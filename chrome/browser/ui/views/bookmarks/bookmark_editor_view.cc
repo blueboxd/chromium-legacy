@@ -431,7 +431,7 @@ void BookmarkEditorView::Reset() {
 GURL BookmarkEditorView::GetInputURL() const {
   if (details_.GetNodeType() == BookmarkNode::FOLDER)
     return GURL();
-  return url_formatter::FixupURL(base::UTF16ToUTF8(url_tf_->text()),
+  return url_formatter::FixupURL(base::UTF16ToUTF8(url_tf_->GetText()),
                                  std::string());
 }
 
@@ -549,7 +549,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   bb_model_->RemoveObserver(this);
 
   GURL new_url(GetInputURL());
-  base::string16 new_title(title_tf_->text());
+  base::string16 new_title(title_tf_->GetText());
 
   if (!show_tree_) {
     BookmarkEditor::ApplyEditsWithNoFolderChange(

@@ -70,6 +70,11 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2366718077645204424">A gazdagép nem érhető el. Ez valószínűleg az Ön által használt hálózat konfigurációja miatt van.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Legutóbb észlelve az interneten: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ez az alkalmazás már nem támogatott. Annak érdekében, hogy biztosan megkapja a legújabb funkciókat és biztonsági frissítéseket, használja a <ph name="LINK_BEGIN" />Chrome távoliasztal-szolgáltatás internetes alkalmazást<ph name="LINK_END" />.</translation>
+<translation id="2431841749166974386">Végre kell hajtania még egy konfigurációs lépést, hogy távolról vezérelhesse ezt a számítógépet a(z) <ph name="PRODUCT_NAME" /> használatával.
+
+Ha aktiválni szeretné ezt a funkciót, kattintson a(z) „<ph name="BUTTON_NAME" />” gombra a biztonsági és adatvédelmi beállítások megnyitásához, majd jelölje be a(z) „<ph name="SERVICE_SCRIPT_NAME" />” melletti jelölőnégyzetet.
+
+Ha a(z) „<ph name="SERVICE_SCRIPT_NAME" />” már jelen van, és be van jelölve, előfordulhat, hogy el kell távolítania, majd újra hozzá kell adnia.</translation>
 <translation id="2499160551253595098">Segítsen fejleszteni a Chrome távoliasztal-szolgáltatást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikákat és hibajelentéseket.</translation>
 <translation id="2509394361235492552">Csatlakozva a következőhöz: <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MEGJEGYZÉS: ha biztosítani akarja valamennyi billentyűkód elérhetőségét, konfigurálja a Chrome távoliasztal-szolgáltatást a „Megnyitás ablakban” lehetőséggel.</translation>
@@ -192,9 +197,6 @@ PC</translation>
 <translation id="4973800994433240357">A Chromoting gazdagép-telepítő letöltésével elfogadja a Google <ph name="LINK_BEGIN" />Általános Szerződési Feltételeit<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Megszakítva a kapcsolat a következővel: <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Előbb be kell állítania számítógépén a távoli hozzáférést.</translation>
-<translation id="5059773780693835145">Végre kell hajtania még egy konfigurációs lépést, hogy távolról vezérelhesse ezt a számítógépet a <ph name="PRODUCT_NAME" /> használatával.
-
-Ha aktiválni szeretné ezt a funkciót, kattintson a(z) „<ph name="BUTTON_NAME" />” gombra a Biztonság és adatvédelem beállításainak megnyitásához, majd jelölje be a(z) „<ph name="SERVICE_SCRIPT_NAME" />” melletti jelölőnégyzetet.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chrome távoliasztal-szolgáltatásnak a cím eléréséhez:</translation>
 <translation id="507204348399810022">Biztosan szeretné letiltani a távoli kapcsolatokat a(z) <ph name="HOSTNAME" /> gazdagéppel?</translation>

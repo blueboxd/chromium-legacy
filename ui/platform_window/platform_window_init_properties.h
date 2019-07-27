@@ -58,6 +58,18 @@ struct PlatformWindowInitProperties {
 #endif
 
   bool activatable = false;
+  bool force_show_in_taskbar;
+  bool keep_on_top = false;
+  bool visible_on_all_workspaces = false;
+  bool remove_standard_frame = false;
+  std::string workspace;
+
+  // Only used by X11. Specifies the res_name and res_class fields,
+  // respectively, of the WM_CLASS window property. Controls window grouping
+  // and desktop file matching in Linux window managers.
+  std::string wm_role_name;
+  std::string wm_class_name;
+  std::string wm_class_class;
 };
 
 }  // namespace ui

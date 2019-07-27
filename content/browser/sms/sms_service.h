@@ -78,6 +78,7 @@ class CONTENT_EXPORT SmsService
   base::OneShotTimer timer_;
   ReceiveCallback callback_;
   base::Optional<std::string> sms_;
+  base::TimeTicks receive_time_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(SmsService);

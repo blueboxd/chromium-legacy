@@ -1218,6 +1218,10 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         json_failing_test_results = host.filesystem.read_text_file('/tmp/json_failing_results.json')
         self.assertEqual(json.loads(json_failing_test_results), details.summarized_failing_results)
 
+    def test_no_default_expectations(self):
+        self.assertTrue(passing_run(['failures/expected/text.html']))
+        self.assertFalse(passing_run(['--ignore-default-expectations', 'failures/expected/text.html']))
+
 
 class RebaselineTest(unittest.TestCase, StreamTestingMixin):
     """Tests for flags which cause new baselines to be written.

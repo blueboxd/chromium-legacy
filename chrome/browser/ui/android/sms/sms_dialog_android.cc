@@ -49,12 +49,10 @@ void SmsDialogAndroid::EnableContinueButton() {
                                               java_dialog_);
 }
 
-void SmsDialogAndroid::OnContinue(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+void SmsDialogAndroid::OnContinue(JNIEnv* env) {
   std::move(on_continue_).Run();
 }
 
-void SmsDialogAndroid::OnCancel(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void SmsDialogAndroid::OnCancel(JNIEnv* env) {
   std::move(on_cancel_).Run();
 }

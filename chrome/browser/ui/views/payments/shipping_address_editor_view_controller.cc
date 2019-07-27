@@ -253,7 +253,7 @@ ShippingAddressEditorViewController::ShippingAddressValidationDelegate::Format(
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     IsValidTextfield(views::Textfield* textfield,
                      base::string16* error_message) {
-  return ValidateValue(textfield->text(), error_message);
+  return ValidateValue(textfield->GetText(), error_message);
 }
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
@@ -268,7 +268,7 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     return true;
 
   base::string16 error_message;
-  bool is_valid = ValidateValue(textfield->text(), &error_message);
+  bool is_valid = ValidateValue(textfield->GetText(), &error_message);
   controller_->DisplayErrorMessageForField(field_.type, error_message);
   return is_valid;
 }
@@ -548,12 +548,13 @@ bool ShippingAddressEditorViewController::SaveFieldsToProfile(
     // ValidatingTextfield* is the key, EditorField is the value.
     if (field.first->IsValid()) {
       success =
-          profile->SetInfo(field.second.type, field.first->text(), locale);
+          profile->SetInfo(field.second.type, field.first->GetText(), locale);
     } else {
       success = false;
     }
     LOG_IF(ERROR, !success && !ignore_errors)
-        << "Can't setinfo(" << field.second.type << ", " << field.first->text();
+        << "Can't setinfo(" << field.second.type << ", "
+        << field.first->GetText();
     if (!success && !ignore_errors)
       return false;
   }

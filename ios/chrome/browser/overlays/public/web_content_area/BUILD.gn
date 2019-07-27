@@ -22,7 +22,6 @@ source_set("web_content_area") {
     "//base",
     "//ios/chrome/browser/overlays",
     "//ios/web/public",
-    "//ios/web/public:web_state_types",
     "//url",
   ]
 }

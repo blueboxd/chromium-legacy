@@ -1176,7 +1176,7 @@ void LocationBarView::AnimationCanceled(const gfx::Animation* animation) {
 void LocationBarView::OnChanged() {
   location_icon_view_->Update(/*suppress_animations=*/false);
   clear_all_button_->SetVisible(IsLocationBarUserInputInProgress() &&
-                                !omnibox_view_->text().empty() &&
+                                !omnibox_view_->GetText().empty() &&
                                 IsVirtualKeyboardVisible(GetWidget()));
   Layout();
   SchedulePaint();

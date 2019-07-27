@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 mojom = "//mojo/public/mojom/base/time.mojom"
-public_headers = [ "//third_party/blink/renderer/platform/wtf/time.h" ]
 traits_headers = [
   "//ipc/ipc_message_utils.h",
   "//mojo/public/cpp/base/time_mojom_traits.h",

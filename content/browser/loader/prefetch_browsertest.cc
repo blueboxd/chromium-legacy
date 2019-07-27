@@ -23,12 +23,9 @@
 namespace content {
 
 struct PrefetchBrowserTestParam {
-  PrefetchBrowserTestParam(bool signed_exchange_enabled,
-                           bool network_service_enabled)
-      : signed_exchange_enabled(signed_exchange_enabled),
-        network_service_enabled(network_service_enabled) {}
+  explicit PrefetchBrowserTestParam(bool signed_exchange_enabled)
+      : signed_exchange_enabled(signed_exchange_enabled) {}
   const bool signed_exchange_enabled;
-  const bool network_service_enabled;
 };
 
 class PrefetchBrowserTest
@@ -48,11 +45,6 @@ class PrefetchBrowserTest
       enable_features.push_back(features::kSignedHTTPExchange);
     } else {
       disabled_features.push_back(features::kSignedHTTPExchange);
-    }
-    if (GetParam().network_service_enabled) {
-      enable_features.push_back(network::features::kNetworkService);
-    } else {
-      disabled_features.push_back(network::features::kNetworkService);
     }
     feature_list_.InitWithFeatures(enable_features, disabled_features);
     PrefetchBrowserTestBase::SetUp();
@@ -472,9 +464,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(PrefetchBrowserTest,
                          PrefetchBrowserTest,
-                         testing::Values(PrefetchBrowserTestParam(false, false),
-                                         PrefetchBrowserTestParam(false, true),
-                                         PrefetchBrowserTestParam(true, false),
-                                         PrefetchBrowserTestParam(true, true)));
+                         testing::Values(PrefetchBrowserTestParam(false),
+                                         PrefetchBrowserTestParam(true)));
 
 }  // namespace content

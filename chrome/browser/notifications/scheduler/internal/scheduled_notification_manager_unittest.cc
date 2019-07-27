@@ -178,7 +178,11 @@ TEST_F(ScheduledNotificationManagerTest, ScheduleNotification) {
   EXPECT_FALSE(guid.empty());
 
   // Verify call contract.
-  EXPECT_CALL(*notification_store(), Add(guid, _, _));
+  EXPECT_CALL(*notification_store(), Add(guid, _, _))
+      .WillOnce(Invoke([guid](const std::string&, const NotificationEntry&,
+                              base::OnceCallback<void(bool)> cb) {
+        std::move(cb).Run(true);
+      }));
   manager()->ScheduleNotification(std::move(params));
 
   // Verify in-memory data.

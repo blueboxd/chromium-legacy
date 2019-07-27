@@ -419,6 +419,8 @@ public abstract class SigninFragmentBase
      * visual appearance of these controls. Refuse button is always enabled.
      */
     private boolean areControlsEnabled() {
+        // Ignore clicks if the fragment is being removed or the app is being backgrounded.
+        if (!isResumed() || isStateSaved()) return false;
         return !mAccountSelectionPending && !mIsSigninInProgress && !mHasGmsError;
     }
 
@@ -510,7 +512,7 @@ public abstract class SigninFragmentBase
                 AccountPickerDialogFragment.create(mSelectedAccountName);
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
         transaction.add(dialog, ACCOUNT_PICKER_DIALOG_TAG);
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
     private AccountPickerDialogFragment getAccountPickerDialogFragment() {
@@ -548,7 +550,7 @@ public abstract class SigninFragmentBase
             // Found the account name, dismiss the account picker dialog if it is shown.
             AccountPickerDialogFragment accountPickerFragment = getAccountPickerDialogFragment();
             if (accountPickerFragment != null) {
-                accountPickerFragment.dismiss();
+                accountPickerFragment.dismissAllowingStateLoss();
             }
 
             // Wait for the account cache to be updated and select newly-added account.

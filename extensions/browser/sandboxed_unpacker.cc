@@ -26,7 +26,6 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
-#include "components/services/unzip/public/cpp/unzip.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"

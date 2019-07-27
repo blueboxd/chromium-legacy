@@ -43,12 +43,12 @@ public class H2OMainActivity extends TransparentLauncherActivity {
             // because {@link H2OLauncher#changeEnabledComponentsAndKillShellApk()} kills the
             // WebAPK app. We cannot use AlarmManager or JobScheduler because their minimum
             // delay (several seconds) is too high.
-            H2OLauncher.requestRelaunchFromHostBrowser(appContext, params);
+            H2OLauncher.requestRelaunchFromHostBrowser(this, params);
             H2OLauncher.changeEnabledComponentsAndKillShellApk(appContext,
                     new ComponentName(appContext, H2OOpaqueMainActivity.class), getComponentName());
             return;
         }
 
-        HostBrowserLauncher.launch(appContext, params);
+        HostBrowserLauncher.launch(this, params);
     }
 }

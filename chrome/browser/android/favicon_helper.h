@@ -25,17 +25,15 @@ class Profile;
 class FaviconHelper {
  public:
   FaviconHelper();
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Destroy(JNIEnv* env);
   jboolean GetLocalFaviconImageForURL(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_profile,
       const base::android::JavaParamRef<jstring>& j_page_url,
       jint j_desired_size_in_pixel,
       const base::android::JavaParamRef<jobject>& j_favicon_image_callback);
   jboolean GetForeignFaviconImageForURL(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jprofile,
       const base::android::JavaParamRef<jstring>& j_page_url,
       jint j_desired_size_in_pixel,
@@ -43,7 +41,6 @@ class FaviconHelper {
 
   void EnsureIconIsAvailable(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_profile,
       const base::android::JavaParamRef<jobject>& j_web_contents,
       const base::android::JavaParamRef<jstring>& j_page_url,
@@ -52,7 +49,6 @@ class FaviconHelper {
       const base::android::JavaParamRef<jobject>& j_availability_callback);
   void TouchOnDemandFavicon(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_profile,
       const base::android::JavaParamRef<jstring>& j_icon_url);
 

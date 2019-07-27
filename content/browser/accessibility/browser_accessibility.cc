@@ -1851,6 +1851,20 @@ base::string16 BrowserAccessibility::GetLocalizedStringForLandmarkType() const {
   }
 }
 
+base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
+    const {
+  ContentClient* content_client = content::GetContentClient();
+  const ui::AXNodeData& data = GetData();
+
+  switch (data.role) {
+    case ax::mojom::Role::kSearchBox:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SEARCH_BOX);
+
+    default:
+      return {};
+  }
+}
+
 base::string16 BrowserAccessibility::GetStyleNameAttributeAsLocalizedString()
     const {
   const BrowserAccessibility* current_node = this;

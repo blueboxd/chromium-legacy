@@ -714,7 +714,8 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     double inherited_time = old_start_time.has_value()
                                 ? state.animating_element->GetDocument()
                                           .Timeline()
-                                          .CurrentTimeInternal() -
+                                          .CurrentTimeInternal()
+                                          ->InSecondsF() -
                                       old_start_time.value()
                                 : 0;
     std::unique_ptr<TypedInterpolationValue> retargeted_start = SampleAnimation(

@@ -50,10 +50,6 @@
 #include "ui/gfx/transform.h"
 #include "ui/latency/latency_info.h"
 
-#if defined(OS_MACOSX)
-#include "components/viz/service/display/overlay_processor_ca.h"
-#endif
-
 using testing::_;
 using testing::AnyNumber;
 using testing::Args;
@@ -2242,8 +2238,6 @@ static void CollectResources(std::vector<ReturnedResource>* array,
   array->insert(array->end(), returned.begin(), returned.end());
 }
 
-// TODO(weiliangc): This unit test should really be an overlay unit test. It is
-// very volatile during the refactoring of OverlayProcessor.
 TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   cc::FakeOutputSurfaceClient output_surface_client;
   std::unique_ptr<FakeOutputSurface> output_surface(
@@ -2330,7 +2324,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 #if defined(USE_OZONE) || defined(OS_ANDROID)
   EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _)).Times(0);
 #elif defined(OS_MACOSX)
-  // Mac's test is in overlay_ca_unittest.
+  EXPECT_CALL(*validator, AllowCALayerOverlays()).Times(0);
 #elif defined(OS_WIN)
   EXPECT_CALL(*validator, AllowDCLayerOverlays()).Times(0);
 #endif
@@ -2355,7 +2349,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 #if defined(USE_OZONE) || defined(OS_ANDROID)
   EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _)).Times(1);
 #elif defined(OS_MACOSX)
-  // Mac's test is in overlay_ca_unittest.
+  EXPECT_CALL(*validator, AllowCALayerOverlays())
+      .Times(1)
+      .WillOnce(::testing::Return(false));
 #elif defined(OS_WIN)
   EXPECT_CALL(*validator, AllowDCLayerOverlays())
       .Times(1)
@@ -2363,9 +2359,6 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 #endif
   DrawFrame(&renderer, viewport_size);
 
-  // TODO(weiliangc): ProcessForOverlays should be a single path on each
-  // platform. When OverlayProcessor refactor happens, this part of the test
-  // will be obsolete.
   // If the CALayerOverlay path is taken, then the ordinary overlay path should
   // not be called.
   root_pass = cc::AddRenderPass(&render_passes_in_draw_order_, 1,
@@ -2381,7 +2374,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
       /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 #if defined(OS_MACOSX)
-  // Mac's test is in overlay_ca_unittest.
+  EXPECT_CALL(*validator, AllowCALayerOverlays())
+      .Times(1)
+      .WillOnce(::testing::Return(true));
 #elif defined(USE_OZONE) || defined(OS_ANDROID)
   EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _)).Times(1);
 #elif defined(OS_WIN)
@@ -3150,6 +3145,14 @@ TEST_F(GLRendererSwapWithBoundsTest, NonEmpty) {
 #endif  // defined(USE_OZONE) || defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)
+class CALayerValidator : public OverlayCandidateValidator {
+ public:
+  bool AllowCALayerOverlays() const override { return true; }
+  bool AllowDCLayerOverlays() const override { return false; }
+  bool NeedsSurfaceOccludingDamageRect() const override { return false; }
+  void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
+};
+
 class MockCALayerGLES2Interface : public TestGLES2Interface {
  public:
   MOCK_METHOD6(ScheduleCALayerSharedStateCHROMIUM,
@@ -3210,7 +3213,9 @@ class CALayerGLRendererTest : public GLRendererTest {
     // This validator allows the renderer to make CALayer overlays. If all
     // quads can be turned into CALayer overlays, then all damage is removed and
     // we can skip the root RenderPass, swapping empty.
-    OverlayProcessorCA* processor = new OverlayProcessorCA(true /* allow_ca */);
+    TestOverlayProcessor* processor =
+        new TestOverlayProcessor(output_surface_->context_provider(),
+                                 std::make_unique<CALayerValidator>());
     renderer_->SetOverlayProcessor(processor);
   }
 

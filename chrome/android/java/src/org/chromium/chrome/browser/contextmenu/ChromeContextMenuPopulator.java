@@ -293,7 +293,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                         && UrlUtilities.isDownloadableScheme(params.getLinkUrl())) {
                     linkTab.add(new ChromeContextMenuItem(Item.SAVE_LINK_AS));
                 }
-                linkTab.add(new ShareContextMenuItem(R.drawable.ic_share_white_24dp,
+                linkTab.add(new ShareContextMenuItem(
                         R.string.contextmenu_share_link, R.id.contextmenu_share_link, true));
                 if (UrlUtilities.isTelScheme(params.getLinkUrl())) {
                     if (mDelegate.supportsCall()) {
@@ -354,7 +354,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                         imageTab.add(new ChromeContextMenuItem(Item.SEARCH_BY_IMAGE));
                     }
                 }
-                imageTab.add(new ShareContextMenuItem(R.drawable.ic_share_white_24dp,
+                imageTab.add(new ShareContextMenuItem(
                         R.string.contextmenu_share_image, R.id.contextmenu_share_image, false));
 
                 recordSaveImageContextMenuResult(isSrcDownloadableScheme);

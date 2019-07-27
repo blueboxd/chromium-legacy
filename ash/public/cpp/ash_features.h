@@ -107,6 +107,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayFeaturePodsPagination;
 ASH_PUBLIC_EXPORT extern const base::Feature
     kSwapSideVolumeButtonsForOrientation;
 
+// Enables refactored UnifiedMessageCenter which is completely separated from
+// the UnifiedSystemTrayView.
+ASH_PUBLIC_EXPORT extern const base::Feature kUnifiedMessageCenterRefactor;
+
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
@@ -138,6 +142,8 @@ ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 ASH_PUBLIC_EXPORT bool IsSystemTrayFeaturePodsPaginationEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
+
+ASH_PUBLIC_EXPORT bool IsUnifiedMessageCenterRefactorEnabled();
 
 }  // namespace features
 }  // namespace ash

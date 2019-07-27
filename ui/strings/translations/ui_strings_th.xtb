@@ -46,8 +46,10 @@
 <translation id="2289052229480071835">แตะเป้าหมายการสัมผัสในหน้าจอ</translation>
 <translation id="2295140143284145483">แบบสำรวจ</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/วินาที</translation>
+<translation id="2388990488038464401">โทรหาหมายเลขนี้จากโทรศัพท์ของคุณใช่ไหม</translation>
 <translation id="24452542372838207">ขยายการแจ้งเตือน</translation>
 <translation id="2445449901874883781">ใช้ความหนาแน่นสูง</translation>
+<translation id="2451871130406122810">ส่งไปที่อุปกรณ์แล้ว</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2497284189126895209">ไฟล์ทั้งหมด</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -114,6 +116,7 @@
 <translation id="5266161281976477809">สามเหลี่ยมซ่อนเนื้อหา</translation>
 <translation id="5278860589123563674">ส่งไม่สำเร็จ</translation>
 <translation id="528468243742722775">สิ้นสุด</translation>
+<translation id="5327567770033251652">เปิดการซิงค์</translation>
 <translation id="5329858601952122676">&amp;ลบ</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> อยู่เหนือ <ph name="IN_PLACE_APP" /> ปล่อยเพื่อสร้างโฟลเดอร์</translation>
 <translation id="5463830097259460683">อีโมจิและสัญลักษณ์</translation>

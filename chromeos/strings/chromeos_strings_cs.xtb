@@ -15,7 +15,6 @@
 <translation id="445059817448385655">Staré heslo</translation>
 <translation id="467510802200863975">Hesla se neshodují</translation>
 <translation id="4731797938093519117">Rodičovský přístup</translation>
-<translation id="476166673298332917">Správce tohoto zařízení může monitorovat vaše aktivity v prohlížeči.</translation>
 <translation id="4890353053343094602">Ihned si zvolte nové</translation>
 <translation id="5212543919916444558">Na obrazovce nevidím nic, s čím vám můžu pomoct.
 Zkuste klepnout na mikrofon a zeptat se.</translation>
@@ -24,13 +23,11 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="5332948983412042822">Zvolte si nové</translation>
 <translation id="5457599981699367932">Použít jako host</translation>
 <translation id="54609108002486618">Spravovaný</translation>
-<translation id="5632302877407885207">{NUM_DAYS,plural, =0{Platnost hesla vypršela}=1{Platnost hesla vyprší za méně než jeden den}few{Platnost hesla vyprší za méně než # dny}many{Platnost hesla vyprší za méně než # dne}other{Platnost hesla vyprší za méně než # dní}}</translation>
 <translation id="5832805196449965646">Přidat uživatele</translation>
 <translation id="5895138241574237353">Restartovat</translation>
 <translation id="6058625436358447366">Chcete-li akci dokončit, zadejte své staré a nové heslo</translation>
 <translation id="6106186594183574873">Chcete-li akci dokončit, zadejte své staré heslo</translation>
 <translation id="6146993107019042706">Chcete-li akci dokončit, zadejte své nové heslo</translation>
-<translation id="6574601967010742428">Administrátor zařízení může mít možnost sledovat vaši aktivitu.</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7690294790491645610">Potvrďte nové heslo</translation>
 <translation id="808894953321890993">Změnit heslo</translation>

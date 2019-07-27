@@ -347,66 +347,25 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDataWithLayout(
     uint8_t* data,
     size_t data_size,
     base::TimeDelta timestamp) {
-  return WrapExternalStorage(STORAGE_UNOWNED_MEMORY, layout, visible_rect,
-                             natural_size, data, data_size, timestamp, nullptr,
-                             nullptr, base::SharedMemoryHandle(), 0);
-}
+  StorageType storage_type = STORAGE_UNOWNED_MEMORY;
 
-// static
-scoped_refptr<VideoFrame> VideoFrame::WrapExternalReadOnlySharedMemory(
-    VideoPixelFormat format,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    uint8_t* data,
-    size_t data_size,
-    base::ReadOnlySharedMemoryRegion* region,
-    size_t data_offset,
-    base::TimeDelta timestamp) {
-  auto layout = GetDefaultLayout(format, coded_size);
-  if (!layout)
+  if (!IsValidConfig(layout.format(), storage_type, layout.coded_size(),
+                     visible_rect, natural_size)) {
+    DLOG(ERROR) << __func__ << " Invalid config."
+                << ConfigToString(layout.format(), storage_type,
+                                  layout.coded_size(), visible_rect,
+                                  natural_size);
     return nullptr;
-  return WrapExternalStorage(STORAGE_SHMEM, *layout, visible_rect, natural_size,
-                             data, data_size, timestamp, region, nullptr,
-                             base::SharedMemoryHandle(), data_offset);
-}
+  }
 
-// static
-scoped_refptr<VideoFrame> VideoFrame::WrapExternalUnsafeSharedMemory(
-    VideoPixelFormat format,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    uint8_t* data,
-    size_t data_size,
-    base::UnsafeSharedMemoryRegion* region,
-    size_t data_offset,
-    base::TimeDelta timestamp) {
-  auto layout = GetDefaultLayout(format, coded_size);
-  if (!layout)
-    return nullptr;
-  return WrapExternalStorage(STORAGE_SHMEM, *layout, visible_rect, natural_size,
-                             data, data_size, timestamp, nullptr, region,
-                             base::SharedMemoryHandle(), data_offset);
-}
+  scoped_refptr<VideoFrame> frame = new VideoFrame(
+      layout, storage_type, visible_rect, natural_size, timestamp);
 
-// static
-scoped_refptr<VideoFrame> VideoFrame::WrapExternalSharedMemory(
-    VideoPixelFormat format,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    uint8_t* data,
-    size_t data_size,
-    base::SharedMemoryHandle handle,
-    size_t data_offset,
-    base::TimeDelta timestamp) {
-  auto layout = GetDefaultLayout(format, coded_size);
-  if (!layout)
-    return nullptr;
-  return WrapExternalStorage(STORAGE_SHMEM, *layout, visible_rect, natural_size,
-                             data, data_size, timestamp, nullptr, nullptr,
-                             handle, data_offset);
+  for (size_t i = 0; i < layout.planes().size(); ++i) {
+    frame->data_[i] = data + layout.planes()[i].offset;
+  }
+
+  return frame;
 }
 
 // static
@@ -613,6 +572,10 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
   CHECK(!frame.HasTextures());
   DCHECK(frame.visible_rect().Contains(visible_rect));
 
+  // The following storage type should not be wrapped as the shared region
+  // cannot be owned by both the wrapped frame and the wrapping frame.
+  DCHECK(frame.storage_type() != STORAGE_MOJO_SHARED_BUFFER);
+
   if (!AreValidPixelFormatsForWrap(frame.format(), format)) {
     DLOG(ERROR) << __func__ << " Invalid format conversion."
                 << VideoPixelFormatToString(frame.format()) << " to "
@@ -649,18 +612,9 @@ scoped_refptr<VideoFrame> VideoFrame::WrapVideoFrame(
 #endif
 
   if (frame.storage_type() == STORAGE_SHMEM) {
-    if (frame.read_only_shared_memory_region_) {
-      DCHECK(frame.read_only_shared_memory_region_->IsValid());
-      wrapping_frame->AddReadOnlySharedMemoryRegion(
-          frame.read_only_shared_memory_region_);
-    } else if (frame.unsafe_shared_memory_region_) {
-      DCHECK(frame.unsafe_shared_memory_region_->IsValid());
-      wrapping_frame->AddUnsafeSharedMemoryRegion(
-          frame.unsafe_shared_memory_region_);
-    } else {
-      DCHECK(frame.shared_memory_handle_.IsValid());
-      wrapping_frame->AddSharedMemoryHandle(frame.shared_memory_handle_);
-    }
+    DCHECK(frame.shm_region_ && frame.shm_region_->IsValid());
+    wrapping_frame->BackWithSharedMemory(frame.shm_region_,
+                                         frame.shared_memory_offset());
   }
 
   return wrapping_frame;
@@ -864,6 +818,37 @@ void VideoFrame::HashFrameForTesting(base::MD5Context* context,
   }
 }
 
+void VideoFrame::BackWithSharedMemory(base::UnsafeSharedMemoryRegion* region,
+                                      size_t offset) {
+  DCHECK(!shm_region_);
+  DCHECK(!owned_shm_region_.IsValid());
+  // Either we should be backing a frame created with WrapExternal*, or we are
+  // wrapping an existing STORAGE_SHMEM, in which case the storage
+  // type has already been set to STORAGE_SHMEM.
+  DCHECK(storage_type_ == STORAGE_UNOWNED_MEMORY ||
+         storage_type_ == STORAGE_SHMEM);
+  DCHECK(region && region->IsValid());
+  storage_type_ = STORAGE_SHMEM;
+  shm_region_ = region;
+  shared_memory_offset_ = offset;
+}
+
+void VideoFrame::BackWithOwnedSharedMemory(
+    base::UnsafeSharedMemoryRegion region,
+    base::WritableSharedMemoryMapping mapping,
+    size_t offset) {
+  DCHECK(!shm_region_);
+  DCHECK(!owned_shm_region_.IsValid());
+  // We should be backing a frame created with WrapExternal*. We cannot be
+  // wrapping an existing STORAGE_SHMEM, as the region is unowned in that case.
+  DCHECK(storage_type_ == STORAGE_UNOWNED_MEMORY);
+  storage_type_ = STORAGE_SHMEM;
+  owned_shm_region_ = std::move(region);
+  shm_region_ = &owned_shm_region_;
+  owned_shm_mapping_ = std::move(mapping);
+  shared_memory_offset_ = offset;
+}
+
 bool VideoFrame::IsMappable() const {
   return IsStorageTypeMappable(storage_type_);
 }
@@ -928,38 +913,6 @@ VideoFrame::mailbox_holder(size_t texture_index) const {
   return mailbox_holders_[texture_index];
 }
 
-base::ReadOnlySharedMemoryRegion* VideoFrame::read_only_shared_memory_region()
-    const {
-  DCHECK_EQ(storage_type_, STORAGE_SHMEM);
-  DCHECK(read_only_shared_memory_region_ &&
-         read_only_shared_memory_region_->IsValid());
-  return read_only_shared_memory_region_;
-}
-
-base::UnsafeSharedMemoryRegion* VideoFrame::unsafe_shared_memory_region()
-    const {
-  DCHECK_EQ(storage_type_, STORAGE_SHMEM);
-  DCHECK(unsafe_shared_memory_region_ &&
-         unsafe_shared_memory_region_->IsValid());
-  return unsafe_shared_memory_region_;
-}
-
-base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {
-  DCHECK_EQ(storage_type_, STORAGE_SHMEM);
-  DCHECK(shared_memory_handle_.IsValid());
-  return shared_memory_handle_;
-}
-
-size_t VideoFrame::shared_memory_offset() const {
-  DCHECK_EQ(storage_type_, STORAGE_SHMEM);
-  DCHECK((read_only_shared_memory_region_ &&
-          read_only_shared_memory_region_->IsValid()) ||
-         (unsafe_shared_memory_region_ &&
-          unsafe_shared_memory_region_->IsValid()) ||
-         shared_memory_handle_.IsValid());
-  return shared_memory_offset_;
-}
-
 #if defined(OS_LINUX)
 const std::vector<base::ScopedFD>& VideoFrame::DmabufFds() const {
   DCHECK_EQ(storage_type_, STORAGE_DMABUFS);
@@ -977,28 +930,6 @@ bool VideoFrame::IsSameDmaBufsAs(const VideoFrame& frame) const {
          &DmabufFds() == &frame.DmabufFds();
 }
 #endif
-
-void VideoFrame::AddReadOnlySharedMemoryRegion(
-    base::ReadOnlySharedMemoryRegion* region) {
-  storage_type_ = STORAGE_SHMEM;
-  DCHECK(SharedMemoryUninitialized());
-  DCHECK(region && region->IsValid());
-  read_only_shared_memory_region_ = region;
-}
-
-void VideoFrame::AddUnsafeSharedMemoryRegion(
-    base::UnsafeSharedMemoryRegion* region) {
-  storage_type_ = STORAGE_SHMEM;
-  DCHECK(SharedMemoryUninitialized());
-  DCHECK(region && region->IsValid());
-  unsafe_shared_memory_region_ = region;
-}
-
-void VideoFrame::AddSharedMemoryHandle(base::SharedMemoryHandle handle) {
-  storage_type_ = STORAGE_SHMEM;
-  DCHECK(SharedMemoryUninitialized());
-  shared_memory_handle_ = handle;
-}
 
 #if defined(OS_MACOSX)
 CVPixelBufferRef VideoFrame::CvPixelBuffer() const {
@@ -1048,60 +979,6 @@ size_t VideoFrame::BitDepth() const {
   return media::BitDepth(format());
 }
 
-// static
-scoped_refptr<VideoFrame> VideoFrame::WrapExternalStorage(
-    StorageType storage_type,
-    const VideoFrameLayout& layout,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    uint8_t* data,
-    size_t data_size,
-    base::TimeDelta timestamp,
-    base::ReadOnlySharedMemoryRegion* read_only_region,
-    base::UnsafeSharedMemoryRegion* unsafe_region,
-    base::SharedMemoryHandle handle,
-    size_t data_offset) {
-  DCHECK(IsStorageTypeMappable(storage_type));
-
-  if (!IsValidConfig(layout.format(), storage_type, layout.coded_size(),
-                     visible_rect, natural_size)) {
-    DLOG(ERROR) << __func__ << " Invalid config."
-                << ConfigToString(layout.format(), storage_type,
-                                  layout.coded_size(), visible_rect,
-                                  natural_size);
-    return nullptr;
-  }
-
-  scoped_refptr<VideoFrame> frame = new VideoFrame(
-      layout, storage_type, visible_rect, natural_size, timestamp);
-
-  for (size_t i = 0; i < layout.planes().size(); ++i) {
-    frame->data_[i] = data + layout.planes()[i].offset;
-  }
-
-  if (storage_type == STORAGE_SHMEM) {
-    if (read_only_region || unsafe_region) {
-      DCHECK(!handle.IsValid());
-      DCHECK_NE(!!read_only_region, !!unsafe_region)
-          << "Expected exactly one read-only or unsafe region for "
-          << "STORAGE_SHMEM VideoFrame";
-      if (read_only_region) {
-        frame->read_only_shared_memory_region_ = read_only_region;
-        DCHECK(frame->read_only_shared_memory_region_->IsValid());
-      } else if (unsafe_region) {
-        frame->unsafe_shared_memory_region_ = unsafe_region;
-        DCHECK(frame->unsafe_shared_memory_region_->IsValid());
-      }
-      frame->shared_memory_offset_ = data_offset;
-    } else {
-      frame->AddSharedMemoryHandle(handle);
-      frame->shared_memory_offset_ = data_offset;
-    }
-  }
-
-  return frame;
-}
-
 VideoFrame::VideoFrame(const VideoFrameLayout& layout,
                        StorageType storage_type,
                        const gfx::Rect& visible_rect,
@@ -1111,7 +988,6 @@ VideoFrame::VideoFrame(const VideoFrameLayout& layout,
       storage_type_(storage_type),
       visible_rect_(Intersection(visible_rect, gfx::Rect(layout.coded_size()))),
       natural_size_(natural_size),
-      shared_memory_offset_(0),
 #if defined(OS_LINUX)
       dmabuf_fds_(base::MakeRefCounted<DmabufHolder>()),
 #endif
@@ -1217,11 +1093,6 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrameWithLayout(
   return frame;
 }
 
-bool VideoFrame::SharedMemoryUninitialized() {
-  return !read_only_shared_memory_region_ && !unsafe_shared_memory_region_ &&
-         !shared_memory_handle_.IsValid();
-}
-
 // static
 gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
   DCHECK(IsValidPlane(plane, format));
@@ -1308,6 +1179,12 @@ void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
     data_[plane] = data + offset;
     offset += plane_size[plane];
   }
+}
+
+bool VideoFrame::IsValidSharedMemoryFrame() const {
+  if (storage_type_ == STORAGE_SHMEM)
+    return shm_region_ && shm_region_->IsValid();
+  return false;
 }
 
 std::vector<size_t> VideoFrame::CalculatePlaneSize() const {

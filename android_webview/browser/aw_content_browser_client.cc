@@ -34,7 +34,6 @@
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
 #include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/network_service/aw_url_loader_throttle.h"
-#include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/safe_browsing/aw_url_checker_delegate_impl.h"
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
 #include "android_webview/common/aw_content_client.h"
@@ -605,10 +604,6 @@ bool AwContentBrowserClient::CanCreateWindow(
 
   return (settings && settings->GetJavaScriptCanOpenWindowsAutomatically()) ||
          user_gesture;
-}
-
-void AwContentBrowserClient::ResourceDispatcherHostCreated() {
-  AwResourceDispatcherHostDelegate::ResourceDispatcherHostCreated();
 }
 
 base::FilePath AwContentBrowserClient::GetDefaultDownloadDirectory() {

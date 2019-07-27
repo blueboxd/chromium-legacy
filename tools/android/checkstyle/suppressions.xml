@@ -10,4 +10,5 @@
   <suppress id="StringBufferCheck" files="src/chrome/android/webapk/"/>
   <!-- Robolectric shadows can overwrite constructor by implementing __constructor__() method. -->
   <suppress id="MethodNameCheck" files="FirstRunIntegrationUnitTest.java"/>
+  <suppress id="MethodNameCheck" files="SplashActivityTest.java"/>
 </suppressions>

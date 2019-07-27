@@ -27,6 +27,9 @@ namespace ui {
 namespace {
 
 std::string TreeToStringHelper(const AXNode* node, int indent) {
+  if (!node)
+    return "";
+
   return std::accumulate(
       node->children().cbegin(), node->children().cend(),
       std::string(2 * indent, ' ') + node->data().ToString() + "\n",
@@ -105,18 +108,16 @@ struct AXTreeUpdateState {
   AXTreeUpdateState() : new_root(nullptr) {}
   // Returns whether this update changes |node|.
   bool IsChangedNode(const AXNode* node) {
-    return changed_node_ids.find(node->id()) != changed_node_ids.end();
+    return base::Contains(changed_node_ids, node->id());
   }
 
   // Returns whether this update removes |node|.
   bool IsRemovedNode(const AXNode* node) const {
-    return removed_node_ids.find(node->id()) != removed_node_ids.end();
+    return base::Contains(removed_node_ids, node->id());
   }
 
   // Returns whether this update creates |node|.
-  bool IsNewNode(const AXNode* node) {
-    return new_nodes.find(node) != new_nodes.end();
-  }
+  bool IsNewNode(const AXNode* node) { return base::Contains(new_nodes, node); }
 
   // If this node is removed, it should be considered reparented.
   bool IsPotentiallyReparentedNode(const AXNode* node) const {
@@ -167,10 +168,10 @@ struct AXTreeUpdateState {
 
 AXTree::AXTree() {
   AXNodeData root;
-  root.id = -1;
+  root.id = AXNode::kInvalidAXID;
 
   AXTreeUpdate initial_state;
-  initial_state.root_id = -1;
+  initial_state.root_id = AXNode::kInvalidAXID;
   initial_state.nodes.push_back(root);
   CHECK(Unserialize(initial_state)) << error();
   // TODO(chrishall): should language_detection_manager be a member or pointer?
@@ -403,7 +404,7 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_, true);
 
   AXTreeUpdateState update_state;
-  int32_t old_root_id = root_ ? root_->id() : 0;
+  const AXNode::AXID old_root_id = root_ ? root_->id() : AXNode::kInvalidAXID;
 
   // First, make a note of any nodes we will touch as part of this update.
   for (size_t i = 0; i < update.nodes.size(); ++i)
@@ -415,41 +416,48 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   // Get all of the node ids that are certain to exist after the update.
   // These are the nodes that are considered reparented if they are removed from
   // somewhere else.
-  update_state.potentially_reparented_ids.emplace(update.root_id);
+  if (update.root_id != AXNode::kInvalidAXID)
+    update_state.potentially_reparented_ids.emplace(update.root_id);
   for (const AXNodeData& update_node_data : update.nodes) {
     update_state.potentially_reparented_ids.insert(
         update_node_data.child_ids.begin(), update_node_data.child_ids.end());
   }
 
   // We distinguish between updating the root, e.g. changing its children or
-  // some of its attributes, or replacing the root completely.
+  // some of its attributes, or replacing the root completely. If the root is
+  // being updated, update.node_id_to_clear should hold the current root's ID.
+  // Otherwise if the root is being replaced, update.root_id should hold the ID
+  // of the new root.
   bool root_updated = false;
-  if (update.node_id_to_clear != 0) {
-    AXNode* node = GetFromId(update.node_id_to_clear);
-
-    // Only destroy the root if the root was replaced and not if it's simply
-    // updated. To figure out if  the root was simply updated, we compare the ID
-    // of the new root with the existing root ID.
-    if (node && node == root_) {
-      if (update.root_id != old_root_id) {
-        // Clear root_ before calling DestroySubtree so that root_ doesn't ever
-        // point to an invalid node.
-        AXNode* old_root = root_;
-        root_ = nullptr;
-        DestroySubtree(old_root, &update_state);
-      } else {
-        root_updated = true;
+  if (update.node_id_to_clear != AXNode::kInvalidAXID) {
+    if (AXNode* cleared_node = GetFromId(update.node_id_to_clear)) {
+      DCHECK(root_);
+      if (cleared_node == root_) {
+        // Only destroy the root if the root was replaced and not if it's simply
+        // updated. To figure out if  the root was simply updated, we compare
+        // the ID of the new root with the existing root ID.
+        if (update.root_id != old_root_id) {
+          // Clear root_ before calling DestroySubtree so that root_ doesn't
+          // ever point to an invalid node.
+          AXNode* old_root = root_;
+          root_ = nullptr;
+          DestroySubtree(old_root, &update_state);
+        } else {
+          // If the root has simply been updated, we treat it like an update to
+          // any other node.
+          root_updated = true;
+        }
       }
-    }
 
-    // If the root has simply been updated, we treat it like an update to any
-    // other node.
-    if (node && root_ && (node != root_ || root_updated)) {
-      for (auto* child : node->children())
-        DestroySubtree(child, &update_state);
-      std::vector<AXNode*> children;
-      node->SwapChildren(children);
-      update_state.pending_nodes.insert(node);
+      // If the tree doesn't exists any more because the root has just been
+      // replaced, there is nothing more to clear.
+      if (root_) {
+        for (auto* child : cleared_node->children())
+          DestroySubtree(child, &update_state);
+        std::vector<AXNode*> children;
+        cleared_node->SwapChildren(children);
+        update_state.pending_nodes.insert(cleared_node);
+      }
     }
   }
 
@@ -615,10 +623,11 @@ AXNode* AXTree::CreateNode(AXNode* parent,
                                 parent ? 0 : index_in_parent);
   id_map_[new_node->id()] = new_node;
   for (AXTreeObserver& observer : observers_) {
-    if (update_state->IsReparentedNode(new_node))
+    if (update_state->IsReparentedNode(new_node)) {
       observer.OnNodeReparented(this, new_node);
-    else
+    } else {
       observer.OnNodeCreated(this, new_node);
+    }
   }
   AXNode* unignored_parent = new_node->GetUnignoredParent();
   if (unignored_parent) {
@@ -908,10 +917,11 @@ void AXTree::DestroySubtree(AXNode* node,
                             AXTreeUpdateState* update_state) {
   DCHECK(update_state);
   for (AXTreeObserver& observer : observers_) {
-    if (update_state->IsPotentiallyReparentedNode(node))
+    if (update_state->IsPotentiallyReparentedNode(node)) {
       observer.OnSubtreeWillBeReparented(this, node);
-    else
+    } else {
       observer.OnSubtreeWillBeDeleted(this, node);
+    }
   }
   DestroyNodeAndSubtree(node, update_state);
 }
@@ -931,10 +941,11 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
   }
 
   for (AXTreeObserver& observer : observers_) {
-    if (update_state && update_state->IsPotentiallyReparentedNode(node))
+    if (update_state && update_state->IsPotentiallyReparentedNode(node)) {
       observer.OnNodeWillBeReparented(this, node);
-    else
+    } else {
       observer.OnNodeWillBeDeleted(this, node);
+    }
   }
   id_map_.erase(node->id());
   for (auto* child : node->children())

@@ -81,7 +81,10 @@
   # START chrome/browser section.
   "chrome/browser/browser_resources.grd": {
     "includes": [11000],
-    "structures": [11850],
+    "structures": [11800],
+  },
+  "chrome/browser/resources/bluetooth_internals/resources.grd": {
+    "includes": [11870],
   },
   "chrome/browser/resources/chromeos/camera/camera_resources.grd": {
     "includes": [11930],

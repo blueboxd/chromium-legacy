@@ -69,6 +69,7 @@ namespace blink {
 
 class AdTracker;
 class AssociatedInterfaceProvider;
+class BrowserInterfaceBrokerProxy;
 class Color;
 class ContentCaptureManager;
 class Document;
@@ -294,6 +295,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mojom::blink::DocumentInterfaceBroker& GetDocumentInterfaceBroker();
   mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
       mojo::ScopedMessagePipeHandle blink_handle);
+
+  const BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy() const;
+
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
 
   // Returns an AssociatedInterfaceProvider the frame can use to request

@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">탐색 슬라이더</translation>
 <translation id="1399648040768741453">텔루구어 키보드(음역)</translation>
 <translation id="1430915738399379752">인쇄</translation>
+<translation id="1439494416798956626"><ph name="FOLDER_NAME" /> 폴더로 이동했습니다.</translation>
 <translation id="1441841714100794440">베트남어 키보드(텔렉스)</translation>
 <translation id="1455548678241328678">노르웨이어 키보드</translation>
 <translation id="1464724975715666883">오류가 1개 있습니다.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">미디어 기기 스캔 중...</translation>
 <translation id="3468522857997926824">사진 <ph name="FILE_COUNT" />장을 <ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 백업</translation>
 <translation id="3470502288861289375">복사 중...</translation>
+<translation id="3473378059788601120"><ph name="FOLDER_NAME" />에 복사되었습니다.</translation>
 <translation id="3475447146579922140">Google 스프레드시트</translation>
 <translation id="3495304270784461826">오류가 <ph name="COUNT" />개 있습니다.</translation>
 <translation id="3519867315646775981">음역(shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">일본어 입력(일본어 키보드용)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux 앱에 Google 드라이브의 파일을 수정할 수 있는 권한을 부여합니다. 변경사항이 다른 기기에 동기화됩니다.</translation>
+<translation id="5955954492236143329">항목 <ph name="NUMBER_OF_ITEMS" />개</translation>
 <translation id="5982621672636444458">정렬 옵션</translation>
 <translation id="6005282720244019462">남미 언어 키보드</translation>
 <translation id="6007237601604674381">이동에 실패했습니다. <ph name="ERROR_MESSAGE" /></translation>

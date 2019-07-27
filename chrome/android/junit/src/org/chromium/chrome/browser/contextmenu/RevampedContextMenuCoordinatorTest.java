@@ -50,14 +50,14 @@ public class RevampedContextMenuCoordinatorTest {
         groupOne.add(new ChromeContextMenuItem(Item.OPEN_IN_NEW_TAB));
         groupOne.add(new ChromeContextMenuItem(Item.OPEN_IN_INCOGNITO_TAB));
         groupOne.add(new ChromeContextMenuItem(Item.SAVE_LINK_AS));
-        groupOne.add(new ShareContextMenuItem(0, R.string.contextmenu_share_link,
+        groupOne.add(new ShareContextMenuItem(R.string.contextmenu_share_link,
                 org.chromium.chrome.R.id.contextmenu_share_link, true));
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
         // Image Items
         List<ContextMenuItem> groupTwo = new ArrayList<>();
         groupTwo.add(new ChromeContextMenuItem(Item.OPEN_IMAGE_IN_NEW_TAB));
         groupTwo.add(new ChromeContextMenuItem(Item.SAVE_IMAGE));
-        groupTwo.add(new ShareContextMenuItem(0, R.string.contextmenu_share_image,
+        groupTwo.add(new ShareContextMenuItem(R.string.contextmenu_share_image,
                 org.chromium.chrome.R.id.contextmenu_share_image, false));
         rawItems.add(new Pair<>(ContextMenuGroup.IMAGE, groupTwo));
 
@@ -91,7 +91,7 @@ public class RevampedContextMenuCoordinatorTest {
         groupOne.add(new ChromeContextMenuItem(Item.OPEN_IN_NEW_TAB));
         groupOne.add(new ChromeContextMenuItem(Item.OPEN_IN_INCOGNITO_TAB));
         groupOne.add(new ChromeContextMenuItem(Item.SAVE_LINK_AS));
-        groupOne.add(new ShareContextMenuItem(0, R.string.contextmenu_share_link,
+        groupOne.add(new ShareContextMenuItem(R.string.contextmenu_share_link,
                 org.chromium.chrome.R.id.contextmenu_share_link, true));
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 

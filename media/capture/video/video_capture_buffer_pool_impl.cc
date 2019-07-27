@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
@@ -27,9 +28,20 @@ VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(
 
 VideoCaptureBufferPoolImpl::~VideoCaptureBufferPoolImpl() = default;
 
+base::UnsafeSharedMemoryRegion
+VideoCaptureBufferPoolImpl::DuplicateAsUnsafeRegion(int buffer_id) {
+  base::AutoLock lock(lock_);
+
+  VideoCaptureBufferTracker* tracker = GetTracker(buffer_id);
+  if (!tracker) {
+    NOTREACHED() << "Invalid buffer_id.";
+    return {};
+  }
+  return tracker->DuplicateAsUnsafeRegion();
+}
+
 mojo::ScopedSharedBufferHandle
-VideoCaptureBufferPoolImpl::GetHandleForInterProcessTransit(int buffer_id,
-                                                            bool read_only) {
+VideoCaptureBufferPoolImpl::DuplicateAsMojoBuffer(int buffer_id) {
   base::AutoLock lock(lock_);
 
   VideoCaptureBufferTracker* tracker = GetTracker(buffer_id);
@@ -37,20 +49,7 @@ VideoCaptureBufferPoolImpl::GetHandleForInterProcessTransit(int buffer_id,
     NOTREACHED() << "Invalid buffer_id.";
     return mojo::ScopedSharedBufferHandle();
   }
-  return tracker->GetHandleForTransit(read_only);
-}
-
-base::SharedMemoryHandle
-VideoCaptureBufferPoolImpl::GetNonOwnedSharedMemoryHandleForLegacyIPC(
-    int buffer_id) {
-  base::AutoLock lock(lock_);
-
-  VideoCaptureBufferTracker* tracker = GetTracker(buffer_id);
-  if (!tracker) {
-    NOTREACHED() << "Invalid buffer_id.";
-    return base::SharedMemoryHandle();
-  }
-  return tracker->GetNonOwnedSharedMemoryHandleForLegacyIPC();
+  return tracker->DuplicateAsMojoBuffer();
 }
 
 mojom::SharedMemoryViaRawFileDescriptorPtr
@@ -67,11 +66,17 @@ VideoCaptureBufferPoolImpl::CreateSharedMemoryViaRawFileDescriptorStruct(
     return 0u;
   }
 
+  // Convert the mojo::ScopedSharedBufferHandle to a PlatformSharedMemoryRegion
+  // in order to extract the platform file descriptor.
+  base::subtle::PlatformSharedMemoryRegion platform_region =
+      mojo::UnwrapPlatformSharedMemoryRegion(tracker->DuplicateAsMojoBuffer());
+  if (!platform_region.IsValid()) {
+    NOTREACHED();
+    return 0u;
+  }
+  base::subtle::ScopedFDPair fds = platform_region.PassPlatformHandle();
   auto result = mojom::SharedMemoryViaRawFileDescriptor::New();
-  result->file_descriptor_handle = mojo::WrapPlatformFile(
-      base::SharedMemory::DuplicateHandle(
-          tracker->GetNonOwnedSharedMemoryHandleForLegacyIPC())
-          .GetHandle());
+  result->file_descriptor_handle = mojo::WrapPlatformFile(fds.fd.release());
   result->shared_memory_size_in_bytes = tracker->GetMemorySizeInBytes();
   return result;
 #else

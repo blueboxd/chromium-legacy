@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">Опције за чување лозинке</translation>
 <translation id="2523363575747517183">Овај веб-сајт непрекидно покушава да отвори другу апликацију.</translation>
 <translation id="2529021024822217800">Отвори све</translation>
+<translation id="2562041823070056534">Шаље се на уређај <ph name="DEVICE_NAME" />...</translation>
 <translation id="2570206273416014374">Подразумеваном претраживачу шаље неке колачиће и претраге из траке за адресу и оквира за претрагу.</translation>
 <translation id="2572712655377361602">Смернице за уређај су блокирале приступ сликама</translation>
 <translation id="2578571896248130439">Пошаљите веб-страницу</translation>
@@ -314,6 +315,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="5556459405103347317">Учитај поново</translation>
 <translation id="5614553682702429503">Желите ли да сачувате лозинку?</translation>
 <translation id="5626245204502895507">Тренутно није могуће преузети датотеку.</translation>
+<translation id="5631164295104953411">Додај начина плаћања</translation>
 <translation id="5659593005791499971">Имејл</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Верзија <ph name="PRODUCT_VERSION" /></translation>
@@ -465,6 +467,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7772032839648071052">Потврди приступну фразу</translation>
 <translation id="7781829728241885113">Јуче</translation>
 <translation id="778855399387580014">Започните претрагу на новој Chrome картици.</translation>
+<translation id="7791543448312431591">Додај</translation>
 <translation id="780301667611848630">Не, хвала</translation>
 <translation id="7840771868269352570">Ставке које сте изабрали ће бити уклоњене.</translation>
 <translation id="7856733331829174190">Преузимање није успело</translation>
@@ -532,7 +535,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8976382372951310360">Помоћ</translation>
 <translation id="8981454092730389528">Google контроле активности</translation>
 <translation id="8985320356172329008">Пријављени сте на Google као</translation>
-<translation id="9016406938567631235">Шаље се…</translation>
 <translation id="902659348151742535">Google може да користи историју прегледања за персонализацију Претраге, огласа и других Google услуга.</translation>
 <translation id="9034759925968272072">Нећемо вас одјавити са Google налога. Google налог можда има друге облике историје прегледања на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Пропусни опсег</translation>

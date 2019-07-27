@@ -8,7 +8,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.NativeMethods;
 
 /** The JNI bridge for Android to receive notifications about history deletions. */
@@ -56,6 +55,6 @@ public class HistoryDeletionBridge {
 
     @NativeMethods
     interface Natives {
-        long init(@JCaller HistoryDeletionBridge self);
+        long init(HistoryDeletionBridge self);
     }
 }

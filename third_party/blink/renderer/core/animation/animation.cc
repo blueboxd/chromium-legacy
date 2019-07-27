@@ -708,11 +708,16 @@ Animation::AnimationPlayState Animation::CalculatePlayState() const {
     return kPaused;
   if (internal_play_state_ == kIdle)
     return kIdle;
-  if (current_time_pending_ || (!start_time_ && playback_rate_ != 0))
+  if (NeedsCompositorTimeSync())
     return kPending;
   if (Limited())
     return kFinished;
   return kRunning;
+}
+
+Animation::AnimationPlayState Animation::GetPlayState() const {
+  DCHECK_NE(animation_play_state_, kUnset);
+  return animation_play_state_;
 }
 
 // https://drafts.csswg.org/web-animations/#play-states

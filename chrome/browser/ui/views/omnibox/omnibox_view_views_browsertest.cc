@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, DoNotNavigateOnDrop) {
   EXPECT_TRUE(data.HasString());
 
   omnibox_view_views->OnDrop(data);
-  EXPECT_EQ(input, omnibox_view_views->text());
+  EXPECT_EQ(input, omnibox_view_views->GetText());
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_TRUE(omnibox_view_views->IsSelectAll());
   EXPECT_FALSE(

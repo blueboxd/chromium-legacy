@@ -296,9 +296,19 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="SubFrame.LayoutInstability.CumulativeShiftScore">
     <summary>
-      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
       occurred during the session, in the AMP subframe. This metric's integral
-      value is 100x the fractional jank score described in the explainer.
+      value is 100x the fractional cumulative layout shift score described in
+      the explainer.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.LayoutInstability.CumulativeShiftScore.BeforeInputOrScroll">
+    <summary>
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
+      occurred in the AMP subframe, before any user input or document scroll.
+      This metric's integral value is 100x the fractional cumulative layout
+      shift score described in the explainer.
     </summary>
   </metric>
   <metric name="SubFrame.LayoutStability.JankScore">
@@ -4783,6 +4793,120 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="NavigationPredictorAnchorElementMetrics">
+  <owner>ryansturm@chromium.com</owner>
+  <summary>
+    Metrics that describe an anchor element's data. This event is emitted at
+    most 10 times per page load, once for each of the top n URLs on a page, and
+    the order of the events is randomized. If there is no nth anchor element, no
+    value is returned.
+  </summary>
+  <metric name="AnchorIndex">
+    <summary>
+      The index of the clicked-on anchor element in NavigationPredictor's
+      |top_urls_|.
+    </summary>
+  </metric>
+  <metric name="ContainsImage">
+    <summary>
+      1 if the anchor element contains an image.
+    </summary>
+  </metric>
+  <metric name="IsInIframe">
+    <summary>
+      1 if the anchor element is in an iframe.
+    </summary>
+  </metric>
+  <metric name="IsURLIncrementedByOne">
+    <summary>
+      1 if the anchor element's target URL and the document's source URL only
+      differ by one number, and the target URL increments that number in the
+      source URL by 1.
+    </summary>
+  </metric>
+  <metric name="PercentClickableArea">
+    <summary>
+      The percent of the total document area that this anchor element's
+      clickable area occupies.
+    </summary>
+  </metric>
+  <metric name="PercentVerticalDistance">
+    <summary>
+      How far down the document the top of the anchor element is, expressed as a
+      ratio with the total document height.
+    </summary>
+  </metric>
+  <metric name="SameOrigin">
+    <summary>
+      1 if the anchor element's target URL and the document's source URL are the
+      same origin.
+    </summary>
+  </metric>
+</event>
+
+<event name="NavigationPredictorPageLinkMetrics" singular="True">
+  <owner>ryansturm@chromium.com</owner>
+  <summary>
+    Metrics that describe aggregate information about the links within a page.
+    Some anchor elements present on a page may not be represented in these
+    metrics, if they are outside the viewport or if their placement in the page
+    is after the 40th anchor element. This event is emitted at most once per
+    page load. Unless otherwise specified, each of the aggregate metrics is
+    bucketted with exponential buckets of size 1.3.
+  </summary>
+  <metric name="MedianLinkLocation">
+    <summary>
+      The median vertical link location in the viewport, as a ratio of the
+      distance from the top of the link to the visible top of the page.
+      Bucketted with a linear bucket size of 10.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.ContainsImage">
+    <summary>
+      The total number of links in the page that are images.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.InIframe">
+    <summary>
+      The total number of links in the page in any iframe.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.SameHost">
+    <summary>
+      The total number of links in the page that point to the same origin as the
+      current page's origin.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.Total">
+    <summary>
+      The total number of links within a page.
+    </summary>
+  </metric>
+  <metric name="NumberOfAnchors.URLIncremented">
+    <summary>
+      The total number of links on the page, where each link only differs from
+      the current page's URL by a number, and that number is incremented by 1 in
+      the link.
+    </summary>
+  </metric>
+  <metric name="TotalClickableSpace">
+    <summary>
+      The total clickable space in the entire page, expressed as a ratio of the
+      visible clickable region to the entire viewport region.
+    </summary>
+  </metric>
+  <metric name="Viewport.Height">
+    <summary>
+      The height of the viewport, in pixels.
+    </summary>
+  </metric>
+  <metric name="Viewport.Width">
+    <summary>
+      The width of the viewport, in pixels.
+    </summary>
+  </metric>
+</event>
+
 <event name="Net.LegacyTLSVersion">
   <owner>davidben@chromium.org</owner>
   <summary>
@@ -5377,26 +5501,27 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="LayoutInstability.CumulativeShiftScore">
     <summary>
-      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
       occurred on the page (including all subframes) during the session. This
-      metric's integral value is 100x the fractional jank score described in the
-      explainer.
+      metric's integral value is 100x the fractional cumulative layout shift
+      score described in the explainer.
     </summary>
   </metric>
   <metric name="LayoutInstability.CumulativeShiftScore.MainFrame">
     <summary>
-      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
       occurred in the main frame during the session. This metric's integral
-      value is 100x the fractional jank score described in the explainer.
+      value is 100x the fractional cumulative layout shift score described in
+      the explainer.
     </summary>
   </metric>
   <metric
       name="LayoutInstability.CumulativeShiftScore.MainFrame.BeforeInputOrScroll">
     <summary>
-      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
       occurred in the main frame during the session, before any user input or
-      document scroll. This metric's integral value is 100x the fractional jank
-      score described in the explainer.
+      document scroll. This metric's integral value is 100x the fractional
+      cumulative layout shift score described in the explainer.
     </summary>
   </metric>
   <metric name="LayoutStability.JankScore">

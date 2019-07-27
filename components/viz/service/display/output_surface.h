@@ -27,7 +27,6 @@
 
 namespace gfx {
 class ColorSpace;
-class Rect;
 class Size;
 struct SwapResponse;
 }  // namespace gfx
@@ -141,12 +140,6 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // implementation must call OutputSurfaceClient::DidReceiveSwapBuffersAck()
   // after returning from this method in order to unblock the next frame.
   virtual void SwapBuffers(OutputSurfaceFrame frame) = 0;
-
-  // Returns a rectangle whose contents may have changed since the current
-  // buffer was last submitted and they need to be redrawn. For partial swap,
-  // the contents outside this rectangle can be considered valid and do not need
-  // to be redrawn.
-  virtual gfx::Rect GetCurrentFramebufferDamage() const;
 
   // Updates the GpuFence associated with this surface. The id of a newly
   // created GpuFence is returned, or if an error occurs, or fences are not

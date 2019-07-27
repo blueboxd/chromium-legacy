@@ -34,7 +34,7 @@ document
 ++++++button Name='Reset:'
 ++++description
 ++++++description Name='Search: '
-++++++textbox Name='Search:'
+++++++searchbox Name='Search:'
 ++++description
 ++++++description Name='Submit: '
 ++++++button Name='Submit:'

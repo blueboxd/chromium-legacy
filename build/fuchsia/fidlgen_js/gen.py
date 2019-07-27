@@ -156,7 +156,7 @@ class Compiler(object):
     if val.kind == fidl.ConstantKind.IDENTIFIER:
       js_name = self.resolved_constant_name.get(val.identifier)
       if not js_name:
-        raise Exception('expected ' + val.identifer +
+        raise Exception('expected ' + val.identifier +
                         ' to be in self.resolved_constant_name')
       return js_name
     elif val.kind == fidl.ConstantKind.LITERAL:
@@ -217,9 +217,15 @@ const %(name)s = {
       self.f.write(
           '''  %s: %s,\n''' %
           (member.name, self._CompileConstant(member.value, underlying_type)))
-      fidl_constant_name = '.'.join(compound.library) + '/' + member.name
+      fidl_constant_name = ('.'.join(compound.library) +
+                            '/' + name + '.' + member.name)
       javascript_name = name + '.' + member.name
       self.resolved_constant_name[fidl_constant_name] = javascript_name
+
+      # https://crbug.com/988195: Also map the legacy unqualified name.
+      legacy_fidl_constant_name = ('.'.join(compound.library) +
+                                   '/' + member.name)
+      self.resolved_constant_name[legacy_fidl_constant_name] = javascript_name
     self.f.write('};\n')
     self.f.write('const _kTT_%(name)s = _kTT_%(type)s;\n\n' % data)
 

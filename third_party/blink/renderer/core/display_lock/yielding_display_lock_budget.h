@@ -8,7 +8,6 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_budget.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

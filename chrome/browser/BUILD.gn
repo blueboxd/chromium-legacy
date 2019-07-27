@@ -630,6 +630,10 @@ jumbo_split_static_library("browser") {
     "lookalikes/lookalike_url_navigation_throttle.h",
     "lookalikes/lookalike_url_service.cc",
     "lookalikes/lookalike_url_service.h",
+    "lookalikes/safety_tips/reputation_service.cc",
+    "lookalikes/safety_tips/reputation_service.h",
+    "lookalikes/safety_tips/reputation_web_contents_observer.cc",
+    "lookalikes/safety_tips/reputation_web_contents_observer.h",
     "lookalikes/safety_tips/safety_tip_ui.h",
     "lookalikes/safety_tips/safety_tips_config.cc",
     "lookalikes/safety_tips/safety_tips_config.h",
@@ -2032,6 +2036,7 @@ jumbo_split_static_library("browser") {
     "//components/services/patch/public/mojom",
     "//components/services/quarantine",
     "//components/services/quarantine/public/mojom",
+    "//components/services/unzip/content",
     "//components/services/unzip/public/mojom",
     "//components/sessions",
     "//components/signin/core/browser",
@@ -2596,13 +2601,10 @@ jumbo_split_static_library("browser") {
       "android/shortcut_helper.h",
       "android/shortcut_info.cc",
       "android/shortcut_info.h",
-      "android/signin/chrome_signin_manager_delegate.cc",
-      "android/signin/chrome_signin_manager_delegate.h",
       "android/signin/signin_investigator_android.cc",
       "android/signin/signin_investigator_android.h",
       "android/signin/signin_manager_android.cc",
       "android/signin/signin_manager_android.h",
-      "android/signin/signin_manager_delegate.h",
       "android/signin/signin_promo_util_android.cc",
       "android/signin/signin_promo_util_android.h",
       "android/signin/signin_utils.cc",
@@ -3306,10 +3308,6 @@ jumbo_split_static_library("browser") {
       "search/instant_service_factory.h",
       "search/instant_service_observer.cc",
       "search/instant_service_observer.h",
-      "search/local_ntp_first_run_field_trial_handler.cc",
-      "search/local_ntp_first_run_field_trial_handler.h",
-      "search/local_ntp_first_run_field_trials.cc",
-      "search/local_ntp_first_run_field_trials.h",
       "search/local_ntp_source.cc",
       "search/local_ntp_source.h",
       "search/most_visited_iframe_source.cc",
@@ -3852,6 +3850,8 @@ jumbo_split_static_library("browser") {
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
       "icon_loader_auralinux.cc",
+      "password_manager/native_backend_kwallet_x.cc",
+      "password_manager/native_backend_kwallet_x.h",
       "platform_util_linux.cc",
       "shell_integration_linux.cc",
       "shell_integration_linux.h",
@@ -3881,6 +3881,16 @@ jumbo_split_static_library("browser") {
         "themes/theme_service_aurax11.cc",
         "themes/theme_service_aurax11.h",
       ]
+    }
+
+    # libsecret hard depends on GLib.
+    if (use_glib) {
+      sources += [
+        "password_manager/native_backend_libsecret.cc",
+        "password_manager/native_backend_libsecret.h",
+      ]
+      defines += [ "USE_LIBSECRET" ]
+      deps += [ "//third_party/libsecret" ]
     }
 
     if (use_ozone) {
@@ -5075,6 +5085,14 @@ jumbo_split_static_library("browser") {
     configs += [ "//printing:cups" ]
   }
 
+  if (use_gnome_keyring) {
+    sources += [
+      "password_manager/native_backend_gnome_x.cc",
+      "password_manager/native_backend_gnome_x.h",
+    ]
+    configs += [ "//components/os_crypt:gnome_keyring" ]
+  }
+
   if (use_nss_certs) {
     sources += [
       "certificate_manager_model.cc",
@@ -5428,6 +5446,7 @@ static_library("test_support") {
     "//components/prefs:test_support",
     "//components/safe_browsing:csd_proto",
     "//components/search_engines:test_support",
+    "//components/services/unzip/content",
     "//components/sessions:test_support",
     "//components/signin/public/identity_manager:test_support",
     "//components/subresource_filter/core/browser:test_support",
@@ -5589,6 +5608,7 @@ static_library("test_support") {
     ]
     deps += [
       "//components/drive:test_support",
+      "//components/services/unzip:in_process",
       "//components/storage_monitor:test_support",
       "//extensions:test_support",
       "//google_apis:test_support",

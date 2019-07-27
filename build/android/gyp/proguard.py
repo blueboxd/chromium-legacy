@@ -165,20 +165,18 @@ def _CreateR8Command(options, map_output_path, output_dir, tmp_config_path,
     cmd += ['--pg-conf', config_file]
 
   temp_config_string = ''
-  if options.apply_mapping or options.repackage_classes or options.min_api:
+  if options.apply_mapping or options.repackage_classes:
     with open(tmp_config_path, 'w') as f:
       if options.apply_mapping:
         temp_config_string += '-applymapping \'%s\'\n' % (options.apply_mapping)
       if options.repackage_classes:
         temp_config_string += '-repackageclasses \'%s\'\n' % (
             options.repackage_classes)
-      if options.min_api:
-        temp_config_string += (
-            '-assumenosideeffects class android.os.Build$VERSION {\n' +
-            '    public static final int SDK_INT return ' + options.min_api +
-            '..9999;\n}\n')
       f.write(temp_config_string)
     cmd += ['--pg-conf', tmp_config_path]
+
+  if options.min_api:
+    cmd += ['--min-api', options.min_api]
 
   if options.main_dex_rules_path:
     for main_dex_rule in options.main_dex_rules_path:

@@ -12,8 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/memory/aligned_memory.h"
-#include "base/memory/read_only_shared_memory_region.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -330,37 +328,21 @@ TEST(VideoFrame, WrapExternalData) {
 }
 
 // Create a frame that wraps read-only shared memory.
-TEST(VideoFrame, WrapExternalReadOnlySharedMemory) {
+TEST(VideoFrame, WrapSharedMemory) {
   const size_t kDataSize = 2 * 256 * 256;
-  auto mapped_region = base::ReadOnlySharedMemoryRegion::Create(kDataSize);
-  gfx::Size coded_size(256, 256);
-  gfx::Rect visible_rect(coded_size);
-  CreateTestY16Frame(coded_size, visible_rect, mapped_region.mapping.memory());
-  auto timestamp = base::TimeDelta::FromMilliseconds(1);
-  auto frame = VideoFrame::WrapExternalReadOnlySharedMemory(
-      media::PIXEL_FORMAT_Y16, coded_size, visible_rect, visible_rect.size(),
-      static_cast<uint8_t*>(mapped_region.mapping.memory()), kDataSize,
-      &mapped_region.region, 0, timestamp);
-
-  EXPECT_EQ(frame->coded_size(), coded_size);
-  EXPECT_EQ(frame->visible_rect(), visible_rect);
-  EXPECT_EQ(frame->timestamp(), timestamp);
-  EXPECT_EQ(frame->data(media::VideoFrame::kYPlane)[0], 0xff);
-}
-
-// Create a frame that wraps unsafe shared memory.
-TEST(VideoFrame, WrapExternalUnsafeSharedMemory) {
-  const size_t kDataSize = 2 * 256 * 256;
-  auto region = base::UnsafeSharedMemoryRegion::Create(kDataSize);
-  auto mapping = region.Map();
+  base::UnsafeSharedMemoryRegion region =
+      base::UnsafeSharedMemoryRegion::Create(kDataSize);
+  ASSERT_TRUE(region.IsValid());
+  base::WritableSharedMemoryMapping mapping = region.Map();
+  ASSERT_TRUE(mapping.IsValid());
   gfx::Size coded_size(256, 256);
   gfx::Rect visible_rect(coded_size);
   CreateTestY16Frame(coded_size, visible_rect, mapping.memory());
   auto timestamp = base::TimeDelta::FromMilliseconds(1);
-  auto frame = VideoFrame::WrapExternalUnsafeSharedMemory(
+  auto frame = VideoFrame::WrapExternalData(
       media::PIXEL_FORMAT_Y16, coded_size, visible_rect, visible_rect.size(),
-      static_cast<uint8_t*>(mapping.memory()), kDataSize, &region, 0,
-      timestamp);
+      mapping.GetMemoryAsSpan<uint8_t>().data(), kDataSize, timestamp);
+  frame->BackWithSharedMemory(&region);
 
   EXPECT_EQ(frame->coded_size(), coded_size);
   EXPECT_EQ(frame->visible_rect(), visible_rect);
@@ -368,19 +350,26 @@ TEST(VideoFrame, WrapExternalUnsafeSharedMemory) {
   EXPECT_EQ(frame->data(media::VideoFrame::kYPlane)[0], 0xff);
 }
 
-// Create a frame that wraps a legacy shared memory handle.
-TEST(VideoFrame, WrapExternalSharedMemory) {
+// Create a frame that wraps shared memory with an offset.
+TEST(VideoFrame, WrapUnsafeSharedMemoryWithOffset) {
+  const size_t kOffset = 64;
   const size_t kDataSize = 2 * 256 * 256;
-  base::SharedMemory shm;
-  ASSERT_TRUE(shm.CreateAndMapAnonymous(kDataSize));
+  base::UnsafeSharedMemoryRegion region =
+      base::UnsafeSharedMemoryRegion::Create(kDataSize + kOffset);
+  ASSERT_TRUE(region.IsValid());
+  base::WritableSharedMemoryMapping mapping = region.Map();
+  ASSERT_TRUE(mapping.IsValid());
   gfx::Size coded_size(256, 256);
   gfx::Rect visible_rect(coded_size);
-  CreateTestY16Frame(coded_size, visible_rect, shm.memory());
+  CreateTestY16Frame(
+      coded_size, visible_rect,
+      mapping.GetMemoryAsSpan<uint8_t>().subspan(kOffset).data());
   auto timestamp = base::TimeDelta::FromMilliseconds(1);
-  auto frame = VideoFrame::WrapExternalSharedMemory(
+  auto frame = VideoFrame::WrapExternalData(
       media::PIXEL_FORMAT_Y16, coded_size, visible_rect, visible_rect.size(),
-      static_cast<uint8_t*>(shm.memory()), kDataSize, shm.handle(), 0,
+      mapping.GetMemoryAsSpan<uint8_t>().subspan(kOffset).data(), kDataSize,
       timestamp);
+  frame->BackWithSharedMemory(&region, kOffset);
 
   EXPECT_EQ(frame->coded_size(), coded_size);
   EXPECT_EQ(frame->visible_rect(), visible_rect);

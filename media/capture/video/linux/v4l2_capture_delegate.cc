@@ -423,6 +423,8 @@ void V4L2CaptureDelegate::GetPhotoState(
 
   mojom::PhotoStatePtr photo_capabilities = mojo::CreateEmptyPhotoState();
 
+  photo_capabilities->pan = RetrieveUserControlRange(V4L2_CID_PAN_ABSOLUTE);
+  photo_capabilities->tilt = RetrieveUserControlRange(V4L2_CID_TILT_ABSOLUTE);
   photo_capabilities->zoom = RetrieveUserControlRange(V4L2_CID_ZOOM_ABSOLUTE);
 
   v4l2_queryctrl manual_focus_ctrl = {};
@@ -528,6 +530,22 @@ void V4L2CaptureDelegate::SetPhotoOptions(
   DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
   if (!device_fd_.is_valid() || !is_capturing_)
     return;
+
+  if (settings->has_pan) {
+    v4l2_control pan_current = {};
+    pan_current.id = V4L2_CID_PAN_ABSOLUTE;
+    pan_current.value = settings->pan;
+    if (DoIoctl(VIDIOC_S_CTRL, &pan_current) < 0)
+      DPLOG(ERROR) << "setting pan to " << settings->pan;
+  }
+
+  if (settings->has_tilt) {
+    v4l2_control tilt_current = {};
+    tilt_current.id = V4L2_CID_TILT_ABSOLUTE;
+    tilt_current.value = settings->tilt;
+    if (DoIoctl(VIDIOC_S_CTRL, &tilt_current) < 0)
+      DPLOG(ERROR) << "setting tilt to " << settings->tilt;
+  }
 
   if (settings->has_zoom) {
     v4l2_control zoom_current = {};

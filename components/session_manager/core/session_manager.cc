@@ -24,9 +24,6 @@ SessionManager::SessionManager() {
 SessionManager::~SessionManager() {
   DCHECK_EQ(instance, this);
   SessionManager::SetInstance(nullptr);
-
-  for (auto& observer : observers_)
-    observer.OnSessionManagerDestroyed();
 }
 
 // static

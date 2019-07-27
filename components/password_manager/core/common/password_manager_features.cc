@@ -48,6 +48,11 @@ const base::Feature kLeakDetection = {"PasswordLeakDetection",
 const base::Feature kManualPasswordGenerationAndroid{
     "ManualPasswordGenerationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Performs a one-off migration (with retries) from a native backend into
+// logindb. Passwords are served from the new location.
+const base::Feature kMigrateLinuxToLoginDB = {"migrate-linux-to-logindb",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables new password form parsing mechanism for filling passwords, details in
 // https://goo.gl/QodPH1
 const base::Feature kNewPasswordFormParsing = {

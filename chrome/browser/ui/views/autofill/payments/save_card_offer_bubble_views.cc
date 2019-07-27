@@ -74,7 +74,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateExtraView() {
   auto upload_explanation_tooltip = std::make_unique<
       views::TooltipIcon>(l10n_util::GetStringUTF16(
       (cardholder_name_textfield_ &&
-       !cardholder_name_textfield_->text().empty())
+       !cardholder_name_textfield_->GetText().empty())
           ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
           : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
   upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
@@ -98,7 +98,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateFootnoteView() {
 bool SaveCardOfferBubbleViews::Accept() {
   if (controller()) {
     controller()->OnSaveButton(
-        {cardholder_name_textfield_ ? cardholder_name_textfield_->text()
+        {cardholder_name_textfield_ ? cardholder_name_textfield_->GetText()
                                     : base::string16(),
          month_input_dropdown_ ? month_input_dropdown_->model()->GetItemAt(
                                      month_input_dropdown_->GetSelectedIndex())
@@ -130,7 +130,7 @@ bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
     DCHECK(!month_input_dropdown_ && !year_input_dropdown_);
     // If requesting the user confirm the name, it cannot be blank.
     base::string16 trimmed_text;
-    base::TrimWhitespace(cardholder_name_textfield_->text(), base::TRIM_ALL,
+    base::TrimWhitespace(cardholder_name_textfield_->GetText(), base::TRIM_ALL,
                          &trimmed_text);
     return !trimmed_text.empty();
   }

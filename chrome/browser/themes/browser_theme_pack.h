@@ -73,9 +73,6 @@ class BrowserThemePack : public CustomThemeSupplier {
   // Builds the theme from given |color| into |pack|.
   static void BuildFromColor(SkColor color, BrowserThemePack* pack);
 
-  // Generates frame, background and active tab colors from |color|.
-  static void GenerateFrameAndTabColors(SkColor color, BrowserThemePack* pack);
-
   // Default. Everything is empty.
   explicit BrowserThemePack(ThemeType theme_type);
 

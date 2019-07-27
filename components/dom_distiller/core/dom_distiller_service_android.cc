@@ -48,9 +48,7 @@ ScopedJavaLocalRef<jstring> DomDistillerServiceAndroid::GetUrlForEntry(
   return ConvertUTF8ToJavaString(env, service_->GetUrlForEntry(entry_id));
 }
 
-jlong DomDistillerServiceAndroid::GetDistilledPagePrefsPtr(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+jlong DomDistillerServiceAndroid::GetDistilledPagePrefsPtr(JNIEnv* env) {
   return reinterpret_cast<intptr_t>(service_->GetDistilledPagePrefs());
 }
 

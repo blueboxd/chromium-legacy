@@ -30,7 +30,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_animator.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout_helper.h"
@@ -1243,7 +1242,6 @@ void TabStrip::ChangeTabGroup(int model_index,
   if (old_group.has_value() &&
       controller_->ListTabsInGroup(old_group.value()).size() == 0) {
     layout_helper_->RemoveGroupHeader(old_group.value());
-    group_headers_.erase(old_group.value());
   }
   UpdateIdealBounds();
   AnimateToIdealBounds();
@@ -1834,8 +1832,9 @@ float TabStrip::GetHoverOpacityForRadialHighlight() const {
   return radial_highlight_opacity_;
 }
 
-const TabGroupData* TabStrip::GetDataForGroup(TabGroupId group) const {
-  return controller_->GetDataForGroup(group);
+const TabGroupVisualData* TabStrip::GetVisualDataForGroup(
+    TabGroupId group) const {
+  return controller_->GetVisualDataForGroup(group);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

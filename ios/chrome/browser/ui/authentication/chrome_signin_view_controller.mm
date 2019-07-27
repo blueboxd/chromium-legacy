@@ -1028,7 +1028,19 @@ enum AuthenticationState {
       [self updateGradientColors];
       // As of iOS 13 Beta 3, MDCFlatButton doesn't update it's colors
       // automatically. These lines do it instead.
-      [self updatePrimaryButtonForIdentityPickerState];
+      switch (_currentState) {
+        case IDENTITY_PICKER_STATE:
+          [self updatePrimaryButtonForIdentityPickerState];
+          break;
+        case IDENTITY_SELECTED_STATE:
+          [self updatePrimaryButtonForIdentitySelectedState];
+          break;
+        case NULL_STATE:
+        case SIGNIN_PENDING_STATE:
+        case DONE_STATE:
+          // Transitional states. No need to updated the primary button.
+          break;
+      }
       [self setSecondaryButtonStyling:_secondaryButton];
     }
   }

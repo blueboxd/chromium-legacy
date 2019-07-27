@@ -5,11 +5,16 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PERMISSION_TYPE_H_
 #define CONTENT_PUBLIC_BROWSER_PERMISSION_TYPE_H_
 
+#include <vector>
+
+#include "content/common/content_export.h"
+
 namespace content {
 
 // This enum is also used for UMA purposes, so it needs to adhere to
 // the UMA guidelines.
-// Make sure you update histograms.xml if you add new permission types.
+// Make sure you update histograms.xml and GetAllPermissionTypes if you add
+// new permission types.
 // Never delete or reorder an entry; only add new entries
 // immediately before PermissionType::NUM
 enum class PermissionType {
@@ -38,6 +43,8 @@ enum class PermissionType {
   // Always keep this at the end.
   NUM,
 };
+
+CONTENT_EXPORT const std::vector<PermissionType>& GetAllPermissionTypes();
 
 }  // namespace content
 

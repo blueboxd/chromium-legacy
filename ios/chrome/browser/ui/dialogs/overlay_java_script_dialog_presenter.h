@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_source.h"
-#include "ios/web/public/java_script_dialog_presenter.h"
+#include "ios/web/public/ui/java_script_dialog_presenter.h"
 
 class OverlayResponse;
 

@@ -33,8 +33,8 @@ public class HomepagePreferences extends PreferenceFragmentCompat {
                         : R.string.options_homepage_title);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.homepage_preferences);
 
-        ChromeSwitchPreferenceCompat mHomepageSwitch =
-                (ChromeSwitchPreferenceCompat) findPreference(PREF_HOMEPAGE_SWITCH);
+        ChromeSwitchPreference mHomepageSwitch =
+                (ChromeSwitchPreference) findPreference(PREF_HOMEPAGE_SWITCH);
         boolean isHomepageEnabled = mHomepageManager.getPrefHomepageEnabled();
         mHomepageSwitch.setChecked(isHomepageEnabled);
         mHomepageSwitch.setOnPreferenceChangeListener((preference, newValue) -> {

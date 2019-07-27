@@ -165,22 +165,17 @@ ForeignSessionHelper::ForeignSessionHelper(Profile* profile)
 ForeignSessionHelper::~ForeignSessionHelper() {
 }
 
-void ForeignSessionHelper::Destroy(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj) {
+void ForeignSessionHelper::Destroy(JNIEnv* env) {
   delete this;
 }
 
-jboolean ForeignSessionHelper::IsTabSyncEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+jboolean ForeignSessionHelper::IsTabSyncEnabled(JNIEnv* env) {
   sync_sessions::SessionSyncService* service =
       SessionSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   return service && service->GetOpenTabsUIDelegate();
 }
 
-void ForeignSessionHelper::TriggerSessionSync(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+void ForeignSessionHelper::TriggerSessionSync(JNIEnv* env) {
   syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (!service)
@@ -191,7 +186,6 @@ void ForeignSessionHelper::TriggerSessionSync(
 
 void ForeignSessionHelper::SetOnForeignSessionCallback(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& callback) {
   callback_.Reset(env, callback);
 }
@@ -206,7 +200,6 @@ void ForeignSessionHelper::FireForeignSessionCallback() {
 
 jboolean ForeignSessionHelper::GetForeignSessions(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& result) {
   OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile_);
   if (!open_tabs)
@@ -254,7 +247,6 @@ jboolean ForeignSessionHelper::GetForeignSessions(
 
 jboolean ForeignSessionHelper::OpenForeignSessionTab(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_tab,
     const JavaParamRef<jstring>& session_tag,
     jint session_tab_id,
@@ -297,7 +289,6 @@ jboolean ForeignSessionHelper::OpenForeignSessionTab(
 
 void ForeignSessionHelper::DeleteForeignSession(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& session_tag) {
   OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(profile_);
   if (open_tabs)
@@ -306,7 +297,6 @@ void ForeignSessionHelper::DeleteForeignSession(
 
 void ForeignSessionHelper::SetInvalidationsForSessionsEnabled(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     jboolean enabled) {
   syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);

@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 
@@ -23,8 +23,8 @@ public class DoNotTrackPreference extends PreferenceFragmentCompat {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.do_not_track_preferences);
         getActivity().setTitle(R.string.do_not_track_title);
 
-        ChromeSwitchPreferenceCompat doNotTrackSwitch =
-                (ChromeSwitchPreferenceCompat) findPreference(PREF_DO_NOT_TRACK_SWITCH);
+        ChromeSwitchPreference doNotTrackSwitch =
+                (ChromeSwitchPreference) findPreference(PREF_DO_NOT_TRACK_SWITCH);
 
         boolean isDoNotTrackEnabled = PrefServiceBridge.getInstance().isDoNotTrackEnabled();
         doNotTrackSwitch.setChecked(isDoNotTrackEnabled);

@@ -81,7 +81,7 @@ public class ManagedPreferencesUtils {
      *      a custodian.
      */
     public static Drawable getManagedIconDrawable(
-            @Nullable ManagedPreferenceDelegateCompat delegate, Preference preference) {
+            @Nullable ManagedPreferenceDelegate delegate, Preference preference) {
         if (delegate == null) return preference.getIcon();
 
         if (delegate.isPreferenceControlledByPolicy(preference)) {
@@ -108,10 +108,10 @@ public class ManagedPreferencesUtils {
      * @param preference The Preference that is being initialized
      */
     public static void initPreference(
-            @Nullable ManagedPreferenceDelegateCompat delegate, Preference preference) {
+            @Nullable ManagedPreferenceDelegate delegate, Preference preference) {
         if (delegate == null) return;
 
-        if (!(preference instanceof ChromeImageViewPreferenceCompat)) {
+        if (!(preference instanceof ChromeImageViewPreference)) {
             preference.setIcon(getManagedIconDrawable(delegate, preference));
         }
 
@@ -140,7 +140,7 @@ public class ManagedPreferencesUtils {
      * @param view The View that was bound to the Preference
      */
     public static void onBindViewToPreference(
-            @Nullable ManagedPreferenceDelegateCompat delegate, Preference preference, View view) {
+            @Nullable ManagedPreferenceDelegate delegate, Preference preference, View view) {
         if (delegate == null) return;
 
         if (delegate.isPreferenceClickDisabledByPolicy(preference)) {
@@ -170,9 +170,8 @@ public class ManagedPreferencesUtils {
      * @param preference The ChromeImageViewPreference that owns the view.
      * @param view The View that was bound to the ChromeImageViewPreference.
      */
-    public static void onBindViewToImageViewPreference(
-            @Nullable ManagedPreferenceDelegateCompat delegate,
-            ChromeImageViewPreferenceCompat preference, View view) {
+    public static void onBindViewToImageViewPreference(@Nullable ManagedPreferenceDelegate delegate,
+            ChromeImageViewPreference preference, View view) {
         if (delegate == null) return;
 
         onBindViewToPreference(delegate, preference, view);
@@ -205,7 +204,7 @@ public class ManagedPreferencesUtils {
      *         propagated; false otherwise.
      */
     public static boolean onClickPreference(
-            @Nullable ManagedPreferenceDelegateCompat delegate, Preference preference) {
+            @Nullable ManagedPreferenceDelegate delegate, Preference preference) {
         if (delegate == null || !delegate.isPreferenceClickDisabledByPolicy(preference)) {
             return false;
         }
@@ -223,7 +222,7 @@ public class ManagedPreferencesUtils {
     }
 
     /**
-     * @param delegate The {@link ManagedPreferenceDelegateCompat} that controls whether the
+     * @param delegate The {@link ManagedPreferenceDelegate} that controls whether the
      *         preference is
      *        managed.
      * @param preference The {@link Preference} that the summary
@@ -233,7 +232,7 @@ public class ManagedPreferencesUtils {
      *         managed.
      */
     private static CharSequence getSummaryWithManagedInfo(
-            @Nullable ManagedPreferenceDelegateCompat delegate, Preference preference,
+            @Nullable ManagedPreferenceDelegate delegate, Preference preference,
             @Nullable CharSequence summary) {
         if (delegate == null) return summary;
 

@@ -10,9 +10,9 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "ios/web/common/user_agent.h"
 #include "ios/web/public/navigation/referrer.h"
-#include "ios/web/public/user_agent.h"
-#import "ios/web/public/web_state/page_display_state.h"
+#import "ios/web/public/ui/page_display_state.h"
 #include "url/gurl.h"
 
 namespace web {

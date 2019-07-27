@@ -107,7 +107,7 @@ void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
 
   vea_requested_input_coded_size_ = input_coded_size;
   output_buffers_.clear();
-  Deque<std::unique_ptr<base::SharedMemory>>().Swap(input_buffers_);
+  Deque<std::unique_ptr<InputBuffer>>().Swap(input_buffers_);
 
   for (int i = 0; i < kVEAEncoderOutputBufferCount; ++i) {
     std::unique_ptr<base::SharedMemory> shm =
@@ -170,7 +170,7 @@ void VEAEncoder::UseOutputBitstreamBufferId(int32_t bitstream_buffer_id) {
       output_buffers_[bitstream_buffer_id]->mapped_size()));
 }
 
-void VEAEncoder::FrameFinished(std::unique_ptr<base::SharedMemory> shm) {
+void VEAEncoder::FrameFinished(std::unique_ptr<InputBuffer> shm) {
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   input_buffers_.push_back(std::move(shm));
@@ -213,36 +213,40 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   // Only STORAGE_SHMEM backed frames can be shared with GPU process, therefore
   // a copy is required for other storage types.
   scoped_refptr<media::VideoFrame> video_frame = frame;
-  if (video_frame->storage_type() != VideoFrame::STORAGE_SHMEM ||
+  bool can_share_frame =
+      (video_frame->storage_type() == media::VideoFrame::STORAGE_SHMEM);
+  if (!can_share_frame ||
       vea_requested_input_coded_size_ != frame->coded_size() ||
       input_visible_size_.width() < kVEAEncoderMinResolutionWidth ||
       input_visible_size_.height() < kVEAEncoderMinResolutionHeight) {
     // Create SharedMemory backed input buffers as necessary. These SharedMemory
     // instances will be shared with GPU process.
-    std::unique_ptr<base::SharedMemory> input_buffer;
     const size_t desired_mapped_size = media::VideoFrame::AllocationSize(
         media::PIXEL_FORMAT_I420, vea_requested_input_coded_size_);
+    auto input_buffer = std::make_unique<InputBuffer>();
     if (input_buffers_.empty()) {
-      input_buffer = gpu_factories_->CreateSharedMemory(desired_mapped_size);
+      input_buffer->region =
+          gpu_factories_->CreateSharedMemoryRegion(desired_mapped_size);
+      input_buffer->mapping = input_buffer->region.Map();
     } else {
       do {
         input_buffer = input_buffers_.TakeFirst();
       } while (!input_buffers_.empty() &&
-               input_buffer->mapped_size() < desired_mapped_size);
-      if (!input_buffer || input_buffer->mapped_size() < desired_mapped_size)
+               input_buffer->mapping.size() < desired_mapped_size);
+      if (!input_buffer || input_buffer->mapping.size() < desired_mapped_size)
         return;
     }
 
-    video_frame = media::VideoFrame::WrapExternalSharedMemory(
+    video_frame = media::VideoFrame::WrapExternalData(
         media::PIXEL_FORMAT_I420, vea_requested_input_coded_size_,
         gfx::Rect(input_visible_size_), input_visible_size_,
-        static_cast<uint8_t*>(input_buffer->memory()),
-        input_buffer->mapped_size(), input_buffer->handle(), 0,
-        frame->timestamp());
+        input_buffer->mapping.GetMemoryAsSpan<uint8_t>().data(),
+        input_buffer->mapping.size(), frame->timestamp());
     if (!video_frame) {
       NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
+    video_frame->BackWithSharedMemory(&input_buffer->region);
     video_frame->AddDestructionObserver(media::BindToCurrentLoop(
         WTF::Bind(&VEAEncoder::FrameFinished, WrapRefCounted(this),
                   std::move(input_buffer))));

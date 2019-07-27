@@ -163,7 +163,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "ui/gfx/skia_util.h"
 
 // Get rid of WTF's pow define so we can use std::pow.

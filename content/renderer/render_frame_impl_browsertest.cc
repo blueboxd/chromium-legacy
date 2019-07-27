@@ -120,10 +120,16 @@ class RenderFrameImplTest : public RenderViewTest {
         stub_document_interface_broker_blink;
     mojo::MakeRequest(&stub_document_interface_broker_blink);
 
+    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+        stub_browser_interface_broker;
+    ignore_result(
+        stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
+
     RenderFrameImpl::CreateFrame(
         kSubframeRouteId, std::move(stub_interface_provider),
         std::move(stub_document_interface_broker_content),
-        std::move(stub_document_interface_broker_blink), MSG_ROUTING_NONE,
+        std::move(stub_document_interface_broker_blink),
+        std::move(stub_browser_interface_broker), MSG_ROUTING_NONE,
         MSG_ROUTING_NONE, kFrameProxyRouteId, MSG_ROUTING_NONE,
         base::UnguessableToken::Create(), frame_replication_state,
         &compositor_deps_, widget_params, FrameOwnerProperties(),
@@ -259,12 +265,17 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
   blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker;
   mojo::MakeRequest(&stub_document_interface_broker);
 
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      stub_browser_interface_broker;
+  ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
+
   // Create and initialize a local child frame of the simulated OOPIF, which
   // is a grandchild of the remote main frame.
   RenderFrameImpl* grandchild =
       RenderFrameImpl::Create(frame()->render_view(), kEmbeddedSubframeRouteId,
                               std::move(stub_interface_provider),
                               std::move(stub_document_interface_broker),
+                              std::move(stub_browser_interface_broker),
                               base::UnguessableToken::Create());
   blink::WebLocalFrame* parent_web_frame = frame()->GetWebFrame();
 
@@ -757,8 +768,6 @@ class TestSimpleDocumentInterfaceBrokerImpl
       override {
     binder_callback_.Run(std::move(receiver));
   }
-  void GetAudioContextManager(
-      mojo::PendingReceiver<blink::mojom::AudioContextManager>) override {}
   void GetCredentialManager(
       mojo::PendingReceiver<blink::mojom::CredentialManager>) override {}
   void GetAuthenticator(
@@ -777,6 +786,42 @@ class TestSimpleDocumentInterfaceBrokerImpl
   BinderCallback binder_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSimpleDocumentInterfaceBrokerImpl);
+};
+
+class TestSimpleBrowserInterfaceBrokerImpl
+    : public blink::mojom::BrowserInterfaceBroker {
+ public:
+  using BinderCallback =
+      base::RepeatingCallback<void(mojo::ScopedMessagePipeHandle)>;
+
+  // Incoming interface requests for |interface_name| will invoke |binder|.
+  // Everything else is ignored.
+  TestSimpleBrowserInterfaceBrokerImpl(const std::string& interface_name,
+                                       BinderCallback binder_callback)
+      : receiver_(this),
+        interface_name_(interface_name),
+        binder_callback_(binder_callback) {}
+
+  void BindAndFlush(
+      mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver) {
+    ASSERT_FALSE(receiver_.is_bound());
+    receiver_.Bind(std::move(receiver));
+    receiver_.FlushForTesting();
+  }
+
+ private:
+  // blink::mojom::BrowserInterfaceBroker:
+  void GetInterface(mojo::GenericPendingReceiver receiver) override {
+    if (receiver.interface_name().value() == interface_name_)
+      binder_callback_.Run(receiver.PassPipe());
+  }
+
+  mojo::Receiver<blink::mojom::BrowserInterfaceBroker> receiver_;
+
+  std::string interface_name_;
+  BinderCallback binder_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSimpleBrowserInterfaceBrokerImpl);
 };
 
 class FrameHostTestInterfaceImpl : public mojom::FrameHostTestInterface {
@@ -831,6 +876,13 @@ class FrameHostTestInterfaceRequestIssuer : public RenderFrameObserver {
     document_interface_broker->GetFrameHostTestInterface(
         blink_remote.BindNewPipeAndPassReceiver());
     blink_remote->Ping(
+        !document.IsNull() ? GURL(document.Url()) : GURL(kNoDocumentMarkerURL),
+        event);
+
+    remote.reset();
+    render_frame()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+        remote.BindNewPipeAndPassReceiver());
+    remote->Ping(
         !document.IsNull() ? GURL(document.Url()) : GURL(kNoDocumentMarkerURL),
         event);
   }
@@ -951,6 +1003,9 @@ class ScopedNewFrameInterfaceProviderExerciser {
 
     document_interface_broker_request_for_first_document_ =
         frame_->TakeLastDocumentInterfaceBrokerRequest();
+
+    browser_interface_broker_receiver_for_first_document_ =
+        frame_->TakeLastBrowserInterfaceBrokerReceiver();
   }
 
   service_manager::mojom::InterfaceProviderRequest
@@ -964,6 +1019,12 @@ class ScopedNewFrameInterfaceProviderExerciser {
         document_interface_broker_request_for_initial_empty_document_);
   }
 
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+  browser_interface_broker_receiver_for_initial_empty_document() {
+    return std::move(
+        browser_interface_broker_receiver_for_initial_empty_document_);
+  }
+
   service_manager::mojom::InterfaceProviderRequest
   interface_request_for_first_document() {
     return std::move(interface_request_for_first_document_);
@@ -972,6 +1033,11 @@ class ScopedNewFrameInterfaceProviderExerciser {
   blink::mojom::DocumentInterfaceBrokerRequest
   document_interface_broker_request_for_first_document() {
     return std::move(document_interface_broker_request_for_first_document_);
+  }
+
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+  browser_interface_broker_receiver_for_first_document() {
+    return std::move(browser_interface_broker_receiver_for_first_document_);
   }
 
  private:
@@ -996,6 +1062,8 @@ class ScopedNewFrameInterfaceProviderExerciser {
         frame->TakeLastInterfaceProviderRequest();
     document_interface_broker_request_for_initial_empty_document_ =
         frame->TakeLastDocumentInterfaceBrokerRequest();
+    browser_interface_broker_receiver_for_initial_empty_document_ =
+        frame_->TakeLastBrowserInterfaceBrokerReceiver();
     EXPECT_TRUE(frame->current_history_item().IsNull());
   }
 
@@ -1017,6 +1085,11 @@ class ScopedNewFrameInterfaceProviderExerciser {
   blink::mojom::DocumentInterfaceBrokerRequest
       document_interface_broker_request_for_first_document_;
 
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker_receiver_for_initial_empty_document_;
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker_receiver_for_first_document_;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedNewFrameInterfaceProviderExerciser);
 };
 
@@ -1028,6 +1101,8 @@ void ExpectPendingInterfaceRequestsFromSources(
     service_manager::mojom::InterfaceProviderRequest interface_provider_request,
     blink::mojom::DocumentInterfaceBrokerRequest
         document_interface_broker_request,
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker_receiver,
     std::vector<SourceAnnotation> expected_sources) {
   std::vector<SourceAnnotation> sources;
   ASSERT_TRUE(interface_provider_request.is_pending());
@@ -1058,6 +1133,22 @@ void ExpectPendingInterfaceRequestsFromSources(
       }));
   broker.BindAndFlush(std::move(document_interface_broker_request));
   EXPECT_THAT(document_interface_broker_sources,
+              ::testing::ElementsAreArray(expected_sources));
+
+  std::vector<SourceAnnotation> browser_interface_broker_sources;
+  ASSERT_TRUE(browser_interface_broker_receiver.is_valid());
+  TestSimpleBrowserInterfaceBrokerImpl browser_broker(
+      mojom::FrameHostTestInterface::Name_,
+      base::BindLambdaForTesting([&browser_interface_broker_sources](
+                                     mojo::ScopedMessagePipeHandle handle) {
+        FrameHostTestInterfaceImpl impl;
+        impl.BindAndFlush(mojo::PendingReceiver<mojom::FrameHostTestInterface>(
+            std::move(handle)));
+        ASSERT_TRUE(impl.ping_source().has_value());
+        browser_interface_broker_sources.push_back(impl.ping_source().value());
+      }));
+  browser_broker.BindAndFlush(std::move(browser_interface_broker_receiver));
+  EXPECT_THAT(browser_interface_broker_sources,
               ::testing::ElementsAreArray(expected_sources));
 }
 
@@ -1127,6 +1218,8 @@ TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
       child_frame_exerciser.interface_request_for_initial_empty_document(),
       child_frame_exerciser
           .document_interface_broker_request_for_initial_empty_document(),
+      child_frame_exerciser
+          .browser_interface_broker_receiver_for_initial_empty_document(),
       {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
        {initial_empty_url, kFrameEventDidCreateNewDocument},
        {initial_empty_url, kFrameEventDidCreateDocumentElement},
@@ -1139,6 +1232,8 @@ TEST_F(RenderFrameRemoteInterfacesTest, ChildFrameAtFirstCommittedLoad) {
       child_frame_exerciser.interface_request_for_first_document(),
       child_frame_exerciser
           .document_interface_broker_request_for_first_document(),
+      child_frame_exerciser
+          .browser_interface_broker_receiver_for_first_document(),
       {{child_frame_url, kFrameEventDidCommitProvisionalLoad},
        {child_frame_url, kFrameEventDidCreateDocumentElement}});
 }
@@ -1179,6 +1274,8 @@ TEST_F(RenderFrameRemoteInterfacesTest,
       main_frame_exerciser.interface_request_for_initial_empty_document(),
       main_frame_exerciser
           .document_interface_broker_request_for_initial_empty_document(),
+      main_frame_exerciser
+          .browser_interface_broker_receiver_for_initial_empty_document(),
       {{initial_empty_url, kFrameEventDidCreateNewFrame},
        {initial_empty_url, kFrameEventReadyToCommitNavigation},
        {new_window_url, kFrameEventDidCreateNewDocument}});
@@ -1186,6 +1283,8 @@ TEST_F(RenderFrameRemoteInterfacesTest,
       main_frame_exerciser.interface_request_for_first_document(),
       main_frame_exerciser
           .document_interface_broker_request_for_first_document(),
+      main_frame_exerciser
+          .browser_interface_broker_receiver_for_first_document(),
       {{new_window_url, kFrameEventDidCommitProvisionalLoad},
        {new_window_url, kFrameEventDidCreateDocumentElement}});
 }
@@ -1241,6 +1340,8 @@ TEST_F(RenderFrameRemoteInterfacesTest,
         child_frame_exerciser.interface_request_for_initial_empty_document(),
         child_frame_exerciser
             .document_interface_broker_request_for_initial_empty_document(),
+        child_frame_exerciser
+            .browser_interface_broker_receiver_for_initial_empty_document(),
         {{GURL(kNoDocumentMarkerURL), kFrameEventDidCreateNewFrame},
          {initial_empty_url, kFrameEventDidCreateNewDocument},
          {initial_empty_url, kFrameEventDidCreateDocumentElement},
@@ -1255,6 +1356,10 @@ TEST_F(RenderFrameRemoteInterfacesTest,
         child_frame_exerciser
             .document_interface_broker_request_for_first_document();
     ASSERT_FALSE(document_interface_broker_request.is_pending());
+    auto browser_interface_broker_receiver =
+        child_frame_exerciser
+            .browser_interface_broker_receiver_for_first_document();
+    ASSERT_FALSE(browser_interface_broker_receiver.is_valid());
   }
 }
 
@@ -1272,6 +1377,9 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReplacedOnNonSameDocumentNavigation) {
   auto document_interface_broker_request_for_first_document =
       GetMainRenderFrame()->TakeLastDocumentInterfaceBrokerRequest();
 
+  auto browser_interface_broker_receiver_for_first_document =
+      GetMainRenderFrame()->TakeLastBrowserInterfaceBrokerReceiver();
+
   FrameHostTestInterfaceRequestIssuer requester(GetMainRenderFrame());
   requester.RequestTestInterfaceOnFrameEvent(kFrameEventAfterCommit);
 
@@ -1283,13 +1391,18 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReplacedOnNonSameDocumentNavigation) {
   auto document_interface_broker_request_for_second_document =
       GetMainRenderFrame()->TakeLastDocumentInterfaceBrokerRequest();
 
+  auto browser_interface_broker_receiver_for_second_document =
+      GetMainRenderFrame()->TakeLastBrowserInterfaceBrokerReceiver();
+
   ASSERT_TRUE(interface_provider_request_for_first_document.is_pending());
   ASSERT_TRUE(
       document_interface_broker_request_for_first_document.is_pending());
+  ASSERT_TRUE(browser_interface_broker_receiver_for_first_document.is_valid());
 
   ExpectPendingInterfaceRequestsFromSources(
       std::move(interface_provider_request_for_first_document),
       std::move(document_interface_broker_request_for_first_document),
+      std::move(browser_interface_broker_receiver_for_first_document),
       {{GURL(kTestFirstURL), kFrameEventAfterCommit},
        {GURL(kTestFirstURL), kFrameEventReadyToCommitNavigation},
        {GURL(kTestSecondURL), kFrameEventDidCreateNewDocument}});
@@ -1297,10 +1410,12 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReplacedOnNonSameDocumentNavigation) {
   ASSERT_TRUE(interface_provider_request_for_second_document.is_pending());
   ASSERT_TRUE(
       document_interface_broker_request_for_second_document.is_pending());
+  ASSERT_TRUE(browser_interface_broker_receiver_for_second_document.is_valid());
 
   ExpectPendingInterfaceRequestsFromSources(
       std::move(interface_provider_request_for_second_document),
       std::move(document_interface_broker_request_for_second_document),
+      std::move(browser_interface_broker_receiver_for_second_document),
       {{GURL(kTestSecondURL), kFrameEventDidCommitProvisionalLoad},
        {GURL(kTestSecondURL), kFrameEventDidCreateDocumentElement}});
 }
@@ -1320,6 +1435,9 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReusedOnSameDocumentNavigation) {
   auto document_interface_broker =
       GetMainRenderFrame()->TakeLastDocumentInterfaceBrokerRequest();
 
+  auto browser_interface_broker_receiver =
+      GetMainRenderFrame()->TakeLastBrowserInterfaceBrokerReceiver();
+
   FrameHostTestInterfaceRequestIssuer requester(GetMainRenderFrame());
   OnSameDocumentNavigation(GetMainFrame(), true /* is_new_navigation */);
 
@@ -1332,10 +1450,12 @@ TEST_F(RenderFrameRemoteInterfacesTest, ReusedOnSameDocumentNavigation) {
 
   ASSERT_TRUE(interface_provider_request.is_pending());
   ASSERT_TRUE(document_interface_broker.is_pending());
+  ASSERT_TRUE(browser_interface_broker_receiver.is_valid());
 
   ExpectPendingInterfaceRequestsFromSources(
       std::move(interface_provider_request),
       std::move(document_interface_broker),
+      std::move(browser_interface_broker_receiver),
       {{GURL(kTestFirstURL), kFrameEventDidCommitSameDocumentLoad}});
 }
 

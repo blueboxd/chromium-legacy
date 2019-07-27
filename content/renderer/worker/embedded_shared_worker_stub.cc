@@ -19,8 +19,6 @@
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
-#include "content/renderer/service_worker/service_worker_provider_context.h"
-#include "content/renderer/worker/service_worker_network_provider_for_shared_worker.h"
 #include "ipc/ipc_message_macros.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -33,7 +31,6 @@
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -67,21 +64,20 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       renderer_preferences_(renderer_preferences),
       preference_watcher_request_(std::move(preference_watcher_request)) {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK(main_script_load_params);
   DCHECK(subresource_loader_factory_bundle_info);
 
-  if (main_script_load_params) {
-    response_override_ =
-        std::make_unique<NavigationResponseOverrideParameters>();
-    response_override_->url_loader_client_endpoints =
-        std::move(main_script_load_params->url_loader_client_endpoints);
-    response_override_->response_head = main_script_load_params->response_head;
-    response_override_->response_body =
-        std::move(main_script_load_params->response_body);
-    response_override_->redirect_responses =
-        main_script_load_params->redirect_response_heads;
-    response_override_->redirect_infos =
-        main_script_load_params->redirect_infos;
-  }
+  // Initialize the response override for the main worker script loaded by the
+  // browser process.
+  response_override_ = std::make_unique<NavigationResponseOverrideParameters>();
+  response_override_->url_loader_client_endpoints =
+      std::move(main_script_load_params->url_loader_client_endpoints);
+  response_override_->response_head = main_script_load_params->response_head;
+  response_override_->response_body =
+      std::move(main_script_load_params->response_body);
+  response_override_->redirect_responses =
+      main_script_load_params->redirect_response_heads;
+  response_override_->redirect_infos = main_script_load_params->redirect_infos;
 
   impl_ = blink::WebSharedWorker::Create(this, appcache_host_id);
   if (pause_on_start) {
@@ -89,9 +85,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     // is attached or explicit resume notification is received.
     impl_->PauseWorkerContextOnStart();
   }
-
-  service_worker_provider_info_ = std::move(service_worker_provider_info);
-  controller_info_ = std::move(controller_info);
 
   // If the network service crashes, then self-destruct so clients don't get
   // stuck with a worker with a broken loader. Self-destruction is effectively
@@ -107,12 +100,21 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
             &EmbeddedSharedWorkerStub::Terminate, base::Unretained(this)));
   }
 
-  // Initialize the loader factory bundle passed by the browser process.
-  DCHECK(!subresource_loader_factory_bundle_);
+  // Initialize the subresource loader factory bundle passed by the browser
+  // process.
   subresource_loader_factory_bundle_ =
       base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
           std::make_unique<ChildURLLoaderFactoryBundleInfo>(
               std::move(subresource_loader_factory_bundle_info)));
+
+  if (service_worker_provider_info) {
+    service_worker_provider_context_ =
+        base::MakeRefCounted<ServiceWorkerProviderContext>(
+            blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
+            std::move(service_worker_provider_info->client_request),
+            std::move(service_worker_provider_info->host_ptr_info),
+            std::move(controller_info), subresource_loader_factory_bundle_);
+  }
 
   impl_->StartWorkerContext(
       url_, blink::WebString::FromUTF8(name_),
@@ -165,35 +167,8 @@ void EmbeddedSharedWorkerStub::WorkerContextDestroyed() {
   delete this;
 }
 
-std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
-EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
-  if (blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled()) {
-    // Off-the-main-thread shared worker script fetch:
-    // |response_override_| will be passed to WebWorkerFetchContextImpl in
-    // CreateWorkerFetchContext() and consumed during off-the-main-thread
-    // shared worker script fetch.
-    return ServiceWorkerNetworkProviderForSharedWorker::Create(
-        std::move(service_worker_provider_info_), std::move(controller_info_),
-        subresource_loader_factory_bundle_, IsOriginSecure(url_),
-        nullptr /* response_override */);
-  }
-
-  // |response_override_| is passed to DocumentLoader and consumed during
-  // on-the-main-thread shared worker script fetch.
-  return ServiceWorkerNetworkProviderForSharedWorker::Create(
-      std::move(service_worker_provider_info_), std::move(controller_info_),
-      subresource_loader_factory_bundle_, IsOriginSecure(url_),
-      std::move(response_override_));
-}
-
 scoped_refptr<blink::WebWorkerFetchContext>
-EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
-    blink::WebServiceWorkerNetworkProvider* web_network_provider) {
-  DCHECK(web_network_provider);
-  auto* network_provider =
-      static_cast<ServiceWorkerNetworkProviderForSharedWorker*>(
-          web_network_provider);
-
+EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
   // Make the factory used for service worker network fallback (that should
   // skip AppCache if it is provided).
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory =
@@ -201,7 +176,8 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
 
   scoped_refptr<WebWorkerFetchContextImpl> worker_fetch_context =
       WebWorkerFetchContextImpl::Create(
-          network_provider->context(), std::move(renderer_preferences_),
+          service_worker_provider_context_.get(),
+          std::move(renderer_preferences_),
           std::move(preference_watcher_request_),
           subresource_loader_factory_bundle_->Clone(),
           std::move(fallback_factory));
@@ -219,11 +195,9 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
   worker_fetch_context->set_is_secure_context(IsOriginSecure(url_));
   worker_fetch_context->set_origin_url(url_.GetOrigin());
 
-  if (response_override_) {
-    DCHECK(blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
-    worker_fetch_context->SetResponseOverrideForMainScript(
-        std::move(response_override_));
-  }
+  DCHECK(response_override_);
+  worker_fetch_context->SetResponseOverrideForMainScript(
+      std::move(response_override_));
 
   return worker_fetch_context;
 }

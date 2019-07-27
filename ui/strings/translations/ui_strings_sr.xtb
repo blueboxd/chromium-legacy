@@ -46,8 +46,10 @@
 <translation id="2289052229480071835">Додирните циљна поља за додир на екрану.</translation>
 <translation id="2295140143284145483">Анкета</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Желите ли да позовете овај број са телефона?</translation>
 <translation id="24452542372838207">Прошири обавештење</translation>
 <translation id="2445449901874883781">Користи високу густину</translation>
+<translation id="2451871130406122810">Послато на уређај</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="2497284189126895209">Све датотеке</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -114,6 +116,7 @@
 <translation id="5266161281976477809">Троугао за откривање</translation>
 <translation id="5278860589123563674">Слање није успело</translation>
 <translation id="528468243742722775">Заврши</translation>
+<translation id="5327567770033251652">укључите синхронизацију</translation>
 <translation id="5329858601952122676">&amp;Избриши</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> преко апликације <ph name="IN_PLACE_APP" />, отпустите да бисте направили директоријум.</translation>
 <translation id="5463830097259460683">Емоџи и симболи</translation>

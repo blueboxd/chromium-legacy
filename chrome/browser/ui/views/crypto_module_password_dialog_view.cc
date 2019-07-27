@@ -63,7 +63,7 @@ bool CryptoModulePasswordDialogView::Cancel() {
 }
 
 bool CryptoModulePasswordDialogView::Accept() {
-  callback_.Run(base::UTF16ToUTF8(password_entry_->text()));
+  callback_.Run(base::UTF16ToUTF8(password_entry_->GetText()));
   const base::string16 empty;
   password_entry_->SetText(empty);
   return true;

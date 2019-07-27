@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">シーク スライダー</translation>
 <translation id="1399648040768741453">テルグ語キーボード（表音）</translation>
 <translation id="1430915738399379752">印刷</translation>
+<translation id="1439494416798956626">「<ph name="FOLDER_NAME" />」に移動しました。</translation>
 <translation id="1441841714100794440">ベトナム語キーボード（テレックス）</translation>
 <translation id="1455548678241328678">ノルウェー語のキーボード</translation>
 <translation id="1464724975715666883">1 件のエラーがあります。</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">ご利用のメディア デバイスをスキャンしています...</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> 枚の写真を <ph name="BEGIN_LINK" />Google ドライブ<ph name="END_LINK" />にバックアップしました</translation>
 <translation id="3470502288861289375">コピーしています...</translation>
+<translation id="3473378059788601120">「<ph name="FOLDER_NAME" />」にコピーしました。</translation>
 <translation id="3475447146579922140">Google スプレッドシート</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> 件のエラーがあります。</translation>
 <translation id="3519867315646775981">文字変換（shalom ← שלום）</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">日本語入力（日本語キーボード用）</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux アプリに対して、Google ドライブのファイルの編集を許可します。変更が加えられた場合は他のデバイスに同期されます。</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> 個のアイテム</translation>
 <translation id="5982621672636444458">並べ替え方法</translation>
 <translation id="6005282720244019462">ラテン アメリカのキーボード</translation>
 <translation id="6007237601604674381">移動できませんでした。<ph name="ERROR_MESSAGE" /></translation>

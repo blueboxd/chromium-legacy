@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
-#include "ios/web/public/user_agent.h"
+#include "ios/web/common/user_agent.h"
 #include "url/gurl.h"
 
 @interface ShareToData : NSObject

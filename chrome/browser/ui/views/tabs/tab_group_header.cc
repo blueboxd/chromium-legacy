@@ -9,7 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
@@ -38,8 +38,8 @@ TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
       .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
-  const TabGroupData* data = GetGroupData();
-  const SkColor color = GetGroupData()->color();
+  const TabGroupVisualData* data = GetGroupVisualData();
+  const SkColor color = GetGroupVisualData()->color();
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   auto title_chip = std::make_unique<views::View>();
@@ -62,6 +62,6 @@ TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
   title_chip_ptr->AddChildView(std::move(title));
 }
 
-const TabGroupData* TabGroupHeader::GetGroupData() {
-  return controller_->GetDataForGroup(group_);
+const TabGroupVisualData* TabGroupHeader::GetGroupVisualData() {
+  return controller_->GetVisualDataForGroup(group_);
 }

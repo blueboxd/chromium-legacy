@@ -22,8 +22,6 @@
 
 namespace content {
 
-class ResourceDispatcherHostImpl;
-
 // Instantiated per RenderProcessHost to provide various optimizations on
 // behalf of a RenderWidgetHost.  This class bridges between the IO thread
 // where the RenderProcessHost's MessageFilter lives and the UI thread where
@@ -34,8 +32,7 @@ class RenderWidgetHelper
  public:
   RenderWidgetHelper();
 
-  void Init(int render_process_id,
-            ResourceDispatcherHostImpl* resource_dispatcher_host);
+  void Init(int render_process_id);
 
   // Gets the next available routing id.  This is thread safe.
   int GetNextRoutingID();
@@ -76,8 +73,6 @@ class RenderWidgetHelper
 
   // The next routing id to use.
   base::AtomicSequenceNumber next_routing_id_;
-
-  ResourceDispatcherHostImpl* resource_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHelper);
 };

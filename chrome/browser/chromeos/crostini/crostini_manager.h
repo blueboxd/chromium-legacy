@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
@@ -451,6 +452,13 @@ class CrostiniManager : public KeyedService,
   // chromeos::PowerManagerClient::Observer overrides:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
+  // Callback for |RemoveSshfsCrostiniVolume| called from |SuspendImminent| when
+  // the device is allowed to suspend. Removes metadata associated with the
+  // crostini sshfs mount and unblocks a pending suspend.
+  void OnRemoveSshfsCrostiniVolume(
+      base::UnguessableToken power_manager_suspend_token,
+      bool result);
 
   void RemoveCrostini(std::string vm_name, RemoveCrostiniCallback callback);
 

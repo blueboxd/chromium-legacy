@@ -12,7 +12,7 @@
 
 class SkPath;
 class Tab;
-class TabGroupData;
+class TabGroupVisualData;
 class TabGroupId;
 
 namespace gfx {
@@ -178,8 +178,9 @@ class TabController {
   // Returns opacity for use on tab hover radial highlight.
   virtual float GetHoverOpacityForRadialHighlight() const = 0;
 
-  // Returns the TabGroupData instance for the given |group|.
-  virtual const TabGroupData* GetDataForGroup(TabGroupId group) const = 0;
+  // Returns the TabGroupVisualData instance for the given |group|.
+  virtual const TabGroupVisualData* GetVisualDataForGroup(
+      TabGroupId group) const = 0;
 
  protected:
   virtual ~TabController() {}

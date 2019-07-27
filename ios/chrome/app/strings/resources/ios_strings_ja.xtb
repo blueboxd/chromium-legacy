@@ -150,6 +150,7 @@
 <translation id="2933759065870693102">照明</translation>
 <translation id="2958718410589002129">パスワード</translation>
 <translation id="2969979262385602596">ログインできません。後でもう一度お試しください。</translation>
+<translation id="298306318844797842">お支払い方法を追加...</translation>
 <translation id="2989805286512600854">新しいタブで開く</translation>
 <translation id="3037605927509011580">エラー</translation>
 <translation id="3112556859945124369">マーク...</translation>
@@ -313,6 +314,7 @@
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5614553682702429503">パスワードを保存しますか？</translation>
 <translation id="5626245204502895507">今回は、ファイルをダウンロードできませんでした。</translation>
+<translation id="5631164295104953411">お支払い方法を追加</translation>
 <translation id="5659593005791499971">メール</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">バージョン <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +466,7 @@
 <translation id="7772032839648071052">パスフレーズの確認</translation>
 <translation id="7781829728241885113">昨日</translation>
 <translation id="778855399387580014">新しい Chrome タブで検索を開始します。</translation>
+<translation id="7791543448312431591">追加</translation>
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7840771868269352570">選択したアイテムが削除されます。</translation>
 <translation id="7856733331829174190">ダウンロードできませんでした</translation>
@@ -531,7 +534,6 @@
 <translation id="8976382372951310360">ヘルプ</translation>
 <translation id="8981454092730389528">Google アクティビティ管理</translation>
 <translation id="8985320356172329008">次のユーザーとして Google にログインしています</translation>
-<translation id="9016406938567631235">送信しています…</translation>
 <translation id="902659348151742535">検索、広告、その他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります。</translation>
 <translation id="9034759925968272072">Google アカウントへのログイン状態は維持されます。Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="9039373489628511875">帯域幅</translation>

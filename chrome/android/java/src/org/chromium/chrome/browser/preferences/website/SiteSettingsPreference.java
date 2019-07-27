@@ -11,12 +11,12 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.ChromeBasePreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 
 /**
  * A custom preference for drawing Site Settings entries.
  */
-public class SiteSettingsPreference extends ChromeBasePreferenceCompat {
+public class SiteSettingsPreference extends ChromeBasePreference {
     /**
      * Constructor for inflating from XML.
      */

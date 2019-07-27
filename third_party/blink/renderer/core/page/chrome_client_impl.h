@@ -263,6 +263,11 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
                                              bool visible) override;
 
+  void RequestBeginMainFrameNotExpected(LocalFrame& frame,
+                                        bool request) override;
+
+  int GetLayerTreeId(LocalFrame& frame) override;
+
   void DidUpdateTextAutosizerPageInfo(const WebTextAutosizerPageInfo&) override;
 
  private:

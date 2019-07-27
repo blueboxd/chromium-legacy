@@ -327,6 +327,9 @@ class CORE_EXPORT StyleEngine final
   bool NeedsWhitespaceReattachment(Element* element) const {
     return whitespace_reattach_set_.Contains(element);
   }
+  void ClearNeedsWhitespaceReattachmentFor(Element* element) {
+    whitespace_reattach_set_.erase(element);
+  }
   void ClearWhitespaceReattachSet() { whitespace_reattach_set_.clear(); }
   void MarkForWhitespaceReattachment();
 

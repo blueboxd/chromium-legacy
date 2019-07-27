@@ -73,6 +73,7 @@ source_set("popup_menu") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/web",
+    "//ios/web/common:user_agent",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]

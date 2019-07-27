@@ -458,7 +458,7 @@ bool EntryImpl::CreateEntry(Addr node_address,
     if (address.is_block_file())
       offset = address.start_block() * address.BlockSize() + kBlockHeaderSize;
 
-    if (!key_file || !key_file->Write(key.data(), key.size(), offset)) {
+    if (!key_file || !key_file->Write(key.data(), key.size() + 1, offset)) {
       DeleteData(address, kKeyFileIndex);
       return false;
     }
@@ -789,7 +789,7 @@ std::string EntryImpl::GetKey() const {
   CacheEntryBlock* entry = const_cast<CacheEntryBlock*>(&entry_);
   int key_len = entry->Data()->key_len;
   if (key_len <= kMaxInternalKeyLength)
-    return std::string(entry->Data()->key);
+    return std::string(entry->Data()->key, key_len);
 
   // We keep a copy of the key so that we can always return it, even if the
   // backend is disabled.
@@ -808,12 +808,18 @@ std::string EntryImpl::GetKey() const {
   if (!key_file)
     return std::string();
 
-  ++key_len;  // We store a trailing \0 on disk that we read back below.
+  ++key_len;  // We store a trailing \0 on disk.
   if (!offset && key_file->GetLength() != static_cast<size_t>(key_len))
     return std::string();
 
-  if (!key_file->Read(base::WriteInto(&key_, key_len), key_len, offset))
+  // WriteInto will ensure that key_.length() == key_len - 1, and so
+  // key_.c_str()[key_len] will be '\0'. Taking advantage of this, do not
+  // attempt read up to the expected on-disk '\0' --- which would be |key_len|
+  // bytes total --- as if due to a corrupt file it isn't |key_| would get its
+  // internal nul messed up.
+  if (!key_file->Read(base::WriteInto(&key_, key_len), key_len - 1, offset))
     key_.clear();
+  DCHECK_LE(strlen(key_.data()), static_cast<size_t>(key_len));
   return key_;
 }
 

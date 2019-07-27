@@ -10,7 +10,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -191,32 +192,39 @@ class ExternalVideoEncoder::VEAClientImpl
     // Copy the |video_frame| into the input buffer provided by the VEA
     // implementation, and with the exact row stride required. Note that, even
     // if |video_frame|'s stride matches VEA's requirement, |video_frame|'s
-    // memory backing (heap, base::ReadOnlySharedMemoryRegion, etc.) could be
-    // something VEA can't handle (as of this writing, it uses the legacy shmem
-    // API). http://crbug.com/888153
+    // memory backing (heap, base::UnsafeSharedMemoryRegion, etc.) could be
+    // something VEA can't handle (as of this writing, it expects an unsafe
+    // region).
     //
     // TODO(crbug.com/888829): Revisit whether we can remove this memcpy, if VEA
     // can accept other "memory backing" methods.
-    const int index = free_input_buffer_index_.back();
-    base::SharedMemory* const input_buffer = input_buffers_[index].get();
-    scoped_refptr<media::VideoFrame> frame =
-        VideoFrame::WrapExternalSharedMemory(
-            video_frame->format(), frame_coded_size_,
-            video_frame->visible_rect(), video_frame->visible_rect().size(),
-            static_cast<uint8_t*>(input_buffer->memory()),
-            input_buffer->mapped_size(), input_buffer->handle(), 0,
-            video_frame->timestamp());
-    if (!frame || !media::I420CopyWithPadding(*video_frame, frame.get())) {
-      LOG(DFATAL) << "Error: ExternalVideoEncoder: copy failed.";
-      AbortLatestEncodeAttemptDueToErrors();
-      return;
+    scoped_refptr<media::VideoFrame> frame = video_frame;
+    if (video_frame->coded_size() != frame_coded_size_ ||
+        video_frame->storage_type() !=
+            media::VideoFrame::StorageType::STORAGE_SHMEM) {
+      const int index = free_input_buffer_index_.back();
+      std::pair<base::UnsafeSharedMemoryRegion,
+                base::WritableSharedMemoryMapping>* input_buffer =
+          input_buffers_[index].get();
+      DCHECK(input_buffer->first.IsValid());
+      DCHECK(input_buffer->second.IsValid());
+      scoped_refptr<media::VideoFrame> frame = VideoFrame::WrapExternalData(
+          video_frame->format(), frame_coded_size_, video_frame->visible_rect(),
+          video_frame->visible_rect().size(),
+          input_buffer->second.GetMemoryAsSpan<uint8_t>().data(),
+          input_buffer->second.size(), video_frame->timestamp());
+      if (!frame || !media::I420CopyWithPadding(*video_frame, frame.get())) {
+        LOG(DFATAL) << "Error: ExternalVideoEncoder: copy failed.";
+        AbortLatestEncodeAttemptDueToErrors();
+        return;
+      }
+      frame->BackWithSharedMemory(&input_buffer->first);
+
+      frame->AddDestructionObserver(media::BindToCurrentLoop(base::Bind(
+          &ExternalVideoEncoder::VEAClientImpl::ReturnInputBufferToPool, this,
+          index)));
+      free_input_buffer_index_.pop_back();
     }
-
-    frame->AddDestructionObserver(media::BindToCurrentLoop(base::Bind(
-        &ExternalVideoEncoder::VEAClientImpl::ReturnInputBufferToPool, this,
-        index)));
-    free_input_buffer_index_.pop_back();
-
     // BitstreamBufferReady will be called once the encoder is done.
     video_encode_accelerator_->Encode(std::move(frame), key_frame_requested);
   }
@@ -438,8 +446,10 @@ class ExternalVideoEncoder::VEAClientImpl
 
   void OnCreateInputSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&VEAClientImpl::OnReceivedInputSharedMemory,
-                                  this, std::move(memory)));
+        FROM_HERE,
+        base::BindOnce(&VEAClientImpl::OnReceivedInputSharedMemory, this,
+                       base::UnsafeSharedMemoryRegion::CreateFromHandle(
+                           memory->TakeHandle())));
   }
 
   void OnReceivedSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
@@ -460,11 +470,16 @@ class ExternalVideoEncoder::VEAClientImpl
     }
   }
 
-  void OnReceivedInputSharedMemory(std::unique_ptr<base::SharedMemory> memory) {
+  void OnReceivedInputSharedMemory(base::UnsafeSharedMemoryRegion region) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-    if (memory.get()) {
-      input_buffers_.push_back(std::move(memory));
+    if (region.IsValid()) {
+      base::WritableSharedMemoryMapping mapping = region.Map();
+      DCHECK(mapping.IsValid());
+      input_buffers_.push_back(
+          std::make_unique<std::pair<base::UnsafeSharedMemoryRegion,
+                                     base::WritableSharedMemoryMapping>>(
+              std::move(region), std::move(mapping)));
       free_input_buffer_index_.push_back(input_buffers_.size() - 1);
     }
     allocate_input_buffer_in_progress_ = false;
@@ -564,8 +579,12 @@ class ExternalVideoEncoder::VEAClientImpl
   // Shared memory buffers for input video frames with the VideoAccelerator.
   // These buffers will be allocated only when copy is needed to match the
   // required coded size for encoder. They are allocated on-demand, up to
-  // |max_allowed_input_buffers_|.
-  std::vector<std::unique_ptr<base::SharedMemory>> input_buffers_;
+  // |max_allowed_input_buffers_|. A VideoFrame wrapping the region will point
+  // to it, so std::unique_ptr is used to ensure the region has a stable address
+  // even if the vector grows or shrinks.
+  std::vector<std::unique_ptr<std::pair<base::UnsafeSharedMemoryRegion,
+                                        base::WritableSharedMemoryMapping>>>
+      input_buffers_;
 
   // Available input buffer index. These buffers are used in FILO order.
   std::vector<int> free_input_buffer_index_;

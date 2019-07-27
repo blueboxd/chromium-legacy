@@ -45,12 +45,9 @@ class UsbChooserDialogAndroid : public ChooserController::View {
 
   // Report the dialog's result.
   void OnItemSelected(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj,
                       const base::android::JavaParamRef<jstring>& item_id);
-  void OnDialogCancelled(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj);
-  void LoadUsbHelpPage(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj);
+  void OnDialogCancelled(JNIEnv* env);
+  void LoadUsbHelpPage(JNIEnv* env);
 
  private:
   // Called when the chooser dialog is closed.

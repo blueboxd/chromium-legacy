@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.PreviewsLitePageInfoBar;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -144,8 +144,8 @@ public class DataReductionPreferenceFragment extends PreferenceFragmentCompat {
     }
 
     private void createDataReductionSwitch(boolean isEnabled) {
-        final ChromeSwitchPreferenceCompat dataReductionSwitch =
-                new ChromeSwitchPreferenceCompat(getPreferenceManager().getContext(), null);
+        final ChromeSwitchPreference dataReductionSwitch =
+                new ChromeSwitchPreference(getPreferenceManager().getContext(), null);
         dataReductionSwitch.setKey(PREF_DATA_REDUCTION_SWITCH);
         dataReductionSwitch.setSummaryOn(R.string.text_on);
         dataReductionSwitch.setSummaryOff(R.string.text_off);

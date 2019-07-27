@@ -57,7 +57,7 @@ DataUseMeasurement::DataUseMeasurement(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(network_connection_tracker_);
 
-  network_connection_tracker_->AddNetworkConnectionObserver(this);
+  network_connection_tracker_->AddLeakyNetworkConnectionObserver(this);
 
 #if defined(OS_ANDROID)
   int64_t bytes = 0;

@@ -126,6 +126,14 @@ ToolbarPageActionIconContainerView::GetWebContentsForPageActionIconView() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
+std::unique_ptr<views::Border>
+ToolbarPageActionIconContainerView::GetPageActionIconBorder() const {
+  // With this border, the icon will have the same ink drop shape as toolbar
+  // buttons.
+  return views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::InsetsMetric::INSETS_LABEL_BUTTON));
+}
+
 void ToolbarPageActionIconContainerView::OnThemeChanged() {
   // Update icon color.
   UpdateAllIcons();

@@ -66,8 +66,8 @@ class MODULES_EXPORT RTCDataChannel final
   bool reliable() const;
 
   bool ordered() const;
-  uint16_t maxRetransmitTime() const;
-  uint16_t maxRetransmits() const;
+  uint16_t maxPacketLifeTime(bool&) const;
+  uint16_t maxRetransmits(bool&) const;
   String protocol() const;
   bool negotiated() const;
   uint16_t id(bool& is_null) const;

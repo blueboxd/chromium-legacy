@@ -10,6 +10,7 @@ typemaps = [
   "//mojo/public/cpp/base/file_info.typemap",
   "//mojo/public/cpp/base/file_path.typemap",
   "//mojo/public/cpp/base/file_error.typemap",
+  "//mojo/public/cpp/base/generic_pending_receiver.typemap",
   "//mojo/public/cpp/base/shared_memory.typemap",
   "//mojo/public/cpp/base/time.typemap",
   "//mojo/public/cpp/base/read_only_buffer.typemap",

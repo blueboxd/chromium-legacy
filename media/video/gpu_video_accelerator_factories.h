@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/unguessable_token.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -127,6 +128,10 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
 
   // Allocate & return a shared memory segment.
   virtual std::unique_ptr<base::SharedMemory> CreateSharedMemory(
+      size_t size) = 0;
+
+  // Allocate & return an unsafe shared memory region
+  virtual base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(
       size_t size) = 0;
 
   // Returns the task runner the video accelerator runs on.

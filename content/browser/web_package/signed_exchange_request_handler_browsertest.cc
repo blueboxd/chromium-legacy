@@ -205,22 +205,14 @@ class SignedExchangeRequestHandlerBrowserTestBase
 class SignedExchangeRequestHandlerBrowserTest
     : public testing::WithParamInterface<
           std::tuple<bool /* prefetch_enabled */,
-                     bool /* network_service_enabled */,
                      bool /* sxg_subresource_prefetch_enabled */>>,
       public SignedExchangeRequestHandlerBrowserTestBase {
  public:
   SignedExchangeRequestHandlerBrowserTest() {
-    bool network_service_enabled;
     bool sxg_subresource_prefetch_enabled;
-    std::tie(prefetch_enabled_, network_service_enabled,
-             sxg_subresource_prefetch_enabled) = GetParam();
+    std::tie(prefetch_enabled_, sxg_subresource_prefetch_enabled) = GetParam();
     std::vector<base::Feature> enable_features;
     std::vector<base::Feature> disabled_features;
-    if (network_service_enabled) {
-      enable_features.push_back(network::features::kNetworkService);
-    } else {
-      disabled_features.push_back(network::features::kNetworkService);
-    }
     if (sxg_subresource_prefetch_enabled) {
       enable_features.push_back(features::kSignedExchangeSubresourcePrefetch);
     } else {
@@ -557,7 +549,6 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
 INSTANTIATE_TEST_SUITE_P(,
                          SignedExchangeRequestHandlerBrowserTest,
                          ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 class SignedExchangeRequestHandlerDownloadBrowserTest

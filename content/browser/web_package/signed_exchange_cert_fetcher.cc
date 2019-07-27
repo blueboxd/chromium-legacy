@@ -155,7 +155,7 @@ void SignedExchangeCertFetcher::Start() {
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory_), std::move(throttles_),
       0 /* routing_id */,
-      ResourceDispatcherHostImpl::Get()->MakeRequestID() /* request_id */,
+      ResourceDispatcherHostImpl::MakeRequestID() /* request_id */,
       network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
       kCertFetcherTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
 }

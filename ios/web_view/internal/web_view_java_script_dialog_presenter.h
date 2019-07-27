@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_VIEW_INTERNAL_WEB_VIEW_JAVA_SCRIPT_DIALOG_PRESENTER_H_
 #define IOS_WEB_VIEW_INTERNAL_WEB_VIEW_JAVA_SCRIPT_DIALOG_PRESENTER_H_
 
-#import "ios/web/public/java_script_dialog_presenter.h"
+#import "ios/web/public/ui/java_script_dialog_presenter.h"
 
 @class CWVWebView;
 @protocol CWVUIDelegate;

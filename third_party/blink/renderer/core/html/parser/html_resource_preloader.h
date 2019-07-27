@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/html/parser/resource_preloader.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

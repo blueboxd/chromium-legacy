@@ -30,8 +30,8 @@ class CAPTURE_EXPORT GpuMemoryBufferTracker final
                            const mojom::PlaneStridesPtr& strides) override;
   uint32_t GetMemorySizeInBytes() override;
   std::unique_ptr<VideoCaptureBufferHandle> GetMemoryMappedAccess() override;
-  mojo::ScopedSharedBufferHandle GetHandleForTransit(bool read_only) override;
-  base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC() override;
+  base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() override;
+  mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() override;
   gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override;
 
  private:

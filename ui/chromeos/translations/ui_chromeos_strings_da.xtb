@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Søgeskyder</translation>
 <translation id="1399648040768741453">Telugu-tastarur (fonetisk)</translation>
 <translation id="1430915738399379752">Udskriv</translation>
+<translation id="1439494416798956626">Flyttet til <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Vietnamesisk tastatur (Telex)</translation>
 <translation id="1455548678241328678">Norsk tastatur</translation>
 <translation id="1464724975715666883">1 fejl.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Din medieenhed scannes...</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> billeder blev sikkerhedskopieret til <ph name="BEGIN_LINK" />Google Drev<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kopierer...</translation>
+<translation id="3473378059788601120">Kopieret til <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Google-regneark</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> fejl.</translation>
 <translation id="3519867315646775981">Translitteration (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Japansk indtastning (på japansk tastatur)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Giv Linux-apps tilladelse til at ændre filer i Google Drev. Ændringer synkroniseres med dine andre enheder.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> elementer</translation>
 <translation id="5982621672636444458">Sorteringsmuligheder</translation>
 <translation id="6005282720244019462">Latinamerikansk tastatur</translation>
 <translation id="6007237601604674381">Flytningen mislykkedes. <ph name="ERROR_MESSAGE" /></translation>

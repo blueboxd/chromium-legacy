@@ -53,21 +53,13 @@ class VR_BASE_EXPORT ConsentFlowMetricsHelper
 #if defined(OS_ANDROID)
   void OnDialogClosedWithConsent(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& url,
       jboolean is_granted);
   void LogUserAction(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& obj,
                      jint action);
-  void LogConsentFlowDurationWhenConsentGranted(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  void LogConsentFlowDurationWhenConsentNotGranted(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-  void LogConsentFlowDurationWhenUserAborted(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+  void LogConsentFlowDurationWhenConsentGranted(JNIEnv* env);
+  void LogConsentFlowDurationWhenConsentNotGranted(JNIEnv* env);
+  void LogConsentFlowDurationWhenUserAborted(JNIEnv* env);
 #endif
 
  private:

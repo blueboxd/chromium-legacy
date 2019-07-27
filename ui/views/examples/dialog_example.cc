@@ -39,7 +39,7 @@ class DialogExample::Delegate : public virtual DialogType {
 
   void InitDelegate() {
     this->SetLayoutManager(std::make_unique<FillLayout>());
-    Label* body = new Label(parent_->body_->text());
+    Label* body = new Label(parent_->body_->GetText());
     body->SetMultiLine(true);
     body->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     body->SetBackground(CreateSolidBackground(SkColorSetRGB(0, 255, 255)));
@@ -56,14 +56,14 @@ class DialogExample::Delegate : public virtual DialogType {
   }
 
   base::string16 GetWindowTitle() const override {
-    return parent_->title_->text();
+    return parent_->title_->GetText();
   }
 
   std::unique_ptr<View> CreateExtraView() override {
     if (!parent_->has_extra_button_->GetChecked())
       return nullptr;
     auto view = MdTextButton::CreateSecondaryUiButton(
-        nullptr, parent_->extra_button_label_->text());
+        nullptr, parent_->extra_button_label_->GetText());
     return view;
   }
 
@@ -72,9 +72,9 @@ class DialogExample::Delegate : public virtual DialogType {
   int GetDialogButtons() const override { return parent_->GetDialogButtons(); }
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
     if (button == ui::DIALOG_BUTTON_OK)
-      return parent_->ok_button_label_->text();
+      return parent_->ok_button_label_->GetText();
     if (button == ui::DIALOG_BUTTON_CANCEL)
-      return parent_->cancel_button_label_->text();
+      return parent_->cancel_button_label_->GetText();
     return base::string16();
   }
 

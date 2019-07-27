@@ -679,7 +679,12 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     DCHECK(web::GetWebClient()->IsAppSpecificURL(
         net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey])));
   } else {
-    if (web::IsWKWebViewSSLCertError(error)) {
+    // Skip this check when committed interstitials enabled and let the cert
+    // error go through handleLoadError: instead. In this case, a generic
+    // net error page gets shown for cert errors.
+    if (web::IsWKWebViewSSLCertError(error) &&
+        !base::FeatureList::IsEnabled(
+            web::features::kSSLCommittedInterstitials)) {
       [self handleSSLCertError:error forNavigation:navigation webView:webView];
     } else {
       [self handleLoadError:error

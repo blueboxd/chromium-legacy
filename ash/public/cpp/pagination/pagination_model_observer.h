@@ -17,7 +17,10 @@ class ASH_PUBLIC_EXPORT PaginationModelObserver {
   // Invoked when the selected page index is changed.
   virtual void SelectedPageChanged(int old_selected, int new_selected) {}
 
-  // Invoked when a transition starts.
+  // Invoked right before a transition starts.
+  virtual void TransitionStarting() {}
+
+  // Invoked right after a transition started.
   virtual void TransitionStarted() {}
 
   // Invoked when the transition data is changed.

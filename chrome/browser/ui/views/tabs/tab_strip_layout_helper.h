@@ -8,9 +8,11 @@
 #include <map>
 #include <vector>
 
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_animator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/view_model.h"
 
@@ -47,14 +49,14 @@ class TabStripLayoutHelper {
 
   // Inserts a new tab at |index|, without animation. |tab_removed_callback|
   // will be invoked if the tab is removed at the end of a remove animation.
-  void InsertTabAtNoAnimation(int index,
+  void InsertTabAtNoAnimation(int model_index,
                               base::OnceClosure tab_removed_callback,
                               TabAnimationState::TabActiveness active,
                               TabAnimationState::TabPinnedness pinned);
 
   // Inserts a new tab at |index|, with animation. |tab_removed_callback| will
   // be invoked if the tab is removed at the end of a remove animation.
-  void InsertTabAt(int index,
+  void InsertTabAt(int model_index,
                    base::OnceClosure tab_removed_callback,
                    TabAnimationState::TabActiveness active,
                    TabAnimationState::TabPinnedness pinned);
@@ -62,7 +64,7 @@ class TabStripLayoutHelper {
   // Removes the tab at |index|. TODO(958173): This should invoke the associated
   // |tab_removed_callback| but currently does not, as it would duplicate
   // TabStrip::RemoveTabDelegate::AnimationEnded.
-  void RemoveTabAt(int index);
+  void RemoveTabAt(int model_index);
 
   // Moves the tab at |prev_index| with group |group_at_prev_index| to
   // |new_index|. Also updates the group header's location if necessary.
@@ -71,16 +73,15 @@ class TabStripLayoutHelper {
                int new_index);
 
   // Sets the tab at |index|'s pinnedness to |pinnedness|.
-  void SetTabPinnedness(int index, TabAnimationState::TabPinnedness pinnedness);
+  void SetTabPinnedness(int model_index,
+                        TabAnimationState::TabPinnedness pinnedness);
 
   // Inserts a new group header for |group|. |header_removed_callback| will be
   // invoked if the group is removed at the end of a remove animation.
   void InsertGroupHeader(TabGroupId group,
                          base::OnceClosure header_removed_callback);
 
-  // Removes the group header for |group|. TODO(958173): This should invoke the
-  // associated |header_removed_callback| but currently does not because
-  // RemoveTabAt also does not, and they share codepaths.
+  // Removes the group header for |group|.
   void RemoveGroupHeader(TabGroupId group);
 
   // Changes the active tab from |prev_active_index| to |new_active_index|.
@@ -113,15 +114,28 @@ class TabStripLayoutHelper {
  private:
   struct TabSlot;
 
+  // Given a tab's |model_index|, returns the index of its corresponding TabSlot
+  // in |slots_|.
+  int GetSlotIndexForTabModelIndex(int model_index) const;
+
+  // Given a group ID, returns the index of its header's corresponding TabSlot
+  // in |slots_|.
+  int GetSlotIndexForGroupHeader(TabGroupId group) const;
+
+  // Returns the current animation progress for each View.
+  std::vector<TabAnimationState> GetCurrentTabStates() const;
+
+  // Runs an animation for the View at |slot_index| towards |target_state|.
+  void AnimateSlot(int slot_index, TabAnimationState target_state);
+
+  // Called when animations progress.
+  void TickAnimations();
+
+  // Deletes the data in |slots_| corresponding to fully closed tabs.
+  void RemoveClosedTabs();
+
   // Recalculate |cached_slots_|, called whenever state changes.
   void UpdateCachedTabSlots();
-
-  // Finds the index of the TabAnimation in |animator_| for the tab at
-  // |tab_model_index|.
-  int AnimatorIndexForTab(int tab_model_index) const;
-
-  // Finds the index of the TabAnimation in |animator_| for |group|.
-  int AnimatorIndexForGroupHeader(TabGroupId group) const;
 
   // Compares |cached_slots_| to the TabAnimations in |animator_| and DCHECKs if
   // the TabAnimation::ViewType do not match. Prevents bugs that could cause the
@@ -139,12 +153,15 @@ class TabStripLayoutHelper {
   GetTabsCallback get_tabs_callback_;
   GetGroupHeadersCallback get_group_headers_callback_;
 
-  // Responsible for tracking the animations of tabs and group headers.
-  TabStripAnimator animator_;
+  // Timer used to run animations on Views..
+  base::RepeatingTimer animation_timer_;
 
-  // Tracks changes to the tab strip in order to properly collate group headers
-  // with tabs.
-  std::vector<TabSlot> cached_slots_;
+  // Called when animations progress.
+  base::RepeatingClosure on_animation_progressed_;
+
+  // Current collation of tabs and group headers, along with necessary data to
+  // run layout and animations for those Views.
+  std::vector<TabSlot> slots_;
 
   // The current widths of tabs. If the space for tabs is not evenly divisible
   // into these widths, the initial tabs in the strip will be 1 px larger.

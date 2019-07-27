@@ -50,7 +50,7 @@ rootWebArea
 ++++labelText
 ++++++staticText name='Search: '
 ++++++++inlineTextBox name='Search: '
-++++++textField name='Search:'
+++++++searchBox name='Search:'
 ++++++++genericContainer
 ++++labelText
 ++++++staticText name='Submit: '

@@ -8,11 +8,11 @@
 #include <stddef.h>
 
 #include "base/callback.h"
+#include "ios/web/common/user_agent.h"
 #include "ios/web/public/deprecated/navigation_item_list.h"
 #include "ios/web/public/navigation/browser_url_rewriter.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "ios/web/public/navigation/reload_type.h"
-#include "ios/web/public/user_agent.h"
 #include "ui/base/page_transition_types.h"
 
 @class NSDictionary;

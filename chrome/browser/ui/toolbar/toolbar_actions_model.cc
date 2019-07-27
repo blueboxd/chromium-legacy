@@ -473,18 +473,14 @@ void ToolbarActionsModel::Populate() {
   std::vector<ActionId> unsorted;
 
   // Populate the lists.
-  int hidden = 0;
 
   // Add the extension action ids to all_actions.
   const extensions::ExtensionSet& extensions =
       extension_registry_->enabled_extensions();
   for (const scoped_refptr<const extensions::Extension>& extension :
        extensions) {
-    if (!ShouldAddExtension(extension.get())) {
-      if (!extension_action_api_->GetBrowserActionVisibility(extension->id()))
-        ++hidden;
+    if (!ShouldAddExtension(extension.get()))
       continue;
-    }
 
     all_actions.push_back(extension->id());
   }
@@ -537,8 +533,6 @@ void ToolbarActionsModel::Populate() {
 
   // Histogram names are prefixed with "ExtensionToolbarModel" rather than
   // "ToolbarActionsModel" for historical reasons.
-  UMA_HISTOGRAM_COUNTS_100(
-      "ExtensionToolbarModel.BrowserActionsPermanentlyHidden", hidden);
   UMA_HISTOGRAM_COUNTS_100("ExtensionToolbarModel.BrowserActionsCount",
                            action_ids_.size());
 

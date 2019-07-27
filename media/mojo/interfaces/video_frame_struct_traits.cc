@@ -31,9 +31,12 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
     const media::MojoSharedBufferVideoFrame* mojo_frame =
         static_cast<const media::MojoSharedBufferVideoFrame*>(input);
 
-    // TODO(https://crbug.com/803136): This should duplicate as READ_ONLY, but
-    // can't because there is no guarantee that the input handle is sharable as
-    // read-only.
+    // Mojo shared buffer handles are always writable. For example,
+    // cdm_video_decoder in ToCdmVideoFrame maps a frame writable; these frames
+    // are returned via callback and reused in ToCdmVideoFrame. Since returning
+    // via callback involves a Clone(), and since cloning a region read-only
+    // makes both the source handle and the cloned handle read-only, it must be
+    // cloned writable.
     mojo::ScopedSharedBufferHandle dup = mojo_frame->Handle().Clone(
         mojo::SharedBufferHandle::AccessMode::READ_WRITE);
     DCHECK(dup.is_valid());

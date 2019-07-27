@@ -59,7 +59,6 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -6213,6 +6212,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
         &params->interface_bundle->document_interface_broker_content);
     mojo::MakeRequest(
         &params->interface_bundle->document_interface_broker_blink);
+    ignore_result(params->interface_bundle->browser_interface_broker
+                      .InitWithNewPipeAndPassReceiver());
     params->previous_routing_id = previous_routing_id;
     params->opener_routing_id = IPC::mojom::kRoutingIdNone;
     params->parent_routing_id =
@@ -6284,6 +6285,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
         &params->interface_bundle->document_interface_broker_content);
     mojo::MakeRequest(
         &params->interface_bundle->document_interface_broker_blink);
+    ignore_result(params->interface_bundle->browser_interface_broker
+                      .InitWithNewPipeAndPassReceiver());
     params->previous_routing_id = IPC::mojom::kRoutingIdNone;
     params->opener_routing_id = IPC::mojom::kRoutingIdNone;
     params->parent_routing_id = parent_routing_id;
@@ -14442,7 +14445,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
           mojom::DidCommitProvisionalLoadInterfaceParams::New(
               mojo::MakeRequest(&interface_provider),
               mojo::MakeRequest(&document_interface_broker_content),
-              mojo::MakeRequest(&document_interface_broker_blink)));
+              mojo::MakeRequest(&document_interface_broker_blink),
+              mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
+                  .InitWithNewPipeAndPassReceiver()));
 
   // When the IPC message is received and validation fails, the process is
   // terminated. However, the notification for that should be processed in a

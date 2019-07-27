@@ -70,6 +70,11 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2366718077645204424">No es pot connectar amb l'amfitrió. Probablement, això passa a causa de la configuració de la xarxa que esteu fent servir.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> L'última connexió va ser <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Aquesta aplicació ja no s'admet. Per garantir que tens les funcions i actualitzacions de seguretat més recents, fes servir l'<ph name="LINK_BEGIN" />aplicació web Escriptori remot de Chrome<ph name="LINK_END" />.</translation>
+<translation id="2431841749166974386">Per poder controlar aquest ordinador de manera remota amb <ph name="PRODUCT_NAME" />, primer has de dur a terme un pas addicional de configuració.
+
+Per activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> perquè es mostri el tauler de preferències Seguretat i privadesa. Tot seguit, marca la casella <ph name="SERVICE_SCRIPT_NAME" />.
+
+Si l'script <ph name="SERVICE_SCRIPT_NAME" /> ja existeix i s'ha marcat la casella corresponent, pot ser que hagis de suprimir-lo i tornar a afegir-lo.</translation>
 <translation id="2499160551253595098">Ajudeu-nos a millorar l'escriptori remot de Chrome: permeteu-nos recollir estadístiques d'ús i informes d'error.</translation>
 <translation id="2509394361235492552">Connectat a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Per assegurar-vos que totes les tecles de drecera estiguin disponibles, podeu configurar l'escriptori remot de Chrome amb l'opció "Obre com a finestra".</translation>
@@ -192,9 +197,6 @@ PC</translation>
 <translation id="4973800994433240357">En baixar l'instal·lador de l'amfitrió de Chromoting accepteu les <ph name="LINK_BEGIN" />Condicions del servei<ph name="LINK_END" /> de Google.</translation>
 <translation id="4974476491460646149">La connexió amb <ph name="HOSTNAME" /> s'ha tancat</translation>
 <translation id="4985296110227979402">Primer heu de configurar l'accés remot al vostre ordinador.</translation>
-<translation id="5059773780693835145">Per poder controlar aquest ordinador de manera remota amb <ph name="PRODUCT_NAME" />, primer has de dur a terme un pas addicional de configuració.
-
-Si vols activar aquesta funcionalitat, selecciona <ph name="BUTTON_NAME" /> per mostrar el tauler de preferències Seguretat i privacitat. Tot seguit, marca la casella "<ph name="SERVICE_SCRIPT_NAME" />".</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (fora de línia)</translation>
 <translation id="5070121137485264635">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a l'escriptori remot de Chrome per accedir a aquesta adreça:</translation>
 <translation id="507204348399810022">Confirmes que vols desactivar les connexions remotes a <ph name="HOSTNAME" />?</translation>

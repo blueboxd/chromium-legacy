@@ -1366,7 +1366,7 @@ IN_PROC_BROWSER_TEST_F(
   // Account.
   views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
       FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
-  EXPECT_EQ(cardholder_name_textfield->text(),
+  EXPECT_EQ(cardholder_name_textfield->GetText(),
             base::ASCIIToUTF16("John Smith"));
 }
 
@@ -1637,7 +1637,7 @@ IN_PROC_BROWSER_TEST_F(
   // user's Google Account should also be visible.
   views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
       FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
-  EXPECT_EQ(cardholder_name_textfield->text(),
+  EXPECT_EQ(cardholder_name_textfield->GetText(),
             base::ASCIIToUTF16("John Smith"));
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCardCardholderNamePrefilled", true, 1);
@@ -1673,7 +1673,7 @@ IN_PROC_BROWSER_TEST_F(
   // name came from the user's Google Account should NOT be visible.
   views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
       FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
-  EXPECT_TRUE(cardholder_name_textfield->text().empty());
+  EXPECT_TRUE(cardholder_name_textfield->GetText().empty());
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCardCardholderNamePrefilled", false, 1);
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TOOLTIP));
@@ -1783,7 +1783,7 @@ IN_PROC_BROWSER_TEST_F(
   // name came from the user's Google Account should NOT be visible.
   views::Textfield* cardholder_name_textfield = static_cast<views::Textfield*>(
       FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TEXTFIELD));
-  EXPECT_TRUE(cardholder_name_textfield->text().empty());
+  EXPECT_TRUE(cardholder_name_textfield->GetText().empty());
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCardCardholderNamePrefilled", false, 1);
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CARDHOLDER_NAME_TOOLTIP));

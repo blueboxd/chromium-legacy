@@ -27,6 +27,10 @@ message RedirectStat {
   // in M-77 without wiping the database. As such, it may be empty in some
   // cases even when originally |url| had a non-empty scheme.
   optional string url_scheme = 5;
+  // |url_port| field was added in M-77 without wiping the database. As such,
+  // it may be empty in some cases even when originally |url| had a non-empty
+  // port number.
+  optional int32 url_port = 6;
 }
 
 // Represents a mapping from URL or host to a list of redirect endpoints.

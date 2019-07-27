@@ -25,6 +25,8 @@
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
 #include "third_party/blink/renderer/platform/mediastream/audio_service_audio_processor_proxy.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/media/base/media_channel.h"
 
 namespace blink {
@@ -475,11 +477,11 @@ void ProcessedLocalAudioSource::CaptureUsingProcessor(
 
     DeliverDataToTracks(*processed_data, audio_capture_time);
 
-    // TODO(crbug.com/704136): Replace base::BindOnce by CrossThreadBindOnce.
     if (new_volume) {
-      GetTaskRunner()->PostTask(
-          FROM_HERE, base::BindOnce(&ProcessedLocalAudioSource::SetVolume,
-                                    weak_factory_.GetWeakPtr(), new_volume));
+      PostCrossThreadTask(
+          *GetTaskRunner(), FROM_HERE,
+          CrossThreadBindOnce(&ProcessedLocalAudioSource::SetVolume,
+                              weak_factory_.GetWeakPtr(), new_volume));
       // Update the |current_volume| to avoid passing the old volume to AGC.
       current_volume = new_volume;
     }

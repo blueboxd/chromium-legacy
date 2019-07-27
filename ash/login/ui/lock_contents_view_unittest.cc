@@ -2019,9 +2019,9 @@ TEST_F(LockContentsViewUnitTest, PasswordClearedOnSuspend) {
 
   textfield->SetText(base::ASCIIToUTF16("some_password"));
   // Suspend clears password.
-  EXPECT_FALSE(textfield->text().empty());
+  EXPECT_FALSE(textfield->GetText().empty());
   contents->SuspendImminent(power_manager::SuspendImminent_Reason_LID_CLOSED);
-  EXPECT_TRUE(textfield->text().empty());
+  EXPECT_TRUE(textfield->GetText().empty());
 }
 
 TEST_F(LockContentsViewUnitTest, ArrowNavSingleUser) {

@@ -63,7 +63,6 @@ void UsbMidiDeviceAndroid::Send(int endpoint_number,
 }
 
 void UsbMidiDeviceAndroid::OnData(JNIEnv* env,
-                                  const JavaParamRef<jobject>& caller,
                                   jint endpoint_number,
                                   const JavaParamRef<jbyteArray>& data) {
   std::vector<uint8_t> bytes;

@@ -107,7 +107,6 @@ void BluetoothChooserAndroid::AddOrUpdateDevice(
 
 void BluetoothChooserAndroid::OnDialogFinished(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     jint event_type,
     const JavaParamRef<jstring>& device_id) {
   // Values are defined in BluetoothChooserDialog as DIALOG_FINISHED constants.
@@ -131,28 +130,21 @@ void BluetoothChooserAndroid::RestartSearch() {
   event_handler_.Run(Event::RESCAN, "");
 }
 
-void BluetoothChooserAndroid::RestartSearch(JNIEnv*,
-                                            const JavaParamRef<jobject>&) {
+void BluetoothChooserAndroid::RestartSearch(JNIEnv*) {
   RestartSearch();
 }
 
-void BluetoothChooserAndroid::ShowBluetoothOverviewLink(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+void BluetoothChooserAndroid::ShowBluetoothOverviewLink(JNIEnv* env) {
   OpenURL(chrome::kChooserBluetoothOverviewURL);
   event_handler_.Run(Event::SHOW_OVERVIEW_HELP, "");
 }
 
-void BluetoothChooserAndroid::ShowBluetoothAdapterOffLink(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+void BluetoothChooserAndroid::ShowBluetoothAdapterOffLink(JNIEnv* env) {
   OpenURL(chrome::kChooserBluetoothOverviewURL);
   event_handler_.Run(Event::SHOW_ADAPTER_OFF_HELP, "");
 }
 
-void BluetoothChooserAndroid::ShowNeedLocationPermissionLink(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+void BluetoothChooserAndroid::ShowNeedLocationPermissionLink(JNIEnv* env) {
   OpenURL(chrome::kChooserBluetoothOverviewURL);
   event_handler_.Run(Event::SHOW_NEED_LOCATION_HELP, "");
 }

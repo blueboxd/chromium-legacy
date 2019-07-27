@@ -40,8 +40,7 @@ class APP_LIST_EXPORT HorizontalPageContainer
 
   // AppListPage overrides:
   void OnWillBeHidden() override;
-  void OnAnimationUpdated(double progress,
-                          ash::AppListState from_state,
+  void OnAnimationStarted(ash::AppListState from_state,
                           ash::AppListState to_state) override;
   gfx::Rect GetSearchBoxBounds() const override;
   gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const override;
@@ -58,7 +57,7 @@ class APP_LIST_EXPORT HorizontalPageContainer
   // PaginationModelObserver:
   void TotalPagesChanged() override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
-  void TransitionStarted() override;
+  void TransitionStarting() override;
   void TransitionChanged() override;
   void TransitionEnded() override;
 

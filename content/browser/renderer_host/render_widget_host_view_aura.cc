@@ -334,6 +334,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       window_(nullptr),
       in_shutdown_(false),
       in_bounds_changed_(false),
+      is_occluded_(true),
       popup_parent_host_view_(nullptr),
       popup_child_host_view_(nullptr),
       is_loading_(false),
@@ -478,12 +479,14 @@ void RenderWidgetHostViewAura::Show() {
                                 window_->GetLocalSurfaceIdAllocation());
   }
 
-  window_->Show();
+  // See documentation of |is_occluded_|.
+  DCHECK(window_->TargetVisibility());
   WasUnOccluded();
 }
 
 void RenderWidgetHostViewAura::Hide() {
-  window_->Hide();
+  // See documentation of |is_occluded_|.
+  DCHECK(window_->TargetVisibility());
   WasOccluded();
 }
 
@@ -627,10 +630,13 @@ void RenderWidgetHostViewAura::EnsureSurfaceSynchronizedForWebTest() {
 }
 
 bool RenderWidgetHostViewAura::IsShowing() {
-  return window_->IsVisible();
+  // See documentation of |is_occluded_|.
+  DCHECK(window_->TargetVisibility());
+  return !is_occluded_;
 }
 
 void RenderWidgetHostViewAura::WasUnOccluded() {
+  is_occluded_ = false;
   if (!host_->is_hidden())
     return;
 
@@ -663,6 +669,7 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
 }
 
 void RenderWidgetHostViewAura::WasOccluded() {
+  is_occluded_ = true;
   if (!host()->is_hidden()) {
     host()->WasHidden();
     if (delegated_frame_host_)
@@ -1692,6 +1699,8 @@ void RenderWidgetHostViewAura::OnWindowDestroyed(aura::Window* window) {
 }
 
 void RenderWidgetHostViewAura::OnWindowTargetVisibilityChanged(bool visible) {
+  // See documentation of |is_occluded_|.
+  DCHECK(visible);
 }
 
 bool RenderWidgetHostViewAura::HasHitTestMask() const {
@@ -2024,6 +2033,10 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   // Init(), because it needs to have the layer.
   if (frame_sink_id_.is_valid())
     window_->SetEmbedFrameSinkId(frame_sink_id_);
+
+  // The |window_|'s visiblility remains visible the entire time.
+  // See documentation of |is_occluded_|.
+  window_->Show();
 }
 
 void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {

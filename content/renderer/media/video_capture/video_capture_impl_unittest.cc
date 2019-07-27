@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/video_capture/video_capture_impl.h"
@@ -154,22 +154,11 @@ class VideoCaptureImplTest : public ::testing::Test {
     video_capture_impl_->StopCapture(client_id);
   }
 
-  bool CreateAndMapSharedMemory(size_t size, base::SharedMemory* shm) {
-    base::SharedMemoryCreateOptions options;
-    options.size = size;
-    options.share_read_only = true;
-    if (!shm->Create(options))
-      return false;
-    return shm->Map(size);
-  }
-
-  void SimulateOnBufferCreated(int buffer_id, const base::SharedMemory& shm) {
+  void SimulateOnBufferCreated(int buffer_id,
+                               const base::UnsafeSharedMemoryRegion& region) {
     video_capture_impl_->OnNewBuffer(
-        buffer_id,
-        media::mojom::VideoBufferHandle::NewSharedBufferHandle(
-            mojo::WrapSharedMemoryHandle(
-                shm.GetReadOnlyHandle(), shm.mapped_size(),
-                mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly)));
+        buffer_id, media::mojom::VideoBufferHandle::NewSharedBufferHandle(
+                       mojo::WrapUnsafeSharedMemoryRegion(region.Duplicate())));
   }
 
   void SimulateReadOnlyBufferCreated(int buffer_id,
@@ -313,10 +302,11 @@ TEST_F(VideoCaptureImplTest, GetDeviceFormatsInUse) {
 TEST_F(VideoCaptureImplTest, BufferReceived) {
   const int kArbitraryBufferId = 11;
 
-  base::SharedMemory shm;
   const size_t frame_size = media::VideoFrame::AllocationSize(
       media::PIXEL_FORMAT_I420, params_small_.requested_format.frame_size);
-  ASSERT_TRUE(CreateAndMapSharedMemory(frame_size, &shm));
+  base::UnsafeSharedMemoryRegion region =
+      base::UnsafeSharedMemoryRegion::Create(frame_size);
+  ASSERT_TRUE(region.IsValid());
 
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
@@ -327,7 +317,7 @@ TEST_F(VideoCaptureImplTest, BufferReceived) {
       .Times(0);
 
   StartCapture(0, params_small_);
-  SimulateOnBufferCreated(kArbitraryBufferId, shm);
+  SimulateOnBufferCreated(kArbitraryBufferId, region);
   SimulateBufferReceived(kArbitraryBufferId,
                          params_small_.requested_format.frame_size);
   StopCapture(0);
@@ -366,10 +356,11 @@ TEST_F(VideoCaptureImplTest, BufferReceived_ReadOnlyShmemRegion) {
 TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
   const int kArbitraryBufferId = 12;
 
-  base::SharedMemory shm;
   const size_t frame_size = media::VideoFrame::AllocationSize(
       media::PIXEL_FORMAT_I420, params_large_.requested_format.frame_size);
-  ASSERT_TRUE(CreateAndMapSharedMemory(frame_size, &shm));
+  base::UnsafeSharedMemoryRegion region =
+      base::UnsafeSharedMemoryRegion::Create(frame_size);
+  ASSERT_TRUE(region.IsValid());
 
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
@@ -380,7 +371,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
               ReleaseBuffer(_, kArbitraryBufferId, _));
 
   StartCapture(0, params_large_);
-  SimulateOnBufferCreated(kArbitraryBufferId, shm);
+  SimulateOnBufferCreated(kArbitraryBufferId, region);
   StopCapture(0);
   // A buffer received after StopCapture() triggers an instant ReleaseBuffer().
   SimulateBufferReceived(kArbitraryBufferId,
@@ -465,10 +456,11 @@ TEST_F(VideoCaptureImplTest, ErrorBeforeStop) {
 TEST_F(VideoCaptureImplTest, BufferReceivedBeforeOnStarted) {
   const int kArbitraryBufferId = 16;
 
-  base::SharedMemory shm;
   const size_t frame_size = media::VideoFrame::AllocationSize(
       media::PIXEL_FORMAT_I420, params_small_.requested_format.frame_size);
-  ASSERT_TRUE(CreateAndMapSharedMemory(frame_size, &shm));
+  base::UnsafeSharedMemoryRegion region =
+      base::UnsafeSharedMemoryRegion::Create(frame_size);
+  ASSERT_TRUE(region.IsValid());
 
   InSequence s;
   EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_))
@@ -476,7 +468,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedBeforeOnStarted) {
   EXPECT_CALL(mock_video_capture_host_,
               ReleaseBuffer(_, kArbitraryBufferId, _));
   StartCapture(0, params_small_);
-  SimulateOnBufferCreated(kArbitraryBufferId, shm);
+  SimulateOnBufferCreated(kArbitraryBufferId, region);
   SimulateBufferReceived(kArbitraryBufferId,
                          params_small_.requested_format.frame_size);
 

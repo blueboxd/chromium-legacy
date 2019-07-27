@@ -7,6 +7,7 @@
 <translation id="1051826050538111504">Υπάρχει επιβλαβές λογισμικό στον υπολογιστή σας. Το Chrome μπορεί να το καταργήσει, να επαναφέρει τις ρυθμίσεις σας και να απενεργοποιήσει τις επεκτάσεις, προκειμένου το πρόγραμμα περιήγησής σας να επιστρέψει σε φυσιολογική λειτουργία.</translation>
 <translation id="1065672644894730302">Δεν είναι δυνατή η ανάγνωση των προτιμήσεών σας. Ορισμένες λειτουργίες ενδέχεται να μην είναι διαθέσιμες και οι αλλαγές στις προτιμήσεις δεν θα αποθηκευτούν.</translation>
 <translation id="1088300314857992706">Η διεύθυνση <ph name="USER_EMAIL_ADDRESS" /> χρησιμοποιούσε το Chrome στο παρελθόν</translation>
+<translation id="1097330777386562916">Διαγραφή cookie και δεδομένων ιστοτόπου κατά τον τερματισμό του Chrome.</translation>
 <translation id="1104959162601287462">Σχ&amp;ετικά με το Chrome OS</translation>
 <translation id="110877069173485804">Ορίστε το δικό σας Chrome</translation>
 <translation id="1142745911746664600">Δεν είναι δυνατή η ενημέρωση του Chrome</translation>
@@ -26,6 +27,7 @@
 <translation id="1590588151039584890">Για να ενημερωθεί το Chrome, θα πρέπει να σταματήσει η εκτέλεσή του σε αυτόν τον υπολογιστή. Αυτό μπορεί να προκαλέσει την απώλεια μη αποθηκευμένων αλλαγών που έχουν πραγματοποιήσει άλλοι χρήστες, οι οποίοι είναι συνδεδεμένοι σε αυτόν τον υπολογιστή.</translation>
 <translation id="1619887657840448962">Για να κάνουμε το Chrome πιο ασφαλές, απενεργοποιήσαμε τις ακόλουθες επεκτάσεις που δεν αναφέρονται στο <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> και ενδέχεται να έχουν προστεθεί εν αγνοία σας.</translation>
 <translation id="1628000112320670027">Λήψη βοήθειας σχετικά με το Chrome</translation>
+<translation id="1635734105302489219">Τα cookie διαγράφονται κατά τον τερματισμό του Chrome. Αλλάξτε τις <ph name="COOKIE_SETTINGS_LINK" /> για να συνεχίσετε τον συγχρονισμό.</translation>
 <translation id="1662639173275167396">Το Chrome OS έγινε πραγματικότητα χάρη στα πρόσθετα <ph name="BEGIN_LINK_CROS_OSS" />λογισμικά ανοικτού κώδικα<ph name="END_LINK_CROS_OSS" />, όπως το <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Άνοιγμα Συνδέσμου σε Παράθυρο ανών&amp;υμης περιήγησης Chrome</translation>
 <translation id="1682634494516646069">Το Google Chrome δεν έχει δυνατότητα ανάγνωσης και εγγραφής στον κατάλογο δεδομένων του:
@@ -92,6 +94,7 @@
 
 Ελέγξτε το ηλεκτρονικό ταχυδρομείο σας στη διεύθυνση <ph name="ACCOUNT_EMAIL" /> για περαιτέρω οδηγίες.</translation>
 <translation id="3282568296779691940">Σύνδεση στο Chrome</translation>
+<translation id="3340978935015468852">ρυθμίσεις</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Η επανεκκίνηση του Chrome θα γίνει τώρα}=1{Η επανεκκίνηση του Chrome θα γίνει σε 1 δευτερόλεπτο}other{Η επανεκκίνηση του Chrome θα γίνει σε # δευτερόλεπτα}}</translation>
 <translation id="3395323229510056640">Λήψη βοήθειας σχετικά με το Chrome OS</translation>
@@ -99,7 +102,6 @@
 <translation id="3398288718845740432">Απόκρυψη στο μενού του Chrome</translation>
 <translation id="3451115285585441894">Προσθήκη στο Chrome...</translation>
 <translation id="345171907106878721">Προσθήκη του εαυτού σας στο Chrome</translation>
-<translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="34857402635545079">Να διαγραφούν επίσης δεδομένα από το (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία σας, για να την κοινοποιήσει σε αυτόν τον ιστότοπο</translation>
 <translation id="3576528680708590453">Ο διαχειριστής συστήματος έχει διαμορφώσει το Google Chrome έτσι ώστε να ανοίγει άλλο πρόγραμμα περιήγησης για την πρόσβαση στη διεύθυνση <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -114,7 +116,6 @@
 <translation id="386202838227397562">Κλείστε όλα τα παράθυρα του Google Chrome και προσπαθήστε ξανά.</translation>
 <translation id="3873044882194371212">Άνοιγμα συνδέσμου σε παράθυρο ανών&amp;υμης περιήγησης Chrome</translation>
 <translation id="3889417619312448367">Απεγκατάσταση Google Chrome</translation>
-<translation id="3898493977366060150">Περιήγηση στον ιστό με το Google smarts</translation>
 <translation id="4050175100176540509">Στην πιο πρόσφατη έκδοση διατίθενται σημαντικές βελτιώσεις ασφάλειας και νέες λειτουργίες.</translation>
 <translation id="4053720452172726777">Προσαρμογή και έλεγχος του Google Chrome</translation>
 <translation id="4143243756087420366">Όνομα και εικόνα στο Chrome</translation>
@@ -200,7 +201,6 @@
 <translation id="6750954913813541382">Για τη διόρθωση ορθογραφικών λαθών, το Chrome στέλνει στην Google το κείμενο που πληκτρολογείτε στο πρόγραμμα περιήγησης</translation>
 <translation id="677276454032249905">Να γίνει έξοδος από το Chrome ούτως ή άλλως;</translation>
 <translation id="683440813066116847">Εισερχόμενος κανόνας για το Google Chrome Canary για να επιτρέπεται η κυκλοφορία του mDNS.</translation>
-<translation id="686561893457936865">Πάρτε το Chrome μαζί σας παντού</translation>
 <translation id="6885412569789873916">Εφαρμογές Chrome Beta</translation>
 <translation id="6943584222992551122">Τα δεδομένα περιήγησης αυτού του ατόμου θα διαγραφούν από αυτήν τη συσκευή. Για να επαναφέρετε τα δεδομένα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Εισερχόμενος κανόνας για το Google Chrome Beta για να επιτρέπεται η κυκλοφορία του mDNS.</translation>

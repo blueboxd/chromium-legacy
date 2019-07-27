@@ -4,6 +4,7 @@
 <translation id="1510238584712386396">Покретач</translation>
 <translation id="1734367976349034509">Овим уређајем управља предузеће</translation>
 <translation id="1930797645656624981">Услуга метода уноса за Chrome ОС</translation>
+<translation id="1979103255016296513">Рок за промену лозинке је истекао</translation>
 <translation id="2049639323467105390">Овим уређајем управља домен <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Нисмо пронашли ништа на екрану</translation>
 <translation id="2338501278241028356">Укључите Bluetooth да бисте открили уређаје у близини</translation>
@@ -11,11 +12,11 @@
 <translation id="2872961005593481000">Искључи</translation>
 <translation id="3008341117444806826">ОСВЕЖИ</translation>
 <translation id="3838338534323494292">Нова лозинка</translation>
+<translation id="4227825898293920515">Лозинка истиче за <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos тикет ускоро истиче</translation>
 <translation id="445059817448385655">Стара лозинка</translation>
 <translation id="467510802200863975">Лозинке се не подударају</translation>
 <translation id="4731797938093519117">Родитељски приступ</translation>
-<translation id="476166673298332917">Администратор овог уређаја може да надгледа активности прегледања.</translation>
 <translation id="4890353053343094602">Одмах одаберите нову</translation>
 <translation id="5212543919916444558">Не могу да пронађем на екрану ништа око чега могу да помогнем.
 Пробајте да додирнете микрофон да бисте ме питали нешто.</translation>
@@ -24,13 +25,11 @@
 <translation id="5332948983412042822">Одаберите нову</translation>
 <translation id="5457599981699367932">Прегледајте као гост</translation>
 <translation id="54609108002486618">Управљани</translation>
-<translation id="5632302877407885207">{NUM_DAYS,plural, =0{Лозинка је истекла}=1{Лозинка истиче за мање од једног дана}one{Лозинка истиче за мање од # дан}few{Лозинка истиче за мање од # дана}other{Лозинка истиче за мање од # дана}}</translation>
 <translation id="5832805196449965646">Додај особу</translation>
 <translation id="5895138241574237353">Покрени поново</translation>
 <translation id="6058625436358447366">Да бисте завршили, унесите стару и нову лозинку</translation>
 <translation id="6106186594183574873">Да бисте завршили, унесите стару лозинку</translation>
 <translation id="6146993107019042706">Да бисте завршили, унесите нову лозинку</translation>
-<translation id="6574601967010742428">Администратор уређаја ће можда моћи да надгледа ваше активности.</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7690294790491645610">Потврдите нову лозинку</translation>
 <translation id="808894953321890993">Промени лозинку</translation>

@@ -20,7 +20,8 @@ ThemeBackgroundInfo::ThemeBackgroundInfo()
       has_attribution(false),
       logo_alternate(false),
       has_theme_image(false),
-      theme_name() {}
+      theme_name(),
+      color_id(0) {}
 
 ThemeBackgroundInfo::~ThemeBackgroundInfo() {
 }
@@ -43,7 +44,8 @@ bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
          image_tiling == rhs.image_tiling &&
          has_attribution == rhs.has_attribution &&
          logo_alternate == rhs.logo_alternate &&
-         has_theme_image == rhs.has_theme_image && theme_name == rhs.theme_name;
+         has_theme_image == rhs.has_theme_image &&
+         theme_name == rhs.theme_name && color_id == rhs.color_id;
 }
 
 InstantMostVisitedItem::InstantMostVisitedItem()

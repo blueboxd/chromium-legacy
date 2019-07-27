@@ -75,6 +75,16 @@ function notifyAboutIncognito(isIncognito) {
   document.body.dataset.incognito = isIncognito;
 }
 
+function notifyAboutVariations(variations) {
+  var list = document.createElement("div");
+  for (let item of variations) {
+    list.appendChild(document.createTextNode(item));
+    list.appendChild(document.createElement("br"));
+  }
+  var variationsList = document.getElementById("variations-list");
+  variationsList.appendChild(list);
+}
+
 document.addEventListener("DOMContentLoaded", function(event) {
   chrome.send('loaded');
 });

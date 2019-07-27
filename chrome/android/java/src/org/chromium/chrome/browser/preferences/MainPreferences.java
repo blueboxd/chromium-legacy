@@ -63,7 +63,7 @@ public class MainPreferences extends PreferenceFragmentCompat
     // chrome/browser/ui/webui/options/autofill_options_handler.cc
     public static final String SETTINGS_ORIGIN = "Chrome settings";
 
-    private final ManagedPreferenceDelegateCompat mManagedPreferenceDelegate;
+    private final ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
     private SignInPreference mSignInPreference;
 
@@ -192,8 +192,7 @@ public class MainPreferences extends PreferenceFragmentCompat
     }
 
     private void setManagedPreferenceDelegateForPreference(String key) {
-        ChromeBasePreferenceCompat chromeBasePreference =
-                (ChromeBasePreferenceCompat) mAllPreferences.get(key);
+        ChromeBasePreference chromeBasePreference = (ChromeBasePreference) mAllPreferences.get(key);
         chromeBasePreference.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
     }
 
@@ -229,8 +228,8 @@ public class MainPreferences extends PreferenceFragmentCompat
             removePreferenceIfPresent(PREF_DEVELOPER);
         }
 
-        ChromeBasePreferenceCompat dataReduction =
-                (ChromeBasePreferenceCompat) findPreference(PREF_DATA_REDUCTION);
+        ChromeBasePreference dataReduction =
+                (ChromeBasePreference) findPreference(PREF_DATA_REDUCTION);
         dataReduction.setSummary(DataReductionPreferenceFragment.generateSummary(getResources()));
     }
 
@@ -246,16 +245,16 @@ public class MainPreferences extends PreferenceFragmentCompat
     }
 
     private void updateSyncAndServicesPreference() {
-        ChromeBasePreferenceCompat syncAndServices =
-                (ChromeBasePreferenceCompat) findPreference(PREF_SYNC_AND_SERVICES);
+        ChromeBasePreference syncAndServices =
+                (ChromeBasePreference) findPreference(PREF_SYNC_AND_SERVICES);
         syncAndServices.setIcon(SyncPreferenceUtils.getSyncStatusIcon(getActivity()));
         syncAndServices.setSummary(SyncPreferenceUtils.getSyncStatusSummary(getActivity()));
     }
 
     private void updateSearchEnginePreference() {
         if (!TemplateUrlServiceFactory.get().isLoaded()) {
-            ChromeBasePreferenceCompat searchEnginePref =
-                    (ChromeBasePreferenceCompat) findPreference(PREF_SEARCH_ENGINE);
+            ChromeBasePreference searchEnginePref =
+                    (ChromeBasePreference) findPreference(PREF_SEARCH_ENGINE);
             searchEnginePref.setEnabled(false);
             return;
         }
@@ -318,12 +317,12 @@ public class MainPreferences extends PreferenceFragmentCompat
     }
 
     @VisibleForTesting
-    ManagedPreferenceDelegateCompat getManagedPreferenceDelegateForTest() {
+    ManagedPreferenceDelegate getManagedPreferenceDelegateForTest() {
         return mManagedPreferenceDelegate;
     }
 
-    private ManagedPreferenceDelegateCompat createManagedPreferenceDelegate() {
-        return new ManagedPreferenceDelegateCompat() {
+    private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
+        return new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 if (PREF_DATA_REDUCTION.equals(preference.getKey())) {

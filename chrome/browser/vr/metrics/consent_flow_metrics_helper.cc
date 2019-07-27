@@ -73,7 +73,6 @@ void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenUserAborted() {
 #if defined(OS_ANDROID)
 void ConsentFlowMetricsHelper::OnDialogClosedWithConsent(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& jurl,
     jboolean is_granted) {
   OnDialogClosedWithConsent(base::android::ConvertJavaStringToUTF8(env, jurl),
@@ -82,26 +81,22 @@ void ConsentFlowMetricsHelper::OnDialogClosedWithConsent(
 
 void ConsentFlowMetricsHelper::LogUserAction(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     jint action) {
   LogUserAction(static_cast<ConsentDialogAction>(action));
 }
 
 void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenConsentGranted(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+    JNIEnv* env) {
   LogConsentFlowDurationWhenConsentGranted();
 }
 
 void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenConsentNotGranted(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+    JNIEnv* env) {
   LogConsentFlowDurationWhenConsentNotGranted();
 }
 
 void ConsentFlowMetricsHelper::LogConsentFlowDurationWhenUserAborted(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+    JNIEnv* env) {
   LogConsentFlowDurationWhenUserAborted();
 }
 

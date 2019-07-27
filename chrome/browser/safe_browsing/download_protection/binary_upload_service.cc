@@ -10,7 +10,7 @@
 namespace safe_browsing {
 
 void BinaryUploadService::UploadForDeepScanning(
-    BinaryUploadService::Request request) {
+    std::unique_ptr<BinaryUploadService::Request> request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NOTREACHED();
 }

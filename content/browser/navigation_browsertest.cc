@@ -19,7 +19,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
@@ -1091,64 +1090,6 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   EXPECT_EQ(starting_page_origin, test_interceptor.GetInitiatorForURL(url));
 }
 
-// Navigation are started in the browser process. After the headers are
-// received, the URLLoaderClient is transferred from the browser process to the
-// renderer process. This test ensures that when the the URLLoader is deleted
-// (in the browser process), the URLLoaderClient (in the renderer process) stops
-// properly.
-IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
-                       CancelRequestAfterReadyToCommit) {
-  // This test cancels the request using the ResourceDispatchHost. With the
-  // NetworkService, it is not used so the request is not canceled.
-  // TODO(arthursonzogni): Find a way to cancel a request from the browser
-  // with the NetworkService.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  net::test_server::ControllableHttpResponse response(embedded_test_server(),
-                                                      "/main_document");
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // 1) Load a new document. Commit the navigation but do not send the full
-  //    response's body.
-  GURL url(embedded_test_server()->GetURL("/main_document"));
-  TestNavigationManager navigation_manager(shell()->web_contents(), url);
-  shell()->LoadURL(url);
-
-  // Let the navigation start.
-  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
-  navigation_manager.ResumeNavigation();
-
-  // The server sends the first part of the response and waits.
-  response.WaitForRequest();
-  response.Send(
-      "HTTP/1.1 200 OK\r\n"
-      "Content-Type: text/html; charset=utf-8\r\n"
-      "\r\n"
-      "<html><body> ... ");
-
-  EXPECT_TRUE(navigation_manager.WaitForResponse());
-  GlobalRequestID global_id =
-      navigation_manager.GetNavigationHandle()->GetGlobalRequestID();
-  navigation_manager.ResumeNavigation();
-
-  // The navigation commits successfully. The renderer is waiting for the
-  // response's body.
-  navigation_manager.WaitForNavigationFinished();
-
-  // 2) The ResourceDispatcherHost cancels the request.
-  auto cancel_request = [](GlobalRequestID global_id) {
-    ResourceDispatcherHostImpl* rdh =
-        static_cast<ResourceDispatcherHostImpl*>(ResourceDispatcherHost::Get());
-    rdh->CancelRequest(global_id.child_id, global_id.request_id);
-  };
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(cancel_request, global_id));
-
-  // 3) Check that the load stops properly.
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-}
-
 // Data URLs can have a reference fragment like any other URLs. This test makes
 // sure it is taken into account.
 IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, DataURLWithReferenceFragment) {
@@ -1776,15 +1717,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
 
   EXPECT_FALSE(manager.was_successful());
 
-  // Navigations downloads that go through ResourceDispatcherHost do not trigger
-  // metrics collection, since the "cancellation reason" is collapsed to a
-  // boolean before the navigation turns into a download. Just expect metrics
-  // when the network service is enabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    histograms.ExpectBucketCount(
-        "Navigation.DownloadPolicy.LogPerPolicyApplied",
-        NavigationDownloadType::kOpenerCrossOrigin, 1);
-  }
+  histograms.ExpectBucketCount("Navigation.DownloadPolicy.LogPerPolicyApplied",
+                               NavigationDownloadType::kOpenerCrossOrigin, 1);
 }
 
 // Regression test for https://crbug.com/872284.

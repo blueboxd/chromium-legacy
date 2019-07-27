@@ -9,6 +9,15 @@
 
 DbusType::~DbusType() = default;
 
+bool DbusType::operator==(const DbusType& other) const {
+  if (GetSignatureDynamic() != other.GetSignatureDynamic())
+    return false;
+  return IsEqual(other);
+}
+bool DbusType::operator!=(const DbusType& other) const {
+  return !(*this == other);
+}
+
 DbusBoolean::DbusBoolean(bool value) : value_(value) {}
 DbusBoolean::DbusBoolean(DbusBoolean&& other) = default;
 DbusBoolean::~DbusBoolean() = default;
@@ -85,6 +94,11 @@ DbusVariant::operator bool() const {
   return !!value_;
 }
 
+bool DbusVariant::IsEqual(const DbusType& other_type) const {
+  const DbusVariant* other = static_cast<const DbusVariant*>(&other_type);
+  return *value_ == *other->value_;
+}
+
 void DbusVariant::Write(dbus::MessageWriter* writer) const {
   dbus::MessageWriter variant_writer(nullptr);
   writer->OpenVariant(value_->GetSignatureDynamic(), &variant_writer);
@@ -102,6 +116,12 @@ DbusByteArray::DbusByteArray(scoped_refptr<base::RefCountedMemory> value)
     : value_(value) {}
 DbusByteArray::DbusByteArray(DbusByteArray&& other) = default;
 DbusByteArray::~DbusByteArray() = default;
+
+bool DbusByteArray::IsEqual(const DbusType& other_type) const {
+  const DbusByteArray* other = static_cast<const DbusByteArray*>(&other_type);
+  return value_->size() == other->value_->size() &&
+         !memcmp(value_->front(), other->value_->front(), value_->size());
+}
 
 void DbusByteArray::Write(dbus::MessageWriter* writer) const {
   writer->AppendArrayOfBytes(value_->front(), value_->size());

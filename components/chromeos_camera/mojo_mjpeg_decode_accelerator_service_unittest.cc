@@ -73,8 +73,12 @@ TEST_F(MojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
       base::subtle::PlatformSharedMemoryRegion::CreateUnsafe(
           kInputBufferSizeInBytes);
 
+  // mojo::SharedBufferHandle::Create will make a writable region, but an unsafe
+  // one is needed.
   mojo::ScopedSharedBufferHandle output_frame_handle =
-      mojo::SharedBufferHandle::Create(kOutputFrameSizeInBytes);
+      mojo::WrapPlatformSharedMemoryRegion(
+          base::subtle::PlatformSharedMemoryRegion::CreateUnsafe(
+              kOutputFrameSizeInBytes));
 
   media::BitstreamBuffer bitstream_buffer(kArbitraryBitstreamBufferId,
                                           std::move(shm_region),

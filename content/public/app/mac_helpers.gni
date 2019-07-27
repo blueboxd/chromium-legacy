@@ -37,9 +37,12 @@ content_mac_helpers = [
 
   # A helper with the capability to execute writable memory, needed by
   # Swiftshader, and used to run renderer processes.
+  #
+  # Note: be careful if adding a suffix to this name - doing so may
+  # break automatic graphics switching. crbug.com/985486
   [
     "gpu",
-    ".gpu",
+    "",
     " (GPU)",
   ],
 

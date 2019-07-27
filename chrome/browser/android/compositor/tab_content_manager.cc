@@ -136,7 +136,7 @@ TabContentManager::TabContentManager(JNIEnv* env,
 TabContentManager::~TabContentManager() {
 }
 
-void TabContentManager::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void TabContentManager::Destroy(JNIEnv* env) {
   thumbnail_cache_->RemoveThumbnailCacheObserver(this);
   delete this;
 }

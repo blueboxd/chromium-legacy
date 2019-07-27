@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Glisor pentru căutare</translation>
 <translation id="1399648040768741453">Tastatură telugu (Fonetică)</translation>
 <translation id="1430915738399379752">Printează</translation>
+<translation id="1439494416798956626">Mutat în <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Tastatură vietnameză (Telex)</translation>
 <translation id="1455548678241328678">Tastatură norvegiană</translation>
 <translation id="1464724975715666883">1 eroare.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Se scanează dispozitivul media...</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> fotografii cu backup pe <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Se copiază...</translation>
+<translation id="3473378059788601120">S-a copiat în <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Foaie de calcul Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> erori.</translation>
 <translation id="3519867315646775981">Transliterație (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Tastare în japoneză (pentru tastatură japoneză)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Acordă aplicațiilor Linux permisiunea de a modifica fișiere în Google Drive. Modificările se vor sincroniza cu celelalte dispozitive care îți aparțin.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> elemente</translation>
 <translation id="5982621672636444458">Opțiuni de sortare</translation>
 <translation id="6005282720244019462">Tastatură America Latină</translation>
 <translation id="6007237601604674381">Mutarea nu a reușit. <ph name="ERROR_MESSAGE" /></translation>

@@ -27,6 +27,7 @@ jumbo_source_set("common") {
     "bluetooth/web_bluetooth_device_id.cc",
     "bluetooth/web_bluetooth_device_id.h",
     "bluetooth/web_bluetooth_device_id_struct_traits.h",
+    "browser_interface_broker_proxy.cc",
     "cache_storage/cache_storage_utils.cc",
     "client_hints/client_hints.cc",
     "device_memory/approximated_device_memory.cc",

@@ -192,9 +192,6 @@ PC</translation>
 <translation id="4973800994433240357">下载 Chrome 远程访问主机安装程序，即表示您同意遵守 Google <ph name="LINK_BEGIN" />服务条款<ph name="LINK_END" />。</translation>
 <translation id="4974476491460646149">与“<ph name="HOSTNAME" />”的连接已关闭</translation>
 <translation id="4985296110227979402">您需要先设置计算机，然后才能进行远程访问</translation>
-<translation id="5059773780693835145">要使用 <ph name="PRODUCT_NAME" />远程控制此机器，您必须执行一个额外的配置步骤。
-
-要启用此功能，请选择“<ph name="BUTTON_NAME" />”以显示“安全性与隐私”偏好设置窗格，然后选中“<ph name="SERVICE_SCRIPT_NAME" />”旁边的方框。</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />（离线）</translation>
 <translation id="5070121137485264635">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>
 <translation id="507204348399810022">确定要停用与“<ph name="HOSTNAME" />”的远程连接吗？</translation>

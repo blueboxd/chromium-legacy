@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_UI_H_
 #define CHROME_BROWSER_LOOKALIKES_SAFETY_TIPS_SAFETY_TIP_UI_H_
 
+#include "build/build_config.h"
+
 namespace content {
 class WebContents;
 }
 
 class GURL;
-class Browser;
 
 namespace safety_tips {
 
@@ -34,11 +35,12 @@ enum class SafetyTipType {
 // Shows Safety Tip UI using the specified information. |virtual_url| is the
 // virtual url of the page/frame the info applies to. |safe_url| is the URL
 // that the "Leave" action redirects to. Implemented in platform-specific files.
-void ShowSafetyTipDialog(Browser* browser,
-                         content::WebContents* web_contents,
+#if !defined(OS_ANDROID)
+// TODO(crbug/982930): Once we have an Android infobar, change include guards.
+void ShowSafetyTipDialog(content::WebContents* web_contents,
                          SafetyTipType type,
-                         const GURL& virtual_url,
-                         const GURL& safe_url);
+                         const GURL& virtual_url);
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace safety_tips
 

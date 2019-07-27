@@ -5,7 +5,7 @@ document Name='Action verbs'
 ++button Name='Button'
 ++link Name='Link'
 ++textbox
-++textbox
+++searchbox
 ++textbox
 ++textbox
 ++checkbox Toggle.ToggleState='Off'

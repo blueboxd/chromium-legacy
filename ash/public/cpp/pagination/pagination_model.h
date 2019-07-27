@@ -106,6 +106,7 @@ class ASH_PUBLIC_EXPORT PaginationModel : public views::AnimationDelegateViews {
 
  private:
   void NotifySelectedPageChanged(int old_selected, int new_selected);
+  void NotifyTransitionAboutToStart();
   void NotifyTransitionStarted();
   void NotifyTransitionChanged();
   void NotifyTransitionEnded();

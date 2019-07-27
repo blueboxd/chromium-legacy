@@ -16,6 +16,10 @@
 #include "gpu/config/gpu_feature_info.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "components/viz/service/display_embedder/overlay_candidate_validator_mac.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/feature_list.h"
 #include "components/viz/service/display_embedder/overlay_candidate_validator_win.h"
@@ -112,8 +116,8 @@ std::unique_ptr<OverlayCandidateValidator> OverlayCandidateValidator::Create(
     return CreateOverlayCandidateValidatorOzone(surface_handle,
                                                 renderer_settings);
 #elif defined(OS_MACOSX)
-    // Mac's CA Overlay is handled inside OverlayProcessorCA without use of
-    // a validator.
+    return std::make_unique<OverlayCandidateValidatorMac>(
+        !renderer_settings.allow_overlays);
 #elif defined(OS_ANDROID)
     return std::make_unique<OverlayCandidateValidatorSurfaceControl>();
 #else

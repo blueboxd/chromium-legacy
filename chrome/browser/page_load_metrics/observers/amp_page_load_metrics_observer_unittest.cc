@@ -373,7 +373,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutInstability) {
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
   SimulateMetadataUpdate(metadata, subframe);
 
-  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 0.5);
   SimulateRenderDataUpdate(render_data, subframe);
 
   // Navigate the main frame to trigger metrics recording.
@@ -390,6 +390,10 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutInstability) {
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.LayoutInstability.CumulativeShiftScore", 100);
+  test_ukm_recorder().ExpectEntryMetric(
+      entry.get(),
+      "SubFrame.LayoutInstability.CumulativeShiftScore.BeforeInputOrScroll",
+      50);
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {

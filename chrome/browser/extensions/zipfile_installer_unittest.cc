@@ -21,8 +21,8 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/services/unzip/public/mojom/constants.mojom.h"
-#include "components/services/unzip/unzip_service.h"
+#include "components/services/unzip/content/unzip_service.h"
+#include "components/services/unzip/in_process_unzipper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -101,8 +101,6 @@ class ZipFileInstallerTest : public testing::Test {
       : browser_threads_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         data_decoder_(test_connector_factory_.RegisterInstance(
             data_decoder::mojom::kServiceName)),
-        unzip_service_(test_connector_factory_.RegisterInstance(
-            unzip::mojom::kServiceName)),
         connector_(test_connector_factory_.CreateConnector()) {
     test_connector_factory_.set_ignore_quit_requests(true);
   }
@@ -112,6 +110,8 @@ class ZipFileInstallerTest : public testing::Test {
 
     in_process_utility_thread_helper_.reset(
         new content::InProcessUtilityThreadHelper);
+    unzip::SetUnzipperLaunchOverrideForTesting(
+        base::BindRepeating(&unzip::LaunchInProcessUnzipper));
 
     // Create profile for extension service.
     profile_.reset(new TestingProfile());
@@ -130,6 +130,7 @@ class ZipFileInstallerTest : public testing::Test {
     ExtensionRegistry* registry(ExtensionRegistry::Get(profile_.get()));
     registry->RemoveObserver(&observer_);
     profile_.reset();
+    unzip::SetUnzipperLaunchOverrideForTesting(base::NullCallback());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -181,7 +182,6 @@ class ZipFileInstallerTest : public testing::Test {
  private:
   service_manager::TestConnectorFactory test_connector_factory_;
   data_decoder::DataDecoderService data_decoder_;
-  unzip::UnzipService unzip_service_;
   std::unique_ptr<service_manager::Connector> connector_;
 };
 

@@ -58,8 +58,7 @@ public class TouchlessPreferencesTest {
                         SiteSettingsPreferences.class.getName());
         Assert.assertTrue(activity instanceof TouchlessPreferences);
 
-        SiteSettingsPreferences preferences =
-                (SiteSettingsPreferences) activity.getMainFragmentCompat();
+        SiteSettingsPreferences preferences = (SiteSettingsPreferences) activity.getMainFragment();
         Assert.assertNull(preferences.findPreference(
                 SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.CLIPBOARD)));
     }
@@ -73,7 +72,7 @@ public class TouchlessPreferencesTest {
         Assert.assertTrue(activity instanceof TouchlessPreferences);
 
         SingleCategoryPreferences cookiesPreferences =
-                (SingleCategoryPreferences) activity.getMainFragmentCompat();
+                (SingleCategoryPreferences) activity.getMainFragment();
         Assert.assertNull(cookiesPreferences.findPreference(
                 SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY));
     }

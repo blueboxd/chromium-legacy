@@ -13,7 +13,6 @@ import android.widget.Button;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.ui.base.WindowAndroid;
@@ -68,8 +67,7 @@ public class SmsReceiverDialog {
                     public void onClick(DialogInterface prompt, int which) {
                         assert mNativeSmsDialogAndroid != 0;
                         prompt.dismiss();
-                        SmsReceiverDialogJni.get().onCancel(
-                                SmsReceiverDialog.this, mNativeSmsDialogAndroid);
+                        SmsReceiverDialogJni.get().onCancel(mNativeSmsDialogAndroid);
                     }
                 });
         mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
@@ -78,8 +76,7 @@ public class SmsReceiverDialog {
                     public void onClick(DialogInterface prompt, int which) {
                         assert mNativeSmsDialogAndroid != 0;
                         prompt.dismiss();
-                        SmsReceiverDialogJni.get().onContinue(
-                                SmsReceiverDialog.this, mNativeSmsDialogAndroid);
+                        SmsReceiverDialogJni.get().onContinue(mNativeSmsDialogAndroid);
                     }
                 });
         mDialog.show();
@@ -121,7 +118,7 @@ public class SmsReceiverDialog {
 
     @NativeMethods
     interface Natives {
-        void onCancel(@JCaller SmsReceiverDialog self, long nativeSmsDialogAndroid);
-        void onContinue(@JCaller SmsReceiverDialog self, long nativeSmsDialogAndroid);
+        void onCancel(long nativeSmsDialogAndroid);
+        void onContinue(long nativeSmsDialogAndroid);
     }
 }

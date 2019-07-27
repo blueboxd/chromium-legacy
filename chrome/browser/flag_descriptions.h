@@ -924,6 +924,9 @@ extern const char kPassiveDocumentWheelEventListenersDescription[];
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
 
+extern const char kPasswordsMigrateLinuxToLoginDBName[];
+extern const char kPasswordsMigrateLinuxToLoginDBDescription[];
+
 extern const char kPeriodicBackgroundSyncName[];
 extern const char kPeriodicBackgroundSyncDescription[];
 

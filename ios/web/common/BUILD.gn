@@ -40,8 +40,8 @@ source_set("web_view_creation_util") {
   ]
 
   deps = [
+    ":user_agent",
     "//base",
-    "//ios/web/public:user_agent",
     "//ios/web/web_state:web_view_internal_creation_util",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
   ]
@@ -51,11 +51,26 @@ source_set("web_view_creation_util") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+# This is a separate target as it is used by Cronet.
+source_set("user_agent") {
+  deps = [
+    "//base",
+  ]
+
+  sources = [
+    "user_agent.h",
+    "user_agent.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("unittests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   deps = [
     ":common",
+    ":user_agent",
     "//base",
     "//ios/web/public/navigation",
     "//net",
@@ -68,5 +83,6 @@ source_set("unittests") {
     "referrer_util_unittest.cc",
     "url_scheme_util_unittest.mm",
     "url_util_unittest.cc",
+    "user_agent_unittest.mm",
   ]
 }

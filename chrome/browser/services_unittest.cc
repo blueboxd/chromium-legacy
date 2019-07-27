@@ -9,7 +9,7 @@
 #include "base/test/bind_test_util.h"
 #include "components/services/patch/public/mojom/constants.mojom.h"
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
-#include "components/services/unzip/public/mojom/constants.mojom.h"
+#include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -40,6 +40,15 @@ class ServicesTest : public testing::Test {
     return !encountered_error;
   }
 
+  template <typename Interface>
+  bool IsConnected(mojo::Remote<Interface>* remote) {
+    bool connected = true;
+    remote->set_disconnect_handler(
+        base::BindLambdaForTesting([&] { connected = false; }));
+    remote->FlushForTesting();
+    return connected;
+  }
+
  private:
   service_manager::Connector* connector() {
     return content::GetSystemConnector();
@@ -54,8 +63,8 @@ class ServicesTest : public testing::Test {
 }  // namespace
 
 TEST_F(ServicesTest, ConnectToUnzip) {
-  EXPECT_TRUE(CanAccessInterfaceFromBrowser<unzip::mojom::Unzipper>(
-      unzip::mojom::kServiceName));
+  mojo::Remote<unzip::mojom::Unzipper> unzipper(unzip::LaunchUnzipper());
+  EXPECT_TRUE(IsConnected(&unzipper));
 }
 
 TEST_F(ServicesTest, ConnectToFilePatch) {

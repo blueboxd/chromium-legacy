@@ -102,12 +102,16 @@ class FakeVideoCaptureDevice : public VideoCaptureDevice {
 // This is a separate struct because read-access to it is shared with several
 // collaborating classes.
 struct FakeDeviceState {
-  FakeDeviceState(double zoom,
+  FakeDeviceState(double pan,
+                  double tilt,
+                  double zoom,
                   double exposure_time,
                   double focus_distance,
                   float frame_rate,
                   VideoPixelFormat pixel_format)
-      : zoom(zoom),
+      : pan(pan),
+        tilt(tilt),
+        zoom(zoom),
         exposure_time(exposure_time),
         focus_distance(focus_distance),
         format(gfx::Size(), frame_rate, pixel_format) {
@@ -117,6 +121,8 @@ struct FakeDeviceState {
                                           : mojom::MeteringMode::CONTINUOUS;
   }
 
+  double pan;
+  double tilt;
   double zoom;
   double exposure_time;
   mojom::MeteringMode exposure_mode;

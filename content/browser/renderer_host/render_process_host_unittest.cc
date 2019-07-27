@@ -135,6 +135,7 @@ TEST_F(RenderProcessHostUnitTest, ReuseCommittedSite) {
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       TestRenderFrameHost::CreateStubDocumentInterfaceBrokerRequest(),
       TestRenderFrameHost::CreateStubDocumentInterfaceBrokerRequest(),
+      TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);

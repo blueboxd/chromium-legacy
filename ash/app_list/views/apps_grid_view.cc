@@ -2663,7 +2663,7 @@ void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
   }
 }
 
-void AppsGridView::TransitionStarted() {
+void AppsGridView::TransitionStarting() {
   // Drag ends and animation starts.
   presentation_time_recorder_.reset();
 

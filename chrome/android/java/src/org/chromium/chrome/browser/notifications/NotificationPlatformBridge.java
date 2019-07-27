@@ -286,8 +286,7 @@ public class NotificationPlatformBridge {
         Class<? extends PreferenceFragmentCompat> fragment = launchSingleWebsitePreferences
                 ? SingleWebsitePreferences.class
                 : SingleCategoryPreferences.class;
-        PreferencesLauncher.launchSettingsPageCompat(
-                applicationContext, fragment, fragmentArguments);
+        PreferencesLauncher.launchSettingsPage(applicationContext, fragment, fragmentArguments);
     }
 
     /**

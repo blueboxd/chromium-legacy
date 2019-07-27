@@ -14,7 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/referrer.h"
-#import "ios/web/public/web_state/context_menu_params.h"
+#import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"

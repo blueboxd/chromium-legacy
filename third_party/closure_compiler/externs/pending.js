@@ -141,7 +141,6 @@ TtsEvent.prototype.length;
  * @param {number=} opt_length
  * @extends {ArrayBufferView}
  * @constructor
- * @noalias
  * @throws {Error}
  * @modifies {arguments}
  */

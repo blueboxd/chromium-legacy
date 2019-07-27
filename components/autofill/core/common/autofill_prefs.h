@@ -20,6 +20,7 @@ namespace prefs {
 // component. Keep alphabetized, and document each in the .cc file.
 extern const char kAutofillAcceptSaveCreditCardPromptState[];
 // Do not get/set the value of this pref directly. Use provided getter/setter.
+extern const char kAutofillCreditCardFIDOAuthEnabled[];
 extern const char kAutofillCreditCardEnabled[];
 extern const char kAutofillCreditCardSigninPromoImpressionCount[];
 // Please use kAutofillCreditCardEnabled and kAutofillProfileEnabled instead.
@@ -68,6 +69,10 @@ bool IsAutocompleteEnabled(const PrefService* prefs);
 bool IsAutofillEnabled(const PrefService* prefs);
 
 void SetAutofillEnabled(PrefService* prefs, bool enabled);
+
+bool IsCreditCardFIDOAuthEnabled(PrefService* prefs);
+
+void SetCreditCardFIDOAuthEnabled(PrefService* prefs, bool enabled);
 
 bool IsCreditCardAutofillEnabled(const PrefService* prefs);
 

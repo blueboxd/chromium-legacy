@@ -344,7 +344,6 @@ public class HistoryActivityTest {
 
     @Test
     @SmallTest
-    @RetryOnFailure(message = "https://crbug.com/752520")
     public void testSupervisedUser() throws Exception {
         final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
         final SelectableItemView<HistoryItem> item = getItemView(2);

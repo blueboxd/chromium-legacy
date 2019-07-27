@@ -10,7 +10,7 @@
 #include "base/files/file.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/sqlite/sqlite3.h"
 
 namespace blink {

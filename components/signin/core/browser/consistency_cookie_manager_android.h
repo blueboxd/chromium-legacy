@@ -25,9 +25,7 @@ class ConsistencyCookieManagerAndroid : public ConsistencyCookieManagerBase {
 
   ~ConsistencyCookieManagerAndroid() override;
 
-  void OnIsUpdatePendingChanged(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& java_self);
+  void OnIsUpdatePendingChanged(JNIEnv* env);
 
  protected:
   std::string CalculateCookieValue() override;

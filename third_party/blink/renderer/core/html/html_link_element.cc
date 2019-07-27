@@ -107,7 +107,7 @@ void HTMLLinkElement::ParseAttribute(
       icon_sizes_[i] = web_icon_sizes[i];
     Process();
   } else if (name == kMediaAttr) {
-    media_ = value.DeprecatedLower();
+    media_ = value.LowerASCII();
     Process();
   } else if (name == kScopeAttr) {
     scope_ = value;

@@ -152,8 +152,6 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // whether further use of this login database will succeed is unspecified.
   bool DeleteAndRecreateDatabaseFile();
 
-  bool IsEmpty();
-
   // On MacOS, it deletes all logins from the database that cannot be decrypted
   // when encryption key from Keychain is available. If the Keychain is locked,
   // it does nothing and returns ENCRYPTION_UNAVAILABLE. If it's not running on

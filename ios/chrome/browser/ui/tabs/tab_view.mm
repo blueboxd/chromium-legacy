@@ -8,6 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 
+#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
@@ -372,9 +373,14 @@ UIImage* DefaultFaviconImage() {
 // Updates this tab's style based on the value of |selected| and the current
 // incognito style.
 - (void)updateStyleForSelected:(BOOL)selected {
+  // On iOS 13 there is no need to pick custom incognito assets because
+  // |overrideUserInterfaceStyle| is set to dark mode when in incognito.
+  using base::ios::IsRunningOnIOS13OrLater;
+  BOOL useIncognitoFallback = self.incognitoStyle && !IsRunningOnIOS13OrLater();
+
   // Style the background image first.
   NSString* state = (selected ? @"foreground" : @"background");
-  NSString* incognito = self.incognitoStyle ? @"incognito_" : @"";
+  NSString* incognito = useIncognitoFallback ? @"incognito_" : @"";
   NSString* imageName =
       [NSString stringWithFormat:@"tabstrip_%@%@_tab", incognito, state];
   CGFloat leftInset = kTabBackgroundLeftCapInset;
@@ -391,7 +397,7 @@ UIImage* DefaultFaviconImage() {
   NSString* closeButtonColorName;
   if (selected) {
     closeButtonColorName =
-        self.incognitoStyle
+        useIncognitoFallback
             ? @"tabstrip_active_tab_incognito_close_button_color"
             : @"tabstrip_active_tab_close_button_color";
   } else {
@@ -402,13 +408,12 @@ UIImage* DefaultFaviconImage() {
   // Style the favicon tint color and the title label.
   NSString* faviconColorName;
   if (selected) {
-    faviconColorName = kTextPrimaryColor;
+    faviconColorName =
+        useIncognitoFallback ? kTextPrimaryDarkColor : kTextPrimaryColor;
   } else {
     faviconColorName = @"tabstrip_inactive_tab_text_color";
   }
-  _faviconView.tintColor = self.incognitoStyle && selected
-                               ? [UIColor whiteColor]
-                               : [UIColor colorNamed:faviconColorName];
+  _faviconView.tintColor = [UIColor colorNamed:faviconColorName];
   self.titleLabel.textColor = _faviconView.tintColor;
 
   // Update font weight and accessibility label.

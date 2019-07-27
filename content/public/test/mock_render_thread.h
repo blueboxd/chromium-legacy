@@ -18,6 +18,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 
 struct FrameHostMsg_CreateChildFrame_Params;
@@ -125,6 +126,13 @@ class MockRenderThread : public RenderThread {
   blink::mojom::DocumentInterfaceBrokerRequest
   TakeInitialDocumentInterfaceBrokerRequestForFrame(int32_t routing_id);
 
+  // Returns the receiver end of the BrowserInterfaceBroker interface whose
+  // client end was passed in to construct RenderFrame with |routing_id|; if
+  // any. The client end will be used by the RenderFrame to service interface
+  // requests originating from the initial empty document.
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+  TakeInitialBrowserInterfaceBrokerReceiverForFrame(int32_t routing_id);
+
   // Called from the RenderViewTest harness to supply the request end of the
   // InterfaceProvider interface connection that the harness used to service the
   // initial empty document in the RenderFrame with |routing_id|.
@@ -158,6 +166,9 @@ class MockRenderThread : public RenderThread {
 
   std::map<int32_t, blink::mojom::DocumentInterfaceBrokerRequest>
       frame_routing_id_to_initial_document_broker_requests_;
+
+  std::map<int32_t, mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>>
+      frame_routing_id_to_initial_browser_broker_receivers_;
 
   // The last known good deserializer for sync messages.
   std::unique_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;

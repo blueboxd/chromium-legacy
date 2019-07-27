@@ -72,6 +72,7 @@ class DocumentInterfaceBroker;
 }  // namespace mojom
 
 class Agent;
+class BrowserInterfaceBrokerProxy;
 class ConsoleMessage;
 class ContentSecurityPolicy;
 class ContentSecurityPolicyDelegate;
@@ -289,6 +290,11 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   }
 
   virtual mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() {
+    return nullptr;
+  }
+
+  virtual const BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
+      const {
     return nullptr;
   }
 

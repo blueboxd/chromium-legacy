@@ -583,9 +583,15 @@ void NetworkServiceClient::OnLoadingStateUpdate(
     rdh_infos->push_back(std::move(load_info));
   }
 
-  auto* rdh = ResourceDispatcherHostImpl::Get();
-  ResourceDispatcherHostImpl::UpdateLoadStateOnUI(rdh->loader_delegate_,
-                                                  std::move(rdh_infos));
+  std::unique_ptr<ResourceDispatcherHostImpl::LoadInfoMap> info_map =
+      ResourceDispatcherHostImpl::PickMoreInterestingLoadInfos(
+          std::move(rdh_infos));
+  for (const auto& load_info : *info_map) {
+    static_cast<WebContentsImpl*>(load_info.first)
+        ->LoadStateChanged(load_info.second.host, load_info.second.load_state,
+                           load_info.second.upload_position,
+                           load_info.second.upload_size);
+  }
 
   std::move(callback).Run();
 }

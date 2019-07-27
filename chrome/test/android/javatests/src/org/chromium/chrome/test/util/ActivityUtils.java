@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
 import org.junit.Assert;
@@ -151,19 +153,18 @@ public class ActivityUtils {
      * @param fragmentTag The tag of the fragment to be loaded.
      */
     @SuppressWarnings("unchecked")
-    public static <T extends android.support.v4.app.Fragment> T waitForFragmentCompat(
+    public static <T extends Fragment> T waitForFragment(
             AppCompatActivity activity, String fragmentTag) {
         String failureReason =
                 String.format("Could not locate the fragment with tag '%s'", fragmentTag);
         CriteriaHelper.pollInstrumentationThread(new Criteria(failureReason) {
             @Override
             public boolean isSatisfied() {
-                android.support.v4.app.Fragment fragment =
+                Fragment fragment =
                         activity.getSupportFragmentManager().findFragmentByTag(fragmentTag);
                 if (fragment == null) return false;
-                if (fragment instanceof android.support.v4.app.DialogFragment) {
-                    android.support.v4.app.DialogFragment dialogFragment =
-                            (android.support.v4.app.DialogFragment) fragment;
+                if (fragment instanceof DialogFragment) {
+                    DialogFragment dialogFragment = (DialogFragment) fragment;
                     return dialogFragment.getDialog() != null
                             && dialogFragment.getDialog().isShowing();
                 }
@@ -179,22 +180,22 @@ public class ActivityUtils {
      * quickly and we can miss the time that a fragment is visible. This method allows you to get a
      * reference to any fragment that was attached to the activity at any point.
      *
-     * @param <T> A subclass of {@link android.support.v4.app.Fragment}.
+     * @param <T> A subclass of {@link Fragment}.
      * @param activity An instance or subclass of {@link Preferences}.
      * @param fragmentClass The class object for {@link T}.
      * @return A reference to the requested fragment or null.
      */
     @SuppressWarnings("unchecked")
-    public static <T extends android.support.v4.app.Fragment> T waitForFragmentToAttachCompat(
+    public static <T extends Fragment> T waitForFragmentToAttach(
             final Preferences activity, final Class<T> fragmentClass) {
         String failureReason = String.format(
                 "Could not find fragment of type %s", fragmentClass.getCanonicalName());
         CriteriaHelper.pollInstrumentationThread(new Criteria(failureReason) {
             @Override
             public boolean isSatisfied() {
-                return fragmentClass.isInstance(activity.getMainFragmentCompat());
+                return fragmentClass.isInstance(activity.getMainFragment());
             }
         }, ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS);
-        return (T) activity.getMainFragmentCompat();
+        return (T) activity.getMainFragment();
     }
 }

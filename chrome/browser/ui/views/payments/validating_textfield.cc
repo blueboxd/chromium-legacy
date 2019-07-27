@@ -22,8 +22,8 @@ void ValidatingTextfield::OnBlur() {
   if (!being_removed_)
     Validate();
 
-  if (!text().empty() && delegate_->ShouldFormat())
-    SetText(delegate_->Format(text()));
+  if (!GetText().empty() && delegate_->ShouldFormat())
+    SetText(delegate_->Format(GetText()));
 }
 
 void ValidatingTextfield::ViewHierarchyChanged(
@@ -34,9 +34,9 @@ void ValidatingTextfield::ViewHierarchyChanged(
 
 void ValidatingTextfield::OnContentsChanged() {
   // This is called on every keystroke.
-  if (!text().empty() && GetCursorPosition() == text().length() &&
+  if (!GetText().empty() && GetCursorPosition() == GetText().length() &&
       delegate_->ShouldFormat()) {
-    SetText(delegate_->Format(text()));
+    SetText(delegate_->Format(GetText()));
   }
 
   Validate();

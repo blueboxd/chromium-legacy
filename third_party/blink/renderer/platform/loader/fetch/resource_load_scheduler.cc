@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/aggregated_metric_reporter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_status.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

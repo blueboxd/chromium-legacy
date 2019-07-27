@@ -23,8 +23,8 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
-#include "media/capture/video/shared_memory_handle_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
@@ -275,12 +275,14 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
                    media::mojom::VideoBufferHandlePtr buffer_handle,
                    OnNewBufferCallback callback) override {
     CHECK(buffer_handle->is_shared_buffer_handle());
-    auto handle_provider =
-        std::make_unique<media::SharedMemoryHandleProvider>();
-    handle_provider->InitFromMojoHandle(
-        std::move(buffer_handle->get_shared_buffer_handle()));
+    base::UnsafeSharedMemoryRegion region =
+        mojo::UnwrapUnsafeSharedMemoryRegion(
+            std::move(buffer_handle->get_shared_buffer_handle()));
+    CHECK(region.IsValid());
+    base::WritableSharedMemoryMapping mapping = region.Map();
+    CHECK(mapping.IsValid());
     outgoing_buffer_id_to_buffer_map_.insert(
-        std::make_pair(buffer_id, std::move(handle_provider)));
+        std::make_pair(buffer_id, std::move(mapping)));
     std::move(callback).Run();
   }
   void OnBufferRetired(int32_t buffer_id) override {
@@ -305,15 +307,15 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
     info->metadata = metadata.GetInternalValues().Clone();
     info->strides = strides_.Clone();
 
-    auto outgoing_buffer = outgoing_buffer_id_to_buffer_map_.at(buffer_id)
-                               ->GetHandleForInProcessAccess();
+    const base::WritableSharedMemoryMapping& outgoing_buffer =
+        outgoing_buffer_id_to_buffer_map_.at(buffer_id);
 
     static int frame_count = 0;
     frame_count++;
     const uint8_t dummy_value = frame_count % 256;
 
     // Reset the whole buffer to 0
-    memset(outgoing_buffer->data(), 0, outgoing_buffer->mapped_size());
+    memset(outgoing_buffer.memory(), 0, outgoing_buffer.size());
 
     // Set all bytes affecting |info->visible_rect| to |dummy_value|.
     const int kYStride = info->strides ? info->strides->stride_by_plane[0]
@@ -341,7 +343,7 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
     const int kVStride = info->strides ? info->strides->stride_by_plane[2]
                                        : info->coded_size.width() / 2;
 
-    uint8_t* write_ptr = outgoing_buffer->data();
+    uint8_t* write_ptr = outgoing_buffer.GetMemoryAsSpan<uint8_t>().data();
     FillVisiblePortionOfPlane(&write_ptr, dummy_value, kYCodedRowCount,
                               kYRowsToSkipAtStart, kYVisibleRowCount, kYStride,
                               kYColsToSkipAtStart, kYVisibleColCount);
@@ -387,8 +389,7 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
   media::mojom::PlaneStridesPtr strides_;
   mojo::Binding<video_capture::mojom::Producer> producer_binding_;
   video_capture::mojom::SharedMemoryVirtualDevicePtr virtual_device_;
-  std::map<int32_t /*buffer_id*/,
-           std::unique_ptr<media::SharedMemoryHandleProvider>>
+  std::map<int32_t /*buffer_id*/, base::WritableSharedMemoryMapping>
       outgoing_buffer_id_to_buffer_map_;
   base::WeakPtrFactory<SharedMemoryDeviceExerciser> weak_factory_{this};
 };

@@ -29,8 +29,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -283,6 +283,25 @@ struct TabStripModel::DetachNotifications {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DetachNotifications);
+};
+
+class TabStripModel::GroupData {
+ public:
+  explicit GroupData(TabGroupVisualData visual_data)
+      : visual_data_(std::move(visual_data)) {}
+
+  const TabGroupVisualData& visual_data() const { return visual_data_; }
+  bool empty() const { return tab_count_ == 0; }
+
+  void TabAdded() { ++tab_count_; }
+  void TabRemoved() {
+    DCHECK_GT(tab_count_, 0);
+    --tab_count_;
+  }
+
+ private:
+  const TabGroupVisualData visual_data_;
+  int tab_count_ = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -778,9 +797,10 @@ bool TabStripModel::IsTabBlocked(int index) const {
   return contents_data_[index]->blocked();
 }
 
-const TabGroupData* TabStripModel::GetDataForGroup(TabGroupId group) const {
+const TabGroupVisualData* TabStripModel::GetVisualDataForGroup(
+    TabGroupId group) const {
   DCHECK(base::Contains(group_data_, group));
-  return &group_data_.at(group);
+  return &group_data_.at(group).visual_data();
 }
 
 base::Optional<TabGroupId> TabStripModel::GetTabGroupForTab(int index) const {
@@ -1488,7 +1508,7 @@ int TabStripModel::InsertWebContentsAtImpl(
   }
   data->set_group(group);
   if (group.has_value())
-    group_data_[group.value()].TabAdded();
+    group_data_.at(group.value()).TabAdded();
 
   // TODO(gbillock): Ask the modal dialog manager whether the WebContents should
   // be blocked, or just let the modal dialog manager make the blocking call
@@ -1759,7 +1779,7 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
       contents_data_.cbegin(), contents_data_.cend(),
       [new_group](const auto& datum) { return datum->group() == new_group; }));
 
-  group_data_.emplace(new_group, TabGroupData());
+  group_data_.emplace(new_group, GroupData(TabGroupVisualData()));
 
   // Find a destination for the first tab that's not inside another group. We
   // will stack the rest of the tabs up to its right.
@@ -1843,7 +1863,7 @@ void TabStripModel::MoveAndSetGroup(int index,
     MoveWebContentsAtImpl(index, new_index, false);
   contents_data_[new_index]->set_group(new_group);
   if (new_group.has_value())
-    group_data_[new_group.value()].TabAdded();
+    group_data_.at(new_group.value()).TabAdded();
 
   NotifyGroupChange(new_index, old_group, new_group);
 }
@@ -1870,11 +1890,14 @@ base::Optional<TabGroupId> TabStripModel::UngroupTab(int index) {
     return base::nullopt;
 
   contents_data_[index]->set_group(base::nullopt);
-  TabGroupData* group_data = &group_data_[group.value()];
+
+  auto group_data_it = group_data_.find(group.value());
+  DCHECK(group_data_it != group_data_.end());
+
+  GroupData* const group_data = &group_data_it->second;
   group_data->TabRemoved();
-  // Delete the group if we just ungrouped the last tab in that group.
   if (group_data->empty())
-    group_data_.erase(group.value());
+    group_data_.erase(group_data_it);
   return group;
 }
 

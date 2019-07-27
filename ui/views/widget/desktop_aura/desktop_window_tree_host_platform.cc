@@ -52,6 +52,15 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
   properties.bounds = params.bounds;
   properties.activatable =
       params.activatable == Widget::InitParams::ACTIVATABLE_YES;
+  properties.force_show_in_taskbar = params.force_show_in_taskbar;
+  properties.keep_on_top =
+      params.EffectiveZOrderLevel() != ui::ZOrderLevel::kNormal;
+  properties.visible_on_all_workspaces = params.visible_on_all_workspaces;
+  properties.remove_standard_frame = params.remove_standard_frame;
+  properties.workspace = params.workspace;
+  properties.wm_class_name = params.wm_class_name;
+  properties.wm_class_class = params.wm_class_class;
+  properties.wm_role_name = params.wm_role_name;
 
   if (params.parent && params.parent->GetHost())
     properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();

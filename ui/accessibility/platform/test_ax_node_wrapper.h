@@ -108,6 +108,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   bool AccessibilityPerformAction(const AXActionData& data) override;
   base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
   base::string16 GetLocalizedStringForLandmarkType() const override;
+  base::string16 GetLocalizedStringForRoleDescription() const override;
   base::string16 GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const override;
   base::string16 GetStyleNameAttributeAsLocalizedString() const override;

@@ -62,6 +62,7 @@
 <translation id="1062407476771304334">Vervangen</translation>
 <translation id="1079801999187584280">Het gebruik van de hulpprogramma's voor ontwikkelaars niet toestaan</translation>
 <translation id="1087437665304381368">Met dit beleid wordt alleen de ontwikkelaarsmodus van <ph name="PRODUCT_OS_NAME" /> bepaald. Als je de toegang tot de ontwikkelaarsopties van Android wilt blokkeren, moet je het beleid <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> instellen.</translation>
+<translation id="1087707496788636333">De Chrome Enterprise-beleidslijst wordt verplaatst. Update je bladwijzers naar <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
 <translation id="1093082332347834239">Als de instelling is ingeschakeld, wordt de host voor ondersteuning op afstand uitgevoerd in een proces met <ph name="UIACCESS_PERMISSION_NAME" />-rechten. Zodoende kan een externe gebruiker de vensters met een verhoogde bevoegdheid op de desktop van de lokale gebruiker gebruiken.
 
           Als deze instelling is uitgeschakeld of niet geconfigureerd, wordt de host voor ondersteuning op afstand uitgevoerd in de context van de gebruiker en kan de externe gebruiker geen vensters met een verhoogde bevoegdheid op de desktop gebruiken.</translation>
@@ -742,6 +743,10 @@
 <translation id="2240879329269430151">Hiermee kun je instellen of websites pop-ups mogen weergeven. Het weergeven van pop-ups kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
 
           Als dit beleid niet is ingesteld, wordt 'BlockPopups' gebruikt en kan de gebruiker dit wijzigen.</translation>
+<translation id="2241498944622759244">Deze functie is nooit gelanceerd. Het beleid is daardoor beëindigd. Als dit beleid is ingesteld op True of niet is ingesteld, stelt <ph name="PRODUCT_NAME" /> pagina's voor met betrekking tot de huidige pagina.
+      Deze suggesties worden extern opgehaald van Google-servers.
+
+      Als deze instelling is ingesteld op False, worden er geen suggesties opgehaald of weergegeven.</translation>
 <translation id="2255326053989409609">Inschakeling van deze instelling voorkomt dat webpagina's toegang hebben tot de GPU (Graphics Processing Unit). Webpagina's krijgen met name geen toegang tot de WebGL-API en plug-ins kunnen de Pepper 3D-API niet gebruiken.
 
       Als je deze instelling uitschakelt of niet instelt, kunnen webpagina's mogelijk de WebGL-API gebruiken en kunnen plug-ins mogelijk de Pepper 3D-API gebruiken. Mogelijk is in de standaardinstellingen van de browser opgegeven dat toch opdrachtregelargumenten moeten worden doorgegeven om deze API's te kunnen gebruiken.
@@ -994,6 +999,20 @@
       De notatie van de waarde volgt de naamgeving van tijdzones in de IANA Time Zone Database (zie https://en.wikipedia.org/wiki/Tz_database). Je kunt naar veel tijdzones verwijzen met de notatie 'continent/grote_stad' of 'oceaan/grote_stad'.
 
       Als je dit beleid volledig instelt, wordt het automatisch verwerken van de tijdzone op basis van apparaatlocatie uitgeschakeld. Ook wordt hiermee het beleid SystemTimezoneAutomaticDetection overschreven.</translation>
+<translation id="2758218632193192525">Biedt configuraties voor beschikbare afdrukservers.
+
+      Met dit beleid kun je configuratie van externe afdrukservers als json-bestand leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten.
+
+      Het bestand mag niet groter zijn dan 1 MB en moet een matrix van records (json-objecten) bevatten. Elke record moet de velden 'url' en 'display_name' bevatten.
+
+      Het bestand wordt gedownload en opgeslagen in het cachegeheugen. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren. Het bestand wordt opnieuw gedownload wanneer de URL of de hash wordt gewijzigd.
+
+      Als dit beleid is ingesteld op de juiste waarde, proberen apparaten opgegeven afdrukservers naar beschikbare printers te vragen die het IPP-protocol gebruiken.
+
+      Als dit beleid niet is ingesteld of is ingesteld op een onjuiste waarde, zijn er geen serverprinters zichtbaar voor gebruikers.
+
+      Het aantal afdrukservers is momenteel beperkt tot zestien. Alleen de eerste zestien afdrukservers in de lijst worden opgevraagd.
+      </translation>
 <translation id="2759224876420453487">Het gebruikersgedrag beheren in een multiprofielsessie</translation>
 <translation id="2761483219396643566">Inactieve waarschuwingsvertraging wanneer op de batterij wordt gewerkt</translation>
 <translation id="2762164719979766599">Hiermee wordt de lijst met lokale accounts op het apparaat weergegeven op het aanmeldscherm.
@@ -1904,6 +1923,15 @@
 
           Deze functie is momenteel uitgeschakeld aan de serverzijde.</translation>
 <translation id="4363057787588706121">Toestaan dat lijstbeleid van verschillende bronnen kan worden samengevoegd</translation>
+<translation id="4363136876356691536">Als dit beleid is ingesteld op True, worden toegankelijkheidsopties altijd weergegeven in het systeemvakmenu.
+
+          Als dit beleid is ingesteld op False, worden toegankelijkheidsopties nooit weergegeven in het systeemvakmenu.
+
+          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
+
+          Als dit beleid niet is ingesteld, worden toegankelijkheidsopties niet weergegeven in het systeemvakmenu, maar kan de gebruiker er via de pagina Instellingen voor zorgen dat de toegankelijkheidsopties worden weergegeven.
+
+          Als de toegankelijkheidsfuncties zijn ingeschakeld (via een andere manier, zoals een sleutelcombinatie), worden de toegankelijkheidsopties altijd weergegeven in het systeemvakmenu.</translation>
 <translation id="436581050240847513">Apparaatnetwerkinterface rapporteren</translation>
 <translation id="4372704773119750918">Zakelijke gebruikers niet toestaan deel uit te maken van multiprofielen (primair of secundair)</translation>
 <translation id="4377599627073874279">Alle sites toestaan afbeeldingen weer te geven</translation>
@@ -2002,20 +2030,6 @@
 <translation id="4604931264910482931">Zwarte lijst voor systeemeigen berichten configureren</translation>
 <translation id="4617338332148204752">De metatagcontrole in <ph name="PRODUCT_FRAME_NAME" /> overslaan</translation>
 <translation id="4625915093043961294">Witte lijst voor het installeren van extensies configureren</translation>
-<translation id="4627884124191169977">Biedt configuraties voor beschikbare afdrukservers.
-
-      Met dit beleid kun je configuratie van externe afdrukservers als JSON-bestand leveren aan <ph name="PRODUCT_OS_NAME" />-apparaten.
-
-      Het bestand mag niet groter zijn dan 1 MB en moet een matrix van records (JSON-objecten) bevatten. Elke record moet de velden 'url' en 'display_name' bevatten.
-
-      Het bestand wordt gedownload en opgeslagen in het cachegeheugen. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren. Het bestand wordt opnieuw gedownload wanneer de URL of de hash wordt gewijzigd.
-
-      Wanneer dit beleid is ingesteld op de juiste waarde, proberen apparaten opgegeven afdrukservers op te vragen voor beschikbare printers die het IPP-protocol gebruiken.
-
-      Als dit beleid niet is ingesteld of is ingesteld op een onjuiste waarde, zijn er geen serverprinters zichtbaar voor gebruikers.
-
-      Het aantal afdrukservers is momenteel beperkt tot zestien. Alleen de eerste zestien afdrukservers in de lijst worden opgevraagd.
-      </translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" /> toestaan de vermelde soorten content te verwerken.</translation>
 <translation id="4632566332417930481">Het gebruik van de hulpprogramma's voor ontwikkelaars uitschakelen voor extensies die zijn geïnstalleerd op basis van het bedrijfsbeleid, maar toestaan in andere contexten</translation>
 <translation id="4633786464238689684">Hiermee wordt het standaardgedrag van de toetsen op de bovenste rij gewijzigd in functietoetsen.
@@ -2873,6 +2887,7 @@
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.</translation>
 <translation id="6190022522129724693">Standaardinstelling voor pop-ups</translation>
 <translation id="6190367314942602985">Gegevens over de identiteit van gebruikers rapporteren</translation>
+<translation id="6195802366906945965">Bepaalt of de ingebouwde certificaatverificatie wordt gebruikt om servercertificaten te verifiëren</translation>
 <translation id="6197453924249895891">Geeft extensies toegang tot zakelijke sleutels.
 
       Sleutels zijn voor zakelijk gebruik bedoeld als ze via een beheerd account worden gegenereerd met de chrome.enterprise.platformKeys-API. Sleutels die op een andere manier worden geïmporteerd of gegenereerd, worden niet beschouwd als geschikt voor zakelijk gebruik.
@@ -3258,6 +3273,12 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Raadpleeg https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
 
       Als dit beleid niet wordt ingesteld, wordt de standaardcachedirectory gebruikt en kan de gebruiker deze overschrijven met de opdrachtregelmarkering '--user-data-dir'.</translation>
+<translation id="7011669683779011760">Wanneer deze instelling is ingeschakeld, verifieert <ph name="PRODUCT_OS_NAME" /> servercertificaten met de ingebouwde certificaatverificatie.
+      Wanneer deze instelling is uitgeschakeld, verifieert <ph name="PRODUCT_OS_NAME" /> servercertificaten met de verouderde certificaatverificatie die door het platform wordt geleverd.
+      Wanneer deze instelling niet is ingesteld, kan <ph name="PRODUCT_OS_NAME" /> de ingebouwde of de verouderde certificaatverificatie gebruiken.
+
+      Volgens planning wordt dit beleid verwijderd vanaf <ph name="PRODUCT_OS_NAME" /> versie 81, wanneer de ondersteuning voor de verouderde certificaatverificatie in <ph name="PRODUCT_OS_NAME" /> volgens planning wordt verwijderd.
+      </translation>
 <translation id="7027785306666625591">Energiebeheer in <ph name="PRODUCT_OS_NAME" /> configureren.
 
       Met dit beleid kun je configureren hoe <ph name="PRODUCT_OS_NAME" /> zich gedraagt wanneer de gebruiker enige tijd inactief is.</translation>

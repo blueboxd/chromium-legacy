@@ -16,7 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/values.h"
-#include "ios/web/public/user_agent.h"
+#include "ios/web/common/user_agent.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/mojom/service.mojom.h"

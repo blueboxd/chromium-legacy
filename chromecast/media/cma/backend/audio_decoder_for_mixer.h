@@ -116,6 +116,7 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   bool pushed_eos_ = false;
   bool mixer_error_ = false;
   bool paused_ = false;
+  bool reported_ready_for_playback_ = false;
 
   AudioConfig config_;
   std::unique_ptr<CastAudioDecoder> decoder_;

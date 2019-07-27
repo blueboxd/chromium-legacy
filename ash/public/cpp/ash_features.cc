@@ -87,6 +87,9 @@ const base::Feature kSystemTrayFeaturePodsPagination{
 const base::Feature kSwapSideVolumeButtonsForOrientation{
     "SwapSideVolumeButtonsForOrientation", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kUnifiedMessageCenterRefactor{
+    "UnifiedMessageCenterRefactor", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
          base::FeatureList::IsEnabled(kHideArcMediaNotifications);
@@ -154,6 +157,10 @@ bool IsSystemTrayFeaturePodsPaginationEnabled() {
 
 bool IsSwapSideVolumeButtonsForOrientationEnabled() {
   return base::FeatureList::IsEnabled(kSwapSideVolumeButtonsForOrientation);
+}
+
+bool IsUnifiedMessageCenterRefactorEnabled() {
+  return base::FeatureList::IsEnabled(kUnifiedMessageCenterRefactor);
 }
 
 }  // namespace features

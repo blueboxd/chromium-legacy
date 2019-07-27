@@ -636,8 +636,6 @@ source_set("common") {
     "browser/renderer_host/auto_login_parser.h",
     "browser/renderer_host/aw_render_view_host_ext.cc",
     "browser/renderer_host/aw_render_view_host_ext.h",
-    "browser/renderer_host/aw_resource_dispatcher_host_delegate.cc",
-    "browser/renderer_host/aw_resource_dispatcher_host_delegate.h",
     "browser/safe_browsing/aw_safe_browsing_blocking_page.cc",
     "browser/safe_browsing/aw_safe_browsing_blocking_page.h",
     "browser/safe_browsing/aw_safe_browsing_resource_throttle.cc",

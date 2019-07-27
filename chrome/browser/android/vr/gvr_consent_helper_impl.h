@@ -27,7 +27,6 @@ class GvrConsentHelperImpl : public GvrConsentHelper {
                                int render_frame_id,
                                OnUserConsentCallback) override;
   void OnUserConsentResult(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& j_caller,
                            jboolean is_granted);
 
  private:

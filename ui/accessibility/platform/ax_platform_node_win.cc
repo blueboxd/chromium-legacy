@@ -3909,18 +3909,17 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       }
       break;
 
-    case UIA_LocalizedControlTypePropertyId:
-      if (data.HasStringAttribute(
-              ax::mojom::StringAttribute::kRoleDescription)) {
-        V_VT(result) = VT_BSTR;
-        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kRoleDescription,
-                                 &V_BSTR(result));
+    case UIA_LocalizedControlTypePropertyId: {
+      base::string16 localized_control_type = GetRoleDescription();
+      if (!localized_control_type.empty()) {
+        result->vt = VT_BSTR;
+        result->bstrVal = SysAllocString(localized_control_type.c_str());
       }
       // If a role description has not been provided, leave as VT_EMPTY.
       // UIA core handles Localized Control type for some built-in types and
       // also has a mapping for ARIA roles. To get these defaults, we need to
       // have returned VT_EMPTY.
-      break;
+    } break;
 
     case UIA_NamePropertyId:
       result->vt = VT_BSTR;
@@ -5645,8 +5644,10 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"button";
 
     case ax::mojom::Role::kTextField:
-    case ax::mojom::Role::kSearchBox:
       return L"textbox";
+
+    case ax::mojom::Role::kSearchBox:
+      return L"searchbox";
 
     case ax::mojom::Role::kTextFieldWithComboBox:
       return L"combobox";

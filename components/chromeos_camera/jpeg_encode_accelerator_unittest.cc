@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -327,7 +328,8 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   media::BitstreamBuffer encoded_buffer_;
 
   // Mapped memory of input file.
-  std::unique_ptr<base::SharedMemory> in_shm_;
+  base::UnsafeSharedMemoryRegion in_shm_;
+  base::WritableSharedMemoryMapping in_mapping_;
   // Mapped memory of output buffer from hardware encoder.
   std::unique_ptr<base::SharedMemory> hw_out_shm_;
   // Mapped memory of output buffer from software encoder.
@@ -439,7 +441,7 @@ bool JpegClient::GetSoftwareEncodeResult(int width,
   int y_stride = width;
   int u_stride = width / 2;
   int v_stride = u_stride;
-  uint8_t* yuv_src = static_cast<uint8_t*>(in_shm_->memory());
+  uint8_t* yuv_src = in_mapping_.GetMemoryAsSpan<uint8_t>().data();
   const int kBytesPerPixel = 4;
   std::vector<uint8_t> rgba_buffer(width * height * kBytesPerPixel);
   std::vector<uint8_t> encoded;
@@ -541,11 +543,13 @@ void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
   TestImage* test_image = GetTestImage(bitstream_buffer_id);
 
   size_t input_size = test_image->image_data.size();
-  if (!in_shm_.get() || input_size > in_shm_->mapped_size()) {
-    in_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(in_shm_->CreateAndMapAnonymous(input_size));
+  if (!in_mapping_.IsValid() || input_size > in_mapping_.size()) {
+    in_shm_ = base::UnsafeSharedMemoryRegion::Create(input_size);
+    LOG_ASSERT(in_shm_.IsValid());
+    in_mapping_ = in_shm_.Map();
+    LOG_ASSERT(in_mapping_.IsValid());
   }
-  memcpy(in_shm_->memory(), test_image->image_data.data(), input_size);
+  memcpy(in_mapping_.memory(), test_image->image_data.data(), input_size);
 
   if (!hw_out_shm_.get() ||
       test_image->output_size > hw_out_shm_->mapped_size()) {
@@ -610,14 +614,13 @@ void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
       media::BitstreamBuffer(bitstream_buffer_id, hw_out_shm_->handle(),
                              false /* read_only */, test_image->output_size);
   scoped_refptr<media::VideoFrame> input_frame_ =
-      media::VideoFrame::WrapExternalSharedMemory(
+      media::VideoFrame::WrapExternalData(
           media::PIXEL_FORMAT_I420, test_image->visible_size,
           gfx::Rect(test_image->visible_size), test_image->visible_size,
-          static_cast<uint8_t*>(in_shm_->memory()),
-          test_image->image_data.size(), in_shm_->handle(), 0,
-          base::TimeDelta());
-
+          in_mapping_.GetMemoryAsSpan<uint8_t>().data(),
+          test_image->image_data.size(), base::TimeDelta());
   LOG_ASSERT(input_frame_.get());
+  input_frame_->BackWithSharedMemory(&in_shm_);
 
   buffer_id_to_start_time_[bitstream_buffer_id] = base::TimeTicks::Now();
   encoder_->Encode(input_frame_, kJpegDefaultQuality, nullptr,

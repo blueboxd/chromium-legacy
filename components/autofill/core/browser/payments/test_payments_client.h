@@ -58,7 +58,9 @@ class TestPaymentsClient : public payments::PaymentsClient {
 
   void AllowFidoRegistration(bool offer_fido_opt_in = true);
 
-  void AddFidoEligibleCard(std::string server_id);
+  void AddFidoEligibleCard(std::string server_id,
+                           std::string credential_id,
+                           std::string relying_party_id);
 
   void SetServerIdForCardUpload(std::string);
 

@@ -2121,6 +2121,9 @@ void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {
 
       // Added 2019-07.
       "has_set_script_all_urls",
+
+      // Added 2019-07.
+      "browser_action_visible",
   };
 
   for (const auto& key_value : extensions_dictionary->DictItems()) {

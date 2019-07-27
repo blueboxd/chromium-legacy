@@ -114,7 +114,7 @@ public class ClearDataDialogActivity extends AppCompatActivity {
         extras.putInt(SettingsNavigationSource.EXTRA_KEY,
                 SettingsNavigationSource.TWA_CLEAR_DATA_DIALOG);
 
-        PreferencesLauncher.launchSettingsPageCompat(this, SingleCategoryPreferences.class, extras);
+        PreferencesLauncher.launchSettingsPage(this, SingleCategoryPreferences.class, extras);
     }
 
     private void recordDecision(boolean accepted) {

@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_details.h"
+#include "components/policy/core/common/policy_merger.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/schema.h"
@@ -386,6 +387,26 @@ Value PolicyConversions::GetPolicyValue(
     value.SetKey("level", Value(policy.level));
     value.SetKey("source", Value(policy.source));
   }
+
+  // Policies that have at least one source that could not be merged will
+  // still be treated as conflicted policies while policies that had all of
+  // their sources merged will not be considered conflicted anymore. Some
+  // policies have only one source but still appear as POLICY_SOURCE_MERGED
+  // because all policies that are listed as policies that should be merged are
+  // treated as merged regardless the number of sources. Those policies will not
+  // be treated as conflicted policies.
+  if (policy.source == POLICY_SOURCE_MERGED) {
+    bool policy_has_unmerged_source = false;
+    for (const auto& conflict : policy.conflicts) {
+      if (PolicyMerger::ConflictCanBeMerged(conflict, policy))
+        continue;
+      policy_has_unmerged_source = true;
+      break;
+    }
+    value.SetKey("allSourcesMerged", Value(policy.conflicts.size() <= 1 ||
+                                           !policy_has_unmerged_source));
+  }
+
   base::string16 error;
   if (!known_policy_schema.has_value()) {
     // We don't know what this policy is. This is an important error to

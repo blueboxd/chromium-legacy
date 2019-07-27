@@ -65,6 +65,13 @@ class AX_EXPORT AXNode final {
     NodeType* child_;
   };
 
+  // Defines the type used for AXNode IDs.
+  using AXID = int32_t;
+
+  // If a node is not yet or no longer valid, its ID should have a value of
+  // kInvalidAXID.
+  static constexpr AXID kInvalidAXID = 0;
+
   // The constructor requires a parent, id, and index in parent, but
   // the data is not required. After initialization, only index_in_parent
   // and unignored_index_in_parent is allowed to change, the others are

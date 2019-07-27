@@ -5,6 +5,7 @@
 package org.chromium.webapk.shell_apk.h2o;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -21,10 +22,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowActivityManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowPackageManager;
 
@@ -408,7 +412,10 @@ public final class LaunchTest {
     }
 
     private static void buildActivityFully(Class<? extends Activity> activityClass, Intent intent) {
-        Robolectric.buildActivity(activityClass, intent).create().start().resume().visible();
+        ActivityController<? extends Activity> controller =
+                Robolectric.buildActivity(activityClass, intent);
+        setAppTaskTopActivity(controller.get().getTaskId(), controller.get());
+        controller.create().start().resume().visible();
     }
 
     /** Installs browser with the given package name and version. */
@@ -416,6 +423,23 @@ public final class LaunchTest {
         Intent intent = WebApkUtils.getQueryInstalledBrowsersIntent();
         mShadowPackageManager.addResolveInfoForIntent(intent, newResolveInfo(browserPackageName));
         mShadowPackageManager.addPackage(newPackageInfo(browserPackageName, version));
+    }
+
+    private static void setAppTaskTopActivity(int taskId, Activity topActivity) {
+        ActivityManager.RecentTaskInfo recentTaskInfo = new ActivityManager.RecentTaskInfo();
+        recentTaskInfo.id = taskId;
+        recentTaskInfo.topActivity = topActivity.getComponentName();
+        ActivityManager.AppTask appTask = Mockito.mock(ActivityManager.AppTask.class);
+        Mockito.when(appTask.getTaskInfo()).thenReturn(recentTaskInfo);
+
+        ArrayList<ActivityManager.AppTask> appTasks = new ArrayList<ActivityManager.AppTask>();
+        appTasks.add(appTask);
+
+        ActivityManager activityManager =
+                (ActivityManager) RuntimeEnvironment.application.getSystemService(
+                        Context.ACTIVITY_SERVICE);
+        ShadowActivityManager shadowActivityManager = Shadows.shadowOf(activityManager);
+        shadowActivityManager.setAppTasks(appTasks);
     }
 
     private static ResolveInfo newResolveInfo(String packageName) {

@@ -135,7 +135,7 @@ void LayoutExampleBase::ChildPanel::SetSelected(bool value) {
 
 int LayoutExampleBase::ChildPanel::GetFlex() {
   int flex;
-  if (base::StringToInt(flex_->text(), &flex))
+  if (base::StringToInt(flex_->GetText(), &flex))
     return flex;
   return -1;
 }
@@ -317,9 +317,9 @@ gfx::Size LayoutExampleBase::TextfieldsToSize(Textfield* textfields[2],
                                               const gfx::Size& default_size) {
   int width;
   int height;
-  if (!base::StringToInt(textfields[0]->text(), &width))
+  if (!base::StringToInt(textfields[0]->GetText(), &width))
     width = default_size.width();
-  if (!base::StringToInt(textfields[1]->text(), &height))
+  if (!base::StringToInt(textfields[1]->GetText(), &height))
     height = default_size.height();
   return gfx::Size(std::max(0, width), std::max(0, height));
 }
@@ -331,13 +331,13 @@ gfx::Insets LayoutExampleBase::TextfieldsToInsets(
   int left;
   int bottom;
   int right;
-  if (!base::StringToInt(textfields[0]->text(), &top))
+  if (!base::StringToInt(textfields[0]->GetText(), &top))
     top = default_insets.top();
-  if (!base::StringToInt(textfields[1]->text(), &left))
+  if (!base::StringToInt(textfields[1]->GetText(), &left))
     left = default_insets.left();
-  if (!base::StringToInt(textfields[2]->text(), &bottom))
+  if (!base::StringToInt(textfields[2]->GetText(), &bottom))
     bottom = default_insets.bottom();
-  if (!base::StringToInt(textfields[3]->text(), &right))
+  if (!base::StringToInt(textfields[3]->GetText(), &right))
     right = default_insets.right();
 
   return gfx::Insets(std::max(0, top), std::max(0, left), std::max(0, bottom),

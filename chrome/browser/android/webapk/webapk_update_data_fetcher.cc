@@ -35,7 +35,7 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-bool DoesAndroidSupportMaskableIcons() {
+bool DoesAndroidSupportMaskableIconsForWebApk() {
   // TODO(crbug.com/977173): re-enable maskable icon support once server support
   // is ready.
   return false;
@@ -119,7 +119,7 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
 
   InstallableParams params;
   params.valid_manifest = true;
-  params.prefer_maskable_icon = DoesAndroidSupportMaskableIcons();
+  params.prefer_maskable_icon = DoesAndroidSupportMaskableIconsForWebApk();
   params.has_worker = true;
   params.valid_primary_icon = true;
   params.valid_badge_icon = true;

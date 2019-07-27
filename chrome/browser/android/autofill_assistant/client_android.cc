@@ -72,14 +72,14 @@ void FillStringMapFromJava(JNIEnv* env,
   }
 }
 
-std::unique_ptr<TriggerContext> CreateTriggerContext(
+std::unique_ptr<TriggerContextImpl> CreateTriggerContext(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
     const base::android::JavaParamRef<jobjectArray>& jparameter_names,
     const base::android::JavaParamRef<jobjectArray>& jparameter_values) {
   std::map<std::string, std::string> parameters;
   FillStringMapFromJava(env, jparameter_names, jparameter_values, &parameters);
-  return TriggerContext::Create(
+  return std::make_unique<TriggerContextImpl>(
       std::move(parameters),
       base::android::ConvertJavaStringToUTF8(env, jexperiment_ids));
 }
@@ -147,10 +147,12 @@ bool ClientAndroid::Start(JNIEnv* env,
     AttachUI(joverlay_coordinator);
   }
 
+  std::unique_ptr<TriggerContextImpl> trigger_context = CreateTriggerContext(
+      env, jexperiment_ids, parameter_names, parameter_values);
+  trigger_context->SetCCT(true);
+
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
-  return controller_->Start(
-      initial_url, CreateTriggerContext(env, jexperiment_ids, parameter_names,
-                                        parameter_values));
+  return controller_->Start(initial_url, std::move(trigger_context));
 }
 
 void ClientAndroid::DestroyUI(
@@ -261,10 +263,14 @@ bool ClientAndroid::PerformDirectAction(
 
   int action_index = FindDirectAction(action_name);
 
+  std::unique_ptr<TriggerContextImpl> trigger_context = CreateTriggerContext(
+      env, jexperiment_ids, jargument_names, jargument_values);
+  trigger_context->SetDirectAction(true);
   // Cancel through the UI if it is up. This allows the user to undo. This is
   // always available, even if no action was found and action_index == -1.
   if (action_name == kCancelActionName && ui_controller_android_) {
-    ui_controller_android_->CloseOrCancel(action_index);
+    ui_controller_android_->CloseOrCancel(action_index,
+                                          std::move(trigger_context));
     return true;
   }
 
@@ -276,9 +282,8 @@ bool ClientAndroid::PerformDirectAction(
     AttachUI(joverlay_coordinator);
   }
 
-  return controller_->PerformUserActionWithContext(
-      action_index, CreateTriggerContext(env, jexperiment_ids, jargument_names,
-                                         jargument_values));
+  return controller_->PerformUserActionWithContext(action_index,
+                                                   std::move(trigger_context));
 }
 
 int ClientAndroid::FindDirectAction(const std::string& action_name) {

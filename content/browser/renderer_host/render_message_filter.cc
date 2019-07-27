@@ -28,7 +28,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/pepper/pepper_security_helper.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -91,13 +90,12 @@ RenderMessageFilter::RenderMessageFilter(
     : BrowserMessageFilter(kRenderFilteredMessageClasses,
                            base::size(kRenderFilteredMessageClasses)),
       BrowserAssociatedInterface<mojom::RenderMessageFilter>(this, this),
-      resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       render_process_id_(render_process_id),
       media_internals_(media_internals) {
   if (render_widget_helper)
-    render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
+    render_widget_helper_->Init(render_process_id_);
 }
 
 RenderMessageFilter::~RenderMessageFilter() {

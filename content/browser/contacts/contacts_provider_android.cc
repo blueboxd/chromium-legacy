@@ -68,7 +68,6 @@ void ContactsProviderAndroid::Select(
 
 void ContactsProviderAndroid::AddContact(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     jboolean include_names,
     jboolean include_emails,
     jboolean include_tel,
@@ -104,16 +103,12 @@ void ContactsProviderAndroid::AddContact(
   contacts_.push_back(std::move(contact));
 }
 
-void ContactsProviderAndroid::EndContactsList(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+void ContactsProviderAndroid::EndContactsList(JNIEnv* env) {
   DCHECK(callback_);
   std::move(callback_).Run(std::move(contacts_));
 }
 
-void ContactsProviderAndroid::EndWithPermissionDenied(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+void ContactsProviderAndroid::EndWithPermissionDenied(JNIEnv* env) {
   DCHECK(callback_);
   std::move(callback_).Run(base::nullopt);
 }

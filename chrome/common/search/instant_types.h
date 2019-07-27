@@ -104,6 +104,9 @@ struct ThemeBackgroundInfo {
 
   // The theme name.
   std::string theme_name;
+
+  // The color id for Chrome Colors. Valid only if Chrome Colors is set.
+  int color_id;
 };
 
 struct InstantMostVisitedItem {

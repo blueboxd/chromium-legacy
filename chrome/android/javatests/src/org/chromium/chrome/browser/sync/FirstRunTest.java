@@ -161,7 +161,7 @@ public class FirstRunTest {
 
         // Close the settings fragment.
         AccountManagementFragment fragment =
-                (AccountManagementFragment) prefActivity.getMainFragmentCompat();
+                (AccountManagementFragment) prefActivity.getMainFragment();
         Assert.assertNotNull(fragment);
         prefActivity.getSupportFragmentManager().beginTransaction().remove(fragment).commit();
 

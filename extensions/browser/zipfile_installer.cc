@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
+#include "components/services/unzip/content/unzip_service.h"
 #include "components/services/unzip/public/cpp/unzip.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -112,7 +113,7 @@ void ZipFileInstaller::Unzip(base::Optional<base::FilePath> unzip_dir) {
   }
 
   unzip::UnzipWithFilter(
-      connector_->Clone(), zip_file_, *unzip_dir,
+      unzip::LaunchUnzipper(), zip_file_, *unzip_dir,
       base::BindRepeating(&ZipFileInstaller::IsManifestFile),
       base::BindOnce(&ZipFileInstaller::ManifestUnzipped, this, *unzip_dir));
 }
@@ -172,7 +173,7 @@ void ZipFileInstaller::ManifestParsed(const base::FilePath& unzip_dir,
   // TODO(crbug.com/645263): This silently ignores blocked file types.
   //                         Add install warnings.
   unzip::UnzipWithFilter(
-      connector_->Clone(), zip_file_, unzip_dir, filter,
+      unzip::LaunchUnzipper(), zip_file_, unzip_dir, filter,
       base::BindOnce(&ZipFileInstaller::UnzipDone, this, unzip_dir));
 }
 

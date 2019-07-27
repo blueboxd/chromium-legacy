@@ -26,6 +26,18 @@ void CompareInsetSizes(const PageInsetSizes& expected_insets,
   EXPECT_EQ(expected_insets.bottom, given_insets.bottom);
 }
 
+void CompareRect(const pp::Rect& expected_rect, const pp::Rect& given_rect) {
+  EXPECT_EQ(expected_rect.x(), given_rect.x());
+  EXPECT_EQ(expected_rect.y(), given_rect.y());
+  EXPECT_EQ(expected_rect.width(), given_rect.width());
+  EXPECT_EQ(expected_rect.height(), given_rect.height());
+}
+
+void CompareSize(const pp::Size& expected_size, const pp::Size& given_size) {
+  EXPECT_EQ(expected_size.width(), given_size.width());
+  EXPECT_EQ(expected_size.height(), given_size.height());
+}
+
 }  // namespace
 
 TEST(CoordinateTest, ExpandDocumentSize) {
@@ -34,23 +46,19 @@ TEST(CoordinateTest, ExpandDocumentSize) {
   // Test various expansion sizes.
   pp::Size rect_size(100, 200);
   ExpandDocumentSize(rect_size, &doc_size);
-  EXPECT_EQ(100, doc_size.width());
-  EXPECT_EQ(600, doc_size.height());
+  CompareSize({100, 600}, doc_size);
 
   rect_size.SetSize(200, 150);
   ExpandDocumentSize(rect_size, &doc_size);
-  EXPECT_EQ(200, doc_size.width());
-  EXPECT_EQ(750, doc_size.height());
+  CompareSize({200, 750}, doc_size);
 
   rect_size.SetSize(100, 300);
   ExpandDocumentSize(rect_size, &doc_size);
-  EXPECT_EQ(200, doc_size.width());
-  EXPECT_EQ(1050, doc_size.height());
+  CompareSize({200, 1050}, doc_size);
 
   rect_size.SetSize(250, 400);
   ExpandDocumentSize(rect_size, &doc_size);
-  EXPECT_EQ(250, doc_size.width());
-  EXPECT_EQ(1450, doc_size.height());
+  CompareSize({250, 1450}, doc_size);
 }
 
 TEST(CoordinateTest, GetPageInsetsForTwoUpView) {
@@ -78,33 +86,21 @@ TEST(CoordinateTest, GetPageInsetsForTwoUpView) {
 TEST(CoordinateTest, GetLeftFillRect) {
   // Testing various rectangles with different positions and sizes.
   pp::Rect page_rect(10, 20, 400, 500);
-  page_rect = GetLeftFillRect(page_rect, kSingleViewInsets, kBottomSeparator);
-  EXPECT_EQ(0, page_rect.x());
-  EXPECT_EQ(17, page_rect.y());
-  EXPECT_EQ(5, page_rect.width());
-  EXPECT_EQ(514, page_rect.height());
+  CompareRect({0, 17, 5, 514},
+              GetLeftFillRect(page_rect, kSingleViewInsets, kBottomSeparator));
 
   page_rect.SetRect(200, 300, 400, 350);
-  page_rect = GetLeftFillRect(page_rect, kSingleViewInsets, kBottomSeparator);
-  EXPECT_EQ(0, page_rect.x());
-  EXPECT_EQ(297, page_rect.y());
-  EXPECT_EQ(195, page_rect.width());
-  EXPECT_EQ(364, page_rect.height());
+  CompareRect({0, 297, 195, 364},
+              GetLeftFillRect(page_rect, kSingleViewInsets, kBottomSeparator));
 
   page_rect.SetRect(800, 650, 20, 15);
-  page_rect = GetLeftFillRect(page_rect, kSingleViewInsets, kBottomSeparator);
-  EXPECT_EQ(0, page_rect.x());
-  EXPECT_EQ(647, page_rect.y());
-  EXPECT_EQ(795, page_rect.width());
-  EXPECT_EQ(29, page_rect.height());
+  CompareRect({0, 647, 795, 29},
+              GetLeftFillRect(page_rect, kSingleViewInsets, kBottomSeparator));
 
   // Testing rectangle with a negative y-component.
   page_rect.SetRect(50, -200, 100, 300);
-  page_rect = GetLeftFillRect(page_rect, kSingleViewInsets, kBottomSeparator);
-  EXPECT_EQ(0, page_rect.x());
-  EXPECT_EQ(-203, page_rect.y());
-  EXPECT_EQ(45, page_rect.width());
-  EXPECT_EQ(314, page_rect.height());
+  CompareRect({0, -203, 45, 314},
+              GetLeftFillRect(page_rect, kSingleViewInsets, kBottomSeparator));
 }
 
 TEST(CoordinateTest, GetRightFillRect) {
@@ -113,302 +109,148 @@ TEST(CoordinateTest, GetRightFillRect) {
   // Testing various rectangles with different positions, sizes, and document
   // widths.
   pp::Rect page_rect(10, 20, 400, 500);
-  page_rect = GetRightFillRect(page_rect, kSingleViewInsets, kDocWidth,
-                               kBottomSeparator);
-  EXPECT_EQ(415, page_rect.x());
-  EXPECT_EQ(17, page_rect.y());
-  EXPECT_EQ(585, page_rect.width());
-  EXPECT_EQ(514, page_rect.height());
+  CompareRect({415, 17, 585, 514},
+              GetRightFillRect(page_rect, kSingleViewInsets, kDocWidth,
+                               kBottomSeparator));
 
   page_rect.SetRect(200, 300, 400, 350);
-  page_rect = GetRightFillRect(page_rect, kSingleViewInsets, kDocWidth,
-                               kBottomSeparator);
-  EXPECT_EQ(605, page_rect.x());
-  EXPECT_EQ(297, page_rect.y());
-  EXPECT_EQ(395, page_rect.width());
-  EXPECT_EQ(364, page_rect.height());
+  CompareRect({605, 297, 395, 364},
+              GetRightFillRect(page_rect, kSingleViewInsets, kDocWidth,
+                               kBottomSeparator));
 
   page_rect.SetRect(200, 300, 400, 350);
-  page_rect =
-      GetRightFillRect(page_rect, kSingleViewInsets, 800, kBottomSeparator);
-  EXPECT_EQ(605, page_rect.x());
-  EXPECT_EQ(297, page_rect.y());
-  EXPECT_EQ(195, page_rect.width());
-  EXPECT_EQ(364, page_rect.height());
+  CompareRect(
+      {605, 297, 195, 364},
+      GetRightFillRect(page_rect, kSingleViewInsets, 800, kBottomSeparator));
 
   // Testing rectangle with a negative y-component.
   page_rect.SetRect(50, -200, 100, 300);
-  page_rect = GetRightFillRect(page_rect, kSingleViewInsets, kDocWidth,
-                               kBottomSeparator);
-  EXPECT_EQ(155, page_rect.x());
-  EXPECT_EQ(-203, page_rect.y());
-  EXPECT_EQ(845, page_rect.width());
-  EXPECT_EQ(314, page_rect.height());
+  CompareRect({155, -203, 845, 314},
+              GetRightFillRect(page_rect, kSingleViewInsets, kDocWidth,
+                               kBottomSeparator));
 }
 
 TEST(CoordinateTest, GetBottomFillRect) {
   // Testing various rectangles with different positions and sizes.
   pp::Rect page_rect(10, 20, 400, 500);
-  page_rect = GetBottomFillRect(page_rect, kSingleViewInsets, kBottomSeparator);
-  EXPECT_EQ(5, page_rect.x());
-  EXPECT_EQ(527, page_rect.y());
-  EXPECT_EQ(410, page_rect.width());
-  EXPECT_EQ(4, page_rect.height());
+  CompareRect({5, 527, 410, 4}, GetBottomFillRect(page_rect, kSingleViewInsets,
+                                                  kBottomSeparator));
+
   page_rect.SetRect(200, 300, 400, 350);
-  page_rect = GetBottomFillRect(page_rect, kSingleViewInsets, kBottomSeparator);
-  EXPECT_EQ(195, page_rect.x());
-  EXPECT_EQ(657, page_rect.y());
-  EXPECT_EQ(410, page_rect.width());
-  EXPECT_EQ(4, page_rect.height());
+  CompareRect(
+      {195, 657, 410, 4},
+      GetBottomFillRect(page_rect, kSingleViewInsets, kBottomSeparator));
 
   page_rect.SetRect(800, 650, 20, 15);
-  page_rect = GetBottomFillRect(page_rect, kSingleViewInsets, kBottomSeparator);
-  EXPECT_EQ(795, page_rect.x());
-  EXPECT_EQ(672, page_rect.y());
-  EXPECT_EQ(30, page_rect.width());
-  EXPECT_EQ(4, page_rect.height());
+  CompareRect({795, 672, 30, 4}, GetBottomFillRect(page_rect, kSingleViewInsets,
+                                                   kBottomSeparator));
 
   // Testing rectangle with a negative y-component.
   page_rect.SetRect(50, -200, 100, 300);
-  page_rect = GetBottomFillRect(page_rect, kSingleViewInsets, kBottomSeparator);
-  EXPECT_EQ(45, page_rect.x());
-  EXPECT_EQ(107, page_rect.y());
-  EXPECT_EQ(110, page_rect.width());
-  EXPECT_EQ(4, page_rect.height());
+  CompareRect({45, 107, 110, 4}, GetBottomFillRect(page_rect, kSingleViewInsets,
+                                                   kBottomSeparator));
 }
 
 TEST(CoordinateTest, GetScreenRect) {
-  pp::Rect screen_rect;
   const pp::Rect rect(10, 20, 200, 300);
 
   // Test various zooms with the position at the origin.
-  screen_rect = GetScreenRect(rect, {0, 0}, 1);
-  EXPECT_EQ(10, screen_rect.x());
-  EXPECT_EQ(20, screen_rect.y());
-  EXPECT_EQ(200, screen_rect.width());
-  EXPECT_EQ(300, screen_rect.height());
-
-  screen_rect = GetScreenRect(rect, {0, 0}, 1.5);
-  EXPECT_EQ(15, screen_rect.x());
-  EXPECT_EQ(30, screen_rect.y());
-  EXPECT_EQ(300, screen_rect.width());
-  EXPECT_EQ(450, screen_rect.height());
-
-  screen_rect = GetScreenRect(rect, {0, 0}, 0.5);
-  EXPECT_EQ(5, screen_rect.x());
-  EXPECT_EQ(10, screen_rect.y());
-  EXPECT_EQ(100, screen_rect.width());
-  EXPECT_EQ(150, screen_rect.height());
+  CompareRect({10, 20, 200, 300}, GetScreenRect(rect, {0, 0}, 1));
+  CompareRect({15, 30, 300, 450}, GetScreenRect(rect, {0, 0}, 1.5));
+  CompareRect({5, 10, 100, 150}, GetScreenRect(rect, {0, 0}, 0.5));
 
   // Test various zooms with the position elsewhere.
-  screen_rect = GetScreenRect(rect, {400, 30}, 1);
-  EXPECT_EQ(-390, screen_rect.x());
-  EXPECT_EQ(-10, screen_rect.y());
-  EXPECT_EQ(200, screen_rect.width());
-  EXPECT_EQ(300, screen_rect.height());
-
-  screen_rect = GetScreenRect(rect, {400, 30}, 1.5);
-  EXPECT_EQ(-385, screen_rect.x());
-  EXPECT_EQ(0, screen_rect.y());
-  EXPECT_EQ(300, screen_rect.width());
-  EXPECT_EQ(450, screen_rect.height());
-
-  screen_rect = GetScreenRect(rect, {400, 30}, 0.5);
-  EXPECT_EQ(-395, screen_rect.x());
-  EXPECT_EQ(-20, screen_rect.y());
-  EXPECT_EQ(100, screen_rect.width());
-  EXPECT_EQ(150, screen_rect.height());
+  CompareRect({-390, -10, 200, 300}, GetScreenRect(rect, {400, 30}, 1));
+  CompareRect({-385, 0, 300, 450}, GetScreenRect(rect, {400, 30}, 1.5));
+  CompareRect({-395, -20, 100, 150}, GetScreenRect(rect, {400, 30}, 0.5));
 
   // Test various zooms with a negative position.
-  screen_rect = GetScreenRect(rect, {100, -50}, 1);
-  EXPECT_EQ(-90, screen_rect.x());
-  EXPECT_EQ(70, screen_rect.y());
-  EXPECT_EQ(200, screen_rect.width());
-  EXPECT_EQ(300, screen_rect.height());
-
-  screen_rect = GetScreenRect(rect, {100, -50}, 1.5);
-  EXPECT_EQ(-85, screen_rect.x());
-  EXPECT_EQ(80, screen_rect.y());
-  EXPECT_EQ(300, screen_rect.width());
-  EXPECT_EQ(450, screen_rect.height());
-
-  screen_rect = GetScreenRect(rect, {100, -50}, 0.5);
-  EXPECT_EQ(-95, screen_rect.x());
-  EXPECT_EQ(60, screen_rect.y());
-  EXPECT_EQ(100, screen_rect.width());
-  EXPECT_EQ(150, screen_rect.height());
+  CompareRect({-90, 70, 200, 300}, GetScreenRect(rect, {100, -50}, 1));
+  CompareRect({-85, 80, 300, 450}, GetScreenRect(rect, {100, -50}, 1.5));
+  CompareRect({-95, 60, 100, 150}, GetScreenRect(rect, {100, -50}, 0.5));
 
   // Test an empty rect always outputs an empty rect.
   const pp::Rect empty_rect;
-  screen_rect = GetScreenRect(empty_rect, {20, 500}, 1);
-  EXPECT_EQ(-20, screen_rect.x());
-  EXPECT_EQ(-500, screen_rect.y());
-  EXPECT_EQ(0, screen_rect.width());
-  EXPECT_EQ(0, screen_rect.height());
-
-  screen_rect = GetScreenRect(empty_rect, {20, 500}, 1.5);
-  EXPECT_EQ(-20, screen_rect.x());
-  EXPECT_EQ(-500, screen_rect.y());
-  EXPECT_EQ(0, screen_rect.width());
-  EXPECT_EQ(0, screen_rect.height());
-
-  screen_rect = GetScreenRect(empty_rect, {20, 500}, 0.5);
-  EXPECT_EQ(-20, screen_rect.x());
-  EXPECT_EQ(-500, screen_rect.y());
-  EXPECT_EQ(0, screen_rect.width());
-  EXPECT_EQ(0, screen_rect.height());
+  CompareRect({-20, -500, 0, 0}, GetScreenRect(empty_rect, {20, 500}, 1));
+  CompareRect({-20, -500, 0, 0}, GetScreenRect(empty_rect, {20, 500}, 1.5));
+  CompareRect({-20, -500, 0, 0}, GetScreenRect(empty_rect, {20, 500}, 0.5));
 }
 
 TEST(CoordinateTest, GetSurroundingRect) {
   constexpr int kDocWidth = 1000;
 
   // Test various position, sizes, and document width.
-  pp::Rect rect = GetSurroundingRect(100, 300, kSingleViewInsets, kDocWidth,
-                                     kBottomSeparator);
-  EXPECT_EQ(0, rect.x());
-  EXPECT_EQ(97, rect.y());
-  EXPECT_EQ(1000, rect.width());
-  EXPECT_EQ(314, rect.height());
-
-  rect = GetSurroundingRect(40, 200, kSingleViewInsets, kDocWidth,
-                            kBottomSeparator);
-  EXPECT_EQ(0, rect.x());
-  EXPECT_EQ(37, rect.y());
-  EXPECT_EQ(1000, rect.width());
-  EXPECT_EQ(214, rect.height());
-
-  rect = GetSurroundingRect(200, 500, kSingleViewInsets, kDocWidth,
-                            kBottomSeparator);
-  EXPECT_EQ(0, rect.x());
-  EXPECT_EQ(197, rect.y());
-  EXPECT_EQ(1000, rect.width());
-  EXPECT_EQ(514, rect.height());
-
-  rect =
-      GetSurroundingRect(-100, 300, kSingleViewInsets, 200, kBottomSeparator);
-  EXPECT_EQ(0, rect.x());
-  EXPECT_EQ(-103, rect.y());
-  EXPECT_EQ(200, rect.width());
-  EXPECT_EQ(314, rect.height());
+  CompareRect({0, 97, 1000, 314},
+              GetSurroundingRect(100, 300, kSingleViewInsets, kDocWidth,
+                                 kBottomSeparator));
+  CompareRect({0, 37, 1000, 214},
+              GetSurroundingRect(40, 200, kSingleViewInsets, kDocWidth,
+                                 kBottomSeparator));
+  CompareRect({0, 197, 1000, 514},
+              GetSurroundingRect(200, 500, kSingleViewInsets, kDocWidth,
+                                 kBottomSeparator));
+  CompareRect(
+      {0, -103, 200, 314},
+      GetSurroundingRect(-100, 300, kSingleViewInsets, 200, kBottomSeparator));
 }
 
 TEST(CoordinateTest, GetLeftRectForTwoUpView) {
-  pp::Rect left_rect;
-
-  left_rect = GetLeftRectForTwoUpView({200, 400}, {300, 100}, kLeftInsets);
-  EXPECT_EQ(105, left_rect.x());
-  EXPECT_EQ(103, left_rect.y());
-  EXPECT_EQ(194, left_rect.width());
-  EXPECT_EQ(390, left_rect.height());
-
-  left_rect = GetLeftRectForTwoUpView({300, 400}, {300, 0}, kLeftInsets);
-  EXPECT_EQ(5, left_rect.x());
-  EXPECT_EQ(3, left_rect.y());
-  EXPECT_EQ(294, left_rect.width());
-  EXPECT_EQ(390, left_rect.height());
+  CompareRect({105, 103, 194, 390},
+              GetLeftRectForTwoUpView({200, 400}, {300, 100}, kLeftInsets));
+  CompareRect({5, 3, 294, 390},
+              GetLeftRectForTwoUpView({300, 400}, {300, 0}, kLeftInsets));
 
   // Test rect smaller than shadow insets returns empty rect.
-  left_rect = GetLeftRectForTwoUpView({5, 5}, {10, 0}, kLeftInsets);
-  EXPECT_EQ(10, left_rect.x());
-  EXPECT_EQ(3, left_rect.y());
-  EXPECT_EQ(0, left_rect.width());
-  EXPECT_EQ(0, left_rect.height());
+  CompareRect({10, 3, 0, 0},
+              GetLeftRectForTwoUpView({5, 5}, {10, 0}, kLeftInsets));
 
   // Test empty rect gets positioned.
-  left_rect = GetLeftRectForTwoUpView({0, 0}, {100, 0}, kLeftInsets);
-  EXPECT_EQ(105, left_rect.x());
-  EXPECT_EQ(3, left_rect.y());
-  EXPECT_EQ(0, left_rect.width());
-  EXPECT_EQ(0, left_rect.height());
+  CompareRect({105, 3, 0, 0},
+              GetLeftRectForTwoUpView({0, 0}, {100, 0}, kLeftInsets));
 }
 
 TEST(CoordinateTest, GetRightRectForTwoUpView) {
-  pp::Rect right_rect;
-
-  right_rect = GetRightRectForTwoUpView({200, 400}, {300, 100}, kRightInsets);
-  EXPECT_EQ(301, right_rect.x());
-  EXPECT_EQ(103, right_rect.y());
-  EXPECT_EQ(194, right_rect.width());
-  EXPECT_EQ(390, right_rect.height());
-
-  right_rect = GetRightRectForTwoUpView({300, 400}, {300, 0}, kRightInsets);
-  EXPECT_EQ(301, right_rect.x());
-  EXPECT_EQ(3, right_rect.y());
-  EXPECT_EQ(294, right_rect.width());
-  EXPECT_EQ(390, right_rect.height());
+  CompareRect({301, 103, 194, 390},
+              GetRightRectForTwoUpView({200, 400}, {300, 100}, kRightInsets));
+  CompareRect({301, 3, 294, 390},
+              GetRightRectForTwoUpView({300, 400}, {300, 0}, kRightInsets));
 
   // Test rect smaller than shadow insets returns empty rect.
-  right_rect = GetRightRectForTwoUpView({5, 5}, {10, 0}, kRightInsets);
-  EXPECT_EQ(11, right_rect.x());
-  EXPECT_EQ(3, right_rect.y());
-  EXPECT_EQ(0, right_rect.width());
-  EXPECT_EQ(0, right_rect.height());
+  CompareRect({11, 3, 0, 0},
+              GetRightRectForTwoUpView({5, 5}, {10, 0}, kRightInsets));
 
   // Test empty rect gets positioned.
-  right_rect = GetRightRectForTwoUpView({0, 0}, {100, 0}, kRightInsets);
-  EXPECT_EQ(101, right_rect.x());
-  EXPECT_EQ(3, right_rect.y());
-  EXPECT_EQ(0, right_rect.width());
-  EXPECT_EQ(0, right_rect.height());
+  CompareRect({101, 3, 0, 0},
+              GetRightRectForTwoUpView({0, 0}, {100, 0}, kRightInsets));
 }
 
 TEST(CoordinateTest, TwoUpViewLayout) {
-  pp::Rect left_rect;
-  pp::Rect right_rect;
   pp::Point position(1066, 0);
 
   // Test layout when the widest page is on the left.
-  left_rect = GetLeftRectForTwoUpView({826, 1066}, position, kLeftInsets);
-  EXPECT_EQ(245, left_rect.x());
-  EXPECT_EQ(3, left_rect.y());
-  EXPECT_EQ(820, left_rect.width());
-  EXPECT_EQ(1056, left_rect.height());
-
-  right_rect = GetRightRectForTwoUpView({1066, 826}, position, kRightInsets);
-  EXPECT_EQ(1067, right_rect.x());
-  EXPECT_EQ(3, right_rect.y());
-  EXPECT_EQ(1060, right_rect.width());
-  EXPECT_EQ(816, right_rect.height());
+  CompareRect({245, 3, 820, 1056},
+              GetLeftRectForTwoUpView({826, 1066}, position, kLeftInsets));
+  CompareRect({1067, 3, 1060, 816},
+              GetRightRectForTwoUpView({1066, 826}, position, kRightInsets));
 
   position.set_y(1066);
-  left_rect = GetLeftRectForTwoUpView({826, 1066}, position, kLeftInsets);
-  EXPECT_EQ(245, left_rect.x());
-  EXPECT_EQ(1069, left_rect.y());
-  EXPECT_EQ(820, left_rect.width());
-  EXPECT_EQ(1056, left_rect.height());
-
-  right_rect = GetRightRectForTwoUpView({826, 900}, position, kRightInsets);
-  EXPECT_EQ(1067, right_rect.x());
-  EXPECT_EQ(1069, right_rect.y());
-  EXPECT_EQ(820, right_rect.width());
-  EXPECT_EQ(890, right_rect.height());
+  CompareRect({245, 1069, 820, 1056},
+              GetLeftRectForTwoUpView({826, 1066}, position, kLeftInsets));
+  CompareRect({1067, 1069, 820, 890},
+              GetRightRectForTwoUpView({826, 900}, position, kRightInsets));
 
   // Test layout when the widest page is on the right.
   position.set_y(0);
-  left_rect = GetLeftRectForTwoUpView({1066, 826}, position, kLeftInsets);
-  EXPECT_EQ(5, left_rect.x());
-  EXPECT_EQ(3, left_rect.y());
-  EXPECT_EQ(1060, left_rect.width());
-  EXPECT_EQ(816, left_rect.height());
-
-  right_rect = GetRightRectForTwoUpView({826, 1066}, position, kRightInsets);
-  EXPECT_EQ(1067, right_rect.x());
-  EXPECT_EQ(3, right_rect.y());
-  EXPECT_EQ(820, right_rect.width());
-  EXPECT_EQ(1056, right_rect.height());
+  CompareRect({5, 3, 1060, 816},
+              GetLeftRectForTwoUpView({1066, 826}, position, kLeftInsets));
+  CompareRect({1067, 3, 820, 1056},
+              GetRightRectForTwoUpView({826, 1066}, position, kRightInsets));
 
   position.set_y(1066);
-  left_rect = GetLeftRectForTwoUpView({826, 900}, position, kLeftInsets);
-  EXPECT_EQ(245, left_rect.x());
-  EXPECT_EQ(1069, left_rect.y());
-  EXPECT_EQ(820, left_rect.width());
-  EXPECT_EQ(890, left_rect.height());
-
-  right_rect = GetRightRectForTwoUpView({826, 1066}, position, kRightInsets);
-  EXPECT_EQ(1067, right_rect.x());
-  EXPECT_EQ(1069, right_rect.y());
-  EXPECT_EQ(820, right_rect.width());
-  EXPECT_EQ(1056, right_rect.height());
+  CompareRect({245, 1069, 820, 890},
+              GetLeftRectForTwoUpView({826, 900}, position, kLeftInsets));
+  CompareRect({1067, 1069, 820, 1056},
+              GetRightRectForTwoUpView({826, 1066}, position, kRightInsets));
 }
 
 }  // namespace draw_utils

@@ -95,7 +95,8 @@ void LockLayoutManager::OnWindowBoundsChanged(aura::Window* window,
                                               const gfx::Rect& new_bounds,
                                               ui::PropertyChangeReason reason) {
   if (root_window_ == window) {
-    const WMEvent wm_event(WM_EVENT_DISPLAY_BOUNDS_CHANGED);
+    const DisplayMetricsChangedWMEvent wm_event(
+        display::DisplayObserver::DISPLAY_METRIC_BOUNDS);
     AdjustWindowsForWorkAreaChange(&wm_event);
   }
 }

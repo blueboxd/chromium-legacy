@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">स्लायाडर शोधा</translation>
 <translation id="1399648040768741453">तेलगु कीबोर्ड (Phonetic)</translation>
 <translation id="1430915738399379752">प्रिंट</translation>
+<translation id="1439494416798956626"><ph name="FOLDER_NAME" /> मध्ये हलवले.</translation>
 <translation id="1441841714100794440">व्हिएतनामी कीबोर्ड (Telex)</translation>
 <translation id="1455548678241328678">नॉर्वेजियन कीबोर्ड</translation>
 <translation id="1464724975715666883">१ एरर.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">तुमचे मीडिया डिव्हाइस स्कॅन करीत आहे...</translation>
 <translation id="3468522857997926824"><ph name="BEGIN_LINK" />Google ड्राइव्ह<ph name="END_LINK" /> वर <ph name="FILE_COUNT" /> फोटोंचा बॅकअप घेतला</translation>
 <translation id="3470502288861289375">कॉपी करत आहे...</translation>
+<translation id="3473378059788601120"><ph name="FOLDER_NAME" /> मध्ये कॉपी केले.</translation>
 <translation id="3475447146579922140">Google स्प्रेडशीट</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> एरर.</translation>
 <translation id="3519867315646775981">लिप्यंतरण (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">जपानी इनपुट (जपानी कीबोर्डसाठी)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux अ‍ॅप्सना तुमच्या Google ड्राइव्ह मधील फायलींमध्ये बदल करण्याची परवानगी द्या. बदल तुमच्या दुसर्‍या डिव्हाइसवर सिंक होतील.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> आयटम</translation>
 <translation id="5982621672636444458">क्रमवारी पर्याय</translation>
 <translation id="6005282720244019462">लॅटिन अमेरिकन कीबोर्ड</translation>
 <translation id="6007237601604674381">हलविणे अयशस्वी. <ph name="ERROR_MESSAGE" /></translation>

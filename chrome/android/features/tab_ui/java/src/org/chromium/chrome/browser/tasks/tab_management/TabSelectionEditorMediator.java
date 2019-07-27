@@ -11,7 +11,6 @@ import android.view.View;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
@@ -117,24 +116,12 @@ class TabSelectionEditorMediator
 
     @Override
     public void show() {
-        mResetHandler.resetWithListOfTabs(getTabsToShow());
+        List<Tab> nonGroupedTabs = mTabModelSelector.getTabModelFilterProvider()
+                                           .getCurrentTabModelFilter()
+                                           .getTabsWithNoOtherRelatedTabs();
+        mResetHandler.resetWithListOfTabs(nonGroupedTabs);
         mSelectionDelegate.setSelectionModeEnabledForZeroItems(true);
         mModel.set(TabSelectionEditorProperties.IS_VISIBLE, true);
-    }
-
-    private List<Tab> getTabsToShow() {
-        List<Tab> tabs = new ArrayList<>();
-        TabModelFilter tabModelFilter =
-                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
-        for (int i = 0; i < tabModelFilter.getCount(); i++) {
-            Tab tab = tabModelFilter.getTabAt(i);
-            // TODO(977302): This filtered out the tabs that has related tabs. This should be done
-            // at the TabModelFilter.
-            if (tabModelFilter.getRelatedTabList(tab.getId()).size() == 1) {
-                tabs.add(tab);
-            }
-        }
-        return tabs;
     }
 
     @Override

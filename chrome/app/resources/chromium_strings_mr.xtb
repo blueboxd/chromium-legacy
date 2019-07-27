@@ -69,8 +69,8 @@
 <translation id="328888136576916638">Google API की गहाळ आहेत. Chromium ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
 <translation id="3296368748942286671">Chromium बंद असताना पार्श्वभूमी ॲप्लिकेशन चालवणे सुरू ठेवा</translation>
 <translation id="331951419404882060">साइन इन करण्यात एररमुळे Chromium OS तुमचा डेटा संकालित करू शकले नाही.</translation>
+<translation id="3340978935015468852">सेटिंग्ज</translation>
 <translation id="3474745554856756813">हे या डिव्‍हाइस मधून <ph name="ITEMS_COUNT" /> आयटम हटवेल. नंतर तुमचा डेटा पुनर्प्राप्त करण्‍यासाठी, Chromium मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
-<translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="3509308970982693815">कृपया सर्व Chromium विंडो बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
 <translation id="352783484088404971">Chromium मधून काढून टाका...</translation>
 <translation id="3575459661164320785">तुमच्या काँप्युटरवर हानिकारक सॉफ्टवेअर आहे. Chromium ते काढून टाकून तुमचा ब्राउझर पुन्हा नीट चालावा यासाठी तुमच्या सेटिंग्ज रिस्टोअर आणि एक्स्टेंशन बंद करू शकते.</translation>
@@ -83,7 +83,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="388648406173476553">Chromium कस्टमाइझ करा आणि नियंत्रित करा. एका गोष्टीवर तुम्ही लक्ष द्यायला हवे - तपशिलांसाठी क्लिक करा.</translation>
 <translation id="3889543394854987837">Chromium उघडण्यासाठी तुमचे नाव क्लिक करा आणि ब्राउझिंग प्रारंभ करा.</translation>
-<translation id="3898493977366060150">Google smarts सह वेब ब्राउझिंग</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />वर्तमान सेटिंग्ज<ph name="END_LINK" /> चा अहवाल देऊन Chromium उत्कृष्ट बनव‍िण्यात मदत करा</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
 <translation id="421369550622382712">Chromium साठी उत्कृष्ट ॲप्स, गेम, विस्तार आणि थीम शोधा</translation>
@@ -109,7 +108,6 @@
 <translation id="4943838377383847465">Chromium पार्श्वभूमी मोड मध्ये आहे.</translation>
 <translation id="4987820182225656817">अतिथी कोणतीही गोष्ट मागे न सोडता Chromium वापरू शकतात.</translation>
 <translation id="4994636714258228724">आपल्या स्वतःस Chromium वर जोडा</translation>
-<translation id="5045248521775609809">Chromium ला सर्वत्र न्या</translation>
 <translation id="5181952534059945058">हे पेज खूप जास्त मेमरी वापरत असल्यामुळे, Chromium ने काही आशय काढला आहे.</translation>
 <translation id="5277894862589591112">तुम्ही केलेले बदल लागू करण्यासाठी, Chromium रीलाँच करा</translation>
 <translation id="5358375970380395591">तुम्ही एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि तुमच्या Chromium प्रोफाइलवर त्याच्या अॅडमिनिस्ट्रेटरला नियंत्रण देत आहात. तुमचा Chromium डेटा, जसे की तुमचे अॅप्स, बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. तुम्ही Google खाती डॅशबोर्डद्वारे हा डेटा हटवण्यात सक्षम व्हाल, परंतु तुम्ही दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम असणार नाही. <ph name="LEARN_MORE" /></translation>

@@ -219,6 +219,13 @@ enum class TaskType : unsigned char {
   // Task used to split a script loading task for cooperative scheduling
   kInternalContinueScriptLoading = 65,
 
+  // Experimental tasks types used for main thread scheduling postTask API
+  // (https://github.com/WICG/main-thread-scheduling).
+  // These task types should not be passed directly to
+  // FrameScheduler::GetTaskRunner(); they are used indirectly by
+  // WebSchedulingTaskQueues.
+  kExperimentalWebScheduling = 67,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -242,9 +249,9 @@ enum class TaskType : unsigned char {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 67,
+  kCount = 68,
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_TASK_TYPE_H_

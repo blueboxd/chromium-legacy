@@ -202,6 +202,11 @@ void PaginationModel::NotifySelectedPageChanged(int old_selected,
     observer.SelectedPageChanged(old_selected, new_selected);
 }
 
+void PaginationModel::NotifyTransitionAboutToStart() {
+  for (auto& observer : observers_)
+    observer.TransitionStarting();
+}
+
 void PaginationModel::NotifyTransitionStarted() {
   for (auto& observer : observers_)
     observer.TransitionStarted();
@@ -252,7 +257,7 @@ base::TimeDelta PaginationModel::GetTransitionAnimationSlideDuration() const {
 void PaginationModel::StartTransitionAnimation(const Transition& transition) {
   DCHECK(selected_page_ != transition.target_page);
 
-  NotifyTransitionStarted();
+  NotifyTransitionAboutToStart();
   SetTransition(transition);
 
   transition_animation_ = std::make_unique<gfx::SlideAnimation>(this);
@@ -266,6 +271,7 @@ void PaginationModel::StartTransitionAnimation(const Transition& transition) {
   if (duration)
     transition_animation_->SetSlideDuration(duration);
 
+  NotifyTransitionStarted();
   transition_animation_->Show();
 }
 

@@ -45,6 +45,7 @@ class BrowserGpuVideoAcceleratorFactories
   gpu::SharedImageInterface* SharedImageInterface() override;
   gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() override;
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
+  base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
   media::VideoEncodeAccelerator::SupportedProfiles
   GetVideoEncodeAcceleratorSupportedProfiles() override;

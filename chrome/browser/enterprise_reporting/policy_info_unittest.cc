@@ -84,12 +84,12 @@ TEST_F(PolicyInfoTest, ChromePolicy) {
 
   EXPECT_CALL(*policy_service(), GetPolicies(_));
 
-  AppendChromePolicyInfoIntoProfileReport(
-      policy::GetAllPolicyValuesAsDictionary(
-          profile(), /* with_user_policies */ true, /* convert_values */ false,
-          /* with_device_data*/ false,
-          /* is_pretty_print */ false, /* convert_types */ false),
-      &profile_info);
+  AppendChromePolicyInfoIntoProfileReport(policy::DictionaryPolicyConversions()
+                                              .WithBrowserContext(profile())
+                                              .EnableConvertTypes(false)
+                                              .EnablePrettyPrint(false)
+                                              .ToValue(),
+                                          &profile_info);
   EXPECT_EQ(2, profile_info.chrome_policies_size());
 
   auto policy1 = profile_info.chrome_policies(0);
@@ -131,8 +131,11 @@ TEST_F(PolicyInfoTest, ExtensionPolicy) {
                               std::make_unique<base::Value>(3), nullptr);
   em::ChromeUserProfileInfo profile_info;
   AppendExtensionPolicyInfoIntoProfileReport(
-      policy::GetAllPolicyValuesAsDictionary(profile(), true, false, false,
-                                             false, false),
+      policy::DictionaryPolicyConversions()
+          .WithBrowserContext(profile())
+          .EnableConvertTypes(false)
+          .EnablePrettyPrint(false)
+          .ToValue(),
       &profile_info);
   // The second extension is not in the report because it has no policy.
   EXPECT_EQ(1, profile_info.extension_policies_size());

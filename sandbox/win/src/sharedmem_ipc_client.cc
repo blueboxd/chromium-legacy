@@ -144,7 +144,7 @@ ResultCode SharedMemIPCClient::DoCall(CrossCallParams* params,
   }
 
   // The server has returned an answer, copy it and free the channel.
-  memcpy(answer, params->GetCallReturn(), sizeof(CrossCallReturn));
+  memcpy_wrapper(answer, params->GetCallReturn(), sizeof(CrossCallReturn));
 
   // Return the IPC state It can indicate that while the IPC has
   // completed some error in the Broker has caused to not return valid

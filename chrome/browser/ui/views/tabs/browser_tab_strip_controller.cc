@@ -391,9 +391,9 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
     source_browser_view->TabDraggingStatusChanged(/*is_dragging=*/false);
 }
 
-const TabGroupData* BrowserTabStripController::GetDataForGroup(
+const TabGroupVisualData* BrowserTabStripController::GetVisualDataForGroup(
     TabGroupId group) const {
-  return model_->GetDataForGroup(group);
+  return model_->GetVisualDataForGroup(group);
 }
 
 std::vector<int> BrowserTabStripController::ListTabsInGroup(

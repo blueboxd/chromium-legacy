@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_animation.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -1017,6 +1019,30 @@ TEST_P(TabStripTest, HorizontalScroll) {
                                   tab_center, ui::EventTimeForNow(), 0, 0);
   tab_strip_->OnMouseWheel(wheel_event);
   EXPECT_EQ(1, controller_->GetActiveIndex());
+}
+
+TEST_P(TabStripTest, AnimationOnTabAdd) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+  // Show widget to enable animations.
+  widget_->Show();
+
+  // First tab does not animate.
+  controller_->AddTab(0, true);
+  controller_->AddTab(1, false);
+
+  const int initial_width = tab_strip_->tab_at(1)->width();
+  EXPECT_LT(initial_width, tab_strip_->tab_at(0)->width());
+
+  scoped_task_environment()->FastForwardBy(TabAnimation::kAnimationDuration /
+                                           2);
+
+  EXPECT_GT(tab_strip_->tab_at(1)->width(), initial_width);
+  EXPECT_LT(tab_strip_->tab_at(1)->width(), tab_strip_->tab_at(0)->width());
+
+  // Fast-forward by more than enough to ensure the animation finishes.
+  scoped_task_environment()->FastForwardBy(TabAnimation::kAnimationDuration);
+
+  EXPECT_EQ(tab_strip_->tab_at(0)->width(), tab_strip_->tab_at(1)->width());
 }
 
 TEST_P(TabStripTest, GroupHeaderBasics) {

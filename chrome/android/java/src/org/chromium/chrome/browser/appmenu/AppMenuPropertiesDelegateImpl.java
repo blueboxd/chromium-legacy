@@ -268,6 +268,13 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
                     || DeviceClassManager.enableAccessibilityLayout()) {
                 menu.findItem(R.id.menu_group_tabs).setVisible(false);
+            } else {
+                boolean shouldEnabled = mTabModelSelector.getTabModelFilterProvider()
+                                                .getCurrentTabModelFilter()
+                                                .getTabsWithNoOtherRelatedTabs()
+                                                .size()
+                        > 1;
+                menu.findItem(R.id.menu_group_tabs).setEnabled(shouldEnabled);
             }
         }
 

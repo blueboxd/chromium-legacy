@@ -1648,4 +1648,35 @@ TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
   target->getDisplayLockForBindings()->acquire(script_state, &options);
 }
 
+TEST_F(DisplayLockContextRenderingTest,
+       SelectionOnAnonymousColumnSpannerDoesNotCrash) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      #columns {
+        column-count: 5;
+      }
+      #spanner {
+        column-span: all;
+      }
+    </style>
+    <div id="columns">
+      <div id="spanner"></div>
+    </div>
+  )HTML");
+
+  auto* columns_object =
+      GetDocument().getElementById("columns")->GetLayoutObject();
+  LayoutObject* spanner_placeholder_object = nullptr;
+  for (auto* candidate = columns_object->SlowFirstChild(); candidate;
+       candidate = candidate->NextSibling()) {
+    if (candidate->IsLayoutMultiColumnSpannerPlaceholder()) {
+      spanner_placeholder_object = candidate;
+      break;
+    }
+  }
+
+  ASSERT_TRUE(spanner_placeholder_object);
+  EXPECT_FALSE(spanner_placeholder_object->CanBeSelectionLeaf());
+}
+
 }  // namespace blink

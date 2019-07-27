@@ -152,7 +152,7 @@ void BookmarkAppConfirmationView::ContentsChanged(
 }
 
 base::string16 BookmarkAppConfirmationView::GetTrimmedTitle() const {
-  base::string16 title(title_tf_->text());
+  base::string16 title(title_tf_->GetText());
   base::TrimWhitespace(title, base::TRIM_ALL, &title);
   return title;
 }

@@ -1945,17 +1945,17 @@ TEST_F(ViewTest, Textfield) {
 
   // Test setting, appending text.
   textfield->SetText(kText);
-  EXPECT_EQ(kText, textfield->text());
+  EXPECT_EQ(kText, textfield->GetText());
   textfield->AppendText(kExtraText);
-  EXPECT_EQ(kText + kExtraText, textfield->text());
+  EXPECT_EQ(kText + kExtraText, textfield->GetText());
   textfield->SetText(base::string16());
-  EXPECT_TRUE(textfield->text().empty());
+  EXPECT_TRUE(textfield->GetText().empty());
 
   // Test selection related methods.
   textfield->SetText(kText);
   EXPECT_TRUE(textfield->GetSelectedText().empty());
   textfield->SelectAll(false);
-  EXPECT_EQ(kText, textfield->text());
+  EXPECT_EQ(kText, textfield->GetText());
   textfield->ClearSelection();
   EXPECT_TRUE(textfield->GetSelectedText().empty());
 
@@ -2047,18 +2047,18 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   // Attempting to paste kNormalText in a read-only text-field should fail.
   read_only->SelectAll(false);
   read_only->ExecuteCommand(IDS_APP_PASTE, 0);
-  EXPECT_EQ(kReadOnlyText, read_only->text());
+  EXPECT_EQ(kReadOnlyText, read_only->GetText());
 
   password->SelectAll(false);
   password->ExecuteCommand(IDS_APP_PASTE, 0);
-  EXPECT_EQ(kNormalText, password->text());
+  EXPECT_EQ(kNormalText, password->GetText());
 
   // Copy from |read_only| to observe a change in the normal textfield text.
   read_only->SelectAll(false);
   read_only->ExecuteCommand(IDS_APP_COPY, 0);
   normal->SelectAll(false);
   normal->ExecuteCommand(IDS_APP_PASTE, 0);
-  EXPECT_EQ(kReadOnlyText, normal->text());
+  EXPECT_EQ(kReadOnlyText, normal->GetText());
   widget->CloseNow();
 }
 

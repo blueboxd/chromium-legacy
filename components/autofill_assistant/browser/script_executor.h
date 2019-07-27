@@ -206,12 +206,8 @@ class ScriptExecutor : public ActionDelegate,
     //
     // If the given result is non-null, it should be forwarded as the result of
     // the main script.
-    //
-    // The third argument contains the set of interrupts that were run while
-    // waiting.
-    using Callback = base::OnceCallback<void(bool,
-                                             const ScriptExecutor::Result*,
-                                             const std::set<std::string>&)>;
+    using Callback =
+        base::OnceCallback<void(bool, const ScriptExecutor::Result*)>;
 
     // |main_script_| must not be null and outlive this instance.
     WaitForDomOperation(
@@ -317,13 +313,11 @@ class ScriptExecutor : public ActionDelegate,
                            base::OnceCallback<void(bool)> callback);
   void OnShortWaitForElement(base::OnceCallback<void(bool)> callback,
                              bool element_found,
-                             const Result* interrupt_result,
-                             const std::set<std::string>& interrupt_paths);
+                             const Result* interrupt_result);
   void OnWaitForElementVisibleWithInterrupts(
       base::OnceCallback<void(ProcessedActionStatusProto)> callback,
       bool element_found,
-      const Result* interrupt_result,
-      const std::set<std::string>& ran_interrupts);
+      const Result* interrupt_result);
   void OnGetPaymentInformation(
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       std::unique_ptr<PaymentInformation> result);
@@ -338,39 +332,33 @@ class ScriptExecutor : public ActionDelegate,
   void OnChosen(UserAction::Callback callback,
                 std::unique_ptr<TriggerContext> context);
 
-  std::string script_path_;
+  const std::string script_path_;
   std::unique_ptr<TriggerContext> additional_context_;
   std::string last_global_payload_;
   const std::string initial_script_payload_;
   std::string last_script_payload_;
   ScriptExecutor::Listener* const listener_;
   ScriptExecutorDelegate* const delegate_;
-  RunScriptCallback callback_;
-
-  std::vector<std::unique_ptr<Action>> actions_;
-  std::vector<ProcessedActionProto> processed_actions_;
-  AtEnd at_end_;
-  bool should_stop_script_;
-  bool should_clean_contextual_ui_on_finish_;
-  ActionProto::ActionInfoCase previous_action_type_;
-  Selector last_focused_element_selector_;
-  TopPadding last_focused_element_top_padding_;
-  std::unique_ptr<ElementAreaProto> touchable_element_area_;
-  std::map<std::string, ScriptStatusProto>* scripts_state_;
-  std::unique_ptr<BatchElementChecker> batch_element_checker_;
-
-  // Navigation information relevant to the current action.
-  NavigationInfoProto navigation_info_;
-
-  // Paths of the interrupts that were run during the current script.
-  std::set<std::string> ran_interrupts_;
-
   // Set of interrupts that might run during wait for dom actions with
   // allow_interrupt. Sorted by priority; an interrupt that appears on the
   // vector first should run first.
   const std::vector<Script*>* ordered_interrupts_;
+  std::map<std::string, ScriptStatusProto>* const scripts_state_;
+  RunScriptCallback callback_;
+  std::vector<std::unique_ptr<Action>> actions_;
+  std::vector<ProcessedActionProto> processed_actions_;
+  AtEnd at_end_ = CONTINUE;
+  bool should_stop_script_ = false;
+  bool should_clean_contextual_ui_on_finish_ = false;
+  ActionProto::ActionInfoCase previous_action_type_ =
+      ActionProto::ACTION_INFO_NOT_SET;
+  Selector last_focused_element_selector_;
+  TopPadding last_focused_element_top_padding_;
+  std::unique_ptr<ElementAreaProto> touchable_element_area_;
 
-  std::unique_ptr<WaitForDomOperation> wait_for_dom_;
+  // Callback set by Prompt(). This is called when the prompt is terminated
+  // without selecting any chips. nullptr unless showing a prompt.
+  base::OnceCallback<void()> on_terminate_prompt_;
 
   // Steps towards the requirements for calling |on_expected_navigation_done_|
   // to be fulfilled.
@@ -390,11 +378,25 @@ class ScriptExecutor : public ActionDelegate,
   // Callback called the next time |expected_navigation_step_| becomes DONE.
   base::OnceCallback<void(bool)> on_expected_navigation_done_;
 
-  // Callback set by Prompt(). This is called when the prompt is terminated
-  // without selecting any chips. nullptr unless showing a prompt.
-  base::OnceCallback<void()> on_terminate_prompt_;
+  // Data only relevant to the currently running action. It is cleared before an
+  // action is run.
+  struct CurrentActionData {
+    CurrentActionData();
+    ~CurrentActionData();
+    CurrentActionData& operator=(CurrentActionData&& other);
 
-  base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_;
+    // Navigation information relevant to the current action.
+    NavigationInfoProto navigation_info;
+
+    std::unique_ptr<WaitForDomOperation> wait_for_dom;
+
+    // Set to true when a direct action was used to trigger a UserAction within
+    // a prompt. This is reported to the backend.
+    bool direct_action = false;
+  };
+  CurrentActionData current_action_data_;
+
+  base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);
 };
 }  // namespace autofill_assistant

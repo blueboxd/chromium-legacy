@@ -10,7 +10,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
@@ -75,7 +74,7 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
                             if (mNativeUsbChooserDialogPtr == 0) return;
 
                             Natives jni = UsbChooserDialogJni.get();
-                            jni.loadUsbHelpPage(this, mNativeUsbChooserDialogPtr);
+                            jni.loadUsbHelpPage(mNativeUsbChooserDialogPtr);
 
                             // Get rid of the highlight background on selection.
                             view.invalidate();
@@ -95,9 +94,9 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
         if (mNativeUsbChooserDialogPtr != 0) {
             Natives jni = UsbChooserDialogJni.get();
             if (id.isEmpty()) {
-                jni.onDialogCancelled(this, mNativeUsbChooserDialogPtr);
+                jni.onDialogCancelled(mNativeUsbChooserDialogPtr);
             } else {
-                jni.onItemSelected(this, mNativeUsbChooserDialogPtr, id);
+                jni.onItemSelected(mNativeUsbChooserDialogPtr, id);
             }
         }
     }
@@ -137,9 +136,8 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
 
     @NativeMethods
     interface Natives {
-        void onItemSelected(@JCaller UsbChooserDialog self, long nativeUsbChooserDialogAndroid,
-                String deviceId);
-        void onDialogCancelled(@JCaller UsbChooserDialog self, long nativeUsbChooserDialogAndroid);
-        void loadUsbHelpPage(@JCaller UsbChooserDialog self, long nativeUsbChooserDialogAndroid);
+        void onItemSelected(long nativeUsbChooserDialogAndroid, String deviceId);
+        void onDialogCancelled(long nativeUsbChooserDialogAndroid);
+        void loadUsbHelpPage(long nativeUsbChooserDialogAndroid);
     }
 }

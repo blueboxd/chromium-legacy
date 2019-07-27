@@ -65,6 +65,9 @@ class COMPONENT_EXPORT(DBUS) DbusType {
  public:
   virtual ~DbusType();
 
+  bool operator==(const DbusType& other) const;
+  bool operator!=(const DbusType& other) const;
+
   // Serializes this object to |writer|.
   virtual void Write(dbus::MessageWriter* writer) const = 0;
 
@@ -75,6 +78,10 @@ class COMPONENT_EXPORT(DBUS) DbusType {
   // array is empty, then there would be no DbusType instance to get the
   // signature from.
   virtual std::string GetSignatureDynamic() const = 0;
+
+ protected:
+  // This is only safe to call after verifying GetSignatureDynamic() matches.
+  virtual bool IsEqual(const DbusType& other_type) const = 0;
 };
 
 template <typename T>
@@ -82,8 +89,14 @@ class DbusTypeImpl : public DbusType {
  public:
   ~DbusTypeImpl() override {}
 
-  // DbusType:
   std::string GetSignatureDynamic() const override { return T::GetSignature(); }
+
+ protected:
+  // DbusType:
+  bool IsEqual(const DbusType& other_type) const override {
+    const T* other = static_cast<const T*>(&other_type);
+    return static_cast<const T*>(this)->value_ == other->value_;
+  }
 };
 
 class COMPONENT_EXPORT(DBUS) DbusBoolean : public DbusTypeImpl<DbusBoolean> {
@@ -98,6 +111,8 @@ class COMPONENT_EXPORT(DBUS) DbusBoolean : public DbusTypeImpl<DbusBoolean> {
   static std::string GetSignature();
 
  private:
+  friend class DbusTypeImpl<DbusBoolean>;
+
   bool value_;
 };
 
@@ -113,6 +128,8 @@ class COMPONENT_EXPORT(DBUS) DbusInt32 : public DbusTypeImpl<DbusInt32> {
   static std::string GetSignature();
 
  private:
+  friend class DbusTypeImpl<DbusInt32>;
+
   int32_t value_;
 };
 
@@ -128,6 +145,8 @@ class COMPONENT_EXPORT(DBUS) DbusUint32 : public DbusTypeImpl<DbusUint32> {
   static std::string GetSignature();
 
  private:
+  friend class DbusTypeImpl<DbusUint32>;
+
   uint32_t value_;
 };
 
@@ -143,6 +162,8 @@ class COMPONENT_EXPORT(DBUS) DbusString : public DbusTypeImpl<DbusString> {
   static std::string GetSignature();
 
  private:
+  friend class DbusTypeImpl<DbusString>;
+
   std::string value_;
 };
 
@@ -159,6 +180,8 @@ class COMPONENT_EXPORT(DBUS) DbusObjectPath
   static std::string GetSignature();
 
  private:
+  friend class DbusTypeImpl<DbusObjectPath>;
+
   dbus::ObjectPath value_;
 };
 
@@ -171,14 +194,17 @@ class COMPONENT_EXPORT(DBUS) DbusVariant : public DbusTypeImpl<DbusVariant> {
 
   DbusVariant& operator=(DbusVariant&& other);
 
-  operator bool() const;
+  explicit operator bool() const;
 
   // DbusType:
+  bool IsEqual(const DbusType& other_type) const override;
   void Write(dbus::MessageWriter* writer) const override;
 
   static std::string GetSignature();
 
  private:
+  friend class DbusTypeImpl<DbusVariant>;
+
   std::unique_ptr<DbusType> value_;
 };
 
@@ -215,6 +241,8 @@ class COMPONENT_EXPORT(DBUS) DbusArray : public DbusTypeImpl<DbusArray<T>> {
   }
 
  private:
+  friend class DbusTypeImpl<DbusArray<T>>;
+
   std::vector<T> value_;
 };
 
@@ -235,11 +263,14 @@ class COMPONENT_EXPORT(DBUS) DbusByteArray
   ~DbusByteArray() override;
 
   // DbusType:
+  bool IsEqual(const DbusType& other_type) const override;
   void Write(dbus::MessageWriter* writer) const override;
 
   static std::string GetSignature();
 
  private:
+  friend class DbusTypeImpl<DbusByteArray>;
+
   scoped_refptr<base::RefCountedMemory> value_;
 };
 
@@ -264,6 +295,8 @@ class COMPONENT_EXPORT(DBUS) DbusStruct
   }
 
  private:
+  friend class DbusTypeImpl<DbusStruct<Ts...>>;
+
   std::tuple<Ts...> value_;
 };
 
@@ -276,7 +309,7 @@ template <typename K, typename V>
 class COMPONENT_EXPORT(DBUS) DbusDictEntry
     : public DbusTypeImpl<DbusDictEntry<K, V>> {
  public:
-  DbusDictEntry(K&& k, V&& v) : k_(std::move(k)), v_(std::move(v)) {}
+  DbusDictEntry(K&& k, V&& v) : value_{std::move(k), std::move(v)} {}
   DbusDictEntry(DbusDictEntry<K, V>&& other) = default;
   ~DbusDictEntry() override = default;
 
@@ -284,8 +317,8 @@ class COMPONENT_EXPORT(DBUS) DbusDictEntry
   void Write(dbus::MessageWriter* writer) const override {
     dbus::MessageWriter dict_entry_writer(nullptr);
     writer->OpenDictEntry(&dict_entry_writer);
-    k_.Write(&dict_entry_writer);
-    v_.Write(&dict_entry_writer);
+    value_.first.Write(&dict_entry_writer);
+    value_.second.Write(&dict_entry_writer);
     writer->CloseContainer(&dict_entry_writer);
   }
 
@@ -294,8 +327,9 @@ class COMPONENT_EXPORT(DBUS) DbusDictEntry
   }
 
  private:
-  K k_;
-  V v_;
+  friend class DbusTypeImpl<DbusDictEntry<K, V>>;
+
+  std::pair<K, V> value_;
 };
 
 template <typename K, typename V>

@@ -75,34 +75,34 @@ CreditCardAccessoryControllerImpl::~CreditCardAccessoryControllerImpl() {
 
 void CreditCardAccessoryControllerImpl::OnFillingTriggered(
     const UserInfo::Field& selection) {
-  autofill::ContentAutofillDriver* driver =
-      autofill::ContentAutofillDriver::GetForRenderFrameHost(
-          web_contents_->GetFocusedFrame());
-  if (!driver)
-    return;
+  DCHECK(GetDriver());
 
   // Credit card number fields have a GUID populated to allow deobfuscation
   // before filling.
   if (selection.id().empty()) {
-    driver->RendererShouldFillFieldWithValue(selection.display_text());
+    GetDriver()->RendererShouldFillFieldWithValue(selection.display_text());
     return;
   }
 
   auto card_iter = std::find_if(cards_cache_.begin(), cards_cache_.end(),
                                 [&selection](const auto* card) {
-                                  return card->guid() == selection.id();
+                                  return card && card->guid() == selection.id();
                                 });
 
-  DCHECK(card_iter != cards_cache_.end())
-      << "Tried to fill card with unknown GUID";
+  if (card_iter == cards_cache_.end()) {
+    NOTREACHED() << "Tried to fill card with unknown GUID";
+    return;
+  }
 
   CreditCard* matching_card = *card_iter;
   if (matching_card->record_type() ==
       CreditCard::RecordType::MASKED_SERVER_CARD) {
-    // Unmasking server cards is not yet supported
-    return;
+    DCHECK(GetManager());
+    GetManager()->credit_card_access_manager()->FetchCreditCard(matching_card,
+                                                                AsWeakPtr());
+  } else {
+    GetDriver()->RendererShouldFillFieldWithValue(matching_card->number());
   }
-  driver->RendererShouldFillFieldWithValue(matching_card->number());
 }
 
 void CreditCardAccessoryControllerImpl::OnOptionSelected(
@@ -167,19 +167,33 @@ void CreditCardAccessoryControllerImpl::OnPersonalDataChanged() {
   RefreshSuggestions();
 }
 
+void CreditCardAccessoryControllerImpl::OnCreditCardFetched(
+    bool did_succeed,
+    const CreditCard* credit_card,
+    const base::string16& cvc) {
+  if (!did_succeed)
+    return;
+  DCHECK(credit_card);
+  DCHECK(GetDriver());
+
+  GetDriver()->RendererShouldFillFieldWithValue(credit_card->number());
+}
+
 // static
 void CreditCardAccessoryControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
     base::WeakPtr<ManualFillingController> mf_controller,
-    autofill::PersonalDataManager* personal_data_manager) {
+    autofill::PersonalDataManager* personal_data_manager,
+    autofill::AutofillManager* af_manager,
+    autofill::AutofillDriver* af_driver) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
   DCHECK(mf_controller);
 
   web_contents->SetUserData(
-      UserDataKey(),
-      base::WrapUnique(new CreditCardAccessoryControllerImpl(
-          web_contents, std::move(mf_controller), personal_data_manager)));
+      UserDataKey(), base::WrapUnique(new CreditCardAccessoryControllerImpl(
+                         web_contents, std::move(mf_controller),
+                         personal_data_manager, af_manager, af_driver)));
 }
 
 CreditCardAccessoryControllerImpl::CreditCardAccessoryControllerImpl(
@@ -196,10 +210,14 @@ CreditCardAccessoryControllerImpl::CreditCardAccessoryControllerImpl(
 CreditCardAccessoryControllerImpl::CreditCardAccessoryControllerImpl(
     content::WebContents* web_contents,
     base::WeakPtr<ManualFillingController> mf_controller,
-    PersonalDataManager* personal_data_manager)
+    PersonalDataManager* personal_data_manager,
+    autofill::AutofillManager* af_manager,
+    autofill::AutofillDriver* af_driver)
     : web_contents_(web_contents),
       mf_controller_(mf_controller),
-      personal_data_manager_(personal_data_manager) {
+      personal_data_manager_(personal_data_manager),
+      af_manager_for_testing_(af_manager),
+      af_driver_for_testing_(af_driver) {
   if (personal_data_manager_)
     personal_data_manager_->AddObserver(this);
 }
@@ -220,6 +238,21 @@ CreditCardAccessoryControllerImpl::GetManualFillingController() {
     mf_controller_ = ManualFillingController::GetOrCreate(web_contents_);
   DCHECK(mf_controller_);
   return mf_controller_;
+}
+
+autofill::AutofillDriver* CreditCardAccessoryControllerImpl::GetDriver() {
+  return af_driver_for_testing_
+             ? af_driver_for_testing_
+             : autofill::ContentAutofillDriver::GetForRenderFrameHost(
+                   web_contents_->GetFocusedFrame());
+}
+
+autofill::AutofillManager* CreditCardAccessoryControllerImpl::GetManager() {
+  return af_manager_for_testing_
+             ? af_manager_for_testing_
+             : autofill::ContentAutofillDriver::GetForRenderFrameHost(
+                   web_contents_->GetFocusedFrame())
+                   ->autofill_manager();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(CreditCardAccessoryControllerImpl)

@@ -254,7 +254,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
     }
     case file_manager::VOLUME_TYPE_CROSTINI:
       file_manager::VolumeManager::Get(chrome_details.GetProfile())
-          ->RemoveSshfsCrostiniVolume(volume->mount_path());
+          ->RemoveSshfsCrostiniVolume(volume->mount_path(), base::DoNothing());
       break;
     default:
       // Requested unmounting a device which is not unmountable.

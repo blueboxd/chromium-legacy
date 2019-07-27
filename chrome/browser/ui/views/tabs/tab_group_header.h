@@ -9,7 +9,7 @@
 #include "ui/views/view.h"
 
 class TabController;
-class TabGroupData;
+class TabGroupVisualData;
 
 // View for tab group headers in the tab strip, which are tab-shaped markers of
 // group boundaries. There is one header for each group, which is included in
@@ -19,7 +19,7 @@ class TabGroupHeader : public views::View {
   TabGroupHeader(TabController* controller, TabGroupId group);
 
  private:
-  const TabGroupData* GetGroupData();
+  const TabGroupVisualData* GetGroupVisualData();
 
   TabController* const controller_;
   const TabGroupId group_;

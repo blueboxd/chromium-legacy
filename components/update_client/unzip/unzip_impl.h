@@ -7,20 +7,20 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "components/update_client/unzipper.h"
-
-namespace service_manager {
-class Connector;
-}
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace update_client {
 
 class UnzipChromiumFactory : public UnzipperFactory {
  public:
-  explicit UnzipChromiumFactory(
-      std::unique_ptr<service_manager::Connector> connector);
+  using Callback =
+      base::RepeatingCallback<mojo::PendingRemote<unzip::mojom::Unzipper>()>;
+  explicit UnzipChromiumFactory(Callback callback);
 
   std::unique_ptr<Unzipper> Create() const override;
 
@@ -28,7 +28,7 @@ class UnzipChromiumFactory : public UnzipperFactory {
   ~UnzipChromiumFactory() override;
 
  private:
-  std::unique_ptr<service_manager::Connector> connector_;
+  const Callback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UnzipChromiumFactory);
 };

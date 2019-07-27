@@ -95,7 +95,6 @@ class FindRequestManager;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
 class JavaScriptDialogNavigationDeferrer;
-class LoaderIOThreadNotifier;
 class ManifestManagerHost;
 class MediaWebContentsObserver;
 class PluginContentOriginWhitelist;
@@ -1470,8 +1469,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |delegate_|.
   void OnPreferredSizeChanged(const gfx::Size& old_size);
 
-  void SendUserGestureForResourceDispatchHost();
-
   // Internal helper to create WebUI objects associated with |this|. |url| is
   // used to determine which WebUI should be created (if any).
   std::unique_ptr<WebUIImpl> CreateWebUI(const GURL& url);
@@ -1825,9 +1822,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   size_t native_file_system_writable_handle_count_ = 0;
 
   bool has_picture_in_picture_video_ = false;
-
-  // Notifies ResourceDispatcherHostImpl of various events related to loading.
-  std::unique_ptr<LoaderIOThreadNotifier> loader_io_thread_notifier_;
 
   // Manages media players, CDMs, and power save blockers for media.
   std::unique_ptr<MediaWebContentsObserver> media_web_contents_observer_;

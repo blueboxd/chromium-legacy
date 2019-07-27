@@ -193,7 +193,6 @@ class ChildProcessLauncherHelper :
 
 #if defined(OS_ANDROID)
   void OnChildProcessStarted(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj,
                              jint handle);
 
   // Dumps the stack of the child process without crashing it.

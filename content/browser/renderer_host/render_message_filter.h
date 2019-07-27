@@ -46,7 +46,6 @@ class BrowserContext;
 class MediaInternals;
 class RenderWidgetHelper;
 class ResourceContext;
-class ResourceDispatcherHostImpl;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
@@ -103,11 +102,6 @@ class CONTENT_EXPORT RenderMessageFilter
 
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;
-
-  // Cached resource request dispatcher host, guaranteed to be non-null. We do
-  // not own it; it is managed by the BrowserProcess, which has a wider scope
-  // than we do.
-  ResourceDispatcherHostImpl* resource_dispatcher_host_;
 
   // The ResourceContext which is to be used on the IO thread.
   ResourceContext* resource_context_;

@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

@@ -53,22 +53,20 @@ void MojoMjpegDecodeAccelerator::Decode(
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(jpeg_decoder_.is_bound());
 
-  DCHECK(
-      base::SharedMemory::IsHandleValid(video_frame->shared_memory_handle()));
-
-  base::SharedMemoryHandle output_handle =
-      base::SharedMemory::DuplicateHandle(video_frame->shared_memory_handle());
-  if (!base::SharedMemory::IsHandleValid(output_handle)) {
-    DLOG(ERROR) << "Failed to duplicate handle of VideoFrame";
-    return;
-  }
+  DCHECK(video_frame->storage_type() == media::VideoFrame::STORAGE_SHMEM)
+      << video_frame->storage_type();
 
   size_t output_buffer_size = media::VideoFrame::AllocationSize(
       video_frame->format(), video_frame->coded_size());
+  DCHECK_GE(video_frame->shm_region()->GetSize(), output_buffer_size);
+
   mojo::ScopedSharedBufferHandle output_frame_handle =
-      mojo::WrapSharedMemoryHandle(
-          output_handle, output_buffer_size,
-          mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+      mojo::WrapUnsafeSharedMemoryRegion(
+          video_frame->shm_region()->Duplicate());
+  if (!output_frame_handle.is_valid()) {
+    DLOG(ERROR) << "Failed to duplicate handle of VideoFrame";
+    return;
+  }
 
   // base::Unretained is safe because |this| owns |jpeg_decoder_|.
   jpeg_decoder_->Decode(std::move(bitstream_buffer), video_frame->coded_size(),

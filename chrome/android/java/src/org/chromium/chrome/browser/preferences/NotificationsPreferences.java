@@ -33,7 +33,7 @@ public class NotificationsPreferences extends PreferenceFragmentCompat {
     // The following field is only set if Feed is disabled, and should be null checked before
     // being used.
     @Nullable
-    private ChromeSwitchPreferenceCompat mSuggestionsPref;
+    private ChromeSwitchPreference mSuggestionsPref;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -43,7 +43,7 @@ public class NotificationsPreferences extends PreferenceFragmentCompat {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.notifications_preferences);
         getActivity().setTitle(R.string.prefs_notifications);
 
-        mSuggestionsPref = (ChromeSwitchPreferenceCompat) findPreference(PREF_SUGGESTIONS);
+        mSuggestionsPref = (ChromeSwitchPreference) findPreference(PREF_SUGGESTIONS);
         mSuggestionsPref.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
             PrefetchPrefs.setNotificationEnabled((boolean) newValue);
             return true;

@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -78,7 +78,8 @@ class ServiceIPCServerTest : public ::testing::Test {
 
  protected:
   FakeServiceIPCServerClient service_process_client_;
-  base::MessageLoopForUI main_message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   base::Thread io_thread_;
   base::WaitableEvent shutdown_event_;
   std::unique_ptr<ServiceIPCServer> server_;

@@ -104,10 +104,18 @@ std::vector<CreditCard*> CreditCardAccessManager::GetCreditCardsToSuggest() {
 
 bool CreditCardAccessManager::ShouldDisplayGPayLogo() {
   for (const CreditCard* credit_card : GetCreditCardsToSuggest()) {
-    if (credit_card->record_type() == CreditCard::LOCAL_CARD)
+    if (IsLocalCard(credit_card))
       return false;
   }
   return true;
+}
+
+bool CreditCardAccessManager::ServerCardsAvailable() {
+  for (const CreditCard* credit_card : GetCreditCardsToSuggest()) {
+    if (!IsLocalCard(credit_card))
+      return true;
+  }
+  return false;
 }
 
 bool CreditCardAccessManager::DeleteCard(const CreditCard* card) {
@@ -152,9 +160,11 @@ void CreditCardAccessManager::PrepareToFetchCreditCard() {
   // Reset in case a late response was ignored.
   ready_to_start_authentication_.Reset();
 #if !defined(OS_IOS)
-  GetOrCreateFIDOAuthenticator()->IsUserVerifiable(base::BindOnce(
-      &CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable,
-      weak_ptr_factory_.GetWeakPtr()));
+  if (ServerCardsAvailable()) {
+    GetOrCreateFIDOAuthenticator()->IsUserVerifiable(base::BindOnce(
+        &CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable,
+        weak_ptr_factory_.GetWeakPtr()));
+  }
 #endif
 }
 
@@ -164,8 +174,9 @@ void CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable(
 
   // If user is verifiable, then make preflight call to payments to fetch unmask
   // details, otherwise the only option is to perform CVC Auth, which does not
-  // require any.
-  if (is_user_verifiable_) {
+  // require any. Do nothing if request is already in progress.
+  if (is_user_verifiable_ && !unmask_details_request_in_progress_) {
+    unmask_details_request_in_progress_ = true;
     payments_client_->GetUnmaskDetails(
         base::BindOnce(&CreditCardAccessManager::OnDidGetUnmaskDetails,
                        weak_ptr_factory_.GetWeakPtr()),
@@ -176,6 +187,7 @@ void CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable(
 void CreditCardAccessManager::OnDidGetUnmaskDetails(
     AutofillClient::PaymentsRpcResult result,
     AutofillClient::UnmaskDetails& unmask_details) {
+  unmask_details_request_in_progress_ = false;
   unmask_details_.offer_fido_opt_in = unmask_details.offer_fido_opt_in;
   unmask_details_.unmask_auth_method = unmask_details.unmask_auth_method;
   unmask_details_.fido_request_options =
@@ -183,6 +195,9 @@ void CreditCardAccessManager::OnDidGetUnmaskDetails(
   unmask_details_.fido_eligible_card_ids =
       unmask_details.fido_eligible_card_ids;
 
+#if !defined(OS_IOS)
+  GetOrCreateFIDOAuthenticator()->SyncUserOptIn(unmask_details);
+#endif
   ready_to_start_authentication_.Signal();
 }
 
@@ -218,9 +233,23 @@ void CreditCardAccessManager::FetchCreditCard(
   }
 }
 
+void CreditCardAccessManager::FIDOAuthOptChange(bool opt_in,
+                                                base::Value creation_options) {
+#if defined(OS_IOS)
+  return;
+#else
+  if (opt_in) {
+    GetOrCreateFIDOAuthenticator()->Register(std::move(creation_options));
+  } else {
+    GetOrCreateFIDOAuthenticator()->OptOut();
+  }
+#endif
+}
+
 void CreditCardAccessManager::Authenticate(bool did_get_unmask_details) {
   // Reset now that we have started authentication.
   ready_to_start_authentication_.Reset();
+  unmask_details_request_in_progress_ = false;
 
   // Do not use FIDO if card is not listed in unmask details, as each Card must
   // be CVC authed at least once per device.

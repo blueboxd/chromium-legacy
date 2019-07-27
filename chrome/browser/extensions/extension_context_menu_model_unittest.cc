@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
@@ -678,14 +677,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionContextMenuShowAndHide) {
     int index = menu.GetIndexOfCommandId(visibility_command);
     EXPECT_NE(-1, index);
     EXPECT_EQ(hide_string, menu.GetLabelAt(index));
-
-    ExtensionActionAPI* action_api = ExtensionActionAPI::Get(profile());
-    EXPECT_TRUE(action_api->GetBrowserActionVisibility(browser_action->id()));
-    // Executing the 'hide' command shouldn't modify the prefs (the ordering
-    // behavior is tested in ToolbarActionsModel tests).
-    // TODO(devlin): We should be able to get rid of the pref.
     menu.ExecuteCommand(visibility_command, 0);
-    EXPECT_TRUE(action_api->GetBrowserActionVisibility(browser_action->id()));
   }
 
   {

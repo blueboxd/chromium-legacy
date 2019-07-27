@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_client.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -36,19 +37,10 @@ namespace {
 const CGFloat kIpadFontSize = 15.0f;
 const CGFloat kIphoneFontSize = 14.0f;
 
-// The alpha values of the suggestion's main and description labels.
-const CGFloat kMainLabelAlpha = 0.87f;
-const CGFloat kDescriptionLabelAlpha = 0.55f;
-
 // The horizontal space between the edge of the background and the text.
 const CGFloat kBorderWidth = 14.0f;
 // The space between items in the label.
 const CGFloat kSpacing = 4.0f;
-
-// RGB button color when the button is not pressed.
-const int kBackgroundNormalColor = 0xeceff1;
-// RGB button color when the button is pressed.
-const int kBackgroundPressedColor = 0xc4cbcf;
 
 // Structure that record the image for each icon.
 struct IconImageMap {
@@ -58,14 +50,14 @@ struct IconImageMap {
 
 // Creates a label with the given |text| and |alpha| suitable for use in a
 // suggestion button in the keyboard accessory view.
-UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
+UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
   UILabel* label = [[UILabel alloc] init];
   [label setText:text];
   CGFloat fontSize = IsIPadIdiom() ? kIpadFontSize : kIphoneFontSize;
   UIFont* font = bold ? [UIFont boldSystemFontOfSize:fontSize]
                       : [UIFont systemFontOfSize:fontSize];
   [label setFont:font];
-  [label setTextColor:[UIColor colorWithWhite:0.0f alpha:alpha]];
+  label.textColor = textColor;
   [label setBackgroundColor:[UIColor clearColor]];
   return label;
 }
@@ -110,17 +102,17 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
       [stackView addArrangedSubview:iconView];
     }
 
-    UILabel* label = TextLabel(suggestion.value, kMainLabelAlpha, YES);
+    UILabel* label = TextLabel(suggestion.value, UIColor.cr_labelColor, YES);
     [stackView addArrangedSubview:label];
 
     if ([suggestion.displayDescription length] > 0) {
-      UILabel* description =
-          TextLabel(suggestion.displayDescription, kDescriptionLabelAlpha, NO);
+      UILabel* description = TextLabel(suggestion.displayDescription,
+                                       UIColor.cr_secondaryLabelColor, NO);
       [stackView addArrangedSubview:description];
     }
 
     if (userInteractionEnabled_) {
-      [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
+      [self setBackgroundColor:UIColor.cr_secondarySystemBackgroundColor];
     }
 
     [self setClipsToBounds:YES];
@@ -150,19 +142,19 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
 
 - (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
   if (userInteractionEnabled_) {
-    [self setBackgroundColor:UIColorFromRGB(kBackgroundPressedColor)];
+    [self setBackgroundColor:UIColor.cr_systemGray3Color];
   }
 }
 
 - (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event {
   if (userInteractionEnabled_) {
-    [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
+    [self setBackgroundColor:UIColor.cr_secondarySystemBackgroundColor];
   }
 }
 
 - (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event {
   if (userInteractionEnabled_) {
-    [self setBackgroundColor:UIColorFromRGB(kBackgroundNormalColor)];
+    [self setBackgroundColor:UIColor.cr_secondarySystemBackgroundColor];
     [client_ didSelectSuggestion:suggestion_];
   }
 }

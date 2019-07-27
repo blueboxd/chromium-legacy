@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/text_codec_utf8.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace WTF {

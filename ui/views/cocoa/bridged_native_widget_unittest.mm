@@ -1488,29 +1488,29 @@ TEST_F(BridgedNativeWidgetTest, TextInput_SimulatePhoneticIme) {
         if (event.key_code() == ui::VKEY_RETURN) {
           EXPECT_FALSE(*saw_return);
           *saw_return = true;
-          EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+          EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->GetText());
         }
         return false;
       },
       &saw_vkey_return));
 
-  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->GetText());
 
   g_fake_interpret_key_events = &handle_q_in_ime;
   [ns_view_ keyDown:q_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"ㅂ"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"ㅂ"), textfield->GetText());
   EXPECT_FALSE(saw_vkey_return);
 
   g_fake_interpret_key_events = &handle_o_in_ime;
   [ns_view_ keyDown:o_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->GetText());
   EXPECT_FALSE(saw_vkey_return);
 
   // Note the "Enter" should not replace the replacement range, even though a
   // replacement range was set.
   g_fake_interpret_key_events = &handle_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->GetText());
 
   // VKEY_RETURN should be seen by via the unhandled key event handler (but not
   // via -insertText:.
@@ -1564,28 +1564,29 @@ TEST_F(BridgedNativeWidgetTest, TextInput_SimulateTelexMoo) {
         [view doCommandBySelector:@selector(insertNewLine:)];
       });
 
-  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
   g_fake_interpret_key_events = &handle_m_in_ime;
   [ns_view_ keyDown:m_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"m"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"m"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_first_o_in_ime;
   [ns_view_ keyDown:o_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"mo"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"mo"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_second_o_in_ime;
   [ns_view_ keyDown:o_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"mô"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"mô"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"mô"), textfield->text());  // No change.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"mô"),
+            textfield->GetText());    // No change.
   EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
 }
 
@@ -1617,24 +1618,25 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorEnterComposition) {
   InterpretKeyEventsCallback handle_second_return_in_ime = base::BindRepeating(
       [](id view) { [view doCommandBySelector:@selector(insertNewLine:)]; });
 
-  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
   g_fake_interpret_key_events = &handle_a_in_ime;
   [ns_view_ keyDown:a_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_first_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
 
   g_fake_interpret_key_events = &handle_second_return_in_ime;
   [ns_view_
       keyDown:VkeyKeyDown(ui::VKEY_RETURN)];  // Sanity check: send Enter again.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());  // No change.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"),
+            textfield->GetText());    // No change.
   EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
 }
 
@@ -1683,37 +1685,38 @@ TEST_F(BridgedNativeWidgetTest, TextInput_NoAcceleratorTabEnterComposition) {
         [view doCommandBySelector:@selector(insertNewLine:)];
       });
 
-  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->text());
+  EXPECT_EQ(base::UTF8ToUTF16(""), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   object_setClass(ns_view_, [InterpretKeyEventMockedBridgedContentView class]);
   g_fake_interpret_key_events = &handle_a_in_ime;
   [ns_view_ keyDown:a_in_ime];
-  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"あ"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_tab_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_TAB)];
   // Tab will switch to a Romanji (Latin) character.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());
 
   g_fake_interpret_key_events = &handle_first_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
   // Enter just dismisses the IME window. The composition is still active.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
 
   g_fake_interpret_key_events = &handle_second_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];
   // Enter now confirms the composition (unmarks text). Note there is still no
   // IME window visible but, since there is marked text, IME is still active.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->GetText());
   EXPECT_EQ(0, enter_view->count());  // Not seen as an accelerator.
 
   g_fake_interpret_key_events = &handle_third_return_in_ime;
   [ns_view_ keyDown:VkeyKeyDown(ui::VKEY_RETURN)];  // Send Enter a third time.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"a"), textfield->text());  // No change.
+  EXPECT_EQ(base::SysNSStringToUTF16(@"a"),
+            textfield->GetText());    // No change.
   EXPECT_EQ(1, enter_view->count());  // Now we see the accelerator.
 }
 
@@ -1797,7 +1800,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
   // Starting text (just insert it).
   [ns_view_ insertText:@"ㅂ" replacementRange:NSMakeRange(NSNotFound, 0)];
 
-  EXPECT_EQ(base::SysNSStringToUTF16(@"ㅂ"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"ㅂ"), textfield->GetText());
 
   g_fake_interpret_key_events = &generate_return_and_fake_ime;
   g_update_windows_closure = &update_windows_closure;
@@ -1814,7 +1817,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_RecursiveUpdateWindows) {
 
   // The text inserted during updateWindows should have been inserted, even
   // though we were trying to change the input context.
-  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->text());
+  EXPECT_EQ(base::SysNSStringToUTF16(@"배"), textfield->GetText());
 
   EXPECT_TRUE(g_fake_current_input_context);
 

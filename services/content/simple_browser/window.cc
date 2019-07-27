@@ -77,7 +77,7 @@ class SimpleBrowserUI : public views::WidgetDelegateView,
 
     if (key_event.key_code() == ui::VKEY_RETURN) {
       navigable_contents_->Navigate(
-          GURL(base::UTF16ToUTF8(location_bar_->text())));
+          GURL(base::UTF16ToUTF8(location_bar_->GetText())));
     }
 
     return false;

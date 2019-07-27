@@ -80,7 +80,8 @@ public class ShareMenuActionHandler {
         }
 
         if (!classesToEnable.isEmpty()) {
-            OptionalShareTargetsManager.enableOptionalShareActivities(activity, classesToEnable,
+            OptionalShareTargetsManager.getInstance().enableOptionalShareActivities(activity,
+                    classesToEnable,
                     () -> triggerShare(activity, currentTab, shareDirectly, isIncognito));
             return;
         }

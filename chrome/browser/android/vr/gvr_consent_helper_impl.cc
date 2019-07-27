@@ -69,7 +69,6 @@ void GvrConsentHelperImpl::PromptUserAndGetConsent(
 
 void GvrConsentHelperImpl::OnUserConsentResult(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_caller,
     jboolean is_granted) {
   jdelegate_.Reset();
   if (!on_user_consent_callback_)

@@ -535,6 +535,10 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB_MultipleSchemes) {
                            .data_[host_redirect_data_https.primary_key()]
                            .redirect_endpoints(0)
                            .url_scheme());
+    EXPECT_EQ(443, mock_tables_->host_redirect_table_
+                       .data_[host_redirect_data_https.primary_key()]
+                       .redirect_endpoints(0)
+                       .url_port());
   }
   {
     std::vector<content::mojom::ResourceLoadInfoPtr> resources_http;
@@ -569,6 +573,10 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB_MultipleSchemes) {
                           .data_[host_redirect_data_http.primary_key()]
                           .redirect_endpoints(1)
                           .url_scheme());
+    EXPECT_EQ(80, mock_tables_->host_redirect_table_
+                      .data_[host_redirect_data_http.primary_key()]
+                      .redirect_endpoints(1)
+                      .url_port());
   }
 }
 

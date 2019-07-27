@@ -15,7 +15,7 @@
 #include "ui/base/ui_base_types.h"
 
 class Tab;
-class TabGroupData;
+class TabGroupVisualData;
 class TabGroupId;
 class TabStrip;
 
@@ -111,8 +111,9 @@ class TabStripController {
   // from this tabstrip but the user is still dragging the tabs.
   virtual void OnStoppedDraggingTabs() = 0;
 
-  // Returns the TabGroupData instance for the given |group|.
-  virtual const TabGroupData* GetDataForGroup(TabGroupId group) const = 0;
+  // Returns the TabGroupVisualData instance for the given |group|.
+  virtual const TabGroupVisualData* GetVisualDataForGroup(
+      TabGroupId group) const = 0;
 
   // Returns the list of tabs in the given |group|.
   virtual std::vector<int> ListTabsInGroup(TabGroupId group) const = 0;

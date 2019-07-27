@@ -6,10 +6,8 @@
 #define BASE_FUCHSIA_SCOPED_SERVICE_BINDING_H_
 
 #include <lib/fidl/cpp/binding_set.h>
-#include <lib/sys/cpp/outgoing_directory.h>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/fuchsia/service_directory.h"
 
 namespace base {
@@ -18,41 +16,14 @@ namespace fuchsia {
 template <typename Interface>
 class ScopedServiceBinding {
  public:
-  // Published a public service in the specified |outgoing_directory|.
-  // |outgoing_directory| and |impl| must outlive the binding.
-  ScopedServiceBinding(sys::OutgoingDirectory* outgoing_directory,
-                       Interface* impl)
-      : directory_(outgoing_directory), impl_(impl) {
-    directory_->AddPublicService<Interface>(
-        [this](fidl::InterfaceRequest<Interface> request) {
-          BindClient(std::move(request));
-        });
-  }
-
-  // Publishes a service in the specified |pseudo_dir|. |pseudo_dir| and |impl|
-  // must outlive the binding.
-  ScopedServiceBinding(vfs::PseudoDir* pseudo_dir, Interface* impl)
-      : pseudo_dir_(pseudo_dir), impl_(impl) {
-    pseudo_dir_->AddEntry(
-        Interface::Name_,
-        std::make_unique<vfs::Service>(fidl::InterfaceRequestHandler<Interface>(
-            [this](fidl::InterfaceRequest<Interface> request) {
-              BindClient(std::move(request));
-            })));
-  }
-
-  // TODO(crbug.com/974072): Remove this constructor once all code has been
-  // migrated from base::fuchsia::ServiceDirectory to sys::OutgoingDirectory.
+  // |service_directory| and |impl| must outlive the binding.
   ScopedServiceBinding(ServiceDirectory* service_directory, Interface* impl)
-      : ScopedServiceBinding(service_directory->outgoing_directory(), impl) {}
-
-  ~ScopedServiceBinding() {
-    if (directory_) {
-      directory_->RemovePublicService<Interface>();
-    } else {
-      pseudo_dir_->RemoveEntry(Interface::Name_);
-    }
+      : directory_(service_directory), impl_(impl) {
+    directory_->AddService(
+        BindRepeating(&ScopedServiceBinding::BindClient, Unretained(this)));
   }
+
+  ~ScopedServiceBinding() { directory_->RemoveService(Interface::Name_); }
 
   void SetOnLastClientCallback(base::OnceClosure on_last_client_callback) {
     on_last_client_callback_ = std::move(on_last_client_callback);
@@ -72,8 +43,7 @@ class ScopedServiceBinding {
     std::move(on_last_client_callback_).Run();
   }
 
-  sys::OutgoingDirectory* const directory_ = nullptr;
-  vfs::PseudoDir* const pseudo_dir_ = nullptr;
+  ServiceDirectory* const directory_;
   Interface* const impl_;
   fidl::BindingSet<Interface> bindings_;
   base::OnceClosure on_last_client_callback_;
@@ -90,26 +60,16 @@ template <typename Interface,
               ScopedServiceBindingPolicy::kPreferNew>
 class ScopedSingleClientServiceBinding {
  public:
-  // |outgoing_directory| and |impl| must outlive the binding.
-  ScopedSingleClientServiceBinding(sys::OutgoingDirectory* outgoing_directory,
-                                   Interface* impl)
-      : directory_(std::move(outgoing_directory)), binding_(impl) {
-    directory_->AddPublicService<Interface>(
-        [this](fidl::InterfaceRequest<Interface> request) {
-          BindClient(std::move(request));
-        });
-  }
-
-  // TODO(crbug.com/974072): Remove this constructor once all code has been
-  // migrated from base::fuchsia::ServiceDirectory to sys::OutgoingDirectory.
+  // |service_directory| and |impl| must outlive the binding.
   ScopedSingleClientServiceBinding(ServiceDirectory* service_directory,
                                    Interface* impl)
-      : ScopedSingleClientServiceBinding(
-            service_directory->outgoing_directory(),
-            impl) {}
+      : directory_(service_directory), binding_(impl) {
+    directory_->AddService(BindRepeating(
+        &ScopedSingleClientServiceBinding::BindClient, Unretained(this)));
+  }
 
   ~ScopedSingleClientServiceBinding() {
-    directory_->RemovePublicService<Interface>();
+    directory_->RemoveService(Interface::Name_);
   }
 
   typename Interface::EventSender_& events() { return binding_.events(); }
@@ -125,9 +85,8 @@ class ScopedSingleClientServiceBinding {
  private:
   void BindClient(fidl::InterfaceRequest<Interface> request) {
     if (Policy == ScopedServiceBindingPolicy::kPreferExisting &&
-        binding_.is_bound()) {
+        binding_.is_bound())
       return;
-    }
     binding_.Bind(std::move(request));
   }
 
@@ -136,7 +95,7 @@ class ScopedSingleClientServiceBinding {
     std::move(on_last_client_callback_).Run();
   }
 
-  sys::OutgoingDirectory* const directory_;
+  ServiceDirectory* const directory_;
   fidl::Binding<Interface> binding_;
   base::OnceClosure on_last_client_callback_;
 

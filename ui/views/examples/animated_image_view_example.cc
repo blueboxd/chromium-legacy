@@ -89,9 +89,9 @@ class AnimationGallery : public View,
     std::string json;
     base::ScopedAllowBlockingForTesting allow_blocking;
 #if defined(OS_POSIX)
-    base::FilePath path(base::UTF16ToUTF8(file_chooser_->text()));
+    base::FilePath path(base::UTF16ToUTF8(file_chooser_->GetText()));
 #else
-    base::FilePath path(file_chooser_->text());
+    base::FilePath path(file_chooser_->GetText());
 #endif  // defined(OS_POSIX)
     base::ReadFileToString(path, &json);
 

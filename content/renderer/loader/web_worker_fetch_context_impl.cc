@@ -401,10 +401,9 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
         ancestor_frame_id_, request, WebURLRequestToResourceType(request)));
   }
   if (response_override_) {
-    DCHECK(blink::features::IsPlzDedicatedWorkerEnabled() ||
-           blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
     using RequestContextType = blink::mojom::RequestContextType;
-    DCHECK(request.GetRequestContext() == RequestContextType::WORKER ||
+    DCHECK((blink::features::IsPlzDedicatedWorkerEnabled() &&
+            request.GetRequestContext() == RequestContextType::WORKER) ||
            request.GetRequestContext() == RequestContextType::SHARED_WORKER)
         << request.GetRequestContext();
     extra_data->set_navigation_response_override(std::move(response_override_));
@@ -522,7 +521,6 @@ void WebWorkerFetchContextImpl::set_client_id(const std::string& client_id) {
 
 void WebWorkerFetchContextImpl::SetResponseOverrideForMainScript(
     std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
-  DCHECK(blink::features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
   DCHECK(!response_override_);
   response_override_ = std::move(response_override);
 }

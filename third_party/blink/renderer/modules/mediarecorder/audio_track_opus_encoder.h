@@ -13,7 +13,7 @@
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_encoder.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/opus/src/include/opus.h"
 
 namespace blink {

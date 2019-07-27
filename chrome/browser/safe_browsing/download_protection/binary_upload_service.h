@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_BINARY_UPLOAD_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_BINARY_UPLOAD_SERVICE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "components/safe_browsing/proto/webprotect.pb.h"
 
@@ -40,6 +42,7 @@ class BinaryUploadService {
    public:
     // |callback| will run on the UI thread.
     explicit Request(Callback callback);
+    virtual ~Request() = default;
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
 
@@ -67,7 +70,7 @@ class BinaryUploadService {
   // Upload the given file contents for deep scanning. The results will be
   // returned asynchronously by calling |request|'s |callback|. This must be
   // called on the UI thread.
-  void UploadForDeepScanning(Request request);
+  void UploadForDeepScanning(std::unique_ptr<Request> request);
 };
 
 }  // namespace safe_browsing

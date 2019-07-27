@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 
 import com.google.android.gms.common.ConnectionResult;
 
@@ -60,9 +61,9 @@ public class PreferencesLauncher {
      * @param context The current Activity, or an application context if no Activity is available.
      * @param fragment The fragment to show, or null to show the top-level page.
      */
-    public static void launchSettingsPageCompat(
-            Context context, @Nullable Class<? extends android.support.v4.app.Fragment> fragment) {
-        launchSettingsPageCompat(context, fragment, null);
+    public static void launchSettingsPage(
+            Context context, @Nullable Class<? extends Fragment> fragment) {
+        launchSettingsPage(context, fragment, null);
     }
 
     /**
@@ -72,9 +73,8 @@ public class PreferencesLauncher {
      * @param fragment The name of the fragment to show, or null to show the top-level page.
      * @param fragmentArgs The arguments bundle to initialize the instance of subpage fragment.
      */
-    public static void launchSettingsPageCompat(Context context,
-            @Nullable Class<? extends android.support.v4.app.Fragment> fragment,
-            @Nullable Bundle fragmentArgs) {
+    public static void launchSettingsPage(Context context,
+            @Nullable Class<? extends Fragment> fragment, @Nullable Bundle fragmentArgs) {
         String fragmentName = fragment != null ? fragment.getName() : null;
         Intent intent = createIntentForSettingsPage(context, fragmentName, fragmentArgs);
         IntentUtils.safeStartActivity(context, intent);
@@ -146,7 +146,7 @@ public class PreferencesLauncher {
             }
         }
 
-        launchSettingsPageCompat(activity, SavePasswordsPreferences.class);
+        launchSettingsPage(activity, SavePasswordsPreferences.class);
     }
 
     @CalledByNative
@@ -171,10 +171,10 @@ public class PreferencesLauncher {
     }
 
     private static void showSettingSubpage(
-            WebContents webContents, Class<? extends android.support.v4.app.Fragment> fragment) {
+            WebContents webContents, Class<? extends Fragment> fragment) {
         WeakReference<Activity> currentActivity =
                 webContents.getTopLevelNativeWindow().getActivity();
-        launchSettingsPageCompat(currentActivity.get(), fragment);
+        launchSettingsPage(currentActivity.get(), fragment);
     }
 
     private static boolean isSyncingPasswordsWithoutCustomPassphrase() {

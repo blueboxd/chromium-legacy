@@ -18,10 +18,9 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
-#include "components/services/unzip/public/mojom/constants.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace unzip {
 
@@ -49,7 +48,7 @@ class UnzipFilter : public unzip::mojom::UnzipFilter {
 class UnzipParams : public base::RefCounted<UnzipParams> {
  public:
   UnzipParams(
-      mojom::UnzipperPtr unzipper,
+      mojo::PendingRemote<mojom::Unzipper> unzipper,
       const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner,
       UnzipCallback callback,
       const scoped_refptr<base::SequencedTaskRunner>&
@@ -59,7 +58,7 @@ class UnzipParams : public base::RefCounted<UnzipParams> {
         callback_(std::move(callback)),
         background_task_runner_keep_alive_(background_task_runner_keep_alive) {}
 
-  mojom::UnzipperPtr* unzipper() { return &unzipper_; }
+  mojo::Remote<mojom::Unzipper>& unzipper() { return unzipper_; }
 
   void InvokeCallback(bool result) {
     if (callback_) {
@@ -77,9 +76,9 @@ class UnzipParams : public base::RefCounted<UnzipParams> {
 
   ~UnzipParams() = default;
 
-  // The UnzipperPtr and UnzipFilter are stored so they do not get deleted
-  // before the callback runs.
-  mojom::UnzipperPtr unzipper_;
+  // The Remote and UnzipFilter are stored so they do not get deleted before the
+  // callback runs.
+  mojo::Remote<mojom::Unzipper> unzipper_;
   std::unique_ptr<UnzipFilter> filter_;
 
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
@@ -92,11 +91,11 @@ class UnzipParams : public base::RefCounted<UnzipParams> {
 
 void UnzipDone(scoped_refptr<UnzipParams> params, bool success) {
   params->InvokeCallback(success);
-  params->unzipper()->reset();
+  params->unzipper().reset();
 }
 
 void DoUnzipWithFilter(
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<mojom::Unzipper> unzipper,
     const base::FilePath& zip_path,
     const base::FilePath& output_dir,
     const scoped_refptr<base::SequencedTaskRunner>& callback_task_runner,
@@ -117,9 +116,6 @@ void DoUnzipWithFilter(
       std::make_unique<filesystem::DirectoryImpl>(output_dir, nullptr, nullptr),
       mojo::MakeRequest(&directory_ptr));
 
-  mojom::UnzipperPtr unzipper;
-  connector->BindInterface(mojom::kServiceName, mojo::MakeRequest(&unzipper));
-
   // |result_callback| is shared between the connection error handler and the
   // Unzip call using a refcounted UnzipParams object that owns
   // |result_callback|.
@@ -127,13 +123,13 @@ void DoUnzipWithFilter(
       std::move(unzipper), callback_task_runner, std::move(result_callback),
       background_task_runner_keep_alive);
 
-  unzip_params->unzipper()->set_connection_error_handler(
-      base::BindRepeating(&UnzipDone, unzip_params, false));
+  unzip_params->unzipper().set_disconnect_handler(
+      base::BindOnce(&UnzipDone, unzip_params, false));
 
   if (filter_callback.is_null()) {
-    (*unzip_params->unzipper())
-        ->Unzip(std::move(zip_file), std::move(directory_ptr),
-                base::BindOnce(&UnzipDone, unzip_params));
+    unzip_params->unzipper()->Unzip(std::move(zip_file),
+                                    std::move(directory_ptr),
+                                    base::BindOnce(&UnzipDone, unzip_params));
     return;
   }
 
@@ -141,23 +137,22 @@ void DoUnzipWithFilter(
   unzip_params->set_unzip_filter(std::make_unique<UnzipFilter>(
       mojo::MakeRequest(&unzip_filter_ptr), filter_callback));
 
-  (*unzip_params->unzipper())
-      ->UnzipWithFilter(std::move(zip_file), std::move(directory_ptr),
-                        std::move(unzip_filter_ptr),
-                        base::BindOnce(&UnzipDone, unzip_params));
+  unzip_params->unzipper()->UnzipWithFilter(
+      std::move(zip_file), std::move(directory_ptr),
+      std::move(unzip_filter_ptr), base::BindOnce(&UnzipDone, unzip_params));
 }
 
 }  // namespace
 
-void Unzip(std::unique_ptr<service_manager::Connector> connector,
+void Unzip(mojo::PendingRemote<mojom::Unzipper> unzipper,
            const base::FilePath& zip_path,
            const base::FilePath& output_dir,
            UnzipCallback callback) {
-  UnzipWithFilter(std::move(connector), zip_path, output_dir,
+  UnzipWithFilter(std::move(unzipper), zip_path, output_dir,
                   UnzipFilterCallback(), std::move(callback));
 }
 
-void UnzipWithFilter(std::unique_ptr<service_manager::Connector> connector,
+void UnzipWithFilter(mojo::PendingRemote<mojom::Unzipper> unzipper,
                      const base::FilePath& zip_path,
                      const base::FilePath& output_dir,
                      UnzipFilterCallback filter_callback,
@@ -170,7 +165,7 @@ void UnzipWithFilter(std::unique_ptr<service_manager::Connector> connector,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   background_task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&DoUnzipWithFilter, std::move(connector), zip_path,
+      base::BindOnce(&DoUnzipWithFilter, std::move(unzipper), zip_path,
                      output_dir, base::SequencedTaskRunnerHandle::Get(),
                      filter_callback, std::move(result_callback),
                      background_task_runner));

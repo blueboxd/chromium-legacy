@@ -12,9 +12,12 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
@@ -125,7 +128,8 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
 
   void SetupFieldTrial(base::Optional<int> preconnect_origin_score_threshold,
                        base::Optional<int> prefetch_url_score_threshold,
-                       base::Optional<bool> prefetch_after_preconnect) {
+                       base::Optional<bool> prefetch_after_preconnect,
+                       base::Optional<bool> send_ukm_metrics) {
     if (field_trial_initiated_)
       return;
 
@@ -145,6 +149,9 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     if (prefetch_after_preconnect.has_value()) {
       params["prefetch_after_preconnect"] =
           prefetch_after_preconnect.value() ? "true" : "false";
+    }
+    if (send_ukm_metrics.has_value()) {
+      params["send_ukm_metrics"] = send_ukm_metrics.value() ? "true" : "false";
     }
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         blink::features::kNavigationPredictor, params);
@@ -510,11 +517,181 @@ TEST_F(NavigationPredictorTest,
   EXPECT_FALSE(prefetch_url().has_value());
 }
 
+class NavigationPredictorSendUkmMetricsEnabledTest
+    : public NavigationPredictorTest {
+ public:
+  NavigationPredictorSendUkmMetricsEnabledTest() {
+    SetupFieldTrial(base::nullopt, base::nullopt, base::nullopt, true);
+  }
+
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
+        mojo::MakeRequest(&predictor_service_), main_rfh(), false);
+  }
+
+  struct TestMetrics {
+    float ratio_area;
+    float ratio_distance_root_top;
+    bool is_in_iframe;
+    bool is_url_incremented_by_one;
+    bool contains_image;
+    bool is_same_host;
+  };
+
+  // Helper function to generate mojom metrics.
+  blink::mojom::AnchorElementMetricsPtr CreateMetricsPtrWithAllMetrics(
+      const std::string& source_url,
+      const std::string& target_url,
+      const struct TestMetrics metrics_vector) const {
+    auto metrics = blink::mojom::AnchorElementMetrics::New();
+    metrics->source_url = GURL(source_url);
+    metrics->target_url = GURL(target_url);
+    metrics->ratio_area = metrics_vector.ratio_area / 100;
+    metrics->ratio_distance_root_top =
+        metrics_vector.ratio_distance_root_top / 100;
+    metrics->is_in_iframe = metrics_vector.is_in_iframe;
+    metrics->is_url_incremented_by_one =
+        metrics_vector.is_url_incremented_by_one;
+    metrics->contains_image = metrics_vector.contains_image;
+    metrics->is_same_host = metrics_vector.is_same_host;
+
+    return metrics;
+  }
+
+  std::vector<int> GetUKMMetricsAsVector(
+      int ukm_entry_index,
+      ukm::TestAutoSetUkmRecorder& ukm_recorder) {
+    using UkmEntry = ukm::builders::NavigationPredictorAnchorElementMetrics;
+    auto* entry =
+        ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[ukm_entry_index];
+
+    std::vector<int> metrics = {
+        *ukm_recorder.GetEntryMetric(entry,
+                                     UkmEntry::kPercentClickableAreaName),
+        *ukm_recorder.GetEntryMetric(entry,
+                                     UkmEntry::kPercentVerticalDistanceName),
+        *ukm_recorder.GetEntryMetric(entry, UkmEntry::kIsInIframeName),
+        *ukm_recorder.GetEntryMetric(entry,
+                                     UkmEntry::kIsURLIncrementedByOneName),
+        *ukm_recorder.GetEntryMetric(entry, UkmEntry::kContainsImageName),
+        *ukm_recorder.GetEntryMetric(entry, UkmEntry::kSameOriginName)};
+
+    return metrics;
+  }
+
+  std::vector<int> GetTestMetricsAsVector(struct TestMetrics test_metrics) {
+    std::vector<int> metrics_vector = {
+        test_metrics.ratio_area,     test_metrics.ratio_distance_root_top,
+        test_metrics.is_in_iframe,   test_metrics.is_url_incremented_by_one,
+        test_metrics.contains_image, test_metrics.is_same_host};
+
+    return metrics_vector;
+  }
+};
+
+// Checks that per-link metrics are sent to the UKM on page load, and that
+// the bits are packed correctly.
+TEST_F(NavigationPredictorSendUkmMetricsEnabledTest, SendLinkUkmMetrics) {
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  const std::string source = "https://example.com";
+
+  struct TestMetrics anchor_1_metrics, anchor_2_metrics, anchor_3_metrics;
+  anchor_1_metrics = {100.f, 10.f, false, true, true, true};
+  anchor_2_metrics = {50.f, 20.f, false, false, true, true};
+  anchor_3_metrics = {5.f, 30.f, false, true, false, false};
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtrWithAllMetrics(
+      source, "https://example.com/large", anchor_1_metrics));
+  metrics.push_back(CreateMetricsPtrWithAllMetrics(
+      source, "https://example.com/small", anchor_2_metrics));
+  metrics.push_back(CreateMetricsPtrWithAllMetrics(
+      source, "https://neworigin.com/xsmall", anchor_3_metrics));
+
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
+                                                        GetDefaultViewport());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(4ul, test_ukm_recorder.entries_count());
+
+  std::vector<std::vector<int>> vector_actual;
+  vector_actual.push_back(GetUKMMetricsAsVector(0, test_ukm_recorder));
+  vector_actual.push_back(GetUKMMetricsAsVector(1, test_ukm_recorder));
+  vector_actual.push_back(GetUKMMetricsAsVector(2, test_ukm_recorder));
+
+  EXPECT_THAT(vector_actual,
+              ::testing::Contains(GetTestMetricsAsVector(anchor_1_metrics)));
+  EXPECT_THAT(vector_actual,
+              ::testing::Contains(GetTestMetricsAsVector(anchor_2_metrics)));
+  EXPECT_THAT(vector_actual,
+              ::testing::Contains(GetTestMetricsAsVector(anchor_3_metrics)));
+}
+
+// Checks that per-page link aggregate information is sent to the UKM on page
+// load.
+TEST_F(NavigationPredictorSendUkmMetricsEnabledTest, SendAggregateUkmMetrics) {
+  using UkmEntry = ukm::builders::NavigationPredictorPageLinkMetrics;
+
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  const std::string source = "https://example.com";
+  const std::string same_origin_href_large = "https://example.com/large";
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, same_origin_href_large, 1));
+
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
+                                                        GetDefaultViewport());
+  base::RunLoop().RunUntilIdle();
+
+  // There should be one ukm entry for the PageLinkMetrics aggregate
+  // information, and another for the AnchorElementMetrics event associated with
+  // the one anchor element in |metrics|.
+  EXPECT_EQ(2ul, test_ukm_recorder.entries_count());
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kNumberOfAnchors_TotalName, 1);
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kNumberOfAnchors_SameHostName, 0);
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kNumberOfAnchors_ContainsImageName, 0);
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kNumberOfAnchors_InIframeName, 0);
+
+  ukm::TestUkmRecorder::ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kNumberOfAnchors_URLIncrementedName, 0);
+
+  ukm::TestUkmRecorder::EntryHasMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kTotalClickableSpaceName);
+
+  ukm::TestUkmRecorder::EntryHasMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kMedianLinkLocationName);
+
+  ukm::TestUkmRecorder::EntryHasMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kViewport_HeightName);
+
+  ukm::TestUkmRecorder::EntryHasMetric(
+      test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName)[0],
+      UkmEntry::kViewport_WidthName);
+}
+
 class NavigationPredictorPrefetchAfterPreconnectEnabledTest
     : public NavigationPredictorTest {
  public:
   NavigationPredictorPrefetchAfterPreconnectEnabledTest() {
-    SetupFieldTrial(base::nullopt, base::nullopt, true);
+    SetupFieldTrial(base::nullopt, base::nullopt, true, base::nullopt);
   }
 
   void SetUp() override {
@@ -561,7 +738,8 @@ class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
  public:
   NavigationPredictorPrefetchDisabledTest() {
     SetupFieldTrial(0 /* preconnect_origin_score_threshold */,
-                    101 /* prefetch_url_score_threshold */, base::nullopt);
+                    101 /* prefetch_url_score_threshold */, base::nullopt,
+                    base::nullopt);
   }
 
   void SetUp() override {
@@ -659,7 +837,8 @@ class NavigationPredictorPreconnectPrefetchDisabledTest
  public:
   NavigationPredictorPreconnectPrefetchDisabledTest() {
     SetupFieldTrial(101 /* preconnect_origin_score_threshold */,
-                    101 /* prefetch_url_score_threshold */, base::nullopt);
+                    101 /* prefetch_url_score_threshold */, base::nullopt,
+                    base::nullopt);
   }
 
   void SetUp() override {

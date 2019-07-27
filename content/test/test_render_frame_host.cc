@@ -144,6 +144,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
       GetProcess()->GetNextRoutingID(), CreateStubInterfaceProviderRequest(),
       CreateStubDocumentInterfaceBrokerRequest(),
       CreateStubDocumentInterfaceBrokerRequest(),
+      CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, frame_name, frame_unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
@@ -453,6 +454,8 @@ void TestRenderFrameHost::SimulateCommitProcessed(
         document_interface_broker_content_request,
     blink::mojom::DocumentInterfaceBrokerRequest
         document_interface_broker_blink_request,
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker_receiver,
     bool same_document) {
   CHECK(params);
   blink::mojom::CommitResult result = blink::mojom::CommitResult::Ok;
@@ -476,7 +479,8 @@ void TestRenderFrameHost::SimulateCommitProcessed(
                  mojom::DidCommitProvisionalLoadInterfaceParams::New(
                      std::move(interface_provider_request),
                      std::move(document_interface_broker_content_request),
-                     std::move(document_interface_broker_blink_request)));
+                     std::move(document_interface_broker_blink_request),
+                     std::move(browser_interface_broker_receiver)));
         did_commit = true;
       }
     }
@@ -494,7 +498,8 @@ void TestRenderFrameHost::SimulateCommitProcessed(
                  mojom::DidCommitProvisionalLoadInterfaceParams::New(
                      std::move(interface_provider_request),
                      std::move(document_interface_broker_content_request),
-                     std::move(document_interface_broker_blink_request)));
+                     std::move(document_interface_broker_blink_request),
+                     std::move(browser_interface_broker_receiver)));
         did_commit = true;
       }
     }
@@ -506,7 +511,8 @@ void TestRenderFrameHost::SimulateCommitProcessed(
         mojom::DidCommitProvisionalLoadInterfaceParams::New(
             std::move(interface_provider_request),
             std::move(document_interface_broker_content_request),
-            std::move(document_interface_broker_blink_request)),
+            std::move(document_interface_broker_blink_request),
+            std::move(browser_interface_broker_receiver)),
         same_document);
   }
 }
@@ -643,6 +649,8 @@ TestRenderFrameHost::BuildDidCommitInterfaceParams(bool is_same_document) {
       document_interface_broker_content_request;
   blink::mojom::DocumentInterfaceBrokerRequest
       document_interface_broker_blink_request;
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker_receiver;
 
   if (!is_same_document) {
     interface_provider_request = mojo::MakeRequest(&interface_provider);
@@ -650,12 +658,16 @@ TestRenderFrameHost::BuildDidCommitInterfaceParams(bool is_same_document) {
         mojo::MakeRequest(&document_interface_broker_content);
     document_interface_broker_blink_request =
         mojo::MakeRequest(&document_interface_broker_blink);
+    browser_interface_broker_receiver =
+        mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
+            .InitWithNewPipeAndPassReceiver();
   }
 
   auto interface_params = mojom::DidCommitProvisionalLoadInterfaceParams::New(
       std::move(interface_provider_request),
       std::move(document_interface_broker_content_request),
-      std::move(document_interface_broker_blink_request));
+      std::move(document_interface_broker_blink_request),
+      std::move(browser_interface_broker_receiver));
   return interface_params;
 }
 
@@ -677,6 +689,13 @@ TestRenderFrameHost::CreateStubDocumentInterfaceBrokerRequest() {
   ::blink::mojom::DocumentInterfaceBrokerPtrInfo
       dead_document_interface_broker_proxy;
   return mojo::MakeRequest(&dead_document_interface_broker_proxy);
+}
+
+// static
+mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver() {
+  return mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
+      .InitWithNewPipeAndPassReceiver();
 }
 
 }  // namespace content

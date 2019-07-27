@@ -71,7 +71,7 @@ class BrowserProxy {
     this.handler_.setClientPage(
         this.callbackRouter_.$.bindNewPipeAndPassRemote());
 
-    /** @private {Request} */
+    /** @private {?Request} */
     this.lastRequest;
   }
 

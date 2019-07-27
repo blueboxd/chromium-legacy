@@ -160,8 +160,9 @@ class AccessibleInputField : public views::Textfield {
     // {number of fields}"
     node_data->RemoveState(ax::mojom::State::kEditable);
     node_data->role = ax::mojom::Role::kListItem;
-    base::string16 description =
-        text().empty() ? accessible_description_ : text();
+    base::string16 description = views::Textfield::GetText().empty()
+                                     ? accessible_description_
+                                     : GetText();
     node_data->AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
                                   base::UTF16ToUTF8(description));
   }
@@ -265,12 +266,12 @@ class ParentAccessView::AccessCodeInput : public views::View,
     std::string result;
     size_t length;
     for (auto* field : input_fields_) {
-      length = field->text().length();
+      length = field->GetText().length();
       if (!length)
         return base::nullopt;
 
       DCHECK_EQ(1u, length);
-      base::StrAppend(&result, {base::UTF16ToUTF8(field->text())});
+      base::StrAppend(&result, {base::UTF16ToUTF8(field->GetText())});
     }
     return result;
   }
@@ -390,7 +391,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
   }
 
   // Returns text in the active input field.
-  const base::string16& ActiveInput() const { return ActiveField()->text(); }
+  const base::string16& ActiveInput() const { return ActiveField()->GetText(); }
 
   // To be called when access input code changes (digit is inserted, deleted or
   // updated). Passes true when code is complete (all digits have input value)
@@ -458,7 +459,7 @@ ParentAccessView::Callbacks::~Callbacks() = default;
 ParentAccessView::ParentAccessView(const AccountId& account_id,
                                    const Callbacks& callbacks,
                                    ParentAccessRequestReason reason)
-    : callbacks_(callbacks), account_id_(account_id) {
+    : callbacks_(callbacks), account_id_(account_id), request_reason_(reason) {
   DCHECK(callbacks.on_finished);
 
   // Main view contains all other views aligned vertically and centered.
@@ -526,8 +527,9 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   };
 
   // Main view title.
-  title_label_ = new views::Label(GetTitle(reason), views::style::CONTEXT_LABEL,
-                                  views::style::STYLE_PRIMARY);
+  title_label_ =
+      new views::Label(GetTitle(request_reason_), views::style::CONTEXT_LABEL,
+                       views::style::STYLE_PRIMARY);
   title_label_->SetFontList(gfx::FontList().Derive(
       kTitleFontSizeDeltaDp, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   decorate_label(title_label_);
@@ -537,9 +539,9 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
 
   // Main view description.
   // TODO(crbug.com/970223): Add learn more link after description.
-  description_label_ =
-      new views::Label(GetDescription(reason), views::style::CONTEXT_LABEL,
-                       views::style::STYLE_PRIMARY);
+  description_label_ = new views::Label(GetDescription(request_reason_),
+                                        views::style::CONTEXT_LABEL,
+                                        views::style::STYLE_PRIMARY);
   description_label_->SetMultiLine(true);
   description_label_->SetLineHeight(kDescriptionTextLineHeightDp);
   description_label_->SetFontList(
@@ -733,8 +735,7 @@ void ParentAccessView::UpdateState(State state) {
     case State::kNormal: {
       access_code_view_->SetInputColor(kTextColor);
       title_label_->SetEnabledColor(kTextColor);
-      title_label_->SetText(
-          l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE));
+      title_label_->SetText(GetTitle(request_reason_));
       return;
     }
     case State::kError: {

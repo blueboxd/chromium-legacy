@@ -577,4 +577,19 @@ TEST_F(ClientControlledStateTest, HandleBoundsEventsUpdatesPipRestoreBounds) {
             window_state()->GetRestoreBoundsInParent());
 }
 
+// Make sure disconnecting primary notifies the display id change.
+TEST_F(ClientControlledStateTest, DisconnectPrimary) {
+  UpdateDisplay("500x500,500x500");
+  SwapPrimaryDisplay();
+  auto* screen = display::Screen::GetScreen();
+  auto old_primary_id = screen->GetPrimaryDisplay().id();
+  EXPECT_EQ(old_primary_id, window_state()->GetDisplay().id());
+  gfx::Rect bounds = window()->bounds();
+
+  UpdateDisplay("500x500");
+  ASSERT_NE(old_primary_id, screen->GetPrimaryDisplay().id());
+  EXPECT_EQ(delegate()->display_id(), screen->GetPrimaryDisplay().id());
+  EXPECT_EQ(bounds, delegate()->requested_bounds());
+}
+
 }  // namespace ash

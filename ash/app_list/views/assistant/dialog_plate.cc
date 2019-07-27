@@ -103,7 +103,7 @@ bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
         textfield_->GetFocusManager()->ClearFocus();
 
       const base::StringPiece16& trimmed_text = base::TrimWhitespace(
-          textfield_->text(), base::TrimPositions::TRIM_ALL);
+          textfield_->GetText(), base::TrimPositions::TRIM_ALL);
 
       // Only non-empty trimmed text is consider a valid contents commit.
       // Anything else will simply result in the DialogPlate being cleared.

@@ -50,6 +50,11 @@ ViewEventTestBase::ViewEventTestBase() {
   // The TestingBrowserProcess must be created in the constructor because there
   // are tests that require it before SetUp() is called.
   TestingBrowserProcess::CreateInstance();
+
+  // Mojo is initialized here similar to how each browser test case initializes
+  // Mojo when starting. This only works because each interactive_ui_test runs
+  // in a new process.
+  mojo::core::Init();
 }
 
 void ViewEventTestBase::Done() {
@@ -63,11 +68,6 @@ void ViewEventTestBase::SetUpTestCase() {
 }
 
 void ViewEventTestBase::SetUp() {
-  // Mojo is initialized here similar to how each browser test case initializes
-  // Mojo when starting. This only works because each interactive_ui_test runs
-  // in a new process.
-  mojo::core::Init();
-
   ui::InitializeInputMethodForTesting();
 
   // The ContextFactory must exist before any Compositors are created.

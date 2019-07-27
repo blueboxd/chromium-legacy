@@ -65,13 +65,12 @@ LargeIconBridge::LargeIconBridge() {}
 
 LargeIconBridge::~LargeIconBridge() {}
 
-void LargeIconBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void LargeIconBridge::Destroy(JNIEnv* env) {
   delete this;
 }
 
 jboolean LargeIconBridge::GetLargeIconForURL(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_page_url,
     jint min_source_size_px,

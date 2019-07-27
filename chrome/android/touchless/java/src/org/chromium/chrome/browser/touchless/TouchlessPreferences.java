@@ -40,7 +40,7 @@ public class TouchlessPreferences extends Preferences {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        Fragment fragment = getMainFragmentCompat();
+        Fragment fragment = getMainFragment();
         if (fragment == null || fragment.getView() == null
                 || fragment.getView().findViewById(R.id.list) == null) {
             return;

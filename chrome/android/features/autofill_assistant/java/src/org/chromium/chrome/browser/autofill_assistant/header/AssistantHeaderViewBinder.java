@@ -137,7 +137,7 @@ class AssistantHeaderViewBinder
         view.mProfileIconMenu.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.settings) {
-                PreferencesLauncher.launchSettingsPageCompat(
+                PreferencesLauncher.launchSettingsPage(
                         view.mHeader.getContext(), AutofillAssistantPreferences.class);
                 return true;
             } else if (itemId == R.id.send_feedback) {

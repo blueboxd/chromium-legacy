@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -178,7 +179,7 @@ TextControlInnerEditorElement::CreateInnerEditorStyle() const {
           ComputedStyleInitialValues::InitialLineHeight());
     }
 
-    if (ToHTMLInputElement(host)->ShouldRevealPassword())
+    if (To<HTMLInputElement>(host)->ShouldRevealPassword())
       text_block_style->SetTextSecurity(ETextSecurity::kNone);
 
     text_block_style->SetOverflowX(EOverflow::kScroll);
@@ -205,7 +206,7 @@ SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(
 
 void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {
   // If the element is visible, on mouseup, clear the value, and set selection
-  HTMLInputElement* input(ToHTMLInputElement(OwnerShadowHost()));
+  auto* input = To<HTMLInputElement>(OwnerShadowHost());
   if (!input || input->IsDisabledOrReadOnly()) {
     if (!event.DefaultHandled())
       HTMLDivElement::DefaultEventHandler(event);
@@ -226,11 +227,48 @@ void SearchFieldCancelButtonElement::DefaultEventHandler(Event& event) {
 }
 
 bool SearchFieldCancelButtonElement::WillRespondToMouseClickEvents() {
-  const HTMLInputElement* input = ToHTMLInputElement(OwnerShadowHost());
+  auto* input = To<HTMLInputElement>(OwnerShadowHost());
   if (input && !input->IsDisabledOrReadOnly())
     return true;
 
   return HTMLDivElement::WillRespondToMouseClickEvents();
 }
 
+// ----------------------------
+
+PasswordRevealButtonElement::PasswordRevealButtonElement(Document& document)
+    : HTMLDivElement(document) {
+  SetShadowPseudoId(AtomicString("-internal-reveal"));
+  setAttribute(kIdAttr, shadow_element_names::PasswordRevealButton());
+}
+
+void PasswordRevealButtonElement::DefaultEventHandler(Event& event) {
+  auto* input = To<HTMLInputElement>(OwnerShadowHost());
+  if (!input || input->IsDisabledOrReadOnly()) {
+    if (!event.DefaultHandled())
+      HTMLDivElement::DefaultEventHandler(event);
+    return;
+  }
+
+  // Toggle the should-reveal-password state when clicked.
+  if (event.type() == event_type_names::kClick && event.IsMouseEvent()) {
+    bool shouldRevealPassword = !input->ShouldRevealPassword();
+
+    input->SetShouldRevealPassword(shouldRevealPassword);
+    input->UpdateView();
+
+    event.SetDefaultHandled();
+  }
+
+  if (!event.DefaultHandled())
+    HTMLDivElement::DefaultEventHandler(event);
+}
+
+bool PasswordRevealButtonElement::WillRespondToMouseClickEvents() {
+  auto* input = To<HTMLInputElement>(OwnerShadowHost());
+  if (input && !input->IsDisabledOrReadOnly())
+    return true;
+
+  return HTMLDivElement::WillRespondToMouseClickEvents();
+}
 }  // namespace blink

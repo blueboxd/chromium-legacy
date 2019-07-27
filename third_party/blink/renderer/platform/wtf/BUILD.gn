@@ -185,8 +185,6 @@ jumbo_component("wtf") {
     "threading_primitives.h",
     "threading_pthreads.cc",
     "threading_win.cc",
-    "time.cc",
-    "time.h",
     "tree_node.h",
     "type_traits.h",
     "typed_arrays/array_buffer.cc",

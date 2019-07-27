@@ -107,6 +107,7 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // present otherwise.
   void DestroyContext();
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
+  base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>

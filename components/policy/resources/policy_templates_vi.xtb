@@ -65,6 +65,7 @@
 <translation id="1062407476771304334">Thay thế</translation>
 <translation id="1079801999187584280">Không cho phép sử dụng Công cụ dành cho nhà phát triển</translation>
 <translation id="1087437665304381368">Chính sách này chỉ kiểm soát chế độ nhà phát triển của <ph name="PRODUCT_OS_NAME" />. Nếu muốn ngăn khả năng truy cập vào Tùy chọn của nhà phát triển Android, bạn cần đặt chính sách <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
+<translation id="1087707496788636333">Danh sách chính sách của Chrome Enterprise sẽ chuyển sang vị trí mới! Vui lòng cập nhật dấu trang của bạn thành <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
 <translation id="1093082332347834239">Nếu cài đặt này được bật, máy chủ hỗ trợ từ xa sẽ chạy theo quy trình với các quyền <ph name="UIACCESS_PERMISSION_NAME" />. Điều này sẽ cho phép người dùng ở xa tương tác với cửa sổ bật lên trên màn hình của người dùng cục bộ.
 
           Nếu cài đặt này bị tắt hoặc không được định cấu hình, máy chủ hỗ trợ từ xa sẽ chạy trên ngữ cảnh của người dùng và người dùng ở xa không thể tương tác với cửa sổ bật lên trên màn hình.</translation>
@@ -741,6 +742,10 @@
 <translation id="2240879329269430151">Cho phép bạn đặt liệu các trang web có được phép hiển thị cửa sổ bật lên hay không. Bạn có thể cho phép hoặc từ chối hiển thị cửa sổ bật lên đối với tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'BlockPopups' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
+<translation id="2241498944622759244">Tính năng này không bao giờ ra mắt nên chính sách đó không còn dùng nữa. Nếu bạn không đặt hoặc đặt chính sách này thành true, thì <ph name="PRODUCT_NAME" /> sẽ đề xuất các trang liên quan đến trang hiện tại.
+      Hệ thống sẽ tìm nạp từ xa các nội dung đề xuất này từ các máy chủ của Google.
+
+      Nếu bạn đặt tùy chọn cài đặt này thành false, thì hệ thống sẽ không tìm nạp hay hiển thị nội dung đề xuất.</translation>
 <translation id="2255326053989409609">Việc bật tùy chọn cài đặt này sẽ ngăn các trang web truy cập vào đơn vị xử lý đồ họa (GPU). Cụ thể, các trang web sẽ không thể truy cập vào API WebGL và các plugin sẽ không thể sử dụng API Pepper 3D.
 
       Việc tắt hoặc không đặt tùy chọn cài đặt này có thể cho phép các trang web sử dụng API WebGL và các plugin sử dụng API Pepper 3D. Các tùy chọn cài đặt mặc định của trình duyệt có thể vẫn yêu cầu phải thông qua đối số dòng lệnh để sử dụng các API này.
@@ -992,6 +997,20 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Định dạng của giá trị sẽ dựa trên tên của múi giờ trong "Cơ sở dữ liệu múi giờ IANA" (xem "https://en.wikipedia.org/wiki/Tz_database"). Cụ thể là bạn có thể sử dụng "continent/large_city" hoặc "ocean/large_city" cho hầu hết các múi giờ.
 
       Việc đặt chính sách này sẽ hoàn toàn vô hiệu hóa tính năng tự động xác định múi giờ theo vị trí của thiết bị, đồng thời ghi đè chính sách SystemTimezoneAutomaticDetection.</translation>
+<translation id="2758218632193192525">Cung cấp cấu hình của các máy chủ máy in hiện có.
+
+      Chính sách này cho phép bạn cung cấp cấu hình của các máy chủ máy in bên ngoài cho các thiết bị <ph name="PRODUCT_OS_NAME" /> dưới dạng tệp JSON.
+
+      Kích thước của tệp không được vượt quá 1 MB và phải chứa một chuỗi bản ghi (đối tượng JSON). Mỗi bản ghi phải chứa các trường "url" và "display_name".
+
+      Tệp sẽ được tải xuống và lưu vào bộ nhớ đệm. Hàm băm mật mã dùng để xác minh tính toàn vẹn của tệp tải xuống. Tệp sẽ được tải lại xuống mỗi khi URL hoặc hàm băm thay đổi.
+
+      Khi bạn đặt chính sách này thành giá trị chính xác, thiết bị sẽ tìm cách truy vấn các máy chủ máy in được chỉ định để tìm những máy in hiện có sử dụng giao thức IPP.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành giá trị không chính xác, thì người dùng sẽ không nhìn thấy máy chủ máy in.
+
+      Hiện tại, giới hạn số lượng máy chủ máy in là 16. Thiết bị sẽ chỉ truy vấn được 16 máy chủ máy in đầu tiên trong danh sách.
+      </translation>
 <translation id="2759224876420453487">Kiểm soát hoạt động của người dùng trong một phiên đa cấu hình</translation>
 <translation id="2761483219396643566">Thời gian chờ cảnh báo trạng thái không sử dụng khi chạy trên nguồn pin</translation>
 <translation id="2762164719979766599">Chỉ định danh sách tài khoản trong thiết bị được hiển thị trên màn hình đăng nhập.
@@ -1911,6 +1930,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Tính năng này hiện bị tắt phía máy chủ.</translation>
 <translation id="4363057787588706121">Cho phép hợp nhất các chính sách trong danh sách thuộc các nguồn khác nhau</translation>
+<translation id="4363136876356691536">Nếu bạn đặt chính sách này thành true, thì các tùy chọn Hỗ trợ tiếp cận sẽ luôn xuất hiện trong trình đơn ở khay hệ thống.
+
+          Nếu bạn đặt chính sách này thành false, thì các tùy chọn Hỗ trợ tiếp cận sẽ không bao giờ xuất hiện trong trình đơn ở khay hệ thống.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì các tùy chọn Hỗ trợ tiếp cận sẽ không xuất hiện trong trình đơn ở khay hệ thống. Tuy nhiên, người dùng có thể đặt để các tùy chọn Hỗ trợ tiếp cận hiển thị qua trang Cài đặt.
+
+          Khi bạn dùng cách khác (chẳng hạn như dùng tổ hợp phím) để bật tính năng hỗ trợ tiếp cận, các tùy chọn của tính năng này sẽ luôn xuất hiện trong trình đơn ở khay hệ thống.</translation>
 <translation id="436581050240847513">Báo cáo giao diện mạng thiết bị</translation>
 <translation id="4372704773119750918">Không cho phép người dùng doanh nghiệp là một phần của đa cấu hình (chính hoặc phụ)</translation>
 <translation id="4377599627073874279">Cho phép tất cả các trang web hiển thị tất cả hình ảnh</translation>
@@ -2009,20 +2037,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4604931264910482931">Định cấu hình danh sách cấm nhắn tin gốc</translation>
 <translation id="4617338332148204752">Bỏ qua kiểm tra thẻ meta trong <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Định cấu hình danh sách trắng cài đặt tiện ích</translation>
-<translation id="4627884124191169977">Cung cấp cấu hình của các máy chủ máy in hiện có.
-
-      Chính sách này cho phép bạn cung cấp cấu hình của các máy chủ máy in bên ngoài cho các thiết bị <ph name="PRODUCT_OS_NAME" /> dưới dạng tệp JSON.
-
-      Kích thước của tệp không được vượt quá 1 MB và phải chứa một chuỗi bản ghi (đối tượng JSON). Mỗi bản ghi phải chứa các trường "url" và "display_name".
-
-      Tệp sẽ được tải xuống và lưu vào bộ nhớ đệm. Hàm băm mật mã dùng để xác minh tính toàn vẹn của tệp tải xuống. Tệp sẽ được tải lại xuống mỗi khi URL hoặc hàm băm thay đổi.
-
-      Khi bạn đặt chính sách này thành giá trị chính xác, thiết bị sẽ tìm cách truy vấn các máy chủ máy in được chỉ định để tìm những máy in hiện có sử dụng giao thức IPP.
-
-      Nếu bạn không đặt hoặc đặt chính sách này thành giá trị không chính xác, thì người dùng sẽ không nhìn thấy máy chủ máy in.
-
-      Hiện tại, giới hạn số lượng máy chủ máy in là 16. Thiết bị sẽ chỉ truy vấn được 16 máy chủ máy in đầu tiên trong danh sách.
-      </translation>
 <translation id="4632343302005518762">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung được liệt kê</translation>
 <translation id="4632566332417930481">Không cho phép sử dụng Công cụ dành cho nhà phát triển trên các tiện ích được cài đặt theo chính sách doanh nghiệp, nhưng lại cho phép sử dụng Công cụ dành cho nhà phát triển trong các ngữ cảnh khác</translation>
 <translation id="4633786464238689684">Thay đổi trạng thái mặc định của các phím hàng trên cùng thành các phím chức năng.
@@ -2890,6 +2904,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web của chính sách 'DefaultPluginsSetting' nếu chính sách này được đặt hoặc nếu không thì giá trị mặc định chung sẽ được sử dụng cho cấu hình cá nhân của người dùng.</translation>
 <translation id="6190022522129724693">Cài đặt cửa sổ bật lên</translation>
 <translation id="6190367314942602985">Báo cáo thông tin nhận dạng người dùng</translation>
+<translation id="6195802366906945965">Xác định xem trình xác minh chứng chỉ tích hợp sẵn có được dùng để xác minh chứng chỉ máy chủ hay không</translation>
 <translation id="6197453924249895891">Cấp quyền truy cập vào khóa kết hợp đến các tiện ích.
 
       Các khóa được chỉ định để sử dụng kết hợp nếu chúng được tạo bằng API chrome.enterprise.platformKeys trên tài khoản được quản lý. Các khóa được nhập hoặc tạo bằng cách khác sẽ không được chỉ định để sử dụng kết hợp.
@@ -3219,7 +3234,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Các ngôn ngữ hiện được hỗ trợ là: tiếng Afrikaans - Nam Phi, tiếng Bulgaria, tiếng Catalan, tiếng Séc, tiếng Đan Mạch, tiếng Đức, tiếng Hy Lạp, tiếng Anh - Úc, tiếng Anh - Canada, tiếng Anh - Anh, tiếng Anh - Mỹ, tiếng Tây Ban Nha, tiếng Tây Ban Nha-419, tiếng Tây Ban Nha - Argentina, tiếng Tây Ban Nha - Tây Ban Nha, tiếng Tây Ban Nha - Mexico, tiếng Tây Ban Nha - Mỹ, tiếng Estonia, tiếng Ba Tư, tiếng Faroe, tiếng Pháp, tiếng Do Thái, tiếng Hindi, tiếng Croatia, tiếng Hungary, tiếng Indonesia, tiếng Ý, tiếng Hàn, tiếng Lithuania, tiếng Latvia, tiếng Bokmål, tiếng Hà Lan, tiếng Ba Lan, tiếng Bồ Đào Nha - Brazil, tiếng Bồ Đào Nha - Bồ Đào Nha, tiếng Rumani, tiếng Nga, tiếng Serbo - Croatia, tiếng Slovak, tiếng Slovenia, tiếng Albania, tiếng Serbia, tiếng Thụy Điển, tiếng Tamil, tiếng Tajik, tiếng Thổ Nhĩ Kỳ, tiếng Ukraina, tiếng Việt.</translation>
 <translation id="6926703471186170050">Bật chế độ in hai mặt với cạnh dài</translation>
 <translation id="6931242315485576290">Tắt đồng bộ hóa dữ liệu với Google</translation>
-<translation id="6932419914671987652">Nếu bạn đặt chính sách này thành bật, thì <ph name="PRODUCT_NAME" /> sẽ thực thi các phiên khách và ngăn chặn phiên đăng nhập bằng hồ sơ. Phiên đăng nhập khách là hồ sơ <ph name="PRODUCT_NAME" />, trong đó tất cả các cửa sổ đều ở chế độ ẩn danh.
+<translation id="6932419914671987652">Nếu bạn đặt chính sách này thành bật, thì <ph name="PRODUCT_NAME" /> sẽ thực thi các phiên khách và ngăn chặn phiên đăng nhập vào hồ sơ. Phiên đăng nhập khách là hồ sơ <ph name="PRODUCT_NAME" />, trong đó tất cả các cửa sổ đều ở chế độ ẩn danh.
 
       Nếu bạn không đặt hoặc đặt chính sách này thành tắt, hoặc chế độ khách trên trình duyệt bị tắt theo chính sách <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME" />, thì <ph name="PRODUCT_NAME" /> sẽ cho phép sử dụng các hồ sơ mới và hiện có.</translation>
 <translation id="6936894225179401731">Chỉ định số lượng tối đa kết nối đồng thời tới máy chủ proxy.
@@ -3279,6 +3294,12 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.
 
       Nếu chính sách này không được đặt thì đường dẫn hồ sơ mặc định sẽ được sử dụng và người dùng có thể ghi đè bằng cờ dòng lệnh '--user-data-dir'.</translation>
+<translation id="7011669683779011760">Khi bạn bật tùy chọn cài đặt này, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng trình xác minh chứng chỉ tích hợp sẵn để xác minh chứng chỉ máy chủ.
+      Khi bạn tắt tùy chọn cài đặt này, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng trình xác minh chứng chỉ cũ do nền tảng này cung cấp để xác minh chứng chỉ máy chủ.
+      Nếu bạn không đặt tùy chọn cài đặt này, thì trình xác minh chứng chỉ cũ hoặc tích hợp sẵn trong <ph name="PRODUCT_OS_NAME" /> có thể được sử dụng.
+
+      Chúng tôi dự định loại bỏ chính sách này trong <ph name="PRODUCT_OS_NAME" /> phiên bản 81, khi ngừng hỗ trợ trình xác minh chứng chỉ cũ trong <ph name="PRODUCT_OS_NAME" /> theo kế hoạch.
+      </translation>
 <translation id="7027785306666625591">Định cấu hình việc quản lý nguồn trong <ph name="PRODUCT_OS_NAME" />.
 
       Những chính sách này cho phép bạn định cấu hình cách <ph name="PRODUCT_OS_NAME" /> hoạt động khi người dùng duy trì chế độ rảnh trong một khoảng thời gian.</translation>
@@ -4375,9 +4396,9 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Nếu bạn đặt chính sách này thành "Vô hiệu hóa đăng nhập vào trình duyệt", thì người dùng sẽ không thể đăng nhập vào trình duyệt và sử dụng các dịch vụ dựa trên tài khoản. Trong trường hợp này, các tính năng ở cấp trình duyệt như tính năng đồng bộ hóa trên Chrome sẽ không sử dụng được và không có sẵn. Nếu người dùng đã đăng nhập và bạn đặt chính sách này thành "Tắt", thì họ sẽ bị đăng xuất khi chạy Chrome vào lần sau. Tuy nhiên, các dữ liệu hồ sơ trên máy của họ như dấu trang, mật khẩu, v.v. sẽ vẫn giữ nguyên. Người dùng vẫn có thể đăng nhập và sử dụng các dịch vụ web của Google như Gmail.
 
-      Nếu bạn đặt chính sách này thành "Cho phép đăng nhập vào trình duyệt", thì người dùng sẽ được phép đăng nhập vào trình duyệt và tự động được đăng nhập vào đó khi họ đăng nhập vào các dịch vụ web của Google như Gmail. Được đăng nhập vào trình duyệt nghĩa là thông tin tài khoản của người dùng sẽ do trình duyệt lưu giữ. Tuy nhiên, điều đó không có nghĩa là tính năng đồng bộ hóa trên Chrome sẽ bật theo mặc định; người dùng phải chọn sử dụng tính năng này riêng biệt. Nếu bạn bật chính sách này, thì người dùng sẽ không thể tắt tùy chọn cài đặt cho phép đăng nhập vào trình duyệt. Để kiểm soát việc có cho phép tính năng đồng bộ hóa trên Chrome hay không, hãy sử dụng chính sách "SyncDisabled".
+      Nếu bạn đặt chính sách này thành "Cho phép đăng nhập vào trình duyệt", thì người dùng sẽ được phép đăng nhập vào trình duyệt và tự động được đăng nhập vào đó khi họ đăng nhập vào các dịch vụ web của Google như Gmail. Được đăng nhập vào trình duyệt nghĩa là trình duyệt sẽ lưu giữ thông tin tài khoản của người dùng. Tuy nhiên, điều đó không có nghĩa là tính năng đồng bộ hóa trên Chrome sẽ bật theo mặc định; người dùng phải chọn sử dụng tính năng này riêng biệt. Nếu bạn bật chính sách này, thì người dùng sẽ không thể tắt tùy chọn cho phép đăng nhập vào trình duyệt. Để kiểm soát việc có cho phép tính năng đồng bộ hóa trên Chrome hay không, hãy sử dụng chính sách "SyncDisabled".
 
-      Nếu bạn đặt chính sách này thành "Buộc đăng nhập vào trình duyệt", thì người dùng sẽ thấy hộp thoại lựa chọn tài khoản và phải chọn rồi đăng nhập vào tài khoản để sử dụng trình duyệt. Điều này đảm bảo rằng các chính sách liên kết với tài khoản sẽ được áp dụng và thực thi (đối với tài khoản được quản lý). Theo mặc định, việc này sẽ bật tính năng đồng bộ hóa trên Chrome cho tài khoản, trừ khi quản trị viên miền hoặc chính sách "SyncDisabled" đã tắt tính năng đó. Giá trị mặc định của BrowserGuestModeEnabled sẽ được đặt thành false. Xin lưu ý rằng các hồ sơ chưa ký hiện tại sẽ bị khóa và không truy cập được sau khi bật chính sách này. Để biết thêm thông tin, hãy xem bài viết trong trung tâm trợ giúp: https://support.google.com/chrome/a/answer/7572556. Tùy chọn này không hỗ trợ Linux và sẽ dự phòng cho tùy chọn "Cho phép đăng nhập vào trình duyệt" nếu được dùng.
+      Nếu bạn đặt chính sách này thành "Buộc đăng nhập vào trình duyệt", thì người dùng sẽ thấy hộp thoại lựa chọn tài khoản và phải chọn rồi đăng nhập vào một tài khoản để sử dụng trình duyệt. Điều này đảm bảo rằng đối với tài khoản được quản lý, các chính sách liên kết với tài khoản sẽ được áp dụng và thực thi. Theo mặc định, việc này sẽ bật tính năng đồng bộ hóa trên Chrome cho tài khoản, trừ khi quản trị viên miền hoặc chính sách "SyncDisabled" đã tắt tính năng đó. Giá trị mặc định của BrowserGuestModeEnabled sẽ được đặt thành false. Xin lưu ý rằng các hồ sơ chưa ký hiện tại sẽ bị khóa và không truy cập được sau khi bật chính sách này. Để biết thêm thông tin, hãy xem bài viết này trong trung tâm trợ giúp: https://support.google.com/chrome/a/answer/7572556. Tùy chọn này không hỗ trợ Linux và sẽ là phương án dự phòng cho tùy chọn "Cho phép đăng nhập vào trình duyệt" nếu được dùng.
 
       Nếu bạn không đặt chính sách này, thì người dùng có thể quyết định xem họ có muốn bật tùy chọn đăng nhập vào trình duyệt và sử dụng khi thấy phù hợp hay không.</translation>
 <translation id="9072600218500597787">Định cấu hình tên miền của máy chủ bắt buộc sẽ được áp dụng trên các máy chủ truy cập từ xa và ngăn người dùng thay đổi tên miền này.

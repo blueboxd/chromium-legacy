@@ -9,8 +9,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_candidate_validator.h"
@@ -18,10 +18,6 @@
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
-
-#if defined(OS_MACOSX)
-#include "components/viz/service/display/overlay_processor_ca.h"
-#endif
 
 namespace viz {
 
@@ -106,18 +102,11 @@ std::unique_ptr<OverlayProcessor> OverlayProcessor::CreateOverlayProcessor(
     const ContextProvider* context_provider,
     gpu::SurfaceHandle surface_handle,
     const RendererSettings& renderer_settings) {
-#if defined(OS_MACOSX)
-  bool allow_ca_layer_overlays = surface_handle != gpu::kNullSurfaceHandle;
-  allow_ca_layer_overlays &= renderer_settings.allow_overlays;
-
-  std::unique_ptr<OverlayProcessorCA> processor(
-      new OverlayProcessorCA(allow_ca_layer_overlays));
-#else
   std::unique_ptr<OverlayProcessor> processor(
       new OverlayProcessor(context_provider));
+
   processor->SetOverlayCandidateValidator(OverlayCandidateValidator::Create(
       surface_handle, context_provider, renderer_settings));
-#endif
 
   return processor;
 }
@@ -143,13 +132,34 @@ gfx::Rect OverlayProcessor::GetAndResetOverlayDamage() {
   return result;
 }
 
-bool OverlayProcessor::ProcessForOverlayInternal(
+bool OverlayProcessor::ProcessForCALayers(
     DisplayResourceProvider* resource_provider,
-    RenderPassList* render_passes,
-    const FilterOperationsMap& render_pass_filters,
-    const FilterOperationsMap& render_pass_backdrop_filters,
-    CandidateList* overlay_candidates,
+    RenderPass* render_pass,
+    const OverlayProcessor::FilterOperationsMap& render_pass_filters,
+    const OverlayProcessor::FilterOperationsMap& render_pass_backdrop_filters,
+    CandidateList* ca_layer_overlays,
     gfx::Rect* damage_rect) {
+#if defined(OS_MACOSX)
+  // Skip overlay processing if we have copy request.
+  if (!render_pass->copy_requests.empty())
+    return true;
+
+  if (!overlay_validator_ || !overlay_validator_->AllowCALayerOverlays())
+    return false;
+
+  if (!ProcessForCALayerOverlays(
+          resource_provider, gfx::RectF(render_pass->output_rect),
+          render_pass->quad_list, render_pass_filters,
+          render_pass_backdrop_filters, ca_layer_overlays))
+    return false;
+
+  // CALayer overlays are all-or-nothing. If all quads were replaced with
+  // layers then mark the output surface as already handled.
+  output_surface_already_handled_ = true;
+  overlay_damage_rect_ = render_pass->output_rect;
+  *damage_rect = gfx::Rect();
+  return true;
+#endif  // defined(OS_MACOSX)
   return false;
 }
 
@@ -199,10 +209,13 @@ void OverlayProcessor::ProcessForOverlays(
   SendPromotionHintsBeforeReturning notifier(resource_provider, candidates);
 #endif
 
+  // Clear to get ready to handle output surface as overlay.
+  output_surface_already_handled_ = false;
+
   // First attempt to process for CALayers.
-  if (ProcessForOverlayInternal(
-          resource_provider, render_passes, render_pass_filters,
-          render_pass_backdrop_filters, candidates, damage_rect)) {
+  if (ProcessForCALayers(resource_provider, render_passes->back().get(),
+                         render_pass_filters, render_pass_backdrop_filters,
+                         candidates, damage_rect)) {
     return;
   }
 
@@ -326,14 +339,14 @@ void OverlayProcessor::UpdateDamageRect(
   previous_frame_underlay_rect_ = this_frame_underlay_rect;
 }
 
-// The return value is optional because for Mac's OverlayProcessorCA the output
-// surface could only be represented as an overlay when the CA overlay
-// processing has failed.
 base::Optional<OverlayProcessor::OutputSurfaceOverlayPlane>
 OverlayProcessor::ProcessOutputSurfaceAsOverlay(
     const gfx::Size& viewport_size,
     const gfx::BufferFormat& buffer_format,
     const gfx::ColorSpace& color_space) const {
+  if (output_surface_already_handled_)
+    return base::nullopt;
+
   OutputSurfaceOverlayPlane overlay_plane;
   overlay_plane.transform = gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE;
   overlay_plane.resource_size = viewport_size;

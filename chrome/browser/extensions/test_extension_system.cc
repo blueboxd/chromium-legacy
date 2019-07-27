@@ -17,8 +17,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"
-#include "components/services/unzip/public/mojom/constants.mojom.h"
-#include "components/services/unzip/unzip_service.h"
+#include "components/services/unzip/content/unzip_service.h"
+#include "components/services/unzip/in_process_unzipper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_prefs.h"
@@ -55,8 +55,7 @@ TestExtensionSystem::TestExtensionSystem(Profile* profile)
 #endif
 }
 
-TestExtensionSystem::~TestExtensionSystem() {
-}
+TestExtensionSystem::~TestExtensionSystem() = default;
 
 void TestExtensionSystem::Shutdown() {
   if (extension_service_)
@@ -87,8 +86,8 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
     data_decoder_ = std::make_unique<data_decoder::DataDecoderService>(
         connector_factory_->RegisterInstance(
             data_decoder::mojom::kServiceName));
-    unzip_service_ = std::make_unique<unzip::UnzipService>(
-        connector_factory_->RegisterInstance(unzip::mojom::kServiceName));
+    unzip::SetUnzipperLaunchOverrideForTesting(
+        base::BindRepeating(&unzip::LaunchInProcessUnzipper));
     connector_ = connector_factory_->CreateConnector();
     CrxInstaller::set_connector_for_test(connector_.get());
   }

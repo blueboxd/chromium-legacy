@@ -70,6 +70,11 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="2366718077645204424">Haiwezi kufikia seva pangishi. Labda hii ni kwa sababu ya usanidi wa mtandao unaotumia.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Mara ya mwisho alionekana mtandaoni <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Programu hii haitumiki tena. Ili upate vipengele vipya zaidi na masasisho ya usalama, tafadhali tumia <ph name="LINK_BEGIN" />programu ya wavuti ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali<ph name="LINK_END" />.</translation>
+<translation id="2431841749166974386">Hatua ya ziada ya kuweka mipangilio inahitajika kabla ya kudhibiti mashine hii kutoka mbali ukitumia <ph name="PRODUCT_NAME" />.
+
+Ili uwashe utendaji huu, chagua '<ph name="BUTTON_NAME" />' ili uonyeshe kidirisha cha mapendeleo ya Usalama na Faragha, kisha uchague kisanduku kilicho karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari ipo na imechaguliwa, huenda utahitaji kuiondoa kisha uiweke tena.</translation>
 <translation id="2499160551253595098">Tusaidie kuboresha Eneo-kazi la Mbali la Chrome kwa kuturuhusu tukusanye takwimu za matumizi na ripoti za hitilafu.</translation>
 <translation id="2509394361235492552">Imeunganisha kwenye <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">KUMBUKA: Ili kuhakikisha kuwa mikato yote ya kibodi inapatikana, unaweza kusanidi Kompyuta ya Mbali ya Chrome ili "Ifungue kama dirisha'’.</translation>
@@ -192,9 +197,6 @@ PC</translation>
 <translation id="4973800994433240357">Kwa kupakua Kisakinishaji cha Seva Pangishi ya Kuwasiliana na Mifumo Tofauti kutoka Mbali, unakubaliana na <ph name="LINK_BEGIN" />Sheria na Masharti ya Google<ph name="LINK_END" />.</translation>
 <translation id="4974476491460646149">Muunganisho wa <ph name="HOSTNAME" /> umefungwa</translation>
 <translation id="4985296110227979402">Kwanza unahitaji kuwekea kompyuta yako mipangilio kwa ajili ya ufikiaji wa mbali</translation>
-<translation id="5059773780693835145">Hatua ya ziada ya kuweka mipangilio inahitajika kabla uweze kudhibiti mashine hii kwa mbali ukitumia <ph name="PRODUCT_NAME" />.
-
-Ili uwashe kipengele hiki, chagua '<ph name="BUTTON_NAME" />' ili uonyeshe kidirisha cha mapendeleo ya Usalama na Faragha, kisha uchague kisanduku kilicho karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (nje ya mtandao)</translation>
 <translation id="5070121137485264635">Seva pangishi ya mbali inakuhitaji uhalalishe hadi kwenye tovuti nyingine. Ili kuendelea, sharti uipe Chrome Remote Desktop idhini za ziada ili ifikie anwani hii:</translation>
 <translation id="507204348399810022">Una uhakika ungependa kuzima miunganisho ya mbali kwenye <ph name="HOSTNAME" />?</translation>

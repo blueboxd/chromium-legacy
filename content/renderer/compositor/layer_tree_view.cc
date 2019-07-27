@@ -197,10 +197,6 @@ void LayerTreeView::SetLayerTreeFrameSink(
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-int LayerTreeView::LayerTreeId() const {
-  return layer_tree_host_->GetId();
-}
-
 void LayerTreeView::UpdateBrowserControlsState(
     cc::BrowserControlsState constraints,
     cc::BrowserControlsState current,
@@ -384,10 +380,6 @@ void LayerTreeView::SetExternalPageScaleFactor(
 
 void LayerTreeView::ClearCachesOnNextCommit() {
   layer_tree_host_->ClearCachesOnNextCommit();
-}
-
-void LayerTreeView::RequestBeginMainFrameNotExpected(bool new_state) {
-  layer_tree_host_->RequestBeginMainFrameNotExpected(new_state);
 }
 
 const cc::LayerTreeSettings& LayerTreeView::GetLayerTreeSettings() const {

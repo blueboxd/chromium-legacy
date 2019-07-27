@@ -158,6 +158,11 @@ BrowserGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
   return nullptr;
 }
 
+base::UnsafeSharedMemoryRegion
+BrowserGpuVideoAcceleratorFactories::CreateSharedMemoryRegion(size_t size) {
+  return {};
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 BrowserGpuVideoAcceleratorFactories::GetTaskRunner() {
   return nullptr;

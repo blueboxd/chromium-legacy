@@ -192,9 +192,6 @@ PC</translation>
 <translation id="4973800994433240357">Chromoting ホスト インストーラをダウンロードすると、Google の<ph name="LINK_BEGIN" />利用規約<ph name="LINK_END" />に同意したことになります。</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> との接続が切断されました</translation>
 <translation id="4985296110227979402">リモート接続に使用するパソコンを最初に設定しておく必要があります</translation>
-<translation id="5059773780693835145"><ph name="PRODUCT_NAME" /> を使用してこのパソコンをリモートで管理するには、追加の設定手順を行う必要があります。
-
-この機能を有効にするには、[<ph name="BUTTON_NAME" />] を選択して [セキュリティとプライバシー] 設定パネルを開き、[<ph name="SERVICE_SCRIPT_NAME" />] の横にあるチェックボックスをオンにします。</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />（オフライン）</translation>
 <translation id="5070121137485264635">リモート ホストで、サードパーティ ウェブサイトへの認証が求められています。続行するには、次のアドレスにアクセスできるように Chrome リモート デスクトップに追加の権限を与える必要があります:</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" /> へのリモート接続を無効にしてもよろしいですか？</translation>

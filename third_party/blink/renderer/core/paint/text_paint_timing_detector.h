@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -59,6 +59,7 @@ class CORE_EXPORT LargestTextPaintManager {
   LargestTextPaintManager(LocalFrameView*, PaintTimingDetector*);
 
   inline void RemoveVisibleRecord(base::WeakPtr<TextRecord> record) {
+    DCHECK(record);
     size_ordered_set_.erase(record);
     if (cached_largest_paint_candidate_.get() == record.get())
       cached_largest_paint_candidate_ = nullptr;

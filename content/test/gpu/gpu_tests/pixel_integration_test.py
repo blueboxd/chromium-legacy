@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 from subprocess import CalledProcessError
+import shutil
 import sys
 import tempfile
 
@@ -63,7 +64,7 @@ if sys.platform == 'win32':
 SKIA_GOLD_INSTANCE = 'chrome-gpu'
 
 
-class _ReferenceImageParameters(object):
+class _ImageParameters(object):
   def __init__(self):
     # Parameters for cloud storage reference images.
     self.vendor_id = None
@@ -79,6 +80,13 @@ class PixelIntegrationTest(
 
   test_base_name = 'Pixel'
 
+  # This information is class-scoped, so that it can be shared across
+  # invocations of tests; but it's zapped every time the browser is
+  # restarted with different command line arguments.
+  _image_parameters = None
+
+  _skia_gold_temp_dir = None
+
   @classmethod
   def Name(cls):
     """The name by which this test is invoked on the command line."""
@@ -93,6 +101,7 @@ class PixelIntegrationTest(
     cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
     cls.StartBrowser()
     cls.SetStaticServerDirs(test_data_dirs)
+    cls._skia_gold_temp_dir = tempfile.mkdtemp()
 
   @staticmethod
   def _AddDefaultArgs(browser_args):
@@ -109,6 +118,12 @@ class PixelIntegrationTest(
   def StopBrowser(cls):
     super(PixelIntegrationTest, cls).StopBrowser()
     cls.ResetGpuInfo()
+
+  @classmethod
+  def TearDownProcess(cls):
+    super(PixelIntegrationTest, cls).TearDownProcess()
+    if not cls.GetParsedCommandLineOptions().local_run:
+      shutil.rmtree(cls._skia_gold_temp_dir)
 
   @classmethod
   def AddCommandlineArgs(cls, parser):
@@ -140,8 +155,9 @@ class PixelIntegrationTest(
       '--local-run',
       action='store_true', default=False,
       help='Runs the tests in a manner more suitable for local testing. '
-           'Specifically, runs goldctl in dryrun mode (no upload) and outputs '
-           'local links to generated images. Implies --no-luci-auth.')
+           'Specifically, runs goldctl in extra_imgtest_args mode (no upload) '
+           'and outputs local links to generated images. Implies '
+           '--no-luci-auth.')
     parser.add_option(
       '--no-luci-auth',
       action='store_true', default=False,
@@ -169,17 +185,17 @@ class PixelIntegrationTest(
 
   @classmethod
   def ResetGpuInfo(cls):
-    cls._reference_image_parameters = None
+    cls._image_parameters = None
 
   @classmethod
-  def GetReferenceImageParameters(cls, tab, page):
-    if not cls._reference_image_parameters:
+  def GetImageParameters(cls, tab, page):
+    if not cls._image_parameters:
       cls._ComputeGpuInfo(tab, page)
-    return cls._reference_image_parameters
+    return cls._image_parameters
 
   @classmethod
   def _ComputeGpuInfo(cls, tab, page):
-    if cls._reference_image_parameters:
+    if cls._image_parameters:
       return
     browser = cls.browser
     system_info = browser.GetSystemInfo()
@@ -188,8 +204,8 @@ class PixelIntegrationTest(
     if not system_info.gpu:
       raise Exception('GPU information was absent')
     device = system_info.gpu.devices[0]
-    cls._reference_image_parameters = _ReferenceImageParameters()
-    params = cls._reference_image_parameters
+    cls._image_parameters = _ImageParameters()
+    params = cls._image_parameters
     if device.vendor_id and device.device_id:
       params.vendor_id = device.vendor_id
       params.device_id = device.device_id
@@ -250,12 +266,20 @@ class PixelIntegrationTest(
       'domAutomationController._readyForActions')
     if do_page_action:
       self._DoPageAction(tab, page)
-    self.RunSkiaGoldBasedPixelTest(test_path, do_page_action, args)
+    self._RunSkiaGoldBasedPixelTest(do_page_action, page)
 
-  def RunSkiaGoldBasedPixelTest(self, test_path, do_page_action, args):
-    page = args[0]
+  def _RunSkiaGoldBasedPixelTest(self, do_page_action, page):
+    """Captures and compares a test image using Skia Gold.
+
+    Raises an Exception if the comparison fails.
+
+    Args:
+      do_page_action: a bool indicating if an action was run on the page.
+      page: the GPU PixelTestPage object for the test.
+    """
     tab = self.tab
     try:
+      # Actually run the test and capture the screenshot.
       if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
         self.fail('page indicated test failure')
       if not tab.screenshot_supported:
@@ -269,12 +293,13 @@ class PixelIntegrationTest(
             screenshot, int(page.test_rect[0] * dpr),
             int(page.test_rect[1] * dpr), int(page.test_rect[2] * dpr),
             int(page.test_rect[3] * dpr))
-      # This is required by Gold whether this is a tryjob or not.
+
+      # Get all the information that goldctl requires.
+      parsed_options = self.GetParsedCommandLineOptions()
       build_id_args = [
         '--commit',
-        self.GetParsedCommandLineOptions().build_revision,
+        parsed_options.build_revision,
       ]
-      parsed_options = self.GetParsedCommandLineOptions()
       # If --review-patch-issue is passed, then we assume we're running on a
       # trybot.
       if parsed_options.review_patch_issue:
@@ -286,11 +311,12 @@ class PixelIntegrationTest(
           '--jobid',
           parsed_options.buildbucket_build_id
         ]
+
+      # Compare images against approved images/colors.
       if page.expected_colors:
-        # Use expected colors instead of ref images for validation.
+        # Use expected colors instead of hash comparison for validation.
         self._ValidateScreenshotSamplesWithSkiaGold(
-            tab, page, screenshot, page.expected_colors, page.tolerance,
-            dpr, build_id_args)
+            tab, page, screenshot, dpr, build_id_args)
         return
       image_name = self._UrlToImageName(page.name)
       self._UploadTestResultToSkiaGold(
@@ -304,49 +330,68 @@ class PixelIntegrationTest(
 
   def _UploadTestResultToSkiaGold(self, image_name, screenshot,
                                   tab, page, build_id_args=None):
-    if build_id_args is None:
+    """Compares the given image using Skia Gold and uploads the result.
+
+    No uploading is done if the test is being run in local run mode. Compares
+    the given screenshot to baselines provided by Gold, raising an Exception if
+    a match is not found.
+
+    Args:
+      image_name: the name of the image being checked.
+      screenshot: the image being checked as a Telemetry Bitmap.
+      tab: the Telemetry Tab object that the test was run in.
+      page: the GPU PixelTestPage object for the test.
+      build_id_args: a list of build-identifying flags and values.
+    """
+    if not isinstance(build_id_args, list) or '--commit' not in build_id_args:
       raise Exception('Requires build args to be specified, including --commit')
-    if self._skia_gold_temp_dir is None:
-      # TODO(kbr): this depends on Swarming to clean up the temporary
-      # directory to avoid filling up the local disk.
-      self._skia_gold_temp_dir = tempfile.mkdtemp()
+
     # Write screenshot to PNG file on local disk.
-    png_temp_file = tempfile.NamedTemporaryFile(suffix='.png').name
+    png_temp_file = tempfile.NamedTemporaryFile(
+        suffix='.png', dir=self._skia_gold_temp_dir).name
     image_util.WritePngFile(screenshot, png_temp_file)
-    ref_img_params = self.GetReferenceImageParameters(tab, page)
+
+    # Get all information that goldctl will need.
+    img_params = self.GetImageParameters(tab, page)
     # All values need to be strings, otherwise goldctl fails.
     gpu_keys = {
-      'vendor_id': self.ToHexOrNone(ref_img_params.vendor_id),
-      'device_id': self.ToHexOrNone(ref_img_params.device_id),
-      'vendor_string': str(ref_img_params.vendor_string),
-      'device_string': str(ref_img_params.device_string),
-      'msaa': str(ref_img_params.msaa),
-      'model_name': str(ref_img_params.model_name),
+      'vendor_id': self.ToHexOrNone(img_params.vendor_id),
+      'device_id': self.ToHexOrNone(img_params.device_id),
+      'vendor_string': str(img_params.vendor_string),
+      'device_string': str(img_params.device_string),
+      'msaa': str(img_params.msaa),
+      'model_name': str(img_params.model_name),
     }
-    mode = ['--passfail']
-    dryrun = []
-    luci = []
-    if self.GetParsedCommandLineOptions().local_run:
-      dryrun = ['--dryrun']
-    elif not self.GetParsedCommandLineOptions().no_luci_auth:
-      luci = ['--luci']
-    json_temp_file = tempfile.NamedTemporaryFile(suffix='.json').name
-    failure_file = tempfile.NamedTemporaryFile(suffix='.txt').name
+    json_temp_file = tempfile.NamedTemporaryFile(
+        suffix='.json', dir=self._skia_gold_temp_dir).name
+    failure_file = tempfile.NamedTemporaryFile(
+        suffix='.txt', dir=self._skia_gold_temp_dir).name
     with open(json_temp_file, 'w+') as f:
       json.dump(gpu_keys, f)
+
+    # Figure out any extra args we need to pass to goldctl.
+    extra_imgtest_args = []
+    extra_auth_args = []
+    parsed_options = self.GetParsedCommandLineOptions()
+    if parsed_options.local_run:
+      extra_imgtest_args.append('--dryrun')
+    elif not parsed_options.no_luci_auth:
+      extra_auth_args = ['--luci']
+
+    # Run goldctl for a result.
     try:
       subprocess.check_output([goldctl_bin, 'auth',
                                '--work-dir', self._skia_gold_temp_dir]
-                               + luci,
+                               + extra_auth_args,
             stderr=subprocess.STDOUT)
-      cmd = ([goldctl_bin, 'imgtest', 'add'] + mode +
-                            ['--test-name', image_name,
-                             '--instance', SKIA_GOLD_INSTANCE,
-                             '--keys-file', json_temp_file,
-                             '--png-file', png_temp_file,
-                             '--work-dir', self._skia_gold_temp_dir,
-                             '--failure-file', failure_file] +
-                            build_id_args + dryrun)
+      cmd = ([goldctl_bin, 'imgtest', 'add', '--passfail',
+              '--test-name', image_name,
+              '--instance', SKIA_GOLD_INSTANCE,
+              '--keys-file', json_temp_file,
+              '--png-file', png_temp_file,
+              '--work-dir', self._skia_gold_temp_dir,
+              '--failure-file', failure_file] +
+              build_id_args + extra_imgtest_args)
       subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except CalledProcessError as e:
       try:
@@ -359,7 +404,7 @@ class PixelIntegrationTest(
       except Exception:
         logging.error('Failed to read contents of goldctl failure file')
       logging.error('goldctl failed with output: %s', e.output)
-      if self.GetParsedCommandLineOptions().local_run:
+      if parsed_options.local_run:
         logging.error(
             'Image produced by %s: file://%s', image_name, png_temp_file)
         gold_images = ('https://%s-gold.skia.org/search?'
@@ -368,35 +413,41 @@ class PixelIntegrationTest(
                           SKIA_GOLD_INSTANCE, image_name))
         logging.error(
             'Approved images for %s in Gold: %s', image_name, gold_images)
-      if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
+      if not parsed_options.no_skia_gold_failure:
         raise Exception('goldctl command failed')
 
   def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
-                                             expectations, tolerance,
                                              device_pixel_ratio,
                                              build_id_args):
     """Samples the given screenshot and verifies pixel color values.
-       The sample locations and expected color values are given in expectations.
-       In case any of the samples do not match the expected color, it raises
-       a Failure and dumps the screenshot locally or cloud storage depending on
-       what machine the test is being run."""
-    url = page.name
+
+    In case any of the samples do not match the expected color, it raises
+    a Failure and uploads the image to Gold.
+
+    Args:
+      tab: the Telemetry Tab object that the test was run in.
+      page: the GPU PixelTestPage object for the test.
+      screenshot: the screenshot of the test page as a Telemetry Bitmap.
+      device_pixel_ratio: the device pixel ratio for the test device as a float.
+      build_id_args: a list of build-identifying flags and values.
+    """
     try:
       self._CompareScreenshotSamples(
-        tab, screenshot, expectations, tolerance, device_pixel_ratio,
+        tab, screenshot, page.expected_colors, page.tolerance,
+        device_pixel_ratio,
         self.GetParsedCommandLineOptions().test_machine_name)
     except Exception:
       # An exception raised from self.fail() indicates a failure.
-      image_name = self._UrlToImageName(url)
-      if self.GetParsedCommandLineOptions().test_machine_name:
+      image_name = self._UrlToImageName(page.name)
+      # We want to report the screenshot comparison failure, not any failures
+      # related to Gold.
+      try:
         self._UploadTestResultToSkiaGold(
           image_name, screenshot,
           tab, page,
           build_id_args=build_id_args)
-      else:
-        self._WriteErrorImages(
-          self.GetParsedCommandLineOptions().generated_dir, image_name,
-          screenshot, None)
+      except Exception as e:
+        logging.error(str(e))
       raise
 
   def _DoPageAction(self, tab, page):

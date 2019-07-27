@@ -426,11 +426,15 @@ class DBusServices {
     vm_applications_service_.reset();
     drive_file_stream_service_.reset();
     cryptohome_key_delegate_service_.reset();
-    machine_learning_decision_service_.reset();
     ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
+  }
+
+  void PreAshShutdown() {
+    // Services depending on ash should be released here.
+    machine_learning_decision_service_.reset();
   }
 
  private:
@@ -1190,6 +1194,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
     startup_settings_cache::WriteAppLocale(primary_user->GetPrefs()->GetString(
         language::prefs::kApplicationLocale));
   }
+
+  // Cleans up dbus services depending on ash.
+  dbus_services_->PreAshShutdown();
 
   // NOTE: Closes ash and destroys ash::Shell.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();

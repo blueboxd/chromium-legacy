@@ -99,11 +99,11 @@ class WindowAgentFactory final : public GarbageCollected<WindowAgentFactory> {
       opaque_origin_agents_;
 
   // Use registerable domain as the key for general tuple origins.
-  HeapHashMap<SchemeAndRegistrableDomain,
-              WeakMember<WindowAgent>,
-              SchemeAndRegistrableDomainHash,
-              SchemeAndRegistrableDomainTraits>
-      tuple_origin_agents_;
+  using TupleOriginAgents = HeapHashMap<SchemeAndRegistrableDomain,
+                                        WeakMember<WindowAgent>,
+                                        SchemeAndRegistrableDomainHash,
+                                        SchemeAndRegistrableDomainTraits>;
+  TupleOriginAgents tuple_origin_agents_;
 };
 
 }  // namespace blink

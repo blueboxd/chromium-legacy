@@ -53,8 +53,9 @@ std::vector<SearchResult*> SearchModel::FilterSearchResultsByFunction(
     if (matches.size() == max_results)
       break;
     SearchResult* item = results->GetItemAt(i);
-    if (result_filter.Run(*item))
+    if (result_filter.Run(*item)) {
       matches.push_back(item);
+    }
   }
   return matches;
 }

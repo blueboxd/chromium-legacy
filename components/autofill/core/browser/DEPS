@@ -42,6 +42,7 @@ specific_include_rules = {
     "+components/ukm",
   ],
   "(test_)?credit_card_fido_authenticator\.(cc|h)": [
+    "+device/fido/fido_constants.h",
     "+third_party/blink/public/mojom/webauthn/authenticator.mojom.h",
     "+third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h",
   ],

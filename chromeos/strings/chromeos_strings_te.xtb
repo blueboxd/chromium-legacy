@@ -9,14 +9,17 @@
 <translation id="2338501278241028356">సమీప పరికరాలను కనుగొనడానికి బ్లూటూత్‌ను ఆన్ చేయండి</translation>
 <translation id="2805756323405976993">యాప్స్</translation>
 <translation id="2872961005593481000">షట్ డౌన్ చెయ్యండి</translation>
+<translation id="3008341117444806826">రిఫ్రెష్ చేయి</translation>
 <translation id="3838338534323494292">కొత్త పాస్‌వర్డ్</translation>
+<translation id="4429881212383817840">Kerberos టిక్కెట్ గడువు త్వరలో ముగుస్తుంది</translation>
 <translation id="445059817448385655">పాత పాస్‌వర్డ్</translation>
 <translation id="467510802200863975">పాస్‌వర్డ్‌లు సరిపోలడం లేదు</translation>
 <translation id="4731797938093519117">తల్లి/తండ్రి యాక్సెస్</translation>
-<translation id="476166673298332917">పరికర నిర్వాహకులు మీ బ్రౌజింగ్ కార్యకలాపాన్ని పర్యవేక్షించవచ్చు.</translation>
+<translation id="4890353053343094602">వెంటనే ఒక కొత్త దానిని ఎంచుకోండి</translation>
 <translation id="5212543919916444558">నేను సహాయం అందించగలిగేలా మీ స్క్రీన్‌పై నాకు ఏదీ కనిపించలేదు. మైక్‌ను నొక్కి, నన్ను ఏదైనా అడగడానికి ప్రయత్నించండి.</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
+<translation id="5332948983412042822">ఇప్పుడే ఒక కొత్త దానిని ఎంచుకోండి</translation>
 <translation id="5457599981699367932">అతిథి లాగా బ్రౌజ్ చేయండి</translation>
 <translation id="54609108002486618">నిర్వహించబడింది</translation>
 <translation id="5832805196449965646">వ్యక్తిని జోడించు</translation>
@@ -24,10 +27,10 @@
 <translation id="6058625436358447366">దీనిని ముగించడానికి, మీ పాత, కొత్త పాస్‌వర్డ్‌లను నమోదు చేయండి</translation>
 <translation id="6106186594183574873">దీనిని ముగించడానికి, మీ పాత పాస్‌వర్డ్‌ను నమోదు చేయండి</translation>
 <translation id="6146993107019042706">దీనిని ముగించడానికి, మీ కొత్త పాస్‌వర్డ్‌ను నమోదు చేయండి</translation>
-<translation id="6574601967010742428">మీ కార్యకలాపాన్ని పరికర నిర్వాహకులు పర్యవేక్షించవచ్చు.</translation>
 <translation id="7658239707568436148">రద్దు చేయి</translation>
 <translation id="7690294790491645610">కొత్త పాస్‌వర్డ్‌ను నిర్ధారించండి</translation>
 <translation id="808894953321890993">పాస్‌వర్డ్‌ను మార్చు</translation>
 <translation id="8747900814994928677">మార్పును నిర్ధారించండి</translation>
+<translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> సంబంధిత టిక్కెట్‌ను రిఫ్రెష్ చేయండి</translation>
 <translation id="9111102763498581341">అన్‌లాక్ చేయి</translation>
 </translationbundle>

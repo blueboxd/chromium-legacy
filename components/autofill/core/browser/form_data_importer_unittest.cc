@@ -16,7 +16,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -224,9 +223,6 @@ class FormDataImporterTestBase {
     run_loop.Run();
   }
 
-  // The temporary directory should be deleted at the end to ensure that
-  // files are not used anymore and deletion succeeds.
-  base::ScopedTempDir temp_dir_;
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
@@ -245,8 +241,7 @@ class FormDataImporterTest : public FormDataImporterTestBase,
   void SetUp() override {
     OSCryptMocker::SetUp();
     prefs_ = test::PrefServiceForTesting();
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
+    base::FilePath path(WebDatabase::kInMemoryPath);
     web_database_ =
         new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                base::ThreadTaskRunnerHandle::Get());

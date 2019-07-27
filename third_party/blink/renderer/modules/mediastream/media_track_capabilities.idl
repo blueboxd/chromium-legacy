@@ -34,6 +34,8 @@ dictionary MediaTrackCapabilities {
     MediaSettingsRange   saturation;
     MediaSettingsRange   sharpness;
     MediaSettingsRange   focusDistance;
+    MediaSettingsRange   pan;
+    MediaSettingsRange   tilt;
     MediaSettingsRange   zoom;
     boolean              torch;
 };

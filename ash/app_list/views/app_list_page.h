@@ -31,7 +31,11 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // Triggered after the page has been hidden.
   virtual void OnHidden();
 
-  // Triggered after the animation has updated.
+  // Triggered when the page transition animation started.
+  virtual void OnAnimationStarted(ash::AppListState from_state,
+                                  ash::AppListState to_state);
+
+  // Triggered after the page transition animation has updated.
   virtual void OnAnimationUpdated(double progress,
                                   ash::AppListState from_state,
                                   ash::AppListState to_state);

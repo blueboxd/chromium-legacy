@@ -25,6 +25,7 @@
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -32,6 +33,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
@@ -126,6 +128,16 @@ Browser* LaunchBrowserForAppInTab(Profile* profile,
   DCHECK_EQ(browser, chrome::FindLastActive());
   DCHECK_EQ(web_contents, browser->tab_strip_model()->GetActiveWebContents());
   return browser;
+}
+
+content::WebContents* AddTab(Browser* browser, const GURL& url) {
+  int starting_tab_count = browser->tab_strip_model()->count();
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser, url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  int tab_count = browser->tab_strip_model()->count();
+  EXPECT_EQ(starting_tab_count + 1, tab_count);
+  return browser->tab_strip_model()->GetActiveWebContents();
 }
 
 }  // namespace browsertest_util

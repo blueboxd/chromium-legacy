@@ -117,7 +117,6 @@ class UserActivityManager : public ui::UserActivityObserver,
                               UserActivityEvent::ModelPrediction prediction);
 
   // session_manager::SessionManagerObserver overrides:
-  void OnSessionManagerDestroyed() override;
   void OnSessionStateChanged() override;
 
  private:
@@ -203,7 +202,7 @@ class UserActivityManager : public ui::UserActivityObserver,
                  session_manager::SessionManagerObserver>
       session_manager_observer_;
 
-  session_manager::SessionManager* session_manager_ = nullptr;
+  session_manager::SessionManager* const session_manager_;
 
   mojo::Binding<viz::mojom::VideoDetectorObserver> binding_;
 

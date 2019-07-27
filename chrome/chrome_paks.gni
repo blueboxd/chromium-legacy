@@ -91,6 +91,7 @@ template("chrome_extra_paks") {
                            ])
     output = "${invoker.output_dir}/resources.pak"
     sources = [
+      "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
       "$root_gen_dir/chrome/browser_resources.pak",
       "$root_gen_dir/chrome/chrome_unscaled_resources.pak",
       "$root_gen_dir/chrome/common_resources.pak",
@@ -112,6 +113,7 @@ template("chrome_extra_paks") {
       "//chrome/browser/resources:invalidations_resources",
       "//chrome/browser/resources:net_internals_resources",
       "//chrome/browser/resources:quota_internals_resources",
+      "//chrome/browser/resources/bluetooth_internals:resources",
       "//chrome/common:resources",
       "//components/autofill/core/browser:autofill_address_rewriter_resources",
       "//components/resources",

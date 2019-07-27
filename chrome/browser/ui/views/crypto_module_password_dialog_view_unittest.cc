@@ -44,5 +44,5 @@ TEST_F(CryptoModulePasswordDialogViewTest, TestAccept) {
   EXPECT_TRUE(dialog_->Accept());
   EXPECT_EQ(kPassword, text_);
   const base::string16 empty;
-  EXPECT_EQ(empty, dialog_->password_entry_->text());
+  EXPECT_EQ(empty, dialog_->password_entry_->GetText());
 }

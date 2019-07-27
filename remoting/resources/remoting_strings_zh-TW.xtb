@@ -192,9 +192,6 @@ PC</translation>
 <translation id="4973800994433240357">下載 Chromoting 主機安裝程式即表示您同意 Google 的《<ph name="LINK_BEGIN" />服務條款<ph name="LINK_END" />》。</translation>
 <translation id="4974476491460646149">「<ph name="HOSTNAME" />」連線已中斷</translation>
 <translation id="4985296110227979402">您必須先設定電腦，才能執行遠端存取作業。</translation>
-<translation id="5059773780693835145">你必須先完成一項額外的設定步驟，才能使用 <ph name="PRODUCT_NAME" /> 從遠端控制這部電腦。
-
-如要啟用這項功能，請選取 [<ph name="BUTTON_NAME" />] 開啟「安全性和隱私權」偏好設定窗格，然後勾選 [<ph name="SERVICE_SCRIPT_NAME" />] 旁邊的方塊。</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (離線)</translation>
 <translation id="5070121137485264635">遠端主機要求你向第三方網站進行驗證。如要繼續，你必須授予額外權限，讓 Chrome 遠端桌面能夠存取這個位址：</translation>
 <translation id="507204348399810022">您確定要停用與「<ph name="HOSTNAME" />」之間的遠端連線嗎？</translation>

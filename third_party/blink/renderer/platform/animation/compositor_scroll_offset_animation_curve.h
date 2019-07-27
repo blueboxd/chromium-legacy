@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation_curve.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace cc {
 class ScrollOffsetAnimationCurve;

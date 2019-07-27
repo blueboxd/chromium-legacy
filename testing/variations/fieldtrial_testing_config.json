@@ -2381,49 +2381,7 @@
             ]
         }
     ],
-    "GwpAsanMallocMacOSLaunch": [
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "AllocationSamplingRange": "16",
-                        "MaxAllocations": "70",
-                        "MaxMetadata": "255",
-                        "ProcessSamplingProbability": "0.1"
-                    },
-                    "enable_features": [
-                        "GwpAsanMalloc"
-                    ]
-                }
-            ]
-        }
-    ],
-    "GwpAsanMallocWindowsM75Launch": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "AllocationSamplingRange": "16",
-                        "MaxAllocations": "70",
-                        "MaxMetadata": "255",
-                        "ProcessSamplingProbability": "0.1"
-                    },
-                    "enable_features": [
-                        "GwpAsanMalloc"
-                    ]
-                }
-            ]
-        }
-    ],
-    "GwpAsanPartitionAllocLaunch": [
+    "GwpAsanUnified": [
         {
             "platforms": [
                 "mac",
@@ -2432,7 +2390,15 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "AllocationSamplingRange": "16",
+                        "MaxAllocations": "70",
+                        "MaxMetadata": "255",
+                        "ProcessSamplingBoost2": "10",
+                        "ProcessSamplingProbability": "0.1"
+                    },
                     "enable_features": [
+                        "GwpAsanMalloc",
                         "GwpAsanPartitionAlloc"
                     ]
                 }
@@ -5234,7 +5200,6 @@
                 "android",
                 "chromeos",
                 "ios",
-                "linux",
                 "mac",
                 "windows"
             ],

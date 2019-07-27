@@ -46,8 +46,10 @@
 <translation id="2289052229480071835">Puudutage ekraanil puutesihtmärke.</translation>
 <translation id="2295140143284145483">Küsitlus</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Kas soovite telefonist sellele numbrile helistada?</translation>
 <translation id="24452542372838207">Laienda märguannet</translation>
 <translation id="2445449901874883781">Kasuta kõrget tihedust</translation>
+<translation id="2451871130406122810">Saadeti seadmesse</translation>
 <translation id="2482878487686419369">Märguanded</translation>
 <translation id="2497284189126895209">Kõik failid</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -114,6 +116,7 @@
 <translation id="5266161281976477809">Avalikustamise kolmnurk</translation>
 <translation id="5278860589123563674">Saatmine ebaõnnestus</translation>
 <translation id="528468243742722775">Lõpeta</translation>
+<translation id="5327567770033251652">lülita sünkroonimine sisse</translation>
 <translation id="5329858601952122676">&amp;Kustuta</translation>
 <translation id="5395308026110844773">Rakendus <ph name="DRAGGED_APP_NAME" /> rakenduse <ph name="IN_PLACE_APP" /> kohal, kausta loomiseks vabastage.</translation>
 <translation id="5463830097259460683">Emotikonid ja sümbolid</translation>

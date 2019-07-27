@@ -144,6 +144,7 @@ void SharingFCMHandler::SendAckMessage(const std::string& original_sender_guid,
 void SharingFCMHandler::OnAckMessageSent(
     const std::string& original_message_id,
     base::Optional<std::string> message_id) {
+  LogSendSharingAckMessageSuccess(message_id.has_value());
   if (!message_id) {
     LOG(ERROR) << "Failed to send ack mesage for " << original_message_id;
   }

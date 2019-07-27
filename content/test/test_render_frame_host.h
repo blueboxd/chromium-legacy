@@ -163,6 +163,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
           document_interface_broker_content_request,
       blink::mojom::DocumentInterfaceBrokerRequest
           document_interface_broker_blink_request,
+      mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+          browser_interface_broker_receiver,
       bool same_document);
 
   // Send a message with the sandbox flags and feature policy
@@ -188,6 +190,11 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // implementation, but will never receive any interface requests.
   static blink::mojom::DocumentInterfaceBrokerRequest
   CreateStubDocumentInterfaceBrokerRequest();
+
+  // Returns a PendingReceiver<BrowserInterfaceBroker> that is safe to bind to
+  // an implementation, but will never receive any interface requests.
+  static mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+  CreateStubBrowserInterfaceBrokerReceiver();
 
   // This simulates aborting a cross document navigation.
   // Will abort the navigation with the given |navigation_id|.

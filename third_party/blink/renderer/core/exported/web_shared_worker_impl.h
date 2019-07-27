@@ -63,7 +63,6 @@ class SharedWorkerThread;
 class WebSharedWorkerClient;
 class WebString;
 class WebURL;
-class WorkerClassicScriptLoader;
 
 // This class is used by the worker process code to talk to the SharedWorker
 // implementation. This is basically accessed on the main thread, but some
@@ -122,8 +121,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   // Shuts down the worker thread.
   void TerminateWorkerThread();
 
-  void DidReceiveScriptLoaderResponse();
-  void OnScriptLoaderFinished();
   void OnAppCacheSelected();
   void ContinueStartWorkerContext();
   void StartWorkerThread(
@@ -150,9 +147,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   bool asked_to_terminate_ = false;
   bool pause_worker_context_on_start_ = false;
   bool is_paused_on_start_ = false;
-
-  // Kept around only while main script loading is ongoing.
-  Persistent<WorkerClassicScriptLoader> main_script_loader_;
 
   WebURL script_request_url_;
   WebString name_;

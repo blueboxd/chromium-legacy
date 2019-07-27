@@ -41,12 +41,12 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat;
-import org.chromium.chrome.browser.preferences.ChromeBasePreferenceCompat;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
+import org.chromium.chrome.browser.preferences.ChromeBasePreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ExpandablePreferenceGroup;
 import org.chromium.chrome.browser.preferences.LocationSettings;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -512,8 +512,8 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                 }
             }
 
-            ChromeSwitchPreferenceCompat binaryToggle =
-                    (ChromeSwitchPreferenceCompat) getPreferenceScreen().findPreference(
+            ChromeSwitchPreference binaryToggle =
+                    (ChromeSwitchPreference) getPreferenceScreen().findPreference(
                             BINARY_TOGGLE_KEY);
             updateAllowedHeader(mAllowedSiteCount, !binaryToggle.isChecked());
 
@@ -820,8 +820,8 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                             TRI_STATE_TOGGLE_KEY);
             return (triStateToggle.getCheckedSetting() == ContentSettingValues.BLOCK);
         } else {
-            ChromeSwitchPreferenceCompat binaryToggle =
-                    (ChromeSwitchPreferenceCompat) getPreferenceScreen().findPreference(
+            ChromeSwitchPreference binaryToggle =
+                    (ChromeSwitchPreference) getPreferenceScreen().findPreference(
                             BINARY_TOGGLE_KEY);
             if (binaryToggle != null) return !binaryToggle.isChecked();
         }
@@ -835,8 +835,8 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
 
         // Find all preferences on the current preference screen. Some preferences are
         // not needed for the current category and will be removed in the steps below.
-        ChromeSwitchPreferenceCompat binaryToggle =
-                (ChromeSwitchPreferenceCompat) screen.findPreference(BINARY_TOGGLE_KEY);
+        ChromeSwitchPreference binaryToggle =
+                (ChromeSwitchPreference) screen.findPreference(BINARY_TOGGLE_KEY);
         TriStateSiteSettingsPreference triStateToggle =
                 (TriStateSiteSettingsPreference) screen.findPreference(TRI_STATE_TOGGLE_KEY);
         Preference thirdPartyCookies = screen.findPreference(THIRD_PARTY_COOKIES_TOGGLE_KEY);
@@ -933,10 +933,8 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         }
 
         // Show the link to system settings since permission is disabled.
-        ChromeBasePreferenceCompat osWarning =
-                new ChromeBasePreferenceCompat(getStyledContext(), null);
-        ChromeBasePreferenceCompat osWarningExtra =
-                new ChromeBasePreferenceCompat(getStyledContext(), null);
+        ChromeBasePreference osWarning = new ChromeBasePreference(getStyledContext(), null);
+        ChromeBasePreference osWarningExtra = new ChromeBasePreference(getStyledContext(), null);
         mCategory.configurePermissionIsOffPreferences(
                 osWarning, osWarningExtra, getActivity(), true);
         if (osWarning.getTitle() != null) {
@@ -957,7 +955,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         triStateToggle.initialize(setting, descriptionIds);
     }
 
-    private void configureBinaryToggle(ChromeSwitchPreferenceCompat binaryToggle, int contentType) {
+    private void configureBinaryToggle(ChromeSwitchPreference binaryToggle, int contentType) {
         binaryToggle.setOnPreferenceChangeListener(this);
         binaryToggle.setTitle(ContentSettingsResources.getTitle(contentType));
 
@@ -970,7 +968,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
         }
         binaryToggle.setSummaryOff(ContentSettingsResources.getDisabledSummary(contentType));
 
-        binaryToggle.setManagedPreferenceDelegate(new ManagedPreferenceDelegateCompat() {
+        binaryToggle.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 // TODO(bauerb): Align the ManagedPreferenceDelegate and
@@ -994,8 +992,8 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
     }
 
     private void updateThirdPartyCookiesCheckBox() {
-        ChromeBaseCheckBoxPreferenceCompat thirdPartyCookiesPref =
-                (ChromeBaseCheckBoxPreferenceCompat) getPreferenceScreen().findPreference(
+        ChromeBaseCheckBoxPreference thirdPartyCookiesPref =
+                (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         THIRD_PARTY_COOKIES_TOGGLE_KEY);
         thirdPartyCookiesPref.setChecked(
                 PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled());
@@ -1006,8 +1004,8 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
     }
 
     private void updateNotificationsVibrateCheckBox() {
-        ChromeBaseCheckBoxPreferenceCompat preference =
-                (ChromeBaseCheckBoxPreferenceCompat) getPreferenceScreen().findPreference(
+        ChromeBaseCheckBoxPreference preference =
+                (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
         if (preference != null) {
             preference.setEnabled(PrefServiceBridge.getInstance().isCategoryEnabled(

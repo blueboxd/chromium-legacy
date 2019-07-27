@@ -348,6 +348,9 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
   blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker_blink;
   document_interface_broker_blink_request_ =
       mojo::MakeRequest(&stub_document_interface_broker_blink);
+  browser_interface_broker_receiver_ =
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver();
 }
 
 NavigationSimulatorImpl::~NavigationSimulatorImpl() {}
@@ -596,6 +599,7 @@ void NavigationSimulatorImpl::Commit() {
     interface_provider_request_ = nullptr;
     document_interface_broker_content_request_ = nullptr;
     document_interface_broker_blink_request_ = nullptr;
+    browser_interface_broker_receiver_.reset();
   }
 
   if (request_) {
@@ -615,7 +619,8 @@ void NavigationSimulatorImpl::Commit() {
   render_frame_host_->SimulateCommitProcessed(
       request_, std::move(params), std::move(interface_provider_request_),
       std::move(document_interface_broker_content_request_),
-      std::move(document_interface_broker_blink_request_), same_document_);
+      std::move(document_interface_broker_blink_request_),
+      std::move(browser_interface_broker_receiver_), same_document_);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
@@ -741,7 +746,7 @@ void NavigationSimulatorImpl::CommitErrorPage() {
       request_, std::move(params), std::move(interface_provider_request_),
       std::move(document_interface_broker_content_request_),
       std::move(document_interface_broker_blink_request_),
-      false /* same_document */);
+      std::move(browser_interface_broker_receiver_), false /* same_document */);
 
   // Simulate the UnloadACK in the old RenderFrameHost if it was swapped out at
   // commit time.
@@ -771,11 +776,15 @@ void NavigationSimulatorImpl::CommitSameDocument() {
   interface_provider_request_ = nullptr;
   document_interface_broker_content_request_ = nullptr;
   document_interface_broker_blink_request_ = nullptr;
+  browser_interface_broker_receiver_.reset();
 
   render_frame_host_->SimulateCommitProcessed(
       request_, std::move(params), nullptr /* interface_provider_request_ */,
       nullptr /* document_interface_broker_content_handle */,
       nullptr /* document_interface_broker_blink_handle */,
+      mojo::PendingReceiver<
+          blink::mojom::
+              BrowserInterfaceBroker>() /* browser_interface_broker_receiver */,
       true /* same_document */);
 
   // Same-document commits should never hit network-related stages of committing

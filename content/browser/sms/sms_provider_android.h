@@ -22,9 +22,8 @@ class SmsProviderAndroid : public SmsProvider {
   void Retrieve() override;
 
   void OnReceive(JNIEnv*,
-                 const base::android::JavaParamRef<jobject>&,
                  jstring message);
-  void OnTimeout(JNIEnv* env, const base::android::JavaParamRef<jobject>&);
+  void OnTimeout(JNIEnv* env);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> j_sms_receiver_;

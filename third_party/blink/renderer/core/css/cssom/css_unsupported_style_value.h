@@ -24,7 +24,7 @@ namespace blink {
 // * Tied to no CSS property at all, in which case it's not valid for any
 //   property.
 
-class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
+class CORE_EXPORT CSSUnsupportedStyleValue : public CSSStyleValue {
  public:
   static CSSUnsupportedStyleValue* Create(const CSSValue& value) {
     return MakeGarbageCollected<CSSUnsupportedStyleValue>(value.CssText());
@@ -70,7 +70,9 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
 template <>
 struct DowncastTraits<CSSUnsupportedStyleValue> {
   static bool AllowFrom(const CSSStyleValue& value) {
-    return value.GetType() == CSSStyleValue::StyleValueType::kUnknownType;
+    return value.GetType() == CSSStyleValue::StyleValueType::kUnknownType ||
+           value.GetType() ==
+               CSSStyleValue::StyleValueType::kUnsupportedColorType;
   }
 };
 

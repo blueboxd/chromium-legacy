@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -19,19 +20,6 @@ enum class ContextType {
   kEventPage,
   kServiceWorker,
 };
-
-// Returns the newly added WebContents.
-// TODO(lazyboy): We have at least 3 versions of this AddTab within
-// //extensions, put this in a central place and use that instead.
-content::WebContents* AddTab(Browser* browser, const GURL& url) {
-  int starting_tab_count = browser->tab_strip_model()->count();
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser, url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  int tab_count = browser->tab_strip_model()->count();
-  EXPECT_EQ(starting_tab_count + 1, tab_count);
-  return browser->tab_strip_model()->GetActiveWebContents();
-}
 
 }  // namespace
 
@@ -124,7 +112,8 @@ IN_PROC_BROWSER_TEST_P(ManagementApiNonPersistentApiTest,
   // Click on browser action to start the test, |extension_a| will uninstall
   // |extension_b|.
   {
-    content::WebContents* web_contents = AddTab(browser(), GURL("about:blank"));
+    content::WebContents* web_contents =
+        browsertest_util::AddTab(browser(), GURL("about:blank"));
     ASSERT_TRUE(web_contents);
     ExtensionActionRunner::GetForWebContents(
         browser()->tab_strip_model()->GetActiveWebContents())

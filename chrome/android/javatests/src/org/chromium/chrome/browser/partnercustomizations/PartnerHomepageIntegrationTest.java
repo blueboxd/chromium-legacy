@@ -28,7 +28,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.HomepageEditor;
 import org.chromium.chrome.browser.preferences.HomepagePreferences;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -246,9 +246,8 @@ public class PartnerHomepageIntegrationTest {
         PreferenceFragmentCompat fragment =
                 (PreferenceFragmentCompat) homepagePreferenceActivity.getSupportFragmentManager()
                         .findFragmentById(android.R.id.content);
-        ChromeSwitchPreferenceCompat preference =
-                (ChromeSwitchPreferenceCompat) fragment.findPreference(
-                        HomepagePreferences.PREF_HOMEPAGE_SWITCH);
+        ChromeSwitchPreference preference = (ChromeSwitchPreference) fragment.findPreference(
+                HomepagePreferences.PREF_HOMEPAGE_SWITCH);
         Assert.assertNotNull(preference);
 
         // Click toggle and verify that checked state matches expectation.

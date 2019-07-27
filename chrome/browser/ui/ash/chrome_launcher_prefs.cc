@@ -105,6 +105,13 @@ struct ComparePinInfo {
   }
 };
 
+// Returns true in case some configuration was rolled.
+bool IsAnyDefaultPinLayoutRolled(Profile* profile) {
+  const auto* layouts_rolled =
+      profile->GetPrefs()->GetList(prefs::kShelfDefaultPinLayoutRolls);
+  return layouts_rolled && !layouts_rolled->GetList().empty();
+}
+
 // Returns true in case default pin layout |default_pin_layout| was already
 // rolled.
 bool IsDefaultPinLayoutRolled(Profile* profile,
@@ -449,8 +456,11 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
   // completed. prefs::kPolicyPinnedLauncherApps overrides any default layout.
   // This also limits applying experimental configuration only for users who
   // have the default pin layout specified by |kDefaultPinnedApps| or for
-  // fresh users who have no pin information at all.
-  std::string shelf_layout = kDefaultPinnedAppsKey;
+  // fresh users who have no pin information at all. Default configuration is
+  // not applied if any of experimental layout was rolled.
+  std::string shelf_layout = IsAnyDefaultPinLayoutRolled(helper->profile())
+                                 ? std::string()
+                                 : kDefaultPinnedAppsKey;
   // Set to true in case default configuration has to be reset in order to let
   // new layout takes effect.
   bool reset_default_configuration = false;
@@ -478,6 +488,7 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
 
   if (!prefs->HasPrefPath(prefs::kPolicyPinnedLauncherApps) &&
       IsSafeToApplyDefaultPinLayout(helper->profile()) &&
+      !shelf_layout.empty() &&
       !IsDefaultPinLayoutRolled(helper->profile(), shelf_layout)) {
     VLOG(1) << "Roll default shelf pin layout " << shelf_layout;
     if (reset_default_configuration) {

@@ -30,7 +30,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/skia/include/codec/SkCodec.h"
 
 namespace blink {

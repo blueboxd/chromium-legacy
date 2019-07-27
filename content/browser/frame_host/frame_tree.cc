@@ -178,6 +178,8 @@ FrameTreeNode* FrameTree::AddFrame(
         document_interface_broker_content_request,
     blink::mojom::DocumentInterfaceBrokerRequest
         document_interface_broker_blink_request,
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker_receiver,
     blink::WebTreeScopeType scope,
     const std::string& frame_name,
     const std::string& frame_unique_name,
@@ -225,6 +227,10 @@ FrameTreeNode* FrameTree::AddFrame(
   added_node->current_frame_host()->BindDocumentInterfaceBrokerRequest(
       std::move(document_interface_broker_content_request),
       std::move(document_interface_broker_blink_request));
+
+  DCHECK(browser_interface_broker_receiver.is_valid());
+  added_node->current_frame_host()->BindBrowserInterfaceBrokerReceiver(
+      std::move(browser_interface_broker_receiver));
 
   // The last committed NavigationEntry may have a FrameNavigationEntry with the
   // same |frame_unique_name|, since we don't remove FrameNavigationEntries if

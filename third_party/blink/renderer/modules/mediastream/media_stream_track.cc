@@ -77,8 +77,12 @@ bool ConstraintSetHasImageCapture(
          constraint_set->hasColorTemperature() || constraint_set->hasIso() ||
          constraint_set->hasBrightness() || constraint_set->hasContrast() ||
          constraint_set->hasSaturation() || constraint_set->hasSharpness() ||
-         constraint_set->hasFocusDistance() || constraint_set->hasZoom() ||
-         constraint_set->hasTorch();
+         constraint_set->hasFocusDistance() ||
+         (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
+          constraint_set->hasPan()) ||
+         (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
+          constraint_set->hasTilt()) ||
+         constraint_set->hasZoom() || constraint_set->hasTorch();
 }
 
 bool ConstraintSetHasNonImageCapture(
@@ -451,6 +455,10 @@ MediaTrackConstraints* MediaStreamTrack::getConstraints() const {
       image_capture_constraints->hasSaturation() ||
       image_capture_constraints->hasSharpness() ||
       image_capture_constraints->hasFocusDistance() ||
+      (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
+       image_capture_constraints->hasPan()) ||
+      (RuntimeEnabledFeatures::MediaCapturePanTiltEnabled() &&
+       image_capture_constraints->hasTilt()) ||
       image_capture_constraints->hasZoom()) {
     // Add image capture constraints, if any, as another entry to advanced().
     vector.push_back(image_capture_constraints);

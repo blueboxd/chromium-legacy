@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">স্লাইডার খুঁজুন</translation>
 <translation id="1399648040768741453">তেলুগু কীবোর্ড (ফোনেটিক)</translation>
 <translation id="1430915738399379752">প্রিন্ট</translation>
+<translation id="1439494416798956626"><ph name="FOLDER_NAME" /> এ সরানো হয়েছে।</translation>
 <translation id="1441841714100794440">ভিয়েতনামি কীবোর্ড (টেলেক্স)</translation>
 <translation id="1455548678241328678">নরওয়েয়ান কীবোর্ড</translation>
 <translation id="1464724975715666883">১টি ত্রুটি৷</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">আপনার মিডিয়া ডিভাইস স্ক্যান করা হচ্ছে...</translation>
 <translation id="3468522857997926824"><ph name="BEGIN_LINK" />Google ড্রাইভ<ph name="END_LINK" /> এ <ph name="FILE_COUNT" />টি ফটো ব্যাকআপ নেওয়া হয়েছে</translation>
 <translation id="3470502288861289375">অনুলিপি করা হচ্ছে...</translation>
+<translation id="3473378059788601120"><ph name="FOLDER_NAME" /> ফোল্ডারে কপি করা হয়েছে।</translation>
 <translation id="3475447146579922140">Google স্প্রেডশীট</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />টি ত্রুটি৷</translation>
 <translation id="3519867315646775981">লিপ্যন্তরকরণ (shalom ← שלום)</translation>
@@ -436,6 +438,7 @@
 <translation id="5923484009666796948">জাপানি ইনপুট (জাপানি কীবোর্ডের ক্ষেত্রে)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux অ্যাপকে আপনার Google ড্রাইভ-এর ফাইলগুলি পরিবর্তন করার অনুমতি দিন। পরিবর্তনগুলি আপনার অন্যান্য ডিভাইসের সাথে সিঙ্ক হয়ে যাবে।</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" />টি আইটেম</translation>
 <translation id="5982621672636444458">বাছাই বিকল্পগুলি</translation>
 <translation id="6005282720244019462">লাতিন আমেরিকান কীবোর্ড</translation>
 <translation id="6007237601604674381">স্থানান্তরণ ব্যর্থ হয়েছে৷ <ph name="ERROR_MESSAGE" /></translation>

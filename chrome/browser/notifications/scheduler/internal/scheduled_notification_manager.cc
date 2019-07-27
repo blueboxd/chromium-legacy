@@ -216,6 +216,8 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
 
     // TODO(hesen): Address only first icon for now. Handle all icons situation
     // in following CLs.
+    if (entry->notification_data.icons.empty())
+      return;
     notifications::ConvertIconToString(
         std::move(entry->notification_data.icons.front()),
         base::BindOnce(&ScheduledNotificationManagerImpl::OnIconEncoded,

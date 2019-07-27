@@ -192,9 +192,6 @@ PC</translation>
 <translation id="4973800994433240357">Al descargar el programa de instalación del host de Chromoting, aceptas las <ph name="LINK_BEGIN" />Condiciones de Servicio<ph name="LINK_END" /> de Google.</translation>
 <translation id="4974476491460646149">Conexión cerrada para <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">En primer lugar, debes configurar el acceso remoto a tu ordenador</translation>
-<translation id="5059773780693835145">Para controlar este equipo de forma remota con <ph name="PRODUCT_NAME" />, es necesario realizar otro paso de configuración.
-
-Para habilitar esta función, selecciona <ph name="BUTTON_NAME" /> para mostrar el panel de preferencias Privacidad y seguridad y, a continuación, marca la casilla situada junto a <ph name="SERVICE_SCRIPT_NAME" />.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (sin conexión)</translation>
 <translation id="5070121137485264635">El host remoto requiere tu autenticación en un sitio web de terceros. Para continuar, debes conceder a la aplicación Escritorio Remoto de Chrome permisos adicionales para acceder a la siguiente dirección:</translation>
 <translation id="507204348399810022">¿Seguro que quieres inhabilitar las conexiones remotas a <ph name="HOSTNAME" />?</translation>

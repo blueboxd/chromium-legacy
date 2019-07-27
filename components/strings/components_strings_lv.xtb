@@ -706,7 +706,7 @@
 <translation id="4771973620359291008">Radās nezināma kļūda.</translation>
 <translation id="4780900888022378816">Jūsu ierīci pārvalda <ph name="ENROLLMENT_DOMAIN" />, un jūsu kontu pārvalda <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Pāriet uz šo cilni</translation>
-<translation id="4791134497475588553">Instalētās Linux lietotnes un to iepriekšējās lietošanas reizes laiks</translation>
+<translation id="4791134497475588553">Instalētās Linux lietotnes un to iepriekšējās lietošanas laiks</translation>
 <translation id="4798078619018708837">Lai atjauninātu kartes informāciju, ievadiet kredītkartes <ph name="CREDIT_CARD" /> derīguma termiņu un CVC kodu. Pēc apstiprināšanas kartes informācija no Google konta tiks kopīgota ar šo vietni.</translation>
 <translation id="4800132727771399293">Pārbaudiet derīguma termiņu un CVC kodu un mēģiniet vēlreiz.</translation>
 <translation id="480334179571489655">Izcelsmes politikas kļūda</translation>
@@ -1412,6 +1412,7 @@ Papildu informācija:
 <translation id="8703575177326907206">Jūsu savienojums ar <ph name="DOMAIN" /> nav kodēts.</translation>
 <translation id="8718314106902482036">Maksājums nav pabeigts</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, meklēšanas ieteikums</translation>
+<translation id="8723954843026426558">Es piekrītu domēna <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> pakalpojumu sniegšanas noteikumiem, konfidencialitātes politikai un atteikuma tiesībām</translation>
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
 <translation id="8728672262656704056">Jūs esat atvēris inkognito režīmu</translation>
 <translation id="8730621377337864115">Gatavs</translation>

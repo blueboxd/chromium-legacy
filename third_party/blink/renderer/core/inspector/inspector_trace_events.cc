@@ -1329,10 +1329,8 @@ std::unique_ptr<TracedValue> inspector_set_layer_tree_id::Data(
     LocalFrame* frame) {
   auto value = std::make_unique<TracedValue>();
   value->SetString("frame", IdentifiersFactory::FrameId(frame));
-  WebLayerTreeView* layerTreeView =
-      frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
   value->SetInteger("layerTreeId",
-                    layerTreeView ? layerTreeView->LayerTreeId() : 0);
+                    frame->GetPage()->GetChromeClient().GetLayerTreeId(*frame));
   return value;
 }
 

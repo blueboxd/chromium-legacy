@@ -79,7 +79,7 @@ public final class SearchEngineChoiceNotification {
 
         @Override
         public void onAction(Object actionData) {
-            PreferencesLauncher.launchSettingsPageCompat(mContext, SearchEnginePreference.class);
+            PreferencesLauncher.launchSettingsPage(mContext, SearchEnginePreference.class);
             recordEvent(Events.PROMPT_FOLLOWED);
             recordSearchEngineTypeBeforeChoicePresented();
         }

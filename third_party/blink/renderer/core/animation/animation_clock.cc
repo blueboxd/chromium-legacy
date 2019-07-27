@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 
 #include <math.h>
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

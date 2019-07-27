@@ -30,6 +30,7 @@ class ContextFactoryPrivate;
 class TestContextFactories {
  public:
   explicit TestContextFactories(bool enable_pixel_output);
+  TestContextFactories(bool enable_pixel_output, bool use_skia_renderer);
   ~TestContextFactories();
 
   TestContextFactories(const TestContextFactories&) = delete;

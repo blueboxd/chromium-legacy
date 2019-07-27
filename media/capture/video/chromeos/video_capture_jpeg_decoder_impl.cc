@@ -5,6 +5,7 @@
 #include "media/capture/video/chromeos/video_capture_jpeg_decoder_impl.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/chromeos_camera/mojo_mjpeg_decode_accelerator.h"
 #include "media/base/media_switches.h"
@@ -96,32 +97,29 @@ void VideoCaptureJpegDecoderImpl::DecodeCapturedData(
 
   // The API of |decoder_| requires us to wrap the |out_buffer| in a VideoFrame.
   const gfx::Size dimensions = frame_format.frame_size;
-  std::unique_ptr<media::VideoCaptureBufferHandle> out_buffer_access =
-      out_buffer.handle_provider->GetHandleForInProcessAccess();
-  base::SharedMemoryHandle out_handle =
-      out_buffer.handle_provider->GetNonOwnedSharedMemoryHandleForLegacyIPC();
+  base::UnsafeSharedMemoryRegion out_region =
+      out_buffer.handle_provider->DuplicateAsUnsafeRegion();
+  DCHECK(out_region.IsValid());
+  base::WritableSharedMemoryMapping out_mapping = out_region.Map();
+  DCHECK(out_mapping.IsValid());
   scoped_refptr<media::VideoFrame> out_frame =
-      media::VideoFrame::WrapExternalSharedMemory(
-          media::PIXEL_FORMAT_I420,          // format
-          dimensions,                        // coded_size
-          gfx::Rect(dimensions),             // visible_rect
-          dimensions,                        // natural_size
-          out_buffer_access->data(),         // data
-          out_buffer_access->mapped_size(),  // data_size
-          out_handle,                        // handle
-          0,                                 // shared_memory_offset
-          timestamp);                        // timestamp
+      media::VideoFrame::WrapExternalData(
+          media::PIXEL_FORMAT_I420,                       // format
+          dimensions,                                     // coded_size
+          gfx::Rect(dimensions),                          // visible_rect
+          dimensions,                                     // natural_size
+          out_mapping.GetMemoryAsSpan<uint8_t>().data(),  // data
+          out_mapping.size(),                             // data_size
+          timestamp);                                     // timestamp
   if (!out_frame) {
     base::AutoLock lock(lock_);
     decoder_status_ = FAILED;
     LOG(ERROR) << "DecodeCapturedData: WrapExternalSharedMemory failed";
     return;
   }
-  // Hold onto the buffer access handle for the lifetime of the VideoFrame, to
-  // ensure the data pointers remain valid.
-  out_frame->AddDestructionObserver(base::BindOnce(
-      [](std::unique_ptr<media::VideoCaptureBufferHandle> handle) {},
-      std::move(out_buffer_access)));
+  out_frame->BackWithOwnedSharedMemory(std::move(out_region),
+                                       std::move(out_mapping));
+
   out_frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                    frame_format.frame_rate);
 

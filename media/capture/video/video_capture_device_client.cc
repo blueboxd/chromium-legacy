@@ -128,24 +128,21 @@ class BufferPoolBufferHandleProvider
       int buffer_id)
       : buffer_pool_(std::move(buffer_pool)), buffer_id_(buffer_id) {}
 
-  // Implementation of HandleProvider:
-  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-      bool read_only) override {
-    return buffer_pool_->GetHandleForInterProcessTransit(buffer_id_, read_only);
+  base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() override {
+    return buffer_pool_->DuplicateAsUnsafeRegion(buffer_id_);
   }
-  base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC()
-      override {
-    return buffer_pool_->GetNonOwnedSharedMemoryHandleForLegacyIPC(buffer_id_);
-  }
-  std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
-      override {
-    return buffer_pool_->GetHandleForInProcessAccess(buffer_id_);
+  mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() override {
+    return buffer_pool_->DuplicateAsMojoBuffer(buffer_id_);
   }
 #if defined(OS_CHROMEOS)
   gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override {
     return buffer_pool_->GetGpuMemoryBufferHandle(buffer_id_);
   }
 #endif
+  std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
+      override {
+    return buffer_pool_->GetHandleForInProcessAccess(buffer_id_);
+  }
 
  private:
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
@@ -490,8 +487,7 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
     switch (target_buffer_type_) {
       case VideoCaptureBufferType::kSharedMemory:
         buffer_handle->set_shared_buffer_handle(
-            buffer_pool_->GetHandleForInterProcessTransit(buffer_id,
-                                                          true /*read_only*/));
+            buffer_pool_->DuplicateAsMojoBuffer(buffer_id));
         break;
       case VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor:
         buffer_handle->set_shared_memory_via_raw_file_descriptor(

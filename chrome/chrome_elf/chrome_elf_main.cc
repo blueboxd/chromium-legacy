@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include "chrome/chrome_elf/blacklist/blacklist.h"
+#include "chrome/chrome_elf/chrome_elf_security.h"
 #include "chrome/chrome_elf/crash/crash_helper.h"
 #include "chrome/chrome_elf/third_party_dlls/main.h"
 #include "chrome/install_static/install_details.h"
@@ -69,6 +70,9 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
     // If this is not the browser process, all done.
     if (install_static::IsNonBrowserProcess())
       return TRUE;
+
+    // Disable legacy hooking.
+    elf_security::EarlyBrowserSecurity();
 
     __try {
       // Initialize blacklist before initializing third_party_dlls.

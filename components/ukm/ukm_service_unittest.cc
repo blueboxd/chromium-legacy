@@ -711,8 +711,10 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
       // The one whitelisted source is of navigation type.
       EXPECT_EQ(1, proto_report.source_counts().navigation_sources());
       EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
-      // Only the navigation type source is deferred.
-      EXPECT_EQ(1, proto_report.source_counts().deferred_sources());
+      // Source 0 of navigation type, and entryless sources 1, 3, 4, 5 of
+      // non-whitelisted type are eligible to be deferred, but MaxKeptSources
+      // restricts deferral to the 3 latest created ones.
+      EXPECT_EQ(3, proto_report.source_counts().deferred_sources());
       EXPECT_EQ(0, proto_report.source_counts().carryover_sources());
 
       ASSERT_EQ(3, proto_report.sources_size());
@@ -756,12 +758,14 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
       // Only the navigation type source is deferred.
       EXPECT_EQ(1, proto_report.source_counts().deferred_sources());
       // Number of sources carried over from the previous report to this report.
-      EXPECT_EQ(1, proto_report.source_counts().carryover_sources());
-      // Only the navigation source is again included in current report and
-      // there is a new entry associated to it.
-      ASSERT_EQ(1, proto_report.sources_size());
-      EXPECT_EQ(whitelisted_id, proto_report.sources(0).id());
+      EXPECT_EQ(3, proto_report.source_counts().carryover_sources());
+      // Out of sources 3, 4, 5 that were retained from the previous cycle,
+      // sources 3 and 4 got new entries are thus included in this report.
+      ASSERT_EQ(2, proto_report.sources_size());
+      EXPECT_EQ(ids[3], proto_report.sources(0).id());
       EXPECT_EQ(kURL.spec(), proto_report.sources(0).url());
+      EXPECT_EQ(ids[4], proto_report.sources(1).id());
+      EXPECT_EQ(kURL.spec(), proto_report.sources(1).url());
     }
   }
 }

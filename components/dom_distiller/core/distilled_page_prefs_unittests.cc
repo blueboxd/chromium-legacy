@@ -4,8 +4,8 @@
 
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,7 +58,7 @@ class DistilledPagePrefsTest : public testing::Test {
   std::unique_ptr<DistilledPagePrefs> distilled_page_prefs_;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(DistilledPagePrefsTest, TestingOnChangeFontIsBeingCalled) {

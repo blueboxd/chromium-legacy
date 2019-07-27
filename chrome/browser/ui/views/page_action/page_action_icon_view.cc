@@ -23,6 +23,12 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/platform_style.h"
 
+std::unique_ptr<views::Border>
+PageActionIconView::Delegate::GetPageActionIconBorder() const {
+  return views::CreateEmptyBorder(
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING));
+}
+
 bool PageActionIconView::Delegate::IsLocationBarUserInputInProgress() const {
   return false;
 }
@@ -211,6 +217,5 @@ content::WebContents* PageActionIconView::GetWebContents() const {
 }
 
 void PageActionIconView::UpdateBorder() {
-  SetBorder(views::CreateEmptyBorder(
-      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
+  SetBorder(delegate_->GetPageActionIconBorder());
 }

@@ -110,11 +110,6 @@ const base::Feature kOffMainThreadDedicatedWorkerScriptFetch{
 const base::Feature kOffMainThreadServiceWorkerScriptFetch{
     "OffMainThreadServiceWorkerScriptFetch", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable off-the-main-thread shared worker script fetch.
-// (https://crbug.com/924041)
-const base::Feature kOffMainThreadSharedWorkerScriptFetch{
-    "OffMainThreadSharedWorkerScriptFetch", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
 const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",
@@ -279,14 +274,6 @@ const base::Feature kLightweightNoStatePrefetch{
 // Use scroll gestures for scrollbar scrolls (see https://crbug.com/954007).
 const base::Feature kScrollbarInjectScrollGestures{
     "ScrollbarInjectScrollGestures", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
-  // Off-the-main-thread shared worker script fetch depends on PlzSharedWorker
-  // (NetworkService).
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         base::FeatureList::IsEnabled(
-             features::kOffMainThreadSharedWorkerScriptFetch);
-}
 
 bool IsPlzDedicatedWorkerEnabled() {
   // PlzDedicatedWorker depends on off-the-main-thread dedicated worker script

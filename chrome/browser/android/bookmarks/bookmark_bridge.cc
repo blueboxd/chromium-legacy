@@ -144,9 +144,7 @@ static jlong JNI_BookmarkBridge_Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(delegate);
 }
 
-jboolean BookmarkBridge::IsEditBookmarksEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+jboolean BookmarkBridge::IsEditBookmarksEnabled(JNIEnv* env) {
   return IsEditBookmarksEnabled();
 }
 
@@ -438,6 +436,13 @@ jint BookmarkBridge::GetTotalBookmarkCount(
         nodes.push(child.get());
       else
         ++count;
+    }
+    // If we are looking at the mobile bookmarks folder,
+    // and we have partner bookmarks
+    if (node == bookmark_model_->mobile_node() &&
+        partner_bookmarks_shim_->HasPartnerBookmarks() &&
+        IsReachable(partner_bookmarks_shim_->GetPartnerBookmarksRoot())) {
+      nodes.push(partner_bookmarks_shim_->GetPartnerBookmarksRoot());
     }
   }
 

@@ -42,6 +42,7 @@ policy.Conflict;
  *    source: string,
  *    error: string,
  *    value: any,
+ *    allSourcesMerged: ?boolean,
  *    conflicts: ?Array<!Conflict>,
  * }}
  */
@@ -241,6 +242,9 @@ cr.define('policy', function() {
       /** @private {boolean} */
       this.hasConflicts_ = !!policy.conflicts;
 
+      /** @private {boolean} */
+      this.isMergedValue_ = !!policy.allSourcesMerged;
+
       // Populate the name column.
       const nameDisplay = this.querySelector('.name .link span');
       nameDisplay.textContent = policy.name;
@@ -290,8 +294,9 @@ cr.define('policy', function() {
             this.hasErrors_ ? loadTimeData.getString('error') : '';
         const warningsNotice =
             this.hasWarnings_ ? loadTimeData.getString('warning') : '';
-        const conflictsNotice =
-            this.hasConflicts_ ? loadTimeData.getString('conflict') : '';
+        const conflictsNotice = this.hasConflicts_ && !this.isMergedValue_ ?
+            loadTimeData.getString('conflict') :
+            '';
         const ignoredNotice =
             this.policy.ignored ? loadTimeData.getString('ignored') : '';
         const notice =

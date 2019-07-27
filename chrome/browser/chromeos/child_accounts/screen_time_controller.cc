@@ -159,8 +159,8 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
 
   // TODO(agawronska): Usage timestamp should be passed instead of second |now|.
   usage_time_limit::State state = usage_time_limit::GetState(
-      time_limit->CreateDeepCopy(), local_override, GetScreenTimeDuration(),
-      now, now, &time_zone, last_state);
+      *time_limit, local_override, GetScreenTimeDuration(), now, now,
+      &time_zone, last_state);
   SaveCurrentStateToPref(state);
 
   VLOG(1) << "Screen should be locked is set to " << state.is_locked;
@@ -196,8 +196,9 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   }
 
   // Trigger policy update notifications.
-  auto updated_policy_types = usage_time_limit::UpdatedPolicyTypes(
-      last_policy_, time_limit->CreateDeepCopy());
+  DCHECK(last_policy_);
+  auto updated_policy_types =
+      usage_time_limit::UpdatedPolicyTypes(*last_policy_, *time_limit);
   for (const auto& policy_type : updated_policy_types) {
     base::Optional<base::Time> lock_time;
     if (policy_type == usage_time_limit::PolicyType::kOverride)
@@ -213,10 +214,10 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
 
   // TODO(agawronska): We are creating UsageTimeLimitProcessor second time in
   // this method. Could expected reset time be returned as a part of the state?
-  base::Time next_get_state_time = std::min(
-      state.next_state_change_time,
-      usage_time_limit::GetExpectedResetTime(time_limit->CreateDeepCopy(),
-                                             local_override, now, &time_zone));
+  base::Time next_get_state_time =
+      std::min(state.next_state_change_time,
+               usage_time_limit::GetExpectedResetTime(
+                   *time_limit, local_override, now, &time_zone));
   if (!next_get_state_time.is_null()) {
     VLOG(1) << "Scheduling state change timer in " << next_get_state_time - now;
     next_state_timer_->Start(
@@ -464,9 +465,9 @@ void ScreenTimeController::UsageTimeLimitWarning() {
       pref_service_->GetDictionary(prefs::kTimeLimitLocalOverride);
 
   base::Optional<base::TimeDelta> remaining_usage =
-      usage_time_limit::GetRemainingTimeUsage(
-          time_limit->CreateDeepCopy(), local_override, now,
-          GetScreenTimeDuration(), &time_zone);
+      usage_time_limit::GetRemainingTimeUsage(*time_limit, local_override, now,
+                                              GetScreenTimeDuration(),
+                                              &time_zone);
 
   // Remaining time usage can be bigger than |kUsageTimeLimitWarningTime|
   // because it is counted in another class so the timers might be called with

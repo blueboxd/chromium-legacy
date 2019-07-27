@@ -190,9 +190,6 @@ PageSwitcher::PageSwitcher(ash::PaginationModel* model,
       buttons_(new views::View),
       vertical_(vertical),
       is_tablet_mode_(is_tablet_mode) {
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-
   if (vertical_) {
     buttons_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -279,11 +276,5 @@ void PageSwitcher::SelectedPageChanged(int old_selected, int new_selected) {
   if (new_selected >= 0 && size_t{new_selected} < buttons_->children().size())
     GetButtonByIndex(buttons_, size_t{new_selected})->SetSelected(true);
 }
-
-void PageSwitcher::TransitionStarted() {}
-
-void PageSwitcher::TransitionChanged() {}
-
-void PageSwitcher::TransitionEnded() {}
 
 }  // namespace app_list

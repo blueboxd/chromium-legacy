@@ -121,6 +121,7 @@ void AudioDecoderForMixer::Initialize() {
   pushed_eos_ = false;
   pending_output_frames_ = kNoPendingOutput;
   paused_ = false;
+  reported_ready_for_playback_ = false;
 
   last_mixer_delay_ = RenderingDelay();
   last_push_pts_ = kInvalidTimestamp;
@@ -688,6 +689,10 @@ void AudioDecoderForMixer::OnEos() {
 
 void AudioDecoderForMixer::OnAudioReadyForPlayback() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  if (reported_ready_for_playback_) {
+    return;
+  }
+  reported_ready_for_playback_ = true;
   backend_->OnAudioReadyForPlayback();
 }
 

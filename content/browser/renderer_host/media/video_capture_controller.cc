@@ -226,19 +226,21 @@ VideoCaptureController::BufferContext::CloneBufferHandle() {
   media::mojom::VideoBufferHandlePtr result =
       media::mojom::VideoBufferHandle::New();
   if (buffer_handle_->is_shared_buffer_handle()) {
-    // Special behavior here: If the handle was already read-only, the Clone()
-    // call here will maintain that read-only permission. If it was read-write,
-    // the cloned handle will have read-write permission.
+    // Buffer handles are always writable as they come from
+    // VideoCaptureBufferPool which, among other use cases, provides decoder
+    // output buffers.
     //
-    // TODO(crbug.com/797470): We should be able to demote read-write to
-    // read-only permissions when Clone()'ing handles. Currently, this causes a
-    // crash.
+    // TODO(crbug.com/793446): BroadcastingReceiver::BufferContext also defines
+    // CloneBufferHandle and independently decides on handle permissions. The
+    // permissions should be coordinated between these two classes.
     result->set_shared_buffer_handle(
         buffer_handle_->get_shared_buffer_handle()->Clone(
             mojo::SharedBufferHandle::AccessMode::READ_WRITE));
+    DCHECK(result->get_shared_buffer_handle()->is_valid());
   } else if (buffer_handle_->is_read_only_shmem_region()) {
     result->set_read_only_shmem_region(
         buffer_handle_->get_read_only_shmem_region().Duplicate());
+    DCHECK(result->get_read_only_shmem_region().IsValid());
   } else if (buffer_handle_->is_mailbox_handles()) {
     result->set_mailbox_handles(buffer_handle_->get_mailbox_handles()->Clone());
   } else {

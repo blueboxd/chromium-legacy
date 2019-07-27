@@ -46,8 +46,10 @@
 <translation id="2289052229480071835">הקש על יעדי המגע במסך.</translation>
 <translation id="2295140143284145483">סקר</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">להתקשר למספר הזה מהטלפון שלך?</translation>
 <translation id="24452542372838207">הרחבת ההודעה</translation>
 <translation id="2445449901874883781">שימוש בדחיסות גבוהה</translation>
+<translation id="2451871130406122810">נשלח למכשיר</translation>
 <translation id="2482878487686419369">התראות</translation>
 <translation id="2497284189126895209">כל הקבצים</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -114,6 +116,7 @@
 <translation id="5266161281976477809">משולש הצגה</translation>
 <translation id="5278860589123563674">השליחה נכשלה</translation>
 <translation id="528468243742722775">סיום</translation>
+<translation id="5327567770033251652">הפעלת סנכרון</translation>
 <translation id="5329858601952122676">&amp;מחק</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> מעל <ph name="IN_PLACE_APP" />. יש לשחרר כדי ליצור תיקייה.</translation>
 <translation id="5463830097259460683">אמוג'י וסמלים</translation>

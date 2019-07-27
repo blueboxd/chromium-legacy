@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
@@ -61,7 +60,6 @@
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
-#include "chrome/browser/search/local_ntp_first_run_field_trial_handler.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -463,6 +461,12 @@ const char kHasSeenWin10PromoPage[] = "browser.has_seen_win10_promo_page";
 // Deprecated 7/2019
 const char kSignedInTime[] = "signin.signedin_time";
 
+#if !defined(OS_ANDROID)
+// Deprecated 7/2019
+const char kNtpActivateHideShortcutsFieldTrial[] =
+    "ntp.activate_hide_shortcuts_field_trial";
+#endif  // !defined(OS_ANDROID)
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -585,7 +589,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
   gcm::RegisterPrefs(registry);
   metrics::TabStatsTracker::RegisterPrefs(registry);
-  ntp_first_run::RegisterLocalStatePrefs(registry);
   RegisterBrowserPrefs(registry);
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   task_manager::TaskManagerInterface::RegisterPrefs(registry);
@@ -677,6 +680,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
   // Obsolete. See MigrateObsoleteBrowserPrefs().
   registry->RegisterIntegerPref(metrics::prefs::kStabilityExecutionPhase, 0);
+#if !defined(OS_ANDROID)
+  registry->RegisterBooleanPref(kNtpActivateHideShortcutsFieldTrial, false);
+#endif  // !defined(OS_ANDROID)
 
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewLocalPrefs(registry);
@@ -687,7 +693,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
                           const std::string& locale) {
   TRACE_EVENT0("browser", "chrome::RegisterProfilePrefs");
-  SCOPED_UMA_HISTOGRAM_TIMER("Settings.RegisterProfilePrefsTime");
   // User prefs. Please keep this list alphabetized.
   AccessibilityLabelsService::RegisterProfilePrefs(registry);
   AccessibilityUIMessageHandler::RegisterProfilePrefs(registry);
@@ -992,6 +997,11 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
   // Added 6/2019.
   local_state->ClearPref(kHasSeenWin10PromoPage);
 #endif  // defined(OS_WIN)
+
+#if !defined(OS_ANDROID)
+  // Added 7/2019.
+  local_state->ClearPref(kNtpActivateHideShortcutsFieldTrial);
+#endif  // !defined(OS_ANDROID)
 }
 
 // This method should be periodically pruned of year+ old migrations.

@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -161,7 +162,14 @@ class SmsServiceTest : public RenderViewHostTestHarness {
   SmsServiceTest() {}
   ~SmsServiceTest() override {}
 
+  std::unique_ptr<base::HistogramSamples> GetHistogramSamplesSinceTestStart(
+      const std::string& name) {
+    return histogram_tester_.GetHistogramSamplesSinceCreation(name);
+  }
+
  private:
+  base::HistogramTester histogram_tester_;
+
   DISALLOW_COPY_AND_ASSIGN(SmsServiceTest);
 };
 
@@ -579,6 +587,114 @@ TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
   sms_loop2.Run();
 
   sms_loop1.Run();
+}
+
+TEST_F(SmsServiceTest, RecordContinueOnSuccessTimeMetric) {
+  NavigateAndCommit(GURL(kTestUrl));
+
+  Service service(web_contents());
+
+  base::RunLoop loop;
+
+  service.SetupSmsDialog(main_rfh());
+
+  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    service.NotifyReceive(GURL(kTestUrl), "hi");
+  }));
+
+  service.MakeRequest(
+      TimeDelta::FromSeconds(10),
+      BindLambdaForTesting(
+          [&loop](SmsStatus status, const Optional<string>& sms) {
+            loop.Quit();
+          }));
+
+  loop.Run();
+
+  std::unique_ptr<base::HistogramSamples> samples(
+      GetHistogramSamplesSinceTestStart(
+          "Blink.Sms.Receive.TimeContinueOnSuccess"));
+  EXPECT_EQ(1, samples->TotalCount());
+}
+
+TEST_F(SmsServiceTest, RecordCancelOnSuccessTimeMetric) {
+  NavigateAndCommit(GURL(kTestUrl));
+
+  Service service(web_contents());
+
+  {
+    // Histogram will not be recorded if the user cancels the operation before
+    // the SMS arrives.
+    base::RunLoop loop;
+
+    service.MakeRequest(
+        TimeDelta::FromSeconds(10),
+        BindLambdaForTesting(
+            [&loop](SmsStatus status, const Optional<string>& sms) {
+              loop.Quit();
+            }));
+
+    auto* dialog = new NiceMock<MockSmsDialog>();
+
+    EXPECT_CALL(*service.delegate(), CreateSmsDialog())
+        .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
+
+    EXPECT_CALL(*dialog, Open(main_rfh(), _, _))
+        .WillOnce(
+            Invoke([](content::RenderFrameHost*, base::OnceClosure on_continue,
+                      base::OnceClosure on_cancel) {
+              // Simulates the user pressing "Cancel".
+              std::move(on_cancel).Run();
+            }));
+
+    loop.Run();
+
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(
+            "Blink.Sms.Receive.TimeCancelOnSuccess"));
+    EXPECT_EQ(0, samples->TotalCount());
+  }
+
+  {
+    // Histogram will be recorded if the SMS has already arrived.
+    base::RunLoop loop;
+
+    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+      service.NotifyReceive(GURL(kTestUrl), "hi");
+    }));
+
+    service.MakeRequest(
+        TimeDelta::FromSeconds(10),
+        BindLambdaForTesting(
+            [&loop](SmsStatus status, const Optional<string>& sms) {
+              loop.Quit();
+            }));
+
+    auto* dialog = new NiceMock<MockSmsDialog>();
+    base::OnceClosure on_cancel_callback;
+
+    EXPECT_CALL(*service.delegate(), CreateSmsDialog())
+        .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
+
+    EXPECT_CALL(*dialog, Open(main_rfh(), _, _))
+        .WillOnce(Invoke([&on_cancel_callback](content::RenderFrameHost*,
+                                               base::OnceClosure on_continue,
+                                               base::OnceClosure on_cancel) {
+          on_cancel_callback = std::move(on_cancel);
+        }));
+
+    EXPECT_CALL(*dialog, EnableContinueButton()).WillOnce(Invoke([&]() {
+      // Simulates user clicking the "Cancel" once the SMS has been received.
+      std::move(on_cancel_callback).Run();
+    }));
+
+    loop.Run();
+
+    std::unique_ptr<base::HistogramSamples> samples(
+        GetHistogramSamplesSinceTestStart(
+            "Blink.Sms.Receive.TimeCancelOnSuccess"));
+    EXPECT_EQ(1, samples->TotalCount());
+  }
 }
 
 }  // namespace content

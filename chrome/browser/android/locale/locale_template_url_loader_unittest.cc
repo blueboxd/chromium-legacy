@@ -77,8 +77,7 @@ TEST_F(LocaleTemplateUrlLoaderTest, AddLocalSearchEngines) {
   ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(naver));
   ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(keyword_so));
 
-  ASSERT_TRUE(
-      loader()->LoadTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr)));
+  ASSERT_TRUE(loader()->LoadTemplateUrls(nullptr));
 
   EXPECT_EQ(TemplateURLPrepopulateData::naver.id,
             model()->GetTemplateURLForKeyword(naver)->prepopulate_id());
@@ -87,15 +86,13 @@ TEST_F(LocaleTemplateUrlLoaderTest, AddLocalSearchEngines) {
 
   // Ensure multiple calls to Load do not duplicate the search engines.
   size_t existing_size = model()->GetTemplateURLs().size();
-  ASSERT_TRUE(
-      loader()->LoadTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr)));
+  ASSERT_TRUE(loader()->LoadTemplateUrls(nullptr));
   EXPECT_EQ(existing_size, model()->GetTemplateURLs().size());
 }
 
 TEST_F(LocaleTemplateUrlLoaderTest, RemoveLocalSearchEngines) {
   test_util()->VerifyLoad();
-  ASSERT_TRUE(
-      loader()->LoadTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr)));
+  ASSERT_TRUE(loader()->LoadTemplateUrls(nullptr));
   // Make sure locale engines are loaded.
   auto keyword_naver = base::ASCIIToUTF16("naver.com");
   auto keyword_so = base::ASCIIToUTF16("so.com");
@@ -104,7 +101,7 @@ TEST_F(LocaleTemplateUrlLoaderTest, RemoveLocalSearchEngines) {
   ASSERT_EQ(TemplateURLPrepopulateData::so_360.id,
             model()->GetTemplateURLForKeyword(keyword_so)->prepopulate_id());
 
-  loader()->RemoveTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr));
+  loader()->RemoveTemplateUrls(nullptr);
 
   ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(keyword_naver));
   ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(keyword_so));
@@ -115,20 +112,18 @@ TEST_F(LocaleTemplateUrlLoaderTest, OverrideDefaultSearch) {
   ASSERT_EQ(TemplateURLPrepopulateData::google.id,
             model()->GetDefaultSearchProvider()->prepopulate_id());
   // Load local search engines first.
-  ASSERT_TRUE(
-      loader()->LoadTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr)));
+  ASSERT_TRUE(loader()->LoadTemplateUrls(nullptr));
 
   ASSERT_EQ(TemplateURLPrepopulateData::google.id,
             model()->GetDefaultSearchProvider()->prepopulate_id());
 
   // Set one of the local search engine as default.
-  loader()->OverrideDefaultSearchProvider(nullptr,
-                                          JavaParamRef<jobject>(nullptr));
+  loader()->OverrideDefaultSearchProvider(nullptr);
   ASSERT_EQ(TemplateURLPrepopulateData::naver.id,
             model()->GetDefaultSearchProvider()->prepopulate_id());
 
   // Revert the default search engine tweak.
-  loader()->SetGoogleAsDefaultSearch(nullptr, JavaParamRef<jobject>(nullptr));
+  loader()->SetGoogleAsDefaultSearch(nullptr);
   ASSERT_EQ(TemplateURLPrepopulateData::google.id,
             model()->GetDefaultSearchProvider()->prepopulate_id());
 }
@@ -144,8 +139,7 @@ TEST_F(LocaleTemplateUrlLoaderTest, ChangedGoogleBaseURL) {
   // match.
   ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(google_keyword));
 
-  ASSERT_TRUE(
-      loader()->LoadTemplateUrls(nullptr, JavaParamRef<jobject>(nullptr)));
+  ASSERT_TRUE(loader()->LoadTemplateUrls(nullptr));
 
   auto template_urls = model()->GetTemplateURLs();
   ASSERT_EQ(1, std::count_if(template_urls.begin(), template_urls.end(),

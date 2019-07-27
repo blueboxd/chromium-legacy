@@ -54,14 +54,14 @@ bool LeftRightKeyEventShouldExitText(views::Textfield* textfield,
                                      const ui::KeyEvent& key_event) {
   DCHECK(IsUnhandledLeftRightKeyEvent(key_event));
 
-  if (textfield->text().empty())
+  if (textfield->GetText().empty())
     return true;
 
   if (textfield->HasSelection())
     return false;
 
   if (textfield->GetCursorPosition() != 0 &&
-      textfield->GetCursorPosition() != textfield->text().length()) {
+      textfield->GetCursorPosition() != textfield->GetText().length()) {
     return false;
   }
 

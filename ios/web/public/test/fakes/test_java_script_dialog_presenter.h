@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#import "ios/web/public/java_script_dialog_presenter.h"
+#import "ios/web/public/ui/java_script_dialog_presenter.h"
 
 namespace web {
 

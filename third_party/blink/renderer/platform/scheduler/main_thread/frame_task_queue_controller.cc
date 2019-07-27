@@ -14,6 +14,8 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/web_scheduling_task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -120,6 +122,24 @@ FrameTaskQueueController::NewResourceLoadingTaskQueue() {
           MainThreadTaskQueue::QueueType::kFrameLoading, frame_scheduler_impl_);
   TaskQueueCreated(task_queue);
   resource_loading_task_queues_.insert(task_queue);
+  return task_queue;
+}
+
+scoped_refptr<MainThreadTaskQueue>
+FrameTaskQueueController::NewWebSchedulingTaskQueue(
+    QueueTraits queue_traits,
+    WebSchedulingPriority priority) {
+  // Note: we only track this |task_queue| in |all_task_queues_and_voters_|.
+  // It's interacted with through the WebSchedulingTaskQueueImpl that
+  // will wrap it, rather than through this class like other task queues.
+  scoped_refptr<MainThreadTaskQueue> task_queue =
+      main_thread_scheduler_impl_->NewTaskQueue(
+          MainThreadTaskQueue::QueueCreationParams(
+              MainThreadTaskQueue::QueueType::kWebScheduling)
+              .SetQueueTraits(queue_traits)
+              .SetWebSchedulingPriority(priority)
+              .SetFrameScheduler(frame_scheduler_impl_));
+  TaskQueueCreated(task_queue);
   return task_queue;
 }
 

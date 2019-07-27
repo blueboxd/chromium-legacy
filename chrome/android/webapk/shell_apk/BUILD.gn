@@ -350,6 +350,7 @@ junit_binary("webapk_shell_apk_h2o_junit_tests") {
   java_files = [
     "junit/src/org/chromium/webapk/shell_apk/CustomAndroidOsShadowAsyncTask.java",
     "junit/src/org/chromium/webapk/shell_apk/h2o/LaunchTest.java",
+    "junit/src/org/chromium/webapk/shell_apk/h2o/SplashActivityTest.java",
   ]
   deps = [
     ":${h2o_junit_manifest_target_name}",

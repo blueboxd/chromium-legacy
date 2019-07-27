@@ -91,8 +91,6 @@ crbug.com/648369 [ linux debug intel ] * [ RetryOnFailure ]
 # further.
 crbug.com/660461 [ mac ] Pixel_ScissorTestWithPreserveDrawingBuffer [ RetryOnFailure ]
 
-crbug.com/751328 [ mac debug nvidia-0xfe9 ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ RetryOnFailure ]
-
 # Failing on Nexus 5; haven't investigated why yet.
 crbug.com/773293 [ android qualcomm-adreno-(tm)-330 ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
 crbug.com/773293 [ android qualcomm-adreno-(tm)-330 ] Pixel_WebGL2_ClearBufferfv_Result_Displayed [ Skip ]

@@ -19,8 +19,7 @@ class OverlayWindowAndroid : public content::OverlayWindow {
 
   void OnActivityStart(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
-  void OnActivityDestroy(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj);
+  void OnActivityDestroy(JNIEnv* env);
 
   bool IsActive() override;
   void Close() override;

@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 
@@ -56,6 +59,8 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "cleanup_tq";
     case MainThreadTaskQueue::QueueType::kOther:
       return "other_tq";
+    case MainThreadTaskQueue::QueueType::kWebScheduling:
+      return "web_scheduling_tq";
     case MainThreadTaskQueue::QueueType::kCount:
       NOTREACHED();
       return nullptr;
@@ -83,6 +88,7 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::kFrameDeferrable:
     case QueueType::kFramePausable:
     case QueueType::kFrameUnpausable:
+    case QueueType::kWebScheduling:
       return QueueClass::kTimer;
     case QueueType::kCompositor:
     case QueueType::kInput:
@@ -108,6 +114,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       fixed_priority_(params.fixed_priority),
       queue_traits_(params.queue_traits),
       freeze_when_keep_active_(params.freeze_when_keep_active),
+      web_scheduling_priority_(params.web_scheduling_priority),
       main_thread_scheduler_(main_thread_scheduler),
       frame_scheduler_(params.frame_scheduler) {
   if (GetTaskQueueImpl() && spec.should_notify_observers) {
@@ -190,6 +197,11 @@ void MainThreadTaskQueue::SetNetRequestPriority(
 base::Optional<net::RequestPriority> MainThreadTaskQueue::net_request_priority()
     const {
   return net_request_priority_;
+}
+
+base::Optional<WebSchedulingPriority>
+MainThreadTaskQueue::web_scheduling_priority() const {
+  return web_scheduling_priority_;
 }
 
 }  // namespace scheduler

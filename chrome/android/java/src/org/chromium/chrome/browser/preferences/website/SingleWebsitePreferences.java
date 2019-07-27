@@ -30,8 +30,8 @@ import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
-import org.chromium.chrome.browser.preferences.ChromeImageViewPreferenceCompat;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
+import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -396,10 +396,10 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
      * summary and (intentionally) loses its click handler.
      * @return A read-only copy of the preference passed in as |oldPreference|.
      */
-    private ChromeImageViewPreferenceCompat replaceWithReadOnlyCopyOf(
+    private ChromeImageViewPreference replaceWithReadOnlyCopyOf(
             Preference oldPreference, String newSummary) {
-        ChromeImageViewPreferenceCompat newPreference =
-                new ChromeImageViewPreferenceCompat(oldPreference.getContext());
+        ChromeImageViewPreference newPreference =
+                new ChromeImageViewPreference(oldPreference.getContext());
         newPreference.setKey(oldPreference.getKey());
         setUpPreferenceCommon(newPreference);
         newPreference.setSummary(newSummary);
@@ -414,7 +414,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
     }
 
     private void setupNotificationManagedByPreference(
-            ChromeImageViewPreferenceCompat preference, Intent settingsIntent) {
+            ChromeImageViewPreference preference, Intent settingsIntent) {
         preference.setImageView(
                 R.drawable.permission_popups, R.string.website_notification_settings, null);
         // By disabling the ImageView, clicks will go through to the preference.
@@ -436,7 +436,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
             String summaryText = String.format(
                     getResources().getString(R.string.website_notification_managed_by_app),
                     managedBy);
-            ChromeImageViewPreferenceCompat newPreference =
+            ChromeImageViewPreference newPreference =
                     replaceWithReadOnlyCopyOf(preference, summaryText);
             setupNotificationManagedByPreference(newPreference, notificationSettingsIntent);
             return;
@@ -469,7 +469,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
 
             // On Android O this preference is read-only, so we replace the existing pref with a
             // regular Preference that takes users to OS settings on click.
-            ChromeImageViewPreferenceCompat newPreference =
+            ChromeImageViewPreference newPreference =
                     replaceWithReadOnlyCopyOf(preference, overrideSummary);
             newPreference.setDefaultValue(value);
 
@@ -559,8 +559,8 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
         PreferenceScreen preferenceScreen = getPreferenceScreen();
 
         for (ChosenObjectInfo info : mSite.getChosenObjectInfo()) {
-            ChromeImageViewPreferenceCompat preference =
-                    new ChromeImageViewPreferenceCompat(getStyledContext());
+            ChromeImageViewPreference preference =
+                    new ChromeImageViewPreference(getStyledContext());
 
             preference.setKey(CHOOSER_PERMISSION_PREFERENCE_KEY);
             preference.setIcon(ContentSettingsResources.getIcon(info.getContentSettingsType()));
@@ -577,7 +577,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
                         }
                     });
 
-            preference.setManagedPreferenceDelegate(new ManagedPreferenceDelegateCompat() {
+            preference.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
                 @Override
                 public boolean isPreferenceControlledByPolicy(Preference preference) {
                     return info.isManaged();
@@ -944,7 +944,7 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
      */
     private void removeUserChosenObjectPreferences() {
         Preference preference = findPreference(CHOOSER_PERMISSION_PREFERENCE_KEY);
-        if (preference != null && !((ChromeImageViewPreferenceCompat) preference).isManaged()) {
+        if (preference != null && !((ChromeImageViewPreference) preference).isManaged()) {
             getPreferenceScreen().removePreference(preference);
         }
         mObjectUserPermissionCount = 0;

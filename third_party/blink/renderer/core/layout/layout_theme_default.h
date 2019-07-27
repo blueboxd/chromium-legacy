@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/paint/theme_painter_default.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

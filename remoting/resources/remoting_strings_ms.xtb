@@ -192,9 +192,6 @@ PC</translation>
 <translation id="4973800994433240357">Apabila memuat turun Pemasang Hos Chromoting, anda bersetuju menerima <ph name="LINK_BEGIN" />Syarat Perkhidmatan<ph name="LINK_END" /> Google.</translation>
 <translation id="4974476491460646149">Sambungan ditutup untuk <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Anda perlu menyediakan komputer untuk akses jauh terlebih dahulu</translation>
-<translation id="5059773780693835145">Langkah konfigurasi tambahan diperlukan sebelum anda boleh mengawal mesin ini dari jauh menggunakan <ph name="PRODUCT_NAME" />.
-
-Untuk mendayakan fungsian ini, pilih '<ph name="BUTTON_NAME" />' untuk mendapatkan anak tetingkap pilihan Keselamatan dan Privasi, kemudian tandai kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (luar talian)</translation>
 <translation id="5070121137485264635">Hos jauh memerlukan anda membuat pengesahan pada tapak web pihak ketiga. Untuk meneruskan, anda hendaklah memberikan Desktop Jauh Chrome kebenaran tambahan untuk mengakses alamat ini:</translation>
 <translation id="507204348399810022">Adakah anda pasti mahu melumpuhkan sambungan jauh ke <ph name="HOSTNAME" />?</translation>

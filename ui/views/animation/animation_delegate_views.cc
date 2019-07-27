@@ -56,6 +56,12 @@ void AnimationDelegateViews::AnimationContainerShuttingDown(
 }
 
 void AnimationDelegateViews::UpdateAnimationRunner() {
+#if defined(OS_CHROMEOS)
+  // TODO(crbug.com/969788): Re-enable this function with better ui::Compositor
+  // switching support.
+  return;
+#endif  // defined(OS_CHROMEOS)
+
   if (!container_)
     return;
 

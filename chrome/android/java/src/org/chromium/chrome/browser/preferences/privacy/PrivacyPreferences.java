@@ -16,8 +16,8 @@ import android.view.MenuItem;
 import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
+import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -39,7 +39,7 @@ public class PrivacyPreferences
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
     private static final String PREF_SYNC_AND_SERVICES_LINK = "sync_and_services_link";
 
-    private ManagedPreferenceDelegateCompat mManagedPreferenceDelegate;
+    private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -52,20 +52,19 @@ public class PrivacyPreferences
 
         mManagedPreferenceDelegate = createManagedPreferenceDelegate();
 
-        ChromeBaseCheckBoxPreferenceCompat canMakePaymentPref =
-                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_CAN_MAKE_PAYMENT);
+        ChromeBaseCheckBoxPreference canMakePaymentPref =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
         canMakePaymentPref.setOnPreferenceChangeListener(this);
 
-        ChromeBaseCheckBoxPreferenceCompat networkPredictionPref =
-                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_NETWORK_PREDICTIONS);
+        ChromeBaseCheckBoxPreference networkPredictionPref =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_NETWORK_PREDICTIONS);
         networkPredictionPref.setChecked(prefServiceBridge.getNetworkPredictionEnabled());
         networkPredictionPref.setOnPreferenceChangeListener(this);
         networkPredictionPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         Preference syncAndServicesLink = findPreference(PREF_SYNC_AND_SERVICES_LINK);
         NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(getResources(), view -> {
-            PreferencesLauncher.launchSettingsPageCompat(getActivity(),
-                    SyncAndServicesPreferences.class,
+            PreferencesLauncher.launchSettingsPage(getActivity(), SyncAndServicesPreferences.class,
                     SyncAndServicesPreferences.createArguments(false));
         });
         syncAndServicesLink.setSummary(
@@ -135,7 +134,7 @@ public class PrivacyPreferences
         }
     }
 
-    private ManagedPreferenceDelegateCompat createManagedPreferenceDelegate() {
+    private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
         return preference -> {
             String key = preference.getKey();
             PrefServiceBridge prefs = PrefServiceBridge.getInstance();

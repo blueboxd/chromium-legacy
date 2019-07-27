@@ -93,9 +93,7 @@ DistilledPagePrefsObserverAndroid::DistilledPagePrefsObserverAndroid(
 
 DistilledPagePrefsObserverAndroid::~DistilledPagePrefsObserverAndroid() {}
 
-void DistilledPagePrefsObserverAndroid::DestroyObserverAndroid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+void DistilledPagePrefsObserverAndroid::DestroyObserverAndroid(JNIEnv* env) {
   delete this;
 }
 

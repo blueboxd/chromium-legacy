@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/unguessable_token.h"
+#include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -79,10 +80,8 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void WorkerReadyForInspection() override;
   void WorkerScriptLoadFailed() override;
   void WorkerScriptEvaluated(bool success) override;
-  std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
-  CreateServiceWorkerNetworkProvider() override;
-  scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
-      blink::WebServiceWorkerNetworkProvider*) override;
+  scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
+      override;
 
  private:
   // WebSharedWorker will own |channel|.
@@ -112,11 +111,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       std::pair<int /* connection_request_id */, blink::MessagePortChannel>;
   std::vector<PendingChannel> pending_channels_;
 
-  // The info needed to connect to the ServiceWorkerProviderHost on the browser.
-  blink::mojom::ServiceWorkerProviderInfoForClientPtr
-      service_worker_provider_info_;
-
-  blink::mojom::ControllerServiceWorkerInfoPtr controller_info_;
+  scoped_refptr<ServiceWorkerProviderContext> service_worker_provider_context_;
 
   // The factory bundle used for loading subresources for this shared worker.
   scoped_refptr<ChildURLLoaderFactoryBundle> subresource_loader_factory_bundle_;

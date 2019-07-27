@@ -235,6 +235,103 @@ TEST_F(NtpBackgroundServiceTest, MultipleRequests) {
   EXPECT_THAT(service()->collection_images().at(0), Eq(collection_image));
 }
 
+TEST_F(NtpBackgroundServiceTest, NextImageNetworkError) {
+  SetUpResponseWithNetworkError(service()->GetNextImageURLForTesting());
+
+  service()->FetchNextCollectionImage("shapes", base::nullopt);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(service()->next_image_error_info().error_type,
+              Eq(ErrorType::NET_ERROR));
+}
+
+TEST_F(NtpBackgroundServiceTest, BadNextImageResponse) {
+  SetUpResponseWithData(service()->GetNextImageURLForTesting(),
+                        "bad serialized GetImageFromCollectionResponse");
+
+  service()->FetchNextCollectionImage("shapes", base::nullopt);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(service()->next_image_error_info().error_type,
+              Eq(ErrorType::SERVICE_ERROR));
+}
+
+TEST_F(NtpBackgroundServiceTest, GoodNextImageResponse) {
+  ntp::background::Image image;
+  image.set_asset_id(12345);
+  image.set_image_url("https://wallpapers.co/some_image");
+  image.add_attribution()->set_text("attribution text");
+  image.set_action_url("https://wallpapers.co/some_image/learn_more");
+  ntp::background::GetImageFromCollectionResponse response;
+  *response.mutable_image() = image;
+  response.set_resume_token("resume1");
+  std::string response_string;
+  response.SerializeToString(&response_string);
+
+  SetUpResponseWithData(service()->GetNextImageURLForTesting(),
+                        response_string);
+
+  // NOTE: the effect of the resume token in the request (i.e. prevent images
+  // from being repeated) cannot be verified in a unit test.
+  service()->FetchNextCollectionImage("shapes", "resume0");
+  base::RunLoop().RunUntilIdle();
+
+  CollectionImage collection_image;
+  collection_image.collection_id = "shapes";
+  collection_image.asset_id = image.asset_id();
+  collection_image.thumbnail_image_url =
+      GURL(image.image_url() + GetThumbnailImageOptionsForTesting());
+  collection_image.image_url =
+      GURL(image.image_url() + service()->GetImageOptionsForTesting());
+  collection_image.attribution.push_back(image.attribution(0).text());
+  collection_image.attribution_action_url = GURL(image.action_url());
+
+  EXPECT_THAT(service()->next_image(), Eq(collection_image));
+  EXPECT_THAT(service()->next_image_resume_token(), Eq("resume1"));
+
+  EXPECT_THAT(service()->collection_images_error_info().error_type,
+              Eq(ErrorType::NONE));
+}
+
+TEST_F(NtpBackgroundServiceTest, MultipleRequestsNextImage) {
+  ntp::background::Image image;
+  image.set_asset_id(12345);
+  image.set_image_url("https://wallpapers.co/some_image");
+  image.add_attribution()->set_text("attribution text");
+  image.set_action_url("https://wallpapers.co/some_image/learn_more");
+  ntp::background::GetImageFromCollectionResponse response;
+  *response.mutable_image() = image;
+  response.set_resume_token("resume1");
+  std::string response_string;
+  response.SerializeToString(&response_string);
+
+  SetUpResponseWithData(service()->GetNextImageURLForTesting(),
+                        response_string);
+
+  // NOTE: the effect of the resume token in the request (i.e. prevent images
+  // from being repeated) cannot be verified in a unit test.
+  service()->FetchNextCollectionImage("shapes", base::nullopt);
+  // Subsequent requests are ignored while the loader is in use.
+  service()->FetchNextCollectionImage("shapes", "resume0");
+  base::RunLoop().RunUntilIdle();
+
+  CollectionImage collection_image;
+  collection_image.collection_id = "shapes";
+  collection_image.asset_id = image.asset_id();
+  collection_image.thumbnail_image_url =
+      GURL(image.image_url() + GetThumbnailImageOptionsForTesting());
+  collection_image.image_url =
+      GURL(image.image_url() + service()->GetImageOptionsForTesting());
+  collection_image.attribution.push_back(image.attribution(0).text());
+  collection_image.attribution_action_url = GURL(image.action_url());
+
+  EXPECT_THAT(service()->next_image(), Eq(collection_image));
+  EXPECT_THAT(service()->next_image_resume_token(), Eq("resume1"));
+
+  EXPECT_THAT(service()->collection_images_error_info().error_type,
+              Eq(ErrorType::NONE));
+}
+
 TEST_F(NtpBackgroundServiceTest, CheckValidAndInvalidBackdropUrls) {
   ntp::background::Image image;
   image.set_asset_id(12345);

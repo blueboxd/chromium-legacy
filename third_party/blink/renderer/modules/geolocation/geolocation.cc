@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/modules/geolocation/coordinates.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_error.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 namespace {

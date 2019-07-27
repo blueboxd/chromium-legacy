@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
@@ -48,6 +49,7 @@ class UkmRecorder;
 namespace blink {
 
 class MainThreadSchedulerTest;
+class WebSchedulingTaskQueue;
 
 namespace scheduler {
 
@@ -177,6 +179,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // No calls will be issued to the delegate if the set of features didn't
   // change since the previous call.
   void ReportFeaturesToDelegate();
+
+  std::unique_ptr<WebSchedulingTaskQueue> CreateWebSchedulingTaskQueue(
+      WebSchedulingPriority) override;
 
  protected:
   FrameSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,

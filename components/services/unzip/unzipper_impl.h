@@ -10,14 +10,20 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace unzip {
 
 class UnzipperImpl : public mojom::Unzipper {
  public:
-  explicit UnzipperImpl(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  // Constructs an UnzipperImpl which will be bound to some externally owned
+  // Receiver, such as through |mojo::MakeSelfOwnedReceiver()|.
+  UnzipperImpl();
+
+  // Constructs an UnzipperImpl bound to |receiver|.
+  explicit UnzipperImpl(mojo::PendingReceiver<mojom::Unzipper> receiver);
+
   ~UnzipperImpl() override;
 
  private:
@@ -31,7 +37,7 @@ class UnzipperImpl : public mojom::Unzipper {
                        mojom::UnzipFilterPtr filter,
                        UnzipWithFilterCallback callback) override;
 
-  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
+  mojo::Receiver<mojom::Unzipper> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UnzipperImpl);
 };

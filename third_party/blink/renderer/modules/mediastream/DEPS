@@ -26,6 +26,7 @@ include_rules = [
     "+skia/ext/platform_canvas.h",
 
     "+base/trace_event/trace_event.h",
+    "+base/unguessable_token.h",
     "+media/audio",
     "+media/base",
     "+media/capture",

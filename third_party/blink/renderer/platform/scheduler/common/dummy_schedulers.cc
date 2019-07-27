@@ -9,6 +9,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
+#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_task_queue.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -59,6 +61,10 @@ class DummyFrameScheduler : public FrameScheduler {
   CreateResourceLoadingTaskRunnerHandle() override {
     return WebResourceLoadingTaskRunnerHandle::CreateUnprioritized(
         base::ThreadTaskRunnerHandle::Get());
+  }
+  std::unique_ptr<WebSchedulingTaskQueue> CreateWebSchedulingTaskQueue(
+      WebSchedulingPriority) override {
+    return nullptr;
   }
   ukm::SourceId GetUkmSourceId() override { return ukm::kInvalidSourceId; }
   void OnStartedUsingFeature(SchedulingPolicy::Feature feature,

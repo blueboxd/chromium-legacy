@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace views {
@@ -180,3 +181,41 @@ DEFINE_ENUM_CONVERTERS(gfx::HorizontalAlignment,
                         base::ASCIIToUTF16("ALIGN_RIGHT")},
                        {gfx::HorizontalAlignment::ALIGN_TO_HEAD,
                         base::ASCIIToUTF16("ALIGN_TO_HEAD")})
+
+DEFINE_ENUM_CONVERTERS(ui::TextInputType,
+                       {ui::TextInputType::TEXT_INPUT_TYPE_NONE,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_NONE")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_TEXT,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_TEXT")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_PASSWORD,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_PASSWORD")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_SEARCH,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_SEARCH")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_EMAIL,
+                        base::ASCIIToUTF16("EXT_INPUT_TYPE_EMAIL")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_NUMBER,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_NUMBER")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_TELEPHONE,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_TELEPHONE")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_URL,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_URL")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_DATE,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_DATE")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_DATE_TIME,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_DATE_TIME")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_DATE_TIME_LOCAL,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_DATE_TIME_LOCAL")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_MONTH,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_MONTH")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_TIME,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_TIME")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_WEEK,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_WEEK")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_TEXT_AREA,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_TEXT_AREA")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_CONTENT_EDITABLE,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_CONTENT_EDITABLE")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_DATE_TIME_FIELD,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_DATE_TIME_FIELD")},
+                       {ui::TextInputType::TEXT_INPUT_TYPE_MAX,
+                        base::ASCIIToUTF16("TEXT_INPUT_TYPE_MAX")})

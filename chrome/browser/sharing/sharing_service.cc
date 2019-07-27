@@ -224,6 +224,7 @@ void SharingService::InvokeSendMessageCallback(const std::string& message_guid,
   SendMessageCallback callback = std::move(iter->second);
   send_message_callbacks_.erase(iter);
   std::move(callback).Run(result);
+  LogSendSharingMessageSuccess(result);
 }
 
 void SharingService::RegisterHandler(

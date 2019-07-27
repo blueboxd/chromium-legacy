@@ -278,6 +278,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       document_interface_broker_content_request_;
   blink::mojom::DocumentInterfaceBrokerRequest
       document_interface_broker_blink_request_;
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker_receiver_;
   std::string contents_mime_type_;
   CSPDisposition should_check_main_world_csp_ = CSPDisposition::CHECK;
   net::HttpResponseInfo::ConnectionInfo http_connection_info_ =

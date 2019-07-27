@@ -4,6 +4,7 @@
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1734367976349034509">This device is enterprise managed</translation>
 <translation id="1930797645656624981">Chrome OS Input Method Service</translation>
+<translation id="1979103255016296513">Password change overdue</translation>
 <translation id="2049639323467105390">This device is managed by <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Nothing found on screen</translation>
 <translation id="2338501278241028356">Turn on Bluetooth to discover nearby devices</translation>
@@ -11,11 +12,11 @@
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="3008341117444806826">REFRESH</translation>
 <translation id="3838338534323494292">New password</translation>
+<translation id="4227825898293920515">Password expires in <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kerberos ticket expires soon</translation>
 <translation id="445059817448385655">Old password</translation>
 <translation id="467510802200863975">Passwords do not match</translation>
 <translation id="4731797938093519117">Parent access</translation>
-<translation id="476166673298332917">The device admin may monitor your browsing activity.</translation>
 <translation id="4890353053343094602">Choose a new one immediately</translation>
 <translation id="5212543919916444558">I can't find anything on your screen that I can help with.
 Try tapping the mic to ask me anything.</translation>
@@ -24,13 +25,11 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="5332948983412042822">Choose a new one now</translation>
 <translation id="5457599981699367932">Browse as Guest</translation>
 <translation id="54609108002486618">Managed</translation>
-<translation id="5632302877407885207">{NUM_DAYS,plural, =0{Password is expired}=1{Password expires in less than one day}other{Password expires in less than # days}}</translation>
 <translation id="5832805196449965646">Add Person</translation>
 <translation id="5895138241574237353">Restart</translation>
 <translation id="6058625436358447366">To finish, enter your old and new passwords</translation>
 <translation id="6106186594183574873">To finish, enter your old password</translation>
 <translation id="6146993107019042706">To finish, enter your new password</translation>
-<translation id="6574601967010742428">The device administrator may be able to monitor your activity.</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7690294790491645610">Confirm new password</translation>
 <translation id="808894953321890993">Change password</translation>

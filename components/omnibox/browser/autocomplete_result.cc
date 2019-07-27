@@ -388,7 +388,7 @@ ACMatches::iterator AutocompleteResult::FindTopMatch(
       OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled()) {
     auto best = matches->end();
     for (auto it = matches->begin(); it != matches->end(); ++it) {
-      if (it->allowed_to_be_default_match &&
+      if (it->allowed_to_be_default_match && !it->IsSubMatch() &&
           (best == matches->end() ||
            AutocompleteMatch::MoreRelevant(*it, *best))) {
         best = it;

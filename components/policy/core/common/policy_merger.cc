@@ -20,8 +20,9 @@ const char* const kDictionaryPoliciesToMerge[] = {
     key::kScreenBrightnessPercent,
     key::kScreenLockDelays};
 
-bool UseConflictValueInMerging(const PolicyMap::Entry& conflict,
-                               const PolicyMap::Entry& policy) {
+// static
+bool PolicyMerger::ConflictCanBeMerged(const PolicyMap::Entry& conflict,
+                                       const PolicyMap::Entry& policy) {
   // On desktop, the user cloud policy potentially comes from a different
   // domain than e.g. GPO policy or machine-level cloud policy, so prevent
   // merging user cloud policy with other policy sources.
@@ -91,7 +92,7 @@ void PolicyListMerger::DoMerge(PolicyMap::Entry* policy) const {
   // Concatenates the values from accepted conflicting sources to the policy
   // value while avoiding duplicates.
   for (const auto& it : policy->conflicts) {
-    if (!UseConflictValueInMerging(it, *policy)) {
+    if (!PolicyMerger::ConflictCanBeMerged(it, *policy)) {
       continue;
     }
 
@@ -182,7 +183,7 @@ void PolicyDictionaryMerger::DoMerge(PolicyMap::Entry* policy) const {
 
   // Merges all the keys from the policies from different sources.
   for (const auto* it : policies) {
-    if (it != policy && !UseConflictValueInMerging(*it, *policy))
+    if (it != policy && !PolicyMerger::ConflictCanBeMerged(*it, *policy))
       continue;
 
     base::DictionaryValue* dict = nullptr;

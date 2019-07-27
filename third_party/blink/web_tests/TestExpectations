@@ -3272,8 +3272,6 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-under
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-writing-modes/tcy-white-space-processing-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-writing-modes/tcy-white-space-processing-003.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/shapedetection-cross-origin.sub.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
@@ -6369,3 +6367,7 @@ crbug.com/987138 [ Linux Win ] media/controls/doubletap-to-jump-forwards.html [ 
 # Sheriff 2019-07-26
 crbug.com/835943 [ Debug ] http/tests/appcache/non-html.xhtml [ Crash Pass ]
 crbug.com/874866 [ Linux Debug ] media/controls/doubletap-to-jump-backwards.html [ Failure ]
+crbug.com/987915 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
+crbug.com/987915 virtual/scalefactor200/external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
+crbug.com/987915 external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
+

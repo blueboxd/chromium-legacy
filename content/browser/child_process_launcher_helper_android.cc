@@ -267,7 +267,6 @@ void ChildProcessLauncherHelper::DumpProcessStack(
 // the ChildProcess could not be created.
 void ChildProcessLauncherHelper::OnChildProcessStarted(
     JNIEnv*,
-    const base::android::JavaParamRef<jobject>& obj,
     jint handle) {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   scoped_refptr<ChildProcessLauncherHelper> ref(this);

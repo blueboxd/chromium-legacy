@@ -31,9 +31,7 @@ ConsistencyCookieManagerAndroid::~ConsistencyCookieManagerAndroid() {
   Java_ConsistencyCookieManager_destroy(env, java_ref_);
 }
 
-void ConsistencyCookieManagerAndroid::OnIsUpdatePendingChanged(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& java_obj) {
+void ConsistencyCookieManagerAndroid::OnIsUpdatePendingChanged(JNIEnv* env) {
   bool is_update_pending_in_java =
       Java_ConsistencyCookieManager_getIsUpdatePending(env, java_ref_);
   if (is_update_pending_in_java == is_update_pending_in_java_)

@@ -1314,7 +1314,6 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
 
 Profile* ProfileManager::CreateProfileHelper(const base::FilePath& path) {
   TRACE_EVENT0("browser", "ProfileManager::CreateProfileHelper");
-  SCOPED_UMA_HISTOGRAM_TIMER("Profile.CreateProfileHelperTime");
 
   return Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS)
       .release();
@@ -1396,7 +1395,6 @@ bool ProfileManager::AddProfile(std::unique_ptr<Profile> profile) {
 Profile* ProfileManager::CreateAndInitializeProfile(
     const base::FilePath& profile_dir) {
   TRACE_EVENT0("browser", "ProfileManager::CreateAndInitializeProfile");
-  SCOPED_UMA_HISTOGRAM_LONG_TIMER("Profile.CreateAndInitializeProfile");
 
   // CHECK that we are not trying to load the same profile twice, to prevent
   // profile corruption. Note that this check also covers the case when we have

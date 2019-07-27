@@ -81,6 +81,18 @@ namespace {
 const char kTestGUID[] = "00000000-0000-0000-0000-000000000001";
 const char kTestNumber[] = "4234567890123456";  // Visa
 
+#if !defined(OS_IOS)
+// Base64 encoding of "This is a test Credential ID".
+const char kCredentialId[] = "VGhpcyBpcyBhIHRlc3QgQ3JlZGVudGlhbCBJRC4=";
+const char kGooglePaymentsRpid[] = "google.com";
+
+std::string BytesToBase64(const std::vector<uint8_t> bytes) {
+  std::string base64;
+  base::Base64Encode(std::string(bytes.begin(), bytes.end()), &base64);
+  return base64;
+}
+#endif
+
 class TestAccessor : public CreditCardAccessManager::Accessor {
  public:
   TestAccessor() {}
@@ -238,12 +250,6 @@ class CreditCardAccessManagerTest : public testing::Test {
   TestCreditCardFIDOAuthenticator* GetFIDOAuthenticator() {
     return static_cast<TestCreditCardFIDOAuthenticator*>(
         credit_card_access_manager_->GetOrCreateFIDOAuthenticator());
-  }
-
-  void OnFIDOUserVerification(bool did_succeed) {
-    // TODO(crbug/949269): Currently CreditCardFIDOAuthenticator fails by
-    // default. Once implemented, update this function along with
-    // TestCreditCardFIDOAuthenticator to mock a user verification gesture.
   }
 #endif
 
@@ -426,13 +432,41 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCTryAgainFailure) {
 }
 
 #if !defined(OS_IOS)
+// Ensures that FetchCreditCard() returns the full PAN upon a successful
+// WebAuthn verification and response from payments.
+TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  GetFIDOAuthenticator()->SetUserOptIn(true);
+  payments_client_->AddFidoEligibleCard(card->server_id(), kCredentialId,
+                                        kGooglePaymentsRpid);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  WaitForCallbacks();
+
+  // FIDO Success.
+  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+                                                /*did_succeed=*/true);
+  EXPECT_TRUE(GetRealPanForFIDOAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(accessor_->did_succeed());
+
+  EXPECT_EQ(kCredentialId,
+            BytesToBase64(GetFIDOAuthenticator()->GetCredentialId()));
+  EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+}
+
 // Ensures that CVC prompt is invoked after WebAuthn fails.
 TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOFailureCVCFallback) {
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
   GetFIDOAuthenticator()->SetUserOptIn(true);
-  payments_client_->AddFidoEligibleCard(card->server_id());
+  payments_client_->AddFidoEligibleCard(card->server_id(), kCredentialId,
+                                        kGooglePaymentsRpid);
 
   credit_card_access_manager_->PrepareToFetchCreditCard();
   WaitForCallbacks();
@@ -441,7 +475,36 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOFailureCVCFallback) {
   WaitForCallbacks();
 
   // FIDO Failure.
-  OnFIDOUserVerification(/*did_succeed=*/false);
+  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+                                                /*did_succeed=*/false);
+  EXPECT_FALSE(GetRealPanForFIDOAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_FALSE(accessor_->did_succeed());
+
+  // Followed by a fallback to CVC.
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(accessor_->did_succeed());
+  EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
+}
+
+// Ensures WebAuthn call is not made if Request Options is missing a Credential
+// ID, and falls back to CVC.
+TEST_F(CreditCardAccessManagerTest,
+       FetchServerCardBadRequestOptionsCVCFallback) {
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  GetFIDOAuthenticator()->SetUserOptIn(true);
+  // Don't set Credential ID.
+  payments_client_->AddFidoEligibleCard(card->server_id(), /*credential_id=*/"",
+                                        kGooglePaymentsRpid);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  WaitForCallbacks();
+
+  // FIDO Failure.
   EXPECT_FALSE(GetRealPanForFIDOAuth(AutofillClient::SUCCESS, kTestNumber));
   EXPECT_FALSE(accessor_->did_succeed());
 

@@ -10,9 +10,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
@@ -21,12 +22,6 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace {
-
-void DecodeFinished(std::unique_ptr<base::SharedMemory> shm) {
-  // Do nothing. Because VideoFrame is backed by |shm|, the purpose of this
-  // function is to just keep reference of |shm| to make sure it lives until
-  // decode finishes.
-}
 
 bool VerifyDecodeParams(const gfx::Size& coded_size,
                         mojo::ScopedSharedBufferHandle* output_handle,
@@ -141,14 +136,14 @@ void MojoMjpegDecodeAcceleratorService::Decode(
     return;
   }
 
-  base::SharedMemoryHandle memory_handle;
-  MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      std::move(output_handle), &memory_handle, nullptr, nullptr);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
+  base::UnsafeSharedMemoryRegion output_region =
+      mojo::UnwrapUnsafeSharedMemoryRegion(std::move(output_handle));
+  DCHECK(output_region.IsValid());
+  DCHECK_GE(output_region.GetSize(), output_buffer_size);
 
-  std::unique_ptr<base::SharedMemory> output_shm(
-      new base::SharedMemory(memory_handle, false));
-  if (!output_shm->Map(output_buffer_size)) {
+  base::WritableSharedMemoryMapping mapping =
+      output_region.MapAt(0, output_buffer_size);
+  if (!mapping.IsValid()) {
     LOG(ERROR) << "Could not map output shared memory for input buffer id "
                << input_buffer.id();
     NotifyDecodeStatus(
@@ -157,18 +152,15 @@ void MojoMjpegDecodeAcceleratorService::Decode(
     return;
   }
 
-  uint8_t* shm_memory = static_cast<uint8_t*>(output_shm->memory());
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
-          media::PIXEL_FORMAT_I420,  // format
-          coded_size,                // coded_size
-          gfx::Rect(coded_size),     // visible_rect
-          coded_size,                // natural_size
-          shm_memory,                // data
-          output_buffer_size,        // data_size
-          memory_handle,             // handle
-          0,                         // data_offset
-          base::TimeDelta());        // timestamp
+  uint8_t* shm_memory = mapping.GetMemoryAsSpan<uint8_t>().data();
+  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapExternalData(
+      media::PIXEL_FORMAT_I420,  // format
+      coded_size,                // coded_size
+      gfx::Rect(coded_size),     // visible_rect
+      coded_size,                // natural_size
+      shm_memory,                // data
+      output_buffer_size,        // data_size
+      base::TimeDelta());        // timestamp
   if (!frame.get()) {
     LOG(ERROR) << "Could not create VideoFrame for input buffer id "
                << input_buffer.id();
@@ -177,8 +169,8 @@ void MojoMjpegDecodeAcceleratorService::Decode(
         ::chromeos_camera::MjpegDecodeAccelerator::Error::PLATFORM_FAILURE);
     return;
   }
-  frame->AddDestructionObserver(
-      base::Bind(DecodeFinished, base::Passed(&output_shm)));
+  frame->BackWithOwnedSharedMemory(std::move(output_region),
+                                   std::move(mapping));
 
   DCHECK(accelerator_);
   accelerator_->Decode(std::move(input_buffer), frame);

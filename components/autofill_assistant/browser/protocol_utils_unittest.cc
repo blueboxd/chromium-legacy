@@ -87,6 +87,7 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
   parameters["a"] = "b";
   parameters["c"] = "d";
   TriggerContextImpl trigger_context(parameters, "1,2,3");
+  trigger_context.SetCCT(true);
 
   ScriptActionRequestProto request;
   EXPECT_TRUE(
@@ -96,6 +97,8 @@ TEST(ProtocolUtilsTest, CreateInitialScriptActionsRequest) {
 
   AssertClientContext(request.client_context());
   EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
+  EXPECT_TRUE(request.client_context().is_cct());
+  EXPECT_FALSE(request.client_context().is_direct_action());
 
   const InitialScriptActionsRequestProto& initial = request.initial_request();
   EXPECT_THAT(initial.query().script_path(), ElementsAre("script_path"));
@@ -133,6 +136,7 @@ TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
   parameters["a"] = "b";
   parameters["c"] = "d";
   TriggerContextImpl trigger_context(parameters, "1,2,3");
+  trigger_context.SetDirectAction(true);
 
   SupportsScriptRequestProto request;
   EXPECT_TRUE(request.ParseFromString(ProtocolUtils::CreateGetScriptsRequest(
@@ -141,6 +145,8 @@ TEST(ProtocolUtilsTest, CreateGetScriptsRequest) {
 
   AssertClientContext(request.client_context());
   EXPECT_THAT(request.client_context().experiment_ids(), Eq("1,2,3"));
+  EXPECT_FALSE(request.client_context().is_cct());
+  EXPECT_TRUE(request.client_context().is_direct_action());
 
   EXPECT_EQ("http://example.com/", request.url());
   ASSERT_EQ(2, request.script_parameters_size());

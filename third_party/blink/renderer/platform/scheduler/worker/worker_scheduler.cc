@@ -207,6 +207,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kInternalTranslation:
     case TaskType::kServiceWorkerClientMessage:
     case TaskType::kInternalContentCapture:
+    case TaskType::kExperimentalWebScheduling:
     case TaskType::kCount:
       NOTREACHED();
       break;

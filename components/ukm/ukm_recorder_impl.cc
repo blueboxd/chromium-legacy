@@ -64,8 +64,9 @@ size_t GetMaxSources() {
       kUkmFeature, "MaxSources", kDefaultMaxSources));
 }
 
-// Gets the maximum number of Sources we can kept in memory to defer to the next
-// reporting interval at the end of the current reporting cycle.
+// Gets the maximum number of Sources we can keep in memory at the end of the
+// current reporting cycle that will stay accessible in the next reporting
+// interval.
 size_t GetMaxKeptSources() {
   constexpr size_t kDefaultMaxKeptSources = 100;
   return static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
@@ -295,9 +296,11 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   std::unordered_map<ukm::SourceIdType, int> serialized_source_type_counts;
 
   for (const auto& kv : recordings_.sources) {
-    // Sources of non-navigation types will not be kept after current report.
-    if (GetSourceIdType(kv.first) != base::UkmSourceId::Type::NAVIGATION_ID) {
-      recordings_.obsolete_source_ids.insert(kv.first);
+    // Don't keep sources of these types after current report because their
+    // entries are logged only at source creation time.
+    if (GetSourceIdType(kv.first) == base::UkmSourceId::Type::APP_ID ||
+        GetSourceIdType(kv.first) == base::UkmSourceId::Type::HISTORY_ID) {
+      MarkSourceForDeletion(kv.first);
     }
     // If the source id is not whitelisted, don't send it unless it has
     // associated entries and the URL matches that of a whitelisted source.
@@ -316,6 +319,10 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
       // Omit entryless sources from the report.
       if (!base::Contains(source_ids_seen, kv.first)) {
         continue;
+      } else {
+        // Source of base::UkmSourceId::Type::UKM type will not be kept after
+        // entries are logged.
+        MarkSourceForDeletion(kv.first);
       }
     }
     Source* proto_source = report->add_sources();

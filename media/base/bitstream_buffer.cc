@@ -24,6 +24,18 @@ BitstreamBuffer::BitstreamBuffer(
       presentation_timestamp_(presentation_timestamp) {}
 
 BitstreamBuffer::BitstreamBuffer(int32_t id,
+                                 base::UnsafeSharedMemoryRegion region,
+                                 size_t size,
+                                 off_t offset,
+                                 base::TimeDelta presentation_timestamp)
+    : id_(id),
+      region_(base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+          std::move(region))),
+      size_(size),
+      offset_(offset),
+      presentation_timestamp_(presentation_timestamp) {}
+
+BitstreamBuffer::BitstreamBuffer(int32_t id,
                                  base::SharedMemoryHandle handle,
                                  bool read_only,
                                  size_t size,

@@ -179,7 +179,7 @@ TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
   // Press a key should enter search mode.
   KeyPress(ui::VKEY_A, /*should_insert=*/true);
   EXPECT_TRUE(GetSearchBoxView()->back_button()->GetVisible());
-  EXPECT_FALSE(GetSearchBoxView()->search_box()->text().empty());
+  EXPECT_FALSE(GetSearchBoxView()->search_box()->GetText().empty());
 
   // Case 2: Exit search mode by clicking |back_button|. The focus should be on
   // search box.
@@ -188,17 +188,17 @@ TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON,
                      ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_TRUE(GetSearchBoxView()->search_box()->text().empty());
+  EXPECT_TRUE(GetSearchBoxView()->search_box()->GetText().empty());
   EXPECT_TRUE(GetSearchBoxView()->search_box()->HasFocus());
 
   // Enter search mode again.
   KeyPress(ui::VKEY_A, /*should_insert=*/true);
-  EXPECT_FALSE(GetSearchBoxView()->search_box()->text().empty());
+  EXPECT_FALSE(GetSearchBoxView()->search_box()->GetText().empty());
 
   // Case 3: Exit search mode by pressing |VKEY_ESCAPE|. The focus should be on
   // search box.
   KeyPress(ui::VKEY_ESCAPE, /*should_insert=*/false);
-  EXPECT_TRUE(GetSearchBoxView()->search_box()->text().empty());
+  EXPECT_TRUE(GetSearchBoxView()->search_box()->GetText().empty());
   EXPECT_TRUE(GetSearchBoxView()->search_box()->HasFocus());
 
   // Cleaning up.

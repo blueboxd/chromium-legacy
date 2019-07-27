@@ -142,6 +142,19 @@ class ASH_EXPORT OverviewWindowDragController {
   // with the DesksBarView.
   gfx::SizeF original_scaled_size_;
 
+  // Cached values related to dragging items while the desks bar is shown.
+  // |desks_bar_bounds_| is the bounds of the desks bar in screen coordinates.
+  // |shrink_bounds_| is a rectangle around the desks bar which the items starts
+  // shrinking when the event location is contained. The item will shrink until
+  // it is contained in |desks_bar_bounds_|, at which it has reached its minimum
+  // size and will no longer shrink. |shrink_region_distance_| is a vector
+  // contained the distance from the origin of |desks_bar_bounds_| to the origin
+  // of |shrink_bounds_|. It's used to determine the size of the dragged item
+  // when it's within |shrink_bounds_|.
+  gfx::RectF desks_bar_bounds_;
+  gfx::RectF shrink_bounds_;
+  gfx::Vector2dF shrink_region_distance_;
+
   const size_t display_count_;
 
   // True if the drag-to-close mode is allowed (generally when the item is

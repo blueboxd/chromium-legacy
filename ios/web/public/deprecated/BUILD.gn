@@ -9,7 +9,7 @@ source_set("deprecated") {
 
   deps = [
     "//base",
-    "//ios/web/public:web_state_types",
+    "//ios/web/public:web_state_observer",
     "//url",
   ]
   sources = [

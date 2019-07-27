@@ -60,6 +60,7 @@
         "DomContentLoadedEventFired",
         "FrameDocumentUpdated",
         "FrameOwnerContentUpdated",
+        "NodeCreated",
         "PseudoElementCreated",
         "PseudoElementDestroyed",
         "WillModifyDOMAttr",

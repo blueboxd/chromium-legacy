@@ -3,7 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <org.chromium.chrome.browser.preferences.themes.RadioButtonGroupThemePreference
         android:key="ui_theme_pref" />
-</android.support.v7.preference.PreferenceScreen>
+</PreferenceScreen>

@@ -111,7 +111,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ClearBrowsingDataPreferencesBasic fragment =
-                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragmentCompat();
+                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragment();
             PreferenceScreen screen = fragment.getPreferenceScreen();
 
             String cookiesSummary = getCheckboxSummary(screen,
@@ -142,7 +142,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ClearBrowsingDataPreferencesBasic fragment =
-                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragmentCompat();
+                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragment();
             PreferenceScreen screen = fragment.getPreferenceScreen();
 
             String cookiesSummary = getCheckboxSummary(screen,
@@ -173,7 +173,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ClearBrowsingDataPreferencesBasic fragment =
-                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragmentCompat();
+                    (ClearBrowsingDataPreferencesBasic) preferences.getMainFragment();
             PreferenceScreen screen = fragment.getPreferenceScreen();
 
             String cookiesSummary = getCheckboxSummary(screen,

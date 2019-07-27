@@ -469,6 +469,8 @@ class CONTENT_EXPORT RenderWidget
       override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
   void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
+  void RequestBeginMainFrameNotExpected(bool request) override;
+  int GetLayerTreeId() const override;
 
   // Registers a SwapPromise to report presentation time and possibly swap time.
   // If |swap_time_callback| is not a null callback, it would be called once

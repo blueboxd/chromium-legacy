@@ -662,18 +662,22 @@ void VolumeManager::AddSshfsCrostiniVolume(
           crostini::kCrostiniDefaultVmName,
           crostini::kCrostiniDefaultContainerName,
           base::BindOnce(&VolumeManager::RemoveSshfsCrostiniVolume,
-                         weak_ptr_factory_.GetWeakPtr(), sshfs_mount_path));
+                         weak_ptr_factory_.GetWeakPtr(), sshfs_mount_path,
+                         base::BindOnce([](bool result) {
+                           if (!result)
+                             LOG(ERROR) << "Failed to remove sshfs mount";
+                         })));
 }
 
 void VolumeManager::RemoveSshfsCrostiniVolume(
-    const base::FilePath& sshfs_mount_path) {
+    const base::FilePath& sshfs_mount_path,
+    RemoveSshfsCrostiniVolumeCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // Call DiskMountManager first since DoUnmountEvent deletes Volume.
   disk_mount_manager_->UnmountPath(
       sshfs_mount_path.value(), chromeos::UNMOUNT_OPTIONS_NONE,
-      chromeos::disks::DiskMountManager::UnmountPathCallback());
-  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
-                 *Volume::CreateForSshfsCrostini(sshfs_mount_path));
+      base::BindOnce(&VolumeManager::OnSshfsCrostiniUnmountCallback,
+                     base::Unretained(this), sshfs_mount_path,
+                     std::move(callback)));
 }
 
 bool VolumeManager::RegisterAndroidFilesDirectoryForTesting(
@@ -1409,6 +1413,26 @@ void VolumeManager::DoUnmountEvent(chromeos::MountError error_code,
 
 base::FilePath VolumeManager::GetDriveMountPointPath() const {
   return drive_integration_service_->GetMountPointPath();
+}
+
+void VolumeManager::OnSshfsCrostiniUnmountCallback(
+    const base::FilePath& sshfs_mount_path,
+    RemoveSshfsCrostiniVolumeCallback callback,
+    chromeos::MountError error_code) {
+  if ((error_code == chromeos::MOUNT_ERROR_NONE) ||
+      (error_code == chromeos::MOUNT_ERROR_PATH_NOT_MOUNTED)) {
+    // Remove metadata associated with the mount. It will be a no-op if it
+    // wasn't mounted or unmounted out of band.
+    DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                   *Volume::CreateForSshfsCrostini(sshfs_mount_path));
+    if (callback)
+      std::move(callback).Run(true);
+    return;
+  }
+
+  LOG(ERROR) << "Unmounting " << sshfs_mount_path.value() << " failed";
+  if (callback)
+    std::move(callback).Run(false);
 }
 
 }  // namespace file_manager

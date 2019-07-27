@@ -98,8 +98,7 @@ public class PreferencesTest {
 
         // Set the second search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEnginePreference pref =
-                    (SearchEnginePreference) prefActivity.getMainFragmentCompat();
+            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
             pref.setValueForTesting("1");
 
             // Ensure that the second search engine in the list is selected.
@@ -181,8 +180,8 @@ public class PreferencesTest {
         Preferences preferenceActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), Preferences.class);
 
-        final MainPreferences mainPreferences = ActivityUtils.waitForFragmentToAttachCompat(
-                preferenceActivity, MainPreferences.class);
+        final MainPreferences mainPreferences =
+                ActivityUtils.waitForFragmentToAttach(preferenceActivity, MainPreferences.class);
 
         final android.support.v7.preference.Preference searchEnginePref =
                 waitForPreference(mainPreferences, MainPreferences.PREF_SEARCH_ENGINE);
@@ -194,7 +193,7 @@ public class PreferencesTest {
             }
         }));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ManagedPreferenceDelegateCompat managedPrefDelegate =
+            ManagedPreferenceDelegate managedPrefDelegate =
                     mainPreferences.getManagedPreferenceDelegateForTest();
             Assert.assertTrue(managedPrefDelegate.isPreferenceControlledByPolicy(searchEnginePref));
         });
@@ -221,15 +220,13 @@ public class PreferencesTest {
 
         // Set the first search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEnginePreference pref =
-                    (SearchEnginePreference) prefActivity.getMainFragmentCompat();
+            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
             pref.setValueForTesting("0");
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Ensure that the first search engine in the list is selected.
-            SearchEnginePreference pref =
-                    (SearchEnginePreference) prefActivity.getMainFragmentCompat();
+            SearchEnginePreference pref = (SearchEnginePreference) prefActivity.getMainFragment();
             Assert.assertNotNull(pref);
             Assert.assertEquals("0", pref.getValueForTesting());
 
@@ -299,11 +296,11 @@ public class PreferencesTest {
         String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
         AccessibilityPreferences accessibilityPref = (AccessibilityPreferences) startPreferences(
                 InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
-                                                             .getMainFragmentCompat();
+                                                             .getMainFragment();
         SeekBarPreference textScalePref = (SeekBarPreference) accessibilityPref.findPreference(
                 AccessibilityPreferences.PREF_TEXT_SCALE);
-        ChromeBaseCheckBoxPreferenceCompat forceEnableZoomPref =
-                (ChromeBaseCheckBoxPreferenceCompat) accessibilityPref.findPreference(
+        ChromeBaseCheckBoxPreference forceEnableZoomPref =
+                (ChromeBaseCheckBoxPreference) accessibilityPref.findPreference(
                         AccessibilityPreferences.PREF_FORCE_ENABLE_ZOOM);
         NumberFormat percentFormat = NumberFormat.getPercentInstance();
         // Arbitrary value 0.4f to be larger and smaller than threshold.
@@ -349,7 +346,7 @@ public class PreferencesTest {
         String accessibilityPrefClassname = AccessibilityPreferences.class.getName();
         AccessibilityPreferences accessibilityPref = (AccessibilityPreferences) startPreferences(
                 InstrumentationRegistry.getInstrumentation(), accessibilityPrefClassname)
-                                                             .getMainFragmentCompat();
+                                                             .getMainFragment();
         android.support.v7.preference.Preference captionsPref =
                 accessibilityPref.findPreference(AccessibilityPreferences.PREF_CAPTIONS);
         Assert.assertNotNull(captionsPref);
@@ -408,7 +405,7 @@ public class PreferencesTest {
     }
 
     private static void userSetForceEnableZoom(final AccessibilityPreferences accessibilityPref,
-            final ChromeBaseCheckBoxPreferenceCompat forceEnableZoomPref, final boolean enabled) {
+            final ChromeBaseCheckBoxPreference forceEnableZoomPref, final boolean enabled) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> { accessibilityPref.onPreferenceChange(forceEnableZoomPref, enabled); });
     }

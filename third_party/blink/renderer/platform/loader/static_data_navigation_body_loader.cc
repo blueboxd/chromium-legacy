@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 
-#include "third_party/blink/renderer/platform/wtf/time.h"
-
 namespace blink {
 
 StaticDataNavigationBodyLoader::StaticDataNavigationBodyLoader() {}

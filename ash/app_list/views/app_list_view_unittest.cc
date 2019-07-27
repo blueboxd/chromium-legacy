@@ -459,7 +459,7 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   // Test the behavior triggered by left and right key when focus is on the
   // |textfield|. Does not insert text.
   void TestLeftAndRightKeyTraversalOnTextfield(views::Textfield* textfield) {
-    EXPECT_TRUE(textfield->text().empty());
+    EXPECT_TRUE(textfield->GetText().empty());
     EXPECT_EQ(textfield, focused_view());
 
     views::View* next_view =
@@ -1178,7 +1178,7 @@ TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
   GetAllSuggestions()[0]->RequestFocus();
   SimulateKeyPress(ui::VKEY_SPACE, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" "));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(), base::UTF8ToUTF16(" "));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // UI and Focus behavior is different with Zero State enabled.
@@ -1186,21 +1186,24 @@ TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
   expand_arrow_view()->RequestFocus();
   SimulateKeyPress(ui::VKEY_A, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" a"));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(),
+            base::UTF8ToUTF16(" a"));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // Set focus to close button and type a character.
   search_box_view()->close_button()->RequestFocus();
   SimulateKeyPress(ui::VKEY_B, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" ab"));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(),
+            base::UTF8ToUTF16(" ab"));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 
   // Set focus to close button and hitting backspace.
   search_box_view()->close_button()->RequestFocus();
   SimulateKeyPress(ui::VKEY_BACK, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" a"));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(),
+            base::UTF8ToUTF16(" a"));
   EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
 }
 
@@ -1215,7 +1218,8 @@ TEST_F(AppListViewFocusTest, SearchBoxTextfieldHasNoSelectionWhenFocusLeaves) {
   Show();
 
   search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
-  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16("test"));
+  EXPECT_EQ(search_box_view()->search_box()->GetText(),
+            base::UTF8ToUTF16("test"));
 
   // Move selection away from the searchbox.
   SimulateKeyPress(ui::VKEY_TAB, false);
@@ -1242,18 +1246,18 @@ TEST_F(AppListViewFocusTest, SearchBoxTextUpdatesOnResultFocus) {
     SimulateKeyPress(ui::VKEY_TAB, false);
     SimulateKeyPress(ui::VKEY_TAB, false);
 
-    EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult1"));
+    EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult1"));
   }
   // Change focus to the next result
   SimulateKeyPress(ui::VKEY_TAB, false);
 
-  EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult2"));
+  EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult2"));
 
   // This should remain after the flag is removed.
   if (app_list_features::IsSearchBoxSelectionEnabled()) {
     SimulateKeyPress(ui::VKEY_TAB, true);
 
-    EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult1"));
+    EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult1"));
 
     SimulateKeyPress(ui::VKEY_TAB, false);
   }
@@ -1261,7 +1265,7 @@ TEST_F(AppListViewFocusTest, SearchBoxTextUpdatesOnResultFocus) {
   // Change focus to the final result
   SimulateKeyPress(ui::VKEY_TAB, false);
 
-  EXPECT_EQ(search_box->text(), base::UTF8ToUTF16("TestResult3"));
+  EXPECT_EQ(search_box->GetText(), base::UTF8ToUTF16("TestResult3"));
 }
 
 // Tests that the search box selects the whole query when focus moves to the
@@ -1278,7 +1282,8 @@ TEST_F(AppListViewFocusTest, SearchBoxSelectionCoversWholeQueryOnFocus) {
   constexpr int kListResults = 1;
   SetUpSearchResults(0, kListResults, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
-  EXPECT_EQ(base::UTF8ToUTF16("test"), search_box_view()->search_box()->text());
+  EXPECT_EQ(base::UTF8ToUTF16("test"),
+            search_box_view()->search_box()->GetText());
 
   // Hit Tab to move focus away from the searchbox.
   SimulateKeyPress(ui::VKEY_TAB, false);
@@ -2185,7 +2190,7 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   main_view->search_box_view()->search_box()->InsertText(search_text);
   // Check that the current search is using |search_text|.
   EXPECT_EQ(search_text, delegate_->GetSearchModel()->search_box()->text());
-  EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->text());
+  EXPECT_EQ(search_text, main_view->search_box_view()->search_box()->GetText());
   contents_view->Layout();
   EXPECT_TRUE(
       contents_view->IsStateActive(ash::AppListState::kStateSearchResults));
@@ -2203,7 +2208,7 @@ TEST_F(AppListViewTest, DISABLED_SearchResultsTest) {
   // Check that the current search is using |new_search_text|.
   EXPECT_EQ(new_search_text, delegate_->GetSearchModel()->search_box()->text());
   EXPECT_EQ(new_search_text,
-            main_view->search_box_view()->search_box()->text());
+            main_view->search_box_view()->search_box()->GetText());
   contents_view->Layout();
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
   EXPECT_TRUE(CheckSearchBoxWidget(contents_view->GetDefaultSearchBoxBounds()));

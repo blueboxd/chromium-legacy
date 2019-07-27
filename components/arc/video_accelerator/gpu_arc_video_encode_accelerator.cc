@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "media/base/video_types.h"
@@ -157,11 +159,14 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
   // TODO(rockot): This fd comes from a mojo::ScopedHandle in
   // GpuArcVideoService::BindSharedMemory. That should be passed through,
   // rather than pulling out the fd. https://crbug.com/713763.
-  // TODO(rockot): Pass through a real size rather than |0|.
   base::UnguessableToken guid = base::UnguessableToken::Create();
-  base::SharedMemoryHandle shm_handle(base::FileDescriptor(fd.release(), true),
-                                      0u, guid);
-  auto shm = std::make_unique<base::SharedMemory>(shm_handle, true);
+  base::subtle::PlatformSharedMemoryRegion platform_region =
+      base::subtle::PlatformSharedMemoryRegion::Take(
+          std::move(fd),
+          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+          allocation_size, guid);
+  base::UnsafeSharedMemoryRegion shared_region =
+      base::UnsafeSharedMemoryRegion::Deserialize(std::move(platform_region));
 
   base::CheckedNumeric<off_t> map_offset = planes[0].offset;
   base::CheckedNumeric<size_t> map_size = allocation_size;
@@ -175,25 +180,21 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
     client_->NotifyError(Error::kInvalidArgumentError);
     return;
   }
-  if (!shm->MapAt(map_offset.ValueOrDie(), map_size.ValueOrDie())) {
+  base::WritableSharedMemoryMapping mapping =
+      shared_region.MapAt(map_offset.ValueOrDie(), map_size.ValueOrDie());
+  if (!mapping.IsValid()) {
     DLOG(ERROR) << "Failed to map memory.";
     client_->NotifyError(Error::kPlatformFailureError);
     return;
   }
 
-  uint8_t* shm_memory = reinterpret_cast<uint8_t*>(shm->memory());
-  auto frame = media::VideoFrame::WrapExternalSharedMemory(
+  uint8_t* shm_memory = mapping.GetMemoryAsSpan<uint8_t>().data();
+  auto frame = media::VideoFrame::WrapExternalData(
       format, coded_size_, gfx::Rect(visible_size_), visible_size_,
-      shm_memory + aligned_offset, allocation_size, shm_handle,
-      planes[0].offset, base::TimeDelta::FromMicroseconds(timestamp));
-
-  // Add the function to relase |shm| and |callback| to |frame|'s  destruction
-  // observer. When the |frame| goes out of scope, it unmaps and releases the
-  // shared memory as well as executes |callback|.
-  frame->AddDestructionObserver(base::BindOnce(
-      base::DoNothing::Once<std::unique_ptr<base::SharedMemory>>(),
-      std::move(shm)));
-  frame->AddDestructionObserver(std::move(callback));
+      shm_memory + aligned_offset, allocation_size,
+      base::TimeDelta::FromMicroseconds(timestamp));
+  frame->BackWithOwnedSharedMemory(std::move(shared_region), std::move(mapping),
+                                   planes[0].offset);
   accelerator_->Encode(frame, force_keyframe);
 }
 

@@ -58,15 +58,24 @@ class CC_EXPORT ScrollbarController {
   // Decides whether a track autoscroll should be aborted.
   bool ShouldCancelTrackAutoscroll();
 
+  // Calculates the scroll_offset based on position_in_widget and
+  // drag_anchor_relative_to_thumb_.
+  gfx::ScrollOffset GetScrollOffsetForDragPosition(
+      const gfx::PointF pointer_position_in_widget);
+
+  // Returns a Vector2dF for position_in_widget relative to the scrollbar thumb.
+  gfx::Vector2dF GetThumbRelativePoint(const gfx::PointF position_in_widget);
+
+  // Returns the ratio of the scroller length to the scrollbar length. This is
+  // needed to scale the scroll delta for thumb drag.
+  float GetScrollerToScrollbarRatio();
+
   LayerTreeHostImpl* layer_tree_host_impl_;
 
   // Used to safeguard against firing GSE without firing GSB and GSU. For
   // example, if mouse is pressed outside the scrollbar but released after
   // moving inside the scrollbar, a GSE will get queued up without this flag.
   bool scrollbar_scroll_is_active_;
-
-  // Used to tell if the scrollbar thumb is getting dragged.
-  bool thumb_drag_in_progress_;
 
   // "Autoscroll" here means the continuous scrolling that occurs when the
   // pointer is held down on a hit-testable area of the scrollbar such as an
@@ -76,6 +85,10 @@ class CC_EXPORT ScrollbarController {
 
   // This is relative to the RenderWidget's origin.
   gfx::PointF previous_pointer_position_;
+
+  // This is used to track the pointer location relative to the thumb origin
+  // when a drag has started.
+  base::Optional<gfx::Vector2dF> drag_anchor_relative_to_thumb_;
 
   std::unique_ptr<base::CancelableClosure> cancelable_autoscroll_task_;
 };

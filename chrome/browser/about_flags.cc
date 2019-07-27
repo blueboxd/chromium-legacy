@@ -2240,6 +2240,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 #endif  // OS_ANDROID
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    {"passwords-migrate-linux-to-login-db",
+     flag_descriptions::kPasswordsMigrateLinuxToLoginDBName,
+     flag_descriptions::kPasswordsMigrateLinuxToLoginDBDescription, kOsLinux,
+     FEATURE_VALUE_TYPE(password_manager::features::kMigrateLinuxToLoginDB)},
     {"enable-dbus-and-x11-status-icons",
      flag_descriptions::kEnableDbusAndX11StatusIconsName,
      flag_descriptions::kEnableDbusAndX11StatusIconsDescription, kOsLinux,
@@ -3776,7 +3780,8 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kDisableBestEffortTasks)},
     {"enable-sync-uss-passwords",
      flag_descriptions::kEnableSyncUSSPasswordsName,
-     flag_descriptions::kEnableSyncUSSPasswordsDescription, kOsAll,
+     flag_descriptions::kEnableSyncUSSPasswordsDescription,
+     kOsMac | kOsWin | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(switches::kSyncUSSPasswords)},
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)

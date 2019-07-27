@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
@@ -47,12 +46,12 @@ public class SmsReceiverDialogTest {
 
     private class TestSmsReceiverDialogJni implements SmsReceiverDialog.Natives {
         @Override
-        public void onCancel(@JCaller SmsReceiverDialog self, long nativeSmsDialogAndroid) {
+        public void onCancel(long nativeSmsDialogAndroid) {
             mCancelButtonClickedCallback.notifyCalled();
         }
 
         @Override
-        public void onContinue(@JCaller SmsReceiverDialog self, long nativeSmsDialogAndroid) {
+        public void onContinue(long nativeSmsDialogAndroid) {
             mContinueButtonClickedCallback.notifyCalled();
         }
     }

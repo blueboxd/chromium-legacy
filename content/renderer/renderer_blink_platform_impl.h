@@ -139,6 +139,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() override;
   rtc::Thread* GetWebRtcWorkerThreadRtcThread() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingTaskRunner()
+      override;
   std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
       blink::WebLocalFrame* frame) override;
   std::unique_ptr<webrtc::AsyncResolverFactory>

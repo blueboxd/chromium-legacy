@@ -138,7 +138,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   // Overridden from SearchBoxViewDelegate:
   void QueryChanged(search_box::SearchBoxViewBase* sender) override {
     ++query_changed_count_;
-    last_query_ = sender->search_box()->text();
+    last_query_ = sender->search_box()->GetText();
   }
 
   void AssistantButtonPressed() override {}
@@ -199,7 +199,7 @@ TEST_F(SearchBoxViewTest, SearchBoxEmptyAfterCloseButtonClicked) {
       ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON,
                      ui::EF_LEFT_MOUSE_BUTTON));
-  EXPECT_TRUE(view()->search_box()->text().empty());
+  EXPECT_TRUE(view()->search_box()->GetText().empty());
 }
 
 // Tests that the search box is no longer active after close button is clicked.
@@ -363,19 +363,19 @@ class SearchBoxViewAutocompleteTest
       // Search box autocomplete suggestion is accepted, but it should not
       // trigger another query, thus it is not reflected in Search Model.
       EXPECT_EQ(base::ASCIIToUTF16("hello world!"),
-                view()->search_box()->text());
+                view()->search_box()->GetText());
       EXPECT_EQ(base::ASCIIToUTF16("he"),
                 view_delegate()->GetSearchModel()->search_box()->text());
     } else {
       // Search box autocomplete suggestion is removed and is reflected in
       // SearchModel.
-      EXPECT_EQ(view()->search_box()->text(),
+      EXPECT_EQ(view()->search_box()->GetText(),
                 view_delegate()->GetSearchModel()->search_box()->text());
-      EXPECT_EQ(base::ASCIIToUTF16("he"), view()->search_box()->text());
+      EXPECT_EQ(base::ASCIIToUTF16("he"), view()->search_box()->GetText());
       // ProcessAutocomplete should be a no-op.
       view()->ProcessAutocomplete();
       // The autocomplete suggestion should still not be present.
-      EXPECT_EQ(base::ASCIIToUTF16("he"), view()->search_box()->text());
+      EXPECT_EQ(base::ASCIIToUTF16("he"), view()->search_box()->GetText());
     }
   }
 
@@ -491,7 +491,7 @@ TEST_F(SearchBoxViewAutocompleteTest,
   KeyPress(ui::VKEY_H);
   KeyPress(ui::VKEY_E);
   view()->ProcessAutocomplete();
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello list"));
+  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("hello list"));
   EXPECT_EQ(view()->search_box()->GetSelectedText(),
             base::ASCIIToUTF16("llo list"));
 }
@@ -511,7 +511,7 @@ TEST_F(SearchBoxViewAutocompleteTest,
   KeyPress(ui::VKEY_H);
   KeyPress(ui::VKEY_E);
   view()->ProcessAutocomplete();
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello tile"));
+  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("hello tile"));
   EXPECT_EQ(view()->search_box()->GetSelectedText(),
             base::ASCIIToUTF16("llo tile"));
 }
@@ -531,7 +531,7 @@ TEST_F(SearchBoxViewAutocompleteTest,
   KeyPress(ui::VKEY_H);
   KeyPress(ui::VKEY_E);
   view()->ProcessAutocomplete();
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello list"));
+  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("hello list"));
   EXPECT_EQ(view()->search_box()->GetSelectedText(),
             base::ASCIIToUTF16("llo list"));
 }
@@ -551,7 +551,7 @@ TEST_F(SearchBoxViewAutocompleteTest,
   KeyPress(ui::VKEY_H);
   KeyPress(ui::VKEY_E);
   view()->ProcessAutocomplete();
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello tile"));
+  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("hello tile"));
   EXPECT_EQ(view()->search_box()->GetSelectedText(),
             base::ASCIIToUTF16("llo tile"));
 }
@@ -569,7 +569,7 @@ TEST_F(SearchBoxViewAutocompleteTest,
   KeyPress(ui::VKEY_Z);
   view()->ProcessAutocomplete();
   // The text should not be autocompleted.
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("z"));
+  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("z"));
 }
 
 // Tests that autocomplete suggestion will remain if next key in the suggestion
@@ -587,13 +587,14 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesAcceptsNextChar) {
   // After typing L, the highlighted text will be replaced by L.
   KeyPress(ui::VKEY_L);
   base::string16 selected_text = view()->search_box()->GetSelectedText();
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hel"));
+  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("hel"));
   EXPECT_EQ(base::ASCIIToUTF16(""), selected_text);
 
   // After handling autocomplete, the highlighted text will show again.
   view()->ProcessAutocomplete();
   selected_text = view()->search_box()->GetSelectedText();
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello world!"));
+  EXPECT_EQ(view()->search_box()->GetText(),
+            base::ASCIIToUTF16("hello world!"));
   EXPECT_EQ(base::ASCIIToUTF16("lo world!"), selected_text);
 }
 
@@ -621,7 +622,8 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesNotHandledForIME) {
   view()->ProcessAutocomplete();
 
   base::string16 selected_text = view()->search_box()->GetSelectedText();
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("hello world!"));
+  EXPECT_EQ(view()->search_box()->GetText(),
+            base::ASCIIToUTF16("hello world!"));
   EXPECT_EQ(base::ASCIIToUTF16("llo world!"), selected_text);
   view()->search_box()->SetText(base::string16());
 
@@ -633,7 +635,7 @@ TEST_F(SearchBoxViewAutocompleteTest, SearchBoxAutocompletesNotHandledForIME) {
   view()->ProcessAutocomplete();
 
   selected_text = view()->search_box()->GetSelectedText();
-  EXPECT_EQ(view()->search_box()->text(), base::ASCIIToUTF16("he"));
+  EXPECT_EQ(view()->search_box()->GetText(), base::ASCIIToUTF16("he"));
   EXPECT_EQ(base::ASCIIToUTF16(""), selected_text);
 }
 

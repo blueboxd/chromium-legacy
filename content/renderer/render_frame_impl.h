@@ -74,6 +74,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
@@ -198,6 +199,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::DocumentInterfaceBrokerPtr
           document_interface_broker_content,
       blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink,
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+          browser_interface_broker,
       int32_t widget_routing_id,
       bool hidden,
       const ScreenInfo& screen_info,
@@ -232,6 +235,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::DocumentInterfaceBrokerPtr
           document_interface_broker_content,
       blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink,
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+          browser_interface_broker,
       int previous_routing_id,
       int opener_routing_id,
       int parent_routing_id,
@@ -257,6 +262,8 @@ class CONTENT_EXPORT RenderFrameImpl
         service_manager::mojom::InterfaceProviderPtr interface_provider,
         blink::mojom::DocumentInterfaceBrokerPtr
             document_interface_broker_content,
+        mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+            browser_interface_broker,
         const base::UnguessableToken& devtools_frame_token);
     ~CreateParams();
 
@@ -267,6 +274,8 @@ class CONTENT_EXPORT RenderFrameImpl
     int32_t routing_id;
     service_manager::mojom::InterfaceProviderPtr interface_provider;
     blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content;
+    mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker;
     base::UnguessableToken devtools_frame_token;
   };
 
@@ -878,6 +887,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebScrollDirection direction,
       ui::input_types::ScrollGranularity granularity) override;
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
+  const blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
+      override;
 
   // WebFrameSerializerClient implementation:
   void DidSerializeDataForFrame(
@@ -1092,6 +1103,8 @@ class CONTENT_EXPORT RenderFrameImpl
       service_manager::mojom::InterfaceProviderPtr interface_provider,
       blink::mojom::DocumentInterfaceBrokerPtr
           document_interface_broker_content,
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+          browser_interface_broker,
       const base::UnguessableToken& devtools_frame_token);
 
   // Functions to add and remove observers for this object.
@@ -1614,6 +1627,7 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<BlinkInterfaceRegistryImpl> blink_interface_registry_;
 
   blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_;
+  blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 
   service_manager::BindSourceInfo local_info_;
   service_manager::BindSourceInfo remote_info_;

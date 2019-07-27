@@ -39,7 +39,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -252,16 +251,6 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (!is_active())
     GetWidget()->UpdatePriority();
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
-            GetProcess()->GetID(), GetRoutingID(),
-            base::RetainedRef(
-                GetProcess()->GetStoragePartition()->GetURLRequestContext())));
-  }
-
   close_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderViewHostImpl::ClosePageTimeout, weak_factory_.GetWeakPtr())));
 
@@ -278,13 +267,6 @@ RenderViewHostImpl::~RenderViewHostImpl() {
   }
 
   GetWidget()->ShutdownAndDestroyWidget(false);
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
-                       GetProcess()->GetID(), GetRoutingID()));
-  }
 
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
 
@@ -362,6 +344,9 @@ bool RenderViewHostImpl::CreateRenderView(
                                ->document_interface_broker_content),
         mojo::MakeRequest(&params->main_frame_interface_bundle
                                ->document_interface_broker_blink));
+    main_rfh->BindBrowserInterfaceBrokerReceiver(
+        params->main_frame_interface_bundle->browser_interface_broker
+            .InitWithNewPipeAndPassReceiver());
     RenderWidgetHostImpl* main_rwh = main_rfh->GetRenderWidgetHost();
     params->main_frame_widget_routing_id = main_rwh->GetRoutingID();
   }

@@ -150,6 +150,7 @@
 <translation id="2933759065870693102">چراغ</translation>
 <translation id="2958718410589002129">گذرواژه‌ها</translation>
 <translation id="2969979262385602596">ورود به سیستم انجام نشد. بعداً دوباره امتحان کنید.</translation>
+<translation id="298306318844797842">افزودن روش پرداخت…</translation>
 <translation id="2989805286512600854">باز کردن در برگهٔ جدید</translation>
 <translation id="3037605927509011580">اوه، نه!</translation>
 <translation id="3112556859945124369">علامت‌گذاری...</translation>
@@ -313,6 +314,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5614553682702429503">گذرواژه ذخیره شود؟</translation>
 <translation id="5626245204502895507">فایل در حال حاضر قابل بارگیری نیست.</translation>
+<translation id="5631164295104953411">افزودن روش پرداخت</translation>
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">نسخه <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +466,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
 <translation id="7781829728241885113">دیروز</translation>
 <translation id="778855399387580014">‏جستجویی در برگه Chrome جدیدی شروع کنید.</translation>
+<translation id="7791543448312431591">افزودن</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7840771868269352570">موارد انتخاب‌شده برداشته خواهد شد.</translation>
 <translation id="7856733331829174190">بارگیری نشد</translation>
@@ -531,7 +534,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8976382372951310360">راهنما</translation>
 <translation id="8981454092730389528">‏کنترل‌های فعالیت Google</translation>
 <translation id="8985320356172329008">‏ورود به سیستم Google به‌عنوان</translation>
-<translation id="9016406938567631235">درحال ارسال…</translation>
 <translation id="902659348151742535">‏Google ممکن است از سابقه مرور شما برای شخصی‌سازی جستجو، آگهی‌ها و سایر سرویس‌های Google استفاده کند.</translation>
 <translation id="9034759925968272072">‏از حساب Google خود خارج نمی‌شوید. حساب Google شما ممکن است ممکن است اشکال دیگری از سابقه مرورتان در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> وجود داشته باشد.</translation>
 <translation id="9039373489628511875">پهنای باند</translation>

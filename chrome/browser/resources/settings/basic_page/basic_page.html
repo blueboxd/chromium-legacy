@@ -180,12 +180,10 @@
           </settings-section>
         </template>
 </if>
-        <template is="dom-if" if="[[showPage_(pageVisibility.search)]]" restamp>
-          <settings-section page-title="$i18n{searchPageTitle}"
-              section="search">
-            <settings-search-page prefs="{{prefs}}"></settings-search-page>
-          </settings-section>
-        </template>
+        <settings-section page-title="$i18n{searchPageTitle}"
+            section="search">
+          <settings-search-page prefs="{{prefs}}"></settings-search-page>
+        </settings-section>
 <if expr="chromeos">
         <template is="dom-if" if="[[showApps]]" restamp>
           <settings-section page-title="$i18n{appsPageTitle}" section="apps">
@@ -193,8 +191,7 @@
             </settings-app-management-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[shouldCreateAndroidAppsSection_(
-            showAndroidApps, pageVisibility)]]" restamp>
+        <template is="dom-if" if="[[showAndroidApps]]" restamp>
           <settings-section page-title="$i18n{androidAppsPageTitle}"
               section="androidApps" hidden$="[[!shouldShowAndroidAppsSection_(
               androidAppsInfo)]]">
@@ -314,13 +311,10 @@
               </settings-section>
             </template>
 <if expr="not chromeos">
-            <template is="dom-if" if="[[showPage_(pageVisibility.system)]]"
-                restamp>
-              <settings-section page-title="$i18n{systemPageTitle}"
-                  section="system">
-                <settings-system-page prefs="{{prefs}}"></settings-system-page>
-              </settings-section>
-            </template>
+            <settings-section page-title="$i18n{systemPageTitle}"
+                section="system">
+              <settings-system-page prefs="{{prefs}}"></settings-system-page>
+            </settings-section>
 </if>
             <template is="dom-if" if="[[showPage_(pageVisibility.reset)]]"
                 restamp>

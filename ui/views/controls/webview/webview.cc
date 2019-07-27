@@ -147,6 +147,7 @@ void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // Only WebContentses that are in fullscreen mode and being screen-captured
   // will engage the special layout/sizing behavior.
   gfx::Rect holder_bounds(bounds().size());
+  holder_bounds.Inset(GetInsets());
   if (!embed_fullscreen_widget_mode_enabled_ || !web_contents() ||
       !web_contents()->IsBeingCaptured() ||
       web_contents()->GetPreferredSize().IsEmpty() ||

@@ -1158,6 +1158,12 @@ LocalFrame::GetDocumentInterfaceBroker() {
   return *Client()->GetDocumentInterfaceBroker();
 }
 
+const BrowserInterfaceBrokerProxy* LocalFrame::GetBrowserInterfaceBrokerProxy()
+    const {
+  DCHECK(Client());
+  return Client()->GetBrowserInterfaceBrokerProxy();
+}
+
 mojo::ScopedMessagePipeHandle LocalFrame::SetDocumentInterfaceBrokerForTesting(
     mojo::ScopedMessagePipeHandle blink_handle) {
   DCHECK(Client());

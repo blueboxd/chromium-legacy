@@ -94,6 +94,7 @@
 
 കൂടുതൽ നിർദ്ദേശങ്ങൾക്ക് <ph name="ACCOUNT_EMAIL" /> എന്നതിൽ നിങ്ങളുടെ ഇമെയിൽ പരിശോധിക്കുക.</translation>
 <translation id="3282568296779691940">Chrome-ലേക്ക് സൈൻ ഇൻ ചെയ്യുക</translation>
+<translation id="3340978935015468852">ക്രമീകരണങ്ങൾ</translation>
 <translation id="3360895254066713204">Chrome സഹായി‌</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ഇപ്പോൾ വീണ്ടും സമാരംഭിക്കും}=1{ഒരു സെക്കൻഡിൽ Chrome വീണ്ടും സമാരംഭിക്കും}other{# സെക്കൻഡിൽ Chrome വീണ്ടും സമാരംഭിക്കും}}</translation>
 <translation id="3395323229510056640">Chrome OS ഉപയോഗിക്കാനുള്ള സഹായം തേടുക</translation>
@@ -101,7 +102,6 @@
 <translation id="3398288718845740432">Chrome മെനുവിൽ മറയ്‌ക്കുക</translation>
 <translation id="3451115285585441894">Chrome-ലേക്ക് ചേർക്കുന്നു...</translation>
 <translation id="345171907106878721">Chrome-ലേക്ക് സ്വയം ചേരുക</translation>
-<translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="34857402635545079">Chrome-ൽ നിന്നും ഡാറ്റ മായ്ക്കുക (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">ഈ സൈറ്റുമായി ലൊക്കേഷൻ പങ്കിടാൻ Chrome-ന് നിങ്ങളുടെ ലൊക്കേഷനിലേക്കുള്ള ആക്‌സസ് ആവശ്യമാണ്</translation>
 <translation id="3576528680708590453"><ph name="TARGET_URL_HOSTNAME" /> ആക്‌സസ് ചെയ്യാൻ ഇതര ബ്രൗസർ തുറക്കുന്നതിനായി നിങ്ങളുടെ സിസ്‌റ്റം അഡ്‌മിൻ Google Chrome കോൺഫിഗർ ചെയ്‌തു.</translation>
@@ -116,7 +116,6 @@
 <translation id="386202838227397562">ദയവായി എല്ലാ Google Chrome വിന്‍‌ഡോകളും അടച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3873044882194371212">Chrome അദൃശ്യ വിൻഡോയിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="3889417619312448367">Google Chrome അണ്‍‌ഇന്‍സ്റ്റാള്‍ ചെയ്യുക</translation>
-<translation id="3898493977366060150">Google ഉപയോഗിച്ചുള്ള വെബ് ബ്രൗസിംഗ് മികവുറ്റതാണ്</translation>
 <translation id="4050175100176540509">ഏറ്റവും പുതിയ പതിപ്പിൽ പ്രധാനപ്പെട്ട സുരക്ഷാ മെച്ചപ്പെടുത്തലുകളും പുതിയ ഫീച്ചറുകളും ലഭ്യമാണ്.</translation>
 <translation id="4053720452172726777">Google Chrome ഇഷ്‌ടാനുസൃതമാക്കുക, നിയന്ത്രിക്കുക</translation>
 <translation id="4143243756087420366">Chrome പേരും ചിത്രവും</translation>
@@ -204,7 +203,6 @@
 <translation id="6750954913813541382">അക്ഷരത്തെറ്റുകൾ പരിഹരിക്കാൻ നിങ്ങൾ ബ്രൗസറിൽ ടൈപ്പ് ചെയ്യുന്ന ടെക്‌സ്‌റ്റ് Chrome Google ലേക്ക് അയയ്ക്കുന്നു</translation>
 <translation id="677276454032249905">എന്തായാലും Chrome-ൽ നിന്ന് പുറത്തുകടക്കണോ?</translation>
 <translation id="683440813066116847">mDNS ട്രാഫിക് അനുവദിക്കാൻ Google Chrome കാനറിയ്‌ക്കുള്ള ഇൻബൗണ്ട് റൂൾ.</translation>
-<translation id="686561893457936865">എല്ലായിടത്ത് നിന്നും Chrome ഉപയോഗിക്കുക</translation>
 <translation id="6885412569789873916">Chrome ബീറ്റ ആപ്പുകൾ</translation>
 <translation id="6943584222992551122">ഈ ഉപകരണത്തിൽ നിന്ന് ഈ വ്യക്തിയുടെ ബ്രൗസിംഗ് ഡാറ്റ ഇല്ലാതാകും. ഡാറ്റ വീണ്ടെടുക്കാൻ, Chromium-ത്തിലേക്ക് <ph name="USER_EMAIL" /> ആയി സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="6967962315388095737">mDNS ട്രാഫിക് അനുവദിക്കുന്നതിന് Google Chrome ബീറ്റയ്ക്ക് വേണ്ടിയുള്ള ഇൻബൗണ്ട് റൂൾ.</translation>

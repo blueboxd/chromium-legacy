@@ -41,7 +41,7 @@ class ValidatingTextfieldTest : public ChromeViewsTestBase {
     bool IsValidTextfield(views::Textfield* textfield,
                           base::string16* error_message) override {
       // We really don't like textfields with more than 5 characters in them.
-      return textfield->text().size() <= 5u;
+      return textfield->GetText().size() <= 5u;
     }
     bool IsValidCombobox(views::Combobox* combobox,
                          base::string16* error_message) override {

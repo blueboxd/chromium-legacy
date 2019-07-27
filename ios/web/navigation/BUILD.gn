@@ -70,6 +70,7 @@ source_set("navigation") {
     "session_storage_builder.mm",
     "time_smoother.cc",
     "time_smoother.h",
+    "url_schemes.mm",
     "web_kit_constants.cc",
     "web_kit_constants.h",
     "wk_back_forward_list_item_holder.h",

@@ -44,6 +44,7 @@ class ToolbarPageActionIconContainerView : public ToolbarIconContainerView,
   // PageActionIconView::Delegate:
   SkColor GetPageActionInkDropColor() const override;
   content::WebContents* GetWebContentsForPageActionIconView() override;
+  std::unique_ptr<views::Border> GetPageActionIconBorder() const override;
 
   // views::View:
   void OnThemeChanged() override;

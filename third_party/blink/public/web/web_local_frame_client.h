@@ -89,6 +89,7 @@ enum class WebFeature : int32_t;
 
 enum class WebTreeScopeType;
 class AssociatedInterfaceProvider;
+class BrowserInterfaceBrokerProxy;
 class WebComputedAXTree;
 class WebContentDecryptionModule;
 class WebCookieJar;
@@ -196,6 +197,13 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Returns an InterfaceProvider the frame can use to request interfaces from
   // the browser. This method may not return nullptr.
   virtual service_manager::InterfaceProvider* GetInterfaceProvider();
+
+  // Returns a BrowserInterfaceBrokerProxy the frame can use to request
+  // interfaces from the browser.
+  virtual const blink::BrowserInterfaceBrokerProxy*
+  GetBrowserInterfaceBrokerProxy() {
+    return nullptr;
+  }
 
   // Returns an AssociatedInterfaceProvider the frame can use to request
   // navigation-associated interfaces from the browser. See also

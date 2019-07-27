@@ -20,11 +20,12 @@ function whenFinished(animation) {
 const viewAnimations = new Map();
 viewAnimations.set('no-animation', () => Promise.resolve());
 viewAnimations.set('fade-in', element => {
+  // The call to animate can have 2 methods of passing the keyframes, however as
+  // of the current closure version, only one of them is supported. See
+  // https://crbug.com/987842 for more info.
   const animation = element.animate(
-      {
-        opacity: [0, 1],
-      },
-      /** @type {!KeyframeEffectOptions} */ ({
+      [{opacity: 0}, {opacity: 1}],
+      /** @type {!KeyframeAnimationOptions } */ ({
         duration: 180,
         easing: 'ease-in-out',
         iterations: 1,
@@ -33,11 +34,12 @@ viewAnimations.set('fade-in', element => {
   return whenFinished(animation);
 });
 viewAnimations.set('fade-out', element => {
+  // The call to animate can have 2 methods of passing the keyframes, however as
+  // of the current closure version, only one of them is supported. See
+  // https://crbug.com/987842 for more info.
   const animation = element.animate(
-      {
-        opacity: [1, 0],
-      },
-      /** @type {!KeyframeEffectOptions} */ ({
+      [{opacity: 0}, {opacity: 1}],
+      /** @type {!KeyframeAnimationOptions} */ ({
         duration: 180,
         easing: 'ease-in-out',
         iterations: 1,

@@ -4,6 +4,7 @@
 
 import("//build/config/android/rules.gni")
 import("//chrome/common/features.gni")
+import("//components/feed/features.gni")
 
 java_strings_grd("java_strings_grd") {
   defines = chrome_grit_defines
@@ -77,14 +78,13 @@ android_resources("java_resources") {
 android_library("java") {
   java_files = [
     "java/src/org/chromium/chrome/features/start_surface/BottomBarCoordinator.java",
-    "java/src/org/chromium/chrome/features/start_surface/BottomBarProperties.java",
     "java/src/org/chromium/chrome/features/start_surface/BottomBarView.java",
     "java/src/org/chromium/chrome/features/start_surface/BottomBarViewBinder.java",
-    "java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceCoordinator.java",
     "java/src/org/chromium/chrome/features/start_surface/StartSurfaceCoordinator.java",
     "java/src/org/chromium/chrome/features/start_surface/StartSurfaceDelegate.java",
     "java/src/org/chromium/chrome/features/start_surface/StartSurfaceLayout.java",
     "java/src/org/chromium/chrome/features/start_surface/StartSurfaceMediator.java",
+    "java/src/org/chromium/chrome/features/start_surface/StartSurfaceProperties.java",
   ]
 
   deps = [
@@ -95,4 +95,25 @@ android_library("java") {
     "//third_party/android_deps:com_android_support_design_java",
     "//ui/android:ui_full_java",
   ]
+
+  if (enable_feed_in_chrome) {
+    java_files += [
+      "java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceActionHandler.java",
+      "java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceCoordinator.java",
+      "java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceNavigationDelegate.java",
+      "java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceStreamLifecycleManager.java",
+      "java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceViewBinder.java",
+    ]
+
+    deps += [
+      "//chrome/android/public/profiles:java",
+      "//content/public/android:content_java",
+      "//third_party/custom_tabs_client:custom_tabs_support_java",
+      "//third_party/feed:feed_lib_java",
+      "//ui/android:ui_utils_java",
+      "//ui/base/mojom:mojom_java",
+    ]
+  } else {
+    java_files += [ "dummy/java/src/org/chromium/chrome/features/start_surface/ExploreSurfaceCoordinator.java" ]
+  }
 }

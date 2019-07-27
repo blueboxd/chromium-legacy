@@ -22,6 +22,7 @@
 #include "content/public/utility/utility_thread.h"
 #include "content/shell/common/power_monitor_test_impl.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/bindings/service_factory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -81,6 +82,10 @@ class TestUtilityServiceImpl : public mojom::TestService {
   DISALLOW_COPY_AND_ASSIGN(TestUtilityServiceImpl);
 };
 
+auto RunEchoService(mojo::PendingReceiver<echo::mojom::EchoService> receiver) {
+  return std::make_unique<echo::EchoService>(std::move(receiver));
+}
+
 }  // namespace
 
 ShellContentUtilityClient::ShellContentUtilityClient(bool is_browsertest) {
@@ -127,13 +132,11 @@ bool ShellContentUtilityClient::HandleServiceRequest(
   return false;
 }
 
-void ShellContentUtilityClient::RunIOThreadService(
-    mojo::GenericPendingReceiver* receiver) {
-  if (auto echo_receiver = receiver->As<echo::mojom::EchoService>()) {
-    static base::NoDestructor<echo::EchoService> service(
-        std::move(echo_receiver));
-    return;
-  }
+mojo::ServiceFactory* ShellContentUtilityClient::GetIOThreadServiceFactory() {
+  static base::NoDestructor<mojo::ServiceFactory> factory{
+      RunEchoService,
+  };
+  return factory.get();
 }
 
 void ShellContentUtilityClient::RegisterNetworkBinders(

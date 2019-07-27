@@ -15,6 +15,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -75,17 +76,6 @@
 namespace extensions {
 
 namespace {
-
-// Returns the newly added WebContents.
-content::WebContents* AddTab(Browser* browser, const GURL& url) {
-  int starting_tab_count = browser->tab_strip_model()->count();
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser, url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  int tab_count = browser->tab_strip_model()->count();
-  EXPECT_EQ(starting_tab_count + 1, tab_count);
-  return browser->tab_strip_model()->GetActiveWebContents();
-}
 
 class WebContentsLoadStopObserver : content::WebContentsObserver {
  public:
@@ -331,7 +321,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, PRE_Basic) {
   EXPECT_TRUE(worker_listener.WaitUntilSatisfied());
 
   const GURL url = embedded_test_server()->GetURL("/extensions/test_file.html");
-  content::WebContents* new_web_contents = AddTab(browser(), url);
+  content::WebContents* new_web_contents =
+      browsertest_util::AddTab(browser(), url);
   EXPECT_TRUE(new_web_contents);
   EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
 
@@ -347,7 +338,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, Basic) {
   ExtensionTestMessageListener newtab_listener("CREATED", false);
   newtab_listener.set_failure_message("CREATE_FAILED");
   const GURL url = embedded_test_server()->GetURL("/extensions/test_file.html");
-  content::WebContents* new_web_contents = AddTab(browser(), url);
+  content::WebContents* new_web_contents =
+      browsertest_util::AddTab(browser(), url);
   EXPECT_TRUE(new_web_contents);
   EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
 }
@@ -857,8 +849,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, DISABLED_UpdateWithoutSkipWaiting) {
 
   ExtensionTestMessageListener listener1("Pong from version 1", false);
   listener1.set_failure_message("FAILURE");
-  content::WebContents* web_contents =
-      AddTab(browser(), extension->GetResourceURL("page.html"));
+  content::WebContents* web_contents = browsertest_util::AddTab(
+      browser(), extension->GetResourceURL("page.html"));
   EXPECT_TRUE(listener1.WaitUntilSatisfied());
 
   // Update to version 2.0.
@@ -875,8 +867,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, DISABLED_UpdateWithoutSkipWaiting) {
   // the extension page yet.
   ExtensionTestMessageListener listener2("Pong from version 1", false);
   listener2.set_failure_message("FAILURE");
-  web_contents =
-      AddTab(browser(), extension_after_update->GetResourceURL("page.html"));
+  web_contents = browsertest_util::AddTab(
+      browser(), extension_after_update->GetResourceURL("page.html"));
   EXPECT_TRUE(listener2.WaitUntilSatisfied());
 
   // Navigate the tab away from the extension page so that no clients are
@@ -892,8 +884,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, DISABLED_UpdateWithoutSkipWaiting) {
   // Now expect service worker version 2 to control the extension page.
   ExtensionTestMessageListener listener3("Pong from version 2", false);
   listener3.set_failure_message("FAILURE");
-  web_contents =
-      AddTab(browser(), extension_after_update->GetResourceURL("page.html"));
+  web_contents = browsertest_util::AddTab(
+      browser(), extension_after_update->GetResourceURL("page.html"));
   EXPECT_TRUE(listener3.WaitUntilSatisfied());
 }
 
@@ -999,8 +991,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, SWServedBackgroundPageReceivesEvent) {
   // that the SW served background script correctly receives the message/event.
   ExtensionTestMessageListener listener("onMessage/SW BG.", false);
   listener.set_failure_message("onMessage/original BG.");
-  content::WebContents* web_contents =
-      AddTab(browser(), extension->GetResourceURL("page.html"));
+  content::WebContents* web_contents = browsertest_util::AddTab(
+      browser(), extension->GetResourceURL("page.html"));
   ASSERT_TRUE(web_contents);
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
@@ -1387,7 +1379,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesIframeSrc) {
                                      "web_accessible_resources/webpage.html");
   EXPECT_FALSE(content::IsOriginSecure(page_url));
 
-  content::WebContents* web_contents = AddTab(browser(), page_url);
+  content::WebContents* web_contents =
+      browsertest_util::AddTab(browser(), page_url);
   std::string result;
   // webpage.html will create an iframe pointing to a resource from |extension|.
   // Expect the resource to be served by the extension.
@@ -1814,7 +1807,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, EventsAfterRestart) {
   ExtensionTestMessageListener moved_tab_listener("moved-tab", false);
   // Add a tab, then move it.
   content::WebContents* new_web_contents =
-      AddTab(browser(), GURL(url::kAboutBlankURL));
+      browsertest_util::AddTab(browser(), GURL(url::kAboutBlankURL));
   EXPECT_TRUE(new_web_contents);
   browser()->tab_strip_model()->MoveWebContentsAt(
       browser()->tab_strip_model()->count() - 1, 0, false);
@@ -1867,7 +1860,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   ExtensionTestMessageListener worker_filtered_event_listener(
       "PASS_FROM_WORKER", false);
   worker_filtered_event_listener.set_failure_message("FAIL_FROM_WORKER");
-  content::WebContents* web_contents = AddTab(browser(), page_url);
+  content::WebContents* web_contents =
+      browsertest_util::AddTab(browser(), page_url);
   EXPECT_TRUE(web_contents);
   EXPECT_TRUE(worker_filtered_event_listener.WaitUntilSatisfied());
 }
@@ -1887,7 +1881,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
   ResultCatcher catcher;
   // Click on browser action to start the test.
   {
-    content::WebContents* web_contents = AddTab(browser(), GURL("about:blank"));
+    content::WebContents* web_contents =
+        browsertest_util::AddTab(browser(), GURL("about:blank"));
     ASSERT_TRUE(web_contents);
     ExtensionActionRunner::GetForWebContents(
         browser()->tab_strip_model()->GetActiveWebContents())

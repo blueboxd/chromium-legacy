@@ -66,8 +66,6 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/browser/loader/loader_io_thread_notifier.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/browser/media/audio_stream_monitor.h"
@@ -268,14 +266,6 @@ bool IsUserInteractionInputType(blink::WebInputEvent::Type type) {
   // https://whatwg.org/C/interaction.html#triggered-by-user-activation.
   return type == blink::WebInputEvent::kMouseDown ||
          type == blink::WebInputEvent::kGestureScrollBegin ||
-         type == blink::WebInputEvent::kTouchStart ||
-         type == blink::WebInputEvent::kRawKeyDown;
-}
-
-// Returns |true| if |type| is the kind of user input that should be used as
-// a user gesture signal for resource load dispatches.
-bool IsResourceLoadUserInteractionInputType(blink::WebInputEvent::Type type) {
-  return type == blink::WebInputEvent::kMouseDown ||
          type == blink::WebInputEvent::kTouchStart ||
          type == blink::WebInputEvent::kRawKeyDown;
 }
@@ -607,7 +597,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   pepper_playback_observer_.reset(new PepperPlaybackObserver(this));
 #endif
 
-  loader_io_thread_notifier_.reset(new LoaderIOThreadNotifier(this));
 #if !defined(OS_ANDROID)
   host_zoom_map_observer_.reset(new HostZoomMapObserver(this));
 #endif  // !defined(OS_ANDROID)
@@ -4062,7 +4051,6 @@ void WebContentsImpl::SystemDragEnded(RenderWidgetHost* source_rwh) {
 }
 
 void WebContentsImpl::NavigatedByUser() {
-  SendUserGestureForResourceDispatchHost();
 }
 
 void WebContentsImpl::SetClosedByUserGesture(bool value) {
@@ -6335,9 +6323,6 @@ void WebContentsImpl::DidReceiveInputEvent(
 
   for (auto& observer : observers_)
     observer.DidGetUserInteraction(type);
-
-  if (IsResourceLoadUserInteractionInputType(type))
-    SendUserGestureForResourceDispatchHost();
 }
 
 bool WebContentsImpl::ShouldIgnoreInputEvents() {
@@ -6779,14 +6764,6 @@ void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
   const gfx::Size new_size = GetPreferredSize();
   if (new_size != old_size)
     delegate_->UpdatePreferredSize(this, new_size);
-}
-
-void WebContentsImpl::SendUserGestureForResourceDispatchHost() {
-  // This is null in unittests. =(
-  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-
-  if (rdh)
-    rdh->OnUserGesture();
 }
 
 std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(const GURL& url) {

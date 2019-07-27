@@ -85,6 +85,31 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     }
 
     /**
+     * @return An unmodifiable list of {@link Tab}s that are not related to any tabs
+     */
+    @NonNull
+    final public List<Tab> getTabsWithNoOtherRelatedTabs() {
+        List<Tab> tabs = new ArrayList<>();
+        for (int i = 0; i < mTabModel.getCount(); i++) {
+            Tab tab = mTabModel.getTabAt(i);
+            if (!hasOtherRelatedTabs(tab)) {
+                tabs.add(tab);
+            }
+        }
+        return Collections.unmodifiableList(tabs);
+    }
+
+    /**
+     * Any of the concrete class that defined a relationship between tabs should override this
+     * method. By default, the given {@link Tab} has no related tabs, other than itself.
+     * @param tab A {@link Tab}.
+     * @return Whether the given {@link Tab} has other related tabs that is not itself.
+     */
+    public boolean hasOtherRelatedTabs(Tab tab) {
+        return false;
+    }
+
+    /**
      * Concrete class requires to define what's the behavior when {@link TabModel} added a
      * {@link Tab}.
      * @param tab {@link Tab} had added to {@link TabModel}.

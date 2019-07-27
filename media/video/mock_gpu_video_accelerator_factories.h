@@ -83,6 +83,9 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
 
+  // Allocate & return a read-only shared memory region
+  base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;
+
   std::unique_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
 

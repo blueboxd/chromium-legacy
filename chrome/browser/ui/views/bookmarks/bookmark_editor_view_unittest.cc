@@ -74,7 +74,7 @@ class BookmarkEditorViewTest : public testing::Test {
 
   base::string16 GetURLText() const {
     if (editor_->details_.type != BookmarkEditor::EditDetails::NEW_FOLDER)
-      return editor_->url_tf_->text();
+      return editor_->url_tf_->GetText();
 
     return base::string16();
   }

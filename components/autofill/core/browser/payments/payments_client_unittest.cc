@@ -150,6 +150,15 @@ class PaymentsClientTest : public testing::Test {
     real_pan_ = real_pan;
   }
 
+  void OnDidGetOptChangeResult(AutofillClient::PaymentsRpcResult result,
+                               bool user_is_opted_in,
+                               base::Value fido_creation_options) {
+    result_ = result;
+    user_is_opted_in_ = user_is_opted_in;
+    if (fido_creation_options.is_dict())
+      fido_creation_options_ = fido_creation_options.Clone();
+  }
+
   void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
@@ -205,6 +214,17 @@ class PaymentsClientTest : public testing::Test {
     client_->UnmaskCard(request_details,
                         base::BindOnce(&PaymentsClientTest::OnDidGetRealPan,
                                        weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  // If |opt_in| is set to true, then opts the user in to use FIDO
+  // authentication for card unmasking. Otherwise opts the user out.
+  void StartOptChangeRequest(bool opt_in) {
+    PaymentsClient::OptChangeRequestDetails request_details;
+    request_details.opt_in = opt_in;
+    client_->OptChange(
+        request_details,
+        base::BindOnce(&PaymentsClientTest::OnDidGetOptChangeResult,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Issue a GetUploadDetails request.
@@ -288,6 +308,8 @@ class PaymentsClientTest : public testing::Test {
 
   std::string server_id_;
   std::string real_pan_;
+  base::Optional<bool> user_is_opted_in_;
+  base::Value fido_creation_options_;
   std::unique_ptr<base::Value> legal_message_;
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
   std::vector<MigratableCreditCard> migratable_credit_cards_;
@@ -486,6 +508,42 @@ TEST_F(PaymentsClientTest, UnmaskLogsBlankCvcLength) {
 
   histogram_tester.ExpectBucketCount(
       "Autofill.CardUnmask.CvcLength.ForAutofill", 0, 1);
+}
+
+TEST_F(PaymentsClientTest, OptInSuccess) {
+  StartOptChangeRequest(/*opt_in=*/true);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{ \"user_is_opted_in\": true }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_TRUE(user_is_opted_in_.value());
+}
+
+TEST_F(PaymentsClientTest, OptInServerUnresponsive) {
+  StartOptChangeRequest(/*opt_in=*/true);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_REQUEST_TIMEOUT, "");
+  EXPECT_EQ(AutofillClient::NETWORK_ERROR, result_);
+  EXPECT_FALSE(user_is_opted_in_.value());
+}
+
+TEST_F(PaymentsClientTest, OptOutSuccess) {
+  StartOptChangeRequest(/*opt_in=*/false);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK, "{ \"user_is_opted_in\": false }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_FALSE(user_is_opted_in_.value());
+}
+
+TEST_F(PaymentsClientTest, EnrollAttemptReturnsCreationOptions) {
+  StartOptChangeRequest(/*opt_in=*/true);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{ \"user_is_opted_in\": false, \"fido_creation_options\": { "
+                 "\"relying_party_id\": \"google.com\"} }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_FALSE(user_is_opted_in_.value());
+  EXPECT_EQ("google.com",
+            *fido_creation_options_.FindStringKey("relying_party_id"));
 }
 
 TEST_F(PaymentsClientTest, GetDetailsSuccess) {

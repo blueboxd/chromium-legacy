@@ -167,4 +167,5 @@ interface CoreProbes {
   void DidSuspendAudioContext(Document*);
   void ProduceCompilationCache(LocalFrame*, const ScriptSourceCode& source, v8::Local<v8::Script> script);
   void ConsumeCompilationCache(ExecutionContext*, const ScriptSourceCode& source, v8::ScriptCompiler::CachedData** cached_data);
+  void NodeCreated([Keep] Node* node);
 }

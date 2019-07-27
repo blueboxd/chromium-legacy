@@ -449,9 +449,17 @@ below:
       <message name="IDS_AX_ROLE_REGION" desc="Accessibility role description for region">
         region
       </message>
-      <message name="IDS_AX_ROLE_SEARCH_BOX" desc="Accessibility role description for search text field">
-        search text field
-      </message>
+      <!-- https://www.w3.org/TR/core-aam-1.1/#role-map-searchbox -->
+      <if expr="is_win">
+        <message name="IDS_AX_ROLE_SEARCH_BOX" desc="UIA role description for search text field">
+          search box
+        </message>
+      </if>
+      <if expr="not is_win">
+        <message name="IDS_AX_ROLE_SEARCH_BOX" desc="Accessibility role description for search text field">
+          search text field
+        </message>
+      </if>
       <message name="IDS_AX_ROLE_STATUS" desc="Accessibility role description for status">
         status
       </message>

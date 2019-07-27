@@ -32,7 +32,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.sync.SyncPreferenceUtils;
 import org.chromium.chrome.browser.preferences.sync.SyncedAccountPreference;
@@ -110,7 +110,7 @@ public class SyncCustomizationFragment extends PreferenceFragmentCompat
         int OTHER_ERRORS = 128;
     }
 
-    private ChromeSwitchPreferenceCompat mSyncSwitchPreference;
+    private ChromeSwitchPreference mSyncSwitchPreference;
     private boolean mIsEngineInitialized;
     private boolean mIsPassphraseRequired;
 
@@ -173,7 +173,7 @@ public class SyncCustomizationFragment extends PreferenceFragmentCompat
             type.setOnPreferenceChangeListener(this);
         }
 
-        mSyncSwitchPreference = (ChromeSwitchPreferenceCompat) findPreference(PREF_SYNC_SWITCH);
+        mSyncSwitchPreference = (ChromeSwitchPreference) findPreference(PREF_SYNC_SWITCH);
         mSyncSwitchPreference.setOnPreferenceChangeListener((preference, newValue) -> {
             assert canDisableSync();
             SyncPreferenceUtils.enableSync((boolean) newValue);

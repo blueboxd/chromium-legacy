@@ -162,7 +162,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        Fragment fragment = getMainFragmentCompat();
+        Fragment fragment = getMainFragment();
         if (fragment == null || fragment.getView() == null
                 || fragment.getView().findViewById(R.id.list) == null) {
             return;
@@ -219,7 +219,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
      * top of the main content.
      */
     @VisibleForTesting
-    public Fragment getMainFragmentCompat() {
+    public Fragment getMainFragment() {
         return getSupportFragmentManager().findFragmentById(android.R.id.content);
     }
 
@@ -245,8 +245,8 @@ public class Preferences extends ChromeBaseAppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Fragment mainFragmentCompat = getMainFragmentCompat();
-        if (mainFragmentCompat != null && mainFragmentCompat.onOptionsItemSelected(item)) {
+        Fragment mainFragment = getMainFragment();
+        if (mainFragment != null && mainFragment.onOptionsItemSelected(item)) {
             return true;
         }
 
@@ -263,7 +263,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
 
     @Override
     public void onBackPressed() {
-        Fragment activeFragment = getMainFragmentCompat();
+        Fragment activeFragment = getMainFragment();
         if (!(activeFragment instanceof OnBackPressedListener)) {
             super.onBackPressed();
             return;

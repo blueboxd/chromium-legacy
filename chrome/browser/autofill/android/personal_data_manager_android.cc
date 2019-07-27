@@ -741,15 +741,11 @@ void PersonalDataManagerAndroid::StartAddressNormalization(
                      ScopedJavaGlobalRef<jobject>(jdelegate)));
 }
 
-jboolean PersonalDataManagerAndroid::HasProfiles(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& unused_obj) {
+jboolean PersonalDataManagerAndroid::HasProfiles(JNIEnv* env) {
   return !personal_data_manager_->GetProfiles().empty();
 }
 
-jboolean PersonalDataManagerAndroid::HasCreditCards(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& unused_obj) {
+jboolean PersonalDataManagerAndroid::HasCreditCards(JNIEnv* env) {
   return !personal_data_manager_->GetCreditCards().empty();
 }
 
@@ -773,15 +769,11 @@ void PersonalDataManagerAndroid::StartRegionSubKeysRequest(
                                               jtimeout_seconds, std::move(cb));
 }
 
-void PersonalDataManagerAndroid::CancelPendingGetSubKeys(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& unused_obj) {
+void PersonalDataManagerAndroid::CancelPendingGetSubKeys(JNIEnv* env) {
   subkey_requester_.CancelPendingGetSubKeys();
 }
 
-void PersonalDataManagerAndroid::SetSyncServiceForTesting(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& unused_obj) {
+void PersonalDataManagerAndroid::SetSyncServiceForTesting(JNIEnv* env) {
   personal_data_manager_->SetSyncingForTest(true);
 }
 

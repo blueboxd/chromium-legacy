@@ -132,16 +132,200 @@ CaseMap::Locale::Locale(const AtomicString& locale) {
     case_map_locale_ = nullptr;
 }
 
+scoped_refptr<StringImpl> CaseMap::FastToLowerInvariant(StringImpl* source) {
+  DCHECK(source);
+
+  // Note: This is a hot function in the Dromaeo benchmark, specifically the
+  // no-op code path up through the first 'return' statement.
+
+  // First scan the string for uppercase and non-ASCII characters:
+  if (source->Is8Bit()) {
+    wtf_size_t first_index_to_be_lowered = source->length();
+    for (wtf_size_t i = 0; i < source->length(); ++i) {
+      LChar ch = source->Characters8()[i];
+      if (UNLIKELY(IsASCIIUpper(ch) || ch & ~0x7F)) {
+        first_index_to_be_lowered = i;
+        break;
+      }
+    }
+
+    // Nothing to do if the string is all ASCII with no uppercase.
+    if (first_index_to_be_lowered == source->length())
+      return source;
+
+    LChar* data8;
+    scoped_refptr<StringImpl> new_impl =
+        StringImpl::CreateUninitialized(source->length(), data8);
+    memcpy(data8, source->Characters8(), first_index_to_be_lowered);
+
+    for (wtf_size_t i = first_index_to_be_lowered; i < source->length(); ++i) {
+      LChar ch = source->Characters8()[i];
+      data8[i] = UNLIKELY(ch & ~0x7F) ? static_cast<LChar>(unicode::ToLower(ch))
+                                      : ToASCIILower(ch);
+    }
+
+    return new_impl;
+  }
+
+  bool no_upper = true;
+  UChar ored = 0;
+
+  const UChar* end = source->Characters16() + source->length();
+  for (const UChar* chp = source->Characters16(); chp != end; ++chp) {
+    if (UNLIKELY(IsASCIIUpper(*chp)))
+      no_upper = false;
+    ored |= *chp;
+  }
+  // Nothing to do if the string is all ASCII with no uppercase.
+  if (no_upper && !(ored & ~0x7F))
+    return source;
+
+  CHECK_LE(source->length(),
+           static_cast<wtf_size_t>(std::numeric_limits<int32_t>::max()));
+  int32_t length = source->length();
+
+  if (!(ored & ~0x7F)) {
+    UChar* data16;
+    scoped_refptr<StringImpl> new_impl =
+        StringImpl::CreateUninitialized(source->length(), data16);
+
+    for (int32_t i = 0; i < length; ++i) {
+      UChar c = source->Characters16()[i];
+      data16[i] = ToASCIILower(c);
+    }
+    return new_impl;
+  }
+
+  // Do a slower implementation for cases that include non-ASCII characters.
+  UChar* data16;
+  scoped_refptr<StringImpl> new_impl =
+      StringImpl::CreateUninitialized(source->length(), data16);
+
+  bool error;
+  int32_t real_length = unicode::ToLower(data16, length, source->Characters16(),
+                                         source->length(), &error);
+  if (!error && real_length == length)
+    return new_impl;
+
+  new_impl = StringImpl::CreateUninitialized(real_length, data16);
+  unicode::ToLower(data16, real_length, source->Characters16(),
+                   source->length(), &error);
+  if (error)
+    return source;
+  return new_impl;
+}
+
+scoped_refptr<StringImpl> CaseMap::FastToUpperInvariant(StringImpl* source) {
+  DCHECK(source);
+
+  // This function could be optimized for no-op cases the way LowerUnicode() is,
+  // but in empirical testing, few actual calls to UpperUnicode() are no-ops, so
+  // it wouldn't be worth the extra time for pre-scanning.
+
+  CHECK_LE(source->length(),
+           static_cast<wtf_size_t>(std::numeric_limits<int32_t>::max()));
+  int32_t length = source->length();
+
+  if (source->Is8Bit()) {
+    LChar* data8;
+    scoped_refptr<StringImpl> new_impl =
+        StringImpl::CreateUninitialized(source->length(), data8);
+
+    // Do a faster loop for the case where all the characters are ASCII.
+    LChar ored = 0;
+    for (int i = 0; i < length; ++i) {
+      LChar c = source->Characters8()[i];
+      ored |= c;
+      data8[i] = ToASCIIUpper(c);
+    }
+    if (!(ored & ~0x7F))
+      return new_impl;
+
+    // Do a slower implementation for cases that include non-ASCII Latin-1
+    // characters.
+    int number_sharp_s_characters = 0;
+
+    // There are two special cases.
+    //  1. latin-1 characters when converted to upper case are 16 bit
+    //     characters.
+    //  2. Lower case sharp-S converts to "SS" (two characters)
+    for (int32_t i = 0; i < length; ++i) {
+      LChar c = source->Characters8()[i];
+      if (UNLIKELY(c == kSmallLetterSharpSCharacter))
+        ++number_sharp_s_characters;
+      UChar upper = static_cast<UChar>(unicode::ToUpper(c));
+      if (UNLIKELY(upper > 0xff)) {
+        // Since this upper-cased character does not fit in an 8-bit string, we
+        // need to take the 16-bit path.
+        goto upconvert;
+      }
+      data8[i] = static_cast<LChar>(upper);
+    }
+
+    if (!number_sharp_s_characters)
+      return new_impl;
+
+    // We have numberSSCharacters sharp-s characters, but none of the other
+    // special characters.
+    new_impl = StringImpl::CreateUninitialized(
+        source->length() + number_sharp_s_characters, data8);
+
+    LChar* dest = data8;
+
+    for (int32_t i = 0; i < length; ++i) {
+      LChar c = source->Characters8()[i];
+      if (c == kSmallLetterSharpSCharacter) {
+        *dest++ = 'S';
+        *dest++ = 'S';
+      } else {
+        *dest++ = static_cast<LChar>(unicode::ToUpper(c));
+      }
+    }
+
+    return new_impl;
+  }
+
+upconvert:
+  scoped_refptr<StringImpl> upconverted = source->UpconvertedString();
+  const UChar* source16 = upconverted->Characters16();
+
+  UChar* data16;
+  scoped_refptr<StringImpl> new_impl =
+      StringImpl::CreateUninitialized(source->length(), data16);
+
+  // Do a faster loop for the case where all the characters are ASCII.
+  UChar ored = 0;
+  for (int i = 0; i < length; ++i) {
+    UChar c = source16[i];
+    ored |= c;
+    data16[i] = ToASCIIUpper(c);
+  }
+  if (!(ored & ~0x7F))
+    return new_impl;
+
+  // Do a slower implementation for cases that include non-ASCII characters.
+  bool error;
+  int32_t real_length =
+      unicode::ToUpper(data16, length, source16, source->length(), &error);
+  if (!error && real_length == length)
+    return new_impl;
+  new_impl = StringImpl::CreateUninitialized(real_length, data16);
+  unicode::ToUpper(data16, real_length, source16, source->length(), &error);
+  if (error)
+    return source;
+  return new_impl;
+}
+
 scoped_refptr<StringImpl> CaseMap::ToLower(StringImpl* source) const {
   if (!case_map_locale_)
-    return source->LowerUnicode();
+    return FastToLowerInvariant(source);
 
   return CaseConvert(CaseMapType::kLowerLegacy, source, case_map_locale_);
 }
 
 scoped_refptr<StringImpl> CaseMap::ToUpper(StringImpl* source) const {
   if (!case_map_locale_)
-    return source->UpperUnicode();
+    return FastToUpperInvariant(source);
 
   return CaseConvert(CaseMapType::kUpperLegacy, source, case_map_locale_);
 }

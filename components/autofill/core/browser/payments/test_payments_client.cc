@@ -12,7 +12,14 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace autofill {
+
 namespace payments {
+
+namespace {
+// Base64 encoding of "This is a test challenge".
+constexpr char kTestChallenge[] = "VGhpcyBpcyBhIHRlc3QgY2hhbGxlbmdl";
+constexpr int kTestTimeoutSeconds = 180;
+}  // namespace
 
 TestPaymentsClient::TestPaymentsClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_,
@@ -73,12 +80,46 @@ void TestPaymentsClient::AllowFidoRegistration(bool offer_fido_opt_in) {
   unmask_details_.offer_fido_opt_in = offer_fido_opt_in;
 }
 
-void TestPaymentsClient::AddFidoEligibleCard(std::string server_id) {
+void TestPaymentsClient::AddFidoEligibleCard(std::string server_id,
+                                             std::string credential_id,
+                                             std::string relying_party_id) {
   unmask_details_.offer_fido_opt_in = false;
   unmask_details_.unmask_auth_method = AutofillClient::UnmaskAuthMethod::FIDO;
+  unmask_details_.fido_eligible_card_ids.insert(server_id);
   unmask_details_.fido_request_options =
       base::Value(base::Value::Type::DICTIONARY);
-  unmask_details_.fido_eligible_card_ids.insert(server_id);
+
+  // Building the following JSON structure--
+  // fido_request_options = {
+  //   "challenge": kTestChallenge,
+  //   "timeout_millis": kTestTimeoutSeconds,
+  //   "relying_party_id": relying_party_id,
+  //   "key_info": [{
+  //       "credential_id": credential_id,
+  //       "authenticator_transport_support": ["INTERNAL"]
+  // }]}
+  unmask_details_.fido_request_options.SetKey("challenge",
+                                              base::Value(kTestChallenge));
+  unmask_details_.fido_request_options.SetKey("timeout_millis",
+                                              base::Value(kTestTimeoutSeconds));
+  unmask_details_.fido_request_options.SetKey("relying_party_id",
+                                              base::Value(relying_party_id));
+
+  base::Value key_info(base::Value::Type::DICTIONARY);
+  if (!credential_id.empty())
+    key_info.SetKey("credential_id", base::Value(credential_id));
+  key_info.SetKey("authenticator_transport_support",
+                  base::Value(base::Value::Type::LIST));
+  key_info
+      .FindKeyOfType("authenticator_transport_support", base::Value::Type::LIST)
+      ->GetList()
+      .push_back(base::Value("INTERNAL"));
+  unmask_details_.fido_request_options.SetKey(
+      "key_info", base::Value(base::Value::Type::LIST));
+  unmask_details_.fido_request_options
+      .FindKeyOfType("key_info", base::Value::Type::LIST)
+      ->GetList()
+      .push_back(std::move(key_info));
 }
 
 void TestPaymentsClient::SetServerIdForCardUpload(std::string server_id) {

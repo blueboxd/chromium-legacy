@@ -149,6 +149,88 @@ function testCreateAndGetTrackSettings() {
       });
 }
 
+// Tries to read, set and read back the pan capability if available.
+function testManipulatePan() {
+  var newPan = -1;
+  var imageCapturer;
+  var panTolerance;
+  navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
+      .then(stream => {
+        assertEquals('video', stream.getVideoTracks()[0].kind);
+        imageCapturer = new ImageCapture(stream.getVideoTracks()[0]);
+        // TODO(mcasas): Before accesing synchronous track APIs we need a delay,
+        // use instead a round trip of capabilities: https://crbug.com/711524.
+        return imageCapturer.getPhotoCapabilities();
+      })
+      .then(capabilities => {
+        const trackCapabilities = imageCapturer.track.getCapabilities();
+        if (trackCapabilities.pan === undefined) {
+          console.log('pan not supported, skipping test');
+          reportTestSuccess();
+          return;
+        }
+
+        const currentPan = imageCapturer.track.getSettings().pan;
+        newPan = currentPan + trackCapabilities.pan.step;
+        newPan = Math.min(newPan, trackCapabilities.pan.max);
+        console.log("Setting pan from " + currentPan + " to " + newPan);
+        panTolerance = trackCapabilities.pan.step / 10;
+
+        return imageCapturer.track.applyConstraints({advanced : [{pan : newPan}]});
+      })
+      .then(() => {
+        assertEquals(newPan,
+                     imageCapturer.track.getConstraints().advanced[0].pan);
+        assertTrue(Math.abs(newPan - imageCapturer.track.getSettings().pan)
+            < panTolerance);
+        reportTestSuccess();
+      })
+      .catch(err => {
+        return failTest(err.toString());
+      });
+}
+
+// Tries to read, set and read back the tilt capability if available.
+function testManipulateTilt() {
+  var newTilt = -1;
+  var imageCapturer;
+  var tiltTolerance;
+  navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
+      .then(stream => {
+        assertEquals('video', stream.getVideoTracks()[0].kind);
+        imageCapturer = new ImageCapture(stream.getVideoTracks()[0]);
+        // TODO(mcasas): Before accesing synchronous track APIs we need a delay,
+        // use instead a round trip of capabilities: https://crbug.com/711524.
+        return imageCapturer.getPhotoCapabilities();
+      })
+      .then(capabilities => {
+        const trackCapabilities = imageCapturer.track.getCapabilities();
+        if (trackCapabilities.tilt === undefined) {
+          console.log('tilt not supported, skipping test');
+          reportTestSuccess();
+          return;
+        }
+
+        const currentTilt = imageCapturer.track.getSettings().tilt;
+        newTilt = currentTilt + trackCapabilities.tilt.step;
+        newTilt = Math.min(newTilt, trackCapabilities.tilt.max);
+        console.log("Setting tilt from " + currentTilt + " to " + newTilt);
+        tiltTolerance = trackCapabilities.tilt.step / 10;
+
+        return imageCapturer.track.applyConstraints({advanced : [{tilt : newTilt}]});
+      })
+      .then(() => {
+        assertEquals(newTilt,
+                     imageCapturer.track.getConstraints().advanced[0].tilt);
+        assertTrue(Math.abs(newTilt - imageCapturer.track.getSettings().tilt)
+            < tiltTolerance);
+        reportTestSuccess();
+      })
+      .catch(err => {
+        return failTest(err.toString());
+      });
+}
+
 // Tries to read, set and read back the zoom capability if available.
 function testManipulateZoom() {
   var newZoom = -1;

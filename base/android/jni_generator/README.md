@@ -123,13 +123,6 @@ class NewStyle {
   /* package */ interface Natives {
     void foo();
     double bar(int a, int b);
-    // @JCaller is passed to C++ as the java "this" object, and nativeClassName
-    // as the C++ "this" object.
-    //
-    // If the C++ object does not use its Java caller in this method, you may
-    // omit the @JCaller parameter here. The C++ method still must have a caller
-    // parameter, but it will not be an instance of NewStyle.
-    //
     // Either the |ClassName| part of the |nativeClassName| parameter name must
     // match the native class name exactly, or the method annotation
     // @NativeClassQualifiedName("ClassName") must be used.
@@ -137,7 +130,7 @@ class NewStyle {
     // If the native class is nested, use
     // @NativeClassQualifiedName("FooClassName::BarClassName") and call the
     // parameter |nativePointer|.
-    void nonStatic(@JCaller NewStyle self, long nativeClassName);
+    void nonStatic(long nativeClassName, NewStyle self);
   }
 
   void callNatives() {

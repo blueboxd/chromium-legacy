@@ -85,7 +85,8 @@ void CreateChildFrameOnUI(
     int new_routing_id,
     mojo::ScopedMessagePipeHandle interface_provider_request_handle,
     mojo::ScopedMessagePipeHandle document_interface_broker_content_handle,
-    mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle) {
+    mojo::ScopedMessagePipeHandle document_interface_broker_blink_handle,
+    mojo::ScopedMessagePipeHandle browser_interface_broker_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(process_id, parent_routing_id);
@@ -100,6 +101,8 @@ void CreateChildFrameOnUI(
             std::move(document_interface_broker_content_handle)),
         blink::mojom::DocumentInterfaceBrokerRequest(
             std::move(document_interface_broker_blink_handle)),
+        mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>(
+            std::move(browser_interface_broker_handle)),
         scope, frame_name, frame_unique_name, is_created_by_script,
         devtools_frame_token, frame_policy, frame_owner_properties, owner_type);
   }
@@ -437,6 +440,13 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
   params_reply->document_interface_broker_blink_handle =
       document_interface_broker_blink.PassHandle().release();
 
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker;
+  auto browser_interface_broker_receiver =
+      browser_interface_broker.InitWithNewPipeAndPassReceiver();
+  params_reply->browser_interface_broker_handle =
+      browser_interface_broker.PassPipe().release();
+
   params_reply->devtools_frame_token = base::UnguessableToken::Create();
 
   base::PostTaskWithTraits(
@@ -449,7 +459,8 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
           params.frame_owner_element_type, params_reply->child_routing_id,
           interface_provider_request.PassMessagePipe(),
           document_interface_broker_request_content.PassMessagePipe(),
-          document_interface_broker_request_blink.PassMessagePipe()));
+          document_interface_broker_request_blink.PassMessagePipe(),
+          browser_interface_broker_receiver.PassPipe()));
 }
 
 void RenderFrameMessageFilter::OnDownloadUrl(

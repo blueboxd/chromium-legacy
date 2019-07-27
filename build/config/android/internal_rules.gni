@@ -1180,28 +1180,20 @@ if (enable_java_templates) {
           ]
         }
 
-        if (_enable_multidex && _proguarding_with_r8) {
-          if (_enable_main_dex_list) {
-            if (defined(invoker.extra_main_dex_proguard_config)) {
-              args += [
-                "--main-dex-rules-path",
-                rebase_path(invoker.extra_main_dex_proguard_config,
-                            root_build_dir),
-              ]
-              inputs += [ invoker.extra_main_dex_proguard_config ]
-            }
+        if (_proguarding_with_r8 && _enable_main_dex_list) {
+          if (defined(invoker.extra_main_dex_proguard_config)) {
             args += [
               "--main-dex-rules-path",
-              rebase_path(_main_dex_rules, root_build_dir),
-            ]
-            inputs += [ _main_dex_rules ]
-          } else {
-            args += [
-              "--main-dex-rules-path",
-              rebase_path("//build/android/arbitrary_main_dex.flags",
+              rebase_path(invoker.extra_main_dex_proguard_config,
                           root_build_dir),
             ]
+            inputs += [ invoker.extra_main_dex_proguard_config ]
           }
+          args += [
+            "--main-dex-rules-path",
+            rebase_path(_main_dex_rules, root_build_dir),
+          ]
+          inputs += [ _main_dex_rules ]
         }
 
         output_path = _proguard_output_path

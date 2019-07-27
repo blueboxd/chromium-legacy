@@ -5,6 +5,7 @@
 #include "ash/app_list/views/app_list_page.h"
 
 #include "ash/app_list/views/contents_view.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 
 namespace app_list {
 
@@ -19,6 +20,18 @@ void AppListPage::OnWillBeShown() {}
 void AppListPage::OnHidden() {}
 
 void AppListPage::OnWillBeHidden() {}
+
+void AppListPage::OnAnimationStarted(ash::AppListState from_state,
+                                     ash::AppListState to_state) {
+  gfx::Rect from_rect = GetPageBoundsForState(from_state);
+  gfx::Rect to_rect = GetPageBoundsForState(to_state);
+  if (from_rect == to_rect)
+    return;
+
+  SetBoundsRect(from_rect);
+  auto settings = contents_view()->CreateTransitionAnimationSettings(layer());
+  SetBoundsRect(to_rect);
+}
 
 void AppListPage::OnAnimationUpdated(double progress,
                                      ash::AppListState from_state,

@@ -94,7 +94,7 @@ class VIEWS_EXPORT Textfield : public View,
   }
 
   // Gets/Sets whether or not the Textfield is read-only.
-  bool read_only() const { return read_only_; }
+  bool GetReadOnly() const;
   void SetReadOnly(bool read_only);
 
   // Sets the input type; displays only asterisks for TEXT_INPUT_TYPE_PASSWORD.
@@ -107,7 +107,7 @@ class VIEWS_EXPORT Textfield : public View,
   // Gets the text for the Textfield.
   // NOTE: Call sites should take care to not reveal the text for a password
   // textfield.
-  const base::string16& text() const { return model_->text(); }
+  const base::string16& GetText() const;
 
   // Sets the text currently displayed in the Textfield.  This doesn't
   // change the cursor position if the current cursor is within the

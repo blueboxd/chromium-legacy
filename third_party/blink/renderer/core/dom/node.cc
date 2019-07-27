@@ -107,6 +107,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
@@ -342,6 +343,9 @@ Node::Node(TreeScope* tree_scope, ConstructionType type)
   TrackForDebugging();
 #endif
   InstanceCounters::IncrementCounter(InstanceCounters::kNodeCounter);
+  // Document is required for probe sink.
+  if (tree_scope_)
+    probe::NodeCreated(this);
 }
 
 Node::~Node() {

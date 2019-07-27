@@ -11,6 +11,7 @@
 #include "components/autofill/ios/form_util/form_activity_observer.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #include "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/ui/crw_web_view_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

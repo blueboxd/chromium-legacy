@@ -4,13 +4,19 @@
 
 #include "ash/wm/gestures/overview_gesture_handler.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_histogram_enums.h"
+#include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/window_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -197,6 +203,83 @@ TEST_F(OverviewGestureHandlerTest, ScrollUpDownWithoutReleasing) {
   ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, start, timestamp, 0, 0,
                               10, 0, 10, num_fingers);
   generator.Dispatch(&fling_start);
+}
+
+class DesksGestureHandlerTest : public OverviewGestureHandlerTest {
+ public:
+  DesksGestureHandlerTest() = default;
+  ~DesksGestureHandlerTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
+    OverviewGestureHandlerTest::SetUp();
+  }
+
+  void Scroll(float x_offset, float y_offset) {
+    GetEventGenerator()->ScrollSequence(gfx::Point(),
+                                        base::TimeDelta::FromMilliseconds(5),
+                                        x_offset, y_offset, 100, 4);
+  }
+
+  void ScrollToSwitchDesks(bool scroll_left) {
+    DeskSwitchAnimationWaiter waiter;
+    const float x_offset =
+        (scroll_left ? -1 : 1) * horizontal_threshold_pixels();
+    Scroll(x_offset, 0);
+    waiter.Wait();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesksGestureHandlerTest);
+};
+
+// Tests that a four-finger scroll will switch desks as expected.
+TEST_F(DesksGestureHandlerTest, HorizontalScrolls) {
+  auto* desk_controller = DesksController::Get();
+  desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desk_controller->desks().size());
+  ASSERT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
+
+  // Tests that scrolling left should take us to the next desk.
+  ScrollToSwitchDesks(/*scroll_left=*/true);
+  EXPECT_EQ(desk_controller->desks()[1].get(), desk_controller->active_desk());
+
+  // Tests that scrolling right should take us to the previous desk.
+  ScrollToSwitchDesks(/*scroll_left=*/false);
+  EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
+
+  // Tests that since there is no previous desk, we remain on the same desk when
+  // scrolling right.
+  const float long_scroll = horizontal_threshold_pixels();
+  Scroll(long_scroll, 0.f);
+  EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
+}
+
+// Tests that vertical scrolls and horizontal scrolls that are too small do not
+// switch desks.
+TEST_F(DesksGestureHandlerTest, NoDeskChanges) {
+  auto* desk_controller = DesksController::Get();
+  desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
+  ASSERT_EQ(2u, desk_controller->desks().size());
+  ASSERT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
+
+  const float short_scroll = horizontal_threshold_pixels() - 10.f;
+  const float long_scroll = horizontal_threshold_pixels();
+  // Tests that a short horizontal scroll does not switch desks.
+  Scroll(short_scroll, 0.f);
+  EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
+
+  // Tests that a scroll that meets the horizontal requirements, but is mostly
+  // vertical does not switch desks.
+  Scroll(long_scroll, long_scroll + 10.f);
+  EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
+
+  // Tests that a vertical scroll does not switch desks.
+  Scroll(0.f, vertical_threshold_pixels());
+  EXPECT_EQ(desk_controller->desks()[0].get(), desk_controller->active_desk());
 }
 
 }  // namespace ash

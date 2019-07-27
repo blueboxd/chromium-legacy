@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -85,6 +86,10 @@ class PLATFORM_EXPORT FrameTaskQueueController {
       MainThreadTaskQueue::QueueTraits);
 
   scoped_refptr<MainThreadTaskQueue> NewResourceLoadingTaskQueue();
+
+  scoped_refptr<MainThreadTaskQueue> NewWebSchedulingTaskQueue(
+      MainThreadTaskQueue::QueueTraits,
+      WebSchedulingPriority);
 
   // Get the list of all task queue and voter pairs.
   const Vector<TaskQueueAndEnabledVoterPair>& GetAllTaskQueuesAndVoters() const;

@@ -1306,7 +1306,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRunImpl");
 
   SCOPED_UMA_HISTOGRAM_LONG_TIMER("Startup.PreMainMessageLoopRunImplLongTime");
-  const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
 
   // Can't be in SetupFieldTrials() because it needs a task runner.
   blink::MemoryAblationExperiment::MaybeStart(
@@ -1525,11 +1524,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Desktop construction occurs here, (required before profile creation).
   PreProfileInit();
 
-  // Profile creation ----------------------------------------------------------
-
-  UMA_HISTOGRAM_TIMES("Startup.PreMainMessageLoopRunImplStep1Time",
-                      base::TimeTicks::Now() - start_time_step1);
-
   // This step is costly and is already measured in Startup.CreateFirstProfile
   // and more directly Profile.CreateAndInitializeProfile.
   profile_ = CreatePrimaryProfile(parameters(),
@@ -1539,7 +1533,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     return service_manager::RESULT_CODE_NORMAL_EXIT;
 
 #if !defined(OS_ANDROID)
-  const base::TimeTicks start_time_step2 = base::TimeTicks::Now();
   // The first run sentinel must be created after the process singleton was
   // grabbed and no early return paths were otherwise hit above.
   first_run::CreateSentinelIfNeeded();
@@ -1768,9 +1761,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       g_browser_process->profile_manager()->GetLastOpenedProfiles();
 #endif  // defined(OS_CHROMEOS)
 
-  UMA_HISTOGRAM_TIMES("Startup.PreMainMessageLoopRunImplStep2Time",
-                      base::TimeTicks::Now() - start_time_step2);
-
   // This step is costly and is already measured in
   // Startup.StartupBrowserCreator_Start.
   // See the comment above for an explanation of |process_command_line|.
@@ -1778,7 +1768,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       !process_command_line ||
       browser_creator_->Start(parsed_command_line(), base::FilePath(), profile_,
                               last_opened_profiles);
-  const base::TimeTicks start_time_step3 = base::TimeTicks::Now();
   if (started) {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
     // Initialize autoupdate timer. Timer callback costs basically nothing
@@ -1843,10 +1832,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif  // defined(OS_ANDROID)
 
-#if !defined(OS_ANDROID)
-  UMA_HISTOGRAM_TIMES("Startup.PreMainMessageLoopRunImplStep3Time",
-                      base::TimeTicks::Now() - start_time_step3);
-#endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS) || \
     BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)

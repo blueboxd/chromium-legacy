@@ -80,6 +80,10 @@ class ViewsTestBase : public PlatformTest {
     scoped_task_environment_ = std::move(scoped_task_environment);
   }
 
+  ScopedTaskEnvironment* scoped_task_environment() {
+    return scoped_task_environment_.get();
+  }
+
   void set_views_delegate(std::unique_ptr<TestViewsDelegate> views_delegate) {
     DCHECK(!setup_called_);
     views_delegate_for_setup_.swap(views_delegate);

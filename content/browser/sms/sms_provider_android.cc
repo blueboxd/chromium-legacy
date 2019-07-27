@@ -39,15 +39,11 @@ void SmsProviderAndroid::Retrieve() {
 
 void SmsProviderAndroid::OnReceive(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     jstring message) {
   std::string sms = ConvertJavaStringToUTF8(env, message);
   NotifyReceive(sms);
 }
 
-void SmsProviderAndroid::OnTimeout(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-}
+void SmsProviderAndroid::OnTimeout(JNIEnv* env) {}
 
 }  // namespace content

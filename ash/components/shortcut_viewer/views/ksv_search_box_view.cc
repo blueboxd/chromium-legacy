@@ -89,7 +89,7 @@ void KSVSearchBoxView::UpdateBackgroundColor(SkColor color) {
 void KSVSearchBoxView::UpdateSearchBoxBorder() {
   // TODO(wutao): Rename this function or create another function in base class.
   // It updates many things in addition to the border.
-  if (!search_box()->HasFocus() && search_box()->text().empty())
+  if (!search_box()->HasFocus() && search_box()->GetText().empty())
     SetSearchBoxActive(false, ui::ET_UNKNOWN);
 
   constexpr int kBorderThichness = 2;

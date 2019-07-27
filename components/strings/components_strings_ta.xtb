@@ -331,6 +331,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">கோப்பிற்கான அணுகல் மறுக்கப்பட்டது</translation>
 <translation id="2653659639078652383">சமர்ப்பி</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{எதுவுமில்லை}=1{ஒரு கடவுச்சொல் (டொமைன்கள்: <ph name="DOMAIN_LIST" />)}=2{2 கடவுச்சொற்கள் (டொமைன்கள்: <ph name="DOMAIN_LIST" />)}other{# கடவுச்சொற்கள் (டொமைன்கள்: <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">பிற தாவல்கள் அல்லது பயன்பாடுகளை மூடவும்</translation>
 <translation id="267371737713284912">செயல்தவிர்க்க, <ph name="MODIFIER_KEY_DESCRIPTION" />ஐ அழுத்தவும்</translation>
 <translation id="2674170444375937751">உங்கள் வரலாற்றிலிருக்கும் பக்கங்களை நிச்சயமாக நீக்க விரும்புகிறீர்களா?</translation>
@@ -657,6 +658,7 @@
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">ப்ராக்ஸி பயன்பாடு முடக்கப்பட்டுள்ளது. ஆனால் வெளிப்படையான ப்ராக்ஸி உள்ளமைவு குறிப்பிடப்பட்டுள்ளது.</translation>
 <translation id="445100540951337728">ஏற்கப்படும் டெபிட் கார்டுகள்</translation>
+<translation id="4453237654902532092"><ph name="SAFETY_TIP" /> சந்தேகிக்கும்படியான செயல்பாடு</translation>
 <translation id="4466881336512663640">படிவத்தில் செய்த மாற்றங்கள் சேமிக்கப்படாது. நிச்சயமாகத் தொடர விரும்புகிறீர்களா?</translation>
 <translation id="4477350412780666475">அடுத்த டிராக்</translation>
 <translation id="4482953324121162758">இந்தத் தளம் மொழிபெயர்க்கப்படாது.</translation>
@@ -709,6 +711,7 @@
 <translation id="4771973620359291008">அறியப்படாத பிழை ஏற்பட்டுள்ளது.</translation>
 <translation id="4780900888022378816">உங்கள் சாதனத்தை நிர்வகிப்பது: <ph name="ENROLLMENT_DOMAIN" />, கணக்கை நிர்வகிப்பது: <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">இந்தத் தாவலுக்கு மாற்றும்</translation>
+<translation id="4791134497475588553">Linux ஆப்ஸ் எப்போது நிறுவப்பட்டன, எப்போது கடைசியாகப் பயன்படுத்தப்பட்டன போன்றவற்றைப் பார்க்கலாம்</translation>
 <translation id="4798078619018708837">கார்டு விவரங்களைப் புதுப்பிக்க, <ph name="CREDIT_CARD" /> இன் காலாவதித் தேதியையும் CVC எண்ணையும் உள்ளிடவும். நீங்கள் உறுதிப்படுத்திய பின்னர், உங்கள் Google கணக்கிலிருக்கும் கார்டு விவரங்கள் இந்தத் தளத்துடன் பகிரப்படும்.</translation>
 <translation id="4800132727771399293">காலாவதியாகும் நேரத்தையும், CVCஐயும் சரிபார்த்து, மீண்டும் முயற்சிக்கவும்</translation>
 <translation id="480334179571489655">அசல் கொள்கை பிழை</translation>
@@ -719,6 +722,7 @@
 <translation id="4850886885716139402">காட்சி</translation>
 <translation id="4854362297993841467">இந்த டெலிவரி முறை இல்லை. வேறு முறையைப் பயன்படுத்திப் பார்க்கவும்.</translation>
 <translation id="4858792381671956233">இந்தத் தளத்தைப் பார்வையிடலாமா என, நீங்கள் பெற்றோரிடம் கேட்டுள்ளீர்கள்</translation>
+<translation id="4864052566555297930">பாதுகாப்புக் குறிப்பு:</translation>
 <translation id="4876188919622883022">எளிதாக்கப்பட்ட காட்சி</translation>
 <translation id="4876305945144899064">பயனர்பெயர் இல்லை</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{எதுவுமில்லை}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -819,6 +823,7 @@
 <translation id="536296301121032821">கொள்கை அமைப்புகளைச் சேமிப்பதில் தோல்வி</translation>
 <translation id="5371425731340848620">கார்டை மாற்றவும்</translation>
 <translation id="5377026284221673050">"நேரம் பின்தங்கியுள்ளது" அல்லது "நேரம் கூடுதலாக அமைக்கப்பட்டுள்ளது" அல்லது "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5377179979757081683">இந்தப் பக்கம் உங்களை ஏமாற்றவோ, தனிப்பட்ட தகவலைத் திருடவோ சாதனத்திற்குத் தீங்கிழைக்கவோ கூடும். தனிப்பட்ட தகவலை உள்ளிடும்போதோ பதிவிறக்கப்பட்ட கோப்புகளைத் திறக்கும்போதோ கவனமாக இருக்கவும்.</translation>
 <translation id="5384855140246857529">உங்கள் சாதனங்கள் அனைத்திலும் உங்கள் கார்டுகளைப் பயன்படுத்த, உள்நுழைந்து, ஒத்திசைவை இயக்கவும்.</translation>
 <translation id="5386426401304769735">இந்தச் சான்றிதழ் சங்கிலியில், SHA-1ஐப் பயன்படுத்தி கையொப்பமிடப்பட்ட சான்றிதழ் உள்ளது.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
@@ -982,6 +987,7 @@
 <translation id="6328786501058569169">இது ஏமாற்றக்கூடிய தளம்</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />க்கும் குறைவான அளவைக் காலியாக்கும். நீங்கள் அடுத்த முறை பார்வையிடும் போது, சில தளங்கள் மிகவும் மெதுவாக ஏற்றப்படலாம்.</translation>
 <translation id="6337534724793800597">பெயரின்படி கொள்கைகளை வடி</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{எதுவுமில்லை}=1{1 கடவுச்சொல் (டொமைன்கள்: <ph name="DOMAIN_LIST" />, ஒத்திசைக்கப்பட்டது)}=2{2 கடவுச்சொற்கள் (டொமைன்கள்: <ph name="DOMAIN_LIST" />, ஒத்திசைக்கப்பட்டன)}other{# கடவுச்சொற்கள் (டொமைன்கள்: <ph name="DOMAIN_LIST" />, ஒத்திசைக்கப்பட்டன)}}</translation>
 <translation id="6358450015545214790">இவற்றின் பொருள் என்ன?</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1160,6 +1166,7 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">இணைக்கப்பட்டுள்ளாரா?:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
+<translation id="7352902249897488700">வலைதளத்திலிருந்து வெளியேறு</translation>
 <translation id="7353601530677266744">கட்டளை வரி</translation>
 <translation id="7372973238305370288">தேடல் முடிவு</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1411,6 +1418,7 @@
 <translation id="8703575177326907206"><ph name="DOMAIN" /> க்கான உங்கள் இணைப்பு குறியாக்கம் செய்யப்படவில்லை.</translation>
 <translation id="8718314106902482036">பேமெண்ட் முடியவில்லை</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, தேடல் பரிந்துரை</translation>
+<translation id="8723954843026426558">விதிமுறைகள் &amp; நிபந்தனைகள், தனியுரிமைக் கொள்கை, <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> டொமைனைத் திரும்பப்பெறும் உரிமை ஆகியவற்றை ஏற்கிறேன்</translation>
 <translation id="8725066075913043281">மீண்டும் முயற்சிக்கவும்</translation>
 <translation id="8728672262656704056">மறைநிலைக்குச் சென்றுவிட்டீர்கள்</translation>
 <translation id="8730621377337864115">முடிந்தது</translation>

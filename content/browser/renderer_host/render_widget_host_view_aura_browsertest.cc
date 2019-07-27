@@ -72,6 +72,10 @@ class RenderWidgetHostViewAuraBrowserTest : public ContentBrowserTest {
         GetRenderViewHost()->GetWidget()->GetView());
   }
 
+  aura::Window* GetWindow() const {
+    return GetRenderWidgetHostView()->window();
+  }
+
   DelegatedFrameHost* GetDelegatedFrameHost() const {
     return GetRenderWidgetHostView()->delegated_frame_host_.get();
   }
@@ -100,6 +104,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
   // Hide the view and evict the frame. This should trigger a copy of the stale
   // frame content.
   GetRenderWidgetHostView()->Hide();
+  EXPECT_TRUE(GetWindow()->TargetVisibility());
   static_cast<viz::FrameEvictorClient*>(GetDelegatedFrameHost())
       ->EvictDelegatedFrame();
   EXPECT_EQ(GetDelegatedFrameHost()->frame_eviction_state_,
@@ -115,6 +120,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
   // Unhidding the view should reset the stale content layer to show the new
   // frame content.
   GetRenderWidgetHostView()->Show();
+  EXPECT_TRUE(GetWindow()->TargetVisibility());
   EXPECT_FALSE(
       GetDelegatedFrameHost()->stale_content_layer_->has_external_content());
 }
@@ -140,12 +146,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
   // Hide the view and evict the frame. This should trigger a copy of the stale
   // frame content.
   GetRenderWidgetHostView()->Hide();
+  EXPECT_TRUE(GetWindow()->TargetVisibility());
   static_cast<viz::FrameEvictorClient*>(GetDelegatedFrameHost())
       ->EvictDelegatedFrame();
   EXPECT_EQ(GetDelegatedFrameHost()->frame_eviction_state_,
             DelegatedFrameHost::FrameEvictionState::kPendingEvictionRequests);
 
   GetRenderWidgetHostView()->Show();
+  EXPECT_TRUE(GetWindow()->TargetVisibility());
   EXPECT_EQ(GetDelegatedFrameHost()->frame_eviction_state_,
             DelegatedFrameHost::FrameEvictionState::kNotStarted);
 
@@ -180,6 +188,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
   // Hide the view and evict the frame. This should not trigger a copy of the
   // stale frame content as the WebContentDelegate returns false.
   GetRenderWidgetHostView()->Hide();
+  EXPECT_TRUE(GetWindow()->TargetVisibility());
   static_cast<viz::FrameEvictorClient*>(GetDelegatedFrameHost())
       ->EvictDelegatedFrame();
 
@@ -192,6 +201,25 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
   EXPECT_FALSE(
       GetDelegatedFrameHost()->stale_content_layer_->has_external_content());
 }
+
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
+                       OcclusionDoesntAffectWindowTargetVisibility) {
+  NavigateToURL(shell(), GURL(kMinimalPageDataURL));
+  EXPECT_TRUE(GetWindow()->TargetVisibility());
+  EXPECT_TRUE(GetRenderWidgetHostView()->IsShowing());
+
+  // Hide the window's parent, the content should be occluded but the window's
+  // target visibility should remain visible.
+  GetWindow()->parent()->Hide();
+  EXPECT_TRUE(GetWindow()->TargetVisibility());
+  EXPECT_FALSE(GetRenderWidgetHostView()->IsShowing());
+
+  // Show the parent again, and expect that the contents are unoccluded again.
+  GetWindow()->parent()->Show();
+  EXPECT_TRUE(GetWindow()->TargetVisibility());
+  EXPECT_TRUE(GetRenderWidgetHostView()->IsShowing());
+}
+
 #endif  // #if defined(OS_CHROMEOS)
 
 }  // namespace content

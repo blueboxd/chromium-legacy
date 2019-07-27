@@ -19,7 +19,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/opus/src/include/opus.h"
 
 using base::TimeTicks;

@@ -71,7 +71,7 @@ void FakeBaseTabStripController::MoveTabIntoGroup(
   tab_strip_->ChangeTabGroup(index, old_group, new_group);
 }
 
-const TabGroupData* FakeBaseTabStripController::GetDataForGroup(
+const TabGroupVisualData* FakeBaseTabStripController::GetVisualDataForGroup(
     TabGroupId group) const {
   return &fake_group_data_;
 }

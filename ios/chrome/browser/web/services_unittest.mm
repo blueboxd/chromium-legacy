@@ -6,8 +6,6 @@
 #include "base/test/bind_test_util.h"
 #include "components/services/patch/public/mojom/constants.mojom.h"
 #include "components/services/patch/public/mojom/file_patcher.mojom.h"
-#include "components/services/unzip/public/mojom/constants.mojom.h"
-#include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #include "ios/web/public/service/service_manager_connection.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
@@ -42,12 +40,6 @@ class ServicesTest : public PlatformTest {
   DISALLOW_COPY_AND_ASSIGN(ServicesTest);
 };
 
-struct UnzipConfig {
-  static std::string ServiceName() { return unzip::mojom::kServiceName; }
-
-  using Interface = unzip::mojom::Unzipper;
-};
-
 struct FilePatchConfig {
   static std::string ServiceName() { return patch::mojom::kServiceName; }
 
@@ -56,7 +48,7 @@ struct FilePatchConfig {
 
 }  // namespace
 
-using ServicesTestConfig = ::testing::Types<UnzipConfig, FilePatchConfig>;
+using ServicesTestConfig = ::testing::Types<FilePatchConfig>;
 TYPED_TEST_SUITE(ServicesTest, ServicesTestConfig);
 
 // Tests that services provided by Chrome reachable from browser code.

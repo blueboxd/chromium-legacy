@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Slider ng seek bar</translation>
 <translation id="1399648040768741453">Telugu keyboard (Phonetic)</translation>
 <translation id="1430915738399379752">I-print</translation>
+<translation id="1439494416798956626">Inilipat sa <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Vietnamese keyboard (Telex)</translation>
 <translation id="1455548678241328678">Norwegian na keyboard</translation>
 <translation id="1464724975715666883">1 error.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Sina-scan ang iyong media device...</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> (na) larawan ang na-back up sa <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kinokopya...</translation>
+<translation id="3473378059788601120">Kinopya sa <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Spreadsheet ng Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> (na) error.</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Japanese input (para sa Japanese keyboard)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Bigyan ang mga Linux app ng pahintulot na baguhin ang mga file sa iyong Google Drive. Masi-sync sa iba mo pang device ang mga pagbabago.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> item</translation>
 <translation id="5982621672636444458">Mga opsyon sa pag-uuri</translation>
 <translation id="6005282720244019462">Latin American na keyboard</translation>
 <translation id="6007237601604674381">Nabigo ang paglipat. <ph name="ERROR_MESSAGE" /></translation>

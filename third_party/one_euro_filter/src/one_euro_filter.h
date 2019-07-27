@@ -1,6 +1,8 @@
 #ifndef ONE_EURO_ONE_EURO_FILTER_H_
 #define ONE_EURO_ONE_EURO_FILTER_H_
 
+#include <memory>
+
 #include "low_pass_filter.h"
 
 namespace one_euro_filter {

@@ -18,11 +18,6 @@ class CallbackWrapper {
 }
 
 function sensorMocks() {
-  // Helper function that returns resolved promise with result.
-  function sensorResponse(success) {
-    return Promise.resolve({success});
-  }
-
   // Class that mocks Sensor interface defined in sensor.mojom
   class MockSensor {
     constructor(sensorRequest, handle, offset, size, reportingMode) {
@@ -50,13 +45,13 @@ function sensorMocks() {
     }
 
     // Returns default configuration.
-    getDefaultConfiguration() {
-      return Promise.resolve({frequency: 5});
+    async getDefaultConfiguration() {
+      return { frequency: 5 };
     }
 
     // Adds configuration for the sensor and starts reporting fake data
     // through setSensorReading function.
-    addConfiguration(configuration) {
+    async addConfiguration(configuration) {
       assert_not_equals(configuration, null, "Invalid sensor configuration.");
 
       this.requestedFrequencies_.push(configuration.frequency);
@@ -70,7 +65,7 @@ function sensorMocks() {
       if (this.addConfigurationCalled_ != null)
         this.addConfigurationCalled_(this);
 
-      return sensorResponse(!this.startShouldFail_);
+      return { success: !this.startShouldFail_ };
     }
 
     // Removes sensor configuration from the list of active configurations and
@@ -134,9 +129,9 @@ function sensorMocks() {
     }
 
     // Sets fake data that is used to deliver sensor reading updates.
-    setSensorReading(readingData) {
+    async setSensorReading(readingData) {
       this.readingData_ = readingData;
-      return Promise.resolve(this);
+      return this;
     }
 
     // Sets flag that forces sensor to fail when addConfiguration is invoked.
@@ -152,28 +147,28 @@ function sensorMocks() {
 
     // Returns resolved promise if suspend() was called, rejected otherwise.
     suspendCalled() {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         this.suspendCalled_ = resolve;
       });
     }
 
     // Returns resolved promise if resume() was called, rejected otherwise.
     resumeCalled() {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         this.resumeCalled_ = resolve;
       });
     }
 
     // Resolves promise when addConfiguration() is called.
     addConfigurationCalled() {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         this.addConfigurationCalled_ = resolve;
       });
     }
 
     // Resolves promise when removeConfiguration() is called.
     removeConfigurationCalled() {
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         this.removeConfigurationCalled_ = resolve;
       });
     }
@@ -209,7 +204,6 @@ function sensorMocks() {
        assert_true(this.requestedFrequencies_.length > 0);
        return this.requestedFrequencies_[0];
     }
-
   }
 
   // Class that mocks SensorProvider interface defined in
@@ -357,7 +351,7 @@ function sensorMocks() {
         return Promise.resolve(this.activeSensors_.get(type));
       }
 
-      return new Promise((resolve, reject) => {
+      return new Promise(resolve => {
         if (!this.resolveFuncs_.has(type)) {
           this.resolveFuncs_.set(type, []);
         }

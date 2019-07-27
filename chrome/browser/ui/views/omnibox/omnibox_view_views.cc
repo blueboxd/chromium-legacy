@@ -324,7 +324,7 @@ bool OmniboxViewViews::SelectionAtBeginning() const {
 
 bool OmniboxViewViews::SelectionAtEnd() const {
   const gfx::Range sel = GetSelectedRange();
-  return sel.GetMin() == text().size();
+  return sel.GetMin() == GetText().size();
 }
 
 void OmniboxViewViews::EmphasizeURLComponents() {
@@ -382,7 +382,7 @@ void OmniboxViewViews::Update() {
 
 base::string16 OmniboxViewViews::GetText() const {
   // TODO(oshima): IME support
-  return text();
+  return Textfield::GetText();
 }
 
 void OmniboxViewViews::SetUserText(const base::string16& text,
@@ -727,7 +727,7 @@ void OmniboxViewViews::SetCaretPos(size_t caret_pos) {
 
 bool OmniboxViewViews::IsSelectAll() const {
   // TODO(oshima): IME support.
-  return !text().empty() && text() == GetSelectedText();
+  return !GetText().empty() && GetText() == GetSelectedText();
 }
 
 void OmniboxViewViews::UpdatePopup() {
@@ -762,7 +762,7 @@ void OmniboxViewViews::OnTemporaryTextMaybeChanged(
 bool OmniboxViewViews::OnInlineAutocompleteTextMaybeChanged(
     const base::string16& display_text,
     size_t user_text_length) {
-  if (display_text == text())
+  if (display_text == GetText())
     return false;
 
   if (!IsIMEComposing()) {
@@ -958,7 +958,7 @@ void OmniboxViewViews::HideImeIfNeeded() {
 
 int OmniboxViewViews::GetOmniboxTextLength() const {
   // TODO(oshima): Support IME.
-  return static_cast<int>(text().length());
+  return static_cast<int>(GetText().length());
 }
 
 void OmniboxViewViews::SetEmphasis(bool emphasize, const gfx::Range& range) {
@@ -1222,7 +1222,7 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 bool OmniboxViewViews::HandleAccessibleAction(
     const ui::AXActionData& action_data) {
-  if (read_only())
+  if (GetReadOnly())
     return Textfield::HandleAccessibleAction(action_data);
 
   if (action_data.action == ax::mojom::Action::kSetValue) {
@@ -1318,9 +1318,9 @@ void OmniboxViewViews::OnBlur() {
   if (GetWidget() && GetWidget()->IsActive() && popup_closes_on_blur &&
       !model()->is_keyword_selected() &&
       ((!model()->user_input_in_progress() &&
-        text() != model()->GetPermanentDisplayText()) ||
+        GetText() != model()->GetPermanentDisplayText()) ||
        (model()->user_input_in_progress() &&
-        text() == model()->GetPermanentDisplayText()))) {
+        GetText() == model()->GetPermanentDisplayText()))) {
     RevertAll();
   }
 
@@ -1334,7 +1334,8 @@ void OmniboxViewViews::OnBlur() {
   // If we fully reverted in this case, we'd lose the cursor/highlight
   // information saved above.
   if (!model()->user_input_in_progress() && popup_model &&
-      popup_model->IsOpen() && text() != model()->GetPermanentDisplayText()) {
+      popup_model->IsOpen() &&
+      GetText() != model()->GetPermanentDisplayText()) {
     RevertAll();
   } else if (popup_closes_on_blur) {
     CloseOmniboxPopup();
@@ -1380,9 +1381,9 @@ void OmniboxViewViews::OnBlur() {
 
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   if (command_id == IDS_APP_PASTE)
-    return !read_only() && !GetClipboardText().empty();
+    return !GetReadOnly() && !GetClipboardText().empty();
   if (command_id == IDC_PASTE_AND_GO)
-    return !read_only() && model()->CanPasteAndGo(GetClipboardText());
+    return !GetReadOnly() && model()->CanPasteAndGo(GetClipboardText());
 
   // Menu item is only shown when it is valid.
   if (command_id == IDS_SHOW_URL)
@@ -1420,9 +1421,9 @@ bool OmniboxViewViews::IsTextEditCommandEnabled(
   switch (command) {
     case ui::TextEditCommand::MOVE_UP:
     case ui::TextEditCommand::MOVE_DOWN:
-      return !read_only();
+      return !GetReadOnly();
     case ui::TextEditCommand::PASTE:
-      return !read_only() && !GetClipboardText().empty();
+      return !GetReadOnly() && !GetClipboardText().empty();
     default:
       return Textfield::IsTextEditCommandEnabled(command);
   }
@@ -1568,14 +1569,14 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_PRIOR:
-      if (control || alt || shift || read_only())
+      if (control || alt || shift || GetReadOnly())
         return false;
       model()->OnUpOrDownKeyPressed(
           -static_cast<int>(model()->popup_model()->selected_line()));
       return true;
 
     case ui::VKEY_NEXT:
-      if (control || alt || shift || read_only())
+      if (control || alt || shift || GetReadOnly())
         return false;
       model()->OnUpOrDownKeyPressed(model()->result().size() -
                                     model()->popup_model()->selected_line() -
@@ -1807,8 +1808,9 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox)) {
     // If the user has not started editing the text, and we are not showing the
     // full URL, then provide a way to unelide via the context menu.
-    if (!read_only() && !model()->user_input_in_progress() &&
-        text() != controller()->GetLocationBarModel()->GetFormattedFullURL()) {
+    if (!GetReadOnly() && !model()->user_input_in_progress() &&
+        GetText() !=
+            controller()->GetLocationBarModel()->GetFormattedFullURL()) {
       menu_contents->AddItemWithStringId(IDS_SHOW_URL, IDS_SHOW_URL);
     }
   }

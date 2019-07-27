@@ -90,6 +90,7 @@
 
 Подальші вказівки надійдуть на електронну адресу <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Вхід у Chrome</translation>
+<translation id="3340978935015468852">налаштування</translation>
 <translation id="3360895254066713204">Помічник Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome перезапуститься зараз}=1{Chrome перезапуститься через 1 секунду}one{Chrome перезапуститься через # секунду}few{Chrome перезапуститься через # секунди}many{Chrome перезапуститься через # секунд}other{Chrome перезапуститься через # секунди}}</translation>
 <translation id="3395323229510056640">Отримати довідку щодо ОС Chrome</translation>
@@ -97,7 +98,6 @@
 <translation id="3398288718845740432">Сховати в меню Chrome</translation>
 <translation id="3451115285585441894">Додавання в Chrome...</translation>
 <translation id="345171907106878721">Додати себе в Chrome</translation>
-<translation id="3479552764303398839">Не зараз</translation>
 <translation id="34857402635545079">Також очистити дані Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome потрібен доступ до геоданих, щоб повідомляти цьому сайту ваше місцезнаходження</translation>
 <translation id="3576528680708590453">Ваш системний адміністратор налаштував Chrome відкривати сторінку <ph name="TARGET_URL_HOSTNAME" /> в альтернативному веб-переглядачі.</translation>
@@ -112,7 +112,6 @@
 <translation id="386202838227397562">Закрийте всі вікна Google Chrome і повторіть спробу.</translation>
 <translation id="3873044882194371212">Відкрити посилання в аноні&amp;мному вікні Chrome</translation>
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
-<translation id="3898493977366060150">Перегляд веб-сторінок із розумними функціями Google</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="4053720452172726777">Налаштування та керування Google Chrome</translation>
 <translation id="4143243756087420366">Ім’я та зображення профілю Chrome</translation>
@@ -196,7 +195,6 @@
 <translation id="6750954913813541382">Щоб виправляти орфографічні помилки, Chrome надсилає в Google текст, який ви вводите у веб-переглядачі</translation>
 <translation id="677276454032249905">Усе одно вийти з Chrome?</translation>
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
-<translation id="686561893457936865">Використовуйте Chrome на всіх пристроях</translation>
 <translation id="6885412569789873916">Бета-версія додатків Chrome</translation>
 <translation id="6943584222992551122">Дані веб-перегляду користувача буде видалено з цього пристрою. Щоб відновити їх, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Вхідне правило для бета-версії Google Chrome дозволяє трафік mDNS.</translation>

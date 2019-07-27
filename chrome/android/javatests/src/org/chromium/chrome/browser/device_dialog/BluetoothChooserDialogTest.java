@@ -65,53 +65,57 @@ public class BluetoothChooserDialogTest {
     private int mRestartSearchCount;
 
     private class TestBluetoothChooserDialogJni implements BluetoothChooserDialog.Natives {
+        private BluetoothChooserDialog mBluetoothChooserDialog;
+
+        TestBluetoothChooserDialogJni(BluetoothChooserDialog dialog) {
+            mBluetoothChooserDialog = dialog;
+        }
+
         @Override
-        public void onDialogFinished(BluetoothChooserDialog self,
+        public void onDialogFinished(
                 long nativeBluetoothChooserAndroid, int eventType, String deviceId) {
-            Assert.assertEquals(
-                    nativeBluetoothChooserAndroid, self.mNativeBluetoothChooserDialogPtr);
+            Assert.assertEquals(nativeBluetoothChooserAndroid,
+                    mBluetoothChooserDialog.mNativeBluetoothChooserDialogPtr);
             Assert.assertEquals(mFinishedEventType, -1);
             mFinishedEventType = eventType;
             mFinishedDeviceId = deviceId;
             // The native code calls closeDialog() when OnDialogFinished is called.
-            self.closeDialog();
+            mBluetoothChooserDialog.closeDialog();
         }
 
         @Override
-        public void restartSearch(BluetoothChooserDialog self, long nativeBluetoothChooserAndroid) {
-            Assert.assertTrue(self.mNativeBluetoothChooserDialogPtr != 0);
+        public void restartSearch(long nativeBluetoothChooserAndroid) {
+            Assert.assertTrue(mBluetoothChooserDialog.mNativeBluetoothChooserDialogPtr != 0);
             mRestartSearchCount++;
         }
 
         @Override
-        public void showBluetoothOverviewLink(
-                BluetoothChooserDialog self, long nativeBluetoothChooserAndroid) {
+        public void showBluetoothOverviewLink(long nativeBluetoothChooserAndroid) {
             // We shouldn't be running native functions if the native class has been destroyed.
-            Assert.assertTrue(self.mNativeBluetoothChooserDialogPtr != 0);
+            Assert.assertTrue(mBluetoothChooserDialog.mNativeBluetoothChooserDialogPtr != 0);
         }
 
         @Override
-        public void showBluetoothAdapterOffLink(
-                BluetoothChooserDialog self, long nativeBluetoothChooserAndroid) {
+        public void showBluetoothAdapterOffLink(long nativeBluetoothChooserAndroid) {
             // We shouldn't be running native functions if the native class has been destroyed.
-            Assert.assertTrue(self.mNativeBluetoothChooserDialogPtr != 0);
+            Assert.assertTrue(mBluetoothChooserDialog.mNativeBluetoothChooserDialogPtr != 0);
         }
 
         @Override
-        public void showNeedLocationPermissionLink(
-                BluetoothChooserDialog self, long nativeBluetoothChooserAndroid) {
+        public void showNeedLocationPermissionLink(long nativeBluetoothChooserAndroid) {
             // We shouldn't be running native functions if the native class has been destroyed.
-            Assert.assertTrue(self.mNativeBluetoothChooserDialogPtr != 0);
+            Assert.assertTrue(mBluetoothChooserDialog.mNativeBluetoothChooserDialogPtr != 0);
         }
     }
 
     @Before
     public void setUp() throws Exception {
-        mocker.mock(BluetoothChooserDialogJni.TEST_HOOKS, new TestBluetoothChooserDialogJni());
         mActivityTestRule.startMainActivityOnBlankPage();
         mLocationUtils = new FakeLocationUtils();
         LocationUtils.setFactory(() -> mLocationUtils);
         mChooserDialog = createDialog();
+        mocker.mock(BluetoothChooserDialogJni.TEST_HOOKS,
+                new TestBluetoothChooserDialogJni(mChooserDialog));
     }
 
     @After

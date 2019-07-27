@@ -5,7 +5,7 @@
 #import "ios/web/common/web_view_creation_util.h"
 
 #include "base/logging.h"
-#include "ios/web/public/user_agent.h"
+#include "ios/web/common/user_agent.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 

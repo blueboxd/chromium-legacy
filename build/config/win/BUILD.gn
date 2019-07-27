@@ -82,19 +82,19 @@ config("compiler") {
   ]
 
   if (msvc_use_absolute_paths) {
-    # Pass /FC flag to the compiler if needed.
-    cflags += [ "/FC" ]
-
-    # Print absolute paths in diagnostics. There is no precedent for doing this
-    # on Linux/Mac (GCC doesn't support it), but MSVC does this with /FC and
-    # Windows developers rely on it (crbug.com/636109) so only do this on
-    # Windows.
+    # MSVC used to require absolute paths in its diagnostics to be able to
+    # click them. cl.exe only has "/FC" for this, which also affects __FILE__
+    # and other things, which is bad for build determinism.
+    # clang-cl has a more targeted flag (and silently ignores /FC because it's
+    # bad for build determinism), so use the better flag there.
     # TODO(thakis): This comment no longer really make sense after
     # https://chromium-review.googlesource.com/c/chromium/src/+/558871/
     # See if we can remove msvc_use_absolute_paths. See also discussion in
     # https://reviews.llvm.org/D23816
     if (is_clang) {
       cflags += [ "-fdiagnostics-absolute-paths" ]
+    } else {
+      cflags += [ "/FC" ]
     }
   }
 

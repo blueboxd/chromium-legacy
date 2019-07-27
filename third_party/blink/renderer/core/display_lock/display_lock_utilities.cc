@@ -201,6 +201,27 @@ Element* DisplayLockUtilities::HighestLockedExclusiveAncestor(
   return nullptr;
 }
 
+Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(
+    const LayoutObject& object) {
+  auto* node = object.GetNode();
+  auto* ancestor = object.Parent();
+  while (ancestor && !node) {
+    node = ancestor->GetNode();
+    ancestor = ancestor->Parent();
+  }
+  return node ? NearestLockedInclusiveAncestor(*node) : nullptr;
+}
+
+Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
+    const LayoutObject& object) {
+  if (auto* node = object.GetNode())
+    return NearestLockedExclusiveAncestor(*node);
+  // Since we now navigate to an ancestor, use the inclusive version.
+  if (auto* parent = object.Parent())
+    return NearestLockedInclusiveAncestor(*parent);
+  return nullptr;
+}
+
 bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(
     const Node& source_node) {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled())

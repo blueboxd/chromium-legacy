@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/time/time.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -38,6 +39,13 @@ class MEDIA_EXPORT BitstreamBuffer {
   // |media::kNoTimestamp|.
   BitstreamBuffer(int32_t id,
                   base::subtle::PlatformSharedMemoryRegion region,
+                  size_t size,
+                  off_t offset = 0,
+                  base::TimeDelta presentation_timestamp = kNoTimestamp);
+
+  // As above, creating by unwrapping a base::UnsafeSharedMemoryRegion.
+  BitstreamBuffer(int32_t id,
+                  base::UnsafeSharedMemoryRegion region,
                   size_t size,
                   off_t offset = 0,
                   base::TimeDelta presentation_timestamp = kNoTimestamp);

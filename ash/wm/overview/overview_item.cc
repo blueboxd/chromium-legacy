@@ -648,8 +648,7 @@ void OverviewItem::OnDragAnimationCompleted() {
 }
 
 void OverviewItem::UpdatePhantomsForDragging(
-    const gfx::PointF& location_in_screen,
-    bool allow_original_window_opacity_change) {
+    const gfx::PointF& location_in_screen) {
   DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   DCHECK_GT(Shell::GetAllRootWindows().size(), 1u);
 
@@ -663,10 +662,8 @@ void OverviewItem::UpdatePhantomsForDragging(
   }
 
   const gfx::Point location = gfx::ToRoundedPoint(location_in_screen);
-  if (allow_original_window_opacity_change) {
     window->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
         root_window_, window, location));
-  }
   phantoms_for_dragging_->Update(location);
 }
 

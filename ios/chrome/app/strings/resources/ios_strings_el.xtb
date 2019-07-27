@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">Επιλογές για την αποθήκευση κωδικού πρόσβασης</translation>
 <translation id="2523363575747517183">Αυτός ο ιστότοπος προσπαθεί επανειλημμένως να ανοίξει κάποια άλλη εφαρμογή.</translation>
 <translation id="2529021024822217800">Άνοιγμα όλων</translation>
+<translation id="2562041823070056534">Αποστολή σε <ph name="DEVICE_NAME" />…</translation>
 <translation id="2570206273416014374">Αποστέλλει ορισμένα cookie και αναζητήσεις από τη γραμμή διευθύνσεων και το πλαίσιο αναζήτησης στην προεπιλεγμένη μηχανή αναζήτησης.</translation>
 <translation id="2572712655377361602">Μια πολιτική συσκευής απέκλεισε την πρόσβαση στις φωτογραφίες σας</translation>
 <translation id="2578571896248130439">Αποστολή ιστοσελίδας</translation>
@@ -314,6 +315,7 @@
 <translation id="5556459405103347317">Επαναφόρτωση</translation>
 <translation id="5614553682702429503">Αποθήκευση κωδικού πρόσβασης;</translation>
 <translation id="5626245204502895507">Δεν ήταν δυνατή η λήψη του αρχείου αυτή τη φορά.</translation>
+<translation id="5631164295104953411">Προσθήκη τρόπου πληρωμής</translation>
 <translation id="5659593005791499971">Διεύθυνση ηλεκτρονικού ταχυδρομείου</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Έκδοση <ph name="PRODUCT_VERSION" /></translation>
@@ -466,6 +468,7 @@
 <translation id="7772032839648071052">Επιβεβαίωση φράσης πρόσβασης</translation>
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="778855399387580014">Ξεκινήστε μια αναζήτηση σε μια νέα καρτέλα Chrome.</translation>
+<translation id="7791543448312431591">Προσθήκη</translation>
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
 <translation id="7840771868269352570">Τα στοιχεία που επιλέξατε θα καταργηθούν.</translation>
 <translation id="7856733331829174190">Δεν ήταν δυνατή η λήψη</translation>
@@ -533,7 +536,6 @@
 <translation id="8976382372951310360">Βοήθεια</translation>
 <translation id="8981454092730389528">Στοιχεία ελέγχου δραστηριότητας Google</translation>
 <translation id="8985320356172329008">Έχετε συνδεθεί στο Google ως</translation>
-<translation id="9016406938567631235">Αποστολή…</translation>
 <translation id="902659348151742535">Η Google μπορεί να χρησιμοποιεί το ιστορικό περιήγησής σας για την εξατομίκευση της Αναζήτησης, των διαφημίσεων και άλλων υπηρεσιών Google.</translation>
 <translation id="9034759925968272072">Δεν θα αποσυνδεθείτε από το Λογαριασμό σας Google. Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Εύρος ζώνης</translation>

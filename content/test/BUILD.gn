@@ -1892,7 +1892,9 @@ test("content_unittests") {
     # TODO(jam): move these network/ tests to services/network.
     "../public/common/drop_data_unittest.cc",
     "../public/common/url_utils_unittest.cc",
+    "../public/test/devtools_permission_overrides_unittest.cc",
     "../public/test/no_renderer_crashes_assertion_unittest.cc",
+    "../public/test/permission_type_unittest.cc",
     "../public/test/referrer_unittest.cc",
     "../public/test/test_browser_thread_bundle_unittest.cc",
     "../renderer/categorized_worker_pool_unittest.cc",

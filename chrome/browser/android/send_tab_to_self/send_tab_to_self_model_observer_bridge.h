@@ -24,7 +24,7 @@ class SendTabToSelfModelObserverBridge : public SendTabToSelfModelObserver {
       const base::android::JavaRef<jobject>& obj,
       const base::android::JavaRef<jobject>& j_profile);
 
-  void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
+  void Destroy(JNIEnv*);
 
   // SendTabToSelfModelObserver implementation.
   void SendTabToSelfModelLoaded() override;

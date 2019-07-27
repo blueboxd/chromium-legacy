@@ -9,7 +9,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 
@@ -29,8 +29,8 @@ public class UsageAndCrashReportsPreferenceFragment extends PreferenceFragmentCo
     }
 
     private void initUsageAndCrashReportsSwitch() {
-        ChromeSwitchPreferenceCompat usageAndCrashReportsSwitch =
-                (ChromeSwitchPreferenceCompat) findPreference(PREF_USAGE_AND_CRASH_REPORTS_SWITCH);
+        ChromeSwitchPreference usageAndCrashReportsSwitch =
+                (ChromeSwitchPreference) findPreference(PREF_USAGE_AND_CRASH_REPORTS_SWITCH);
         boolean enabled =
                 PrivacyPreferencesManager.getInstance().isUsageAndCrashReportingPermittedByUser();
         usageAndCrashReportsSwitch.setChecked(enabled);

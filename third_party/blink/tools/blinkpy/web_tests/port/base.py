@@ -1318,9 +1318,10 @@ class Port(object):
         # updated to know about the ordered dict.
         expectations = collections.OrderedDict()
 
-        for path in self.expectations_files():
-            if self._filesystem.exists(path):
-                expectations[path] = self._filesystem.read_text_file(path)
+        if not self.get_option('ignore_default_expectations', False):
+            for path in self.expectations_files():
+                if self._filesystem.exists(path):
+                    expectations[path] = self._filesystem.read_text_file(path)
 
         for path in self.get_option('additional_expectations', []):
             expanded_path = self._filesystem.expanduser(path)

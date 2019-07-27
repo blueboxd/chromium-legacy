@@ -93,7 +93,7 @@ bool WaitForMemoryPressureChanges(int available_fd) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
 
-  pollfd pfd = {available_fd, POLLPRI | POLLERR | POLLIN, 0};
+  pollfd pfd = {available_fd, POLLPRI | POLLERR, 0};
   int res = HANDLE_EINTR(poll(&pfd, 1, -1));  // Wait indefinitely.
   PCHECK(res != -1);
 
@@ -292,7 +292,9 @@ void MemoryPressureMonitor::ScheduleEarlyCheck() {
 
 void MemoryPressureMonitor::ScheduleWaitForKernelNotification() {
   base::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()}, kernel_waiting_callback_,
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      kernel_waiting_callback_,
       base::BindRepeating(&MemoryPressureMonitor::HandleKernelNotification,
                           weak_ptr_factory_.GetWeakPtr()));
 }

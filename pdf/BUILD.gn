@@ -50,6 +50,8 @@ if (enable_pdf) {
       "accessibility.cc",
       "accessibility.h",
       "chunk_stream.h",
+      "document_layout.cc",
+      "document_layout.h",
       "document_loader.h",
       "document_loader_impl.cc",
       "document_loader_impl.h",
@@ -151,6 +153,7 @@ if (enable_pdf) {
     configs += [ ":pdf_common_config" ]
     sources = [
       "chunk_stream_unittest.cc",
+      "document_layout_unittest.cc",
       "document_loader_impl_unittest.cc",
       "draw_utils/coordinates_unittest.cc",
       "out_of_process_instance_unittest.cc",

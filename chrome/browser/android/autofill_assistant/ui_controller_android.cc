@@ -538,7 +538,7 @@ void UiControllerAndroid::OnCancelButtonClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jint index) {
-  CloseOrCancel(index);
+  CloseOrCancel(index, TriggerContext::CreateEmpty());
 }
 
 void UiControllerAndroid::OnCloseButtonClicked(
@@ -547,7 +547,9 @@ void UiControllerAndroid::OnCloseButtonClicked(
   DestroySelf();
 }
 
-void UiControllerAndroid::CloseOrCancel(int action_index) {
+void UiControllerAndroid::CloseOrCancel(
+    int action_index,
+    std::unique_ptr<TriggerContext> trigger_context) {
   // Close immediately.
   if (!ui_delegate_ ||
       ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
@@ -560,19 +562,24 @@ void UiControllerAndroid::CloseOrCancel(int action_index) {
   if (action_index >= 0 &&
       static_cast<size_t>(action_index) < user_actions.size() &&
       user_actions[action_index].chip().type == CLOSE_ACTION &&
-      ui_delegate_->PerformUserAction(action_index)) {
+      ui_delegate_->PerformUserActionWithContext(action_index,
+                                                 std::move(trigger_context))) {
     return;
   }
 
   // Cancel, with a snackbar to allow UNDO.
   ShowSnackbar(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
                base::BindOnce(&UiControllerAndroid::OnCancel,
-                              weak_ptr_factory_.GetWeakPtr(), action_index));
+                              weak_ptr_factory_.GetWeakPtr(), action_index,
+                              std::move(trigger_context)));
 }
 
-void UiControllerAndroid::OnCancel(int action_index) {
+void UiControllerAndroid::OnCancel(
+    int action_index,
+    std::unique_ptr<TriggerContext> trigger_context) {
   if (action_index == -1 || !ui_delegate_ ||
-      !ui_delegate_->PerformUserAction(action_index)) {
+      !ui_delegate_->PerformUserActionWithContext(action_index,
+                                                  std::move(trigger_context))) {
     Shutdown(Metrics::DropOutReason::SHEET_CLOSED);
   }
 }

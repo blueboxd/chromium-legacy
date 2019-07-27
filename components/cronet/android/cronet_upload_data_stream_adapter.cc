@@ -98,8 +98,7 @@ void CronetUploadDataStreamAdapter::OnRewindSucceeded(
                                 upload_data_stream_));
 }
 
-void CronetUploadDataStreamAdapter::Destroy(JNIEnv* env,
-                                            const JavaParamRef<jobject>& jobj) {
+void CronetUploadDataStreamAdapter::Destroy(JNIEnv* env) {
   delete this;
 }
 

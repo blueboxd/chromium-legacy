@@ -236,18 +236,6 @@ Polymer({
   },
 
   /**
-   * Returns true in case Android apps settings needs to be created. It is not
-   * created in case ARC++ is not allowed for the current profile.
-   * @return {boolean}
-   * @private
-   */
-  shouldCreateAndroidAppsSection_: function() {
-    const visibility = /** @type {boolean|undefined} */ (
-        this.get('pageVisibility.androidApps'));
-    return this.showAndroidApps && this.showPage_(visibility);
-  },
-
-  /**
    * Returns true in case Android apps settings should be shown. It is not
    * shown in case we don't have the Play Store app and settings app is not
    * yet available.

@@ -8,7 +8,8 @@
  */
 class DisplayPanel extends HTMLElement {
   constructor() {
-    DisplayPanel.createElement_.call(super());
+    super();
+    this.createElement_();
 
     /** @private {?Element} */
     this.summary_ = this.shadowRoot.querySelector('#summary');
@@ -48,7 +49,7 @@ class DisplayPanel extends HTMLElement {
    * Creates an instance of DisplayPanel, attaching the template clone.
    * @private
    */
-  static createElement_() {
+  createElement_() {
     const template = document.createElement('template');
     template.innerHTML = DisplayPanel.html_();
     const fragment = template.content.cloneNode(true);

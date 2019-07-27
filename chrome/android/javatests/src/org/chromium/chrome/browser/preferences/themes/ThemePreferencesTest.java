@@ -41,7 +41,7 @@ public class ThemePreferencesTest extends DummyUiActivityTestCase {
         ChromePreferenceManager.getInstance().removeKey(UI_THEME_SETTING_KEY);
         Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), ThemePreferences.class.getName());
-        mFragment = (ThemePreferences) preferences.getMainFragmentCompat();
+        mFragment = (ThemePreferences) preferences.getMainFragment();
         mPreference = (RadioButtonGroupThemePreference) mFragment.findPreference(
                 ThemePreferences.PREF_UI_THEME_PREF);
     }

@@ -24,7 +24,6 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_ANDROID)
@@ -213,9 +212,10 @@ bool SetActiveProfileToGuestIfLocked() {
 #endif  // !defined(OS_CHROMEOS)
 
 void RemoveBrowsingDataForProfile(const base::FilePath& profile_path) {
-  // The BrowsingDataRemover relies on the ResourceDispatcherHost, which is
-  // null in unit tests.
-  if (!content::ResourceDispatcherHost::Get())
+  // The BrowsingDataRemover relies on many objects that aren't created in unit
+  // tests. Previously this code would depend on content::ResourceDispatcherHost
+  // but that's gone, so do a similar hack for now.
+  if (!g_browser_process->safe_browsing_service())
     return;
 
   Profile* profile = g_browser_process->profile_manager()->GetProfileByPath(

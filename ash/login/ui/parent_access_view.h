@@ -136,6 +136,10 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   // empty, the code is processed for all the children signed in the device.
   const AccountId account_id_;
 
+  // Indicates what action will be authorized with parent access code.
+  // The appearance of the view depends on |request_reason_|.
+  const ParentAccessRequestReason request_reason_;
+
   State state_ = State::kNormal;
 
   views::Label* title_label_ = nullptr;

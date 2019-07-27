@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/track_audio_renderer.h"
+#include "third_party/blink/renderer/modules/mediastream/track_audio_renderer.h"
 
 #include <utility>
 
@@ -137,7 +137,7 @@ void TrackAudioRenderer::OnSetFormat(const media::AudioParameters& params) {
 TrackAudioRenderer::TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
                                        WebLocalFrame* playout_web_frame,
                                        const base::UnguessableToken& session_id,
-                                       const std::string& device_id)
+                                       const String& device_id)
     : audio_track_(audio_track),
       internal_playout_frame_(
           std::make_unique<MediaStreamInternalFrameWrapper>(playout_web_frame)),
@@ -171,7 +171,8 @@ void TrackAudioRenderer::Start() {
   DCHECK(!sink_);
   sink_ = Platform::Current()->NewAudioRendererSink(
       WebAudioDeviceSourceType::kNonRtcAudioTrack,
-      internal_playout_frame_->web_frame(), {session_id_, output_device_id_});
+      internal_playout_frame_->web_frame(),
+      {session_id_, output_device_id_.Utf8()});
 
   base::AutoLock auto_lock(thread_lock_);
   prior_elapsed_render_time_ = base::TimeDelta();
@@ -281,7 +282,7 @@ void TrackAudioRenderer::SwitchOutputDevice(
     return;
   }
 
-  output_device_id_ = device_id;
+  output_device_id_ = String(device_id.data(), device_id.size());
   bool was_sink_started = sink_started_;
 
   if (sink_)
@@ -368,7 +369,8 @@ void TrackAudioRenderer::ReconfigureSink(const media::AudioParameters& params) {
   sink_started_ = false;
   sink_ = Platform::Current()->NewAudioRendererSink(
       WebAudioDeviceSourceType::kNonRtcAudioTrack,
-      internal_playout_frame_->web_frame(), {session_id_, output_device_id_});
+      internal_playout_frame_->web_frame(),
+      {session_id_, output_device_id_.Utf8()});
   MaybeStartSink();
 }
 

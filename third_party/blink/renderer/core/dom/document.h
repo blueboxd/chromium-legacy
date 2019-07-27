@@ -1398,6 +1398,9 @@ class CORE_EXPORT Document : public ContainerNode,
   service_manager::InterfaceProvider* GetInterfaceProvider() final;
   mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker() final;
 
+  const BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
+      const final;
+
   // May return nullptr when PerformanceManager instrumentation is disabled.
   DocumentResourceCoordinator* GetResourceCoordinator();
 

@@ -11,7 +11,7 @@
 const DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
 
 /**
- * @typedef {{file:File, externalFileUrl:string}}
+ * @typedef {{file:?File, externalFileUrl:string}}
  */
 let FileAsyncData;
 
@@ -271,7 +271,7 @@ class FileTransferController {
   /**
    * Write the current selection to system clipboard.
    *
-   * @param {!ClipboardData} clipboardData ClipboardData from the event.
+   * @param {DataTransfer} clipboardData DataTransfer from the event.
    * @param {string} effectAllowed Value must be valid for the
    *     |clipboardData.effectAllowed| property.
    * @private
@@ -299,7 +299,7 @@ class FileTransferController {
 
   /**
    * Appends copy or cut information of |entries| to |clipboardData|.
-   * @param {!ClipboardData} clipboardData ClipboardData from the event.
+   * @param {DataTransfer} clipboardData DataTransfer from the event.
    * @param {string} effectAllowed Value must be valid for the
    *     |clipboardData.effectAllowed| property.
    * @param {!VolumeInfo} sourceVolumeInfo
@@ -327,7 +327,7 @@ class FileTransferController {
 
   /**
    * Appends uri-list of |entries| to |clipboardData|.
-   * @param {!ClipboardData} clipboardData ClipboardData from the event.
+   * @param {DataTransfer} clipboardData ClipboardData from the event.
    * @param {!Array<!Entry>} entries
    * @private
    */
@@ -340,7 +340,7 @@ class FileTransferController {
         continue;
       }
       if (this.selectedAsyncData_[url].file) {
-        clipboardData.items.add(this.selectedAsyncData_[url].file);
+        clipboardData.items.add(assert(this.selectedAsyncData_[url].file));
       }
       if (!externalFileUrl) {
         externalFileUrl = this.selectedAsyncData_[url].externalFileUrl;
@@ -375,7 +375,7 @@ class FileTransferController {
    * Extracts source root URL from the |clipboardData| or |dragAndDropData|
    * object.
    *
-   * @param {!ClipboardData} clipboardData DataTransfer object from the event.
+   * @param {!DataTransfer} clipboardData DataTransfer object from the event.
    * @param {Object<string>} dragAndDropData The drag and drop data from
    *     getDragAndDropGlobalData_().
    * @return {string} URL or an empty string (if unknown).
@@ -397,7 +397,7 @@ class FileTransferController {
   }
 
   /**
-   * @param {!ClipboardData} clipboardData DataTransfer object from the event.
+   * @param {!DataTransfer} clipboardData DataTransfer object from the event.
    * @return {boolean} Returns true when missing some file contents.
    * @private
    */
@@ -528,7 +528,7 @@ class FileTransferController {
    * Queue up a file copy operation based on the current system clipboard and
    * drag-and-drop global object.
    *
-   * @param {!ClipboardData} clipboardData System data transfer object.
+   * @param {!DataTransfer} clipboardData System data transfer object.
    * @param {DirectoryEntry=} opt_destinationEntry Paste destination.
    * @param {string=} opt_effect Desired drop/paste effect. Could be
    *     'move'|'copy' (default is copy). Ignored if conflicts with
@@ -772,12 +772,13 @@ class FileTransferController {
   /**
    * Renders a drag-and-drop thumbnail.
    *
-   * @return {!Element} Element containing the thumbnail.
+   * @return {!HTMLElement} Element containing the thumbnail.
    * @private
    */
   renderThumbnail_() {
     const length = this.selectionHandler_.selection.entries.length;
-    const container = this.document_.querySelector('#drag-container');
+    const container = /** @type {HTMLElement} */ (
+        this.document_.querySelector('#drag-container'));
     const contents = this.document_.createElement('div');
     contents.className = 'drag-contents';
     container.appendChild(contents);
@@ -884,7 +885,7 @@ class FileTransferController {
       return;
     }
 
-    const dt = event.dataTransfer;
+    const dt = /** @type {DragEvent} */ (event).dataTransfer;
     const canCopy = this.canCopyOrDrag();
     const canCut = this.canCutOrDrag();
     if (canCopy || canCut) {
@@ -1067,7 +1068,7 @@ class FileTransferController {
    * Sets the drop target.
    *
    * @param {Element} domElement Target of the drop.
-   * @param {!ClipboardData} clipboardData Data transfer object.
+   * @param {!DataTransfer} clipboardData Data transfer object.
    * @param {!DirectoryEntry|!FakeEntry} destinationEntry Destination entry.
    * @private
    */
@@ -1142,6 +1143,19 @@ class FileTransferController {
   }
 
   /**
+   * addEventListener only accepts callback that receives base class Event,
+   * this forces clipboard event handlers to cast event to ClipboardEvent to
+   * be able to use |clipboard| member.
+   * @param {Event} event
+   * @return {!DataTransfer}
+   * @private
+   */
+  getClipboardData_(event) {
+    const clipboardEvent = /** @type {ClipboardEvent} */ (event);
+    return assert(clipboardEvent.clipboardData);
+  }
+
+  /**
    * @return {boolean} Returns false if {@code <input type="text"> or
    *     <cr-input>} element is currently active. Otherwise, returns true.
    * @private
@@ -1167,7 +1181,7 @@ class FileTransferController {
 
     event.preventDefault();
 
-    const clipboardData = assert(event.clipboardData);
+    const clipboardData = this.getClipboardData_(event);
     const effectAllowed = isMove ? 'move' : 'copy';
 
     // If current focus is on DirectoryTree, write selected item of
@@ -1187,7 +1201,7 @@ class FileTransferController {
   /**
    * Performs cut or copy operation dispatched from directory tree.
    * @param {!DirectoryTree} directoryTree
-   * @param {!ClipboardData} clipboardData
+   * @param {!DataTransfer} clipboardData
    * @param {string} effectAllowed
    */
   cutOrCopyFromDirectoryTree(directoryTree, clipboardData, effectAllowed) {
@@ -1300,11 +1314,11 @@ class FileTransferController {
 
     // Need to update here since 'beforepaste' doesn't fire.
     if (!this.isDocumentWideEvent_() ||
-        !this.canPasteOrDrop_(assert(event.clipboardData), destination)) {
+        !this.canPasteOrDrop_(this.getClipboardData_(event), destination)) {
       return;
     }
     event.preventDefault();
-    this.paste(assert(event.clipboardData), destination).then(effect => {
+    this.paste(this.getClipboardData_(event), destination).then(effect => {
       // On cut, we clear the clipboard after the file is pasted/moved so we
       // don't try to move/delete the original file again.
       if (effect === 'move') {
@@ -1326,14 +1340,14 @@ class FileTransferController {
     }
     // queryCommandEnabled returns true if event.defaultPrevented is true.
     if (this.canPasteOrDrop_(
-            assert(event.clipboardData),
+            this.getClipboardData_(event),
             this.directoryModel_.getCurrentDirEntry())) {
       event.preventDefault();
     }
   }
 
   /**
-   * @param {ClipboardData} clipboardData Clipboard data object.
+   * @param {DataTransfer} clipboardData Data transfer object.
    * @param {DirectoryEntry|FilesAppEntry} destinationEntry Destination
    *    entry.
    * @return {boolean} Returns true if items stored in {@code clipboardData} can
@@ -1402,7 +1416,7 @@ class FileTransferController {
     let result;
     this.simulateCommand_('paste', event => {
       result =
-          this.canPasteOrDrop_(assert(event.clipboardData), destinationEntry);
+          this.canPasteOrDrop_(this.getClipboardData_(event), destinationEntry);
     });
     return result;
   }

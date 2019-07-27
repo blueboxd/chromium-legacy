@@ -743,6 +743,13 @@ void DockedMagnifierControllerImpl::CreateMagnifierViewport() {
   //    and magnified.
   viewport_magnifier_layer_ =
       std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+  // There are situations that the content rect for the magnified container gets
+  // larger than its bounds (e.g. shelf stretches beyond the screen to allow it
+  // being dragged up, or contents of mouse pointer might go beyond screen when
+  // the pointer is at the edges of the screen). To avoid this extra content
+  // becoming visible in the magnifier, magnifier layer should clip its contents
+  // to its bounds.
+  viewport_magnifier_layer_->SetMasksToBounds(true);
   viewport_layer->Add(viewport_magnifier_layer_.get());
   viewport_layer->SetMasksToBounds(true);
 

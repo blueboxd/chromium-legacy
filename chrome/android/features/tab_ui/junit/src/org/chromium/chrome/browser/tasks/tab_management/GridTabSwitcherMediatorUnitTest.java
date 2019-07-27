@@ -113,6 +113,8 @@ public class GridTabSwitcherMediatorUnitTest {
     CompositorViewHolder mCompositorViewHolder;
     @Mock
     Layout mLayout;
+    @Mock
+    TabGridDialogMediator.ResetHandler mTabGridDialogResetHandler;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -180,6 +182,7 @@ public class GridTabSwitcherMediatorUnitTest {
                 mFullscreenManager, mCompositorViewHolder, null);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
+        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
     }
 
     @After
@@ -273,6 +276,7 @@ public class GridTabSwitcherMediatorUnitTest {
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(false));
         assertThat(mMediator.overviewVisible(), equalTo(false));
+        verify(mTabGridDialogResetHandler).hideDialog(eq(false));
     }
 
     @Test
@@ -298,6 +302,7 @@ public class GridTabSwitcherMediatorUnitTest {
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(false));
         assertThat(mMediator.overviewVisible(), equalTo(false));
+        verify(mTabGridDialogResetHandler).hideDialog(eq(false));
     }
 
     @Test
@@ -345,6 +350,7 @@ public class GridTabSwitcherMediatorUnitTest {
         doReturn(true).when(mTabModelFilter).isIncognito();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
         verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false));
+        verify(mTabGridDialogResetHandler).hideDialog(eq(false));
         assertThat(mModel.get(TabListContainerProperties.IS_INCOGNITO), equalTo(true));
 
         // Switching TabModels by itself shouldn't cause visibility changes.

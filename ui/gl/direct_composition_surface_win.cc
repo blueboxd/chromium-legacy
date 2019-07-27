@@ -605,13 +605,15 @@ void DirectCompositionSurfaceWin::CheckPendingFrames() {
   d3d11_device_->GetImmediateContext(&context);
   while (!pending_frames_.empty()) {
     auto& frame = pending_frames_.front();
-    HRESULT hr = context->GetData(frame.query.Get(), nullptr, 0,
-                                  D3D11_ASYNC_GETDATA_DONOTFLUSH);
-    // When the GPU completes execution past the event query, GetData() will
-    // return S_OK, and S_FALSE otherwise.  Do not use SUCCEEDED() because
-    // S_FALSE is also a success code.
-    if (hr != S_OK)
-      break;
+    if (frame.query) {
+      HRESULT hr = context->GetData(frame.query.Get(), nullptr, 0,
+                                    D3D11_ASYNC_GETDATA_DONOTFLUSH);
+      // When the GPU completes execution past the event query, GetData() will
+      // return S_OK, and S_FALSE otherwise.  Do not use SUCCEEDED() because
+      // S_FALSE is also a success code.
+      if (hr != S_OK)
+        break;
+    }
     std::move(frame.callback)
         .Run(
             gfx::PresentationFeedback(last_vsync_time_, last_vsync_interval_,
@@ -631,11 +633,15 @@ void DirectCompositionSurfaceWin::EnqueuePendingFrame(
   Microsoft::WRL::ComPtr<ID3D11Query> query;
   D3D11_QUERY_DESC desc = {};
   desc.Query = D3D11_QUERY_EVENT;
-  d3d11_device_->CreateQuery(&desc, &query);
 
-  Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
-  d3d11_device_->GetImmediateContext(&context);
-  context->End(query.Get());
+  HRESULT hr = d3d11_device_->CreateQuery(&desc, &query);
+  if (SUCCEEDED(hr)) {
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+    d3d11_device_->GetImmediateContext(&context);
+    context->End(query.Get());
+  } else {
+    DLOG(ERROR) << "CreateQuery failed with error 0x" << std::hex << hr;
+  }
 
   if (!NeedsVSync())
     vsync_thread_->AddObserver(this);

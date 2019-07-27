@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_animations.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/root_window_desk_switch_animator.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -336,6 +337,17 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
   // animators are still being constructed.
   for (auto& animator : desk_switch_animators_)
     animator->TakeStartingDeskScreenshot();
+}
+
+void DesksController::ActivateAdjacentDesk(bool going_left,
+                                           DesksSwitchSource source) {
+  const Desk* desk_to_activate = going_left ? GetPreviousDesk() : GetNextDesk();
+  if (desk_to_activate) {
+    ActivateDesk(desk_to_activate, source);
+  } else {
+    for (auto* root : Shell::GetAllRootWindows())
+      desks_animations::PerformHitTheWallAnimation(root, going_left);
+  }
 }
 
 void DesksController::MoveWindowFromActiveDeskTo(

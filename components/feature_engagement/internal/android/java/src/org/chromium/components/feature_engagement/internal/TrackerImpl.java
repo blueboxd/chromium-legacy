@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.feature_engagement.TriggerState;
@@ -46,13 +45,10 @@ public class TrackerImpl implements Tracker {
         @Override
         public void release() {
             assert mNativePtr != 0;
-            nativeRelease(this, mNativePtr);
+            nativeRelease(mNativePtr);
             assert mNativePtr == 0;
         }
     }
-
-    private static native void nativeRelease(
-            @JCaller DisplayLockHandleAndroid caller, long nativeDisplayLockHandleAndroid);
 
     /**
      * The pointer to the feature_engagement::TrackerImplAndroid JNI bridge.
@@ -145,4 +141,5 @@ public class TrackerImpl implements Tracker {
     private native boolean nativeIsInitialized(long nativeTrackerImplAndroid);
     private native void nativeAddOnInitializedCallback(
             long nativeTrackerImplAndroid, Callback<Boolean> callback);
+    private static native void nativeRelease(long nativeDisplayLockHandleAndroid);
 }

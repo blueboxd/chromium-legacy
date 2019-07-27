@@ -45,6 +45,7 @@
 
 namespace blink {
 
+class BrowserInterfaceBrokerProxy;
 class WebDevToolsAgentImpl;
 class WebLocalFrameImpl;
 class WebSpellCheckPanelHostClient;
@@ -270,6 +271,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   // forward the calls to methods that have not been overridden.
   mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
       mojo::ScopedMessagePipeHandle blink_handle) override;
+
+  const blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
+      const override;
 
   AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
       override;

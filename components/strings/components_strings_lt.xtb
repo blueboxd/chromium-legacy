@@ -330,7 +330,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Prieiga prie failo atmesta</translation>
 <translation id="2653659639078652383">Pateikti</translation>
-<translation id="2664887757054927933">{COUNT,plural, =0{Nėra}=1{1 slaptažodis (skirta <ph name="DOMAIN_LIST" />)}=2{2 1 slaptažodžiai (skirta <ph name="DOMAIN_LIST" />)}one{# 1 slaptažodis (skirta <ph name="DOMAIN_LIST" />)}few{# 1 slaptažodžiai (skirta <ph name="DOMAIN_LIST" />)}many{# 1 slaptažodžio (skirta <ph name="DOMAIN_LIST" />)}other{# 1 slaptažodžių (skirta <ph name="DOMAIN_LIST" />)}}</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{Nėra}=1{1 slaptažodis (skirta <ph name="DOMAIN_LIST" />)}=2{2 slaptažodžiai (skirta <ph name="DOMAIN_LIST" />)}one{# slaptažodis (skirta <ph name="DOMAIN_LIST" />)}few{# slaptažodžiai (skirta <ph name="DOMAIN_LIST" />)}many{# slaptažodžio (skirta <ph name="DOMAIN_LIST" />)}other{# slaptažodžių (skirta <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">Uždarykite kitus skirtukus arba programas</translation>
 <translation id="267371737713284912">paspauskite <ph name="MODIFIER_KEY_DESCRIPTION" />, kad anuliuotumėte</translation>
 <translation id="2674170444375937751">Ar tikrai norite pašalinti šiuos puslapius iš savo istorijos?</translation>
@@ -1424,6 +1424,7 @@ Papildoma išsami informacija:
 <translation id="8703575177326907206">Jūsų ryšys su <ph name="DOMAIN" /> nekoduotas.</translation>
 <translation id="8718314106902482036">Mokėjimas neužbaigtas</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, paieškos pasiūlymas</translation>
+<translation id="8723954843026426558">Sutinku su taisyklėmis ir nuostatoms, privatumo politika ir teise atsisakyti <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8728672262656704056">Veikia inkognito režimas</translation>
 <translation id="8730621377337864115">Atlikta</translation>

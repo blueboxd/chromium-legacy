@@ -133,13 +133,13 @@ void TestingOmniboxView::CheckUpdatePopupNotCalled() {
 }
 
 void TestingOmniboxView::EmphasizeURLComponents() {
-  UpdateTextStyle(text(), model()->CurrentTextIsURL(),
+  UpdateTextStyle(GetText(), model()->CurrentTextIsURL(),
                   model()->client()->GetSchemeClassifier());
 }
 
 void TestingOmniboxView::UpdatePopup() {
   ++update_popup_call_count_;
-  update_popup_text_ = text();
+  update_popup_text_ = GetText();
   update_popup_selection_range_ = GetSelectedRange();
 
   // The real view calls OmniboxEditModel::UpdateInput(), which sets input in
@@ -505,7 +505,8 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
 
-  EXPECT_EQ(base::ASCIIToUTF16("https://example.com/"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("https://example.com/"),
+            omnibox_view()->GetText());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 
   // Set the view text without updating the model's user text. This usually
@@ -513,23 +514,24 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
   // the full URL to the user.
   omnibox_view()->SetWindowTextAndCaretPos(base::ASCIIToUTF16("view text"), 0,
                                            false, false);
-  EXPECT_EQ(base::ASCIIToUTF16("view text"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("view text"), omnibox_view()->GetText());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 
   // Expect that on blur, we revert to the original text and are not in user
   // input mode.
   omnibox_textfield()->OnBlur();
-  EXPECT_EQ(base::ASCIIToUTF16("https://example.com/"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("https://example.com/"),
+            omnibox_view()->GetText());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 
   // Now set user text, which is reflected into the model as well.
   omnibox_view()->SetUserText(base::ASCIIToUTF16("user text"));
-  EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->GetText());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
 
   // Expect that on blur, if the text has been edited, stay in user input mode.
   omnibox_textfield()->OnBlur();
-  EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->GetText());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
 }
 
@@ -539,11 +541,11 @@ TEST_F(OmniboxViewViewsTest, RevertOnEscape) {
   omnibox_view()->RevertAll();
 
   EXPECT_EQ(base::ASCIIToUTF16("https://permanent-text.com/"),
-            omnibox_view()->text());
+            omnibox_view()->GetText());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 
   omnibox_view()->SetUserText(base::ASCIIToUTF16("user text"));
-  EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("user text"), omnibox_view()->GetText());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
 
   // Expect that on Escape, the text is reverted to the permanent URL.
@@ -551,7 +553,7 @@ TEST_F(OmniboxViewViewsTest, RevertOnEscape) {
   omnibox_textfield()->OnKeyEvent(&escape);
 
   EXPECT_EQ(base::ASCIIToUTF16("https://permanent-text.com/"),
-            omnibox_view()->text());
+            omnibox_view()->GetText());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 }
 
@@ -584,12 +586,12 @@ TEST_F(OmniboxViewViewsTest, BlurNeverExitsKeywordMode) {
   // Enter keyword mode, but with no user text.
   omnibox_view()->model()->EnterKeywordModeForDefaultSearchProvider(
       OmniboxEventProto::KEYBOARD_SHORTCUT);
-  EXPECT_TRUE(omnibox_view()->text().empty());
+  EXPECT_TRUE(omnibox_view()->GetText().empty());
   EXPECT_FALSE(omnibox_view()->model()->keyword().empty());
 
   // Expect that on blur, stay in keyword mode.
   omnibox_textfield()->OnBlur();
-  EXPECT_TRUE(omnibox_view()->text().empty());
+  EXPECT_TRUE(omnibox_view()->GetText().empty());
   EXPECT_FALSE(omnibox_view()->model()->keyword().empty());
 }
 
@@ -818,12 +820,12 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   }
 
   void ExpectFullUrlDisplayed() {
-    EXPECT_EQ(base::UTF8ToUTF16(kFullUrl.spec()), omnibox_view()->text());
+    EXPECT_EQ(base::UTF8ToUTF16(kFullUrl.spec()), omnibox_view()->GetText());
     EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
   }
 
   bool IsElidedUrlDisplayed() {
-    return omnibox_view()->text() == base::ASCIIToUTF16("example.com") &&
+    return omnibox_view()->GetText() == base::ASCIIToUTF16("example.com") &&
            !omnibox_view()->model()->user_input_in_progress();
   }
 
@@ -1135,12 +1137,14 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, DontReelideOnBlurIfEdited) {
                           ui::DomKey::FromCharacter('a'),
                           ui::EventTimeForNow());
   omnibox_textfield()->InsertChar(char_event);
-  EXPECT_EQ(base::ASCIIToUTF16("https://www.a.com/"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.a.com/"),
+            omnibox_view()->GetText());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
 
   // Now that we've edited the text, blurring should not re-elide the URL.
   BlurOmnibox();
-  EXPECT_EQ(base::ASCIIToUTF16("https://www.a.com/"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.a.com/"),
+            omnibox_view()->GetText());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
 }
 
@@ -1217,7 +1221,7 @@ class OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest
     omnibox_view()->RevertAll();
 
     // Sanity check that Query in Omnibox is working with Steady State Elisions.
-    EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->text());
+    EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->GetText());
 
     // Focus the Omnibox.
     SendMouseClick(0);
@@ -1230,7 +1234,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
   // end of the search query.
   omnibox_textfield_view()->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, 0));
-  EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->GetText());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 
   size_t start, end;
@@ -1243,7 +1247,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
        UnelideFromModel) {
   // Uneliding without exiting Query in Omnibox should do nothing.
   omnibox_view()->model()->Unelide(false /* exit_query_in_omnibox */);
-  EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->GetText());
   {
     size_t start, end;
     omnibox_view()->GetSelectionBounds(&start, &end);
@@ -1254,7 +1258,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
   // Uneliding and exiting Query in Omnibox should reveal the full URL.
   omnibox_view()->model()->Unelide(true /* exit_query_in_omnibox */);
   EXPECT_EQ(base::ASCIIToUTF16(kValidSearchResultsPage.spec()),
-            omnibox_view()->text());
+            omnibox_view()->GetText());
   {
     size_t start, end;
     omnibox_view()->GetSelectionBounds(&start, &end);
@@ -1270,7 +1274,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
   location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foo:bar"));
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
-  EXPECT_EQ(base::ASCIIToUTF16("foo:bar"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("foo:bar"), omnibox_view()->GetText());
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 
   omnibox_view()->ResetEmphasisTestState();

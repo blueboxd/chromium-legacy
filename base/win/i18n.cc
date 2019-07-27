@@ -17,22 +17,21 @@ typedef decltype(::GetSystemPreferredUILanguages)* GetPreferredUILanguages_Fn;
 bool GetPreferredUILanguageList(GetPreferredUILanguages_Fn function,
                                 ULONG flags,
                                 std::vector<base::string16>* languages) {
-  DCHECK_EQ(0U, (flags & (MUI_LANGUAGE_ID | MUI_LANGUAGE_NAME)));
+  DCHECK_EQ((flags & (MUI_LANGUAGE_ID | MUI_LANGUAGE_NAME)), 0U);
   const ULONG call_flags = flags | MUI_LANGUAGE_NAME;
   ULONG language_count = 0;
   ULONG buffer_length = 0;
   if (!function(call_flags, &language_count, nullptr, &buffer_length) ||
-      0 == buffer_length) {
-    DPCHECK(0 == buffer_length)
-        << "Failed getting size of preferred UI languages.";
+      !buffer_length) {
+    DPCHECK(!buffer_length) << "Failed getting size of preferred UI languages.";
     return false;
   }
 
   base::string16 buffer(buffer_length, '\0');
   if (!function(call_flags, &language_count, base::as_writable_wcstr(buffer),
                 &buffer_length) ||
-      0 == language_count) {
-    DPCHECK(0 == language_count) << "Failed getting preferred UI languages.";
+      !language_count) {
+    DPCHECK(!language_count) << "Failed getting preferred UI languages.";
     return false;
   }
 

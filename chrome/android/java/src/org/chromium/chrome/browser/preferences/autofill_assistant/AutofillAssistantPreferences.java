@@ -11,7 +11,7 @@ import android.support.v7.preference.PreferenceScreen;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 
 /** The "Autofill Assistant" preferences screen in Settings. */
 public class AutofillAssistantPreferences extends PreferenceFragmentCompat {
@@ -28,8 +28,8 @@ public class AutofillAssistantPreferences extends PreferenceFragmentCompat {
     }
 
     private void createAutofillAssistantSwitch() {
-        ChromeSwitchPreferenceCompat autofillAssistantSwitch =
-                new ChromeSwitchPreferenceCompat(getStyledContext(), null);
+        ChromeSwitchPreference autofillAssistantSwitch =
+                new ChromeSwitchPreference(getStyledContext(), null);
         autofillAssistantSwitch.setKey(PREF_AUTOFILL_ASSISTANT_SWITCH);
         autofillAssistantSwitch.setTitle(R.string.prefs_autofill_assistant_switch);
         autofillAssistantSwitch.setSummaryOn(R.string.text_on);

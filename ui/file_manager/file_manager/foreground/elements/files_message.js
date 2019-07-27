@@ -75,7 +75,8 @@ const filesMessageTemplate = `
  */
 class FilesMessage extends HTMLElement {
   constructor() {
-    FilesMessage.createElement_.call(super());
+    super();
+    this.createElement_();
 
     /**
      * FilesMessage visual signals user callback.
@@ -88,7 +89,7 @@ class FilesMessage extends HTMLElement {
    * Creates FilesMessage element.
    * @private
    */
-  static createElement_() {
+  createElement_() {
     this.attachShadow({mode: 'open'}).innerHTML = filesMessageTemplate;
   }
 

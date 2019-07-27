@@ -10,7 +10,7 @@
 #include "base/version.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/patch/public/mojom/constants.mojom.h"
-#include "components/services/unzip/public/mojom/constants.mojom.h"
+#include "components/services/unzip/in_process_unzipper.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/net/network_chromium.h"
 #include "components/update_client/patch/patch_impl.h"
@@ -42,11 +42,9 @@ TestConfigurator::TestConfigurator()
       enabled_cup_signing_(false),
       enabled_component_updates_(true),
       unzip_factory_(base::MakeRefCounted<update_client::UnzipChromiumFactory>(
-          connector_factory_.CreateConnector())),
+          base::BindRepeating(&unzip::LaunchInProcessUnzipper))),
       patch_factory_(base::MakeRefCounted<update_client::PatchChromiumFactory>(
           connector_factory_.CreateConnector())),
-      unzip_service_(
-          connector_factory_.RegisterInstance(unzip::mojom::kServiceName)),
       patch_service_(
           connector_factory_.RegisterInstance(patch::mojom::kServiceName)),
       test_shared_loader_factory_(

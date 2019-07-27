@@ -11,7 +11,6 @@
 #include "chrome/services/file_util/public/cpp/manifest.h"
 #include "components/services/patch/public/cpp/manifest.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
-#include "components/services/unzip/public/cpp/manifest.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -106,7 +105,6 @@ GetChromeBuiltinServiceManifests() {
       GetChromeManifest(),
       GetFileUtilManifest(),
       patch::GetManifest(),
-      unzip::GetManifest(),
       prefs::GetLocalStateManifest(),
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)

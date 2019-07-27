@@ -210,63 +210,63 @@ TEST_F(BrowserAccessibilityTest, TestGetDescendants) {
 
 TEST_F(BrowserAccessibilityTest, PlatformChildIterator) {
   // (i) => node is ignored
-  // 0
+  // 1
   // |__________
   // |     |   |
-  // 1(i)  2   3
+  // 2(i)  3   4
   // |_______________________
   // |   |      |           |
-  // 4   5      6(i)        7(i)
+  // 5   6      7(i)        8(i)
   // |   |      |________
   // |   |      |       |
-  // 8   9(i)   10(i)   11
+  // 9   10(i)   11(i)   12
   //     |      |____
   //     |      |   |
-  //     12(i)  13  14
+  //     13(i)  14  15
   ui::AXTreeUpdate tree_update;
-  tree_update.root_id = 0;
+  tree_update.root_id = 1;
   tree_update.nodes.resize(15);
-  tree_update.nodes[0].id = 0;
-  tree_update.nodes[0].child_ids = {1, 2, 3};
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].child_ids = {2, 3, 4};
 
-  tree_update.nodes[1].id = 1;
-  tree_update.nodes[1].child_ids = {4, 5, 6, 7};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].child_ids = {5, 6, 7, 8};
   tree_update.nodes[1].AddState(ax::mojom::State::kIgnored);
 
-  tree_update.nodes[2].id = 2;
-  tree_update.nodes[3].id = 3;
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[3].id = 4;
 
-  tree_update.nodes[4].id = 4;
-  tree_update.nodes[4].child_ids = {8};
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].child_ids = {9};
 
-  tree_update.nodes[5].id = 5;
-  tree_update.nodes[5].child_ids = {9};
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].child_ids = {10};
 
-  tree_update.nodes[6].id = 6;
-  tree_update.nodes[6].child_ids = {10, 11};
+  tree_update.nodes[6].id = 7;
+  tree_update.nodes[6].child_ids = {11, 12};
   tree_update.nodes[6].AddState(ax::mojom::State::kIgnored);
 
-  tree_update.nodes[7].id = 7;
+  tree_update.nodes[7].id = 8;
   tree_update.nodes[7].AddState(ax::mojom::State::kIgnored);
 
-  tree_update.nodes[8].id = 8;
+  tree_update.nodes[8].id = 9;
 
-  tree_update.nodes[9].id = 9;
-  tree_update.nodes[9].child_ids = {12};
+  tree_update.nodes[9].id = 10;
+  tree_update.nodes[9].child_ids = {13};
   tree_update.nodes[9].AddState(ax::mojom::State::kIgnored);
 
-  tree_update.nodes[10].id = 10;
-  tree_update.nodes[10].child_ids = {13, 14};
+  tree_update.nodes[10].id = 11;
+  tree_update.nodes[10].child_ids = {14, 15};
   tree_update.nodes[10].AddState(ax::mojom::State::kIgnored);
 
-  tree_update.nodes[11].id = 11;
+  tree_update.nodes[11].id = 12;
 
-  tree_update.nodes[12].id = 12;
+  tree_update.nodes[12].id = 13;
   tree_update.nodes[12].AddState(ax::mojom::State::kIgnored);
 
-  tree_update.nodes[13].id = 13;
+  tree_update.nodes[13].id = 14;
 
-  tree_update.nodes[14].id = 14;
+  tree_update.nodes[14].id = 15;
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
@@ -275,61 +275,61 @@ TEST_F(BrowserAccessibilityTest, PlatformChildIterator) {
 
   BrowserAccessibility* root_obj = manager->GetRoot();
   // Test traversal
-  // PlatformChildren(root_obj) = {4, 5, 13, 14, 11, 2, 3}
+  // PlatformChildren(root_obj) = {5, 6, 14, 15, 12, 3, 4}
   BrowserAccessibility::PlatformChildIterator platform_iterator =
       root_obj->PlatformChildrenBegin();
-  EXPECT_EQ(4, platform_iterator->GetId());
-
-  ++platform_iterator;
   EXPECT_EQ(5, platform_iterator->GetId());
 
   ++platform_iterator;
-  EXPECT_EQ(13, platform_iterator->GetId());
-
-  ++platform_iterator;
-  EXPECT_EQ(14, platform_iterator->GetId());
-
-  --platform_iterator;
-  EXPECT_EQ(13, platform_iterator->GetId());
-
-  --platform_iterator;
-  EXPECT_EQ(5, platform_iterator->GetId());
-
-  ++platform_iterator;
-  EXPECT_EQ(13, platform_iterator->GetId());
+  EXPECT_EQ(6, platform_iterator->GetId());
 
   ++platform_iterator;
   EXPECT_EQ(14, platform_iterator->GetId());
 
   ++platform_iterator;
-  EXPECT_EQ(11, platform_iterator->GetId());
+  EXPECT_EQ(15, platform_iterator->GetId());
+
+  --platform_iterator;
+  EXPECT_EQ(14, platform_iterator->GetId());
+
+  --platform_iterator;
+  EXPECT_EQ(6, platform_iterator->GetId());
 
   ++platform_iterator;
-  EXPECT_EQ(2, platform_iterator->GetId());
+  EXPECT_EQ(14, platform_iterator->GetId());
+
+  ++platform_iterator;
+  EXPECT_EQ(15, platform_iterator->GetId());
+
+  ++platform_iterator;
+  EXPECT_EQ(12, platform_iterator->GetId());
 
   ++platform_iterator;
   EXPECT_EQ(3, platform_iterator->GetId());
+
+  ++platform_iterator;
+  EXPECT_EQ(4, platform_iterator->GetId());
 
   ++platform_iterator;
   EXPECT_EQ(root_obj->PlatformChildrenEnd(), platform_iterator);
 
   // test empty list
   // PlatformChildren(2) = {}
-  BrowserAccessibility* node2 = manager->GetFromID(2);
+  BrowserAccessibility* node2 = manager->GetFromID(3);
   platform_iterator = node2->PlatformChildrenBegin();
   EXPECT_EQ(node2->PlatformChildrenEnd(), platform_iterator);
 
   // empty list from ignored node
   // PlatformChildren(7) = {}
-  BrowserAccessibility* node7 = manager->GetFromID(7);
+  BrowserAccessibility* node7 = manager->GetFromID(8);
   platform_iterator = node7->PlatformChildrenBegin();
   EXPECT_EQ(node7->PlatformChildrenEnd(), platform_iterator);
 
   // non-empty list from ignored node
-  // PlatformChildren(10) = {13, 14}
-  BrowserAccessibility* node10 = manager->GetFromID(10);
+  // PlatformChildren(10) = {14, 15}
+  BrowserAccessibility* node10 = manager->GetFromID(11);
   platform_iterator = node10->PlatformChildrenBegin();
-  EXPECT_EQ(13, platform_iterator->GetId());
+  EXPECT_EQ(14, platform_iterator->GetId());
 
   // Two UnignoredChildIterators from the same parent at the same position
   // should be equivalent, even in end position.

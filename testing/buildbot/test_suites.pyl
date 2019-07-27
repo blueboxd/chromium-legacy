@@ -4367,53 +4367,6 @@
       },
     },
 
-    # These tests will be run on the main Android waterfall since Android
-    # WebView hasn't switched to network service on stable yet.
-    'non_network_service_android_gtests': {
-      'non_network_service_content_browsertests': {
-        'args': [
-          '--disable-features=NetworkService',
-        ],
-        'swarming': {
-          'shards': 5,
-        },
-        'test': 'content_browsertests',
-      },
-      'non_network_service_content_shell_test_apk': {
-        'swarming': {
-          'shards': 5,
-        },
-        'args': [
-          '--disable-features=NetworkService',
-        ],
-        'test': 'content_shell_test_apk',
-      },
-    },
-
-    'non_network_service_isolated_scripts': {
-      'non_network_service_webkit_layout_tests': {
-        'args': [
-          '--additional-driver-flag=--disable-features=NetworkService',
-
-          # layout test failures are retried 3 times when '--test-list' is not
-          # passed, but 0 times when '--test-list' is passed. We want to always
-          # retry 3 times, so we explicitly specify it.
-          '--num-retries=3',
-        ],
-        'isolate_name': 'blink_web_tests_exparchive',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 12,
-        },
-      },
-    },
-
     'ozone_linux_gtests': {
       'services_unittests': {},
       'ozone_unittests': {},
@@ -4916,7 +4869,6 @@
       'linux_flavor_specific_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'network_service_android_gtests',
-      'non_network_service_android_gtests',
     ],
 
     'chromium_code_coverage_isolated_scripts_and_fuzzers': [
@@ -4973,7 +4925,6 @@
     'chromium_linux_dbg_isolated_scripts': [
       'desktop_chromium_isolated_scripts',
       'linux_specific_chromium_isolated_scripts',
-      'non_network_service_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
     ],
 
@@ -5564,7 +5515,6 @@
 
     'mojo_android_gtests': [
       'network_service_android_gtests',
-      'non_network_service_android_gtests',
     ],
 
     'mojo_chromiumos_fyi_gtests': [

@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "pdf/document_layout.h"
 #include "pdf/document_loader.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdfium/pdfium_form_filler.h"
@@ -515,7 +516,9 @@ class PDFiumEngine : public PDFEngine,
   static FPDF_BOOL Pause_NeedToPauseNow(IFSDK_PAUSE* param);
 
   PDFEngine::Client* const client_;
-  pp::Size document_size_;  // Size of document in pixels.
+
+  // The current document layout.
+  DocumentLayout layout_;
 
   // The scroll position in screen coordinates.
   pp::Point position_;
@@ -524,7 +527,6 @@ class PDFiumEngine : public PDFEngine,
   // The plugin size in screen coordinates.
   pp::Size plugin_size_;
   double current_zoom_ = 1.0;
-  unsigned int current_rotation_ = 0;
 
   std::unique_ptr<DocumentLoader> doc_loader_;  // Main document's loader.
   std::string url_;

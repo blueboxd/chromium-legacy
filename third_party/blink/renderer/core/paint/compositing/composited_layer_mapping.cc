@@ -81,7 +81,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -3549,25 +3548,25 @@ void CompositedLayerMapping::GraphicsLayersDidChange() {
 bool CompositedLayerMapping::PaintBlockedByDisplayLockIncludingAncestors(
     DisplayLockContextLifecycleTarget target) const {
   auto* node = GetLayoutObject().GetNode();
-  if (!node)
-    return false;
-  auto* element = DynamicTo<Element>(node);
-  if (target == DisplayLockContextLifecycleTarget::kSelf && element) {
-    if (auto* context = element->GetDisplayLockContext()) {
-      if (!context->ShouldPaint(DisplayLockContext::kSelf))
-        return true;
+  if (node) {
+    auto* element = DynamicTo<Element>(node);
+    if (target == DisplayLockContextLifecycleTarget::kSelf && element) {
+      if (auto* context = element->GetDisplayLockContext()) {
+        if (!context->ShouldPaint(DisplayLockContext::kSelf))
+          return true;
+      }
     }
   }
-  return DisplayLockUtilities::NearestLockedExclusiveAncestor(*node);
+  return DisplayLockUtilities::NearestLockedExclusiveAncestor(
+      GetLayoutObject());
 }
 
 void CompositedLayerMapping::NotifyDisplayLockNeedsGraphicsLayerCollection() {
-  if (auto* node = GetLayoutObject().GetNode()) {
-    if (auto* locked_element =
-            DisplayLockUtilities::NearestLockedInclusiveAncestor(*node)) {
-      locked_element->GetDisplayLockContext()
-          ->NotifyNeedsGraphicsLayerCollection();
-    }
+  if (auto* locked_element =
+          DisplayLockUtilities::NearestLockedInclusiveAncestor(
+              GetLayoutObject())) {
+    locked_element->GetDisplayLockContext()
+        ->NotifyNeedsGraphicsLayerCollection();
   }
 }
 

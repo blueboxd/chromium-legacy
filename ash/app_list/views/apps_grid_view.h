@@ -473,7 +473,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Overridden from PaginationModelObserver:
   void TotalPagesChanged() override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
-  void TransitionStarted() override;
+  void TransitionStarting() override;
   void TransitionChanged() override;
   void TransitionEnded() override;
   void ScrollStarted() override;

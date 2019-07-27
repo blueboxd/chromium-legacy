@@ -22,13 +22,13 @@ test.customizeMenu.IDS = {
   BACKGROUNDS_MENU: 'backgrounds-menu',
   COLORS_BUTTON: 'colors-button',
   COLORS_DEFAULT: 'colors-default',
+  COLORS_DEFAULT_ICON: 'colors-default-icon',
   COLORS_MENU: 'colors-menu',
   COLORS_THEME: 'colors-theme',
   COLORS_THEME_UNINSTALL: 'colors-theme-uninstall',
   CUSTOMIZATION_MENU: 'customization-menu',
   CUSTOM_BG: 'custom-bg',
   CUSTOM_BG_PREVIEW: 'custom-bg-preview',
-  DONE: 'menu-done',
   EDIT_BG: 'edit-bg',
   MENU_BACK: 'menu-back',
   MENU_CANCEL: 'menu-cancel',
@@ -690,6 +690,97 @@ test.customizeMenu.testColors_ThemeInfo_Uninstall = function() {
 
   $(test.customizeMenu.IDS.COLORS_THEME_UNINSTALL).click();
   assertEquals(1, test.customizeMenu.useDefaultThemeCount);
+};
+
+/**
+ * Test preselect default tile.
+ */
+test.customizeMenu.testColors_PreselectDefault = function() {
+  test.customizeMenu.mockThemeBackgroundInfo = {usingDefaultTheme: true};
+  init();
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
+
+  assertTrue(
+      $(test.customizeMenu.IDS.COLORS_MENU)
+          .getElementsByClassName('selected')
+          .length === 1);
+  assertTrue($(test.customizeMenu.IDS.COLORS_DEFAULT)
+                 .classList.contains(test.customizeMenu.CLASSES.SELECTED));
+};
+
+/**
+ * Test 'Done' button enabled/disabled when preselect is present.
+ */
+test.customizeMenu.testColors_DoneButtonWithPreselect = function() {
+  test.customizeMenu.mockThemeBackgroundInfo = {usingDefaultTheme: true};
+  init();
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
+
+  assertTrue($(test.customizeMenu.IDS.MENU_DONE).disabled);
+
+  !!$('color_0').click();
+  assertFalse($(test.customizeMenu.IDS.MENU_DONE).disabled);
+
+  $(test.customizeMenu.IDS.COLORS_DEFAULT_ICON).click();
+  assertTrue($(test.customizeMenu.IDS.MENU_DONE).disabled);
+};
+
+/**
+ * Test preselect color tile.
+ */
+test.customizeMenu.testColors_PreselectColor = function() {
+  test.customizeMenu.mockThemeBackgroundInfo = {
+    usingDefaultTheme: false,
+    colorId: '1'
+  };
+  init();
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
+
+  assertTrue(
+      $(test.customizeMenu.IDS.COLORS_MENU)
+          .getElementsByClassName('selected')
+          .length === 1);
+  const tile = $(test.customizeMenu.IDS.COLORS_MENU)
+                   .getElementsByClassName('selected')[0]
+                   .firstChild;
+  assertTrue(
+      tile.dataset.id === test.customizeMenu.mockThemeBackgroundInfo.colorId);
+};
+
+/**
+ * Test no preselect when color id is invalid.
+ */
+test.customizeMenu.testColors_NoPreselectInvalidColorId = function() {
+  test.customizeMenu.mockThemeBackgroundInfo = {
+    usingDefaultTheme: false,
+    colorId: '0'
+  };
+  init();
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
+
+  assertTrue(
+      $(test.customizeMenu.IDS.COLORS_MENU)
+          .getElementsByClassName('selected')
+          .length === 0);
+};
+
+/**
+ * Test no preselect when color id not specified.
+ */
+test.customizeMenu.testColors_NoPreselectNoColorId = function() {
+  test.customizeMenu.mockThemeBackgroundInfo = {usingDefaultTheme: false};
+  init();
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+  $(test.customizeMenu.IDS.COLORS_BUTTON).click();
+
+  assertTrue(
+      $(test.customizeMenu.IDS.COLORS_MENU)
+          .getElementsByClassName('selected')
+          .length === 0);
 };
 
 //// BACKGROUND SUBMENU TESTS ////

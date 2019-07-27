@@ -159,6 +159,10 @@ def parse_args(args):
                 help=('Path to a test_expectations file that will override previous '
                       'expectations. Specify multiple times for multiple sets of overrides.')),
             optparse.make_option(
+                '--ignore-default-expectations',
+                action='store_true',
+                help=('Do not use the default set of TestExpectations files.')),
+            optparse.make_option(
                 '--additional-platform-directory',
                 action='append',
                 default=[],

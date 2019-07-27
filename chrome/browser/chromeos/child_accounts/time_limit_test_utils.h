@@ -55,6 +55,8 @@ base::Value CreateTimeUsage(base::TimeDelta usage_quota,
 
 // Creates a minimalist Time Limit policy, containing only the time usage
 // limit reset time.
+// TODO(agawronska): Return value as described at
+//   https://cs.chromium.org/chromium/src/base/values.h?l=56
 std::unique_ptr<base::DictionaryValue> CreateTimeLimitPolicy(
     base::TimeDelta reset_time);
 

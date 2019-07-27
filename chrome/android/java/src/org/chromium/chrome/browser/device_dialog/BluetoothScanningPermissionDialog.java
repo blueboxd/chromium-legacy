@@ -24,7 +24,6 @@ import android.widget.ProgressBar;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
@@ -250,7 +249,7 @@ public class BluetoothScanningPermissionDialog {
     private void finishDialog(int resultCode) {
         if (mNativeBluetoothScanningPermissionDialogPtr == 0) return;
         Natives jni = BluetoothScanningPermissionDialogJni.get();
-        jni.onDialogFinished(this, mNativeBluetoothScanningPermissionDialogPtr, resultCode);
+        jni.onDialogFinished(mNativeBluetoothScanningPermissionDialogPtr, resultCode);
     }
 
     /**
@@ -271,7 +270,6 @@ public class BluetoothScanningPermissionDialog {
 
     @NativeMethods
     interface Natives {
-        void onDialogFinished(@JCaller BluetoothScanningPermissionDialog self,
-                long nativeBluetoothScanningPromptAndroid, int eventType);
+        void onDialogFinished(long nativeBluetoothScanningPromptAndroid, int eventType);
     }
 }

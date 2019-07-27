@@ -63,13 +63,11 @@ class CorsFileOriginBrowserTest
       case CorsTestMode::kInBlink:
         scoped_feature_list_.InitWithFeatures(
             {} /* enabled */,
-            {network::features::kOutOfBlinkCors,
-             network::features::kNetworkService} /* disabled */);
+            {network::features::kOutOfBlinkCors} /* disabled */);
         break;
       case CorsTestMode::kInNetworkService:
         scoped_feature_list_.InitWithFeatures(
-            {network::features::kOutOfBlinkCors,
-             network::features::kNetworkService} /* enabled */,
+            {network::features::kOutOfBlinkCors} /* enabled */,
             {} /*disabled */);
         break;
     }

@@ -137,6 +137,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       std::move(interface_provider_request),
       mojo::MakeRequest(&document_interface_broker_content),
       mojo::MakeRequest(&document_interface_broker_blink),
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver(),
       blink::WebTreeScopeType::kDocument, "", "", true,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), false, blink::FrameOwnerElementType::kPortal);

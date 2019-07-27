@@ -246,11 +246,4 @@ void LogNumberOfReuseBeforeSyncPasswordChange(size_t reuse_count) {
       reuse_count);
 }
 
-void LogContentsSize(const gfx::Size& size) {
-  if (size.width() <= 0 || size.height() <= 0)
-    return;
-  UMA_HISTOGRAM_COUNTS_10000("SafeBrowsing.ContentsSize.Width", size.width());
-  UMA_HISTOGRAM_COUNTS_10000("SafeBrowsing.ContentsSize.Height", size.height());
-}
-
 }  // namespace safe_browsing

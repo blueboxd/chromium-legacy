@@ -32,7 +32,7 @@ public class AccessibilityPreferences
     private FontSizePrefs mFontSizePrefs;
 
     private TextScalePreference mTextScalePref;
-    private ChromeBaseCheckBoxPreferenceCompat mForceEnableZoomPref;
+    private ChromeBaseCheckBoxPreference mForceEnableZoomPref;
 
     private FontSizePrefsObserver mFontSizePrefsObserver = new FontSizePrefsObserver() {
         @Override
@@ -58,17 +58,17 @@ public class AccessibilityPreferences
         mTextScalePref.setOnPreferenceChangeListener(this);
 
         mForceEnableZoomPref =
-                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_FORCE_ENABLE_ZOOM);
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_FORCE_ENABLE_ZOOM);
         mForceEnableZoomPref.setOnPreferenceChangeListener(this);
 
-        ChromeBaseCheckBoxPreferenceCompat readerForAccessibilityPref =
-                (ChromeBaseCheckBoxPreferenceCompat) findPreference(PREF_READER_FOR_ACCESSIBILITY);
+        ChromeBaseCheckBoxPreference readerForAccessibilityPref =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_READER_FOR_ACCESSIBILITY);
         readerForAccessibilityPref.setChecked(
                 PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY_ENABLED));
         readerForAccessibilityPref.setOnPreferenceChangeListener(this);
 
-        ChromeBaseCheckBoxPreferenceCompat mAccessibilityTabSwitcherPref =
-                (ChromeBaseCheckBoxPreferenceCompat) findPreference(
+        ChromeBaseCheckBoxPreference mAccessibilityTabSwitcherPref =
+                (ChromeBaseCheckBoxPreference) findPreference(
                         ChromePreferenceManager.ACCESSIBILITY_TAB_SWITCHER);
         if (AccessibilityUtil.isAccessibilityEnabled()) {
             mAccessibilityTabSwitcherPref.setChecked(

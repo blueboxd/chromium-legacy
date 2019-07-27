@@ -103,8 +103,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   base::TimeTicks ZeroTime();
   double currentTime(bool& is_null) override;
   double currentTime();
-  double CurrentTimeInternal(bool& is_null);
-  double CurrentTimeInternal();
+  base::Optional<base::TimeDelta> CurrentTimeInternal();
   double EffectiveTime();
   void PauseAnimationsForTesting(double);
 
@@ -152,7 +151,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   static const double kMinimumDelay;
 
   Member<PlatformTiming> timing_;
-  double last_current_time_internal_;
+  base::Optional<base::TimeDelta> last_current_time_internal_;
 
   std::unique_ptr<CompositorAnimationTimeline> compositor_timeline_;
 

@@ -3996,7 +3996,7 @@ const LayoutObject* AssociatedLayoutObjectOf(const Node& node,
 
 bool LayoutObject::CanBeSelectionLeaf() const {
   if (SlowFirstChild() || StyleRef().Visibility() != EVisibility::kVisible ||
-      DisplayLockUtilities::NearestLockedExclusiveAncestor(*GetNode())) {
+      DisplayLockUtilities::NearestLockedExclusiveAncestor(*this)) {
     return false;
   }
   return CanBeSelectionLeafInternal();

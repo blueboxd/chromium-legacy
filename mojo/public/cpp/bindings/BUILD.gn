@@ -187,6 +187,8 @@ component("bindings") {
     "remote_set.h",
     "self_owned_receiver.h",
     "sequence_local_sync_event_watcher.h",
+    "service_factory.cc",
+    "service_factory.h",
     "shared_associated_remote.h",
     "shared_remote.h",
     "strong_associated_binding.h",

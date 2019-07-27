@@ -66,8 +66,7 @@ void AwPermissionRequest::DeleteThis() {
   Java_AwPermissionRequest_destroyNative(AttachCurrentThread(), j_request);
 }
 
-void AwPermissionRequest::Destroy(JNIEnv* env,
-                                  const JavaParamRef<jobject>& obj) {
+void AwPermissionRequest::Destroy(JNIEnv* env) {
   delete this;
 }
 

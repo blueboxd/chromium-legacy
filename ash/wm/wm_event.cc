@@ -83,6 +83,12 @@ bool WMEvent::IsTransitionEvent() const {
   return false;
 }
 
+const DisplayMetricsChangedWMEvent* WMEvent::AsDisplayMetricsChangedWMEvent()
+    const {
+  DCHECK_EQ(type(), WM_EVENT_DISPLAY_BOUNDS_CHANGED);
+  return static_cast<const DisplayMetricsChangedWMEvent*>(this);
+}
+
 SetBoundsWMEvent::SetBoundsWMEvent(const gfx::Rect& bounds,
                                    bool animate,
                                    base::TimeDelta duration)
@@ -99,5 +105,11 @@ SetBoundsWMEvent::SetBoundsWMEvent(const gfx::Rect& requested_bounds,
       animate_(false) {}
 
 SetBoundsWMEvent::~SetBoundsWMEvent() = default;
+
+DisplayMetricsChangedWMEvent::DisplayMetricsChangedWMEvent(int changed_metrics)
+    : WMEvent(WM_EVENT_DISPLAY_BOUNDS_CHANGED),
+      changed_metrics_(changed_metrics) {}
+
+DisplayMetricsChangedWMEvent::~DisplayMetricsChangedWMEvent() = default;
 
 }  // namespace ash

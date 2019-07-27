@@ -353,9 +353,7 @@ class WTF_EXPORT StringImpl {
   double ToDouble(bool* ok = nullptr);
   float ToFloat(bool* ok = nullptr);
 
-  scoped_refptr<StringImpl> LowerUnicode();
   scoped_refptr<StringImpl> LowerASCII();
-  scoped_refptr<StringImpl> UpperUnicode();
   scoped_refptr<StringImpl> UpperASCII();
 
   scoped_refptr<StringImpl> Fill(UChar);

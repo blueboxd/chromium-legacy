@@ -72,6 +72,19 @@ public class FeedProcessScopeFactory {
     }
 
     /**
+     * @return The {@link Runnable} to notify feed has been consumed.
+     */
+    public static Runnable getFeedConsumptionObserver() {
+        Runnable consumptionObserver = () -> {
+            FeedScheduler scheduler = getFeedScheduler();
+            if (scheduler != null) {
+                scheduler.onSuggestionConsumed();
+            }
+        };
+        return consumptionObserver;
+    }
+
+    /**
      * @return The {@link FeedOfflineIndicator} that was given to the {@link ProcessScope}.
      * Null if the Feed is disabled.
      */

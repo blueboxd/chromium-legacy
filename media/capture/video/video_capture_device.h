@@ -23,6 +23,7 @@
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -95,10 +96,14 @@ class CAPTURE_EXPORT VideoCaptureDevice
       class CAPTURE_EXPORT HandleProvider {
        public:
         virtual ~HandleProvider() {}
-        virtual mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-            bool read_only) = 0;
-        virtual base::SharedMemoryHandle
-        GetNonOwnedSharedMemoryHandleForLegacyIPC() = 0;
+
+        // Duplicate as an writable (unsafe) shared memory region.
+        virtual base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() = 0;
+
+        // Duplicate as a writable (unsafe) mojo buffer.
+        virtual mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() = 0;
+
+        // Access a |VideoCaptureBufferHandle| for local, writable memory.
         virtual std::unique_ptr<VideoCaptureBufferHandle>
         GetHandleForInProcessAccess() = 0;
 #if defined(OS_CHROMEOS)

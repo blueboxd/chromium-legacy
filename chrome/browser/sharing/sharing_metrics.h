@@ -87,4 +87,13 @@ void LogSharingMessageAckTime(base::TimeDelta time);
 // Logs to UMA the |type| of dialog shown for Click to Call.
 void LogClickToCallDialogShown(SharingClickToCallDialogType type);
 
+// Logs to UMA whether a SharingMessage was sent successfully by the Sharing
+// service. For |success| to be true, an ack message must be received before the
+// timeout. This should not be called for sending ack messages.
+void LogSendSharingMessageSuccess(bool success);
+
+// Logs to UMA whether an ack message was sent successfully by the Sharing
+// service.
+void LogSendSharingAckMessageSuccess(bool success);
+
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_

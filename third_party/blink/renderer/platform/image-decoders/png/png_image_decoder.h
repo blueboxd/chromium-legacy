@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/png/png_image_reader.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

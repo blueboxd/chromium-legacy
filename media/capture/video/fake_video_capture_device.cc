@@ -39,6 +39,14 @@ static const int kBeepInterval = 500;
 // Gradient travels from bottom to top in 5 seconds.
 static const float kGradientFrequency = 1.f / 5;
 
+static const double kMinPan = 100.0;
+static const double kMaxPan = 400.0;
+static const double kPanStep = 1.0;
+
+static const double kMinTilt = 100.0;
+static const double kMaxTilt = 400.0;
+static const double kTiltStep = 1.0;
+
 static const double kMinZoom = 100.0;
 static const double kMaxZoom = 400.0;
 static const double kZoomStep = 1.0;
@@ -541,6 +549,18 @@ void FakePhotoDevice::GetPhotoState(
   photo_state->focus_distance->min = kMinFocusDistance;
   photo_state->focus_distance->step = kFocusDistanceStep;
 
+  photo_state->pan = mojom::Range::New();
+  photo_state->pan->current = fake_device_state_->pan;
+  photo_state->pan->max = kMaxPan;
+  photo_state->pan->min = kMinPan;
+  photo_state->pan->step = kPanStep;
+
+  photo_state->tilt = mojom::Range::New();
+  photo_state->tilt->current = fake_device_state_->tilt;
+  photo_state->tilt->max = kMaxTilt;
+  photo_state->tilt->min = kMinTilt;
+  photo_state->tilt->step = kTiltStep;
+
   photo_state->zoom = mojom::Range::New();
   photo_state->zoom->current = fake_device_state_->zoom;
   photo_state->zoom->max = kMaxZoom;
@@ -579,6 +599,14 @@ void FakePhotoDevice::SetPhotoOptions(
   if (config_.should_fail_set_photo_options)
     return;
 
+  if (settings->has_pan) {
+    device_state_write_access->pan =
+        std::max(kMinPan, std::min(settings->pan, kMaxPan));
+  }
+  if (settings->has_tilt) {
+    device_state_write_access->tilt =
+        std::max(kMinTilt, std::min(settings->tilt, kMaxTilt));
+  }
   if (settings->has_zoom) {
     device_state_write_access->zoom =
         std::max(kMinZoom, std::min(settings->zoom, kMaxZoom));

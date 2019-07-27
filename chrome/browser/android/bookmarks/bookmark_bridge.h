@@ -36,9 +36,7 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   bool IsDoingExtensiveChanges(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
 
-  jboolean IsEditBookmarksEnabled(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsEditBookmarksEnabled(JNIEnv* env);
 
   void LoadEmptyPartnerBookmarkShimForTesting(
       JNIEnv* env,

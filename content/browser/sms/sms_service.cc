@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/optional.h"
+#include "content/browser/sms/sms_metrics.h"
 #include "content/public/browser/sms_dialog.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -88,6 +89,7 @@ bool SmsService::OnReceive(const url::Origin& origin, const std::string& sms) {
   sms_provider_->RemoveObserver(this);
 
   sms_ = sms;
+  receive_time_ = base::TimeTicks::Now();
   prompt_->EnableContinueButton();
   return true;
 }
@@ -118,12 +120,20 @@ void SmsService::OnContinue() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(sms_);
+  DCHECK(!receive_time_.is_null());
+  RecordContinueOnSuccessTime(base::TimeTicks::Now() - receive_time_);
 
   Process(SmsStatus::kSuccess, sms_);
 }
 
 void SmsService::OnCancel() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Record only when SMS has already been received.
+  if (sms_) {
+    DCHECK(!receive_time_.is_null());
+    RecordCancelOnSuccessTime(base::TimeTicks::Now() - receive_time_);
+  }
 
   Process(SmsStatus::kCancelled, base::nullopt);
 }
@@ -149,6 +159,7 @@ void SmsService::Dismiss() {
   timer_.Stop();
   callback_.Reset();
   sms_.reset();
+  receive_time_ = base::TimeTicks();
   sms_provider_->RemoveObserver(this);
 }
 

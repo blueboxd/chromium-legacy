@@ -7,14 +7,15 @@
  */
 class PanelButton extends HTMLElement {
   constructor() {
-    PanelButton.createElement_.call(super());
+    super();
+    this.createElement_();
   }
 
   /**
    * Creates a PanelButton.
    * @private
    */
-  static createElement_() {
+  createElement_() {
     const template = document.createElement('template');
     template.innerHTML = PanelButton.html_();
     const fragment = template.content.cloneNode(true);

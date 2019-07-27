@@ -35,7 +35,6 @@ void WebApkHandlerDelegate::RetrieveWebApks() {
 
 void WebApkHandlerDelegate::OnWebApkInfoRetrieved(
     JNIEnv* env,
-    const JavaParamRef<jobject>& caller,
     const JavaParamRef<jstring>& jname,
     const JavaParamRef<jstring>& jshort_name,
     const JavaParamRef<jstring>& jpackage_name,

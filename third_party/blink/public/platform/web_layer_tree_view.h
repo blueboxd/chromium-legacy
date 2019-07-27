@@ -71,12 +71,6 @@ class WebLayerTreeView {
 
   // Returns the FrameSinkId of the widget associated with this layer tree view.
   virtual viz::FrameSinkId GetFrameSinkId() { return viz::FrameSinkId(); }
-
-  // Debugging / dangerous ---------------------------------------------
-
-  virtual int LayerTreeId() const { return 0; }
-
-  virtual void RequestBeginMainFrameNotExpected(bool new_state) {}
 };
 
 }  // namespace blink

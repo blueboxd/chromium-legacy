@@ -4,6 +4,7 @@
 <translation id="1510238584712386396">Zaganjalnik</translation>
 <translation id="1734367976349034509">To napravo upravlja podjetje</translation>
 <translation id="1930797645656624981">Storitev načina vnosa v okolju OS Chrome</translation>
+<translation id="1979103255016296513">Rok za spremembo gesla je potekel</translation>
 <translation id="2049639323467105390">To napravo upravlja <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Na zaslonu ni bilo mogoče najti ničesar</translation>
 <translation id="2338501278241028356">Vklopite Bluetooth, če želite odkriti naprave v bližini</translation>
@@ -11,11 +12,11 @@
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="3008341117444806826">OSVEŽI</translation>
 <translation id="3838338534323494292">Novo geslo</translation>
+<translation id="4227825898293920515">Geslo poteče čez toliko časa: <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Kartonček za Kerberos kmalu poteče</translation>
 <translation id="445059817448385655">Staro geslo</translation>
 <translation id="467510802200863975">Gesli se ne ujemata</translation>
 <translation id="4731797938093519117">Starševski dostop</translation>
-<translation id="476166673298332917">Skrbnik naprave morda spremlja vašo dejavnost brskanja.</translation>
 <translation id="4890353053343094602">Takoj izberite novo</translation>
 <translation id="5212543919916444558">Na zaslonu ni ničesar uporabnega.
 Poskusite vprašati tako, da se dotaknete mikrofona.</translation>
@@ -24,13 +25,11 @@ Poskusite vprašati tako, da se dotaknete mikrofona.</translation>
 <translation id="5332948983412042822">Izberite novo</translation>
 <translation id="5457599981699367932">Brskajte kot gost</translation>
 <translation id="54609108002486618">Upravljan</translation>
-<translation id="5632302877407885207">{NUM_DAYS,plural, =0{Geslo je poteklo}=1{Geslo poteče čez manj kot en dan}one{Geslo poteče čez manj kot # dan}two{Geslo poteče čez manj kot # dneva}few{Geslo poteče čez manj kot # dni}other{Geslo poteče čez manj kot # dni}}</translation>
 <translation id="5832805196449965646">Dodaj osebo</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
 <translation id="6058625436358447366">Za dokončanje vnesite staro in novo geslo</translation>
 <translation id="6106186594183574873">Za dokončanje vnesite staro geslo</translation>
 <translation id="6146993107019042706">Za dokončanje vnesite novo geslo</translation>
-<translation id="6574601967010742428">Upravitelj naprave lahko morda nadzira vašo dejavnost.</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7690294790491645610">Potrdite novo geslo</translation>
 <translation id="808894953321890993">Sprememba gesla</translation>

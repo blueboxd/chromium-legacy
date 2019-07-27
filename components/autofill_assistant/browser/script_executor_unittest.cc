@@ -1369,5 +1369,56 @@ TEST_F(ScriptExecutorTest, WaitForNavigationReportsError) {
   EXPECT_EQ(NAVIGATION_ERROR, processed_actions_capture[1].status());
 }
 
+TEST_F(ScriptExecutorTest, InterceptUserActions) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()
+      ->mutable_prompt()
+      ->add_choices()
+      ->mutable_chip()
+      ->set_text("done");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+
+  executor_->Run(executor_callback_.Get());
+  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
+  ASSERT_NE(nullptr, delegate_.GetUserActions());
+  ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
+
+  // The prompt action must finish. We don't bother continuing with the script
+  // in this test.
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _));
+
+  (*delegate_.GetUserActions())[0].Call(TriggerContext::CreateEmpty());
+  EXPECT_EQ(AutofillAssistantState::RUNNING, delegate_.GetState());
+}
+
+TEST_F(ScriptExecutorTest, ReportDirectActionsChoices) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()
+      ->mutable_prompt()
+      ->add_choices()
+      ->mutable_direct_action()
+      ->add_names("done");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(SaveArg<3>(&processed_actions_capture));
+
+  auto context = std::make_unique<TriggerContextImpl>();
+  context->SetDirectAction(true);
+  executor_->Run(executor_callback_.Get());
+
+  ASSERT_NE(nullptr, delegate_.GetUserActions());
+  ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
+  (*delegate_.GetUserActions())[0].Call(std::move(context));
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(1));
+  EXPECT_TRUE(processed_actions_capture[0].direct_action());
+}
+
 }  // namespace
 }  // namespace autofill_assistant

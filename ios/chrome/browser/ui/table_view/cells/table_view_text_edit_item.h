@@ -16,6 +16,9 @@
 // The name of the text field.
 @property(nonatomic, copy) NSString* textFieldName;
 
+// The placeholder of the text field.
+@property(nonatomic, copy) NSString* textFieldPlaceholder;
+
 // The value of the text field.
 @property(nonatomic, copy) NSString* textFieldValue;
 

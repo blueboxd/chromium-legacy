@@ -12,6 +12,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

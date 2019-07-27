@@ -74,7 +74,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/histogram_synchronizer.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader_delegate_impl.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
@@ -1044,12 +1043,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     parts_->PostMainMessageLoopRun();
   }
 
-  // Cancel pending requests and prevent new requests.
-  if (resource_dispatcher_host_) {
-    TRACE_EVENT0("shutdown",
-                 "BrowserMainLoop::Subsystem:ResourceDispatcherHost");
-    resource_dispatcher_host_->Shutdown();
-  }
   // Request shutdown to clean up allocated resources on the IO thread.
   if (midi_service_) {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:MidiService");
@@ -1326,28 +1319,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // created; namely, WebRtcEventLogManager.
   // Allowed to leak when the browser exits.
   WebRTCInternals::CreateSingletonInstance();
-
-  // RDH needs the IO thread to be created
-  {
-    TRACE_EVENT0("startup",
-      "BrowserMainLoop::BrowserThreadsStarted:InitResourceDispatcherHost");
-    // TODO(ananta)
-    // We register an interceptor on the ResourceDispatcherHostImpl instance to
-    // intercept requests to create handlers for download requests. We need to
-    // find a better way to achieve this. Ideally we don't want knowledge of
-    // downloads in ResourceDispatcherHostImpl.
-    // We pass the task runners for the UI and IO threads as a stopgap approach
-    // for now. Eventually variants of these runners would be available in the
-    // network service.
-    resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl(
-        base::Bind(&DownloadResourceHandler::Create),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-        !parsed_command_line_.HasSwitch(switches::kDisableResourceScheduler)));
-    GetContentClient()->browser()->ResourceDispatcherHostCreated();
-
-    loader_delegate_.reset(new LoaderDelegateImpl());
-    resource_dispatcher_host_->SetLoaderDelegate(loader_delegate_.get());
-  }
 
   // MediaStreamManager needs the IO thread to be created.
   {

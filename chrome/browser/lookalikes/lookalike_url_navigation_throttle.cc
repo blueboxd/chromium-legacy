@@ -250,9 +250,10 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
   }
 
   LookalikeUrlService* service = LookalikeUrlService::Get(profile_);
-  if (service->UpdateEngagedSites(
-          base::BindOnce(&LookalikeUrlNavigationThrottle::PerformChecksDeferred,
-                         weak_factory_.GetWeakPtr(), url, navigated_domain))) {
+  if (service->EngagedSitesNeedUpdating()) {
+    service->ForceUpdateEngagedSites(
+        base::BindOnce(&LookalikeUrlNavigationThrottle::PerformChecksDeferred,
+                       weak_factory_.GetWeakPtr(), url, navigated_domain));
     // If we're not going to show an interstitial, there's no reason to delay
     // the navigation any further.
     if (!interstitials_enabled_) {

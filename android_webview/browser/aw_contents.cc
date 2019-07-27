@@ -31,7 +31,6 @@
 #include "android_webview/browser/permission/aw_permission_request.h"
 #include "android_webview/browser/permission/permission_request_handler.h"
 #include "android_webview/browser/permission/simple_permission_request.h"
-#include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/state_serializer.h"
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/aw_switches.h"
@@ -293,14 +292,6 @@ void AwContents::SetJavaPeers(
     autofill_provider_ = std::make_unique<autofill::AutofillProviderAndroid>(
         autofill_provider, web_contents_.get());
   }
-
-  // Finally, having setup the associations, release any deferred requests
-  for (content::RenderFrameHost* rfh : web_contents_->GetAllFrames()) {
-    int render_process_id = rfh->GetProcess()->GetID();
-    int render_frame_id = rfh->GetRoutingID();
-    AwResourceDispatcherHostDelegate::OnIoThreadClientReady(render_process_id,
-                                                            render_frame_id);
-  }
 }
 
 void AwContents::SetSaveFormData(bool enabled) {
@@ -403,7 +394,7 @@ ScopedJavaLocalRef<jobject> AwContents::GetRenderProcess(
   return render_process->GetJavaObject();
 }
 
-void AwContents::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void AwContents::Destroy(JNIEnv* env) {
   java_ref_.reset();
   delete this;
 }

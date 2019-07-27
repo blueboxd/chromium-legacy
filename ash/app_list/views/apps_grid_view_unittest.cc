@@ -82,7 +82,6 @@ class PageFlipWaiter : public ash::PaginationModelObserver {
 
  private:
   // PaginationModelObserver overrides:
-  void TotalPagesChanged() override {}
   void SelectedPageChanged(int old_selected, int new_selected) override {
     if (!selected_pages_.empty())
       selected_pages_ += ',';
@@ -91,9 +90,6 @@ class PageFlipWaiter : public ash::PaginationModelObserver {
     if (wait_)
       ui_run_loop_->QuitWhenIdle();
   }
-  void TransitionStarted() override {}
-  void TransitionChanged() override {}
-  void TransitionEnded() override {}
 
   std::unique_ptr<base::RunLoop> ui_run_loop_;
   ash::PaginationModel* model_ = nullptr;

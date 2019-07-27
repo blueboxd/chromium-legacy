@@ -192,6 +192,8 @@ void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
     return;
 
   it->second.render_data.layout_shift_score += render_data.layout_shift_delta;
+  it->second.render_data.layout_shift_score_before_input_or_scroll +=
+      render_data.layout_shift_delta_before_input_or_scroll;
 }
 
 void AMPPageLoadMetricsObserver::OnComplete(
@@ -420,10 +422,17 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   // full-frame layout shifts.
   float clamped_shift_score =
       std::min(subframe_info.render_data.layout_shift_score, 10.0f);
+  float clamped_shift_score_before_input_or_scroll = std::min(
+      subframe_info.render_data.layout_shift_score_before_input_or_scroll,
+      10.0f);
 
   // For UKM, report (shift_score * 100) as an int in the range [0, 1000].
-  builder.SetSubFrame_LayoutInstability_CumulativeShiftScore(
-      static_cast<int>(roundf(clamped_shift_score * 100.0f)));
+  builder
+      .SetSubFrame_LayoutInstability_CumulativeShiftScore(
+          static_cast<int>(roundf(clamped_shift_score * 100.0f)))
+      .SetSubFrame_LayoutInstability_CumulativeShiftScore_BeforeInputOrScroll(
+          static_cast<int>(
+              roundf(clamped_shift_score_before_input_or_scroll * 100.0f)));
 
   // For UMA, report (shift_score * 10) an an int in the range [0,100].
   int32_t uma_value = static_cast<int>(roundf(clamped_shift_score * 10.0f));

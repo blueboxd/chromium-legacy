@@ -14,14 +14,18 @@ class ScrollEvent;
 
 namespace ash {
 
-// This handles 3-finger touchpad scroll events to enter/exit overview mode.
+// This handles 3-finger touchpad scroll events to enter/exit overview mode and
+// move the overview highlight if it is visible. This class also handles
+// 4-finger horizontal scrolls to switch desks.
+// TODO(sammiequon): Rename this class and do some cleanup.
 class ASH_EXPORT OverviewGestureHandler {
  public:
   OverviewGestureHandler();
   virtual ~OverviewGestureHandler();
 
-  // Processes a scroll event and may start overview. Returns true if the event
-  // has been handled and should not be processed further, false otherwise.
+  // Processes a scroll event and may switch desks, start overview or move the
+  // overivew highlight. Returns true if the event has been handled and should
+  // not be processed further, false otherwise.
   bool ProcessScrollEvent(const ui::ScrollEvent& event);
 
  private:

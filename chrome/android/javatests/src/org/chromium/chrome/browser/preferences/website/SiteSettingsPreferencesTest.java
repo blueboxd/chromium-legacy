@@ -30,8 +30,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -84,9 +84,9 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences websitePreferences =
-                    (SingleCategoryPreferences) preferenceActivity.getMainFragmentCompat();
-            ChromeSwitchPreferenceCompat location =
-                    (ChromeSwitchPreferenceCompat) websitePreferences.findPreference(
+                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+            ChromeSwitchPreference location =
+                    (ChromeSwitchPreference) websitePreferences.findPreference(
                             SingleCategoryPreferences.BINARY_TOGGLE_KEY);
 
             websitePreferences.onPreferenceChange(location, enabled);
@@ -157,12 +157,12 @@ public class SiteSettingsPreferencesTest {
             @Override
             public void run() {
                 final SingleCategoryPreferences websitePreferences =
-                        (SingleCategoryPreferences) preferenceActivity.getMainFragmentCompat();
-                final ChromeSwitchPreferenceCompat cookies =
-                        (ChromeSwitchPreferenceCompat) websitePreferences.findPreference(
+                        (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+                final ChromeSwitchPreference cookies =
+                        (ChromeSwitchPreference) websitePreferences.findPreference(
                                 SingleCategoryPreferences.BINARY_TOGGLE_KEY);
-                final ChromeBaseCheckBoxPreferenceCompat thirdPartyCookies =
-                        (ChromeBaseCheckBoxPreferenceCompat) websitePreferences.findPreference(
+                final ChromeBaseCheckBoxPreference thirdPartyCookies =
+                        (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
                                 SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
 
                 if (thirdPartyCookies != null) {
@@ -186,9 +186,9 @@ public class SiteSettingsPreferencesTest {
             final boolean enabled) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             final SingleCategoryPreferences websitePreferences =
-                    (SingleCategoryPreferences) preferenceActivity.getMainFragmentCompat();
-            final ChromeBaseCheckBoxPreferenceCompat thirdPartyCookies =
-                    (ChromeBaseCheckBoxPreferenceCompat) websitePreferences.findPreference(
+                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+            final ChromeBaseCheckBoxPreference thirdPartyCookies =
+                    (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
                             SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
 
             websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
@@ -205,10 +205,9 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleCategoryPreferences preferences =
-                    (SingleCategoryPreferences) preferenceActivity.getMainFragmentCompat();
-            ChromeSwitchPreferenceCompat toggle =
-                    (ChromeSwitchPreferenceCompat) preferences.findPreference(
-                            SingleCategoryPreferences.BINARY_TOGGLE_KEY);
+                    (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+            ChromeSwitchPreference toggle = (ChromeSwitchPreference) preferences.findPreference(
+                    SingleCategoryPreferences.BINARY_TOGGLE_KEY);
             preferences.onPreferenceChange(toggle, enabled);
         });
         preferenceActivity.finish();
@@ -248,7 +247,7 @@ public class SiteSettingsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PreferenceFragmentCompat preferenceFragment =
-                    (PreferenceFragmentCompat) preferenceActivity.getMainFragmentCompat();
+                    (PreferenceFragmentCompat) preferenceActivity.getMainFragment();
             PreferenceScreen preferenceScreen = preferenceFragment.getPreferenceScreen();
             int preferenceCount = preferenceScreen.getPreferenceCount();
 
@@ -392,7 +391,7 @@ public class SiteSettingsPreferencesTest {
                 SiteSettingsTestUtils.startSingleWebsitePreferences(website);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleWebsitePreferences websitePreferences =
-                    (SingleWebsitePreferences) preferenceActivity.getMainFragmentCompat();
+                    (SingleWebsitePreferences) preferenceActivity.getMainFragment();
             websitePreferences.resetSite();
         });
         preferenceActivity.finish();
@@ -473,7 +472,7 @@ public class SiteSettingsPreferencesTest {
                 SiteSettingsTestUtils.startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SiteSettingsPreferences siteSettings =
-                    (SiteSettingsPreferences) preferenceActivity.getMainFragmentCompat();
+                    (SiteSettingsPreferences) preferenceActivity.getMainFragment();
 
             SiteSettingsPreference allSites = (SiteSettingsPreference) siteSettings.findPreference(
                     SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.ALL_SITES));

@@ -156,7 +156,7 @@ static_library("test_support") {
     "//base",
     "//components/prefs",
     "//components/services/patch:lib",
-    "//components/services/unzip:lib",
+    "//components/services/unzip:in_process",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
     "//services/network:test_support",

@@ -73,12 +73,12 @@ class LookalikeUrlService : public KeyedService {
 
   static LookalikeUrlService* Get(Profile* profile);
 
-  // Checks whether the engaged site list is recently updated, and triggers
-  // an update to the list if not. This method will not update the contents of
-  // engaged_sites nor call |callback| if an update is not required.  The method
-  // returns whether or not an update was triggered (and thus whether the
-  // callback will be called).
-  bool UpdateEngagedSites(EngagedSitesCallback callback);
+  // Returns whether the engaged site list is recently updated.
+  bool EngagedSitesNeedUpdating();
+
+  // Triggers an update to the engaged sites list and calls |callback| with the
+  // new list once available.
+  void ForceUpdateEngagedSites(EngagedSitesCallback callback);
 
   // Returns the _current_ list of engaged sites, without updating them if
   // they're out of date.

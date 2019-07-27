@@ -73,16 +73,8 @@ declare_args() {
   # This is initialized below, after use_gold might have been overridden.
   gold_path = false
 
-  if (is_win) {
-    # Whether the VS xtree header has been patched to disable warning 4702. If
-    # it has, then we don't need to disable 4702 (unreachable code warning).
-    # The patch is preapplied to the internal toolchain and hence all bots.
-    msvs_xtree_patched = false
-  }
-
   # Enable fatal linker warnings. Building Chromium with certain versions
   # of binutils can cause linker warning.
-  # See: https://bugs.chromium.org/p/chromium/issues/detail?id=457359
   fatal_linker_warnings = true
 
   # Build with C++ RTTI enabled. Chromium builds without RTTI by default,
@@ -300,6 +292,9 @@ config("compiler") {
       # TODO(lizeb,pasko): Fix link errors when linking with order_profiling=1
       # crbug.com/485542
       ldflags += [ "-Wl,--fatal-warnings" ]
+    }
+    if (fatal_linker_warnings && (is_mac || is_ios)) {
+      ldflags += [ "-Wl,-fatal_warnings" ]
     }
   } else {
   }
@@ -1424,14 +1419,6 @@ config("default_warnings") {
         "/wd4267",
       ]
     }
-
-    # VS xtree header file needs to be patched or 4702 (unreachable code
-    # warning) is reported if _HAS_EXCEPTIONS=0. Disable the warning if xtree is
-    # not patched.
-    if (!msvs_xtree_patched &&
-        exec_script("../../win_is_xtree_patched.py", [], "value") == 0) {
-      cflags += [ "/wd4702" ]  # Unreachable code.
-    }
   } else {
     if ((is_mac || is_ios) && !is_nacl) {
       # When compiling Objective-C, warns if a method is used whose
@@ -1978,15 +1965,7 @@ config("optimize") {
   if (is_win) {
     # TODO(thakis): Remove is_clang here, https://crbug.com/598772
     if (is_official_build && full_wpo_on_official && !is_clang) {
-      common_optimize_on_cflags += [
-        "/GL",  # Whole program optimization.
-
-        # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
-        # Probably anything that this would catch that wouldn't be caught in a
-        # normal build isn't going to actually be a bug, so the incremental
-        # value of C4702 for PGO builds is likely very small.
-        "/wd4702",
-      ]
+      common_optimize_on_cflags += [ "/GL" ]  # Whole program optimization.
     }
 
     # Favor size over speed, /O1 must be before the common flags. The GYP
@@ -2079,15 +2058,7 @@ config("optimize_max") {
 
       if (is_official_build) {
         if (!is_clang) {
-          cflags += [
-            "/GL",  # Whole program optimization.
-
-            # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
-            # Probably anything that this would catch that wouldn't be caught
-            # in a normal build isn't going to actually be a bug, so the
-            # incremental value of C4702 for PGO builds is likely very small.
-            "/wd4702",
-          ]
+          cflags += [ "/GL" ]  # Whole program optimization.
         }
         # TODO(crbug.com/598772): Enable -flto for Clang.
       }
@@ -2126,15 +2097,7 @@ config("optimize_speed") {
 
       # TODO(thakis): Remove is_clang here, https://crbug.com/598772
       if (is_official_build && !is_clang) {
-        cflags += [
-          "/GL",  # Whole program optimization.
-
-          # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
-          # Probably anything that this would catch that wouldn't be caught in a
-          # normal build isn't going to actually be a bug, so the incremental
-          # value of C4702 for PGO builds is likely very small.
-          "/wd4702",
-        ]
+        cflags += [ "/GL" ]  # Whole program optimization.
       }
     } else if (optimize_for_fuzzing) {
       cflags = [ "-O1" ] + common_optimize_on_cflags

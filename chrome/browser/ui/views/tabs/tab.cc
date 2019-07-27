@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -692,7 +692,7 @@ void Tab::SetGroup(base::Optional<TabGroupId> group) {
 base::Optional<SkColor> Tab::GetGroupColor() const {
   return group_.has_value()
              ? base::make_optional(
-                   controller_->GetDataForGroup(group_.value())->color())
+                   controller_->GetVisualDataForGroup(group_.value())->color())
              : base::nullopt;
 }
 

@@ -1107,6 +1107,11 @@ LocalFrameClientImpl::GetDocumentInterfaceBroker() {
   return document_interface_broker_.get();
 }
 
+const blink::BrowserInterfaceBrokerProxy*
+LocalFrameClientImpl::GetBrowserInterfaceBrokerProxy() const {
+  return web_frame_->Client()->GetBrowserInterfaceBrokerProxy();
+}
+
 void LocalFrameClientImpl::BindDocumentInterfaceBroker(
     mojo::ScopedMessagePipeHandle js_handle) {
   document_interface_broker_bindings_.AddBinding(

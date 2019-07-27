@@ -124,9 +124,17 @@ TEST(SearchboxExtensionTest, TestGetLogoColor) {
 
   // Theme with no image.
   theme_info.has_theme_image = false;
-  theme_info.background_color = SK_ColorRED;
-  SkColor logo_color = GetLogoColor(theme_info);
+  theme_info.background_color = SK_ColorBLACK;
+  EXPECT_EQ(SK_ColorWHITE, GetLogoColor(theme_info));
+
+  // Close to midpoint but still dark color should have white logo.
+  theme_info.background_color = SkColorSetRGB(120, 120, 120);
+  EXPECT_EQ(SK_ColorWHITE, GetLogoColor(theme_info));
+
+  // Light color should have themed logo.
+  theme_info.background_color = SkColorSetRGB(130, 130, 130);
   EXPECT_NE(kNTPLightLogoColor, GetLogoColor(theme_info));
-  EXPECT_NE(SK_ColorRED, logo_color);
+  EXPECT_NE(SK_ColorWHITE, GetLogoColor(theme_info));
+  EXPECT_NE(theme_info.background_color, GetLogoColor(theme_info));
 }
 }  // namespace internal

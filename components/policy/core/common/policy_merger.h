@@ -24,6 +24,8 @@ extern const char* const kDictionaryPoliciesToMerge[];
 class POLICY_EXPORT PolicyMerger {
  public:
   PolicyMerger();
+  static bool ConflictCanBeMerged(const PolicyMap::Entry& conflict,
+                                  const PolicyMap::Entry& policy);
   virtual ~PolicyMerger();
   virtual void Merge(PolicyMap::PolicyMapType* policies) const = 0;
 };

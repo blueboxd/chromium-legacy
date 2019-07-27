@@ -14,6 +14,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
@@ -34,6 +35,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_video_frame_adapter.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
@@ -251,7 +253,9 @@ class RTCVideoEncoder::Impl
   gfx::Size input_visible_size_;
 
   // Shared memory buffers for input/output with the VEA.
-  std::vector<std::unique_ptr<base::SharedMemory>> input_buffers_;
+  std::vector<std::unique_ptr<std::pair<base::UnsafeSharedMemoryRegion,
+                                        base::WritableSharedMemoryMapping>>>
+      input_buffers_;
   std::vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
 
   // Input buffers ready to be filled with input from Encode().  As a LIFO since
@@ -478,15 +482,24 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
   input_frame_coded_size_ = input_coded_size;
 
   for (unsigned int i = 0; i < input_count + kInputBufferExtraCount; ++i) {
-    std::unique_ptr<base::SharedMemory> shm =
-        gpu_factories_->CreateSharedMemory(media::VideoFrame::AllocationSize(
+    base::UnsafeSharedMemoryRegion shm =
+        mojo::CreateUnsafeSharedMemoryRegion(media::VideoFrame::AllocationSize(
             media::PIXEL_FORMAT_I420, input_coded_size));
-    if (!shm) {
+    if (!shm.IsValid()) {
       LogAndNotifyError(FROM_HERE, "failed to create input buffer ",
                         media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    input_buffers_.push_back(std::move(shm));
+    base::WritableSharedMemoryMapping mapping = shm.Map();
+    if (!mapping.IsValid()) {
+      LogAndNotifyError(FROM_HERE, "failed to create input buffer ",
+                        media::VideoEncodeAccelerator::kPlatformFailureError);
+      return;
+    }
+    input_buffers_.push_back(
+        std::make_unique<std::pair<base::UnsafeSharedMemoryRegion,
+                                   base::WritableSharedMemoryMapping>>(
+            std::move(shm), std::move(mapping)));
     input_buffers_free_.push_back(i);
   }
 
@@ -661,17 +674,20 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
     const base::TimeDelta timestamp =
         frame ? frame->timestamp()
               : base::TimeDelta::FromMilliseconds(next_frame->ntp_time_ms());
-    base::SharedMemory* input_buffer = input_buffers_[index].get();
-    frame = media::VideoFrame::WrapExternalSharedMemory(
+    std::pair<base::UnsafeSharedMemoryRegion,
+              base::WritableSharedMemoryMapping>* input_buffer =
+        input_buffers_[index].get();
+    frame = media::VideoFrame::WrapExternalData(
         media::PIXEL_FORMAT_I420, input_frame_coded_size_,
         gfx::Rect(input_visible_size_), input_visible_size_,
-        static_cast<uint8_t*>(input_buffer->memory()),
-        input_buffer->mapped_size(), input_buffer->handle(), 0, timestamp);
+        input_buffer->second.GetMemoryAsSpan<uint8_t>().data(),
+        input_buffer->second.size(), timestamp);
     if (!frame.get()) {
       LogAndNotifyError(FROM_HERE, "failed to create frame",
                         media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
+    frame->BackWithSharedMemory(&input_buffer->first);
 
     // Do a strided copy and scale (if necessary) the input frame to match
     // the input requirements for the encoder.

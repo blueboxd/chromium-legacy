@@ -180,9 +180,6 @@ void LogReferrerChainSize(
     LoginReputationClientResponse::VerdictType verdict_type,
     int referrer_chain_size);
 
-// Logs the content area size in DIPs.
-void LogContentsSize(const gfx::Size& size);
-
 }  // namespace safe_browsing
 
 #endif  // COMPONENTS_SAFE_BROWSING_PASSWORD_PROTECTION_METRICS_UTIL_H_

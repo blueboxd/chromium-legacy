@@ -16,10 +16,12 @@ bool ContentUtilityClient::HandleServiceRequest(
   return false;
 }
 
-void ContentUtilityClient::RunIOThreadService(
-    mojo::GenericPendingReceiver* receiver) {}
+mojo::ServiceFactory* ContentUtilityClient::GetIOThreadServiceFactory() {
+  return nullptr;
+}
 
-void ContentUtilityClient::RunMainThreadService(
-    mojo::GenericPendingReceiver receiver) {}
+mojo::ServiceFactory* ContentUtilityClient::GetMainThreadServiceFactory() {
+  return nullptr;
+}
 
 }  // namespace content

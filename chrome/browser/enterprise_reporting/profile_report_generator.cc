@@ -59,10 +59,11 @@ void ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
 
   if (policies_enabled_) {
     // TODO(crbug.com/983151): Upload policy error as their IDs.
-    policies_ = policy::GetAllPolicyValuesAsDictionary(
-        profile_, /* with_user_policies */ true, /* convert_values */ false,
-        /* with_device_data*/ false,
-        /* is_pretty_print */ false, /* convert_types */ false);
+    policies_ = policy::DictionaryPolicyConversions()
+                    .WithBrowserContext(profile_)
+                    .EnableConvertTypes(false)
+                    .EnablePrettyPrint(false)
+                    .ToValue();
     GetChromePolicyInfo();
     GetExtensionPolicyInfo();
     GetPolicyFetchTimestampInfo();

@@ -12,6 +12,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk_preview_view.h"
+#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -52,10 +53,6 @@ constexpr float kMinimumDragDistanceAlreadyInSnapRegionDp = 48.f;
 constexpr float kFlingToCloseVelocityThreshold = 2000.f;
 constexpr float kItemMinOpacity = 0.4f;
 
-// The opacity the dragged item uses once its dragged location intersects with
-// the DesksBarView.
-constexpr float kDragToDeskItemOpacity = 0.6f;
-
 // The UMA histogram that records presentation time for window dragging
 // operation in overview mode.
 constexpr char kOverviewWindowDragHistogram[] =
@@ -84,6 +81,14 @@ gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewItem* item) {
   // Add the margins overview mode adds around the window's contents.
   scaled_size.Enlarge(2 * kWindowMargin, 2 * kWindowMargin + kHeaderHeightDp);
   return scaled_size;
+}
+
+float GetManhattanDistanceX(float point_x, const gfx::RectF& rect) {
+  return std::max(rect.x() - point_x, point_x - rect.right());
+}
+
+float GetManhattanDistanceY(float point_y, const gfx::RectF& rect) {
+  return std::max(rect.y() - point_y, point_y - rect.bottom());
 }
 
 }  // namespace
@@ -205,6 +210,26 @@ void OverviewWindowDragController::StartNormalDragMode(
     // active when dragging the overview window, the split divider bar should be
     // placed below the dragged window during dragging.
     split_view_controller_->OnWindowDragStarted(item_->GetWindow());
+  }
+
+  if (virtual_desks_bar_enabled_) {
+    // Calculate the item bounds minus the header and margins (which are
+    // invisible). Use this for the shrink bounds so that the item starts
+    // shrinking when the visible top-edge of the item aligns with the
+    // bottom-edge of the desks bar (may be different edges if we are dragging
+    // from different directions).
+    gfx::SizeF item_no_header_size = original_scaled_size_;
+    item_no_header_size.Enlarge(float{-kWindowMargin * 2},
+                                float{-kWindowMargin * 2 - kHeaderHeightDp});
+
+    // Calculate cached values for usage during drag.
+    desks_bar_bounds_ = gfx::RectF(
+        item_->overview_grid()->desks_bar_view()->GetBoundsInScreen());
+    shrink_bounds_ = desks_bar_bounds_;
+    shrink_bounds_.Inset(-item_no_header_size.width() / 2,
+                         -item_no_header_size.height() / 2);
+    shrink_region_distance_ =
+        desks_bar_bounds_.origin() - shrink_bounds_.origin();
   }
 }
 
@@ -358,26 +383,50 @@ void OverviewWindowDragController::ContinueNormalDrag(
   gfx::PointF centerpoint =
       location_in_screen - (initial_event_location_ - initial_centerpoint_);
 
-  bool allow_original_window_opacity_change = true;
+  // If virtual desks is enabled, we want to gradually shrink the dragged item
+  // as it gets closer to get dropped into a desk mini view.
   if (virtual_desks_bar_enabled_) {
-    if (item_->overview_grid()->IntersectsWithDesksBar(
-            gfx::ToRoundedPoint(location_in_screen),
-            /*update_desks_bar_drag_details=*/true, /*for_drop=*/false)) {
-      // The drag location intersects the bounds of the DesksBarView, in this
-      // case we scale down the item, and center it around the drag location.
-      bounds.set_size(on_desks_bar_item_size_);
-      item_->SetOpacity(kDragToDeskItemOpacity);
-      allow_original_window_opacity_change = false;
-      centerpoint = location_in_screen;
-      // To make the dragged window contents appear centered around the drag
-      // location, we need to take into account the margins applied on the
-      // target bounds, and offset up the centerpoint by half that amount, so
-      // that the transformed bounds of the window contents move up to be
-      // centered around the cursor.
-      centerpoint.Offset(0, (-kWindowMargin - kHeaderHeightDp) / 2);
+    // TODO(sammiequon): There is a slight jump especially if we drag from the
+    // corner of a larger overview item, but this is necessary for the time
+    // being to prevent jumps from happening while shrinking. Investigate if we
+    // can satisfy all cases.
+    centerpoint = location_in_screen;
+    // To make the dragged window contents appear centered around the drag
+    // location, we need to take into account the margins applied on the
+    // target bounds, and offset up the centerpoint by half that amount, so
+    // that the transformed bounds of the window contents move up to be
+    // centered around the cursor.
+    centerpoint.Offset(0, (-kWindowMargin - kHeaderHeightDp) / 2);
+
+    if (shrink_bounds_.Contains(location_in_screen)) {
+      // Update the mini views borders by checking if |location_in_screen|
+      // intersects.
+      item_->overview_grid()->IntersectsWithDesksBar(
+          gfx::ToRoundedPoint(location_in_screen),
+          /*update_desks_bar_drag_details=*/true, /*for_drop=*/false);
+
+      float value = 0.f;
+      if (centerpoint.y() < desks_bar_bounds_.y() ||
+          centerpoint.y() > desks_bar_bounds_.y()) {
+        // Coming vertically, this is the main use case. This is a ratio of the
+        // distance from |centerpoint| to the closest edge of |desk_bar_bounds|
+        // to the distance from |shrink_bounds| to |desk_bar_bounds|.
+        value = GetManhattanDistanceY(centerpoint.y(), desks_bar_bounds_) /
+                shrink_region_distance_.y();
+      } else if (centerpoint.x() < desks_bar_bounds_.x() ||
+                 centerpoint.x() > desks_bar_bounds_.right()) {
+        // Coming horizontally, this only happens if we are in landscape split
+        // view and someone drags an item to the other half, then up, then into
+        // the desks bar. Works same as vertically except using x-coordinates.
+        value = GetManhattanDistanceX(centerpoint.x(), desks_bar_bounds_) /
+                shrink_region_distance_.x();
+      }
+      value = base::ClampToRange(value, 0.f, 1.f);
+      const gfx::SizeF size_value = gfx::Tween::SizeFValueBetween(
+          1.f - value, original_scaled_size_, on_desks_bar_item_size_);
+      bounds.set_size(size_value);
     } else {
       bounds.set_size(original_scaled_size_);
-      item_->SetOpacity(original_opacity_);
     }
   }
 
@@ -389,10 +438,8 @@ void OverviewWindowDragController::ContinueNormalDrag(
   bounds.set_x(centerpoint.x() - bounds.width() / 2.f);
   bounds.set_y(centerpoint.y() - bounds.height() / 2.f);
   item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
-  if (AreMultiDisplayOverviewAndSplitViewEnabled() && display_count_ > 1u) {
-    item_->UpdatePhantomsForDragging(location_in_screen,
-                                     allow_original_window_opacity_change);
-  }
+  if (AreMultiDisplayOverviewAndSplitViewEnabled() && display_count_ > 1u)
+    item_->UpdatePhantomsForDragging(location_in_screen);
 }
 
 OverviewWindowDragController::DragResult

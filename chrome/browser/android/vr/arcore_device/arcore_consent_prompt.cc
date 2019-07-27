@@ -68,7 +68,6 @@ ArCoreConsentPrompt::~ArCoreConsentPrompt() = default;
 
 void ArCoreConsentPrompt::OnUserConsentResult(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_caller,
     jboolean is_granted) {
   jdelegate_.Reset();
 
@@ -142,7 +141,6 @@ void ArCoreConsentPrompt::RequestInstallSupportedArCore() {
 
 void ArCoreConsentPrompt::OnRequestInstallArModuleResult(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     bool success) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -154,7 +152,6 @@ void ArCoreConsentPrompt::OnRequestInstallArModuleResult(
 
 void ArCoreConsentPrompt::OnRequestInstallSupportedArCoreResult(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     bool success) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

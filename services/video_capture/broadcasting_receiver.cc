@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
-#include "media/capture/video/shared_memory_handle_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
 
 namespace video_capture {
@@ -26,13 +26,13 @@ class ConsumerAccessPermission : public mojom::ScopedAccessPermission {
 
 void CloneSharedBufferHandle(const mojo::ScopedSharedBufferHandle& source,
                              media::mojom::VideoBufferHandlePtr* target) {
-  // Special behavior here: If the handle was already read-only, the
-  // Clone() call here will maintain that read-only permission. If it was
-  // read-write, the cloned handle will have read-write permission.
+  // Buffers are always cloned read-write, as they can be used as output
+  // buffers for the cross-process MojoMjpegDecodeAccelerator.
   //
-  // TODO(crbug.com/797470): We should be able to demote read-write to
-  // read-only permissions when Clone()'ing handles. Currently, this
-  // causes a crash.
+  // TODO(crbug.com/793446): VideoBufferHandle.shared_buffer_handle is also
+  // managed in VideoCaptureController, which makes it hard to keep shared
+  // memory permissions consistent. Permissions should be coordinated better
+  // between these two classes.
   (*target)->set_shared_buffer_handle(
       source->Clone(mojo::SharedBufferHandle::AccessMode::READ_WRITE));
 }
@@ -41,15 +41,15 @@ void CloneSharedBufferToRawFileDescriptorHandle(
     const mojo::ScopedSharedBufferHandle& source,
     media::mojom::VideoBufferHandlePtr* target) {
 #if defined(OS_LINUX)
-  media::SharedMemoryHandleProvider provider;
-  provider.InitFromMojoHandle(
-      source->Clone(mojo::SharedBufferHandle::AccessMode::READ_WRITE));
+  // |source| is unwrapped to a |PlatformSharedMemoryRegion|, from whence a file
+  // descriptor can be extracted which is then mojo-wrapped.
+  base::subtle::PlatformSharedMemoryRegion platform_region =
+      mojo::UnwrapPlatformSharedMemoryRegion(
+          source->Clone(mojo::SharedBufferHandle::AccessMode::READ_WRITE));
   auto sub_struct = media::mojom::SharedMemoryViaRawFileDescriptor::New();
-  sub_struct->shared_memory_size_in_bytes = provider.GetMemorySizeInBytes();
-  sub_struct->file_descriptor_handle = mojo::WrapPlatformFile(
-      base::SharedMemory::DuplicateHandle(
-          provider.GetNonOwnedSharedMemoryHandleForLegacyIPC())
-          .GetHandle());
+  sub_struct->shared_memory_size_in_bytes = platform_region.GetSize();
+  base::subtle::ScopedFDPair fds = platform_region.PassPlatformHandle();
+  sub_struct->file_descriptor_handle = mojo::WrapPlatformFile(fds.fd.release());
   (*target)->set_shared_memory_via_raw_file_descriptor(std::move(sub_struct));
 #else
   NOTREACHED() << "Cannot convert buffer handle to "
@@ -181,14 +181,35 @@ void BroadcastingReceiver::BufferContext::
   DCHECK(buffer_handle_->is_shared_memory_via_raw_file_descriptor());
 
 #if defined(OS_LINUX)
-  media::SharedMemoryHandleProvider provider;
-  provider.InitAsReadOnlyFromRawFileDescriptor(
+  // The conversion unwraps the descriptor from its mojo handle to the raw file
+  // descriptor (ie, an int). This is used to create a
+  // PlatformSharedMemoryRegion which is then wrapped as a
+  // mojo::ScopedSharedBufferHandle.
+  const size_t handle_size =
+      buffer_handle_->get_shared_memory_via_raw_file_descriptor()
+          ->shared_memory_size_in_bytes;
+  base::PlatformFile raw_platform_file;
+  MojoResult result = mojo::UnwrapPlatformFile(
       std::move(buffer_handle_->get_shared_memory_via_raw_file_descriptor()
                     ->file_descriptor_handle),
-      buffer_handle_->get_shared_memory_via_raw_file_descriptor()
-          ->shared_memory_size_in_bytes);
+      &raw_platform_file);
+  if (result != MOJO_RESULT_OK) {
+    NOTREACHED();
+    return;
+  }
+  base::ScopedFD platform_file(raw_platform_file);
+  base::UnguessableToken guid = base::UnguessableToken::Create();
+  base::subtle::PlatformSharedMemoryRegion platform_region =
+      base::subtle::PlatformSharedMemoryRegion::Take(
+          std::move(platform_file),
+          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe, handle_size,
+          guid);
+  if (!platform_region.IsValid()) {
+    NOTREACHED();
+    return;
+  }
   buffer_handle_->set_shared_buffer_handle(
-      provider.GetHandleForInterProcessTransit(true /*read_only*/));
+      mojo::WrapPlatformSharedMemoryRegion(std::move(platform_region)));
 #else
   NOTREACHED() << "Unable to consume buffer handle of type "
                   "kSharedMemoryViaRawFileDescriptor on non-Linux platform.";

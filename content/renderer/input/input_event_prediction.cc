@@ -113,28 +113,51 @@ void InputEventPrediction::UpdatePrediction(const WebInputEvent& event) {
   last_event_timestamp_ = event.TimeStamp();
 }
 
+// When resampling, we don't want to predict too far away because the result
+// will likely be inaccurate in that case. We then cut off the prediction to
+// the maximum available for the current predictor
 void InputEventPrediction::ApplyResampling(base::TimeTicks frame_time,
                                            WebInputEvent* event) {
-  // When resampling, we don't want to predict too far away because the
-  // result will likely be inaccurate in that case. We then cut off the
-  // prediction to the maximum available for the current mouse predictor
-  base::TimeDelta prediction_delta = std::min(
-      frame_time - event->TimeStamp(), mouse_predictor_->MaxResampleTime());
-  base::TimeTicks predict_time = event->TimeStamp() + prediction_delta;
+  base::TimeDelta prediction_delta = frame_time - event->TimeStamp();
+  base::TimeTicks predict_time;
+  WebPointerProperties* wpp_event;
 
   if (event->GetType() == WebInputEvent::kTouchMove) {
     WebTouchEvent* touch_event = static_cast<WebTouchEvent*>(event);
     for (unsigned i = 0; i < touch_event->touches_length; ++i) {
-      if (GetPointerPrediction(predict_time, &touch_event->touches[i]))
-        event->SetTimeStamp(predict_time);
+      wpp_event = &touch_event->touches[i];
+      // Cutoff prediction if delta > MaxResampleTime
+      auto predictor = pointer_id_predictor_map_.find(wpp_event->id);
+      if (predictor != pointer_id_predictor_map_.end()) {
+        prediction_delta =
+            std::min(prediction_delta, predictor->second->MaxResampleTime());
+        predict_time = event->TimeStamp() + prediction_delta;
+        // Compute the prediction
+        if (GetPointerPrediction(predict_time, wpp_event))
+          event->SetTimeStamp(predict_time);
+      }
     }
   } else if (event->GetType() == WebInputEvent::kMouseMove) {
-    if (GetPointerPrediction(predict_time, static_cast<WebMouseEvent*>(event)))
+    wpp_event = static_cast<WebMouseEvent*>(event);
+    // Cutoff prediction if delta > MaxResampleTime
+    prediction_delta =
+        std::min(prediction_delta, mouse_predictor_->MaxResampleTime());
+    predict_time = event->TimeStamp() + prediction_delta;
+    // Compute the prediction
+    if (GetPointerPrediction(predict_time, wpp_event))
       event->SetTimeStamp(predict_time);
   } else if (event->GetType() == WebInputEvent::kPointerMove) {
-    if (GetPointerPrediction(predict_time,
-                             static_cast<WebPointerEvent*>(event)))
-      event->SetTimeStamp(predict_time);
+    wpp_event = static_cast<WebPointerEvent*>(event);
+    // Cutoff prediction if delta > MaxResampleTime
+    auto predictor = pointer_id_predictor_map_.find(wpp_event->id);
+    if (predictor != pointer_id_predictor_map_.end()) {
+      prediction_delta =
+          std::min(prediction_delta, predictor->second->MaxResampleTime());
+      predict_time = event->TimeStamp() + prediction_delta;
+      // Compute the prediction
+      if (GetPointerPrediction(predict_time, wpp_event))
+        event->SetTimeStamp(predict_time);
+    }
   }
 }
 

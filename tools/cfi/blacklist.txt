@@ -159,6 +159,8 @@ src:*device/udev_linux/udev1_loader.cc
 src:*ui/gl/gl_bindings_autogen_*
 
 src:*components/os_crypt/*
+src:*chrome/browser/password_manager/native_backend_gnome_x.cc
+src:*chrome/browser/password_manager/native_backend_libsecret*
 
 src:*content/browser/accessibility/browser_accessibility_auralinux.cc
 src:*ui/accessibility/platform/ax_platform_node_auralinux.cc

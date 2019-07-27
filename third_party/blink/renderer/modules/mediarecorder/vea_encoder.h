@@ -9,7 +9,7 @@
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -52,6 +52,11 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   using VideoParamsAndTimestamp =
       std::pair<media::WebmMuxer::VideoParameters, base::TimeTicks>;
 
+  struct InputBuffer {
+    base::UnsafeSharedMemoryRegion region;
+    base::WritableSharedMemoryMapping mapping;
+  };
+
   VEAEncoder(
       const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
       const VideoTrackRecorder::OnErrorCB& on_error_callback,
@@ -61,7 +66,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void UseOutputBitstreamBufferId(int32_t bitstream_buffer_id);
-  void FrameFinished(std::unique_ptr<base::SharedMemory> shm);
+  void FrameFinished(std::unique_ptr<InputBuffer> shm);
 
   // VideoTrackRecorder::Encoder implementation.
   ~VEAEncoder() override;
@@ -83,7 +88,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   Vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
 
   // Shared memory buffers for output with the VEA as FIFO.
-  Deque<std::unique_ptr<base::SharedMemory>> input_buffers_;
+  Deque<std::unique_ptr<InputBuffer>> input_buffers_;
 
   // Tracks error status.
   bool error_notified_;

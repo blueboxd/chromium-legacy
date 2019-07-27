@@ -67,10 +67,6 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  bool GetBrowserActionVisibility(const std::string& extension_id);
-  void SetBrowserActionVisibility(const std::string& extension_id,
-                                  bool visible);
-
   // Opens the popup for the given |extension| in the given |browser|'s window.
   // If |grant_active_tab_permissions| is true, this grants the extension
   // activeTab (so this should only be done if this is through a direct user

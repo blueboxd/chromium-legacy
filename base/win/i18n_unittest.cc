@@ -4,11 +4,12 @@
 
 // This file contains unit tests for Windows internationalization funcs.
 
+#include "base/win/i18n.h"
+
 #include <stddef.h>
 #include <string.h>
 
 #include "base/strings/string_util.h"
-#include "base/win/i18n.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

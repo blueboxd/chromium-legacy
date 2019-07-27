@@ -4,10 +4,11 @@
 
 #include "services/video_capture/broadcasting_receiver.h"
 
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "media/capture/video/shared_memory_handle_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,11 +46,13 @@ class BroadcastingReceiverTest : public ::testing::Test {
     client_id_2_ = broadcaster_.AddClient(
         std::move(receiver_2), media::VideoCaptureBufferType::kSharedMemory);
 
-    ASSERT_TRUE(shm_provider.InitForSize(kArbitraryDummyBufferSize));
+    shm_region_ =
+        base::UnsafeSharedMemoryRegion::Create(kArbitraryDummyBufferSize);
+    ASSERT_TRUE(shm_region_.IsValid());
     media::mojom::VideoBufferHandlePtr buffer_handle =
         media::mojom::VideoBufferHandle::New();
     buffer_handle->set_shared_buffer_handle(
-        shm_provider.GetHandleForInterProcessTransit(true /*read_only*/));
+        mojo::WrapUnsafeSharedMemoryRegion(std::move(shm_region_)));
     broadcaster_.OnNewBuffer(kArbiraryBufferId, std::move(buffer_handle));
   }
 
@@ -59,7 +62,7 @@ class BroadcastingReceiverTest : public ::testing::Test {
   std::unique_ptr<MockReceiver> mock_receiver_2_;
   int32_t client_id_1_;
   int32_t client_id_2_;
-  media::SharedMemoryHandleProvider shm_provider;
+  base::UnsafeSharedMemoryRegion shm_region_;
   base::test::ScopedTaskEnvironment task_environment_;
 };
 

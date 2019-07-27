@@ -9,15 +9,18 @@
 <translation id="2338501278241028356">برای کاوش دستگاه‌های همین اطراف، بلوتوث را روشن کنید</translation>
 <translation id="2805756323405976993">برنامه‌ها</translation>
 <translation id="2872961005593481000">خاموش کردن</translation>
+<translation id="3008341117444806826">بازخوانی</translation>
 <translation id="3838338534323494292">گذرواژه جدید</translation>
+<translation id="4429881212383817840">‏بلیت Kerberos به‌زودی منقضی می‌شود</translation>
 <translation id="445059817448385655">گذرواژه قدیمی</translation>
 <translation id="467510802200863975">گذرواژه‌ها با هم مطابقت ندارند</translation>
 <translation id="4731797938093519117">دسترسی والدین</translation>
-<translation id="476166673298332917">سرپرست دستگاه ممکن است فعالیت مرور شما را پایش کند.</translation>
+<translation id="4890353053343094602">انتخاب فوری موردی جدید</translation>
 <translation id="5212543919916444558">در صفحه‌‌تان چیزی پیدا نمی‌کنم تا درمورد آن کمکتان کنم.
 برای درخواست از من، روی میکروفون ضربه بزنید.</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="5317780077021120954">ذخیره</translation>
+<translation id="5332948983412042822">انتخاب مورد جدیدی در همین لحظه</translation>
 <translation id="5457599981699367932">مرور کردن به‌عنوان یک مهمان</translation>
 <translation id="54609108002486618">مدیریت شده</translation>
 <translation id="5832805196449965646">افزودن شخص</translation>
@@ -25,10 +28,10 @@
 <translation id="6058625436358447366">برای تکمیل کار، گذرواژه‌های قدیمی و جدیدتان را وارد کنید</translation>
 <translation id="6106186594183574873">برای تکمیل کار، گذرواژه قدیمی‌تان را وارد کنید</translation>
 <translation id="6146993107019042706">برای تکمیل کار،‌ گذرواژه جدیدتان را وارد کنید</translation>
-<translation id="6574601967010742428">سرپرست دستگاه ممکن است بر فعالیتتان نظارت داشته باشد.</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7690294790491645610">تأیید گذرواژه جدید</translation>
 <translation id="808894953321890993">تغییر گذرواژه</translation>
 <translation id="8747900814994928677">تأیید تغییر</translation>
+<translation id="910415269708673980">بازخوانی بلیت برای <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">باز کردن قفل</translation>
 </translationbundle>

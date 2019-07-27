@@ -26,6 +26,11 @@ namespace gfx {
 class Rect;
 }
 
+namespace ui {
+class Layer;
+class ScopedLayerAnimationSettings;
+}  // namespace ui
+
 namespace app_list {
 
 class AppListPage;
@@ -165,6 +170,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   ExpandArrowView* expand_arrow_view() const { return expand_arrow_view_; }
 
+  ash::AppListViewState target_view_state() const { return target_view_state_; }
+
   // Returns the pagination model for the ContentsView.
   const ash::PaginationModel& pagination_model() { return pagination_model_; }
 
@@ -200,7 +207,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void SelectedPageChanged(int old_selected, int new_selected) override;
   void TransitionStarted() override;
   void TransitionChanged() override;
-  void TransitionEnded() override;
 
   // Returns selected view in active page.
   views::View* GetSelectedView() const;
@@ -215,6 +221,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Show/hide the expand arrow view button when contents view is in fullscreen
   // and tablet mode is enabled.
   void SetExpandArrowViewVisibility(bool show);
+
+  std::unique_ptr<ui::ScopedLayerAnimationSettings>
+  CreateTransitionAnimationSettings(ui::Layer* layer) const;
 
   void NotifySearchBoxBoundsUpdated();
 
@@ -231,19 +240,15 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Returns the size of the default content area.
   gfx::Size GetDefaultContentsSize() const;
 
-  // Calculates and sets the bounds for the subviews. If there is currently an
-  // animation, this positions the views as appropriate for the current frame.
-  void UpdatePageBounds();
-
-  void UpdateSearchBox(double progress,
-                       ash::AppListState current_state,
-                       ash::AppListState target_state);
-
-  // Updates the expand arrow's opacity based on the progress of transition from
-  // current state to target state.
-  void UpdateExpandArrowOpacity(double progress,
+  void InitializeSearchBoxAnimation(ash::AppListState current_state,
+                                    ash::AppListState target_state);
+  void UpdateSearchBoxAnimation(double progress,
                                 ash::AppListState current_state,
                                 ash::AppListState target_state);
+
+  // Updates the opacity of the expand arrow to the target state. Set |animate|
+  // to true when the opacity changes gradually.
+  void UpdateExpandArrowOpacity(ash::AppListState target_state, bool animate);
 
   // Updates the expand arrow's focus behavior based on AppListViewState.
   void UpdateExpandArrowFocusBehavior(ash::AppListViewState target_state);
@@ -291,6 +296,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Owned by the views hierarchy.
   AppListView* const app_list_view_;
+
+  ash::AppListViewState target_view_state_ = ash::AppListViewState::kPeeking;
 
   // Owned by the views hierarchy.
   ExpandArrowView* expand_arrow_view_ = nullptr;

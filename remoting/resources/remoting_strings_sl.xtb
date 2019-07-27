@@ -69,6 +69,11 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="2366718077645204424">Ni mogoče vzpostaviti povezave z gostiteljem; verjetno zaradi konfiguracije omrežja, ki ga uporabljate.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Zadnji odziv z vzpostavljeno povezavo: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Ta aplikacija ni več podprta. Zaradi prejemanja najnovejših funkcij in varnostnih posodobitev uporabljajte <ph name="LINK_BEGIN" />spletno aplikacijo Oddaljeno namizje za Chrome<ph name="LINK_END" />.</translation>
+<translation id="2431841749166974386">Preden lahko ta računalnik na daljavo upravljate z izdelkom <ph name="PRODUCT_NAME" />, je potreben dodaten konfiguracijski korak.
+
+Če želite omogočiti to funkcijo, izberite »<ph name="BUTTON_NAME" />«, da prikažete podokno z nastavitvami za varnost in zasebnost, ter potrdite polje zraven možnosti »<ph name="SERVICE_SCRIPT_NAME" />«.
+
+Če je možnost »<ph name="SERVICE_SCRIPT_NAME" />« že na voljo in označena, jo morate morda odstraniti in nato znova dodati.</translation>
 <translation id="2499160551253595098">Pomagajte nam izboljšati Oddaljeno namizje za Chrome, tako da nam dovolite zbiranje statističnih podatkov o uporabi in poročil o zrušitvah.</translation>
 <translation id="2512228156274966424">OPOMBA: Če želite zagotoviti, da bodo na voljo vse bližnjične tipke, lahko Oddaljeno namizje za Chrome konfigurirate na »Odpri kot okno«.</translation>
 <translation id="2540992418118313681">Ali želite ta računalnik deliti z drugimi, tako da bo imel drug uporabnik do njega dostop in ga bo lahko nadziral?</translation>
@@ -186,9 +191,6 @@ PC</translation>
 <translation id="492843737083352574">Imam težave s tipkovnico ali miško.</translation>
 <translation id="4973800994433240357">Če prenesete namestitveni program za gostitelja za Oddaljeno povezovanje s Chromom, sprejemate Googlove <ph name="LINK_BEGIN" />pogoje storitve<ph name="LINK_END" />.</translation>
 <translation id="4985296110227979402">Računalnik morate najprej nastaviti za oddaljeni dostop.</translation>
-<translation id="5059773780693835145">Preden lahko ta računalnik na daljavo upravljate z uporabo izdelka <ph name="PRODUCT_NAME" />, je potreben dodaten konfiguracijski korak.
-
-Če želite omogočiti to funkcijo, izberite »<ph name="BUTTON_NAME" />«, da prikažete podokno z nastavitvami za varnost in zasebnost, ter potrdite polje zraven možnosti »<ph name="SERVICE_SCRIPT_NAME" />«.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (brez povezave)</translation>
 <translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
 <translation id="507204348399810022">Ali ste prepričani, da želite onemogočiti oddaljene povezave z gostiteljem <ph name="HOSTNAME" />?</translation>

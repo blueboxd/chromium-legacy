@@ -156,7 +156,7 @@
 <translation id="2100350898815792233">सभी विराम चिह्न</translation>
 <translation id="2110480898214777136">किसी पेज, संवाद या अन्य कंटेनर के भीतर शुरुआत से अंत तक ले जाएं या अंत से शुरुआत तक ले जाएं</translation>
 <translation id="2119965627982867824">spnbtn</translation>
-<translation id="2121067395472282800">एक्सेस कुंजी:<ph name="KEY" /></translation>
+<translation id="2121067395472282800">ऐक्सेस कुंजी:<ph name="KEY" /></translation>
 <translation id="2127747486437921899">इटैलिक</translation>
 <translation id="2138345533858834403">स्क्रीन के ऊपर मौजूद ChromeVox पैनल में रीफ़्रेश
         किए जा सकने वाले ब्रेल प्रदर्शन के आउटपुट की नकल पेश करता है.</translation>
@@ -668,7 +668,7 @@
 <translation id="5628125749885014029">h4</translation>
 <translation id="5632083598315326067">ग्राफ़िक्स चिह्न</translation>
 <translation id="5637871198229500030">कोई पिछली टेबल नहीं.</translation>
-<translation id="5653397561111110475">Chromebook टच स्क्रीन एक्सेस-योग्यता सुविधाओं का उपयोग करें</translation>
+<translation id="5653397561111110475">Chromebook टच स्क्रीन ऐक्सेस-योग्यता सुविधाओं का उपयोग करें</translation>
 <translation id="5655682562155942719">आदेशों पर जाएं</translation>
 <translation id="56637627897541303">लेख क्षेत्र</translation>
 <translation id="5678161956734658133">mled</translation>
@@ -1117,7 +1117,7 @@
 <translation id="844681116543532394">कोई पिछला चेकबॉक्स नहीं.</translation>
 <translation id="8446884382197647889">ज़्यादा जानें</translation>
 <translation id="8455868257606149352">अधिकतम <ph name="X" /></translation>
-<translation id="84575901236241018">एक्सेस कुंजी है, <ph name="KEY" /></translation>
+<translation id="84575901236241018">ऐक्सेस कुंजी है, <ph name="KEY" /></translation>
 <translation id="847154984256717791">व्यस्त</translation>
 <translation id="8476408756881832830">जब ChromeVox बोल रहा हो, तब प्लेबैक रोकें</translation>
 <translation id="8476508772960940536">विंडो अवलोकन</translation>

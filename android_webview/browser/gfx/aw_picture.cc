@@ -18,7 +18,7 @@ AwPicture::AwPicture(sk_sp<SkPicture> picture) : picture_(std::move(picture)) {
 
 AwPicture::~AwPicture() {}
 
-void AwPicture::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void AwPicture::Destroy(JNIEnv* env) {
   delete this;
 }
 

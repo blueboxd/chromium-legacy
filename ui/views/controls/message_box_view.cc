@@ -90,7 +90,7 @@ MessageBoxView::MessageBoxView(const InitParams& params)
 MessageBoxView::~MessageBoxView() = default;
 
 base::string16 MessageBoxView::GetInputText() {
-  return prompt_field_ ? prompt_field_->text() : base::string16();
+  return prompt_field_ ? prompt_field_->GetText() : base::string16();
 }
 
 bool MessageBoxView::IsCheckBoxSelected() {

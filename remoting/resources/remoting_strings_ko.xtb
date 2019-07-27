@@ -192,9 +192,6 @@ PC</translation>
 <translation id="4973800994433240357">Chromoting 호스트 설치 프로그램을 다운로드하면 Google <ph name="LINK_BEGIN" />서비스 약관<ph name="LINK_END" />에 동의하게 됩니다.</translation>
 <translation id="4974476491460646149"><ph name="HOSTNAME" /> 연결이 종료되었습니다</translation>
 <translation id="4985296110227979402">먼저 컴퓨터를 원격으로 액세스할 수 있도록 설정해야 합니다.</translation>
-<translation id="5059773780693835145"><ph name="PRODUCT_NAME" />을(를) 사용하여 이 기기를 원격으로 제어하려면 먼저 추가 구성 단계를 완료해야 합니다.
-
-이 기능을 사용하려면 '<ph name="BUTTON_NAME" />' 버튼을 선택하여 보안 및 개인정보 보호 환경설정 창을 표시한 후 '<ph name="SERVICE_SCRIPT_NAME" />' 옆의 체크박스를 선택하세요.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />(오프라인)</translation>
 <translation id="5070121137485264635">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chrome 원격 데스크톱에 추가 권한을 허용해야 합니다.</translation>
 <translation id="507204348399810022"><ph name="HOSTNAME" /> 원격 연결을 사용 중지하시겠습니까?</translation>

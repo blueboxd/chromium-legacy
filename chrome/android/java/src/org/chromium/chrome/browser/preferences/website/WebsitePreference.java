@@ -20,17 +20,17 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
-import org.chromium.chrome.browser.preferences.ChromeImageViewPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 /**
  * A preference that displays a website's favicon and URL and, optionally, the amount of local
  * storage used by the site. This preference can also display an additional icon on the right side
- * of the preference. See {@link ChromeImageViewPreferenceCompat} for more details on how this icon
+ * of the preference. See {@link ChromeImageViewPreference} for more details on how this icon
  * can be used.
  */
-class WebsitePreference extends ChromeImageViewPreferenceCompat implements FaviconImageCallback {
+class WebsitePreference extends ChromeImageViewPreference implements FaviconImageCallback {
     private final Website mSite;
     private final SiteSettingsCategory mCategory;
 

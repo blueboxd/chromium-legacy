@@ -308,7 +308,7 @@ void SearchBoxViewBase::Init() {
 }
 
 bool SearchBoxViewBase::HasSearch() const {
-  return !search_box_->text().empty();
+  return !search_box_->GetText().empty();
 }
 
 gfx::Rect SearchBoxViewBase::GetViewBoundsForSearchBoxContentsBounds(
@@ -444,14 +444,14 @@ void SearchBoxViewBase::OnSearchBoxFocusedChanged() {
 
 bool SearchBoxViewBase::IsSearchBoxTrimmedQueryEmpty() const {
   base::string16 trimmed_query;
-  base::TrimWhitespace(search_box_->text(), base::TrimPositions::TRIM_ALL,
+  base::TrimWhitespace(search_box_->GetText(), base::TrimPositions::TRIM_ALL,
                        &trimmed_query);
   return trimmed_query.empty();
 }
 
 void SearchBoxViewBase::ClearSearch() {
   // Avoid setting |search_box_| text to empty if it is already empty.
-  if (search_box_->text() == base::string16())
+  if (search_box_->GetText() == base::string16())
     return;
 
   search_box_->SetText(base::string16());
@@ -485,7 +485,7 @@ void SearchBoxViewBase::UpdateButtonsVisisbility() {
   DCHECK(close_button_ && assistant_button_);
 
   const bool should_show_close_button =
-      !search_box_->text().empty() ||
+      !search_box_->GetText().empty() ||
       (show_close_button_when_active_ && is_search_box_active_);
   const bool should_show_assistant_button =
       show_assistant_button_ && !should_show_close_button;
@@ -549,7 +549,7 @@ void SearchBoxViewBase::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
         GetWidget()->GetWindowBoundsInScreen().Contains(
             located_event->root_location());
     if (is_search_box_active_ || !event_is_in_searchbox_bounds ||
-        !search_box_->text().empty())
+        !search_box_->GetText().empty())
       return;
     // If the event was within the searchbox bounds and in an inactive empty
     // search box, enable the search box.

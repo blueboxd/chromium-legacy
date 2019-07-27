@@ -208,6 +208,7 @@ bool WebInputEventTraits::ShouldBlockEventStream(const WebInputEvent& event) {
     case WebInputEvent::kGestureTapDown:
     case WebInputEvent::kGestureTapCancel:
     case WebInputEvent::kGesturePinchBegin:
+    case WebInputEvent::kGesturePinchUpdate:
     case WebInputEvent::kGesturePinchEnd:
       return false;
 

@@ -55,18 +55,23 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     OCMStub([signin_promo_view_ closeButton]).andReturn(close_button_);
   }
 
+  // Creates the default identity and adds it into the ChromeIdentityService.
+  void AddDefaultIdentity() {
+    expected_default_identity_ =
+        [FakeChromeIdentity identityWithEmail:@"johndoe@example.com"
+                                       gaiaID:@"1"
+                                         name:@"John Doe"];
+    ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
+        ->AddIdentity(expected_default_identity_);
+  }
+
   void TestColdState() {
     EXPECT_EQ(nil, mediator_.defaultIdentity);
     CheckColdStateConfigurator([mediator_ createConfigurator]);
   }
 
   void TestWarmState() {
-    expected_default_dentity_ =
-        [FakeChromeIdentity identityWithEmail:@"johndoe@example.com"
-                                       gaiaID:@"1"
-                                         name:@"John Doe"];
-    ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-        ->AddIdentity(expected_default_dentity_);
+    AddDefaultIdentity();
     CheckWarmStateConfigurator([mediator_ createConfigurator]);
   }
 
@@ -100,7 +105,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   }
 
   void ExpectWarmStateConfiguration() {
-    EXPECT_EQ(expected_default_dentity_, mediator_.defaultIdentity);
+    EXPECT_EQ(expected_default_identity_, mediator_.defaultIdentity);
     OCMExpect([signin_promo_view_ setMode:SigninPromoViewModeWarmState]);
     OCMExpect([signin_promo_view_
         setProfileImage:[OCMArg checkWithBlock:^BOOL(id value) {
@@ -128,9 +133,9 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     OCMExpect([close_button_ setHidden:YES]);
     [configurator configureSigninPromoView:signin_promo_view_];
     EXPECT_NE(nil, image_view_profile_image_);
-    NSString* userFullName = expected_default_dentity_.userFullName.length
-                                 ? expected_default_dentity_.userFullName
-                                 : expected_default_dentity_.userEmail;
+    NSString* userFullName = expected_default_identity_.userFullName.length
+                                 ? expected_default_identity_.userFullName
+                                 : expected_default_identity_.userEmail;
     NSRange profileNameRange =
         [primary_button_title_ rangeOfString:userFullName];
     EXPECT_NE(profileNameRange.length, 0u);
@@ -138,7 +143,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
       // Secondary buttons for sign-in promos contained the email before
       // Unified Consent.
-      NSString* userEmail = expected_default_dentity_.userEmail;
+      NSString* userEmail = expected_default_identity_.userEmail;
       NSRange profileEmailRange =
           [secondary_button_title_ rangeOfString:userEmail];
       EXPECT_NE(profileEmailRange.length, 0u);
@@ -149,7 +154,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   SigninPromoViewMediator* mediator_;
 
   // Identity used for the warm state.
-  FakeChromeIdentity* expected_default_dentity_;
+  FakeChromeIdentity* expected_default_identity_;
 
   // Configurator received from the consumer.
   SigninPromoViewConfigurator* configurator_;
@@ -187,12 +192,7 @@ TEST_F(SigninPromoViewMediatorTest,
        WarmStateConfigureSigninPromoViewWithoutImage) {
   CreateMediator(signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS);
   ExpectConfiguratorNotification(YES);
-  expected_default_dentity_ =
-      [FakeChromeIdentity identityWithEmail:@"johndoe@example.com"
-                                     gaiaID:@"1"
-                                       name:nil];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      expected_default_dentity_);
+  AddDefaultIdentity();
   CheckWarmStateConfigurator([mediator_ createConfigurator]);
   CheckWarmStateConfigurator(configurator_);
 }
@@ -232,8 +232,8 @@ TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithWarmAndCold) {
   CheckWarmStateConfigurator(configurator_);
   ExpectConfiguratorNotification(YES);
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->RemoveIdentity(expected_default_dentity_);
-  expected_default_dentity_ = nil;
+      ->RemoveIdentity(expected_default_identity_);
+  expected_default_identity_ = nil;
   TestColdState();
   CheckColdStateConfigurator(configurator_);
 }

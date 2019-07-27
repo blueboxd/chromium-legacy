@@ -51,16 +51,15 @@ public class UsbChooserDialogTest {
 
     private class TestUsbChooserDialogJni implements UsbChooserDialog.Natives {
         @Override
-        public void onItemSelected(
-                UsbChooserDialog self, long nativeUsbChooserDialogAndroid, String deviceId) {
+        public void onItemSelected(long nativeUsbChooserDialogAndroid, String deviceId) {
             mSelectedDeviceId = deviceId;
         }
 
         @Override
-        public void onDialogCancelled(UsbChooserDialog self, long nativeUsbChooserDialogAndroid) {}
+        public void onDialogCancelled(long nativeUsbChooserDialogAndroid) {}
 
         @Override
-        public void loadUsbHelpPage(UsbChooserDialog self, long nativeUsbChooserDialogAndroid) {}
+        public void loadUsbHelpPage(long nativeUsbChooserDialogAndroid) {}
     }
 
     @Before

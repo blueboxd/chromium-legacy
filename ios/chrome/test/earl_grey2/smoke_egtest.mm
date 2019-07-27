@@ -5,6 +5,7 @@
 #import <TestLib/EarlGreyImpl/EarlGrey.h>
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -12,7 +13,9 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/earl_grey2/chrome_earl_grey_edo.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/web/common/features.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -190,6 +193,21 @@
 - (void)testAccessibilityUtil {
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+}
+
+// Tests enabling/disabling features through [AppLaunchManager
+// ensureAppLaunchedWithFeaturesEnabled]
+- (void)testAppLaunchManagerLaunchWithFeatures {
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithFeaturesEnabled:
+          {kNewOmniboxPopupLayout, web::features::kSlimNavigationManager}
+                                  disabled:{}
+                              forceRestart:NO];
+
+  GREYAssertTrue([ChromeEarlGrey isNewOmniboxPopupLayoutEnabled],
+                 @"NewOmniboxPopupLayout should be enabled");
+  GREYAssertTrue([ChromeEarlGrey isSlimNavigationManagerEnabled],
+                 @"SlimNavigationManager should be enabled");
 }
 
 @end

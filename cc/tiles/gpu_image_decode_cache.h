@@ -656,6 +656,26 @@ class CC_EXPORT GpuImageDecodeCache
   sk_sp<SkColorSpace> ColorSpaceForImageDecode(const DrawImage& image,
                                                DecodedDataMode mode) const;
 
+  // Helper function to add a memory dump to |pmd| for a single texture
+  // identified by |gl_id| with size |bytes| and |locked_size| equal to either
+  // |bytes| or 0 depending on whether the texture is currently locked.
+  void AddTextureDump(base::trace_event::ProcessMemoryDump* pmd,
+                      const std::string& texture_dump_name,
+                      const size_t bytes,
+                      const GrGLuint gl_id,
+                      const size_t locked_size) const;
+
+  // Alias each texture of the YUV image entry to its Skia texture counterpart,
+  // taking ownership of the memory and preventing double counting.
+  //
+  // Given |dump_base_name| as the location where single RGB image textures are
+  // dumped, this method creates dumps under |pmd| for the planar textures
+  // backing |image_data| as subcategories plane_0, plane_1, etc.
+  void MemoryDumpYUVImage(base::trace_event::ProcessMemoryDump* pmd,
+                          const ImageData* image_data,
+                          const std::string& dump_base_name,
+                          size_t locked_size) const;
+
   // |persistent_cache_| represents the long-lived cache, keeping a certain
   // budget of ImageDatas alive even when their ref count reaches zero.
   using PersistentCache = base::HashingMRUCache<PaintImage::FrameKey,

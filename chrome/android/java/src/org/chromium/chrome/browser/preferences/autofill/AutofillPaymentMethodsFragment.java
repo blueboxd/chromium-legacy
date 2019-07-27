@@ -20,9 +20,9 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.AndroidPaymentAppFactory;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.MainPreferences;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 
 /**
  * Autofill credit cards fragment, which allows the user to edit credit cards and control
@@ -62,8 +62,8 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
         getPreferenceScreen().removeAll();
         getPreferenceScreen().setOrderingAsAdded(true);
 
-        ChromeSwitchPreferenceCompat autofillSwitch =
-                new ChromeSwitchPreferenceCompat(getStyledContext(), null);
+        ChromeSwitchPreference autofillSwitch =
+                new ChromeSwitchPreference(getStyledContext(), null);
         autofillSwitch.setTitle(R.string.autofill_enable_credit_cards_toggle_label);
         autofillSwitch.setSummary(R.string.autofill_enable_credit_cards_toggle_sublabel);
         autofillSwitch.setChecked(PersonalDataManager.isAutofillCreditCardEnabled());
@@ -71,7 +71,7 @@ public class AutofillPaymentMethodsFragment extends PreferenceFragmentCompat
             PersonalDataManager.setAutofillCreditCardEnabled((boolean) newValue);
             return true;
         });
-        autofillSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegateCompat() {
+        autofillSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 return PersonalDataManager.isAutofillCreditCardManaged();

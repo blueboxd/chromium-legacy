@@ -150,6 +150,7 @@
 <translation id="2933759065870693102">闪光灯</translation>
 <translation id="2958718410589002129">密码</translation>
 <translation id="2969979262385602596">登录失败，请稍后重试。</translation>
+<translation id="298306318844797842">添加付款方式…</translation>
 <translation id="2989805286512600854">在新标签页中打开</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
 <translation id="3112556859945124369">标为…</translation>
@@ -313,6 +314,7 @@
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5614553682702429503">要保存密码吗？</translation>
 <translation id="5626245204502895507">该文件目前无法下载。</translation>
+<translation id="5631164295104953411">添加付款方式</translation>
 <translation id="5659593005791499971">电子邮件</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">版本 <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +466,7 @@
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="778855399387580014">在新的 Chrome 标签页中发起搜索。</translation>
+<translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7840771868269352570">系统将会移除您所选的各项内容。</translation>
 <translation id="7856733331829174190">无法下载</translation>
@@ -531,7 +534,6 @@
 <translation id="8976382372951310360">帮助</translation>
 <translation id="8981454092730389528">Google 活动控件</translation>
 <translation id="8985320356172329008">已使用以下帐号登录 Google：</translation>
-<translation id="9016406938567631235">正在发送…</translation>
 <translation id="902659348151742535">Google 可能会利用您的浏览记录为您提供个性化的 Google 搜索、广告和其他 Google 服务。</translation>
 <translation id="9034759925968272072">您不会因此而退出自己的 Google 帐号。您的 Google 帐号在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="9039373489628511875">带宽</translation>

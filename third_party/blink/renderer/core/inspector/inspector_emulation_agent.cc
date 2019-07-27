@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_cpu_throttler.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 using protocol::Maybe;

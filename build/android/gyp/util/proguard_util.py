@@ -136,7 +136,7 @@ class ProguardCmdBuilder(object):
 
     if self._min_api:
       cmd += [
-          '-assumevalues class android.os.Build$VERSION {' +
+          '-assumenosideeffects class android.os.Build$VERSION {' +
           ' public static final int SDK_INT return ' + self._min_api +
           '..9999; }'
       ]

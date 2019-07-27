@@ -145,7 +145,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '59192a0d66a746e472802fed50c139b880ef11c4',
+  'skia_revision': 'ff5d7a2f90339e868defc86800cedef537b5868c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -157,15 +157,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'f002a637743fd613e687d2f8e1e0aa20302c1c23',
+  'angle_revision': 'a51232eb2f723b6bb99b23d87edd3f5c3418f8f3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'ec3039253ab805b040ac3a5a42eeec7e84d0377b',
+  'swiftshader_revision': '3575550a711be52a32201e3ddcf605ac61aa56f0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '6e3a40600f246bd8cff2367e3805ce53466cb349',
+  'pdfium_revision': 'fee18fe49862b9140e888ce29cbba9115b8b26ee',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -280,7 +280,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '506ce9bba43beca3ba6416b93f6c43ef7df0c5d3',
+  'dawn_revision': 'b98f0faa4d0ba55fcde794fe0e6fcb069e43d8c3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -809,7 +809,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'f86d0ece2ee12e7d635880d0338370a59e690c7b',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '8c0f919d41e6efc4456147e4af35479861ebec68',
       'condition': 'checkout_linux',
   },
 
@@ -834,7 +834,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'e3614ad6f574a554f18dbcb1c03dd9f0df6ab3ba',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '602076dcf209cf2630e3976c648f4f4d8da0b553',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1207,7 +1207,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' +  'd7e4835d434575794598259a0dd72e14b458db74',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' +  'c310fac80764464753f6e49be4129ca697308d02',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1375,7 +1375,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'abaae129d9a0c6e1e092067e0b105475df43352e',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '378cae2543f5ea7d0a95a1c15516da0c5cd15f6c',
+    Var('webrtc_git') + '/src.git' + '@' + '9f17aff35bd1f176851f1b5aa568ea374f2b0ecd',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1416,7 +1416,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@424fc331f3be3c8d3558e281fa7437abbac29484',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@93622e0fd14bf6f59ef34db93c3dbd272de3ec3f',
     'condition': 'checkout_src_internal',
   },
 
@@ -2949,7 +2949,7 @@ hooks = [
       'chrome-sdk',
       '--nogoma',
       '--use-external-config',
-      '--require-exact-version',
+      '--fallback-versions=0',
       '--nogn-gen',
       '--download-vm',
       '--board={cros_board}',
@@ -2970,7 +2970,7 @@ hooks = [
       'chrome-sdk',
       '--nogoma',
       '--use-external-config',
-      '--require-exact-version',
+      '--fallback-versions=0',
       '--nogn-gen',
       '--board={cros_board}',
       '--cache-dir=src/build/cros_cache/',

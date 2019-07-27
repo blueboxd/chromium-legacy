@@ -134,6 +134,14 @@ void ClientControlledState::HandleWorkspaceEvents(WindowState* window_state,
     // Then ask delegate to set the desired bounds for the snap state.
     delegate_->HandleBoundsRequest(window_state, window_state->GetStateType(),
                                    bounds, window_state->GetDisplay().id());
+  } else if (event->type() == WM_EVENT_DISPLAY_BOUNDS_CHANGED) {
+    // Explicitly handle the primary change because it can change the display id
+    // with no bounds change.
+    if (event->AsDisplayMetricsChangedWMEvent()->primary_changed()) {
+      const gfx::Rect bounds = window_state->window()->bounds();
+      delegate_->HandleBoundsRequest(window_state, window_state->GetStateType(),
+                                     bounds, window_state->GetDisplay().id());
+    }
   } else if (event->type() == WM_EVENT_ADDED_TO_WORKSPACE) {
     aura::Window* window = window_state->window();
     gfx::Rect bounds = window->bounds();

@@ -26,7 +26,6 @@ class WebApkHandlerDelegate {
   // Called once for each installed WebAPK when RetrieveWebApks() is called.
   void OnWebApkInfoRetrieved(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& caller,
       const base::android::JavaParamRef<jstring>& jname,
       const base::android::JavaParamRef<jstring>& jshort_name,
       const base::android::JavaParamRef<jstring>& jpackage_name,

@@ -432,7 +432,6 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     std::unique_ptr<PrefValueStore::Delegate> delegate) {
   TRACE_EVENT0("browser", "chrome_prefs::CreateProfilePrefs");
-  SCOPED_UMA_HISTOGRAM_TIMER("PrefService.CreateProfilePrefsTime");
 
   prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer;
   mojo::MakeStrongBinding(

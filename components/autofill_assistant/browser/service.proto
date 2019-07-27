@@ -37,6 +37,13 @@ message ClientContextProto {
 
   // Experiment ids string provided by the 'caller'.
   optional string experiment_ids = 7;
+
+  // True if the script is called from a Chrome Custom Tab created for Autofill
+  // Assistant.
+  optional bool is_cct = 8;
+
+  // True if the script was triggered by a direct action.
+  optional bool is_direct_action = 9;
 }
 
 // Get the list of scripts that can potentially be run on a url.
@@ -455,6 +462,11 @@ message ProcessedActionProto {
   // Reports how long it took for the client to run the action. This does not
   // include the delay specified in action.delay_ms.
   optional int64 run_time_ms = 23;
+
+  // If true, the user triggered, during the client action, at least one user
+  // action, such as a prompt choice, through a direct action instead of
+  // selecting a chip on the UI. This is meant for monitoring and debugging.
+  optional bool direct_action = 24;
 }
 
 // Extended information about the action status, which provides more details

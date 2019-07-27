@@ -370,8 +370,8 @@ void FileVideoCaptureDevice::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
       settings->has_color_temperature || settings->has_iso ||
       settings->has_brightness || settings->has_contrast ||
       settings->has_saturation || settings->has_sharpness ||
-      settings->has_focus_distance || settings->has_zoom ||
-      settings->has_fill_light_mode) {
+      settings->has_focus_distance || settings->has_pan || settings->has_tilt ||
+      settings->has_zoom || settings->has_fill_light_mode) {
     return;
   }
 

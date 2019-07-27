@@ -127,7 +127,6 @@ class CONTENT_EXPORT LayerTreeView
   // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
   void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
-  int LayerTreeId() const override;
 
   void UpdateBrowserControlsState(cc::BrowserControlsState constraints,
                                   cc::BrowserControlsState current,
@@ -170,7 +169,6 @@ class CONTENT_EXPORT LayerTreeView
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override;
-  void RequestBeginMainFrameNotExpected(bool new_state) override;
 
   const cc::LayerTreeSettings& GetLayerTreeSettings() const;
 

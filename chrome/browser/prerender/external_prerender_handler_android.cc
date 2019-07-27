@@ -53,7 +53,6 @@ bool JNI_ExternalPrerenderHandler_CheckAndConvertParams(
 base::android::ScopedJavaLocalRef<jobject>
 ExternalPrerenderHandlerAndroid::AddPrerender(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jstring>& jurl,
@@ -108,9 +107,7 @@ ExternalPrerenderHandlerAndroid::AddPrerender(
   }
 }
 
-void ExternalPrerenderHandlerAndroid::CancelCurrentPrerender(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& object) {
+void ExternalPrerenderHandlerAndroid::CancelCurrentPrerender(JNIEnv* env) {
   if (!prerender_handle_)
     return;
 

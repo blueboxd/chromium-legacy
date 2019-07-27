@@ -15,6 +15,8 @@ static_library("utility") {
   sources = [
     "chrome_content_utility_client.cc",
     "chrome_content_utility_client.h",
+    "services.cc",
+    "services.h",
   ]
 
   defines = []

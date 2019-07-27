@@ -58,6 +58,14 @@ std::string TriggerContextImpl::experiment_ids() const {
   return experiment_ids_;
 }
 
+bool TriggerContextImpl::is_cct() const {
+  return cct_;
+}
+
+bool TriggerContextImpl::is_direct_action() const {
+  return direct_action_;
+}
+
 MergedTriggerContext::MergedTriggerContext(
     std::vector<const TriggerContext*> contexts)
     : contexts_(contexts) {}
@@ -94,6 +102,22 @@ std::string MergedTriggerContext::experiment_ids() const {
     experiment_ids.append(context->experiment_ids());
   }
   return experiment_ids;
+}
+
+bool MergedTriggerContext::is_cct() const {
+  for (const TriggerContext* context : contexts_) {
+    if (context->is_cct())
+      return true;
+  }
+  return false;
+}
+
+bool MergedTriggerContext::is_direct_action() const {
+  for (const TriggerContext* context : contexts_) {
+    if (context->is_direct_action())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace autofill_assistant

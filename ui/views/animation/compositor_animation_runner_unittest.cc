@@ -15,7 +15,14 @@ namespace test {
 
 using CompositorAnimationRunnerTest = WidgetTest;
 
-TEST_F(CompositorAnimationRunnerTest, BasicCoverageTest) {
+// TODO(crbug.com/969788): Re-enable CompositorAnimationRunner with better
+// ui::Compositor switching support.
+#if defined(OS_CHROMEOS)
+#define MAYBE_BasicCoverageTest DISABLED_BasicCoverageTest
+#else
+#define MAYBE_BasicCoverageTest BasicCoverageTest
+#endif
+TEST_F(CompositorAnimationRunnerTest, MAYBE_BasicCoverageTest) {
   WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   widget->Show();
 

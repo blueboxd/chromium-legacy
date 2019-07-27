@@ -14,6 +14,7 @@
 #include "base/version.h"
 #include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/component_updater/configurator_impl.h"
+#include "components/services/unzip/in_process_unzipper.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/net/network_chromium.h"
 #include "components/update_client/patch/patch_impl.h"
@@ -161,7 +162,7 @@ scoped_refptr<update_client::UnzipperFactory>
 IOSConfigurator::GetUnzipperFactory() {
   if (!unzip_factory_) {
     unzip_factory_ = base::MakeRefCounted<update_client::UnzipChromiumFactory>(
-        web::ServiceManagerConnection::Get()->GetConnector()->Clone());
+        base::BindRepeating(&unzip::LaunchInProcessUnzipper));
   }
   return unzip_factory_;
 }

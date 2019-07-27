@@ -47,7 +47,7 @@ LayerTitleCache::LayerTitleCache(JNIEnv* env,
       resource_manager_(nullptr) {
 }
 
-void LayerTitleCache::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void LayerTitleCache::Destroy(JNIEnv* env) {
   delete this;
 }
 

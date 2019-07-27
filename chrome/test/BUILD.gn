@@ -1231,6 +1231,7 @@ if (!is_android) {
       "../browser/ui/web_applications/bookmark_app_browsertest.cc",
       "../browser/ui/web_applications/web_app_ui_manager_impl_browsertest.cc",
       "../browser/ui/webauthn/authenticator_dialog_browsertest.cc",
+      "../browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui_browsertest.cc",
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.cc",
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.h",
       "../browser/ui/webui/chrome_url_data_manager_browsertest.cc",
@@ -1254,7 +1255,6 @@ if (!is_android) {
       "../browser/ui/webui/net_internals/net_internals_ui_browsertest.cc",
       "../browser/ui/webui/net_internals/net_internals_ui_browsertest.h",
       "../browser/ui/webui/ntp/new_tab_ui_browsertest.cc",
-      "../browser/ui/webui/password_manager_internals/password_manager_internals_ui_browsertest.cc",
       "../browser/ui/webui/policy_ui_browsertest.cc",
       "../browser/ui/webui/prefs_internals_browsertest.cc",
       "../browser/ui/webui/profile_helper_browsertest.cc",
@@ -1825,6 +1825,7 @@ if (!is_android) {
         "../browser/ui/views/page_action/zoom_view_browsertest.cc",
         "../browser/ui/views/page_info/page_info_bubble_view_browsertest.cc",
         "../browser/ui/views/page_info/page_info_bubble_view_sync_browsertest.cc",
+        "../browser/ui/views/page_info/safety_tip_page_info_bubble_view_browsertest.cc",
         "../browser/ui/views/passwords/password_bubble_browsertest.cc",
         "../browser/ui/views/passwords/password_dialog_view_browsertest.cc",
         "../browser/ui/views/passwords/password_generation_popup_view_tester_views.cc",
@@ -2764,7 +2765,7 @@ test("unit_tests") {
     "../browser/android/preferences/pref_service_bridge_unittest.cc",
     "../browser/android/preferences/prefs_unittest.cc",
     "../browser/android/shortcut_info_unittest.cc",
-    "../browser/android/signin/chrome_signin_manager_delegate_unittest.cc",
+    "../browser/android/signin/signin_manager_android_unittest.cc",
     "../browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc",
     "../browser/android/usage_stats/usage_stats_database_unittest.cc",
     "../browser/android/webapk/webapk_icon_hasher_unittest.cc",
@@ -4102,7 +4103,6 @@ test("unit_tests") {
       "../browser/extensions/api/downloads/downloads_api_unittest.cc",
       "../browser/extensions/api/enterprise_hardware_platform/enterprise_hardware_platform_api_unittest.cc",
       "../browser/extensions/api/extension_action/extension_action_api_unittest.cc",
-      "../browser/extensions/api/extension_action/extension_action_prefs_unittest.cc",
       "../browser/extensions/api/file_system/file_system_api_unittest.cc",
       "../browser/extensions/api/identity/extension_token_key_unittest.cc",
       "../browser/extensions/api/identity/gaia_web_auth_flow_unittest.cc",
@@ -4383,6 +4383,7 @@ test("unit_tests") {
       "//chrome/browser/web_applications/extensions:unit_tests",
       "//chrome/common/extensions/api",
       "//components/safe_browsing:buildflags",
+      "//components/services/unzip:in_process",
       "//extensions:extensions_resources",
       "//extensions/browser:test_support",
       "//extensions/common",
@@ -4434,6 +4435,7 @@ test("unit_tests") {
   }
   if (!is_chromeos && is_linux) {
     sources += [
+      "../browser/password_manager/native_backend_kwallet_x_unittest.cc",
       "../browser/shell_integration_linux_unittest.cc",
       "../browser/ui/input_method/input_method_engine_unittest.cc",
     ]
@@ -4676,6 +4678,21 @@ test("unit_tests") {
   } else {
     sources -= [ "../browser/password_manager/password_store_x_unittest.cc" ]
   }
+  if (use_gnome_keyring && current_cpu == "x64") {
+    # Only add this test for 64 bit builds because otherwise we need the 32
+    # bit library on 64 bit systems when running this test.
+    sources +=
+        [ "../browser/password_manager/native_backend_gnome_x_unittest.cc" ]
+    configs += [
+      "//components/os_crypt:gnome_keyring",
+      "//components/os_crypt:gnome_keyring_direct",
+    ]
+  }
+  if (is_linux && !is_chromeos && !use_ozone) {
+    sources +=
+        [ "../browser/password_manager/native_backend_libsecret_unittest.cc" ]
+    deps += [ "//third_party/libsecret" ]
+  }
   if (is_linux && use_aura) {
     deps += [ "//ui/aura:test_support" ]
     if (use_dbus) {
@@ -4867,6 +4884,7 @@ test("unit_tests") {
       "../browser/ui/views/omnibox/omnibox_result_view_unittest.cc",
       "../browser/ui/views/omnibox/omnibox_view_views_unittest.cc",
       "../browser/ui/views/page_info/page_info_bubble_view_unittest.cc",
+      "../browser/ui/views/page_info/safety_tip_page_info_bubble_view_unittest.cc",
       "../browser/ui/views/payments/payment_request_item_list_unittest.cc",
       "../browser/ui/views/payments/validating_textfield_unittest.cc",
       "../browser/ui/views/payments/view_stack_unittest.cc",
@@ -4881,7 +4899,6 @@ test("unit_tests") {
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.h",
       "../browser/ui/views/tabs/stacked_tab_strip_layout_unittest.cc",
       "../browser/ui/views/tabs/tab_animation_unittest.cc",
-      "../browser/ui/views/tabs/tab_strip_animator_unittest.cc",
       "../browser/ui/views/tabs/tab_strip_layout_unittest.cc",
       "../browser/ui/views/tabs/tab_strip_unittest.cc",
       "../browser/ui/views/tabs/tab_unittest.cc",

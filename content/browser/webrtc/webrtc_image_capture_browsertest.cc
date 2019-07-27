@@ -32,9 +32,13 @@ namespace content {
 #if defined(OS_ANDROID)
 // TODO(crbug.com/793859): Re-enable test on Android as soon as the cause for
 // the bug is understood and fixed.
+#define MAYBE_ManipulatePan DISABLED_ManipulatePan
+#define MAYBE_ManipulateTilt DISABLED_ManipulateTilt
 #define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
 #define MAYBE_ManipulateExposureTime DISABLED_ManipulateExposureTime
 #else
+#define MAYBE_ManipulatePan ManipulatePan
+#define MAYBE_ManipulateTilt ManipulateTilt
 #define MAYBE_ManipulateZoom ManipulateZoom
 #define MAYBE_ManipulateExposureTime ManipulateExposureTime
 #endif
@@ -92,6 +96,9 @@ class WebRtcImageCaptureBrowserTestBase
     ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
 
+    // Enable Pan/Tilt for testing.
+    command_line->AppendSwitchASCII("--enable-blink-features",
+                                    "MediaCapturePanTilt");
   }
 
   void SetUp() override {
@@ -212,6 +219,18 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
                        MAYBE_GetTrackSettings) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGetTrackSettings()"));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
+                       MAYBE_ManipulatePan) {
+  embedded_test_server()->StartAcceptingConnections();
+  ASSERT_TRUE(RunImageCaptureTestCase("testManipulatePan()"));
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
+                       MAYBE_ManipulateTilt) {
+  embedded_test_server()->StartAcceptingConnections();
+  ASSERT_TRUE(RunImageCaptureTestCase("testManipulateTilt()"));
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,

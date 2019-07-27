@@ -57,8 +57,8 @@ source_set("flags") {
     "//ios/chrome/browser/web:feature_flags",
     "//ios/public/provider/chrome/browser",
     "//ios/web/common",
+    "//ios/web/common:user_agent",
     "//ios/web/common:web_view_creation_util",
     "//ios/web/public",
-    "//ios/web/public:user_agent",
   ]
 }

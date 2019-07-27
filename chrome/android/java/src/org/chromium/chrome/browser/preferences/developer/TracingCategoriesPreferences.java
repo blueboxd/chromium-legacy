@@ -11,7 +11,7 @@ import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceScreen;
 
-import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.tracing.TracingController;
 
 import java.util.ArrayList;
@@ -55,8 +55,7 @@ public class TracingCategoriesPreferences
     }
 
     private CheckBoxPreference createPreference(String category) {
-        CheckBoxPreference preference =
-                new ChromeBaseCheckBoxPreferenceCompat(getStyledContext(), null);
+        CheckBoxPreference preference = new ChromeBaseCheckBoxPreference(getStyledContext(), null);
         preference.setKey(category);
         preference.setTitle(category.startsWith(TracingPreferences.NON_DEFAULT_CATEGORY_PREFIX)
                         ? category.substring(

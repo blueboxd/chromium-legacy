@@ -17,10 +17,12 @@ component("menu") {
   deps = [
     "//base",
     "//base:i18n",
-    "//dbus",
     "//skia",
     "//ui/base",
     "//ui/gfx",
+  ]
+  public_deps = [
+    "//dbus",
   ]
 }
 
@@ -28,6 +30,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "success_barrier_callback_unittest.cc",
+    "types_unittest.cc",
   ]
   deps = [
     ":menu",

@@ -150,6 +150,7 @@
 <translation id="2933759065870693102">Linterna</translation>
 <translation id="2958718410589002129">Contraseñas</translation>
 <translation id="2969979262385602596">Error al iniciar la sesión. Inténtalo más tarde.</translation>
+<translation id="298306318844797842">Agregar forma de pago…</translation>
 <translation id="2989805286512600854">Abrir en una nueva pestaña</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
 <translation id="3112556859945124369">Marcar…</translation>
@@ -313,6 +314,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5614553682702429503">¿Quieres guardar la contraseña?</translation>
 <translation id="5626245204502895507">No se pudo descargar el archivo esta vez.</translation>
+<translation id="5631164295104953411">Agregar forma de pago</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versión <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +466,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7772032839648071052">Confirmar frase de contraseña</translation>
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="778855399387580014">Realiza una búsqueda en una nueva pestaña de Chrome.</translation>
+<translation id="7791543448312431591">Agregar</translation>
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7840771868269352570">Se quitarán los elementos seleccionados.</translation>
 <translation id="7856733331829174190">No se pudo descargar</translation>
@@ -531,7 +534,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8976382372951310360">Ayuda</translation>
 <translation id="8981454092730389528">Controles de actividad de Google</translation>
 <translation id="8985320356172329008">Accediste a Google como</translation>
-<translation id="9016406938567631235">Enviando…</translation>
 <translation id="902659348151742535">Es posible que Google use tu historial de navegación para personalizar Búsqueda, Ads y otros servicios de Google.</translation>
 <translation id="9034759925968272072">No saldrás de tu cuenta de Google. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Ancho de banda</translation>

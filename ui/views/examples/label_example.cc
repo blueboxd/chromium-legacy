@@ -207,7 +207,7 @@ void LabelExample::AddCustomLabel(View* container) {
   auto custom_label = std::make_unique<ExamplePreferredSizeLabel>();
   custom_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   custom_label->SetElideBehavior(gfx::NO_ELIDE);
-  custom_label->SetText(textfield_->text());
+  custom_label->SetText(textfield_->GetText());
   custom_label_ = layout->AddView(std::move(custom_label));
 
   // Disable the text selection checkbox if |custom_label_| does not support

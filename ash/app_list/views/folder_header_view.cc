@@ -51,7 +51,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
 
   void OnFocus() override {
     SetText(base::UTF8ToUTF16(folder_header_view_->folder_item_->name()));
-    starting_name_ = text();
+    starting_name_ = GetText();
     folder_header_view_->previous_folder_name_ = starting_name_;
     SelectAll(false);
     Textfield::OnFocus();
@@ -60,20 +60,20 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
   void OnBlur() override {
     // Collapse whitespace when FolderNameView loses focus.
     folder_header_view_->ContentsChanged(
-        this, base::CollapseWhitespace(text(), false));
+        this, base::CollapseWhitespace(GetText(), false));
 
     // Ensure folder name is truncated when FolderNameView loses focus.
     SetText(folder_header_view_->GetElidedFolderName(
         base::UTF8ToUTF16(folder_header_view_->folder_item_->name())));
 
     // Record metric each time a folder is renamed.
-    if (text() != starting_name_) {
+    if (GetText() != starting_name_) {
       if (folder_header_view_->is_tablet_mode()) {
         UMA_HISTOGRAM_COUNTS_100("Apps.AppListFolderNameLength.TabletMode",
-                                 text().length());
+                                 GetText().length());
       } else {
         UMA_HISTOGRAM_COUNTS_100("Apps.AppListFolderNameLength.ClamshellMode",
-                                 text().length());
+                                 GetText().length());
       }
     }
 
@@ -172,16 +172,16 @@ void FolderHeaderView::Update() {
 void FolderHeaderView::UpdateFolderNameAccessibleName() {
   // Sets |folder_name_view_|'s accessible name to the placeholder text if
   // |folder_name_view_| is blank; otherwise, clear the accessible name, the
-  // accessible state's value is set to be folder_name_view_->text() by
+  // accessible state's value is set to be folder_name_view_->GetText() by
   // TextField.
-  base::string16 accessible_name = folder_name_view_->text().empty()
+  base::string16 accessible_name = folder_name_view_->GetText().empty()
                                        ? folder_name_placeholder_text_
                                        : base::string16();
   folder_name_view_->SetAccessibleName(accessible_name);
 }
 
 const base::string16& FolderHeaderView::GetFolderNameForTest() {
-  return folder_name_view_->text();
+  return folder_name_view_->GetText();
 }
 
 void FolderHeaderView::SetFolderNameForTest(const base::string16& name) {

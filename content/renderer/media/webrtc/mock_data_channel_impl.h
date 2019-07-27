@@ -24,8 +24,6 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   std::string label() const override;
   bool reliable() const override;
   bool ordered() const override;
-  uint16_t maxRetransmitTime() const override;
-  uint16_t maxRetransmits() const override;
   std::string protocol() const override;
   bool negotiated() const override;
   int id() const override;

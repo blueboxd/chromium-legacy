@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">进度滑块</translation>
 <translation id="1399648040768741453">泰卢固语键盘（注音）</translation>
 <translation id="1430915738399379752">打印</translation>
+<translation id="1439494416798956626">已移至“<ph name="FOLDER_NAME" />”。</translation>
 <translation id="1441841714100794440">越南语键盘（电传机）</translation>
 <translation id="1455548678241328678">挪威语键盘</translation>
 <translation id="1464724975715666883">1个错误。</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">正在扫描您的媒体设备…</translation>
 <translation id="3468522857997926824">已将 <ph name="FILE_COUNT" /> 张照片备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">正在复制…</translation>
+<translation id="3473378059788601120">已复制到“<ph name="FOLDER_NAME" />”。</translation>
 <translation id="3475447146579922140">Google 电子表格</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />个错误。</translation>
 <translation id="3519867315646775981">音译(shalom ← שלום)</translation>
@@ -432,6 +434,7 @@
 <translation id="5923484009666796948">日语输入法（适用于日语键盘）</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">授权 Linux 应用修改您 Google 云端硬盘中的文件。相关更改会同步到您的其他设备。</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> 项内容</translation>
 <translation id="5982621672636444458">排序选项</translation>
 <translation id="6005282720244019462">拉丁美洲文键盘</translation>
 <translation id="6007237601604674381">移动失败。<ph name="ERROR_MESSAGE" /></translation>

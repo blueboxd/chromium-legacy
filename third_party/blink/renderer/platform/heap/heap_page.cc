@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
 

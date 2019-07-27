@@ -5461,31 +5461,6 @@
         }
       },
       {
-        "args": [
-          "--additional-driver-flag=--disable-features=NetworkService",
-          "--num-retries=3",
-          "--debug"
-        ],
-        "isolate_name": "blink_web_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "non_network_service_webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 20
-        }
-      },
-      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],

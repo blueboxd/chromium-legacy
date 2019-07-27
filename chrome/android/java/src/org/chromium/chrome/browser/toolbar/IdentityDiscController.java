@@ -132,8 +132,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         Drawable profileImage = mProfileDataCache.getProfileDataOrDefault(accountName).getImage();
         mToolbarManager.enableExperimentalButton(view -> {
             RecordUserAction.record("MobileToolbarIdentityDiscTap");
-            PreferencesLauncher.launchSettingsPageCompat(
-                    mContext, SyncAndServicesPreferences.class);
+            PreferencesLauncher.launchSettingsPage(mContext, SyncAndServicesPreferences.class);
         }, profileImage, R.string.accessibility_toolbar_btn_identity_disc);
     }
 

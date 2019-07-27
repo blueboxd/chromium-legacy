@@ -156,9 +156,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // PaginationModelObserver overrides:
   void TotalPagesChanged() override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
-  void TransitionStarted() override;
-  void TransitionChanged() override;
-  void TransitionEnded() override;
 
   // Registers a callback that is run when the next frame successfully makes it
   // to the screen.

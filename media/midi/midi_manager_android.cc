@@ -118,7 +118,6 @@ void MidiManagerAndroid::OnReceivedData(MidiInputPortAndroid* port,
 
 void MidiManagerAndroid::OnInitialized(
     JNIEnv* env,
-    const JavaParamRef<jobject>& caller,
     const JavaParamRef<jobjectArray>& devices) {
   for (auto raw_device : devices.ReadElements<jobject>()) {
     AddDevice(std::make_unique<MidiDeviceAndroid>(env, raw_device, this));
@@ -129,9 +128,7 @@ void MidiManagerAndroid::OnInitialized(
                      base::Unretained(this), Result::OK));
 }
 
-void MidiManagerAndroid::OnInitializationFailed(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& caller) {
+void MidiManagerAndroid::OnInitializationFailed(JNIEnv* env) {
   service()->task_service()->PostBoundTask(
       TaskService::kDefaultRunnerId,
       base::BindOnce(&MidiManagerAndroid::CompleteInitialization,
@@ -139,13 +136,11 @@ void MidiManagerAndroid::OnInitializationFailed(
 }
 
 void MidiManagerAndroid::OnAttached(JNIEnv* env,
-                                    const JavaParamRef<jobject>& caller,
                                     const JavaParamRef<jobject>& raw_device) {
   AddDevice(std::make_unique<MidiDeviceAndroid>(env, raw_device, this));
 }
 
 void MidiManagerAndroid::OnDetached(JNIEnv* env,
-                                    const JavaParamRef<jobject>& caller,
                                     const JavaParamRef<jobject>& raw_device) {
   for (auto& device : devices_) {
     if (device->HasRawDevice(env, raw_device)) {

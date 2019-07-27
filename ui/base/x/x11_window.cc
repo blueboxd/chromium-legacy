@@ -96,7 +96,7 @@ XWindow::Configuration::Configuration()
       force_show_in_taskbar(false),
       keep_on_top(false),
       visible_on_all_workspaces(false),
-      remove_standard_frame(false),
+      remove_standard_frame(true),
       prefer_dark_theme(false) {}
 
 XWindow::Configuration::Configuration(const Configuration&) = default;

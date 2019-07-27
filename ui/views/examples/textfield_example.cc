@@ -130,7 +130,7 @@ bool TextfieldExample::HandleMouseEvent(Textfield* sender,
 
 void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == show_password_) {
-    PrintStatus("Password [%s]", UTF16ToUTF8(password_->text()).c_str());
+    PrintStatus("Password [%s]", UTF16ToUTF8(password_->GetText()).c_str());
   } else if (sender == set_background_) {
     password_->SetBackgroundColor(gfx::kGoogleRed300);
   } else if (sender == clear_all_) {
@@ -156,11 +156,11 @@ void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
     invalid_->SetText(ASCIIToUTF16("[set]"));
     rtl_->SetText(ASCIIToUTF16("[set]"));
   } else if (sender == set_style_) {
-    if (!name_->text().empty()) {
+    if (!name_->GetText().empty()) {
       name_->SetColor(SK_ColorGREEN);
 
-      if (name_->text().length() >= 5) {
-        size_t fifth = name_->text().length() / 5;
+      if (name_->GetText().length() >= 5) {
+        size_t fifth = name_->GetText().length() / 5;
         const gfx::Range big_range(1 * fifth, 4 * fifth);
         name_->ApplyStyle(gfx::TEXT_STYLE_UNDERLINE, true, big_range);
         name_->ApplyColor(SK_ColorBLUE, big_range);

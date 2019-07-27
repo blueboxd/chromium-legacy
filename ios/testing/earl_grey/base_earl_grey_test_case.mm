@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
@@ -37,6 +38,7 @@ bool g_needs_set_up_for_test_case = true;
 }
 
 // Invoked upon starting each test method in a test case.
+// Launches the app under test if necessary.
 - (void)setUp {
   [super setUp];
 
@@ -107,8 +109,9 @@ bool g_needs_set_up_for_test_case = true;
 }
 
 - (void)launchAppForTestMethod {
-  [[AppLaunchManager sharedManager] ensureAppLaunchedWithArgs:nil
-                                                 forceRestart:false];
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithFeaturesEnabled:{}
+      disabled:{}
+      forceRestart:NO];
 }
 
 // Prevents tests inheriting from this class from putting logic in +setUp.

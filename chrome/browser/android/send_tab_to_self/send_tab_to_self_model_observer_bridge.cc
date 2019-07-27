@@ -51,8 +51,7 @@ static jlong JNI_SendTabToSelfModelObserverBridge_Init(
   return reinterpret_cast<intptr_t>(bridge);
 }
 
-void SendTabToSelfModelObserverBridge::Destroy(JNIEnv*,
-                                               const JavaParamRef<jobject>&) {
+void SendTabToSelfModelObserverBridge::Destroy(JNIEnv*) {
   delete this;
 }
 

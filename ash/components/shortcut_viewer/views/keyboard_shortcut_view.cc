@@ -300,7 +300,7 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
   debounce_timer_.Start(
       FROM_HERE, kTimeOut,
       base::Bind(&KeyboardShortcutView::ShowSearchResults,
-                 base::Unretained(this), sender->search_box()->text()));
+                 base::Unretained(this), sender->search_box()->GetText()));
 }
 
 void KeyboardShortcutView::BackButtonPressed() {

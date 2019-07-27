@@ -45,6 +45,7 @@ const CGFloat kEditIconLength = 18;
   NSString* textLabelFormat = self.required ? @"%@*" : @"%@";
   cell.textLabel.text =
       [NSString stringWithFormat:textLabelFormat, self.textFieldName];
+  cell.textField.placeholder = self.textFieldPlaceholder;
   cell.textField.text = self.textFieldValue;
   if (self.textFieldName.length) {
     cell.textField.accessibilityIdentifier =

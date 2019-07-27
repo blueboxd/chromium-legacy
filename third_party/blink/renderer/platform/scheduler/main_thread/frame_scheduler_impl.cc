@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/resource_loading_task_runner_handle_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/web_scheduling_task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 
 namespace blink {
@@ -490,6 +491,10 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kWorkerThreadTaskQueueDefault:
     case TaskType::kWorkerThreadTaskQueueV8:
     case TaskType::kWorkerThreadTaskQueueCompositor:
+    // The web scheduling API task types are used by WebSchedulingTaskQueues.
+    // The associated TaskRunner should be obtained by creating a
+    // WebSchedulingTaskQueue with CreateWebSchedulingTaskQueue().
+    case TaskType::kExperimentalWebScheduling:
     case TaskType::kCount:
       // Not a valid frame-level TaskType.
       return base::nullopt;
@@ -921,6 +926,24 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   if (fixed_priority)
     return fixed_priority.value();
 
+  // TODO(shaseley): This should use lower priorities if the frame is
+  // deprioritized. Change this once we refactor and add frame policy/priorities
+  // and add a range of new priorities less than low.
+  if (task_queue->web_scheduling_priority()) {
+    switch (task_queue->web_scheduling_priority().value()) {
+      case WebSchedulingPriority::kImmediatePriority:
+        return TaskQueue::QueuePriority::kHighestPriority;
+      case WebSchedulingPriority::kHighPriority:
+        return TaskQueue::QueuePriority::kHighPriority;
+      case WebSchedulingPriority::kDefaultPriority:
+        return TaskQueue::QueuePriority::kNormalPriority;
+      case WebSchedulingPriority::kLowPriority:
+        return TaskQueue::QueuePriority::kLowPriority;
+      case WebSchedulingPriority::kIdlePriority:
+        return TaskQueue::QueuePriority::kBestEffortPriority;
+    }
+  }
+
   if (!parent_page_scheduler_) {
     // Frame might be detached during its shutdown. Return a default priority
     // in that case.
@@ -1085,6 +1108,18 @@ FrameSchedulerImpl::GetActiveFeaturesTrackedForBackForwardCacheMetricsMask()
 base::WeakPtr<FrameOrWorkerScheduler>
 FrameSchedulerImpl::GetDocumentBoundWeakPtr() {
   return document_bound_weak_factory_.GetWeakPtr();
+}
+
+std::unique_ptr<WebSchedulingTaskQueue>
+FrameSchedulerImpl::CreateWebSchedulingTaskQueue(
+    WebSchedulingPriority priority) {
+  // Use QueueTraits here that are the same as postMessage, which is one current
+  // method for scheduling script.
+  scoped_refptr<MainThreadTaskQueue> task_queue =
+      frame_task_queue_controller_->NewWebSchedulingTaskQueue(
+          PausableTaskQueueTraits(), priority);
+  return std::make_unique<WebSchedulingTaskQueueImpl>(priority,
+                                                      task_queue.get());
 }
 
 // static

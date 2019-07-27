@@ -32,7 +32,7 @@ class BottomBarView extends FrameLayout {
     private TextView mHomeButtonLabel;
     private ChromeImageView mExploreButton;
     private TextView mExploreButtonLabel;
-    private BottomBarProperties.OnClickListener mOnClickListener;
+    private StartSurfaceProperties.BottomBarClickListener mOnClickListener;
 
     public BottomBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -84,7 +84,7 @@ class BottomBarView extends FrameLayout {
 
     /**
      * Set the incognito state.
-     * @param isIncognito Whether is setting the incognito mode.
+     * @param isIncognito Whether is in incognito mode.
      */
     public void setIncognito(boolean isIncognito) {
         // TODO(crbug.com/982018): Support dark mode.
@@ -115,10 +115,10 @@ class BottomBarView extends FrameLayout {
     }
 
     /**
-     * Set the {@link BottomBarProperties.OnClickListener}.
+     * Set the {@link StartSurfaceProperties.BottomBarClickListener}.
      * @param listener Listen clicks.
      */
-    public void setOnClickListener(BottomBarProperties.OnClickListener listener) {
+    public void setOnClickListener(StartSurfaceProperties.BottomBarClickListener listener) {
         mOnClickListener = listener;
     }
 }

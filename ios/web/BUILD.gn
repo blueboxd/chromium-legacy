@@ -54,6 +54,7 @@ source_set("web") {
     "//ios/web/service",
     "//ios/web/session",
     "//ios/web/thread",
+    "//ios/web/ui",
     "//ios/web/web_state",
     "//ios/web/web_state:web_view_internal_creation_util",
     "//services/network:network_service",
@@ -197,7 +198,6 @@ test("ios_web_unittests") {
     ":ios_web_general_unittests",
     ":ios_web_navigation_unittests",
     ":ios_web_net_unittests",
-    ":ios_web_public_unittests",
     ":ios_web_web_state_js_unittests",
     ":ios_web_web_state_ui_unittests",
     ":ios_web_web_state_unittests",
@@ -360,40 +360,6 @@ source_set("test_support") {
   ]
 }
 
-source_set("ios_web_public_unittests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  deps = [
-    ":core",
-    ":test_support",
-    ":web",
-    "//base",
-    "//base/test:test_support",
-    "//components/url_formatter",
-    "//ios/net",
-    "//ios/net:ios_net_unittests",
-    "//ios/testing:ocmock_support",
-    "//ios/web/public",
-    "//ios/web/public/test",
-    "//ios/web/public/test/fakes",
-    "//ios/web/test:mojo_bindings",
-    "//ios/web/test:test_constants",
-    "//ios/web/test:test_support",
-    "//ios/web/web_state:page_viewport_state",
-    "//net:test_support",
-    "//services/service_manager/public/cpp",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/ocmock",
-    "//ui/base:test_support",
-  ]
-
-  sources = [
-    "public/user_agent_unittest.mm",
-    "public/web_state/page_viewport_state_unittest.mm",
-  ]
-}
-
 source_set("ios_web_web_state_unittests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -429,6 +395,7 @@ source_set("ios_web_web_state_unittests") {
     "//ios/web/test/fakes",
     "//ios/web/web_state",
     "//ios/web/web_state:context_menu",
+    "//ios/web/web_state:page_viewport_state",
     "//ios/web/web_state:web_view_internal_creation_util",
     "//net:test_support",
     "//services/service_manager/public/cpp",
@@ -442,6 +409,7 @@ source_set("ios_web_web_state_unittests") {
   sources = [
     "web_state/context_menu_params_utils_unittest.mm",
     "web_state/page_display_state_unittest.mm",
+    "web_state/page_viewport_state_unittest.mm",
     "web_state/web_state_delegate_bridge_unittest.mm",
     "web_state/web_state_impl_unittest.mm",
     "web_state/web_state_observer_bridge_unittest.mm",

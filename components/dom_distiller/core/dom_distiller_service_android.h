@@ -23,9 +23,7 @@ class DomDistillerServiceAndroid {
   virtual ~DomDistillerServiceAndroid();
   // Returns native pointer to native DistilledPagePrefs registered with
   // DomDistillerService.
-  jlong GetDistilledPagePrefsPtr(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+  jlong GetDistilledPagePrefsPtr(JNIEnv* env);
   bool HasEntry(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 const base::android::JavaParamRef<jstring>& entry_id);

@@ -150,6 +150,7 @@
 <translation id="2933759065870693102">টর্চ</translation>
 <translation id="2958718410589002129">পাসওয়ার্ড</translation>
 <translation id="2969979262385602596">সাইন-ইন করা যায়নি৷ অনুগ্রহ করে পরে আবার চেষ্টা করুন৷</translation>
+<translation id="298306318844797842">পেমেন্টের পদ্ধতি যোগ করুন...</translation>
 <translation id="2989805286512600854">নতুন ট্যাবে খুলুন</translation>
 <translation id="3037605927509011580">ইস!</translation>
 <translation id="3112556859945124369">চিহ্নিত করুন…</translation>
@@ -314,6 +315,7 @@
 <translation id="5556459405103347317">রিলোড করুন</translation>
 <translation id="5614553682702429503">পাসওয়ার্ড সেভ করবেন?</translation>
 <translation id="5626245204502895507">ফাইলটি এই সময়ে ডাউনলোড করা যাবে না৷</translation>
+<translation id="5631164295104953411">পেমেন্টের পদ্ধতি যোগ করুন</translation>
 <translation id="5659593005791499971">ইমেল আইডি</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">ভার্সন <ph name="PRODUCT_VERSION" /></translation>
@@ -465,6 +467,7 @@
 <translation id="7772032839648071052">পাসফ্রেজ নিশ্চিত করুন</translation>
 <translation id="7781829728241885113">গতকাল</translation>
 <translation id="778855399387580014">নতুন Chrome ট্যাবে সার্চ করা শুরু করুন।</translation>
+<translation id="7791543448312431591">জুড়ুন</translation>
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7840771868269352570">আপনার বেছে নেওয়া আইটেমগুলি সরানো হবে।</translation>
 <translation id="7856733331829174190">ডাউনলোড করা যায়নি</translation>
@@ -532,7 +535,6 @@
 <translation id="8976382372951310360">সহায়তা</translation>
 <translation id="8981454092730389528">Google অ্যাক্টিভিটির নিয়ন্ত্রণগুলি</translation>
 <translation id="8985320356172329008">এই হিসাবে Google এ প্রবেশ করেছেন</translation>
-<translation id="9016406938567631235">পাঠানো হচ্ছে…</translation>
 <translation id="902659348151742535">সার্চ, বিজ্ঞাপন এবং অন্যান্য Google পরিষেবা নিজের মতো করতে Google আপনার ব্রাউজিং ইতিহাস ব্যবহার করতে পারে।</translation>
 <translation id="9034759925968272072">আপনাকে Google অ্যাকাউন্ট থেকে সাইন-আউট করা হবে না। আপনার Google অ্যাকাউন্টের অন্যান্য ধরনের ব্রাউজিং ইতিহাস <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />-এ থাকতে পারে।</translation>
 <translation id="9039373489628511875">ব্যান্ডউইথ</translation>

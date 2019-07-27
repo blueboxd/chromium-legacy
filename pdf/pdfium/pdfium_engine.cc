@@ -1161,7 +1161,8 @@ PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::Point& point,
 
   *page_index = page;
   PDFiumPage::Area result = pages_[page]->GetCharIndex(
-      point_in_page, current_rotation_, char_index, form_type, target);
+      point_in_page, layout_.default_page_orientation(), char_index, form_type,
+      target);
   return (client_->IsPrintPreview() && result == PDFiumPage::WEBLINK_AREA)
              ? PDFiumPage::NONSELECTABLE_AREA
              : result;
@@ -2005,7 +2006,7 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
   // Use zoom of 1.0 since |visible_rect| is without zoom.
   const std::vector<pp::Rect>& rects =
       find_results_[current_find_index_.value()].GetScreenRects(
-          pp::Point(), 1.0, current_rotation_);
+          pp::Point(), 1.0, layout_.default_page_orientation());
   for (const auto& rect : rects)
     bounding_rect = bounding_rect.Union(rect);
   if (!visible_rect.Contains(bounding_rect)) {
@@ -2052,8 +2053,8 @@ void PDFiumEngine::GetAllScreenRectsUnion(
     std::vector<pp::Rect>* rect_vector) const {
   for (const auto& range : rect_range) {
     pp::Rect result_rect;
-    const std::vector<pp::Rect>& rects =
-        range.GetScreenRects(offset_point, current_zoom_, current_rotation_);
+    const std::vector<pp::Rect>& rects = range.GetScreenRects(
+        offset_point, current_zoom_, layout_.default_page_orientation());
     for (const auto& rect : rects)
       result_rect = result_rect.Union(rect);
     rect_vector->push_back(result_rect);
@@ -2076,12 +2077,12 @@ void PDFiumEngine::ZoomUpdated(double new_zoom_level) {
 }
 
 void PDFiumEngine::RotateClockwise() {
-  current_rotation_ = (current_rotation_ + 1) % 4;
+  layout_.RotatePagesClockwise();
   RotateInternal();
 }
 
 void PDFiumEngine::RotateCounterclockwise() {
-  current_rotation_ = (current_rotation_ - 1) % 4;
+  layout_.RotatePagesCounterclockwise();
   RotateInternal();
 }
 
@@ -2445,18 +2446,18 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
   pp::Size page_size = GetPageSize(0);
   page_size.Enlarge(kPageShadowLeft + kPageShadowRight,
                     kPageShadowTop + kPageShadowBottom);
-  pp::Size old_document_size = document_size_;
-  document_size_ = pp::Size(page_size.width(), 0);
+  pp::Size old_document_size = layout_.size();
+  layout_.set_size(pp::Size(page_size.width(), 0));
   for (int i = 0; i < num_pages; ++i) {
     if (i != 0) {
-      // Add space for horizontal separator.
-      document_size_.Enlarge(0, kBottomSeparator);
+      // Add space for bottom separator.
+      layout_.EnlargeHeight(kBottomSeparator);
     }
 
-    pp::Rect rect(pp::Point(0, document_size_.height()), page_size);
+    pp::Rect rect(pp::Point(0, layout_.size().height()), page_size);
     page_rects.push_back(rect);
 
-    document_size_.Enlarge(0, page_size.height());
+    layout_.EnlargeHeight(page_size.height());
   }
 
   // Create blank pages.
@@ -2477,8 +2478,8 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
   }
 
   CalculateVisiblePages();
-  if (document_size_ != old_document_size)
-    client_->DocumentSizeUpdated(document_size_);
+  if (layout_.size() != old_document_size)
+    client_->DocumentSizeUpdated(layout_.size());
 }
 
 void PDFiumEngine::LoadDocument() {
@@ -2606,8 +2607,8 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   if (pages_.empty() && reload)
     return;
   pending_pages_.clear();
-  pp::Size old_document_size = document_size_;
-  document_size_ = pp::Size();
+  pp::Size old_document_size = layout_.size();
+  layout_.set_size(pp::Size());
   std::vector<pp::Rect> page_rects;
   size_t new_page_count = FPDF_GetPageCount(doc());
 
@@ -2616,8 +2617,8 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
       FPDFAvail_IsLinearized(fpdf_availability()) == PDF_LINEARIZED;
   for (size_t i = 0; i < new_page_count; ++i) {
     if (i != 0) {
-      // Add space for horizontal separator.
-      document_size_.Enlarge(0, kBottomSeparator);
+      // Add space for bottom separator.
+      layout_.EnlargeHeight(kBottomSeparator);
     }
 
     // Get page availability. If |reload| == true and the page is not new,
@@ -2639,15 +2640,15 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
 
     pp::Size size = page_available ? GetPageSize(i) : default_page_size_;
     EnlargePage(i, new_page_count, &size);
-    pp::Rect rect(pp::Point(0, document_size_.height()), size);
+    pp::Rect rect(pp::Point(0, layout_.size().height()), size);
     page_rects.push_back(rect);
 
-    draw_utils::ExpandDocumentSize(size, &document_size_);
+    layout_.AppendPageRect(size);
   }
 
   for (size_t i = 0; i < new_page_count; ++i) {
     // Center pages relative to the entire document.
-    page_rects[i].set_x((document_size_.width() - page_rects[i].width()) / 2);
+    page_rects[i].set_x((layout_.size().width() - page_rects[i].width()) / 2);
     InsetPage(i, new_page_count, /*multiplier=*/1, &page_rects[i]);
     AppendPageRectToPages(page_rects[i], i, reload);
   }
@@ -2661,8 +2662,8 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   }
 
   CalculateVisiblePages();
-  if (document_size_ != old_document_size)
-    client_->DocumentSizeUpdated(document_size_);
+  if (layout_.size() != old_document_size)
+    client_->DocumentSizeUpdated(layout_.size());
 }
 
 void PDFiumEngine::LoadBody() {
@@ -2826,7 +2827,7 @@ pp::Size PDFiumEngine::GetPageSize(int index) {
         ConvertUnitDouble(width_in_points, kPointsPerInch, kPixelsPerInch));
     int height_in_pixels = static_cast<int>(
         ConvertUnitDouble(height_in_points, kPointsPerInch, kPixelsPerInch));
-    if (current_rotation_ % 2 == 1)
+    if (layout_.default_page_orientation() % 2 == 1)
       std::swap(width_in_pixels, height_in_pixels);
     size = pp::Size(width_in_pixels, height_in_pixels);
   }
@@ -2920,9 +2921,9 @@ bool PDFiumEngine::ContinuePaint(int progressive_index,
     ScopedFPDFBitmap new_bitmap = CreateBitmap(dirty, image_data);
     FPDFBitmap_FillRect(new_bitmap.get(), start_x, start_y, size_x, size_y,
                         0xFFFFFFFF);
-    rv = FPDF_RenderPageBitmap_Start(new_bitmap.get(), page, start_x, start_y,
-                                     size_x, size_y, current_rotation_,
-                                     GetRenderingFlags(), this);
+    rv = FPDF_RenderPageBitmap_Start(
+        new_bitmap.get(), page, start_x, start_y, size_x, size_y,
+        layout_.default_page_orientation(), GetRenderingFlags(), this);
     progressive_paints_[progressive_index].SetBitmapAndImageData(
         std::move(new_bitmap), *image_data);
   }
@@ -2949,7 +2950,8 @@ void PDFiumEngine::FinishPaint(int progressive_index,
 
   // Draw the forms.
   FPDF_FFLDraw(form(), bitmap, pages_[page_index]->GetPage(), start_x, start_y,
-               size_x, size_y, current_rotation_, GetRenderingFlags());
+               size_x, size_y, layout_.default_page_orientation(),
+               GetRenderingFlags());
 
   FillPageSides(progressive_index);
 
@@ -2995,9 +2997,9 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
                         left.height(), client_->GetBackgroundColor());
   }
 
-  if (page_rect.right() < document_size_.width()) {
+  if (page_rect.right() < layout_.size().width()) {
     pp::Rect right = draw_utils::GetRightFillRect(
-        page_rect, inset_sizes, document_size_.width(), kBottomSeparator);
+        page_rect, inset_sizes, layout_.size().width(), kBottomSeparator);
     right = GetScreenRect(right).Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, right.x() - dirty_in_screen.x(),
@@ -3059,8 +3061,9 @@ void PDFiumEngine::DrawSelections(int progressive_index,
     if (range.page_index() != page_index)
       continue;
 
-    const std::vector<pp::Rect>& rects = range.GetScreenRects(
-        visible_rect.point(), current_zoom_, current_rotation_);
+    const std::vector<pp::Rect>& rects =
+        range.GetScreenRects(visible_rect.point(), current_zoom_,
+                             layout_.default_page_orientation());
     for (const auto& rect : rects) {
       pp::Rect visible_selection = rect.Intersect(dirty_in_screen);
       if (visible_selection.IsEmpty())
@@ -3171,7 +3174,7 @@ pp::Rect PDFiumEngine::GetPageScreenRect(int page_index) const {
   }
 
   return GetScreenRect(draw_utils::GetSurroundingRect(
-      page_rect.y(), max_page_height, inset_sizes, document_size_.width(),
+      page_rect.y(), max_page_height, inset_sizes, layout_.size().width(),
       kBottomSeparator));
 }
 
@@ -3281,8 +3284,9 @@ PDFiumEngine::SelectionChangeInvalidator::GetVisibleSelections() const {
     if (!engine_->IsPageVisible(range.page_index()))
       continue;
 
-    const std::vector<pp::Rect>& selection_rects = range.GetScreenRects(
-        visible_point, engine_->current_zoom_, engine_->current_rotation_);
+    const std::vector<pp::Rect>& selection_rects =
+        range.GetScreenRects(visible_point, engine_->current_zoom_,
+                             engine_->layout_.default_page_orientation());
     rects.insert(rects.end(), selection_rects.begin(), selection_rects.end());
   }
   return rects;
@@ -3341,8 +3345,8 @@ void PDFiumEngine::DeviceToPage(int page_index,
                                 pages_[page_index]->rect().y());
   FPDF_BOOL ret = FPDF_DeviceToPage(
       pages_[page_index]->GetPage(), 0, 0, pages_[page_index]->rect().width(),
-      pages_[page_index]->rect().height(), current_rotation_, temp_x, temp_y,
-      page_x, page_y);
+      pages_[page_index]->rect().height(), layout_.default_page_orientation(),
+      temp_x, temp_y, page_x, page_y);
   DCHECK(ret);
 }
 
@@ -3448,8 +3452,9 @@ void PDFiumEngine::OnSelectionPositionChanged() {
                 std::numeric_limits<int32_t>::max(), 0, 0);
   pp::Rect right;
   for (const auto& sel : selection_) {
-    const std::vector<pp::Rect>& screen_rects = sel.GetScreenRects(
-        GetVisibleRect().point(), current_zoom_, current_rotation_);
+    const std::vector<pp::Rect>& screen_rects =
+        sel.GetScreenRects(GetVisibleRect().point(), current_zoom_,
+                           layout_.default_page_orientation());
     for (const auto& rect : screen_rects) {
       if (IsAboveOrDirectlyLeftOf(rect, left))
         left = rect;

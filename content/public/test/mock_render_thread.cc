@@ -295,6 +295,18 @@ MockRenderThread::TakeInitialDocumentInterfaceBrokerRequestForFrame(
   return document_broker_request;
 }
 
+mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+MockRenderThread::TakeInitialBrowserInterfaceBrokerReceiverForFrame(
+    int32_t routing_id) {
+  auto it =
+      frame_routing_id_to_initial_browser_broker_receivers_.find(routing_id);
+  if (it == frame_routing_id_to_initial_browser_broker_receivers_.end())
+    return mojo::NullReceiver();
+  auto browser_broker_receiver = std::move(it->second);
+  frame_routing_id_to_initial_browser_broker_receivers_.erase(it);
+  return browser_broker_receiver;
+}
+
 void MockRenderThread::PassInitialInterfaceProviderRequestForFrame(
     int32_t routing_id,
     service_manager::mojom::InterfaceProviderRequest
@@ -328,6 +340,14 @@ void MockRenderThread::OnCreateChildFrame(
   mojo::MakeRequest(&document_interface_broker_blink);
   params_reply->document_interface_broker_blink_handle =
       document_interface_broker_blink.PassInterface().PassHandle().release();
+
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker;
+  frame_routing_id_to_initial_browser_broker_receivers_.emplace(
+      params_reply->child_routing_id,
+      browser_interface_broker.InitWithNewPipeAndPassReceiver());
+  params_reply->browser_interface_broker_handle =
+      browser_interface_broker.PassPipe().release();
 
   params_reply->devtools_frame_token = base::UnguessableToken::Create();
 }
@@ -379,12 +399,22 @@ void MockRenderThread::OnCreateWindow(
   frame_routing_id_to_initial_document_broker_requests_.emplace(
       reply->main_frame_route_id,
       mojo::MakeRequest(&document_interface_broker));
+
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker;
+  frame_routing_id_to_initial_browser_broker_receivers_.emplace(
+      reply->main_frame_route_id,
+      browser_interface_broker.InitWithNewPipeAndPassReceiver());
   reply->main_frame_interface_bundle->document_interface_broker_content =
       std::move(document_interface_broker);
 
   mojo::MakeRequest(&document_interface_broker);
   reply->main_frame_interface_bundle->document_interface_broker_blink =
       std::move(document_interface_broker);
+
+  reply->main_frame_interface_bundle->browser_interface_broker =
+      std::move(browser_interface_broker);
+
   reply->main_frame_widget_route_id = GetNextRoutingID();
   reply->cloned_session_storage_namespace_id =
       blink::AllocateSessionStorageNamespaceId();

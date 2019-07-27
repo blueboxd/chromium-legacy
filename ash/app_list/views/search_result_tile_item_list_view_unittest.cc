@@ -29,9 +29,6 @@ namespace {
 constexpr size_t kInstalledApps = 4;
 constexpr size_t kPlayStoreApps = 2;
 constexpr size_t kRecommendedApps = 1;
-
-// used to test when multiple policy chips have been added
-constexpr size_t kMultipleRecommendedApps = 3;
 }  // namespace
 
 class SearchResultTileItemListViewTest
@@ -128,80 +125,10 @@ class SearchResultTileItemListViewTest
         result->set_result_id("RecommendedApp " + base::NumberToString(i));
         result->set_display_type(ash::SearchResultDisplayType::kRecommendation);
         result->set_result_type(ash::SearchResultType::kPlayStoreReinstallApp);
-        result->set_display_location(
-            ash::SearchResultDisplayLocation::kTileListContainer);
-        result->set_display_index(ash::SearchResultDisplayIndex::kSixthIndex);
         result->set_title(base::ASCIIToUTF16("RecommendedApp ") +
                           base::NumberToString16(i));
         result->SetRating(1 + i);
         results->Add(std::move(result));
-      }
-    }
-
-    // Adding results calls SearchResultContainerView::ScheduleUpdate().
-    // It will post a delayed task to update the results and relayout.
-    RunPendingMessages();
-  }
-
-  void SetUpSearchResultsWithMultiplePolicies() {
-    SearchModel::SearchResults* results = GetResults();
-
-    const ash::SearchResultDisplayIndex policy_indexes[3] = {
-        ash::SearchResultDisplayIndex::kFourthIndex,
-        ash::SearchResultDisplayIndex::kFifthIndex,
-        ash::SearchResultDisplayIndex::kSixthIndex,
-    };
-
-    // Populate results for installed applications.
-    for (size_t i = 0; i < kInstalledApps; ++i) {
-      std::unique_ptr<TestSearchResult> result =
-          std::make_unique<TestSearchResult>();
-      result->set_result_id("InstalledApp " + base::NumberToString(i));
-      result->set_display_type(ash::SearchResultDisplayType::kTile);
-      result->set_result_type(ash::SearchResultType::kInstalledApp);
-      result->set_title(base::ASCIIToUTF16("InstalledApp ") +
-                        base::NumberToString16(i));
-      results->Add(std::move(result));
-    }
-
-    // Populate results for Play Store search applications.
-    if (IsPlayStoreAppSearchEnabled()) {
-      for (size_t i = 0; i < kPlayStoreApps; ++i) {
-        std::unique_ptr<TestSearchResult> result =
-            std::make_unique<TestSearchResult>();
-        result->set_result_id("PlayStoreApp " + base::NumberToString(i));
-        result->set_display_type(ash::SearchResultDisplayType::kTile);
-        result->set_result_type(ash::SearchResultType::kPlayStoreApp);
-        result->set_title(base::ASCIIToUTF16("PlayStoreApp ") +
-                          base::NumberToString16(i));
-        result->SetRating(1 + i);
-        result->SetFormattedPrice(base::ASCIIToUTF16("Price ") +
-                                  base::NumberToString16(i));
-        results->Add(std::move(result));
-      }
-    }
-
-    if (IsReinstallAppRecommendationEnabled()) {
-      for (size_t i = 0; i < kMultipleRecommendedApps; ++i) {
-        std::unique_ptr<TestSearchResult> result =
-            std::make_unique<TestSearchResult>();
-        result->set_result_id("RecommendedApp " + base::NumberToString(i));
-        result->set_display_type(ash::SearchResultDisplayType::kRecommendation);
-        result->set_result_type(ash::SearchResultType::kPlayStoreReinstallApp);
-        result->set_display_location(
-            ash::SearchResultDisplayLocation::kTileListContainer);
-        result->set_display_index(policy_indexes[i]);
-        result->set_title(base::ASCIIToUTF16("RecommendedApp ") +
-                          base::NumberToString16(i));
-        result->SetRating(1 + i);
-        results->Add(std::move(result));
-      }
-    }
-
-    for (size_t i = 0; i < results->item_count(); ++i) {
-      if (results->GetItemAt(i)->display_index() !=
-          ash::SearchResultDisplayIndex::kUndefined) {
-        results->Move(i, results->GetItemAt(i)->display_index());
       }
     }
 
@@ -313,29 +240,6 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
       EXPECT_EQ(i + 1, GetOpenResultCount(i + 1));
     } else {
       EXPECT_EQ(i + 1, GetOpenResultCount(i));
-    }
-  }
-}
-
-TEST_P(SearchResultTileItemListViewTest, TestRecommendations) {
-  CreateSearchResultTileItemListView();
-  SetUpSearchResultsWithMultiplePolicies();
-
-  const size_t child_step = 2;
-
-  size_t first_index = kInstalledApps + kMultipleRecommendedApps;
-
-  if (IsReinstallAppRecommendationEnabled()) {
-    size_t stepper = IsPlayStoreAppSearchEnabled() ? 3 : 2;
-    for (size_t i = 0; i < stepper; ++i) {
-      ui::AXNodeData node_data;
-      view()->children()[first_index + (i)*child_step]->GetAccessibleNodeData(
-          &node_data);
-      EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
-      EXPECT_EQ(
-          "RecommendedApp " + base::NumberToString(i) + ", Star rating " +
-              base::NumberToString(i + 1) + ".0, App recommendation",
-          node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
     }
   }
 }

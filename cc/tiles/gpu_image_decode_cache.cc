@@ -485,6 +485,13 @@ sk_sp<SkImage> MakeTextureImage(viz::RasterContextProvider* context,
   return uploaded_image;
 }
 
+size_t GetUploadedTextureSizeFromSkImage(const sk_sp<SkImage>& plane,
+                                         const GrMipMapped mipped) {
+  const size_t plane_size = GrContext::ComputeTextureSize(
+      plane->colorType(), plane->width(), plane->height(), mipped);
+  return plane_size;
+}
+
 }  // namespace
 
 // static
@@ -1271,6 +1278,71 @@ size_t GpuImageDecodeCache::GetMaximumMemoryLimitBytes() const {
   return max_working_set_bytes_;
 }
 
+void GpuImageDecodeCache::AddTextureDump(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& texture_dump_name,
+    const size_t bytes,
+    const GrGLuint gl_id,
+    const size_t locked_size) const {
+  using base::trace_event::MemoryAllocatorDump;
+  using base::trace_event::MemoryAllocatorDumpGuid;
+
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(texture_dump_name);
+  dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                  MemoryAllocatorDump::kUnitsBytes, bytes);
+
+  // Dump the "locked_size" as an additional column.
+  dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes, locked_size);
+
+  MemoryAllocatorDumpGuid guid;
+  guid = gl::GetGLTextureClientGUIDForTracing(
+      context_->ContextSupport()->ShareGroupTracingGUID(), gl_id);
+  pmd->CreateSharedGlobalAllocatorDump(guid);
+  // Importance of 3 gives this dump priority over the dump made by Skia
+  // (importance 2), attributing memory here.
+  const int kImportance = 3;
+  pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+}
+
+void GpuImageDecodeCache::MemoryDumpYUVImage(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const ImageData* image_data,
+    const std::string& dump_base_name,
+    size_t locked_size) const {
+  using base::trace_event::MemoryAllocatorDump;
+  DCHECK(image_data->is_yuv);
+  DCHECK(image_data->upload.has_yuv_planes());
+
+  struct PlaneMemoryDumpInfo {
+    size_t byte_size;
+    GrGLuint gl_id;
+  };
+  std::vector<PlaneMemoryDumpInfo> plane_dump_infos;
+  const GrMipMapped mipped =
+      image_data->needs_mips ? GrMipMapped::kYes : GrMipMapped::kNo;
+  // TODO(crbug.com/910276): Also include alpha plane if applicable.
+  plane_dump_infos.push_back(
+      {GetUploadedTextureSizeFromSkImage(image_data->upload.y_image(), mipped),
+       image_data->upload.gl_y_id()});
+  plane_dump_infos.push_back(
+      {GetUploadedTextureSizeFromSkImage(image_data->upload.u_image(), mipped),
+       image_data->upload.gl_u_id()});
+  plane_dump_infos.push_back(
+      {GetUploadedTextureSizeFromSkImage(image_data->upload.v_image(), mipped),
+       image_data->upload.gl_v_id()});
+
+  for (size_t i = 0u; i < plane_dump_infos.size(); ++i) {
+    auto plane_dump_info = plane_dump_infos.at(i);
+    // If the image is currently locked, we dump the locked size per plane.
+    AddTextureDump(
+        pmd,
+        dump_base_name +
+            base::StringPrintf("/plane_%0u", base::checked_cast<uint32_t>(i)),
+        plane_dump_info.byte_size, plane_dump_info.gl_id,
+        locked_size ? plane_dump_info.byte_size : 0u);
+  }
+}
+
 bool GpuImageDecodeCache::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
@@ -1335,38 +1407,17 @@ bool GpuImageDecodeCache::OnMemoryDump(
         discardable_size = 0;
       }
 
-      std::string gpu_dump_name = base::StringPrintf(
+      std::string gpu_dump_base_name = base::StringPrintf(
           "cc/image_memory/cache_0x%" PRIXPTR "/gpu/image_%d",
           reinterpret_cast<uintptr_t>(this), image_id);
-      MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(gpu_dump_name);
-      dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                      MemoryAllocatorDump::kUnitsBytes, discardable_size);
-
-      // Dump the "locked_size" as an additional column.
       size_t locked_size =
           image_data->upload.is_locked() ? discardable_size : 0u;
-      dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
-                      locked_size);
-
-      // TODO(crbug.com/919296): Dump additional plane information for YUV.
-      // Create globally shared GUID(s) to associate this data with its
-      // GPU process counterpart.
-      MemoryAllocatorDumpGuid guid;
-      if (image_data->is_yuv) {  // Choose luma plane for identifying texture.
-        guid = gl::GetGLTextureClientGUIDForTracing(
-            context_->ContextSupport()->ShareGroupTracingGUID(),
-            image_data->upload.gl_y_id());
+      if (image_data->is_yuv) {
+        MemoryDumpYUVImage(pmd, image_data, gpu_dump_base_name, locked_size);
       } else {
-        guid = gl::GetGLTextureClientGUIDForTracing(
-            context_->ContextSupport()->ShareGroupTracingGUID(),
-            image_data->upload.gl_id());
+        AddTextureDump(pmd, gpu_dump_base_name, discardable_size,
+                       image_data->upload.gl_id(), locked_size);
       }
-      // kImportance is somewhat arbitrary - we chose 3 to be higher than the
-      // value used in the GPU process (1), and Skia (2), causing us to appear
-      // as the owner in memory traces.
-      const int kImportance = 3;
-      pmd->CreateSharedGlobalAllocatorDump(guid);
-      pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
     }
   }
 

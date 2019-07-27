@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_request_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_rp_entity.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_user_entity.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace {
 // Time to wait for an authenticator to successfully complete an operation.

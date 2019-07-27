@@ -64,8 +64,7 @@ void AwGLFunctor::DetachFunctorFromView() {
     Java_AwGLFunctor_detachFunctorFromView(env, obj);
 }
 
-void AwGLFunctor::Destroy(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj) {
+void AwGLFunctor::Destroy(JNIEnv* env) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   java_ref_.reset();
   delete this;

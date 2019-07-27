@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/old_render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
@@ -83,6 +84,7 @@
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
+#include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
@@ -386,21 +388,29 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // parts of the child frame. RenderFrameHost should bind these handles to
   // expose services to the renderer process. The caller takes care of sending
   // down the client end of the pipe to the child RenderFrame to use.
-  void OnCreateChildFrame(int new_routing_id,
-                          service_manager::mojom::InterfaceProviderRequest
-                              interface_provider_request,
-                          blink::mojom::DocumentInterfaceBrokerRequest
-                              document_interface_broker_content_request,
-                          blink::mojom::DocumentInterfaceBrokerRequest
-                              document_interface_broker_blink_request,
-                          blink::WebTreeScopeType scope,
-                          const std::string& frame_name,
-                          const std::string& frame_unique_name,
-                          bool is_created_by_script,
-                          const base::UnguessableToken& devtools_frame_token,
-                          const blink::FramePolicy& frame_policy,
-                          const FrameOwnerProperties& frame_owner_properties,
-                          blink::FrameOwnerElementType owner_type);
+  // |browser_interface_broker_receiver| is the receiver end of
+  // BrowserInterfaceBroker interface in the child frame. RenderFrameHost should
+  // bind this receiver to expose services to the renderer process. The caller
+  // takes care of sending down the client end of the pipe to the child
+  // RenderFrame to use.
+  void OnCreateChildFrame(
+      int new_routing_id,
+      service_manager::mojom::InterfaceProviderRequest
+          interface_provider_request,
+      blink::mojom::DocumentInterfaceBrokerRequest
+          document_interface_broker_content_request,
+      blink::mojom::DocumentInterfaceBrokerRequest
+          document_interface_broker_blink_request,
+      mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+          browser_interface_broker_receiver,
+      blink::WebTreeScopeType scope,
+      const std::string& frame_name,
+      const std::string& frame_unique_name,
+      bool is_created_by_script,
+      const base::UnguessableToken& devtools_frame_token,
+      const blink::FramePolicy& frame_policy,
+      const FrameOwnerProperties& frame_owner_properties,
+      blink::FrameOwnerElementType owner_type);
 
   // Update this frame's state at the appropriate time when a navigation
   // commits. This is called by NavigatorImpl::DidNavigate as a helper, in the
@@ -832,6 +842,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::DocumentInterfaceBrokerRequest content_request,
       blink::mojom::DocumentInterfaceBrokerRequest blink_request);
 
+  // Binds the receiver end of the BrowserInterfaceBroker interface through
+  // which services provided by this RenderFrameHost are exposed to the
+  // corresponding RenderFrame. The caller is responsible for plumbing the
+  // client end to the the renderer process.
+  void BindBrowserInterfaceBrokerReceiver(
+      mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>);
+
   // Exposed so that tests can swap out the implementation and intercept calls.
   mojo::AssociatedBinding<mojom::FrameHost>& frame_host_binding_for_testing() {
     return frame_host_associated_binding_;
@@ -980,6 +997,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns true if frame is frozen.
   bool IsFrozen();
+
+  void GetAudioContextManager(
+      mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver);
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1437,9 +1457,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // blink::mojom::DocumentInterfaceBroker:
   void GetFrameHostTestInterface(
       mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver)
-      override;
-  void GetAudioContextManager(
-      mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver)
       override;
   void GetCredentialManager(
       mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) override;
@@ -2103,6 +2120,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
       document_interface_broker_content_binding_;
   mojo::Binding<blink::mojom::DocumentInterfaceBroker>
       document_interface_broker_blink_binding_;
+
+  // BrowserInterfaceBroker implementation through which this
+  // RenderFrameHostImpl exposes document-scoped Mojo services to the currently
+  // active document in the corresponding RenderFrame.
+  BrowserInterfaceBrokerImpl<RenderFrameHostImpl> broker_{this};
+  mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
+      &broker_};
 
   // Logs interface requests that arrive after the frame has already committed a
   // non-same-document navigation, and has already unbound

@@ -367,6 +367,8 @@ void ImageCapture::SetMediaTrackConstraints(
       (constraints->hasSaturation() && !capabilities_->hasSaturation()) ||
       (constraints->hasSharpness() && !capabilities_->hasSharpness()) ||
       (constraints->hasFocusDistance() && !capabilities_->hasFocusDistance()) ||
+      (constraints->hasPan() && !capabilities_->hasPan()) ||
+      (constraints->hasTilt() && !capabilities_->hasTilt()) ||
       (constraints->hasZoom() && !capabilities_->hasZoom()) ||
       (constraints->hasTorch() && !capabilities_->hasTorch())) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -566,6 +568,32 @@ void ImageCapture::SetMediaTrackConstraints(
     settings->focus_distance = focus_distance;
   }
 
+  settings->has_pan = constraints->hasPan() && constraints->pan().IsDouble();
+  if (settings->has_pan) {
+    const auto pan = constraints->pan().GetAsDouble();
+    if (pan < capabilities_->pan()->min() ||
+        pan > capabilities_->pan()->max()) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError, "pan setting out of range"));
+      return;
+    }
+    temp_constraints->setPan(constraints->pan());
+    settings->pan = pan;
+  }
+
+  settings->has_tilt = constraints->hasTilt() && constraints->tilt().IsDouble();
+  if (settings->has_tilt) {
+    const auto tilt = constraints->tilt().GetAsDouble();
+    if (tilt < capabilities_->tilt()->min() ||
+        tilt > capabilities_->tilt()->max()) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError, "tilt setting out of range"));
+      return;
+    }
+    temp_constraints->setTilt(constraints->tilt());
+    settings->tilt = tilt;
+  }
+
   settings->has_zoom = constraints->hasZoom() && constraints->zoom().IsDouble();
   if (settings->has_zoom) {
     const auto zoom = constraints->zoom().GetAsDouble();
@@ -650,6 +678,11 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings* settings) const {
 
   if (settings_->hasFocusDistance())
     settings->setFocusDistance(settings_->focusDistance());
+
+  if (settings_->hasPan())
+    settings->setPan(settings_->pan());
+  if (settings_->hasTilt())
+    settings->setTilt(settings_->tilt());
   if (settings_->hasZoom())
     settings->setZoom(settings_->zoom());
   if (settings_->hasTorch())
@@ -876,6 +909,15 @@ void ImageCapture::UpdateMediaTrackCapabilities(
     capabilities_->setFocusDistance(
         MediaSettingsRange::Create(*photo_state->focus_distance));
     settings_->setFocusDistance(photo_state->focus_distance->current);
+  }
+
+  if (photo_state->pan->max != photo_state->pan->min) {
+    capabilities_->setPan(MediaSettingsRange::Create(*photo_state->pan));
+    settings_->setPan(photo_state->pan->current);
+  }
+  if (photo_state->tilt->max != photo_state->tilt->min) {
+    capabilities_->setTilt(MediaSettingsRange::Create(*photo_state->tilt));
+    settings_->setTilt(photo_state->tilt->current);
   }
   if (photo_state->zoom->max != photo_state->zoom->min) {
     capabilities_->setZoom(MediaSettingsRange::Create(*photo_state->zoom));

@@ -9,7 +9,6 @@ import android.content.Intent;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 
@@ -42,7 +41,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
             return;
         }
 
-        PictureInPictureActivityJni.get().onActivityStart(this, sNativeOverlayWindowAndroid);
+        PictureInPictureActivityJni.get().onActivityStart(sNativeOverlayWindowAndroid, this);
     }
 
     @Override
@@ -85,8 +84,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
 
     @NativeMethods
     interface Natives {
-        void onActivityStart(
-                @JCaller PictureInPictureActivity self, long nativeOverlayWindowAndroid);
+        void onActivityStart(long nativeOverlayWindowAndroid, PictureInPictureActivity self);
 
         void onActivityDestroy(long nativeOverlayWindowAndroid);
     }

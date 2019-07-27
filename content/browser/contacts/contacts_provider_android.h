@@ -32,7 +32,6 @@ class ContactsProviderAndroid : public ContactsProvider {
   // (or EndWithPermissionDenied) must be called to signal the end of the
   // construction of the contacts list.
   void AddContact(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& obj,
                   jboolean includeNames,
                   jboolean includeEmails,
                   jboolean includeTel,
@@ -42,12 +41,10 @@ class ContactsProviderAndroid : public ContactsProvider {
 
   // Signals the end of adding contacts to the list. The contact list is
   // returned to the web page.
-  void EndContactsList(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj);
+  void EndContactsList(JNIEnv* env);
 
   // Signals the end (due to a permission error).
-  void EndWithPermissionDenied(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj);
+  void EndWithPermissionDenied(JNIEnv* env);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> dialog_;

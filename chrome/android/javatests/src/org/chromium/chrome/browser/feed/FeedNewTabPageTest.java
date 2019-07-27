@@ -117,7 +117,8 @@ public class FeedNewTabPageTest {
         SignInPromo.SigninObserver signinObserver = mNtp.getMediatorForTesting()
                                                             .getSignInPromoForTesting()
                                                             .getSigninObserverForTesting();
-        RecyclerView recyclerView = (RecyclerView) mNtp.getStream().getView();
+        RecyclerView recyclerView =
+                (RecyclerView) mNtp.getCoordinatorForTesting().getStream().getView();
 
         // Prioritize RecyclerView's focusability so that the sign-in promo button and the action
         // button don't get focused initially to avoid flakiness.
@@ -177,7 +178,7 @@ public class FeedNewTabPageTest {
                 .perform(RecyclerViewActions.actionOnItemAtPosition(
                         SIGNIN_PROMO_POSITION, swipeLeft()));
 
-        ViewGroup view = (ViewGroup) mNtp.getStream().getView();
+        ViewGroup view = (ViewGroup) mNtp.getCoordinatorForTesting().getStream().getView();
         waitForView(view, withId(R.id.signin_promo_view_container), VIEW_NULL);
         waitForView(view, allOf(withId(R.id.header_title), isDisplayed()));
 
@@ -203,7 +204,8 @@ public class FeedNewTabPageTest {
         Tab tab1 = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
         FeedNewTabPage ntp1 = (FeedNewTabPage) tab1.getNativePage();
         SectionHeader firstHeader = ntp1.getMediatorForTesting().getSectionHeaderForTesting();
-        RecyclerView.Adapter adapter1 = ((RecyclerView) ntp1.getStream().getView()).getAdapter();
+        RecyclerView.Adapter adapter1 =
+                ((RecyclerView) ntp1.getCoordinatorForTesting().getStream().getView()).getAdapter();
 
         // Check header is expanded.
         Assert.assertTrue(firstHeader.isExpandable() && firstHeader.isExpanded());
@@ -211,7 +213,7 @@ public class FeedNewTabPageTest {
         Assert.assertTrue(getPreferenceForArticleSectionHeader());
 
         // Toggle header on the current tab.
-        toggleHeader((ViewGroup) ntp1.getStream().getView(), false);
+        toggleHeader((ViewGroup) ntp1.getCoordinatorForTesting().getStream().getView(), false);
 
         // Check header is collapsed.
         Assert.assertTrue(firstHeader.isExpandable() && !firstHeader.isExpanded());
@@ -222,7 +224,8 @@ public class FeedNewTabPageTest {
         Tab tab2 = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
         FeedNewTabPage ntp2 = (FeedNewTabPage) tab2.getNativePage();
         SectionHeader secondHeader = ntp2.getMediatorForTesting().getSectionHeaderForTesting();
-        RecyclerView.Adapter adapter2 = ((RecyclerView) ntp2.getStream().getView()).getAdapter();
+        RecyclerView.Adapter adapter2 =
+                ((RecyclerView) ntp2.getCoordinatorForTesting().getStream().getView()).getAdapter();
 
         // Check header on the second tab is collapsed.
         Assert.assertTrue(secondHeader.isExpandable() && !secondHeader.isExpanded());
@@ -230,7 +233,7 @@ public class FeedNewTabPageTest {
         Assert.assertFalse(getPreferenceForArticleSectionHeader());
 
         // Toggle header on the second tab.
-        toggleHeader((ViewGroup) ntp2.getStream().getView(), true);
+        toggleHeader((ViewGroup) ntp2.getCoordinatorForTesting().getStream().getView(), true);
 
         // Check header on the second tab is expanded.
         Assert.assertTrue(secondHeader.isExpandable() && secondHeader.isExpanded());
@@ -257,19 +260,21 @@ public class FeedNewTabPageTest {
         // Policy is disabled. Verify the NTP root view contains only the Stream view as child.
         ViewGroup rootView = (ViewGroup) mNtp.getView();
         ViewUtils.waitForStableView(rootView);
-        Assert.assertNotNull(mNtp.getStream());
-        Assert.assertNull(mNtp.getScrollViewForPolicy());
+        Assert.assertNotNull(mNtp.getCoordinatorForTesting().getStream());
+        Assert.assertNull(mNtp.getCoordinatorForTesting().getScrollViewForPolicy());
         Assert.assertEquals(1, rootView.getChildCount());
-        Assert.assertEquals(mNtp.getStream().getView(), rootView.getChildAt(0));
+        Assert.assertEquals(
+                mNtp.getCoordinatorForTesting().getStream().getView(), rootView.getChildAt(0));
 
         // Simulate that policy is enabled. Verify the NTP root view contains only the view for
         // policy as child.
         TestThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_SECTION_ENABLED, false));
-        Assert.assertNotNull(mNtp.getScrollViewForPolicy());
-        Assert.assertNull(mNtp.getStream());
+        Assert.assertNotNull(mNtp.getCoordinatorForTesting().getScrollViewForPolicy());
+        Assert.assertNull(mNtp.getCoordinatorForTesting().getStream());
         Assert.assertEquals(1, rootView.getChildCount());
-        Assert.assertEquals(mNtp.getScrollViewForPolicy(), rootView.getChildAt(0));
+        Assert.assertEquals(
+                mNtp.getCoordinatorForTesting().getScrollViewForPolicy(), rootView.getChildAt(0));
 
         // Open a new tab while policy is still enabled.
         Tab tab2 = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
@@ -277,26 +282,29 @@ public class FeedNewTabPageTest {
         ViewGroup rootView2 = (ViewGroup) ntp2.getView();
 
         // Verify that NTP root view contains only the view for policy as child.
-        Assert.assertNotNull(ntp2.getScrollViewForPolicy());
-        Assert.assertNull(ntp2.getStream());
+        Assert.assertNotNull(ntp2.getCoordinatorForTesting().getScrollViewForPolicy());
+        Assert.assertNull(ntp2.getCoordinatorForTesting().getStream());
         Assert.assertEquals(1, rootView2.getChildCount());
-        Assert.assertEquals(ntp2.getScrollViewForPolicy(), rootView2.getChildAt(0));
+        Assert.assertEquals(
+                ntp2.getCoordinatorForTesting().getScrollViewForPolicy(), rootView2.getChildAt(0));
 
         // Simulate that policy is disabled. Verify the NTP root view is the view for policy. We
         // don't re-enable the Feed until the next restart.
         TestThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(
                 Pref.NTP_ARTICLES_SECTION_ENABLED, true));
-        Assert.assertNotNull(ntp2.getScrollViewForPolicy());
-        Assert.assertNull(ntp2.getStream());
+        Assert.assertNotNull(ntp2.getCoordinatorForTesting().getScrollViewForPolicy());
+        Assert.assertNull(ntp2.getCoordinatorForTesting().getStream());
         Assert.assertEquals(1, rootView2.getChildCount());
-        Assert.assertEquals(ntp2.getScrollViewForPolicy(), rootView2.getChildAt(0));
+        Assert.assertEquals(
+                ntp2.getCoordinatorForTesting().getScrollViewForPolicy(), rootView2.getChildAt(0));
 
         // Switch to the old tab. Verify the NTP root view is the view for policy.
         ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), mTab.getId());
-        Assert.assertNotNull(mNtp.getScrollViewForPolicy());
-        Assert.assertNull(mNtp.getStream());
+        Assert.assertNotNull(mNtp.getCoordinatorForTesting().getScrollViewForPolicy());
+        Assert.assertNull(mNtp.getCoordinatorForTesting().getStream());
         Assert.assertEquals(1, rootView.getChildCount());
-        Assert.assertEquals(mNtp.getScrollViewForPolicy(), rootView.getChildAt(0));
+        Assert.assertEquals(
+                mNtp.getCoordinatorForTesting().getScrollViewForPolicy(), rootView.getChildAt(0));
 
         // Reset state.
         TestThreadUtils.runOnUiThreadBlocking(() -> PrefServiceBridge.getInstance().setBoolean(

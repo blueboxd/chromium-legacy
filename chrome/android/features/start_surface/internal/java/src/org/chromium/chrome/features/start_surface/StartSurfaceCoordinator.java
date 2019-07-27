@@ -4,13 +4,18 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.start_surface.R;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Root coordinator that is responsible for showing start surfaces, like a grid of Tabs, explore
@@ -21,6 +26,7 @@ public class StartSurfaceCoordinator implements StartSurface {
     private final StartSurfaceMediator mStartSurfaceMediator;
     private BottomBarCoordinator mBottomBarCoordinator;
     private ExploreSurfaceCoordinator mExploreSurfaceCoordinator;
+    private PropertyModel mPropertyModel;
 
     public StartSurfaceCoordinator(ChromeActivity activity) {
         mGridTabSwitcher =
@@ -31,20 +37,34 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.TWO_PANES_START_SURFACE_ANDROID)
                 && !FeatureUtilities.isBottomToolbarEnabled()) {
             // Margin the bottom of the Tab grid to save space for the bottom bar.
-            mGridTabSwitcher.getTabGridDelegate().setBottomControlsHeight(
+            int bottomBarHeight =
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                            R.dimen.ss_bottom_bar_height));
+                            R.dimen.ss_bottom_bar_height);
+            mGridTabSwitcher.getTabGridDelegate().setBottomControlsHeight(bottomBarHeight);
+
+            mPropertyModel = new PropertyModel(StartSurfaceProperties.ALL_KEYS);
+            mPropertyModel.set(BOTTOM_BAR_HEIGHT, bottomBarHeight);
+            int singleToolbarHeight =
+                    activity.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
+            int toolbarHeight = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
+                    ? singleToolbarHeight * 2
+                    : singleToolbarHeight;
+            mPropertyModel.set(TOP_BAR_HEIGHT, toolbarHeight);
 
             // Create the bottom bar.
             mBottomBarCoordinator = new BottomBarCoordinator(
-                    activity, activity.getCompositorViewHolder(), activity.getTabModelSelector());
+                    activity, activity.getCompositorViewHolder(), mPropertyModel);
 
             // Create the explore surface.
-            mExploreSurfaceCoordinator = new ExploreSurfaceCoordinator();
+            mExploreSurfaceCoordinator = new ExploreSurfaceCoordinator(
+                    activity, activity.getCompositorViewHolder(), mPropertyModel);
         }
 
         mStartSurfaceMediator = new StartSurfaceMediator(mGridTabSwitcher.getGridController(),
-                mBottomBarCoordinator, mExploreSurfaceCoordinator);
+                activity.getTabModelSelector(), mPropertyModel,
+                mExploreSurfaceCoordinator == null
+                        ? null
+                        : mExploreSurfaceCoordinator.getFeedSurfaceCreator());
     }
 
     // Implements StartSurface.

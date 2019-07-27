@@ -43,6 +43,7 @@ source_set("activity_services") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/util",
     "//ios/web",
+    "//ios/web/common:user_agent",
     "//net",
     "//ui/base",
     "//url",

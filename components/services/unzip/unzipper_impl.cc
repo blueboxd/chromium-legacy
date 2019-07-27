@@ -99,9 +99,10 @@ bool FilterWithFilterPtr(mojom::UnzipFilterPtr* filter,
 
 }  // namespace
 
-UnzipperImpl::UnzipperImpl(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+UnzipperImpl::UnzipperImpl() = default;
+
+UnzipperImpl::UnzipperImpl(mojo::PendingReceiver<mojom::Unzipper> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 UnzipperImpl::~UnzipperImpl() = default;
 

@@ -53,6 +53,8 @@ CastWMHelper::CastWMHelper(
       cast_screen_(cast_screen),
       vsync_timing_manager_(this) {
   cast_screen_->AddObserver(&display_observer_);
+  for (const auto& display : cast_screen_->GetAllDisplays())
+    display_observer_.OnDisplayAdded(display);
 }
 
 CastWMHelper::~CastWMHelper() {

@@ -3,17 +3,17 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v7.preference.PreferenceScreen
+<PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat
+    <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
         android:key="do_not_track_switch"
         android:summaryOn="@string/text_on"
         android:summaryOff="@string/text_off" />
 
-    <org.chromium.chrome.browser.preferences.TextMessagePreferenceCompat
+    <org.chromium.chrome.browser.preferences.TextMessagePreference
         android:title="@string/do_not_track_description"
         app:allowDividerBelow="false" />
 
-</android.support.v7.preference.PreferenceScreen>
+</PreferenceScreen>

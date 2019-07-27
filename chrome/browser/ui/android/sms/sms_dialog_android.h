@@ -22,10 +22,10 @@ class SmsDialogAndroid : public content::SmsDialog {
   void EnableContinueButton() override;
 
   // Report the user manually clicks the 'Continue' button.
-  void OnContinue(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void OnContinue(JNIEnv* env);
 
   // Report the user manually dismisses the SMS dialog.
-  void OnCancel(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void OnCancel(JNIEnv* env);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_dialog_;

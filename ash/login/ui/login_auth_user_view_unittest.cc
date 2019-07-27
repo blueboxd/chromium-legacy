@@ -167,7 +167,7 @@ TEST_F(LoginAuthUserViewUnittest,
        PasswordClearedAfterAnimationIfPasswordDisabled) {
   LoginPasswordView::TestApi password_test(view_->password_view());
   auto has_password = [&]() {
-    return !password_test.textfield()->text().empty();
+    return !password_test.textfield()->GetText().empty();
   };
 
   // Set a password.
@@ -209,7 +209,7 @@ TEST_F(LoginAuthUserViewUnittest, AttemptsUnlockOnLidOpen) {
   base::RunLoop().RunUntilIdle();
 
   LoginPasswordView::TestApi password_test(test_auth_user_view.password_view());
-  EXPECT_FALSE(password_test.textfield()->read_only());
+  EXPECT_FALSE(password_test.textfield()->GetReadOnly());
   EXPECT_TRUE(test_auth_user_view.external_binary_auth_button()->state() ==
               views::Button::STATE_NORMAL);
   EXPECT_TRUE(

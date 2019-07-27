@@ -62,6 +62,7 @@
 <translation id="1062407476771304334">Substituir</translation>
 <translation id="1079801999187584280">Não permite o uso das Ferramentas para Desenvolvedores</translation>
 <translation id="1087437665304381368">Essa política controla apenas o modo de desenvolvedor do <ph name="PRODUCT_OS_NAME" />. Se quiser impedir o acesso às Opções do desenvolvedor do Android, configure a política <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
+<translation id="1087707496788636333">A lista de políticas do Chrome Enterprise está mudando. Atualize seus favoritos para <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
 <translation id="1093082332347834239">Se esta configuração for ativada, o host de assistência remota será executado em um processo com permissões <ph name="UIACCESS_PERMISSION_NAME" />. Isso permitirá que os usuários remotos interajam com janelas elevadas na área de trabalho do usuário local.
 
           Se esta configuração for desativada ou não for configurada, o host de assistência remota será executado no contexto do usuário, e os usuários remotos não poderão interagir com janelas elevadas na área de trabalho.</translation>
@@ -724,6 +725,10 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2231817271680715693">Importar histórico de navegação do navegador padrão na primeira execução</translation>
 <translation id="2236488539271255289">Não permitir que nenhum site defina dados locais</translation>
 <translation id="2240879329269430151">Permite que você defina se websites estão autorizados a exibir pop-ups. A exibição de pop-ups pode ser permitida ou negada para todos os websites. Se esta política for deixada sem definição, a política "BlockPopups" será utilizada, mas pode ser modificada pelo usuário.</translation>
+<translation id="2241498944622759244">Esse recurso nunca foi lançado, por isso a política está obsoleta. Se esta política for definida como verdadeira ou não for definida, páginas relacionadas à atual serão sugeridas no <ph name="PRODUCT_NAME" />.
+      Essas sugestões são buscadas remotamente dos servidores do Google.
+
+      Se a configuração for definida como falsa, as sugestões não serão buscadas nem exibidas.</translation>
 <translation id="2255326053989409609">Ativar esta configuração impede que páginas da Web acessem a unidade de processamento gráfico (GPU, na sigla em inglês). Especificamente, as páginas da Web não podem acessar a API WebGL, e plug-ins não podem usar a API Pepper 3D.
 
       Desativar esta configuração ou deixá-la sem definição pode permitir que páginas da Web utilizem a API WebGL e que plug-ins utilizem a API Pepper 3D. As configurações padrão do navegador ainda podem exigir que argumentos de linha de comando sejam aprovados para que essas APIs sejam usadas.
@@ -962,6 +967,20 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       O formato do valor segue os nomes de fusos horários do "IANA Time Zone Database". Consulte o link em inglês https://en.wikipedia.org/wiki/Tz_database. A maioria dos fusos horários pode ser referida como "continente/cidade_grande" ou "oceano/cidade_grande".
 
       A configuração desta política desativa completamente a definição automática de fuso horário de acordo com o local do dispositivo. Ela também modifica a política SystemTimezoneAutomaticDetection.</translation>
+<translation id="2758218632193192525">Oferece as configurações dos servidores de impressão disponíveis.
+
+      Esta política permite fornecer a configuração de servidores de impressão externos no formato de arquivo JSON para dispositivos <ph name="PRODUCT_OS_NAME" />.
+
+      O arquivo não pode ser maior que 1 MB e precisa conter uma matriz de registros (objetos JSON). Cada registro precisa conter os campos "url" e "display_name".
+
+      O arquivo é transferido por download e armazenado em cache. A hash criptográfica é usada para verificar a integridade do download. O download do arquivo será feito novamente sempre que o URL ou a hash mudar.
+
+      Se esta política estiver definida no valor correto, será realizada uma consulta nos servidores de impressão especificados quanto à disponibilidade de impressoras. Isso é feito no dispositivo com o uso do protocolo IPP.
+
+      Se esta política não for definida ou tiver o valor incorreto, nenhuma impressora de servidor ficará visível aos usuários.
+
+      Atualmente, o limite de número de servidores de impressão é 16. Apenas os 16 primeiros servidores de impressão da lista serão consultados.
+      </translation>
 <translation id="2759224876420453487">Controla o comportamento do usuário em uma sessão de diversos perfis</translation>
 <translation id="2761483219396643566">Intervalo da advertência de inatividade no funcionamento com energia da bateria</translation>
 <translation id="2762164719979766599">Especifica a lista de contas locais de dispositivo a serem mostradas na tela de login.
@@ -1412,13 +1431,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Cada item de lista da política é um objeto com dois elementos: "share_url" e "mode". O "share_url" é o URL do compartilhamento, e "mode" é o "drop_down" ou "pre_mount". O modo "drop_down" indica que o "share_url" será adicionado à lista suspensa de descoberta de compartilhamentos. O modo "pre_mount" indica que o "share_url" será ativado.</translation>
 <translation id="3585177699591644295">Ativa o recurso de acessibilidade "Selecionar para ouvir".
 
-          Se esta política for definida como verdadeira, o Selecionar para ouvir estará sempre ativado.
+          Se esta política for definida como verdadeira, o "Selecionar para ouvir" estará sempre ativado.
 
-          Se esta política for definida como falsa, o Selecionar para ouvir estará sempre desativado.
+          Se esta política for definida como falsa, o "Selecionar para ouvir" estará sempre desativado.
 
           Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
-          Se esta política não for definida, o Selecionar para ouvir será desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
+          Se esta política não for definida, o "Selecionar para ouvir" será desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="3591527072193107424">Ativa o recurso "Suporte a navegadores legados".</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
 <translation id="3627678165642179114">Ativar ou desativar serviço da web de verificação ortográfica</translation>
@@ -1860,6 +1879,15 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 
           No momento, esse recurso está desativado para servidores.</translation>
 <translation id="4363057787588706121">Permitir a mescla de políticas de lista de diferentes fontes</translation>
+<translation id="4363136876356691536">Se esta política for definida como verdadeira, as opções de acessibilidade sempre aparecerão no menu da bandeja do sistema.
+
+          Se esta política for definida como falsa, as opções de acessibilidade nunca aparecerão no menu da bandeja do sistema.
+
+          Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
+
+          Se esta política não for definida, as opções de acessibilidade não aparecerão no menu da bandeja do sistema, mas o usuário poderá fazer com que elas apareçam usando a página "Configurações".
+
+          Quando os recursos de acessibilidade são ativados por outros meios (por exemplo, por uma combinação de teclas), as opções de acessibilidade sempre são exibidas no menu da bandeja do sistema.</translation>
 <translation id="436581050240847513">Relatar interfaces de redes de dispositivos</translation>
 <translation id="4372704773119750918">Não permitir que o usuário corporativo faça parte de diversos perfis (primários ou secundários)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites exibam todas as imagens</translation>
@@ -1950,20 +1978,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4604931264910482931">Configurar a lista de proibições de mensagens nativas</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar a lista branca de instalação de extensão</translation>
-<translation id="4627884124191169977">Oferece as configurações dos servidores de impressão disponíveis.
-
-      Esta política permite fornecer a configuração de servidores de impressão externos no formato de arquivo JSON para dispositivos <ph name="PRODUCT_OS_NAME" />.
-
-      O arquivo não pode ser maior que 1 MB e precisa conter uma matriz de registros (objetos JSON). Cada registro precisa conter os campos "url" e "display_name".
-
-      O arquivo é transferido por download e armazenado em cache. A hash criptográfica é usada para verificar a integridade do download. O download do arquivo será feito novamente sempre que o URL ou a hash mudar.
-
-      Se esta política estiver definida no valor correto, será realizada uma consulta nos servidores de impressão especificados quanto à disponibilidade de impressoras. Isso é feito no dispositivo com o uso do protocolo IPP.
-
-      Se esta política não for definida ou tiver o valor incorreto, nenhuma impressora de servidor ficará visível aos usuários.
-
-      Atualmente, o limite de número de servidores de impressão é 16. Apenas os 16 primeiros servidores de impressão da lista serão consultados.
-      </translation>
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo listados</translation>
 <translation id="4632566332417930481">Não permite o uso das Ferramentas para Desenvolvedores em extensões instaladas por uma política corporativa; permite o uso das Ferramentas para desenvolvedores em outros contextos</translation>
 <translation id="4633786464238689684">Faz com que as teclas superiores funcionem como teclas de função.
@@ -2789,6 +2803,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
           Se esta política não for definida, o valor padrão global será utilizado para todos os sites, seja a partir da política "DefaultPluginsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="6190022522129724693">Configuração padrão de pop-ups</translation>
 <translation id="6190367314942602985">Reportar informações de identificação do usuário</translation>
+<translation id="6195802366906945965">Determina se o verificador integrado de certificados será usado para verificar os certificados do servidor</translation>
 <translation id="6197453924249895891">Concede acesso a chaves corporativas para extensões.
 
       As chaves são projetadas para uso corporativo se forem geradas usando a API chrome.enterprise.platformKeys em uma conta gerenciada. As chaves importadas ou geradas de outra forma não são destinadas ao uso corporativo.
@@ -3110,7 +3125,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Os idiomas compatíveis no momento são: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Ativar impressão duplex de borda longa</translation>
 <translation id="6931242315485576290">Desativar a sincronização de dados com o Google</translation>
-<translation id="6932419914671987652">Se esta política for definida como ativada, as sessões de visitante serão aplicadas e os logins de perfil serão impedidos no <ph name="PRODUCT_NAME" />. Logins de visitantes são perfis do <ph name="PRODUCT_NAME" /> quando todas as janelas estão no modo de navegação anônima.
+<translation id="6932419914671987652">Se esta política for definida como ativada, as sessões de visitante serão aplicadas e os logins de perfil serão impedidos no <ph name="PRODUCT_NAME" />. Logins de visitantes são perfis do <ph name="PRODUCT_NAME" /> em que todas as janelas estão no modo de navegação anônima.
 
       Se esta política for definida como desativada, não for definida ou se o modo visitante do navegador estiver desativado pela política <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME" />, o uso de perfis novos e existentes será permitido no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6936894225179401731">Especifica o número máximo de conexões simultâneas ao servidor proxy.
@@ -3166,6 +3181,12 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
       Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver uma lista de variáveis que podem ser usadas.
 
       Se esta política for deixada sem definição, o caminho padrão de perfil será usado, e o usuário poderá substituí-lo pela sinalização de linha de comando "--user-data-dir".</translation>
+<translation id="7011669683779011760">Quando esta configuração estiver ativada, o <ph name="PRODUCT_OS_NAME" /> fará a verificação dos certificados do servidor usando o verificador integrado de certificados.
+      Quando esta configuração estiver desativada, o <ph name="PRODUCT_OS_NAME" /> fará a verificação dos certificados do servidor usando o verificador legado fornecido pela plataforma.
+      Se esta configuração não for definida, o verificador de certificados legado ou o integrado do <ph name="PRODUCT_OS_NAME" /> poderá ser usado.
+
+      Esta política será removida na versão 81 do <ph name="PRODUCT_OS_NAME" />, já que, nessa versão, a compatibilidade com o verificador de certificados legado será removida do <ph name="PRODUCT_OS_NAME" />.
+      </translation>
 <translation id="7027785306666625591">Configura o gerenciamento de energia no <ph name="PRODUCT_OS_NAME" />.
 
       Essas políticas permitem configurar a forma como o <ph name="PRODUCT_OS_NAME" /> se comporta quando o usuário permanece inativo por um período de tempo específico.</translation>
@@ -3322,11 +3343,11 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 
           Se esta política não for definida, a lupa será desativada quando a tela de login for exibida pela primeira vez. Os usuários podem ativar ou desativar a lupa a qualquer momento e seu status na tela de login continuará entre os usuários.</translation>
 <translation id="7249828445670652637">Ativar certificados de CA (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> para apps ARC</translation>
-<translation id="7251652588006515288">Esta política controla se o usuário pode importar e remover certificados do cliente por meio do Administrador de certificados.
+<translation id="7251652588006515288">Esta política controla se o usuário pode importar e remover certificados do cliente por meio do Gerenciador de certificados.
 
       Se esta política estiver definida para "Permitir que os usuários gerenciem todos os certificados'' ou se não estiver definida, os usuários poderão gerenciar os certificados.
 
-      Se esta política estiver definida para ''Permitir que os usuários gerenciem certificados de usuário", eles poderão gerenciar certificados, mas não todos os certificados do dispositivo.
+      Se esta política estiver definida para ''Permitir que os usuários gerenciem certificados de usuário", eles poderão gerenciar os próprios certificados, mas não todos os certificados do dispositivo.
 
       Se esta política estiver definida para "Não permitir que os usuários gerenciem certificados'', os usuários não poderão gerenciar certificados, mas apenas visualizá-los.</translation>
 <translation id="7252681704926980614">Envia o nome de usuário e de arquivo para o servidor de impressoras nativas com cada trabalho de impressão. O padrão é não enviar.
@@ -4076,13 +4097,13 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8759829385824155666">Permitir tipos de criptografia Kerberos</translation>
 <translation id="8764119899999036911">Especifica se o SPN do Kerberos se baseia no nome DNS canônico ou no nome original inserido. Se ativar esta configuração, a pesquisa CNAME será ignorada e o nome do servidor será usado como inserido. Se desativar essa configuração ou a deixar sem definição, o nome canônico do servidor será determinado através da pesquisa CNAME.</translation>
 <translation id="8764477907716150749">Esta política é destinada a uso interno pelo próprio <ph name="PRODUCT_NAME" />.</translation>
-<translation id="877773134585155834">Lista os identificadores de aplicativo que o <ph name="PRODUCT_OS_NAME" /> exibe como apps fixados na barra da tela de início.
+<translation id="877773134585155834">Lista os identificadores de aplicativo que o <ph name="PRODUCT_OS_NAME" /> exibe como apps fixados na barra do acesso rápido.
 
       Aplicativos do Google Chrome são especificados por um código, por exemplo, "pjkljhegncpnkpknbcohdijeoejaedia", enquanto apps Android são especificados por um nome de pacote, como "com.google.android.gm", e apps da Web pelo URL usado em WebAppInstallForceList, por exemplo, "https://google.com/maps".
 
       Se esta política for definida, o conjunto de aplicativos será fixado e não poderá ser alterado pelo usuário.
 
-      Se esta política não for definida, o usuário poderá alterar a lista apps fixados na tela inicial.</translation>
+      Se esta política não for definida, o usuário poderá alterar a lista apps fixados no acesso rápido.</translation>
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8800453707696044281">Configurar a parada personalizada do carregamento da bateria, em porcentagem</translation>
 <translation id="8801680448782904838">Notifica um usuário de que a reinicialização do navegador ou do dispositivo é recomendada ou obrigatória</translation>

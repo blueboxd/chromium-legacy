@@ -227,7 +227,7 @@ void TreeView::CommitEdit() {
 
   DCHECK(selected_node_);
   const bool editor_has_focus = editor_->HasFocus();
-  model_->SetTitle(GetSelectedNode(), editor_->text());
+  model_->SetTitle(GetSelectedNode(), editor_->GetText());
   CancelEdit();
   if (editor_has_focus)
     RequestFocus();

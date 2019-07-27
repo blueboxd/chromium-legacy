@@ -29,15 +29,12 @@ class VR_EXPORT ArCoreConsentPrompt : public ArCoreConsentPromptInterface {
 
   // Called from Java end.
   void OnUserConsentResult(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& j_caller,
                            jboolean is_granted);
   void OnRequestInstallArModuleResult(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       bool success);
   void OnRequestInstallSupportedArCoreResult(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
       bool success);
 
  private:

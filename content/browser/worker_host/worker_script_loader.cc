@@ -22,19 +22,6 @@
 
 namespace content {
 
-namespace {
-void CancelRequestOnIO(int process_id,
-                       int request_id,
-                       base::OnceClosure ui_continuation) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(ResourceDispatcherHostImpl::Get());
-  ResourceDispatcherHostImpl::Get()->CancelRequest(process_id, request_id);
-  if (ui_continuation)
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             std::move(ui_continuation));
-}
-}  // namespace
-
 WorkerScriptLoader::WorkerScriptLoader(
     int process_id,
     int32_t routing_id,
@@ -232,19 +219,6 @@ void WorkerScriptLoader::FollowRedirect(
   url_loader_client_binding_.Unbind();
   redirect_info_.reset();
 
-  // Cancel the request on ResourceDispatcherHost so that we can fall back
-  // to network again.
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    // Hop to the IO thread to touch ResourceDispatcherHost. We continue on
-    // the UI thread in Start().
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&CancelRequestOnIO, process_id_, request_id_,
-                       base::BindOnce(&WorkerScriptLoader::Start,
-                                      weak_factory_.GetWeakPtr())));
-    return;
-  }
-  CancelRequestOnIO(process_id_, request_id_, /*ui_continuation=*/{});
   Start();
 }
 

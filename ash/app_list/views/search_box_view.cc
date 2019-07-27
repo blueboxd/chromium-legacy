@@ -182,7 +182,8 @@ void SearchBoxView::UpdateKeyboardVisibility() {
 void SearchBoxView::UpdateModel(bool initiated_by_user) {
   // Temporarily remove from observer to ignore notifications caused by us.
   search_model_->search_box()->RemoveObserver(this);
-  search_model_->search_box()->Update(search_box()->text(), initiated_by_user);
+  search_model_->search_box()->Update(search_box()->GetText(),
+                                      initiated_by_user);
   search_model_->search_box()->SetSelectionModel(
       search_box()->GetSelectionModel());
   search_model_->search_box()->AddObserver(this);
@@ -319,7 +320,7 @@ void SearchBoxView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (HasAutocompleteText()) {
     node_data->role = ax::mojom::Role::kTextField;
     node_data->SetValue(l10n_util::GetStringFUTF16(
-        IDS_APP_LIST_SEARCH_BOX_AUTOCOMPLETE, search_box()->text()));
+        IDS_APP_LIST_SEARCH_BOX_AUTOCOMPLETE, search_box()->GetText()));
   }
 }
 
@@ -434,7 +435,7 @@ void SearchBoxView::ProcessAutocomplete() {
 
   // Current non-autocompleted text.
   const base::string16& user_typed_text =
-      search_box()->text().substr(0, highlight_range_.start());
+      search_box()->GetText().substr(0, highlight_range_.start());
   if (last_key_pressed_ == ui::VKEY_BACK ||
       last_key_pressed_ == ui::VKEY_DELETE || IsArrowKey(last_key_pressed_) ||
       !first_visible_result ||
@@ -512,7 +513,7 @@ void SearchBoxView::SetAutocompleteText(
   if (!ShouldProcessAutocomplete())
     return;
 
-  const base::string16& current_text = search_box()->text();
+  const base::string16& current_text = search_box()->GetText();
   // Currrent text is a prefix of autocomplete text.
   DCHECK(base::StartsWith(autocomplete_text, current_text,
                           base::CompareCase::INSENSITIVE_ASCII));
@@ -627,7 +628,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
   }
 
   // Record the |last_key_pressed_| for autocomplete.
-  if (!search_box()->text().empty() && ShouldProcessAutocomplete())
+  if (!search_box()->GetText().empty() && ShouldProcessAutocomplete())
     last_key_pressed_ = key_event.key_code();
 
   // Only arrow key or tab events intended for traversal within search results
@@ -800,7 +801,7 @@ bool SearchBoxView::ShouldProcessAutocomplete() {
 
 void SearchBoxView::ResetHighlightRange() {
   DCHECK(ShouldProcessAutocomplete());
-  const uint32_t text_length = search_box()->text().length();
+  const uint32_t text_length = search_box()->GetText().length();
   highlight_range_.set_start(text_length);
   highlight_range_.set_end(text_length);
 }

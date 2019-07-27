@@ -11,7 +11,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -33,8 +32,7 @@ void AddWidgetHelper(int render_process_id,
 
 }  // namespace
 
-RenderWidgetHelper::RenderWidgetHelper()
-    : render_process_id_(-1), resource_dispatcher_host_(nullptr) {}
+RenderWidgetHelper::RenderWidgetHelper() : render_process_id_(-1) {}
 
 RenderWidgetHelper::~RenderWidgetHelper() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -46,11 +44,8 @@ RenderWidgetHelper::~RenderWidgetHelper() {
     widget_map.erase(it);
 }
 
-void RenderWidgetHelper::Init(
-    int render_process_id,
-    ResourceDispatcherHostImpl* resource_dispatcher_host) {
+void RenderWidgetHelper::Init(int render_process_id) {
   render_process_id_ = render_process_id;
-  resource_dispatcher_host_ = resource_dispatcher_host;
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
                            base::BindOnce(&AddWidgetHelper, render_process_id_,

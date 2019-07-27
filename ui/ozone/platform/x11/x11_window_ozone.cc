@@ -67,15 +67,14 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
   config.activatable = properties.activatable;
 #endif
 
-  // TODO(nickdiego): Add missing platform window init properties
-  // config.force_show_in_taskbar = properties.force_show_in_taskbar;
-  // config.keep_on_top = properties.keep_on_top;
-  // config.visible_on_all_workspaces = properties.visible_on_all_workspaces;
-  // config.remove_standard_frame = properties.remove_standard_frame;
-  // config.workspace = properties.workspace;
-  // config.wm_class_name = properties.wm_class_name;
-  // config.wm_class_class = properties.wm_class_class;
-  // config.wm_role_name = properties.wm_role_name;
+  config.force_show_in_taskbar = properties.force_show_in_taskbar;
+  config.keep_on_top = properties.keep_on_top;
+  config.visible_on_all_workspaces = properties.visible_on_all_workspaces;
+  config.remove_standard_frame = properties.remove_standard_frame;
+  config.workspace = properties.workspace;
+  config.wm_class_name = properties.wm_class_name;
+  config.wm_class_class = properties.wm_class_class;
+  config.wm_role_name = properties.wm_role_name;
 
   return config;
 }

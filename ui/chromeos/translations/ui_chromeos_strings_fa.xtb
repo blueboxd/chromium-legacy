@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">اسلایدر جستجو</translation>
 <translation id="1399648040768741453">صفحه‌کلید تلوگو (آوایی)</translation>
 <translation id="1430915738399379752">چاپ</translation>
+<translation id="1439494416798956626">به <ph name="FOLDER_NAME" /> منتقل شد.</translation>
 <translation id="1441841714100794440">صفحه‌کلید ویتنامی (تلکس)</translation>
 <translation id="1455548678241328678">صفحه‌کلید نروژی</translation>
 <translation id="1464724975715666883">۱ خطا.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">در حال اسکن دستگاه رسانه شما...</translation>
 <translation id="3468522857997926824">‏<ph name="FILE_COUNT" /> عکس در <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> پشتیبان گرفته شدند</translation>
 <translation id="3470502288861289375">در حال کپی کردن...</translation>
+<translation id="3473378059788601120">در <ph name="FOLDER_NAME" /> کپی شد.</translation>
 <translation id="3475447146579922140">‏صفحه‌گسترده Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> خطا.</translation>
 <translation id="3519867315646775981">‏نویسه‌گردانی (shalom ← ‏שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">ورودی ژاپنی (برای صفحه کلید ژاپنی)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">‏به برنامه‌های Linux اجازه دهید فایل‌های موجود در Google Drive را تغییر دهند. تغییرات در سایر دستگاه‌هایتان همگام‌سازی خواهد شد.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> مورد</translation>
 <translation id="5982621672636444458">گزینه‌های مرتب‌سازی</translation>
 <translation id="6005282720244019462">صفحه‌کلید لاتین آمریکایی</translation>
 <translation id="6007237601604674381">انتقال انجام نشد. <ph name="ERROR_MESSAGE" /></translation>

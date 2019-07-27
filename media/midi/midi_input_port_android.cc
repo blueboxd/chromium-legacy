@@ -33,7 +33,6 @@ void MidiInputPortAndroid::Close() {
 }
 
 void MidiInputPortAndroid::OnData(JNIEnv* env,
-                                  const JavaParamRef<jobject>& caller,
                                   const JavaParamRef<jbyteArray>& data,
                                   jint offset,
                                   jint size,

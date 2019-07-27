@@ -497,7 +497,13 @@ base::string16 AXPlatformNodeBase::GetRoleDescription() const {
     return GetDelegate()->GetLocalizedRoleDescriptionForUnlabeledImage();
   }
 
-  return GetString16Attribute(ax::mojom::StringAttribute::kRoleDescription);
+  base::string16 role_description =
+      GetString16Attribute(ax::mojom::StringAttribute::kRoleDescription);
+  if (!role_description.empty()) {
+    return role_description;
+  }
+
+  return GetDelegate()->GetLocalizedStringForRoleDescription();
 }
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetSelectionContainer() const {

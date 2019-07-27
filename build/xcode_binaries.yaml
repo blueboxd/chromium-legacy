@@ -21,6 +21,7 @@ data:
   - file: Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/llvm-nm
   - file: Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/llvm-objdump
   - file: Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/llvm-otool
+  - file: Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/llvm-size
   - file: Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool
   - file: Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/mig
   - file: Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/nm

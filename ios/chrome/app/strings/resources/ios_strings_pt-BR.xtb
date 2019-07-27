@@ -314,6 +314,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5614553682702429503">Salvar senha?</translation>
 <translation id="5626245204502895507">Não foi possível fazer download do arquivo neste momento.</translation>
+<translation id="5631164295104953411">Adicionar forma de pagamento.</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versão <ph name="PRODUCT_VERSION" /></translation>
@@ -465,6 +466,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7772032839648071052">Confirmar senha</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="778855399387580014">Inicie uma pesquisa em uma nova guia do Chrome.</translation>
+<translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="7840771868269352570">Os itens selec. serão removidos.</translation>
 <translation id="7856733331829174190">Falha no download</translation>
@@ -532,7 +534,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8976382372951310360">Ajuda</translation>
 <translation id="8981454092730389528">Controles de atividades do Google</translation>
 <translation id="8985320356172329008">Conectado(a) ao Google como</translation>
-<translation id="9016406938567631235">Enviando...</translation>
 <translation id="902659348151742535">O Google pode usar seu histórico de navegação para personalizar a Pesquisa Google, os anúncios e outros serviços nossos.</translation>
 <translation id="9034759925968272072">Você não será desconectado da sua Conta do Google. É possível que sua Conta do Google tenha outras formas de histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Largura de banda</translation>

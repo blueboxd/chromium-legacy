@@ -41,9 +41,9 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.preferences.ChromeBasePreferenceCompat;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
+import org.chromium.chrome.browser.preferences.ChromeBasePreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -118,7 +118,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private final PrefServiceBridge mPrefServiceBridge = PrefServiceBridge.getInstance();
     private final PrivacyPreferencesManager mPrivacyPrefManager =
             PrivacyPreferencesManager.getInstance();
-    private final ManagedPreferenceDelegateCompat mManagedPreferenceDelegate =
+    private final ManagedPreferenceDelegate mManagedPreferenceDelegate =
             createManagedPreferenceDelegate();
 
     private boolean mIsFromSigninScreen;
@@ -129,15 +129,15 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private PreferenceCategory mSyncCategory;
     private Preference mSyncErrorCard;
     private Preference mSyncDisabledByAdministrator;
-    private ChromeBasePreferenceCompat mManageSync;
-    private ChromeSwitchPreferenceCompat mSyncRequested;
+    private ChromeBasePreference mManageSync;
+    private ChromeSwitchPreference mSyncRequested;
 
-    private ChromeSwitchPreferenceCompat mSearchSuggestions;
-    private ChromeSwitchPreferenceCompat mNavigationError;
-    private ChromeSwitchPreferenceCompat mSafeBrowsing;
-    private ChromeSwitchPreferenceCompat mSafeBrowsingReporting;
-    private ChromeSwitchPreferenceCompat mUsageAndCrashReporting;
-    private ChromeSwitchPreferenceCompat mUrlKeyedAnonymizedData;
+    private ChromeSwitchPreference mSearchSuggestions;
+    private ChromeSwitchPreference mNavigationError;
+    private ChromeSwitchPreference mSafeBrowsing;
+    private ChromeSwitchPreference mSafeBrowsingReporting;
+    private ChromeSwitchPreference mUsageAndCrashReporting;
+    private ChromeSwitchPreference mUrlKeyedAnonymizedData;
     private @Nullable Preference mContextualSearch;
 
     private ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
@@ -190,34 +190,34 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         mSyncDisabledByAdministrator = findPreference(PREF_SYNC_DISABLED_BY_ADMINISTRATOR);
         mSyncDisabledByAdministrator.setIcon(
                 ManagedPreferencesUtils.getManagedByEnterpriseIconId());
-        mSyncRequested = (ChromeSwitchPreferenceCompat) findPreference(PREF_SYNC_REQUESTED);
+        mSyncRequested = (ChromeSwitchPreference) findPreference(PREF_SYNC_REQUESTED);
         mSyncRequested.setOnPreferenceChangeListener(this);
-        mManageSync = (ChromeBasePreferenceCompat) findPreference(PREF_MANAGE_SYNC);
+        mManageSync = (ChromeBasePreference) findPreference(PREF_MANAGE_SYNC);
 
-        mSearchSuggestions = (ChromeSwitchPreferenceCompat) findPreference(PREF_SEARCH_SUGGESTIONS);
+        mSearchSuggestions = (ChromeSwitchPreference) findPreference(PREF_SEARCH_SUGGESTIONS);
         mSearchSuggestions.setOnPreferenceChangeListener(this);
         mSearchSuggestions.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mNavigationError = (ChromeSwitchPreferenceCompat) findPreference(PREF_NAVIGATION_ERROR);
+        mNavigationError = (ChromeSwitchPreference) findPreference(PREF_NAVIGATION_ERROR);
         mNavigationError.setOnPreferenceChangeListener(this);
         mNavigationError.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        mSafeBrowsing = (ChromeSwitchPreferenceCompat) findPreference(PREF_SAFE_BROWSING);
+        mSafeBrowsing = (ChromeSwitchPreference) findPreference(PREF_SAFE_BROWSING);
         mSafeBrowsing.setOnPreferenceChangeListener(this);
         mSafeBrowsing.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mSafeBrowsingReporting =
-                (ChromeSwitchPreferenceCompat) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
+                (ChromeSwitchPreference) findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING);
         mSafeBrowsingReporting.setOnPreferenceChangeListener(this);
         mSafeBrowsingReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mUsageAndCrashReporting =
-                (ChromeSwitchPreferenceCompat) findPreference(PREF_USAGE_AND_CRASH_REPORTING);
+                (ChromeSwitchPreference) findPreference(PREF_USAGE_AND_CRASH_REPORTING);
         mUsageAndCrashReporting.setOnPreferenceChangeListener(this);
         mUsageAndCrashReporting.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
         mUrlKeyedAnonymizedData =
-                (ChromeSwitchPreferenceCompat) findPreference(PREF_URL_KEYED_ANONYMIZED_DATA);
+                (ChromeSwitchPreference) findPreference(PREF_URL_KEYED_ANONYMIZED_DATA);
         mUrlKeyedAnonymizedData.setOnPreferenceChangeListener(this);
         mUrlKeyedAnonymizedData.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
@@ -561,7 +561,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         mSyncRequested.setEnabled(canDisableSync());
     }
 
-    private ManagedPreferenceDelegateCompat createManagedPreferenceDelegate() {
+    private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
         return preference -> {
             String key = preference.getKey();
             if (PREF_NAVIGATION_ERROR.equals(key)) {

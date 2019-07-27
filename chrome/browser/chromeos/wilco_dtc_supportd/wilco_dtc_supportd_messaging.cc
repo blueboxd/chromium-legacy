@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory_mapping.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -164,7 +164,7 @@ class WilcoDtcSupportdExtensionOwnedMessageHost final
       return;
     }
 
-    base::ReadOnlySharedMemoryMapping response_json_shared_memory;
+    std::unique_ptr<base::SharedMemory> response_json_shared_memory;
     base::StringPiece response_json_string = GetStringPieceFromMojoHandle(
         std::move(response_json_message), &response_json_shared_memory);
     if (response_json_string.empty()) {

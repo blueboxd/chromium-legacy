@@ -43,6 +43,10 @@ int GetSyncTransportOptInBitFieldForAccount(const PrefService* prefs,
 const char kAutofillAcceptSaveCreditCardPromptState[] =
     "autofill.accept_save_credit_card_prompt_state";
 
+// Boolean that is true if FIDO Authentication is enabled for card unmasking.
+const char kAutofillCreditCardFIDOAuthEnabled[] =
+    "autofill.credit_card_fido_auth_enabled";
+
 // Boolean that is true if Autofill is enabled and allowed to save credit card
 // data.
 const char kAutofillCreditCardEnabled[] = "autofill.credit_card_enabled";
@@ -153,6 +157,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 
   // Non-synced prefs. Used for per-device choices, e.g., signin promo.
+  registry->RegisterBooleanPref(prefs::kAutofillCreditCardFIDOAuthEnabled,
+                                false);
   registry->RegisterIntegerPref(
       prefs::kAutofillCreditCardSigninPromoImpressionCount, 0);
   registry->RegisterBooleanPref(prefs::kAutofillJapanCityFieldMigrated, false);
@@ -217,6 +223,14 @@ bool IsAutofillEnabled(const PrefService* prefs) {
 void SetAutofillEnabled(PrefService* prefs, bool enabled) {
   SetProfileAutofillEnabled(prefs, enabled);
   SetCreditCardAutofillEnabled(prefs, enabled);
+}
+
+bool IsCreditCardFIDOAuthEnabled(PrefService* prefs) {
+  return prefs->GetBoolean(kAutofillCreditCardFIDOAuthEnabled);
+}
+
+void SetCreditCardFIDOAuthEnabled(PrefService* prefs, bool enabled) {
+  prefs->SetBoolean(kAutofillCreditCardFIDOAuthEnabled, enabled);
 }
 
 bool IsCreditCardAutofillEnabled(const PrefService* prefs) {

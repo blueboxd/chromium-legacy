@@ -43,7 +43,7 @@ public class H2OTransparentLauncherActivity extends TransparentLauncherActivity 
             return;
         }
 
-        HostBrowserLauncher.launch(getApplicationContext(), params);
+        HostBrowserLauncher.launch(this, params);
     }
 
     /**

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_frame.h"
 
@@ -105,15 +106,16 @@ class MjpegDecodeAccelerator {
   // with the corresponding bitstream_buffer_id, or NotifyError.
   // Parameters:
   //  |bitstream_buffer| contains encoded JPEG frame.
-  //  |video_frame| contains an allocated video frame for the output.
+  //  |video_frame| contains an allocated video frame for the output, backed
+  //  with an UnsafeSharedMemoryRegion.
+  //
   //  Client is responsible for filling the coded_size of video_frame and
-  //  allocating its backing buffer. For now, only shared memory backed
+  //  allocating its backing buffer. For now, only unsafe shared memory backed
   //  VideoFrames are supported. After decode completes, the decoded JPEG frame
-  //  will be filled into the |video_frame|.
-  //  Ownership of the |bitstream_buffer| and |video_frame| remains with the
-  //  client. The client is not allowed to deallocate them before
-  //  VideoFrameReady or NotifyError() is invoked for given id of
-  //  |bitstream_buffer|, or destructor returns.
+  //  will be filled into the |video_frame|.  Ownership of the
+  //  |bitstream_buffer| and |video_frame| remains with the client. The client
+  //  is not allowed to deallocate them before VideoFrameReady or NotifyError()
+  //  is invoked for given id of |bitstream_buffer|, or destructor returns.
   virtual void Decode(media::BitstreamBuffer bitstream_buffer,
                       scoped_refptr<media::VideoFrame> video_frame) = 0;
 

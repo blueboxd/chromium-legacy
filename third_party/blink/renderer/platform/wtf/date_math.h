@@ -46,7 +46,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {

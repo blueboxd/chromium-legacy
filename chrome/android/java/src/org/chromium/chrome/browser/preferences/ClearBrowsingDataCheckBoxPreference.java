@@ -26,7 +26,7 @@ import org.chromium.ui.text.SpanApplier;
  * A preference representing one browsing data type in ClearBrowsingDataPreferences.
  * This class allows clickable links inside the checkbox summary.
  */
-public class ClearBrowsingDataCheckBoxPreference extends ChromeBaseCheckBoxPreferenceCompat {
+public class ClearBrowsingDataCheckBoxPreference extends ChromeBaseCheckBoxPreference {
     private View mView;
     private Runnable mLinkClickDelegate;
     private boolean mHasClickableSpans;

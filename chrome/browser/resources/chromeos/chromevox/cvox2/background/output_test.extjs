@@ -281,12 +281,19 @@ TEST_F('ChromeVoxOutputE2ETest', 'Input', function() {
       '<input type="search"</input>' +
       '<input type="invalidType"</input>',
     function(root) {
-      var expectedSpans = [
+      var expectedSpansNonSearchBox = [
         {value: 'name', start: 0, end: 0},
         {value: new Output.EarconAction('EDITABLE_TEXT'), start: 0, end: 0},
         {value: new Output.SelectionSpan(0, 0, 0), start: 1, end: 1},
         {value: 'value', start: 1, end: 1},
         {value: 'inputType', start: 2}
+      ];
+      var expectedSpansForSearchBox = [
+        {value: 'name', start: 0, end: 0},
+        {value: new Output.EarconAction('EDITABLE_TEXT'), start: 0, end: 0},
+        {value: new Output.SelectionSpan(0, 0, 0), start: 1, end: 1},
+        {value: 'value', start: 1, end: 1},
+        {value: 'role', start:2, end:8}
       ];
 
       var expectedSpeechValues = [
@@ -313,7 +320,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Input', function() {
           {value: 'value', start: 12, end: 26},
           {value: 'role', start: 27, end: 33}]
         ],
-        '||Edit text, search entry',
+        '||Search',
         '||Edit text'
       ];
       // TODO(plundblad): Some of these are wrong, there should be an initial
@@ -327,7 +334,7 @@ TEST_F('ChromeVoxOutputE2ETest', 'Input', function() {
         {string_: 'time'},
         {string_: 'date'},
         {string_: 'Choose File No file chosen btn'},
-        ' srched',
+        ' search',
         ' ed'
       ];
       assertEquals(expectedSpeechValues.length, expectedBrailleValues.length);
@@ -338,11 +345,14 @@ TEST_F('ChromeVoxOutputE2ETest', 'Input', function() {
         var o = new Output()
             .withoutHints()
             .withSpeechAndBraille(range, null, 'navigate');
+        var expectedSpansForValue = null;
         if (typeof expectedValue == 'object') {
           checkSpeechOutput(expectedValue[0], expectedValue[1], o);
         } else {
-          expectedSpans[4].end = expectedValue.length;
-          checkSpeechOutput(expectedValue, expectedSpans, o);
+          expectedSpansForValue = expectedValue === '||Search' ?
+              expectedSpansForSearchBox : expectedSpansNonSearchBox;
+          expectedSpansForValue[4].end = expectedValue.length;
+          checkSpeechOutput(expectedValue, expectedSpansForValue, o);
         }
         el = el.nextSibling;
       });

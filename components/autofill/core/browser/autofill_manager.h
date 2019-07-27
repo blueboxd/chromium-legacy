@@ -107,7 +107,7 @@ class AutofillManager : public AutofillHandler,
   virtual bool ShouldShowCreditCardSigninPromo(const FormData& form,
                                                const FormFieldData& field);
 
-  // Handlers for the "Set Cards From Account" row. This row should be shown to
+  // Handlers for the "Show Cards From Account" row. This row should be shown to
   // users who have cards in their account and can use Sync Transport. Clicking
   // the row records the user's consent to see these cards on this device, and
   // refreshes the popup.
@@ -163,6 +163,10 @@ class AutofillManager : public AutofillHandler,
 
   AutofillDownloadManager* download_manager() {
     return download_manager_.get();
+  }
+
+  CreditCardAccessManager* credit_card_access_manager() {
+    return credit_card_access_manager_.get();
   }
 
   payments::FullCardRequest* GetOrCreateFullCardRequest();
@@ -237,13 +241,15 @@ class AutofillManager : public AutofillHandler,
 
  protected:
   // Test code should prefer to use this constructor.
-  AutofillManager(AutofillDriver* driver,
-                  AutofillClient* client,
-                  PersonalDataManager* personal_data,
-                  AutocompleteHistoryManager* autocomplete_history_manager,
-                  const std::string app_locale = "en-US",
-                  AutofillDownloadManagerState enable_download_manager =
-                      DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+  AutofillManager(
+      AutofillDriver* driver,
+      AutofillClient* client,
+      PersonalDataManager* personal_data,
+      AutocompleteHistoryManager* autocomplete_history_manager,
+      const std::string app_locale = "en-US",
+      AutofillDownloadManagerState enable_download_manager =
+          DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
+      std::unique_ptr<CreditCardAccessManager> cc_access_manager = nullptr);
 
   // Uploads the form data to the Autofill server. |observed_submission|
   // indicates that upload is the result of a submission event.
@@ -623,6 +629,7 @@ class AutofillManager : public AutofillHandler,
   friend class AutofillMetricsTest;
   friend class FormStructureBrowserTest;
   friend class GetMatchingTypesTest;
+  friend class CreditCardAccessoryControllerTest;
   FRIEND_TEST_ALL_PREFIXES(ProfileMatchingTypesTest,
                            DeterminePossibleFieldTypesForUpload);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,

@@ -12,7 +12,7 @@
 #include <ostream>
 
 #if defined(BLINK_ANIMATION_USE_TIME_DELTA)
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #endif
 
 namespace blink {

@@ -131,7 +131,6 @@ PaymentManifestParserAndroid::~PaymentManifestParserAndroid() {}
 
 void PaymentManifestParserAndroid::ParsePaymentMethodManifest(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jcontent,
     const base::android::JavaParamRef<jobject>& jcallback) {
   parser_.ParsePaymentMethodManifest(
@@ -142,7 +141,6 @@ void PaymentManifestParserAndroid::ParsePaymentMethodManifest(
 
 void PaymentManifestParserAndroid::ParseWebAppManifest(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jcontent,
     const base::android::JavaParamRef<jobject>& jcallback) {
   parser_.ParseWebAppManifest(
@@ -152,8 +150,7 @@ void PaymentManifestParserAndroid::ParseWebAppManifest(
 }
 
 void PaymentManifestParserAndroid::DestroyPaymentManifestParserAndroid(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
+    JNIEnv* env) {
   delete this;
 }
 

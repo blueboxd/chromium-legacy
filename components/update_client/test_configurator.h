@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/services/patch/patch_service.h"
-#include "components/services/unzip/unzip_service.h"
 #include "components/update_client/configurator.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -138,7 +137,6 @@ class TestConfigurator : public Configurator {
   scoped_refptr<update_client::UnzipChromiumFactory> unzip_factory_;
   scoped_refptr<update_client::PatchChromiumFactory> patch_factory_;
 
-  unzip::UnzipService unzip_service_;
   patch::PatchService patch_service_;
 
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;

@@ -42,6 +42,14 @@ const int64_t kMinAdRedirectCollectionStartDelayMilliseconds = 500;
 const char kAdRedirectTriggerActionMetricName[] =
     "SafeBrowsing.Triggers.AdRedirect.Action";
 
+namespace {
+
+void RecordAdRedirectTriggerAction(AdRedirectTriggerAction action) {
+  UMA_HISTOGRAM_ENUMERATION(kAdRedirectTriggerActionMetricName, action);
+}
+
+}  // namespace
+
 AdRedirectTrigger::AdRedirectTrigger(
     content::WebContents* web_contents,
     TriggerManager* trigger_manager,
@@ -92,12 +100,10 @@ void AdRedirectTrigger::CreateAdRedirectReport() {
           TriggerType::AD_REDIRECT, web_contents_, resource,
           url_loader_factory_, history_service_, error_options, &reason)) {
     if (reason == TriggerManagerReason::DAILY_QUOTA_EXCEEDED) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kAdRedirectTriggerActionMetricName,
+      RecordAdRedirectTriggerAction(
           AdRedirectTriggerAction::REDIRECT_DAILY_QUOTA_EXCEEDED);
     } else {
-      UMA_HISTOGRAM_ENUMERATION(
-          kAdRedirectTriggerActionMetricName,
+      RecordAdRedirectTriggerAction(
           AdRedirectTriggerAction::REDIRECT_COULD_NOT_START_REPORT);
     }
     return;
@@ -114,21 +120,19 @@ void AdRedirectTrigger::CreateAdRedirectReport() {
           base::Unretained(web_contents_), base::TimeDelta(),
           /*did_proceed=*/false, /*num_visits=*/0, error_options),
       base::TimeDelta::FromMilliseconds(finish_report_delay_ms_));
-  UMA_HISTOGRAM_ENUMERATION(kAdRedirectTriggerActionMetricName,
-                            AdRedirectTriggerAction::AD_REDIRECT);
+  RecordAdRedirectTriggerAction(AdRedirectTriggerAction::AD_REDIRECT);
 }
 
 void AdRedirectTrigger::OnDidBlockNavigation(const GURL& initiator_url) {
-  UMA_HISTOGRAM_ENUMERATION(kAdRedirectTriggerActionMetricName,
-                            AdRedirectTriggerAction::REDIRECT_CHECK);
+  RecordAdRedirectTriggerAction(AdRedirectTriggerAction::REDIRECT_CHECK);
   content::RenderFrameHost* initiator_frame =
       web_contents_->GetOriginalOpener();
   // Use focused frame as proxy if there is no opener.
   if (!initiator_frame)
     initiator_frame = web_contents_->GetFocusedFrame();
   if (!DetectGoogleAd(initiator_frame, initiator_url)) {
-    UMA_HISTOGRAM_ENUMERATION(kAdRedirectTriggerActionMetricName,
-                              AdRedirectTriggerAction::REDIRECT_NO_GOOGLE_AD);
+    RecordAdRedirectTriggerAction(
+        AdRedirectTriggerAction::REDIRECT_NO_GOOGLE_AD);
     return;
   }
   // Create a report after a short delay.

@@ -80,5 +80,49 @@ TEST(TriggerContextTest, Merge) {
   EXPECT_EQ("exp1,exp2", merged->experiment_ids());
 }
 
+TEST(TriggerContextText, CCT) {
+  TriggerContextImpl context;
+
+  EXPECT_FALSE(context.is_cct());
+  context.SetCCT(true);
+  EXPECT_TRUE(context.is_cct());
+}
+
+TEST(TriggerContextText, MergeCCT) {
+  auto empty = TriggerContext::CreateEmpty();
+
+  auto all_empty = TriggerContext::Merge({empty.get(), empty.get()});
+  EXPECT_FALSE(all_empty->is_cct());
+
+  TriggerContextImpl cct_context;
+  cct_context.SetCCT(true);
+  auto one_with_cct =
+      TriggerContext::Merge({empty.get(), &cct_context, empty.get()});
+
+  EXPECT_TRUE(one_with_cct->is_cct());
+}
+
+TEST(TriggerContextText, DirectAction) {
+  TriggerContextImpl context;
+
+  EXPECT_FALSE(context.is_direct_action());
+  context.SetDirectAction(true);
+  EXPECT_TRUE(context.is_direct_action());
+}
+
+TEST(TriggerContextText, MergeDirectAction) {
+  auto empty = TriggerContext::CreateEmpty();
+
+  auto all_empty = TriggerContext::Merge({empty.get(), empty.get()});
+  EXPECT_FALSE(all_empty->is_direct_action());
+
+  TriggerContextImpl direct_action_context;
+  direct_action_context.SetDirectAction(true);
+  auto one_direct_action =
+      TriggerContext::Merge({empty.get(), &direct_action_context, empty.get()});
+
+  EXPECT_TRUE(one_direct_action->is_direct_action());
+}
+
 }  // namespace
 }  // namespace autofill_assistant

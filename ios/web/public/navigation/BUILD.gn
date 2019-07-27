@@ -4,8 +4,7 @@
 
 source_set("navigation") {
   deps = [
-    "//ios/web/public:ui",
-    "//ios/web/public:user_agent",
+    "//ios/web/common:user_agent",
     "//ios/web/public/deprecated:deprecated_navigation_util",
     "//ui/base",
     "//url",

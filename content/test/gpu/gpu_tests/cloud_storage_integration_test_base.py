@@ -28,18 +28,11 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   # methods that aren't overridden.
   # pylint: disable=abstract-method
 
-  # This information is class-scoped, so that it can be shared across
-  # invocations of tests; but it's zapped every time the browser is
-  # restarted with different command line arguments.
-  _reference_image_parameters = None
-
   # The command line options (which are passed to subclasses'
   # GenerateGpuTests) *must* be configured here, via a call to
   # SetParsedCommandLineOptions. If they are not, an error will be
   # raised when running the tests.
   _parsed_command_line_options = None
-
-  _skia_gold_temp_dir = None
 
   _error_image_cloud_storage_bucket = 'chromium-browser-gpu-tests'
 

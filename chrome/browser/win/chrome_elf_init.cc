@@ -29,10 +29,6 @@ const char kBrowserBlacklistTrialDisabledGroupName[] = "NoBlacklist";
 
 namespace {
 
-// How long to wait, in seconds, before reporting for the second (and last
-// time), what dlls were blocked from the browser process.
-const int kBlacklistReportingDelaySec = 600;
-
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
 //   (a) existing enumerated constants should never be deleted or reordered, and
@@ -68,29 +64,6 @@ void RecordBlacklistSetupEvent(BlacklistSetupEventType blacklist_setup_event) {
                             BLACKLIST_SETUP_EVENT_MAX);
 }
 
-// Report which DLLs were prevented from being loaded.
-void ReportSuccessfulBlocks() {
-  // Figure out how many dlls were blocked.
-  int num_blocked_dlls = 0;
-  blacklist::SuccessfullyBlocked(NULL, &num_blocked_dlls);
-
-  if (num_blocked_dlls == 0)
-    return;
-
-  // Now retrieve the list of blocked dlls.
-  std::vector<const wchar_t*> blocked_dlls(num_blocked_dlls);
-  blacklist::SuccessfullyBlocked(&blocked_dlls[0], &num_blocked_dlls);
-
-  // Send up the hashes of the blocked dlls via UMA.
-  for (size_t i = 0; i < blocked_dlls.size(); ++i) {
-    std::string dll_name_utf8;
-    base::WideToUTF8(blocked_dlls[i], wcslen(blocked_dlls[i]), &dll_name_utf8);
-    int uma_hash = DllNameToHash(dll_name_utf8);
-
-    base::UmaHistogramSparse("Blacklist.Blocked", uma_hash);
-  }
-}
-
 base::string16 GetBeaconRegistryPath() {
   return install_static::GetRegistryPath().append(
       blacklist::kRegistryBeaconKeyName);
@@ -107,17 +80,6 @@ void InitializeChromeElf() {
   } else {
     BrowserBlacklistBeaconSetup();
   }
-
-  // Report all successful blacklist interceptions.
-  ReportSuccessfulBlocks();
-
-  // Schedule another task to report all successful interceptions later.
-  // This time delay should be long enough to catch any dlls that attempt to
-  // inject after Chrome has started up.
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&ReportSuccessfulBlocks),
-      base::TimeDelta::FromSeconds(kBlacklistReportingDelaySec));
 
   // Make sure the early finch emergency "off switch" for
   // sandbox::MITIGATION_EXTENSION_POINT_DISABLE is set properly in reg.

@@ -65,8 +65,7 @@ public class SogouPromoDialog extends PromoDialog {
         mLocaleManager = localeManager;
         mSpan = new NoUnderlineClickableSpan(activity.getResources(), (widget) -> {
             mChoice = UserChoice.SETTINGS;
-            PreferencesLauncher.launchSettingsPageCompat(
-                    getContext(), SearchEnginePreference.class);
+            PreferencesLauncher.launchSettingsPage(getContext(), SearchEnginePreference.class);
             dismiss();
         });
         setOnDismissListener(this);

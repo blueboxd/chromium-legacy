@@ -130,7 +130,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   bool Paused() const { return paused_ && !is_paused_for_testing_; }
   static const char* PlayStateString(AnimationPlayState);
   String playState() const { return PlayStateString(animation_play_state_); }
-  AnimationPlayState PlayStateInternal() const;
+
   bool pending() const;
 
   void pause(ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -147,6 +147,21 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
     return !(PlayStateInternal() == kIdle || Limited() || paused_ ||
              is_paused_for_testing_);
   }
+
+  // TODO(crbug/960944): Deprecate. This version of the play state is not to
+  // spec due to the inclusion of a 'pending' state. Whether or not an animation
+  // is pending is separate from the actual play state.
+  AnimationPlayState PlayStateInternal() const;
+
+  // Indicates if the animation is out of sync with the compositor. A change to
+  // the play state (running/paused) requires synchronization with the
+  // compositor.
+  bool NeedsCompositorTimeSync() const {
+    return current_time_pending_ || (!start_time_ && playback_rate_ != 0);
+  }
+
+  AnimationPlayState GetPlayState() const;
+
   bool Limited() const { return Limited(CurrentTimeInternal()); }
   bool FinishedInternal() const { return finished_; }
 

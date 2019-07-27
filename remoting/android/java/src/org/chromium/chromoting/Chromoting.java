@@ -63,8 +63,7 @@ public class Chromoting extends AppCompatActivity
     // To use these scopes in a debug build, your development account will need to be whitelisted.
     private static final String TOKEN_SCOPE = "oauth2:https://www.googleapis.com/auth/chromoting "
             + "https://www.googleapis.com/auth/chromoting.directory "
-            + "https://www.googleapis.com/auth/tachyon "
-            + "https://www.googleapis.com/auth/googletalk";
+            + "https://www.googleapis.com/auth/tachyon";
 
     /** Result code used for starting {@link DesktopActivity}. */
     public static final int DESKTOP_ACTIVITY = 0;

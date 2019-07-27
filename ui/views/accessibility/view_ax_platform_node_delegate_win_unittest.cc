@@ -97,7 +97,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAccessibility) {
 
   ScopedBstr new_value(L"New value");
   ASSERT_EQ(S_OK, textfield_accessible->put_accValue(childid_self, new_value));
-  EXPECT_STREQ(L"New value", textfield->text().c_str());
+  EXPECT_STREQ(L"New value", textfield->GetText().c_str());
 }
 
 TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAssociatedLabel) {

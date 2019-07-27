@@ -62,6 +62,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
 <translation id="1062407476771304334">Ganti</translation>
 <translation id="1079801999187584280">Larang penggunaan Developer Tools</translation>
 <translation id="1087437665304381368">Kebijakan ini hanya mengontrol mode developer<ph name="PRODUCT_OS_NAME" />. Jika ingin mencegah akses ke Opsi Developer Android, Anda perlu menetapkan kebijakan <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.</translation>
+<translation id="1087707496788636333">Daftar kebijakan Chrome Enterprise berpindah! Update bookmark ke <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
 <translation id="1093082332347834239">Jika setelan ini diaktifkan, host bantuan jarak jauh akan dijalankan dalam proses dengan izin <ph name="UIACCESS_PERMISSION_NAME" />.  Hal ini akan memungkinkan pengguna jarak jauh untuk berinteraksi dengan jendela yang berada jauh di desktop pengguna lokal.
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, host bantuan jarak jauh akan dijalankan dalam konteks pengguna dan pengguna jarak jauh tidak dapat berinteraksi dengan jendela yang berada jauh di desktop.</translation>
@@ -714,6 +715,10 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2231817271680715693">Impor histori browseran dari browser default saat pertama kali dijalankan</translation>
 <translation id="2236488539271255289">Jangan izinkan situs mana pun menyetel data lokal</translation>
 <translation id="2240879329269430151">Memungkinkan Anda menentukan apakah situs diizinkan untuk menampilkan pop-up. Menampilkan pop-up dapat diizinkan atau diblokir untuk semua situs. Jika kebijakan ini tidak disetel, 'BlockPopups' akan digunakan dan pengguna dapat mengubahnya.</translation>
+<translation id="2241498944622759244">Fitur ini tidak pernah diluncurkan sehingga kebijakannya tidak digunakan lagi. Jika fitur ini ditetapkan ke true atau tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan menyarankan halaman yang terkait dengan halaman saat ini.
+      Saran ini diambil secara jarak jauh dari server Google.
+
+      Jika setelan ini ditetapkan ke false, saran tidak akan diambil ataupun ditampilkan.</translation>
 <translation id="2255326053989409609">Jika setelan ini diaktifkan, halaman web tidak diizinkan mengakses unit pemrosesan grafis (GPU). Secara khusus, halaman web tidak dapat mengakses WebGL API dan plugin tidak dapat menggunakan Pepper 3D API.
 
       Jika setelan ini dinonaktifkan atau tidak ditetapkan, halaman web diizinkan menggunakan API WebGL dan plugin diizinkan menggunakan Pepper 3D API. Setelan default browser mungkin masih mengharuskan argumen command line diteruskan agar dapat menggunakan API ini.
@@ -956,6 +961,20 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
       Format nilai mengikuti nama zona waktu di "Database Zona Waktu IANA" (lihat "https://en.wikipedia.org/wiki/Tz_database"). Secara khusus, sebagian besar zona waktu dapat dirujuk menurut "continent/large_city" atau "ocean/large_city".
 
       Menyetel kebijakan ini sepenuhnya menonaktifkan penentuan zona waktu otomatis menurut lokasi perangkat. Kebijakan ini juga menggantikan kebijakan SystemTimezoneAutomaticDetection.</translation>
+<translation id="2758218632193192525">Menyediakan konfigurasi server cetak yang tersedia.
+
+      Kebijakan ini memungkinkan Anda menyediakan konfigurasi server cetak eksternal untuk perangkat <ph name="PRODUCT_OS_NAME" /> sebagai file JSON.
+
+      Ukuran file tidak boleh lebih dari 1 MB dan harus berisi array data (objek JSON). Setiap data harus berisi kolom "url" dan "display_name".
+
+      File didownload dan disimpan di cache. Hash kriptografi digunakan untuk memverifikasi integritas download. File akan didownload ulang setiap kali URL atau hash berubah.
+
+      Jika kebijakan ini ditetapkan ke nilai yang benar, perangkat akan mencoba mengirimkan kueri pada server cetak tertentu untuk printer yang tersedia menggunakan protokol IPP.
+
+      Jika kebijakan ini tidak ditetapkan atau ditetapkan ke nilai yang salah, pengguna tidak dapat melihat server printer.
+
+      Saat ini, jumlah maksimum server cetak adalah 16. Hanya 16 server cetak pertama dari daftar tersebut yang akan dikueri.
+      </translation>
 <translation id="2759224876420453487">Mengontrol perilaku pengguna pada sesi multiprofil</translation>
 <translation id="2761483219396643566">Menunda peringatan waktu menganggur saat menggunakan daya baterai</translation>
 <translation id="2762164719979766599">Menentukan daftar akun lokal perangkat untuk ditampilkan di layar masuk.
@@ -1865,6 +1884,15 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
           Fitur ini saat ini dinonaktifkan pada sistem server.</translation>
 <translation id="4363057787588706121">Mengizinkan penggabungan kebijakan yang ada dalam daftar dari sumber berbeda</translation>
+<translation id="4363136876356691536">Jika kebijakan ini ditetapkan ke true, opsi Aksesibilitas akan selalu muncul di menu baki sistem.
+
+          Jika kebijakan ini ditetapkan ke false, opsi Aksesibilitas tidak akan muncul di menu baki sistem.
+
+          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
+
+          Jika kebijakan ini tidak ditetapkan, opsi Aksesibilitas tidak akan muncul di menu baki sistem, tetapi pengguna dapat menyebabkan munculnya opsi Aksesibilitas melalui halaman Setelan.
+
+          Jika fitur aksesibilitas diaktifkan dengan cara lain (misalnya dengan kombinasi kunci), opsi Aksesibilitas akan selalu muncul di menu baki sistem.</translation>
 <translation id="436581050240847513">Melaporkan antarmuka jaringan perangkat</translation>
 <translation id="4372704773119750918">Jangan izinkan pengguna perusahaan untuk menjadi bagian dari multiprofil (primer atau sekunder)</translation>
 <translation id="4377599627073874279">Izinkan semua situs menampilkan semua gambar</translation>
@@ -1955,20 +1983,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4604931264910482931">Konfigurasikan daftar hitam perpesanan asli</translation>
 <translation id="4617338332148204752">Lewati pemeriksaan tag meta pada <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Mengonfigurasi daftar putih pemasangan ekstensi</translation>
-<translation id="4627884124191169977">Menyediakan konfigurasi server cetak yang tersedia.
-
-      Kebijakan ini memungkinkan Anda menyediakan konfigurasi server cetak eksternal bagi perangkat <ph name="PRODUCT_OS_NAME" /> sebagai file JSON.
-
-      Ukuran file tidak boleh lebih dari 1 MB dan harus berisi array data (objek JSON). Setiap data harus berisi kolom "url" dan "display_name".
-
-      File didownload dan disimpan di cache. Hash kriptografi digunakan untuk memverifikasi integritas download. File akan didownload ulang setiap kali URL atau hash berubah.
-
-      Jika kebijakan ini ditetapkan ke nilai yang benar, perangkat akan mencoba mengkueri server cetak tertentu untuk printer yang tersedia menggunakan protokol IPP.
-
-      Jika kebijakan ini tidak ditetapkan atau ditetapkan ke nilai yang salah, tidak ada server cetak yang dapat dilihat oleh pengguna.
-
-      Saat ini, jumlah maksimum server cetak adalah 16. Hanya 16 server cetak pertama dari daftar tersebut yang akan dikueri.
-      </translation>
 <translation id="4632343302005518762">Izinkan <ph name="PRODUCT_FRAME_NAME" /> menangani jenis konten yang tercantum</translation>
 <translation id="4632566332417930481">Larang penggunaan Developer Tools pada ekstensi yang diinstal oleh kebijakan perusahaan, izinkan penggunaan Developer Tools dalam konteks lainnya</translation>
 <translation id="4633786464238689684">Mengubah perilaku default tombol baris teratas ke tombol fungsi.
@@ -2781,6 +2795,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="6190022522129724693">Setelan pop-up default</translation>
 <translation id="6190367314942602985">Laporkan informasi Identifikasi Pengguna</translation>
+<translation id="6195802366906945965">Menentukan apakah pemverifikasi sertifikat bawaan akan digunakan untuk memverifikasi sertifikat server</translation>
 <translation id="6197453924249895891">Memberikan akses ke kunci perusahaan ke ekstensi.
 
       Kunci hanya ditujukan untuk pemakaian dalam perusahaan jika dibuat menggunakan API chrome.enterprise.platformKeys pada akun yang dikelola. Kunci yang diimpor atau dibuat dengan cara lain tidak boleh digunakan untuk perusahaan.
@@ -3159,6 +3174,12 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mengetahui daftar variabel yang dapat digunakan.
 
       Jika kebijakan ini tidak disetel, jalur profil default akan digunakan dan pengguna dapat menggantinya dengan tanda baris perintah '--user-data-dir'.</translation>
+<translation id="7011669683779011760">Ketika setelan ini diaktifkan, <ph name="PRODUCT_OS_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat bawaan.
+      Ketika setelan ini dinonaktifkan, <ph name="PRODUCT_OS_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat lama yang disediakan oleh platform.
+      Ketika setelan tidak ditetapkan, Anda dapat menggunakan pemverifikasi sertifikat bawaan ataupun yang lama dari <ph name="PRODUCT_OS_NAME" />.
+
+      Kebijakan ini direncanakan akan dihapus dari <ph name="PRODUCT_OS_NAME" /> versi 81, ketika dukungan untuk pemverifikasi sertifikat lama di <ph name="PRODUCT_OS_NAME" /> direncanakan akan dihapus.
+      </translation>
 <translation id="7027785306666625591">Mengonfigurasi pengelolaan daya di <ph name="PRODUCT_OS_NAME" />.
 
       Kebijakan ini memungkinkan Anda mengonfigurasi cara <ph name="PRODUCT_OS_NAME" /> berperilaku saat pengguna tetap menganggur dalam beberapa waktu.</translation>
@@ -4058,7 +4079,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8759829385824155666">Jenis enkripsi Kerberos yang diizinkan</translation>
 <translation id="8764119899999036911">Menentukan apakah Kerberos SPN yang dihasilkan didasarkan pada nama DNS kanonik atau nama asli yang dimasukkan. Jika Anda mengaktifkan setelan ini, pencarian CNAME akan dilewati dan nama server akan digunakan seperti saat dimasukkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, nama kanonik server akan ditentukan melalui pencarian CNAME.</translation>
 <translation id="8764477907716150749">Kebijakan ini untuk penggunaan internal oleh <ph name="PRODUCT_NAME" /> sendiri.</translation>
-<translation id="877773134585155834">Membuat daftar ID aplikasi yang ditampilkan <ph name="PRODUCT_OS_NAME" /> sebagai aplikasi yang dipasangi pin di batang peluncur.
+<translation id="877773134585155834">Membuat daftar ID aplikasi yang ditampilkan <ph name="PRODUCT_OS_NAME" /> sebagai aplikasi yang dipasangi pin di kotak peluncur.
 
       Aplikasi Chrome ditetapkan berdasarkan ID, misalnya "pjkljhegncpnkpknbcohdijeoejaedia", Aplikasi Android berdasarkan nama paketnya, misalnya "com.google.android.gm", dan Aplikasi Web ditetapkan berdasarkan URL yang digunakan dalam WebAppInstallForceList, misalnya "https://google.com/maps".
 

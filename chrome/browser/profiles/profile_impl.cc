@@ -22,7 +22,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -629,7 +628,6 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
 
 void ProfileImpl::DoFinalInit() {
   TRACE_EVENT0("browser", "ProfileImpl::DoFinalInit")
-  SCOPED_UMA_HISTOGRAM_TIMER("Profile.ProfileImplDoFinalInit");
 
   PrefService* prefs = GetPrefs();
   pref_change_registrar_.Init(prefs);
@@ -756,12 +754,9 @@ void ProfileImpl::DoFinalInit() {
   // initialized.
   SharingServiceFactory::GetForBrowserContext(this);
 
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("Profile.NotifyProfileCreatedTime");
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_CREATED, content::Source<Profile>(this),
-        content::NotificationService::NoDetails());
-  }
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_CREATED, content::Source<Profile>(this),
+      content::NotificationService::NoDetails());
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -947,7 +942,6 @@ ExtensionSpecialStoragePolicy* ProfileImpl::GetExtensionSpecialStoragePolicy() {
 
 void ProfileImpl::OnLocaleReady() {
   TRACE_EVENT0("browser", "ProfileImpl::OnLocaleReady");
-  SCOPED_UMA_HISTOGRAM_TIMER("Profile.OnLocaleReadyTime");
   // Migrate obsolete prefs.
   if (g_browser_process->local_state())
     MigrateObsoleteBrowserPrefs(this, g_browser_process->local_state());
@@ -985,11 +979,8 @@ void ProfileImpl::OnLocaleReady() {
 
   FullBrowserTransitionManager::Get()->OnProfileCreated(this);
 
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("Profile.CreateBrowserContextServicesTime");
-    BrowserContextDependencyManager::GetInstance()
-        ->CreateBrowserContextServices(this);
-  }
+  BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
+      this);
 
   ChromeVersionService::OnProfileLoaded(prefs_.get(), IsNewProfile());
   DoFinalInit();

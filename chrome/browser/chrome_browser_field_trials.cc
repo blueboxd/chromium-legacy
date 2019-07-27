@@ -17,7 +17,6 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
-#include "chrome/browser/search/local_ntp_first_run_field_trial_handler.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -91,11 +90,6 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
     chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
-#if !defined(OS_ANDROID)
-  // TODO(crbug.com/944624) Remove hide shortcuts field trial
-  ntp_first_run::ActivateHideShortcutsOnNtpFieldTrial(feature_list,
-                                                      local_state_);
-#endif  // !defined(OS_ANDROID)
 }
 
 void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {

@@ -292,8 +292,8 @@ there is no intended API to disable checksum verification, or when target code
 uses random generator that affects reproducibility of crashes.
 
 [AFL]: http://lcamtuf.coredump.cx/afl/
-[ClusterFuzz Corpus]: clusterfuzz.md#Corpus
-[ClusterFuzz status]: clusterfuzz.md#Status-Links
+[ClusterFuzz Corpus]: libFuzzer_integration.md#Corpus
+[ClusterFuzz status]: libFuzzer_integration.md#Status-Links
 [Corpus GCS Bucket]: https://console.cloud.google.com/storage/clusterfuzz-corpus/libfuzzer
 [issue 638836]: https://bugs.chromium.org/p/chromium/issues/detail?id=638836
 [coverage script]: https://cs.chromium.org/chromium/src/tools/code_coverage/coverage.py

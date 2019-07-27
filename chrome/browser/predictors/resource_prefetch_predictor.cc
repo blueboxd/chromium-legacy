@@ -296,6 +296,7 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
                                               const GURL& final_redirect,
                                               RedirectDataMap* redirect_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // If the primary key is too long reject it.
   if (key.length() > ResourcePrefetchPredictorTables::kMaxStringLength)
     return;
@@ -309,6 +310,7 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
     redirect_to_add->set_url(final_redirect.host());
     redirect_to_add->set_number_of_hits(1);
     redirect_to_add->set_url_scheme(final_redirect.scheme());
+    redirect_to_add->set_url_port(final_redirect.EffectiveIntPort());
   } else {
     data.set_last_visit_time(base::Time::Now().ToInternalValue());
 
@@ -325,15 +327,26 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
           !redirect.url_scheme().empty() &&
           redirect.url_scheme() != final_redirect.scheme();
 
-      if (!host_mismatch && !url_scheme_mismatch) {
+      // When the existing port in database is empty, then difference in
+      // ports is not considered a mismatch. This case is treated
+      // specially since port was added later to the database, and previous
+      // entries would have empty value. In such case, we simply update the port
+      // in the database.
+      const bool url_port_mismatch =
+          redirect.has_url_port() &&
+          redirect.url_port() != final_redirect.EffectiveIntPort();
+
+      if (!host_mismatch && !url_scheme_mismatch && !url_port_mismatch) {
         // No mismatch.
         need_to_add = false;
         redirect.set_number_of_hits(redirect.number_of_hits() + 1);
         redirect.set_consecutive_misses(0);
 
-        // If existing scheme in database is empty, then update it.
+        // If existing scheme or port in database are empty, then update them.
         if (redirect.url_scheme().empty())
           redirect.set_url_scheme(final_redirect.scheme());
+        if (!redirect.has_url_port())
+          redirect.set_url_port(final_redirect.EffectiveIntPort());
       } else {
         // A real mismatch.
         redirect.set_number_of_misses(redirect.number_of_misses() + 1);
@@ -346,6 +359,7 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
       redirect_to_add->set_url(final_redirect.host());
       redirect_to_add->set_number_of_hits(1);
       redirect_to_add->set_url_scheme(final_redirect.scheme());
+      redirect_to_add->set_url_port(final_redirect.EffectiveIntPort());
     }
   }
 

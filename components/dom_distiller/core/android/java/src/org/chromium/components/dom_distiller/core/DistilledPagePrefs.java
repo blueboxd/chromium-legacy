@@ -5,7 +5,6 @@
 package org.chromium.components.dom_distiller.core;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.util.HashMap;
@@ -57,20 +56,13 @@ public final class DistilledPagePrefs {
         }
 
         public void destroy() {
-            nativeDestroyObserverAndroid(this, mNativeDistilledPagePrefsObserverAndroidPtr);
+            nativeDestroyObserverAndroid(mNativeDistilledPagePrefsObserverAndroidPtr);
         }
 
         public long getNativePtr() {
             return mNativeDistilledPagePrefsObserverAndroidPtr;
         }
     }
-
-    static private native long nativeInitObserverAndroid(
-            @JCaller DistilledPagePrefsObserverWrapper caller);
-
-    static private native void nativeDestroyObserverAndroid(
-            @JCaller DistilledPagePrefsObserverWrapper caller,
-            long nativeDistilledPagePrefsObserverAndroid);
 
     DistilledPagePrefs(long distilledPagePrefsPtr) {
         mDistilledPagePrefsAndroid = nativeInit(distilledPagePrefsPtr);
@@ -145,4 +137,9 @@ public final class DistilledPagePrefs {
 
     private native void nativeRemoveObserver(long nativeDistilledPagePrefsAndroid,
             long nativeObserverPtr);
+
+    private static native long nativeInitObserverAndroid(DistilledPagePrefsObserverWrapper caller);
+
+    private static native void nativeDestroyObserverAndroid(
+            long nativeDistilledPagePrefsObserverAndroid);
 }

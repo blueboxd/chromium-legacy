@@ -242,7 +242,7 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
                     getString(R.string.website_settings_storage));
             RecordHistogram.recordEnumeratedHistogram(
                     "Android.ManageSpace.ActionTaken", OPTION_MANAGE_STORAGE, OPTION_MAX);
-            PreferencesLauncher.launchSettingsPageCompat(
+            PreferencesLauncher.launchSettingsPage(
                     this, SingleCategoryPreferences.class, initialArguments);
         } else if (view == mClearAllDataButton) {
             final ActivityManager activityManager =

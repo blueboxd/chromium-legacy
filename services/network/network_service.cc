@@ -212,6 +212,7 @@ std::unique_ptr<net::HttpNegotiateAuthSystem> CreateAuthSystem(
 // NetworkService is running in a separate process - otherwise the existing bad
 // message handling inside the Browser process is sufficient).
 void HandleBadMessage(const std::string& error) {
+  LOG(WARNING) << "Mojo error in NetworkService:" << error;
   static auto* bad_message_reason = base::debug::AllocateCrashKeyString(
       "bad_message_reason", base::debug::CrashKeySize::Size256);
   base::debug::SetCrashKeyString(bad_message_reason, error);

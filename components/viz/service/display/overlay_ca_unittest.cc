@@ -16,7 +16,6 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/resource_provider_test_utils.h"
 #include "components/viz/client/client_resource_provider.h"
-#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -30,7 +29,8 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
-#include "components/viz/service/display/overlay_processor_ca.h"
+#include "components/viz/service/display/overlay_candidate_validator.h"
+#include "components/viz/service/display/overlay_processor.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
@@ -49,6 +49,14 @@ namespace {
 const gfx::Rect kOverlayRect(0, 0, 256, 256);
 const gfx::PointF kUVTopLeft(0.1f, 0.2f);
 const gfx::PointF kUVBottomRight(1.0f, 1.0f);
+
+class CALayerValidator : public OverlayCandidateValidator {
+ public:
+  bool AllowCALayerOverlays() const override { return true; }
+  bool AllowDCLayerOverlays() const override { return false; }
+  bool NeedsSurfaceOccludingDamageRect() const override { return false; }
+  void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
+};
 
 class OverlayOutputSurface : public OutputSurface {
  public:
@@ -91,6 +99,13 @@ class OverlayOutputSurface : public OutputSurface {
 
  private:
   unsigned bind_framebuffer_count_ = 0;
+};
+
+class CATestOverlayProcessor : public OverlayProcessor {
+ public:
+  CATestOverlayProcessor() : OverlayProcessor(nullptr) {
+    SetOverlayCandidateValidator(std::make_unique<CALayerValidator>());
+  }
 };
 
 std::unique_ptr<RenderPass> CreateRenderPass() {
@@ -224,8 +239,7 @@ class CALayerOverlayTest : public testing::Test {
     child_provider_->BindToCurrentThread();
     child_resource_provider_ = std::make_unique<ClientResourceProvider>(true);
 
-    overlay_processor_ =
-        std::make_unique<OverlayProcessorCA>(true /* allow_ca */);
+    overlay_processor_ = std::make_unique<CATestOverlayProcessor>();
   }
 
   void TearDown() override {
@@ -246,33 +260,10 @@ class CALayerOverlayTest : public testing::Test {
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   scoped_refptr<TestContextProvider> child_provider_;
   std::unique_ptr<ClientResourceProvider> child_resource_provider_;
-  std::unique_ptr<OverlayProcessorCA> overlay_processor_;
+  std::unique_ptr<CATestOverlayProcessor> overlay_processor_;
   gfx::Rect damage_rect_;
   std::vector<gfx::Rect> content_bounds_;
 };
-
-TEST_F(CALayerOverlayTest, DoNotOverlayCopyRequest) {
-  std::unique_ptr<RenderPass> pass = CreateRenderPass();
-  CreateFullscreenCandidateQuad(
-      resource_provider_.get(), child_resource_provider_.get(),
-      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
-  pass->copy_requests.push_back(CopyOutputRequest::CreateStubForTesting());
-
-  gfx::Rect damage_rect;
-  CALayerOverlayList ca_layer_list;
-  OverlayProcessor::FilterOperationsMap render_pass_filters;
-  OverlayProcessor::FilterOperationsMap render_pass_backdrop_filters;
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-  overlay_processor_->ProcessForOverlays(
-      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
-      render_pass_filters, render_pass_backdrop_filters, &ca_layer_list,
-      &damage_rect_, &content_bounds_);
-
-  EXPECT_EQ(gfx::Rect(), damage_rect);
-  EXPECT_EQ(0U, ca_layer_list.size());
-  EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
-}
 
 TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();

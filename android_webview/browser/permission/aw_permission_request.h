@@ -47,7 +47,7 @@ class AwPermissionRequest {
   void OnAccept(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& jcaller,
                 jboolean granted);
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Destroy(JNIEnv* env);
 
   // Return the origin which initiated the request.
   const GURL& GetOrigin();

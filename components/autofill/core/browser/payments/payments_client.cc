@@ -57,6 +57,9 @@ const char kUnmaskCardRequestFormat[] =
     "requestContentType=application/json; charset=utf-8&request=%s"
     "&s7e_13_cvc=%s";
 
+const char kOptChangeRequestPath[] =
+    "payments/apis/chromepaymentsservice/autofillauthoptchange";
+
 const char kGetUploadDetailsRequestPath[] =
     "payments/apis/chromepaymentsservice/getdetailsforsavecard";
 
@@ -422,6 +425,81 @@ class UnmaskCardRequest : public PaymentsRequest {
   std::string real_pan_;
 
   DISALLOW_COPY_AND_ASSIGN(UnmaskCardRequest);
+};
+
+class OptChangeRequest : public PaymentsRequest {
+ public:
+  OptChangeRequest(
+      const PaymentsClient::OptChangeRequestDetails& request_details,
+      OptChangeCallback callback,
+      const bool full_sync_enabled)
+      : request_details_(request_details),
+        callback_(std::move(callback)),
+        full_sync_enabled_(full_sync_enabled) {}
+  ~OptChangeRequest() override {}
+
+  std::string GetRequestUrlPath() override { return kOptChangeRequestPath; }
+
+  std::string GetRequestContentType() override { return "application/json"; }
+
+  std::string GetRequestContent() override {
+    base::Value request_dict(base::Value::Type::DICTIONARY);
+    base::Value context(base::Value::Type::DICTIONARY);
+    context.SetKey("language_code", base::Value(request_details_.app_locale));
+    context.SetKey("billable_service",
+                   base::Value(kUnmaskCardBillableServiceNumber));
+    request_dict.SetKey("context", std::move(context));
+
+    if (ShouldUseActiveSignedInAccount()) {
+      base::Value chrome_user_context(base::Value::Type::DICTIONARY);
+      chrome_user_context.SetKey("full_sync_enabled",
+                                 base::Value(full_sync_enabled_));
+      request_dict.SetKey("chrome_user_context",
+                          std::move(chrome_user_context));
+    }
+
+    request_dict.SetKey("opt_in", base::Value(request_details_.opt_in));
+
+    if (request_details_.fido_authenticator_response.is_dict()) {
+      request_dict.SetKey(
+          "fido_authenticator_response",
+          std::move(request_details_.fido_authenticator_response));
+    }
+
+    std::string request_content;
+    base::JSONWriter::Write(request_dict, &request_content);
+    VLOG(3) << "autofillauthoptchange request body: " << request_content;
+    return request_content;
+  }
+
+  void ParseResponse(const base::Value& response) override {
+    const auto* user_is_opted_in =
+        response.FindKeyOfType("user_is_opted_in", base::Value::Type::BOOLEAN);
+    if (user_is_opted_in)
+      user_is_opted_in_ = user_is_opted_in->GetBool();
+
+    const auto* fido_creation_options = response.FindKeyOfType(
+        "fido_creation_options", base::Value::Type::DICTIONARY);
+    if (fido_creation_options)
+      fido_creation_options_ = fido_creation_options->Clone();
+  }
+
+  bool IsResponseComplete() override { return user_is_opted_in_.has_value(); }
+
+  void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
+    std::move(callback_).Run(
+        result, user_is_opted_in_.value_or(!request_details_.opt_in),
+        std::move(fido_creation_options_));
+  }
+
+ private:
+  PaymentsClient::OptChangeRequestDetails request_details_;
+  OptChangeCallback callback_;
+  const bool full_sync_enabled_;
+  base::Optional<bool> user_is_opted_in_;
+  base::Value fido_creation_options_;
+
+  DISALLOW_COPY_AND_ASSIGN(OptChangeRequest);
 };
 
 class GetUploadDetailsRequest : public PaymentsRequest {
@@ -864,6 +942,15 @@ PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails(
 }
 PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() {}
 
+PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails() {}
+PaymentsClient::OptChangeRequestDetails::OptChangeRequestDetails(
+    const OptChangeRequestDetails& other) {
+  app_locale = other.app_locale;
+  opt_in = other.opt_in;
+  fido_authenticator_response = other.fido_authenticator_response.Clone();
+}
+PaymentsClient::OptChangeRequestDetails::~OptChangeRequestDetails() {}
+
 PaymentsClient::UploadRequestDetails::UploadRequestDetails() {}
 PaymentsClient::UploadRequestDetails::UploadRequestDetails(
     const UploadRequestDetails& other) = default;
@@ -908,7 +995,15 @@ void PaymentsClient::UnmaskCard(
       std::make_unique<UnmaskCardRequest>(
           request_details, account_info_getter_->IsSyncFeatureEnabled(),
           std::move(callback)),
-      true);
+      /*authenticate=*/true);
+}
+
+void PaymentsClient::OptChange(const OptChangeRequestDetails request_details,
+                               OptChangeCallback callback) {
+  IssueRequest(std::make_unique<OptChangeRequest>(
+                   request_details, std::move(callback),
+                   account_info_getter_->IsSyncFeatureEnabled()),
+               /*authenticate=*/true);
 }
 
 void PaymentsClient::GetUploadDetails(
@@ -927,7 +1022,7 @@ void PaymentsClient::GetUploadDetails(
           addresses, detected_values, active_experiments,
           account_info_getter_->IsSyncFeatureEnabled(), app_locale,
           std::move(callback), billable_service_number, upload_card_source),
-      false);
+      /*authenticate=*/false);
 }
 
 void PaymentsClient::UploadCard(
@@ -938,7 +1033,7 @@ void PaymentsClient::UploadCard(
       std::make_unique<UploadCardRequest>(
           request_details, account_info_getter_->IsSyncFeatureEnabled(),
           std::move(callback)),
-      true);
+      /*authenticate=*/true);
 }
 
 void PaymentsClient::MigrateCards(

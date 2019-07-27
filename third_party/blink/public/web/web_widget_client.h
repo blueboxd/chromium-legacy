@@ -345,6 +345,14 @@ class WebWidgetClient {
   virtual void StartDeferringCommits(base::TimeDelta timeout) {}
   // Immediately stop deferring commits.
   virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) {}
+
+  // Enable or disable BeginMainFrameNotExpected signals from the compositor,
+  // which are consumed by the blink scheduler.
+  virtual void RequestBeginMainFrameNotExpected(bool request) {}
+
+  // A stable numeric Id for the local root's compositor. For tracing/debugging
+  // purposes.
+  virtual int GetLayerTreeId() const { return 0; }
 };
 
 }  // namespace blink

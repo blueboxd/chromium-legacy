@@ -62,10 +62,9 @@ public class NotificationsPreferencesTest {
         // clang-format on
 
         final PreferenceFragmentCompat fragment =
-                (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
-        final ChromeSwitchPreferenceCompat toggle =
-                (ChromeSwitchPreferenceCompat) fragment.findPreference(
-                        NotificationsPreferences.PREF_SUGGESTIONS);
+                (PreferenceFragmentCompat) mActivity.getMainFragment();
+        final ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
+                NotificationsPreferences.PREF_SUGGESTIONS);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Make sure the toggle reflects the state correctly.
@@ -99,11 +98,9 @@ public class NotificationsPreferencesTest {
     public void testToggleDisabledWhenPrefetchingDisabled() {
         // clang-format on
 
-        PreferenceFragmentCompat fragment =
-                (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
-        ChromeSwitchPreferenceCompat toggle =
-                (ChromeSwitchPreferenceCompat) fragment.findPreference(
-                        NotificationsPreferences.PREF_SUGGESTIONS);
+        PreferenceFragmentCompat fragment = (PreferenceFragmentCompat) mActivity.getMainFragment();
+        ChromeSwitchPreference toggle = (ChromeSwitchPreference) fragment.findPreference(
+                NotificationsPreferences.PREF_SUGGESTIONS);
 
         Assert.assertFalse(toggle.isEnabled());
         Assert.assertFalse(toggle.isChecked());
@@ -122,7 +119,7 @@ public class NotificationsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PreferenceFragmentCompat fragment =
-                    (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
+                    (PreferenceFragmentCompat) mActivity.getMainFragment();
             Preference fromWebsites =
                     fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 
@@ -153,7 +150,7 @@ public class NotificationsPreferencesTest {
         // clang-format on
 
         final PreferenceFragmentCompat fragment =
-                (PreferenceFragmentCompat) mActivity.getMainFragmentCompat();
+                (PreferenceFragmentCompat) mActivity.getMainFragment();
         final Preference fromWebsites =
                 fragment.findPreference(NotificationsPreferences.PREF_FROM_WEBSITES);
 
@@ -173,7 +170,7 @@ public class NotificationsPreferencesTest {
     /** Gets the fragment of the top Activity. Assumes the top Activity is a Preferences. */
     private static Fragment getTopFragment() {
         Preferences preferences = (Preferences) ApplicationStatus.getLastTrackedFocusedActivity();
-        return preferences.getMainFragmentCompat();
+        return preferences.getMainFragment();
     }
 
     /** Gets the summary text that should be used for site specific notifications. */

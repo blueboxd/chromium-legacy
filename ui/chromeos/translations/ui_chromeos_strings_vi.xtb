@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Thanh trượt tìm kiếm</translation>
 <translation id="1399648040768741453">Bàn phím tiếng Telugu (Ngữ âm)</translation>
 <translation id="1430915738399379752">In</translation>
+<translation id="1439494416798956626">Đã di chuyển sang <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Bàn phím tiếng Việt (Telex)</translation>
 <translation id="1455548678241328678">Bàn phím tiếng Na Uy</translation>
 <translation id="1464724975715666883">1 lỗi.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Đang quét thiết bị truyền thông của bạn...</translation>
 <translation id="3468522857997926824">Đã sao lưu <ph name="FILE_COUNT" /> ảnh vào <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Đang sao chép...</translation>
+<translation id="3473378059788601120">Đã sao chép vào <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Bảng tính Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> lỗi.</translation>
 <translation id="3519867315646775981">Chuyển ngữ (shalom ← שלום)</translation>
@@ -264,7 +266,7 @@
 <translation id="421017592316736757">Bạn phải trực tuyến để truy cập tệp này.</translation>
 <translation id="4212740939091998969">Thư mục có tên "<ph name="FOLDER_NAME" />" đã tồn tại. Hãy chọn một tên khác.</translation>
 <translation id="4215448920900139318">Đang sao lưu <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Mở cài đặt</translation>
+<translation id="4242533952199664413">Mở phần cài đặt</translation>
 <translation id="426015154560005552">Bàn phím tiếng Ả Rập</translation>
 <translation id="4261901459838235729">Bản trình bày Google</translation>
 <translation id="4290535918735525311">Đã chia sẻ 1 thư mục với Linux</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Nhập bằng tiếng Nhật (dành cho bàn phím tiếng Nhật)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Cấp cho các ứng dụng Linux quyền sửa đổi tệp trong Google Drive. Các mục thay đổi sẽ đồng bộ hóa với những thiết bị khác của bạn.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> mục</translation>
 <translation id="5982621672636444458">Tùy chọn sắp xếp</translation>
 <translation id="6005282720244019462">Bàn phím tiếng Mỹ Latinh</translation>
 <translation id="6007237601604674381">Di chuyển không thành công. <ph name="ERROR_MESSAGE" /></translation>

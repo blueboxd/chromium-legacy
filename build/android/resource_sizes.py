@@ -8,6 +8,8 @@
 More information at //docs/speed/binary_size/metrics.md.
 """
 
+from __future__ import print_function
+
 import argparse
 import collections
 from contextlib import contextmanager
@@ -80,7 +82,7 @@ _READELF_SIZES_METRICS = {
         '.dynsym', '.dynstr', '.dynamic', '.shstrtab', '.got', '.plt',
         '.got.plt', '.hash', '.gnu.hash'
     ],
-    'bss': ['.bss', '.bss.rel.ro'],
+    'bss': ['.bss'],
     'other': [
         '.init_array', '.preinit_array', '.ctors', '.fini_array', '.comment',
         '.note.gnu.gold-version', '.note.crashpad.info', '.note.android.ident',
@@ -112,7 +114,7 @@ def _ExtractLibSectionSizesFromApk(apk_path, lib_path, tool_prefix):
 
     # Group any unknown section headers into the "other" group.
     for section_header, section_size in section_sizes.iteritems():
-      sys.stderr.write('Unknown elf section header: %s\n' % section_header)
+      print('Unknown elf section header: %s' % section_header)
       grouped_section_sizes['other'] += section_size
 
     return grouped_section_sizes
@@ -475,7 +477,7 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
 
   # It will be -Inf for .apk files with multiple .arsc files and no out_dir set.
   if normalized_apk_size < 0:
-    sys.stderr.write('Skipping normalized_apk_size (no output directory set)\n')
+    print('Skipping normalized_apk_size because no output directory was set.')
   else:
     report_func('Specifics', 'normalized apk size', normalized_apk_size,
                 'bytes')
@@ -602,16 +604,10 @@ def ResourceSizes(args):
     raise Exception('Unknown file type: ' + args.input)
 
   if chartjson:
-    if args.output_file == '-':
-      json_file = sys.stdout
-    elif args.output_file:
-      json_file = open(args.output_file, 'w')
-    else:
-      results_path = os.path.join(args.output_dir, 'results-chart.json')
-      logging.critical('Dumping chartjson to %s', results_path)
-      json_file = open(results_path, 'w')
-
-    json.dump(chartjson, json_file, indent=2)
+    results_path = os.path.join(args.output_dir, 'results-chart.json')
+    logging.critical('Dumping chartjson to %s', results_path)
+    with open(results_path, 'w') as json_file:
+      json.dump(chartjson, json_file)
 
     # We would ideally generate a histogram set directly instead of generating
     # chartjson then converting. However, perf_tests_results_helper is in
@@ -685,10 +681,6 @@ def main():
 
   output_group.add_argument(
       '--output-dir', default='.', help='Directory to save chartjson to.')
-  output_group.add_argument(
-      '--output-file',
-      help='Path to output .json (replaces --output-dir). Works only for '
-      '--output-format=chartjson')
   output_group.add_argument(
       '--isolated-script-test-output',
       type=os.path.realpath,

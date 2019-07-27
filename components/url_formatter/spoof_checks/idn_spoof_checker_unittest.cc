@@ -1063,7 +1063,9 @@ const IDNTestCase kIdnCases[] = {
     // Kana voiced sound marks are not allowed.
     {"xn--google-1m4e.com", L"google\x3099.com", false},
     {"xn--google-8m4e.com", L"google\x309A.com", false},
-};
+
+    // Small letter theta looks like a zero.
+    {"xn--123456789-yzg.com", L"123456789θ.com", false}};
 
 namespace test {
 #include "components/url_formatter/top_domains/test_domains-trie-inc.cc"

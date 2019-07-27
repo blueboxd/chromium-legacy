@@ -23,7 +23,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryActivity;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
@@ -85,9 +85,9 @@ public class AutofillAssistantPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AutofillAssistantPreferences autofillAssistantPrefs =
-                    (AutofillAssistantPreferences) preferences.getMainFragmentCompat();
-            ChromeSwitchPreferenceCompat onOffSwitch =
-                    (ChromeSwitchPreferenceCompat) autofillAssistantPrefs.findPreference(
+                    (AutofillAssistantPreferences) preferences.getMainFragment();
+            ChromeSwitchPreference onOffSwitch =
+                    (ChromeSwitchPreference) autofillAssistantPrefs.findPreference(
                             AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH);
             Assert.assertTrue(onOffSwitch.isChecked());
 
@@ -105,9 +105,9 @@ public class AutofillAssistantPreferencesTest {
                         AutofillAssistantPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AutofillAssistantPreferences autofillAssistantPrefs =
-                    (AutofillAssistantPreferences) preferences2.getMainFragmentCompat();
-            ChromeSwitchPreferenceCompat onOffSwitch =
-                    (ChromeSwitchPreferenceCompat) autofillAssistantPrefs.findPreference(
+                    (AutofillAssistantPreferences) preferences2.getMainFragment();
+            ChromeSwitchPreference onOffSwitch =
+                    (ChromeSwitchPreference) autofillAssistantPrefs.findPreference(
                             AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH);
             Assert.assertFalse(onOffSwitch.isChecked());
         });
@@ -128,7 +128,7 @@ public class AutofillAssistantPreferencesTest {
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragmentCompat();
+            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragment();
             Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
                     is(nullValue()));
         });
@@ -149,7 +149,7 @@ public class AutofillAssistantPreferencesTest {
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragmentCompat();
+            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragment();
             Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
                     is(not(nullValue())));
         });
@@ -167,7 +167,7 @@ public class AutofillAssistantPreferencesTest {
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragmentCompat();
+            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragment();
             Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
                     is(nullValue()));
         });

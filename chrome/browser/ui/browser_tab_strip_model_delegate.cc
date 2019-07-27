@@ -27,8 +27,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "ipc/ipc_message.h"
 
-class TabGroupData;
-
 namespace chrome {
 
 ////////////////////////////////////////////////////////////////////////////////

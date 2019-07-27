@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">Options to save password</translation>
 <translation id="2523363575747517183">This website is repeatedly trying to open another application.</translation>
 <translation id="2529021024822217800">Open All</translation>
+<translation id="2562041823070056534">Sending to <ph name="DEVICE_NAME" />...</translation>
 <translation id="2570206273416014374">Sends some cookies and searches from the address bar and search box to your default search engine.</translation>
 <translation id="2572712655377361602">A device policy blocked access to your photos</translation>
 <translation id="2578571896248130439">Send Web Page</translation>
@@ -314,6 +315,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5614553682702429503">Save password?</translation>
 <translation id="5626245204502895507">The file could not be downloaded at this time.</translation>
+<translation id="5631164295104953411">Add payment method</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
@@ -465,6 +467,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7772032839648071052">Confirm passphrase</translation>
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="778855399387580014">Start a search in a new Chrome tab.</translation>
+<translation id="7791543448312431591">Add</translation>
 <translation id="780301667611848630">No, thanks</translation>
 <translation id="7840771868269352570">The items that you selected will be removed.</translation>
 <translation id="7856733331829174190">Couldn't download</translation>
@@ -532,7 +535,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8976382372951310360">Help</translation>
 <translation id="8981454092730389528">Google Activity Controls</translation>
 <translation id="8985320356172329008">Signed In to Google as</translation>
-<translation id="9016406938567631235">Sending...</translation>
 <translation id="902659348151742535">Google may use your browsing history to personalise Search, ads and other Google services.</translation>
 <translation id="9034759925968272072">You won't be signed out of your Google Account. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Bandwidth</translation>

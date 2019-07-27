@@ -2555,11 +2555,13 @@ void CrostiniManager::OnPendingAppListUpdates(
 
 void CrostiniManager::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
-  // https://crbug.com/968060.  Unmount sshfs before suspend.
+  // Block suspend and try to unmount sshfs (https://crbug.com/968060).
+  auto token = base::UnguessableToken::Create();
+  chromeos::PowerManagerClient::Get()->BlockSuspend(token, "CrostiniManager");
   file_manager::VolumeManager::Get(profile_)->RemoveSshfsCrostiniVolume(
-      file_manager::util::GetCrostiniMountDirectory(profile_));
-  SetContainerSshfsMounted(kCrostiniDefaultVmName,
-                           kCrostiniDefaultContainerName, false);
+      file_manager::util::GetCrostiniMountDirectory(profile_),
+      base::BindOnce(&CrostiniManager::OnRemoveSshfsCrostiniVolume,
+                     weak_ptr_factory_.GetWeakPtr(), token));
 }
 
 void CrostiniManager::SuspendDone(const base::TimeDelta& sleep_duration) {
@@ -2569,6 +2571,18 @@ void CrostiniManager::SuspendDone(const base::TimeDelta& sleep_duration) {
     RestartCrostini(kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
                     base::DoNothing());
   }
+}
+
+void CrostiniManager::OnRemoveSshfsCrostiniVolume(
+    base::UnguessableToken power_manager_suspend_token,
+    bool result) {
+  if (result) {
+    SetContainerSshfsMounted(kCrostiniDefaultVmName,
+                             kCrostiniDefaultContainerName, false);
+  }
+  // Need to let the device suspend after cleaning up.
+  chromeos::PowerManagerClient::Get()->UnblockSuspend(
+      power_manager_suspend_token);
 }
 
 }  // namespace crostini

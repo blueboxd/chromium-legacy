@@ -10,6 +10,8 @@
 (function() {
 'use strict';
 
+const mojom = chromeos.networkConfig.mojom;
+
 Polymer({
   is: 'settings-internet-detail-page',
 
@@ -515,10 +517,25 @@ Polymer({
     }
     const type = /** @type {CrOnc.Type} */ (
         OncMojo.getNetworkTypeString(networkState.type));
-    const connectionState = /** @type {CrOnc.ConnectionState} */ (
-        OncMojo.getConnectionStateTypeString(networkState.connectionState));
+
+    let connectionState;
+    switch (networkState.connectionState) {
+      case mojom.ConnectionStateType.kOnline:
+      case mojom.ConnectionStateType.kConnected:
+      case mojom.ConnectionStateType.kPortal:
+        connectionState = CrOnc.ConnectionState.CONNECTED;
+        break;
+      case mojom.ConnectionStateType.kConnecting:
+        connectionState = CrOnc.ConnectionState.CONNECTING;
+        break;
+      case mojom.ConnectionStateType.kNotConnected:
+        connectionState = CrOnc.ConnectionState.NOT_CONNECTED;
+        break;
+    }
+
     this.networkProperties_ = {
       GUID: networkState.guid,
+      Name: {Active: networkState.name},
       Type: type,
       Connectable: networkState.connectable,
       ConnectionState: connectionState,
@@ -936,8 +953,8 @@ Polymer({
     // Only mark VPN networks as enforced. This fake pref also controls the
     // policy indicator on the connect/disconnect buttons, so it shouldn't be
     // shown on non-VPN networks.
-    if (this.isVpn_(this.networkProperties_) && this.prefs.vpn_config_allowed &&
-        !this.prefs.vpn_config_allowed.value) {
+    if (this.isVpn_(this.networkProperties_) && this.prefs &&
+        this.prefs.vpn_config_allowed && !this.prefs.vpn_config_allowed.value) {
       fakeAlwaysOnVpnEnforcementPref.enforcement =
           chrome.settingsPrivate.Enforcement.ENFORCED;
       fakeAlwaysOnVpnEnforcementPref.controlledBy =

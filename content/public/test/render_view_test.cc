@@ -424,6 +424,12 @@ void RenderViewTest::SetUp() {
   mojo::MakeRequest(&info);
   view_params->main_frame_interface_bundle->document_interface_broker_blink =
       std::move(info);
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker;
+  // Ignoring the returned PendingReceiver because it is not bound to anything
+  ignore_result(browser_interface_broker.InitWithNewPipeAndPassReceiver());
+  view_params->main_frame_interface_bundle->browser_interface_broker =
+      std::move(browser_interface_broker);
   view_params->session_storage_namespace_id =
       blink::AllocateSessionStorageNamespaceId();
   view_params->replicated_frame_state = FrameReplicationState();

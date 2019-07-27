@@ -76,8 +76,11 @@ SkColor GetContrastingColorForBackground(SkColor bg_color,
   if (hsl.l == 0)
     return SK_ColorWHITE;
 
+  if (hsl.l < 0.2)
+    luminosity_change += 0.1;
+
   // Decrease luminosity, unless color is already dark.
-  if (hsl.l > 0.15)
+  if (hsl.l > 0.1)
     luminosity_change *= -1;
 
   hsl.l *= 1 + luminosity_change;
@@ -114,8 +117,11 @@ SkColor GetLogoColor(const ThemeBackgroundInfo& theme_info) {
   bool has_background_image = theme_info.has_theme_image ||
                               !theme_info.custom_background_url.is_empty();
   if (theme_info.logo_alternate && !has_background_image) {
-    logo_color = GetContrastingColorForBackground(theme_info.background_color,
-                                                  /*luminosity_change=*/0.3f);
+    if (color_utils::IsDark(theme_info.background_color))
+      logo_color = SK_ColorWHITE;
+    else
+      logo_color = GetContrastingColorForBackground(theme_info.background_color,
+                                                    /*luminosity_change=*/0.3f);
   }
 
   return logo_color;
@@ -437,6 +443,9 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
 
   builder.Set("logoColor",
               SkColorToArray(isolate, internal::GetLogoColor(theme_info)));
+
+  builder.Set("colorId", theme_info.color_id);
+
   return builder.Build();
 }
 

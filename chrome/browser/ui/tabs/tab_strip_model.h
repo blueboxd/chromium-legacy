@@ -21,8 +21,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_switch_event_latency_recorder.h"
@@ -324,9 +324,9 @@ class TabStripModel {
   // https://crbug.com/915956).
   base::Optional<TabGroupId> GetTabGroupForTab(int index) const;
 
-  // Returns the TabGroupData instance for the given |group|. The returned
+  // Returns the TabGroupVisualData instance for the given |group|. The returned
   // pointer is valid until all tabs in |group| are destroyed.
-  const TabGroupData* GetDataForGroup(TabGroupId group) const;
+  const TabGroupVisualData* GetVisualDataForGroup(TabGroupId group) const;
 
   // Returns a list of tab groups that contain at least one tab in this strip.
   std::vector<TabGroupId> ListTabGroups() const;
@@ -668,7 +668,8 @@ class TabStripModel {
 
   // The data for tab groups hosted within this TabStripModel, indexed by the
   // group ID.
-  std::map<TabGroupId, TabGroupData> group_data_;
+  class GroupData;
+  std::map<TabGroupId, GroupData> group_data_;
 
   TabStripModelDelegate* delegate_;
 

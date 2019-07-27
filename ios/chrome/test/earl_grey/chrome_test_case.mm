@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case_app_interface.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/coverage_utils.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -107,7 +108,7 @@ UIDeviceOrientation GetCurrentDeviceOrientation() {
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 #endif
 
-@interface ChromeTestCase () {
+@interface ChromeTestCase () <AppLaunchManagerObserver> {
   // Block to be executed during object tearDown.
   ProceduralBlock _tearDownHandler;
 
@@ -184,28 +185,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   [super setUp];
   [ChromeTestCase setUpHelper];
 }
-#elif defined(CHROME_EARL_GREY_2)
-+ (void)setUpForTestCase {
-  [super setUpForTestCase];
-  [ChromeTestCase setUpHelper];
-}
-#endif  // CHROME_EARL_GREY_2
-
-// Set up called once for the class, to dismiss anything displayed on startup
-// and revert browser settings to default. It also starts the HTTP server and
-// enables mock authentication.
-+ (void)setUpHelper {
-  [[self class] startHTTPServer];
-  [[self class] enableMockAuthentication];
-
-  // Sometimes on start up there can be infobars (e.g. restore session), so
-  // ensure the UI is in a clean state.
-  [self removeAnyOpenMenusAndInfoBars];
-  [self closeAllTabs];
-  [ChromeEarlGrey setContentSettings:CONTENT_SETTING_DEFAULT];
-
-  [CoverageUtils configureCoverageReportPath];
-}
+#endif  // CHROME_EARL_GREY_1
 
 // Tear down called once for the class, to shutdown mock authentication and
 // the HTTP server.
@@ -229,11 +209,12 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 
 // Set up called once per test, to open a new tab.
 - (void)setUp {
+  // Add this class as an AppLaunchManager observer before [super setUp],
+  // as [super setUp] can trigger an app launch.
+  [[AppLaunchManager sharedManager] addObserver:self];
+
   [super setUp];
-  _isHTTPServerStopped = NO;
-  _isMockAuthenticationDisabled = NO;
-  _tearDownHandler = nil;
-  _originalOrientation = GetCurrentDeviceOrientation();
+  [self resetAppState];
 
   ResetAuthentication();
 
@@ -246,6 +227,8 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
 // tracked tests accounts. It also makes sure mock authentication and the HTTP
 // server are running.
 - (void)tearDown {
+  [[AppLaunchManager sharedManager] removeObserver:self];
+
   if (_tearDownHandler) {
     _tearDownHandler();
   }
@@ -388,10 +371,44 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   return multitaskingTestNames;
 }
 
+// Called from +setUp or when the host app is relaunched.
+// Dismisses and revert browser settings to default.
+// It also starts the HTTP server and enables mock authentication.
++ (void)setUpHelper {
+  [CoverageUtils configureCoverageReportPath];
+
+  [[self class] startHTTPServer];
+  [[self class] enableMockAuthentication];
+
+  // Sometimes on start up there can be infobars (e.g. restore session), so
+  // ensure the UI is in a clean state.
+  [self removeAnyOpenMenusAndInfoBars];
+  [self closeAllTabs];
+  [ChromeEarlGrey setContentSettings:CONTENT_SETTING_DEFAULT];
+
+  [CoverageUtils configureCoverageReportPath];
+}
+
+// Resets the variables tracking app state.
+// Called at the start of a test and when the app is relaunched.
+- (void)resetAppState {
+  _isHTTPServerStopped = NO;
+  _isMockAuthenticationDisabled = NO;
+  _tearDownHandler = nil;
+  _originalOrientation = GetCurrentDeviceOrientation();
+}
+
 #pragma mark - Handling system alerts
 
 - (void)failAllTestsDueToSystemAlertVisible {
   XCTFail("System alerts are present on device. Skipping all tests.");
+}
+
+#pragma mark AppLaunchManagerObserver method
+
+- (void)appLaunchManagerDidRelaunchApp:(AppLaunchManager*)appLaunchManager {
+  [ChromeTestCase setUpHelper];
+  [self resetAppState];
 }
 
 @end

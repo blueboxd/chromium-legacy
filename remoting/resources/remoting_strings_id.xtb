@@ -70,6 +70,11 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2366718077645204424">Tidak dapat menjangkau inang. Ini mungkin karena konfigurasi jaringan yang Anda gunakan.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Terakhir terlihat online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Aplikasi ini tidak lagi didukung. Untuk memastikan Anda mendapatkan update fitur dan keamanan terbaru, gunakan <ph name="LINK_BEGIN" />aplikasi web Chrome Desktop Jarak Jauh<ph name="LINK_END" />.</translation>
+<translation id="2431841749166974386">Langkah konfigurasi tambahan diperlukan sebelum Anda dapat mengontrol mesin ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />.
+
+Untuk mengaktifkan fungsi ini, pilih <ph name="BUTTON_NAME" />' untuk menampilkan panel preferensi Keamanan dan Privasi, kemudian centang kotak di sebelah '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Jika '<ph name="SERVICE_SCRIPT_NAME" />' sudah ada dan dicentang, Anda mungkin perlu menghapusnya, lalu menambahkannya kembali.</translation>
 <translation id="2499160551253595098">Bantu kami meningkatkan Chrome Desktop Jarak Jauh dengan mengizinkan kami mengumpulkan statistik penggunaan dan laporan kerusakan.</translation>
 <translation id="2509394361235492552">Terhubung ke <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">CATATAN: Untuk memastikan bahwa semua pintasan keyboard tersedia, Anda dapat mengonfigurasi Chrome Desktop Jarak Jauh menjadi ‘Buka sebagai jendela’.</translation>
@@ -90,7 +95,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 
 • Download aplikasi Chrome Desktop Jarak Jauh dari Chrome Webstore di komputer yang ingin diakses dari jarak jauh.
 • Instal software Chrome Desktop Jarak Jauh dan ikuti petunjuknya untuk menyelesaikan penyiapan.
-• Pada perangkat iOS, buka aplikasi dan tap komputer online mana pun agar terhubung.</translation>
+• Pada perangkat iOS, buka aplikasi dan ketuk komputer online mana pun agar terhubung.</translation>
 <translation id="2894654864775534701">Saat ini komputer ini dibagikan dengan akun lain.</translation>
 <translation id="2919669478609886916">Saat ini Anda sedang berbagi mesin ini dengan pengguna lain. Apakah Anda ingin terus berbagi?</translation>
 <translation id="2921543551052660690">Sebelumnya, Anda telah login sebagai <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Untuk mengakses komputer menggunakan akun tersebut, <ph name="LINK_BEGIN" />masuk ke Chromium<ph name="LINK_END" /> dengan akun tersebut dan instal kembali Chromoting.</translation>
@@ -192,7 +197,6 @@ PC</translation>
 <translation id="4973800994433240357">Dengan mendownload Pemasang Host Chrome Desktop Jarak Jauh, Anda menyetujui <ph name="LINK_BEGIN" />Persyaratan Layanan<ph name="LINK_END" /> Google.</translation>
 <translation id="4974476491460646149">Sambungan terputus untuk <ph name="HOSTNAME" /></translation>
 <translation id="4985296110227979402">Pertama, Anda perlu menyiapkan komputer untuk akses jarak jauh</translation>
-<translation id="5059773780693835145">Diperlukan langkah konfigurasi tambahan sebelum Anda dapat mengontrol mesin ini dari jarak jauh menggunakan <ph name="PRODUCT_NAME" />. Untuk mengaktifkan fungsi ini, pilih '<ph name="BUTTON_NAME" />' untuk menampilkan panel preferensi Keamanan dan Privasi, lalu centang kotak di samping '<ph name="SERVICE_SCRIPT_NAME" />'.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
 <translation id="507204348399810022">Yakin ingin menonaktifkan sambungan jarak jauh ke <ph name="HOSTNAME" />?</translation>
@@ -348,7 +352,7 @@ PC</translation>
 <translation id="8998327464021325874">Pengontrol Host Chrome Desktop Jarak Jauh</translation>
 <translation id="9016232822027372900">Tetap sambungkan</translation>
 <translation id="906458777597946297">Memaksimalkan jendela</translation>
-<translation id="9111855907838866522">Anda terhubung dengan perangkat jarak jauh. Untuk membuka menu, tap layar dengan 4 jari.</translation>
+<translation id="9111855907838866522">Anda terhubung dengan perangkat jarak jauh. Untuk membuka menu, ketuk layar dengan 4 jari.</translation>
 <translation id="9126115402994542723">Jangan minta PIN lagi saat menyambungkan ke hosting ini dari perangkat ini.</translation>
 <translation id="9149580767411232853">Pertahankan agar keseluruhan desktop jarak jauh tetap terlihat</translation>
 <translation id="9149992051684092333">Untuk mulai berbagi desktop, berikan kode akses di bawah kepada orang yang akan membantu Anda.</translation>

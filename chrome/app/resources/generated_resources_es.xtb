@@ -69,12 +69,10 @@
 <translation id="1085697365578766383">No se ha podido iniciar la máquina virtual. Inténtalo de nuevo.</translation>
 <translation id="1089439967362294234">Cambiar contraseña</translation>
 <translation id="1090126737595388931">No se están ejecutando aplicaciones en segundo plano.</translation>
-<translation id="1090290614672149983">¿Quieres guardar los cambios en el archivo original?</translation>
 <translation id="1091767800771861448">Pulsa Esc para omitir este paso (solo para compilaciones no oficiales).</translation>
 <translation id="1093457606523402488">Redes visibles:</translation>
 <translation id="1094607894174825014">La operación de lectura o escritura se ha solicitado con una variación no válida de "<ph name="DEVICE_NAME" />".</translation>
 <translation id="1097658378307015415">Antes de iniciar sesión, entra como invitado para activar la red <ph name="NETWORK_ID" />.</translation>
-<translation id="110029732810301672">Esta pestaña tiene permiso para guardar cambios en los archivos originales.</translation>
 <translation id="1103523840287552314">Traducir siempre del <ph name="LANGUAGE" /></translation>
 <translation id="1108600514891325577">&amp;Detener</translation>
 <translation id="1110155001042129815">Esperar</translation>
@@ -167,7 +165,6 @@
 <translation id="1224275271335624810">Velocidad máxima</translation>
 <translation id="1225177025209879837">Procesando solicitud...</translation>
 <translation id="1227507814927581609">Se ha producido un error de autenticación al establecer conexión con <ph name="DEVICE_NAME" />.</translation>
-<translation id="1229246658989055856"><ph name="ORIGIN" /> puede guardar los cambios que hagas directamente en los archivos de las siguientes carpetas. Este sitio web solo podrá guardar los cambios mientras esa pestaña esté abierta.</translation>
 <translation id="1231733316453485619">¿Activar sincronización?</translation>
 <translation id="1232569758102978740">Sin título</translation>
 <translation id="1233497634904001272">Vuelve a tocar tu llave de seguridad para completar la solicitud.</translation>
@@ -251,7 +248,6 @@
 <translation id="1367951781824006909">Selecciona un archivo</translation>
 <translation id="1370749010280229230">La pantalla conectada a la base tiene un problema</translation>
 <translation id="1371301976177520732">Tus marcadores, contraseñas, historial y mucho más en todos tus dispositivos</translation>
-<translation id="1371321359524760420"><ph name="ORIGIN" /> puede guardar los cambios directamente en los siguientes archivos y carpetas.</translation>
 <translation id="1372841398847029212">Sincronizar con tu cuenta</translation>
 <translation id="1374844444528092021">El certificado requerido por la red "<ph name="NETWORK_NAME" />" no está instalado o ya no es válido. Consigue un nuevo certificado y prueba a conectarte de nuevo.</translation>
 <translation id="1375321115329958930">Contraseñas guardadas</translation>
@@ -310,7 +306,6 @@
 <translation id="1451375123200651445">Página web (un único archivo)</translation>
 <translation id="1451917004835509682">Añadir persona supervisada</translation>
 <translation id="1454223536435069390">H&amp;acer captura de pantalla</translation>
-<translation id="1458243790901188746">{0,plural, =1{Carpeta: <ph name="DIRECTORIES" />}other{Carpetas: <ph name="DIRECTORIES" />}}</translation>
 <translation id="1459967076783105826">Motores de búsqueda añadidos por extensiones</translation>
 <translation id="146000042969587795">Este marco se ha bloqueado porque incluye contenido no seguro.</translation>
 <translation id="146219525117638703">Estado ONC</translation>
@@ -365,7 +360,7 @@
 <translation id="1529891865407786369">Fuente de alimentación</translation>
 <translation id="1530838837447122178">Abrir la configuración del ratón y del panel táctil</translation>
 <translation id="1531004739673299060">Ventana de la aplicación</translation>
-<translation id="1531275250079031713">Mostrar cuadro de diálogo "Añadir nueva red Wi‑Fi"</translation>
+<translation id="1531275250079031713">Mostrar cuadro de diálogo "Añadir Wi‑Fi"</translation>
 <translation id="1536754031901697553">Desconectando...</translation>
 <translation id="15373452373711364">Cursor del ratón grande</translation>
 <translation id="1540605929960647700">Habilitar modo de demostración</translation>
@@ -490,7 +485,6 @@
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (ID: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (resolución nativa)</translation>
 <translation id="1709217939274742847">Selecciona el ticket que vas a usar para autenticarte. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
-<translation id="1711401317189798723">Actualmente hay una copia de seguridad en curso de <ph name="CONTAINER_ID" /></translation>
 <translation id="1712349894969001173">Recibe esta contraseña en tu iPhone</translation>
 <translation id="1712552549805331520"><ph name="URL" /> quiere almacenar datos de forma permanente en tu ordenador local</translation>
 <translation id="1717218214683051432">Sensores de movimiento</translation>
@@ -877,12 +871,10 @@
 <translation id="2288181517385084064">Cambiar al modo de cámara de vídeo</translation>
 <translation id="2288735659267887385">Configuración de accesibilidad</translation>
 <translation id="2289270750774289114">Preguntar cuando un sitio web quiera buscar dispositivos Bluetooth cercanos (recomendado)</translation>
-<translation id="2291093247613531009">¿Quieres permitir que el sitio web lea esta carpeta?</translation>
 <translation id="2292848386125228270">Inicia <ph name="PRODUCT_NAME" /> como un usuario normal. Si debes ejecutarlo como root para el desarrollo, vuelve a iniciarlo con el indicador "--no-sandbox".</translation>
 <translation id="2294358108254308676">¿Quieres instalar <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2297705863329999812">Buscar impresoras</translation>
 <translation id="2300383962156589922">Personalizar y controlar <ph name="APP_NAME" /></translation>
-<translation id="2300800387751317588">La sincronización se ha pausado debido a que se borran las cookies en el arranque. Cambia <ph name="COOKIE_SETTINGS_LINK" /> para continuar con la sincronización.</translation>
 <translation id="2301382460326681002">El directorio raíz de la extensión no es válido.</translation>
 <translation id="23030561267973084"><ph name="EXTENSION_NAME" /> ha solicitado permisos adicionales.</translation>
 <translation id="2307462900900812319">Configurar red</translation>
@@ -952,7 +944,6 @@
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
 <translation id="2413749388954403953">Cambiar la interfaz de usuario de marcadores</translation>
-<translation id="241639282915300771">Actualmente hay una restauración en curso de <ph name="CONTAINER_ID" /></translation>
 <translation id="241727068219398187">Se han cifrado los datos con tu contraseña de Google desde el
           <ph name="TIME" />. El cifrado no incluye los métodos de pago ni las direcciones de Google Pay.</translation>
 <translation id="2419706071571366386">Por motivos de seguridad, cierra la sesión cuando termines de utilizar tu ordenador.</translation>
@@ -984,7 +975,7 @@
 <translation id="2453021845418314664">Configuración avanzada de sincronización</translation>
 <translation id="2453860139492968684">Finalizar</translation>
 <translation id="2454247629720664989">Palabra clave</translation>
-<translation id="245650153866130664">Para actualizar un ticket automáticamente, marca la casilla "Recordar contraseña". La contraseña solo se almacenará en tu dispositivo.</translation>
+<translation id="245650153866130664">Para actualizar un ticket automáticamente, marca la casilla Recordar contraseña. La contraseña solo se almacenará en tu dispositivo.</translation>
 <translation id="245661998428026871">Se dejará de reproducir el vídeo en modo imagen en imagen.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> quiere copiar archivos de <ph name="VOLUME_NAME" />.</translation>
 <translation id="2458379781610688953">Actualizar cuenta, <ph name="EMAIL" /></translation>
@@ -1053,6 +1044,7 @@
 <translation id="2541002089857695151">¿Quieres optimizar el envío de pantalla completa?</translation>
 <translation id="2541706104884128042">Se ha definido una nueva hora de dormir</translation>
 <translation id="2544853746127077729">Certificado de autenticación rechazado por la red</translation>
+<translation id="2546283357679194313">Cookies y datos de sitios</translation>
 <translation id="2549985041256363841">Iniciar grabación</translation>
 <translation id="2550212893339833758">Memoria trasladada al espacio de reserva</translation>
 <translation id="2550596535588364872">¿Quieres permitir que <ph name="EXTENSION_NAME" /> abra <ph name="FILE_NAME" />?</translation>
@@ -1307,7 +1299,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
     Mensaje del servidor: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Añadir galería de archivos por directorio</translation>
 <translation id="2910318910161511225">Conéctate a una red y vuelve a intentarlo</translation>
-<translation id="2910518940971897750">Guardar en el archivo original</translation>
 <translation id="2913331724188855103">Permitir que los sitios guarden y lean datos de cookies (recomendado)</translation>
 <translation id="2915102088417824677">Ver registro de actividad</translation>
 <translation id="2915873080513663243">Búsqueda automática</translation>
@@ -1379,7 +1370,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3020183492814296499">Combinaciones de teclas</translation>
 <translation id="3020990233660977256">Número de serie: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021066826692793094">Mariposa</translation>
-<translation id="3021408157810018664">¿Quieres guardar los cambios en los archivos originales?</translation>
 <translation id="3021426244864538700">Pueden acceder a los datos de este sitio web</translation>
 <translation id="3021678814754966447">&amp;Ver fuente del marco</translation>
 <translation id="3022978424994383087">No te he entendido.</translation>
@@ -1544,7 +1534,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3303855915957856445">No se han encontrado resultados de búsqueda</translation>
 <translation id="3305389145870741612">El proceso de formateo puede tardar unos segundos. Espera...</translation>
 <translation id="3305661444342691068">Vista previa de PDF</translation>
-<translation id="3307871847038842490">Esta página tiene permiso para guardar cambios en archivos originales.</translation>
 <translation id="3308006649705061278">Unidad organizativa (OU)</translation>
 <translation id="3308116878371095290">Se ha evitado el uso de cookies en esta página.</translation>
 <translation id="3308134619352333507">Ocultar botón</translation>
@@ -1583,7 +1572,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3369624026883419694">Resolviendo host...</translation>
 <translation id="3371140690572404006">Dispositivo USB tipo C (puerto frontal derecho)</translation>
 <translation id="337286756654493126">Lee carpetas que abras en la aplicación</translation>
-<translation id="3378503599595235699">Conservar datos locales solo hasta que salgas del navegador</translation>
 <translation id="3378572629723696641">Esta extensión puede estar dañada.</translation>
 <translation id="337920581046691015">Se va a instalar <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3380365263193509176">Error desconocido</translation>
@@ -1831,7 +1819,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3722108462506185496">No se ha podido iniciar el servicio de la máquina virtual. Inténtalo de nuevo.</translation>
 <translation id="3725367690636977613">páginas</translation>
 <translation id="3726137731714254362">Las carpetas que quites de aquí dejarán de compartirse, pero los archivos no se eliminarán.</translation>
-<translation id="3726619284930744244"><ph name="ORIGIN" /> puede guardar los cambios que hagas directamente en los siguientes archivos.</translation>
 <translation id="3727148787322499904">Si cambias esta opción, todas las redes compartidas se verán afectadas</translation>
 <translation id="3727187387656390258">Inspeccionar ventana emergente</translation>
 <translation id="372722114124766626">Solo una vez</translation>
@@ -1972,7 +1959,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3909791450649380159">Cor&amp;tar</translation>
 <translation id="3911073280391218446"><ph name="USER_DISPLAY_NAME" /> (nombre utilizado en este dispositivo)</translation>
 <translation id="3911824782900911339">Página Nueva pestaña</translation>
-<translation id="3912379726609951682"><ph name="WINDOW_TITLE" />: tiene permiso para leer una carpeta del dispositivo</translation>
 <translation id="3915280005470252504">Búsqueda por voz</translation>
 <translation id="3916445069167113093">Este tipo de archivo puede dañar tu ordenador. ¿Quieres descargar <ph name="FILE_NAME" /> de todos modos?</translation>
 <translation id="3918972485393593704">Enviar informe detallado a Google</translation>
@@ -1993,7 +1979,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3937734102568271121">Traducir siempre del <ph name="LANGUAGE" /></translation>
 <translation id="3938128855950761626">Dispositivos del proveedor <ph name="VENDOR_ID" /></translation>
 <translation id="3940233957883229251">Habilitar repetición automática</translation>
-<translation id="394114064046181471">Este sitio web también puede leer todos los archivos de las siguientes carpetas.</translation>
 <translation id="3941357410013254652">ID de canal</translation>
 <translation id="3941565636838060942">Para ocultar el acceso a este programa, debes desinstalarlo utilizando la función <ph name="CONTROL_PANEL_APPLET_NAME" /> del Panel de control.
 
@@ -2005,7 +1990,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importado desde Internet Explorer</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
-<translation id="3950828138786918475">Esta pestaña tiene permiso para leer una carpeta de tu dispositivo.</translation>
 <translation id="3954354850384043518">En curso</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" />x<ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> Hz)</translation>
 <translation id="3954953195017194676">No has capturado ningún registro de eventos de WebRTC recientemente.</translation>
@@ -2096,7 +2080,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4087089424473531098">Se ha creado la extensión:
 
 <ph name="EXTENSION_FILE" /></translation>
-<translation id="4087470595660267445">Descarga aplicaciones y juegos de Google Play en tu Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="4088095054444612037">Aceptar la invitación para el grupo</translation>
 <translation id="4089235344645910861">Se ha guardado la configuración y se ha iniciado la sincronización.</translation>
 <translation id="4090103403438682346">Habilitar acceso verificado</translation>
@@ -2119,7 +2102,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4109135793348361820">Mover ventana a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Descarga completa: <ph name="FILE_NAME" />. Pulsa Mayús+F6 para desplazarte al área de la barra de descargas.</translation>
 <translation id="4110895898888439383">Navega por la Web con el modo de contraste alto</translation>
-<translation id="4111407695731262203">tus ajustes</translation>
 <translation id="4115002065223188701">La red está fuera del alcance</translation>
 <translation id="4115080753528843955">Algunos servicios de contenido utilizan identificadores únicos para autorizar el acceso a contenido protegido</translation>
 <translation id="4115378294792113321">Magenta</translation>
@@ -2163,7 +2145,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4194570336751258953">Habilitar la función Tocar para hacer clic</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="4195814663415092787">Abrir todo como estaba antes de cerrar</translation>
-<translation id="4197940474316761015"><ph name="ORIGIN" /> puede guardar los cambios que hagas directamente en los siguientes archivos. Este sitio web solo podrá guardar los cambios mientras esa pestaña esté abierta.</translation>
 <translation id="4198146608511578238">Solo tienes que mantener pulsado el icono del menú de aplicaciones para hablar con el Asistente de Google.</translation>
 <translation id="4200689466366162458">Palabras personalizadas</translation>
 <translation id="4200983522494130825">Nueva pes&amp;taña</translation>
@@ -2326,7 +2307,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4469477701382819144">Bloqueados en sitios web que muestran anuncios invasivos o engañosos</translation>
 <translation id="4470957202018033307">Preferencias de almacenamiento externo</translation>
 <translation id="447252321002412580">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
-<translation id="4472575034687746823">Empezar</translation>
 <translation id="4474155171896946103">Añadir todas las pestañas a marcadores...</translation>
 <translation id="4475552974751346499">Buscar descargas</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -2421,7 +2401,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4617001782309103936">Demasiado corto</translation>
 <translation id="4617270414136722281">Opciones de extensión</translation>
 <translation id="4619615317237390068">Pestañas de otros dispositivos</translation>
-<translation id="462021874527520979">Llamada de tus dispositivos</translation>
+<translation id="462021874527520979">Llamar desde tus dispositivos</translation>
 <translation id="4620809267248568679">Una extensión aplica esta opción.</translation>
 <translation id="4623189117674524348">El sistema no ha podido autorizar el acceso de este dispositivo a la API.</translation>
 <translation id="4625078469366263107">Habilitar aplicación</translation>
@@ -2486,7 +2466,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4724450788351008910">Afiliación modificada</translation>
 <translation id="4725511304875193254">Corgi</translation>
 <translation id="4726710629007580002">Se han recibido advertencias al intentar instalar esta extensión:</translation>
-<translation id="4726970474000335584"><ph name="ORIGIN" /> puede guardar los cambios que hagas directamente en los archivos de las siguientes carpetas.</translation>
 <translation id="4727847987444062305">Sesión de invitado administrada</translation>
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4733082559415072992"><ph name="URL" /> quiere utilizar la ubicación de tu dispositivo</translation>
@@ -2992,7 +2971,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5511379779384092781">Muy pequeño</translation>
 <translation id="5511823366942919280">¿Seguro que quieres configurar este dispositivo como un "Shark"?</translation>
 <translation id="5512653252560939721">El certificado de usuario debe estar respaldado por hardware.</translation>
-<translation id="5516183516694518900">Inicia sesión con tu cuenta de Google para acceder a los marcadores, las contraseñas, el historial y otros ajustes desde todos tus dispositivos.</translation>
 <translation id="551752069230578406">Se está añadiendo la impresora a tu cuenta. Esta acción puede tardar unos minutos...</translation>
 <translation id="5518219166343146486">Preguntar cuando un sitio web quiera ver el texto y las imágenes que se hayan copiado en el portapapeles</translation>
 <translation id="5518584115117143805">Certificado de cifrado de correo electrónico</translation>
@@ -3182,7 +3160,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5794414402486823030">Abrir siempre con el visor del sistema</translation>
 <translation id="5794786537412027208">Salir de todas las aplicaciones de Chrome</translation>
 <translation id="5797070761912323120">Es posible que Google utilice tu historial para personalizar la Búsqueda, los anuncios y otros servicios de Google</translation>
-<translation id="5797948578832622895"><ph name="ORIGIN" /> podrá leer todos los archivos de la siguiente carpeta. Este sitio web solo puede ver los cambios que se hagan en la carpeta mientras esa pestaña esté abierta.</translation>
 <translation id="579915268381781820">Se ha desconectado la llave de seguridad.</translation>
 <translation id="5799508265798272974">Máquina virtual de Linux: <ph name="LINUX_VM_NAME" /></translation>
 <translation id="5800020978570554460">El archivo de destino está truncado o se ha eliminado desde la última descarga.</translation>
@@ -3285,7 +3262,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="5941153596444580863">Añadir perfil...</translation>
 <translation id="5941343993301164315">Inicia sesión en <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimizar</translation>
-<translation id="5944977331672315316"><ph name="ORIGIN" /> puede leer todos los archivos de las siguientes carpetas. Este sitio web solo puede ver los cambios que se hagan en la carpeta mientras esa pestaña esté abierta.</translation>
 <translation id="5945188205370098537">Enviar datos de uso y diagnóstico. Contribuye a mejorar tu experiencia de Android enviando automáticamente a Google datos de diagnóstico, del dispositivo y del uso de las aplicaciones. Los datos servirán para aumentar la estabilidad de las aplicaciones y del sistema y realizar otras mejoras. Parte de los datos recogidos también ayudarán a las aplicaciones y los colaboradores de Google, como los desarrolladores de Android. Si la opción Actividad en la Web y en Aplicaciones Adicional está activada, es posible que estos datos se guarden en tu cuenta de Google. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">ID de informe <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">No se ha podido analizar el archivo</translation>
@@ -3581,7 +3557,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /> e <ph name="BEGIN_LINK1" />información del sistema<ph name="END_LINK1" /></translation>
 <translation id="6396988158856674517">Impedir que los sitios web usen los sensores de movimiento</translation>
 <translation id="6397094776139756010">Opciones de sincronización y personalización</translation>
-<translation id="6397449385184089588"><ph name="ORIGIN" /> podrá guardar los cambios que hagas directamente en los archivos de la siguiente carpeta. Este sitio web solo podrá guardar los cambios mientras esa pestaña esté abierta.</translation>
 <translation id="6398715114293939307">Quitar Google Play Store</translation>
 <translation id="6398765197997659313">Salir del modo de pantalla completa</translation>
 <translation id="6399774419735315745">Espía</translation>
@@ -3681,7 +3656,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" /> Habilita esta opción solo si tienes conciencia de los efectos de esta acción o si se te ha pedido que lo hagas, ya que la recogida de datos puede reducir el rendimiento.</translation>
 <translation id="6541638731489116978">Este sitio web no tiene permiso para acceder a los sensores de movimiento.</translation>
 <translation id="654233263479157500">Utilizar un servicio web para intentar resolver errores de navegación</translation>
-<translation id="6544215763872433504">El navegador web de Google a tu disposición</translation>
 <translation id="6545665334409411530">Frecuencia de repetición</translation>
 <translation id="6545834809683560467">Utilizar un servicio de predicción para completar las búsquedas y las URL introducidas en la barra de direcciones o en el cuadro de búsqueda del menú de aplicaciones</translation>
 <translation id="6545864417968258051">Búsqueda de dispositivos Bluetooth</translation>
@@ -3700,7 +3674,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6561726789132298588">intro</translation>
 <translation id="656293578423618167">La ruta o el nombre del archivo es demasiado largo. Especifica un nombre más corto o guarda el archivo en otra ubicación.</translation>
 <translation id="6567688344210276845">No se ha podido cargar el icono "<ph name="ICON" />" para la acción de la página.</translation>
-<translation id="6571979863037191371">Desconecta el teléfono del Chromebook. Dejarán de conectarse automáticamente.</translation>
 <translation id="657402800789773160">Volver a &amp;cargar la página</translation>
 <translation id="6577284282025554716">Descarga cancelada: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Cifrar las contraseñas sincronizadas con tu nombre de usuario y contraseña de Google</translation>
@@ -3796,6 +3769,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6723839937902243910">Batería</translation>
 <translation id="6725073593266469338">Servicio de UI</translation>
 <translation id="6725206449694821596">Protocolo de impresión en Internet (IPP)</translation>
+<translation id="672609503628871915">Consultar las novedades</translation>
 <translation id="67269783048918309">Enviar datos de uso y diagnóstico. Este dispositivo envía automáticamente a Google datos de diagnóstico, del dispositivo y del uso de las aplicaciones. Los datos no se usarán para identificar a tu hijo, sino para aumentar la estabilidad de las aplicaciones y del sistema y realizar otras mejoras. Parte de los datos recogidos también ayudarán a las aplicaciones y los colaboradores de Google, como los desarrolladores de Android. El propietario ha aplicado este <ph name="BEGIN_LINK1" />ajuste<ph name="END_LINK1" />. Si la opción Actividad en la Web y en Aplicaciones Adicional está activada, es posible que estos datos se guarden en la cuenta de Google de tu hijo. <ph name="BEGIN_LINK2" />Más información<ph name="END_LINK2" /></translation>
 <translation id="6727969043791803658">Conectado, <ph name="BATTERY_PERCENTAGE" /> % de batería</translation>
 <translation id="6732801395666424405">No se han cargado los certificados</translation>
@@ -3937,7 +3911,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6951153907720526401">Controladores de pago</translation>
 <translation id="6951663584153258142">Tu organización pide que actualices este dispositivo</translation>
 <translation id="6953878494808481632">Información relacionada</translation>
-<translation id="6953916367503892689">{0,plural, =1{Archivo: <ph name="FILES" />}other{Archivos: <ph name="FILES" />}}</translation>
 <translation id="6955446738988643816">Inspeccionar ventana emergente</translation>
 <translation id="6957044667612803194">Esta llave de seguridad no admite números PIN.</translation>
 <translation id="6957231940976260713">Nombre de servicio</translation>
@@ -4110,6 +4083,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7200083590239651963">Seleccionar configuración</translation>
 <translation id="720110658997053098">Mantener este dispositivo en modo kiosco de forma permanente</translation>
 <translation id="7201118060536064622">Se ha eliminado "<ph name="DELETED_ITEM_NAME" />"</translation>
+<translation id="7201420661433230412">Ver archivos</translation>
 <translation id="7206693748120342859">Descargando <ph name="PLUGIN_NAME" />...</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Salir de la página}other{Salir de las páginas}}</translation>
 <translation id="7207631048330366454">Buscar aplicaciones</translation>
@@ -4220,7 +4194,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7360183604634508679">Menú de marcadores</translation>
 <translation id="7360233684753165754"><ph name="PAGE_NUMBER" /> páginas a <ph name="PRINTER_NAME" /></translation>
 <translation id="7361297102842600584">Haz clic con el botón derecho para ejecutar <ph name="PLUGIN_NAME" /></translation>
-<translation id="7361537270840348817">Desconecta el teléfono del Chromebook</translation>
 <translation id="7363117941401515667">Actualizado hace <ph name="HOURS" /> horas</translation>
 <translation id="7363260028279024205">{NUM_TABS,plural, =1{Fijar pestaña}other{Fijar pestañas}}</translation>
 <translation id="7364796246159120393">Seleccionar archivo</translation>
@@ -4257,14 +4230,13 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7415454883318062233">Configuración completada</translation>
 <translation id="7416362041876611053">Error de red desconocido</translation>
 <translation id="741906494724992817">Esta aplicación no requiere permisos especiales.</translation>
-<translation id="7419433794191666278">Conecta tu Chromebook con el teléfono. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="742130257665691897">Se han eliminado marcadores</translation>
 <translation id="7421925624202799674">&amp;Ver código fuente de la página</translation>
 <translation id="7422192691352527311">Preferencias...</translation>
 <translation id="7423098979219808738">Preguntar antes</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">Página en segundo plano: <ph name="BACKGROUND_PAGE_URL" /></translation>
-<translation id="7427798576651127129">Llamada de <ph name="DEVICE_NAME" /></translation>
+<translation id="7427798576651127129">Llamar desde <ph name="DEVICE_NAME" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Abrir todas en una &amp;nueva ventana}=1{Abrir en una &amp;nueva ventana}other{Abrir (#) en una &amp;nueva ventana}}</translation>
 <translation id="7434509671034404296">Opciones para desarrolladores</translation>
 <translation id="7436921188514130341">¡Vaya! No se ha podido cambiar el nombre.</translation>
@@ -4446,7 +4418,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7707922173985738739">Se utilizarán datos móviles</translation>
 <translation id="7709152031285164251">Error: <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Enviar...</translation>
-<translation id="7712740978240882272">Desbloquea tu Chromebook con el teléfono. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="7712836429117959503">Extensión desconocida con ID <ph name="EXTENSION_ID" /></translation>
 <translation id="7714307061282548371">Se han habilitado las cookies de <ph name="DOMAIN" /></translation>
 <translation id="7714464543167945231">Certificado</translation>
@@ -4471,7 +4442,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Ajusta los extremos de la pantalla</translation>
 <translation id="7760004034676677601">¿Es esta la página de inicio que esperabas?</translation>
-<translation id="7761380698973548146">Llamada de tus dispositivos</translation>
+<translation id="7761380698973548146">Llamar desde tus dispositivos</translation>
 <translation id="7764225426217299476">Añadir dirección</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> desde <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Mover</translation>
@@ -4656,7 +4627,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7985283639530788531">¿Quieres utilizar Touch ID con <ph name="APP_NAME" /> en el modo de incógnito?</translation>
 <translation id="7986295104073916105">Leer y cambiar la configuración de contraseñas guardadas</translation>
 <translation id="7987814697832569482">Conectar siempre a través de esta VPN</translation>
-<translation id="798835209536175951">Envía y recibe mensajes de texto con tu Chromebook. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="7988355189918024273">Habilita las funciones de accesibilidad</translation>
 <translation id="7991296728590311172">Ajustes de accesibilidad mediante interruptores</translation>
 <translation id="7994702968232966508">Método EAP</translation>
@@ -4712,7 +4682,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8054517699425078995">Este tipo de archivo puede dañar tu dispositivo. ¿Quieres descargar <ph name="FILE_NAME" /> de todas formas?</translation>
 <translation id="8054563304616131773">Escribe una dirección de correo electrónico válida</translation>
 <translation id="8054921503121346576">Teclado USB conectado</translation>
-<translation id="805836796915198592"><ph name="WINDOW_TITLE" />: tiene permiso para guardar cambios en archivos originales</translation>
 <translation id="8058655154417507695">Año de caducidad</translation>
 <translation id="8059417245945632445">&amp;Inspeccionar dispositivos</translation>
 <translation id="8063235345342641131">Avatar verde predeterminado</translation>
@@ -4778,7 +4747,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8168435359814927499">Contenido</translation>
 <translation id="8174047975335711832">Información sobre el dispositivo</translation>
 <translation id="8174876712881364124">Crear copia de seguridad en Google Drive. Cambia de dispositivo o restaura datos fácilmente en cualquier momento. Esta copia de seguridad incluye datos de las aplicaciones. Los archivos de las copias de seguridad se suben a Google y se cifran con la contraseña de la cuenta de Google de tu hijo. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
-<translation id="8176238094383414357">Este sitio web solo puede guardar y leer cambios mientras la pestaña esté abierta.</translation>
 <translation id="8177196903785554304">Información de la red</translation>
 <translation id="8178208419593390223">Gestiona las cuentas de Google que hayas usado para iniciar sesión. Los sitios web, las aplicaciones y las extensiones de Chrome y Google Play pueden usar estas cuentas para personalizar tu experiencia si has concedido los permisos correspondientes.</translation>
 <translation id="8179976553408161302">Intro</translation>
@@ -4931,7 +4899,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Preguntar antes (recomendado)</translation>
 <translation id="8418445294933751433">Mo&amp;strar como pestaña</translation>
-<translation id="8418905021510211421">La página tiene permiso para leer una carpeta de tu dispositivo.</translation>
 <translation id="8419098111404128271">Resultados de búsqueda de "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8419368276599091549">Te damos la bienvenida a tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="8425213833346101688">Cambiar</translation>
@@ -5459,7 +5426,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9214520840402538427">¡Vaya! Se ha agotado el tiempo de la inicialización de los atributos de tiempo de instalación. Ponte en contacto con el representante del servicio de asistencia.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" añadida</translation>
-<translation id="9216712190298404438"><ph name="ORIGIN" /> podrá guardar los cambios que hagas directamente en el siguiente archivo. Este sitio web solo podrá guardar los cambios mientras esa pestaña esté abierta.</translation>
 <translation id="9218430445555521422">Elegir como predeterminado</translation>
 <translation id="9219103736887031265">Imágenes</translation>
 <translation id="9220525904950070496">Quitar cuenta</translation>

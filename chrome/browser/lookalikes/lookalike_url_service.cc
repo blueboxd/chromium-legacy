@@ -134,28 +134,29 @@ LookalikeUrlService* LookalikeUrlService::Get(Profile* profile) {
   return LookalikeUrlServiceFactory::GetForProfile(profile);
 }
 
-bool LookalikeUrlService::UpdateEngagedSites(EngagedSitesCallback callback) {
-  const base::Time now = clock_->Now();
-
+bool LookalikeUrlService::EngagedSitesNeedUpdating() {
   if (!last_engagement_fetch_time_.is_null()) {
-    const base::TimeDelta elapsed = now - last_engagement_fetch_time_;
+    const base::TimeDelta elapsed = clock_->Now() - last_engagement_fetch_time_;
     if (elapsed <
         base::TimeDelta::FromSeconds(kEngagedSiteUpdateIntervalInSeconds)) {
       return false;
     }
   }
+  return true;
+}
 
+void LookalikeUrlService::ForceUpdateEngagedSites(
+    EngagedSitesCallback callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
-          &SiteEngagementService::GetAllDetailsInBackground, now,
+          &SiteEngagementService::GetAllDetailsInBackground, clock_->Now(),
           base::WrapRefCounted(
               HostContentSettingsMapFactory::GetForProfile(profile_))),
       base::BindOnce(&LookalikeUrlService::OnFetchEngagedSites,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
-  return true;
 }
 
 const std::vector<DomainInfo> LookalikeUrlService::GetLatestEngagedSites()

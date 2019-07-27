@@ -142,8 +142,7 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
   animations.swap(waiting_for_compositor_animation_start_);
 
   for (auto animation : animations) {
-    if (animation->startTime() ||
-        animation->PlayStateInternal() != Animation::kPending ||
+    if (animation->startTime() || !animation->NeedsCompositorTimeSync() ||
         !animation->timeline() || !animation->timeline()->IsActive()) {
       // Already started or no longer relevant.
       continue;

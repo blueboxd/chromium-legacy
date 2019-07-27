@@ -48,9 +48,6 @@ namespace extensions {
 
 namespace {
 
-// Whether the browser action is visible in the toolbar.
-const char kBrowserActionVisible[] = "browser_action_visible";
-
 // Errors.
 const char kNoExtensionActionError[] =
     "This extension has no action specified.";
@@ -111,29 +108,6 @@ void ExtensionActionAPI::AddObserver(Observer* observer) {
 
 void ExtensionActionAPI::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-bool ExtensionActionAPI::GetBrowserActionVisibility(
-    const std::string& extension_id) {
-  bool visible = false;
-  ExtensionPrefs* prefs = GetExtensionPrefs();
-  if (!prefs || !prefs->ReadPrefAsBoolean(extension_id,
-                                          kBrowserActionVisible,
-                                          &visible)) {
-    return true;
-  }
-  return visible;
-}
-
-void ExtensionActionAPI::SetBrowserActionVisibility(
-    const std::string& extension_id,
-    bool visible) {
-  if (GetBrowserActionVisibility(extension_id) == visible)
-    return;
-
-  GetExtensionPrefs()->UpdateExtensionPref(
-      extension_id, kBrowserActionVisible,
-      std::make_unique<base::Value>(visible));
 }
 
 bool ExtensionActionAPI::ShowExtensionActionPopup(

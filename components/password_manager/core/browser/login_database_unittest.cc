@@ -283,7 +283,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
-  EXPECT_TRUE(db().IsEmpty());
 
   EXPECT_EQ(db().GetAllLogins(&key_to_form_map), FormRetrievalResult::kSuccess);
   EXPECT_EQ(0U, key_to_form_map.size());
@@ -300,7 +299,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
-  EXPECT_FALSE(db().IsEmpty());
   result.clear();
 
   EXPECT_EQ(db().GetAllLogins(&key_to_form_map), FormRetrievalResult::kSuccess);
@@ -393,7 +391,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_EQ(2, changes[0].primary_key());
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
-  EXPECT_TRUE(db().IsEmpty());
 }
 
 TEST_F(LoginDatabaseTest, AddLoginReturnsPrimaryKey) {

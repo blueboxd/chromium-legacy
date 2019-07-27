@@ -16,7 +16,6 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/i18n/time_formatting.h"
 #include "base/rand_util.h"
@@ -150,8 +149,7 @@ class PersonalDataManagerTestBase {
   void SetUpTest() {
     OSCryptMocker::SetUp();
     prefs_ = test::PrefServiceForTesting();
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
+    base::FilePath path(WebDatabase::kInMemoryPath);
     profile_web_database_ =
         new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                base::ThreadTaskRunnerHandle::Get());
@@ -299,9 +297,6 @@ class PersonalDataManagerTestBase {
     run_loop.Run();
   }
 
-  // The temporary directory should be deleted at the end to ensure that
-  // files are not used anymore and deletion succeeds.
-  base::ScopedTempDir temp_dir_;
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;

@@ -2656,6 +2656,67 @@ TEST_F(DiskCacheEntryTest, KeySanityCheck) {
   DisableIntegrityCheck();
 }
 
+TEST_F(DiskCacheEntryTest, KeySanityCheck2) {
+  UseCurrentThread();
+  InitCache();
+  std::string key("the first key");
+  disk_cache::Entry* entry;
+  ASSERT_THAT(CreateEntry(key, &entry), IsOk());
+
+  disk_cache::EntryImpl* entry_impl =
+      static_cast<disk_cache::EntryImpl*>(entry);
+  disk_cache::EntryStore* store = entry_impl->entry()->Data();
+
+  // Fill in the rest of inline key store with non-nulls. Unlike in
+  // KeySanityCheck, this does not change the length to identify it as
+  // stored under |long_key|.
+  memset(store->key + key.size(), 'k', sizeof(store->key) - key.size());
+  entry_impl->entry()->set_modified();
+  entry->Close();
+
+  // We have a corrupt entry. Now reload it. We should NOT read beyond the
+  // allocated buffer here.
+  ASSERT_NE(net::OK, OpenEntry(key, &entry));
+  DisableIntegrityCheck();
+}
+
+TEST_F(DiskCacheEntryTest, KeySanityCheck3) {
+  const size_t kVeryLong = 40 * 1024;
+  UseCurrentThread();
+  InitCache();
+  std::string key(kVeryLong, 'a');
+  disk_cache::Entry* entry;
+  ASSERT_THAT(CreateEntry(key, &entry), IsOk());
+
+  disk_cache::EntryImpl* entry_impl =
+      static_cast<disk_cache::EntryImpl*>(entry);
+  disk_cache::EntryStore* store = entry_impl->entry()->Data();
+
+  // Test meaningful when using long keys; and also want this to be
+  // an external file to avoid needing to duplicate offset math here.
+  disk_cache::Addr key_addr(store->long_key);
+  ASSERT_TRUE(key_addr.is_initialized());
+  ASSERT_TRUE(key_addr.is_separate_file());
+
+  // Close the entry before messing up its files.
+  entry->Close();
+
+  // Mess up the terminating null in the external key file.
+  auto key_file =
+      base::MakeRefCounted<disk_cache::File>(true /* want sync ops*/);
+  ASSERT_TRUE(key_file->Init(cache_impl_->GetFileName(key_addr)));
+
+  ASSERT_TRUE(key_file->Write("b", 1u, kVeryLong));
+  key_file = nullptr;
+
+  // This case gets graceful recovery.
+  ASSERT_THAT(OpenEntry(key, &entry), IsOk());
+
+  // Make sure the key object isn't messed up.
+  EXPECT_EQ(kVeryLong, strlen(entry->GetKey().data()));
+  entry->Close();
+}
+
 TEST_F(DiskCacheEntryTest, SimpleCacheInternalAsyncIO) {
   SetSimpleCacheMode();
   InitCache();

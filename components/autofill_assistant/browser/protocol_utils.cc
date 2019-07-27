@@ -47,6 +47,12 @@ void FillClientContext(const ClientContextProto& client_context,
   if (!experiment_ids.empty()) {
     proto->set_experiment_ids(experiment_ids);
   }
+  if (trigger_context.is_cct()) {
+    proto->set_is_cct(true);
+  }
+  if (trigger_context.is_direct_action()) {
+    proto->set_is_direct_action(true);
+  }
 }
 
 }  // namespace

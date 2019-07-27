@@ -37,9 +37,7 @@ void OverlayWindowAndroid::OnActivityStart(
   java_ref_ = JavaObjectWeakGlobalRef(env, obj);
 }
 
-void OverlayWindowAndroid::OnActivityDestroy(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+void OverlayWindowAndroid::OnActivityDestroy(JNIEnv* env) {
   java_ref_.reset();
   controller_->CloseAndFocusInitiator();
   controller_->OnWindowDestroyed();

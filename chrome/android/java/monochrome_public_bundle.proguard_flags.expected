@@ -715,10 +715,3 @@
     @com.google.vr.dynamite.client.UsedByReflection *;
 }
 
-
-################################################################################
-# Dynamically generated from build/android/gyp/proguard.py
-################################################################################
--assumenosideeffects class android.os.Build$VERSION {
-    public static final int SDK_INT return 24..9999;
-}

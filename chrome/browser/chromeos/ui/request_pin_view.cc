@@ -73,7 +73,7 @@ bool RequestPinView::Accept() {
 
   if (!textfield_->GetEnabled())
     return true;
-  DCHECK(!textfield_->text().empty());
+  DCHECK(!textfield_->GetText().empty());
 
   error_label_->SetVisible(true);
   error_label_->SetText(
@@ -84,7 +84,7 @@ bool RequestPinView::Accept() {
   // The |textfield_| and OK button become disabled, but the user still can
   // close the dialog.
   SetAcceptInput(false);
-  std::move(callback_).Run(base::UTF16ToUTF8(textfield_->text()));
+  std::move(callback_).Run(base::UTF16ToUTF8(textfield_->GetText()));
   DialogModelChanged();
   delegate_->OnPinDialogInput();
 
@@ -103,7 +103,7 @@ bool RequestPinView::IsDialogButtonEnabled(ui::DialogButton button) const {
       // dialog.
       if (!textfield_->GetEnabled())
         return true;
-      return textfield_->text().size() > 0;
+      return textfield_->GetText().size() > 0;
     case ui::DialogButton::DIALOG_BUTTON_NONE:
       return true;
   }

@@ -86,7 +86,7 @@ function as64Bit(num) {
 /**
  * Sets the display option of all the elements in HtmlCollection to the value
  * passed.
- * @param {!NodeList<!Element>} collection Collection of Elements.
+ * @param {!HTMLCollection<!Element>} collection Collection of Elements.
  */
 function setDisplayStyle(collection, display_value) {
   for (const el of collection) {

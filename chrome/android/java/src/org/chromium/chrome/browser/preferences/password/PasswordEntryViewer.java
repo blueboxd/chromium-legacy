@@ -224,7 +224,7 @@ public class PasswordEntryViewer extends Fragment {
         if (id == R.id.action_edit_saved_password) {
             Bundle fragmentArgs = new Bundle();
             fragmentArgs.putInt(SavePasswordsPreferences.PASSWORD_LIST_ID, mID);
-            PreferencesLauncher.launchSettingsPageCompat(
+            PreferencesLauncher.launchSettingsPage(
                     getActivity(), PasswordEntryEditor.class, fragmentArgs);
             return true;
         }

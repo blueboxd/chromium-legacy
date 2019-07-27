@@ -232,6 +232,10 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
                                              bool visible) override {}
 
+  void RequestBeginMainFrameNotExpected(LocalFrame& frame,
+                                        bool request) override {}
+  int GetLayerTreeId(LocalFrame& frame) override { return 0; }
+
   void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
 
   void InstallSupplements(LocalFrame&) override {}

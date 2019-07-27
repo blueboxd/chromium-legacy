@@ -214,13 +214,18 @@ TEST_F(MojoVideoEncodeAcceleratorTest, EncodeOneFrame) {
   }
 
   {
-    const scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrame(
+    base::UnsafeSharedMemoryRegion shmem =
+        base::UnsafeSharedMemoryRegion::Create(
+            VideoFrame::AllocationSize(PIXEL_FORMAT_I420, kInputVisibleSize) *
+            2);
+    ASSERT_TRUE(shmem.IsValid());
+    base::WritableSharedMemoryMapping mapping = shmem.Map();
+    ASSERT_TRUE(mapping.IsValid());
+    const scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalData(
         PIXEL_FORMAT_I420, kInputVisibleSize, gfx::Rect(kInputVisibleSize),
-        kInputVisibleSize, base::TimeDelta());
-    base::SharedMemory shmem;
-    shmem.CreateAnonymous(
-        VideoFrame::AllocationSize(PIXEL_FORMAT_I420, kInputVisibleSize) * 2);
-    video_frame->AddSharedMemoryHandle(shmem.handle());
+        kInputVisibleSize, mapping.GetMemoryAsSpan<uint8_t>().data(),
+        mapping.size(), base::TimeDelta());
+    video_frame->BackWithSharedMemory(&shmem);
     const bool is_keyframe = true;
 
     // The remote end of the mojo Pipe doesn't receive |video_frame| itself.

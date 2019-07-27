@@ -965,6 +965,27 @@ void ChromeClientImpl::FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
     client->FallbackCursorModeSetCursorVisibility(visible);
 }
 
+void ChromeClientImpl::RequestBeginMainFrameNotExpected(LocalFrame& frame,
+                                                        bool request) {
+  // WebWidgetClient can be null when not compositing, and this behaviour only
+  // applies when compositing is enabled.
+  if (!web_view_->does_composite())
+    return;
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
+  client->RequestBeginMainFrameNotExpected(request);
+}
+
+int ChromeClientImpl::GetLayerTreeId(LocalFrame& frame) {
+  // WebWidgetClient can be null when not compositing, and this method is only
+  // useful when compositing is enabled.
+  if (!web_view_->does_composite())
+    return 0;
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
+  return client->GetLayerTreeId();
+}
+
 void ChromeClientImpl::SetEventListenerProperties(
     LocalFrame* frame,
     cc::EventListenerClass event_class,

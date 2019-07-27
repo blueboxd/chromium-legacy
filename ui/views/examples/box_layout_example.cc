@@ -87,11 +87,11 @@ void BoxLayoutExample::ContentsChanged(Textfield* textfield,
     UpdateLayoutManager();
   } else if (textfield == default_flex_) {
     int default_flex;
-    base::StringToInt(default_flex_->text(), &default_flex);
+    base::StringToInt(default_flex_->GetText(), &default_flex);
     layout_->SetDefaultFlex(default_flex);
   } else if (textfield == min_cross_axis_size_) {
     int min_cross_size;
-    base::StringToInt(min_cross_axis_size_->text(), &min_cross_size);
+    base::StringToInt(min_cross_axis_size_->GetText(), &min_cross_size);
     layout_->set_minimum_cross_axis_size(min_cross_size);
   } else if (textfield == border_insets_[0] || textfield == border_insets_[1] ||
              textfield == border_insets_[2] || textfield == border_insets_[3]) {
@@ -108,9 +108,9 @@ void BoxLayoutExample::UpdateLayoutManager() {
   int child_spacing;
   int default_flex;
   int min_cross_size;
-  base::StringToInt(between_child_spacing_->text(), &child_spacing);
-  base::StringToInt(default_flex_->text(), &default_flex);
-  base::StringToInt(min_cross_axis_size_->text(), &min_cross_size);
+  base::StringToInt(between_child_spacing_->GetText(), &child_spacing);
+  base::StringToInt(default_flex_->GetText(), &default_flex);
+  base::StringToInt(min_cross_axis_size_->GetText(), &min_cross_size);
   auto layout = std::make_unique<BoxLayout>(
       orientation_->GetSelectedIndex() == 0
           ? BoxLayout::Orientation::kHorizontal

@@ -81,8 +81,8 @@ source_set("page_viewport_state") {
 source_set("web_view_internal_creation_util") {
   deps = [
     "//base",
+    "//ios/web/common:user_agent",
     "//ios/web/public",
-    "//ios/web/public:user_agent",
     "//ios/web/web_state/ui:crw_context_menu_controller",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
   ]

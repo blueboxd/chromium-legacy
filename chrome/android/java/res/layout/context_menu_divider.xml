@@ -6,9 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingTop="@dimen/revamped_context_menu_divider_padding"
-    android:paddingBottom="@dimen/revamped_context_menu_divider_padding">
-
-
+    android:paddingBottom="@dimen/revamped_context_menu_divider_padding"
+    android:importantForAccessibility="no">
     <!-- TODO(sinansahin): divider_preference can be renamed to horizontal_divider -->
     <include layout="@layout/divider_preference" />
 </FrameLayout>

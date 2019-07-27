@@ -104,7 +104,7 @@ class PaymentRequestShippingAddressEditorTest
     if (!textfield)
       return false;
     if (textfield_text)
-      *textfield_text = textfield->text();
+      *textfield_text = textfield->GetText();
     return true;
   }
 
@@ -416,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
       if (textfield) {
         // The zip field will be populated after switching to a country for
         // which the profile has a zip set.
-        EXPECT_TRUE(textfield->text().empty() ||
+        EXPECT_TRUE(textfield->GetText().empty() ||
                     type == autofill::ADDRESS_HOME_ZIP)
             << type;
         SetFieldTestValue(type);
@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
       static_cast<views::Textfield*>(dialog_view()->GetViewByID(
           EditorViewController::GetInputFieldViewId(autofill::NAME_FULL)));
   DCHECK(textfield);
-  EXPECT_TRUE(textfield->text().empty());
+  EXPECT_TRUE(textfield->GetText().empty());
   // Field is not invalid because there is nothing in it.
   EXPECT_FALSE(textfield->invalid());
   EXPECT_TRUE(textfield->HasFocus());
@@ -647,7 +647,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
       static_cast<views::Textfield*>(dialog_view()->GetViewByID(
           EditorViewController::GetInputFieldViewId(autofill::NAME_FULL)));
   DCHECK(textfield);
-  EXPECT_FALSE(textfield->text().empty());
+  EXPECT_FALSE(textfield->GetText().empty());
   EXPECT_FALSE(textfield->invalid());
   EXPECT_FALSE(textfield->HasFocus());
 

@@ -312,7 +312,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 #ifndef NDEBUG
 using WeakDocumentSet = blink::HeapHashSet<blink::WeakMember<blink::Document>>;
@@ -5749,6 +5748,10 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
 }
 
 bool Document::CookiesEnabled() const {
+  // Compatible behavior in contexts that don't have cookie access.
+  if (!GetSecurityOrigin()->CanAccessCookies())
+    return true;
+
   if (!cookie_jar_)
     return false;
 
@@ -7906,6 +7909,14 @@ mojom::blink::DocumentInterfaceBroker* Document::GetDocumentInterfaceBroker() {
     return nullptr;
 
   return &GetFrame()->GetDocumentInterfaceBroker();
+}
+
+const BrowserInterfaceBrokerProxy* Document::GetBrowserInterfaceBrokerProxy()
+    const {
+  if (!GetFrame())
+    return nullptr;
+
+  return GetFrame()->GetBrowserInterfaceBrokerProxy();
 }
 
 DocumentResourceCoordinator* Document::GetResourceCoordinator() {

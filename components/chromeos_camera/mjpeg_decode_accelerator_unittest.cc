@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -273,18 +274,20 @@ class JpegClient : public MjpegDecodeAccelerator::Client {
   base::UnsafeSharedMemoryRegion in_shm_;
   base::WritableSharedMemoryMapping in_shm_mapping_;
   // Mapped memory of output buffer from hardware decoder.
-  std::unique_ptr<base::SharedMemory> hw_out_shm_;
+  base::UnsafeSharedMemoryRegion hw_out_region_;
+  base::WritableSharedMemoryMapping hw_out_mapping_;
   // Video frame corresponding to the output of the hardware decoder.
   scoped_refptr<media::VideoFrame> hw_out_frame_;
   // Mapped memory of output buffer from software decoder.
-  std::unique_ptr<base::SharedMemory> sw_out_shm_;
+  base::UnsafeSharedMemoryRegion sw_out_shm_;
+  base::WritableSharedMemoryMapping sw_out_mapping_;
   // Video frame corresponding to the output of the software decoder.
   scoped_refptr<media::VideoFrame> sw_out_frame_;
 
   // This should be the first member to get destroyed because |decoder_|
   // potentially uses other members in the JpegClient instance. For example,
-  // as decode tasks finish in a new thread spawned by |decoder_|, |hw_out_shm_|
-  // can be accessed.
+  // as decode tasks finish in a new thread spawned by |decoder_|,
+  // |hw_out_frame_| can be accessed.
   std::unique_ptr<MjpegDecodeAccelerator> decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(JpegClient);
@@ -374,19 +377,23 @@ void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
   }
   memcpy(in_shm_mapping_.memory(), image_file->data_str.data(), input_size);
 
-  if (!hw_out_shm_.get() ||
-      image_file->output_size > hw_out_shm_->mapped_size()) {
-    hw_out_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(hw_out_shm_->CreateAndMapAnonymous(image_file->output_size));
+  if (!hw_out_region_.IsValid() ||
+      image_file->output_size > hw_out_mapping_.size()) {
+    hw_out_region_ =
+        base::UnsafeSharedMemoryRegion::Create(image_file->output_size);
+    hw_out_mapping_ = hw_out_region_.Map();
   }
-  memset(hw_out_shm_->memory(), 0, image_file->output_size);
+  memset(hw_out_mapping_.memory(), 0, image_file->output_size);
 
-  if (!sw_out_shm_.get() ||
-      image_file->output_size > sw_out_shm_->mapped_size()) {
-    sw_out_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(sw_out_shm_->CreateAndMapAnonymous(image_file->output_size));
+  if (!sw_out_mapping_.IsValid() ||
+      image_file->output_size > sw_out_mapping_.size()) {
+    sw_out_shm_ =
+        base::UnsafeSharedMemoryRegion::Create(image_file->output_size);
+    LOG_ASSERT(sw_out_shm_.IsValid());
+    sw_out_mapping_ = sw_out_shm_.Map();
+    LOG_ASSERT(sw_out_mapping_.IsValid());
   }
-  memset(sw_out_shm_->memory(), 0, image_file->output_size);
+  memset(sw_out_mapping_.memory(), 0, image_file->output_size);
 }
 
 void JpegClient::SetState(ClientState new_state) {
@@ -487,11 +494,12 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
   media::BitstreamBuffer bitstream_buffer(
       bitstream_buffer_id, std::move(dup_region), image_file->data_str.size());
 
-  hw_out_frame_ = media::VideoFrame::WrapExternalSharedMemory(
+  hw_out_frame_ = media::VideoFrame::WrapExternalData(
       media::PIXEL_FORMAT_I420, image_file->coded_size,
       gfx::Rect(image_file->visible_size), image_file->visible_size,
-      static_cast<uint8_t*>(hw_out_shm_->memory()), image_file->output_size,
-      hw_out_shm_->handle(), 0, base::TimeDelta());
+      hw_out_mapping_.GetMemoryAsSpan<uint8_t>().data(),
+      image_file->output_size, base::TimeDelta());
+  hw_out_frame_->BackWithSharedMemory(&hw_out_region_);
   LOG_ASSERT(hw_out_frame_.get());
 
   decoder_->Decode(std::move(bitstream_buffer), hw_out_frame_);
@@ -499,13 +507,13 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id,
 
 bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
   ParsedJpegImage* image_file = test_image_files_[bitstream_buffer_id];
-  sw_out_frame_ = media::VideoFrame::WrapExternalSharedMemory(
+  LOG_ASSERT(sw_out_shm_.IsValid() && sw_out_mapping_.IsValid());
+  sw_out_frame_ = media::VideoFrame::WrapExternalData(
       media::PIXEL_FORMAT_I420, image_file->coded_size,
       gfx::Rect(image_file->visible_size), image_file->visible_size,
-      static_cast<uint8_t*>(sw_out_shm_->memory()), image_file->output_size,
-      sw_out_shm_->handle(), 0, base::TimeDelta());
-  LOG_ASSERT(sw_out_shm_.get());
-
+      sw_out_mapping_.GetMemoryAsSpan<uint8_t>().data(),
+      image_file->output_size, base::TimeDelta());
+  sw_out_frame_->BackWithSharedMemory(&sw_out_shm_);
   if (libyuv::ConvertToI420(static_cast<uint8_t*>(in_shm_mapping_.memory()),
                             image_file->data_str.size(),
                             sw_out_frame_->data(media::VideoFrame::kYPlane),

@@ -2384,6 +2384,7 @@ void Element::DetachLayoutTree(bool performing_reattach) {
   }
 
   SetNeedsResizeObserverUpdate();
+  GetDocument().GetStyleEngine().ClearNeedsWhitespaceReattachmentFor(this);
 }
 
 scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(

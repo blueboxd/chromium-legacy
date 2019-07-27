@@ -3,40 +3,40 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v7.preference.PreferenceScreen
+<PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <android.support.v7.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="accounts_category"
         android:title="@string/account_management_title"/>
 
-    <android.support.v7.preference.Preference
+    <Preference
         android:layout="@layout/divider_preference"/>
 
-    <android.support.v7.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="parental_settings"
         android:title="@string/account_management_parental_settings"/>
 
-    <org.chromium.chrome.browser.preferences.TextMessagePreferenceCompat
+    <org.chromium.chrome.browser.preferences.TextMessagePreference
         android:key="parent_accounts"
         tools:summary="@string/account_management_two_parent_names"/>
 
-    <android.support.v7.preference.Preference
+    <Preference
         android:key="child_content"
         android:selectable="false"
         android:title="@string/account_management_child_content_title"/>
 
-    <android.support.v7.preference.Preference
+    <Preference
         android:key="child_content_divider"
         android:layout="@layout/divider_preference"/>
 
-    <android.support.v7.preference.Preference
+    <Preference
         android:key="sign_out"
         android:title="@string/account_management_sign_out"/>
 
-    <android.support.v7.preference.Preference
+    <Preference
         android:key="sign_out_divider"
         android:layout="@layout/divider_preference"/>
 
-</android.support.v7.preference.PreferenceScreen>
+</PreferenceScreen>

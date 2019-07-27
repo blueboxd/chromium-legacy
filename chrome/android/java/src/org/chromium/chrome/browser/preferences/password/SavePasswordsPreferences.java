@@ -26,13 +26,13 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat;
-import org.chromium.chrome.browser.preferences.ChromeBasePreferenceCompat;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
+import org.chromium.chrome.browser.preferences.ChromeBasePreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchUtils;
-import org.chromium.chrome.browser.preferences.TextMessagePreferenceCompat;
+import org.chromium.chrome.browser.preferences.TextMessagePreference;
 import org.chromium.ui.text.SpanApplier;
 
 import java.util.Locale;
@@ -82,9 +82,9 @@ public class SavePasswordsPreferences
 
     private String mSearchQuery;
     private Preference mLinkPref;
-    private ChromeSwitchPreferenceCompat mSavePasswordsSwitch;
-    private ChromeBaseCheckBoxPreferenceCompat mAutoSignInSwitch;
-    private TextMessagePreferenceCompat mEmptyView;
+    private ChromeSwitchPreference mSavePasswordsSwitch;
+    private ChromeBaseCheckBoxPreference mAutoSignInSwitch;
+    private TextMessagePreference mEmptyView;
     private boolean mSearchRecorded;
     private Menu mMenu;
 
@@ -182,7 +182,7 @@ public class SavePasswordsPreferences
      * Empty screen message when no passwords or exceptions are stored.
      */
     private void displayEmptyScreenMessage() {
-        mEmptyView = new TextMessagePreferenceCompat(getStyledContext(), null);
+        mEmptyView = new TextMessagePreference(getStyledContext(), null);
         mEmptyView.setSummary(R.string.saved_passwords_none_text);
         mEmptyView.setKey(PREF_KEY_SAVED_PASSWORDS_NO_TEXT);
         mEmptyView.setOrder(ORDER_SAVED_PASSWORDS_NO_TEXT);
@@ -377,7 +377,7 @@ public class SavePasswordsPreferences
             Bundle fragmentAgs = new Bundle(preference.getExtras());
             fragmentAgs.putBoolean(
                     SavePasswordsPreferences.EXTRA_FOUND_VIA_SEARCH, mSearchQuery != null);
-            PreferencesLauncher.launchSettingsPageCompat(
+            PreferencesLauncher.launchSettingsPage(
                     getActivity(), PasswordEntryViewer.class, fragmentAgs);
         }
         return true;
@@ -387,7 +387,7 @@ public class SavePasswordsPreferences
         if (mSearchQuery != null) {
             return; // Don't create this option when the preferences are filtered for passwords.
         }
-        mSavePasswordsSwitch = new ChromeSwitchPreferenceCompat(getStyledContext(), null);
+        mSavePasswordsSwitch = new ChromeSwitchPreference(getStyledContext(), null);
         mSavePasswordsSwitch.setKey(PREF_SAVE_PASSWORDS_SWITCH);
         mSavePasswordsSwitch.setTitle(R.string.prefs_saved_passwords);
         mSavePasswordsSwitch.setOrder(ORDER_SWITCH);
@@ -416,7 +416,7 @@ public class SavePasswordsPreferences
         if (mSearchQuery != null) {
             return; // Don't create this option when the preferences are filtered for passwords.
         }
-        mAutoSignInSwitch = new ChromeBaseCheckBoxPreferenceCompat(getStyledContext(), null);
+        mAutoSignInSwitch = new ChromeBaseCheckBoxPreference(getStyledContext(), null);
         mAutoSignInSwitch.setKey(PREF_AUTOSIGNIN_SWITCH);
         mAutoSignInSwitch.setTitle(R.string.passwords_auto_signin_title);
         mAutoSignInSwitch.setOrder(ORDER_AUTO_SIGNIN_CHECKBOX);
@@ -448,7 +448,7 @@ public class SavePasswordsPreferences
                 ApiCompatibilityUtils.getColor(getResources(), R.color.default_text_color_link));
         SpannableString title = SpanApplier.applySpans(getString(R.string.manage_passwords_text),
                 new SpanApplier.SpanInfo("<link>", "</link>", colorSpan));
-        mLinkPref = new ChromeBasePreferenceCompat(getStyledContext());
+        mLinkPref = new ChromeBasePreference(getStyledContext());
         mLinkPref.setKey(PREF_KEY_MANAGE_ACCOUNT_LINK);
         mLinkPref.setTitle(title);
         mLinkPref.setOnPreferenceClickListener(this);

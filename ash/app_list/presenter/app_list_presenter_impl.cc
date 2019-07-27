@@ -447,12 +447,6 @@ void AppListPresenterImpl::SelectedPageChanged(int old_selected,
   current_apps_page_ = new_selected;
 }
 
-void AppListPresenterImpl::TransitionStarted() {}
-
-void AppListPresenterImpl::TransitionChanged() {}
-
-void AppListPresenterImpl::TransitionEnded() {}
-
 void AppListPresenterImpl::RequestPresentationTime(
     int64_t display_id,
     base::TimeTicks event_time_stamp) {

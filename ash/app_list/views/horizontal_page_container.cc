@@ -14,6 +14,7 @@
 #include "ash/public/cpp/pagination/pagination_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/label.h"
 
 namespace app_list {
@@ -21,6 +22,8 @@ namespace app_list {
 HorizontalPageContainer::HorizontalPageContainer(ContentsView* contents_view,
                                                  AppListModel* model)
     : contents_view_(contents_view) {
+  // Assumes all horizontal pages paint to their own layers.
+  SetPaintToLayer(ui::LAYER_NOT_DRAWN);
   pagination_model_.SetTransitionDurations(
       AppListConfig::instance().page_transition_duration_ms(),
       AppListConfig::instance().overscroll_page_transition_duration_ms());
@@ -76,24 +79,23 @@ void HorizontalPageContainer::OnWillBeHidden() {
   GetSelectedPage()->OnWillBeHidden();
 }
 
-void HorizontalPageContainer::OnAnimationUpdated(double progress,
-                                                 ash::AppListState from_state,
+void HorizontalPageContainer::OnAnimationStarted(ash::AppListState from_state,
                                                  ash::AppListState to_state) {
+  AppListPage::OnAnimationStarted(from_state, to_state);
+
   for (size_t i = 0; i < horizontal_pages_.size(); ++i) {
     HorizontalPage* page = horizontal_pages_[i];
     gfx::Rect to_rect = page->GetPageBoundsForState(to_state);
     gfx::Rect from_rect = page->GetPageBoundsForState(from_state);
 
-    // Invalidate layout when the state changes to ensure that SetBoundsRect
-    // below also triggers a layout.
-    if (from_state != to_state)
-      page->InvalidateLayout();
+    if (to_rect == from_rect)
+      continue;
 
-    // Animate linearly (the PaginationModel handles easing).
-    gfx::Rect bounds(
-        gfx::Tween::RectValueBetween(progress, from_rect, to_rect));
-    bounds.Offset(GetOffsetForPageIndex(i));
-    page->SetBoundsRect(bounds);
+    to_rect.Offset(GetOffsetForPageIndex(i));
+
+    auto settings =
+        contents_view()->CreateTransitionAnimationSettings(page->layer());
+    page->SetBoundsRect(to_rect);
   }
 }
 
@@ -105,7 +107,7 @@ gfx::Rect HorizontalPageContainer::GetSearchBoxBoundsForState(
     ash::AppListState state) const {
   // The search box bounds are decided by AppsContainerView and are not changed
   // during horizontal page switching.
-  return apps_container_view_->GetSearchBoxExpectedBounds();
+  return apps_container_view_->GetSearchBoxTargetBounds();
 }
 
 gfx::Rect HorizontalPageContainer::GetPageBoundsForState(
@@ -142,7 +144,7 @@ void HorizontalPageContainer::SelectedPageChanged(int old_selected,
   Layout();
 }
 
-void HorizontalPageContainer::TransitionStarted() {
+void HorizontalPageContainer::TransitionStarting() {
   Layout();
 }
 

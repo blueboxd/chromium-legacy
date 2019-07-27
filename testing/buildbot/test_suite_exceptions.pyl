@@ -1114,63 +1114,6 @@
       'ToTAndroidCFI',
     ],
   },
-  'non_network_service_content_browsertests': {
-    'remove_from': [
-      # chromium.android
-      'android-asan',
-      # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel',
-      # No capacity for tablet testers.
-      'KitKat Tablet Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow Tablet Tester',
-    ],
-  },
-  'non_network_service_content_shell_test_apk': {
-    'remove_from': [
-      # chromium.android
-      'android-asan',
-      # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-rel',
-      'android-marshmallow-arm64-rel',
-      # No capacity for tablet testers.
-      'KitKat Tablet Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow Tablet Tester',
-    ],
-  },
-  'non_network_service_webkit_layout_tests' : {
-    'remove_from': [
-      # chromium.mac. TODO(https://crbug.com/944117): Remove this.
-      'mac-dummy-rel',
-    ],
-    'modifications': {
-      'Linux Tests': {
-        "args": [
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-        ],
-      },
-      'Linux Tests Code Coverage': {
-        "args": [
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-        ],
-      },
-      'Linux Release Code Coverage (NVIDIA)': {
-        "args": [
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-        ],
-      },
-      'Linux Tests (dbg)(1)': {
-        'args': [
-          '--debug',
-        ],
-        'swarming': {
-          'shards': 20,
-        },
-      },
-    },
-  },
   'non_viz_browser_tests': {
     'modifications': {
       # chromium.fyi

@@ -157,6 +157,12 @@ void AutoclickController::SetEnabled(bool enabled,
       HideScrollPosition();
       Shell::Get()->RemovePreTargetHandler(this);
       menu_bubble_controller_ = nullptr;
+      // Set the click type to left-click. This is the most useful click type
+      // and users will want this type when they re-enable. If users were to
+      // re-enable in scroll, or right-click, they would need to use the bubble
+      // menu to change types.
+      Shell::Get()->accessibility_controller()->SetAutoclickEventType(
+          AutoclickEventType::kLeftClick);
       enabled_ = enabled;
     }
   }
@@ -520,6 +526,8 @@ void AutoclickController::InitializeScrollLocation() {
 
 void AutoclickController::UpdateScrollPosition(
     const gfx::Point& point_in_screen) {
+  if (!enabled_)
+    return;
   if (!scroll_position_widget_) {
     CreateAutoclickScrollPositionWidget(point_in_screen);
     autoclick_scroll_position_handler_ =

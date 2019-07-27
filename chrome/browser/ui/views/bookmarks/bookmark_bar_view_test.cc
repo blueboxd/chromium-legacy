@@ -289,6 +289,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     BookmarkBarView::DisableAnimationsForTesting(true);
     SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 
+    local_state_.reset(
+        new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
@@ -298,8 +300,6 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     Browser::CreateParams native_params(profile_.get(), true);
     browser_ = CreateBrowserWithTestWindowForParams(&native_params);
 
-    local_state_.reset(new ScopedTestingLocalState(
-        TestingBrowserProcess::GetGlobal()));
     model_->ClearStore();
 
     bb_view_.reset(new BookmarkBarView(browser_.get(), NULL));

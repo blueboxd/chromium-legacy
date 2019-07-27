@@ -259,7 +259,7 @@ void FindBarView::SetFindTextAndSelectedRange(
 }
 
 base::string16 FindBarView::GetFindText() const {
-  return find_text_->text();
+  return find_text_->GetText();
 }
 
 gfx::Range FindBarView::GetSelectedRange() const {
@@ -286,7 +286,7 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
   // Find Bar hosts with global find pasteboards are expected to preserve the
   // find text contents after clearing the find results as the normal
   // prepopulation code does not run.
-  if (find_text_->text() != find_text && !find_text_->IsIMEComposing() &&
+  if (find_text_->GetText() != find_text && !find_text_->IsIMEComposing() &&
       (!find_bar_host_->HasGlobalFindPasteboard() || !find_text.empty())) {
     find_text_->SetText(find_text);
     find_text_->SelectAll(true);
@@ -373,7 +373,7 @@ void FindBarView::FocusAndSelectAll() {
 #if !defined(OS_WIN)
   GetWidget()->GetInputMethod()->ShowVirtualKeyboardIfEnabled();
 #endif
-  if (!find_text_->text().empty())
+  if (!find_text_->GetText().empty())
     find_text_->SelectAll(true);
 }
 
@@ -385,11 +385,11 @@ void FindBarView::ButtonPressed(
   switch (sender->GetID()) {
     case VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON:
     case VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON:
-      if (!find_text_->text().empty()) {
+      if (!find_text_->GetText().empty()) {
         FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(
             find_bar_host_->GetFindBarController()->web_contents());
         find_tab_helper->StartFinding(
-            find_text_->text(),
+            find_text_->GetText(),
             sender->GetID() == VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON,
             false);  // Not case sensitive.
       }
@@ -419,7 +419,7 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
   if (key_event.key_code() == ui::VKEY_RETURN &&
       key_event.type() == ui::ET_KEY_PRESSED) {
     // Pressing Return/Enter starts the search (unless text box is empty).
-    base::string16 find_string = find_text_->text();
+    base::string16 find_string = find_text_->GetText();
     if (!find_string.empty()) {
       FindBarController* controller = find_bar_host_->GetFindBarController();
       FindTabHelper* find_tab_helper =
@@ -438,8 +438,8 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
 void FindBarView::OnAfterUserAction(views::Textfield* sender) {
   // The composition text wouldn't be what the user is really looking for.
   // We delay the search until the user commits the composition text.
-  if (!sender->IsIMEComposing() && sender->text() != last_searched_text_)
-    Find(sender->text());
+  if (!sender->IsIMEComposing() && sender->GetText() != last_searched_text_)
+    Find(sender->GetText());
 }
 
 void FindBarView::OnAfterPaste() {
@@ -493,7 +493,7 @@ void FindBarView::Find(const base::string16& search_text) {
 }
 
 void FindBarView::UpdateMatchCountAppearance(bool no_match) {
-  bool enable_buttons = !find_text_->text().empty() && !no_match;
+  bool enable_buttons = !find_text_->GetText().empty() && !no_match;
   find_previous_button_->SetEnabled(enable_buttons);
   find_next_button_->SetEnabled(enable_buttons);
 }

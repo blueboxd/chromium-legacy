@@ -35,7 +35,6 @@ class BluetoothScanningPromptAndroid : public content::BluetoothScanningPrompt {
 
   // Report the dialog's result.
   void OnDialogFinished(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj,
                         jint event_type);
 
  private:

@@ -126,7 +126,6 @@ void UsbChooserDialogAndroid::OnRefreshStateChanged(bool refreshing) {
 
 void UsbChooserDialogAndroid::OnItemSelected(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& item_id_jstring) {
   std::string item_id =
       base::android::ConvertJavaStringToUTF8(env, item_id_jstring);
@@ -136,15 +135,11 @@ void UsbChooserDialogAndroid::OnItemSelected(
   std::move(on_close_).Run();
 }
 
-void UsbChooserDialogAndroid::OnDialogCancelled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+void UsbChooserDialogAndroid::OnDialogCancelled(JNIEnv* env) {
   Cancel();
 }
 
-void UsbChooserDialogAndroid::LoadUsbHelpPage(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+void UsbChooserDialogAndroid::LoadUsbHelpPage(JNIEnv* env) {
   controller_->OpenHelpCenterUrl();
   Cancel();
 }

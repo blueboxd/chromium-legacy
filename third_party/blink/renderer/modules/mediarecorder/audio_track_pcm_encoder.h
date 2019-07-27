@@ -11,7 +11,6 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "third_party/blink/renderer/modules/mediarecorder/audio_track_encoder.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

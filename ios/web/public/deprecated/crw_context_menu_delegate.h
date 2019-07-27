@@ -7,7 +7,7 @@
 
 #import <WebKit/WebKit.h>
 
-#import "ios/web/public/web_state/context_menu_params.h"
+#import "ios/web/public/ui/context_menu_params.h"
 
 // Implement this protocol to listen to the custom context menu trigger from
 // WKWebView.

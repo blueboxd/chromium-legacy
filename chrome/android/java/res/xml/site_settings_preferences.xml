@@ -4,7 +4,7 @@
      found in the LICENSE file. -->
 
 <!-- The order of the following items is from: http://crbug.com/610358. -->
-<android.support.v7.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <!-- All sites -->
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
@@ -96,4 +96,4 @@
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:key="bluetooth_scanning" />
-</android.support.v7.preference.PreferenceScreen>
+</PreferenceScreen>

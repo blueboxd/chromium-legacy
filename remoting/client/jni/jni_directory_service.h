@@ -34,14 +34,12 @@ class JniDirectoryService {
   ~JniDirectoryService();
 
   void RetrieveHostList(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& caller,
                         const base::android::JavaParamRef<jobject>& callback);
   void DeleteHost(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& caller,
                   const base::android::JavaParamRef<jstring>& host_id,
                   const base::android::JavaParamRef<jobject>& callback);
 
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& caller);
+  void Destroy(JNIEnv* env);
 
  private:
   void OnHostListRetrieved(base::android::ScopedJavaGlobalRef<jobject> callback,

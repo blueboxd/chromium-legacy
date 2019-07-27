@@ -53,6 +53,11 @@ typedef base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                                 AutofillClient::UnmaskDetails&)>
     GetUnmaskDetailsCallback;
 
+// Callback type for OptChange callback.
+typedef base::OnceCallback<
+    void(AutofillClient::PaymentsRpcResult, bool, base::Value)>
+    OptChangeCallback;
+
 // Billable service number is defined in Payments server to distinguish
 // different requests.
 const int kUnmaskCardBillableServiceNumber = 70154;
@@ -87,6 +92,18 @@ class PaymentsClient {
     std::string risk_data;
     CardUnmaskDelegate::UnmaskResponse user_response;
     base::Value fido_assertion_info;
+  };
+
+  // Information required to either opt-in or opt-out a user for FIDO
+  // Authentication.
+  struct OptChangeRequestDetails {
+    OptChangeRequestDetails();
+    OptChangeRequestDetails(const OptChangeRequestDetails& other);
+    ~OptChangeRequestDetails();
+
+    std::string app_locale;
+    bool opt_in;
+    base::Value fido_authenticator_response;
   };
 
   // A collection of the information required to make a credit card upload
@@ -170,6 +187,11 @@ class PaymentsClient {
   void UnmaskCard(const UnmaskRequestDetails& request_details,
                   base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                                           const std::string&)> callback);
+
+  // Opts-in or opts-out the user to use FIDO authentication for card unmasking
+  // on this device.
+  void OptChange(const OptChangeRequestDetails request_details,
+                 OptChangeCallback callback);
 
   // Determine if the user meets the Payments service's conditions for upload.
   // The service uses |addresses| (from which names and phone numbers are

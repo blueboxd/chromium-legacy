@@ -261,14 +261,11 @@ void HandleActivateDesk(const ui::Accelerator& accelerator) {
   if (desks_controller->AreDesksBeingModified())
     return;
 
-  const Desk* desk_to_activate = nullptr;
   switch (accelerator.key_code()) {
     case ui::VKEY_OEM_4:
-      desk_to_activate = desks_controller->GetPreviousDesk();
       base::RecordAction(base::UserMetricsAction("Accel_Desks_ActivateLeft"));
       break;
     case ui::VKEY_OEM_6:
-      desk_to_activate = desks_controller->GetNextDesk();
       base::RecordAction(base::UserMetricsAction("Accel_Desks_ActivateRight"));
       break;
 
@@ -276,14 +273,9 @@ void HandleActivateDesk(const ui::Accelerator& accelerator) {
       NOTREACHED();
   }
 
-  if (desk_to_activate) {
-    desks_controller->ActivateDesk(desk_to_activate,
-                                   DesksSwitchSource::kDeskSwitchShortcut);
-  } else {
-    const bool going_left = accelerator.key_code() == ui::VKEY_OEM_4;
-    for (auto* root : Shell::GetAllRootWindows())
-      desks_animations::PerformHitTheWallAnimation(root, going_left);
-  }
+  desks_controller->ActivateAdjacentDesk(
+      /*going_left=*/accelerator.key_code() == ui::VKEY_OEM_4,
+      DesksSwitchSource::kDeskSwitchShortcut);
 }
 
 void HandleMoveActiveItem(const ui::Accelerator& accelerator) {

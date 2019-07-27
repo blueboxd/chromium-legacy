@@ -11,6 +11,7 @@ source_set("earl_grey_support") {
     "//base/test:test_support",
     "//build/config/ios:xctest",
     "//ios/third_party/earl_grey:earl_grey+link",
+    "//ios/web/common",
     "//testing/gtest:gtest",
   ]
 
@@ -84,6 +85,7 @@ source_set("eg_test_support+eg2") {
   deps = [
     "//base",
     "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/common",
     "//testing/gtest:gtest",
   ]
 }

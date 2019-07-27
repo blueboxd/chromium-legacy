@@ -6,4 +6,7 @@ michaelpg@chromium.org
 stevenjb@chromium.org
 tommycli@chromium.org
 
+# Chrome OS Settings
+per-file *os_settings*=file://chrome/browser/resources/settings/chromeos/OWNERS
+
 # COMPONENT: UI>Settings

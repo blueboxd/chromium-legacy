@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autofill/accessory_controller.h"
+#include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 
 namespace content {
@@ -21,7 +22,8 @@ namespace autofill {
 class CreditCardAccessoryController
     : public base::SupportsWeakPtr<CreditCardAccessoryController>,
       public AccessoryController,
-      public PersonalDataManagerObserver {
+      public PersonalDataManagerObserver,
+      public CreditCardAccessManager::Accessor {
  public:
   CreditCardAccessoryController() = default;
   ~CreditCardAccessoryController() override = default;

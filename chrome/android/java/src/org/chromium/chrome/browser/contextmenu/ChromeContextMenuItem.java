@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
 import android.text.style.ForegroundColorSpan;
@@ -13,7 +12,6 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.SuperscriptSpan;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.DefaultBrowserInfo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
@@ -180,10 +178,5 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             default:
                 return context.getString(getStringID(mItem));
         }
-    }
-
-    @Override
-    public void getDrawableAsync(Context context, Callback<Drawable> callback) {
-        callback.onResult(null);
     }
 }

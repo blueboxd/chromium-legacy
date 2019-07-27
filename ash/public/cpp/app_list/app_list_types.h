@@ -143,7 +143,7 @@ enum SearchResultDisplayType {
 enum SearchResultDisplayLocation {
   kSuggestionChipContainer,
   kTileListContainer,
-  kPlacementUndefined,
+  kUnknown,
 };
 
 // Which index in the UI container should the result be placed in.
@@ -154,7 +154,7 @@ enum SearchResultDisplayIndex {
   kFourthIndex,
   kFifthIndex,
   kSixthIndex,
-  kUndefined,
+  kPlacementUndefined,
 };
 
 // Actions for OmniBox zero state suggestion.
@@ -261,10 +261,11 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // Which UI container should the result be displayed in.
   SearchResultDisplayLocation display_location =
-      SearchResultDisplayLocation::kPlacementUndefined;
+      SearchResultDisplayLocation::kUnknown;
 
   // Which index in the UI container should the result be placed in.
-  SearchResultDisplayIndex display_index = SearchResultDisplayIndex::kUndefined;
+  SearchResultDisplayIndex display_index =
+      SearchResultDisplayIndex::kPlacementUndefined;
 
   // A score to determine the result display order.
   double display_score = 0;

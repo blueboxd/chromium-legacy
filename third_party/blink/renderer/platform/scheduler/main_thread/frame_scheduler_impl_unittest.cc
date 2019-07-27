@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -24,6 +26,8 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/resource_loading_task_runner_handle_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
+#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_task_queue.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 using base::sequence_manager::TaskQueue;
@@ -289,6 +293,10 @@ void ExpectAndIncrementCounter(int expected, int* actual) {
 
 void RecordQueueName(String name, Vector<String>* tasks) {
   tasks->push_back(std::move(name));
+}
+
+void AppendToVectorTestTask(Vector<String>* vector, String value) {
+  vector->push_back(std::move(value));
 }
 
 // Simulate running a task of a particular length by fast forwarding the task
@@ -2226,6 +2234,84 @@ TEST_F(FrameSchedulerImplTest, FeatureUpload_FrameDestruction) {
   base::RunLoop().RunUntilIdle();
 
   testing::Mock::VerifyAndClearExpectations(frame_scheduler_delegate_.get());
+}
+
+class WebSchedulingTaskQueueTest : public FrameSchedulerImplTest {
+ public:
+  void SetUp() override {
+    FrameSchedulerImplTest::SetUp();
+
+    for (int i = 0; i <= static_cast<int>(WebSchedulingPriority::kLastPriority);
+         i++) {
+      WebSchedulingPriority priority = static_cast<WebSchedulingPriority>(i);
+      // We only need the TaskRunner, so it's ok that the WebSchedulingTaskQueue
+      // gets destroyed right away.
+      std::unique_ptr<WebSchedulingTaskQueue> task_queue =
+          frame_scheduler_->CreateWebSchedulingTaskQueue(priority);
+      web_scheduling_task_runners_.push_back(task_queue->GetTaskRunner());
+    }
+  }
+
+  void TearDown() override {
+    FrameSchedulerImplTest::TearDown();
+
+    web_scheduling_task_runners_.clear();
+  }
+
+ protected:
+  // Helper for posting tasks to a WebSchedulingTaskQueue. |task_descriptor| is
+  // a string with space delimited task identifiers. The first letter of each
+  // task identifier specifies the task queue priority:
+  // - 'I': Immediate
+  // - 'H': High
+  // - 'D': Default
+  // - 'L': Low
+  // - 'E': Idle
+  void PostWebSchedulingTestTasks(Vector<String>* run_order,
+                                  const String& task_descriptor) {
+    std::istringstream stream(task_descriptor.Utf8());
+    while (!stream.eof()) {
+      std::string task;
+      stream >> task;
+      WebSchedulingPriority priority;
+      switch (task[0]) {
+        case 'I':
+          priority = WebSchedulingPriority::kImmediatePriority;
+          break;
+        case 'H':
+          priority = WebSchedulingPriority::kHighPriority;
+          break;
+        case 'D':
+          priority = WebSchedulingPriority::kDefaultPriority;
+          break;
+        case 'L':
+          priority = WebSchedulingPriority::kLowPriority;
+          break;
+        case 'E':
+          priority = WebSchedulingPriority::kIdlePriority;
+          break;
+        default:
+          EXPECT_FALSE(true);
+          return;
+      }
+      web_scheduling_task_runners_[static_cast<int>(priority)]->PostTask(
+          FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                    String::FromUTF8(task)));
+    }
+  }
+
+  Vector<scoped_refptr<base::SingleThreadTaskRunner>>
+      web_scheduling_task_runners_;
+};
+
+TEST_F(WebSchedulingTaskQueueTest, TasksRunInPriorityOrder) {
+  Vector<String> run_order;
+
+  PostWebSchedulingTestTasks(&run_order, "E1 E2 L1 L2 D1 D2 H1 H2 I1 I2");
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("I1", "I2", "H1", "H2", "D1",
+                                              "D2", "L1", "L2", "E1", "E2"));
 }
 
 }  // namespace frame_scheduler_impl_unittest

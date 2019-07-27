@@ -61,6 +61,9 @@ constexpr float kSuggestionChipOpacityEndProgress = 1;
 AppsContainerView::AppsContainerView(ContentsView* contents_view,
                                      AppListModel* model)
     : contents_view_(contents_view) {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+
   suggestion_chip_container_view_ =
       new SuggestionChipContainerView(contents_view);
   AddChildView(suggestion_chip_container_view_);
@@ -195,7 +198,7 @@ void AppsContainerView::UpdateYPositionAndOpacity() {
               (AppListConfig::instance().all_apps_opacity_end_px() - start_px),
           0.f),
       1.0f);
-  page_switcher_->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
+  layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
 
   const float progress =
       contents_view_->app_list_view()->GetAppListTransitionProgress();
@@ -411,6 +414,27 @@ views::View* AppsContainerView::GetFirstFocusableView() {
 gfx::Rect AppsContainerView::GetPageBoundsForState(
     ash::AppListState state) const {
   return contents_view_->GetContentsBounds();
+}
+
+gfx::Rect AppsContainerView::GetSearchBoxTargetBounds() const {
+  gfx::Rect search_box_bounds(contents_view_->GetDefaultSearchBoxBounds());
+
+  int y = 0;
+  const ash::AppListViewState target_state =
+      contents_view_->target_view_state();
+  switch (target_state) {
+    case ash::AppListViewState::kClosed:
+      y = AppListConfig::instance().search_box_closed_top_padding();
+      break;
+    case ash::AppListViewState::kPeeking:
+    case ash::AppListViewState::kHalf:
+      y = AppListConfig::instance().search_box_peeking_top_padding();
+      break;
+    default:  // fullscreen
+      y = AppListConfig::instance().search_box_fullscreen_top_padding();
+  }
+  search_box_bounds.set_y(y);
+  return search_box_bounds;
 }
 
 gfx::Rect AppsContainerView::GetSearchBoxExpectedBounds() const {

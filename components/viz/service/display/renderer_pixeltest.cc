@@ -28,6 +28,7 @@
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/gl_renderer.h"
+#include "components/viz/service/display/software_renderer.h"
 #include "components/viz/test/test_in_process_context_provider.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -2954,8 +2955,8 @@ class RendererPixelTestWithBackdropFilter
   gfx::Rect filter_pass_layer_rect_;
 };
 
-// TODO(916318): The software renderer does not support background filters yet.
 using BackdropFilterRendererTypes = ::testing::Types<GLRenderer,
+                                                     SoftwareRenderer,
                                                      SkiaRenderer
 #if defined(ENABLE_VIZ_VULKAN_TESTS)
                                                      ,

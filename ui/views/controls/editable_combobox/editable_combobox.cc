@@ -349,7 +349,7 @@ EditableCombobox::~EditableCombobox() {
 }
 
 const base::string16& EditableCombobox::GetText() const {
-  return textfield_->text();
+  return textfield_->GetText();
 }
 
 void EditableCombobox::SetText(const base::string16& text) {

@@ -241,7 +241,8 @@ InspectorDOMAgent::InspectorDOMAgent(
       document_node_to_id_map_(MakeGarbageCollected<NodeToIdMap>()),
       last_node_id_(1),
       suppress_attribute_modified_event_(false),
-      enabled_(&agent_state_, /*default_value=*/false) {}
+      enabled_(&agent_state_, /*default_value=*/false),
+      capture_node_stack_traces_(&agent_state_, /*default_value=*/false) {}
 
 InspectorDOMAgent::~InspectorDOMAgent() = default;
 
@@ -1279,6 +1280,30 @@ Response InspectorDOMAgent::setFileInputFiles(
   return Response::OK();
 }
 
+Response InspectorDOMAgent::setNodeStackTracesEnabled(bool enable) {
+  capture_node_stack_traces_.Set(enable);
+  return Response::OK();
+}
+
+Response InspectorDOMAgent::getNodeStackTraces(
+    int node_id,
+    protocol::Maybe<v8_inspector::protocol::Runtime::API::StackTrace>*
+        creation) {
+  Node* node = nullptr;
+  Response response = AssertNode(node_id, node);
+  if (!response.isSuccess())
+    return response;
+
+  InspectorSourceLocation* creation_inspector_source_location =
+      node_to_creation_source_location_map_.at(node);
+  if (creation_inspector_source_location) {
+    SourceLocation& source_location =
+        creation_inspector_source_location->GetSourceLocation();
+    *creation = source_location.BuildInspectorObject();
+  }
+  return Response::OK();
+}
+
 Response InspectorDOMAgent::getBoxModel(
     Maybe<int> node_id,
     Maybe<int> backend_node_id,
@@ -2080,6 +2105,19 @@ void InspectorDOMAgent::PseudoElementDestroyed(PseudoElement* pseudo_element) {
   GetFrontend()->pseudoElementRemoved(parent_id, pseudo_element_id);
 }
 
+void InspectorDOMAgent::NodeCreated(Node* node) {
+  if (!capture_node_stack_traces_.Get())
+    return;
+
+  std::unique_ptr<SourceLocation> creation_source_location =
+      SourceLocation::CaptureWithFullStackTrace();
+  if (creation_source_location) {
+    node_to_creation_source_location_map_.Set(
+        node, MakeGarbageCollected<InspectorSourceLocation>(
+                  std::move(creation_source_location)));
+  }
+}
+
 static ShadowRoot* ShadowRootForNode(Node* node, const String& type) {
   auto* element = DynamicTo<Element>(node);
   if (!element)
@@ -2288,6 +2326,7 @@ void InspectorDOMAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(search_results_);
   visitor->Trace(history_);
   visitor->Trace(dom_editor_);
+  visitor->Trace(node_to_creation_source_location_map_);
   InspectorBaseAgent::Trace(visitor);
 }
 

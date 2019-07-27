@@ -537,6 +537,21 @@ class ResourceScheduler::Client
     return (!pending_requests_.IsEmpty() || !in_flight_requests_.empty());
   }
 
+  size_t CountInflightDelayableRequests() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return in_flight_delayable_count_;
+  }
+
+  size_t CountInflightNonDelayableRequests() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return in_flight_requests_.size() - in_flight_delayable_count_;
+  }
+
+  size_t CountInflightLayoutBlockingRequests() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return total_layout_blocking_count_;
+  }
+
  private:
   enum ShouldStartReqResult {
     DO_NOT_START_REQUEST_AND_STOP_SEARCHING,
@@ -594,6 +609,8 @@ class ResourceScheduler::Client
     UMA_HISTOGRAM_COUNTS_100(
         "ResourceScheduler.RequestsCount.TotalLayoutBlocking",
         total_layout_blocking_count_);
+
+    resource_scheduler_->RecordGlobalRequestCountMetrics();
   }
 
   void InsertInFlightRequest(ScheduledResourceRequestImpl* request) {
@@ -1370,6 +1387,8 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
 }
 
 size_t ResourceScheduler::ActiveSchedulerClientsCounter() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   size_t active_scheduler_clients_count = 0;
   for (const auto& client : client_map_) {
     if (client.second->IsActiveResourceSchedulerClient()) {
@@ -1377,6 +1396,34 @@ size_t ResourceScheduler::ActiveSchedulerClientsCounter() const {
     }
   }
   return active_scheduler_clients_count;
+}
+
+// Records the metrics related to number of requests in flight that are observed
+// by the global resource scheduler.
+void ResourceScheduler::RecordGlobalRequestCountMetrics() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  size_t global_delayable_count = 0;
+  size_t global_non_delayable_count = 0;
+  size_t global_layout_blocking_count = 0;
+
+  for (const auto& client : client_map_) {
+    global_delayable_count += client.second->CountInflightDelayableRequests();
+    global_non_delayable_count +=
+        client.second->CountInflightNonDelayableRequests();
+    global_layout_blocking_count +=
+        client.second->CountInflightLayoutBlockingRequests();
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("ResourceScheduler.RequestsCount.GlobalAll",
+                           global_delayable_count + global_non_delayable_count);
+  UMA_HISTOGRAM_COUNTS_100("ResourceScheduler.RequestsCount.GlobalDelayable",
+                           global_delayable_count);
+  UMA_HISTOGRAM_COUNTS_100("ResourceScheduler.RequestsCount.GlobalNonDelayable",
+                           global_non_delayable_count);
+  UMA_HISTOGRAM_COUNTS_100(
+      "ResourceScheduler.RequestsCount.GlobalLayoutBlocking",
+      global_layout_blocking_count);
 }
 
 ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,

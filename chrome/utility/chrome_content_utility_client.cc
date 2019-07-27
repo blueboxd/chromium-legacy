@@ -13,18 +13,16 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
-#include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/utility/services.h"
 #include "components/mirroring/mojom/constants.mojom.h"
 #include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/patch/patch_service.h"
 #include "components/services/patch/public/mojom/constants.mojom.h"
-#include "components/services/unzip/public/mojom/constants.mojom.h"
-#include "components/services/unzip/unzip_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -40,13 +38,9 @@
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "chrome/utility/importer/profile_import_service.h"
 #include "services/network/url_request_context_builder_mojo.h"
-#include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
-#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-#include "chrome/services/util_win/public/mojom/util_win.mojom.h"
-#include "chrome/services/util_win/util_win_impl.h"
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
 #include "components/services/quarantine/quarantine_service.h"  // nogncheck
@@ -211,9 +205,6 @@ std::unique_ptr<service_manager::Service>
 ChromeContentUtilityClient::MaybeCreateMainThreadService(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-  if (service_name == unzip::mojom::kServiceName)
-    return std::make_unique<unzip::UnzipService>(std::move(request));
-
   if (service_name == patch::mojom::kServiceName)
     return std::make_unique<patch::PatchService>(std::move(request));
 
@@ -319,25 +310,13 @@ void ChromeContentUtilityClient::RegisterNetworkBinders(
     g_network_binder_creation_callback.Get().Run(registry);
 }
 
-void ChromeContentUtilityClient::RunMainThreadService(
-    mojo::GenericPendingReceiver receiver) {
-#if defined(OS_WIN)
-  if (auto util_receiver = receiver.As<chrome::mojom::UtilWin>()) {
-    static base::NoDestructor<UtilWinImpl> service(std::move(util_receiver));
-  }
-#endif
+mojo::ServiceFactory*
+ChromeContentUtilityClient::GetMainThreadServiceFactory() {
+  return ::GetMainThreadServiceFactory();
 }
 
-void ChromeContentUtilityClient::RunIOThreadService(
-    mojo::GenericPendingReceiver* receiver) {
-#if !defined(OS_ANDROID)
-  if (auto factory_receiver =
-          receiver->As<proxy_resolver::mojom::ProxyResolverFactory>()) {
-    static base::NoDestructor<proxy_resolver::ProxyResolverFactoryImpl> factory(
-        std::move(factory_receiver));
-    return;
-  }
-#endif  // !defined(OS_ANDROID)
+mojo::ServiceFactory* ChromeContentUtilityClient::GetIOThreadServiceFactory() {
+  return ::GetIOThreadServiceFactory();
 }
 
 // static

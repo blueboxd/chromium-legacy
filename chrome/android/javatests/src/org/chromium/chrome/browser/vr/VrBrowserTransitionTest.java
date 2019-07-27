@@ -395,8 +395,7 @@ public class VrBrowserTransitionTest {
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                PreferencesLauncher.launchSettingsPageCompat(
-                        context, SingleWebsitePreferences.class);
+                PreferencesLauncher.launchSettingsPage(context, SingleWebsitePreferences.class);
             });
         });
         TestThreadUtils.runOnUiThreadBlocking(
@@ -413,7 +412,7 @@ public class VrBrowserTransitionTest {
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PreferencesLauncher.launchSettingsPageCompat(context, null);
+            PreferencesLauncher.launchSettingsPage(context, null);
             VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting();
         });
         CriteriaHelper.pollUiThread(() -> {

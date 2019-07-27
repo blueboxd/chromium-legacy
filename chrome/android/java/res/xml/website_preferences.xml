@@ -3,14 +3,14 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v7.preference.PreferenceScreen
+<PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:title="@string/all_sites">
 
     <!-- A common binary toggle, only shown for specific categories that allow
          turning default values for that category on/off.-->
-    <org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat
+    <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
         android:key="binary_toggle"
         android:defaultValue="true" />
     <!-- A common Allow/Ask/Block 3-state toggle (radio group). Only shown when
@@ -20,20 +20,20 @@
         android:key="tri_state_toggle" />
 
     <!-- A toggle for blocking third-party cookies, only shown for the Cookies category. -->
-    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat
+    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
         android:key="third_party_cookies"
         android:title="@string/block_third_party_cookies_title"
         android:summary="@string/block_third_party_cookies_summary"
         android:defaultValue="true"
         android:persistent="false" />
     <!-- A toggle for enabling vibration in notifications. -->
-    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat
+    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
         android:key="notifications_vibrate"
         android:title="@string/enable_notifications_vibrate_title"
         android:summary="@string/enable_notifications_vibrate_summary"
         android:defaultValue="true" />
     <!-- An hyperlink to explain more about Protected Media content settings. -->
-    <org.chromium.chrome.browser.preferences.LearnMorePreferenceCompat
+    <org.chromium.chrome.browser.preferences.LearnMorePreference
         android:key="protected_content_learn_more"
         android:background="?android:attr/listDivider"
         app:helpContext="@string/help_context_protected_content"/>
@@ -45,4 +45,4 @@
         android:key="blocked_group" />
     <org.chromium.chrome.browser.preferences.ExpandablePreferenceGroup
         android:key="allowed_group" />
-</android.support.v7.preference.PreferenceScreen>
+</PreferenceScreen>

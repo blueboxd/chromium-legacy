@@ -151,12 +151,20 @@ double SMILTimeContainer::Elapsed() const {
   if (IsPaused())
     return presentation_time_;
 
-  return presentation_time_ +
-         (GetDocument().Timeline().CurrentTimeInternal() - reference_time_);
+  return presentation_time_ + (GetDocument()
+                                   .Timeline()
+                                   .CurrentTimeInternal()
+                                   .value_or(base::TimeDelta())
+                                   .InSecondsF() -
+                               reference_time_);
 }
 
 void SMILTimeContainer::SynchronizeToDocumentTimeline() {
-  reference_time_ = GetDocument().Timeline().CurrentTimeInternal();
+  reference_time_ = GetDocument()
+                        .Timeline()
+                        .CurrentTimeInternal()
+                        .value_or(base::TimeDelta())
+                        .InSecondsF();
 }
 
 bool SMILTimeContainer::IsPaused() const {

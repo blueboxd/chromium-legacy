@@ -310,6 +310,7 @@ ios_web_view_deps = [
   "//ios/net",
   "//ios/web",
   "//ios/web/common",
+  "//ios/web/common:user_agent",
   "//ios/web/public",
   "//ios/web/public/init",
   "//ios/web/public/deprecated",

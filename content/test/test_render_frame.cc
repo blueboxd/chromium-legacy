@@ -47,6 +47,11 @@ class MockFrameHost : public mojom::FrameHost {
     return std::move(last_document_interface_broker_request_);
   }
 
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+  TakeLastBrowserInterfaceBrokerReceiver() {
+    return std::move(last_browser_interface_broker_receiver_);
+  }
+
   void SetDidAddMessageToConsoleCallback(
       base::OnceCallback<void(const base::string16& msg)> callback) {
     did_add_message_to_console_callback_ = std::move(callback);
@@ -73,6 +78,17 @@ class MockFrameHost : public mojom::FrameHost {
         std::move(document_interface_broker_request);
   }
 
+  // Holds on to the request end of the BrowserInterfaceBroker interface whose
+  // client end is bound to the corresponding RenderFrame's
+  // |browser_interface_broker_proxy_| to facilitate retrieving the most recent
+  // |browser_interface_broker_receiver| in tests.
+  void PassLastBrowserInterfaceBrokerReceiver(
+      mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+          browser_interface_broker_receiver) {
+    last_browser_interface_broker_receiver_ =
+        std::move(browser_interface_broker_receiver);
+  }
+
   void DidCommitProvisionalLoad(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params)
@@ -84,6 +100,8 @@ class MockFrameHost : public mojom::FrameHost {
       last_document_interface_broker_request_ =
           blink::mojom::DocumentInterfaceBrokerRequest(std::move(
               interface_params->document_interface_broker_content_request));
+      last_browser_interface_broker_receiver_ =
+          std::move(interface_params->browser_interface_broker_receiver);
     }
   }
 
@@ -204,6 +222,8 @@ class MockFrameHost : public mojom::FrameHost {
       last_interface_provider_request_;
   blink::mojom::DocumentInterfaceBrokerRequest
       last_document_interface_broker_request_;
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+      last_browser_interface_broker_receiver_;
 
   base::OnceCallback<void(const base::string16& msg)>
       did_add_message_to_console_callback_;
@@ -227,6 +247,9 @@ TestRenderFrame::TestRenderFrame(RenderFrameImpl::CreateParams params)
           params.routing_id));
   mock_frame_host_->PassLastDocumentInterfaceBrokerRequest(
       mock_render_thread->TakeInitialDocumentInterfaceBrokerRequestForFrame(
+          params.routing_id));
+  mock_frame_host_->PassLastBrowserInterfaceBrokerReceiver(
+      mock_render_thread->TakeInitialBrowserInterfaceBrokerReceiverForFrame(
           params.routing_id));
 }
 
@@ -387,6 +410,11 @@ TestRenderFrame::TakeLastInterfaceProviderRequest() {
 blink::mojom::DocumentInterfaceBrokerRequest
 TestRenderFrame::TakeLastDocumentInterfaceBrokerRequest() {
   return mock_frame_host_->TakeLastDocumentInterfaceBrokerRequest();
+}
+
+mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+TestRenderFrame::TakeLastBrowserInterfaceBrokerReceiver() {
+  return mock_frame_host_->TakeLastBrowserInterfaceBrokerReceiver();
 }
 
 mojom::FrameHost* TestRenderFrame::GetFrameHost() {

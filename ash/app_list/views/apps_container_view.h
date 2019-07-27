@@ -84,6 +84,8 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   views::View* GetFirstFocusableView() override;
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
 
+  gfx::Rect GetSearchBoxTargetBounds() const;
+
   // Returns the expected search box bounds based on the current height of app
   // list.
   gfx::Rect GetSearchBoxExpectedBounds() const;

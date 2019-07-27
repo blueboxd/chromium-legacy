@@ -58,16 +58,14 @@ class StubBufferHandleProvider
 
   ~StubBufferHandleProvider() override = default;
 
-  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-      bool read_only) override {
+  base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() override {
     NOTREACHED();
-    return mojo::ScopedSharedBufferHandle();
+    return {};
   }
 
-  base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC()
-      override {
+  mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() override {
     NOTREACHED();
-    return base::SharedMemoryHandle();
+    return mojo::ScopedSharedBufferHandle();
   }
 
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
@@ -410,6 +408,17 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_EQ(96, state->width->min);
   EXPECT_EQ(1920, state->width->max);
   EXPECT_EQ(1, state->width->step);
+
+  EXPECT_EQ(100, state->pan->min);
+  EXPECT_EQ(400, state->pan->max);
+  EXPECT_EQ(1, state->pan->step);
+  EXPECT_GE(state->pan->current, state->pan->min);
+  EXPECT_GE(state->pan->max, state->pan->current);
+  EXPECT_EQ(100, state->tilt->min);
+  EXPECT_EQ(400, state->tilt->max);
+  EXPECT_EQ(1, state->tilt->step);
+  EXPECT_GE(state->tilt->current, state->tilt->min);
+  EXPECT_GE(state->tilt->max, state->tilt->current);
   EXPECT_EQ(100, state->zoom->min);
   EXPECT_EQ(400, state->zoom->max);
   EXPECT_EQ(1, state->zoom->step);

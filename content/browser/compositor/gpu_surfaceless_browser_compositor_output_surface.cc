@@ -121,12 +121,6 @@ void GpuSurfacelessBrowserCompositorOutputSurface::BindFramebuffer() {
   }
 }
 
-gfx::Rect
-GpuSurfacelessBrowserCompositorOutputSurface::GetCurrentFramebufferDamage()
-    const {
-  return buffer_queue_->CurrentBufferDamage();
-}
-
 GLenum GpuSurfacelessBrowserCompositorOutputSurface::
     GetFramebufferCopyTextureFormat() {
   return buffer_queue_->internal_format();
@@ -184,6 +178,12 @@ unsigned GpuSurfacelessBrowserCompositorOutputSurface::UpdateGpuFence() {
   gpu_fence_id_ = gl->CreateGpuFenceCHROMIUM();
 
   return gpu_fence_id_;
+}
+
+void GpuSurfacelessBrowserCompositorOutputSurface::SetDrawRectangle(
+    const gfx::Rect& damage) {
+  GpuBrowserCompositorOutputSurface::SetDrawRectangle(damage);
+  buffer_queue_->CopyDamageForCurrentSurface(damage);
 }
 
 gpu::SurfaceHandle

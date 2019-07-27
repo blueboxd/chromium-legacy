@@ -46,8 +46,10 @@
 <translation id="2289052229480071835">Toca els elements tàctils a la pantalla.</translation>
 <translation id="2295140143284145483">Enquesta</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Vols trucar a aquest número des del telèfon?</translation>
 <translation id="24452542372838207">Desplega la notificació</translation>
 <translation id="2445449901874883781">Utilitza una densitat alta</translation>
+<translation id="2451871130406122810">S'ha enviat al dispositiu</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="2497284189126895209">Tots els fitxers</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -114,6 +116,7 @@
 <translation id="5266161281976477809">Triangle desplegable</translation>
 <translation id="5278860589123563674">No s'ha pogut enviar</translation>
 <translation id="528468243742722775">Finalitza</translation>
+<translation id="5327567770033251652">activa la sincronització</translation>
 <translation id="5329858601952122676">&amp;Suprimeix</translation>
 <translation id="5395308026110844773">L'aplicació <ph name="DRAGGED_APP_NAME" /> és a sobre de l'aplicació <ph name="IN_PLACE_APP" />. Deixa-la anar per crear una carpeta.</translation>
 <translation id="5463830097259460683">Emojis i símbols</translation>

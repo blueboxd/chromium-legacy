@@ -842,13 +842,13 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   event_generator->PressKey(ui::VKEY_A, 0);
   event_generator->ReleaseKey(ui::VKEY_A, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
-  EXPECT_EQ("a", base::UTF16ToASCII(textfield->text()));
+  EXPECT_EQ("a", base::UTF16ToASCII(textfield->GetText()));
 
   event_generator->set_current_target(root_windows[1]);
   event_generator->PressKey(ui::VKEY_B, 0);
   event_generator->ReleaseKey(ui::VKEY_B, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
-  EXPECT_EQ("ab", base::UTF16ToASCII(textfield->text()));
+  EXPECT_EQ("ab", base::UTF16ToASCII(textfield->GetText()));
 
   // Deleting 2nd display. The lock window still should get the events.
   UpdateDisplay("100x100");
@@ -856,7 +856,7 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   event_generator->PressKey(ui::VKEY_C, 0);
   event_generator->ReleaseKey(ui::VKEY_C, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
-  EXPECT_EQ("abc", base::UTF16ToASCII(textfield->text()));
+  EXPECT_EQ("abc", base::UTF16ToASCII(textfield->GetText()));
 
   // Creating 2nd display again, and lock window still should get events
   // on both root windows.
@@ -866,13 +866,13 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   event_generator->PressKey(ui::VKEY_D, 0);
   event_generator->ReleaseKey(ui::VKEY_D, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
-  EXPECT_EQ("abcd", base::UTF16ToASCII(textfield->text()));
+  EXPECT_EQ("abcd", base::UTF16ToASCII(textfield->GetText()));
 
   event_generator->set_current_target(root_windows[1]);
   event_generator->PressKey(ui::VKEY_E, 0);
   event_generator->ReleaseKey(ui::VKEY_E, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
-  EXPECT_EQ("abcde", base::UTF16ToASCII(textfield->text()));
+  EXPECT_EQ("abcde", base::UTF16ToASCII(textfield->GetText()));
 }
 
 // Verifies that clicking in the primary display and dragging to the secondary

@@ -206,6 +206,7 @@
 <translation id="2490684707762498678"><ph name="APP_NAME" /> ద్వారా నిర్వహించబడుతున్నాయి</translation>
 <translation id="2494974097748878569">Chromeలో Google అసిస్టెంట్</translation>
 <translation id="2496180316473517155">బ్రౌజింగ్ చరిత్ర</translation>
+<translation id="2497852260688568942">సింక్‌ను మీ నిర్వాహకులు నిలిపివేశారు</translation>
 <translation id="2498359688066513246">సహాయం &amp; అభిప్రాయం</translation>
 <translation id="2501278716633472235">వెనుకకు వెళ్ళు</translation>
 <translation id="2513403576141822879">గోప్యత, భద్రత మరియు డేటా సేకరణకు సంబంధించిన మరిన్ని సెట్టింగ్‌ల కోసం, <ph name="BEGIN_LINK" />సమకాలీకరణ మరియు Google సేవలను<ph name="END_LINK" /> చూడండి</translation>
@@ -244,6 +245,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> సెకన్లు మిగిలి ఉంది</translation>
 <translation id="2779651927720337254">విఫలమైంది</translation>
 <translation id="2781151931089541271">1 సెకను మిగిలి ఉంది</translation>
+<translation id="2796941233371040292">ఇక్కడ నిల్వ డేటా ఏదీ లేదు</translation>
 <translation id="2801022321632964776">Chrome యొక్క తాజా వెర్షన్‌లో మీ భాషను పొందడానికి అప్‌డేట్ చేయండి</translation>
 <translation id="2810645512293415242">డేటాను సేవ్ చేయడానికి మరియు మరింత వేగంగా లోడ్ చేయడానికి సరళీకరించిన పేజీ.</translation>
 <translation id="281504910091592009">మీ <ph name="BEGIN_LINK" />Google ఖాతా<ph name="END_LINK" />లో సేవ్ చేసిన పాస్‌వర్డ్‌లను చూడండి మరియు నిర్వహించండి</translation>
@@ -259,6 +261,7 @@
 <translation id="2888126860611144412">Chrome పరిచయం</translation>
 <translation id="2891154217021530873">పేజీ లోడ్ కాకుండా ఆపివేయండి</translation>
 <translation id="2893180576842394309">శోధన, ఇతర Google సేవలను వ్యక్తిగతీకరించడానికి Google మీ చరిత్రను ఉపయోగించే అవకాశం ఉంటుంది</translation>
+<translation id="2898264748040935573">నిల్వ చేసిన పాస్‌వర్డ్‌ను సవరించండి</translation>
 <translation id="2900528713135656174">ఈవెంట్‌ను సృష్టించండి</translation>
 <translation id="2902702728133930130">ప్రారంభ సమయంలో ఊహించని ఎర్రర్ వల్ల, Chrome విఫలమైంది.</translation>
 <translation id="290376772003165898">పేజీ <ph name="LANGUAGE" />లో లేదా?</translation>
@@ -519,6 +522,7 @@
 <translation id="4913169188695071480">రీఫ్రెష్ చేయడం ఆపివేయి</translation>
 <translation id="4915549754973153784">పరికరాల కోసం స్కాన్ చేస్తున్నప్పుడు <ph name="BEGIN_LINK" />సహాయం పొందండి<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# పేజీ}other{# పేజీలు}}</translation>
+<translation id="4932247056774066048">మీరు <ph name="DOMAIN_NAME" /> నిర్వహణలోని ఖాతా నుండి సైన్ అవుట్ చేస్తున్నందున, ఈ పరికరం నుండి మీ Chrome డేటా తొలగించబడుతుంది. అది మీ Google ఖాతాలో అలాగే భద్రపరచబడుతుంది.</translation>
 <translation id="4943703118917034429">వర్చువల్ రియాలిటీ</translation>
 <translation id="4943872375798546930">ఫలితాలు ఏవీ లేవు</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> మీ స్క్రీన్‌ని భాగస్వామ్యం చేస్తోంది</translation>
@@ -561,6 +565,7 @@
 <translation id="5210286577605176222">మునుపటి ట్యాబ్‌కు వెళ్లండి</translation>
 <translation id="5210365745912300556">ట్యాబ్‌ను మూసివేయి</translation>
 <translation id="5224771365102442243">వీడియోతో</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> సమీపంలోని బ్లూటూత్ పరికరాల కోసం స్కాన్ చేయాలనుకుంటోంది. కింది పరికరాలు కనుగొనబడ్డాయి:</translation>
 <translation id="5233638681132016545">కొత్త‌ టాబ్</translation>
 <translation id="526421993248218238">ఈ పేజీని లోడ్ చేయడం సాధ్యం కాదు</translation>
 <translation id="5271967389191913893">పరికరం డౌన్‌లోడ్ చేయాల్సిన కంటెంట్‌ను తెరవలేదు.</translation>
@@ -584,6 +589,7 @@
 <translation id="5414836363063783498">ధృవీకరిస్తోంది...</translation>
 <translation id="5423934151118863508">మీరు అత్యంత ఎక్కువగా సందర్శించిన పేజీలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB అందుబాటులో ఉంది</translation>
+<translation id="543338862236136125">పాస్‌వర్డ్‌ను సవరించు</translation>
 <translation id="5433691172869980887">వినియోగదారు పేరు కాపీ చేయబడింది</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> ఫైల్‌లను డౌన్‌లోడ్ చేస్తోంది (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">చిరునామా పట్టీకి వెళ్లండి</translation>
@@ -753,6 +759,7 @@
 <translation id="6600954340915313787">Chromeకి కాపీ చేయబడింది</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">రక్షిత కంటెంట్</translation>
+<translation id="6615455863669487791">నాకు చూపించు</translation>
 <translation id="6627583120233659107">ఫోల్డర్‌ను సవరించు</translation>
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
 <translation id="6643649862576733715">సేవ్ చేసిన డేటా పరిమాణం ద్వారా క్రమీకరించు</translation>
@@ -869,7 +876,6 @@
 <translation id="7445411102860286510">మ్యూట్ చేసిన వీడియోలను స్వయంచాలకంగా ప్లే చేయడానికి సైట్‌‌లను అనుమతిస్తుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="7453467225369441013">దాదాపు అన్ని సైట్‌ల నుండి మిమ్మల్ని సైన్ అవుట్ చేస్తుంది. మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు.</translation>
 <translation id="7454641608352164238">తగినంత స్థలం లేదు</translation>
-<translation id="7473891865547856676">వద్దు, ధన్యవాదాలు</translation>
 <translation id="7475192538862203634">మీకు ఇది తరచుగా కనిపిస్తుంటే, ఈ <ph name="BEGIN_LINK" />సూచనల<ph name="END_LINK" />ను ప్రయత్నించండి.</translation>
 <translation id="7475688122056506577">SD కార్డ్ కనుగొనబడలేదు. మీ ఫైల్‌లలో కొన్ని ఉండకపోవచ్చు.</translation>
 <translation id="7479104141328977413">ట్యాబ్ నిర్వహణ</translation>
@@ -913,7 +919,6 @@
 <translation id="7746457520633464754">Chrome ప్రమాదకరమైన యాప్‌లు, సైట్‌లను గుర్తించడానికి, మీరు సందర్శించే కొన్ని పేజీల URLలు, పరిమిత సిస్టమ్ సమాచారం, కొంత పేజీ కంటెంట్‌ను Googleకు పంపుతుంది</translation>
 <translation id="7762668264895820836">SD కార్డ్ <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">చిరునామాను జోడించు</translation>
-<translation id="7765158879357617694">తరలించు</translation>
 <translation id="7769602470925380267">అంగీకరిస్తున్నాను, సైన్ అవుట్ చేయి</translation>
 <translation id="7772032839648071052">రహస్య పదబంధాన్ని నిర్ధారించండి</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" />ను మూసివేయి</translation>

@@ -46,8 +46,10 @@
 <translation id="2289052229480071835">Koppintson a képernyőn az érintési célpontokra.</translation>
 <translation id="2295140143284145483">Felmérés</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Szeretné ezt a számot hívni a telefonjáról?</translation>
 <translation id="24452542372838207">Értesítés kibontása</translation>
 <translation id="2445449901874883781">Magas sűrűség használata</translation>
+<translation id="2451871130406122810">Elküldve az eszközre</translation>
 <translation id="2482878487686419369">Értesítések</translation>
 <translation id="2497284189126895209">Minden fájl</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -114,6 +116,7 @@
 <translation id="5266161281976477809">Plusz tartalom kibontására szolgáló háromszög</translation>
 <translation id="5278860589123563674">Sikertelen küldés</translation>
 <translation id="528468243742722775">Befejezés</translation>
+<translation id="5327567770033251652">szinkronizálás bekapcsolása</translation>
 <translation id="5329858601952122676">&amp;Törlés</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> az alatta lévő <ph name="IN_PLACE_APP" /> alkalmazáson; mappa létrehozásához engedje el.</translation>
 <translation id="5463830097259460683">Hangulatjelek és szimbólumok</translation>

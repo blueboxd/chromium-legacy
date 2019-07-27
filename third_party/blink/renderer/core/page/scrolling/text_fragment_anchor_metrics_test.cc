@@ -243,6 +243,167 @@ TEST_F(TextFragmentAnchorMetricsTest, ScrollCancelled) {
                                      0);
 }
 
+class TextFragmentRelatedMetricTest : public TextFragmentAnchorMetricsTest,
+                                      public testing::WithParamInterface<bool> {
+ public:
+  TextFragmentRelatedMetricTest() : text_fragment_anchors_state_(GetParam()) {}
+
+ private:
+  ScopedTextFragmentIdentifiersForTest text_fragment_anchors_state_;
+};
+
+// These tests will run with and without the TextFragmentIdentifiers feature
+// enabled to ensure we collect metrics correctly under both situations.
+INSTANTIATE_TEST_SUITE_P(,
+                         TextFragmentRelatedMetricTest,
+                         testing::Values(false, true));
+
+// Test that we correctly track failed vs. successful element-id lookups. We
+// only count these in cases where we don't have a targetText, when the REF is
+// enabled.
+TEST_P(TextFragmentRelatedMetricTest, ElementIdSuccessFailureCounts) {
+  const int kUncounted = 0;
+  const int kFound = 1;
+  const int kNotFound = 2;
+
+  // When the TextFragmentAnchors feature is on, we should avoid counting the
+  // result of the element-id fragment if a targetText is successfully parsed.
+  // If the feature is off we treat the targetText as an element-id and should
+  // count the result.
+  const int kUncountedOrNotFound = GetParam() ? kUncounted : kNotFound;
+  const int kUncountedOrFound = GetParam() ? kUncounted : kFound;
+
+  Vector<std::pair<String, int>> test_cases = {
+      {"", kUncounted},
+      {"#element", kFound},
+      {"#doesntExist", kNotFound},
+      {"#element##foo", kNotFound},
+      {"#doesntexist##foo", kNotFound},
+      {"##element", kNotFound},
+      {"#element##targetText=doesntexist", kUncountedOrNotFound},
+      {"#element##targetText=page", kUncountedOrNotFound},
+      {"#targetText=doesntexist", kUncountedOrNotFound},
+      {"#targetText=page", kUncountedOrNotFound},
+      {"#targetText=name", kUncountedOrFound},
+      {"#element##targetText=name", kUncountedOrFound}};
+
+  const int kNotFoundSample = 0;
+  const int kFoundSample = 1;
+  const std::string histogram = "TextFragmentAnchor.ElementIdFragmentFound";
+
+  // Add counts to each histogram so that calls to GetBucketCount won't fail
+  // due to not finding the histogram.
+  UMA_HISTOGRAM_BOOLEAN(histogram, true);
+  UMA_HISTOGRAM_BOOLEAN(histogram, false);
+  int expected_found_count = 1;
+  int expected_not_found_count = 1;
+
+  for (auto test_case : test_cases) {
+    String url = "https://example.com/test.html" + test_case.first;
+    SimRequest request(url, "text/html");
+    LoadURL(url);
+    request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <p id="element">This is a test page</p>
+      <p id="targetText=name">This is a test page</p>
+      <p id="element##targetText=name">This is a test page</p>
+    )HTML");
+    Compositor().BeginFrame();
+
+    RunAsyncMatchingTasks();
+
+    auto not_found_count =
+        histogram_tester_.GetBucketCount(histogram, kNotFoundSample);
+    auto found_count =
+        histogram_tester_.GetBucketCount(histogram, kFoundSample);
+    int result = test_case.second;
+    if (result == kFound) {
+      ++expected_found_count;
+      ASSERT_EQ(expected_found_count, found_count)
+          << "ElementId should have been |Found| but did not UseCount on case: "
+          << test_case.first;
+      ASSERT_EQ(expected_not_found_count, not_found_count)
+          << "ElementId should have been |Found| but reported |NotFound| on "
+             "case: "
+          << test_case.first;
+    } else if (result == kNotFound) {
+      ++expected_not_found_count;
+      ASSERT_EQ(expected_not_found_count, not_found_count)
+          << "ElementId should have been |NotFound| but did not UseCount on "
+             "case: "
+          << test_case.first;
+      ASSERT_EQ(expected_found_count, found_count)
+          << "ElementId should have been |NotFound| but reported |Found| on "
+             "case: "
+          << test_case.first;
+    } else {
+      DCHECK_EQ(result, kUncounted);
+      ASSERT_EQ(expected_found_count, found_count)
+          << "Case should not have been counted but reported |Found| on case: "
+          << test_case.first;
+      ASSERT_EQ(expected_not_found_count, not_found_count)
+          << "Case should not have been counted but reported |NotFound| on "
+             "case: "
+          << test_case.first;
+    }
+  }
+}
+
+// Test that we correctly UseCount when we see a pound character '#' in the
+// fragment. We exclude the case where we see a ##targetText format
+// TextFragment so that we don't count it in uses of our own feature.
+TEST_P(TextFragmentRelatedMetricTest, DoubleHashUseCounter) {
+  const int kUncounted = 0;
+  const int kCounted = 1;
+
+  // When the TextFragmentAnchors feature is on, we should avoid counting a
+  // ##targetText directive as a use of double-hash in this case. When it's
+  // off, we expect to count it.
+  const int kCountedOnlyIfDisabled = !GetParam() ? kCounted : kUncounted;
+
+  Vector<std::pair<String, int>> test_cases = {
+      {"", kUncounted},
+      {"#element", kUncounted},
+      {"#doesntExist", kUncounted},
+      {"#element##foo", kCounted},
+      {"#doesntexist##foo", kCounted},
+      {"##element", kCounted},
+      {"#element#", kCounted},
+      {"#foo#bar#", kCounted},
+      {"#foo%23", kUncounted},
+      {"#element##targetText=doesntexist", kCountedOnlyIfDisabled},
+      {"#element##targetText=doesntexist#", kCountedOnlyIfDisabled},
+      {"#element##targetText=page", kCountedOnlyIfDisabled},
+      {"#element##targetText=page#", kCountedOnlyIfDisabled},
+      {"#targetText=doesntexist", kUncounted},
+      {"#targetText=page", kUncounted}};
+
+  for (auto test_case : test_cases) {
+    String url = "https://example.com/test.html" + test_case.first;
+    SimRequest request(url, "text/html");
+    LoadURL(url);
+    request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <p id="element">This is a test page</p>
+    )HTML");
+    Compositor().BeginFrame();
+
+    RunAsyncMatchingTasks();
+
+    bool is_use_counted =
+        GetDocument().IsUseCounted(WebFeature::kFragmentDoubleHash);
+    if (test_case.second == kCounted) {
+      EXPECT_TRUE(is_use_counted)
+          << "Expected to count double-hash but didn't in case: "
+          << test_case.first;
+    } else {
+      EXPECT_FALSE(is_use_counted)
+          << "Expected not to count double-hash but did in case: "
+          << test_case.first;
+    }
+  }
+}
+
 }  // namespace
 
 }  // namespace blink

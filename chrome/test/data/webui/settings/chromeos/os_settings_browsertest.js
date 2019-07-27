@@ -118,7 +118,7 @@ TEST_F('OSSettingsAdvancedPageBrowserTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });
 
-// Tests for the App section.
+// Tests for the Android App section in Google Play Store.
 // eslint-disable-next-line no-var
 var OSSettingsAndroidAppsPageTest = class extends OSSettingsBrowserTest {
   /** @override */
@@ -141,6 +141,30 @@ var OSSettingsAndroidAppsPageTest = class extends OSSettingsBrowserTest {
 TEST_F('OSSettingsAndroidAppsPageTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
+
+// Tests for the App section.
+// eslint-disable-next-line no-var
+var OSSettingsAppManagementPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload;
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'test_open_window_proxy.js',
+      'app_management_page_test.js',
+    ]);
+  }
+};
+
+// TODO(https://crbug.com/979553) Disabled due to failures .
+TEST_F('OSSettingsAppManagementPageTest', 'DISABLED_AllJsTests', () => {
+  mocha.run();
+});
+
 
 // Tests for the Device page.
 // eslint-disable-next-line no-var

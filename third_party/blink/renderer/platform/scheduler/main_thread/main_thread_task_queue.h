@@ -5,11 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_TASK_QUEUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_TASK_QUEUE_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "net/base/request_priority.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 
 namespace base {
 namespace sequence_manager {
@@ -68,9 +71,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     // 21 : kWebSchedulingUserInteraction, obsolete.
     // 22 : kWebSchedulingBestEffort, obsolete.
 
+    kWebScheduling = 24,
+
     // Used to group multiple types when calculating Expected Queueing Time.
     kOther = 23,
-    kCount = 24
+    kCount = 25
   };
 
   // Returns name of the given queue type. Returned string has application
@@ -196,6 +201,12 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       return *this;
     }
 
+    QueueCreationParams SetWebSchedulingPriority(
+        base::Optional<WebSchedulingPriority> priority) {
+      web_scheduling_priority = priority;
+      return *this;
+    }
+
     // Forwarded calls to |queue_traits|
 
     QueueCreationParams SetCanBeDeferred(bool value) {
@@ -269,6 +280,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     FrameSchedulerImpl* frame_scheduler;
     QueueTraits queue_traits;
     bool freeze_when_keep_active;
+    base::Optional<WebSchedulingPriority> web_scheduling_priority;
 
    private:
     void ApplyQueueTraitsToSpec() {
@@ -331,6 +343,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   void SetNetRequestPriority(net::RequestPriority net_request_priority);
   base::Optional<net::RequestPriority> net_request_priority() const;
 
+  base::Optional<WebSchedulingPriority> web_scheduling_priority() const;
+
  protected:
   void SetFrameSchedulerForTest(FrameSchedulerImpl* frame_scheduler);
 
@@ -364,6 +378,14 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   //
   // Used to track UMA metrics for resource loading tasks split by net priority.
   base::Optional<net::RequestPriority> net_request_priority_;
+
+  // |web_scheduling_priority_| is the priority of the task queue within the web
+  // scheduling API. This priority is used in conjunction with the frame
+  // scheduling policy to determine the task queue priority.
+  //
+  // For the initial prototype, we aren't allowing the priority to change since
+  // we're only implementing a set of global task queues.
+  const base::Optional<WebSchedulingPriority> web_scheduling_priority_;
 
   // Needed to notify renderer scheduler about completed tasks.
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED

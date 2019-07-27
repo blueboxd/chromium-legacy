@@ -70,6 +70,11 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="2366718077645204424">Não é possível contactar o anfitrião. Provavelmente, isso deve-se à configuração da rede que está a utilizar.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Última atividade online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Esta aplicação já não é suportada. Para garantir que recebe as mais recentes funcionalidades e atualizações de segurança, utilize a <ph name="LINK_BEGIN" />aplicação Web do Ambiente de Trabalho Remoto do Chrome<ph name="LINK_END" />.</translation>
+<translation id="2431841749166974386">É necessário um passo de configuração adicional para poder controlar remotamente esta máquina com o <ph name="PRODUCT_NAME" />.
+
+Para ativar esta funcionalidade, selecione "<ph name="BUTTON_NAME" />" para apresentar o painel de preferências de Segurança e privacidade e, em seguida, selecione a caixa junto a "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Se o "<ph name="SERVICE_SCRIPT_NAME" />" já está presente e já foi verificado, pode ter de o remover e, em seguida, adicioná-lo novamente.</translation>
 <translation id="2499160551253595098">Ajude-nos a melhorar o Ambiente de Trabalho Remoto do Chrome, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
 <translation id="2509394361235492552">Ligado a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Para garantir que todos os atalhos de teclado estão disponíveis, pode configurar o Ambiente de Trabalho Remoto do Chrome para "Abrir como janela".</translation>
@@ -192,9 +197,6 @@ PC</translation>
 <translation id="4973800994433240357">Ao transferir o instalador do anfitrião do Chromoting, aceita os <ph name="LINK_BEGIN" />Termos de Utilização<ph name="LINK_END" /> do Google.</translation>
 <translation id="4974476491460646149">Ligação a <ph name="HOSTNAME" /> fechada</translation>
 <translation id="4985296110227979402">Primeiro, tem de configurar o computador para acesso remoto</translation>
-<translation id="5059773780693835145">É necessário um passo de configuração adicional para poder controlar remotamente esta máquina com o <ph name="PRODUCT_NAME" />.
-
-Para ativar esta funcionalidade, selecione "<ph name="BUTTON_NAME" />" para apresentar o painel de preferências de Segurança e privacidade e, em seguida, selecione a caixa junto a "<ph name="SERVICE_SCRIPT_NAME" />".</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">O anfitrião remoto requer que efetue a autenticação num Website de terceiros. Para continuar, necessita de conceder permissões adicionais ao Ambiente de Trabalho Remoto do Chrome para aceder a este endereço:</translation>
 <translation id="507204348399810022">Tem a certeza de que pretende desativar as ligações remotas a <ph name="HOSTNAME" />?</translation>

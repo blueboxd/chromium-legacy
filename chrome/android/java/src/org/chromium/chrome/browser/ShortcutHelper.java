@@ -179,6 +179,15 @@ public class ShortcutHelper {
     }
 
     /**
+     * Check the running Android version supports adaptive icon (i.e. API level >= 26)
+     */
+    public static boolean doesAndroidSupportMaskableIcons() {
+        // TODO(crbug.com/977173): re-enable maskable icon support once server support
+        // is ready.
+        return false;
+    }
+
+    /**
      * Adds home screen shortcut which opens in a {@link WebappActivity}. Creates web app
      * home screen shortcut and registers web app asynchronously. Calls
      * ShortcutHelper::OnWebappDataStored() when done.

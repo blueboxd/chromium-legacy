@@ -161,10 +161,10 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
   }
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, *GetLayoutEmbeddedContent(), DisplayItem::kWebPlugin))
+          context, *element_->GetLayoutObject(), DisplayItem::kWebPlugin))
     return;
 
-  DrawingRecorder recorder(context, *GetLayoutEmbeddedContent(),
+  DrawingRecorder recorder(context, *element_->GetLayoutObject(),
                            DisplayItem::kWebPlugin);
   context.Save();
 
@@ -193,7 +193,7 @@ void WebPluginContainerImpl::InvalidateRect(const IntRect& rect) {
   if (!IsAttached())
     return;
 
-  LayoutBox* layout_object = GetLayoutEmbeddedContent();
+  LayoutBox* layout_object = ToLayoutBox(element_->GetLayoutObject());
   if (!layout_object)
     return;
 
@@ -371,11 +371,11 @@ int WebPluginContainerImpl::PrintBegin(
 
 void WebPluginContainerImpl::PrintPage(int page_number, GraphicsContext& gc) {
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          gc, *GetLayoutEmbeddedContent(), DisplayItem::kWebPlugin))
+          gc, *element_->GetLayoutObject(), DisplayItem::kWebPlugin))
     return;
 
   // TODO(wkorman): Do we still need print_rect at all?
-  DrawingRecorder recorder(gc, *GetLayoutEmbeddedContent(),
+  DrawingRecorder recorder(gc, *element_->GetLayoutObject(),
                            DisplayItem::kWebPlugin);
   gc.Save();
 
@@ -648,14 +648,14 @@ WebPoint WebPluginContainerImpl::RootFrameToLocalPoint(
     const WebPoint& point_in_root_frame) {
   WebPoint point_in_content =
       ParentFrameView()->ConvertFromRootFrame(point_in_root_frame);
-  return RoundedIntPoint(GetLayoutEmbeddedContent()->AbsoluteToLocalPoint(
+  return RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocalPoint(
       PhysicalOffset(point_in_content)));
 }
 
 WebPoint WebPluginContainerImpl::LocalToRootFramePoint(
     const WebPoint& point_in_local) {
   IntPoint absolute_point =
-      RoundedIntPoint(GetLayoutEmbeddedContent()->LocalToAbsolutePoint(
+      RoundedIntPoint(element_->GetLayoutObject()->LocalToAbsolutePoint(
           PhysicalOffset(point_in_local)));
   return ParentFrameView()->ConvertToRootFrame(absolute_point);
 }
@@ -799,7 +799,7 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {
 
   // TODO(dtapuska): Move WebMouseEventBuilder into the anonymous namespace
   // in this class.
-  WebMouseEventBuilder transformed_event(parent, GetLayoutEmbeddedContent(),
+  WebMouseEventBuilder transformed_event(parent, element_->GetLayoutObject(),
                                          event);
   if (transformed_event.GetType() == WebInputEvent::kUndefined)
     return;
@@ -861,7 +861,7 @@ void WebPluginContainerImpl::HandleWheelEvent(WheelEvent& event) {
       ParentFrameView()->ConvertFromRootFrame(absolute_location);
 
   FloatPoint local_point =
-      GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(absolute_location);
+      element_->GetLayoutObject()->AbsoluteToLocalFloatPoint(absolute_location);
   WebMouseWheelEvent translated_event = event.NativeEvent().FlattenTransform();
   translated_event.SetPositionInWidget(local_point.X(), local_point.Y());
 
@@ -956,7 +956,7 @@ WebTouchEvent WebPluginContainerImpl::TransformTouchEvent(
     absolute_location = parent->ConvertFromRootFrame(absolute_location);
 
     FloatPoint local_point =
-        GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(
+        element_->GetLayoutObject()->AbsoluteToLocalFloatPoint(
             absolute_location);
     transformed_event.touches[i].SetPositionInWidget(local_point);
   }
@@ -1018,7 +1018,7 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
   WebFloatPoint absolute_root_frame_location =
       event.NativeEvent().PositionInRootFrame();
   FloatPoint local_point =
-      GetLayoutEmbeddedContent()->AbsoluteToLocalFloatPoint(
+      element_->GetLayoutObject()->AbsoluteToLocalFloatPoint(
           absolute_root_frame_location);
   translated_event.FlattenTransform();
   translated_event.SetPositionInWidget(local_point);
@@ -1035,7 +1035,7 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent& event) {
 }
 
 void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent& event) {
-  WebMouseEventBuilder web_event(ParentFrameView(), GetLayoutEmbeddedContent(),
+  WebMouseEventBuilder web_event(ParentFrameView(), element_->GetLayoutObject(),
                                  event);
   if (web_event.GetType() == WebInputEvent::kUndefined)
     return;
@@ -1112,7 +1112,7 @@ void WebPluginContainerImpl::CalculateGeometry(IntRect& window_rect,
   // GetDocument().LayoutView() can be null when we receive messages from the
   // plugins while we are destroying a frame.
   // TODO: Can we just check element_->GetDocument().IsActive() ?
-  if (GetLayoutEmbeddedContent()->GetDocument().GetLayoutView()) {
+  if (element_->GetLayoutObject()->GetDocument().GetLayoutView()) {
     // Take our element and get the clip rect from the enclosing layer and
     // frame view.
     ComputeClipRectsForPlugin(element_, window_rect, clip_rect,

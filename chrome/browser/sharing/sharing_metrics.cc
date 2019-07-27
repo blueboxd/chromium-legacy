@@ -106,3 +106,11 @@ void LogSharingMessageAckTime(base::TimeDelta time) {
 void LogClickToCallDialogShown(SharingClickToCallDialogType type) {
   base::UmaHistogramEnumeration("Sharing.ClickToCallDialogShown", type);
 }
+
+void LogSendSharingMessageSuccess(bool success) {
+  base::UmaHistogramBoolean("Sharing.SendMessageSuccess", success);
+}
+
+void LogSendSharingAckMessageSuccess(bool success) {
+  base::UmaHistogramBoolean("Sharing.SendAckMessageSuccess", success);
+}

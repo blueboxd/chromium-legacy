@@ -415,6 +415,11 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return nullptr;
   }
 
+  virtual const BrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
+      const {
+    return nullptr;
+  }
+
   // Used in tests to set a custom override for DocumentInterfaceBroker methods.
   // |blink_handle| is bound to the test implementation on the caller side.
   // Returns the handle to the previously bound 'production' implementation,

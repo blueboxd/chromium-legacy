@@ -244,6 +244,10 @@ TEST_F(AutoclickTest, ToggleEnabled) {
   EXPECT_FALSE(GetAutoclickController()->IsEnabled());
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
+
+  // After disable, autoclick should be set back to left click.
+  EXPECT_EQ(AutoclickEventType::kLeftClick,
+            Shell::Get()->accessibility_controller()->GetAutoclickEventType());
 }
 
 TEST_F(AutoclickTest, MouseMovement) {

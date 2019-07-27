@@ -104,7 +104,9 @@ void RemoteCommandsService::EnqueueCommand(
       factory_->BuildJobForType(command.type(), this);
 
   if (!job || !job->Init(queue_.GetNowTicks(), command)) {
-    SYSLOG(ERROR) << "Initialization of remote command failed.";
+    SYSLOG(ERROR) << "Initialization of remote command type "
+                  << command.type() << " with id " << command.command_id()
+                  << " failed.";
     em::RemoteCommandResult ignored_result;
     ignored_result.set_result(
         em::RemoteCommandResult_ResultType_RESULT_IGNORED);

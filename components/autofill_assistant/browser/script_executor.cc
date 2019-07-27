@@ -77,13 +77,8 @@ ScriptExecutor::ScriptExecutor(
       last_script_payload_(script_payload),
       listener_(listener),
       delegate_(delegate),
-      at_end_(CONTINUE),
-      should_stop_script_(false),
-      should_clean_contextual_ui_on_finish_(false),
-      previous_action_type_(ActionProto::ACTION_INFO_NOT_SET),
-      scripts_state_(scripts_state),
       ordered_interrupts_(ordered_interrupts),
-      weak_ptr_factory_(this) {
+      scripts_state_(scripts_state) {
   DCHECK(delegate_);
   DCHECK(ordered_interrupts_);
 }
@@ -115,16 +110,17 @@ void ScriptExecutor::Run(RunScriptCallback callback) {
 }
 
 void ScriptExecutor::OnNavigationStateChanged() {
+  NavigationInfoProto& navigation_info = current_action_data_.navigation_info;
   if (delegate_->IsNavigatingToNewDocument()) {
-    navigation_info_.set_started(true);
-    navigation_info_.set_unexpected(expected_navigation_step_ !=
-                                    ExpectedNavigationStep::EXPECTED);
+    navigation_info.set_started(true);
+    navigation_info.set_unexpected(expected_navigation_step_ !=
+                                   ExpectedNavigationStep::EXPECTED);
   } else {
-    navigation_info_.set_ended(true);
+    navigation_info.set_ended(true);
   }
 
   if (delegate_->HasNavigationError()) {
-    navigation_info_.set_has_error(true);
+    navigation_info.set_has_error(true);
   }
 
   switch (expected_navigation_step_) {
@@ -159,14 +155,14 @@ void ScriptExecutor::RunElementChecks(BatchElementChecker* checker) {
 void ScriptExecutor::ShortWaitForElement(
     const Selector& selector,
     base::OnceCallback<void(bool)> callback) {
-  wait_for_dom_ = std::make_unique<WaitForDomOperation>(
+  current_action_data_.wait_for_dom = std::make_unique<WaitForDomOperation>(
       this, delegate_, delegate_->GetSettings().short_wait_for_element_deadline,
       /* allow_interrupt= */ false,
       base::BindRepeating(&ScriptExecutor::CheckElementMatches,
                           weak_ptr_factory_.GetWeakPtr(), selector),
       base::BindOnce(&ScriptExecutor::OnShortWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  wait_for_dom_->Run();
+  current_action_data_.wait_for_dom->Run();
 }
 
 void ScriptExecutor::WaitForDom(
@@ -176,11 +172,11 @@ void ScriptExecutor::WaitForDom(
                                  base::OnceCallback<void(bool)>)>
         check_elements,
     base::OnceCallback<void(ProcessedActionStatusProto)> callback) {
-  wait_for_dom_ = std::make_unique<WaitForDomOperation>(
+  current_action_data_.wait_for_dom = std::make_unique<WaitForDomOperation>(
       this, delegate_, max_wait_time, allow_interrupt, check_elements,
       base::BindOnce(&ScriptExecutor::OnWaitForElementVisibleWithInterrupts,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  wait_for_dom_->Run();
+  current_action_data_.wait_for_dom->Run();
 }
 
 void ScriptExecutor::SetStatusMessage(const std::string& message) {
@@ -314,6 +310,9 @@ void ScriptExecutor::CleanUpAfterPrompt() {
 void ScriptExecutor::OnChosen(UserAction::Callback callback,
                               std::unique_ptr<TriggerContext> context) {
   CleanUpAfterPrompt();
+  if (context->is_direct_action()) {
+    current_action_data_.direct_action = true;
+  }
   std::move(callback).Run(std::move(context));
 }
 
@@ -637,8 +636,9 @@ void ScriptExecutor::ProcessNextAction() {
 void ScriptExecutor::ProcessAction(Action* action) {
   DVLOG(2) << "Begin action: " << *action;
 
-  navigation_info_.Clear();
-  navigation_info_.set_has_error(delegate_->HasNavigationError());
+  current_action_data_ = CurrentActionData();
+  current_action_data_.navigation_info.set_has_error(
+      delegate_->HasNavigationError());
 
   action->ProcessAction(base::BindOnce(&ScriptExecutor::OnProcessedAction,
                                        weak_ptr_factory_.GetWeakPtr(),
@@ -663,7 +663,9 @@ void ScriptExecutor::OnProcessedAction(
 
   auto& processed_action = processed_actions_.back();
   processed_action.set_run_time_ms(run_time.InMilliseconds());
-  *processed_action.mutable_navigation_info() = navigation_info_;
+  processed_action.set_direct_action(current_action_data_.direct_action);
+  *processed_action.mutable_navigation_info() =
+      current_action_data_.navigation_info;
   if (processed_action.status() != ProcessedActionStatusProto::ACTION_APPLIED) {
     if (delegate_->HasNavigationError()) {
       // Overwrite the original error, as the root cause is most likely a
@@ -691,11 +693,9 @@ void ScriptExecutor::CheckElementMatches(
 void ScriptExecutor::OnShortWaitForElement(
     base::OnceCallback<void(bool)> callback,
     bool element_found,
-    const Result* interrupt_result,
-    const std::set<std::string>& interrupt_paths) {
+    const Result* interrupt_result) {
   // Interrupts cannot run, so should never be reported.
   DCHECK(!interrupt_result);
-  DCHECK(interrupt_paths.empty());
 
   std::move(callback).Run(element_found);
 }
@@ -703,9 +703,7 @@ void ScriptExecutor::OnShortWaitForElement(
 void ScriptExecutor::OnWaitForElementVisibleWithInterrupts(
     base::OnceCallback<void(ProcessedActionStatusProto)> callback,
     bool element_found,
-    const Result* interrupt_result,
-    const std::set<std::string>& interrupt_paths) {
-  ran_interrupts_.insert(interrupt_paths.begin(), interrupt_paths.end());
+    const Result* interrupt_result) {
   if (interrupt_result) {
     if (!interrupt_result->success) {
       std::move(callback).Run(INTERRUPT_FAILED);
@@ -907,7 +905,7 @@ void ScriptExecutor::WaitForDomOperation::RunCallbackWithResult(
     return;
 
   RestorePreInterruptScroll();
-  std::move(callback_).Run(check_result, result, ran_interrupts_);
+  std::move(callback_).Run(check_result, result);
 }
 
 void ScriptExecutor::WaitForDomOperation::SavePreInterruptState() {
@@ -935,6 +933,11 @@ void ScriptExecutor::WaitForDomOperation::RestorePreInterruptScroll() {
         main_script_->last_focused_element_top_padding_, base::DoNothing());
   }
 }
+
+ScriptExecutor::CurrentActionData::CurrentActionData() = default;
+ScriptExecutor::CurrentActionData::~CurrentActionData() = default;
+ScriptExecutor::CurrentActionData& ScriptExecutor::CurrentActionData::operator=(
+    ScriptExecutor::CurrentActionData&& other) = default;
 
 std::ostream& operator<<(std::ostream& out,
                          const ScriptExecutor::Result& result) {

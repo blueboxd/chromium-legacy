@@ -96,7 +96,7 @@ public class LocaleManager {
         @Override
         public void onAction(Object actionData) {
             Context context = ContextUtils.getApplicationContext();
-            PreferencesLauncher.launchSettingsPageCompat(context, SearchEnginePreference.class);
+            PreferencesLauncher.launchSettingsPage(context, SearchEnginePreference.class);
         }
     };
 

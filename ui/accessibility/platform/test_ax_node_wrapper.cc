@@ -552,6 +552,17 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
   }
 }
 
+base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
+  const AXNodeData& data = GetData();
+  switch (data.role) {
+    case ax::mojom::Role::kSearchBox:
+      return base::ASCIIToUTF16("search box");
+
+    default:
+      return {};
+  }
+}
+
 base::string16 TestAXNodeWrapper::GetLocalizedStringForImageAnnotationStatus(
     ax::mojom::ImageAnnotationStatus status) const {
   switch (status) {

@@ -22,7 +22,7 @@ import org.chromium.webapk.shell_apk.WebApkSharedPreferences;
 /** Contains methods for launching host browser where ShellAPK shows the splash screen. */
 public class H2OLauncher {
     // Lowest version of Chromium which supports ShellAPK showing the splash screen.
-    static final int MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH = 76;
+    static final int MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH = 77;
 
     private static final String TAG = "cr_H2OLauncher";
 
@@ -72,8 +72,8 @@ public class H2OLauncher {
 
         Bundle extraExtras = new Bundle();
         extraExtras.putBoolean(WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, true);
-        HostBrowserLauncher.launchBrowserInWebApkMode(
-                splashActivity, params, extraExtras, Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        HostBrowserLauncher.launchBrowserInWebApkMode(splashActivity, params, extraExtras,
+                Intent.FLAG_ACTIVITY_NO_ANIMATION, true /* expectResult */);
     }
 
     /** Launches the given component, passing extras from the given intent. */
@@ -99,16 +99,16 @@ public class H2OLauncher {
 
     /** Sends intent to host browser to request that the host browser relaunch the WebAPK. */
     public static void requestRelaunchFromHostBrowser(
-            Context context, HostBrowserLauncherParams params) {
+            Activity activity, HostBrowserLauncherParams params) {
         long timestamp = System.currentTimeMillis();
-        SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(context).edit();
+        SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(activity).edit();
         editor.putLong(
                 WebApkSharedPreferences.PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP, timestamp);
         editor.apply();
 
         Bundle extraExtras = new Bundle();
         extraExtras.putBoolean(WebApkConstants.EXTRA_RELAUNCH, true);
-        HostBrowserLauncher.launchBrowserInWebApkMode(
-                context, params, extraExtras, Intent.FLAG_ACTIVITY_NEW_TASK);
+        HostBrowserLauncher.launchBrowserInWebApkMode(activity, params, extraExtras,
+                Intent.FLAG_ACTIVITY_NEW_TASK, false /* expectResult */);
     }
 }

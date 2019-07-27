@@ -6,7 +6,6 @@
 
 #include "base/time/tick_clock.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 #include <algorithm>
 

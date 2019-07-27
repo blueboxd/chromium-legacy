@@ -184,9 +184,7 @@ DisplayLockHandleAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_obj_);
 }
 
-void DisplayLockHandleAndroid::Release(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jobj) {
+void DisplayLockHandleAndroid::Release(JNIEnv* env) {
   delete this;
 }
 }  // namespace feature_engagement

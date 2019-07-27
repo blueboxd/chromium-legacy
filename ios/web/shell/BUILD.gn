@@ -66,6 +66,7 @@ source_set("shell") {
     "//base",
     "//ios/net",
     "//ios/web",
+    "//ios/web/common:user_agent",
     "//ios/web/public",
     "//ios/web/public/init",
     "//net",

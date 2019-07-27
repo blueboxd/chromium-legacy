@@ -245,7 +245,7 @@ CrSettingsAppManagementPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
-    'app_management_page_test.js',
+    'chromeos/app_management_page_test.js',
     'test_open_window_proxy.js',
   ]),
 };
@@ -1773,7 +1773,7 @@ TEST_F('CrSettingsSystemPageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#endif  // defined(OS_CHROMEOS)');
+GEN('#endif  // !defined(OS_CHROMEOS)');
 
 /**
  * @constructor

@@ -335,7 +335,7 @@ performance and for optimization hints.
 
 
 [Address Sanitizer]: http://clang.llvm.org/docs/AddressSanitizer.html
-[ClusterFuzz status]: clusterfuzz.md#Status-Links
+[ClusterFuzz status]: libFuzzer_integration.md#Status-Links
 [Efficient Fuzzer Guide]: efficient_fuzzer.md
 [Fuzzer Dictionary]: efficient_fuzzer.md#Fuzzer-Dictionary
 [Memory Sanitizer]: http://clang.llvm.org/docs/MemorySanitizer.html

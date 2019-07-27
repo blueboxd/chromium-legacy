@@ -994,49 +994,55 @@ TEST_P(InputRouterImplTest, MAYBE_GestureTypesIgnoringAck) {
       WebInputEvent::kGesturePinchEnd,    WebInputEvent::kGestureScrollEnd};
   for (size_t i = 0; i < base::size(eventTypes); ++i) {
     WebInputEvent::Type type = eventTypes[i];
-    if (ShouldBlockEventStream(GetEventWithType(type))) {
+    if (type == WebInputEvent::kGestureFlingStart ||
+        type == WebInputEvent::kGestureFlingCancel) {
+      SimulateGestureEvent(type, blink::WebGestureDevice::kTouchscreen);
+      DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
+
+      if (type == WebInputEvent::kGestureFlingCancel) {
+        // The fling controller generates and sends a GSE while handling the
+        // GFC.
+        EXPECT_EQ(1U, dispatched_messages.size());
+        EXPECT_EQ(2U, disposition_handler_->GetAndResetAckCount());
+      } else {
+        EXPECT_EQ(0U, dispatched_messages.size());
+        EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+      }
+
+      EXPECT_EQ(0, client_->in_flight_event_count());
+      EXPECT_FALSE(HasPendingEvents());
+    } else if (ShouldBlockEventStream(GetEventWithType(type))) {
       PressAndSetTouchActionAuto();
       SimulateGestureEvent(type, blink::WebGestureDevice::kTouchscreen);
       DispatchedMessages dispatched_messages = GetAndResetDispatchedMessages();
 
-      if (type != WebInputEvent::kGestureFlingStart &&
-          type != WebInputEvent::kGestureFlingCancel) {
-        if (type == WebInputEvent::kGestureScrollUpdate)
-          EXPECT_EQ(2U, dispatched_messages.size());
-        else
-          EXPECT_EQ(1U, dispatched_messages.size());
-        EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
-        EXPECT_EQ(1, client_->in_flight_event_count());
-        EXPECT_TRUE(HasPendingEvents());
-        ASSERT_TRUE(
-            dispatched_messages[dispatched_messages.size() - 1]->ToEvent());
-
-        dispatched_messages[dispatched_messages.size() - 1]
-            ->ToEvent()
-            ->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      if (type == WebInputEvent::kGestureScrollUpdate) {
+        // TouchScrollStarted is also dispatched.
+        EXPECT_EQ(2U, dispatched_messages.size());
+      } else {
+        EXPECT_EQ(1U, dispatched_messages.size());
       }
+      EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
+      EXPECT_EQ(1, client_->in_flight_event_count());
+      EXPECT_TRUE(HasPendingEvents());
+      ASSERT_TRUE(
+          dispatched_messages[dispatched_messages.size() - 1]->ToEvent());
+
+      dispatched_messages[dispatched_messages.size() - 1]
+          ->ToEvent()
+          ->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
       EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
-      if (type == WebInputEvent::kGestureFlingCancel) {
-        // fling controller generates and sends a GSE while handling the GFC.
-        EXPECT_EQ(2U, disposition_handler_->GetAndResetAckCount());
-      } else {
-        EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-      }
+      EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
       EXPECT_EQ(0, client_->in_flight_event_count());
       EXPECT_FALSE(HasPendingEvents());
-      continue;
-
-      ReleaseTouchPoint(0);
-      SendTouchEvent();
-      GetAndResetDispatchedMessages();
+    } else {
+      SimulateGestureEvent(type, blink::WebGestureDevice::kTouchscreen);
+      EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
+      EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+      EXPECT_EQ(0, client_->in_flight_event_count());
+      EXPECT_FALSE(HasPendingEvents());
     }
-
-    SimulateGestureEvent(type, blink::WebGestureDevice::kTouchscreen);
-    EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
-    EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-    EXPECT_EQ(0, client_->in_flight_event_count());
-    EXPECT_FALSE(HasPendingEvents());
   }
 }
 
@@ -1080,15 +1086,14 @@ TEST_P(InputRouterImplTest, RequiredEventAckTypes) {
       WebInputEvent::kKeyDown,
       WebInputEvent::kKeyUp,
       WebInputEvent::kChar,
+      WebInputEvent::kGestureScrollBegin,
       WebInputEvent::kGestureScrollUpdate,
-      WebInputEvent::kGestureFlingStart,
-      WebInputEvent::kGestureFlingCancel,
-      WebInputEvent::kGesturePinchUpdate,
       WebInputEvent::kTouchStart,
       WebInputEvent::kTouchMove};
   for (size_t i = 0; i < base::size(kRequiredEventAckTypes); ++i) {
     const WebInputEvent::Type required_ack_type = kRequiredEventAckTypes[i];
-    ASSERT_TRUE(ShouldBlockEventStream(GetEventWithType(required_ack_type)));
+    ASSERT_TRUE(ShouldBlockEventStream(GetEventWithType(required_ack_type)))
+        << WebInputEvent::GetName(required_ack_type);
   }
 }
 
@@ -1205,16 +1210,27 @@ TEST_P(InputRouterImplTest, GestureShowPressIsInOrder) {
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
 
-  // GesturePinchUpdate waits for an ack.
+  // GesturePinchUpdate ignores its ack.
   // This also verifies that GesturePinchUpdates for touchscreen are sent
   // to the renderer (in contrast to the TrackpadPinchUpdate test).
   SimulateGestureEvent(WebInputEvent::kGesturePinchUpdate,
                        blink::WebGestureDevice::kTouchscreen);
   dispatched_messages = GetAndResetDispatchedMessages();
   EXPECT_EQ(1U, dispatched_messages.size());
+  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0, client_->in_flight_event_count());
+  EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
+            client_->last_in_flight_event_type());
+
+  // GestureScrollUpdate waits for an ack.
+  // This dispatches TouchScrollStarted and GestureScrollUpdate.
+  SimulateGestureEvent(WebInputEvent::kGestureScrollUpdate,
+                       blink::WebGestureDevice::kTouchscreen);
+  dispatched_messages = GetAndResetDispatchedMessages();
+  EXPECT_EQ(2U, dispatched_messages.size());
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1, client_->in_flight_event_count());
-  EXPECT_EQ(WebInputEvent::kGesturePinchUpdate,
+  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate,
             client_->last_in_flight_event_type());
 
   // GestureShowPress will be sent immediately since GestureEventQueue allows
@@ -1236,8 +1252,8 @@ TEST_P(InputRouterImplTest, GestureShowPressIsInOrder) {
   EXPECT_EQ(WebInputEvent::kGestureShowPress,
             client_->last_in_flight_event_type());
 
-  // Ack the GesturePinchUpdate to release two GestureShowPress ack.
-  dispatched_messages[0]->ToEvent()->CallCallback(
+  // Ack the GestureScrollUpdate to release the two GestureShowPress acks.
+  dispatched_messages[1]->ToEvent()->CallCallback(
       INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   EXPECT_EQ(0U, GetAndResetDispatchedMessages().size());
   EXPECT_EQ(3U, disposition_handler_->GetAndResetAckCount());
@@ -1936,7 +1952,7 @@ TEST_P(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
   ASSERT_EQ(1U, temp_dispatched_messages.size());
   ASSERT_TRUE(temp_dispatched_messages[0]->ToEvent());
   dispatched_messages.emplace_back(std::move(temp_dispatched_messages.at(0)));
-  EXPECT_EQ(3, client_->in_flight_event_count());
+  EXPECT_EQ(2, client_->in_flight_event_count());
 
   SimulateGestureScrollUpdateEvent(1.5f, 1.5f, 0,
                                    blink::WebGestureDevice::kTouchpad);
@@ -1944,7 +1960,7 @@ TEST_P(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
   ASSERT_EQ(1U, temp_dispatched_messages.size());
   ASSERT_TRUE(temp_dispatched_messages[0]->ToEvent());
   dispatched_messages.emplace_back(std::move(temp_dispatched_messages.at(0)));
-  EXPECT_EQ(4, client_->in_flight_event_count());
+  EXPECT_EQ(3, client_->in_flight_event_count());
 
   SimulateTouchpadGesturePinchEventWithoutWheel(
       WebInputEvent::kGesturePinchUpdate, 1.5f, 20, 25, 0);
@@ -1952,7 +1968,7 @@ TEST_P(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
   ASSERT_EQ(1U, temp_dispatched_messages.size());
   ASSERT_TRUE(temp_dispatched_messages[0]->ToEvent());
   dispatched_messages.emplace_back(std::move(temp_dispatched_messages.at(0)));
-  EXPECT_EQ(5, client_->in_flight_event_count());
+  EXPECT_EQ(3, client_->in_flight_event_count());
 
   SimulateGestureScrollUpdateEvent(0.f, 1.5f, 0,
                                    blink::WebGestureDevice::kTouchpad);
@@ -1960,36 +1976,26 @@ TEST_P(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
   ASSERT_EQ(1U, temp_dispatched_messages.size());
   ASSERT_TRUE(temp_dispatched_messages[0]->ToEvent());
   dispatched_messages.emplace_back(std::move(temp_dispatched_messages.at(0)));
-  EXPECT_EQ(6, client_->in_flight_event_count());
+  EXPECT_EQ(4, client_->in_flight_event_count());
 
   // Ack'ing events should decrease in-flight event count.
   dispatched_messages[0]->ToEvent()->CallCallback(
       INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-  EXPECT_EQ(5, client_->in_flight_event_count());
+  EXPECT_EQ(3, client_->in_flight_event_count());
 
   // Ack the second scroll.
   dispatched_messages[1]->ToEvent()->CallCallback(
       INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-  EXPECT_EQ(4, client_->in_flight_event_count());
-
-  // Ack the pinch event.
-  dispatched_messages[2]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-  EXPECT_EQ(3, client_->in_flight_event_count());
+  EXPECT_FALSE(dispatched_messages[2]->ToEvent()->HasCallback());
+  EXPECT_EQ(2U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_EQ(2, client_->in_flight_event_count());
 
   // Ack the scroll event.
   dispatched_messages[3]->ToEvent()->CallCallback(
       INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-  EXPECT_EQ(2, client_->in_flight_event_count());
-
-  // Ack the pinch event.
-  dispatched_messages[4]->ToEvent()->CallCallback(
-      INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_FALSE(dispatched_messages[4]->ToEvent()->HasCallback());
+  EXPECT_EQ(2U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1, client_->in_flight_event_count());
 
   // Ack the scroll event.

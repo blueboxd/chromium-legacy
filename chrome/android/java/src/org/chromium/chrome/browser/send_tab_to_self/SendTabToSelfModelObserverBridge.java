@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.send_tab_to_self;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -61,7 +60,7 @@ public class SendTabToSelfModelObserverBridge {
     public void destroy() {
         if (mNativeModelObserverBridge != 0) {
             Natives jni = SendTabToSelfModelObserverBridgeJni.get();
-            jni.destroy(this, mNativeModelObserverBridge);
+            jni.destroy(mNativeModelObserverBridge);
             mNativeModelObserverBridge = 0;
         }
     }
@@ -152,9 +151,8 @@ public class SendTabToSelfModelObserverBridge {
 
     @NativeMethods
     interface Natives {
-        long init(@JCaller SendTabToSelfModelObserverBridge bridge, Profile profile);
+        long init(SendTabToSelfModelObserverBridge bridge, Profile profile);
 
-        void destroy(@JCaller SendTabToSelfModelObserverBridge bridge,
-                long nativeSendTabToSelfModelObserverBridge);
+        void destroy(long nativeSendTabToSelfModelObserverBridge);
     }
 }

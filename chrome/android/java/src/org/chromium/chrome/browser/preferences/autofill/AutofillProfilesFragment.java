@@ -18,9 +18,9 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.MainPreferences;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 
 /**
@@ -57,8 +57,8 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
         getPreferenceScreen().removeAll();
         getPreferenceScreen().setOrderingAsAdded(true);
 
-        ChromeSwitchPreferenceCompat autofillSwitch =
-                new ChromeSwitchPreferenceCompat(getStyledContext(), null);
+        ChromeSwitchPreference autofillSwitch =
+                new ChromeSwitchPreference(getStyledContext(), null);
         autofillSwitch.setTitle(R.string.autofill_enable_profiles_toggle_label);
         autofillSwitch.setSummary(R.string.autofill_enable_profiles_toggle_sublabel);
         autofillSwitch.setChecked(PersonalDataManager.isAutofillProfileEnabled());
@@ -66,7 +66,7 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
             PersonalDataManager.setAutofillProfileEnabled((boolean) newValue);
             return true;
         });
-        autofillSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegateCompat() {
+        autofillSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 return PersonalDataManager.isAutofillProfileManaged();

@@ -320,13 +320,10 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& jdelegate);
 
   // Checks whether the Autofill PersonalDataManager has profiles.
-  jboolean HasProfiles(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& unused_obj);
+  jboolean HasProfiles(JNIEnv* env);
 
   // Checks whether the Autofill PersonalDataManager has credit cards.
-  jboolean HasCreditCards(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj);
+  jboolean HasCreditCards(JNIEnv* env);
 
   // Gets the subkeys for the region with |jregion_code| code, if the
   // |jregion_code| rules have finished loading. Otherwise, sets up a task to
@@ -339,13 +336,9 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& jdelegate);
 
   // Cancels the pending subkey request task.
-  void CancelPendingGetSubKeys(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj);
+  void CancelPendingGetSubKeys(JNIEnv* env);
 
-  void SetSyncServiceForTesting(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj);
+  void SetSyncServiceForTesting(JNIEnv* env);
 
   static const char* GetPrefNameExposedToJava(int pref_index);
 

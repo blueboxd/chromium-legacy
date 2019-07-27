@@ -782,10 +782,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool opener_suppressed,
       bool* no_javascript_access);
 
-  // Notifies the embedder that the ResourceDispatcherHost has been created.
-  // This is when it can optionally add a delegate.
-  virtual void ResourceDispatcherHostCreated() {}
-
   // Allows the embedder to return a delegate for the SpeechRecognitionManager.
   // The delegate will be owned by the manager. It's valid to return nullptr.
   virtual SpeechRecognitionManagerDelegate*

@@ -1005,6 +1005,12 @@ void AutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
                                  form_structure->form_parsed_timestamp(),
                                  sync_state_, driver()->IsIncognito());
   }
+
+  if (autofill_field->Type().group() == CREDIT_CARD &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillCreditCardAuthentication)) {
+    credit_card_access_manager_->PrepareToFetchCreditCard();
+  }
 }
 
 void AutofillManager::OnHidePopup() {
@@ -1334,7 +1340,8 @@ AutofillManager::AutofillManager(
     PersonalDataManager* personal_data,
     AutocompleteHistoryManager* autocomplete_history_manager,
     const std::string app_locale,
-    AutofillDownloadManagerState enable_download_manager)
+    AutofillDownloadManagerState enable_download_manager,
+    std::unique_ptr<CreditCardAccessManager> cc_access_manager)
     : AutofillHandler(driver),
       client_(client),
       log_manager_(client_->GetLogManager()),
@@ -1355,17 +1362,17 @@ AutofillManager::AutofillManager(
               form_interactions_ukm_logger_.get(),
               personal_data_,
               client_)),
-      credit_card_access_manager_(std::make_unique<CreditCardAccessManager>(
-          driver,
-          client_,
-          personal_data_,
-          credit_card_form_event_logger_.get())),
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
       is_rich_query_enabled_(IsRichQueryEnabled(client->GetChannel())) {
   DCHECK(driver);
   DCHECK(client_);
+  credit_card_access_manager_ = cc_access_manager
+                                    ? std::move(cc_access_manager)
+                                    : std::make_unique<CreditCardAccessManager>(
+                                          driver, client_, personal_data_,
+                                          credit_card_form_event_logger_.get());
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
     version_info::Channel channel = client_->GetChannel();
     download_manager_.reset(

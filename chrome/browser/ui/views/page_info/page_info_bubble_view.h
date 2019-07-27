@@ -213,12 +213,4 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleView);
 };
 
-// Creates and returns a safety tip bubble. Used in unit tests.
-PageInfoBubbleViewBase* CreateSafetyTipBubbleForTesting(
-    gfx::NativeView parent_view,
-    content::WebContents* web_contents,
-    safety_tips::SafetyTipType type,
-    const GURL& virtual_url,
-    const GURL& safe_url);
-
 #endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_H_

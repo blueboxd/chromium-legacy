@@ -82,6 +82,17 @@ class SearchFieldCancelButtonElement final : public HTMLDivElement {
   bool SupportsFocus() const override { return false; }
 };
 
+class PasswordRevealButtonElement final : public HTMLDivElement {
+ public:
+  explicit PasswordRevealButtonElement(Document&);
+
+  void DefaultEventHandler(Event&) override;
+  bool WillRespondToMouseClickEvents() override;
+
+ private:
+  bool SupportsFocus() const override { return false; }
+};
+
 }  // namespace blink
 
 #endif

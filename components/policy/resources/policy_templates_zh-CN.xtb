@@ -62,6 +62,7 @@
 <translation id="1062407476771304334">替换</translation>
 <translation id="1079801999187584280">禁止使用开发者工具</translation>
 <translation id="1087437665304381368">此政策仅用于控制 <ph name="PRODUCT_OS_NAME" />开发者模式。如果您想阻止对 Android 开发者选项的访问，则需设置 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 政策。</translation>
+<translation id="1087707496788636333">Chrome 企业版政策列表迁址了！请更新您的书签以改用 <ph name="POLICY_DOCUMENTATION_URL" />。</translation>
 <translation id="1093082332347834239">启用此设置后，远程协助主机会在具有 <ph name="UIACCESS_PERMISSION_NAME" /> 权限的进程中运行。这样，远程用户就可以在本地用户桌面上操控提权后的窗口。
 
           如果停用或未配置此设置，远程协助主机则会在用户的环境中运行，而远程用户将无法在桌面上操控提权后的窗口。</translation>
@@ -251,12 +252,12 @@
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="1438739959477268107">默认的密钥生成设置</translation>
 <translation id="1454846751303307294">可让您设置网址格式的列表，这些网址格式用于指定不允许运行 JavaScript 的网站。在未设置此政策的情况下，如果设置了“DefaultJavaScriptSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
-<translation id="1455804070656338445">配置用于更改密码的网址（仅限 HTTP 和 HTTPS 方案）。当在浏览器中向用户发出警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
+<translation id="1455804070656338445">配置用于更改密码的网址（仅限 HTTP 和 HTTPS 方案）。当浏览器显示警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
       为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获这一用于更改密码的页面中的新密码指纹，请务必确保该页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。
 
-      如果启用了此设置，当在浏览器中向用户发出警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
+      如果启用了此设置，当浏览器中显示了警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
       如果停用了或未配置此设置，则密码保护服务会将用户转到 https://myaccount.google.com，以便其更改密码。
-      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 专业版或企业版实例。</translation>
+      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已加入设备管理服务的 Windows 10 专业版或企业版实例。</translation>
 <translation id="1456822151187621582">Windows（<ph name="PRODUCT_OS_NAME" />客户端）：</translation>
 <translation id="1458547592473993238">此政策已被弃用。请使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 控制 Flash 插件的可用性，并使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> 控制是否应使用集成的 PDF 查看器打开 PDF 文件。
 
@@ -687,6 +688,10 @@
 <translation id="2231817271680715693">首次运行时，从默认浏览器导入浏览记录</translation>
 <translation id="2236488539271255289">不允许任何网站设置本地数据</translation>
 <translation id="2240879329269430151">可让您设置是否允许网站显示弹出式窗口。可以针对所有网站允许或拒绝显示弹出式窗口。如果未设置此政策，系统将使用“BlockPopups”并允许用户更改此设置。</translation>
+<translation id="2241498944622759244">该功能从未被发布，所以此政策已被弃用。如果此政策设为 true 或未设置，<ph name="PRODUCT_NAME" /> 将会根据当前网页来建议相关网页。
+      这些建议是系统从 Google 服务器远程获取的。
+
+      如果此政策设为 false，系统将不会获取或显示这类建议。</translation>
 <translation id="2255326053989409609">启用此设置可禁止网页访问图形处理单元 (GPU)。具体而言，就是网页无法访问 WebGL API，并且插件无法使用 Pepper 3D API。
 
       停用或不设定此设置可能会允许网页使用 WebGL API，并且允许插件使用 Pepper 3D API。浏览器的默认设置可能仍然需要传递命令行参数才能使用这些 API。
@@ -926,6 +931,20 @@
       值的格式应遵循“IANA 时区信息数据库”中的时区名称所采用的格式（请参阅“https://zh.wikipedia.org/wiki/Tz_database”）。需要特别说明的是，大多数时区都可用“大洲/大城市”或“大洋/大城市”的格式来表示。
 
       如果设置了此政策，根据设备位置信息自动解析时区的功能便会被彻底停用，SystemTimezoneAutomaticDetection 政策也会被覆盖。</translation>
+<translation id="2758218632193192525">提供可用打印服务器的配置。
+
+      此政策让您能够以 JSON 文件的形式向 <ph name="PRODUCT_OS_NAME" />设备提供外部打印服务器的配置。
+
+      该文件的大小不得超过 1MB，且必须包含记录（JSON 对象）数组。每条记录都必须包含“url”和“display_name”字段。
+
+      系统会下载并缓存该文件。相应的加密哈希值用于验证下载内容是否完整。只要网址或哈希值有任何变化，系统就会重新下载该文件。
+
+      如果此政策设为正确的值，设备将尝试使用 IPP 协议查询指定的打印服务器，以确认是否有可用的打印机。
+
+      如果此政策设为不正确的值或未设置，用户将看不到任何服务器打印机。
+
+      目前，打印服务器的数量上限为 16 台。系统仅会查询列表中显示的前 16 台打印服务器。
+      </translation>
 <translation id="2759224876420453487">控制多用户配置会话中的用户行为</translation>
 <translation id="2761483219396643566">使用电池供电时的闲置警告延迟时间</translation>
 <translation id="2762164719979766599">指定要在登录屏幕上显示的设备本地帐号列表。
@@ -1816,6 +1835,15 @@
 
           该功能目前在服务器端已停用。</translation>
 <translation id="4363057787588706121">允许合并具有多个不同来源的列表政策</translation>
+<translation id="4363136876356691536">如果将此政策设为 true，系统任务栏菜单中将始终显示无障碍选项。
+
+          如果将此政策设为 false，系统任务栏菜单中绝不会显示无障碍选项。
+
+          如果您设置了此政策，用户将无法更改或覆盖它。
+
+          如果未设置此政策，系统任务栏菜单中将不会显示无障碍选项，但用户可以通过“设置”页面使无障碍选项显示在系统任务栏菜单中。
+
+          通过其他方式（例如组合键）启用无障碍功能后，系统任务栏菜单中将始终显示无障碍选项。</translation>
 <translation id="436581050240847513">报告设备网络接口</translation>
 <translation id="4372704773119750918">不允许企业用户成为多用户配置的用户（一级或二级）</translation>
 <translation id="4377599627073874279">允许所有网站显示所有图片</translation>
@@ -1906,20 +1934,6 @@
 <translation id="4604931264910482931">配置本地消息传递主机黑名单</translation>
 <translation id="4617338332148204752">跳过“<ph name="PRODUCT_FRAME_NAME" />”中的元标记检查</translation>
 <translation id="4625915093043961294">配置扩展程序安装白名单</translation>
-<translation id="4627884124191169977">提供可用打印服务器的配置。
-
-      此政策让您能够以 JSON 文件的形式提供 <ph name="PRODUCT_OS_NAME" />设备的外部打印服务器的配置。
-
-      该文件的大小不得超过 1MB，且必须包含记录（JSON 对象）数组。每条记录都必须包含“url”和“display_name”字段。
-
-      系统会下载并缓存该文件。相应的加密哈希值用于验证下载内容是否完整。只要网址或哈希值有任何变化，系统就会重新下载该文件。
-
-      如果此政策设为正确的值，设备将尝试使用 IPP 协议查询指定的打印服务器，以确认是否有可用的打印机。
-
-      如果此政策设为不正确的值或未设置，用户将看不到任何服务器打印机。
-
-      目前，打印服务器的数量上限为 16 台。系统仅会查询列表中显示的前 16 台打印服务器。
-      </translation>
 <translation id="4632343302005518762">允许 <ph name="PRODUCT_FRAME_NAME" />处理列出的内容类型</translation>
 <translation id="4632566332417930481">禁止在由企业政策安装的扩展程序中使用开发者工具，允许在其他情境中使用开发者工具</translation>
 <translation id="4633786464238689684">将顶行按键的默认行为模式更改为功能键。
@@ -2729,6 +2743,7 @@
           如果未设置此政策，系统将会对所有网站使用“DefaultPluginsSetting”政策中的全局默认值（倘若已设置“DefaultPluginsSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultPluginsSetting”政策）。</translation>
 <translation id="6190022522129724693">默认弹出式窗口设置</translation>
 <translation id="6190367314942602985">报告用户标识信息</translation>
+<translation id="6195802366906945965">确定是否将会使用内置的证书验证程序来验证服务器证书</translation>
 <translation id="6197453924249895891">向扩展程序授予对企业密钥的使用权限。
 
       在受管理的帐号中使用 chrome.enterprise.platformKeys API 生成的密钥会被指定为供企业使用（导入或以其他方式生成的密钥则不会被指定为供企业使用）。
@@ -2941,10 +2956,10 @@
 <translation id="6689792153960219308">报告硬件状态</translation>
 <translation id="6698632841807204978">启用单色打印</translation>
 <translation id="6699880231565102694">为远程访问主机启用双重身份验证</translation>
-<translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> 可确保扩展程序的安全更新和安装。不过，对于某些在 Chrome 网上应用店外部托管的扩展程序而言，它们的内容可能只会受到不安全的签名或哈希算法（例如 SHA1）的保护。当此政策处于停用状态时，Chrome 会禁止对这类扩展程序进行全新安装或更新（除非相应开发者使用更强大的算法重新构建了这些扩展程序）。当此政策处于启用状态时，Chrome 会允许安装和更新这类扩展程序。
+<translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> 可确保扩展程序的安全更新和安装。不过，对于某些不在 Chrome 网上应用店托管的扩展程序而言，它们的内容可能只会受到不安全的签名或哈希算法（例如 SHA1）的保护。当此政策处于停用状态时，Chrome 会禁止对这类扩展程序进行全新安装或更新（除非相应开发者使用更强大的算法重新构建了这些扩展程序）。当此政策处于启用状态时，Chrome 会允许安装和更新这类扩展程序。
 
-          当此政策未设置时，Chrome 的行为将会默认是此政策处于启用状态时的行为。
-          从 <ph name="PRODUCT_NAME" /> 76 开始，当此政策未设置时，Chrome 的行为将会默认是此政策处于停用状态时的行为。
+          如果未设置此政策，Chrome 会默认采用此政策启用时的行为。
+          从 <ph name="PRODUCT_NAME" /> 76 开始，如未设置此政策，Chrome 会默认采用此政策停用时的行为。
 
           从 <ph name="PRODUCT_NAME" /> 78 开始，此政策将会被忽略并会被视为已停用。</translation>
 <translation id="6731757988219967594">滤除提供成人内容的顶级网站（但不滤除嵌入式 iframe）</translation>
@@ -3051,9 +3066,9 @@
       目前支持的语言包括：af、bg、ca、cs、da、de、el、en-AU、en-CA、en-GB、en-US、es、es-419、es-AR、es-ES、es-MX、es-US、et、fa、fo、fr、he、hi、hr、hu、id、it、ko、lt、lv、nb、nl、pl、pt-BR、pt-PT、ro、ru、sh、sk、sl、sq、sr、sv、ta、tg、tr、uk、vi。</translation>
 <translation id="6926703471186170050">启用长边双面打印</translation>
 <translation id="6931242315485576290">停用与 Google 同步数据的功能</translation>
-<translation id="6932419914671987652">如果启用了此政策，<ph name="PRODUCT_NAME" /> 将强制启动访客会话并禁止个人资料登录。访客身份是一类 <ph name="PRODUCT_NAME" /> 个人资料；使用此类个人资料登录后，所有窗口均处于无痕模式。
+<translation id="6932419914671987652">如果启用了此政策，<ph name="PRODUCT_NAME" /> 将强制启动访客会话并禁止登录个人资料。访客身份是一类 <ph name="PRODUCT_NAME" /> 个人资料；使用此类个人资料登录后，所有窗口均处于无痕模式。
 
-      如果停用了或未设置此政策，或者浏览器访客模式已被 <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME" /> 政策停用，<ph name="PRODUCT_NAME" /> 将允许使用新的和现有的个人资料。</translation>
+      如果此政策被停用或未予设置，或者浏览器访客模式已被 <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME" /> 政策停用，<ph name="PRODUCT_NAME" /> 将允许使用新的和现有的个人资料。</translation>
 <translation id="6936894225179401731">指定可同时连接到代理服务器的连接数上限。
 
       某些代理服务器无法处理同一客户端同时发出的大量连接，在这种情况下，您只需将此策略设为较低的值即可。
@@ -3105,6 +3120,12 @@
       有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
 
       如果未设置此政策，则系统将使用默认个人资料路径，而且日后用户将可以通过“--disk-cache-dir”命令行标记来替换此目录。</translation>
+<translation id="7011669683779011760">如果启用了此政策，<ph name="PRODUCT_OS_NAME" />将会使用内置的证书验证程序来验证服务器证书。
+      如果停用了此政策，<ph name="PRODUCT_OS_NAME" />将会使用平台提供的旧版证书验证程序来验证服务器证书。
+      如果未设置此政策，<ph name="PRODUCT_OS_NAME" />可能会使用内置的证书验证程序，也可能会使用旧版证书验证程序。
+
+      按照我们的计划，此政策将会被从 <ph name="PRODUCT_OS_NAME" />版本 81 中移除 - 因为这一版本的 <ph name="PRODUCT_OS_NAME" />将不再支持旧版证书验证程序。
+      </translation>
 <translation id="7027785306666625591">配置<ph name="PRODUCT_OS_NAME" />中的电源管理设置。
 
       这些政策可让您配置在用户停止操作一定时间后<ph name="PRODUCT_OS_NAME" />的行为。</translation>

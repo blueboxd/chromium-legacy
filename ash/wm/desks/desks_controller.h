@@ -99,6 +99,10 @@ class ASH_EXPORT DesksController
   // desk will be activated.
   void ActivateDesk(const Desk* desk, DesksSwitchSource source);
 
+  // Activates the desk to the left or right of the current desk, if it exists.
+  // Performs a hit the wall animation if there is no desk to activate.
+  void ActivateAdjacentDesk(bool going_left, DesksSwitchSource source);
+
   // Moves |window| (which must belong to the currently active desk) to
   // |target_desk| (which must be a different desk). If |window| is minimized,
   // it will be unminimized after it's moved to |target_desk|.

@@ -41,7 +41,7 @@ source_set("inttests") {
     "//base",
     "//base/test:test_support",
     "//ios/web/public",
-    "//ios/web/public:web_state_types",
+    "//ios/web/public:web_state_observer",
     "//ios/web/public/test",
   ]
   sources = [

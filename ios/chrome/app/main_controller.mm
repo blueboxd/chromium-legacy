@@ -1911,6 +1911,18 @@ enum class EnterTabSwitcherSnapshotResult {
   if (currentInterface && currentInterface == newInterface)
     return;
 
+  // Update the snapshot before switching another application mode.  This
+  // ensures that the snapshot is correct when links are opened in a different
+  // application mode.
+  WebStateList* webStateList = self.currentBVC.tabModel.webStateList;
+  if (webStateList) {
+    web::WebState* webState = webStateList->GetActiveWebState();
+    if (webState) {
+      SnapshotTabHelper::FromWebState(webState)->UpdateSnapshotWithCallback(
+          nil);
+    }
+  }
+
   self.interfaceProvider.currentInterface = newInterface;
 
   if (!_dismissingTabSwitcher)

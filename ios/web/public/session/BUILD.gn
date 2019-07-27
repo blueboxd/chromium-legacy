@@ -6,8 +6,8 @@ source_set("session") {
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     "//base",
+    "//ios/web/common:user_agent",
     "//ios/web/public",
-    "//ios/web/public:user_agent",
     "//ios/web/public/navigation",
     "//net",
     "//url",

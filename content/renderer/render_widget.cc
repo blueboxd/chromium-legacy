@@ -3567,6 +3567,15 @@ void RenderWidget::StopDeferringCommits(cc::PaintHoldingCommitTrigger trigger) {
   layer_tree_view_->layer_tree_host()->StopDeferringCommits(trigger);
 }
 
+void RenderWidget::RequestBeginMainFrameNotExpected(bool request) {
+  layer_tree_view_->layer_tree_host()->RequestBeginMainFrameNotExpected(
+      request);
+}
+
+int RenderWidget::GetLayerTreeId() const {
+  return layer_tree_view_->layer_tree_host()->GetId();
+}
+
 void RenderWidget::NotifySwapAndPresentationTime(
     ReportTimeCallback swap_time_callback,
     ReportTimeCallback presentation_time_callback) {

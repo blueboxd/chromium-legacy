@@ -140,6 +140,12 @@ window.onload = () => {
     await mouseDownAt(x, y);
     assert_equals(standardDivFast.scrollTop, 0, "Mousedown on vertical scrollbar thumb is not expected to scroll.");
 
+    await mouseMoveTo(x, y-10);
+    assert_equals(standardDivFast.scrollTop, 0, "Vertical thumb drag beyond the track should not cause a scroll.");
+
+    await mouseMoveTo(x, y);
+    assert_equals(standardDivFast.scrollTop, 0, "Vertical thumb drag beyond the track and back should not cause a scroll.");
+
     y += SCROLL_DELTA;
     await mouseMoveTo(x, y);
     assert_equals(standardDivFast.scrollTop, 915, "Vertical thumb drag downwards did not scroll as expected.");
@@ -158,6 +164,12 @@ window.onload = () => {
     await mouseMoveTo(x, y);
     await mouseDownAt(x, y);
     assert_equals(standardDivFast.scrollLeft, 0, "Mousedown on horizontal scrollbar thumb is not expected to scroll.");
+
+    await mouseMoveTo(x-10, y);
+    assert_equals(standardDivFast.scrollLeft, 0, "Horizontal thumb drag beyond the track should not cause a scroll.");
+
+    await mouseMoveTo(x, y);
+    assert_equals(standardDivFast.scrollLeft, 0, "Horizontal thumb drag beyond the track and back should not cause a scroll.");
 
     x += SCROLL_DELTA;
     await mouseMoveTo(x, y);

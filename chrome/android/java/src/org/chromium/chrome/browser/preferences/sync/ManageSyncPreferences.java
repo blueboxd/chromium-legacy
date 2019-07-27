@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -84,7 +84,7 @@ public class ManageSyncPreferences extends PreferenceFragmentCompat
 
     private final ProfileSyncService mProfileSyncService = ProfileSyncService.get();
 
-    private ChromeSwitchPreferenceCompat mSyncEverything;
+    private ChromeSwitchPreference mSyncEverything;
     private CheckBoxPreference mSyncAutofill;
     private CheckBoxPreference mSyncBookmarks;
     private CheckBoxPreference mSyncPaymentsIntegration;
@@ -108,7 +108,7 @@ public class ManageSyncPreferences extends PreferenceFragmentCompat
 
         PreferenceUtils.addPreferencesFromResource(this, R.xml.manage_sync_preferences);
 
-        mSyncEverything = (ChromeSwitchPreferenceCompat) findPreference(PREF_SYNC_EVERYTHING);
+        mSyncEverything = (ChromeSwitchPreference) findPreference(PREF_SYNC_EVERYTHING);
         mSyncEverything.setOnPreferenceChangeListener(this);
 
         mSyncAutofill = (CheckBoxPreference) findPreference(PREF_SYNC_AUTOFILL);

@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">தேடுவதற்கான ஸ்லைடர்</translation>
 <translation id="1399648040768741453">தெலுங்கு விசைப்பலகை (ஒலிப்புமுறை)</translation>
 <translation id="1430915738399379752">அச்சிடுக</translation>
+<translation id="1439494416798956626"><ph name="FOLDER_NAME" />க்கு நகர்த்தப்பட்டது.</translation>
 <translation id="1441841714100794440">வியட்நாமிய விசைப்பலகை (டெலெக்ஸ்)</translation>
 <translation id="1455548678241328678">நார்வேஜியன் விசைப்பலகை</translation>
 <translation id="1464724975715666883">1 பிழை.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">உங்கள் மீடியா சாதனத்தை ஸ்கேன் செய்கிறது...</translation>
 <translation id="3468522857997926824"><ph name="BEGIN_LINK" />Google இயக்ககத்தில்<ph name="END_LINK" /> <ph name="FILE_COUNT" /> படங்கள் காப்புப் பிரதி எடுக்கப்பட்டன</translation>
 <translation id="3470502288861289375">நகலெடுக்கிறது...</translation>
+<translation id="3473378059788601120"><ph name="FOLDER_NAME" />க்கு நகலெடுக்கப்பட்டது.</translation>
 <translation id="3475447146579922140">Google விரிதாள்</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> பிழைகள்.</translation>
 <translation id="3519867315646775981">ஒலிபெயர்ப்பு (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">ஜாப்பனீஸ் உள்ளீடு (ஜாப்பனீஸ் கீபோர்டிற்கானது)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">உங்கள் Google இயக்ககத்தில் உள்ள கோப்புகளைத் திருத்த Linux ஆப்ஸுக்கு அனுமதி வழங்கவும். மாற்றங்கள் உங்கள் பிற சாதனங்களுடன் ஒத்திசைக்கப்படும்.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> கோப்புகள்</translation>
 <translation id="5982621672636444458">வரிசைப்படுத்தல் விருப்பங்கள்</translation>
 <translation id="6005282720244019462">லத்தீன் அமெரிக்கன் விசைப்பலகை</translation>
 <translation id="6007237601604674381">நகர்வு தோல்வி. <ph name="ERROR_MESSAGE" /></translation>

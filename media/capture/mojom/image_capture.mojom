@@ -47,6 +47,9 @@ struct PhotoState {
   Range sharpness;
 
   Range focus_distance;
+
+  Range pan;
+  Range tilt;
   Range zoom;
 
   bool supports_torch;
@@ -101,6 +104,11 @@ struct PhotoSettings {
 
   bool has_focus_distance;
   double focus_distance;
+
+  bool has_pan;
+  double pan;
+  bool has_tilt;
+  double tilt;
   bool has_zoom;
   double zoom;
 

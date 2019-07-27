@@ -45,6 +45,7 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
     kTransformType,
     kPositionType,
     kURLImageType,
+    kUnsupportedColorType,
   };
 
   static CSSStyleValue* parse(const ExecutionContext*,

@@ -90,7 +90,6 @@ class BrowserThreadImpl;
 class LoaderDelegateImpl;
 class MediaKeysListenerManagerImpl;
 class MediaStreamManager;
-class ResourceDispatcherHostImpl;
 class SaveFileManager;
 class ScreenlockMonitor;
 class SmsProvider;
@@ -391,7 +390,6 @@ class CONTENT_EXPORT BrowserMainLoop {
 #endif
 
   std::unique_ptr<LoaderDelegateImpl> loader_delegate_;
-  std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   scoped_refptr<SaveFileManager> save_file_manager_;
   std::unique_ptr<content::TracingControllerImpl> tracing_controller_;

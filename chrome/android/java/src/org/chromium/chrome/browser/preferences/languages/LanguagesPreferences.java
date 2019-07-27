@@ -10,7 +10,7 @@ import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -36,8 +36,8 @@ public class LanguagesPreferences
                 (LanguageListPreference) findPreference(PREFERRED_LANGUAGES_KEY);
         mLanguageListPref.registerActivityLauncher(this);
 
-        ChromeSwitchPreferenceCompat translateSwitch =
-                (ChromeSwitchPreferenceCompat) findPreference(TRANSLATE_SWITCH_KEY);
+        ChromeSwitchPreference translateSwitch =
+                (ChromeSwitchPreference) findPreference(TRANSLATE_SWITCH_KEY);
         boolean isTranslateEnabled = PrefServiceBridge.getInstance().isTranslateEnabled();
         translateSwitch.setChecked(isTranslateEnabled);
 

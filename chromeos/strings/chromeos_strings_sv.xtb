@@ -15,7 +15,6 @@
 <translation id="445059817448385655">Gammalt lösenord</translation>
 <translation id="467510802200863975">Lösenorden matchar inte</translation>
 <translation id="4731797938093519117">Föräldraåtkomst</translation>
-<translation id="476166673298332917">Enhetens administratör kan övervaka din webbhistorik</translation>
 <translation id="4890353053343094602">Välj ett nytt omedelbart</translation>
 <translation id="5212543919916444558">Det finns inget på skärmen som jag kan hjälpa till med.
 Tryck på mikrofonen och fråga om något.</translation>
@@ -24,13 +23,11 @@ Tryck på mikrofonen och fråga om något.</translation>
 <translation id="5332948983412042822">Välj ett nytt nu</translation>
 <translation id="5457599981699367932">Använd som gäst</translation>
 <translation id="54609108002486618">Hanterade</translation>
-<translation id="5632302877407885207">{NUM_DAYS,plural, =0{Lösenordet gäller inte längre}=1{Lösenordet upphör att gälla om mindre än en dag}other{Lösenordet upphör att gälla om mindre än # dagar}}</translation>
 <translation id="5832805196449965646">Lägg till person</translation>
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="6058625436358447366">Slutför genom att ange det gamla och det nya lösenordet</translation>
 <translation id="6106186594183574873">Slutför genom att ange det gamla lösenordet</translation>
 <translation id="6146993107019042706">Slutför genom att ange det nya lösenordet</translation>
-<translation id="6574601967010742428">Enhetsadministratören kan ha möjlighet att övervaka det du gör.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7690294790491645610">Bekräfta det nya lösenordet</translation>
 <translation id="808894953321890993">Ändra lösenord</translation>

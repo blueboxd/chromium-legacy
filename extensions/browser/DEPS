@@ -3,6 +3,7 @@ include_rules = [
   "+components/guest_view",
   "+components/keyed_service",
   "+components/pref_registry",
+  "+components/services/unzip/content",
   "+components/services/unzip/public",
   "+components/sessions",
   "+components/signin/public",

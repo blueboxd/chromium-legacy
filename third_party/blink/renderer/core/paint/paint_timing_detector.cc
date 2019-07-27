@@ -309,6 +309,12 @@ ScopedPaintTimingDetectorBlockPaintHook::
   DCHECK_EQ(top_, this);
   if (!data_ || data_->aggregated_visual_rect_.IsEmpty())
     return;
+  // TODO(crbug.com/987804): Checking |ShouldWalkObject| again is necessary
+  // because the result can change, but more investigation is needed as to why
+  // the change is possible.
+  if (!data_->detector_ ||
+      !data_->detector_->ShouldWalkObject(data_->aggregator_))
+    return;
   data_->detector_->RecordAggregatedText(data_->aggregator_,
                                          data_->aggregated_visual_rect_,
                                          data_->property_tree_state_);

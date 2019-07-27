@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/dtoa/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
+#include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace WTF {
@@ -75,7 +76,7 @@ AtomicString AtomicString::DeprecatedLower() const {
   StringImpl* impl = this->Impl();
   if (UNLIKELY(!impl))
     return *this;
-  scoped_refptr<StringImpl> new_impl = impl->LowerUnicode();
+  scoped_refptr<StringImpl> new_impl = CaseMap::FastToLowerInvariant(impl);
   if (LIKELY(new_impl == impl))
     return *this;
   return AtomicString(String(std::move(new_impl)));

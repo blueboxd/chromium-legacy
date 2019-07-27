@@ -545,6 +545,8 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
       return ButtonRoleType();
     if (type == input_type_names::kRange)
       return ax::mojom::Role::kSlider;
+    if (type == input_type_names::kSearch)
+      return ax::mojom::Role::kSearchBox;
     if (type == input_type_names::kColor)
       return ax::mojom::Role::kColorWell;
     if (type == input_type_names::kTime)

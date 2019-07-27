@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
@@ -37,6 +38,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     private float mMergeThreshold;
     private float mUngroupThreshold;
     private boolean mActionsOnAllRelatedTabs;
+    private boolean mIsSwipingToDismiss;
     private int mDragFlags;
     private int mSelectedTabIndex = TabModel.INVALID_TAB_INDEX;
     private int mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
@@ -138,6 +140,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, true);
             RecordUserAction.record("TabGrid.Drag.Start." + mComponentName);
         } else if (actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
+            mIsSwipingToDismiss = false;
             if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
                 mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
             }
@@ -189,6 +192,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             if (index == TabModel.INVALID_TAB_INDEX) return;
 
             mModel.get(index).set(TabProperties.ALPHA, alpha);
+            boolean isOverThreshold = Math.abs(dX) >= mSwipeToDismissThreshold;
+            if (isOverThreshold && !mIsSwipingToDismiss) {
+                viewHolder.itemView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            }
+            mIsSwipingToDismiss = isOverThreshold;
         } else if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && mActionsOnAllRelatedTabs) {
             if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return;
             int prev_hovered = mHoveredTabIndex;
@@ -216,7 +224,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
 
     @Override
     public float getSwipeThreshold(RecyclerView.ViewHolder viewHolder) {
-        return mSwipeToDismissThreshold / viewHolder.itemView.getWidth();
+        return mSwipeToDismissThreshold / mRecyclerView.getWidth();
     }
 
     private List<Tab> getRelatedTabsForId(int id) {

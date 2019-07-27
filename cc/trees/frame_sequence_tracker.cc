@@ -367,8 +367,15 @@ void FrameSequenceTracker::ThroughputData::ReportHistogram(
     const ThroughputData& data) {
   DCHECK_LT(sequence_type, FrameSequenceTrackerType::kMaxType);
 
-  UMA_HISTOGRAM_COUNTS_1000("Graphics.Smoothness.FrameSequenceLength",
-                            data.frames_expected);
+  const std::string sequence_length_name =
+      base::StrCat({"Graphics.Smoothness.FrameSequenceLength.",
+                    kBuiltinSequences[sequence_type]});
+  STATIC_HISTOGRAM_POINTER_GROUP(
+      sequence_length_name, sequence_type, FrameSequenceTrackerType::kMaxType,
+      Add(data.frames_expected),
+      base::Histogram::FactoryGet(
+          sequence_length_name, 1, 1000, 50,
+          base::HistogramBase::kUmaTargetedHistogramFlag));
 
   // Avoid reporting any throughput metric for sequences that had a small amount
   // of frames.

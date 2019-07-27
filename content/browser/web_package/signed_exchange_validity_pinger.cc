@@ -101,7 +101,7 @@ void SignedExchangeValidityPinger::Start(
 
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(url_loader_factory), std::move(throttles), 0 /* routing_id */,
-      ResourceDispatcherHostImpl::Get()->MakeRequestID() /* request_id */,
+      ResourceDispatcherHostImpl::MakeRequestID() /* request_id */,
       network::mojom::kURLLoadOptionNone, resource_request.get(), this,
       kValidityPingerTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
 }

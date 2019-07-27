@@ -554,6 +554,9 @@ set_defaults("loadable_module") {
 #
 # Variables
 #   no_default_deps: If true, no standard dependencies will be added.
+#       Targets that set this usually also want to remove
+#       "//build/config/compiler:runtime_library" from configs (to remove
+#       its subconfig "//build/config/c++:runtime_library").
 foreach(_target_type,
         [
           "executable",
@@ -568,6 +571,12 @@ foreach(_target_type,
         deps = []
       }
       if (!defined(invoker.no_default_deps) || !invoker.no_default_deps) {
+        # This pulls in one of:
+        # //build/config:executable_deps
+        # //build/config:loadable_module_deps
+        # //build/config:shared_library_deps
+        # (This explicit list is so that grepping for these configs finds where
+        # they are used.)
         deps += [ "//build/config:${_target_type}_deps" ]
       }
 

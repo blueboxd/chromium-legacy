@@ -677,7 +677,7 @@ void OverviewGrid::OnWindowDragContinued(aura::Window* dragged_window,
 
     overview_session_->highlight_controller()->UpdateTabDragHighlight(
         target_window->GetRootWindow(),
-        item->caption_container_view()->bounds());
+        item->caption_container_view()->GetBoundsInScreen());
     return;
   }
 

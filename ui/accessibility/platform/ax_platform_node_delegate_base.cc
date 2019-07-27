@@ -393,6 +393,11 @@ base::string16 AXPlatformNodeDelegateBase::GetLocalizedStringForLandmarkType()
 }
 
 base::string16
+AXPlatformNodeDelegateBase::GetLocalizedStringForRoleDescription() const {
+  return base::string16();
+}
+
+base::string16
 AXPlatformNodeDelegateBase::GetStyleNameAttributeAsLocalizedString() const {
   return base::string16();
 }

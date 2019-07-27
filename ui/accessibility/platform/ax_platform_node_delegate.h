@@ -321,6 +321,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual base::string16 GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const = 0;
   virtual base::string16 GetLocalizedStringForLandmarkType() const = 0;
+  virtual base::string16 GetLocalizedStringForRoleDescription() const = 0;
   virtual base::string16 GetStyleNameAttributeAsLocalizedString() const = 0;
 
   //

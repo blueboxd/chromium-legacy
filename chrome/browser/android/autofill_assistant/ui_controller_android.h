@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/overlay_state.h"
+#include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_action.h"
 
 namespace autofill_assistant {
@@ -75,7 +76,8 @@ class UiControllerAndroid : public ControllerObserver {
   //
   // If action_index != -1, execute that action as close/cancel. Otherwise
   // execute the default close or cancel action.
-  void CloseOrCancel(int action_index);
+  void CloseOrCancel(int action_index,
+                     std::unique_ptr<TriggerContext> trigger_context);
 
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
@@ -192,7 +194,7 @@ class UiControllerAndroid : public ControllerObserver {
   void ShowSnackbar(const std::string& message,
                     base::OnceCallback<void()> action);
 
-  void OnCancel(int action_index);
+  void OnCancel(int action_index, std::unique_ptr<TriggerContext> context);
 
   // Updates the state of the UI to reflect the UIDelegate's state.
   void SetupForState();

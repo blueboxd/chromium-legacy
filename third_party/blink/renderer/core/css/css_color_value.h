@@ -17,7 +17,7 @@ class CSSValuePool;
 namespace cssvalue {
 
 // Represents the non-keyword subset of <color>.
-class CSSColorValue : public CSSValue {
+class CORE_EXPORT CSSColorValue : public CSSValue {
  public:
   // TODO(sashab): Make this create() method take a Color instead.
   static CSSColorValue* Create(RGBA32 color);

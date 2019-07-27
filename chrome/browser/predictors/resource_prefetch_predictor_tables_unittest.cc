@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/predictors/loading_test_util.h"
@@ -302,7 +303,8 @@ void ResourcePrefetchPredictorTablesTest::AddKey(OriginDataMap* m,
 
 std::string ResourcePrefetchPredictorTablesTest::GetKeyForRedirectStat(
     const RedirectStat& stat) const {
-  return stat.url() + "," + stat.url_scheme();
+  return stat.url() + "," + stat.url_scheme() + "," +
+         base::NumberToString(stat.url_port());
 }
 
 void ResourcePrefetchPredictorTablesTest::DeleteAllData() {

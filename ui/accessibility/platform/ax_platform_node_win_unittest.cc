@@ -3586,8 +3586,6 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
   root.AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts, "Alt+F4");
   root.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
                           "fake description");
-  root.AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
-                          "role description");
   root.AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 2);
   root.AddIntAttribute(ax::mojom::IntAttribute::kInvalidState, 1);
   root.id = 0;
@@ -3613,8 +3611,6 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
                      uia_id.ptr()->bstrVal);
   EXPECT_UIA_BSTR_EQ(root_node, UIA_FullDescriptionPropertyId,
                      L"fake description");
-  EXPECT_UIA_BSTR_EQ(root_node, UIA_LocalizedControlTypePropertyId,
-                     L"role description");
   EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaRolePropertyId, L"list");
   EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaPropertiesPropertyId,
                      L"readonly=true;expanded=false;multiline=false;"
@@ -4074,6 +4070,40 @@ TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_HelpText) {
   EXPECT_UIA_VALUE_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
                           root_node->children()[4]),
                       UIA_HelpTextPropertyId, ScopedVariant::kEmptyVariant);
+}
+
+TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_LocalizedControlType) {
+  AXNodeData root;
+  root.role = ax::mojom::Role::kUnknown;
+  root.id = 1;
+  root.AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
+                          "root role description");
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = ax::mojom::Role::kSearchBox;
+  child1.AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
+                            "child1 role description");
+  root.child_ids.push_back(2);
+
+  AXNodeData child2;
+  child2.id = 3;
+  child2.role = ax::mojom::Role::kSearchBox;
+  root.child_ids.push_back(3);
+
+  Init(root, child1, child2);
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_LocalizedControlTypePropertyId,
+                     L"root role description");
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         GetRootNode()->children()[0]),
+                     UIA_LocalizedControlTypePropertyId,
+                     L"child1 role description");
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         GetRootNode()->children()[1]),
+                     UIA_LocalizedControlTypePropertyId, L"search box");
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {

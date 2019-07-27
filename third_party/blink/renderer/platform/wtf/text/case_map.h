@@ -52,7 +52,15 @@ class WTF_EXPORT CaseMap {
   String ToLower(const String& source, TextOffsetMap* offset_map) const;
   String ToUpper(const String& source, TextOffsetMap* offset_map) const;
 
+  // Fast code path for simple cases, only for root locale.
+  // TODO(crbug.com/627682): This should move to private, once
+  // |DeprecatedLower()| is deprecated.
+  static scoped_refptr<StringImpl> FastToLowerInvariant(StringImpl* source);
+
  private:
+  // Fast code path for simple cases, only for root locale.
+  static scoped_refptr<StringImpl> FastToUpperInvariant(StringImpl* source);
+
   const char* case_map_locale_;
 };
 

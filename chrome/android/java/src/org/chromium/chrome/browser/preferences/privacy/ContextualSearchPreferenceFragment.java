@@ -9,7 +9,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 
@@ -28,8 +28,8 @@ public class ContextualSearchPreferenceFragment extends PreferenceFragmentCompat
     }
 
     private void initContextualSearchSwitch() {
-        ChromeSwitchPreferenceCompat contextualSearchSwitch =
-                (ChromeSwitchPreferenceCompat) findPreference(PREF_CONTEXTUAL_SEARCH_SWITCH);
+        ChromeSwitchPreference contextualSearchSwitch =
+                (ChromeSwitchPreference) findPreference(PREF_CONTEXTUAL_SEARCH_SWITCH);
 
         boolean isContextualSearchEnabled =
                 !PrefServiceBridge.getInstance().isContextualSearchDisabled();

@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "ios/web/public/test/crw_mock_web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#import "ios/web/public/web_state/context_menu_params.h"
+#import "ios/web/public/ui/context_menu_params.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/gtest_support.h"
 #include "ui/base/page_transition_types.h"

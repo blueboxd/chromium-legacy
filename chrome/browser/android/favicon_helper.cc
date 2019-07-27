@@ -88,13 +88,12 @@ FaviconHelper::FaviconHelper() {
   cancelable_task_tracker_.reset(new base::CancelableTaskTracker());
 }
 
-void FaviconHelper::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+void FaviconHelper::Destroy(JNIEnv* env) {
   delete this;
 }
 
 jboolean FaviconHelper::GetLocalFaviconImageForURL(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_page_url,
     jint j_desired_size_in_pixel,
@@ -136,7 +135,6 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
 
 jboolean FaviconHelper::GetForeignFaviconImageForURL(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& j_page_url,
     jint j_desired_size_in_pixel,
@@ -171,7 +169,6 @@ jboolean FaviconHelper::GetForeignFaviconImageForURL(
 
 void FaviconHelper::EnsureIconIsAvailable(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jobject>& j_web_contents,
     const JavaParamRef<jstring>& j_page_url,
@@ -204,7 +201,6 @@ void FaviconHelper::EnsureIconIsAvailable(
 
 void FaviconHelper::TouchOnDemandFavicon(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_icon_url) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);

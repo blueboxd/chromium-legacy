@@ -10,14 +10,7 @@ mojom("mojom") {
   ]
 
   public_deps = [
-    ":constants",
     "//components/services/filesystem/public/mojom",
     "//mojo/public/mojom/base",
-  ]
-}
-
-mojom("constants") {
-  sources = [
-    "constants.mojom",
   ]
 }

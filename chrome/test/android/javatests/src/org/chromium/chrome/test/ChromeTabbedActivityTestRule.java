@@ -18,12 +18,22 @@ import org.chromium.chrome.browser.feed.TestNetworkClient;
  */
 public class ChromeTabbedActivityTestRule extends ChromeActivityTestRule<ChromeTabbedActivity> {
     // Response file for Feed's network stub.
-    // TODO(crbug.com/943874): Make this configurable.
-    public static final String FEED_TEST_RESPONSE_FILE_PATH =
+    private static final String DEFAULT_FEED_TEST_RESPONSE_FILE_PATH =
             "/chrome/test/data/android/feed/feed_large.gcl.bin";
 
+    private final String mFeedTestResponseFilePath;
+
     public ChromeTabbedActivityTestRule() {
+        this(DEFAULT_FEED_TEST_RESPONSE_FILE_PATH);
+    }
+
+    /**
+     * @param feedTestResponseFilePath The file path of the response that the feed library returns
+     *                                 in tests.
+     */
+    public ChromeTabbedActivityTestRule(String feedTestResponseFilePath) {
         super(ChromeTabbedActivity.class);
+        mFeedTestResponseFilePath = feedTestResponseFilePath;
     }
 
     @Override
@@ -37,7 +47,7 @@ public class ChromeTabbedActivityTestRule extends ChromeActivityTestRule<ChromeT
                     feedStubsInitialized = true;
                     TestNetworkClient client = new TestNetworkClient();
                     client.setNetworkResponseFile(
-                            UrlUtils.getIsolatedTestFilePath(FEED_TEST_RESPONSE_FILE_PATH));
+                            UrlUtils.getIsolatedTestFilePath(mFeedTestResponseFilePath));
                     FeedProcessScopeFactory.setTestNetworkClient(client);
                 }
 

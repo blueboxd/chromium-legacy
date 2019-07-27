@@ -92,6 +92,7 @@
 
 कृपया पुढील सूचनांसाठी तुमचे ईमेल <ph name="ACCOUNT_EMAIL" /> वर तपासा.</translation>
 <translation id="3282568296779691940">Chrome वर साइन इन करा</translation>
+<translation id="3340978935015468852">सेटिंग्ज</translation>
 <translation id="3360895254066713204">Chrome मदतनीस</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome आता पुन्हा लॉंच होईल}=1{Chrome एका सेकंदामध्ये पुन्हा लॉंच होईल}other{Chrome # सेकंदांमध्ये पुन्हा लॉंच होईल}}</translation>
 <translation id="3395323229510056640">Chrome OS सह मदत मिळवा</translation>
@@ -99,7 +100,6 @@
 <translation id="3398288718845740432">Chrome मेनूमध्‍ये लपवा</translation>
 <translation id="3451115285585441894">Chrome मध्‍ये जोडत आहे...</translation>
 <translation id="345171907106878721">Chrome वर आपल्या स्वतःस जोडा</translation>
-<translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="34857402635545079">Chrome (<ph name="URL" />) वरील डेटा देखील साफ करा</translation>
 <translation id="3503306920980160878">तुमचे स्थान या साइटसोबत शेअर करण्यासाठी Chrome ला तुमच्या स्थानाचा अ‍ॅक्सेस हवा आहे</translation>
 <translation id="3576528680708590453">तुमच्या सिस्टम अ‍ॅडमिनिस्ट्रेटरने <ph name="TARGET_URL_HOSTNAME" /> ॲक्‍सेस करण्याकरिता पर्यायी ब्राउझर उघडण्यासाठी Google Chrome कॉन्फिगर केले आहे.</translation>
@@ -114,7 +114,6 @@
 <translation id="386202838227397562">कृपया सर्व Google Chrome विंडो बंद करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="3873044882194371212">लिंक Chrome गुप्त विंडोमध्ये उघडा</translation>
 <translation id="3889417619312448367">Google Chrome अनइंस्टॉल करा</translation>
-<translation id="3898493977366060150">Google smarts सह वेब ब्राउझिंग</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
 <translation id="4053720452172726777">Google Chrome कस्टमाइझ करा आणि नियंत्रित करा</translation>
 <translation id="4143243756087420366">Chrome नाव आणि फोटो</translation>
@@ -201,7 +200,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="6750954913813541382">शब्दलेखनाच्या चुकांमध्ये सुधारणा करण्यासाठी, तुम्ही ब्राउझरमध्ये टाइप करता तो मजकूर Chrome Google ला पाठवते</translation>
 <translation id="677276454032249905">तरीही Chrome बंद करायचे?</translation>
 <translation id="683440813066116847">mDNS रहदारीस अनुमती देण्यासाठी Google Chrome कॅनरी साठी अंतर्गामी नियम.</translation>
-<translation id="686561893457936865">Chrome ला सर्वत्र न्या</translation>
 <translation id="6885412569789873916">Chrome बीटा ॲप</translation>
 <translation id="6943584222992551122">या व्यक्तीचा ब्राउझिंग डेटा या डिव्हाइसवरून हटवला जाईल. डेटा रीकव्हर करण्यासाठी, Chrome वर <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="6967962315388095737">Google Chrome बीटाचा mDNS रहदारीस अनुमती देण्यासाठी इनबाउंड नियम.</translation>

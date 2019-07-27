@@ -39,7 +39,7 @@ struct VideoCaptureImpl::BufferContext
     : public base::RefCountedThreadSafe<BufferContext> {
  public:
   explicit BufferContext(media::mojom::VideoBufferHandlePtr buffer_handle)
-      : buffer_type_(buffer_handle->which()), shared_memory_size_(0u) {
+      : buffer_type_(buffer_handle->which()) {
     switch (buffer_type_) {
       case VideoFrameBufferHandleType::SHARED_BUFFER_HANDLE:
         InitializeFromSharedMemory(
@@ -65,10 +65,8 @@ struct VideoCaptureImpl::BufferContext
   }
 
   VideoFrameBufferHandleType buffer_type() const { return buffer_type_; }
-  base::SharedMemory* shared_memory() const { return shared_memory_.get(); }
-  size_t shared_memory_size() const { return shared_memory_size_; }
-  const void* read_only_shmem() const { return read_only_mapping_.memory(); }
-  size_t read_only_shmem_size() const { return read_only_mapping_.size(); }
+  const uint8_t* data() const { return data_; }
+  size_t data_size() const { return data_size_; }
   const std::vector<gpu::MailboxHolder>& mailbox_holders() const {
     return mailbox_holders_;
   }
@@ -76,23 +74,19 @@ struct VideoCaptureImpl::BufferContext
  private:
   void InitializeFromSharedMemory(mojo::ScopedSharedBufferHandle handle) {
     DCHECK(handle.is_valid());
-    base::SharedMemoryHandle memory_handle;
-    mojo::UnwrappedSharedMemoryHandleProtection protection;
-    const MojoResult result = mojo::UnwrapSharedMemoryHandle(
-        std::move(handle), &memory_handle, &shared_memory_size_, &protection);
-    DCHECK_EQ(MOJO_RESULT_OK, result);
-    DCHECK_GT(shared_memory_size_, 0u);
-
-    // TODO(https://crbug.com/803136): We should also be able to assert that
-    // the unwrapped handle was shared for read-only mapping. That condition
-    // is not currently guaranteed to be met.
-
-    shared_memory_ = std::make_unique<base::SharedMemory>(memory_handle,
-                                                          true /* read_only */);
-    if (!shared_memory_->Map(shared_memory_size_)) {
+    base::UnsafeSharedMemoryRegion region =
+        mojo::UnwrapUnsafeSharedMemoryRegion(std::move(handle));
+    if (!region.IsValid()) {
+      DLOG(ERROR) << "Unwrapping shared memory failed.";
+      return;
+    }
+    writable_mapping_ = region.Map();
+    if (!writable_mapping_.IsValid()) {
       DLOG(ERROR) << "Mapping shared memory failed.";
       return;
     }
+    data_ = writable_mapping_.GetMemoryAsSpan<uint8_t>().data();
+    data_size_ = writable_mapping_.size();
   }
 
   void InitializeFromReadOnlyShmemRegion(
@@ -100,6 +94,8 @@ struct VideoCaptureImpl::BufferContext
     DCHECK(region.IsValid());
     read_only_mapping_ = region.Map();
     DCHECK(read_only_mapping_.IsValid());
+    data_ = read_only_mapping_.GetMemoryAsSpan<uint8_t>().data();
+    data_size_ = read_only_mapping_.size();
   }
 
   void InitializeFromMailbox(
@@ -115,11 +111,15 @@ struct VideoCaptureImpl::BufferContext
   VideoFrameBufferHandleType buffer_type_;
 
   // Only valid for |buffer_type_ == SHARED_BUFFER_HANDLE|.
-  std::unique_ptr<base::SharedMemory> shared_memory_;
-  size_t shared_memory_size_;
+  base::WritableSharedMemoryMapping writable_mapping_;
 
   // Only valid for |buffer_type_ == READ_ONLY_SHMEM_REGION|.
   base::ReadOnlySharedMemoryMapping read_only_mapping_;
+
+  // These point into one of the above mappings, which hold the mapping open for
+  // the lifetime of this object.
+  const uint8_t* data_ = nullptr;
+  size_t data_size_ = 0;
 
   // Only valid for |buffer_type_ == MAILBOX_HANDLES|.
   std::vector<gpu::MailboxHolder> mailbox_holders_;
@@ -391,12 +391,14 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
   scoped_refptr<media::VideoFrame> frame;
   switch (buffer_context->buffer_type()) {
     case VideoFrameBufferHandleType::SHARED_BUFFER_HANDLE:
+      // The frame is backed by a writable (unsafe) shared memory handle, but as
+      // it is not sent cross-process the region does not need to be attached to
+      // the frame. See also the case for READ_ONLY_SHMEM_REGION.
       if (info->strides) {
         CHECK(IsYuvPlanar(info->pixel_format) &&
               (media::VideoFrame::NumPlanes(info->pixel_format) == 3))
             << "Currently, only YUV formats support custom strides.";
-        uint8_t* y_data =
-            static_cast<uint8_t*>(buffer_context->shared_memory()->memory());
+        uint8_t* y_data = const_cast<uint8_t*>(buffer_context->data());
         uint8_t* u_data =
             y_data + (media::VideoFrame::Rows(media::VideoFrame::kYPlane,
                                               info->pixel_format,
@@ -413,24 +415,22 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
             info->strides->stride_by_plane[1],
             info->strides->stride_by_plane[2], y_data, u_data, v_data,
             info->timestamp);
-        frame->AddSharedMemoryHandle(buffer_context->shared_memory()->handle());
       } else {
-        frame = media::VideoFrame::WrapExternalSharedMemory(
+        frame = media::VideoFrame::WrapExternalData(
             info->pixel_format, info->coded_size, info->visible_rect,
             info->visible_rect.size(),
-            static_cast<uint8_t*>(buffer_context->shared_memory()->memory()),
-            buffer_context->shared_memory_size(),
-            buffer_context->shared_memory()->handle(),
-            0 /* shared_memory_offset */, info->timestamp);
+            const_cast<uint8_t*>(buffer_context->data()),
+            buffer_context->data_size(), info->timestamp);
       }
       break;
     case VideoFrameBufferHandleType::READ_ONLY_SHMEM_REGION:
+      // As with the SHARED_BUFFER_HANDLE type, it is sufficient to just wrap
+      // the data without attaching the shared region to the frame.
       frame = media::VideoFrame::WrapExternalData(
           info->pixel_format, info->coded_size, info->visible_rect,
           info->visible_rect.size(),
-          const_cast<uint8_t*>(
-              static_cast<const uint8_t*>(buffer_context->read_only_shmem())),
-          buffer_context->read_only_shmem_size(), info->timestamp);
+          const_cast<uint8_t*>(buffer_context->data()),
+          buffer_context->data_size(), info->timestamp);
       break;
     case VideoFrameBufferHandleType::SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR:
       NOTREACHED();

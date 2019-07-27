@@ -9,4 +9,4 @@ per-file *.typemap=set noparent
 per-file *.typemap=file://ipc/SECURITY_OWNERS
 
 # TEAM: identity-dev@chromium.org
-# Component: Blink>WebAuthentication
+# COMPONENT: Blink>WebAuthentication

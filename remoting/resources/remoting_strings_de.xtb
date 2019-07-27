@@ -70,6 +70,11 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="2366718077645204424">Die Verbindung zum Host kann nicht hergestellt werden. Das von Ihnen verwendete Netzwerk ist möglicherweise nicht korrekt konfiguriert.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Zuletzt online: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Diese App wird nicht mehr unterstützt. Damit Ihnen immer die aktuellen Funktionen und Sicherheitsupdates zur Verfügung stehen, verwenden Sie bitte die Web-App <ph name="LINK_BEGIN" />Chrome Remote Desktop<ph name="LINK_END" />.</translation>
+<translation id="2431841749166974386">Bevor der Remotezugriff von <ph name="PRODUCT_NAME" /> auf dieses Gerät möglich ist, ist ein zusätzlicher Konfigurationsschritt erforderlich.
+
+Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME" />" aus. Daraufhin öffnet sich das Sicherheits- und Datenschutzfenster. Klicken Sie dort das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" an.
+
+Wenn "<ph name="SERVICE_SCRIPT_NAME" />" bereits vorhanden und ausgewählt ist, müssen Sie das Häkchen möglicherweise entfernen und das Kästchen wieder anklicken.</translation>
 <translation id="2499160551253595098">Helfen Sie uns bei der Verbesserung von Chrome Remote Desktop, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
 <translation id="2509394361235492552">Verbunden mit <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">HINWEIS: Sie können in Chrome Remote Desktop die Option zum Öffnen als Fenster einstellen, damit alle Tastenkombinationen verfügbar sind.</translation>
@@ -192,9 +197,6 @@ pc</translation>
 <translation id="4973800994433240357">Indem Sie das Chromoting Host-Installationsprogramm herunterladen, erklären Sie sich mit den <ph name="LINK_BEGIN" />Nutzungsbedingungen von Google<ph name="LINK_END" /> einverstanden.</translation>
 <translation id="4974476491460646149">Verbindung zwischen Client und <ph name="HOSTNAME" /> getrennt</translation>
 <translation id="4985296110227979402">Richten Sie zuerst Ihren Computer für den Remotezugriff ein</translation>
-<translation id="5059773780693835145">Bevor Sie auf dieses Gerät mithilfe von <ph name="PRODUCT_NAME" /> remote zugreifen können, ist ein zusätzlicher Konfigurationsschritt erforderlich.
-
-Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME" />" aus. Daraufhin öffnet sich das Sicherheits- und Datenschutzfenster. Klicken Sie dort das Kästchen neben "<ph name="SERVICE_SCRIPT_NAME" />" an.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chrome Remote Desktop zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
 <translation id="507204348399810022">Möchten Sie die Remote-Verbindungen zu <ph name="HOSTNAME" /> wirklich deaktivieren?</translation>
@@ -304,7 +306,7 @@ Wenn Sie diese Funktion aktivieren möchten, wählen Sie "<ph name="BUTTON_NAME"
 <translation id="7782471917492991422">Bitte überprüfen Sie die Energieverwaltungseinstellungen Ihres Computers. Vergewissern Sie sich, dass er nicht so konfiguriert ist, dass er bei Inaktivität in den Energiesparmodus schaltet.</translation>
 <translation id="7810127880729796595">Statistiken anzeigen (Verbindung: <ph name="QUALITY" />)</translation>
 <translation id="7836926030608666805">Es fehlen einige erforderliche Komponenten. Überprüfen Sie, ob Sie die neueste Version von Chrome verwenden, und versuchen Sie es erneut.</translation>
-<translation id="7868137160098754906">Geben Sie Ihre PIN für den Remote-Computer ein.</translation>
+<translation id="7868137160098754906">Gib Ihre PIN für den Remote-Computer ein.</translation>
 <translation id="7869445566579231750">Sie sind nicht berechtigt, diese App auszuführen.</translation>
 <translation id="7895403300744144251">Die Sicherheitsrichtlinien auf dem Remote-Computer gestatten keine Verbindungen von Ihrem Konto.</translation>
 <translation id="7936528439960309876">Rechts verankern</translation>

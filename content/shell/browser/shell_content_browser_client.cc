@@ -24,8 +24,6 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -361,13 +359,6 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
 
 std::string ShellContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
   return ShellURLRequestContextGetter::GetAcceptLanguages();
-}
-
-void ShellContentBrowserClient::ResourceDispatcherHostCreated() {
-  resource_dispatcher_host_delegate_.reset(
-      new ResourceDispatcherHostDelegate());
-  ResourceDispatcherHost::Get()->SetDelegate(
-      resource_dispatcher_host_delegate_.get());
 }
 
 std::string ShellContentBrowserClient::GetDefaultDownloadName() {

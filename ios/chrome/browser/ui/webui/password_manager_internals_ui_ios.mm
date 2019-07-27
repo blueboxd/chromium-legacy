@@ -7,12 +7,17 @@
 #include "base/hash/hash.h"
 #include "components/autofill/core/browser/logging/log_router.h"
 #include "components/grit/components_resources.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
+#include "components/version_info/version_info.h"
+#include "components/version_ui/version_handler_helper.h"
+#include "components/version_ui/version_ui_constants.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
+#import "ios/chrome/common/channel_info.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "ios/web/public/webui/web_ui_ios.h"
-#include "ios/web/public/webui/web_ui_ios_data_source.h"
+#import "ios/web/public/webui/web_ui_ios.h"
+#import "ios/web/public/webui/web_ui_ios_data_source.h"
 #include "net/base/escape.h"
 
 using autofill::LogRouter;
@@ -28,6 +33,16 @@ web::WebUIIOSDataSource* CreatePasswordManagerInternalsHTMLSource() {
   source->AddResourcePath("autofill_and_password_manager_internals.css",
                           IDR_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_CSS);
   source->SetDefaultResource(IDR_AUTOFILL_AND_PASSWORD_MANAGER_INTERNALS_HTML);
+  // Data strings:
+  source->AddString(version_ui::kVersion, version_info::GetVersionNumber());
+  source->AddString(version_ui::kOfficial, version_info::IsOfficialBuild()
+                                               ? "official"
+                                               : "Developer build");
+  source->AddString(version_ui::kVersionModifier,
+                    GetChannelString(GetChannel()));
+  source->AddString(version_ui::kCL, version_info::GetLastChange());
+  source->AddString(version_ui::kUserAgent, web::GetWebClient()->GetUserAgent(
+                                                web::UserAgentType::MOBILE));
   return source;
 }
 

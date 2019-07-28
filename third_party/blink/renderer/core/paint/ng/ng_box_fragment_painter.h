@@ -31,6 +31,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   STACK_ALLOCATED();
 
  public:
+  NGBoxFragmentPainter(const NGPhysicalBoxFragment&,
+                       const NGPaintFragment* = nullptr);
   NGBoxFragmentPainter(const NGPaintFragment&);
 
   void Paint(const PaintInfo&);
@@ -65,7 +67,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const PhysicalRect&) override;
 
  private:
-  bool IsPaintingScrollingBackground(const NGPaintFragment&, const PaintInfo&);
+  bool IsPaintingScrollingBackground(const PaintInfo&);
   bool ShouldPaint(const ScopedPaintState&) const;
 
   void PaintBoxDecorationBackground(const PaintInfo&,
@@ -155,21 +157,50 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const HitTestLocation&,
       const PhysicalOffset& border_box_location) const;
 
-  const NGPhysicalBoxFragment& PhysicalFragment() const;
+  const NGPhysicalBoxFragment& PhysicalFragment() const {
+    return box_fragment_;
+  }
+  const DisplayItemClient& GetDisplayItemClient() const {
+    if (paint_fragment_)
+      return *paint_fragment_;
+    return *PhysicalFragment().GetLayoutObject();
+  }
   const NGBorderEdges& BorderEdges() const;
 
-  const NGPaintFragment& box_fragment_;
+  const NGPhysicalBoxFragment& box_fragment_;
+  const NGPaintFragment* paint_fragment_;
   mutable base::Optional<NGBorderEdges> border_edges_;
 };
 
-inline NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
+inline NGBoxFragmentPainter::NGBoxFragmentPainter(
+    const NGPhysicalBoxFragment& box,
+    const NGPaintFragment* paint_fragment)
     : BoxPainterBase(&box.GetLayoutObject()->GetDocument(),
                      box.Style(),
                      box.GetLayoutObject()->GeneratingNode()),
-      box_fragment_(box) {
-  DCHECK(box.PhysicalFragment().IsBox() ||
-         box.PhysicalFragment().IsRenderedLegend());
+      box_fragment_(box),
+      paint_fragment_(paint_fragment) {
+  DCHECK(box.IsBox() || box.IsRenderedLegend());
+#if DCHECK_IS_ON()
+  if (box.ChildrenInline() || box.IsInlineBox()) {
+    DCHECK(paint_fragment);
+    DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
+  } else if (box.GetLayoutObject()->SlowFirstChild() &&
+             box.GetLayoutObject()->SlowFirstChild()->IsLayoutFlowThread()) {
+    // TODO(kojii): NGPaintFragment for multicol has non-inline children
+    // (kColumnBox). Could this be regular box fragments?
+    DCHECK(paint_fragment);
+  } else {
+    DCHECK(!paint_fragment);
+  }
+#endif
 }
+
+inline NGBoxFragmentPainter::NGBoxFragmentPainter(
+    const NGPaintFragment& paint_fragment)
+    : NGBoxFragmentPainter(
+          To<NGPhysicalBoxFragment>(paint_fragment.PhysicalFragment()),
+          &paint_fragment) {}
 
 }  // namespace blink
 

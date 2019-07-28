@@ -1880,6 +1880,7 @@ jumbo_split_static_library("ui") {
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",
       "//chrome/browser/chromeos",
+      "//chrome/browser/chromeos:backdrop_wallpaper_proto",
       "//chrome/browser/resources/chromeos:camera_resources",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",

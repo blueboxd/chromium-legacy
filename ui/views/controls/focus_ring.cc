@@ -30,7 +30,6 @@ std::unique_ptr<FocusRing> FocusRing::Install(View* parent) {
   auto ring = base::WrapUnique<FocusRing>(new FocusRing());
   ring->set_owned_by_client();
   parent->AddChildView(ring.get());
-  ring->EnableCanvasFlippingForRTLUI(parent->flip_canvas_on_paint_for_rtl_ui());
   ring->InvalidateLayout();
   ring->SchedulePaint();
   return ring;
@@ -102,8 +101,6 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
     path = GetHighlightPath(parent());
 
   DCHECK(IsPathUseable(path));
-  DCHECK_EQ(flip_canvas_on_paint_for_rtl_ui(),
-            parent()->flip_canvas_on_paint_for_rtl_ui());
   SkRect bounds;
   SkRRect rbounds;
   if (path.isRect(&bounds)) {

@@ -5,8 +5,6 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
 
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -19,25 +17,29 @@ void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
                                      const PhysicalOffset& paint_offset) {
   DCHECK(ShouldPaintSelfOutline(paint_info.phase));
 
-  if (!NGOutlineUtils::HasPaintedOutline(paint_fragment_.Style(),
-                                         paint_fragment_.GetNode()))
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
+  if (!NGOutlineUtils::HasPaintedOutline(fragment.Style(), fragment.GetNode()))
+    return;
+
+  // TODO(kojii): Eliminate paint_fragment_ if this is used for block-children
+  if (!paint_fragment_)
     return;
 
   Vector<PhysicalRect> outline_rects;
-  paint_fragment_.AddSelfOutlineRects(
+  paint_fragment_->AddSelfOutlineRects(
       &outline_rects, paint_offset,
-      paint_fragment_.GetLayoutObject()
+      fragment.GetLayoutObject()
           ->OutlineRectsShouldIncludeBlockVisualOverflow());
   if (outline_rects.IsEmpty())
     return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, paint_fragment_, paint_info.phase))
+          paint_info.context, *paint_fragment_, paint_info.phase))
     return;
 
-  DrawingRecorder recorder(paint_info.context, paint_fragment_,
+  DrawingRecorder recorder(paint_info.context, *paint_fragment_,
                            paint_info.phase);
-  PaintOutlineRects(paint_info, outline_rects, paint_fragment_.Style());
+  PaintOutlineRects(paint_info, outline_rects, fragment.Style());
 }
 
 void NGFragmentPainter::AddPDFURLRectIfNeeded(
@@ -46,26 +48,30 @@ void NGFragmentPainter::AddPDFURLRectIfNeeded(
   DCHECK(paint_info.IsPrinting());
 
   // TODO(layout-dev): Should use break token when NG has its own tree building.
-  if (paint_fragment_.GetLayoutObject()->IsElementContinuation() ||
-      !paint_fragment_.GetNode() || !paint_fragment_.GetNode()->IsLink() ||
-      paint_fragment_.Style().Visibility() != EVisibility::kVisible)
+  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
+  if (fragment.GetLayoutObject()->IsElementContinuation() ||
+      fragment.Style().Visibility() != EVisibility::kVisible)
     return;
 
-  KURL url = To<Element>(paint_fragment_.GetNode())->HrefURL();
+  Node* node = fragment.GetNode();
+  if (!node || !node->IsLink())
+    return;
+
+  KURL url = To<Element>(node)->HrefURL();
   if (!url.IsValid())
     return;
 
-  IntRect rect = paint_fragment_.VisualRect();
+  const DisplayItemClient& display_item_client = GetDisplayItemClient();
+  IntRect rect = display_item_client.VisualRect();
   if (rect.IsEmpty())
     return;
 
-  const NGPhysicalFragment& fragment = paint_fragment_.PhysicalFragment();
   if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, paint_fragment_,
+          paint_info.context, display_item_client,
           DisplayItem::kPrintedContentPDFURLRect))
     return;
 
-  DrawingRecorder recorder(paint_info.context, paint_fragment_,
+  DrawingRecorder recorder(paint_info.context, display_item_client,
                            DisplayItem::kPrintedContentPDFURLRect);
 
   Document& document = fragment.GetLayoutObject()->GetDocument();
@@ -81,7 +87,7 @@ void NGFragmentPainter::AddPDFURLRectIfNeeded(
 
 bool NGFragmentPainter::ShouldRecordHitTestData(
     const PaintInfo& paint_info,
-    const NGPhysicalFragment& fragment) {
+    const NGPhysicalBoxFragment& fragment) {
   // Hit test display items are only needed for compositing. This flag is used
   // for for printing and drag images which do not need hit testing.
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)

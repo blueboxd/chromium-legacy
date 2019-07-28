@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 
 namespace blink {
 
@@ -70,6 +71,15 @@ void LayoutNGFieldset::AddChild(LayoutObject* new_child,
 
 bool LayoutNGFieldset::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGFieldset || LayoutNGBlockFlow::IsOfType(type);
+}
+
+void LayoutNGFieldset::Paint(const PaintInfo& paint_info) const {
+  // TODO(kojii): This override shiould not be needed when painting fragment is
+  // enabled in parent classes.
+  if (const NGPhysicalBoxFragment* fragment = CurrentFragment())
+    NGBoxFragmentPainter(*fragment, PaintFragment()).Paint(paint_info);
+  else
+    LayoutNGBlockFlow::Paint(paint_info);
 }
 
 }  // namespace blink

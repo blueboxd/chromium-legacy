@@ -222,8 +222,8 @@ void data_offer_set_actions(wl_client* client,
 }
 
 const struct wl_data_offer_interface data_offer_implementation = {
-    data_offer_accept, data_offer_receive, data_offer_finish,
-    data_offer_destroy, data_offer_set_actions};
+    data_offer_accept, data_offer_receive, data_offer_destroy,
+    data_offer_finish, data_offer_set_actions};
 
 ////////////////////////////////////////////////////////////////////////////////
 // wl_data_device_interface:

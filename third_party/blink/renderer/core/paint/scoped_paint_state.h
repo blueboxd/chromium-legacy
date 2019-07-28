@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCOPED_PAINT_STATE_H_
 
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 
@@ -55,7 +55,8 @@ class ScopedPaintState {
     }
   }
 
-  ScopedPaintState(const NGPaintFragment& fragment, const PaintInfo& paint_info)
+  ScopedPaintState(const NGPhysicalFragment& fragment,
+                   const PaintInfo& paint_info)
       : ScopedPaintState(*fragment.GetLayoutObject(), paint_info) {}
 
   ~ScopedPaintState() {

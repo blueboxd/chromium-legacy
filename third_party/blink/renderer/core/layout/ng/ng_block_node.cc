@@ -454,11 +454,6 @@ void NGBlockNode::FinishLayout(
           Style().IsFlippedBlocksWritingMode());
       block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token),
                                    &physical_fragment);
-    } else if (UNLIKELY(box_->IsLayoutNGFieldset())) {
-      // TODO(kojii): NGFieldset should not create PaintFragment.
-      block_flow->ClearNGInlineNodeData();
-      block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token),
-                                   &layout_result->PhysicalFragment());
     } else {
       // We still need to clear paint fragments in case it had inline children,
       // and thus had NGPaintFragment.

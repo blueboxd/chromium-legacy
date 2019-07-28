@@ -144,8 +144,8 @@ TEST_F(DataOfferTest, SetTextDropData) {
   data_offer.SetSourceActions(source_actions);
   data_offer.SetActions(base::flat_set<DndAction>(), DndAction::kMove);
 
-  EXPECT_EQ(1u, delegate.mime_types().size());
-  EXPECT_EQ(1u, delegate.mime_types().count("text/plain"));
+  EXPECT_EQ(1u, delegate.mime_types().count("text/plain;charset=utf-8"));
+  EXPECT_EQ(1u, delegate.mime_types().count("text/plain;charset=utf-16"));
   EXPECT_EQ(2u, delegate.source_actions().size());
   EXPECT_EQ(1u, delegate.source_actions().count(DndAction::kCopy));
   EXPECT_EQ(1u, delegate.source_actions().count(DndAction::kMove));
@@ -194,14 +194,21 @@ TEST_F(DataOfferTest, ReceiveString) {
   data.SetString(base::ASCIIToUTF16("Test data"));
   data_offer.SetDropData(&file_helper, data);
 
-  base::ScopedFD read_pipe;
-  base::ScopedFD write_pipe;
-  ASSERT_TRUE(base::CreatePipe(&read_pipe, &write_pipe));
+  base::ScopedFD read_pipe_16;
+  base::ScopedFD write_pipe_16;
+  ASSERT_TRUE(base::CreatePipe(&read_pipe_16, &write_pipe_16));
+  data_offer.Receive("text/plain;charset=utf-16", std::move(write_pipe_16));
+  base::string16 result_16;
+  ASSERT_TRUE(ReadString16(std::move(read_pipe_16), &result_16));
+  EXPECT_EQ(base::ASCIIToUTF16("Test data"), result_16);
 
-  data_offer.Receive("text/plain", std::move(write_pipe));
-  base::string16 result;
-  ASSERT_TRUE(ReadString16(std::move(read_pipe), &result));
-  EXPECT_EQ(base::ASCIIToUTF16("Test data"), result);
+  base::ScopedFD read_pipe_8;
+  base::ScopedFD write_pipe_8;
+  ASSERT_TRUE(base::CreatePipe(&read_pipe_8, &write_pipe_8));
+  data_offer.Receive("text/plain;charset=utf-8", std::move(write_pipe_8));
+  std::string result_8;
+  ASSERT_TRUE(ReadString(std::move(read_pipe_8), &result_8));
+  EXPECT_EQ("Test data", result_8);
 }
 
 TEST_F(DataOfferTest, ReceiveUriList) {

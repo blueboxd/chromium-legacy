@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
@@ -107,30 +108,30 @@ ui::ClipboardFormatType GetClipboardFormatType() {
   return *format_type;
 }
 
-void ReadTextFromClipboard(const std::string& charset, base::ScopedFD fd) {
-  base::string16 text;
+scoped_refptr<base::RefCountedString> EncodeAsRefCountedString(
+    const base::string16& text,
+    const std::string& charset) {
   std::string encoded_text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
-                                                 &text);
   base::UTF16ToCodepage(text, charset.c_str(),
                         base::OnStringConversionError::SUBSTITUTE,
                         &encoded_text);
-  WriteFileDescriptor(std::move(fd),
-                      base::RefCountedString::TakeString(&encoded_text));
+  return base::RefCountedString::TakeString(&encoded_text);
+}
+
+void ReadTextFromClipboard(const std::string& charset, base::ScopedFD fd) {
+  base::string16 text;
+  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
+                                                 &text);
+  WriteFileDescriptor(std::move(fd), EncodeAsRefCountedString(text, charset));
 }
 
 void ReadHTMLFromClipboard(const std::string& charset, base::ScopedFD fd) {
   base::string16 text;
   std::string url;
   uint32_t start, end;
-  std::string encoded_text;
   ui::Clipboard::GetForCurrentThread()->ReadHTML(ui::ClipboardType::kCopyPaste,
                                                  &text, &url, &start, &end);
-  base::UTF16ToCodepage(text, charset.c_str(),
-                        base::OnStringConversionError::SUBSTITUTE,
-                        &encoded_text);
-  WriteFileDescriptor(std::move(fd),
-                      base::RefCountedString::TakeString(&encoded_text));
+  WriteFileDescriptor(std::move(fd), EncodeAsRefCountedString(text, charset));
 }
 
 void ReadRTFFromClipboard(base::ScopedFD fd) {
@@ -264,10 +265,21 @@ void DataOffer::SetDropData(FileHelper* file_helper,
 
   base::string16 string_content;
   if (data.HasString() && data.GetString(&string_content)) {
-    const std::string text_mime_type = std::string(ui::kMimeTypeText);
-    data_.emplace(text_mime_type,
-                  RefCountedString16::TakeString(std::move(string_content)));
-    delegate_->OnOffer(text_mime_type);
+    const std::string utf8_mime_type = std::string(kTextMimeTypeUtf8);
+    data_.emplace(utf8_mime_type,
+                  EncodeAsRefCountedString(string_content, kUTF8));
+    delegate_->OnOffer(utf8_mime_type);
+    const std::string utf16_mime_type = std::string(kTextMimeTypeUtf16);
+    data_.emplace(utf16_mime_type,
+                  EncodeAsRefCountedString(string_content, kUTF16));
+    delegate_->OnOffer(utf16_mime_type);
+    // TODO(crbug.com/981247) Arc treates "text/plain" as UTF-16, which is in
+    // volation of the spec. We will temporarily continue to advertise UTF-16
+    // data as "text/plain". Once arc is fixed, we will convert it to ascii.
+    const std::string text_plain_mime_type = std::string(ui::kMimeTypeText);
+    data_.emplace(text_plain_mime_type,
+                  EncodeAsRefCountedString(string_content, kUTF16));
+    delegate_->OnOffer(text_plain_mime_type);
     return;
   }
 }

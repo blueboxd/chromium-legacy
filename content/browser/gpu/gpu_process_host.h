@@ -33,10 +33,10 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
-#include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
-#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
-#include "services/viz/privileged/interfaces/viz_main.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_host.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
+#include "services/viz/privileged/mojom/viz_main.mojom.h"
 #include "url/gurl.h"
 
 #if defined(USE_VIZ_DEVTOOLS)

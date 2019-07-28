@@ -23,7 +23,7 @@ class CallbackWrapper {
 function sensorMocks() {
   // Class that mocks Sensor interface defined in sensor.mojom
   class MockSensor {
-    constructor(sensorRequest, handle, offset, size, reportingMode) {
+    constructor(sensorRequest, sharedBufferHandle, offset, size, reportingMode) {
       this.client_ = null;
       this.startShouldFail_ = false;
       this.notifyOnReadingChange_ = true;
@@ -35,7 +35,7 @@ function sensorMocks() {
       this.addConfigurationCalled_ = null;
       this.removeConfigurationCalled_ = null;
       this.requestedFrequencies_ = [];
-      let rv = handle.mapBuffer(offset, size);
+      const rv = sharedBufferHandle.mapBuffer(offset, size);
       assert_equals(rv.result, Mojo.RESULT_OK, "Failed to map shared buffer");
       this.bufferArray_ = rv.buffer;
       this.buffer_ = new Float64Array(this.bufferArray_);
@@ -79,7 +79,7 @@ function sensorMocks() {
         this.removeConfigurationCalled_(this);
       }
 
-      let index = this.requestedFrequencies_.indexOf(configuration.frequency);
+      const index = this.requestedFrequencies_.indexOf(configuration.frequency);
       if (index == -1)
         return;
 
@@ -177,8 +177,8 @@ function sensorMocks() {
     startReading() {
       if (this.readingData_ != null) {
         this.stopReading();
-        let maxFrequencyUsed = this.requestedFrequencies_[0];
-        let timeout = (1 / maxFrequencyUsed) * 1000;
+        const maxFrequencyUsed = this.requestedFrequencies_[0];
+        const timeout = (1 / maxFrequencyUsed) * 1000;
         this.sensorReadingTimerId_ = window.setInterval(() => {
           if (this.readingData_) {
             this.buffer_.set(this.readingData_, 2);
@@ -215,7 +215,7 @@ function sensorMocks() {
           device.mojom.SensorInitParams.kReadBufferSizeForTests;
       this.sharedBufferSizeInBytes_ = this.readingSizeInBytes_ *
               (device.mojom.SensorType.MAX_VALUE + 1);
-      let rv = Mojo.createSharedBuffer(this.sharedBufferSizeInBytes_);
+      const rv = Mojo.createSharedBuffer(this.sharedBufferSizeInBytes_);
       assert_equals(rv.result, Mojo.RESULT_OK, "Failed to create buffer");
       this.sharedBufferHandle_ = rv.handle;
       this.activeSensors_ = new Map();
@@ -257,35 +257,33 @@ function sensorMocks() {
                 initParams: null};
       }
 
-      let offset = type * this.readingSizeInBytes_;
-      let reportingMode = device.mojom.ReportingMode.ON_CHANGE;
-      if (this.isContinuous_) {
-        reportingMode = device.mojom.ReportingMode.CONTINUOUS;
-      }
+      const offset = type * this.readingSizeInBytes_;
+      const reportingMode = this.isContinuous_ ?
+          device.mojom.ReportingMode.CONTINUOUS :
+          device.mojom.ReportingMode.ON_CHANGE;
 
-      let sensorPtr = new device.mojom.SensorPtr();
+      const sensorPtr = new device.mojom.SensorPtr();
       if (!this.activeSensors_.has(type)) {
-        let mockSensor = new MockSensor(
+        const mockSensor = new MockSensor(
             mojo.makeRequest(sensorPtr), this.sharedBufferHandle_, offset,
             this.readingSizeInBytes_, reportingMode);
         this.activeSensors_.set(type, mockSensor);
         this.activeSensors_.get(type).client_ = new device.mojom.SensorClientPtr();
       }
 
-      let rv = this.sharedBufferHandle_.duplicateBufferHandle();
+      const rv = this.sharedBufferHandle_.duplicateBufferHandle();
 
       assert_equals(rv.result, Mojo.RESULT_OK);
 
-      let defaultConfig = { frequency: DEFAULT_FREQUENCY };
+      const defaultConfig = { frequency: DEFAULT_FREQUENCY };
       // Consider sensor traits to meet assertions in C++ code (see
       // services/device/public/cpp/generic_sensor/sensor_traits.h)
       if (type == device.mojom.SensorType.AMBIENT_LIGHT ||
           type == device.mojom.SensorType.MAGNETOMETER) {
-        if (this.maxFrequency_ > 10)
-          this.maxFrequency_ = 10;
+        this.maxFrequency_ = Math.min(10, this.maxFrequency_);
       }
 
-      let initParams = new device.mojom.SensorInitParams({
+      const initParams = new device.mojom.SensorInitParams({
         sensor: sensorPtr,
         clientRequest: mojo.makeRequest(this.activeSensors_.get(type).client_),
         memory: rv.handle,
@@ -381,7 +379,7 @@ function sensorMocks() {
 
 function sensor_test(func, name, properties) {
   promise_test(async () => {
-    let sensorProvider = sensorMocks();
+    const sensorProvider = sensorMocks();
 
     // Clean up and reset mock sensor stubs asynchronously, so that the blink
     // side closes its proxies and notifies JS sensor objects before new test is
@@ -396,14 +394,14 @@ function sensor_test(func, name, properties) {
 }
 
 async function setMockSensorDataForType(sensorProvider, sensorType, mockDataArray) {
-  let createdSensor = await sensorProvider.getCreatedSensor(sensorType);
+  const createdSensor = await sensorProvider.getCreatedSensor(sensorType);
   return createdSensor.setSensorReading(mockDataArray);
 }
 
 // Returns a promise that will be resolved when an event equal to the given
 // event is fired.
 function waitForEvent(expectedEvent, targetWindow = window) {
-  let stringify = (thing, targetWindow) => {
+  const stringify = (thing, targetWindow) => {
     if (thing instanceof targetWindow.Object && thing.constructor !== targetWindow.Object) {
       let str = '{';
       for (let key of Object.keys(Object.getPrototypeOf(thing))) {
@@ -420,9 +418,9 @@ function waitForEvent(expectedEvent, targetWindow = window) {
     let events = [];
     let timeoutId = null;
 
-    let expectedEventString = stringify(expectedEvent, window);
+    const expectedEventString = stringify(expectedEvent, window);
     function listener(event) {
-      let eventString = stringify(event, targetWindow);
+      const eventString = stringify(event, targetWindow);
       if (eventString === expectedEventString) {
         targetWindow.clearTimeout(timeoutId);
         targetWindow.removeEventListener(expectedEvent.type, listener);

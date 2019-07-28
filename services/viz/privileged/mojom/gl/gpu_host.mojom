@@ -8,7 +8,7 @@ import "gpu/ipc/common/gpu_feature_info.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/gpu_extra_info.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
-import "services/viz/privileged/interfaces/gl/context_lost_reason.mojom";
+import "services/viz/privileged/mojom/gl/context_lost_reason.mojom";
 import "url/mojom/url.mojom";
 
 // Communication channel from the gpu process to the gpu host. This interface

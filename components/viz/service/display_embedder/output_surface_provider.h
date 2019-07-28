@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "gpu/ipc/common/surface_handle.h"
-#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
+#include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 
 namespace viz {
 

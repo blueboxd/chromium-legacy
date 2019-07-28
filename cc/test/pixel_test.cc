@@ -50,7 +50,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
-#include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_host.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {

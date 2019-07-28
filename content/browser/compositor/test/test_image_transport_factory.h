@@ -18,7 +18,7 @@
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "components/viz/test/test_image_factory.h"
 #include "content/browser/compositor/image_transport_factory.h"
-#include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
+#include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom.h"
 #include "ui/compositor/compositor.h"
 
 namespace viz {

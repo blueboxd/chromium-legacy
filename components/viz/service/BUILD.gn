@@ -199,7 +199,7 @@ viz_component("service") {
     "//media",
     "//media/capture:capture_lib",
     "//media/mojo/services",
-    "//services/viz/privileged/interfaces",
+    "//services/viz/privileged/mojom",
     "//ui/display/types",
   ]
 
@@ -209,7 +209,7 @@ viz_component("service") {
     "//cc",
     "//cc/debug",
     "//gpu/command_buffer/client:gles2_interface",
-    "//services/viz/privileged/interfaces/compositing",
+    "//services/viz/privileged/mojom/compositing",
     "//services/viz/public/mojom",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -338,7 +338,7 @@ viz_source_set("gpu_service_dependencies") {
     "//gpu/vulkan:buildflags",
     "//media/gpu/ipc/service",
     "//media/mojo/services",
-    "//services/viz/privileged/interfaces/gl",
+    "//services/viz/privileged/mojom/gl",
     "//skia",
     "//ui/latency:latency",
   ]

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
+#include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom.h"
 
 namespace exo {
 

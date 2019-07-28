@@ -6,7 +6,7 @@
 #define UI_COMPOSITOR_HOST_EXTERNAL_BEGIN_FRAME_CONTROLLER_CLIENT_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/external_begin_frame_controller.mojom.h"
+#include "services/viz/privileged/mojom/compositing/external_begin_frame_controller.mojom.h"
 
 namespace ui {
 

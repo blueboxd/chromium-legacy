@@ -13,7 +13,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/layered_window_updater.mojom.h"
+#include "services/viz/privileged/mojom/compositing/layered_window_updater.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 class SkCanvas;

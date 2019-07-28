@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/viz/service/viz_service_export.h"
-#include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
+#include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom.h"
 
 namespace viz {
 

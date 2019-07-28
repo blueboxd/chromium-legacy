@@ -11,7 +11,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/viz/privileged/interfaces/compositing/external_begin_frame_controller.mojom.h"
+#include "services/viz/privileged/mojom/compositing/external_begin_frame_controller.mojom.h"
 
 namespace viz {
 

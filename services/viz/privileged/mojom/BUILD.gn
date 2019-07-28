@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   sources = [
     "viz_main.mojom",
   ]
@@ -12,8 +12,8 @@ mojom("interfaces") {
   public_deps = [
     "//components/discardable_memory/public/mojom",
     "//services/network/public/mojom",
-    "//services/viz/privileged/interfaces/compositing",
-    "//services/viz/privileged/interfaces/gl",
+    "//services/viz/privileged/mojom/compositing",
+    "//services/viz/privileged/mojom/gl",
     "//services/viz/public/mojom",
     "//ui/gfx/mojo",
   ]
@@ -23,7 +23,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "struct_traits_unittest.cc",
+    "mojom_traits_unittest.cc",
   ]
 
   deps = [
@@ -31,7 +31,7 @@ source_set("unit_tests") {
     "//components/viz/common:common",
     "//media/capture/mojom:video_capture",
     "//services/service_manager/public/cpp",
-    "//services/viz/privileged/interfaces/compositing",
+    "//services/viz/privileged/mojom/compositing",
     "//testing/gtest",
     "//ui/gfx:test_support",
   ]

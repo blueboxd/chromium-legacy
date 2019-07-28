@@ -1261,15 +1261,6 @@ PhysicalRect PaintLayer::TransparencyClipBox(
   return clip_rect;
 }
 
-PhysicalRect PaintLayer::PaintingExtent(
-    const PaintLayer* root_layer,
-    const PhysicalOffset& sub_pixel_accumulation,
-    GlobalPaintFlags global_paint_flags) {
-  return TransparencyClipBox(this, root_layer, kPaintingTransparencyClipBox,
-                             kRootOfTransparencyClipBox, sub_pixel_accumulation,
-                             global_paint_flags);
-}
-
 void* PaintLayer::operator new(size_t sz) {
   return WTF::Partitions::LayoutPartition()->Alloc(
       sz, WTF_HEAP_PROFILER_TYPE_NAME(PaintLayer));

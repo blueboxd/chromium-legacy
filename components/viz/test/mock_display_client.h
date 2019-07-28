@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace viz {

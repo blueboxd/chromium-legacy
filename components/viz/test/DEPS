@@ -24,7 +24,7 @@ include_rules = [
   "+gpu/skia_bindings/grcontext_for_gles2_interface.h",
   "+mojo/public/cpp/bindings",
   "+mojo/public/cpp/system",
-  "+services/viz/privileged/interfaces",
+  "+services/viz/privileged/mojom",
   "+services/viz/public/mojom",
   "+third_party/khronos/GLES2/gl2.h",
   "+third_party/khronos/GLES2/gl2ext.h",

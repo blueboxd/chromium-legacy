@@ -6,10 +6,10 @@ module viz.mojom;
 
 import "gpu/ipc/common/surface_handle.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "services/viz/privileged/interfaces/compositing/display_private.mojom";
-import "services/viz/privileged/interfaces/compositing/external_begin_frame_controller.mojom";
-import "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom";
-import "services/viz/privileged/interfaces/compositing/renderer_settings.mojom";
+import "services/viz/privileged/mojom/compositing/display_private.mojom";
+import "services/viz/privileged/mojom/compositing/external_begin_frame_controller.mojom";
+import "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom";
+import "services/viz/privileged/mojom/compositing/renderer_settings.mojom";
 import "services/viz/public/mojom/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/mojom/compositing/copy_output_request.mojom";
 import "services/viz/public/mojom/compositing/frame_sink_id.mojom";

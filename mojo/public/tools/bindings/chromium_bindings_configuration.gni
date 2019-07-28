@@ -42,7 +42,7 @@ _typemap_imports = [
   "//services/service_manager/public/cpp/typemaps.gni",
   "//services/tracing/public/mojom/typemaps.gni",
   "//services/viz/privileged/cpp/typemaps.gni",
-  "//services/viz/privileged/interfaces/compositing/typemaps.gni",
+  "//services/viz/privileged/mojom/compositing/typemaps.gni",
   "//services/viz/public/cpp/compositing/typemaps.gni",
   "//services/viz/public/cpp/hit_test/typemaps.gni",
   "//skia/public/interfaces/typemaps.gni",

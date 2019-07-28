@@ -11,7 +11,7 @@
 
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/viz_service_export.h"
-#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
+#include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 
 namespace viz {
 

@@ -4,7 +4,7 @@
 
 module viz.mojom;
 
-import "services/viz/privileged/interfaces/compositing/overlay_strategy.mojom";
+import "services/viz/privileged/mojom/compositing/overlay_strategy.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 

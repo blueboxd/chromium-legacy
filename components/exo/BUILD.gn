@@ -73,7 +73,7 @@ source_set("exo") {
     "//gpu/command_buffer/client:raster_interface",
     "//net",
     "//services/data_decoder/public/cpp",
-    "//services/viz/privileged/interfaces/compositing",
+    "//services/viz/privileged/mojom/compositing",
     "//skia",
     "//third_party/blink/public/common",
     "//ui/aura",

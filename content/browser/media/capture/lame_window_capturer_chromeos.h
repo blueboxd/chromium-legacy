@@ -17,7 +17,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/media/capture/lame_capture_overlay_chromeos.h"
 #include "media/base/video_frame.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/size.h"

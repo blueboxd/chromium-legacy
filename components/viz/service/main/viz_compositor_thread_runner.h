@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
-#include "services/viz/privileged/interfaces/viz_main.mojom.h"
+#include "services/viz/privileged/mojom/viz_main.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/java_handler_thread.h"

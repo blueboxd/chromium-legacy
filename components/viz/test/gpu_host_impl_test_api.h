@@ -6,7 +6,7 @@
 #define COMPONENTS_VIZ_TEST_GPU_HOST_IMPL_TEST_API_H_
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 
 namespace viz {
 class GpuHostImpl;

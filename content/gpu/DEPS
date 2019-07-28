@@ -8,7 +8,7 @@ include_rules = [
   "+services/service_manager",
   "+services/shape_detection",
   "+services/tracing/public/cpp",
-  "+services/viz/privileged/interfaces",
+  "+services/viz/privileged/mojom",
   "+services/viz/service",
   "+sandbox",
   "+skia",

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/threading/thread.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace viz {
 class VizCompositorThreadRunner;

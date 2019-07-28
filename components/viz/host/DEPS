@@ -14,7 +14,7 @@ include_rules = [
   "+media/capture/mojom/video_capture_types.mojom.h",
   "+mojo/public/cpp",
   "+services/service_manager/public",
-  "+services/viz/privileged/interfaces",
+  "+services/viz/privileged/mojom",
   "+services/viz/public/mojom",
   "+services/viz/public/mojom/hit_test",
   "+skia",

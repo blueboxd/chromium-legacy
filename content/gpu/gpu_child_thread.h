@@ -34,7 +34,7 @@
 #include "media/base/android_overlay_mojo_factory.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
-#include "services/viz/privileged/interfaces/viz_main.mojom.h"
+#include "services/viz/privileged/mojom/viz_main.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "ui/gfx/native_widget_types.h"
 

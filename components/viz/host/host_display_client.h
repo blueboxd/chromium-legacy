@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
+#include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace viz {

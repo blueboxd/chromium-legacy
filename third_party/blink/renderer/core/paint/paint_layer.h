@@ -946,10 +946,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void DidUpdateScrollsOverflow();
 
-  PhysicalRect PaintingExtent(const PaintLayer* root_layer,
-                              const PhysicalOffset& sub_pixel_accumulation,
-                              GlobalPaintFlags);
-
   void AppendSingleFragmentIgnoringPagination(
       PaintLayerFragments&,
       const PaintLayer* root_layer,

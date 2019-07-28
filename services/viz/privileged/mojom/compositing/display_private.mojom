@@ -12,8 +12,8 @@ import "ui/gfx/mojo/overlay_transform.mojom";
 import "ui/gfx/mojo/transform.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/latency/mojom/latency_info.mojom";
-import "services/viz/privileged/interfaces/compositing/layered_window_updater.mojom";
-import "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom";
+import "services/viz/privileged/mojom/compositing/layered_window_updater.mojom";
+import "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom";
 
 // See ui/compositor/compositor.h: ContextFactoryPrivate.
 // The DisplayPrivate is used by privileged clients to talk to Display.

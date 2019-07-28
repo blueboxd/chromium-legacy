@@ -6244,7 +6244,6 @@ crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html
 crbug.com/973726 [ Mac ] fast/css/large-list-of-rules-crash.html [ Pass Timeout ]
 crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
 crbug.com/937546 [ Win7 ] virtual/blink-cors/http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
-crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 
 # Sheriff 2019-06-14
 crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/null.tentative.html [ Failure ]
@@ -6252,9 +6251,6 @@ crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/usecredentials.tentative
 
 # Flaky on Linux, failing on macOS
 crbug.com/984926 [ Linux Mac ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
-
-# Sheriff 2019-06-19
-crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 
 # Sheriff 2019-06-20
 crbug.com/977153 [ Mac ] fast/forms/validation-bubble-appearance-wrap.html [ Pass Failure ]
@@ -6382,3 +6378,6 @@ crbug.com/988232 virtual/controls-refresh/fast/forms/controls-new-ui/password/pa
 crbug.com/988246 external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_mismatch.tentative.https.html [ Pass Timeout ]
 crbug.com/988248 media/video-persistence.html [ Pass Failure ]
 crbug.com/988250 virtual/omt-worker-fetch/http/tests/workers/worker-invalid-context.html [ Crash Pass Failure Timeout ]
+crbug.com/988252 [ Linux Debug ] virtual/threaded/transitions/composited-with-hit-testing.html [ Pass Failure ]
+crbug.com/959129 virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
+crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]

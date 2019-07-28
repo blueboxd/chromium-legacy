@@ -83,7 +83,7 @@ target(link_target_type, "gpu_sources") {
     "//services/shape_detection:lib",
     "//services/shape_detection/public/mojom",
     "//services/tracing/public/cpp",
-    "//services/viz/privileged/interfaces",
+    "//services/viz/privileged/mojom",
     "//skia",
     "//third_party/angle:angle_gpu_info_util",
     "//ui/gfx/ipc",

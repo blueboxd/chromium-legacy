@@ -31,7 +31,7 @@ static_library("host") {
     "//components/viz/common",
     "//components/viz/host",
     "//mojo/public/cpp/system",
-    "//services/viz/privileged/interfaces",
+    "//services/viz/privileged/mojom",
   ]
 }
 
@@ -46,7 +46,7 @@ static_library("service") {
     "//components/viz/common",
     "//components/viz/service/main",
     "//mojo/public/cpp/system",
-    "//services/viz/privileged/interfaces",
+    "//services/viz/privileged/mojom",
   ]
 }
 

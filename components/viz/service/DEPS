@@ -8,7 +8,7 @@ include_rules = [
   "+components/viz/service/viz_service_export.h",
   "+gpu/config/gpu_feature_info.h",
   "+gpu/ipc/common/surface_handle.h",
-  "+services/viz/privileged/interfaces",
+  "+services/viz/privileged/mojom",
   "+services/viz/public/mojom",
   "+third_party/skia",
   "+ui/latency",

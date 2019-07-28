@@ -1140,7 +1140,7 @@ test("content_browsertests") {
     "//services/video_capture/public/cpp",
     "//services/video_capture/public/cpp:mocks",
     "//services/video_capture/public/mojom:constants",
-    "//services/viz/privileged/interfaces",
+    "//services/viz/privileged/mojom",
     "//services/viz/public/cpp/gpu",
     "//storage/browser",
     "//storage/browser:test_support",

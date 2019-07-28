@@ -32,10 +32,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
-#include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
-#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
-#include "services/viz/privileged/interfaces/viz_main.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_host.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
+#include "services/viz/privileged/mojom/viz_main.mojom.h"
 #include "url/gurl.h"
 
 namespace gfx {

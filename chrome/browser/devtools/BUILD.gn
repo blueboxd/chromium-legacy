@@ -100,7 +100,7 @@ static_library("devtools") {
     "//base",
     "//content/public/browser",
     "//net",
-    "//services/viz/privileged/interfaces/compositing",
+    "//services/viz/privileged/mojom/compositing",
     "//third_party/blink/public:buildflags",
     "//ui/events:dom_keycode_converter",
   ]

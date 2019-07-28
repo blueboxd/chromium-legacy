@@ -13,7 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
-#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
+#include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "ui/compositor/compositor.h"
 
 namespace base {

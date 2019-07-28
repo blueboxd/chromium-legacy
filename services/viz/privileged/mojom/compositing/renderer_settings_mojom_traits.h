@@ -1,15 +1,15 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef SERVICES_VIZ_PRIVILEGED_INTERFACES_COMPOSITING_RENDERER_SETTINGS_STRUCT_TRAITS_H_
-#define SERVICES_VIZ_PRIVILEGED_INTERFACES_COMPOSITING_RENDERER_SETTINGS_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PRIVILEGED_MOJOM_COMPOSITING_RENDERER_SETTINGS_MOJOM_TRAITS_H_
+#define SERVICES_VIZ_PRIVILEGED_MOJOM_COMPOSITING_RENDERER_SETTINGS_MOJOM_TRAITS_H_
 
 #include <vector>
 
 #include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
-#include "services/viz/privileged/cpp/overlay_strategy_struct_traits.h"
-#include "services/viz/privileged/interfaces/compositing/renderer_settings.mojom.h"
+#include "services/viz/privileged/cpp/overlay_strategy_mojom_traits.h"
+#include "services/viz/privileged/mojom/compositing/renderer_settings.mojom.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 #if defined(USE_OZONE)
@@ -102,4 +102,4 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
 
 }  // namespace mojo
 
-#endif  // SERVICES_VIZ_PRIVILEGED_INTERFACES_COMPOSITING_RENDERER_SETTINGS_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PRIVILEGED_MOJOM_COMPOSITING_RENDERER_SETTINGS_MOJOM_TRAITS_H_

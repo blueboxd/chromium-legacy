@@ -113,33 +113,6 @@ TEST_P(PaintLayerTest, RootLayerScrollBounds) {
             plsa->VisibleContentRect(kIncludeScrollbars));
 }
 
-TEST_P(PaintLayerTest, PaintingExtentReflection) {
-  SetBodyInnerHTML(R"HTML(
-    <div id='target' style='background-color: blue; position: absolute;
-        width: 110px; height: 120px; top: 40px; left: 60px;
-        -webkit-box-reflect: below 3px'>
-    </div>
-  )HTML");
-
-  PaintLayer* layer = GetPaintLayerByElementId("target");
-  EXPECT_EQ(PhysicalRect(60, 40, 110, 243),
-            layer->PaintingExtent(GetDocument().GetLayoutView()->Layer(),
-                                  PhysicalOffset(), 0));
-}
-
-TEST_P(PaintLayerTest, PaintingExtentReflectionWithTransform) {
-  SetBodyInnerHTML(R"HTML(
-    <div id='target' style='background-color: blue; position: absolute;
-        width: 110px; height: 120px; top: 40px; left: 60px;
-        -webkit-box-reflect: below 3px; transform: translateX(30px)'>
-    </div>
-  )HTML");
-
-  PaintLayer* layer = GetPaintLayerByElementId("target");
-  EXPECT_EQ(PhysicalRect(90, 40, 110, 243),
-            layer->PaintingExtent(GetDocument().GetLayoutView()->Layer(),
-                                  PhysicalOffset(), 0));
-}
 
 TEST_P(PaintLayerTest, ScrollsWithViewportRelativePosition) {
   SetBodyInnerHTML("<div id='target' style='position: relative'></div>");

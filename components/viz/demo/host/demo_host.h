@@ -13,8 +13,8 @@
 #include "components/viz/host/host_display_client.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace demo {

@@ -44,7 +44,7 @@ viz_component("host") {
     "//components/viz/common",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
-    "//services/viz/privileged/interfaces",
+    "//services/viz/privileged/mojom",
     "//ui/base",
     "//ui/gfx",
 
@@ -56,7 +56,7 @@ viz_component("host") {
   public_deps = [
     "//gpu/command_buffer/client",
     "//gpu/ipc/host",
-    "//services/viz/privileged/interfaces/compositing",
+    "//services/viz/privileged/mojom/compositing",
     "//services/viz/public/mojom",
     "//ui/gfx/geometry",
   ]
@@ -87,7 +87,7 @@ viz_source_set("unit_tests") {
     "//gpu",
     "//gpu/ipc/host",
     "//mojo/public/cpp/bindings",
-    "//services/viz/privileged/interfaces",
+    "//services/viz/privileged/mojom",
     "//services/viz/public/mojom",
     "//testing/gmock",
     "//testing/gtest",

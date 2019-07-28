@@ -555,7 +555,7 @@ cc_test_static_library("test_support") {
     "//gpu/ipc/service",
     "//gpu/skia_bindings",
     "//media",
-    "//services/viz/privileged/interfaces",
+    "//services/viz/privileged/mojom",
     "//skia",
     "//testing/gtest",
     "//ui/gfx",

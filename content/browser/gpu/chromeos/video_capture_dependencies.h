@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_GPU_CHROMEOS_VIDEO_CAPTURE_DEPENDENCIES_H_
 
 #include "content/common/content_export.h"
-#include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
+#include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 
 namespace content {
 

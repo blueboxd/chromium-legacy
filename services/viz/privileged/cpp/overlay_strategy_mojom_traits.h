@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_VIZ_PRIVILEGED_CPP_OVERLAY_STRATEGY_STRUCT_TRAITS_H_
-#define SERVICES_VIZ_PRIVILEGED_CPP_OVERLAY_STRATEGY_STRUCT_TRAITS_H_
+#ifndef SERVICES_VIZ_PRIVILEGED_CPP_OVERLAY_STRATEGY_MOJOM_TRAITS_H_
+#define SERVICES_VIZ_PRIVILEGED_CPP_OVERLAY_STRATEGY_MOJOM_TRAITS_H_
 
 #include "components/viz/common/display/overlay_strategy.h"
-#include "services/viz/privileged/interfaces/compositing/overlay_strategy.mojom.h"
+#include "services/viz/privileged/mojom/compositing/overlay_strategy.mojom.h"
 
 namespace mojo {
 
@@ -51,4 +51,4 @@ struct EnumTraits<viz::mojom::OverlayStrategy, viz::OverlayStrategy> {
 
 }  // namespace mojo
 
-#endif  // SERVICES_VIZ_PRIVILEGED_CPP_OVERLAY_STRATEGY_STRUCT_TRAITS_H_
+#endif  // SERVICES_VIZ_PRIVILEGED_CPP_OVERLAY_STRATEGY_MOJOM_TRAITS_H_

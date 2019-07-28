@@ -12,7 +12,7 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/service/display_embedder/output_device_backing.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/viz/privileged/interfaces/compositing/layered_window_updater.mojom.h"
+#include "services/viz/privileged/mojom/compositing/layered_window_updater.mojom.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"

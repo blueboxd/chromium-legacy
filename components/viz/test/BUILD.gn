@@ -79,7 +79,7 @@ viz_static_library("test_support") {
     "//gpu:test_support",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/skia_bindings",
-    "//services/viz/privileged/interfaces",
+    "//services/viz/privileged/mojom",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx/geometry",

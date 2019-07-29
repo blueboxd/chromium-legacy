@@ -9,8 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 
-namespace chromeos {
-namespace printing {
+namespace cups_proxy {
 
 CupsProxyServiceDelegate::CupsProxyServiceDelegate() : weak_factory_(this) {}
 CupsProxyServiceDelegate::~CupsProxyServiceDelegate() = default;
@@ -19,5 +18,4 @@ base::WeakPtr<CupsProxyServiceDelegate> CupsProxyServiceDelegate::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-}  // namespace printing
-}  // namespace chromeos
+}  // namespace cups_proxy

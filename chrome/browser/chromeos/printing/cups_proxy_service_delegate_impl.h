@@ -27,7 +27,8 @@ class PrinterConfigurer;
 // printing stack dependencies, i.e. PrinterConfigurer & CupsPrintersManager.
 // This class can be created and sequenced anywhere but must be accessed from a
 // sequenced context.
-class CupsProxyServiceDelegateImpl : public printing::CupsProxyServiceDelegate {
+class CupsProxyServiceDelegateImpl
+    : public cups_proxy::CupsProxyServiceDelegate {
  public:
   CupsProxyServiceDelegateImpl();
   ~CupsProxyServiceDelegateImpl() override;
@@ -47,15 +48,15 @@ class CupsProxyServiceDelegateImpl : public printing::CupsProxyServiceDelegate {
 
   // Install |printer| into CUPS.
   void SetupPrinter(const Printer& printer,
-                    printing::PrinterSetupCallback cb) override;
+                    cups_proxy::SetupPrinterCallback cb) override;
 
  private:
   // Conducts SetupPrinter call on UI thread.
   void SetupPrinterOnThread(const Printer& printer,
                             scoped_refptr<base::SequencedTaskRunner> cb_runner,
-                            printing::PrinterSetupCallback cb);
+                            cups_proxy::SetupPrinterCallback cb);
   void OnSetupPrinter(scoped_refptr<base::SequencedTaskRunner> cb_runner,
-                      printing::PrinterSetupCallback cb,
+                      cups_proxy::SetupPrinterCallback cb,
                       PrinterSetupResult result);
 
   // Current/active Profile. Not owned.

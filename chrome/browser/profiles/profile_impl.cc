@@ -44,6 +44,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/client_hints/client_hints_factory.h"
 #include "chrome/browser/content_index/content_index_provider_factory.h"
 #include "chrome/browser/content_index/content_index_provider_impl.h"
@@ -58,7 +59,6 @@
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -173,18 +173,14 @@
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/auth_token_validator_impl.h"
 #include "chrome/browser/chromeos/multidevice_setup/oobe_completion_tracker_factory.h"
-#include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_builder_chromeos.h"
 #include "chrome/browser/chromeos/preferences.h"
-#include "chrome/browser/chromeos/printing/cups_proxy_service_delegate_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
-#include "chrome/services/cups_proxy/cups_proxy_service.h"
-#include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
@@ -220,7 +216,6 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_builder.h"
-#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -469,8 +464,7 @@ ProfileImpl::ProfileImpl(
 
 #if defined(OS_CHROMEOS)
   const bool is_regular_profile =
-      !chromeos::ProfileHelper::IsSigninProfile(this) &&
-      !chromeos::ProfileHelper::IsLockScreenAppProfile(this);
+      chromeos::ProfileHelper::IsRegularProfile(this);
 
   if (is_regular_profile) {
     const user_manager::User* user =
@@ -516,18 +510,21 @@ ProfileImpl::ProfileImpl(
 
 #if defined(OS_CHROMEOS)
   if (is_regular_profile) {
-    chromeos::AccountManagerFactory* factory =
-        g_browser_process->platform_part()->GetAccountManagerFactory();
+    // |chromeos::InitializeAccountManager| is called during a User's session
+    // initialization but some tests do not properly login to a User Session.
+    // This invocation of |chromeos::InitializeAccountManager| is used only
+    // during tests.
+    // Note: |chromeos::InitializeAccountManager| is idempotent and safe to call
+    // multiple times.
+    // TODO(https://crbug.com/982233): Remove this call.
+    chromeos::InitializeAccountManager(
+        path_, base::DoNothing() /* initialization_callback */);
+
     chromeos::AccountManager* account_manager =
-        factory->GetAccountManager(path_.value());
-    account_manager->Initialize(
-        path_,
-        g_browser_process->system_network_context_manager()
-            ->GetSharedURLLoaderFactory(),
-        base::BindRepeating(&chromeos::DelayNetworkCall,
-                            base::TimeDelta::FromMilliseconds(
-                                chromeos::kDefaultNetworkRetryDelayMS)),
-        GetPrefs());
+        g_browser_process->platform_part()
+            ->GetAccountManagerFactory()
+            ->GetAccountManager(path_.value());
+    account_manager->SetPrefService(GetPrefs());
   }
 #endif
 
@@ -1327,12 +1324,6 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
             ? android_sms_service->android_sms_pairing_state_tracker()
             : nullptr,
         chromeos::GcmDeviceInfoProviderImpl::GetInstance());
-  }
-
-  if (service_name == chromeos::printing::mojom::kCupsProxyServiceName) {
-    return std::make_unique<chromeos::printing::CupsProxyService>(
-        std::move(request),
-        std::make_unique<chromeos::CupsProxyServiceDelegateImpl>());
   }
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)

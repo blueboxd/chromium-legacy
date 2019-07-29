@@ -285,8 +285,11 @@ cr.define('settings', function() {
       r.GOOGLE_ASSISTANT = r.SEARCH.createChild('/googleAssistant');
     }
 
-    if (loadTimeData.valueExists('showApps') &&
+    // TODO(crbug.com/950007): Remove when SplitSettings is the default.
+    if (loadTimeData.getBoolean('isOSSettings') &&
+        loadTimeData.valueExists('showApps') &&
         loadTimeData.getBoolean('showApps')) {
+      // Currently only used in OS Settings.
       r.APPS = r.BASIC.createSection('/apps', 'apps');
     }
 

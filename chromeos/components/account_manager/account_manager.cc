@@ -161,16 +161,29 @@ void AccountManager::RegisterPrefs(PrefRegistrySimple* registry) {
       true /* default_value */);
 }
 
+void AccountManager::SetPrefService(PrefService* pref_service) {
+  DCHECK(pref_service);
+  pref_service_ = pref_service;
+}
+
+void AccountManager::Initialize(
+    const base::FilePath& home_dir,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    DelayNetworkCallRunner delay_network_call_runner) {
+  Initialize(home_dir, url_loader_factory, delay_network_call_runner,
+             base::DoNothing());
+}
+
 void AccountManager::Initialize(
     const base::FilePath& home_dir,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     DelayNetworkCallRunner delay_network_call_runner,
-    PrefService* pref_service) {
+    base::OnceClosure initialization_callback) {
   Initialize(
       home_dir, url_loader_factory, std::move(delay_network_call_runner),
       base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()}),
-      pref_service);
+      std::move(initialization_callback));
 }
 
 void AccountManager::Initialize(
@@ -178,7 +191,7 @@ void AccountManager::Initialize(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     DelayNetworkCallRunner delay_network_call_runner,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    PrefService* pref_service) {
+    base::OnceClosure initialization_callback) {
   VLOG(1) << "AccountManager::Initialize";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::TimeTicks initialization_start_time = base::TimeTicks::Now();
@@ -198,7 +211,7 @@ void AccountManager::Initialize(
   task_runner_ = task_runner;
   writer_ = std::make_unique<base::ImportantFileWriter>(
       home_dir.Append(kTokensFileName), task_runner_);
-  pref_service_ = pref_service;
+  initialization_callbacks_.emplace_back(std::move(initialization_callback));
 
   PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
@@ -461,7 +474,14 @@ void AccountManager::UpsertAccountInternal(const AccountKey& account_key,
 
   auto it = accounts_.find(account_key);
   if (it == accounts_.end()) {
-    // New account. Insert it.
+    // This is a new account. Insert it.
+
+    // New account insertions can only happen through a user action, which
+    // implies that |Profile| must have been fully initialized at this point.
+    // |ProfileImpl|'s constructor guarantees that
+    // |AccountManager::SetPrefService| has been called on this object, which in
+    // turn guarantees that |pref_service_| is not null.
+    DCHECK(pref_service_);
     if (!pref_service_->GetBoolean(
             chromeos::prefs::kSecondaryGoogleAccountSigninAllowed)) {
       // Secondary Account additions are disabled by policy and all flows for

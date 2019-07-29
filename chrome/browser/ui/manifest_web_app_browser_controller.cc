@@ -26,26 +26,26 @@ base::Optional<std::string> ManifestWebAppBrowserController::GetAppId() const {
   return base::nullopt;
 }
 
-bool ManifestWebAppBrowserController::ShouldShowToolbar() const {
+bool ManifestWebAppBrowserController::ShouldShowCustomTabBar() const {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  // Don't show a toolbar until a navigation has occurred.
+  // Don't show until a navigation has occurred.
   if (!web_contents || web_contents->GetLastCommittedURL().is_empty())
     return false;
 
-  // Show toolbar if the web_contents is not on a secure origin.
+  // Show if the web_contents is not on a secure origin.
   if (!content::IsOriginSecure(app_launch_url_))
     return true;
 
-  // Show toolbar if web_contents is not currently in scope.
+  // Show if web_contents is not currently in scope.
   if (!IsUrlInAppScope(web_contents->GetLastCommittedURL()) ||
       !IsUrlInAppScope(web_contents->GetVisibleURL())) {
     return true;
   }
 
-  // Show toolbar if on a insecure external website. This checks the security
-  // level, different from IsOriginSecure which just checks the origin itself.
+  // Show if on a insecure external website. This checks the security level,
+  // different from IsOriginSecure which just checks the origin itself.
   if (!InstallableManager::IsContentSecure(web_contents))
     return true;
 
@@ -96,5 +96,5 @@ void ManifestWebAppBrowserController::OnTabInserted(
   if (app_launch_url_.is_empty())
     app_launch_url_ = contents->GetURL();
   AppBrowserController::OnTabInserted(contents);
-  UpdateToolbarVisibility(false);
+  UpdateCustomTabBarVisibility(false);
 }

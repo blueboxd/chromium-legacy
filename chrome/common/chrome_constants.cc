@@ -212,6 +212,7 @@ const int kHighestRendererOomScore = 1000;
 const char kProfileDirPrefix[] = "u-";
 const char kLegacyProfileDir[] = "user";
 const char kTestUserProfileDir[] = "test-user";
+const char kLockScreenAppProfile[] = "LockScreenAppsProfile";
 #endif
 
 // This GUID is associated with any 'don't ask me again' settings that the

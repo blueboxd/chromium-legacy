@@ -43,13 +43,6 @@
 
 #define UNUSED __attribute__((unused))
 
-// See commentary in crazy_linker_elf_loader.cpp for the effect of setting
-// this. If changing there, change here also.
-//
-// For more, see:
-//   https://crbug.com/504410
-#define RESERVE_BREAKPAD_GUARD_REGION 1
-
 #if defined(ARCH_CPU_X86)
 // Dalvik JIT generated code doesn't guarantee 16-byte stack alignment on
 // x86 - use force_align_arg_pointer to realign the stack at the JNI
@@ -60,17 +53,26 @@
 #define JNI_GENERATOR_EXPORT extern "C" __attribute__((visibility("default")))
 #endif
 
+#if defined(__arm__) && defined(__ARM_ARCH_7A__)
+#define CURRENT_ABI "armeabi-v7a"
+#elif defined(__arm__)
+#define CURRENT_ABI "armeabi"
+#elif defined(__i386__)
+#define CURRENT_ABI "x86"
+#elif defined(__mips__)
+#define CURRENT_ABI "mips"
+#elif defined(__x86_64__)
+#define CURRENT_ABI "x86_64"
+#elif defined(__aarch64__)
+#define CURRENT_ABI "arm64-v8a"
+#else
+#error "Unsupported target abi"
+#endif
+
 namespace chromium_android_linker {
 
 // Larger than the largest library we might attempt to load.
 static const size_t kAddressSpaceReservationSize = 192 * 1024 * 1024;
-
-// Size of any Breakpad guard region. 16MB is comfortably larger than the
-// ~6MB relocation packing of the current 64-bit libchrome.so, the largest we
-// expect to encounter.
-#if RESERVE_BREAKPAD_GUARD_REGION
-static const size_t kBreakpadGuardRegionBytes = 16 * 1024 * 1024;
-#endif
 
 // A simple scoped UTF String class that can be initialized from
 // a Java jstring handle. Modeled like std::string, which cannot

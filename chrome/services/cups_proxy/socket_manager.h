@@ -29,12 +29,12 @@ class SocketManager {
  public:
   // Factory function.
   static std::unique_ptr<SocketManager> Create(
-      base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate);
+      base::WeakPtr<CupsProxyServiceDelegate> delegate);
 
   // Factory function that allows injected dependencies, for testing.
   static std::unique_ptr<SocketManager> CreateForTesting(
       std::unique_ptr<net::UnixDomainClientSocket> socket,
-      base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate);
+      base::WeakPtr<CupsProxyServiceDelegate> delegate);
 
   virtual ~SocketManager() = default;
 

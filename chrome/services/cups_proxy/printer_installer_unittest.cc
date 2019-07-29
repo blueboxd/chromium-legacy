@@ -27,8 +27,7 @@ const char kGenericGUID[] = "fd4c5f2e-7549-43d5-b931-9bf4e4f1bf51";
 
 // Faked delegate gives control over PrinterInstaller's printing stack
 // dependencies.
-class FakeServiceDelegate
-    : public chromeos::printing::FakeCupsProxyServiceDelegate {
+class FakeServiceDelegate : public FakeCupsProxyServiceDelegate {
  public:
   FakeServiceDelegate() = default;
   ~FakeServiceDelegate() override = default;
@@ -56,9 +55,8 @@ class FakeServiceDelegate
     return Printer(id);
   }
 
-  void SetupPrinter(
-      const Printer& printer,
-      chromeos::printing::PrinterSetupCallback callback) override {
+  void SetupPrinter(const Printer& printer,
+                    SetupPrinterCallback callback) override {
     if (fail_printer_setup_) {
       return std::move(callback).Run(false);
     }

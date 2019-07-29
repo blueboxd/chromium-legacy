@@ -304,11 +304,11 @@ void PaymentRequestSheetController::UpdateHeaderView() {
 
 void PaymentRequestSheetController::UpdateHeaderContentSeparatorView() {
   header_content_separator_container_->RemoveAllChildViews(true);
-  views::View* separator = CreateHeaderContentSeparatorView();
+  std::unique_ptr<views::View> separator(CreateHeaderContentSeparatorView());
   if (separator) {
     header_content_separator_container_->SetLayoutManager(
         std::make_unique<views::FillLayout>());
-    header_content_separator_container_->AddChildView(separator);
+    header_content_separator_container_->AddChildView(std::move(separator));
   }
 
   // Relayout sheet view after updating header content separator.

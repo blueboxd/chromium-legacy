@@ -411,6 +411,7 @@ interface CSS
     static method pt
     static method px
     static method rad
+    static method registerProperty
     static method rem
     static method s
     static method supports

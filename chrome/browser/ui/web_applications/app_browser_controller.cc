@@ -70,8 +70,9 @@ void AppBrowserController::Uninstall() {
   return;
 }
 
-void AppBrowserController::UpdateToolbarVisibility(bool animate) const {
-  browser()->window()->UpdateToolbarVisibility(ShouldShowToolbar(), animate);
+void AppBrowserController::UpdateCustomTabBarVisibility(bool animate) const {
+  browser()->window()->UpdateCustomTabBarVisibility(ShouldShowCustomTabBar(),
+                                                    animate);
 }
 
 bool AppBrowserController::IsForSystemWebApp() const {

@@ -100,9 +100,9 @@ class ToolbarView : public views::AccessiblePaneView,
   // as well.
   void Update(content::WebContents* tab);
 
-  // Updates the visibility of the toolbar, potentially animating the
+  // Updates the visibility of the custom tab bar, potentially animating the
   // transition.
-  void UpdateToolbarVisibility(bool visible, bool animate);
+  void UpdateCustomTabBarVisibility(bool visible, bool animate);
 
   // Clears the current state for |tab|.
   void ResetTabState(content::WebContents* tab);

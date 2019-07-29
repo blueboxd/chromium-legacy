@@ -129,7 +129,7 @@ bool HostedAppBrowserController::IsHostedApp() const {
   return true;
 }
 
-bool HostedAppBrowserController::ShouldShowToolbar() const {
+bool HostedAppBrowserController::ShouldShowCustomTabBar() const {
   const Extension* extension = GetExtension();
   if (!extension)
     return false;
@@ -258,7 +258,7 @@ base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
 base::string16 HostedAppBrowserController::GetTitle() const {
   // When showing the toolbar, display the name of the app, instead of the
   // current page as the title.
-  if (ShouldShowToolbar()) {
+  if (ShouldShowCustomTabBar()) {
     const Extension* extension = GetExtension();
     return base::UTF8ToUTF16(extension->name());
   }
@@ -325,7 +325,7 @@ bool HostedAppBrowserController::IsInstalled() const {
 }
 
 void HostedAppBrowserController::OnReceivedInitialURL() {
-  UpdateToolbarVisibility(false);
+  UpdateCustomTabBarVisibility(false);
 
   // If the window bounds have not been overridden, there is no need to resize
   // the window.

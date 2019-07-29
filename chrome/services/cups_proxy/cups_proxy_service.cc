@@ -8,39 +8,64 @@
 #include <utility>
 #include <vector>
 
+#include "base/no_destructor.h"
 #include "chrome/services/cups_proxy/cups_proxy_service_delegate.h"
+#include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
-namespace printing {
+namespace cups_proxy {
 
-CupsProxyService::CupsProxyService(
-    service_manager::mojom::ServiceRequest request,
-    std::unique_ptr<CupsProxyServiceDelegate> delegate)
-    : service_binding_(this, std::move(request)),
-      delegate_(std::move(delegate)) {}
-
+CupsProxyService::CupsProxyService() = default;
 CupsProxyService::~CupsProxyService() = default;
 
-void CupsProxyService::OnStart() {
-  BindToCupsProxyDaemon();
+// static
+void CupsProxyService::Spawn(
+    std::unique_ptr<CupsProxyServiceDelegate> delegate) {
+  static base::NoDestructor<CupsProxyService> service;
+  service->BindToCupsProxyDaemon(std::move(delegate));
 }
 
-void CupsProxyService::OnConnect(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  DLOG(WARNING) << "CupsProxyService incorrectly received interface_request";
-}
-
-void CupsProxyService::BindToCupsProxyDaemon() {
-  // TODO(crbug.com/945409): Implement this.
-}
-
-void CupsProxyService::OnBindToCupsProxyDaemon(const bool success) {
-  if (!success) {
-    DLOG(WARNING) << "CupsProxyDaemonConnection bootstrap failed";
+void CupsProxyService::BindToCupsProxyDaemon(
+    std::unique_ptr<CupsProxyServiceDelegate> delegate) {
+  DCHECK(delegate);
+  if (bootstrap_attempted_) {
+    return;
   }
+
+  mojo::PlatformChannel platform_channel;
+
+  // Prepare a Mojo invitation to send through |platform_channel|.
+  mojo::OutgoingInvitation invitation;
+  // Include an initial Mojo pipe in the invitation.
+  mojo::ScopedMessagePipeHandle pipe = invitation.AttachMessagePipe(
+      ::printing::kBootstrapMojoConnectionChannelToken);
+  mojo::OutgoingInvitation::Send(std::move(invitation),
+                                 base::kNullProcessHandle,
+                                 platform_channel.TakeLocalEndpoint());
+
+  // Bind our end of pipe to our |proxy_manager_|. The daemon should
+  // bind its end to a remote<CupsProxier>;
+  // TODO(crbug.com/945409): Add handler & connection error handler.
+
+  // Send the file descriptor for the other end of |platform_channel| to the
+  // CupsProxyDaemon over D-Bus.
+  chromeos::CupsProxyClient::Get()->BootstrapMojoConnection(
+      platform_channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD(),
+      base::BindOnce(&CupsProxyService::OnBindToCupsProxyDaemon,
+                     weak_factory_.GetWeakPtr()));
+  bootstrap_attempted_ = true;
 }
 
-}  // namespace printing
-}  // namespace chromeos
+void CupsProxyService::OnBindToCupsProxyDaemon(bool success) {
+  if (!success) {
+    LOG(ERROR) << "CupsProxyService: bootstrap failure.";
+    // TODO(crbug.com/945409): reset handler.
+    return;
+  }
+
+  DVLOG(1) << "CupsProxyService: bootstrap success!";
+}
+
+}  // namespace cups_proxy

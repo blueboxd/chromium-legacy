@@ -50,9 +50,8 @@ class AppBrowserController : public TabStripModelObserver,
   // Returns true if the associated Hosted App is for a PWA.
   virtual bool CreatedForInstalledPwa() const;
 
-  // Whether the browser being controlled should be currently showing the
-  // toolbar.
-  virtual bool ShouldShowToolbar() const = 0;
+  // Whether the custom tab bar should be visible.
+  virtual bool ShouldShowCustomTabBar() const = 0;
 
   // Returns true if the hosted app buttons should be shown in the frame for
   // this BrowserView.
@@ -91,10 +90,10 @@ class AppBrowserController : public TabStripModelObserver,
   // the lifetime of HostedAppBrowserController).
   virtual bool IsInstalled() const;
 
-  // Updates the location bar visibility based on whether it should be
+  // Updates the custom tab bar's visibility based on whether it should be
   // currently visible or not. If |animate| is set, the change will be
   // animated.
-  void UpdateToolbarVisibility(bool animate) const;
+  void UpdateCustomTabBarVisibility(bool animate) const;
 
   // Returns true if this controller is for a System Web App.
   bool IsForSystemWebApp() const;

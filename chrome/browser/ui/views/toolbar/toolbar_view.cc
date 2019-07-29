@@ -369,7 +369,9 @@ void ToolbarView::SetToolbarVisibility(bool visible) {
   bar->SetVisible(visible);
 }
 
-void ToolbarView::UpdateToolbarVisibility(bool visible, bool animate) {
+void ToolbarView::UpdateCustomTabBarVisibility(bool visible, bool animate) {
+  DCHECK_EQ(display_mode_, DisplayMode::CUSTOM_TAB);
+
   if (!animate) {
     size_animation_.Reset(visible ? 1.0 : 0.0);
     SetToolbarVisibility(visible);

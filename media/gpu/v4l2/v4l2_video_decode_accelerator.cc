@@ -2382,10 +2382,9 @@ uint32_t V4L2VideoDecodeAccelerator::FindImageProcessorInputFormat() {
 
 uint32_t V4L2VideoDecodeAccelerator::FindImageProcessorOutputFormat() {
   // Prefer YVU420 and NV12 because ArcGpuVideoDecodeAccelerator only supports
-  // single physical plane. Prefer YVU420 over NV12 because chrome rendering
-  // supports YV12 only.
-  static const uint32_t kPreferredFormats[] = {V4L2_PIX_FMT_YVU420,
-                                               V4L2_PIX_FMT_NV12};
+  // single physical plane.
+  static const uint32_t kPreferredFormats[] = {V4L2_PIX_FMT_NV12,
+                                               V4L2_PIX_FMT_YVU420};
   auto preferred_formats_first = [](uint32_t a, uint32_t b) -> bool {
     auto* iter_a = std::find(std::begin(kPreferredFormats),
                              std::end(kPreferredFormats), a);

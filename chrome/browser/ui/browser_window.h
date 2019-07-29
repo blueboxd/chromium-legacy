@@ -271,9 +271,9 @@ class BrowserWindow : public ui::BaseWindow {
   // Updates the toolbar with the state for the specified |contents|.
   virtual void UpdateToolbar(content::WebContents* contents) = 0;
 
-  // Updates whether or not the toolbar is visible. Animates the transition if
-  // |animate| is true.
-  virtual void UpdateToolbarVisibility(bool visible, bool animate) = 0;
+  // Updates whether or not the custom tab bar is visible. Animates the
+  // transition if |animate| is true.
+  virtual void UpdateCustomTabBarVisibility(bool visible, bool animate) = 0;
 
   // Resets the toolbar's tab state for |contents|.
   virtual void ResetToolbarTabState(content::WebContents* contents) = 0;

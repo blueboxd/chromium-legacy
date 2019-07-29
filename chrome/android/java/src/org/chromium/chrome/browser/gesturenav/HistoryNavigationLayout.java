@@ -19,9 +19,9 @@ import android.widget.FrameLayout;
  * TODO(jinsukkim): Write a test verifying UI logic.
  */
 public class HistoryNavigationLayout extends FrameLayout {
-    private boolean mNavigationEnabled;
     private GestureDetector mDetector;
     private NavigationHandler mNavigationHandler;
+    private HistoryNavigationDelegate mDelegate = HistoryNavigationDelegateFactory.DEFAULT;
 
     public HistoryNavigationLayout(Context context) {
         this(context, null);
@@ -36,11 +36,16 @@ public class HistoryNavigationLayout extends FrameLayout {
      * @param delegate {@link HistoryNavigationDelegate} providing info and a factory method.
      */
     public void setNavigationDelegate(HistoryNavigationDelegate delegate) {
-        mNavigationEnabled = delegate.isEnabled();
-        if (!mNavigationEnabled) return;
-        mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
-        mNavigationHandler = new NavigationHandler(
-                this, delegate.createActionDelegate(), NavigationGlowFactory.forJavaLayer(this));
+        mDelegate = delegate;
+
+        // Navigation is potentially enabled only when the delegate is set.
+        delegate.setWindowInsetsChangeObserver(this, () -> updateNavigationHandler());
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        updateNavigationHandler();
     }
 
     @Override
@@ -54,11 +59,27 @@ public class HistoryNavigationLayout extends FrameLayout {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent e) {
-        if (mDetector != null) {
+        if (mNavigationHandler != null) {
             mDetector.onTouchEvent(e);
             mNavigationHandler.onTouchEvent(e.getAction());
         }
         return super.dispatchTouchEvent(e);
+    }
+
+    private void updateNavigationHandler() {
+        if (mDelegate.isNavigationEnabled(this)) {
+            if (mNavigationHandler == null) {
+                mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
+                mNavigationHandler = new NavigationHandler(this, mDelegate.createActionDelegate(),
+                        NavigationGlowFactory.forJavaLayer(this));
+            }
+        } else {
+            mDetector = null;
+            if (mNavigationHandler != null) {
+                mNavigationHandler.destroy();
+                mNavigationHandler = null;
+            }
+        }
     }
 
     @Override

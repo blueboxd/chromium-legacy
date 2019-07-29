@@ -15,10 +15,9 @@
 
 #include "base/task/post_task.h"
 
-namespace chromeos {
-namespace printing {
+namespace cups_proxy {
 
-using PrinterSetupCallback = base::OnceCallback<void(bool)>;
+using SetupPrinterCallback = base::OnceCallback<void(bool)>;
 
 // This delegate grants the CupsProxyService access to the Chrome printing
 // stack. This class can be created anywhere but must be accessed from a
@@ -35,18 +34,17 @@ class CupsProxyServiceDelegate {
   virtual std::vector<chromeos::Printer> GetPrinters() = 0;
   virtual base::Optional<chromeos::Printer> GetPrinter(
       const std::string& id) = 0;
-  virtual bool IsPrinterInstalled(const Printer& printer) = 0;
+  virtual bool IsPrinterInstalled(const chromeos::Printer& printer) = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() = 0;
 
   // |cb| will be run on this delegate's sequenced context.
-  virtual void SetupPrinter(const Printer& printer,
-                            PrinterSetupCallback cb) = 0;
+  virtual void SetupPrinter(const chromeos::Printer& printer,
+                            SetupPrinterCallback cb) = 0;
 
  private:
   base::WeakPtrFactory<CupsProxyServiceDelegate> weak_factory_;
 };
 
-}  // namespace printing
-}  // namespace chromeos
+}  // namespace cups_proxy
 
 #endif  // CHROME_SERVICES_CUPS_PROXY_CUPS_PROXY_SERVICE_DELEGATE_H_

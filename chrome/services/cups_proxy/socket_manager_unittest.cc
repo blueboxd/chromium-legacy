@@ -52,8 +52,7 @@ base::Optional<std::string> GetTestFile(std::string test_name) {
 }  // namespace
 
 // Fake delegate granting handle to an IO-thread task runner.
-class FakeServiceDelegate
-    : public chromeos::printing::FakeCupsProxyServiceDelegate {
+class FakeServiceDelegate : public FakeCupsProxyServiceDelegate {
  public:
   FakeServiceDelegate() = default;
   ~FakeServiceDelegate() override = default;

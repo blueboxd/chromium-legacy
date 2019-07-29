@@ -7,13 +7,4 @@
 
 module chromeos.printing.mojom;
 
-// The CupsProxyService's should lazily start once the CupsProxyDaemon has
-// started; since the ChromeOS daemon cannot directly connect to the service,
-// the browser must start it. Currently the only way to start a service is by
-// connecting to its interface, so we explicitly define an interface for this
-// purpose.
-// Note: This service both manages its own lifetime and bootstraps its own
-// connection with the daemon, i.e. it rejects any interface requests besides
-// this one.
-interface StartCupsProxyService {
-};
+// TODO(crbug.com/945409): Add proxy method.

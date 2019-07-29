@@ -398,8 +398,10 @@ class UserSessionManager
   // PrepareProfile().
   void UpdateArcFileSystemCompatibilityAndPrepareProfile();
 
+  void InitializeAccountManager();
+
   void StartCrosSession();
-  void PrepareProfile();
+  void PrepareProfile(const base::FilePath& profile_path);
 
   // Callback for asynchronous profile creation.
   void OnProfileCreated(const UserContext& user_context,

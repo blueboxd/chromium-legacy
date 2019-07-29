@@ -52,7 +52,7 @@ CupsProxyServiceDelegateImpl::GetIOTaskRunner() {
 
 void CupsProxyServiceDelegateImpl::SetupPrinter(
     const Printer& printer,
-    printing::PrinterSetupCallback cb) {
+    cups_proxy::SetupPrinterCallback cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Grab current runner to post |cb| to.
@@ -68,7 +68,7 @@ void CupsProxyServiceDelegateImpl::SetupPrinter(
 void CupsProxyServiceDelegateImpl::SetupPrinterOnThread(
     const Printer& printer,
     scoped_refptr<base::SequencedTaskRunner> cb_runner,
-    printing::PrinterSetupCallback cb) {
+    cups_proxy::SetupPrinterCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Lazily grab the configurer while on the UI thread.
@@ -85,7 +85,7 @@ void CupsProxyServiceDelegateImpl::SetupPrinterOnThread(
 // |printer_configurer| unused but ensures this callback outlives it.
 void CupsProxyServiceDelegateImpl::OnSetupPrinter(
     scoped_refptr<base::SequencedTaskRunner> cb_runner,
-    printing::PrinterSetupCallback cb,
+    cups_proxy::SetupPrinterCallback cb,
     PrinterSetupResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   cb_runner->PostTask(

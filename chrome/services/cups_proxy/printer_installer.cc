@@ -21,7 +21,7 @@
 namespace cups_proxy {
 
 PrinterInstaller::PrinterInstaller(
-    base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate)
+    base::WeakPtr<CupsProxyServiceDelegate> delegate)
     : delegate_(std::move(delegate)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }

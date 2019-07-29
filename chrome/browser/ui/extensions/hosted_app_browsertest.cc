@@ -178,15 +178,15 @@ void NavigateToURLAndWait(Browser* browser,
   }
 }
 
-// Used by ShouldShowToolbarForXXX. Performs a navigation and then checks that
-// the toolbar visibility is as expected.
+// Used by ShouldShowCustomTabBarForXXX. Performs a navigation and then checks
+// that the toolbar visibility is as expected.
 void NavigateAndCheckForToolbar(Browser* browser,
                                 const GURL& url,
                                 bool expected_visibility,
                                 bool proceed_through_interstitial = false) {
   NavigateToURLAndWait(browser, url, proceed_through_interstitial);
   EXPECT_EQ(expected_visibility,
-            browser->app_controller()->ShouldShowToolbar());
+            browser->app_controller()->ShouldShowCustomTabBar());
 }
 
 void CheckWebContentsHasAppPrefs(content::WebContents* web_contents) {
@@ -566,7 +566,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsOpenInChrome) {
 }
 
 // Check that the toolbar is shown correctly.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbar) {
+IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowCustomTabBar) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL app_url = https_server()->GetURL("app.com", "/simple.html");
@@ -599,7 +599,7 @@ class HostedAppTestWithAutoupgradesDisabled : public HostedAppTest {
 };
 
 IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
-                       ShouldShowToolbarMixedContent) {
+                       ShouldShowCustomTabBarMixedContent) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL app_url = https_server()->GetURL("app.com", "/");
@@ -616,7 +616,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
-                       ShouldShowToolbarDynamicMixedContent) {
+                       ShouldShowCustomTabBarDynamicMixedContent) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -633,10 +633,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
       app_browser_->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(TryToLoadImage(
       web_contents, embedded_test_server()->GetURL("foo.com", kImagePath)));
-  EXPECT_TRUE(app_browser_->app_controller()->ShouldShowToolbar());
+  EXPECT_TRUE(app_browser_->app_controller()->ShouldShowCustomTabBar());
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForHTTPAppSameOrigin) {
+IN_PROC_BROWSER_TEST_P(HostedAppTest,
+                       ShouldShowCustomTabBarForHTTPAppSameOrigin) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL app_url =
@@ -648,7 +649,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForHTTPAppSameOrigin) {
   NavigateAndCheckForToolbar(app_browser_, app_url, true);
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForHTTPAppHTTPSUrl) {
+IN_PROC_BROWSER_TEST_P(HostedAppTest,
+                       ShouldShowCustomTabBarForHTTPAppHTTPSUrl) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL app_url = https_server()->GetURL("app.com", "/simple.html");
@@ -665,7 +667,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForHTTPAppHTTPSUrl) {
   NavigateAndCheckForToolbar(app_browser_, app_url, false);
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForHTTPSAppSameOrigin) {
+IN_PROC_BROWSER_TEST_P(HostedAppTest,
+                       ShouldShowCustomTabBarForHTTPSAppSameOrigin) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL app_url = https_server()->GetURL("app.com", "/simple.html");
@@ -677,7 +680,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForHTTPSAppSameOrigin) {
 
 // Check that the toolbar is shown correctly for HTTPS apps when they
 // navigate to a HTTP page on the same origin.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForHTTPSAppHTTPUrl) {
+IN_PROC_BROWSER_TEST_P(HostedAppTest,
+                       ShouldShowCustomTabBarForHTTPSAppHTTPUrl) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL app_url = https_server()->GetURL("app.com", "/simple.html");
@@ -694,7 +698,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForHTTPSAppHTTPUrl) {
 
 // Check that the toolbar is shown correctly for apps that specify start
 // URLs without the 'www.' prefix.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarForAppWithoutWWW) {
+IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowCustomTabBarForAppWithoutWWW) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL app_url = https_server()->GetURL("app.com", "/simple.html");
@@ -1282,10 +1286,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OffScopePWAPopupsHaveCorrectSize) {
   EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(popup_browser));
 
   // Toolbar should be shown, as the popup is out of scope.
-  EXPECT_TRUE(popup_browser->app_controller()->ShouldShowToolbar());
+  EXPECT_TRUE(popup_browser->app_controller()->ShouldShowCustomTabBar());
 
   // Skip animating the toolbar visibility.
-  popup_browser->app_controller()->UpdateToolbarVisibility(false);
+  popup_browser->app_controller()->UpdateCustomTabBarVisibility(false);
 
   // The popup window should be the size we specified.
   EXPECT_EQ(size, popup_browser->window()->GetContentsSize());
@@ -1312,10 +1316,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InScopePWAPopupsHaveCorrectSize) {
   EXPECT_TRUE(web_app::AppBrowserController::IsForWebAppBrowser(popup_browser));
 
   // Toolbar should not be shown, as the popup is in scope.
-  EXPECT_FALSE(popup_browser->app_controller()->ShouldShowToolbar());
+  EXPECT_FALSE(popup_browser->app_controller()->ShouldShowCustomTabBar());
 
   // Skip animating the toolbar visibility.
-  popup_browser->app_controller()->UpdateToolbarVisibility(false);
+  popup_browser->app_controller()->UpdateCustomTabBarVisibility(false);
 
   // The popup window should be the size we specified.
   EXPECT_EQ(size, popup_browser->window()->GetContentsSize());
@@ -1383,7 +1387,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   InstallSecurePWA();
 
   // Toolbar should not be visible in the app.
-  ASSERT_FALSE(app_browser_->app_controller()->ShouldShowToolbar());
+  ASSERT_FALSE(app_browser_->app_controller()->ShouldShowCustomTabBar());
 
   // The installed PWA's scope is app.com:{PORT}/ssl,
   // so app.com:{PORT}/accessibility_fail.html is out of scope.
@@ -1392,7 +1396,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   NavigateToURLAndWait(app_browser_, out_of_scope);
 
   // Location should be visible off scope.
-  ASSERT_TRUE(app_browser_->app_controller()->ShouldShowToolbar());
+  ASSERT_TRUE(app_browser_->app_controller()->ShouldShowCustomTabBar());
 }
 
 // Tests that PWA menus have an uninstall option.
@@ -2954,7 +2958,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ThemeColor) {
 // within an extension, then added it as a bookmark app.
 // Regression test for https://crbug.com/828233.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
-                       ShouldShowToolbarForExtensionPage) {
+                       ShouldShowCustomTabBarForExtensionPage) {
   // Note: This involves the creation of *two* extensions: The first is a
   // regular (non-app) extension with a popup page. The second is a bookmark app
   // created from the popup page URL (allowing the extension's popup page to be

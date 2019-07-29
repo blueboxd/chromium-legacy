@@ -42,9 +42,6 @@ namespace {
 // As defined in /chromeos/dbus/cryptohome/cryptohome_client.cc.
 static const char kUserIdHashSuffix[] = "-hash";
 
-// The name for the lock screen app profile.
-static const char kLockScreenAppProfile[] = "LockScreenAppsProfile";
-
 bool ShouldAddProfileDirPrefix(const std::string& user_id_hash) {
   // Do not add profile dir prefix for legacy profile dir and test
   // user profile. The reason of not adding prefix for test user profile
@@ -77,6 +74,14 @@ class UsernameHashMatcher {
 Profile* GetProfileByUserIdHash(const std::string& user_id_hash) {
   return g_browser_process->profile_manager()->GetProfileByPath(
       ProfileHelper::GetProfilePathByUserIdHash(user_id_hash));
+}
+
+bool IsSigninProfilePath(const base::FilePath& profile_path) {
+  return profile_path.value() == chrome::kInitialProfile;
+}
+
+bool IsLockScreenAppProfilePath(const base::FilePath& profile_path) {
+  return profile_path.value() == chrome::kLockScreenAppProfile;
 }
 
 }  // anonymous namespace
@@ -180,8 +185,7 @@ base::FilePath ProfileHelper::GetUserProfileDir(
 
 // static
 bool ProfileHelper::IsSigninProfile(const Profile* profile) {
-  return profile &&
-         profile->GetPath().BaseName().value() == chrome::kInitialProfile;
+  return profile && IsSigninProfilePath(profile->GetPath().BaseName());
 }
 
 // static
@@ -205,19 +209,19 @@ bool ProfileHelper::SigninProfileHasLoginScreenExtensions() {
 
 // static
 bool ProfileHelper::IsLockScreenAppProfile(const Profile* profile) {
-  return profile &&
-         profile->GetPath().BaseName().value() == kLockScreenAppProfile;
+  return profile && IsLockScreenAppProfilePath(profile->GetPath().BaseName());
 }
 
 // static
 base::FilePath ProfileHelper::GetLockScreenAppProfilePath() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->user_data_dir().AppendASCII(kLockScreenAppProfile);
+  return profile_manager->user_data_dir().AppendASCII(
+      chrome::kLockScreenAppProfile);
 }
 
 // static
 std::string ProfileHelper::GetLockScreenAppProfileName() {
-  return kLockScreenAppProfile;
+  return chrome::kLockScreenAppProfile;
 }
 
 // static
@@ -266,6 +270,18 @@ bool ProfileHelper::IsEphemeralUserProfile(const Profile* profile) {
 
   // Otherwise, users are ephemeral when the policy is enabled.
   return ChromeUserManager::Get()->AreEphemeralUsersEnabled();
+}
+
+// static
+bool ProfileHelper::IsRegularProfile(const Profile* profile) {
+  return !chromeos::ProfileHelper::IsSigninProfile(profile) &&
+         !chromeos::ProfileHelper::IsLockScreenAppProfile(profile);
+}
+
+// static
+bool ProfileHelper::IsRegularProfilePath(const base::FilePath& profile_path) {
+  return !IsSigninProfilePath(profile_path) &&
+         !IsLockScreenAppProfilePath(profile_path);
 }
 
 void ProfileHelper::ProfileStartup(Profile* profile) {
@@ -401,8 +417,7 @@ Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
 
 const user_manager::User* ProfileHelper::GetUserByProfile(
     const Profile* profile) const {
-  if (ProfileHelper::IsSigninProfile(profile) ||
-      ProfileHelper::IsLockScreenAppProfile(profile)) {
+  if (!ProfileHelper::IsRegularProfile(profile)) {
     return nullptr;
   }
 

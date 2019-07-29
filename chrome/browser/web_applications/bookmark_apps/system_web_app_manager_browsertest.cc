@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
   Browser* app_browser =
       WaitForSystemAppInstallAndLaunch(SystemAppType::SETTINGS);
   // In scope, the toolbar should not be visible.
-  EXPECT_FALSE(app_browser->app_controller()->ShouldShowToolbar());
+  EXPECT_FALSE(app_browser->app_controller()->ShouldShowCustomTabBar());
 
   // Because the first part of the url is on a different origin (settings vs.
   // foo) a toolbar would normally be shown. However, because settings is a
@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
   content::NavigateToURLBlockUntilNavigationsComplete(
       app_browser->tab_strip_model()->GetActiveWebContents(),
       out_of_scope_chrome_page, 1);
-  EXPECT_FALSE(app_browser->app_controller()->ShouldShowToolbar());
+  EXPECT_FALSE(app_browser->app_controller()->ShouldShowCustomTabBar());
 
   // Even though the url is secure it is not being served over chrome:// so a
   // toolbar should be shown.
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
   content::NavigateToURLBlockUntilNavigationsComplete(
       app_browser->tab_strip_model()->GetActiveWebContents(), off_scheme_page,
       1);
-  EXPECT_TRUE(app_browser->app_controller()->ShouldShowToolbar());
+  EXPECT_TRUE(app_browser->app_controller()->ShouldShowCustomTabBar());
 }
 
 }  // namespace web_app

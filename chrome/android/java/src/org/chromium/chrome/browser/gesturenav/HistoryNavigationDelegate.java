@@ -4,55 +4,28 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
-import android.content.Context;
-
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.tab.Tab;
+import android.view.View;
 
 /**
- * Provides navigation-related configuration for pages using {@link HistoryNavigationLayout}.
+ * Provides navigation-related configuration.
  */
-public abstract class HistoryNavigationDelegate {
-    private final boolean mIsEnabled;
-
-    private HistoryNavigationDelegate(Context context) {
-        mIsEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
-                && (context instanceof ChromeActivity);
-    }
-
-    /**
-     * @return {@code true} if history navigation is enabled.
-     */
-    public boolean isEnabled() {
-        return mIsEnabled;
-    }
-
+public interface HistoryNavigationDelegate {
     /**
      * @return {@link NavigationHandler#ActionDelegate} object.
      */
-    public abstract NavigationHandler.ActionDelegate createActionDelegate();
-
-    // Implementation for native pages with TabbedActionDelegate that uses Tab.goForward/goBack
-    // to implement history navigation.
-    private static class NativePageDelegate extends HistoryNavigationDelegate {
-        private final Tab mTab;
-
-        private NativePageDelegate(Tab tab) {
-            super(tab.getActivity());
-            mTab = tab;
-        }
-
-        @Override
-        public NavigationHandler.ActionDelegate createActionDelegate() {
-            return new TabbedActionDelegate(mTab);
-        }
-    }
+    NavigationHandler.ActionDelegate createActionDelegate();
 
     /**
-     * Creates {@link HistoryNavigationDelegate} for a native page.
+     * @param view {@link View} object to obtain the navigation setting from.
+     * @return {@code true} if overscroll navigation is allowed to run on this page.
      */
-    public static HistoryNavigationDelegate createForNativePage(Tab tab) {
-        return new NativePageDelegate(tab);
-    }
+    boolean isNavigationEnabled(View view);
+
+    /**
+     * Observe window insets change to update navigation configutation dynamically.
+     * @param view {@link View} to observe the insets change on.
+     * @param runnable {@link Runnable} to execute when insets change is detected.
+     *        Pass {@code null} to reset the observation.
+     */
+    void setWindowInsetsChangeObserver(View view, Runnable runnable);
 }

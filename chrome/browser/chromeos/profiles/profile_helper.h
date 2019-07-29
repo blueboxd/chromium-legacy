@@ -114,6 +114,11 @@ class ProfileHelper
   // Returns true when |profile| is for an ephemeral user.
   static bool IsEphemeralUserProfile(const Profile* profile);
 
+  // Return true if |profile| or |profile_path| corrrespond to a regular
+  // (non-sign-in and non-lockscreen) profile.
+  static bool IsRegularProfile(const Profile* profile);
+  static bool IsRegularProfilePath(const base::FilePath& profile_path);
+
   // Initialize a bunch of services that are tied to a browser profile.
   // TODO(dzhioev): Investigate whether or not this method is needed.
   void ProfileStartup(Profile* profile);

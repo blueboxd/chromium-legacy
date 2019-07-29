@@ -110,6 +110,8 @@ extern const char kLegacyProfileDir[];
 
 // This must be kept in sync with TestingProfile::kTestUserProfileDir.
 extern const char kTestUserProfileDir[];
+
+extern const char kLockScreenAppProfile[];
 #endif
 
 // Used to identify the application to the system AV function in Windows.

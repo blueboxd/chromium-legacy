@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/printing/cups_proxy_service_manager.h"
 
+#include <memory>
+
+#include "chrome/browser/chromeos/printing/cups_proxy_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
@@ -27,15 +30,8 @@ void CupsProxyServiceManager::OnDaemonAvailable(bool daemon_available) {
 
   // Attempt to start the service, which will then bootstrap a connection
   // with the daemon.
-  // Note: The service does not support BindInterface calls, so we
-  // intentionally leave out a connection_error_handler, since it would
-  // called immediately.
-  // TODO(crbug.com/945409): Manage our own service instance when ServiceManager
-  // goes away.
-  content::BrowserContext::GetConnectorFor(
-      ProfileManager::GetPrimaryUserProfile())
-      ->Connect(printing::mojom::kCupsProxyServiceName,
-                service_handle_.BindNewPipeAndPassReceiver());
+  cups_proxy::CupsProxyService::Spawn(
+      std::make_unique<CupsProxyServiceDelegateImpl>());
 }
 
 }  // namespace chromeos

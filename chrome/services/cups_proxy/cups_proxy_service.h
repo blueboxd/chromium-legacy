@@ -8,58 +8,48 @@
 #include <memory>
 #include <string>
 
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
+#include "chrome/services/cups_proxy/public/mojom/proxy.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
-namespace chromeos {
-namespace printing {
+namespace cups_proxy {
 
 class CupsProxyServiceDelegate;
 
-// CupsProxy Service Implementation.
+// This service lives in the browser process and is managed by the
+// CupsProxyServiceManager. It bootstraps/maintains a mojom connection with the
+// CupsProxyDaemon.
 //
-// Singleton Chrome Service managed by the ServiceManager and lives in the
-// browser process. Lazily initializes mojom::CupsProxier handler,
-// |proxy_manager_|, and handles binding all incoming
-// mojom::CupsProxierRequest's to it.
-//
-// Note: Service lifetime is the same as Profile; there will be future work to
-// lazily intiate it on first use.
-class CupsProxyService : public service_manager::Service {
+// Note: There is no method granting a service handle since beyond creation,
+// this service's only client is the daemon, who's connection is managed
+// internally.
+class CupsProxyService {
  public:
-  CupsProxyService(service_manager::mojom::ServiceRequest request,
-                   std::unique_ptr<CupsProxyServiceDelegate> delegate);
-  ~CupsProxyService() override;
+  // Spawns the global service instance.
+  static void Spawn(std::unique_ptr<CupsProxyServiceDelegate> delegate);
 
  private:
-  // service_manager::Service override.
-  void OnStart() override;
+  friend base::NoDestructor<CupsProxyService>;
+  CupsProxyService();
+  ~CupsProxyService();
 
-  // This method is stubbed since the only expected consumer of this service is
-  // a ChromeOS daemon; this connection is bootstrapped over D-Bus by the
-  // below binding methods.
-  void OnConnect(const service_manager::BindSourceInfo& source_info,
-                 const std::string& interface_name,
-                 mojo::ScopedMessagePipeHandle interface_pipe) override;
+  // Records whether we've attempted connection with the daemon yet.
+  bool bootstrap_attempted_ = false;
 
-  // Binds |proxy_manager| to a CupsProxierPtr and passes it to the
-  // CupsProxyDaemon. The binding is accomplished via D-Bus bootstrap.
-  void BindToCupsProxyDaemon();
-  void OnBindToCupsProxyDaemon(const bool success);
+  // Methods for connecting with the CupsProxyDaemon.
+  void BindToCupsProxyDaemon(
+      std::unique_ptr<CupsProxyServiceDelegate> delegate);
+  void OnBindToCupsProxyDaemon(bool success);
 
-  service_manager::ServiceBinding service_binding_;
-  service_manager::BinderRegistry binder_registry_;
-
-  // Delegate providing necessary Profile dependencies.
-  std::unique_ptr<CupsProxyServiceDelegate> delegate_;
-
+  base::WeakPtrFactory<CupsProxyService> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(CupsProxyService);
 };
 
-}  // namespace printing
-}  // namespace chromeos
+}  // namespace cups_proxy
 
 #endif  // CHROME_SERVICES_CUPS_PROXY_CUPS_PROXY_SERVICE_H_

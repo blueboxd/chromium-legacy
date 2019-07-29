@@ -44,7 +44,6 @@ include_rules = [
 specific_include_rules = {
   "chrome_content_browser_overlay_manifest\.cc": [
     "+chrome/services/app_service",
-    "+chrome/services/cups_proxy/public",
     "+chromeos/assistant",
     "+chromeos/services/assistant",
     "+chromeos/services/cellular_setup",

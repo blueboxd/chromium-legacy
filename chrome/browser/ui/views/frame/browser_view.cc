@@ -1138,9 +1138,9 @@ void BrowserView::UpdateToolbar(content::WebContents* contents) {
     toolbar_->Update(contents);
 }
 
-void BrowserView::UpdateToolbarVisibility(bool visible, bool animate) {
+void BrowserView::UpdateCustomTabBarVisibility(bool visible, bool animate) {
   if (toolbar_)
-    toolbar_->UpdateToolbarVisibility(visible, animate);
+    toolbar_->UpdateCustomTabBarVisibility(visible, animate);
 }
 
 void BrowserView::ResetToolbarTabState(content::WebContents* contents) {

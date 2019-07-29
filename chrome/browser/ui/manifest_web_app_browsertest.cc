@@ -47,10 +47,10 @@ IN_PROC_BROWSER_TEST_F(ManifestWebAppTest, OpenExampleSite) {
 
   std::unique_ptr<ManifestWebAppBrowserController> controller =
       std::make_unique<ManifestWebAppBrowserController>(app_browser);
-  controller->UpdateToolbarVisibility(false);
+  controller->UpdateCustomTabBarVisibility(false);
   // http://example.org is not a secure site, so show toolbar about site
   // information that warn users.
-  EXPECT_TRUE(controller->ShouldShowToolbar());
+  EXPECT_TRUE(controller->ShouldShowCustomTabBar());
   // Theme color should be default color (white).
   EXPECT_EQ(controller->GetThemeColor(), SK_ColorWHITE);
 }

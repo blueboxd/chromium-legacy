@@ -150,12 +150,82 @@ void ReportBlockedEvent(EventTarget& target,
 bool CheckTypeThenUseCount(const Event& event,
                            const AtomicString& event_type_to_count,
                            const WebFeature feature,
-                           Document* document) {
+                           Document& document) {
   if (event.type() != event_type_to_count)
     return false;
-  UseCounter::Count(*document, feature);
+  UseCounter::Count(document, feature);
   return true;
 }
+
+void CountFiringEventListeners(const Event& event,
+                               const LocalDOMWindow* executing_window) {
+  if (!executing_window)
+    return;
+  if (!executing_window->document())
+    return;
+  Document& document = *executing_window->document();
+
+  if (event.type() == event_type_names::kToggle &&
+      document.ToggleDuringParsing()) {
+    UseCounter::Count(document, WebFeature::kToggleEventHandlerDuringParsing);
+    return;
+  }
+  if (CheckTypeThenUseCount(event, event_type_names::kBeforeunload,
+                            WebFeature::kDocumentBeforeUnloadFired, document)) {
+    if (executing_window != executing_window->top())
+      UseCounter::Count(document, WebFeature::kSubFrameBeforeUnloadFired);
+    return;
+  }
+  if (CheckTypeThenUseCount(event, event_type_names::kPointerdown,
+                            WebFeature::kPointerDownFired, document)) {
+    if (event.IsPointerEvent() &&
+        static_cast<const PointerEvent&>(event).pointerType() == "touch") {
+      UseCounter::Count(document, WebFeature::kPointerDownFiredForTouch);
+    }
+    return;
+  }
+
+  struct CountedEvent {
+    const AtomicString& event_type;
+    const WebFeature feature;
+  };
+  static const CountedEvent counted_events[] = {
+      {event_type_names::kUnload, WebFeature::kDocumentUnloadFired},
+      {event_type_names::kPagehide, WebFeature::kDocumentPageHideFired},
+      {event_type_names::kPageshow, WebFeature::kDocumentPageShowFired},
+      {event_type_names::kDOMFocusIn, WebFeature::kDOMFocusInOutEvent},
+      {event_type_names::kDOMFocusOut, WebFeature::kDOMFocusInOutEvent},
+      {event_type_names::kFocusin, WebFeature::kFocusInOutEvent},
+      {event_type_names::kFocusout, WebFeature::kFocusInOutEvent},
+      {event_type_names::kTextInput, WebFeature::kTextInputFired},
+      {event_type_names::kTouchstart, WebFeature::kTouchStartFired},
+      {event_type_names::kMousedown, WebFeature::kMouseDownFired},
+      {event_type_names::kPointerenter, WebFeature::kPointerEnterLeaveFired},
+      {event_type_names::kPointerleave, WebFeature::kPointerEnterLeaveFired},
+      {event_type_names::kPointerover, WebFeature::kPointerOverOutFired},
+      {event_type_names::kPointerout, WebFeature::kPointerOverOutFired},
+      {event_type_names::kSearch, WebFeature::kSearchEventFired},
+  };
+  for (const auto& counted_event : counted_events) {
+    if (CheckTypeThenUseCount(event, counted_event.event_type,
+                              counted_event.feature, document))
+      return;
+  }
+
+  if (event.eventPhase() == Event::kCapturingPhase ||
+      event.eventPhase() == Event::kBubblingPhase) {
+    if (CheckTypeThenUseCount(
+            event, event_type_names::kDOMNodeRemoved,
+            WebFeature::kDOMNodeRemovedEventListenedAtNonTarget, document))
+      return;
+    if (CheckTypeThenUseCount(
+            event, event_type_names::kDOMNodeRemovedFromDocument,
+            WebFeature::kDOMNodeRemovedFromDocumentEventListenedAtNonTarget,
+            document))
+      return;
+  }
+}
+
 void RegisterWithScheduler(ExecutionContext* execution_context,
                            const AtomicString& event_type) {
   if (!execution_context)
@@ -795,77 +865,11 @@ bool EventTarget::FireEventListeners(Event& event,
   // index |size|, so iterating up to (but not including) |size| naturally
   // excludes new event listeners.
 
-  struct CountedEvent {
-    const AtomicString& event_type;
-    const WebFeature feature;
-  };
-  static const CountedEvent counted_events[] = {
-      {event_type_names::kUnload, WebFeature::kDocumentUnloadFired},
-      {event_type_names::kPagehide, WebFeature::kDocumentPageHideFired},
-      {event_type_names::kPageshow, WebFeature::kDocumentPageShowFired},
-      {event_type_names::kDOMFocusIn, WebFeature::kDOMFocusInOutEvent},
-      {event_type_names::kDOMFocusOut, WebFeature::kDOMFocusInOutEvent},
-      {event_type_names::kFocusin, WebFeature::kFocusInOutEvent},
-      {event_type_names::kFocusout, WebFeature::kFocusInOutEvent},
-      {event_type_names::kTextInput, WebFeature::kTextInputFired},
-      {event_type_names::kTouchstart, WebFeature::kTouchStartFired},
-      {event_type_names::kMousedown, WebFeature::kMouseDownFired},
-      {event_type_names::kPointerenter, WebFeature::kPointerEnterLeaveFired},
-      {event_type_names::kPointerleave, WebFeature::kPointerEnterLeaveFired},
-      {event_type_names::kPointerover, WebFeature::kPointerOverOutFired},
-      {event_type_names::kPointerout, WebFeature::kPointerOverOutFired},
-      {event_type_names::kSearch, WebFeature::kSearchEventFired},
-  };
-
-  if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
-    if (Document* document = executing_window->document()) {
-      if (event.type() == event_type_names::kToggle &&
-          document->ToggleDuringParsing()) {
-        UseCounter::Count(*document,
-                          WebFeature::kToggleEventHandlerDuringParsing);
-      } else if (CheckTypeThenUseCount(event, event_type_names::kBeforeunload,
-                                WebFeature::kDocumentBeforeUnloadFired,
-                                document)) {
-        if (executing_window != executing_window->top())
-          UseCounter::Count(*document, WebFeature::kSubFrameBeforeUnloadFired);
-      } else if (CheckTypeThenUseCount(event, event_type_names::kPointerdown,
-                                       WebFeature::kPointerDownFired,
-                                       document)) {
-        if (event.IsPointerEvent() &&
-            static_cast<PointerEvent&>(event).pointerType() == "touch") {
-          UseCounter::Count(*document, WebFeature::kPointerDownFiredForTouch);
-        }
-      } else {
-        bool did_count = false;
-        for (const auto& counted_event : counted_events) {
-          if (CheckTypeThenUseCount(event, counted_event.event_type,
-                                    counted_event.feature, document)) {
-            did_count = true;
-            break;
-          }
-        }
-
-        if (!did_count && (event.eventPhase() == Event::kCapturingPhase ||
-                           event.eventPhase() == Event::kBubblingPhase)) {
-          if (CheckTypeThenUseCount(
-                  event, event_type_names::kDOMNodeRemoved,
-                  WebFeature::kDOMNodeRemovedEventListenedAtNonTarget,
-                  document)) {
-          } else if (
-              CheckTypeThenUseCount(
-                  event, event_type_names::kDOMNodeRemovedFromDocument,
-                  WebFeature::
-                      kDOMNodeRemovedFromDocumentEventListenedAtNonTarget,
-                  document)) {
-          }
-        }
-      }
-    }
-  }
-
   ExecutionContext* context = GetExecutionContext();
   if (!context)
     return false;
+
+  CountFiringEventListeners(event, ExecutingWindow());
 
   wtf_size_t i = 0;
   wtf_size_t size = entry.size();

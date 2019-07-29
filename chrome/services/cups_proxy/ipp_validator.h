@@ -27,8 +27,7 @@ struct IppRequest;
 // accessed from a sequenced context.
 class IppValidator {
  public:
-  explicit IppValidator(
-      base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate);
+  explicit IppValidator(base::WeakPtr<CupsProxyServiceDelegate> delegate);
   ~IppValidator();
 
   // Validates each of |to_validate|'s fields and returns a POD representation
@@ -50,7 +49,7 @@ class IppValidator {
   bool ValidateIppData(const std::vector<uint8_t>& ipp_data);
 
   // Delegate providing necessary Profile dependencies.
-  base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate_;
+  base::WeakPtr<CupsProxyServiceDelegate> delegate_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

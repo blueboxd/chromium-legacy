@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -111,7 +112,8 @@ class AccountManagerTest : public testing::Test {
     account_manager_->Initialize(
         tmp_dir_.GetPath(), test_url_loader_factory_.GetSafeWeakWrapper(),
         immediate_callback_runner_, base::SequencedTaskRunnerHandle::Get(),
-        &pref_service_);
+        base::DoNothing());
+    account_manager_->SetPrefService(&pref_service_);
   }
 
   // Check base/test/scoped_task_environment.h. This must be the first member /
@@ -188,7 +190,8 @@ TEST_F(AccountManagerTest, TestInitialization) {
   account_manager.Initialize(
       tmp_dir_.GetPath(), test_url_loader_factory_.GetSafeWeakWrapper(),
       immediate_callback_runner_, base::SequencedTaskRunnerHandle::Get(),
-      &pref_service_);
+      base::DoNothing());
+  account_manager.SetPrefService(&pref_service_);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(account_manager.init_state_,
             AccountManager::InitializationState::kInitialized);

@@ -422,7 +422,7 @@
     },
     {
       name: "CSSVariables2",
-      status: "experimental",
+      status: "stable",
     },
     // Support for @property rules.
     {

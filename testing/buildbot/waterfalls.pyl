@@ -1769,7 +1769,7 @@
       'linux-chromeos-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'gn_all',
@@ -1781,7 +1781,7 @@
       'linux-chromeos-oobe-code-coverage': {
         'mixins': [
           'code-coverage',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'gn_all',

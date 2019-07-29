@@ -502,7 +502,7 @@ Browser::Browser(const CreateParams& params)
                                                 params.user_gesture);
 
   if (app_controller_)
-    app_controller_->UpdateToolbarVisibility(false);
+    app_controller_->UpdateCustomTabBarVisibility(false);
 
   // Create the extension window controller before sending notifications.
   extension_window_controller_.reset(
@@ -1457,7 +1457,7 @@ void Browser::NavigationStateChanged(WebContents* source,
     command_controller_->TabStateChanged();
 
   if (app_controller_)
-    app_controller_->UpdateToolbarVisibility(true);
+    app_controller_->UpdateCustomTabBarVisibility(true);
 }
 
 void Browser::VisibleSecurityStateChanged(WebContents* source) {
@@ -1468,7 +1468,7 @@ void Browser::VisibleSecurityStateChanged(WebContents* source) {
     UpdateToolbar(false);
 
     if (app_controller_)
-      app_controller_->UpdateToolbarVisibility(true);
+      app_controller_->UpdateCustomTabBarVisibility(true);
   }
 }
 

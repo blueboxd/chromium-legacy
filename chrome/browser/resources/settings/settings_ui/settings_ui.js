@@ -66,9 +66,6 @@ Polymer({
     pageVisibility_: {type: Object, value: settings.pageVisibility},
 
     /** @private */
-    showApps_: Boolean,
-
-    /** @private */
     showAndroidApps_: Boolean,
 
     /** @private */
@@ -169,8 +166,6 @@ Polymer({
     // The SplitSettings feature hides OS settings in the browser settings page.
     // https://crbug.com/950007
     const showOSSettings = loadTimeData.getBoolean('showOSSettings');
-    this.showApps_ = showOSSettings && loadTimeData.valueExists('showApps') &&
-        loadTimeData.getBoolean('showApps');
     this.showAndroidApps_ = showOSSettings &&
         loadTimeData.valueExists('androidAppsVisible') &&
         loadTimeData.getBoolean('androidAppsVisible');

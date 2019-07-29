@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
       OpenPopup(app_view->GetActiveWebContents(), out_of_scope_url);
 
   // Out of scope, so custom tab bar should be shown.
-  EXPECT_TRUE(popup_browser->app_controller()->ShouldShowToolbar());
+  EXPECT_TRUE(popup_browser->app_controller()->ShouldShowCustomTabBar());
 
   // As the popup was opened out of scope the close button should not be shown.
   EXPECT_FALSE(BrowserView::GetBrowserViewForBrowser(popup_browser)
@@ -385,11 +385,11 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   const GURL& other_app_url =
       https_server()->GetURL("app.com", "/ssl/blank_page.html");
   NavigateAndWait(web_contents, other_app_url);
-  EXPECT_FALSE(app_controller_->ShouldShowToolbar());
+  EXPECT_FALSE(app_controller_->ShouldShowCustomTabBar());
 
   // Navigate out of scope.
   NavigateAndWait(web_contents, GURL("http://example.test/"));
-  EXPECT_TRUE(app_controller_->ShouldShowToolbar());
+  EXPECT_TRUE(app_controller_->ShouldShowCustomTabBar());
 
   // Simulate clicking the close button and wait for navigation to finish.
   content::TestNavigationObserver nav_observer(web_contents);
@@ -420,12 +420,12 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   const GURL& other_app_url =
       https_server()->GetURL("app.com", "/ssl/blank_page.html");
   NavigateAndWait(web_contents, other_app_url);
-  EXPECT_FALSE(app_controller_->ShouldShowToolbar());
+  EXPECT_FALSE(app_controller_->ShouldShowCustomTabBar());
 
   // Navigate above the scope of the app, on the same origin.
   NavigateAndWait(web_contents, https_server()->GetURL(
                                     "app.com", "/accessibility_fail.html"));
-  EXPECT_TRUE(app_controller_->ShouldShowToolbar());
+  EXPECT_TRUE(app_controller_->ShouldShowCustomTabBar());
 
   // Simulate clicking the close button and wait for navigation to finish.
   content::TestNavigationObserver nav_observer(web_contents);
@@ -459,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_TRUE(content::ExecuteScript(
         web_contents, "window.location.replace('http://example.com');"));
     nav_observer.Wait();
-    EXPECT_TRUE(app_controller_->ShouldShowToolbar());
+    EXPECT_TRUE(app_controller_->ShouldShowCustomTabBar());
   }
   {
     // Simulate clicking the close button and wait for navigation to finish.

@@ -260,8 +260,7 @@ bool IppValidator::ValidateIppData(const std::vector<uint8_t>& ipp_data) {
                     pdf_magic_bytes.begin());
 }
 
-IppValidator::IppValidator(
-    base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate)
+IppValidator::IppValidator(base::WeakPtr<CupsProxyServiceDelegate> delegate)
     : delegate_(std::move(delegate)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }

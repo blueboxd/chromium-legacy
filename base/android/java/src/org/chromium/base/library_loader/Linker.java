@@ -4,12 +4,15 @@
 
 package org.chromium.base.library_loader;
 
+import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.annotations.AccessedByNative;
@@ -18,6 +21,8 @@ import org.chromium.base.annotations.JniIgnoreNatives;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.annotation.concurrent.GuardedBy;
 
 /*
  * Technical note:
@@ -31,9 +36,8 @@ import java.util.Map;
  * the content of their RELRO section (which includes C++ vtables or any
  * constants that contain pointers) will be largely identical [1].
  *
- * By default, the RELRO section is backed by private RAM in each process,
- * which is still significant on mobile (e.g. 1.28 MB / process on Chrome 30 for
- * Android).
+ * By default, the RELRO section is backed by private RAM in each process, which is still
+ * significant on mobile (e.g. ~2 MB / process on Chrome 77 ARM, more on ARM64).
  *
  * However, it is possible to save RAM by creating a shared memory region,
  * copy the RELRO content into it, then have each process swap its private,
@@ -132,7 +136,7 @@ import java.util.Map;
 @JniIgnoreNatives
 public abstract class Linker {
     // Log tag for this class.
-    private static final String TAG = "LibraryLoader";
+    private static final String TAG = "Linker";
 
     // Name of the library that contains our JNI code.
     protected static final String LINKER_JNI_LIBRARY = "chromium_android_linker";
@@ -153,33 +157,120 @@ public abstract class Linker {
     // ensure that we don't try to load outside the area originally requested.
     protected static final int ADDRESS_SPACE_RESERVATION = 192 * 1024 * 1024;
 
+    // Constants used to indicate a given Linker implementation, for testing.
+    //   LEGACY       -> Always uses the LegacyLinker implementation.
+    //   MODERN       -> Always uses the ModernLinker implementation.
+    // NOTE: These names are known and expected by the Linker test scripts.
+    public static final int LINKER_IMPLEMENTATION_LEGACY = 1;
+    public static final int LINKER_IMPLEMENTATION_MODERN = 2;
+
     // Singleton.
     protected static final Object sLock = new Object();
     private static Linker sSingleton;
+
+    // Variables below are used in derived classes.
+    // Becomes true after linker initialization.
+    protected boolean mInitialized;
+
+    // Becomes true to indicate this process needs to wait for a shared RELRO in LibraryLoad().
+    protected boolean mWaitForSharedRelros;
+
+    // Cached Bundle representation of the RELRO sections map for transfer across processes.
+    protected Bundle mSharedRelrosBundle;
+
+    // Set to true if this runs in the browser process. Disabled by initServiceProcess().
+    protected boolean mInBrowserProcess = true;
+
+    // Current common random base load address. A value of -1 indicates not yet initialized.
+    protected long mBaseLoadAddress = -1;
+
+    // Current fixed-location load address for the next library called by loadLibrary().
+    // Initialized to mBaseLoadAddress in prepareLibraryLoad(), and then adjusted as each
+    // library is loaded by loadLibrary().
+    protected long mCurrentLoadAddress = -1;
+
+    // The map of libraries that are currently loaded in this process.
+    protected HashMap<String, LibInfo> mLoadedLibraries;
 
     // Protected singleton constructor.
     protected Linker() {}
 
     /**
-     * Get singleton instance. Returns a LegacyLinker.
+     * Get singleton instance. Returns either a LegacyLinker or a ModernLinker.
      *
-     * On N+ Monochrome is selected by Play Store. With Monochrome this code is not used, instead
-     * Chrome asks the WebView to provide the library (and the shared RELRO). If the WebView fails
-     * to provide the library, the system linker is used as a fallback.
+     * Returns a ModernLinker if running on Android M or later, otherwise returns
+     * a LegacyLinker.
      *
-     * LegacyLinker runs on all Android releases, but is incompatible with GVR library on N+.
-     * LegacyLinker is preferred on M- because it does not write the shared RELRO to disk at
+     * ModernLinker requires OS features from Android M and later: a system linker
+     * that handles packed relocations and load from APK, and |android_dlopen_ext()|
+     * for shared RELRO support. It cannot run on Android releases earlier than M.
+     *
+     * LegacyLinker runs on all Android releases but it is slower and more complex
+     * than ModernLinker. We still use it on M as it avoids writing the relocation to disk.
+     *
+     * On N, O and P Monochrome is selected by Play Store. With Monochrome this code is not used,
+     * instead Chrome asks the WebView to provide the library (and the shared RELRO). If the WebView
+     * fails to provide the library, the system linker is used as a fallback.
+     *
+     * LegacyLinker can run on all Android releases, but is unused on P+ as it may cause issues.
+     * LegacyLinker is preferred on N- because it does not write the shared RELRO to disk at
      * almost every cold startup.
+     *
+     * Finally, ModernLinker is used on Android N+ when installing Chrome{,Modern}.apk, which is not
+     * a configuration shipped through the play store, but kept here temporarily to ease testing.
      *
      * @return the Linker implementation instance.
      */
     public static Linker getInstance() {
+        // A non-monochrome APK (such as ChromePublic.apk) can be installed on N+ in these
+        // circumstances:
+        // * installing APK manually
+        // * after OTA from M to N
+        // * side-installing Chrome (possibly from another release channel)
+        // * Play Store bugs leading to incorrect APK flavor being installed
+        // * installing other Chromium-based browsers
+        //
+        // For Chrome builds regularly shipped to users on N+, the system linker (or the Android
+        // Framework) provides the necessary functionality to load without crazylinker. The
+        // LegacyLinker is risky to auto-enable on newer Android releases, as it may interfere with
+        // regular library loading. See http://crbug.com/980304 as example.
+        //
+        // This is only called if LibraryLoader.useChromiumLinker() returns true, meaning this is
+        // either Chrome{,Modern} or the linker tests.
+        //
+        // TODO(lizeb): Also check that this is a local build to avoid shipping ModernLinker
+        // accidentally.
         synchronized (sLock) {
             if (sSingleton == null) {
-                sSingleton = new LegacyLinker();
-                Log.i(TAG, "Using linker: LegacyLinker");
+                // With incremental install, it's important to fall back to the "normal"
+                // library loading path in order for the libraries to be found.
+                String appClass =
+                        ContextUtils.getApplicationContext().getApplicationInfo().className;
+                boolean isIncrementalInstall =
+                        appClass != null && appClass.contains("incrementalinstall");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !isIncrementalInstall) {
+                    // This is not hit for shipping versions, as the Chrome flavor on N+ is
+                    // MonoChrome, and this requires both Chrome.apk and N+.
+                    sSingleton = new ModernLinker();
+                } else {
+                    sSingleton = new LegacyLinker();
+                }
+                Log.i(TAG, "Using linker: %s", sSingleton.getClass().getName());
             }
             return sSingleton;
+        }
+    }
+
+    /**
+     * Call this method before loading any libraries to indicate that this
+     * process shall neither create or reuse shared RELRO sections.
+     */
+    public void disableSharedRelros() {
+        if (DEBUG) Log.i(TAG, "disableSharedRelros() called");
+        synchronized (sLock) {
+            ensureInitializedLocked();
+            mInBrowserProcess = false;
+            mWaitForSharedRelros = false;
         }
     }
 
@@ -195,15 +286,25 @@ public abstract class Linker {
     }
 
     /**
-     * Assert NativeLibraries.sEnableLinkerTests is true.
-     * Hard assertion that we are in a testing context. Cannot be disabled. The
-     * test methods in this module permit injection of runnable code by class
-     * name. To protect against both malicious and accidental use of these
-     * methods, we ensure that NativeLibraries.sEnableLinkerTests is true when
-     * any is called.
+     * Get Linker implementation type.
+     * For testing.
+     *
+     * @return LINKER_IMPLEMENTATION_LEGACY or LINKER_IMPLEMENTATION_MODERN
      */
-    private static void assertLinkerTestsAreEnabled() {
-        assert NativeLibraries.sEnableLinkerTests : "Testing method called in non-testing context";
+    public final int getImplementationForTesting() {
+        // Sanity check. This method may only be called during tests.
+        assert NativeLibraries.sEnableLinkerTests;
+
+        synchronized (sLock) {
+            assert sSingleton == this;
+
+            if (sSingleton instanceof ModernLinker) {
+                return LINKER_IMPLEMENTATION_MODERN;
+            } else if (sSingleton instanceof LegacyLinker) {
+                return LINKER_IMPLEMENTATION_LEGACY;
+            }
+            throw new AssertionError("Invalid linker: " + sSingleton.getClass().getName());
+        }
     }
 
     /**
@@ -231,8 +332,7 @@ public abstract class Linker {
      * the TestRunner set by calling setTestRunnerClassNameForTesting() previously.
      */
     public final String getTestRunnerClassNameForTesting() {
-        // Sanity check. This method may only be called during tests.
-        assertLinkerTestsAreEnabled();
+        assert NativeLibraries.sEnableLinkerTests;
 
         synchronized (sLock) {
             return mTestRunnerClassName;
@@ -240,20 +340,29 @@ public abstract class Linker {
     }
 
     /**
-     * Sets the test class name.
+     * Set up the Linker for a test.
+     * Convenience function that calls setImplementationForTesting() to force an
+     * implementation, and then setTestRunnerClassNameForTesting() to set the test
+     * class name.
      *
-     * On the first call, instantiates a Linker and sets its test runner class name. On subsequent
-     * calls, checks that the singleton produced by the first call matches the test runner class
-     * name.
+     * On first call, instantiates a Linker of the requested type and sets its test
+     * runner class name. On subsequent calls, checks that the singleton produced by
+     * the first call matches the requested type and test runner class name.
      */
-    public static final void setupForTesting(String testRunnerClassName) {
-        if (DEBUG) {
-            Log.i(TAG, "setupForTesting(" + testRunnerClassName + ") called");
-        }
-        // Sanity check. This method may only be called during tests.
-        assertLinkerTestsAreEnabled();
+    public static final void setupForTesting(int type, String testRunnerClassName) {
+        assert NativeLibraries.sEnableLinkerTests;
+        assert type == LINKER_IMPLEMENTATION_LEGACY || type == LINKER_IMPLEMENTATION_MODERN;
+
+        if (DEBUG) Log.i(TAG, "setupForTesting(%d, %s) called", type, testRunnerClassName);
 
         synchronized (sLock) {
+            assert sSingleton == null;
+            if (type == LINKER_IMPLEMENTATION_MODERN) {
+                sSingleton = new ModernLinker();
+            } else if (type == LINKER_IMPLEMENTATION_LEGACY) {
+                sSingleton = new LegacyLinker();
+            }
+            Log.i(TAG, "Forced linker: %s", sSingleton.getClass().getName());
             Linker.getInstance().mTestRunnerClassName = testRunnerClassName;
         }
     }
@@ -266,11 +375,8 @@ public abstract class Linker {
      * @param inBrowserProcess true if in the browser process
      */
     protected final void runTestRunnerClassForTesting(boolean inBrowserProcess) {
-        if (DEBUG) {
-            Log.i(TAG, "runTestRunnerClassForTesting called");
-        }
-        // Sanity check. This method may only be called during tests.
-        assertLinkerTestsAreEnabled();
+        assert NativeLibraries.sEnableLinkerTests;
+        if (DEBUG) Log.i(TAG, "runTestRunnerClassForTesting called");
 
         synchronized (sLock) {
             if (mTestRunnerClassName == null) {
@@ -403,18 +509,21 @@ public abstract class Linker {
 
     /**
      * Call this method before loading any libraries to indicate that this
-     * process shall neither create or reuse shared RELRO sections.
-     */
-    public abstract void disableSharedRelros();
-
-    /**
-     * Call this method before loading any libraries to indicate that this
      * process is ready to reuse shared RELRO sections from another one.
      * Typically used when starting service processes.
      *
      * @param baseLoadAddress the base library load address to use.
      */
-    public abstract void initServiceProcess(long baseLoadAddress);
+    public void initServiceProcess(long baseLoadAddress) {
+        if (DEBUG) Log.i(TAG, "initServiceProcess(0x%x) called", baseLoadAddress);
+        synchronized (sLock) {
+            ensureInitializedLocked();
+            mInBrowserProcess = false;
+            mWaitForSharedRelros = true;
+            mBaseLoadAddress = baseLoadAddress;
+            mCurrentLoadAddress = baseLoadAddress;
+        }
+    }
 
     /**
      * Retrieve the base load address of all shared RELRO sections.
@@ -434,6 +543,56 @@ public abstract class Linker {
      * supplied, otherwise ignores the fixed address and loads wherever available.
      */
     abstract void loadLibraryImpl(String libFilePath, boolean isFixedAddressPermitted);
+
+    /**
+     * Load the Linker JNI library. Throws UnsatisfiedLinkError on error.
+     */
+    @SuppressLint({"UnsafeDynamicallyLoadedCode"})
+    protected static void loadLinkerJniLibrary() {
+        LibraryLoader.setEnvForNative();
+        if (DEBUG) {
+            String libName = "lib" + LINKER_JNI_LIBRARY + ".so";
+            Log.i(TAG, "Loading %s", libName);
+        }
+        try {
+            System.loadLibrary(LINKER_JNI_LIBRARY);
+        } catch (UnsatisfiedLinkError e) {
+            if (LibraryLoader.PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
+                System.load(LibraryLoader.getExtractedLibraryPath(
+                        ContextUtils.getApplicationContext().getApplicationInfo(),
+                        LINKER_JNI_LIBRARY));
+            } else {
+                // Cannot continue if we cannot load the linker. Technically we could try to
+                // load the library with the system linker on Android M+, but this should never
+                // happen, better to catch it in crash reports.
+                throw e;
+            }
+        }
+    }
+
+    // Used internally to initialize the linker's data. Loads JNI.
+    @GuardedBy("sLock")
+    protected void ensureInitializedLocked() {
+        if (mInitialized) return;
+
+        loadLinkerJniLibrary();
+        mInitialized = true;
+    }
+
+    // Used internally to lazily setup the common random base load address.
+    @GuardedBy("sLock")
+    protected void setupBaseLoadAddressLocked() {
+        if (mBaseLoadAddress == -1) {
+            mBaseLoadAddress = getRandomBaseLoadAddress();
+            mCurrentLoadAddress = mBaseLoadAddress;
+            if (mBaseLoadAddress == 0) {
+                // If the random address is 0 there are issues with finding enough
+                // free address space, so disable RELRO shared / fixed load addresses.
+                Log.w(TAG, "Disabling shared RELROs due address space pressure");
+                mWaitForSharedRelros = false;
+            }
+        }
+    }
 
     /**
      * Record information for a given library.
@@ -518,7 +677,7 @@ public abstract class Linker {
     }
 
     // Create a Bundle from a map of LibInfo objects.
-    protected Bundle createBundleFromLibInfoMap(HashMap<String, LibInfo> map) {
+    protected static Bundle createBundleFromLibInfoMap(HashMap<String, LibInfo> map) {
         Bundle bundle = new Bundle(map.size());
         for (Map.Entry<String, LibInfo> entry : map.entrySet()) {
             bundle.putParcelable(entry.getKey(), entry.getValue());
@@ -527,7 +686,7 @@ public abstract class Linker {
     }
 
     // Create a new LibInfo map from a Bundle.
-    protected HashMap<String, LibInfo> createLibInfoMapFromBundle(Bundle bundle) {
+    protected static HashMap<String, LibInfo> createLibInfoMapFromBundle(Bundle bundle) {
         HashMap<String, LibInfo> map = new HashMap<String, LibInfo>();
         for (String library : bundle.keySet()) {
             LibInfo libInfo = bundle.getParcelable(library);
@@ -537,7 +696,7 @@ public abstract class Linker {
     }
 
     // Call the close() method on all values of a LibInfo map.
-    protected void closeLibInfoMap(HashMap<String, LibInfo> map) {
+    protected static void closeLibInfoMap(HashMap<String, LibInfo> map) {
         for (Map.Entry<String, LibInfo> entry : map.entrySet()) {
             entry.getValue().close();
         }

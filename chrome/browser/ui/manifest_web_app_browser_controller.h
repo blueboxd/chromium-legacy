@@ -29,25 +29,19 @@ class ManifestWebAppBrowserController : public web_app::AppBrowserController {
   explicit ManifestWebAppBrowserController(Browser* browser);
   ~ManifestWebAppBrowserController() override;
 
+  // web_app::AppBrowserController:
   base::Optional<std::string> GetAppId() const override;
-
-  bool ShouldShowToolbar() const override;
-
+  bool ShouldShowCustomTabBar() const override;
   bool ShouldShowHostedAppButtonContainer() const override;
-
   gfx::ImageSkia GetWindowAppIcon() const override;
-
   gfx::ImageSkia GetWindowIcon() const override;
-
   std::string GetAppShortName() const override;
-
   base::string16 GetFormattedUrlOrigin() const override;
-
   GURL GetAppLaunchURL() const override;
-
   bool IsUrlInAppScope(const GURL& url) const override;
 
  protected:
+  // web_app::AppBrowserController:
   void OnTabInserted(content::WebContents* contents) override;
 
  private:

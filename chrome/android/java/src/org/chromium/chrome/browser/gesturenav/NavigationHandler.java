@@ -13,7 +13,6 @@ import android.view.ViewGroup.LayoutParams;
 
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.AppHooks;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -90,13 +89,6 @@ public class NavigationHandler {
         mDelegate = delegate;
         mGlowEffectSupplier = glowEffectSupplier;
         mEdgeWidthPx = EDGE_WIDTH_DP * parentView.getResources().getDisplayMetrics().density;
-        parentView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                AppHooks.get().createNavigationInputAreaSetter(v, left, top, right, bottom).run();
-            }
-        });
     }
 
     private void createLayout() {

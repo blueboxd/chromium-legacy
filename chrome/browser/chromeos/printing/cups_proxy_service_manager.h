@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/services/cups_proxy/cups_proxy_service.h"
 #include "chrome/services/cups_proxy/public/mojom/proxy.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -29,9 +30,7 @@ class CupsProxyServiceManager : public KeyedService {
  private:
   void OnDaemonAvailable(bool daemon_available);
 
-  mojo::Remote<printing::mojom::StartCupsProxyService> service_handle_;
   base::WeakPtrFactory<CupsProxyServiceManager> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(CupsProxyServiceManager);
 };
 

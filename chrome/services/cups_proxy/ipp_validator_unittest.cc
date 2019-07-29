@@ -31,8 +31,7 @@ std::string EncodeEndpointForPrinterId(std::string printer_id) {
 }
 
 // Fake backend for CupsProxyServiceDelegate.
-class FakeServiceDelegate
-    : public chromeos::printing::FakeCupsProxyServiceDelegate {
+class FakeServiceDelegate : public FakeCupsProxyServiceDelegate {
  public:
   FakeServiceDelegate() = default;
   ~FakeServiceDelegate() override = default;

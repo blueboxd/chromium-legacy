@@ -39,57 +39,27 @@ class HostedAppBrowserController : public web_app::AppBrowserController {
   explicit HostedAppBrowserController(Browser* browser);
   ~HostedAppBrowserController() override;
 
+  // web_app::AppBrowserController:
   base::Optional<std::string> GetAppId() const override;
-
-  // Returns true if the associated Hosted App is for a PWA.
   bool CreatedForInstalledPwa() const override;
-
-  // Whether the browser being controlled should be currently showing the
-  // toolbar.
-  bool ShouldShowToolbar() const override;
-
-  // Returns true if the hosted app buttons should be shown in the frame for
-  // this BrowserView.
+  bool ShouldShowCustomTabBar() const override;
   bool ShouldShowHostedAppButtonContainer() const override;
-
-  // Returns the app icon for the window to use in the task list.
   gfx::ImageSkia GetWindowAppIcon() const override;
-
-  // Returns the icon to be displayed in the window title bar.
   gfx::ImageSkia GetWindowIcon() const override;
-
-  // Returns the color of the title bar.
   base::Optional<SkColor> GetThemeColor() const override;
-
-  // Returns the title to be displayed in the window title bar.
   base::string16 GetTitle() const override;
-
-  // Gets the short name of the app.
   std::string GetAppShortName() const override;
-
-  // Gets the origin of the app start url suitable for display (e.g
-  // example.com.au).
   base::string16 GetFormattedUrlOrigin() const override;
-
-  // Gets the launch url for the app.
   GURL GetAppLaunchURL() const override;
-
   bool IsUrlInAppScope(const GURL& url) const override;
-
-  // Gets the extension for this controller.
   const Extension* GetExtensionForTesting() const;
-
   bool CanUninstall() const override;
-
   void Uninstall() override;
-
-  // Returns whether the app is installed (uninstallation may complete within
-  // the lifetime of HostedAppBrowserController).
   bool IsInstalled() const override;
-
   bool IsHostedApp() const override;
 
  protected:
+  // web_app::AppBrowserController:
   void OnReceivedInitialURL() override;
   void OnTabInserted(content::WebContents* contents) override;
   void OnTabRemoved(content::WebContents* contents) override;

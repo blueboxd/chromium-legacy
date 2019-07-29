@@ -5,24 +5,24 @@
 cr.define('cellular_setup', function() {
   /** @interface */
   class MojoInterfaceProvider {
-    /** @return {!chromeos.cellularSetup.mojom.CellularSetupProxy} */
-    getMojoServiceProxy() {}
+    /** @return {!chromeos.cellularSetup.mojom.CellularSetupRemote} */
+    getMojoServiceRemote() {}
   }
 
   /** @implements {cellular_setup.MojoInterfaceProvider} */
   class MojoInterfaceProviderImpl {
     constructor() {
-      /** @private {?chromeos.cellularSetup.mojom.CellularSetupProxy} */
-      this.proxy_ = null;
+      /** @private {?chromeos.cellularSetup.mojom.CellularSetupRemote} */
+      this.remote_ = null;
     }
 
     /** @override */
-    getMojoServiceProxy() {
-      if (!this.proxy_) {
-        this.proxy_ = chromeos.cellularSetup.mojom.CellularSetup.getProxy();
+    getMojoServiceRemote() {
+      if (!this.remote_) {
+        this.remote_ = chromeos.cellularSetup.mojom.CellularSetup.getRemote();
       }
 
-      return this.proxy_;
+      return this.remote_;
     }
   }
 

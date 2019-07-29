@@ -11,13 +11,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "components/guest_view/common/guest_view_constants.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "ipc/ipc_sync_channel.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_associated_url_loader.h"
@@ -54,7 +54,7 @@ base::LazyInstance<
 // Stores a raw pointer to MimeHandlerViewContainerBase since this throttle's
 // lifetime is shorter (it matches |container|'s loader_).
 class MimeHandlerViewContainerBase::PluginResourceThrottle
-    : public content::URLLoaderThrottle {
+    : public blink::URLLoaderThrottle {
  public:
   explicit PluginResourceThrottle(
       base::WeakPtr<MimeHandlerViewContainerBase> container)
@@ -62,7 +62,7 @@ class MimeHandlerViewContainerBase::PluginResourceThrottle
   ~PluginResourceThrottle() override {}
 
  private:
-  // content::URLLoaderThrottle overrides;
+  // blink::URLLoaderThrottle overrides;
   void WillProcessResponse(const GURL& response_url,
                            network::ResourceResponseHead* response_head,
                            bool* defer) override {
@@ -160,7 +160,7 @@ MimeHandlerViewContainerBase::FromRenderFrame(
                                                     it->second.end());
 }
 
-std::unique_ptr<content::URLLoaderThrottle>
+std::unique_ptr<blink::URLLoaderThrottle>
 MimeHandlerViewContainerBase::MaybeCreatePluginThrottle(const GURL& url) {
   if (!waiting_to_create_throttle_ || url != original_url_)
     return nullptr;

@@ -162,7 +162,7 @@ void WilcoDtcSupportdWebRequestService::PerformRequest(
   request->request = std::make_unique<network::ResourceRequest>();
   request->request->method = http_method_str;
   request->request->url = std::move(url);
-  request->request->allow_credentials = false;
+  request->request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   request->request->load_flags = net::LOAD_DISABLE_CACHE;
   for (auto header : headers) {
     request->request->headers.AddHeaderFromString(header);

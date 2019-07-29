@@ -60,6 +60,7 @@ enum class CrostiniResult {
   NOT_ALLOWED = 34,
   CONTAINER_EXPORT_IMPORT_FAILED_SPACE = 35,
   GET_CONTAINER_SSH_KEYS_FAILED = 36,
+  CONTAINER_EXPORT_IMPORT_CANCELLED = 37,
 };
 
 enum class InstallLinuxPackageProgressStatus {

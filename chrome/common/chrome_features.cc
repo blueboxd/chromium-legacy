@@ -241,11 +241,6 @@ const base::Feature kDesktopPWAsWithoutExtensions{
 const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables new Desktop PWAs unified |InstallManager| that does not
-// use extensions.
-const base::Feature kDesktopPWAsUnifiedInstall{
-    "DesktopPWAsUnifiedInstall", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables unconditional use of new Desktop PWAs launch manager
 // for all bookmark apps (including extensions-based bookmark apps).
 // Only relevant if kDesktopPWAsWithoutExtensions is disabled.

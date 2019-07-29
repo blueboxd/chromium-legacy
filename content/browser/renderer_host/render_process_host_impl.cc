@@ -2145,11 +2145,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(
       base::BindRepeating(&metrics::CreateSingleSampleMetricsProvider));
 
-  registry->AddInterface(base::BindRepeating(
-      &CodeCacheHostImpl::Create, GetID(),
-      base::RetainedRef(storage_partition_impl_->GetCacheStorageContext()),
-      base::RetainedRef(
-          storage_partition_impl_->GetGeneratedCodeCacheContext())));
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(
+          &CodeCacheHostImpl::Create, GetID(),
+          base::RetainedRef(storage_partition_impl_->GetCacheStorageContext()),
+          base::RetainedRef(
+              storage_partition_impl_->GetGeneratedCodeCacheContext())));
 
 #if BUILDFLAG(ENABLE_REPORTING)
   AddUIThreadInterface(

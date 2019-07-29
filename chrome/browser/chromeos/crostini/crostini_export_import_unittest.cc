@@ -98,7 +98,7 @@ class CrostiniExportImportTest : public testing::Test {
         storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
         file_manager::util::GetMyFilesFolderForProfile(profile()));
     tarball_ = file_manager::util::GetMyFilesFolderForProfile(profile()).Append(
-        "tarball.tar.gz");
+        "crostini_export_import_unittest_tarball.tar.gz");
   }
 
   void TearDown() override {
@@ -254,6 +254,75 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
   EXPECT_FALSE(base::PathExists(tarball_));
 }
 
+TEST_F(CrostiniExportImportTest, TestExportCancelled) {
+  crostini_export_import_->FileSelected(
+      tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
+  thread_bundle_.RunUntilIdle();
+  CrostiniExportImportNotification* notification =
+      crostini_export_import_->GetNotificationForTesting(container_id_);
+  ASSERT_NE(notification, nullptr);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::RUNNING);
+  EXPECT_EQ(notification->get_notification()->progress(), 0);
+
+  // CANCELLING:
+  crostini_export_import_->CancelOperation(ExportImportType::EXPORT,
+                                           container_id_);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::CANCELLING);
+  EXPECT_EQ(notification->get_notification()->progress(), -1);
+  EXPECT_TRUE(base::PathExists(tarball_));
+
+  // STREAMING: should not be displayed as cancel is in progress
+  SendExportProgress(
+      vm_tools::cicerone::
+          ExportLxdContainerProgressSignal_Status_EXPORTING_STREAMING,
+      {.total_files = 100,
+       .total_bytes = 100,
+       .files_streamed = 50,
+       .bytes_streamed = 50});
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::CANCELLING);
+  EXPECT_EQ(notification->get_notification()->progress(), -1);
+  EXPECT_TRUE(base::PathExists(tarball_));
+
+  // CANCELLED:
+  SendExportProgress(
+      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_CANCELLED);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::CANCELLED);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_FALSE(base::PathExists(tarball_));
+}
+
+TEST_F(CrostiniExportImportTest, TestExportDoneBeforeCancelled) {
+  crostini_export_import_->FileSelected(
+      tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
+  thread_bundle_.RunUntilIdle();
+  CrostiniExportImportNotification* notification =
+      crostini_export_import_->GetNotificationForTesting(container_id_);
+  ASSERT_NE(notification, nullptr);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::RUNNING);
+  EXPECT_EQ(notification->get_notification()->progress(), 0);
+
+  // CANCELLING:
+  crostini_export_import_->CancelOperation(ExportImportType::EXPORT,
+                                           container_id_);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::CANCELLING);
+  EXPECT_EQ(notification->get_notification()->progress(), -1);
+  EXPECT_TRUE(base::PathExists(tarball_));
+
+  // DONE: Completed before cancel processed, file should be deleted.
+  SendExportProgress(
+      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::CANCELLED);
+  thread_bundle_.RunUntilIdle();
+  EXPECT_FALSE(base::PathExists(tarball_));
+}
+
 TEST_F(CrostiniExportImportTest, TestImportSuccess) {
   crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
@@ -315,6 +384,65 @@ TEST_F(CrostiniExportImportTest, TestImportFail) {
   std::string msg("Restoring couldn't be completed due to an error");
   EXPECT_EQ(notification->get_notification()->message(),
             base::UTF8ToUTF16(msg));
+}
+
+TEST_F(CrostiniExportImportTest, TestImportCancelled) {
+  crostini_export_import_->FileSelected(
+      tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
+  thread_bundle_.RunUntilIdle();
+  CrostiniExportImportNotification* notification =
+      crostini_export_import_->GetNotificationForTesting(container_id_);
+  ASSERT_NE(notification, nullptr);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::RUNNING);
+  EXPECT_EQ(notification->get_notification()->progress(), 0);
+
+  // CANCELLING:
+  crostini_export_import_->CancelOperation(ExportImportType::IMPORT,
+                                           container_id_);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::CANCELLING);
+  EXPECT_EQ(notification->get_notification()->progress(), -1);
+
+  // STREAMING: should not be displayed as cancel is in progress
+  SendImportProgress(
+      vm_tools::cicerone::
+          ImportLxdContainerProgressSignal_Status_IMPORTING_UPLOAD,
+      {.progress_percent = 50});
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::CANCELLING);
+  EXPECT_EQ(notification->get_notification()->progress(), -1);
+
+  // CANCELLED:
+  SendImportProgress(
+      vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_CANCELLED);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::CANCELLED);
+}
+
+TEST_F(CrostiniExportImportTest, TestImportDoneBeforeCancelled) {
+  crostini_export_import_->FileSelected(
+      tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
+  thread_bundle_.RunUntilIdle();
+  CrostiniExportImportNotification* notification =
+      crostini_export_import_->GetNotificationForTesting(container_id_);
+  ASSERT_NE(notification, nullptr);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::RUNNING);
+  EXPECT_EQ(notification->get_notification()->progress(), 0);
+
+  // CANCELLING:
+  crostini_export_import_->CancelOperation(ExportImportType::IMPORT,
+                                           container_id_);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::CANCELLING);
+  EXPECT_EQ(notification->get_notification()->progress(), -1);
+
+  // DONE: Cancel couldn't be processed in time, done is displayed instead.
+  SendImportProgress(
+      vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_DONE);
+  EXPECT_EQ(notification->status(),
+            CrostiniExportImportNotification::Status::DONE);
 }
 
 TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {

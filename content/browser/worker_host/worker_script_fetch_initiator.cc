@@ -143,6 +143,7 @@ void WorkerScriptFetchInitiator::Start(
   resource_request->referrer_policy = Referrer::ReferrerPolicyForUrlRequest(
       outside_fetch_client_settings_object->referrer_policy);
   resource_request->resource_type = static_cast<int>(resource_type);
+  resource_request->credentials_mode = credentials_mode;
 
   // For a classic worker script request:
   // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
@@ -154,20 +155,6 @@ void WorkerScriptFetchInitiator::Start(
   // Step 6: "If destination is "worker" or "sharedworker" and the top-level
   // module fetch flag is set, then set request's mode to "same-origin"."
   resource_request->mode = network::mojom::RequestMode::kSameOrigin;
-
-  // When the credentials mode is "omit", clear |allow_credentials| and set
-  // load flags to disable sending credentials according to the comments in
-  // CorsURLLoaderFactory::IsSane().
-  // TODO(https://crbug.com/799935): Unify |LOAD_DO_NOT_*| into
-  // |allow_credentials|.
-  resource_request->credentials_mode = credentials_mode;
-  if (credentials_mode == network::mojom::CredentialsMode::kOmit) {
-    resource_request->allow_credentials = false;
-    const auto load_flags_pattern = net::LOAD_DO_NOT_SAVE_COOKIES |
-                                    net::LOAD_DO_NOT_SEND_COOKIES |
-                                    net::LOAD_DO_NOT_SEND_AUTH_DATA;
-    resource_request->load_flags |= load_flags_pattern;
-  }
 
   switch (resource_type) {
     case ResourceType::kWorker:
@@ -368,7 +355,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnUI(
   // frame tree node ID has the same issue.
   base::RepeatingCallback<WebContents*()> wc_getter =
       base::BindRepeating([]() -> WebContents* { return nullptr; });
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
       GetContentClient()->browser()->CreateURLLoaderThrottles(
           *resource_request, storage_partition->browser_context(), wc_getter,
           nullptr /* navigation_ui_data */,
@@ -483,7 +470,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   // frame tree node ID has the same issue.
   base::RepeatingCallback<WebContents*()> wc_getter =
       base::BindRepeating([]() -> WebContents* { return nullptr; });
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
       GetContentClient()->browser()->CreateURLLoaderThrottlesOnIO(
           *resource_request, resource_context, wc_getter,
           nullptr /* navigation_ui_data */,

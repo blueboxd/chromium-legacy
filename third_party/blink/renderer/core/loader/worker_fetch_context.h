@@ -18,7 +18,6 @@ namespace blink {
 class CoreProbeSink;
 class SubresourceFilter;
 class WebWorkerFetchContext;
-class WorkerContentSettingsClient;
 class WorkerResourceTimingNotifier;
 class WorkerSettings;
 class WorkerOrWorkletGlobalScope;
@@ -85,10 +84,13 @@ class WorkerFetchContext final : public BaseFetchContext {
                                ResourceRequest&) override;
 
   WorkerSettings* GetWorkerSettings() const;
-  WorkerContentSettingsClient* GetWorkerContentSettingsClient() const;
   WebWorkerFetchContext* GetWebWorkerFetchContext() const {
     return web_context_.get();
   }
+
+  bool AllowRunningInsecureContent(bool enabled_per_settings,
+                                   const SecurityOrigin* origin,
+                                   const KURL& url) const;
 
   void Trace(blink::Visitor*) override;
 

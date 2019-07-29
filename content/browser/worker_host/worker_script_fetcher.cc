@@ -11,10 +11,10 @@
 #include "content/browser/worker_host/worker_script_loader_factory.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
@@ -53,7 +53,7 @@ const net::NetworkTrafficAnnotationTag kWorkerScriptLoadTrafficAnnotation =
 
 void WorkerScriptFetcher::CreateAndStart(
     std::unique_ptr<WorkerScriptLoaderFactory> script_loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     std::unique_ptr<network::ResourceRequest> resource_request,
     CreateAndStartCallback callback) {
   DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
@@ -80,7 +80,7 @@ WorkerScriptFetcher::~WorkerScriptFetcher() {
 }
 
 void WorkerScriptFetcher::Start(
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) {
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles) {
   DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
 
   auto shared_url_loader_factory =

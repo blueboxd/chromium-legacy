@@ -9,6 +9,7 @@ import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -34,7 +35,6 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
-import org.chromium.chrome.browser.signin.AccountAdder;
 import org.chromium.chrome.browser.signin.ConfirmManagedSyncDataDialog;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -321,7 +321,16 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
 
             SigninUtils.logEvent(ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
 
-            AccountAdder.getInstance().addAccount(getActivity(), AccountAdder.ADD_ACCOUNT_RESULT);
+            AccountManagerFacade.get().createAddAccountIntent((@Nullable Intent intent) -> {
+                if (intent != null) {
+                    startActivity(intent);
+                    return;
+                }
+
+                // AccountManagerFacade couldn't create intent, use SigninUtils to open settings
+                // instead.
+                SigninUtils.openSettingsForAllAccounts(getActivity());
+            });
 
             // Return to the last opened tab if triggered from the content area.
             if (mGaiaServiceType != GAIAServiceType.GAIA_SERVICE_TYPE_NONE) {

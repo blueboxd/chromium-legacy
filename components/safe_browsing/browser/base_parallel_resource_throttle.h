@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader_throttle.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace net {
 class URLRequest;

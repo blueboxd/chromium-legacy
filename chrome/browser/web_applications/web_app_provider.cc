@@ -8,9 +8,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
@@ -37,7 +35,6 @@
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 
 #define DCHECK_IS_CONNECTED()                                          \
@@ -74,9 +71,6 @@ WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
     CreateBookmarkAppsSubsystems(profile_);
 
   ui_manager_ = WebAppUiManager::Create(profile);
-
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::Source<Profile>(profile_));
 }
 
 WebAppProvider::~WebAppProvider() = default;
@@ -167,12 +161,7 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   install_finalizer_ =
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedInstall)) {
-    install_manager_ = std::make_unique<WebAppInstallManager>(profile);
-  } else {
-    install_manager_ =
-        std::make_unique<extensions::BookmarkAppInstallManager>(profile);
-  }
+  install_manager_ = std::make_unique<WebAppInstallManager>(profile);
 
   pending_app_manager_ =
       std::make_unique<extensions::PendingBookmarkAppManager>(profile);
@@ -251,25 +240,6 @@ WebAppTabHelperBase* WebAppProvider::CreateTabHelper(
 
   tab_helper->Init(provider->audio_focus_id_map_.get());
   return tab_helper;
-}
-
-void WebAppProvider::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& detals) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-
-  ProfileDestroyed();
-}
-
-void WebAppProvider::ProfileDestroyed() {
-  // KeyedService::Shutdown() gets called when the profile is being destroyed,
-  // but after DCHECK'ing that no RenderProcessHosts are being leaked. The
-  // "chrome::NOTIFICATION_PROFILE_DESTROYED" notification gets sent before the
-  // DCHECK so we use that to clean up RenderProcessHosts instead.
-  if (pending_app_manager_)
-    pending_app_manager_->Shutdown();
-
-  install_manager_->Shutdown();
 }
 
 }  // namespace web_app

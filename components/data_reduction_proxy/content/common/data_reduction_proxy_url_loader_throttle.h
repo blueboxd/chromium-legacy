@@ -10,8 +10,8 @@
 #include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace data_reduction_proxy {
 
@@ -25,7 +25,7 @@ struct DataReductionProxyTypeInfo;
 //   * Restarting the URL loader in order to use a different proxy.
 //   * Marking data reduction proxies to be bypassed for future requests.
 class DataReductionProxyURLLoaderThrottle
-    : public content::URLLoaderThrottle,
+    : public blink::URLLoaderThrottle,
       public DataReductionProxyThrottleConfigCheckedObserver {
  public:
   // |manager| is shared between all the DRP Throttles.
@@ -34,7 +34,7 @@ class DataReductionProxyURLLoaderThrottle
       DataReductionProxyThrottleManager* manager);
   ~DataReductionProxyURLLoaderThrottle() override;
 
-  // content::URLLoaderThrottle:
+  // blink::URLLoaderThrottle:
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;

@@ -195,7 +195,7 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
   resource_request->url = url;
 
   resource_request->load_flags = net::LOAD_BYPASS_CACHE;
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = request_type_;
   SetRequestHeaders(resource_request.get());
 

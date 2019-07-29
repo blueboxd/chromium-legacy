@@ -86,7 +86,7 @@ PrefetchRequestFetcher::PrefetchRequestFetcher(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
   resource_request->method = message.empty() ? "GET" : "POST";
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   std::string experiment_header = PrefetchExperimentHeader();
   if (!experiment_header.empty())

@@ -14,11 +14,11 @@
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
@@ -62,7 +62,7 @@ std::unique_ptr<SignedExchangeValidityPinger>
 SignedExchangeValidityPinger::CreateAndStart(
     const GURL& validity_url,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     const base::Optional<base::UnguessableToken>& throttling_profile_id,
     base::OnceClosure callback) {
   auto pinger = base::WrapUnique<SignedExchangeValidityPinger>(
@@ -79,7 +79,7 @@ SignedExchangeValidityPinger::SignedExchangeValidityPinger(
 void SignedExchangeValidityPinger::Start(
     const GURL& validity_url,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     const base::Optional<base::UnguessableToken>& throttling_profile_id) {
   DCHECK(
       base::FeatureList::IsEnabled(features::kSignedHTTPExchangePingValidity));
@@ -91,7 +91,7 @@ void SignedExchangeValidityPinger::Start(
       static_cast<int>(ResourceType::kSubResource);
   // Set empty origin as the initiator and attach no cookies.
   resource_request->request_initiator = url::Origin();
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   // Always hit the network as it's meant to be a liveliness check.
   // (While we don't check the result yet)
   resource_request->load_flags |=

@@ -28,6 +28,8 @@ MarkingVisitorBase::MarkingVisitorBase(ThreadState* state,
                               WorklistTaskId::MainThread),
       movable_reference_worklist_(Heap().GetMovableReferenceWorklist(),
                                   WorklistTaskId::MainThread),
+      weak_table_worklist_(Heap().GetWeakTableWorklist(),
+                           WorklistTaskId::MainThread),
       marking_mode_(marking_mode) {
   DCHECK(state->InAtomicMarkingPause());
 #if DCHECK_IS_ON()
@@ -72,10 +74,12 @@ void MarkingVisitorBase::RegisterBackingStoreCallback(
 bool MarkingVisitorBase::RegisterWeakTable(
     const void* closure,
     EphemeronCallback iteration_callback) {
-  // TODO(mlippautz): Do not call into heap directly but rather use a Worklist
-  // as temporary storage.
-  Heap().RegisterWeakTable(const_cast<void*>(closure), iteration_callback);
+  weak_table_worklist_.Push({const_cast<void*>(closure), iteration_callback});
   return true;
+}
+
+void MarkingVisitorBase::FlushWeakTableCallbacks() {
+  weak_table_worklist_.FlushToGlobal();
 }
 
 void MarkingVisitor::WriteBarrierSlow(void* value) {

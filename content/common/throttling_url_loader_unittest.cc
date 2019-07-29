@@ -9,13 +9,13 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 namespace {
@@ -219,7 +219,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderClient);
 };
 
-class TestURLLoaderThrottle : public URLLoaderThrottle {
+class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
  public:
   TestURLLoaderThrottle() {}
   explicit TestURLLoaderThrottle(const base::Closure& destruction_notifier)
@@ -234,7 +234,7 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
       base::RepeatingCallback<void(URLLoaderThrottle::Delegate* delegate,
                                    bool* defer)>;
   using ThrottleRedirectCallback =
-      base::RepeatingCallback<void(URLLoaderThrottle::Delegate* delegate,
+      base::RepeatingCallback<void(blink::URLLoaderThrottle::Delegate* delegate,
                                    bool* defer,
                                    std::vector<std::string>* removed_headers,
                                    net::HttpRequestHeaders* modified_headers)>;
@@ -279,7 +279,7 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
   Delegate* delegate() const { return delegate_; }
 
  private:
-  // URLLoaderThrottle implementation.
+  // blink::URLLoaderThrottle implementation.
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override {
     will_start_request_called_++;
@@ -377,7 +377,7 @@ class ThrottlingURLLoaderTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<ThrottlingURLLoader> loader_;
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles_;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles_;
 
   TestURLLoaderFactory factory_;
   TestURLLoaderClient client_;
@@ -392,7 +392,7 @@ class ThrottlingURLLoaderTest : public testing::Test {
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeStart) {
   throttle_->set_will_start_request_callback(
-      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
       }));
 
@@ -421,7 +421,7 @@ TEST_F(ThrottlingURLLoaderTest, CancelBeforeStart) {
 
 TEST_F(ThrottlingURLLoaderTest, DeferBeforeStart) {
   throttle_->set_will_start_request_callback(
-      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
       }));
 
@@ -471,7 +471,7 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeStart) {
 
 TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeStart) {
   throttle_->set_will_start_request_callback(
-      base::BindRepeating([](URLLoaderThrottle::Delegate* delegate,
+      base::BindRepeating([](blink::URLLoaderThrottle::Delegate* delegate,
                              bool* defer) { *defer = true; }));
 
   CreateLoaderAndStart();
@@ -507,10 +507,10 @@ TEST_F(ThrottlingURLLoaderTest, ModifyURLBeforeStart) {
 TEST_F(ThrottlingURLLoaderTest, ModifyURLAndDeferRedirect) {
   throttle_->set_modify_url_in_will_start(GURL("http://example.org/foo"));
   throttle_->set_will_start_request_callback(
-      base::BindRepeating([](URLLoaderThrottle::Delegate* /* delegate */,
+      base::BindRepeating([](blink::URLLoaderThrottle::Delegate* /* delegate */,
                              bool* defer) { *defer = true; }));
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
-      [](URLLoaderThrottle::Delegate* /* delegate */, bool* defer,
+      [](blink::URLLoaderThrottle::Delegate* /* delegate */, bool* defer,
          std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) { *defer = true; }));
 
@@ -539,7 +539,7 @@ TEST_F(ThrottlingURLLoaderTest, ModifyURLAndDeferRedirect) {
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeRedirect) {
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
-      [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
@@ -572,7 +572,7 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeRedirect) {
   base::RunLoop run_loop1;
   throttle_->set_will_redirect_request_callback(base::Bind(
       [](const base::Closure& quit_closure,
-         URLLoaderThrottle::Delegate* delegate, bool* defer,
+         blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
          std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) {
         *defer = true;
@@ -623,7 +623,7 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeRedirect) {
 
 TEST_F(ThrottlingURLLoaderTest, ModifyHeadersBeforeRedirect) {
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
-      [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* removed_headers,
          net::HttpRequestHeaders* modified_headers) {
         removed_headers->push_back("X-Test-Header-1");
@@ -658,7 +658,7 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeRedirect) {
   base::RunLoop run_loop1;
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
       [](const base::RepeatingClosure& quit_closure,
-         URLLoaderThrottle::Delegate* delegate, bool* defer,
+         blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
          std::vector<std::string>* removed_headers,
          net::HttpRequestHeaders* modified_headers) {
         *defer = true;
@@ -689,7 +689,7 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
   throttles_.push_back(base::WrapUnique(throttle2));
 
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
-      [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* removed_headers,
          net::HttpRequestHeaders* modified_headers) {
         removed_headers->push_back("X-Test-Header-0");
@@ -699,7 +699,7 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
       }));
 
   throttle2->set_will_redirect_request_callback(base::BindRepeating(
-      [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* removed_headers,
          net::HttpRequestHeaders* modified_headers) {
         removed_headers->push_back("X-Test-Header-1");
@@ -727,7 +727,7 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeResponse) {
   throttle_->set_will_process_response_callback(
-      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
       }));
 
@@ -762,7 +762,7 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeResponse) {
   base::RunLoop run_loop1;
   throttle_->set_will_process_response_callback(base::Bind(
       [](const base::Closure& quit_closure,
-         URLLoaderThrottle::Delegate* delegate, bool* defer) {
+         blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
         quit_closure.Run();
       },
@@ -842,14 +842,14 @@ TEST_F(ThrottlingURLLoaderTest, PipeClosure) {
 
 TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfNotDeferred) {
   auto resume_callback = base::BindRepeating(
-      [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */) {
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */) {
         delegate->Resume();
         delegate->Resume();
       });
   throttle_->set_will_start_request_callback(resume_callback);
   throttle_->set_will_process_response_callback(std::move(resume_callback));
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
-      [](URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) {
         delegate->Resume();
@@ -885,7 +885,7 @@ TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfNotDeferred) {
 
 TEST_F(ThrottlingURLLoaderTest, CancelNoOpIfAlreadyCanceled) {
   throttle_->set_will_start_request_callback(
-      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
         delegate->CancelWithError(net::ERR_UNEXPECTED);
       }));
@@ -916,7 +916,7 @@ TEST_F(ThrottlingURLLoaderTest, CancelNoOpIfAlreadyCanceled) {
 
 TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfAlreadyCanceled) {
   throttle_->set_will_process_response_callback(
-      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
         delegate->Resume();
       }));
@@ -969,7 +969,7 @@ TEST_F(ThrottlingURLLoaderTest, BlockWithOneOfMultipleThrottles) {
   auto* throttle2 =
       static_cast<TestURLLoaderThrottle*>(throttles_.back().get());
   throttle2->set_will_start_request_callback(
-      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
       }));
 
@@ -1034,11 +1034,11 @@ TEST_F(ThrottlingURLLoaderTest, BlockWithMultipleThrottles) {
 
   // Defers a request on both throttles.
   throttle_->set_will_start_request_callback(
-      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
       }));
   throttle2->set_will_start_request_callback(
-      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
       }));
 
@@ -1112,12 +1112,12 @@ TEST_F(ThrottlingURLLoaderTest, PauseResumeReadingBodyFromNet) {
   // Test that it is okay to call delegate->PauseReadingBodyFromNet() even
   // before the loader is created.
   throttle_->set_will_start_request_callback(
-      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->PauseReadingBodyFromNet();
         *defer = true;
       }));
   throttle2->set_will_start_request_callback(
-      base::Bind([](URLLoaderThrottle::Delegate* delegate, bool* defer) {
+      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->PauseReadingBodyFromNet();
       }));
 
@@ -1161,7 +1161,7 @@ TEST_F(ThrottlingURLLoaderTest,
   base::RunLoop run_loop1;
   throttle_->set_will_process_response_callback(base::Bind(
       [](const base::Closure& quit_closure,
-         URLLoaderThrottle::Delegate* delegate, bool* defer) {
+         blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
         quit_closure.Run();
       },
@@ -1213,7 +1213,7 @@ TEST_F(ThrottlingURLLoaderTest,
   base::RunLoop run_loop1;
   throttle_->set_will_redirect_request_callback(base::BindRepeating(
       [](const base::RepeatingClosure& quit_closure,
-         URLLoaderThrottle::Delegate* delegate, bool* defer,
+         blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
          std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) {
         *defer = true;
@@ -1278,7 +1278,7 @@ TEST_F(ThrottlingURLLoaderTest, RestartWithFlags) {
   // Restart the request when processing BeforeWillProcessResponse(), using
   // different load flags (1).
   throttle_->set_before_will_process_response_callback(
-      base::BindRepeating([](URLLoaderThrottle::Delegate* delegate,
+      base::BindRepeating([](blink::URLLoaderThrottle::Delegate* delegate,
                              bool* defer) { delegate->RestartWithFlags(1); }));
 
   CreateLoaderAndStart();
@@ -1350,7 +1350,7 @@ TEST_F(ThrottlingURLLoaderTest, DeferThenRestartWithFlags) {
   // Defer BeforeWillProcessResponse().
   throttle_->set_before_will_process_response_callback(base::BindRepeating(
       [](const base::RepeatingClosure& quit_closure,
-         URLLoaderThrottle::Delegate* delegate, bool* defer) {
+         blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
         quit_closure.Run();
       },
@@ -1450,10 +1450,10 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartWithFlags) {
   // BeforeWillProcessResponse(), using
   // different load flags (2 and 8).
   throttles[0]->set_before_will_process_response_callback(
-      base::BindRepeating([](URLLoaderThrottle::Delegate* delegate,
+      base::BindRepeating([](blink::URLLoaderThrottle::Delegate* delegate,
                              bool* defer) { delegate->RestartWithFlags(2); }));
   throttles[2]->set_before_will_process_response_callback(
-      base::BindRepeating([](URLLoaderThrottle::Delegate* delegate,
+      base::BindRepeating([](blink::URLLoaderThrottle::Delegate* delegate,
                              bool* defer) { delegate->RestartWithFlags(8); }));
 
   CreateLoaderAndStart();
@@ -1549,7 +1549,7 @@ TEST_F(ThrottlingURLLoaderTest, MultipleDeferThenRestartWithFlags) {
   for (auto* throttle : throttles) {
     throttle->set_before_will_process_response_callback(base::BindRepeating(
         [](const base::RepeatingClosure& quit_closure, int* count,
-           URLLoaderThrottle::Delegate* delegate, bool* defer) {
+           blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
           *defer = true;
           if (++(*count) == 3) {
             quit_closure.Run();
@@ -1667,7 +1667,7 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartWithFlagsDeferAndSync) {
   for (size_t i = 0; i < 2u; ++i) {
     throttles[i]->set_before_will_process_response_callback(base::BindRepeating(
         [](const base::RepeatingClosure& quit_closure, int* count,
-           URLLoaderThrottle::Delegate* delegate, bool* defer) {
+           blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
           *defer = true;
           if (++(*count) == 3) {
             quit_closure.Run();
@@ -1677,7 +1677,7 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartWithFlagsDeferAndSync) {
   }
   throttles[2]->set_before_will_process_response_callback(base::BindRepeating(
       [](const base::RepeatingClosure& quit_closure, int* count,
-         URLLoaderThrottle::Delegate* delegate, bool* defer) {
+         blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->RestartWithFlags(4);
         if (++(*count) == 3) {
           quit_closure.Run();

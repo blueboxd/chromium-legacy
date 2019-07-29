@@ -282,9 +282,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
       resource_type.value(), ResourceFetcher::kImageNotImageSet));
 
-  resource_request.SetReferrerPolicy(
-      params.referrer_policy,
-      ResourceRequest::SetReferrerPolicyLocation::kPreloadIfNeeded);
+  resource_request.SetReferrerPolicy(params.referrer_policy);
 
   resource_request.SetFetchImportanceMode(
       GetFetchImportanceAttributeValue(params.importance));
@@ -481,9 +479,7 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     UseCounter::Count(document, WebFeature::kLinkRelPrefetch);
 
     ResourceRequest resource_request(params.href);
-    resource_request.SetReferrerPolicy(
-        params.referrer_policy,
-        ResourceRequest::SetReferrerPolicyLocation::kPrefetchIfNeeded);
+    resource_request.SetReferrerPolicy(params.referrer_policy);
     resource_request.SetFetchImportanceMode(
         GetFetchImportanceAttributeValue(params.importance));
 

@@ -54,6 +54,7 @@ class NavigationURLLoader;
 class NavigationUIData;
 class NavigatorDelegate;
 class PrefetchedSignedExchangeCache;
+class ServiceWorkerNavigationHandle;
 class SiteInstanceImpl;
 struct SubresourceLoaderParams;
 
@@ -204,6 +205,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   }
 
   RestoreType restore_type() const { return restore_type_; }
+
+  ReloadType reload_type() const { return reload_type_; }
 
   bool is_view_source() const { return is_view_source_; }
 
@@ -790,7 +793,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // creation time.
   scoped_refptr<SiteInstanceImpl> source_site_instance_;
   scoped_refptr<SiteInstanceImpl> dest_site_instance_;
-  RestoreType restore_type_;
+  RestoreType restore_type_ = RestoreType::NONE;
+  ReloadType reload_type_ = ReloadType::NONE;
   bool is_view_source_;
   int bindings_;
   int nav_entry_id_ = 0;
@@ -956,6 +960,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   // The unique id to identify the NavigationHandle with.
   int64_t navigation_handle_id_ = 0;
+
+  // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
+  // corresponding provider is created in the renderer.
+  std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

@@ -88,6 +88,7 @@ namespace mojom {
 class RendererPreferences;
 class WebUsbService;
 }
+class URLLoaderThrottle;
 }  // namespace blink
 
 namespace device {
@@ -183,7 +184,6 @@ class TracingDelegate;
 class TtsControllerDelegate;
 class TtsPlatform;
 class URLLoaderRequestInterceptor;
-class URLLoaderThrottle;
 class VpnServiceProxy;
 class WebContents;
 class WebContentsViewDelegate;
@@ -1138,7 +1138,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // This is called both when the network service is enabled and disabled.
   // This is called on the IO thread.
-  virtual std::vector<std::unique_ptr<URLLoaderThrottle>>
+  virtual std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottlesOnIO(
       const network::ResourceRequest& request,
       ResourceContext* resource_context,
@@ -1146,7 +1146,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       NavigationUIData* navigation_ui_data,
       int frame_tree_node_id);
   // Same as above but called on UI thread.
-  virtual std::vector<std::unique_ptr<URLLoaderThrottle>>
+  virtual std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const network::ResourceRequest& request,
       BrowserContext* browser_context,

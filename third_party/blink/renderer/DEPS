@@ -47,6 +47,7 @@ include_rules = [
     "+base/trace_event/memory_dump_provider.h",
     "+base/trace_event/trace_event.h",
     "+base/util/type_safety/pass_key.h",
+    "+base/util/type_safety/strong_alias.h",
     "+build",
     "+components/crash/core/common/crash_key.h",
     "+services/network/public/mojom",

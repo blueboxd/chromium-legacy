@@ -147,7 +147,7 @@ void LogUploader::StartScheduledUpload() {
   resource_request->url = server_url_;
   // We already drop cookies server-side, but we might as well strip them out
   // client-side as well.
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = "POST";
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);

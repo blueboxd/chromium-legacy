@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -28,7 +27,13 @@ enum class ExportImportType;
 class CrostiniExportImportNotification
     : public message_center::NotificationObserver {
  public:
-  enum class Status { RUNNING, DONE, FAILED };
+  enum class Status {
+    RUNNING,
+    CANCELLING,
+    DONE,
+    CANCELLED,
+    FAILED,
+  };
 
   // Used to construct CrostiniExportImportNotification to ensure it controls
   // its lifetime.
@@ -36,15 +41,23 @@ class CrostiniExportImportNotification
       Profile* profile,
       ExportImportType type,
       const std::string& notification_id,
-      const base::FilePath& path) {
+      base::FilePath path,
+      ContainerId container_id) {
     return new CrostiniExportImportNotification(profile, type, notification_id,
-                                                path);
+                                                std::move(path),
+                                                std::move(container_id));
   }
 
   virtual ~CrostiniExportImportNotification();
 
+  // Can be used to draw attention to the notification without changing its
+  // status, even if it has been hidden.
+  void ForceRedisplay();
+
   void SetStatusRunning(int progress_percent);
+  void SetStatusCancelling();
   void SetStatusDone();
+  void SetStatusCancelled();
   void SetStatusFailed();
   void SetStatusFailedArchitectureMismatch(
       const std::string& architecture_container,
@@ -70,18 +83,20 @@ class CrostiniExportImportNotification
   CrostiniExportImportNotification(Profile* profile,
                                    ExportImportType type,
                                    const std::string& notification_id,
-                                   const base::FilePath& path);
+                                   base::FilePath path,
+                                   ContainerId container_id);
 
   void SetStatusFailed(const base::string16& message);
 
   Profile* profile_;
   ExportImportType type_;
   base::FilePath path_;
+  ContainerId container_id_;
   Status status_ = Status::RUNNING;
   // Time when the operation started.  Used for estimating time remaining.
   base::TimeTicks started_ = base::TimeTicks::Now();
   std::unique_ptr<message_center::Notification> notification_;
-  bool closed_ = false;
+  bool hidden_ = false;
   base::WeakPtrFactory<CrostiniExportImportNotification> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(CrostiniExportImportNotification);
 };

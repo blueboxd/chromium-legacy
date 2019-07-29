@@ -707,7 +707,6 @@ NavigationRequest::NavigationRequest(
       source_site_instance_ = frame_navigation_entry->source_site_instance();
       dest_site_instance_ = frame_navigation_entry->site_instance();
     }
-    restore_type_ = entry->restore_type();
     is_view_source_ = entry->IsViewSourceMode();
     bindings_ = entry->bindings();
   }
@@ -721,6 +720,8 @@ NavigationRequest::NavigationRequest(
   // mojom::BeginNavigationParams.
   if (entry) {
     nav_entry_id_ = entry->GetUniqueID();
+    restore_type_ = entry->restore_type();
+    reload_type_ = entry->reload_type();
     // TODO(altimin, crbug.com/933147): Remove this logic after we are done
     // with implementing back-forward cache.
     if (frame_tree_node->IsMainFrame() && entry->back_forward_cache_metrics()) {
@@ -998,8 +999,8 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   handle_state_ = NavigationRequest::INITIAL;
   navigation_handle_id_ = CreateUniqueHandleID();
 
-  std::unique_ptr<NavigationHandleImpl> navigation_handle = base::WrapUnique(
-      new NavigationHandleImpl(this, nav_entry_id_, std::move(headers)));
+  std::unique_ptr<NavigationHandleImpl> navigation_handle =
+      base::WrapUnique(new NavigationHandleImpl(this, std::move(headers)));
 
   if (!frame_tree_node->navigation_request() && !is_for_commit) {
     // A callback could have cancelled this request synchronously in which case
@@ -1517,11 +1518,7 @@ void NavigationRequest::OnRequestFailedInternal(
                                "OnRequestFailed", "error", status.error_code);
   state_ = FAILED;
 
-  int expected_pending_entry_id =
-      navigation_handle_.get() ? navigation_handle_->pending_nav_entry_id()
-                               : nav_entry_id_;
-  frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
-      expected_pending_entry_id);
+  frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(nav_entry_id_);
 
   net_error_ = static_cast<net::Error>(status.error_code);
 
@@ -1690,7 +1687,8 @@ void NavigationRequest::OnStartChecksComplete(
     ServiceWorkerContextWrapper* service_worker_context =
         static_cast<ServiceWorkerContextWrapper*>(
             partition->GetServiceWorkerContext());
-    navigation_handle_->InitServiceWorkerHandle(service_worker_context);
+    service_worker_handle_ =
+        std::make_unique<ServiceWorkerNavigationHandle>(service_worker_context);
   }
 
   if (IsSchemeSupportedForAppCache(common_params_.url)) {
@@ -1766,10 +1764,9 @@ void NavigationRequest::OnStartChecksComplete(
                                    : nullptr,
           devtools_navigation_token(),
           frame_tree_node_->devtools_frame_token()),
-      std::move(navigation_ui_data),
-      navigation_handle_->service_worker_handle(), appcache_handle_.get(),
-      std::move(prefetched_signed_exchange_cache_), this,
-      std::move(interceptor));
+      std::move(navigation_ui_data), service_worker_handle_.get(),
+      appcache_handle_.get(), std::move(prefetched_signed_exchange_cache_),
+      this, std::move(interceptor));
   DCHECK(!render_frame_host_);
 }
 
@@ -2040,10 +2037,10 @@ void NavigationRequest::CommitNavigation() {
 
   blink::mojom::ServiceWorkerProviderInfoForClientPtr
       service_worker_provider_info;
-  if (navigation_handle_->service_worker_handle()) {
+  if (service_worker_handle_) {
     // Notify the service worker navigation handle that navigation commit is
     // about to go.
-    navigation_handle_->service_worker_handle()->OnBeginNavigationCommit(
+    service_worker_handle_->OnBeginNavigationCommit(
         render_frame_host_->GetProcess()->GetID(),
         render_frame_host_->GetRoutingID(), &service_worker_provider_info);
   }

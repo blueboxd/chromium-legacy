@@ -10,6 +10,7 @@ depend on //components/signin/internal/identity_manager.
 
 A quick guide through the core concepts:
 
+- "Account" always refers to a Gaia account.
 - "Primary account" in IdentityManager refers to what is called the
   "authenticated account" in PrimaryAccountManager, i.e., the account that has
   been blessed for sync by the user.
@@ -24,11 +25,24 @@ A quick guide through the core concepts:
   "unconsented" in this context is that it means "did not consent"; really, this
   account is the "possibly unconsented, possibly primary, default account", which
   is a mouthful :).
+- "OAuth2 tokens" are tokens related to the OAuth2 client-server authorization
+  protocol. "OAuth2 refresh tokens" or just "refresh tokens" are long-lived
+  tokens that the browser obtains via the user explicitly adding an account.
+  Clients of IdentityManager do not explicitly see refresh tokens, but rather use
+  IdentityManager to obtain "OAuth2 access tokens" or just "access tokens".
+  Access tokens are short-lived tokens with given scopes that can be used to make
+  authorized requests to Gaia endpoints.
+- "The accounts with refresh tokens" refer to the accounts that are visible to
+  IdentityManager with OAuth2 refresh tokens present (e.g., because the user has
+    signed in to the browser and embedder-level code then added the account to
+    IdentityManager, or because the user has added an account at the
+    system level that embedder-level code then made visible to IdentityManager).
 - PrimaryAccountTokenFetcher is the primary client-side interface for obtaining
   access tokens for the primary account. In particular, it can take care of
   waiting until the primary account is available.
 - AccessTokenFetcher is the client-side interface for obtaining access tokens
-  for arbitrary accounts.
+  for arbitrary accounts; see access_token_fetcher.h for usage explanation and
+  examples.
 - IdentityTestEnvironment is the preferred test infrastructure for unittests
   of production code that interacts with IdentityManager. It is suitable for
   use in cases where neither the production code nor the unittest is interacting

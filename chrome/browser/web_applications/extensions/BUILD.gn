@@ -42,8 +42,6 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    # Deprecated tests. TODO(crbug.com/915043): Erase this .cc file:
-    "bookmark_app_helper_installation_task_unittest.cc",
     "bookmark_app_install_finalizer_unittest.cc",
     "bookmark_app_installation_task_unittest.cc",
     "bookmark_app_util_unittest.cc",
@@ -60,7 +58,6 @@ source_set("unit_tests") {
     "//chrome/browser/web_applications:web_applications",
     "//chrome/browser/web_applications:web_applications_on_extensions",
     "//chrome/browser/web_applications:web_applications_test_support",
-    "//chrome/browser/web_applications/bookmark_apps",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
     "//chrome/test:test_support",

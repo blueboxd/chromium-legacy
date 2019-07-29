@@ -18,16 +18,19 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
+namespace blink {
+class URLLoaderThrottle;
+}  // namespace blink
+
 namespace content {
 
-class URLLoaderThrottle;
 class SignedExchangeLoader;
 class SignedExchangePrefetchMetricRecorder;
 
 class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
-      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
 
   static bool IsSupportedMimeType(const std::string& mime_type);
 

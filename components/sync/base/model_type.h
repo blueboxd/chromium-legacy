@@ -102,6 +102,8 @@ enum ModelType {
   // Custom spelling dictionary entries.
   DICTIONARY,
   // Favicon images, including both the image URL and the actual pixels.
+  // TODO(https://crbug.com/978775): Prepend DEPRECATED to the name of favicon
+  // data types.
   FAVICON_IMAGES,
   // Favicon tracking information, i.e. metadata such as last visit date.
   FAVICON_TRACKING,

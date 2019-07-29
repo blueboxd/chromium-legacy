@@ -120,7 +120,7 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // Add the request or config store information to |surface|.
   // TODO(acourbot): This method is a temporary hack. Implement proper config
   // store/request API support.
-  void PrepareQueueBuffer(scoped_refptr<V4L2DecodeSurface> surface);
+  void PrepareQueueBuffer(const V4L2DecodeSurface& surface);
 
   // Return the V4L2 buffer ID of the underlying buffer.
   // TODO(acourbot) This is used for legacy clients but should be ultimately

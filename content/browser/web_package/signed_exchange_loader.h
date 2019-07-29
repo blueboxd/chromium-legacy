@@ -22,6 +22,10 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/origin.h"
 
+namespace blink {
+class URLLoaderThrottle;
+}  // namespace blink
+
 namespace net {
 struct SHA256HashValue;
 class SourceStream;
@@ -40,7 +44,6 @@ class SignedExchangePrefetchMetricRecorder;
 class SignedExchangeReporter;
 class SignedExchangeValidityPinger;
 class SourceStreamToDataPipe;
-class URLLoaderThrottle;
 
 // SignedExchangeLoader handles an origin-signed HTTP exchange response. It is
 // created when a SignedExchangeRequestHandler recieves an origin-signed HTTP
@@ -52,7 +55,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
       public network::mojom::URLLoader {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
-      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
 
   // If |should_redirect_on_failure| is true, verification failure causes a
   // redirect to the fallback URL.

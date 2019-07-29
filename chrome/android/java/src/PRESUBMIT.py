@@ -83,7 +83,6 @@ def _CheckAlertDialogBuilder(input_api, output_api):
       BROWSER_ROOT + 'password_manager/AccountChooserDialog.java',
       BROWSER_ROOT + 'password_manager/AutoSigninFirstRunDialog.java',
       BROWSER_ROOT + r'preferences[\\\/].*',
-      BROWSER_ROOT + 'signin/AccountAdder.java',
       BROWSER_ROOT + 'signin/AccountPickerDialogFragment.java',
       BROWSER_ROOT + 'signin/AccountSigninView.java',
       BROWSER_ROOT + 'signin/ConfirmImportSyncDataDialog.java',

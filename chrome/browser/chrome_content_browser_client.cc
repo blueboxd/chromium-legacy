@@ -305,7 +305,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
@@ -348,6 +347,7 @@
 #include "services/strings/grit/services_strings.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
@@ -3229,8 +3229,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
         // PWAs should be hosted apps.
         DCHECK(browser->app_controller()->IsHostedApp());
         // HostedApps that are PWAs are always created through WebAppProvider
-        // or BookmarkAppHelper for profiles that support them, so we should
-        // always be able to retrieve a WebAppProvider from the Profile.
+        // for profiles that support them, so we should always be able to
+        // retrieve a WebAppProvider from the Profile.
         //
         // Similarly, if a Hosted Apps is a PWA, it will always have a scope
         // so there is no need to test for has_value().
@@ -3274,11 +3274,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
-  web_prefs->lazy_load_enabled =
-      (base::FeatureList::IsEnabled(features::kLazyFrameLoading) ||
-       base::FeatureList::IsEnabled(features::kLazyImageLoading)) &&
-      (!contents || !contents->GetDelegate() ||
-       contents->GetDelegate()->ShouldAllowLazyLoad());
+  web_prefs->lazy_load_enabled = !contents || !contents->GetDelegate() ||
+                                 contents->GetDelegate()->ShouldAllowLazyLoad();
 
   if (base::FeatureList::IsEnabled(features::kLazyFrameLoading)) {
     const char* param_name =
@@ -4528,7 +4525,7 @@ base::FilePath ChromeContentBrowserClient::GetLoggingFileName(
 namespace {
 // TODO(jam): move this to a separate file.
 template <class HandlerRegistry>
-class ProtocolHandlerThrottle : public content::URLLoaderThrottle {
+class ProtocolHandlerThrottle : public blink::URLLoaderThrottle {
  public:
   explicit ProtocolHandlerThrottle(
       const HandlerRegistry& protocol_handler_registry)
@@ -4561,7 +4558,7 @@ class ProtocolHandlerThrottle : public content::URLLoaderThrottle {
 };
 }  // namespace
 
-std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
     const network::ResourceRequest& request,
     content::ResourceContext* resource_context,
@@ -4573,7 +4570,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
   // thread.
   // DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
 
-  std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
 
   ProfileIOData* io_data = nullptr;
   // Only set |io_data| if needed, as in unit tests |resource_context| is a
@@ -4672,7 +4669,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
   return result;
 }
 
-std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 ChromeContentBrowserClient::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
     content::BrowserContext* browser_context,
@@ -4681,7 +4678,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> result;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
 

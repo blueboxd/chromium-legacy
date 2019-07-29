@@ -358,6 +358,9 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
       system_data_source_reenabled_runloop.QuitClosure());
   system_producer->SetDataSourceDisabledCallback(
       system_data_source_redisabled_runloop.QuitClosure());
+  base::RunLoop system_data_source_wrote_data_runloop;
+  data_sources_[0]->set_start_tracing_callback(
+      system_data_source_wrote_data_runloop.QuitClosure());
 
   local_consumer.StopTracing();
   local_data_source_disabled_runloop.Run();
@@ -420,6 +423,16 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   local_no_more_packets_runloop.Run();
   EXPECT_EQ(7u, local_consumer->received_packets());
 
+  // Because we can't just use |system_data_source_enabled| because they might
+  // attempt to enable but be queued until the local trace has fully finished.
+  // We therefore need to set callbacks explicitly after the data has been
+  // written.
+  std::vector<base::RunLoop> data_sources_wrote_data{data_sources_.size()};
+  for (size_t i = 0; i < data_sources_.size(); ++i) {
+    data_sources_[i]->set_start_tracing_callback(
+        data_sources_wrote_data[i].QuitClosure());
+  }
+
   // Start a trace using the system Perfetto service.
   base::RunLoop system_no_more_packets_runloop;
   MockConsumer system_consumer(
@@ -441,6 +454,9 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
       &system_data_source_disabled_runloop);
 
   system_data_source_enabled_runloop.Run();
+  for (auto& loop : data_sources_wrote_data) {
+    loop.Run();
+  }
 
   // Wait for system tracing to return before stopping the trace on the correct
   // sequence to ensure everything is committed.
@@ -612,6 +628,16 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   // Ensures that the Trace data gets written and committed.
   RunUntilIdle();
 
+  // Because we can't just use |system_data_source_enabled| because they might
+  // attempt to enable but be queued until the local trace has fully finished.
+  // We therefore need to set callbacks explicitly after the data has been
+  // written.
+  std::vector<base::RunLoop> data_sources_wrote_data{data_sources_.size()};
+  for (size_t i = 0; i < data_sources_.size(); ++i) {
+    data_sources_[i]->set_start_tracing_callback(
+        data_sources_wrote_data[i].QuitClosure());
+  }
+
   // Start a trace using the system Perfetto service.
   base::RunLoop system_no_more_packets_runloop;
   MockConsumer system_consumer(
@@ -636,8 +662,12 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
 
   local_data_source_disabled_runloop.Run();
   local_no_more_packets_runloop.Run();
+
   // Now the system trace will start.
   system_data_source_enabled_runloop.Run();
+  for (auto& loop : data_sources_wrote_data) {
+    loop.Run();
+  }
 
   // Wait for system tracing to return before stopping.
   base::RunLoop system_stop_tracing;
@@ -671,14 +701,23 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
     return;
   }
 
-  // Used for both function calls.
-  auto system_service = CreateMockSystemService();
-  auto* system_ptr = system_service.get();
+  auto run_test = [this](bool check_sdk_level) {
+    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
 
-  auto run_test = [system_ptr, this](bool check_sdk_level) {
+    std::string data_source_name = "temp_name";
+    data_source_name += check_sdk_level ? "true" : "false";
+
+    base::RunLoop data_source_started_runloop;
+    std::unique_ptr<TestDataSource> data_source =
+        TestDataSource::CreateAndRegisterDataSource(data_source_name, 1);
+    data_source->set_start_tracing_callback(
+        data_source_started_runloop.QuitClosure());
+
+    auto system_service = CreateMockSystemService();
+
     base::RunLoop system_no_more_packets_runloop;
     MockConsumer system_consumer(
-        {kPerfettoTestDataSourceName}, system_ptr->GetService(),
+        {data_source_name}, system_service->GetService(),
         [&system_no_more_packets_runloop](bool has_more) {
           if (!has_more) {
             system_no_more_packets_runloop.Quit();
@@ -688,12 +727,13 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
     base::RunLoop system_data_source_enabled_runloop;
     base::RunLoop system_data_source_disabled_runloop;
     auto system_producer = CreateMockAndroidSystemProducer(
-        system_ptr,
+        system_service.get(),
         /* num_data_sources = */ 1, &system_data_source_enabled_runloop,
         &system_data_source_disabled_runloop, check_sdk_level);
 
     if (!check_sdk_level) {
       system_data_source_enabled_runloop.Run();
+      data_source_started_runloop.Run();
     }
 
     // Post the task to ensure that the data will have been written and

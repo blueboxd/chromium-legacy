@@ -34,9 +34,6 @@ void WebAppInstallDialogCallback(
     InstallManager::WebAppInstallationAcceptanceCallback
         web_app_acceptance_callback) {
   DCHECK(web_app_info);
-  // This is a copy paste of BookmarkAppHelper::OnIconsDownloaded().
-  // TODO(https://crbug.com/915043): Delete
-  // BookmarkAppHelper::OnIconsDownloaded().
   if (for_installable_site == ForInstallableSite::kYes) {
     web_app_info->open_as_window = true;
     chrome::ShowPWAInstallBubble(initiator_web_contents,

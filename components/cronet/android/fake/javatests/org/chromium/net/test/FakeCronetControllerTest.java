@@ -23,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.impl.JavaCronetEngineBuilderImpl;
 
-import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
@@ -250,11 +249,6 @@ public class FakeCronetControllerTest {
 
         assertTrue(foundResponse.getHttpStatusCode() >= 200);
         assertTrue(foundResponse.getHttpStatusCode() < 300);
-        try {
-            assertEquals(body, new String(foundResponse.getResponseBody(), "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(
-                    "Exception occurred while encoding expected response body: " + body);
-        }
+        assertEquals(body, new String(foundResponse.getResponseBody()));
     }
 }

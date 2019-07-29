@@ -442,7 +442,7 @@ void SimpleGeolocationRequest::StartRequest() {
   request->url = request_url_;
   request->method = "POST";
   request->load_flags = net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
-  request->allow_credentials = false;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(request), NO_TRAFFIC_ANNOTATION_YET);

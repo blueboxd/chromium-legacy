@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/url_loader_throttle.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 class NavigationUIData;
@@ -20,7 +20,7 @@ class HeaderModificationDelegate;
 
 // This class is used to modify the main frame request made when loading the
 // GAIA signin realm.
-class URLLoaderThrottle : public content::URLLoaderThrottle,
+class URLLoaderThrottle : public blink::URLLoaderThrottle,
                           public base::SupportsUserData {
  public:
   // Creates a new throttle if |delegate| says that this request should be
@@ -32,7 +32,7 @@ class URLLoaderThrottle : public content::URLLoaderThrottle,
 
   ~URLLoaderThrottle() override;
 
-  // content::URLLoaderThrottle
+  // blink::URLLoaderThrottle
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
   void WillRedirectRequest(net::RedirectInfo* redirect_info,

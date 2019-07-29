@@ -22,6 +22,7 @@ class CORE_EXPORT CrossThreadStyleValue {
     kUnknownType,
     kKeywordType,
     kUnitType,
+    kColorType,
   };
 
   virtual ~CrossThreadStyleValue() = default;

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 
 #include <memory>
+
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
@@ -24,6 +25,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     bool starter_secure_context,
     HttpsState starter_https_state,
     WorkerClients* worker_clients,
+    std::unique_ptr<WebContentSettingsClient> content_settings_client,
     base::Optional<mojom::IPAddressSpace> response_address_space,
     const Vector<String>* origin_trial_tokens,
     const base::UnguessableToken& parent_devtools_token,
@@ -46,6 +48,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       starter_secure_context(starter_secure_context),
       starter_https_state(starter_https_state),
       worker_clients(worker_clients),
+      content_settings_client(std::move(content_settings_client)),
       response_address_space(response_address_space),
       parent_devtools_token(parent_devtools_token),
       worker_settings(std::move(worker_settings)),

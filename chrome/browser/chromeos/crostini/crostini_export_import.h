@@ -82,6 +82,9 @@ class CrostiniExportImport : public KeyedService,
                        base::FilePath path,
                        CrostiniManager::CrostiniResultCallback callback);
 
+  // Cancel currently running export/import
+  void CancelOperation(ExportImportType type, ContainerId id);
+
   CrostiniExportImportNotification* GetNotificationForTesting(
       ContainerId container_id);
 
@@ -90,8 +93,14 @@ class CrostiniExportImport : public KeyedService,
                            TestDeprecatedExportSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportFail);
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestExportCancelled);
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
+                           TestExportDoneBeforeCancelled);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportSuccess);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportFail);
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportCancelled);
+  FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
+                           TestImportDoneBeforeCancelled);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,
                            TestImportFailArchitecture);
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest, TestImportFailSpace);

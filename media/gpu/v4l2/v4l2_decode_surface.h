@@ -27,21 +27,13 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
  public:
   // V4L2DecodeSurfaceHandler maintains a list of InputRecords, which records
   // the status and metadata of input buffers.
-  // |input_record| is the index of the input record that corresponds to this
-  // V4L2DecodeSurface instance.
-  // |output_record|, similar to |input_record|, is the index of output record
-  // that corresponds to this instance.
-  // |release_cb| is the callback function that will be called when the instance
-  // is destroyed.
-  // DEPRECATED: use the other constructor for new code.
-  V4L2DecodeSurface(int input_record,
-                    int output_record,
-                    base::OnceClosure release_cb);
-
+  // |input_buffer| and |output_buffer| are the buffers to be used as input and
+  // output in this transaction.
+  // |frame| is optional, and allows the caller to keep a reference to a
+  // VideoFrame for as long as this decode surface exists.
   V4L2DecodeSurface(V4L2WritableBufferRef input_buffer,
                     V4L2WritableBufferRef output_buffer,
-                    scoped_refptr<VideoFrame> frame,
-                    base::OnceClosure release_cb);
+                    scoped_refptr<VideoFrame> frame);
 
   // Mark the surface as decoded. This will also release all surfaces used for
   // reference, as they are not needed anymore and execute the done callback,
@@ -121,20 +113,12 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
 // associate controls/buffers to frames.
 class V4L2ConfigStoreDecodeSurface : public V4L2DecodeSurface {
  public:
-  V4L2ConfigStoreDecodeSurface(int input_record,
-                               int output_record,
-                               base::OnceClosure release_cb)
-      : V4L2DecodeSurface(input_record, output_record, std::move(release_cb)),
-        config_store_(input_record + 1) {}
-
   V4L2ConfigStoreDecodeSurface(V4L2WritableBufferRef input_buffer,
                                V4L2WritableBufferRef output_buffer,
-                               scoped_refptr<VideoFrame> frame,
-                               base::OnceClosure release_cb)
+                               scoped_refptr<VideoFrame> frame)
       : V4L2DecodeSurface(std::move(input_buffer),
                           std::move(output_buffer),
-                          std::move(frame),
-                          std::move(release_cb)),
+                          std::move(frame)),
         // config store IDs are arbitrarily defined to be buffer ID + 1
         config_store_(this->input_buffer().BufferId() + 1) {}
 
@@ -161,10 +145,10 @@ class V4L2RequestDecodeSurface : public V4L2DecodeSurface {
   // Note that it will not be closed after the request is submitted - the caller
   // is responsible for managing its lifetime.
   static base::Optional<scoped_refptr<V4L2RequestDecodeSurface>> Create(
-      int input_record,
-      int output_record,
-      int request_fd,
-      base::OnceClosure release_cb);
+      V4L2WritableBufferRef input_buffer,
+      V4L2WritableBufferRef output_buffer,
+      scoped_refptr<VideoFrame> frame,
+      int request_fd);
 
   void PrepareSetCtrls(struct v4l2_ext_controls* ctrls) const override;
   void PrepareQueueBuffer(struct v4l2_buffer* buffer) const override;
@@ -175,10 +159,14 @@ class V4L2RequestDecodeSurface : public V4L2DecodeSurface {
   // FD of the request to use.
   const int request_fd_;
 
-  V4L2RequestDecodeSurface(int input_record,
-                           int output_record,
-                           int request_fd,
-                           base::OnceClosure release_cb);
+  V4L2RequestDecodeSurface(V4L2WritableBufferRef input_buffer,
+                           V4L2WritableBufferRef output_buffer,
+                           scoped_refptr<VideoFrame> frame,
+                           int request_fd)
+      : V4L2DecodeSurface(std::move(input_buffer),
+                          std::move(output_buffer),
+                          std::move(frame)),
+        request_fd_(request_fd) {}
 };
 
 }  // namespace media

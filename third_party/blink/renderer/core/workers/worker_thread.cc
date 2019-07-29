@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
@@ -196,7 +197,7 @@ void WorkerThread::EvaluateClassicScript(
 void WorkerThread::FetchAndRunClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
@@ -205,14 +206,14 @@ void WorkerThread::FetchAndRunClassicScript(
           &WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
           WTF::Passed(outside_settings_object.CopyData()),
-          WrapCrossThreadPersistent(&outside_resource_timing_notifier),
+          WrapCrossThreadPersistent(outside_resource_timing_notifier),
           stack_id));
 }
 
 void WorkerThread::FetchAndRunModuleScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
@@ -221,7 +222,7 @@ void WorkerThread::FetchAndRunModuleScript(
           &WorkerThread::FetchAndRunModuleScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
           WTF::Passed(outside_settings_object.CopyData()),
-          WrapCrossThreadPersistent(&outside_resource_timing_notifier),
+          WrapCrossThreadPersistent(outside_resource_timing_notifier),
           credentials_mode));
 }
 
@@ -598,7 +599,10 @@ void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(outside_resource_timing_notifier);
+  if (!outside_resource_timing_notifier) {
+    outside_resource_timing_notifier =
+        MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
+  }
   To<WorkerGlobalScope>(GlobalScope())
       ->FetchAndRunClassicScript(
           script_url,
@@ -613,7 +617,10 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode) {
-  DCHECK(outside_resource_timing_notifier);
+  if (!outside_resource_timing_notifier) {
+    outside_resource_timing_notifier =
+        MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
+  }
   // Worklets have a different code path to import module scripts.
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like
   // Worklets.

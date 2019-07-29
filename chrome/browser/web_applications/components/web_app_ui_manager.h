@@ -12,7 +12,8 @@ class Profile;
 
 namespace web_app {
 
-class WebAppDialogManager;
+// WebAppUiManagerImpl can be used only in UI code.
+class WebAppUiManagerImpl;
 
 // Pure virtual interface used to perform Web App UI operations or listen to Web
 // App UI events.
@@ -22,7 +23,8 @@ class WebAppUiManager {
 
   virtual ~WebAppUiManager() = default;
 
-  virtual WebAppDialogManager& dialog_manager() = 0;
+  // A safe downcast.
+  virtual WebAppUiManagerImpl* AsImpl() = 0;
 
   virtual size_t GetNumWindowsForApp(const AppId& app_id) = 0;
 

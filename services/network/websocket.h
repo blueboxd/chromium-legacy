@@ -113,7 +113,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
   static const void* const kUserDataKey;
 
- protected:
+ private:
   class WebSocketEventHandler;
 
   // This class is used to set the WebSocket as user data on a URLRequest. This
@@ -153,6 +153,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       const base::Optional<std::string>& headers,
       const GURL& allowed_unsafe_redirect_url);
 
+  void Reset();
+
   std::unique_ptr<Delegate> delegate_;
   mojo::Binding<mojom::WebSocket> binding_;
 
@@ -167,24 +169,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   std::unique_ptr<net::WebSocketChannel> channel_;
 
   // Delay used for per-renderer WebSocket throttling.
-  base::TimeDelta delay_;
+  const base::TimeDelta delay_;
 
-  // AddReceiveFlowControlQuota() is delayed when OnFlowControl() is called
-  // before AddChannel() is called.
-  // Zero indicates there is no pending AddReceiveFlowControlQuota().
-  int64_t pending_flow_control_quota_;
+  const uint32_t options_;
 
-  uint32_t options_;
-
-  int32_t child_id_;
-  int32_t frame_id_;
+  const int32_t child_id_;
+  const int32_t frame_id_;
 
   // The web origin to use for the WebSocket.
   const url::Origin origin_;
 
   // handshake_succeeded_ is used by WebSocketManager to manage counters for
   // per-renderer WebSocket throttling.
-  bool handshake_succeeded_;
+  bool handshake_succeeded_ = false;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 

@@ -15,10 +15,11 @@
 // See http://dev.chromium.org/developers/testing/threadsanitizer-tsan-v2
 // for the instructions on writing suppressions.
 char kTSanDefaultSuppressions[] =
-    // False positives in libflashplayer.so, libgio.so, libglib.so and
-    // libgobject.so.
+    // False positives in libdconfsettings.so, libflashplayer.so, libgio.so,
+    // libglib.so and libgobject.so.
     // Since we don't instrument them, we cannot reason about the
     // synchronization in them.
+    "race:libdconfsettings*.so\n"
     "race:libflashplayer.so\n"
     "race:libgio*.so\n"
     "race:libglib*.so\n"

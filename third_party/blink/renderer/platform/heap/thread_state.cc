@@ -1241,9 +1241,8 @@ void ThreadState::InvokePreFinalizers() {
   ThreadHeapStatsCollector::Scope stats_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kInvokePreFinalizers);
   SweepForbiddenScope sweep_forbidden(this);
-  // Pre finalizers may access unmarked objects but are forbidden from
-  // ressurecting them.
-  ObjectResurrectionForbiddenScope object_resurrection_forbidden(this);
+  // Pre finalizers are forbidden from allocating objects
+  NoAllocationScope no_allocation_scope(this);
 
   // Call the prefinalizers in the opposite order to their registration.
   //

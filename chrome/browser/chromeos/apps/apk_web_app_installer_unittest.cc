@@ -100,7 +100,7 @@ class ApkWebAppInstallerTest : public ChromeRenderViewHostTestHarness,
   base::WeakPtrFactory<ApkWebAppInstallerTest> weak_ptr_factory_;
 };
 
-TEST_F(ApkWebAppInstallerTest, IconDecodeCallsBookmarkAppHelper) {
+TEST_F(ApkWebAppInstallerTest, IconDecodeCallsWebAppInstallManager) {
   base::RunLoop run_loop;
   FakeApkWebAppInstaller apk_web_app_installer(
       profile(), weak_ptr_factory_.GetWeakPtr(), run_loop.QuitClosure());

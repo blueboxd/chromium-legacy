@@ -3729,8 +3729,14 @@
   <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_RUNNING" desc="Title displayed in the notification while export (backup) of the Linux container is in progress.">
     Backing up Linux apps &amp; files
   </message>
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_CANCELLING" desc="Title displayed in the notification while export (backup) of the Linux container is being cancelled.">
+    Cancelling Linux backup
+  </message>
   <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_DONE" desc="Title displayed in the notification when export (backup) of the Linux container is complete.">
     Backup complete
+  </message>
+  <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_CANCELLED" desc="Title displayed in the notification when export (backup) of the Linux container has been cancelled.">
+    Linux backup cancelled
   </message>
   <message name="IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_DONE" desc="Message displayed in the notification when export (backup) of the Linux container is complete.">
     Linux apps &amp; files have been successfully backed up
@@ -3747,8 +3753,14 @@
   <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_RUNNING" desc="Title displayed in the notification while import (restore) of the Linux container is in progress.">
     Restoring Linux apps &amp; files
   </message>
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_CANCELLING" desc="Title displayed in the notification while import (restore) of the Linux container is being cancelled.">
+    Cancelling Linux restore
+  </message>
   <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_DONE" desc="Title displayed in the notification when import (restore) of the Linux container is complete.">
     Restore complete
+  </message>
+  <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_CANCELLED" desc="Title displayed in the notification when import (restore) of the Linux container has been cancelled.">
+    Linux restore cancelled
   </message>
   <message name="IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_DONE" desc="Message displayed in the notification when import (restore) of the Linux container is complete.">
     Linux apps &amp; files have been successfully replaced

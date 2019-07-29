@@ -47,13 +47,9 @@ base::TimeDelta g_commit_timeout = kDefaultCommitTimeout;
 
 NavigationHandleImpl::NavigationHandleImpl(
     NavigationRequest* navigation_request,
-    int pending_nav_entry_id,
     net::HttpRequestHeaders request_headers)
     : navigation_request_(navigation_request),
-      request_headers_(std::move(request_headers)),
-      pending_nav_entry_id_(pending_nav_entry_id),
-      reload_type_(ReloadType::NONE),
-      restore_type_(RestoreType::NONE) {
+      request_headers_(std::move(request_headers)) {
   const GURL& url = navigation_request_->common_params().url;
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
                            "frame_tree_node",
@@ -61,29 +57,6 @@ NavigationHandleImpl::NavigationHandleImpl(
                            url.possibly_invalid_spec());
   DCHECK(!navigation_request_->common_params().navigation_start.is_null());
   DCHECK(!IsRendererDebugURL(url));
-
-  // Try to match this with a pending NavigationEntry if possible.  Note that
-  // the NavigationController itself may be gone if this is a navigation inside
-  // an interstitial and the interstitial is asynchronously deleting itself due
-  // to its tab closing.
-  NavigationControllerImpl* nav_controller =
-      static_cast<NavigationControllerImpl*>(
-          frame_tree_node()->navigator()->GetController());
-  if (pending_nav_entry_id_ && nav_controller) {
-    NavigationEntryImpl* nav_entry =
-        nav_controller->GetEntryWithUniqueID(pending_nav_entry_id_);
-    if (!nav_entry &&
-        nav_controller->GetPendingEntry() &&
-        nav_controller->GetPendingEntry()->GetUniqueID() ==
-            pending_nav_entry_id_) {
-      nav_entry = nav_controller->GetPendingEntry();
-    }
-
-    if (nav_entry) {
-      reload_type_ = nav_entry->reload_type();
-      restore_type_ = nav_entry->restore_type();
-    }
-  }
 
   if (IsInMainFrame()) {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
@@ -312,11 +285,11 @@ const std::string& NavigationHandleImpl::GetSearchableFormEncoding() {
 }
 
 ReloadType NavigationHandleImpl::GetReloadType() {
-  return reload_type_;
+  return navigation_request_->reload_type();
 }
 
 RestoreType NavigationHandleImpl::GetRestoreType() {
-  return restore_type_;
+  return navigation_request_->restore_type();
 }
 
 const GURL& NavigationHandleImpl::GetBaseURLForDataURL() {
@@ -393,12 +366,6 @@ bool NavigationHandleImpl::WasResponseCached() {
 
 const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {
   return navigation_request_->proxy_server();
-}
-
-void NavigationHandleImpl::InitServiceWorkerHandle(
-    ServiceWorkerContextWrapper* service_worker_context) {
-  service_worker_handle_.reset(
-      new ServiceWorkerNavigationHandle(service_worker_context));
 }
 
 void NavigationHandleImpl::RenderProcessBlockedStateChanged(bool blocked) {

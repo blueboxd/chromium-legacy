@@ -1610,7 +1610,6 @@ if (!is_android) {
         "../browser/extensions/background_page_apitest.cc",
         "../browser/extensions/background_scripts_apitest.cc",
         "../browser/extensions/background_xhr_browsertest.cc",
-        "../browser/extensions/bookmark_app_helper_browsertest.cc",
         "../browser/extensions/chrome_app_api_browsertest.cc",
         "../browser/extensions/chrome_test_extension_loader_browsertest.cc",
         "../browser/extensions/chrome_theme_url_browsertest.cc",
@@ -4151,7 +4150,6 @@ test("unit_tests") {
       "../browser/extensions/app_data_migrator_unittest.cc",
       "../browser/extensions/blacklist_check_unittest.cc",
       "../browser/extensions/blacklist_state_fetcher_unittest.cc",
-      "../browser/extensions/bookmark_app_helper_unittest.cc",
       "../browser/extensions/chrome_app_icon_unittest.cc",
       "../browser/extensions/chrome_app_sorting_unittest.cc",
       "../browser/extensions/chrome_component_extension_resource_manager_unittest.cc",
@@ -4435,7 +4433,6 @@ test("unit_tests") {
   }
   if (!is_chromeos && is_linux) {
     sources += [
-      "../browser/password_manager/native_backend_kwallet_x_unittest.cc",
       "../browser/shell_integration_linux_unittest.cc",
       "../browser/ui/input_method/input_method_engine_unittest.cc",
     ]
@@ -4677,21 +4674,6 @@ test("unit_tests") {
     deps += [ "//ui/events/devices" ]
   } else {
     sources -= [ "../browser/password_manager/password_store_x_unittest.cc" ]
-  }
-  if (use_gnome_keyring && current_cpu == "x64") {
-    # Only add this test for 64 bit builds because otherwise we need the 32
-    # bit library on 64 bit systems when running this test.
-    sources +=
-        [ "../browser/password_manager/native_backend_gnome_x_unittest.cc" ]
-    configs += [
-      "//components/os_crypt:gnome_keyring",
-      "//components/os_crypt:gnome_keyring_direct",
-    ]
-  }
-  if (is_linux && !is_chromeos && !use_ozone) {
-    sources +=
-        [ "../browser/password_manager/native_backend_libsecret_unittest.cc" ]
-    deps += [ "//third_party/libsecret" ]
   }
   if (is_linux && use_aura) {
     deps += [ "//ui/aura:test_support" ]

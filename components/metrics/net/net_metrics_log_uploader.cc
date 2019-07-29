@@ -254,7 +254,7 @@ void NetMetricsLogUploader::UploadLogToURL(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
   // Drop cookies and auth data.
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = "POST";
 
   std::string reporting_info_string = SerializeReportingInfo(reporting_info);

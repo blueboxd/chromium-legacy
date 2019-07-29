@@ -67,6 +67,7 @@ struct MarkingItem {
 
 using CustomCallbackItem = MarkingItem;
 using NotFullyConstructedItem = void*;
+using WeakTableItem = MarkingItem;
 
 // Segment size of 512 entries necessary to avoid throughput regressions. Since
 // the work list is currently a temporary object this is not a problem.
@@ -79,6 +80,7 @@ using WeakCallbackWorklist =
 // regressions.
 using MovableReferenceWorklist =
     Worklist<MovableReference*, 512 /* local entries */>;
+using WeakTableWorklist = Worklist<WeakTableItem, 16 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
   STATIC_ONLY(HeapAllocHooks);
@@ -219,6 +221,10 @@ class PLATFORM_EXPORT ThreadHeap {
 
   MovableReferenceWorklist* GetMovableReferenceWorklist() const {
     return movable_reference_worklist_.get();
+  }
+
+  WeakTableWorklist* GetWeakTableWorklist() const {
+    return weak_table_worklist_.get();
   }
 
   // Register an ephemeron table for fixed-point iteration.
@@ -407,7 +413,7 @@ class PLATFORM_EXPORT ThreadHeap {
   void DestroyMarkingWorklists(BlinkGC::StackState);
   void DestroyCompactionWorklists();
 
-  void InvokeEphemeronCallbacks(Visitor*);
+  void InvokeEphemeronCallbacks(MarkingVisitor*);
 
   ThreadState* thread_state_;
   std::unique_ptr<ThreadHeapStatsCollector> heap_stats_collector_;
@@ -442,6 +448,10 @@ class PLATFORM_EXPORT ThreadHeap {
   // marking phases. The mapping between the slots and the backing stores are
   // created at the atomic pause phase.
   std::unique_ptr<MovableReferenceWorklist> movable_reference_worklist_;
+
+  // Worklist of ephemeron callbacks. Used to pass new callbacks from
+  // MarkingVisitor to ThreadHeap.
+  std::unique_ptr<WeakTableWorklist> weak_table_worklist_;
 
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.

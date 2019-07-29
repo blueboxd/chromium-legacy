@@ -214,13 +214,7 @@ void WebSocket::WebSocketEventHandler::OnDropChannel(
            << " code=" << code << " reason=\"" << reason << "\"";
 
   impl_->client_->OnDropChannel(was_clean, code, reason);
-  impl_->handshake_client_ = nullptr;
-  impl_->client_ = nullptr;
-  impl_->auth_handler_ = nullptr;
-  impl_->header_client_ = nullptr;
-
-  // net::WebSocketChannel requires that we delete it at this point.
-  impl_->channel_.reset();
+  impl_->Reset();
 }
 
 void WebSocket::WebSocketEventHandler::OnFailChannel(
@@ -229,13 +223,7 @@ void WebSocket::WebSocketEventHandler::OnFailChannel(
            << reinterpret_cast<void*>(this) << " message=\"" << message << "\"";
 
   impl_->client_->OnFailChannel(message);
-  impl_->handshake_client_ = nullptr;
-  impl_->client_ = nullptr;
-  impl_->auth_handler_ = nullptr;
-  impl_->header_client_ = nullptr;
-
-  // net::WebSocketChannel requires that we delete it at this point.
-  impl_->channel_.reset();
+  impl_->Reset();
 }
 
 void WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
@@ -365,12 +353,10 @@ WebSocket::WebSocket(
       header_client_(std::move(header_client)),
       pending_connection_tracker_(std::move(pending_connection_tracker)),
       delay_(delay),
-      pending_flow_control_quota_(0),
       options_(options),
       child_id_(child_id),
       frame_id_(frame_id),
-      origin_(std::move(origin)),
-      handshake_succeeded_(false) {
+      origin_(std::move(origin)) {
   DCHECK(handshake_client_);
   DCHECK(client_);
   if (auth_handler_) {
@@ -408,22 +394,22 @@ WebSocket::~WebSocket() {}
 const void* const WebSocket::kUserDataKey = &WebSocket::kUserDataKey;
 
 void WebSocket::GoAway() {
-  StartClosingHandshake(static_cast<uint16_t>(net::kWebSocketErrorGoingAway),
-                        "");
+  if (channel_ && handshake_succeeded_) {
+    StartClosingHandshake(static_cast<uint16_t>(net::kWebSocketErrorGoingAway),
+                          "");
+  }
 }
 
 void WebSocket::SendFrame(bool fin,
                           mojom::WebSocketMessageType type,
                           const std::vector<uint8_t>& data) {
-  DCHECK(handshake_succeeded_);
   DVLOG(3) << "WebSocket::SendFrame @" << reinterpret_cast<void*>(this)
            << " fin=" << fin << " type=" << type << " data is " << data.size()
            << " bytes";
-  if (!channel_) {
-    DVLOG(1) << "Dropping frame sent to closed websocket";
-    return;
-  }
 
+  DCHECK(channel_)
+      << "WebSocket::SendFrame is called but there is no active channel.";
+  DCHECK(handshake_succeeded_);
   // This is guaranteed by the maximum size enforced on mojo messages.
   DCHECK_LE(data.size(), static_cast<size_t>(INT_MAX));
 
@@ -442,14 +428,9 @@ void WebSocket::AddReceiveFlowControlQuota(int64_t quota) {
   DVLOG(3) << "WebSocket::AddReceiveFlowControlQuota @"
            << reinterpret_cast<void*>(this) << " quota=" << quota;
 
-  if (!channel_) {
-    // WebSocketChannel is not yet created due to the delay introduced by
-    // per-renderer WebSocket throttling.
-    // SendFlowControl() is called after WebSocketChannel is created.
-    pending_flow_control_quota_ += quota;
-    return;
-  }
-
+  DCHECK(channel_) << "WebSocket::AddReceiveFlowControlQuota is called but "
+                      "there is no active channel.";
+  DCHECK(handshake_succeeded_);
   ignore_result(channel_->AddReceiveFlowControlQuota(quota));
 }
 
@@ -459,15 +440,9 @@ void WebSocket::StartClosingHandshake(uint16_t code,
            << reinterpret_cast<void*>(this) << " code=" << code << " reason=\""
            << reason << "\"";
 
-  if (!channel_) {
-    // WebSocketChannel is not yet created due to the delay introduced by
-    // per-renderer WebSocket throttling.
-    if (client_) {
-      client_->OnDropChannel(false, net::kWebSocketErrorAbnormalClosure, "");
-    }
-    return;
-  }
-
+  DCHECK(channel_)
+      << "WebSocket::SendFrame is called but there is no active channel.";
+  DCHECK(handshake_succeeded_);
   ignore_result(channel_->StartClosingHandshake(code, reason));
 }
 
@@ -546,9 +521,6 @@ void WebSocket::AddChannel(
   channel_.reset(new net::WebSocketChannel(std::move(event_interface),
                                            delegate_->GetURLRequestContext()));
 
-  int64_t quota = pending_flow_control_quota_;
-  pending_flow_control_quota_ = 0;
-
   net::HttpRequestHeaders headers_to_pass;
   for (const auto& header : additional_headers) {
     if (net::HttpUtil::IsValidHeaderName(header->name) &&
@@ -564,8 +536,6 @@ void WebSocket::AddChannel(
   }
   channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
                                   site_for_cookies, headers_to_pass);
-  if (quota > 0)
-    AddReceiveFlowControlQuota(quota);
 }
 
 void WebSocket::OnAuthRequiredComplete(
@@ -610,6 +580,17 @@ void WebSocket::OnHeadersReceivedComplete(
         base::MakeRefCounted<net::HttpResponseHeaders>(headers.value());
   }
   std::move(callback).Run(result);
+}
+
+void WebSocket::Reset() {
+  handshake_client_ = nullptr;
+  client_ = nullptr;
+  auth_handler_ = nullptr;
+  header_client_ = nullptr;
+  binding_.Close();
+
+  // net::WebSocketChannel requires that we delete it at this point.
+  channel_.reset();
 }
 
 }  // namespace network

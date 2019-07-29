@@ -229,14 +229,8 @@ static NSSize abs(NSSize size) {
     scrollbar = _scrollableArea->VerticalScrollbar();
 
   // It is possible to have a null scrollbar here since it is possible for this
-  // delegate
-  // method to be called between the moment when a scrollbar has been set to 0
-  // and the
-  // moment when its destructor has been called. We should probably de-couple
-  // some
-  // of the clean-up work in ScrollbarThemeMac::unregisterScrollbar() to avoid
-  // this
-  // issue.
+  // delegate method to be called between the moment when a scrollbar has been
+  // set to 0 and the moment when its destructor has been called.
   if (!scrollbar)
     return NSZeroPoint;
 

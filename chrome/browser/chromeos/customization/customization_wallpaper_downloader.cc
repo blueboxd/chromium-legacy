@@ -89,7 +89,7 @@ void CustomizationWallpaperDownloader::StartRequest() {
   resource_request->url = wallpaper_url_;
   resource_request->load_flags =
       net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   // TODO(crbug.com/833390): Add a real traffic annotation here.
   simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                     MISSING_TRAFFIC_ANNOTATION);

@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.preferences.password;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -25,6 +27,7 @@ public class PasswordEntryEditor extends Fragment {
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         getActivity().setTitle(R.string.password_entry_viewer_edit_stored_password_action_title);
         return inflater.inflate(R.layout.password_entry_editor, container, false);
     }
@@ -43,5 +46,10 @@ public class PasswordEntryEditor extends Fragment {
         mSiteText.setText(mSavedPasswordEntry.getUrl());
         mUsernameText.setText(mSavedPasswordEntry.getUserName());
         mPasswordText.setText(mSavedPasswordEntry.getPassword());
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.password_entry_editor_action_bar_menu, menu);
     }
 }

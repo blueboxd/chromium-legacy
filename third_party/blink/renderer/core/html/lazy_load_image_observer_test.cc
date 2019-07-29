@@ -205,6 +205,9 @@ class LazyLoadImagesSimTest : public ::testing::WithParamInterface<bool>,
       scoped_automatic_lazy_image_loading_for_test_;
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test_ = true;
+  ScopedRestrictAutomaticLazyImageLoadingToDataSaverForTest
+      scoped_restrict_automatic_lazy_image_loading_to_data_saver_for_test_ =
+          false;
 };
 
 TEST_P(LazyLoadImagesSimTest, CSSBackgroundImage) {

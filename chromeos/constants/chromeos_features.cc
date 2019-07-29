@@ -110,10 +110,20 @@ const base::Feature kGesturePropertiesDBusService{
 const base::Feature kGaiaActionButtons{"GaiaActionButtons",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable or disable Unified Input Logic for FST decocder in the IME extension
+// Enable or disable Unified Input Logic for HMM decoder in the IME extension
+// on Chrome OS.
+const base::Feature kImeInputLogicHmm{"ImeInputLogicHmm",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable Unified Input Logic for FST decoder in the IME extension
 // on Chrome OS.
 const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable Unified Input Logic for FST decoder for non-English in
+// the IME extension on Chrome OS.
+const base::Feature kImeInputLogicFstNonEnglish{
+    "ImeInputLogicFstNonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Instant Tethering on Chrome OS.
 const base::Feature kInstantTethering{"InstantTethering",

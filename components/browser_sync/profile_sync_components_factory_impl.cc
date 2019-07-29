@@ -13,7 +13,6 @@
 #include "components/autofill/core/browser/payments/autofill_wallet_data_type_controller.h"
 #include "components/autofill/core/browser/payments/autofill_wallet_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
@@ -30,6 +29,7 @@
 #include "components/send_tab_to_self/send_tab_to_self_model_type_controller.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/data_type_manager_impl.h"
 #include "components/sync/driver/glue/sync_engine_impl.h"
 #include "components/sync/driver/model_type_controller.h"
@@ -266,8 +266,11 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
               history_disabled_pref_));
     }
 
-    // Favicon sync is enabled by default. Register unless explicitly disabled.
-    if (!disabled_types.Has(syncer::FAVICON_IMAGES) &&
+    // If |kDoNotSyncFaviconDataTypes| feature is enabled, never register
+    // controllers for favicon sync. Otherwise, it is enabled by default and we
+    // should register unless explicitly disabled.
+    if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes) &&
+        !disabled_types.Has(syncer::FAVICON_IMAGES) &&
         !disabled_types.Has(syncer::FAVICON_TRACKING)) {
       controllers.push_back(
           std::make_unique<SyncableServiceBasedModelTypeController>(

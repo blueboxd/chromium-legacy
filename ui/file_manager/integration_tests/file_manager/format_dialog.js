@@ -276,4 +276,31 @@ testcase.formatDialogGearMenu = async () => {
   const title = await remoteCall.waitForElement(
       appId, ['files-format-dialog', 'cr-dialog[open] div[slot="title"]']);
   chrome.test.assertEq('Format fake-usb', title.text.trim());
+
+  // Click cancel button.
+  const cancelButtonQuery = ['files-format-dialog', 'cr-button#cancel'];
+  await remoteCall.waitAndClickElement(appId, cancelButtonQuery);
+
+  // Check the dialog is closed.
+  await remoteCall.waitForElement(
+      appId, ['files-format-dialog', 'cr-dialog:not([open])']);
+
+  // Focus the file list.
+  await remoteCall.callRemoteTestUtil('focus', appId, ['#file-list']);
+
+  // Click an item in the list.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, [ENTRIES.hello.nameText]));
+
+  // Click on the gear menu button.
+  await remoteCall.waitAndClickElement(appId, '#gear-button:not([hidden])');
+
+  // Click on the format menu item.
+  await remoteCall.waitAndClickElement(
+      appId, '#gear-menu-format:not([disabled]):not([hidden])');
+
+  // Check the format dialog is open and the title is correct
+  const title2 = await remoteCall.waitForElement(
+      appId, ['files-format-dialog', 'cr-dialog[open] div[slot="title"]']);
+  chrome.test.assertEq('Format fake-usb', title2.text.trim());
 };

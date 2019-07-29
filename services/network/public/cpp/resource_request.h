@@ -55,7 +55,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   net::HttpRequestHeaders headers;
   net::HttpRequestHeaders cors_exempt_headers;
   int load_flags = 0;
-  bool allow_credentials = true;
   int plugin_child_id = -1;
   int resource_type = 0;
   net::RequestPriority priority = net::IDLE;

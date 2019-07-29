@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -48,9 +47,11 @@ bool IndexedDBClient::AllowIndexedDB(ExecutionContext* context) {
     return true;
   }
 
-  WorkerGlobalScope& worker_global_scope = *To<WorkerGlobalScope>(context);
-  return WorkerContentSettingsClient::From(worker_global_scope)
-      ->AllowIndexedDB();
+  WebContentSettingsClient* content_settings_client =
+      To<WorkerGlobalScope>(context)->ContentSettingsClient();
+  if (!content_settings_client)
+    return true;
+  return content_settings_client->AllowIndexedDB(WebSecurityOrigin());
 }
 
 // static

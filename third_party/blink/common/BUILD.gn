@@ -48,6 +48,7 @@ jumbo_source_set("common") {
     "loader/request_destination.cc",
     "loader/url_loader_factory_bundle.cc",
     "loader/url_loader_factory_bundle_mojom_traits.cc",
+    "loader/url_loader_throttle.cc",
     "logging/logging_utils.cc",
     "manifest/manifest.cc",
     "manifest/manifest_icon_selector.cc",

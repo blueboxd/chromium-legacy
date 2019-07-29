@@ -129,7 +129,7 @@ bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jstring>& jexperiment_ids,
                           const JavaParamRef<jobjectArray>& parameter_names,
                           const JavaParamRef<jobjectArray>& parameter_values,
-                          const JavaParamRef<jobject>& joverlay_coordinator,
+                          const JavaParamRef<jobject>& jonboarding_coordinator,
                           jlong jservice) {
   // When Start() is called, AA_START should have been measured. From now on,
   // the client is responsible for keeping track of dropouts, so that for each
@@ -143,8 +143,8 @@ bool ClientAndroid::Start(JNIEnv* env,
   CreateController(std::move(service));
 
   // If an overlay is already shown, then show the rest of the UI.
-  if (joverlay_coordinator) {
-    AttachUI(joverlay_coordinator);
+  if (jonboarding_coordinator) {
+    AttachUI(jonboarding_coordinator);
   }
 
   std::unique_ptr<TriggerContextImpl> trigger_context = CreateTriggerContext(
@@ -257,7 +257,7 @@ bool ClientAndroid::PerformDirectAction(
     const base::android::JavaParamRef<jstring>& jexperiment_ids,
     const base::android::JavaParamRef<jobjectArray>& jargument_names,
     const base::android::JavaParamRef<jobjectArray>& jargument_values,
-    const base::android::JavaParamRef<jobject>& joverlay_coordinator) {
+    const base::android::JavaParamRef<jobject>& jonboarding_coordinator) {
   std::string action_name =
       base::android::ConvertJavaStringToUTF8(env, jaction_name);
 
@@ -278,8 +278,8 @@ bool ClientAndroid::PerformDirectAction(
     return false;
 
   // If an overlay is already shown, then show the rest of the UI immediately.
-  if (joverlay_coordinator) {
-    AttachUI(joverlay_coordinator);
+  if (jonboarding_coordinator) {
+    AttachUI(jonboarding_coordinator);
   }
 
   return controller_->PerformUserActionWithContext(action_index,
@@ -313,10 +313,10 @@ void ClientAndroid::AttachUI() {
 }
 
 void ClientAndroid::AttachUI(
-    const JavaParamRef<jobject>& joverlay_coordinator) {
+    const JavaParamRef<jobject>& jonboarding_coordinator) {
   if (!ui_controller_android_) {
     ui_controller_android_ = UiControllerAndroid::CreateFromWebContents(
-        web_contents_, joverlay_coordinator);
+        web_contents_, jonboarding_coordinator);
     if (!ui_controller_android_) {
       // The activity is not or not yet in a mode where attaching the UI is
       // possible.

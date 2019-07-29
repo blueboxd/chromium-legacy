@@ -120,7 +120,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
-      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
+      WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id);
 
   // Posts a task to fetch and run a top-level module script on the worker
@@ -128,7 +128,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   void FetchAndRunModuleScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
-      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
+      WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       network::mojom::CredentialsMode);
 
   // Posts a task to the worker thread to close the global scope and terminate

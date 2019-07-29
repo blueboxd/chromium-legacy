@@ -53822,6 +53822,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Enabled"/>
   <int value="1" label="Disabled, ready for migration"/>
   <int value="2" label="Disabled, not ready for migration"/>
+  <int value="3" label="Disabled, not to be migrated"/>
 </enum>
 
 <enum name="SigninDiceResponseHeader">

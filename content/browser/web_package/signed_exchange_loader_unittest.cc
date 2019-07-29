@@ -18,7 +18,6 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
@@ -29,6 +28,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 using testing::_;
 
@@ -128,9 +128,9 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
     return ping_loader_factory_.ping_loader_client_.get();
   }
 
-  static std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+  static std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   ThrottlesGetter() {
-    return std::vector<std::unique_ptr<content::URLLoaderThrottle>>();
+    return std::vector<std::unique_ptr<blink::URLLoaderThrottle>>();
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> CreateMockPingLoaderFactory() {

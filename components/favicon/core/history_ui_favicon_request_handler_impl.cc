@@ -173,8 +173,7 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
             base::AdaptCallbackForRepeating(std::move(response_callback));
     std::unique_ptr<FaviconServerFetcherParams> server_parameters =
         platform == FaviconRequestPlatform::kMobile
-            ? FaviconServerFetcherParams::CreateForMobile(page_url,
-                                                          desired_size_in_pixel)
+            ? FaviconServerFetcherParams::CreateForMobile(page_url)
             : FaviconServerFetcherParams::CreateForDesktop(page_url);
     RequestFromGoogleServer(
         page_url, std::move(server_parameters),

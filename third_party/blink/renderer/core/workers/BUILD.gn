@@ -57,8 +57,6 @@ blink_core_sources("workers") {
     "worker_classic_script_loader.h",
     "worker_clients.cc",
     "worker_clients.h",
-    "worker_content_settings_client.cc",
-    "worker_content_settings_client.h",
     "worker_global_scope.cc",
     "worker_global_scope.h",
     "worker_location.h",

@@ -35,7 +35,6 @@ class WebAppInstallManager final : public InstallManager {
   ~WebAppInstallManager() override;
 
   // InstallManager:
-  void Shutdown() override;
   bool CanInstallWebApp(content::WebContents* web_contents) override;
   void InstallWebAppFromManifest(content::WebContents* contents,
                                  WebappInstallSource install_source,
@@ -103,8 +102,6 @@ class WebAppInstallManager final : public InstallManager {
   // A single WebContents, shared between tasks in |task_queue_|.
   std::unique_ptr<content::WebContents> web_contents_;
   bool web_contents_ready_ = false;
-
-  bool is_shutting_down_ = false;
 
   base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};
 

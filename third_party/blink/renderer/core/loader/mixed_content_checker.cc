@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
@@ -521,10 +520,9 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
         !strict_mode && (!settings->GetStrictlyBlockBlockableMixedContent() ||
                          settings->GetAllowRunningOfInsecureContent());
     allowed = should_ask_embedder &&
-              worker_fetch_context.GetWorkerContentSettingsClient()
-                  ->AllowRunningInsecureContent(
-                      settings->GetAllowRunningOfInsecureContent(),
-                      fetch_client_settings_object.GetSecurityOrigin(), url);
+              worker_fetch_context.AllowRunningInsecureContent(
+                  settings->GetAllowRunningOfInsecureContent(),
+                  fetch_client_settings_object.GetSecurityOrigin(), url);
     if (allowed) {
       worker_fetch_context.GetWebWorkerFetchContext()->DidRunInsecureContent(
           WebSecurityOrigin(fetch_client_settings_object.GetSecurityOrigin()),
@@ -607,17 +605,13 @@ bool MixedContentChecker::IsWebSocketAllowed(
   }
 
   WorkerSettings* settings = worker_fetch_context.GetWorkerSettings();
-  WorkerContentSettingsClient* content_settings_client =
-      worker_fetch_context.GetWorkerContentSettingsClient();
   const SecurityOrigin* security_origin =
       fetch_client_settings_object.GetSecurityOrigin();
 
   bool allowed =
       IsWebSocketAllowedInWorker(worker_fetch_context, settings, url);
-  if (content_settings_client) {
-    allowed = content_settings_client->AllowRunningInsecureContent(
-        allowed, security_origin, url);
-  }
+  allowed = worker_fetch_context.AllowRunningInsecureContent(
+      allowed, security_origin, url);
 
   if (allowed) {
     worker_fetch_context.GetWebWorkerFetchContext()->DidRunInsecureContent(

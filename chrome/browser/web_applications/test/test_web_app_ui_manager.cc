@@ -17,16 +17,13 @@ TestWebAppUiManager::TestWebAppUiManager() = default;
 
 TestWebAppUiManager::~TestWebAppUiManager() = default;
 
-WebAppDialogManager& TestWebAppUiManager::dialog_manager() {
-  // TODO(crbug.com/973324): Implement a TestWebAppDialogManager to return here.
-  NOTIMPLEMENTED();
-  static WebAppDialogManager* manager = nullptr;
-  return *manager;
-}
-
 void TestWebAppUiManager::SetNumWindowsForApp(const AppId& app_id,
                                               size_t num_windows_for_app) {
   app_id_to_num_windows_map_[app_id] = num_windows_for_app;
+}
+
+WebAppUiManagerImpl* TestWebAppUiManager::AsImpl() {
+  return nullptr;
 }
 
 size_t TestWebAppUiManager::GetNumWindowsForApp(const AppId& app_id) {

@@ -361,7 +361,6 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
   features->AppendString(GenerateFeatureFlag("gestureediting", false));
   features->AppendString(GenerateFeatureFlag("fullscreenhandwriting", false));
   features->AppendString(GenerateFeatureFlag("virtualkeyboardmdui", true));
-  features->AppendString(GenerateFeatureFlag("imeservice", true));
 
   keyboard::KeyboardConfig config = keyboard_client->GetKeyboardConfig();
   // TODO(oka): Change this to use config.voice_input.
@@ -378,8 +377,14 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "handwritinggesture",
       base::FeatureList::IsEnabled(features::kHandwritingGesture)));
   features->AppendString(GenerateFeatureFlag(
+      "hmminputlogic",
+      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicHmm)));
+  features->AppendString(GenerateFeatureFlag(
       "fstinputlogic",
       base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicFst)));
+  features->AppendString(GenerateFeatureFlag(
+      "fstnonenglish", base::FeatureList::IsEnabled(
+                           chromeos::features::kImeInputLogicFstNonEnglish)));
 
   results->Set("features", std::move(features));
 

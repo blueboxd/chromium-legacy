@@ -19,10 +19,13 @@ struct ResourceResponseHead;
 struct ResourceRequest;
 }  // namespace network
 
+namespace blink {
+class URLLoaderThrottle;
+}  // namespace blink
+
 namespace content {
 
 class ThrottlingURLLoader;
-class URLLoaderThrottle;
 class WorkerScriptLoaderFactory;
 
 // NetworkService (PlzWorker):
@@ -45,7 +48,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   // OnReceiveResponse is called on |this|.
   static void CreateAndStart(
       std::unique_ptr<WorkerScriptLoaderFactory> script_loader_factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       std::unique_ptr<network::ResourceRequest> resource_request,
       CreateAndStartCallback callback);
 
@@ -57,7 +60,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
 
   ~WorkerScriptFetcher() override;
 
-  void Start(std::vector<std::unique_ptr<URLLoaderThrottle>> throttles);
+  void Start(std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles);
 
   // network::mojom::URLLoaderClient
   void OnReceiveResponse(const network::ResourceResponseHead& head) override;

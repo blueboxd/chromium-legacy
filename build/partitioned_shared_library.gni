@@ -84,6 +84,9 @@ template("partitioned_shared_library") {
         invoker.unstripped_output,
         invoker.stripped_output,
       ]
+      data = [
+        invoker.unstripped_output,
+      ]
       metadata = {
         shared_libraries = [ invoker.stripped_output ]
       }

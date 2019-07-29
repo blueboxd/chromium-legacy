@@ -1501,8 +1501,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
       SecurityPolicy::GenerateReferrer(
           active_document->GetReferrerPolicy(), completed_url,
           window_features.noreferrer ? Referrer::NoReferrer()
-                                     : active_document->OutgoingReferrer()),
-      ResourceRequest::SetHttpReferrerLocation::kLocalDomWindow);
+                                     : active_document->OutgoingReferrer()));
 
   frame_request.GetResourceRequest().SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(GetFrame()));

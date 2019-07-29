@@ -283,7 +283,7 @@ void RemoteSuggestionsService::CreateExperimentalRequest(
   std::string request_body =
       FormatRequestBodyExperimentalService(current_url, visit_time);
   AddVariationHeaders(request.get());
-  request->allow_credentials = false;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   // If authentication services are unavailable or if this request is still
   // waiting for an oauth2 token, run the remote service without access

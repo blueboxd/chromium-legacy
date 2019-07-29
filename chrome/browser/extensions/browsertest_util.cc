@@ -58,11 +58,6 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
   size_t num_extensions =
       ExtensionRegistry::Get(profile)->enabled_extensions().size();
 
-  // TODO(crbug.com/915043): Erase windowed_observer code path.
-  content::WindowedNotificationObserver windowed_observer(
-      NOTIFICATION_CRX_INSTALLER_DONE,
-      content::NotificationService::AllSources());
-
   base::RunLoop run_loop;
   web_app::AppId app_id;
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
@@ -77,16 +72,8 @@ const Extension* InstallBookmarkApp(Profile* profile, WebApplicationInfo info) {
       }));
 
   const Extension* app = nullptr;
-  // The legacy system doesn't support completion callback in
-  // InstallWebAppForTesting. Use |windowed_observer| if
-  // kDesktopPWAsUnifiedInstall disabled.
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedInstall)) {
-    run_loop.Run();
-    app = ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(app_id);
-  } else {
-    windowed_observer.Wait();
-    app = content::Details<const Extension>(windowed_observer.details()).ptr();
-  }
+  run_loop.Run();
+  app = ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(app_id);
 
   EXPECT_EQ(++num_extensions,
             ExtensionRegistry::Get(profile)->enabled_extensions().size());

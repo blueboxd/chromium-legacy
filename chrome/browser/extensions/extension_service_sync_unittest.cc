@@ -46,6 +46,8 @@
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/disable_reason.h"
@@ -1758,6 +1760,13 @@ class ExtensionServiceTestSupervised
 
   void TearDown() override {
     supervised_user_service()->SetDelegate(nullptr);
+
+    if (profile()) {
+      auto* partition =
+          content::BrowserContext::GetDefaultStoragePartition(profile_.get());
+      if (partition)
+        partition->WaitForCodeCacheShutdownForTesting();
+    }
 
     ExtensionServiceSyncCustomGalleryTest::TearDown();
   }

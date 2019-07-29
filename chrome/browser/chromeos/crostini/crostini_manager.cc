@@ -1179,6 +1179,64 @@ void CrostiniManager::ImportLxdContainer(std::string vm_name,
                      request.container_name()));
 }
 
+void CrostiniManager::CancelExportLxdContainer(ContainerId key) {
+  const auto& vm_name = key.first;
+  const auto& container_name = key.second;
+  if (vm_name.empty()) {
+    LOG(ERROR) << "vm_name is required";
+    return;
+  }
+  if (container_name.empty()) {
+    LOG(ERROR) << "container_name is required";
+    return;
+  }
+
+  auto it = export_lxd_container_callbacks_.find(key);
+  if (it == export_lxd_container_callbacks_.end()) {
+    LOG(ERROR) << "No export currently in progress for " << vm_name << ", "
+               << container_name;
+    return;
+  }
+
+  vm_tools::cicerone::CancelExportLxdContainerRequest request;
+  request.set_vm_name(vm_name);
+  request.set_owner_id(owner_id_);
+  request.set_in_progress_container_name(container_name);
+  GetCiceroneClient()->CancelExportLxdContainer(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnCancelExportLxdContainer,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(key)));
+}
+
+void CrostiniManager::CancelImportLxdContainer(ContainerId key) {
+  const auto& vm_name = key.first;
+  const auto& container_name = key.second;
+  if (vm_name.empty()) {
+    LOG(ERROR) << "vm_name is required";
+    return;
+  }
+  if (container_name.empty()) {
+    LOG(ERROR) << "container_name is required";
+    return;
+  }
+
+  auto it = import_lxd_container_callbacks_.find(key);
+  if (it == import_lxd_container_callbacks_.end()) {
+    LOG(ERROR) << "No import currently in progress for " << vm_name << ", "
+               << container_name;
+    return;
+  }
+
+  vm_tools::cicerone::CancelImportLxdContainerRequest request;
+  request.set_vm_name(vm_name);
+  request.set_owner_id(owner_id_);
+  request.set_in_progress_container_name(container_name);
+  GetCiceroneClient()->CancelImportLxdContainer(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnCancelImportLxdContainer,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(key)));
+}
+
 void CrostiniManager::LaunchContainerApplication(
     std::string vm_name,
     std::string container_name,
@@ -2403,6 +2461,8 @@ void CrostiniManager::OnExportLxdContainerProgress(
 
   CrostiniResult result;
   switch (signal.status()) {
+    // TODO(juwa): Remove EXPORTING_[PACK|DOWNLOAD] once a new version of
+    // tremplin has shipped.
     case ProgressSignal::EXPORTING_PACK:
     case ProgressSignal::EXPORTING_DOWNLOAD: {
       // If we are still exporting, call progress observers.
@@ -2428,6 +2488,9 @@ void CrostiniManager::OnExportLxdContainerProgress(
       }
       return;
     }
+    case ProgressSignal::CANCELLED:
+      result = CrostiniResult::CONTAINER_EXPORT_IMPORT_CANCELLED;
+      break;
     case ProgressSignal::DONE:
       result = CrostiniResult::SUCCESS;
       break;
@@ -2497,6 +2560,10 @@ void CrostiniManager::OnImportLxdContainerProgress(
       call_observers = true;
       status = ImportContainerProgressStatus::UNPACK;
       break;
+    case vm_tools::cicerone::ImportLxdContainerProgressSignal::CANCELLED:
+      call_original_callback = true;
+      result = CrostiniResult::CONTAINER_EXPORT_IMPORT_CANCELLED;
+      break;
     case vm_tools::cicerone::ImportLxdContainerProgressSignal::DONE:
       call_original_callback = true;
       result = CrostiniResult::SUCCESS;
@@ -2542,6 +2609,52 @@ void CrostiniManager::OnImportLxdContainerProgress(
     }
     std::move(it->second).Run(result);
     import_lxd_container_callbacks_.erase(it);
+  }
+}
+
+void CrostiniManager::OnCancelExportLxdContainer(
+    const ContainerId& key,
+    base::Optional<vm_tools::cicerone::CancelExportLxdContainerResponse>
+        response) {
+  auto it = export_lxd_container_callbacks_.find(key);
+  if (it == export_lxd_container_callbacks_.end()) {
+    LOG(ERROR) << "No export callback for " << key.first << ", " << key.second;
+    return;
+  }
+
+  if (!response) {
+    LOG(ERROR) << "Failed to cancel lxd container export. Empty response.";
+    return;
+  }
+
+  if (response->status() !=
+      vm_tools::cicerone::CancelExportLxdContainerResponse::CANCEL_QUEUED) {
+    LOG(ERROR) << "Failed to cancel lxd container export:"
+               << " status=" << response->status()
+               << ", failure_reason=" << response->failure_reason();
+  }
+}
+
+void CrostiniManager::OnCancelImportLxdContainer(
+    const ContainerId& key,
+    base::Optional<vm_tools::cicerone::CancelImportLxdContainerResponse>
+        response) {
+  auto it = import_lxd_container_callbacks_.find(key);
+  if (it == import_lxd_container_callbacks_.end()) {
+    LOG(ERROR) << "No import callback for " << key.first << ", " << key.second;
+    return;
+  }
+
+  if (!response) {
+    LOG(ERROR) << "Failed to cancel lxd container import. Empty response.";
+    return;
+  }
+
+  if (response->status() !=
+      vm_tools::cicerone::CancelImportLxdContainerResponse::CANCEL_QUEUED) {
+    LOG(ERROR) << "Failed to cancel lxd container import:"
+               << " status=" << response->status()
+               << ", failure_reason=" << response->failure_reason();
   }
 }
 

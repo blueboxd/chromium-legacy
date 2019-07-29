@@ -39,6 +39,7 @@ enum class SystemAppType {
   SETTINGS,
   DISCOVER,
   CAMERA,
+  TERMINAL,
 };
 
 // The configuration options for a System App.

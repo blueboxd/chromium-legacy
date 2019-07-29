@@ -3850,8 +3850,6 @@ jumbo_split_static_library("browser") {
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
       "icon_loader_auralinux.cc",
-      "password_manager/native_backend_kwallet_x.cc",
-      "password_manager/native_backend_kwallet_x.h",
       "platform_util_linux.cc",
       "shell_integration_linux.cc",
       "shell_integration_linux.h",
@@ -3881,16 +3879,6 @@ jumbo_split_static_library("browser") {
         "themes/theme_service_aurax11.cc",
         "themes/theme_service_aurax11.h",
       ]
-    }
-
-    # libsecret hard depends on GLib.
-    if (use_glib) {
-      sources += [
-        "password_manager/native_backend_libsecret.cc",
-        "password_manager/native_backend_libsecret.h",
-      ]
-      defines += [ "USE_LIBSECRET" ]
-      deps += [ "//third_party/libsecret" ]
     }
 
     if (use_ozone) {
@@ -4480,7 +4468,6 @@ jumbo_split_static_library("browser") {
 
       # TODO(loyso): Erase these. crbug.com/877898.
       "//chrome/browser/web_applications:web_applications_on_extensions",
-      "//chrome/browser/web_applications/bookmark_apps",
       "//chrome/browser/web_applications/components",
       "//chrome/browser/web_applications/extensions",
     ]
@@ -4489,7 +4476,6 @@ jumbo_split_static_library("browser") {
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/browser/web_applications",
       "//chrome/browser/web_applications:web_applications_on_extensions",
-      "//chrome/browser/web_applications/bookmark_apps",
       "//chrome/browser/web_applications/components",
       "//chrome/browser/web_applications/extensions",
       "//chrome/common/extensions/api",
@@ -5083,14 +5069,6 @@ jumbo_split_static_library("browser") {
 
   if (use_cups) {
     configs += [ "//printing:cups" ]
-  }
-
-  if (use_gnome_keyring) {
-    sources += [
-      "password_manager/native_backend_gnome_x.cc",
-      "password_manager/native_backend_gnome_x.h",
-    ]
-    configs += [ "//components/os_crypt:gnome_keyring" ]
   }
 
   if (use_nss_certs) {

@@ -384,9 +384,9 @@ TEST(WebSocketFrameParserTest, DecodePartialHeader) {
       }
       if (kFrameHeaderTests[i].error_code == kWebSocketNormalClosure &&
           j == last_byte_offset) {
-        EXPECT_EQ(1u, frames.size());
+        EXPECT_EQ(1u, frames.size()) << "i=" << i << ", j=" << j;
       } else {
-        EXPECT_EQ(0u, frames.size());
+        EXPECT_EQ(0u, frames.size()) << "i=" << i << ", j=" << j;
       }
     }
     if (frames.size() != 1u)

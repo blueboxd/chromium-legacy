@@ -6,25 +6,6 @@ import("//extensions/buildflags/buildflags.gni")
 
 assert(enable_extensions)
 
-source_set("bookmark_apps") {
-  sources = [
-    "bookmark_app_install_manager.cc",
-    "bookmark_app_install_manager.h",
-  ]
-
-  deps = [
-    "//chrome/browser/extensions",
-    "//chrome/browser/web_applications:web_app_group",
-    "//chrome/browser/web_applications/components",
-    "//chrome/browser/web_applications/extensions",
-    "//chrome/common",
-    "//components/favicon/content",
-    "//components/pref_registry",
-    "//extensions/browser",
-    "//skia",
-  ]
-}
-
 source_set("test_support") {
   testonly = true
 
@@ -34,7 +15,6 @@ source_set("test_support") {
   ]
 
   deps = [
-    ":bookmark_apps",
     "//base",
     "//chrome/browser",
     "//chrome/browser/web_applications",
@@ -50,13 +30,11 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "bookmark_app_install_manager_unittest.cc",
     "policy/web_app_policy_manager_unittest.cc",
     "system_web_app_manager_unittest.cc",
   ]
 
   deps = [
-    ":bookmark_apps",
     ":test_support",
     "//base",
     "//chrome/browser",
@@ -91,7 +69,6 @@ source_set("browser_tests") {
   ]
 
   deps = [
-    ":bookmark_apps",
     ":test_support",
     "//base",
     "//base/test:test_support",

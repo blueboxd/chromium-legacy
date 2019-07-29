@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/url_loader_throttle.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace blink {
 
 void URLLoaderThrottle::Delegate::SetPriority(net::RequestPriority priority) {}
 void URLLoaderThrottle::Delegate::UpdateDeferredRequestHeaders(
@@ -66,4 +66,4 @@ bool URLLoaderThrottle::makes_unsafe_redirect() {
 
 URLLoaderThrottle::URLLoaderThrottle() {}
 
-}  // namespace content
+}  // namespace blink

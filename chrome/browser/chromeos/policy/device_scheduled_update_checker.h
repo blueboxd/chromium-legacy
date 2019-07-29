@@ -53,7 +53,7 @@ class DeviceScheduledUpdateChecker
 
     // Only set when frequency is |kWeekly|. Corresponds to UCAL_DAY_OF_WEEK in
     // icu::Calendar. Values between 1 (SUNDAY) to 7 (SATURDAY).
-    base::Optional<int> day_of_week;
+    base::Optional<UCalendarDaysOfWeek> day_of_week;
 
     // Only set when frequency is |kMonthly|. Corresponds to UCAL_DAY_OF_MONTH
     // in icu::Calendar i.e. values between 1 to 31.
@@ -159,25 +159,6 @@ base::TimeDelta GetDiff(const icu::Calendar& a, const icu::Calendar& b);
 std::unique_ptr<icu::Calendar> ConvertUtcToTzIcuTime(base::Time cur_time,
                                                      const icu::TimeZone& tz);
 
-// Modifies |time| to the next monthly date at |hour|, |minute| and
-// |day_of_month| if it is greater than equal to |hour|:|minute| at
-// |day_of_month|. It takes into account variance in days in different months
-// i.e. 31st Jan is forwarded to 28th Feb in non leap years. However, if
-// |day_of_month| equals |time|'s day of month and the |hour|:|minute| is
-// greater than the |hour|:|minute| of |time| then only the |hour| and |minute|
-// in |time| is set. Returns false iff there is a failure setting any of the
-// fields.
-//
-// Some examples -
-// - hour - 9 minute - 0 day_of_month - 31 time - 31st Jan 08:00 1970. |time|
-// will be 31st Jan 09:00 1970.
-// - hour - 7 minute - 0 day_of_month - 31 time - 31st Jan 08:00 1970. |time|
-// will be 28th Feb 07:00 1970.
-bool SetNextMonthlyDate(int hour,
-                        int minute,
-                        int day_of_month,
-                        icu::Calendar* time);
-
 // The maximum iterations allowed to start an update check timer if the
 // operation fails.
 constexpr int kMaxStartUpdateCheckTimerRetryIterations = 5;
@@ -185,9 +166,6 @@ constexpr int kMaxStartUpdateCheckTimerRetryIterations = 5;
 // Time to call |StartUpdateCheckTimer| again in case it failed.
 constexpr base::TimeDelta kStartUpdateCheckTimerRetryTime =
     base::TimeDelta::FromMinutes(5);
-
-// Number of days in a week.
-constexpr int kDaysInAWeek = 7;
 
 }  // namespace update_checker_internal
 

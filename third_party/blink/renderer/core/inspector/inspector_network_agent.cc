@@ -861,8 +861,7 @@ void InspectorNetworkAgent::PrepareRequest(
       // inside state_'s kExtraRequestHeaders, somewhere else.
       if (header_name.LowerASCII() == http_names::kReferer.LowerASCII()) {
         request.SetHttpReferrer(
-            Referrer(value, network::mojom::ReferrerPolicy::kAlways),
-            ResourceRequest::SetHttpReferrerLocation::kInspectorNetworkAgent);
+            Referrer(value, network::mojom::ReferrerPolicy::kAlways));
       } else {
         request.SetHttpHeaderField(header_name, AtomicString(value));
       }

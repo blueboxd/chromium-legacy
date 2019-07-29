@@ -37,7 +37,6 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -364,21 +363,22 @@ WorkerClients* DedicatedWorker::CreateWorkerClients() {
       *worker_clients);
   CoreInitializer::GetInstance().ProvideIndexedDBClientToWorker(
       *worker_clients);
+  return worker_clients;
+}
 
-  std::unique_ptr<WebContentSettingsClient> client;
+std::unique_ptr<WebContentSettingsClient>
+DedicatedWorker::CreateWebContentSettingsClient() {
+  std::unique_ptr<WebContentSettingsClient> content_settings_client;
   if (auto* document = DynamicTo<Document>(GetExecutionContext())) {
     LocalFrame* frame = document->GetFrame();
-    client = frame->Client()->CreateWorkerContentSettingsClient();
+    return frame->Client()->CreateWorkerContentSettingsClient();
   } else if (GetExecutionContext()->IsWorkerGlobalScope()) {
     WebContentSettingsClient* web_worker_content_settings_client =
-        WorkerContentSettingsClient::From(*GetExecutionContext())
-            ->GetWebContentSettingsClient();
+        To<WorkerGlobalScope>(GetExecutionContext())->ContentSettingsClient();
     if (web_worker_content_settings_client)
-      client = web_worker_content_settings_client->Clone();
+      return web_worker_content_settings_client->Clone();
   }
-
-  ProvideContentSettingsClientToWorker(worker_clients, std::move(client));
-  return worker_clients;
+  return nullptr;
 }
 
 void DedicatedWorker::OnResponse() {
@@ -464,7 +464,7 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
       referrer_policy, GetExecutionContext()->GetSecurityOrigin(),
       GetExecutionContext()->IsSecureContext(),
       GetExecutionContext()->GetHttpsState(), CreateWorkerClients(),
-      response_address_space,
+      CreateWebContentSettingsClient(), response_address_space,
       OriginTrialContext::GetTokens(GetExecutionContext()).get(),
       parent_devtools_token, std::move(settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_responses_map */,

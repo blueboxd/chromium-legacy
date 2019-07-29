@@ -29,14 +29,14 @@ void MergeRemovedHeaders(std::vector<std::string>* removed_headers_A,
 }  // namespace
 
 class ThrottlingURLLoader::ForwardingThrottleDelegate
-    : public URLLoaderThrottle::Delegate {
+    : public blink::URLLoaderThrottle::Delegate {
  public:
   ForwardingThrottleDelegate(ThrottlingURLLoader* loader,
-                             URLLoaderThrottle* throttle)
+                             blink::URLLoaderThrottle* throttle)
       : loader_(loader), throttle_(throttle) {}
   ~ForwardingThrottleDelegate() override = default;
 
-  // URLLoaderThrottle::Delegate:
+  // blink::URLLoaderThrottle::Delegate:
   void CancelWithError(int error_code,
                        base::StringPiece custom_reason) override {
     if (!loader_)
@@ -146,7 +146,7 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
   };
 
   ThrottlingURLLoader* loader_;
-  URLLoaderThrottle* const throttle_;
+  blink::URLLoaderThrottle* const throttle_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingThrottleDelegate);
 };
@@ -190,7 +190,7 @@ ThrottlingURLLoader::PriorityInfo::~PriorityInfo() = default;
 // static
 std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     scoped_refptr<network::SharedURLLoaderFactory> factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -298,7 +298,7 @@ network::mojom::URLLoaderClientEndpointsPtr ThrottlingURLLoader::Unbind() {
 }
 
 ThrottlingURLLoader::ThrottlingURLLoader(
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     network::mojom::URLLoaderClient* client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : forwarding_client_(client),
@@ -460,9 +460,10 @@ void ThrottlingURLLoader::RestartWithFlagsNow() {
   StartNow();
 }
 
-bool ThrottlingURLLoader::HandleThrottleResult(URLLoaderThrottle* throttle,
-                                               bool throttle_deferred,
-                                               bool* should_defer) {
+bool ThrottlingURLLoader::HandleThrottleResult(
+    blink::URLLoaderThrottle* throttle,
+    bool throttle_deferred,
+    bool* should_defer) {
   DCHECK(!deferring_throttles_.count(throttle));
   if (loader_completed_)
     return false;
@@ -473,7 +474,7 @@ bool ThrottlingURLLoader::HandleThrottleResult(URLLoaderThrottle* throttle,
 }
 
 void ThrottlingURLLoader::StopDeferringForThrottle(
-    URLLoaderThrottle* throttle) {
+    blink::URLLoaderThrottle* throttle) {
   if (deferring_throttles_.find(throttle) == deferring_throttles_.end())
     return;
 
@@ -783,7 +784,8 @@ void ThrottlingURLLoader::UpdateDeferredResponseHead(
   response_info_->response_head = new_response_head;
 }
 
-void ThrottlingURLLoader::PauseReadingBodyFromNet(URLLoaderThrottle* throttle) {
+void ThrottlingURLLoader::PauseReadingBodyFromNet(
+    blink::URLLoaderThrottle* throttle) {
   if (pausing_reading_body_from_net_throttles_.empty() && url_loader_)
     url_loader_->PauseReadingBodyFromNet();
 
@@ -791,7 +793,7 @@ void ThrottlingURLLoader::PauseReadingBodyFromNet(URLLoaderThrottle* throttle) {
 }
 
 void ThrottlingURLLoader::ResumeReadingBodyFromNet(
-    URLLoaderThrottle* throttle) {
+    blink::URLLoaderThrottle* throttle) {
   auto iter = pausing_reading_body_from_net_throttles_.find(throttle);
   if (iter == pausing_reading_body_from_net_throttles_.end())
     return;
@@ -835,7 +837,7 @@ void ThrottlingURLLoader::DisconnectClient(base::StringPiece custom_reason) {
 
 ThrottlingURLLoader::ThrottleEntry::ThrottleEntry(
     ThrottlingURLLoader* loader,
-    std::unique_ptr<URLLoaderThrottle> the_throttle)
+    std::unique_ptr<blink::URLLoaderThrottle> the_throttle)
     : delegate(
           std::make_unique<ForwardingThrottleDelegate>(loader,
                                                        the_throttle.get())),

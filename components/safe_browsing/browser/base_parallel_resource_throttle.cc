@@ -19,7 +19,7 @@
 namespace safe_browsing {
 
 class BaseParallelResourceThrottle::URLLoaderThrottleHolder
-    : public content::URLLoaderThrottle::Delegate {
+    : public blink::URLLoaderThrottle::Delegate {
  public:
   URLLoaderThrottleHolder(BaseParallelResourceThrottle* owner,
                           std::unique_ptr<BrowserURLLoaderThrottle> throttle)
@@ -31,7 +31,7 @@ class BaseParallelResourceThrottle::URLLoaderThrottleHolder
   BrowserURLLoaderThrottle* throttle() const { return throttle_.get(); }
   uint32_t inside_delegate_calls() const { return inside_delegate_calls_; }
 
-  // content::URLLoaderThrottle::Delegate implementation:
+  // blink::URLLoaderThrottle::Delegate implementation:
   void CancelWithError(int error_code,
                        base::StringPiece custom_reason) override {
     if (!owner_)

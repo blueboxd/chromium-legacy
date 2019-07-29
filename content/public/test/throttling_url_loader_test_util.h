@@ -10,15 +10,15 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
 // Allows tests outside of content to interface with a ThrottlingURLLoader.
 std::unique_ptr<network::mojom::URLLoaderClient> CreateThrottlingLoaderAndStart(
     scoped_refptr<network::SharedURLLoaderFactory> factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

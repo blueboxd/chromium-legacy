@@ -20,10 +20,13 @@ public interface AutofillAssistantActionHandler {
      * <p>This method starts AA on the current tab, if necessary, and waits for the first results.
      * Once AA is started, the results are reported immediately.
      *
-     * @param arguments extra arguments
+     * @param userName name of the user to use when sending RPCs. Might be empty.
+     * @param experimentIds comma-separated set of experiment ids. Might be empty
+     * @param arguments extra arguments to include into the RPC. Might be empty.
      * @param callback callback to report the result to
      */
-    void listActions(String experimentIds, Bundle arguments, Callback<Set<String>> callback);
+    void listActions(String userName, String experimentIds, Bundle arguments,
+            Callback<Set<String>> callback);
 
     /** Performs onboarding and returns the result to the callback. */
     void performOnboarding(String experimentIds, Callback<Boolean> callback);
@@ -35,8 +38,8 @@ public interface AutofillAssistantActionHandler {
      * It can still fail later, and the failure will be reported to the UI.
      *
      * @param name action name, might be empty to autostart
-     * @param experimentIds experiment ids, might be empty
-     * @param arguments extra arguments
+     * @param experimentIds comma-separated set of experiment ids. Might be empty.
+     * @param arguments extra arguments to pass to the action. Might be empty.
      * @param callback to report the result to
      */
     void performAction(

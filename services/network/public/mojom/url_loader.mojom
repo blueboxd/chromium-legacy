@@ -178,10 +178,6 @@ struct URLRequest {
   // net::URLRequest load flags.
   int32 load_flags;
 
-  // Whether to allow credentials for this request.
-  // See net::URLRequest::set_allow_credentials.
-  bool allow_credentials;
-
   // If this request originated from a pepper plugin running in a child
   // process, this identifies which process it came from. Otherwise, it
   // is zero.
@@ -241,9 +237,9 @@ struct URLRequest {
   RequestMode mode;
 
   // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
-  // Used mainly by CORS handling (out-of-blink CORS), Service Worker.
-  // If this member is kOmit, then DO_NOT_SAVE_COOKIES, DO_NOT_SEND_COOKIES,
-  // and DO_NOT_SEND_AUTH_DATA must be set on load_flags.
+  // Controls whether credentials are attached to this request.
+  // Currently kSameOrigin does not work with |mode: kNavigate|.
+  // TODO(yhirano): Fix this.
   CredentialsMode credentials_mode;
 
   // https://fetch.spec.whatwg.org/#concept-request-redirect-mode

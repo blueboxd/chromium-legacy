@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -31,6 +32,7 @@
 #include "url/origin.h"
 
 using testing::_;
+using testing::Invoke;
 using testing::SaveArg;
 
 namespace content {
@@ -70,13 +72,38 @@ class MockAudioManager : public media::FakeAudioManager {
   MOCK_METHOD1(MockGetAudioInputDeviceNames, void(media::AudioDeviceNames*));
   MOCK_METHOD1(MockGetAudioOutputDeviceNames, void(media::AudioDeviceNames*));
 
+  std::string GetDefaultInputDeviceID() override { return default_device_id_; }
+
+  std::string GetCommunicationsInputDeviceID() override {
+    return communications_device_id_;
+  }
+
   void GetAudioInputDeviceNames(
       media::AudioDeviceNames* device_names) override {
     DCHECK(device_names->empty());
-    for (size_t i = 0; i < num_input_devices_; i++) {
+    if (default_device_id_ != std::string()) {
       device_names->push_back(media::AudioDeviceName(
-          std::string("fake_device_name_") + base::NumberToString(i),
-          std::string("fake_device_id_") + base::NumberToString(i)));
+          media::AudioDeviceDescription::kDefaultDeviceId,
+          media::AudioDeviceDescription::kDefaultDeviceId));
+    }
+    if (communications_device_id_ != std::string()) {
+      device_names->push_back(media::AudioDeviceName(
+          std::string(),
+          media::AudioDeviceDescription::kCommunicationsDeviceId));
+    }
+
+    size_t num_devices_to_create = num_input_devices_;
+    size_t start_id_trailer = 0;
+    while (num_devices_to_create > 0) {
+      size_t trailer = ++start_id_trailer;
+      std::string id("fake_device_id_" + base::NumberToString(trailer));
+      if (base::Contains(removed_input_audio_device_ids_, id))
+        continue;
+
+      device_names->push_back(media::AudioDeviceName(
+          std::string("fake_device_name_") + base::NumberToString(trailer),
+          id));
+      --num_devices_to_create;
     }
     MockGetAudioInputDeviceNames(device_names);
   }
@@ -103,6 +130,15 @@ class MockAudioManager : public media::FakeAudioManager {
                                   media::CHANNEL_LAYOUT_STEREO, 48000, 128);
   }
 
+  void RemoveInputAudioDeviceById(const std::string& device_id) {
+    --num_input_devices_;
+    removed_input_audio_device_ids_.insert(device_id);
+    if (device_id == default_device_id_)
+      default_device_id_ = std::string();
+    if (device_id == communications_device_id_)
+      communications_device_id_ = std::string();
+  }
+
   void SetNumAudioOutputDevices(size_t num_devices) {
     num_output_devices_ = num_devices;
   }
@@ -111,10 +147,21 @@ class MockAudioManager : public media::FakeAudioManager {
     num_input_devices_ = num_devices;
   }
 
+  void SetDefaultDeviceToId(const std::string& device_id) {
+    default_device_id_ = device_id;
+  }
+
+  void SetCommunicationsDeviceToId(const std::string& device_id) {
+    communications_device_id_ = device_id;
+  }
+
  private:
   media::FakeAudioLogFactory fake_audio_log_factory_;
   size_t num_output_devices_;
   size_t num_input_devices_;
+  std::string default_device_id_;
+  std::string communications_device_id_;
+  std::set<std::string> removed_input_audio_device_ids_;
   DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
 };
 
@@ -183,6 +230,23 @@ class MediaDevicesManagerTest : public ::testing::Test {
   ~MediaDevicesManagerTest() override { audio_manager_->Shutdown(); }
 
   MOCK_METHOD1(MockCallback, void(const MediaDeviceEnumeration&));
+
+  void TrackRemovedDevice(blink::MediaDeviceType type,
+                          const blink::WebMediaDeviceInfo& media_device_info) {
+    removed_device_ids_.insert(media_device_info.device_id);
+  }
+
+  void RunEnumerateDevices() {
+    MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+    devices_to_enumerate[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+
+    base::RunLoop run_loop;
+    media_devices_manager_->EnumerateDevices(
+        devices_to_enumerate,
+        base::BindOnce(&MediaDevicesManagerTest::EnumerateCallback,
+                       base::Unretained(this), &run_loop));
+    run_loop.Run();
+  }
 
   void EnumerateCallback(base::RunLoop* run_loop,
                          const MediaDeviceEnumeration& result) {
@@ -274,6 +338,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
   std::unique_ptr<media::AudioSystem> audio_system_;
   testing::StrictMock<MockMediaDevicesManagerClient>
       media_devices_manager_client_;
+  std::set<std::string> removed_device_ids_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaDevicesManagerTest);
@@ -849,6 +914,137 @@ TEST_F(MediaDevicesManagerTest, EnumerateDevicesWithCapabilities) {
           &MediaDevicesManagerTest::EnumerateWithCapabilitiesCallback,
           base::Unretained(this), fake_capture_device_settings, &run_loop));
   run_loop.Run();
+}
+
+TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugDefaultDevice) {
+  std::string default_device_id("fake_device_id_1");
+  std::string new_default_device_id("fake_device_id_2");
+
+  EXPECT_EQ(removed_device_ids_.size(), 0u);
+
+  EXPECT_CALL(*audio_manager_, MockGetAudioInputDeviceNames(_)).Times(2);
+  EXPECT_CALL(*video_capture_device_factory_, MockGetDeviceDescriptors())
+      .Times(0);
+  EXPECT_CALL(*audio_manager_, MockGetAudioOutputDeviceNames(_)).Times(0);
+  EXPECT_CALL(*this, MockCallback(_)).Times(2);
+  EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _))
+      .Times(2);
+  // Since we will be removing the default device, we expect that we will remove
+  // both the actual device as well as the old instance of the device with
+  // 'default' ID.
+  blink::WebMediaDeviceInfo removed_devices;
+  EXPECT_CALL(media_devices_manager_client_, StopRemovedInputDevice(_, _))
+      .Times(2)
+      .WillRepeatedly(
+          Invoke(this, &MediaDevicesManagerTest::TrackRemovedDevice));
+
+  // Setup the configuration and run the devices.
+  audio_manager_->SetDefaultDeviceToId(default_device_id);
+  RunEnumerateDevices();
+
+  // Unplug the default device and switch default to a different device.
+  audio_manager_->RemoveInputAudioDeviceById(default_device_id);
+  audio_manager_->SetDefaultDeviceToId(new_default_device_id);
+  RunEnumerateDevices();
+
+  EXPECT_EQ(removed_device_ids_.size(), 2u);
+  EXPECT_TRUE(base::Contains(removed_device_ids_, default_device_id));
+  EXPECT_TRUE(base::Contains(removed_device_ids_,
+                             media::AudioDeviceDescription::kDefaultDeviceId));
+}
+
+TEST_F(MediaDevicesManagerTest, EnumerateDevicesUnplugCommunicationsDevice) {
+  // This test has only significance on Windows devices, since communication
+  // devices can only be found on windows.
+#if !defined(OS_WIN)
+  return;
+#endif  // OS_WIN
+  std::string communications_device_id("fake_device_id_1");
+  std::string new_communications_device_id("fake_device_id_2");
+
+  EXPECT_EQ(removed_device_ids_.size(), 0u);
+
+  EXPECT_CALL(*audio_manager_, MockGetAudioInputDeviceNames(_)).Times(2);
+  EXPECT_CALL(*video_capture_device_factory_, MockGetDeviceDescriptors())
+      .Times(0);
+  EXPECT_CALL(*audio_manager_, MockGetAudioOutputDeviceNames(_)).Times(0);
+  EXPECT_CALL(*this, MockCallback(_)).Times(2);
+  EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _))
+      .Times(2);
+  // Since we will be removing the communications device, we expect that we will
+  // remove both the actual device as well as the old instance of the device
+  // with 'communications' ID.
+  blink::WebMediaDeviceInfo removed_devices;
+  EXPECT_CALL(media_devices_manager_client_, StopRemovedInputDevice(_, _))
+      .Times(2)
+      .WillRepeatedly(
+          Invoke(this, &MediaDevicesManagerTest::TrackRemovedDevice));
+
+  // Setup the configuration and run the devices.
+  audio_manager_->SetCommunicationsDeviceToId(communications_device_id);
+  RunEnumerateDevices();
+
+  // Unplug the default device and switch default to a different device.
+  audio_manager_->RemoveInputAudioDeviceById(communications_device_id);
+  audio_manager_->SetCommunicationsDeviceToId(new_communications_device_id);
+  RunEnumerateDevices();
+
+  EXPECT_EQ(removed_device_ids_.size(), 2u);
+  EXPECT_TRUE(base::Contains(removed_device_ids_, communications_device_id));
+  EXPECT_TRUE(
+      base::Contains(removed_device_ids_,
+                     media::AudioDeviceDescription::kCommunicationsDeviceId));
+}
+
+TEST_F(MediaDevicesManagerTest,
+       EnumerateDevicesUnplugDefaultAndCommunicationsDevice) {
+  // This test has only significance on Windows devices, since communication
+  // devices can only be found on windows.
+#if !defined(OS_WIN)
+  return;
+#endif  // OS_WIN
+  // The two device IDs that will be used as 'default' and 'communications'
+  // devices.
+  std::string target_device_id("fake_device_id_1");
+  std::string new_target_device_id("fake_device_id_2");
+
+  EXPECT_EQ(removed_device_ids_.size(), 0u);
+
+  EXPECT_CALL(*audio_manager_, MockGetAudioInputDeviceNames(_)).Times(2);
+  EXPECT_CALL(*video_capture_device_factory_, MockGetDeviceDescriptors())
+      .Times(0);
+  EXPECT_CALL(*audio_manager_, MockGetAudioOutputDeviceNames(_)).Times(0);
+  EXPECT_CALL(*this, MockCallback(_)).Times(2);
+  EXPECT_CALL(media_devices_manager_client_, InputDevicesChangedUI(_, _))
+      .Times(2);
+  // Since we will be removing the device identified as 'default' and
+  // 'communications, we expect that we will
+  // remove the actual device as well as the old instances of the device
+  // with 'communications' and 'default' IDs.
+  blink::WebMediaDeviceInfo removed_devices;
+  EXPECT_CALL(media_devices_manager_client_, StopRemovedInputDevice(_, _))
+      .Times(3)
+      .WillRepeatedly(
+          Invoke(this, &MediaDevicesManagerTest::TrackRemovedDevice));
+
+  // Setup the configuration and run the devices.
+  audio_manager_->SetDefaultDeviceToId(target_device_id);
+  audio_manager_->SetCommunicationsDeviceToId(target_device_id);
+  RunEnumerateDevices();
+
+  // Unplug the default device and switch default to a different device.
+  audio_manager_->RemoveInputAudioDeviceById(target_device_id);
+  audio_manager_->SetDefaultDeviceToId(new_target_device_id);
+  audio_manager_->SetCommunicationsDeviceToId(new_target_device_id);
+  RunEnumerateDevices();
+
+  EXPECT_EQ(removed_device_ids_.size(), 3u);
+  EXPECT_TRUE(base::Contains(removed_device_ids_, target_device_id));
+  EXPECT_TRUE(base::Contains(removed_device_ids_,
+                             media::AudioDeviceDescription::kDefaultDeviceId));
+  EXPECT_TRUE(
+      base::Contains(removed_device_ids_,
+                     media::AudioDeviceDescription::kCommunicationsDeviceId));
 }
 
 TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {

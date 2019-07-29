@@ -119,7 +119,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
  public:
   InstallManagerBookmarkAppTest() {
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAsUnifiedInstall}, {});
+        {}, {features::kDesktopPWAsWithoutExtensions});
   }
 
   ~InstallManagerBookmarkAppTest() override = default;

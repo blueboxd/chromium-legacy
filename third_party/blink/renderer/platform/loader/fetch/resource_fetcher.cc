@@ -308,35 +308,21 @@ void SetReferrer(
     if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
       referrer_policy_to_use = fetch_client_settings_object.GetReferrerPolicy();
 
-    request.SetReferrerString(
-        referrer_to_use,
-        ResourceRequest::SetReferrerStringLocation::kResourceFetcher);
-    request.SetReferrerPolicy(
-        referrer_policy_to_use,
-        ResourceRequest::SetReferrerPolicyLocation::kResourceFetcher);
+    request.SetReferrerString(referrer_to_use);
+    request.SetReferrerPolicy(referrer_policy_to_use);
     // TODO(domfarolino): Stop storing ResourceRequest's referrer as a header
     // and store it elsewhere. See https://crbug.com/850813.
-    request.SetHttpReferrer(
-        SecurityPolicy::GenerateReferrer(referrer_policy_to_use, request.Url(),
-                                         referrer_to_use),
-        ResourceRequest::SetHttpReferrerLocation::kResourceFetcher);
+    request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
+        referrer_policy_to_use, request.Url(), referrer_to_use));
   } else {
     // In the case of stale requests that are being revalidated, these requests
     // will already have their HttpReferrer set, and we will end up here. We
     // won't regenerate the referrer, but instead check that it's still correct.
-    Referrer generated_referrer = SecurityPolicy::GenerateReferrer(
-        request.GetReferrerPolicy(), request.Url(), request.ReferrerString());
-    if (generated_referrer.referrer != request.HttpReferrer()) {
-      const auto set_http_referrer_location = request.HttpReferrerLocation();
-      const auto set_referrer_string_location =
-          request.ReferrerStringLocation();
-      const auto set_referrer_policy_location =
-          request.ReferrerPolicyLocation();
-      base::debug::Alias(&set_http_referrer_location);
-      base::debug::Alias(&set_referrer_string_location);
-      base::debug::Alias(&set_referrer_policy_location);
-      CHECK(false);
-    }
+    CHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
+                                              request.Url(),
+                                              request.ReferrerString())
+                 .referrer,
+             request.HttpReferrer());
   }
 }
 
@@ -1888,11 +1874,12 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   resource->FinishAsError(error, task_runner_.get());
   if (resource_load_observer_) {
     DCHECK(!IsDetached());
-    const bool is_internal_request = resource->Options().initiator_info.name ==
-                                     fetch_initiator_type_names::kInternal;
     resource_load_observer_->DidFailLoading(
         resource->LastResourceRequest().Url(), resource->InspectorId(), error,
-        resource->GetResponse().EncodedDataLength(), is_internal_request);
+        resource->GetResponse().EncodedDataLength(),
+        ResourceLoadObserver::IsInternalRequest(
+            resource->Options().initiator_info.name ==
+            fetch_initiator_type_names::kInternal));
   }
   resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadIfNeeded);
 }

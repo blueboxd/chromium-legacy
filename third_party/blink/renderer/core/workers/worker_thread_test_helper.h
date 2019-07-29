@@ -130,8 +130,8 @@ class WorkerThreadForTest : public WorkerThread {
         network::mojom::ReferrerPolicy::kDefault, security_origin,
         false /* starter_secure_context */,
         CalculateHttpsState(security_origin), worker_clients,
-        mojom::IPAddressSpace::kLocal, nullptr,
-        base::UnguessableToken::Create(),
+        nullptr /* content_settings_client */, mojom::IPAddressSpace::kLocal,
+        nullptr, base::UnguessableToken::Create(),
         std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
         kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
 

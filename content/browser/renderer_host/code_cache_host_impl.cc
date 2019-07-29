@@ -104,7 +104,7 @@ CodeCacheHostImpl::CodeCacheHostImpl(
       generated_code_cache_context_(std::move(generated_code_cache_context)) {}
 
 CodeCacheHostImpl::~CodeCacheHostImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 // static
@@ -113,7 +113,7 @@ void CodeCacheHostImpl::Create(
     scoped_refptr<CacheStorageContextImpl> cache_storage_context,
     scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context,
     blink::mojom::CodeCacheHostRequest request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   mojo::MakeStrongBinding(
       std::make_unique<CodeCacheHostImpl>(
           render_process_id, std::move(cache_storage_context),
@@ -131,7 +131,7 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadata(
     return;
   }
 
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GeneratedCodeCache* code_cache = GetCodeCache(cache_type);
   if (!code_cache)

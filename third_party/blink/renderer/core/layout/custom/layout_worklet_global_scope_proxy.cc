@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -39,9 +38,8 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
   String global_scope_name =
       StringView("LayoutWorklet #") + String::Number(global_scope_number);
 
+  // TODO(bashi): Pass nullptr instead of an empty WorkerClients?
   auto* worker_clients = MakeGarbageCollected<WorkerClients>();
-  ProvideContentSettingsClientToWorker(
-      worker_clients, frame->Client()->CreateWorkerContentSettingsClient());
 
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       document->Url(), mojom::ScriptType::kModule,
@@ -50,9 +48,13 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
       document->GetContentSecurityPolicy()->Headers(),
       document->GetReferrerPolicy(), document->GetSecurityOrigin(),
       document->IsSecureContext(), document->GetHttpsState(), worker_clients,
+      frame->Client()->CreateWorkerContentSettingsClient(),
       document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,
-      kV8CacheOptionsDefault, module_responses_map);
+      kV8CacheOptionsDefault, module_responses_map,
+      service_manager::mojom::blink::InterfaceProviderPtrInfo(),
+      BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
+      base::UnguessableToken() /* agent_cluster_id */);
   global_scope_ = LayoutWorkletGlobalScope::Create(
       frame, std::move(creation_params), *reporting_proxy_,
       pending_layout_registry);

@@ -193,9 +193,10 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       "UserAgent", nullptr /* web_worker_fetch_context */,
       Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
       security_origin_.get(), true /* is_secure_context */, HttpsState::kModern,
-      nullptr /* worker_clients */, mojom::IPAddressSpace::kLocal,
-      nullptr /* origin_trial_token */, base::UnguessableToken::Create(),
-      nullptr /* worker_settings */, kV8CacheOptionsDefault,
+      nullptr /* worker_clients */, nullptr /* content_settings_client */,
+      mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_token */,
+      base::UnguessableToken::Create(), nullptr /* worker_settings */,
+      kV8CacheOptionsDefault,
       MakeGarbageCollected<WorkletModuleResponsesMap>());
   global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
       std::move(creation_params), *reporting_proxy_, &GetFrame());

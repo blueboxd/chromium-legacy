@@ -7,6 +7,8 @@
 #include <xdg-shell-unstable-v6-client-protocol.h>
 #include <memory>
 
+#include "base/environment.h"
+#include "base/nix/xdg_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
@@ -223,8 +225,37 @@ bool XDGPopupWrapperV6::Initialize(WaylandConnection* connection,
 
   zxdg_positioner_v6_destroy(positioner);
 
-  zxdg_popup_v6_grab(xdg_popup_.get(), connection->seat(),
-                     connection->serial());
+  // According to the spec, the grab call can only be done on a key press, mouse
+  // press or touch down. However, there is a problem with popup windows and
+  // touch events so long as Chromium creates them only on consequent touch up
+  // events. That results in Wayland compositors dismissing popups. To fix
+  // the issue, do not use grab with touch events. Please note that explicit
+  // grab means that a Wayland compositor dismisses a popup whenever the user
+  // clicks outside the created surfaces. If the explicit grab is not used, the
+  // popups are not dismissed in such cases. What is more, current non-ozone X11
+  // implementation does the same. This means there is no functionality changes
+  // and we do things right.
+  //
+  // We cannot know what was the last event. Instead, we can check if the window
+  // has pointer or keyboard focus. If so, the popup will be explicitly grabbed.
+  //
+  // There is a bug in the gnome/mutter - if explicit grab is not used,
+  // unmapping of a wl_surface (aka destroying xdg_popup and surface) to hide a
+  // window results in weird behaviour. That is, a popup continues to be visible
+  // on a display and it results in a crash of the entire session. Thus, just
+  // continue to use grab here and avoid showing popups for touch events on
+  // gnome/mutter. That is better than crashing the entire system. Otherwise,
+  // Chromium has to change the way how it reacts on touch events - instead of
+  // creating a menu on touch up, it must do it on touch down events.
+  // https://gitlab.gnome.org/GNOME/mutter/issues/698#note_562601.
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  if ((base::nix::GetDesktopEnvironment(env.get()) ==
+       base::nix::DESKTOP_ENVIRONMENT_GNOME) ||
+      (wayland_window_->parent_window()->has_pointer_focus() ||
+       wayland_window_->parent_window()->has_keyboard_focus())) {
+    zxdg_popup_v6_grab(xdg_popup_.get(), connection->seat(),
+                       connection->serial());
+  }
   zxdg_popup_v6_add_listener(xdg_popup_.get(), &zxdg_popup_v6_listener, this);
 
   wl_surface_commit(surface);

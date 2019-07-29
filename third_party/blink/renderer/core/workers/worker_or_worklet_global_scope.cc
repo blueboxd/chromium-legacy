@@ -175,6 +175,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     const base::UnguessableToken& parent_devtools_token,
     V8CacheOptions v8_cache_options,
     WorkerClients* worker_clients,
+    std::unique_ptr<WebContentSettingsClient> content_settings_client,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
     : ExecutionContext(isolate,
@@ -185,6 +186,7 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
       name_(name),
       parent_devtools_token_(parent_devtools_token),
       worker_clients_(worker_clients),
+      content_settings_client_(std::move(content_settings_client)),
       web_worker_fetch_context_(std::move(web_worker_fetch_context)),
       script_controller_(
           MakeGarbageCollected<WorkerOrWorkletScriptController>(this, isolate)),

@@ -1036,7 +1036,7 @@ void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
       LOG_ASSERT(base::StringToDouble(field, &video_file->min_fps_render));
     }
     if (!fields[6].empty()) {
-      std::string field(fields[5].begin(), fields[5].end());
+      std::string field(fields[6].begin(), fields[6].end());
       LOG_ASSERT(base::StringToDouble(field, &video_file->min_fps_no_render));
     }
     // Default to H264 baseline if no profile provided.

@@ -104,7 +104,7 @@ void NtpBackgroundService::FetchCollectionInfo() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = collections_api_url_;
   resource_request->method = "POST";
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   collections_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -197,7 +197,7 @@ void NtpBackgroundService::FetchCollectionImageInfo(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = collection_images_api_url_;
   resource_request->method = "POST";
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   collections_image_info_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -294,7 +294,7 @@ void NtpBackgroundService::FetchNextCollectionImage(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = next_image_api_url_;
   resource_request->method = "POST";
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   next_image_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);

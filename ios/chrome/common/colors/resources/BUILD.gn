@@ -19,6 +19,7 @@ group("resources") {
     ":textfield_placeholder_color",
     ":textfield_placeholder_dark_color",
     ":tint_color",
+    ":tint_dark_color",
   ]
 }
 
@@ -97,5 +98,11 @@ colorset("textfield_background_dark_color") {
 colorset("tint_color") {
   sources = [
     "tint_color.colorset/Contents.json",
+  ]
+}
+
+colorset("tint_dark_color") {
+  sources = [
+    "tint_dark_color.colorset/Contents.json",
   ]
 }

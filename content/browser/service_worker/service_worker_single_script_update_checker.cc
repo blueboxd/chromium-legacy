@@ -157,7 +157,6 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     // default value.
     // TODO(https://crbug.com/972458): Need the test.
     resource_request.credentials_mode = network::mojom::CredentialsMode::kOmit;
-    resource_request.allow_credentials = false;
 
     // |fetch_request_context_type| and |resource_type| roughly correspond to
     // the request's |destination| in the Fetch spec.

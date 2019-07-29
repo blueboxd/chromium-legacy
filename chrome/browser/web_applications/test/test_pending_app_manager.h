@@ -54,7 +54,6 @@ class TestPendingAppManager : public PendingAppManager {
                    const RepeatingInstallCallback& callback) override;
   void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
-  void Shutdown() override {}
 
  private:
   void DoInstall(ExternalInstallOptions install_options,

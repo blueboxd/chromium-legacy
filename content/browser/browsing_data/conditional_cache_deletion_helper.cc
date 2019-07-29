@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,7 +39,6 @@ ConditionalCacheDeletionHelper::ConditionalCacheDeletionHelper(
       condition_(std::move(condition)),
       current_entry_(nullptr),
       previous_entry_(nullptr) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 // static
@@ -70,7 +70,7 @@ ConditionalCacheDeletionHelper::CreateCustomKeyURLAndTimeCondition(
 
 int ConditionalCacheDeletionHelper::DeleteAndDestroySelfWhenFinished(
     net::CompletionOnceCallback completion_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   completion_callback_ = std::move(completion_callback);
   iterator_ = cache_->CreateIterator();
@@ -82,6 +82,7 @@ int ConditionalCacheDeletionHelper::DeleteAndDestroySelfWhenFinished(
 ConditionalCacheDeletionHelper::~ConditionalCacheDeletionHelper() {}
 
 void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   while (error != net::ERR_IO_PENDING) {
     // If the entry obtained in the previous iteration matches the condition,
     // mark it for deletion. The iterator is already one step forward, so it

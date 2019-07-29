@@ -4169,6 +4169,12 @@ void AXPlatformNodeAuraLinux::MergeSpellingIntoAtkTextAttributesAtOffset(
           << "An leaf text range should only span a single object.";
       auto* node = static_cast<AXPlatformNodeAuraLinux*>(
           delegate->GetFromNodeID(leaf_text_range.anchor()->GetAnchor()->id()));
+
+      // The AXNodeRange may include this node as well. We need to skip
+      // that one to avoid an infinite recursive loop.
+      if (node == this)
+        continue;
+
       node->MergeSpellingIntoAtkTextAttributesAtOffset(anchor_start_offset,
                                                        text_attributes);
       anchor_start_offset += leaf_text_range.GetText().length();

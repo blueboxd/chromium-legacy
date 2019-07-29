@@ -31,10 +31,12 @@ CrostiniExportImportNotification::CrostiniExportImportNotification(
     Profile* profile,
     ExportImportType type,
     const std::string& notification_id,
-    const base::FilePath& path)
+    base::FilePath path,
+    ContainerId container_id)
     : profile_(profile),
       type_(type),
-      path_(path),
+      path_(std::move(path)),
+      container_id_(std::move(container_id)),
       weak_ptr_factory_(this) {
   DCHECK(type == ExportImportType::EXPORT || type == ExportImportType::IMPORT);
 
@@ -60,10 +62,26 @@ CrostiniExportImportNotification::CrostiniExportImportNotification(
 
 CrostiniExportImportNotification::~CrostiniExportImportNotification() = default;
 
+void CrostiniExportImportNotification::ForceRedisplay() {
+  hidden_ = false;
+
+  NotificationDisplayService::GetForProfile(profile_)->Display(
+      NotificationHandler::Type::TRANSIENT, *notification_,
+      /*metadata=*/nullptr);
+}
+
 void CrostiniExportImportNotification::SetStatusRunning(int progress_percent) {
+  DCHECK(status_ == Status::RUNNING || status_ == Status::CANCELLING);
+  // Progress updates can still be received while the notification is being
+  // cancelled. These should not be displayed, as the operation will eventually
+  // cancel (or fail to cancel).
+  if (status_ == Status::CANCELLING) {
+    return;
+  }
+
   status_ = Status::RUNNING;
 
-  if (closed_) {
+  if (hidden_) {
     return;
   }
 
@@ -75,16 +93,41 @@ void CrostiniExportImportNotification::SetStatusRunning(int progress_percent) {
           : IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_RUNNING));
   notification_->set_message(
       GetTimeRemainingMessage(started_, progress_percent));
-  notification_->set_buttons({});
+  notification_->set_buttons({message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CANCEL))});
   notification_->set_never_timeout(true);
   notification_->set_progress(progress_percent);
 
-  NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification_,
-      /*metadata=*/nullptr);
+  ForceRedisplay();
+}
+
+void CrostiniExportImportNotification::SetStatusCancelling() {
+  DCHECK(status_ == Status::RUNNING);
+
+  status_ = Status::CANCELLING;
+
+  if (hidden_) {
+    return;
+  }
+
+  notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
+  notification_->set_accent_color(ash::kSystemNotificationColorNormal);
+  notification_->set_title(l10n_util::GetStringUTF16(
+      type_ == ExportImportType::EXPORT
+          ? IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_CANCELLING
+          : IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_CANCELLING));
+  notification_->set_message({});
+  notification_->set_buttons({});
+  notification_->set_never_timeout(true);
+  notification_->set_progress(-1);  // Infinite progress bar
+
+  ForceRedisplay();
 }
 
 void CrostiniExportImportNotification::SetStatusDone() {
+  DCHECK(status_ == Status::RUNNING ||
+         (type_ == ExportImportType::IMPORT && status_ == Status::CANCELLING));
+
   status_ = Status::DONE;
 
   notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
@@ -104,9 +147,25 @@ void CrostiniExportImportNotification::SetStatusDone() {
           : std::vector<message_center::ButtonInfo>{});
   notification_->set_never_timeout(false);
 
-  NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification_,
-      /*metadata=*/nullptr);
+  ForceRedisplay();
+}
+
+void CrostiniExportImportNotification::SetStatusCancelled() {
+  DCHECK(status_ == Status::CANCELLING);
+
+  status_ = Status::CANCELLED;
+
+  notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
+  notification_->set_accent_color(ash::kSystemNotificationColorNormal);
+  notification_->set_title(l10n_util::GetStringUTF16(
+      type_ == ExportImportType::EXPORT
+          ? IDS_CROSTINI_EXPORT_NOTIFICATION_TITLE_CANCELLED
+          : IDS_CROSTINI_IMPORT_NOTIFICATION_TITLE_CANCELLED));
+  notification_->set_message({});
+  notification_->set_buttons({});
+  notification_->set_never_timeout(false);
+
+  ForceRedisplay();
 }
 
 void CrostiniExportImportNotification::SetStatusFailed() {
@@ -144,6 +203,7 @@ void CrostiniExportImportNotification::SetStatusFailedConcurrentOperation(
 
 void CrostiniExportImportNotification::SetStatusFailed(
     const base::string16& message) {
+  DCHECK(status_ == Status::RUNNING || status_ == Status::CANCELLING);
   status_ = Status::FAILED;
 
   notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
@@ -156,15 +216,22 @@ void CrostiniExportImportNotification::SetStatusFailed(
   notification_->set_buttons({});
   notification_->set_never_timeout(false);
 
-  NotificationDisplayService::GetForProfile(profile_)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification_,
-      /*metadata=*/nullptr);
+  ForceRedisplay();
 }
 
 void CrostiniExportImportNotification::Close(bool by_user) {
-  closed_ = true;
-  if (status_ != Status::RUNNING) {
-    delete this;
+  switch (status_) {
+    case Status::RUNNING:
+    case Status::CANCELLING:
+      hidden_ = true;
+      return;
+    case Status::DONE:
+    case Status::CANCELLED:
+    case Status::FAILED:
+      delete this;
+      return;
+    default:
+      NOTREACHED();
   }
 }
 
@@ -176,6 +243,11 @@ void CrostiniExportImportNotification::Click(
   }
 
   switch (status_) {
+    case Status::RUNNING:
+      DCHECK(*button_index == 1);
+      CrostiniExportImport::GetForProfile(profile_)->CancelOperation(
+          type_, container_id_);
+      return;
     case Status::DONE:
       if (type_ == ExportImportType::EXPORT) {
         DCHECK(*button_index == 1);

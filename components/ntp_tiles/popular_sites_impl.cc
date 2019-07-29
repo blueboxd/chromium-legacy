@@ -443,7 +443,7 @@ void PopularSitesImpl::FetchPopularSites() {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = pending_url_;
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->SetRetryOptions(

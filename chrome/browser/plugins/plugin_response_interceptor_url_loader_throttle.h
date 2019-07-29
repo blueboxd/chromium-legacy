@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/common/url_loader_throttle.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 class BrowserContext;
@@ -25,7 +25,7 @@ class ResourceContext;
 // TransferrableURLLoader that allows it to map from that URL to the original
 // URLLoader interface pointer.
 class PluginResponseInterceptorURLLoaderThrottle
-    : public content::URLLoaderThrottle {
+    : public blink::URLLoaderThrottle {
  public:
   PluginResponseInterceptorURLLoaderThrottle(
       content::ResourceContext* resource_context,
@@ -38,7 +38,7 @@ class PluginResponseInterceptorURLLoaderThrottle
   ~PluginResponseInterceptorURLLoaderThrottle() override;
 
  private:
-  // content::URLLoaderThrottle overrides;
+  // blink::URLLoaderThrottle overrides;
   void WillProcessResponse(const GURL& response_url,
                            network::ResourceResponseHead* response_head,
                            bool* defer) override;

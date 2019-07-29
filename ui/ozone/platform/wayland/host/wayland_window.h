@@ -78,11 +78,12 @@ class WaylandWindow : public PlatformWindow,
 
   // Set whether this window has keyboard focus and should dispatch key events.
   void set_keyboard_focus(bool focus) { has_keyboard_focus_ = focus; }
-
   bool has_keyboard_focus() const { return has_keyboard_focus_; }
 
-  // Set whether this window has touch focus and should dispatch touch events.
+  // The methods set or return whether this window has touch focus and should
+  // dispatch touch events.
   void set_touch_focus(bool focus) { has_touch_focus_ = focus; }
+  bool has_touch_focus() const { return has_touch_focus_; }
 
   // Set a child of this window. It is very important in case of nested
   // xdg_popups as long as they must be destroyed in the back order.

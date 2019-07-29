@@ -26,6 +26,12 @@ std::unique_ptr<WebAppUiManager> WebAppUiManager::Create(Profile* profile) {
   return std::make_unique<WebAppUiManagerImpl>(profile);
 }
 
+// static
+WebAppUiManagerImpl* WebAppUiManagerImpl::Get(Profile* profile) {
+  auto* provider = WebAppProvider::Get(profile);
+  return provider ? provider->ui_manager().AsImpl() : nullptr;
+}
+
 WebAppUiManagerImpl::WebAppUiManagerImpl(Profile* profile) : profile_(profile) {
   for (Browser* browser : *BrowserList::GetInstance()) {
     base::Optional<AppId> app_id = GetAppIdForBrowser(browser);
@@ -46,6 +52,10 @@ WebAppUiManagerImpl::~WebAppUiManagerImpl() {
 
 WebAppDialogManager& WebAppUiManagerImpl::dialog_manager() {
   return *dialog_manager_;
+}
+
+WebAppUiManagerImpl* WebAppUiManagerImpl::AsImpl() {
+  return this;
 }
 
 size_t WebAppUiManagerImpl::GetNumWindowsForApp(const AppId& app_id) {

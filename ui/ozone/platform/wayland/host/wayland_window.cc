@@ -105,7 +105,8 @@ WaylandWindow::~WaylandWindow() {
   }
 
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-  connection_->wayland_window_manager()->RemoveWindow(GetWidget());
+  if (surface_)
+    connection_->wayland_window_manager()->RemoveWindow(GetWidget());
 
   if (parent_window_)
     parent_window_->set_child_window(nullptr);
@@ -138,6 +139,8 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   wl_surface_set_user_data(surface_.get(), this);
   AddSurfaceListener();
 
+  connection_->wayland_window_manager()->AddWindow(GetWidget(), this);
+
   ui::PlatformWindowType ui_window_type = properties.type;
   switch (ui_window_type) {
     case ui::PlatformWindowType::kMenu:
@@ -145,7 +148,11 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
       parent_window_ = GetParentWindow(properties.parent_widget);
 
       // Popups need to know their scale earlier to position themselves.
-      DCHECK(parent_window_);
+      if (!parent_window_) {
+        LOG(ERROR) << "Failed to get a parent window for this popup";
+        return false;
+      }
+
       SetBufferScale(parent_window_->buffer_scale_, false);
       ui_scale_ = parent_window_->ui_scale_;
 
@@ -165,7 +172,6 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
 
   connection_->ScheduleFlush();
 
-  connection_->wayland_window_manager()->AddWindow(GetWidget(), this);
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 

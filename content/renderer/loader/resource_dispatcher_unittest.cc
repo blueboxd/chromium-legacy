@@ -139,7 +139,7 @@ class ResourceDispatcherTest : public testing::Test,
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         TRAFFIC_ANNOTATION_FOR_TESTS, false, std::move(peer),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),
-        std::vector<std::unique_ptr<URLLoaderThrottle>>(),
+        std::vector<std::unique_ptr<blink::URLLoaderThrottle>>(),
         nullptr /* navigation_response_override_params */);
     peer_context->request_id = request_id;
     return request_id;

@@ -10,11 +10,11 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/common/mime_sniffing_url_loader.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -73,9 +73,9 @@ class MojoDataPipeSender {
   uint32_t sent_bytes_ = 0;
 };
 
-class MockDelegate : public URLLoaderThrottle::Delegate {
+class MockDelegate : public blink::URLLoaderThrottle::Delegate {
  public:
-  // Implements URLLoaderThrottle::Delegate.
+  // Implements blink::URLLoaderThrottle::Delegate.
   void CancelWithError(int error_code,
                        base::StringPiece custom_reason) override {
     NOTIMPLEMENTED();

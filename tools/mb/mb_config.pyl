@@ -856,7 +856,6 @@
       'gpu-fyi-try-win10-nvidia-rel': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-try-win10-nvidia-dbg': 'gpu_tests_debug_trybot_x86',
       'gpu-try-win10-nvidia-rel': 'gpu_tests_release_trybot_x86_resource_whitelisting',
-      'win7_chromium_rel_loc_exp': 'gpu_tests_release_trybot_x86_resource_whitelisting',
       'win10_chromium_x64_dbg_ng': 'gpu_tests_debug_trybot',
       'win10_chromium_x64_rel_ng': 'gpu_tests_release_trybot_resource_whitelisting',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',

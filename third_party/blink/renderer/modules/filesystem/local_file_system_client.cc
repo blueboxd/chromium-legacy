@@ -37,7 +37,6 @@
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -55,8 +54,11 @@ bool LocalFileSystemClient::RequestFileSystemAccessSync(
     return false;
   }
 
-  return WorkerContentSettingsClient::From(*To<WorkerGlobalScope>(context))
-      ->RequestFileSystemAccessSync();
+  WebContentSettingsClient* content_settings_client =
+      To<WorkerGlobalScope>(context)->ContentSettingsClient();
+  if (!content_settings_client)
+    return true;
+  return content_settings_client->RequestFileSystemAccessSync();
 }
 
 void LocalFileSystemClient::RequestFileSystemAccessAsync(

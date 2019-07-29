@@ -226,9 +226,7 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
                                 Document& document,
                                 ResourceClient* link_client) {
   ResourceRequest resource_request(document.CompleteURL(params.href));
-  resource_request.SetReferrerPolicy(
-      params.referrer_policy,
-      ResourceRequest::SetReferrerPolicyLocation::kLoadStylesheet);
+  resource_request.SetReferrerPolicy(params.referrer_policy);
 
   mojom::FetchImportanceMode importance_mode =
       GetFetchImportanceAttributeValue(params.importance);

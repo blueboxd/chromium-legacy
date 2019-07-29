@@ -10,6 +10,7 @@ include_rules = [
   "+net/http",
   "+services/network/public/cpp",
   "+services/service_manager/public/cpp",
+  "+third_party/blink/public/common/loader/url_loader_throttle.h",
   "+ui/accessibility",
   "+ui/base",
   "+ui/gfx",

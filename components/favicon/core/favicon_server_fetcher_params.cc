@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "components/favicon_base/favicon_util.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -14,6 +15,13 @@ namespace {
 
 const char kClientParamDesktop[] = "client=chrome_desktop";
 const char kClientParamMobile[] = "client=chrome";
+// TODO(https://crbug.com/982810): Refactor to remove ios specific code from
+// here.
+#if defined(OS_IOS)
+const int kMobileSizeInDip = 32;
+#else
+const int kMobileSizeInDip = 24;
+#endif
 
 float GetMaxDeviceScaleFactor() {
   std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
@@ -32,10 +40,10 @@ FaviconServerFetcherParams::CreateForDesktop(const GURL& page_url) {
 }
 
 std::unique_ptr<FaviconServerFetcherParams>
-FaviconServerFetcherParams::CreateForMobile(const GURL& page_url,
-                                            int desired_size_in_pixel) {
+FaviconServerFetcherParams::CreateForMobile(const GURL& page_url) {
   return base::WrapUnique(new FaviconServerFetcherParams(
-      page_url, favicon_base::IconType::kTouchIcon, desired_size_in_pixel,
+      page_url, favicon_base::IconType::kTouchIcon,
+      std::ceil(kMobileSizeInDip * GetMaxDeviceScaleFactor()),
       kClientParamMobile));
 }
 

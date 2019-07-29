@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/device_scheduled_update_checker.h"
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -34,6 +35,9 @@
 namespace policy {
 
 namespace {
+
+// Number of days in a week.
+constexpr int kDaysInAWeek = 7;
 
 // Time zones that will be used in tests.
 constexpr char kESTTimeZoneID[] = "America/New_York";
@@ -148,6 +152,53 @@ base::TimeDelta CalculateTimerExpirationDelayInDailyPolicyForTimeZone(
   return result;
 }
 
+// Returns the number of days in |month| in the epoch year i.e. 1970.
+int GetDaysInMonthInEpochYear(UCalendarMonths month) {
+  switch (month) {
+    case UCAL_JANUARY:
+    case UCAL_MARCH:
+    case UCAL_MAY:
+    case UCAL_JULY:
+    case UCAL_AUGUST:
+    case UCAL_OCTOBER:
+    case UCAL_DECEMBER:
+      return 31;
+    case UCAL_FEBRUARY:
+      return 28;
+    case UCAL_APRIL:
+    case UCAL_JUNE:
+    case UCAL_SEPTEMBER:
+    case UCAL_NOVEMBER:
+      return 30;
+    case UCAL_UNDECIMBER:
+      break;
+  }
+  NOTREACHED();
+  return -1;
+}
+
+// Advances the month in time and sets day to min(|day_of_month|, max days in
+// new month). Returns true if |time| is valid after these operations, false
+// otherwise.
+bool AdvanceTimeAndSetDayOfMonth(int day_of_month, icu::Calendar* time) {
+  DCHECK(time);
+  UErrorCode status = U_ZERO_ERROR;
+  time->add(UCAL_DAY_OF_MONTH, 1, status);
+  if (U_FAILURE(status)) {
+    ADD_FAILURE() << "Failed to advance month";
+    return false;
+  }
+
+  // Cap day of month to a valid day in the incremented month.
+  int cur_max_days_in_month = time->getActualMaximum(UCAL_DAY_OF_MONTH, status);
+  if (U_FAILURE(status)) {
+    ADD_FAILURE() << "Failed to get max days in month";
+    return false;
+  }
+  time->set(UCAL_DAY_OF_MONTH, std::min(day_of_month, cur_max_days_in_month));
+  return true;
+}
+
 }  // namespace
 
 class DeviceScheduledUpdateCheckerForTest
@@ -188,6 +239,14 @@ class DeviceScheduledUpdateCheckerForTest
 
   const icu::TimeZone& GetTimeZone() override { return *time_zone_; }
 
+  base::TimeDelta CalculateNextUpdateCheckTimerDelay(
+      base::Time cur_time) override {
+    if (simulate_calculate_next_update_check_failure_)
+      return base::TimeDelta();
+    return DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
+        cur_time);
+  }
+
  private:
   void OnUpdateCheckTimerExpired() override {
     ++update_check_timer_expirations_;
@@ -198,14 +257,6 @@ class DeviceScheduledUpdateCheckerForTest
     if (result)
       ++update_check_completions_;
     DeviceScheduledUpdateChecker::OnUpdateCheckCompletion(result);
-  }
-
-  base::TimeDelta CalculateNextUpdateCheckTimerDelay(
-      base::Time cur_time) override {
-    if (simulate_calculate_next_update_check_failure_)
-      return base::TimeDelta();
-    return DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
-        cur_time);
   }
 
   base::TimeTicks GetTicksSinceBoot() override {
@@ -234,7 +285,7 @@ class DeviceScheduledUpdateCheckerForTest
 };
 
 class DeviceScheduledUpdateCheckerTest : public testing::Test {
- protected:
+ public:
   DeviceScheduledUpdateCheckerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO,
@@ -261,6 +312,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     chromeos::PowerManagerClient::Shutdown();
   }
 
+ protected:
   // Notifies status update from |fake_update_engine_client_| and runs scheduled
   // tasks to ensure that the pending policy refresh completes.
   void NotifyUpdateCheckStatus(
@@ -580,10 +632,9 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfMonthlyUpdateCheckIsScheduled) {
       update_checker_internal::ParseScheduledUpdate(
           policy_and_next_update_check_time.first);
   ASSERT_TRUE(scheduled_update_check_data);
-  int hour = scheduled_update_check_data->hour;
-  int minute = scheduled_update_check_data->minute;
   ASSERT_TRUE(scheduled_update_check_data->day_of_month);
-  int day_of_month = scheduled_update_check_data->day_of_month.value();
+  auto first_update_check_icu_time =
+      std::move(policy_and_next_update_check_time.second);
 
   // Set a new scheduled update setting, fast forward to right before the
   // expected update and then check if an update check is not scheduled.
@@ -611,24 +662,91 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckIfMonthlyUpdateCheckIsScheduled) {
                          expected_update_check_completions));
 
   // The next update check should happen at the same day of month next month.
-  auto update_check_time = std::move(policy_and_next_update_check_time.second);
   expected_update_checks += 1;
   expected_update_check_requests += 1;
   expected_update_check_completions += 1;
-  EXPECT_TRUE(update_checker_internal::SetNextMonthlyDate(
-      hour, minute, day_of_month, update_check_time.get()));
-  base::Time next_check_time =
-      update_checker_internal::IcuToBaseTime(*update_check_time);
-  // This should be always set in a virtual time environment.
-  EXPECT_FALSE(next_check_time.is_null());
-  delay_from_now =
-      next_check_time - scoped_task_environment_.GetMockClock()->Now();
+  EXPECT_TRUE(AdvanceTimeAndSetDayOfMonth(
+      scheduled_update_check_data->day_of_month.value(),
+      first_update_check_icu_time.get()));
+  base::Time second_update_check_time =
+      update_checker_internal::IcuToBaseTime(*first_update_check_icu_time);
+  base::TimeDelta second_update_check_delay =
+      second_update_check_time -
+      device_scheduled_update_checker_->GetCurrentTime();
+  EXPECT_TRUE(second_update_check_delay > base::TimeDelta());
+  scoped_task_environment_.FastForwardBy(second_update_check_delay);
+  // Simulate update check succeeding.
+  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
+                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
+                         expected_update_check_completions));
+}
+
+TEST_F(DeviceScheduledUpdateCheckerTest, CheckMonthlyRolloverLogic) {
+  // The default time at the beginning is 31st December, 1969, 19:00:00.000
+  // America/New_York. Move it to 31st January, 1970 to test the rollover logic.
+  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromDays(
+      GetDaysInMonthInEpochYear(static_cast<UCalendarMonths>(UCAL_JANUARY))));
+
+  // Set the first update check time to be at 31st January, 1970, 20:00:00.000
+  // America/New_York.
+  base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
+  auto policy_and_next_update_check_time = CreatePolicy(
+      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kMonthly);
+  auto scheduled_update_check_data =
+      update_checker_internal::ParseScheduledUpdate(
+          policy_and_next_update_check_time.first);
+  ASSERT_TRUE(scheduled_update_check_data);
+  ASSERT_TRUE(scheduled_update_check_data->day_of_month);
+  auto update_check_icu_time =
+      std::move(policy_and_next_update_check_time.second);
+
+  // Set a new scheduled update setting. Fast forward to the expected update
+  // check time and then check if the update check is scheduled.
+  int expected_update_checks = 1;
+  int expected_update_check_requests = 1;
+  int expected_update_check_completions = 1;
+  cros_settings_.device_settings()->Set(
+      chromeos::kDeviceScheduledUpdateCheck,
+      std::move(policy_and_next_update_check_time.first));
   scoped_task_environment_.FastForwardBy(delay_from_now);
   // Simulate update check succeeding.
   NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
                               UPDATE_STATUS_UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
+
+  // Check that an update check happens at the last day of every month.
+  for (int month = UCAL_FEBRUARY; month <= UCAL_DECEMBER; month++) {
+    EXPECT_TRUE(AdvanceTimeAndSetDayOfMonth(
+        scheduled_update_check_data->day_of_month.value(),
+        update_check_icu_time.get()));
+    base::Time expected_next_update_check_time =
+        update_checker_internal::IcuToBaseTime(*update_check_icu_time);
+    base::TimeDelta expected_next_update_check_delay =
+        expected_next_update_check_time -
+        device_scheduled_update_checker_->GetCurrentTime();
+    // This should be always set in a virtual time environment.
+    EXPECT_TRUE(expected_next_update_check_delay > base::TimeDelta());
+    const base::TimeDelta small_delay = base::TimeDelta::FromMilliseconds(1);
+    scoped_task_environment_.FastForwardBy(expected_next_update_check_delay -
+                                           small_delay);
+    EXPECT_TRUE(CheckStats(expected_update_checks,
+                           expected_update_check_requests,
+                           expected_update_check_completions));
+
+    expected_update_checks += 1;
+    expected_update_check_requests += 1;
+    expected_update_check_completions += 1;
+    scoped_task_environment_.FastForwardBy(small_delay);
+    // Simulate update check succeeding.
+    NotifyUpdateCheckStatus(
+        chromeos::UpdateEngineClient::UpdateStatusOperation::
+            UPDATE_STATUS_UPDATED_NEED_REBOOT);
+    EXPECT_TRUE(CheckStats(expected_update_checks,
+                           expected_update_check_requests,
+                           expected_update_check_completions));
+  }
 }
 
 // Checks if an update check timer can't be started, retries are scheduled to
@@ -780,7 +898,7 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckRetryLogicUpdateCheckFailure) {
   // No retries should be scheduled till the next update check timer fires. Fast
   // forward to just before the timer firing and check.
   const base::TimeDelta delay_till_next_update_check_timer =
-      base::TimeDelta::FromDays(update_checker_internal::kDaysInAWeek) -
+      base::TimeDelta::FromDays(kDaysInAWeek) -
       (update_checker_internal::kMaxOsAndPoliciesUpdateCheckerRetryIterations *
        update_checker_internal::kOsAndPoliciesUpdateCheckerRetryTime);
   const base::TimeDelta small_delay = base::TimeDelta::FromMilliseconds(1);

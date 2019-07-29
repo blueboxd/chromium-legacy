@@ -165,6 +165,7 @@ public class ManageSyncPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest(message = "https://crbug.com/987827")
     public void testPaymentsIntegrationCheckboxDisablesPaymentsIntegration() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         mSyncTestRule.setPaymentsIntegrationEnabled(true);

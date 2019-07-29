@@ -255,11 +255,12 @@ void ResourceLoadObserverForFrame::DidFinishLoading(
   document.CheckCompleted();
 }
 
-void ResourceLoadObserverForFrame::DidFailLoading(const KURL&,
-                                                  uint64_t identifier,
-                                                  const ResourceError& error,
-                                                  int64_t,
-                                                  bool is_internal_request) {
+void ResourceLoadObserverForFrame::DidFailLoading(
+    const KURL&,
+    uint64_t identifier,
+    const ResourceError& error,
+    int64_t,
+    IsInternalRequest is_internal_request) {
   LocalFrame& frame = frame_or_imported_document_->GetFrame();
   DocumentLoader& document_loader =
       frame_or_imported_document_->GetMasterDocumentLoader();

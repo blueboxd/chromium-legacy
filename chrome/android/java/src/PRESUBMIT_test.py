@@ -77,9 +77,6 @@ class CheckAlertDialogBuilder(unittest.TestCase):
     """Examples of when AlertDialog.Builder should not be flagged."""
     mock_input = MockInputApi()
     mock_input.files = [
-        MockFile('chrome/android/java/src/org/chromium/chrome/browser/signin'
-                 '/AccountAdder.java',
-                 ['new AlertDialog.Builder()']),
         MockFile('path/One.java', ['AlertDialog.Builder']),
         MockFile('path/Two.java', ['// do not: new AlertDialog.Builder()']),
         MockFile('path/Three.java',

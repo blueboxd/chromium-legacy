@@ -143,7 +143,7 @@ TEST_F(ModelTypeRegistryTest, DirectoryTypes) {
 
   // Try registering type with unknown worker.
   EXPECT_DCHECK_DEATH(
-      registry()->RegisterDirectoryType(SESSIONS, GROUP_HISTORY));
+      registry()->RegisterDirectoryType(SESSIONS, GROUP_PASSWORD));
 }
 
 TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {

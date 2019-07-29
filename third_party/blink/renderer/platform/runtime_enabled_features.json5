@@ -135,10 +135,12 @@
     {
       name: "AutomaticLazyFrameLoading",
       depends_on: ["LazyFrameLoading"],
+      status: "experimental",
     },
     {
       name: "AutomaticLazyImageLoading",
       depends_on: ["LazyImageLoading"],
+      status: "experimental",
     },
     {
       name: "AutomationControlled",
@@ -636,6 +638,11 @@
     {
       name: "FirstContentfulPaintPlusPlus",
       status: "stable",
+    },
+    // Perform style recalc traversal in the flat tree order, including marking
+    // flat-tree instead of shadow-including ancestors for child dirtiness.
+    {
+      name: "FlatTreeStyleRecalc",
     },
     {
       name: "FocuslessSpatialNavigation",
@@ -1315,10 +1322,12 @@
     {
       name: "RestrictAutomaticLazyFrameLoadingToDataSaver",
       depends_on: ["AutomaticLazyFrameLoading"],
+      status: "experimental",
     },
     {
       name: "RestrictAutomaticLazyImageLoadingToDataSaver",
       depends_on: ["AutomaticLazyImageLoading"],
+      status: "experimental",
     },
     {
       name: "RtcAudioJitterBufferMaxPackets",

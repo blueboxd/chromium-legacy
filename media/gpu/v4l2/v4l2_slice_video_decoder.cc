@@ -795,8 +795,7 @@ scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
   }
 
   return scoped_refptr<V4L2DecodeSurface>(new V4L2ConfigStoreDecodeSurface(
-      std::move(input_buf), std::move(output_buf), std::move(frame),
-      base::DoNothing()));
+      std::move(input_buf), std::move(output_buf), std::move(frame)));
 }
 
 void V4L2SliceVideoDecoder::ReuseOutputBuffer(V4L2ReadableBufferRef buffer) {
@@ -840,7 +839,7 @@ void V4L2SliceVideoDecoder::DecodeSurface(
   DVLOGF(3);
 
   // Enqueue input_buf and output_buf
-  dec_surface->input_buffer().PrepareQueueBuffer(dec_surface);
+  dec_surface->input_buffer().PrepareQueueBuffer(*dec_surface);
   if (!std::move(dec_surface->input_buffer()).QueueMMap()) {
     SetState(State::kError);
     return;

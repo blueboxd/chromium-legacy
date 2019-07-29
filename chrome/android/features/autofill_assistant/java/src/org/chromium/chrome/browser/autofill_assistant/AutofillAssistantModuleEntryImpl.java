@@ -43,7 +43,7 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
 
             AutofillAssistantClient.fromWebContents(tab.getWebContents())
                     .start(initialUrl, parameters, experimentIds, intentExtras,
-                            onboardingCoordinator.transferControls());
+                            onboardingCoordinator);
         });
     }
 

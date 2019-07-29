@@ -82,7 +82,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   // provide a response.
   const network::ResourceRequest* pending_request;
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL, &pending_request));
-  EXPECT_FALSE(pending_request->allow_credentials);
+  EXPECT_EQ(pending_request->credentials_mode,
+            network::mojom::CredentialsMode::kOmit);
 
   network::ResourceResponseHead head;
   std::string raw_header =
@@ -115,7 +116,8 @@ TEST_F(ImageDataFetcherTest, FetchImageDataWithCookies) {
   // provide a response.
   const network::ResourceRequest* pending_request;
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL, &pending_request));
-  EXPECT_TRUE(pending_request->allow_credentials);
+  EXPECT_EQ(pending_request->credentials_mode,
+            network::mojom::CredentialsMode::kInclude);
 
   network::ResourceResponseHead head;
   std::string raw_header =

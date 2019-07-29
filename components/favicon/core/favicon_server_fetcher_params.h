@@ -18,8 +18,7 @@ class FaviconServerFetcherParams {
   static std::unique_ptr<FaviconServerFetcherParams> CreateForDesktop(
       const GURL& page_url);
   static std::unique_ptr<FaviconServerFetcherParams> CreateForMobile(
-      const GURL& page_url,
-      int desired_size_in_pixel);
+      const GURL& page_url);
 
   ~FaviconServerFetcherParams();
 

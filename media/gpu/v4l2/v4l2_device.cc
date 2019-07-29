@@ -552,8 +552,8 @@ size_t V4L2WritableBufferRef::GetPlaneBytesUsed(const size_t plane) const {
 }
 
 void V4L2WritableBufferRef::PrepareQueueBuffer(
-    scoped_refptr<V4L2DecodeSurface> surface) {
-  surface->PrepareQueueBuffer(&(buffer_data_->v4l2_buffer_));
+    const V4L2DecodeSurface& surface) {
+  surface.PrepareQueueBuffer(&(buffer_data_->v4l2_buffer_));
 }
 
 size_t V4L2WritableBufferRef::BufferId() const {

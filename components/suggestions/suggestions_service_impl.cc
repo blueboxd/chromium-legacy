@@ -420,7 +420,7 @@ SuggestionsServiceImpl::CreateSuggestionsRequest(
   resource_request->url = url;
   resource_request->method = "GET";
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   // Add Chrome experiment state to the request headers.
   // TODO: We should call AppendVariationHeaders with explicit
   // variations::SignedIn::kNo If the access_token is empty

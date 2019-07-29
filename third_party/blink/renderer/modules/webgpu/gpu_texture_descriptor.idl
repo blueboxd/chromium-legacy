@@ -5,7 +5,7 @@
 // https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
 
 dictionary GPUTextureDescriptor {
-    GPUExtent3D size;
+    required GPUExtent3D size;
     unsigned long arrayLayerCount = 1;
     unsigned long mipLevelCount = 1;
     unsigned long sampleCount = 1;

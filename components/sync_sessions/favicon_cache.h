@@ -56,8 +56,12 @@ enum IconSize {
 
 struct SyncedFaviconInfo;
 
-// Encapsulates the logic for loading and storing synced favicons.
+// FAVICON SYNC IS DEPRECATED: This class now only serves to the translation
+// from page url to icon url using sessions sync information.
+// TODO(https://crbug.com/978775): Stop implementing syncer::SyncableService
+// and rename the class accordingly.
 // TODO(zea): make this a KeyedService.
+// Encapsulates the logic for loading and storing synced favicons.
 class FaviconCache : public syncer::SyncableService,
                      public history::HistoryServiceObserver {
  public:

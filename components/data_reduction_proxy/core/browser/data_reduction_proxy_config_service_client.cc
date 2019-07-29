@@ -474,7 +474,7 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   resource_request->url = config_service_url_;
   resource_request->method = "POST";
   resource_request->load_flags = net::LOAD_BYPASS_PROXY;
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   // Attach variations headers.
   url_loader_ = variations::CreateSimpleURLLoaderWithVariationsHeader(
       std::move(resource_request), variations::InIncognito::kNo,

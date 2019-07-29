@@ -13,7 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_loader_throttle.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -38,7 +38,7 @@ class UrlCheckerDelegate;
 // and redirect chain are not complete by the time the response headers are
 // available, the request is deferred until all the checks are done. It cancels
 // the load if any URLs turn out to be bad.
-class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
+class BrowserURLLoaderThrottle : public blink::URLLoaderThrottle {
  public:
   using GetDelegateCallback =
       base::OnceCallback<scoped_refptr<UrlCheckerDelegate>(
@@ -52,7 +52,7 @@ class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
 
   ~BrowserURLLoaderThrottle() override;
 
-  // content::URLLoaderThrottle implementation.
+  // blink::URLLoaderThrottle implementation.
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
   void WillRedirectRequest(net::RedirectInfo* redirect_info,

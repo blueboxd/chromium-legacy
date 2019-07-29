@@ -213,6 +213,8 @@ blink_core_sources("css") {
     "css_viewport_rule.h",
     "cssom/computed_style_property_map.cc",
     "cssom/computed_style_property_map.h",
+    "cssom/cross_thread_color_value.cc",
+    "cssom/cross_thread_color_value.h",
     "cssom/cross_thread_keyword_value.cc",
     "cssom/cross_thread_keyword_value.h",
     "cssom/cross_thread_style_value.h",

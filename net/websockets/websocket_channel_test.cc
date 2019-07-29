@@ -809,12 +809,11 @@ class WebSocketChannelTest : public TestWithScopedTaskEnvironment {
   // well. This method is virtual so that subclasses can also set the stream.
   virtual void CreateChannelAndConnectSuccessfully() {
     CreateChannelAndConnect();
-    // Most tests aren't concerned with flow control from the renderer, so allow
-    // MAX_INT quota units.
-    EXPECT_EQ(CHANNEL_ALIVE,
-              channel_->AddReceiveFlowControlQuota(kPlentyOfQuota));
     connect_data_.argument_saver.connect_delegate->OnSuccess(
         std::move(stream_));
+    // Most tests aren't concerned with flow control from the renderer, so allow
+    // MAX_INT quota units.
+    base::IgnoreResult(channel_->AddReceiveFlowControlQuota(kPlentyOfQuota));
   }
 
   // Returns a WebSocketEventInterface to be passed to the WebSocketChannel.
@@ -939,9 +938,9 @@ class WebSocketChannelFlowControlTest
   // instead of CreateChannelAndConnectSuccessfully().
   void CreateChannelAndConnectWithQuota(int64_t quota) {
     CreateChannelAndConnect();
-    EXPECT_EQ(CHANNEL_ALIVE, channel_->AddReceiveFlowControlQuota(quota));
     connect_data_.argument_saver.connect_delegate->OnSuccess(
         std::move(stream_));
+    base::IgnoreResult(channel_->AddReceiveFlowControlQuota(quota));
   }
 
   virtual void CreateChannelAndConnectSuccesfully() { NOTREACHED(); }
@@ -977,14 +976,6 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   EXPECT_EQ(connect_data_.socket_url, actual.socket_url);
   EXPECT_EQ(connect_data_.origin.Serialize(), actual.origin.Serialize());
   EXPECT_EQ(connect_data_.site_for_cookies, actual.site_for_cookies);
-}
-
-// Verify that calling SendFlowControl before the connection is established does
-// not cause a crash.
-TEST_F(WebSocketChannelTest, SendFlowControlDuringHandshakeOkay) {
-  CreateChannelAndConnect();
-  ASSERT_TRUE(channel_);
-  ASSERT_EQ(CHANNEL_ALIVE, channel_->AddReceiveFlowControlQuota(65536));
 }
 
 TEST_F(WebSocketChannelEventInterfaceTest, ConnectSuccessReported) {
@@ -1828,29 +1819,6 @@ TEST_F(WebSocketChannelEventInterfaceTest,
   completion.WaitForResult();
 }
 
-// The renderer should provide us with some quota immediately, and then
-// WebSocketChannel calls ReadFrames as soon as the stream is available.
-TEST_F(WebSocketChannelStreamTest, FlowControlEarly) {
-  Checkpoint checkpoint;
-  EXPECT_CALL(*mock_stream_, GetSubProtocol()).Times(AnyNumber());
-  EXPECT_CALL(*mock_stream_, GetExtensions()).Times(AnyNumber());
-  {
-    InSequence s;
-    EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(*mock_stream_, ReadFramesInternal(_, _))
-        .WillOnce(Return(ERR_IO_PENDING));
-    EXPECT_CALL(checkpoint, Call(2));
-  }
-
-  set_stream(std::move(mock_stream_));
-  CreateChannelAndConnect();
-  ASSERT_EQ(CHANNEL_ALIVE,
-            channel_->AddReceiveFlowControlQuota(kPlentyOfQuota));
-  checkpoint.Call(1);
-  connect_data_.argument_saver.connect_delegate->OnSuccess(std::move(stream_));
-  checkpoint.Call(2);
-}
-
 // If for some reason the connect succeeds before the renderer sends us quota,
 // we shouldn't call ReadFrames() immediately.
 // TODO(ricea): Actually we should call ReadFrames() with a small limit so we
@@ -1889,8 +1857,8 @@ TEST_F(WebSocketChannelStreamTest, FlowControlStopsReadFrames) {
 
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
-  ASSERT_EQ(CHANNEL_ALIVE, channel_->AddReceiveFlowControlQuota(4));
   connect_data_.argument_saver.connect_delegate->OnSuccess(std::move(stream_));
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->AddReceiveFlowControlQuota(4));
 }
 
 // Providing extra quota causes ReadFrames() to be called again.
@@ -1912,8 +1880,8 @@ TEST_F(WebSocketChannelStreamTest, FlowControlStartsWithMoreQuota) {
 
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
-  ASSERT_EQ(CHANNEL_ALIVE, channel_->AddReceiveFlowControlQuota(4));
   connect_data_.argument_saver.connect_delegate->OnSuccess(std::move(stream_));
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->AddReceiveFlowControlQuota(4));
   checkpoint.Call(1);
   ASSERT_EQ(CHANNEL_ALIVE, channel_->AddReceiveFlowControlQuota(4));
 }
@@ -1939,8 +1907,8 @@ TEST_F(WebSocketChannelStreamTest, ReadFramesNotCalledUntilQuotaAvailable) {
 
   set_stream(std::move(mock_stream_));
   CreateChannelAndConnect();
-  ASSERT_EQ(CHANNEL_ALIVE, channel_->AddReceiveFlowControlQuota(2));
   connect_data_.argument_saver.connect_delegate->OnSuccess(std::move(stream_));
+  ASSERT_EQ(CHANNEL_ALIVE, channel_->AddReceiveFlowControlQuota(2));
   checkpoint.Call(1);
   ASSERT_EQ(CHANNEL_ALIVE, channel_->AddReceiveFlowControlQuota(2));
   checkpoint.Call(2);
@@ -3047,14 +3015,13 @@ class WebSocketChannelStreamTimeoutTest : public WebSocketChannelStreamTest {
   void CreateChannelAndConnectSuccessfully() override {
     set_stream(std::move(mock_stream_));
     CreateChannelAndConnect();
-    ASSERT_EQ(CHANNEL_ALIVE,
-              channel_->AddReceiveFlowControlQuota(kPlentyOfQuota));
     channel_->SetClosingHandshakeTimeoutForTesting(
         TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
     channel_->SetUnderlyingConnectionCloseTimeoutForTesting(
         TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
     connect_data_.argument_saver.connect_delegate->OnSuccess(
         std::move(stream_));
+    base::IgnoreResult(channel_->AddReceiveFlowControlQuota(kPlentyOfQuota));
   }
 };
 

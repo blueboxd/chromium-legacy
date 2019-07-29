@@ -580,9 +580,7 @@ void ImageLoader::DoUpdateFromElement(
       resource_request.SetPreviewsState(WebURLRequest::kPreviewsNoTransform);
     }
 
-    resource_request.SetReferrerPolicy(
-        referrer_policy,
-        ResourceRequest::SetReferrerPolicyLocation::kImageLoader);
+    resource_request.SetReferrerPolicy(referrer_policy);
 
     // Correct the RequestContext if necessary.
     if (IsHTMLPictureElement(GetElement()->parentNode()) ||

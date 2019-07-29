@@ -103,8 +103,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
       new_referrer.IsEmpty() ? Referrer::NoReferrer() : String(new_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  request->SetHttpReferrer(Referrer(referrer, new_referrer_policy),
-                           SetHttpReferrerLocation::kCreateRedirectRequest);
+  request->SetHttpReferrer(Referrer(referrer, new_referrer_policy));
   request->SetSkipServiceWorker(skip_service_worker);
   request->SetRedirectStatus(RedirectStatus::kFollowedRedirect);
 
@@ -221,10 +220,7 @@ void ResourceRequest::SetHttpHeaderField(const AtomicString& name,
   http_header_fields_.Set(name, value);
 }
 
-void ResourceRequest::SetHttpReferrer(
-    const Referrer& referrer,
-    SetHttpReferrerLocation set_http_referrer_location) {
-  set_http_referrer_location_ = set_http_referrer_location;
+void ResourceRequest::SetHttpReferrer(const Referrer& referrer) {
   if (referrer.referrer.IsEmpty())
     http_header_fields_.Remove(http_names::kReferer);
   else

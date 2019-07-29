@@ -134,7 +134,6 @@ public class AutofillAssistantFacade {
     public static boolean areDirectActionsAvailable(@ActivityType int activityType) {
         return BuildInfo.isAtLeastQ()
                 && (activityType == ActivityType.CUSTOM_TAB || activityType == ActivityType.TABBED)
-                && AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT_DIRECT_ACTIONS)
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT);
     }

@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Type;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
-import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
@@ -84,7 +83,7 @@ class AutofillAssistantUiController {
     @CalledByNative
     private static AutofillAssistantUiController create(ChromeActivity activity,
             boolean allowTabSwitching, long nativeUiController,
-            @Nullable AssistantOverlayCoordinator overlayCoordinator) {
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         assert activity != null;
         assert activity.getBottomSheetController() != null;
 
@@ -94,15 +93,16 @@ class AutofillAssistantUiController {
         sActiveChromeActivities.add(activity);
 
         return new AutofillAssistantUiController(activity, activity.getBottomSheetController(),
-                allowTabSwitching, nativeUiController, overlayCoordinator);
+                allowTabSwitching, nativeUiController, onboardingCoordinator);
     }
 
     private AutofillAssistantUiController(ChromeActivity activity, BottomSheetController controller,
             boolean allowTabSwitching, long nativeUiController,
-            @Nullable AssistantOverlayCoordinator overlayCoordinator) {
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         mNativeUiController = nativeUiController;
         mActivity = activity;
-        mCoordinator = new AssistantCoordinator(activity, controller, overlayCoordinator);
+        mCoordinator = new AssistantCoordinator(activity, controller,
+                onboardingCoordinator == null ? null : onboardingCoordinator.transferControls());
         mActivityTabObserver =
                 new ActivityTabProvider.ActivityTabTabObserver(activity.getActivityTabProvider()) {
                     @Override

@@ -97,7 +97,7 @@ void SecureProxyChecker::CheckIfSecureProxyIsAllowed(
   resource_request->url = params::GetSecureProxyCheckURL();
   resource_request->load_flags =
       net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY;
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
 

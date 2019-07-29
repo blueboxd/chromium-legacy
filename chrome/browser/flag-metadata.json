@@ -1087,11 +1087,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "enable-desktop-pwas-unified-install",
-    "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-devtools-experiments",
     "owners": [ "//third_party/blink/renderer/devtools/OWNERS" ],
     // This is a catch-all for ongoing devtools experiments.

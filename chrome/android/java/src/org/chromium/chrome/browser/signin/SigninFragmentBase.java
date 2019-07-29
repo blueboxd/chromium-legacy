@@ -535,8 +535,9 @@ public abstract class SigninFragmentBase
                 return;
             }
 
-            // AccountManagerFacade couldn't create intent, use AccountAdder as fallback.
-            AccountAdder.getInstance().addAccount(this, ADD_ACCOUNT_REQUEST_CODE);
+            // AccountManagerFacade couldn't create intent, use SigninUtils to open settings
+            // instead.
+            SigninUtils.openSettingsForAllAccounts(getContext());
         });
     }
 

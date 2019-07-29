@@ -85,10 +85,6 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
 
 Scrollbar::~Scrollbar() =default;
 
-void Scrollbar::Dispose() {
-  theme_.UnregisterScrollbar(*this);
-}
-
 void Scrollbar::Trace(blink::Visitor* visitor) {
   visitor->Trace(scrollable_area_);
   visitor->Trace(chrome_client_);

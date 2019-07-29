@@ -172,7 +172,7 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(GURL origin,
       })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GetUrlForRequirementsSpec(version_, hash_prefix);
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   lookup->url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   lookup->url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(

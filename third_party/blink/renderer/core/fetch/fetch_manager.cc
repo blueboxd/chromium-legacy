@@ -734,12 +734,8 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
   request.SetUseStreamOnResponse(true);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context_->GetSecurityContext().AddressSpace());
-  request.SetReferrerString(
-      fetch_request_data_->ReferrerString(),
-      ResourceRequest::SetReferrerStringLocation::kPerformHTTPFetch);
-  request.SetReferrerPolicy(
-      fetch_request_data_->GetReferrerPolicy(),
-      ResourceRequest::SetReferrerPolicyLocation::kPerformHTTPFetch);
+  request.SetReferrerString(fetch_request_data_->ReferrerString());
+  request.SetReferrerPolicy(fetch_request_data_->GetReferrerPolicy());
 
   request.SetSkipServiceWorker(is_isolated_world_);
 

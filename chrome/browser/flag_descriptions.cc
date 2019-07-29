@@ -585,11 +585,6 @@ const char kDesktopPWAsOmniboxInstallDescription[] =
     "When on a site that passes PWA installation requirements show a button in "
     "the omnibox for installing it.";
 
-const char kDesktopPWAsUnifiedInstallName[] =
-    "Desktop PWAs Unified Installation.";
-const char kDesktopPWAsUnifiedInstallDescription[] =
-    "New unified installation process for Desktop PWAs.";
-
 const char kEnableSystemWebAppsName[] = "System Web Apps";
 const char kEnableSystemWebAppsDescription[] =
     "Experimental system for using the Desktop PWA framework for running System"

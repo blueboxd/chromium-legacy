@@ -10,13 +10,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
-#include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -69,7 +69,7 @@ void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
 }
 
 void TestWebAppProvider::SetInstallManager(
-    std::unique_ptr<InstallManager> install_manager) {
+    std::unique_ptr<WebAppInstallManager> install_manager) {
   CHECK_NOT_STARTED();
   install_manager_ = std::move(install_manager);
 }

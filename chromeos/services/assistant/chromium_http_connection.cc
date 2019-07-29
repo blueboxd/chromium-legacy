@@ -161,7 +161,7 @@ void ChromiumHttpConnection::Start() {
       resource_request->method = "HEAD";
       break;
   }
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   const bool chunked_upload =
       !chunked_upload_content_type_.empty() && method_ == Method::POST;

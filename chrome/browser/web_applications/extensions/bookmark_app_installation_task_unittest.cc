@@ -270,7 +270,7 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
  public:
   BookmarkAppInstallationTaskTest() {
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAsUnifiedInstall}, {});
+        {}, {features::kDesktopPWAsWithoutExtensions});
   }
 
   ~BookmarkAppInstallationTaskTest() override = default;

@@ -138,7 +138,7 @@ class RequestImpl : public WebHistoryService::Request {
           })");
     auto resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url = url_;
-    resource_request->allow_credentials = false;
+    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
     resource_request->method = post_data_ ? "POST" : "GET";
     resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
                                         "Bearer " + access_token_info.token);

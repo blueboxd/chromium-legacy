@@ -298,6 +298,9 @@ _CONFIG = [
             'gfx::ScrollOffset',
             'ui::input_types::ScrollGranularity',
 
+            # base/util/type_safety/strong_alias.h
+            'util::StrongAlias',
+
             # Standalone utility libraries that only depend on //base
             'skia::.+',
             'url::.+',

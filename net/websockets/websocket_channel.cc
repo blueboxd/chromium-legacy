@@ -392,8 +392,7 @@ const char kWebSocketReceiveQuotaThreshold[] =
     "websocket-renderer-receive-quota-max";
 
 ChannelState WebSocketChannel::AddReceiveFlowControlQuota(int64_t quota) {
-  DCHECK(state_ == CONNECTING || state_ == CONNECTED || state_ == SEND_CLOSED ||
-         state_ == CLOSE_WAIT);
+  DCHECK(state_ == CONNECTED || state_ == SEND_CLOSED || state_ == CLOSE_WAIT);
   // TODO(ricea): Kill the renderer if it tries to send us a negative quota
   // value or > INT_MAX.
   DCHECK_GE(quota, 0);
@@ -441,8 +440,9 @@ ChannelState WebSocketChannel::AddReceiveFlowControlQuota(int64_t quota) {
       current_receive_quota_ == 0 && quota > 0 &&
       (state_ == CONNECTED || state_ == SEND_CLOSED || state_ == CLOSE_WAIT);
   current_receive_quota_ += quota;
-  if (start_read)
+  if (start_read) {
     return ReadFrames();
+  }
   return CHANNEL_ALIVE;
 }
 
@@ -688,19 +688,19 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
 }
 
 ChannelState WebSocketChannel::ReadFrames() {
-  int result = OK;
-  while (result == OK && current_receive_quota_ > 0) {
+  while (current_receive_quota_ > 0) {
     // This use of base::Unretained is safe because this object owns the
     // WebSocketStream, and any pending reads will be cancelled when it is
     // destroyed.
-    result = stream_->ReadFrames(
+    const int result = stream_->ReadFrames(
         &read_frames_,
         base::Bind(base::IgnoreResult(&WebSocketChannel::OnReadDone),
-                   base::Unretained(this),
-                   false));
-    if (result != ERR_IO_PENDING) {
-      if (OnReadDone(true, result) == CHANNEL_DELETED)
-        return CHANNEL_DELETED;
+                   base::Unretained(this), false));
+    if (result == ERR_IO_PENDING) {
+      return CHANNEL_ALIVE;
+    }
+    if (OnReadDone(true, result) == CHANNEL_DELETED) {
+      return CHANNEL_DELETED;
     }
     DCHECK_NE(CLOSED, state_);
   }

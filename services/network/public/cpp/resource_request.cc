@@ -31,7 +31,6 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          cors_exempt_headers.ToString() ==
              request.cors_exempt_headers.ToString() &&
          load_flags == request.load_flags &&
-         allow_credentials == request.allow_credentials &&
          plugin_child_id == request.plugin_child_id &&
          resource_type == request.resource_type &&
          priority == request.priority &&
@@ -79,11 +78,13 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
 }
 
 bool ResourceRequest::SendsCookies() const {
-  return allow_credentials && !(load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
+  return credentials_mode == network::mojom::CredentialsMode::kInclude &&
+         !(load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
 }
 
 bool ResourceRequest::SavesCookies() const {
-  return allow_credentials && !(load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
+  return credentials_mode == network::mojom::CredentialsMode::kInclude &&
+         !(load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
 }
 
 }  // namespace network

@@ -36,7 +36,7 @@ ExtensionThrottleManager::~ExtensionThrottleManager() {
   url_entries_.clear();
 }
 
-std::unique_ptr<content::URLLoaderThrottle>
+std::unique_ptr<blink::URLLoaderThrottle>
 ExtensionThrottleManager::MaybeCreateURLLoaderThrottle(
     const blink::WebURLRequest& request) {
   if (!request.SiteForCookies().ProtocolIs(extensions::kExtensionScheme))

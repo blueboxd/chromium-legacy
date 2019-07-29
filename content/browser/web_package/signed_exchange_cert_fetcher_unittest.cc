@@ -14,7 +14,6 @@
 #include "components/cbor/writer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
@@ -26,12 +25,13 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
 namespace {
 
-class DeferringURLLoaderThrottle final : public URLLoaderThrottle {
+class DeferringURLLoaderThrottle final : public blink::URLLoaderThrottle {
  public:
   DeferringURLLoaderThrottle() = default;
   ~DeferringURLLoaderThrottle() override = default;
@@ -248,7 +248,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   SignedExchangeLoadResult result_;
   std::unique_ptr<SignedExchangeCertificateChain> cert_result_;
   URLLoaderFactoryForMockLoader mock_loader_factory_;
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles_;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ResourceDispatcherHostImpl resource_dispatcher_host_;
@@ -268,7 +268,8 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
   EXPECT_EQ(url_, mock_loader_factory_.url_request()->url);
   EXPECT_EQ(static_cast<int>(ResourceType::kSubResource),
             mock_loader_factory_.url_request()->resource_type);
-  EXPECT_FALSE(mock_loader_factory_.url_request()->allow_credentials);
+  EXPECT_EQ(mock_loader_factory_.url_request()->credentials_mode,
+            network::mojom::CredentialsMode::kOmit);
   EXPECT_TRUE(mock_loader_factory_.url_request()->request_initiator->opaque());
   std::string accept;
   EXPECT_TRUE(
@@ -326,7 +327,8 @@ TEST_F(SignedExchangeCertFetcherTest, ForceFetchAndFail) {
             mock_loader_factory_.url_request()->resource_type);
   EXPECT_EQ(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE,
             mock_loader_factory_.url_request()->load_flags);
-  EXPECT_FALSE(mock_loader_factory_.url_request()->allow_credentials);
+  EXPECT_EQ(mock_loader_factory_.url_request()->credentials_mode,
+            network::mojom::CredentialsMode::kOmit);
 
   mock_loader_factory_.client_ptr()->OnComplete(
       network::URLLoaderCompletionStatus(net::ERR_INVALID_SIGNED_EXCHANGE));

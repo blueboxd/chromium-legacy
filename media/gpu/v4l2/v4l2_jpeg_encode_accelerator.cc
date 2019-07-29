@@ -71,7 +71,7 @@ V4L2JpegEncodeAccelerator::JobRecord::JobRecord(
       output_frame(output_frame),
       quality(quality),
       task_id(task_id),
-      output_shm(base::SharedMemoryHandle(), 0, true),  // dummy
+      output_shm(base::subtle::PlatformSharedMemoryRegion(), 0, true),  // dummy
       exif_shm(nullptr) {
   if (exif_buffer) {
     exif_shm.reset(new UnalignedSharedMemory(exif_buffer->TakeRegion(),

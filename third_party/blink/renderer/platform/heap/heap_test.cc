@@ -1427,29 +1427,6 @@ class FinalizationAllocator
   Persistent<IntWrapper>* wrapper_;
 };
 
-class PreFinalizationAllocator
-    : public GarbageCollectedFinalized<PreFinalizationAllocator> {
-  USING_PRE_FINALIZER(PreFinalizationAllocator, Dispose);
-
- public:
-  PreFinalizationAllocator(Persistent<IntWrapper>* wrapper)
-      : wrapper_(wrapper) {}
-
-  void Dispose() {
-    for (int i = 0; i < 10; ++i)
-      *wrapper_ = MakeGarbageCollected<IntWrapper>(42);
-    for (int i = 0; i < 512; ++i)
-      MakeGarbageCollected<OneKiloByteObject>();
-    for (int i = 0; i < 32; ++i)
-      MakeGarbageCollected<LargeHeapObject>();
-  }
-
-  void Trace(blink::Visitor* visitor) {}
-
- private:
-  Persistent<IntWrapper>* wrapper_;
-};
-
 class PreFinalizerBackingShrinkForbidden
     : public GarbageCollectedFinalized<PreFinalizerBackingShrinkForbidden> {
   USING_PRE_FINALIZER(PreFinalizerBackingShrinkForbidden, Dispose);
@@ -1499,6 +1476,9 @@ class PreFinalizerBackingShrinkForbidden
   HeapHashMap<int, Member<IntWrapper>> map_;
 };
 
+// Following 2 tests check for allocation failures. These failures happen
+// only when DCHECK is on.
+#if DCHECK_IS_ON()
 TEST_F(HeapTest, PreFinalizerBackingShrinkForbidden) {
   MakeGarbageCollected<PreFinalizerBackingShrinkForbidden>();
   PreciselyCollectGarbage();
@@ -1561,6 +1541,27 @@ class PreFinalizerHashTableBackingExpandForbidden
 
 TEST(HeapDeathTest, PreFinalizerHashTableBackingExpandForbidden) {
   MakeGarbageCollected<PreFinalizerHashTableBackingExpandForbidden>();
+  TestSupportingGC::PreciselyCollectGarbage();
+}
+#endif  // DCHECK_IS_ON()
+
+class PreFinalizerAllocationForbidden
+    : public GarbageCollectedFinalized<PreFinalizerAllocationForbidden> {
+  USING_PRE_FINALIZER(PreFinalizerAllocationForbidden, Dispose);
+
+ public:
+  void Dispose() {
+    EXPECT_FALSE(ThreadState::Current()->IsAllocationAllowed());
+#if DCHECK_IS_ON()
+    EXPECT_DEATH(MakeGarbageCollected<IntWrapper>(1), "");
+#endif  // DCHECK_IS_ON()
+  }
+
+  void Trace(blink::Visitor* visitor) {}
+};
+
+TEST(HeapDeathTest, PreFinalizerAllocationForbidden) {
+  MakeGarbageCollected<PreFinalizerAllocationForbidden>();
   TestSupportingGC::PreciselyCollectGarbage();
 }
 
@@ -4385,32 +4386,6 @@ TEST_F(HeapTest, AllocationDuringFinalization) {
   PreciselyCollectGarbage();
   // The 42 IntWrappers were the ones allocated in ~FinalizationAllocator
   // and the ones allocated in LargeHeapObject.
-  EXPECT_EQ(42, IntWrapper::destructor_calls_);
-  EXPECT_EQ(512, OneKiloByteObject::destructor_calls_);
-  EXPECT_EQ(32, LargeHeapObject::destructor_calls_);
-}
-
-TEST_F(HeapTest, AllocationDuringPrefinalizer) {
-  ClearOutOldGarbage();
-  IntWrapper::destructor_calls_ = 0;
-  OneKiloByteObject::destructor_calls_ = 0;
-  LargeHeapObject::destructor_calls_ = 0;
-
-  Persistent<IntWrapper> wrapper;
-  MakeGarbageCollected<PreFinalizationAllocator>(&wrapper);
-
-  PreciselyCollectGarbage();
-  EXPECT_EQ(0, IntWrapper::destructor_calls_);
-  EXPECT_EQ(0, OneKiloByteObject::destructor_calls_);
-  EXPECT_EQ(0, LargeHeapObject::destructor_calls_);
-  // Check that the wrapper allocated during finalization is not
-  // swept away and zapped later in the same sweeping phase.
-  EXPECT_EQ(42, wrapper->Value());
-
-  wrapper.Clear();
-  PreciselyCollectGarbage();
-  // The 42 IntWrappers were the ones allocated in the pre-finalizer
-  // of PreFinalizationAllocator and the ones allocated in LargeHeapObject.
   EXPECT_EQ(42, IntWrapper::destructor_calls_);
   EXPECT_EQ(512, OneKiloByteObject::destructor_calls_);
   EXPECT_EQ(32, LargeHeapObject::destructor_calls_);

@@ -56,6 +56,10 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos[SystemAppType::SETTINGS] = {GURL(kChromeSettingsPWAURL),
                                       app_list::kInternalAppIdSettings};
   }
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
+    constexpr char kChromeTerminalPWAURL[] = "chrome://terminal/pwa.html";
+    infos[SystemAppType::TERMINAL] = {GURL(kChromeTerminalPWAURL)};
+  }
 #endif  // OS_CHROMEOS
 
   return infos;
@@ -88,14 +92,13 @@ bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
   switch (type) {
     case SystemAppType::SETTINGS:
       return true;
-      break;
     case SystemAppType::DISCOVER:
       return base::FeatureList::IsEnabled(chromeos::features::kDiscoverApp);
-      break;
     case SystemAppType::CAMERA:
       return base::FeatureList::IsEnabled(
           chromeos::features::kCameraSystemWebApp);
-      break;
+    case SystemAppType::TERMINAL:
+      return base::FeatureList::IsEnabled(features::kTerminalSystemApp);
   }
 #else
   return false;

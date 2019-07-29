@@ -1459,6 +1459,12 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
   return true;
 }
 
+bool LoginDatabase::IsEmpty() {
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE, "SELECT COUNT(*) FROM logins"));
+  return s.Step() && s.ColumnInt(0) == 0;
+}
+
 bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
   DCHECK(db_.is_open());
   meta_table_.Reset();

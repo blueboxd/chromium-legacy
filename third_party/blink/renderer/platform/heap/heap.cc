@@ -99,6 +99,7 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       not_fully_constructed_worklist_(nullptr),
       weak_callback_worklist_(nullptr),
       movable_reference_worklist_(nullptr),
+      weak_table_worklist_(nullptr),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0) {
   if (ThreadState::Current()->IsMainThread())
@@ -150,18 +151,6 @@ Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
   return nullptr;
 }
 
-void ThreadHeap::RegisterWeakTable(void* table,
-                                   EphemeronCallback iteration_callback) {
-  DCHECK(thread_state_->InAtomicMarkingPause());
-#if DCHECK_IS_ON()
-  auto result = ephemeron_callbacks_.insert(table, iteration_callback);
-  DCHECK(result.is_new_entry ||
-         result.stored_value->value == iteration_callback);
-#else
-  ephemeron_callbacks_.insert(table, iteration_callback);
-#endif  // DCHECK_IS_ON()
-}
-
 void ThreadHeap::SetupWorklists() {
   marking_worklist_.reset(new MarkingWorklist());
   not_fully_constructed_worklist_.reset(new NotFullyConstructedWorklist());
@@ -169,6 +158,7 @@ void ThreadHeap::SetupWorklists() {
       new NotFullyConstructedWorklist());
   weak_callback_worklist_.reset(new WeakCallbackWorklist());
   movable_reference_worklist_.reset(new MovableReferenceWorklist());
+  weak_table_worklist_.reset(new WeakTableWorklist);
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
@@ -176,6 +166,7 @@ void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {
   marking_worklist_.reset(nullptr);
   previously_not_fully_constructed_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
+  weak_table_worklist_.reset();
   ephemeron_callbacks_.clear();
 
   // The fixed point iteration may have found not-fully-constructed objects.
@@ -250,28 +241,39 @@ void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {
   }
 }
 
-void ThreadHeap::InvokeEphemeronCallbacks(Visitor* visitor) {
+void ThreadHeap::InvokeEphemeronCallbacks(MarkingVisitor* visitor) {
   // Mark any strong pointers that have now become reachable in ephemeron maps.
   ThreadHeapStatsCollector::Scope stats_scope(
       stats_collector(),
       ThreadHeapStatsCollector::kMarkInvokeEphemeronCallbacks);
 
-  // Avoid supporting a subtle scheme that allows insertion while iterating
-  // by just creating temporary lists for iteration and sinking.
-  WTF::HashMap<void*, EphemeronCallback> iteration_set;
-  WTF::HashMap<void*, EphemeronCallback> final_set;
+  // MarkingVisitor records callbacks for weak tables in a worklist.
+  // ThreadHeap reads from the worklist before invoking ephemeron callbacks.
+  // We need to flush the callback worklist so ThreadHeap can access it.
+  //
+  // TODO(omerkatz): In concurrent marking, this should flush all visitors.
+  if (thread_state_->in_atomic_pause())
+    visitor->FlushWeakTableCallbacks();
 
-  bool found_new = false;
-  do {
-    iteration_set = std::move(ephemeron_callbacks_);
-    ephemeron_callbacks_.clear();
-    for (auto& tuple : iteration_set) {
-      final_set.insert(tuple.key, tuple.value);
-      tuple.value(visitor, tuple.key);
+  // We first reiterate over known callbacks from previous iterations.
+  for (auto& tuple : ephemeron_callbacks_)
+    tuple.value(visitor, tuple.key);
+
+  // Then we iterate over the new callbacks found by the marking visitor.
+  while (!weak_table_worklist_->IsGlobalEmpty()) {
+    // Read ephemeron callbacks from worklist to ephemeron_callbacks_ hashmap.
+    WeakTableWorklist::View ephemerons_worklist(weak_table_worklist_.get(),
+                                                WorklistTaskId::MainThread);
+    WeakTableItem item;
+    while (ephemerons_worklist.Pop(&item)) {
+      auto result = ephemeron_callbacks_.insert(item.object, item.callback);
+      DCHECK(result.is_new_entry ||
+             result.stored_value->value == item.callback);
+      if (result.is_new_entry) {
+        item.callback(visitor, item.object);
+      }
     }
-    found_new = !ephemeron_callbacks_.IsEmpty();
-  } while (found_new);
-  ephemeron_callbacks_ = std::move(final_set);
+  }
 }
 
 namespace {
@@ -508,6 +510,8 @@ void ThreadHeap::PoisonAllHeaps() {
   // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
   // that would be fine.
   ProcessHeap::GetCrossThreadPersistentRegion()
+      .UnpoisonCrossThreadPersistents();
+  ProcessHeap::GetCrossThreadWeakPersistentRegion()
       .UnpoisonCrossThreadPersistents();
 }
 #endif

@@ -34,11 +34,14 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+namespace blink {
+class URLLoaderThrottle;
+}
+
 namespace content {
 
 class BrowserContext;
 class ResourceContext;
-class URLLoaderThrottle;
 class PrefetchedSignedExchangeCacheAdapter;
 class SignedExchangePrefetchHandler;
 class SignedExchangePrefetchMetricRecorder;
@@ -49,7 +52,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
                                          public mojo::DataPipeDrainer::Client {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
-      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
 
   // |url_loader_throttles_getter|, |resource_context| and
   // |request_context_getter| may be used when a prefetch handler

@@ -244,7 +244,8 @@ void OneGoogleBarLoaderImpl::AuthenticatedURLLoader::Start() {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = api_url_;
-  resource_request->allow_credentials = true;
+  resource_request->credentials_mode =
+      network::mojom::CredentialsMode::kInclude;
   SetRequestHeaders(resource_request.get());
   resource_request->request_initiator =
       url::Origin::Create(GURL(chrome::kChromeUINewTabURL));

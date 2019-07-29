@@ -2087,7 +2087,7 @@ String Element::nodeName() const {
 AtomicString Element::LocalNameForSelectorMatching() const {
   if (IsHTMLElement() || !GetDocument().IsHTMLDocument())
     return localName();
-  return localName().DeprecatedLower();
+  return localName().LowerASCII();
 }
 
 const AtomicString& Element::LocateNamespacePrefix(

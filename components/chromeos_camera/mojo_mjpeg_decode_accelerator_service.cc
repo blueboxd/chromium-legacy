@@ -209,21 +209,20 @@ void MojoMjpegDecodeAcceleratorService::DecodeWithFD(
 
   base::subtle::PlatformSharedMemoryRegion input_shm_region =
       base::subtle::PlatformSharedMemoryRegion::Take(
-          base::subtle::ScopedFDPair(base::ScopedFD(input_fd),
-                                     base::ScopedFD()),
+          base::ScopedFD(input_fd),
           base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
           input_buffer_size, base::UnguessableToken::Create());
   media::BitstreamBuffer in_buffer(buffer_id, std::move(input_shm_region),
                                    input_buffer_size);
   gfx::Size coded_size(coded_size_width, coded_size_height);
 
-  base::SharedMemoryHandle output_shm_handle(
-      base::FileDescriptor(output_fd, true), output_buffer_size,
-      base::UnguessableToken::Create());
+  base::subtle::PlatformSharedMemoryRegion output_shm_region =
+      base::subtle::PlatformSharedMemoryRegion::Take(
+          base::ScopedFD(output_fd),
+          base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+          output_buffer_size, base::UnguessableToken::Create());
   mojo::ScopedSharedBufferHandle output_scoped_handle =
-      mojo::WrapSharedMemoryHandle(
-          output_shm_handle, output_buffer_size,
-          mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+      mojo::WrapPlatformSharedMemoryRegion(std::move(output_shm_region));
 
   Decode(std::move(in_buffer), coded_size, std::move(output_scoped_handle),
          output_buffer_size, std::move(callback));

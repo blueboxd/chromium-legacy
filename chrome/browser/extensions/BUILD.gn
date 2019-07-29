@@ -424,8 +424,6 @@ jumbo_static_library("extensions") {
     "blacklist_state_fetcher.h",
     "bookmark_app_extension_util.cc",
     "bookmark_app_extension_util.h",
-    "bookmark_app_helper.cc",
-    "bookmark_app_helper.h",
     "browser_context_keyed_service_factories.cc",
     "browser_context_keyed_service_factories.h",
     "browser_extension_window_controller.cc",

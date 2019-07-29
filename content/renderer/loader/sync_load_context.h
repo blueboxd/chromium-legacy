@@ -27,6 +27,10 @@ namespace network {
 struct ResourceRequest;
 }
 
+namespace blink {
+class URLLoaderThrottle;
+}
+
 namespace content {
 
 struct SyncLoadResponse;
@@ -55,7 +59,7 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       SyncLoadResponse* response,
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,

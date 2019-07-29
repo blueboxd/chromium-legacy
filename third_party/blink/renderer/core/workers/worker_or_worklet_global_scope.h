@@ -53,6 +53,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
       const base::UnguessableToken& parent_devtools_token,
       V8CacheOptions,
       WorkerClients*,
+      std::unique_ptr<WebContentSettingsClient>,
       scoped_refptr<WebWorkerFetchContext>,
       WorkerReportingProxy&);
   ~WorkerOrWorkletGlobalScope() override;
@@ -125,6 +126,11 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   WorkerClients* Clients() const { return worker_clients_.Get(); }
 
+  // May return nullptr.
+  WebContentSettingsClient* ContentSettingsClient() const {
+    return content_settings_client_.get();
+  }
+
   WorkerOrWorkletScriptController* ScriptController() {
     return script_controller_.Get();
   }
@@ -180,6 +186,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   const base::UnguessableToken parent_devtools_token_;
 
   CrossThreadPersistent<WorkerClients> worker_clients_;
+  std::unique_ptr<WebContentSettingsClient> content_settings_client_;
 
   Member<ResourceFetcher> inside_settings_resource_fetcher_;
 

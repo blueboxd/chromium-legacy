@@ -507,7 +507,7 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
 
   resource_request->url = server_url;
 
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   // Put API key in request's header if a key exists, and the endpoint is
   // trusted by Google.

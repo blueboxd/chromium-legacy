@@ -102,9 +102,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static int32_t load_flags(const network::ResourceRequest& request) {
     return request.load_flags;
   }
-  static bool allow_credentials(const network::ResourceRequest& request) {
-    return request.allow_credentials;
-  }
   static int32_t plugin_child_id(const network::ResourceRequest& request) {
     return request.plugin_child_id;
   }

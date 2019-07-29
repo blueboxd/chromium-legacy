@@ -23,14 +23,7 @@ class StoragePartition;
 class GeneratedCodeCacheContext;
 
 // Helper to remove code cache data from a StoragePartition. This class is
-// created on the UI thread and calls the provided callback and destroys itself
-// on the UI thread after the code caches are cleared. This class also takes a
-// reference to the generated_code_cache_context and is used in read-only mode
-// on both the UI / IO thread. Since this isn't modified, it is OK to access it
-// on both threads. The caches are actually cleared on the IO threads. When the
-// Remove function is called, it posts tasks on the IO thread to clear the code
-// caches. Once the the caches are cleared, the callback is called on the UI
-// thread.
+// created on and acts on the UI thread.
 class StoragePartitionCodeCacheDataRemover {
  public:
   // Creates a StoragePartitionCodeCacheDataRemover that deletes all cache
@@ -64,10 +57,6 @@ class StoragePartitionCodeCacheDataRemover {
 
   ~StoragePartitionCodeCacheDataRemover();
 
-  // Executed on UI thread.
-  void ClearedCodeCache();
-
-  // Executed on IO thread.
   void ClearJSCodeCache();
   void ClearWASMCodeCache(int rv);
   void ClearCache(net::CompletionOnceCallback callback,

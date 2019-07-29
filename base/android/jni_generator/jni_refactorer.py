@@ -100,7 +100,6 @@ _NON_STATIC_NATIVES_REGEX = re.compile(
     r'(?P<name>native\w+)\((?P<params>.*?)\);\n', re.DOTALL)
 
 JNI_IMPORT_STRING = 'import org.chromium.base.annotations.NativeMethods;'
-JCALLER_IMPORT_STRING = 'import org.chromium.base.annotations.JCaller;'
 IMPORT_REGEX = re.compile(r'^import .*?;', re.MULTILINE)
 
 PICKLE_LOCATION = './jni_ref_pickle'
@@ -161,9 +160,6 @@ def convert_nonstatic_to_static(java_file_name, dry=False, verbose=True):
       print('no natives found')
     return
 
-  # Import @JCaller import.
-  contents = add_chromium_import_to_java_file(contents, JCALLER_IMPORT_STRING)
-
   class_name = jni_generator.ExtractFullyQualifiedJavaClassName(
       java_file_name, no_comment_content).split('/')[-1]
 
@@ -187,16 +183,17 @@ def convert_nonstatic_to_static(java_file_name, dry=False, verbose=True):
       insertion_offset += len(insert_str)
 
       # Insert an object param.
-      start = insertion_offset + match.start('params')
-      insert_str = '@JCaller %s caller' % class_name
+      start = insertion_offset + match.end('params')
+      insert_str = '%s caller' % class_name
       if match.group('params'):
-        insert_str += ', '
+        insert_str = ', ' + insert_str
 
       # Match lines that don't have a native keyword.
-      replace_patterns.append(r'(^\s*' + match.group('name') + r'\()')
-      replace_patterns.append(r'(return ' + match.group('name') + r'\()')
+      replace_patterns.append(r'(^\s*' + match.group('name') + r'\(.*?(?=\)))')
+      replace_patterns.append(r'(return ' + match.group('name') +
+                              r'\(.*?(?=\)))')
       replace_patterns.append(r'([\:\)\(\+\*\?\&\|,\.\-\=\!\/][ \t]*' +
-                              match.group('name') + r'\()')
+                              match.group('name') + r'\(.*?(?=\)))')
 
       add_comma = bool(match.group('params'))
       should_add_comma.extend([add_comma] * 3)
@@ -212,7 +209,7 @@ def convert_nonstatic_to_static(java_file_name, dry=False, verbose=True):
   for i, r in enumerate(replace_patterns):
     if should_add_comma[i]:
       new_contents = re.sub(
-          r, '\g<1>%s.this, ' % class_name, new_contents, flags=re.MULTILINE)
+          r, '\g<1>, %s.this' % class_name, new_contents, flags=re.MULTILINE)
     else:
       new_contents = re.sub(
           r, '\g<1>%s.this' % class_name, new_contents, flags=re.MULTILINE)

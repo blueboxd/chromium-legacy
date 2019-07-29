@@ -16,12 +16,9 @@
 #include "url/gurl.h"
 
 namespace blink {
+class URLLoaderThrottle;
 class WebURLRequest;
 }  // namespace blink
-
-namespace content {
-class URLLoaderThrottle;
-}  // namespace content
 
 namespace net {
 struct RedirectInfo;
@@ -49,7 +46,7 @@ class ExtensionThrottleManager {
 
   // Creates a throttle which uses this class to prevent extensions from
   // requesting a URL too often, if such a throttle is needed.
-  std::unique_ptr<content::URLLoaderThrottle> MaybeCreateURLLoaderThrottle(
+  std::unique_ptr<blink::URLLoaderThrottle> MaybeCreateURLLoaderThrottle(
       const blink::WebURLRequest& request);
 
   // Determine if a request to |request_url| with the given |request_load_flags|

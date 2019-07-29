@@ -331,9 +331,11 @@ class JpegClient : public JpegEncodeAccelerator::Client {
   base::UnsafeSharedMemoryRegion in_shm_;
   base::WritableSharedMemoryMapping in_mapping_;
   // Mapped memory of output buffer from hardware encoder.
-  std::unique_ptr<base::SharedMemory> hw_out_shm_;
+  base::UnsafeSharedMemoryRegion hw_out_shm_;
+  base::WritableSharedMemoryMapping hw_out_mapping_;
   // Mapped memory of output buffer from software encoder.
-  std::unique_ptr<base::SharedMemory> sw_out_shm_;
+  base::UnsafeSharedMemoryRegion sw_out_shm_;
+  base::WritableSharedMemoryMapping sw_out_mapping_;
   // Output for DMA-buf based encoding.
   scoped_refptr<media::VideoFrame> hw_out_frame_;
 
@@ -457,7 +459,7 @@ bool JpegClient::GetSoftwareEncodeResult(int width,
     return false;
   }
 
-  memcpy(sw_out_shm_->memory(), encoded.data(), encoded.size());
+  memcpy(sw_out_mapping_.memory(), encoded.data(), encoded.size());
   *sw_encoded_size = encoded.size();
   *sw_encode_time = base::TimeTicks::Now() - sw_encode_start;
   return true;
@@ -474,7 +476,7 @@ bool JpegClient::CompareHardwareAndSoftwareResults(int width,
   int v_stride = u_stride;
 
   const uint8_t* out_mem = static_cast<const uint8_t*>(
-      hw_out_frame_ ? hw_out_frame_->data(0) : hw_out_shm_->memory());
+      hw_out_frame_ ? hw_out_frame_->data(0) : hw_out_mapping_.memory());
   if (libyuv::ConvertToI420(
           out_mem, hw_encoded_size, hw_yuv_result, y_stride,
           hw_yuv_result + y_stride * height, u_stride,
@@ -486,8 +488,9 @@ bool JpegClient::CompareHardwareAndSoftwareResults(int width,
 
   uint8_t* sw_yuv_result = new uint8_t[yuv_size];
   if (libyuv::ConvertToI420(
-          static_cast<const uint8_t*>(sw_out_shm_->memory()), sw_encoded_size,
-          sw_yuv_result, y_stride, sw_yuv_result + y_stride * height, u_stride,
+          static_cast<const uint8_t*>(sw_out_mapping_.memory()),
+          sw_encoded_size, sw_yuv_result, y_stride,
+          sw_yuv_result + y_stride * height, u_stride,
           sw_yuv_result + y_stride * height + u_stride * height / 2, v_stride,
           0, 0, width, height, width, height, libyuv::kRotate0,
           libyuv::FOURCC_MJPG)) {
@@ -551,19 +554,25 @@ void JpegClient::PrepareMemory(int32_t bitstream_buffer_id) {
   }
   memcpy(in_mapping_.memory(), test_image->image_data.data(), input_size);
 
-  if (!hw_out_shm_.get() ||
-      test_image->output_size > hw_out_shm_->mapped_size()) {
-    hw_out_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(hw_out_shm_->CreateAndMapAnonymous(test_image->output_size));
+  if (!hw_out_shm_.IsValid() || !hw_out_mapping_.IsValid() ||
+      test_image->output_size > hw_out_mapping_.size()) {
+    hw_out_shm_ =
+        base::UnsafeSharedMemoryRegion::Create(test_image->output_size);
+    LOG_ASSERT(hw_out_shm_.IsValid());
+    hw_out_mapping_ = hw_out_shm_.Map();
+    LOG_ASSERT(hw_out_mapping_.IsValid());
   }
-  memset(hw_out_shm_->memory(), 0, test_image->output_size);
+  memset(hw_out_mapping_.memory(), 0, test_image->output_size);
 
-  if (!sw_out_shm_.get() ||
-      test_image->output_size > sw_out_shm_->mapped_size()) {
-    sw_out_shm_.reset(new base::SharedMemory);
-    LOG_ASSERT(sw_out_shm_->CreateAndMapAnonymous(test_image->output_size));
+  if (!sw_out_shm_.IsValid() || !sw_out_mapping_.IsValid() ||
+      test_image->output_size > sw_out_mapping_.size()) {
+    sw_out_shm_ =
+        base::UnsafeSharedMemoryRegion::Create(test_image->output_size);
+    LOG_ASSERT(sw_out_shm_.IsValid());
+    sw_out_mapping_ = sw_out_shm_.Map();
+    LOG_ASSERT(sw_out_mapping_.IsValid());
   }
-  memset(sw_out_shm_->memory(), 0, test_image->output_size);
+  memset(sw_out_mapping_.memory(), 0, test_image->output_size);
 
   hw_out_frame_ = nullptr;
 }
@@ -586,12 +595,12 @@ void JpegClient::SaveToFile(TestImage* test_image,
   LOG(INFO) << "Writing HW encode results to "
             << out_filename_hw.MaybeAsASCII();
 
-  ASSERT_EQ(
-      static_cast<int>(hw_size),
-      base::WriteFile(out_filename_hw,
-                      static_cast<char*>(hw_out_frame_ ? hw_out_frame_->data(0)
-                                                       : hw_out_shm_->memory()),
-                      hw_size));
+  ASSERT_EQ(static_cast<int>(hw_size),
+            base::WriteFile(
+                out_filename_hw,
+                static_cast<char*>(hw_out_frame_ ? hw_out_frame_->data(0)
+                                                 : hw_out_mapping_.memory()),
+                hw_size));
 
   base::FilePath out_filename_sw = out_filename_hw.InsertBeforeExtension("_sw");
   LOG(INFO) << "Writing SW encode results to "
@@ -599,7 +608,7 @@ void JpegClient::SaveToFile(TestImage* test_image,
   ASSERT_EQ(
       static_cast<int>(sw_size),
       base::WriteFile(out_filename_sw,
-                      static_cast<char*>(sw_out_shm_->memory()), sw_size));
+                      static_cast<char*>(sw_out_mapping_.memory()), sw_size));
 }
 
 void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
@@ -609,10 +618,8 @@ void JpegClient::StartEncode(int32_t bitstream_buffer_id) {
       encoder_->GetMaxCodedBufferSize(test_image->visible_size);
   PrepareMemory(bitstream_buffer_id);
 
-  // media::BitstreamBuffer will duplicate hw_out_shm_->handle().
-  encoded_buffer_ =
-      media::BitstreamBuffer(bitstream_buffer_id, hw_out_shm_->handle(),
-                             false /* read_only */, test_image->output_size);
+  encoded_buffer_ = media::BitstreamBuffer(
+      bitstream_buffer_id, std::move(hw_out_shm_), test_image->output_size);
   scoped_refptr<media::VideoFrame> input_frame_ =
       media::VideoFrame::WrapExternalData(
           media::PIXEL_FORMAT_I420, test_image->visible_size,

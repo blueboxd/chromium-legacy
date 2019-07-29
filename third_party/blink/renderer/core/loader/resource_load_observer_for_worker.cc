@@ -98,7 +98,7 @@ void ResourceLoadObserverForWorker::DidFailLoading(const KURL&,
                                                    uint64_t identifier,
                                                    const ResourceError& error,
                                                    int64_t,
-                                                   bool) {
+                                                   IsInternalRequest) {
   probe::DidFailLoading(probe_, identifier, nullptr, error);
 }
 

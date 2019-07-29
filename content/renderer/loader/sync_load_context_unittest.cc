@@ -98,14 +98,15 @@ class SyncLoadContextTest : public testing::Test {
       base::WaitableEvent* redirect_or_response_event) {
     loading_thread_.task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            &SyncLoadContext::StartAsyncWithWaitableEvent, std::move(request),
-            MSG_ROUTING_NONE, loading_thread_.task_runner(),
-            TRAFFIC_ANNOTATION_FOR_TESTS, std::move(factory_info),
-            std::vector<std::unique_ptr<URLLoaderThrottle>>(), out_response,
-            redirect_or_response_event, nullptr /* terminate_sync_load_event */,
-            base::TimeDelta::FromSeconds(60) /* timeout */,
-            nullptr /* download_to_blob_registry */));
+        base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
+                       std::move(request), MSG_ROUTING_NONE,
+                       loading_thread_.task_runner(),
+                       TRAFFIC_ANNOTATION_FOR_TESTS, std::move(factory_info),
+                       std::vector<std::unique_ptr<blink::URLLoaderThrottle>>(),
+                       out_response, redirect_or_response_event,
+                       nullptr /* terminate_sync_load_event */,
+                       base::TimeDelta::FromSeconds(60) /* timeout */,
+                       nullptr /* download_to_blob_registry */));
   }
 
   static void RunSyncLoadContextViaDataPipe(

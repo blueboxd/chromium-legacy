@@ -20,10 +20,10 @@ class BrowserContext;
 namespace web_app {
 
 class AppRegistrar;
-class InstallManager;
 class InstallFinalizer;
 class PendingAppManager;
 class SystemWebAppManager;
+class WebAppInstallManager;
 class WebAppPolicyManager;
 
 class TestWebAppProvider : public WebAppProvider {
@@ -47,7 +47,7 @@ class TestWebAppProvider : public WebAppProvider {
   ~TestWebAppProvider() override;
 
   void SetRegistrar(std::unique_ptr<AppRegistrar> registrar);
-  void SetInstallManager(std::unique_ptr<InstallManager> install_manager);
+  void SetInstallManager(std::unique_ptr<WebAppInstallManager> install_manager);
   void SetInstallFinalizer(std::unique_ptr<InstallFinalizer> install_finalizer);
   void SetPendingAppManager(
       std::unique_ptr<PendingAppManager> pending_app_manager);

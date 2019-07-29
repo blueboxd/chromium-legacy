@@ -695,7 +695,7 @@ void WebApkInstaller::SendRequest(
   request->url = server_url_;
   request->method = "POST";
   request->load_flags = net::LOAD_DISABLE_CACHE;
-  request->allow_credentials = false;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   loader_ = network::SimpleURLLoader::Create(std::move(request),
                                              NO_TRAFFIC_ANNOTATION_YET);
   loader_->AttachStringForUpload(*serialized_proto, kProtoMimeType);

@@ -19,8 +19,8 @@ namespace web_app {
 
 enum class InstallResultCode;
 
-// TODO(loyso): Rework these functions (API) once BookmarkAppHelper erased.
-// crbug.com/915043. Move all of them into WebAppDialogManager.
+// TODO(loyso): Rework these functions (API). Move all of them into
+// WebAppDialogManager.
 
 // Returns true if a WebApp installation is allowed for the current page.
 bool CanCreateWebApp(const Browser* browser);

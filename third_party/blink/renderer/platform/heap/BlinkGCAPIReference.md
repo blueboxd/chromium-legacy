@@ -222,7 +222,7 @@ class Child : public Parent {
 ```
 
 *Notes*
-- Pre-finalizers are not allowed to resurrect objects, i.e., they are not allowed to relink dead objects into the object graph.
+- Pre-finalizers are not allowed to allocate new on-heap objects or resurrect objects (i.e., they are not allowed to relink dead objects into the object graph).
 - Pre-finalizers have some implications on the garbage collector's performance: the garbage-collector needs to iterate all registered pre-finalizers at every GC.
 Therefore, a pre-finalizer should be avoided unless it is really necessary.
 Especially, avoid defining a pre-finalizer in a class that can be allocated a lot.

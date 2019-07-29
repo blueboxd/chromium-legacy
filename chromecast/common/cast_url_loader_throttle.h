@@ -10,12 +10,12 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "net/http/http_request_headers.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace chromecast {
 
-class CastURLLoaderThrottle : public content::URLLoaderThrottle {
+class CastURLLoaderThrottle : public blink::URLLoaderThrottle {
  public:
   // An interface for CastURLLoaderThrottle to modify the resource request,
   // possibly also defer the request (by returning net::IO_PENDING) in some
@@ -35,7 +35,7 @@ class CastURLLoaderThrottle : public content::URLLoaderThrottle {
   ~CastURLLoaderThrottle() override;
 
  private:
-  // content::URLLoaderThrottle implementation:
+  // blink::URLLoaderThrottle implementation:
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;

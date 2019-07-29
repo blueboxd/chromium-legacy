@@ -74,24 +74,33 @@ void VideoCaptureJpegDecoderImpl::DecodeCapturedData(
   }
 
   // Enlarge input buffer if necessary.
-  if (!in_shared_memory_.get() ||
-      in_buffer_size > in_shared_memory_->mapped_size()) {
+  if (!in_shared_region_.IsValid() || !in_shared_mapping_.IsValid() ||
+      in_buffer_size > in_shared_mapping_.size()) {
     // Reserve 2x space to avoid frequent reallocations for initial frames.
     const size_t reserved_size = 2 * in_buffer_size;
-    in_shared_memory_.reset(new base::SharedMemory);
-    if (!in_shared_memory_->CreateAndMapAnonymous(reserved_size)) {
+    in_shared_region_ = base::UnsafeSharedMemoryRegion::Create(reserved_size);
+    if (!in_shared_region_.IsValid()) {
       base::AutoLock lock(lock_);
       decoder_status_ = FAILED;
-      LOG(WARNING) << "CreateAndMapAnonymous failed, size=" << reserved_size;
+      LOG(WARNING) << "UnsafeSharedMemoryRegion::Create failed, size="
+                   << reserved_size;
+      return;
+    }
+    in_shared_mapping_ = in_shared_region_.Map();
+    if (!in_shared_mapping_.IsValid()) {
+      base::AutoLock lock(lock_);
+      decoder_status_ = FAILED;
+      LOG(WARNING) << "UnsafeSharedMemoryRegion::Map failed, size="
+                   << reserved_size;
       return;
     }
   }
-  memcpy(in_shared_memory_->memory(), data, in_buffer_size);
+  memcpy(in_shared_mapping_.memory(), data, in_buffer_size);
 
   // No need to lock for |in_buffer_id_| since IsDecoding_Locked() is false.
   in_buffer_id_ = next_bitstream_buffer_id_;
-  media::BitstreamBuffer in_buffer(in_buffer_id_, in_shared_memory_->handle(),
-                                   false /* read_only */, in_buffer_size);
+  media::BitstreamBuffer in_buffer(in_buffer_id_, in_shared_region_.Duplicate(),
+                                   in_buffer_size);
   // Mask against 30 bits, to avoid (undefined) wraparound on signed integer.
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
 

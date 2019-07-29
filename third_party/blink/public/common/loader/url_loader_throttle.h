@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_URL_LOADER_THROTTLE_H_
-#define CONTENT_PUBLIC_COMMON_URL_LOADER_THROTTLE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_URL_LOADER_THROTTLE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_URL_LOADER_THROTTLE_H_
 
 #include <string>
 #include <vector>
 
 #include "base/strings/string_piece.h"
-#include "content/common/content_export.h"
 #include "net/base/request_priority.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/common/common_export.h"
 
 class GURL;
 
@@ -22,9 +22,9 @@ struct RedirectInfo;
 namespace network {
 struct ResourceRequest;
 struct ResourceResponseHead;
-}
+}  // namespace network
 
-namespace content {
+namespace blink {
 
 // A URLLoaderThrottle gets notified at various points during the process of
 // loading a resource. At each stage, it has the opportunity to defer the
@@ -34,7 +34,7 @@ namespace content {
 // block the load from progressing further until a subsequent Delegate::Resume()
 // call is made, it does NOT prevent subsequent throttles from processing the
 // same step of the request if multiple throttles are affecting the load.
-class CONTENT_EXPORT URLLoaderThrottle {
+class BLINK_COMMON_EXPORT URLLoaderThrottle {
  public:
   // An interface for the throttle implementation to resume (when deferred) or
   // cancel the resource load. Please note that these methods could be called
@@ -43,7 +43,7 @@ class CONTENT_EXPORT URLLoaderThrottle {
   //
   // It is guaranteed that throttles calling these methods won't be destroyed
   // synchronously.
-  class CONTENT_EXPORT Delegate {
+  class BLINK_COMMON_EXPORT Delegate {
    public:
     // Cancels the resource load with the specified error code and an optional,
     // application-defined reason description.
@@ -178,6 +178,6 @@ class CONTENT_EXPORT URLLoaderThrottle {
   Delegate* delegate_ = nullptr;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_PUBLIC_COMMON_URL_LOADER_THROTTLE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_LOADER_URL_LOADER_THROTTLE_H_

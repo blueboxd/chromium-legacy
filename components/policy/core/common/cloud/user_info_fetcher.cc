@@ -69,7 +69,7 @@ void UserInfoFetcher::Start(const std::string& access_token) {
   resource_request->url = GaiaUrls::GetInstance()->oauth_user_info_url();
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
                                       MakeAuthorizationHeader(access_token));
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);

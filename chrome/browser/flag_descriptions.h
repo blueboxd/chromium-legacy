@@ -361,9 +361,6 @@ extern const char kDesktopPWAsLocalUpdatingDescription[];
 extern const char kDesktopPWAsOmniboxInstallName[];
 extern const char kDesktopPWAsOmniboxInstallDescription[];
 
-extern const char kDesktopPWAsUnifiedInstallName[];
-extern const char kDesktopPWAsUnifiedInstallDescription[];
-
 extern const char kEnableSystemWebAppsName[];
 extern const char kEnableSystemWebAppsDescription[];
 

@@ -35,8 +35,8 @@ public class BackgroundSyncBackgroundTaskScheduler {
     @IntDef({BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP,
             BackgroundSyncTask.PERIODIC_SYNC_CHROME_WAKE_UP})
     public @interface BackgroundSyncTask {
-        int PERIODIC_SYNC_CHROME_WAKE_UP = 0;
-        int ONE_SHOT_SYNC_CHROME_WAKE_UP = 1;
+        int ONE_SHOT_SYNC_CHROME_WAKE_UP = 0;
+        int PERIODIC_SYNC_CHROME_WAKE_UP = 1;
     };
 
     // Keep in sync with the default min_sync_recovery_time of

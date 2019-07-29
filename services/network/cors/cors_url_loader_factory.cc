@@ -142,24 +142,6 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     return false;
   }
 
-  const auto load_flags_pattern = net::LOAD_DO_NOT_SAVE_COOKIES |
-                                  net::LOAD_DO_NOT_SEND_COOKIES |
-                                  net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  // The Fetch credential mode and lower-level options should match. If the
-  // Fetch mode is kOmit, then either |allow_credentials| must be false or
-  // all three load flags must be set. https://crbug.com/799935 tracks
-  // unifying |LOAD_DO_NOT_*| into |allow_credentials|.
-  if (request.credentials_mode == mojom::CredentialsMode::kOmit &&
-      request.allow_credentials &&
-      (request.load_flags & load_flags_pattern) != load_flags_pattern) {
-    LOG(WARNING) << "|credentials_mode| and |allow_credentials| or "
-                    "|load_flags| contradict each "
-                    "other.";
-    mojo::ReportBadMessage(
-        "CorsURLLoaderFactory: omit-credentials vs load_flags");
-    return false;
-  }
-
   // Ensure that renderer requests are covered either by CORS or CORB.
   if (process_id_ != mojom::kBrowserProcessId) {
     switch (request.mode) {

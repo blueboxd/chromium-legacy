@@ -77,18 +77,7 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
     network::mojom::WebSocketHandshakeClientPtr handshake_client,
     network::mojom::AuthenticationHandlerPtr auth_handler,
     network::mojom::TrustedHeaderClientPtr trusted_header_client) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(ConnectCalledByContentBrowserClient, requested_protocols,
-                       site_for_cookies, process_id, frame_id, origin, options,
-                       std::move(websocket_client), url,
-                       std::move(additional_headers),
-                       std::move(handshake_client), std::move(auth_handler),
-                       std::move(trusted_header_client)));
-    return;
-  }
-
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RenderProcessHost* process = RenderProcessHost::FromID(process_id);
   if (!process) {
     return;

@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/threaded_worklet_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
@@ -55,10 +54,6 @@ void ThreadedWorkletMessagingProxy::Initialize(
   ContentSecurityPolicy* csp = document->GetContentSecurityPolicy();
   DCHECK(csp);
 
-  ProvideContentSettingsClientToWorker(
-      worker_clients,
-      document->GetFrame()->Client()->CreateWorkerContentSettingsClient());
-
   auto global_scope_creation_params =
       std::make_unique<GlobalScopeCreationParams>(
           document->Url(), mojom::ScriptType::kModule,
@@ -67,7 +62,9 @@ void ThreadedWorkletMessagingProxy::Initialize(
           document->GetFrame()->Client()->CreateWorkerFetchContext(),
           csp->Headers(), document->GetReferrerPolicy(),
           document->GetSecurityOrigin(), document->IsSecureContext(),
-          document->GetHttpsState(), worker_clients, document->AddressSpace(),
+          document->GetHttpsState(), worker_clients,
+          document->GetFrame()->Client()->CreateWorkerContentSettingsClient(),
+          document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
           base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(document->GetSettings()),

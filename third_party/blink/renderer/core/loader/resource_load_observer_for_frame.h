@@ -56,7 +56,7 @@ class CORE_EXPORT ResourceLoadObserverForFrame final
                       uint64_t identifier,
                       const ResourceError&,
                       int64_t encoded_data_length,
-                      bool is_internal_request) override;
+                      IsInternalRequest) override;
   void Trace(Visitor*) override;
 
  private:

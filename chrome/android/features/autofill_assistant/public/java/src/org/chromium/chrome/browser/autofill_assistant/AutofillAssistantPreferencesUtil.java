@@ -15,12 +15,12 @@ class AutofillAssistantPreferencesUtil {
 
     /** Peference keeping track of whether the onboarding has been accepted. */
     @VisibleForTesting
-    public static final String AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED =
+    static final String AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED =
             "AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED";
 
     /** LEGACY preference for when the `do not show again' checkbox still existed. */
-    private static final String AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN =
-            "AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN";
+    @VisibleForTesting
+    static final String AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN = "AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN";
 
     /** Checks whether the Autofill Assistant switch preference in settings is on. */
     static boolean isAutofillAssistantSwitchOn() {

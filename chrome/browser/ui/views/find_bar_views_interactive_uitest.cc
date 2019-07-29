@@ -167,13 +167,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, NavigationByKeyEvent) {
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON));
 }
 
-// Flaky on Mac. https://crbug.com/986571
-#if defined(OS_MACOSX)
-#define MAYBE_ButtonsDoNotAlterFocus DISABLED_ButtonsDoNotAlterFocus
-#else
-#define MAYBE_ButtonsDoNotAlterFocus ButtonsDoNotAlterFocus
-#endif
-IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_ButtonsDoNotAlterFocus) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, ButtonsDoNotAlterFocus) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Make sure Chrome is in the foreground, otherwise sending input
   // won't do anything and the test will hang.

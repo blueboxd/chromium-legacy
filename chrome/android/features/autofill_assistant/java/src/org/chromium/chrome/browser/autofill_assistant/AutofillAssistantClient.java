@@ -14,7 +14,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.content_public.browser.WebContents;
@@ -93,7 +92,7 @@ class AutofillAssistantClient {
      * @param parameters autobot parameters to set during the whole flow
      * @param experimentIds comma-separated set of experiments to use while running the flow
      * @param intentExtras extras of the original intent
-     * @param overlayCoordinator if non-null, reuse existing UI elements, usually created to show
+     * @param onboardingCoordinator if non-null, reuse existing UI elements, usually created to show
      *         onboarding.
      *
      * @return true if the flow was started, false if the controller is in a state where
@@ -101,14 +100,14 @@ class AutofillAssistantClient {
      * still fail after this method returns true; the failure will be displayed on the UI.
      */
     boolean start(String initialUrl, Map<String, String> parameters, String experimentIds,
-            Bundle intentExtras, @Nullable AssistantOverlayCoordinator overlayCoordinator) {
+            Bundle intentExtras, @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         if (mNativeClientAndroid == 0) return false;
 
         checkNativeClientIsAliveOrThrow();
         chooseAccountAsyncIfNecessary(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
         return nativeStart(mNativeClientAndroid, initialUrl, experimentIds,
                 parameters.keySet().toArray(new String[parameters.size()]),
-                parameters.values().toArray(new String[parameters.size()]), overlayCoordinator,
+                parameters.values().toArray(new String[parameters.size()]), onboardingCoordinator,
                 AutofillAssistantServiceInjector.getServiceToInject());
     }
 
@@ -135,15 +134,14 @@ class AutofillAssistantClient {
     }
 
     /** Lists available direct actions. */
-    public void listDirectActions(
-            String experimentIds, Map<String, String> arguments, Callback<Set<String>> callback) {
+    public void listDirectActions(String userName, String experimentIds,
+            Map<String, String> arguments, Callback<Set<String>> callback) {
         if (mNativeClientAndroid == 0) {
             callback.onResult(Collections.emptySet());
             return;
         }
 
-        // TODO(b/134741524): An account shouldn't be necessary to fetch the list of actions.
-        chooseAccountAsyncIfNecessary(null, null);
+        chooseAccountAsyncIfNecessary(userName.isEmpty() ? null : userName, null);
 
         // The native side calls sendDirectActionList() on the callback once the controller has
         // results.
@@ -158,22 +156,21 @@ class AutofillAssistantClient {
      * @param actionId id of the action
      * @param experimentIds comma-separated set of experiments to use while running the flow
      * @param arguments report these as autobot parameters while performing this specific action
-     * @param overlayCoordinator if non-null, reuse existing UI elements, usually created to show
+     * @param onboardingcoordinator if non-null, reuse existing UI elements, usually created to show
      *         onboarding.
      * @return true if the action was found started, false otherwise. The action can still fail
      * after this method returns true; the failure will be displayed on the UI.
      */
     public boolean performDirectAction(String actionId, String experimentIds,
-            Map<String, String> arguments, @Nullable AssistantOverlayCoordinator overlay) {
+            Map<String, String> arguments,
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         if (mNativeClientAndroid == 0) return false;
 
-        // TODO(b/134741524): Define a way of specifying a fallback account, for when the user is
-        // not signed-in and allow direct actions when not signed in.
-        chooseAccountAsyncIfNecessary(null, null);
-
+        // Note that only listDirectActions can start AA, so only it needs
+        // chooseAccountAsyncIfNecessary.
         return nativePerformDirectAction(mNativeClientAndroid, actionId, experimentIds,
                 arguments.keySet().toArray(new String[arguments.size()]),
-                arguments.values().toArray(new String[arguments.size()]), overlay);
+                arguments.values().toArray(new String[arguments.size()]), onboardingCoordinator);
     }
 
     @CalledByNative
@@ -330,7 +327,7 @@ class AutofillAssistantClient {
     private static native AutofillAssistantClient nativeFromWebContents(WebContents webContents);
     private native boolean nativeStart(long nativeClientAndroid, String initialUrl,
             String experimentIds, String[] parameterNames, String[] parameterValues,
-            @Nullable AssistantOverlayCoordinator overlayCoordinator, long nativeService);
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator, long nativeService);
     private native void nativeOnAccessToken(
             long nativeClientAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeClientAndroid);
@@ -340,5 +337,5 @@ class AutofillAssistantClient {
             String[] argumentNames, String[] argumentValues, Object callback);
     private native boolean nativePerformDirectAction(long nativeClientAndroid, String actionId,
             String experimentId, String[] argumentNames, String[] argumentValues,
-            @Nullable AssistantOverlayCoordinator overlay);
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator);
 }

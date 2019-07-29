@@ -9,8 +9,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -19,7 +19,7 @@ namespace safe_browsing {
 // SafeBrowsing and determine whether a URL and its redirect URLs are safe to
 // load. It defers response processing until all URL checks are completed;
 // cancels the load if any URLs turn out to be bad.
-class RendererURLLoaderThrottle : public content::URLLoaderThrottle,
+class RendererURLLoaderThrottle : public blink::URLLoaderThrottle,
                                   public mojom::UrlCheckNotifier {
  public:
   // |safe_browsing| must stay alive until WillStartRequest() (if it is called)
@@ -30,7 +30,7 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle,
   ~RendererURLLoaderThrottle() override;
 
  private:
-  // content::URLLoaderThrottle implementation.
+  // blink::URLLoaderThrottle implementation.
   void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;

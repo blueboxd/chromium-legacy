@@ -1407,7 +1407,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/share/ShareParams.java",
   "java/src/org/chromium/chrome/browser/sharing/click_to_call/ClickToCallMessageHandler.java",
   "java/src/org/chromium/chrome/browser/sharing/SharingJNIBridge.java",
-  "java/src/org/chromium/chrome/browser/signin/AccountAdder.java",
   "java/src/org/chromium/chrome/browser/signin/AccountPickerDialogFragment.java",
   "java/src/org/chromium/chrome/browser/signin/IdentityServicesProvider.java",
   "java/src/org/chromium/chrome/browser/signin/ConfirmImportSyncDataDialog.java",

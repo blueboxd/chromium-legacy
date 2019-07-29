@@ -32,6 +32,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
     private static final String ACTION_NAME = "name";
     private static final String EXPERIMENT_IDS = "experiment_ids";
     private static final String ONBOARDING_ACTION = "onboarding";
+    private static final String USER_NAME = "user_name";
 
     /**
      * Set of actions to report when AA is not available, because of preference or
@@ -60,7 +61,12 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
 
     @Override
     public void reportAvailableDirectActions(DirectActionReporter reporter) {
-        reporter.addDirectAction(LIST_AA_ACTIONS).withResult(LIST_AA_ACTIONS_RESULT, Type.STRING);
+        if (!AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) return;
+
+        reporter.addDirectAction(LIST_AA_ACTIONS)
+                .withParameter(USER_NAME, Type.STRING, /* required= */ false)
+                .withParameter(EXPERIMENT_IDS, Type.STRING, /* required= */ false)
+                .withResult(LIST_AA_ACTIONS_RESULT, Type.STRING);
 
         reporter.addDirectAction(PERFORM_AA_ACTION)
                 .withParameter(ACTION_NAME, Type.STRING, /* required= */ false)
@@ -89,10 +95,18 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
             bundleCallback.onResult(bundle);
         };
 
+        if (!AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) {
+            namesCallback.onResult(Collections.emptySet());
+            return;
+        }
+
         if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
             namesCallback.onResult(FALLBACK_ACTION_SET);
             return;
         }
+
+        String userName = arguments.getString(USER_NAME, "");
+        arguments.remove(USER_NAME);
 
         String experimentIds = arguments.getString(EXPERIMENT_IDS, "");
         arguments.remove(EXPERIMENT_IDS);
@@ -102,7 +116,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
                 namesCallback.onResult(FALLBACK_ACTION_SET);
                 return;
             }
-            delegate.listActions(experimentIds, arguments, namesCallback);
+            delegate.listActions(userName, experimentIds, arguments, namesCallback);
         });
     }
 
@@ -112,6 +126,12 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
             bundle.putBoolean(PERFORM_AA_ACTION_RESULT, result);
             bundleCallback.onResult(bundle);
         };
+
+        if (!AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) {
+            booleanCallback.onResult(false);
+            return;
+        }
+
         String name = arguments.getString(ACTION_NAME, "");
         arguments.remove(ACTION_NAME);
 

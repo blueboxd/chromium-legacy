@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/chromeos_camera/mojo_mjpeg_decode_accelerator.h"
@@ -26,7 +27,7 @@ namespace media {
 
 // Implementation of media::VideoCaptureJpegDecoder that delegates to a
 // chromeos_camera::mojom::MjpegDecodeAccelerator. When a frame is received in
-// DecodeCapturedData(), it is copied to |in_shared_memory| for IPC transport
+// DecodeCapturedData(), it is copied to |in_shared_region_| for IPC transport
 // to |decoder_|. When the decoder is finished with the frame, |decode_done_cb_|
 // is invoked. Until |decode_done_cb_| is invoked, subsequent calls to
 // DecodeCapturedData() are ignored.
@@ -100,7 +101,8 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
 
   // Shared memory to store JPEG stream buffer. The input BitstreamBuffer is
   // backed by this.
-  std::unique_ptr<base::SharedMemory> in_shared_memory_;
+  base::UnsafeSharedMemoryRegion in_shared_region_;
+  base::WritableSharedMemoryMapping in_shared_mapping_;
 
   STATUS decoder_status_;
 

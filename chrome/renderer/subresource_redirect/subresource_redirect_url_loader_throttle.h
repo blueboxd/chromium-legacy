@@ -5,18 +5,18 @@
 #ifndef CHROME_RENDERER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_URL_LOADER_THROTTLE_H_
 #define CHROME_RENDERER_SUBRESOURCE_REDIRECT_SUBRESOURCE_REDIRECT_URL_LOADER_THROTTLE_H_
 
-#include "content/public/common/url_loader_throttle.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace subresource_redirect {
 
 // This class handles internal redirects for subresouces on HTTPS sites to
 // compressed versions of subresources.
-class SubresourceRedirectURLLoaderThrottle : public content::URLLoaderThrottle {
+class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
  public:
   SubresourceRedirectURLLoaderThrottle();
   ~SubresourceRedirectURLLoaderThrottle() override;
 
-  // content::URLLoaderThrottle:
+  // blink::URLLoaderThrottle:
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
   void WillRedirectRequest(

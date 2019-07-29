@@ -331,12 +331,12 @@ void TraceLog::ThreadLocalEventBuffer::FlushWhileLocked() {
 }
 
 void TraceLog::SetAddTraceEventOverrides(
-    const AddTraceEventOverrideCallback& add_event_override,
-    const OnFlushCallback& on_flush_callback,
-    const UpdateDurationCallback& update_duration_callback) {
+    const AddTraceEventOverrideFunction& add_event_override,
+    const OnFlushFunction& on_flush_override,
+    const UpdateDurationFunction& update_duration_override) {
   add_trace_event_override_.store(add_event_override);
-  on_flush_callback_.store(on_flush_callback);
-  update_duration_callback_.store(update_duration_callback);
+  on_flush_override_.store(on_flush_override);
+  update_duration_override_.store(update_duration_override);
 }
 
 struct TraceLog::RegisteredAsyncObserver {
@@ -1033,9 +1033,9 @@ void TraceLog::FlushCurrentThread(int generation, bool discard_events) {
   // This will flush the thread local buffer.
   delete thread_local_event_buffer_.Get();
 
-  auto on_flush_callback = on_flush_callback_.load(std::memory_order_relaxed);
-  if (on_flush_callback) {
-    on_flush_callback();
+  auto on_flush_override = on_flush_override_.load(std::memory_order_relaxed);
+  if (on_flush_override) {
+    on_flush_override();
   }
 
   // Scheduler uses TRACE_EVENT macros when posting a task, which can lead
@@ -1432,10 +1432,10 @@ void TraceLog::UpdateTraceEventDurationExplicit(
 #endif  // OS_WIN
 
   if (category_group_enabled_local & TraceCategory::ENABLED_FOR_RECORDING) {
-    auto update_duration_callback =
-        update_duration_callback_.load(std::memory_order_relaxed);
-    if (update_duration_callback) {
-      update_duration_callback(handle, now, thread_now, thread_instruction_now);
+    auto update_duration_override =
+        update_duration_override_.load(std::memory_order_relaxed);
+    if (update_duration_override) {
+      update_duration_override(handle, now, thread_now, thread_instruction_now);
       return;
     }
   }

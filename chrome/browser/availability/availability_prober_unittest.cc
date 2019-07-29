@@ -179,7 +179,8 @@ class AvailabilityProberTest : public testing::Test {
     EXPECT_EQ(testing_header, "Hello world");
     EXPECT_EQ(request->request.method, "GET");
     EXPECT_EQ(request->request.load_flags, net::LOAD_DISABLE_CACHE);
-    EXPECT_FALSE(request->request.allow_credentials);
+    EXPECT_EQ(request->request.credentials_mode,
+              network::mojom::CredentialsMode::kOmit);
     if (expect_random_guid) {
       EXPECT_NE(request->request.url, kTestUrl);
       EXPECT_TRUE(request->request.url.query().find("guid=") !=

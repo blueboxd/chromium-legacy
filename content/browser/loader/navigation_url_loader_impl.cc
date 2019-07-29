@@ -654,7 +654,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // |single_request_handler|.
       DCHECK(interceptor);
 
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles =
           CreateURLLoaderThrottles();
       // Intercepted requests need MimeSniffingThrottle to do mime sniffing.
       // Non-intercepted requests usually go through the regular network
@@ -1246,7 +1246,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     return false;
   }
 
-  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottles() {
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+  CreateURLLoaderThrottles() {
     if (IsNavigationLoaderOnUIEnabled()) {
       return GetContentClient()->browser()->CreateURLLoaderThrottles(
           *resource_request_, browser_context_, web_contents_getter_,

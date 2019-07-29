@@ -147,7 +147,7 @@ class ResourceFetcherTest : public testing::Test {
                         uint64_t identifier,
                         const ResourceError&,
                         int64_t encoded_data_length,
-                        bool is_internal_request) override {}
+                        IsInternalRequest is_internal_request) override {}
 
     const base::Optional<ResourceRequest>& GetLastRequest() const {
       return request_;

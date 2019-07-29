@@ -632,8 +632,8 @@ CommandHandler.COMMANDS_['format'] = new class extends Command {
   execute(event, fileManager) {
     const directoryModel = fileManager.directoryModel;
     let root;
-    if (event.target instanceof DirectoryItem ||
-        event.target instanceof DirectoryTree) {
+    if (fileManager.ui.directoryTree.contains(
+            /** @type {Node} */ (event.target))) {
       // The command is executed from the directory tree context menu.
       root = CommandUtil.getCommandEntry(fileManager, event.target);
     } else {
@@ -667,14 +667,15 @@ CommandHandler.COMMANDS_['format'] = new class extends Command {
   canExecute(event, fileManager) {
     const directoryModel = fileManager.directoryModel;
     let root;
-    if (event.target instanceof DirectoryItem ||
-        event.target instanceof DirectoryTree) {
+    if (fileManager.ui.directoryTree.contains(
+            /** @type {Node} */ (event.target))) {
       // The command is executed from the directory tree context menu.
       root = CommandUtil.getCommandEntry(fileManager, event.target);
     } else {
       // The command is executed from the gear menu.
       root = directoryModel.getCurrentDirEntry();
     }
+
     // |root| is null for unrecognized volumes. Enable format command for such
     // volumes.
     const isUnrecognizedVolume = (root == null);
@@ -685,6 +686,8 @@ CommandHandler.COMMANDS_['format'] = new class extends Command {
     const location = root && fileManager.volumeManager.getLocationInfo(root);
     const writable = location && !location.isReadOnly;
     const isRoot = location && location.isRootEntry;
+
+    // Enable the command if this is a removable device (e.g. a USB drive).
     const removableRoot = location && isRoot &&
         location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
     event.canExecute = removableRoot && (isUnrecognizedVolume || writable);

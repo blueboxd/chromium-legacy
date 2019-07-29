@@ -12,7 +12,7 @@ namespace content {
 
 std::unique_ptr<network::mojom::URLLoaderClient> CreateThrottlingLoaderAndStart(
     scoped_refptr<network::SharedURLLoaderFactory> factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,

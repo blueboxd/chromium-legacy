@@ -60,7 +60,6 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/history/core/browser/sync/history_model_worker.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -71,6 +70,7 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -480,8 +480,13 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING:
-      return GetWeakPtrOrNull(SessionSyncServiceFactory::GetForProfile(profile_)
-                                  ->GetFaviconCache());
+      if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes)) {
+        return GetWeakPtrOrNull(
+            SessionSyncServiceFactory::GetForProfile(profile_)
+                ->GetFaviconCache());
+      }
+      NOTREACHED();
+      return nullptr;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     case syncer::SUPERVISED_USER_SETTINGS:
       return SupervisedUserSettingsServiceFactory::GetForKey(
@@ -574,28 +579,11 @@ ChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
     case syncer::GROUP_DB:
       return new syncer::SequencedModelWorker(web_data_service_thread_,
                                               syncer::GROUP_DB);
-    // TODO(stanisc): crbug.com/731903: Rename GROUP_FILE to reflect that it is
-    // used only for app and extension settings.
-    case syncer::GROUP_FILE:
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      return new syncer::SequencedModelWorker(
-          extensions::GetBackendTaskRunner(), syncer::GROUP_FILE);
-#else
-      return nullptr;
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
-    case syncer::GROUP_HISTORY: {
-      history::HistoryService* history_service = GetHistoryService();
-      if (!history_service)
-        return nullptr;
-      return new HistoryModelWorker(
-          history_service->AsWeakPtr(),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
-    }
     case syncer::GROUP_PASSWORD: {
       if (!password_store_.get())
         return nullptr;

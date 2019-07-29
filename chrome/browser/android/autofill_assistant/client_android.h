@@ -38,14 +38,15 @@ class ClientAndroid : public Client,
   // Returns the corresponding Java AutofillAssistantClient.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  bool Start(JNIEnv* env,
-             const base::android::JavaParamRef<jobject>& jcaller,
-             const base::android::JavaParamRef<jstring>& jinitial_url,
-             const base::android::JavaParamRef<jstring>& jexperiment_ids,
-             const base::android::JavaParamRef<jobjectArray>& parameter_names,
-             const base::android::JavaParamRef<jobjectArray>& parameter_values,
-             const base::android::JavaParamRef<jobject>& joverlay_coordinator,
-             jlong jservice);
+  bool Start(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jinitial_url,
+      const base::android::JavaParamRef<jstring>& jexperiment_ids,
+      const base::android::JavaParamRef<jobjectArray>& parameter_names,
+      const base::android::JavaParamRef<jobjectArray>& parameter_values,
+      const base::android::JavaParamRef<jobject>& jonboarding_coordinator,
+      jlong jservice);
   void DestroyUI(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& jcaller);
   void TransferUITo(
@@ -76,7 +77,7 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jstring>& jexperiment_ids,
       const base::android::JavaParamRef<jobjectArray>& jargument_names,
       const base::android::JavaParamRef<jobjectArray>& jargument_values,
-      const base::android::JavaParamRef<jobject>& joverlay_coordinator);
+      const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
 
   // Overrides Client
   void AttachUI() override;
@@ -102,7 +103,7 @@ class ClientAndroid : public Client,
   void CreateController(std::unique_ptr<Service> service);
   void DestroyController();
   void AttachUI(
-      const base::android::JavaParamRef<jobject>& joverlay_coordinator);
+      const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
   bool NeedsUI();
   void OnListDirectActions(const base::android::JavaRef<jobject>& jcallback);
 

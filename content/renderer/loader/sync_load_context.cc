@@ -11,12 +11,12 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response_info.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
@@ -92,7 +92,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     SyncLoadResponse* response,
     base::WaitableEvent* redirect_or_response_event,
     base::WaitableEvent* abort_event,

@@ -72,10 +72,6 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
     return ScrollbarTheme::DeprecatedStaticGetTheme().RegisterScrollbar(
         scrollbar);
   }
-  void UnregisterScrollbar(Scrollbar& scrollbar) override {
-    return ScrollbarTheme::DeprecatedStaticGetTheme().UnregisterScrollbar(
-        scrollbar);
-  }
 
   int MinimumThumbLength(const Scrollbar&) override;
 

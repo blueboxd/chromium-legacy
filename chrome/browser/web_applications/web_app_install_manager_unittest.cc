@@ -205,7 +205,7 @@ TEST_F(WebAppInstallManagerTest,
 }
 
 TEST_F(WebAppInstallManagerTest,
-       InstallOrUpdateWebAppFromSync_InstallManagerShutdown) {
+       InstallOrUpdateWebAppFromSync_InstallManagerDestroyed) {
   const GURL app_url("https://example.com/path");
   const AppId app_id = GenerateAppIdFromURL(app_url);
   NavigateAndCommit(app_url);
@@ -233,50 +233,17 @@ TEST_F(WebAppInstallManagerTest,
 
   install_manager().InstallOrUpdateWebAppFromSync(
       app_id, CreateWebAppInfo(app_url),
-      base::BindLambdaForTesting(
-          [](const web_app::AppId& installed_app_id,
-             web_app::InstallResultCode code) { NOTREACHED(); }));
+      base::BindLambdaForTesting([](const web_app::AppId& installed_app_id,
+                                    web_app::InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kWebContentsDestroyed, code);
+      }));
   EXPECT_TRUE(install_manager().has_web_contents_for_testing());
 
-  // Wait for the task started.
+  // Wait for the task to start.
   run_loop.Run();
   EXPECT_TRUE(install_manager().has_web_contents_for_testing());
 
-  // Destroy InstallManager: Call Shutdown as if Profile gets destroyed.
-  install_manager().Shutdown();
-  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
-
-  // Delete InstallManager object.
-  DestroyManagers();
-}
-
-TEST_F(WebAppInstallManagerTest,
-       InstallOrUpdateWebAppFromSync_InstallAfterShutdown) {
-  const GURL app1_url("https://example.com/path");
-  const AppId app1_id = GenerateAppIdFromURL(app1_url);
-
-  install_manager().InstallOrUpdateWebAppFromSync(
-      app1_id, CreateWebAppInfo(app1_url),
-      base::BindLambdaForTesting(
-          [&](const web_app::AppId& installed_app_id,
-              web_app::InstallResultCode code) { NOTREACHED(); }));
-  EXPECT_TRUE(install_manager().has_web_contents_for_testing());
-
-  // Destroy InstallManager: Call Shutdown as if Profile gets destroyed.
-  install_manager().Shutdown();
-  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
-
-  const GURL app2_url("https://example.org/path");
-  const AppId app2_id = GenerateAppIdFromURL(app2_url);
-
-  install_manager().InstallOrUpdateWebAppFromSync(
-      app2_id, CreateWebAppInfo(app2_url),
-      base::BindLambdaForTesting(
-          [&](const web_app::AppId& installed_app_id,
-              web_app::InstallResultCode code) { NOTREACHED(); }));
-  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
-
-  // Delete InstallManager object.
+  // Simulate Profile getting destroyed.
   DestroyManagers();
 }
 

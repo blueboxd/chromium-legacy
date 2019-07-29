@@ -15,13 +15,13 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace content {
@@ -181,14 +181,14 @@ void PrefetchURLLoaderService::NotifyUpdate(
   SetAcceptLanguages(new_prefs->accept_languages);
 }
 
-std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 PrefetchURLLoaderService::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
       !request_context_getter_ ||
       !request_context_getter_->GetURLRequestContext())
-    return std::vector<std::unique_ptr<content::URLLoaderThrottle>>();
+    return std::vector<std::unique_ptr<blink::URLLoaderThrottle>>();
   int frame_tree_node_id = frame_tree_node_id_getter.Run();
   if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
     return GetContentClient()->browser()->CreateURLLoaderThrottles(

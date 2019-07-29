@@ -114,12 +114,8 @@ StyleImage* CSSImageSetValue::CacheImage(
     ImageWithScale image = BestImageForScaleFactor(device_scale_factor);
     ResourceRequest resource_request(document.CompleteURL(image.image_url));
     resource_request.SetReferrerPolicy(
-        ReferrerPolicyResolveDefault(image.referrer.referrer_policy),
-        ResourceRequest::SetReferrerPolicyLocation::
-            kCSSImageSetValueCacheImage);
-    resource_request.SetReferrerString(
-        image.referrer.referrer, ResourceRequest::SetReferrerStringLocation::
-                                     kCSSImageSetValueCacheImage);
+        ReferrerPolicyResolveDefault(image.referrer.referrer_policy));
+    resource_request.SetReferrerString(image.referrer.referrer);
     ResourceLoaderOptions options;
     options.initiator_info.name = parser_mode_ == kUASheetMode
                                       ? fetch_initiator_type_names::kUacss

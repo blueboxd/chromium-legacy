@@ -116,7 +116,7 @@ void DialURLFetcher::Start(const GURL& url,
   //     help.
   // net::LOAD_DISABLE_CACHE: The request should not touch the cache.
   request->load_flags = net::LOAD_BYPASS_PROXY | net::LOAD_DISABLE_CACHE;
-  request->allow_credentials = false;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   loader_ = network::SimpleURLLoader::Create(std::move(request),
                                              kDialUrlFetcherTrafficAnnotation);

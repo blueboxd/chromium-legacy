@@ -952,10 +952,8 @@ void WebLocalFrameImpl::SetReferrerForRequest(WebURLRequest& request,
                         : String(referrer_url.GetString());
   ResourceRequest& resource_request = request.ToMutableResourceRequest();
   resource_request.SetReferrerPolicy(
-      GetFrame()->GetDocument()->GetReferrerPolicy(),
-      ResourceRequest::SetReferrerPolicyLocation::kWebLocalFrameImpl);
-  resource_request.SetReferrerString(
-      referrer, ResourceRequest::SetReferrerStringLocation::kWebLocalFrameImpl);
+      GetFrame()->GetDocument()->GetReferrerPolicy());
+  resource_request.SetReferrerString(referrer);
 }
 
 WebAssociatedURLLoader* WebLocalFrameImpl::CreateAssociatedURLLoader(

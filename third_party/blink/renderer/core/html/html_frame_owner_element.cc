@@ -419,9 +419,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
   KURL url_to_request = url.IsNull() ? BlankURL() : url;
   ResourceRequest request(url_to_request);
-  request.SetReferrerPolicy(ReferrerPolicyAttribute(),
-                            ResourceRequest::SetReferrerPolicyLocation::
-                                kFrameOwnerLoadOrRedirectSubframe);
+  request.SetReferrerPolicy(ReferrerPolicyAttribute());
 
   if (ContentFrame()) {
     // TODO(sclittle): Support lazily loading frame navigations.

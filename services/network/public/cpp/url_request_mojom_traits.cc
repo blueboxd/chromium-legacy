@@ -189,7 +189,6 @@ bool StructTraits<
       data.update_first_party_url_on_redirect();
   out->is_prerendering = data.is_prerendering();
   out->load_flags = data.load_flags();
-  out->allow_credentials = data.allow_credentials();
   out->plugin_child_id = data.plugin_child_id();
   out->resource_type = data.resource_type();
   out->should_reset_appcache = data.should_reset_appcache();

@@ -43,7 +43,6 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   ~ScrollbarThemeMac() override;
 
   void RegisterScrollbar(Scrollbar&) override;
-  void UnregisterScrollbar(Scrollbar&) override;
 
   bool SupportsControlTints() const override { return true; }
 

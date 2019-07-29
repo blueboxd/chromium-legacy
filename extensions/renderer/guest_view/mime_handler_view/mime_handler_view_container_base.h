@@ -22,12 +22,12 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+class URLLoaderThrottle;
 class WebAssociatedURLLoader;
 }  // namespace blink
 
 namespace content {
 class RenderFrame;
-class URLLoaderThrottle;
 struct WebPluginInfo;
 }  // namespace content
 
@@ -56,7 +56,7 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
   // If the URL matches the same URL that this object has created and it hasn't
   // added a throttle yet, it will return a new one for the purpose of
   // intercepting it.
-  std::unique_ptr<content::URLLoaderThrottle> MaybeCreatePluginThrottle(
+  std::unique_ptr<blink::URLLoaderThrottle> MaybeCreatePluginThrottle(
       const GURL& url);
 
   // WebAssociatedURLLoaderClient overrides.

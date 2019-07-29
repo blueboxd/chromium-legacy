@@ -1384,7 +1384,10 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
 
   // Although there is no titlebar displayed, sheets need NSTitledWindowMask in
   // order to properly engage window-modal behavior in AppKit.
-  EXPECT_EQ(NSTitledWindowMask, [sheet_window styleMask]);
+  EXPECT_TRUE(NSTitledWindowMask & [sheet_window styleMask]);
+
+  // But to properly size, sheets also need NSFullSizeContentViewWindowMask.
+  EXPECT_TRUE(NSFullSizeContentViewWindowMask & [sheet_window styleMask]);
 
   sheet_widget->SetBounds(gfx::Rect(50, 50, 200, 150));
   EXPECT_FALSE(sheet_widget->IsVisible());

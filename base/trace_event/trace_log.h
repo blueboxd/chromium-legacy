@@ -196,11 +196,11 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // Cancels tracing and discards collected data.
   void CancelTracing(const OutputCallback& cb);
 
-  using AddTraceEventOverrideCallback = void (*)(TraceEvent*,
+  using AddTraceEventOverrideFunction = void (*)(TraceEvent*,
                                                  bool thread_will_flush,
                                                  TraceEventHandle* handle);
-  using OnFlushCallback = void (*)();
-  using UpdateDurationCallback =
+  using OnFlushFunction = void (*)();
+  using UpdateDurationFunction =
       void (*)(TraceEventHandle handle,
                const TimeTicks& now,
                const ThreadTicks& thread_now,
@@ -209,9 +209,9 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // finished, i.e. must be callable until OutputCallback is called with
   // has_more_events==false.
   void SetAddTraceEventOverrides(
-      const AddTraceEventOverrideCallback& add_event_override,
-      const OnFlushCallback& on_flush_callback,
-      const UpdateDurationCallback& update_duration_callback);
+      const AddTraceEventOverrideFunction& add_event_override,
+      const OnFlushFunction& on_flush_callback,
+      const UpdateDurationFunction& update_duration_callback);
 
   // Called by TRACE_EVENT* macros, don't call this directly.
   // The name parameter is a category group for example:
@@ -541,9 +541,9 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   MetadataFilterPredicate metadata_filter_predicate_;
   subtle::AtomicWord generation_;
   bool use_worker_thread_;
-  std::atomic<AddTraceEventOverrideCallback> add_trace_event_override_;
-  std::atomic<OnFlushCallback> on_flush_callback_;
-  std::atomic<UpdateDurationCallback> update_duration_callback_;
+  std::atomic<AddTraceEventOverrideFunction> add_trace_event_override_{nullptr};
+  std::atomic<OnFlushFunction> on_flush_override_{nullptr};
+  std::atomic<UpdateDurationFunction> update_duration_override_{nullptr};
 
   FilterFactoryForTesting filter_factory_for_testing_;
 

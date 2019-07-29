@@ -559,7 +559,7 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
           }
         })");
   auto downstream_request = std::make_unique<network::ResourceRequest>();
-  downstream_request->allow_credentials = false;
+  downstream_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   downstream_request->url = downstream_url;
   downstream_loader_ = std::make_unique<DownstreamLoader>(
       std::move(downstream_request), downstream_traffic_annotation,
@@ -657,7 +657,7 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
   upstream_request->url = upstream_url;
   upstream_request->method = "POST";
   upstream_request->referrer = GURL(config_.origin_url);
-  upstream_request->allow_credentials = false;
+  upstream_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   if (use_framed_post_data_) {
     upstream_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
                                         "application/octet-stream");

@@ -15,23 +15,12 @@
 
 namespace media {
 
-V4L2DecodeSurface::V4L2DecodeSurface(int input_record,
-                                     int output_record,
-                                     base::OnceClosure release_cb)
-    : input_record_(input_record),
-      output_record_(output_record),
-      decoded_(false),
-      release_cb_(std::move(release_cb)) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
 V4L2DecodeSurface::V4L2DecodeSurface(V4L2WritableBufferRef input_buffer,
                                      V4L2WritableBufferRef output_buffer,
-                                     scoped_refptr<VideoFrame> frame,
-                                     base::OnceClosure release_cb)
-    : V4L2DecodeSurface(input_buffer.BufferId(),
-                        output_buffer.BufferId(),
-                        std::move(release_cb)) {
+                                     scoped_refptr<VideoFrame> frame)
+    : input_record_(input_buffer.BufferId()),
+      output_record_(output_buffer.BufferId()),
+      decoded_(false) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   input_buffer_ = std::move(input_buffer);
   output_buffer_ = std::move(output_buffer);
@@ -133,19 +122,12 @@ bool V4L2ConfigStoreDecodeSurface::Submit() const {
   return true;
 }
 
-V4L2RequestDecodeSurface::V4L2RequestDecodeSurface(int input_record,
-                                                   int output_record,
-                                                   int request_fd,
-                                                   base::OnceClosure release_cb)
-    : V4L2DecodeSurface(input_record, output_record, std::move(release_cb)),
-      request_fd_(request_fd) {}
-
 // static
 base::Optional<scoped_refptr<V4L2RequestDecodeSurface>>
-V4L2RequestDecodeSurface::Create(int input_record,
-                                 int output_record,
-                                 int request_fd,
-                                 base::OnceClosure release_cb) {
+V4L2RequestDecodeSurface::Create(V4L2WritableBufferRef input_buffer,
+                                 V4L2WritableBufferRef output_buffer,
+                                 scoped_refptr<VideoFrame> frame,
+                                 int request_fd) {
   // First reinit the request to make sure we can use it for a new submission.
   int ret = HANDLE_EINTR(ioctl(request_fd, MEDIA_REQUEST_IOC_REINIT));
   if (ret < 0) {
@@ -153,8 +135,9 @@ V4L2RequestDecodeSurface::Create(int input_record,
     return base::nullopt;
   }
 
-  return new V4L2RequestDecodeSurface(input_record, output_record, request_fd,
-                                      std::move(release_cb));
+  return new V4L2RequestDecodeSurface(std::move(input_buffer),
+                                      std::move(output_buffer),
+                                      std::move(frame), request_fd);
 }
 
 void V4L2RequestDecodeSurface::PrepareSetCtrls(

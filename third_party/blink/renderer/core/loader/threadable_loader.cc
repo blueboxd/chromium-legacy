@@ -170,14 +170,8 @@ ThreadableLoader::CreateAccessControlPreflightRequest(
   preflight_request->SetRequestContext(request.GetRequestContext());
   preflight_request->SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
   preflight_request->SetSkipServiceWorker(true);
-  preflight_request->SetReferrerString(
-      request.ReferrerString(),
-      ResourceRequest::SetReferrerStringLocation::
-          kThreadableLoaderCreateAccessControlPreflightRequest);
-  preflight_request->SetReferrerPolicy(
-      request.GetReferrerPolicy(),
-      ResourceRequest::SetReferrerPolicyLocation::
-          kThreadableLoaderCreateAccessControlPreflightRequest);
+  preflight_request->SetReferrerString(request.ReferrerString());
+  preflight_request->SetReferrerPolicy(request.GetReferrerPolicy());
 
   if (request.IsExternalRequest()) {
     preflight_request->SetHttpHeaderField(
@@ -349,12 +343,8 @@ void ThreadableLoader::PrepareCrossOriginRequest(
     request.SetHTTPOrigin(GetSecurityOrigin());
 
   if (override_referrer_) {
-    request.SetReferrerString(referrer_after_redirect_.referrer,
-                              ResourceRequest::SetReferrerStringLocation::
-                                  kThreadableLoaderPrepareCrossOriginRequest);
-    request.SetReferrerPolicy(referrer_after_redirect_.referrer_policy,
-                              ResourceRequest::SetReferrerPolicyLocation::
-                                  kThreadableLoaderPrepareCrossOriginRequest);
+    request.SetReferrerString(referrer_after_redirect_.referrer);
+    request.SetReferrerPolicy(referrer_after_redirect_.referrer_policy);
   }
 }
 

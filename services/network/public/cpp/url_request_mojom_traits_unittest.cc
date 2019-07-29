@@ -65,7 +65,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.headers.SetHeader("Accept", "text/xml");
   original.cors_exempt_headers.SetHeader("X-Requested-With", "ForTesting");
   original.load_flags = 3;
-  original.allow_credentials = true;
   original.plugin_child_id = 5;
   original.resource_type = 2;
   original.priority = net::IDLE;

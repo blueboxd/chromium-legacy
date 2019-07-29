@@ -27,9 +27,115 @@ class ProfileOAuth2TokenService;
 namespace signin {
 struct AccessTokenInfo;
 
-// Helper class to ease the task of obtaining an OAuth2 access token for a
-// given account.
-// May only be used on the UI thread.
+// Class that supports obtaining OAuth2 access tokens for any of the user's
+// accounts with OAuth2 refresh tokens. Note that in the common case of
+// obtaining an OAuth2 access token for the user's primary account, use
+// PrimaryAccountAccessTokenFetcher rather than this class. See ./README.md
+// for the definition of "accounts with OAuth2 refresh tokens" and "primary
+// account".
+//
+// The usage model of this class is as follows: When an AccessTokenFetcher is
+// created via IdentityManager::CreateAccessTokenFetcherXXX(), the returned
+// object is owned by the caller. This object will make at most one access
+// token request for the specified account (either immediately or if/once a
+// refresh token for the specified account becomes available, based on the
+// value of the specified |Mode| parameter). When the access token request is
+// fulfilled the AccessTokenFetcher will call the specified callback, at which
+// point it is safe for the caller to destroy the object. If the object is
+// destroyed before the request is fulfilled the request is dropped and the
+// callback will never be invoked.  This class may only be used on the UI
+// thread.
+//
+// To drive responses to access token fetches in unittests of clients of this
+// class, use IdentityTestEnvironment.
+//
+// Concrete usage example (related concrete test example follows):
+//   class MyClass {
+//    public:
+//     MyClass(IdentityManager* identity_manager, account_id) :
+//       identity_manager_(identity_manager) {
+//         // An access token request could also be initiated at any arbitrary
+//         // point in the lifetime of |MyClass|.
+//         StartAccessTokenRequestForAccount(account_id);
+//       }
+//
+//
+//     ~MyClass() {
+//       // If the access token request is still live, the destruction of
+//       |access_token_fetcher_| will cause it to be dropped.
+//     }
+//
+//    private:
+//     IdentityManager* identity_manager_;
+//     std::unique_ptr<AccessTokenFetcher> access_token_fetcher_;
+//     std::string access_token_;
+//     GoogleServiceAuthError access_token_request_error_;
+//
+//     // Most commonly invoked as part of some larger flow to hit a Gaia
+//     // endpoint for a client-specific purpose (e.g., hitting sync
+//     // endpoints).
+//     // Could also be public, but in general, any clients that would need to
+//     // create access token requests could and should just create
+//     // AccessTokenFetchers directly themselves rather than introducing
+//     // wrapper API surfaces.
+//     MyClass::StartAccessTokenRequestForAccount(CoreAccountId account_id) {
+//       // Choose scopes to obtain for the access token.
+//       identity::ScopeSet scopes;
+//       scopes.insert(GaiaConstants::kMyFirstScope);
+//       scopes.insert(GaiaConstants::kMySecondScope);
+
+//       // Choose the mode in which to fetch the access token:
+//       // see AccessTokenFetcher::Mode below for definitions.
+//       auto mode = signin::AccessTokenFetcher::Mode::kImmediate;
+
+//       // Create the fetcher via |identity_manager_|.
+//       access_token_fetcher_ =
+//           identity_manager_->CreateAccessTokenFetcherForAccount(
+//               account_id, /*consumer_name=*/"MyClass",
+//               base::BindOnce(&MyClass::OnAccessTokenRequestCompleted,
+//                              // It is safe to use base::Unretained as
+//                              // |this| owns |access_token_fetcher_|.
+//                              base::Unretained(this)),
+//                              mode);
+//
+//     }
+//     MyClass::OnAccessTokenRequestCompleted(
+//         GoogleServiceAuthError error, AccessTokenInfo access_token_info) {
+//       // It is safe to destroy |access_token_fetcher_| from this callback.
+//       access_token_fetcher_.reset();
+//
+//       if (error.state() == GoogleServiceAuthError::NONE) {
+//         // The fetcher successfully obtained an access token.
+//         access_token_ = access_token_info.token;
+//         // MyClass can now take whatever action required having an access
+//         // token (e.g.,hitting a given Gaia endpoint).
+//         ...
+//       } else {
+//         // The fetcher failed to obtain a token; |error| specifies why.
+//         access_token_request_error_ = error;
+//         // MyClass can now perform any desired error handling.
+//         ...
+//       }
+//     }
+//   }
+//
+//   Concrete test example:
+//   TEST(MyClassTest, SuccessfulAccessTokenFetch) {
+//     IdentityTestEnvironment identity_test_env;
+//     AccountInfo account_info =
+//         identity_test_env.MakeAccountAvailable("test_email");
+//
+//     MyClass my_class(identity_test_env.identity_manager(),
+//                      account_info.account_id);
+//     identity_test_env.
+//         WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
+//             "access_token", base::Time::Max());
+//
+//     // MyClass::OnAccessTokenRequestCompleted() will have been invoked with
+//     // an AccessTokenInfo object containing the above-specified parameters;
+//     // the test can now perform any desired validation of expected actions
+//     // |MyClass| took in response.
+//   }
 class AccessTokenFetcher : public OAuth2TokenServiceObserver,
                            public OAuth2AccessTokenManager::Consumer {
  public:

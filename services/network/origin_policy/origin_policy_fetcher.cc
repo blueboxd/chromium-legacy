@@ -131,7 +131,7 @@ void OriginPolicyFetcher::FetchPolicy(mojom::URLLoaderFactory* factory) {
       std::make_unique<ResourceRequest>();
   policy_request->url = fetch_url_;
   policy_request->request_initiator = url::Origin::Create(fetch_url_);
-  policy_request->allow_credentials = false;
+  policy_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   url_loader_ =
       SimpleURLLoader::Create(std::move(policy_request), traffic_annotation);

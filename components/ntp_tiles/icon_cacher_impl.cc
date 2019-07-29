@@ -35,12 +35,10 @@ constexpr int kDesiredFrameSize = 128;
 // arguments from the UI so that we desire for the right size on a given device.
 // See crbug.com/696563.
 constexpr int kDefaultTileIconMinSizePx = 1;
-constexpr int kDefaultTileIconDesiredSizePx = 96;
 
 const char kImageFetcherUmaClient[] = "IconCacher";
 
 constexpr char kTileIconMinSizePxFieldParam[] = "min_size";
-constexpr char kTileIconDesiredSizePxFieldParam[] = "desired_size";
 
 favicon_base::IconType IconType(const PopularSites::Site& site) {
   return site.large_icon_url.is_valid() ? favicon_base::IconType::kTouchIcon
@@ -64,12 +62,6 @@ int GetMinimumFetchingSizeForChromeSuggestionsFaviconsFromServer() {
   return base::GetFieldTrialParamByFeatureAsInt(
       kNtpMostLikelyFaviconsFromServerFeature, kTileIconMinSizePxFieldParam,
       kDefaultTileIconMinSizePx);
-}
-
-int GetDesiredFetchingSizeForChromeSuggestionsFaviconsFromServer() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      kNtpMostLikelyFaviconsFromServerFeature, kTileIconDesiredSizePxFieldParam,
-      kDefaultTileIconDesiredSizePx);
 }
 
 }  // namespace
@@ -262,9 +254,7 @@ void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
         })");
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-          favicon::FaviconServerFetcherParams::CreateForMobile(
-              page_url,
-              GetDesiredFetchingSizeForChromeSuggestionsFaviconsFromServer()),
+          favicon::FaviconServerFetcherParams::CreateForMobile(page_url),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           traffic_annotation,
           base::Bind(&IconCacherImpl::OnMostLikelyFaviconDownloaded,

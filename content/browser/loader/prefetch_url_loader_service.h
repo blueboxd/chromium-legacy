@@ -32,6 +32,10 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+namespace blink {
+class URLLoaderThrottle;
+}
+
 namespace content {
 
 class BrowserContext;
@@ -39,7 +43,6 @@ class ChromeBlobStorageContext;
 class PrefetchedSignedExchangeCache;
 class ResourceContext;
 class URLLoaderFactoryGetter;
-class URLLoaderThrottle;
 
 class CONTENT_EXPORT PrefetchURLLoaderService final
     : public base::RefCountedThreadSafe<
@@ -118,7 +121,7 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
 
   // For URLLoaderThrottlesGetter.
-  std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const network::ResourceRequest& request,
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter);

@@ -190,7 +190,6 @@ class CORE_EXPORT ScrollbarTheme {
   }
 
   virtual void RegisterScrollbar(Scrollbar&) {}
-  virtual void UnregisterScrollbar(Scrollbar&) {}
 
   virtual bool IsMockTheme() const { return false; }
 

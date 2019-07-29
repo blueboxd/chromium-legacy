@@ -16,7 +16,10 @@ if (use_system_harfbuzz) {
       "//third_party:freetype_harfbuzz",
       "//third_party/freetype:freetype_source",
     ]
-    packages = [ "harfbuzz" ]
+    packages = [
+      "harfbuzz",
+      "harfbuzz-subset",
+    ]
   }
 } else {
   config("harfbuzz_config") {

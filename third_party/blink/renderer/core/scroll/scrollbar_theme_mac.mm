@@ -228,11 +228,6 @@ void ScrollbarThemeMac::RegisterScrollbar(Scrollbar& scrollbar) {
   UpdateScrollbarOverlayColorTheme(scrollbar);
 }
 
-void ScrollbarThemeMac::UnregisterScrollbar(Scrollbar& scrollbar) {
-  GetScrollbarPainterMap().erase(&scrollbar);
-  GetScrollbarSet().erase(&scrollbar);
-}
-
 void ScrollbarThemeMac::SetNewPainterForScrollbar(
     Scrollbar& scrollbar,
     ScrollbarPainter new_painter) {

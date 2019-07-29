@@ -204,8 +204,6 @@ jumbo_source_set("common_sources") {
     "three_d_api_types.h",
     "url_constants.cc",
     "url_constants.h",
-    "url_loader_throttle.cc",
-    "url_loader_throttle.h",
     "url_utils.cc",
     "url_utils.h",
     "use_zoom_for_dsf_policy.cc",

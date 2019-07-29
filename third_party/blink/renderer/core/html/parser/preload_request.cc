@@ -39,13 +39,9 @@ Resource* PreloadRequest::Start(Document* document) {
   DCHECK(!url.ProtocolIsData());
 
   ResourceRequest resource_request(url);
-  resource_request.SetReferrerPolicy(
-      referrer_policy_,
-      ResourceRequest::SetReferrerPolicyLocation::kPreloadRequestStart);
+  resource_request.SetReferrerPolicy(referrer_policy_);
   if (referrer_source_ == kBaseUrlIsReferrer) {
-    resource_request.SetReferrerString(
-        base_url_.StrippedForUseAsReferrer(),
-        ResourceRequest::SetReferrerStringLocation::kPreloadRequestStart);
+    resource_request.SetReferrerString(base_url_.StrippedForUseAsReferrer());
   }
 
   resource_request.SetRequestContext(

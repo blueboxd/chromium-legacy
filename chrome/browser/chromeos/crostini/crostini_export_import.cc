@@ -163,12 +163,14 @@ void CrostiniExportImport::Start(
     base::FilePath path,
     CrostiniManager::CrostiniResultCallback callback) {
   auto* notification = CrostiniExportImportNotification::Create(
-      profile_, type, GetUniqueNotificationId(), path);
+      profile_, type, GetUniqueNotificationId(), path, container_id);
 
   auto it = notifications_.find(container_id);
   if (it != notifications_.end()) {
-    // An operation is in progress for this container, display an error to
-    // the user and exit.
+    // There is already an operation in progress. Ensure the existing
+    // notification is (re)displayed so the user knows why this new concurrent
+    // operation failed, and show a failure notification for the new request.
+    it->second->ForceRedisplay();
     notification->SetStatusFailedConcurrentOperation(it->second->type());
     return;
   } else {
@@ -242,11 +244,38 @@ void CrostiniExportImport::OnExportComplete(
   ExportContainerResult enum_hist_result = ExportContainerResult::kSuccess;
   if (result == CrostiniResult::SUCCESS) {
     switch (it->second->status()) {
+      case CrostiniExportImportNotification::Status::CANCELLING: {
+        // If a user requests to cancel, but the export completes before the
+        // cancel can happen (|result| == SUCCESS), then removing the exported
+        // file is functionally the same as a successful cancel.
+        base::PostTaskWithTraits(
+            FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                           it->second->path(), false));
+        RemoveNotification(it).SetStatusCancelled();
+        break;
+      }
       case CrostiniExportImportNotification::Status::RUNNING:
         UMA_HISTOGRAM_LONG_TIMES("Crostini.BackupTimeSuccess",
                                  base::Time::Now() - start);
         RemoveNotification(it).SetStatusDone();
         break;
+      default:
+        NOTREACHED();
+    }
+  } else if (result == CrostiniResult::CONTAINER_EXPORT_IMPORT_CANCELLED) {
+    switch (it->second->status()) {
+      case CrostiniExportImportNotification::Status::CANCELLING: {
+        // If a user requests to cancel, and the export is cancelled (|result|
+        // == CONTAINER_EXPORT_IMPORT_CANCELLED), then the partially exported
+        // file needs to be cleaned up.
+        base::PostTaskWithTraits(
+            FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                           it->second->path(), false));
+        RemoveNotification(it).SetStatusCancelled();
+        break;
+      }
       default:
         NOTREACHED();
     }
@@ -270,7 +299,9 @@ void CrostiniExportImport::OnExportComplete(
     UMA_HISTOGRAM_LONG_TIMES("Crostini.BackupTimeFailed",
                              base::Time::Now() - start);
     DCHECK(it->second->status() ==
-           CrostiniExportImportNotification::Status::RUNNING);
+               CrostiniExportImportNotification::Status::RUNNING ||
+           it->second->status() ==
+               CrostiniExportImportNotification::Status::CANCELLING);
     RemoveNotification(it).SetStatusFailed();
   }
   UMA_HISTOGRAM_ENUMERATION("Crostini.Backup", enum_hist_result);
@@ -358,7 +389,24 @@ void CrostiniExportImport::OnImportComplete(
                                        << " has no notification to update";
     switch (it->second->status()) {
       case CrostiniExportImportNotification::Status::RUNNING:
+        // If a user requests to cancel, but the import completes before the
+        // cancel can happen, then the container will have been imported over
+        // and the cancel will have failed. However the period of time in which
+        // this can happen is very small (<5s), so it feels quite natural to
+        // pretend the cancel did not happen, and instead display success.
+      case CrostiniExportImportNotification::Status::CANCELLING:
         RemoveNotification(it).SetStatusDone();
+        break;
+      default:
+        NOTREACHED();
+    }
+  } else if (result ==
+             crostini::CrostiniResult::CONTAINER_EXPORT_IMPORT_CANCELLED) {
+    DCHECK(it != notifications_.end()) << ContainerIdToString(container_id)
+                                       << " has no notification to update";
+    switch (it->second->status()) {
+      case CrostiniExportImportNotification::Status::CANCELLING:
+        RemoveNotification(it).SetStatusCancelled();
         break;
       default:
         NOTREACHED();
@@ -457,6 +505,31 @@ CrostiniExportImportNotification& CrostiniExportImport::RemoveNotification(
   auto& notification = *it->second;
   notifications_.erase(it);
   return notification;
+}
+
+void CrostiniExportImport::CancelOperation(ExportImportType type,
+                                           ContainerId container_id) {
+  auto it = notifications_.find(container_id);
+  if (it == notifications_.end()) {
+    NOTREACHED() << ContainerIdToString(container_id)
+                 << " has no notification to cancel";
+    return;
+  }
+
+  it->second->SetStatusCancelling();
+
+  auto& manager = *CrostiniManager::GetForProfile(profile_);
+
+  switch (type) {
+    case ExportImportType::EXPORT:
+      manager.CancelExportLxdContainer(std::move(container_id));
+      return;
+    case ExportImportType::IMPORT:
+      manager.CancelImportLxdContainer(std::move(container_id));
+      return;
+    default:
+      NOTREACHED();
+  }
 }
 
 CrostiniExportImportNotification*

@@ -30,12 +30,10 @@ class SyncBackendRegistrarTest : public testing::Test {
  public:
   SyncBackendRegistrarTest()
       : db_thread_("DBThreadForTest"),
-        file_thread_("FileThreadForTest"),
         sync_thread_("SyncThreadForTest") {}
 
   void SetUp() override {
     db_thread_.StartAndWaitForTesting();
-    file_thread_.StartAndWaitForTesting();
     sync_thread_.StartAndWaitForTesting();
     test_user_share_.SetUp();
     registrar_ = std::make_unique<SyncBackendRegistrar>(
@@ -100,8 +98,6 @@ class SyncBackendRegistrarTest : public testing::Test {
             task_environment_.GetMainThreadTaskRunner(), group);
       case GROUP_DB:
         return new SequencedModelWorker(db_thread_.task_runner(), group);
-      case GROUP_FILE:
-        return new SequencedModelWorker(file_thread_.task_runner(), group);
       case GROUP_PASSIVE:
         return new PassiveModelWorker();
       default:
@@ -111,7 +107,6 @@ class SyncBackendRegistrarTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment task_environment_;
   base::Thread db_thread_;
-  base::Thread file_thread_;
   base::Thread sync_thread_;
 
   TestUserShare test_user_share_;
@@ -121,7 +116,7 @@ class SyncBackendRegistrarTest : public testing::Test {
 TEST_F(SyncBackendRegistrarTest, ConstructorEmpty) {
   registrar()->SetInitialTypes(ModelTypeSet());
   EXPECT_FALSE(registrar()->IsNigoriEnabled());
-  EXPECT_EQ(4u, GetWorkersSize());
+  EXPECT_EQ(3u, GetWorkersSize());
   ExpectRoutingInfo(ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(ModelTypeSet());
 }
@@ -130,7 +125,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmpty) {
   registrar()->RegisterNonBlockingType(BOOKMARKS);
   registrar()->SetInitialTypes(ModelTypeSet(BOOKMARKS, NIGORI, PASSWORDS));
   EXPECT_TRUE(registrar()->IsNigoriEnabled());
-  EXPECT_EQ(4u, GetWorkersSize());
+  EXPECT_EQ(3u, GetWorkersSize());
   EXPECT_EQ(ModelTypeSet(NIGORI), registrar()->GetLastConfiguredTypes());
   // Bookmarks dropped because it is nonblocking.
   // Passwords dropped because of no password store.
@@ -143,7 +138,7 @@ TEST_F(SyncBackendRegistrarTest, ConstructorNonEmptyReversedInitialization) {
   registrar()->SetInitialTypes(ModelTypeSet(BOOKMARKS, NIGORI, PASSWORDS));
   registrar()->RegisterNonBlockingType(BOOKMARKS);
   EXPECT_TRUE(registrar()->IsNigoriEnabled());
-  EXPECT_EQ(4u, GetWorkersSize());
+  EXPECT_EQ(3u, GetWorkersSize());
   EXPECT_EQ(ModelTypeSet(NIGORI), registrar()->GetLastConfiguredTypes());
   // Bookmarks dropped because it is nonblocking.
   // Passwords dropped because of no password store.

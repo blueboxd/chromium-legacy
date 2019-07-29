@@ -17,6 +17,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
@@ -101,8 +102,10 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::AUTOFILL_WALLET_METADATA);
     datatypes.push_back(syncer::BOOKMARKS);
     datatypes.push_back(syncer::DEVICE_INFO);
-    datatypes.push_back(syncer::FAVICON_TRACKING);
-    datatypes.push_back(syncer::FAVICON_IMAGES);
+    if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes)) {
+      datatypes.push_back(syncer::FAVICON_TRACKING);
+      datatypes.push_back(syncer::FAVICON_IMAGES);
+    }
     datatypes.push_back(syncer::HISTORY_DELETE_DIRECTIVES);
     if (!base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
       // Password store factory is null for testing. For directory

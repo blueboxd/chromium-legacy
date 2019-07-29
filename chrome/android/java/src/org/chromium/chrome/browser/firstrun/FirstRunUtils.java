@@ -5,12 +5,10 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.content.SharedPreferences;
-import android.support.v4.app.Fragment;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.signin.AccountAdder;
 
 /** Provides first run related utility functions. */
 public class FirstRunUtils {
@@ -64,13 +62,5 @@ public class FirstRunUtils {
                 .putBoolean(CACHED_TOS_ACCEPTED_PREF, true)
                 .apply();
         PrefServiceBridge.getInstance().setEulaAccepted();
-    }
-
-    /**
-     * Opens the Android account adder UI.
-     * @param fragment A fragment that requested the service.
-     */
-    public static void openAccountAdder(Fragment fragment) {
-        AccountAdder.getInstance().addAccount(fragment, AccountAdder.ADD_ACCOUNT_RESULT);
     }
 }

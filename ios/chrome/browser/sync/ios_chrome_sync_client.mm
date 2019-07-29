@@ -24,7 +24,6 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/history/core/browser/sync/history_model_worker.h"
 #include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -33,6 +32,7 @@
 #include "components/password_manager/core/browser/sync/password_model_worker.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_util.h"
@@ -236,11 +236,15 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
     }
     case syncer::FAVICON_IMAGES:
     case syncer::FAVICON_TRACKING: {
-      sync_sessions::FaviconCache* favicons =
-          SessionSyncServiceFactory::GetForBrowserState(browser_state_)
-              ->GetFaviconCache();
-      return favicons ? favicons->AsWeakPtr()
-                      : base::WeakPtr<syncer::SyncableService>();
+      if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes)) {
+        sync_sessions::FaviconCache* favicons =
+            SessionSyncServiceFactory::GetForBrowserState(browser_state_)
+                ->GetFaviconCache();
+        return favicons ? favicons->AsWeakPtr()
+                        : base::WeakPtr<syncer::SyncableService>();
+      }
+      NOTREACHED();
+      return nullptr;
     }
     case syncer::DEPRECATED_ARTICLES: {
       // DomDistillerService is used in iOS ReadingList. The distilled articles
@@ -303,22 +307,11 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   switch (group) {
     case syncer::GROUP_DB:
       return new syncer::SequencedModelWorker(db_thread_, syncer::GROUP_DB);
-    case syncer::GROUP_FILE:
-      // Not supported on iOS.
-      return nullptr;
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(
           base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker();
-    case syncer::GROUP_HISTORY: {
-      history::HistoryService* history_service = GetHistoryService();
-      if (!history_service)
-        return nullptr;
-      return new browser_sync::HistoryModelWorker(
-          history_service->AsWeakPtr(),
-          base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::UI}));
-    }
     case syncer::GROUP_PASSWORD: {
       if (!password_store_)
         return nullptr;

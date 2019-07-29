@@ -135,6 +135,8 @@ class CORE_EXPORT DedicatedWorker final
       base::Optional<mojom::IPAddressSpace> response_address_space);
   scoped_refptr<WebWorkerFetchContext> CreateWebWorkerFetchContext();
   WorkerClients* CreateWorkerClients();
+  // May return nullptr.
+  std::unique_ptr<WebContentSettingsClient> CreateWebContentSettingsClient();
 
   // Callbacks for |classic_script_loader_|.
   void OnResponse();

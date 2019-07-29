@@ -81,7 +81,7 @@ class MockMojoDataReductionProxy : public mojom::DataReductionProxy {
   DISALLOW_COPY_AND_ASSIGN(MockMojoDataReductionProxy);
 };
 
-class MockDelegate : public content::URLLoaderThrottle::Delegate {
+class MockDelegate : public blink::URLLoaderThrottle::Delegate {
  public:
   MockDelegate() = default;
 

@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -37,8 +36,8 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
     }
 
     @Override
-    public void listActions(
-            String experimentIds, Bundle arguments, Callback<Set<String>> callback) {
+    public void listActions(String userName, String experimentIds, Bundle arguments,
+            Callback<Set<String>> callback) {
         if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
             callback.onResult(Collections.emptySet());
             return;
@@ -49,7 +48,7 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
             return;
         }
 
-        client.listDirectActions(experimentIds, toArgumentMap(arguments), callback);
+        client.listDirectActions(userName, experimentIds, toArgumentMap(arguments), callback);
     }
 
     @Override
@@ -71,15 +70,15 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
             return;
         }
 
-        Callback<AssistantOverlayCoordinator> afterOnboarding = (overlayController) -> {
+        Callback<AssistantOnboardingCoordinator> afterOnboarding = (onboardingCoordinator) -> {
             Map<String, String> argumentMap = toArgumentMap(arguments);
             if (name.isEmpty()) {
                 callback.onResult(client.start(/* initialUrl= */ "", argumentMap, experimentIds,
-                        Bundle.EMPTY, overlayController));
+                        Bundle.EMPTY, onboardingCoordinator));
                 return;
             }
             callback.onResult(client.performDirectAction(
-                    name, experimentIds, argumentMap, overlayController));
+                    name, experimentIds, argumentMap, onboardingCoordinator));
         };
 
         if (!AutofillAssistantPreferencesUtil.isAutofillOnboardingAccepted()) {
@@ -91,7 +90,7 @@ class AutofillAssistantActionHandlerImpl implements AutofillAssistantActionHandl
                     callback.onResult(false);
                     return;
                 }
-                afterOnboarding.onResult(coordinator.transferControls());
+                afterOnboarding.onResult(coordinator);
             });
             return;
         }

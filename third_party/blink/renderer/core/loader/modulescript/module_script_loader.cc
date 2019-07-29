@@ -162,8 +162,7 @@ void ModuleScriptLoader::FetchInternal(
   // <spec label="SMSR">... its referrer policy to options's referrer
   // policy.</spec>
   fetch_params.MutableResourceRequest().SetReferrerPolicy(
-      module_request.Options().GetReferrerPolicy(),
-      ResourceRequest::SetReferrerPolicyLocation::kModuleLoader);
+      module_request.Options().GetReferrerPolicy());
 
   // <spec step="5">... mode is "cors", ...</spec>
   //
@@ -175,8 +174,7 @@ void ModuleScriptLoader::FetchInternal(
 
   // <spec step="5">... referrer is referrer, ...</spec>
   fetch_params.MutableResourceRequest().SetReferrerString(
-      module_request.ReferrerString(),
-      ResourceRequest::SetReferrerStringLocation::kModuleScriptLoader);
+      module_request.ReferrerString());
 
   // Priority Hints and a request's "importance" are currently non-standard, but
   // we can assume the following (see https://crbug.com/821464):

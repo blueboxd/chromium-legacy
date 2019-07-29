@@ -30,7 +30,7 @@ class InstallManagerBookmarkAppDialogTest : public DialogBrowserTest {
  public:
   InstallManagerBookmarkAppDialogTest() {
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAsUnifiedInstall}, {});
+        {}, {features::kDesktopPWAsWithoutExtensions});
   }
 
   // DialogBrowserTest:

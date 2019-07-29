@@ -157,14 +157,14 @@ URLLoaderThrottleProviderImpl::Clone() {
   return base::WrapUnique(new URLLoaderThrottleProviderImpl(*this));
 }
 
-std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 URLLoaderThrottleProviderImpl::CreateThrottles(
     int render_frame_id,
     const blink::WebURLRequest& request,
     content::ResourceType resource_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
 
   // Some throttles have already been added in the browser for frame resources.
   // Don't add them for frame requests.
@@ -249,7 +249,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
       SetExtensionThrottleManagerTestPolicy(extension_throttle_manager_.get());
     }
 
-    std::unique_ptr<content::URLLoaderThrottle> throttle =
+    std::unique_ptr<blink::URLLoaderThrottle> throttle =
         extension_throttle_manager_->MaybeCreateURLLoaderThrottle(request);
     if (throttle)
       throttles.push_back(std::move(throttle));

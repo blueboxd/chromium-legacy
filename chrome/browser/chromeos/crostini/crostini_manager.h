@@ -268,6 +268,14 @@ class CrostiniManager : public KeyedService,
                           base::FilePath import_path,
                           CrostiniResultCallback callback);
 
+  // Checks the arguments for cancelling a Lxd container export via
+  // CiceroneClient::CancelExportLxdContainer .
+  void CancelExportLxdContainer(ContainerId key);
+
+  // Checks the arguments for cancelling a Lxd container import via
+  // CiceroneClient::CancelImportLxdContainer.
+  void CancelImportLxdContainer(ContainerId key);
+
   // Asynchronously launches an app as specified by its desktop file id.
   void LaunchContainerApplication(std::string vm_name,
                                   std::string container_name,
@@ -606,6 +614,18 @@ class CrostiniManager : public KeyedService,
       std::string vm_name,
       std::string container_name,
       base::Optional<vm_tools::cicerone::ImportLxdContainerResponse> response);
+
+  // Callback for CiceroneClient::CancelExportLxdContainer.
+  void OnCancelExportLxdContainer(
+      const ContainerId& key,
+      base::Optional<vm_tools::cicerone::CancelExportLxdContainerResponse>
+          response);
+
+  // Callback for CiceroneClient::CancelImportLxdContainer.
+  void OnCancelImportLxdContainer(
+      const ContainerId& key,
+      base::Optional<vm_tools::cicerone::CancelImportLxdContainerResponse>
+          response);
 
   // Callback for CrostiniManager::LaunchContainerApplication.
   void OnLaunchContainerApplication(

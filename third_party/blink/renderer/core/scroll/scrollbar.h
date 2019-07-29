@@ -47,7 +47,6 @@ class WebMouseEvent;
 
 class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
                               public DisplayItemClient {
-    USING_PRE_FINALIZER(Scrollbar, Dispose);
  public:
   // Theme object ownership remains with the caller and it must outlive the
   // scrollbar.
@@ -190,9 +189,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
 
   CompositorElementId GetElementId();
 
-  // Promptly unregister from the theme manager + run finalizers of derived
-  // Scrollbars.
-  void Dispose();
   virtual void Trace(blink::Visitor*);
 
  protected:

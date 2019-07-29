@@ -25,5 +25,6 @@ extern NSString* const kBackgroundDarkColor;
 extern NSString* const kTextPrimaryDarkColor;
 extern NSString* const kTextfieldBackgroundDarkColor;
 extern NSString* const kTextfieldPlaceholderDarkColor;
+extern NSString* const kTintDarkColor;
 
 #endif  // IOS_CHROME_COMMON_COLORS_SEMANTIC_COLOR_NAMES_H_

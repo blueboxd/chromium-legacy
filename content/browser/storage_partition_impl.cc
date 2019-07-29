@@ -34,6 +34,7 @@
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
@@ -831,6 +832,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
           base::BindOnce(&ChromeAppCacheService::Shutdown, appcache_service_));
     }
   }
+
+  if (GetGeneratedCodeCacheContext())
+    GetGeneratedCodeCacheContext()->Shutdown();
 
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
                             std::move(network_context_owner_));
@@ -1708,6 +1712,21 @@ void StoragePartitionImpl::WaitForDeletionTasksForTesting() {
     base::RunLoop loop;
     on_deletion_helpers_done_callback_ = loop.QuitClosure();
     loop.Run();
+  }
+}
+
+void StoragePartitionImpl::WaitForCodeCacheShutdownForTesting() {
+  if (generated_code_cache_context_) {
+    // If this is still running its initialization task it may check
+    // enabled features on a sequenced worker pool which could race
+    // between ScopedFeatureList destruction.
+    base::RunLoop loop;
+    generated_code_cache_context_->generated_js_code_cache()->GetBackend(
+        base::BindOnce([](base::OnceClosure quit,
+                          disk_cache::Backend*) { std::move(quit).Run(); },
+                       loop.QuitClosure()));
+    loop.Run();
+    generated_code_cache_context_->Shutdown();
   }
 }
 

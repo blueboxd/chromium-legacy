@@ -53,8 +53,6 @@ class PendingAppManager {
                      WebAppUiManager* ui_manager,
                      InstallFinalizer* finalizer);
 
-  virtual void Shutdown() = 0;
-
   // Queues an installation operation with the highest priority. Essentially
   // installing the app immediately if there are no ongoing operations or
   // installing the app right after the current operation finishes. Runs its

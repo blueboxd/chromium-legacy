@@ -581,7 +581,7 @@ void ServicesCustomizationDocument::DoStartFileFetch() {
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url_;
   request->load_flags = net::LOAD_DISABLE_CACHE;
-  request->allow_credentials = false;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   request->headers.SetHeader("Accept", "application/json");
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(request),

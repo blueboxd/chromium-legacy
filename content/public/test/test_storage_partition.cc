@@ -182,4 +182,6 @@ void TestStoragePartition::FlushNetworkInterfaceForTesting() {}
 
 void TestStoragePartition::WaitForDeletionTasksForTesting() {}
 
+void TestStoragePartition::WaitForCodeCacheShutdownForTesting() {}
+
 }  // namespace content

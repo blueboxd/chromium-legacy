@@ -16,6 +16,7 @@
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_pipeline.h"
 #include "media/base/bind_to_current_loop.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace extensions {
@@ -329,9 +330,9 @@ void CreateVideoEncodeMemory(
     const WiFiDisplayVideoEncoder::ReceiveEncodeMemoryCallback& callback) {
   DCHECK(content::RenderThread::Get());
 
-  std::unique_ptr<base::SharedMemory> shm =
-      content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(size);
-  if (!shm || !shm->Map(size)) {
+  base::UnsafeSharedMemoryRegion shm =
+      mojo::CreateUnsafeSharedMemoryRegion(size);
+  if (!shm.IsValid()) {
     NOTREACHED() << "Shared memory allocation or map failed";
   }
   callback.Run(std::move(shm));

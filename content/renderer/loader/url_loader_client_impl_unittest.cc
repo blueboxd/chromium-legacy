@@ -62,7 +62,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),
-        std::vector<std::unique_ptr<URLLoaderThrottle>>(),
+        std::vector<std::unique_ptr<blink::URLLoaderThrottle>>(),
         nullptr /* navigation_response_override_params */);
     request_peer_context_.request_id = request_id_;
 

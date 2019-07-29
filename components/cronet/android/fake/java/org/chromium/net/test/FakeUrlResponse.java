@@ -270,17 +270,20 @@ public class FakeUrlResponse {
 
     @Override
     public String toString() {
-        String outputString = "HTTP Status Code: " + mHttpStatusCode
-                + " Headers: " + mAllHeadersList.toString() + " Was Cached: " + mWasCached
-                + " Negotiated Protocol: " + mNegotiatedProtocol + " Proxy Server: " + mProxyServer
-                + " Response Body ";
+        StringBuilder outputString = new StringBuilder();
+        outputString.append("HTTP Status Code: " + mHttpStatusCode);
+        outputString.append(" Headers: " + mAllHeadersList.toString());
+        outputString.append(" Was Cached: " + mWasCached);
+        outputString.append(" Negotiated Protocol: " + mNegotiatedProtocol);
+        outputString.append(" Proxy Server: " + mProxyServer);
+        outputString.append(" Response Body ");
         try {
             String bodyString = new String(mResponseBody, "UTF-8");
-            outputString += "(UTF-8): " + bodyString;
+            outputString.append("(UTF-8): " + bodyString);
         } catch (UnsupportedEncodingException e) {
-            outputString += "(hexadecimal): " + getHexStringFromBytes(mResponseBody);
+            outputString.append("(hexadecimal): " + getHexStringFromBytes(mResponseBody));
         }
-        return outputString;
+        return outputString.toString();
     }
 
     private String getHexStringFromBytes(byte[] bytes) {

@@ -454,11 +454,6 @@ void CorsURLLoader::StartRequest() {
       request_.url, request_.mode, request_.request_initiator, fetch_cors_flag_,
       tainted_, origin_access_list_);
 
-  if (!CalculateCredentialsFlag(request_.credentials_mode,
-                                response_tainting_)) {
-    request_.allow_credentials = false;
-  }
-
   // Note that even when |NeedsPreflight(request_)| holds we don't make a
   // preflight request when |fetch_cors_flag_| is false (e.g., when the origin
   // of the url is equal to the origin of the request.
@@ -488,6 +483,15 @@ void CorsURLLoader::StartNetworkRequest(
   if (preflight_timing_info)
     preflight_timing_info_.push_back(*preflight_timing_info);
 
+  // Here we overwrite the credentials mode sent to URLLoader because
+  // network::URLLoader doesn't understand |kSameOrigin|.
+  // TODO(crbug.com/943939): Fix this.
+  auto original_credentials_mode = request_.credentials_mode;
+  request_.credentials_mode =
+      CalculateCredentialsFlag(original_credentials_mode, response_tainting_)
+          ? mojom::CredentialsMode::kInclude
+          : mojom::CredentialsMode::kOmit;
+
   mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
   // Binding |this| as an unretained pointer is safe because
@@ -497,6 +501,8 @@ void CorsURLLoader::StartNetworkRequest(
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
       request_, std::move(network_client), traffic_annotation_);
+
+  request_.credentials_mode = original_credentials_mode;
 }
 
 void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {

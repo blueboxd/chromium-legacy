@@ -278,7 +278,7 @@ JobConfigurationBase::GetResourceRequest(bool bypass_proxy, int last_error) {
   rr->method = "POST";
   rr->load_flags =
       net::LOAD_DISABLE_CACHE | (bypass_proxy ? net::LOAD_BYPASS_PROXY : 0);
-  rr->allow_credentials = false;
+  rr->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   // If auth data is specified, use it to build the request.
   if (auth_data_) {

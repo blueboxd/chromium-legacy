@@ -14,6 +14,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -53,6 +54,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       bool starter_secure_context,
       HttpsState starter_https_state,
       WorkerClients*,
+      std::unique_ptr<WebContentSettingsClient>,
       base::Optional<mojom::IPAddressSpace>,
       const Vector<String>* origin_trial_tokens,
       const base::UnguessableToken& parent_devtools_token,
@@ -131,6 +133,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // persistent reference. If the worker thread creation context
   // supplies no extra 'clients', m_workerClients can be left as empty/null.
   CrossThreadPersistent<WorkerClients> worker_clients;
+
+  std::unique_ptr<WebContentSettingsClient> content_settings_client;
 
   // Worker script response's address space. This is valid only when the worker
   // script is fetched on the main thread (i.e., when

@@ -52,17 +52,9 @@ PendingBookmarkAppManager::PendingBookmarkAppManager(Profile* profile)
 
 PendingBookmarkAppManager::~PendingBookmarkAppManager() = default;
 
-void PendingBookmarkAppManager::Shutdown() {
-  shutting_down_ = true;
-  web_contents_.reset();
-}
-
 void PendingBookmarkAppManager::Install(
     web_app::ExternalInstallOptions install_options,
     OnceInstallCallback callback) {
-  if (shutting_down_)
-    return;
-
   pending_tasks_and_callbacks_.push_front(std::make_unique<TaskAndCallback>(
       task_factory_.Run(profile_, registrar(), finalizer(),
                         std::move(install_options)),

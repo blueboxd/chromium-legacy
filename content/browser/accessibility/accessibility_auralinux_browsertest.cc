@@ -970,4 +970,30 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(text);
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TextAttributesInInputWithAriaHidden) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(
+      R"HTML(<!DOCTYPE html>
+          <html>
+          <body>
+            <input aria-hidden="true">
+          </body>
+          </html>)HTML"));
+
+  AtkObject* document = GetRendererAccessible();
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
+
+  AtkObject* section = atk_object_ref_accessible_child(document, 0);
+  AtkText* input_element =
+      ATK_TEXT(atk_object_ref_accessible_child(section, 0));
+
+  AtkAttributeSet* attributes =
+      atk_text_get_run_attributes(input_element, 0, nullptr, nullptr);
+  ASSERT_NE(attributes, nullptr);
+  atk_attribute_set_free(attributes);
+
+  g_object_unref(input_element);
+  g_object_unref(section);
+}
+
 }  // namespace content

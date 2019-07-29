@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/nfc/nfc_reader_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reading_event.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -45,6 +46,18 @@ bool NFCReader::HasPendingActivity() const {
 void NFCReader::start() {
   if (!CheckSecurity())
     return;
+
+  // https://w3c.github.io/web-nfc/#dom-nfcreader-start (Step 3.4)
+  if (options_->hasURL() && !options_->url().IsEmpty()) {
+    KURL pattern_url(options_->url());
+    if (!pattern_url.IsValid() || pattern_url.Protocol() != kNfcProtocolHttps) {
+      DispatchEvent(*MakeGarbageCollected<NFCErrorEvent>(
+          event_type_names::kError,
+          MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
+                                             kNfcUrlPatternError)));
+    }
+  }
+
   GetNfcProxy()->StartReading(this);
 }
 

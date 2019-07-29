@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_package.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
@@ -105,11 +104,6 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
   }
 
   BrowserContext* CreateBrowserContext() override {
-    // This method is invoked after the browser threads have been created and
-    // obviously before the BrowserContext is created. This is the correct time
-    // to create a ResourceDispatcherHostImpl so that our SavePackage objects
-    // can initialize correctly.
-    rdh_.reset(new ResourceDispatcherHostImpl);
     // Initialize the SaveFileManager instance which we will use for the tests.
     save_file_manager_ = new SaveFileManager();
     return RenderViewHostImplTestHarness::CreateBrowserContext();
@@ -121,7 +115,6 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
 
     save_package_success_ = nullptr;
     save_package_fail_ = nullptr;
-    rdh_.reset();
 
     RenderViewHostImplTestHarness::TearDown();
   }
@@ -141,7 +134,6 @@ class SavePackageTest : public RenderViewHostImplTestHarness {
 
   base::ScopedTempDir temp_dir_;
 
-  std::unique_ptr<ResourceDispatcherHostImpl> rdh_;
   scoped_refptr<SaveFileManager> save_file_manager_;
 };
 

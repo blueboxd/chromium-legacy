@@ -6,10 +6,10 @@
 
 #include "base/feature_list.h"
 #include "chromecast/common/cast_url_loader_throttle.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace chromecast {
 
@@ -34,14 +34,14 @@ CastURLLoaderThrottleProvider::Clone() {
   return base::WrapUnique(new CastURLLoaderThrottleProvider(*this));
 }
 
-std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 CastURLLoaderThrottleProvider::CreateThrottles(
     int render_frame_id,
     const blink::WebURLRequest& request,
     content::ResourceType resource_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
   return throttles;
 }
 

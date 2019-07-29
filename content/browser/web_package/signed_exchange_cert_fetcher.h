@@ -29,12 +29,15 @@ namespace mojo {
 class SimpleWatcher;
 }  // namespace mojo
 
+namespace blink {
+class URLLoaderThrottle;
+}  // namespace blink
+
 namespace content {
 
 class SignedExchangeDevToolsProxy;
 class SignedExchangeReporter;
 class ThrottlingURLLoader;
-class URLLoaderThrottle;
 
 class CONTENT_EXPORT SignedExchangeCertFetcher
     : public network::mojom::URLLoaderClient {
@@ -53,7 +56,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
   // calling this.
   static std::unique_ptr<SignedExchangeCertFetcher> CreateAndStart(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       const GURL& cert_url,
       bool force_fetch,
       CertificateCallback callback,
@@ -75,7 +78,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
 
   SignedExchangeCertFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       const GURL& cert_url,
       bool force_fetch,
       CertificateCallback callback,
@@ -108,7 +111,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
                         network::mojom::URLLoaderClientPtr);
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles_;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles_;
   std::unique_ptr<network::ResourceRequest> resource_request_;
   CertificateCallback callback_;
 

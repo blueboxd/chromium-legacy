@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test that NFCReader.start fails if NFCReaderOptions.url is missing components. promise_test: Unhandled rejection with value: object "ReferenceError: NFCReader is not defined"
-FAIL Test that NFCReader.start fails if NFCReaderOptions.url is invalid. promise_test: Unhandled rejection with value: object "ReferenceError: NFCReader is not defined"
-FAIL Test that NFCReader.start fails if NFCReaderOptions.url has wrong protocol. promise_test: Unhandled rejection with value: object "ReferenceError: NFCReader is not defined"
-Harness: the test ran to completion.
-

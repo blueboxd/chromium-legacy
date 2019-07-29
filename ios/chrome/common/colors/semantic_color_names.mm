@@ -25,3 +25,4 @@ NSString* const kTextfieldBackgroundDarkColor =
     @"textfield_background_dark_color";
 NSString* const kTextfieldPlaceholderDarkColor =
     @"textfield_placeholder_dark_color";
+NSString* const kTintDarkColor = @"tint_dark_color";

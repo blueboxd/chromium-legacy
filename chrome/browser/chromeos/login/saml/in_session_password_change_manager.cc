@@ -287,6 +287,11 @@ void InSessionPasswordChangeManager::OnAuthFailure(const AuthFailure& error) {
   NotifyObservers(CRYPTOHOME_PASSWORD_CHANGE_FAILURE);
 }
 
+void InSessionPasswordChangeManager::OnPasswordChangeDetected() {
+  VLOG(1) << "Failed to change cryptohome password: PasswordChangeDetected";
+  NotifyObservers(CRYPTOHOME_PASSWORD_CHANGE_FAILURE);
+}
+
 void InSessionPasswordChangeManager::OnAuthSuccess(
     const UserContext& user_context) {
   VLOG(3) << "Cryptohome password is changed.";

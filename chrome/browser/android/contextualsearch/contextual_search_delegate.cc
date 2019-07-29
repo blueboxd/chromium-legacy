@@ -166,7 +166,7 @@ void ContextualSearchDelegate::ResolveSearchTermFromContext() {
       GetDiscourseContext(*context_));
 
   // Disable cookies for this request.
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   // Add Chrome experiment state to the request headers.
   // Reset will delete any previous loader, and we won't get any callback.

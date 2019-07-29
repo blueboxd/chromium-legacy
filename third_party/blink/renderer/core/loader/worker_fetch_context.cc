@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -81,11 +80,13 @@ WorkerFetchContext::GetPreviewsResourceLoadingHints() const {
 }
 
 bool WorkerFetchContext::AllowScriptFromSource(const KURL& url) const {
-  WorkerContentSettingsClient* settings_client =
-      WorkerContentSettingsClient::From(*global_scope_);
+  if (!global_scope_->ContentSettingsClient()) {
+    return true;
+  }
   // If we're on a worker, script should be enabled, so no need to plumb
   // Settings::GetScriptEnabled() here.
-  return !settings_client || settings_client->AllowScriptFromSource(true, url);
+  return global_scope_->ContentSettingsClient()->AllowScriptFromSource(true,
+                                                                       url);
 }
 
 bool WorkerFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
@@ -254,9 +255,14 @@ WorkerSettings* WorkerFetchContext::GetWorkerSettings() const {
   return scope ? scope->GetWorkerSettings() : nullptr;
 }
 
-WorkerContentSettingsClient*
-WorkerFetchContext::GetWorkerContentSettingsClient() const {
-  return WorkerContentSettingsClient::From(*global_scope_);
+bool WorkerFetchContext::AllowRunningInsecureContent(
+    bool enabled_per_settings,
+    const SecurityOrigin* origin,
+    const KURL& url) const {
+  if (!global_scope_->ContentSettingsClient())
+    return enabled_per_settings;
+  return global_scope_->ContentSettingsClient()->AllowRunningInsecureContent(
+      enabled_per_settings, WebSecurityOrigin(origin), url);
 }
 
 void WorkerFetchContext::Trace(blink::Visitor* visitor) {

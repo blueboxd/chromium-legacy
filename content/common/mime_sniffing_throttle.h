@@ -7,13 +7,13 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/public/common/url_loader_throttle.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
 // Throttle for mime type sniffing. This may intercept the request and
 // modify the response's mime type in the response head.
-class CONTENT_EXPORT MimeSniffingThrottle : public URLLoaderThrottle {
+class CONTENT_EXPORT MimeSniffingThrottle : public blink::URLLoaderThrottle {
  public:
   // |task_runner| is used to bind the right task runner for handling incoming
   // IPC in MimeSniffingLoader. |task_runner| is supposed to be bound to the
@@ -22,7 +22,7 @@ class CONTENT_EXPORT MimeSniffingThrottle : public URLLoaderThrottle {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MimeSniffingThrottle() override;
 
-  // Implements URLLoaderThrottle.
+  // Implements blink::URLLoaderThrottle.
   void WillProcessResponse(const GURL& response_url,
                            network::ResourceResponseHead* response_head,
                            bool* defer) override;

@@ -24,10 +24,13 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
+namespace blink {
+class URLLoaderThrottle;
+}
+
 namespace content {
 
 class ResourceContext;
-class URLLoaderThrottle;
 class SignedExchangeLoader;
 class SignedExchangePrefetchMetricRecorder;
 
@@ -36,7 +39,7 @@ class SignedExchangePrefetchHandler final
     : public network::mojom::URLLoaderClient {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
-      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
 
   // This takes |network_loader| and |network_client| to set up the
   // SignedExchangeLoader (so that the loader can load data from the network).

@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -70,14 +71,16 @@ public class AutofillAssistantDirectActionHandlerTest {
                 mActivity.getScrim(), mActivity.getTabModelSelector()::getCurrentTab,
                 mModuleEntryProvider);
 
-        AutofillAssistantPreferencesUtil.setInitialPreferences(false);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .remove(AutofillAssistantPreferencesUtil.AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED)
+                .remove(AutofillAssistantPreferencesUtil.AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN)
+                .apply();
     }
 
     @Test
     @MediumTest
     public void testReportAvailableDirectActions() throws Exception {
-        AutofillAssistantPreferencesUtil.setInitialPreferences(false);
-
         FakeDirectActionReporter reporter = new FakeDirectActionReporter();
         mHandler.reportAvailableDirectActions(reporter);
 
@@ -85,7 +88,14 @@ public class AutofillAssistantDirectActionHandlerTest {
 
         FakeDirectActionDefinition list = reporter.mActions.get(0);
         assertEquals("list_assistant_actions", list.mId);
-        assertThat(list.mParameters, empty());
+        assertEquals(2, list.mParameters.size());
+        assertEquals("user_name", list.mParameters.get(0).mName);
+        assertEquals(Type.STRING, list.mParameters.get(0).mType);
+        assertEquals(false, list.mParameters.get(0).mRequired);
+        assertEquals("experiment_ids", list.mParameters.get(1).mName);
+        assertEquals(Type.STRING, list.mParameters.get(1).mType);
+        assertEquals(false, list.mParameters.get(1).mRequired);
+
         assertEquals(1, list.mResults.size());
         assertEquals("names", list.mResults.get(0).mName);
         assertEquals(Type.STRING, list.mResults.get(0).mType);
@@ -132,6 +142,15 @@ public class AutofillAssistantDirectActionHandlerTest {
         acceptOnboarding();
     }
 
+    @Test
+    @MediumTest
+    public void testSwitchedOffInPreferences() throws Exception {
+        AutofillAssistantPreferencesUtil.setInitialPreferences(false);
+
+        assertThat(listActions(), empty());
+        assertFalse(performAction("onboarding", Bundle.EMPTY));
+    }
+
     private void acceptOnboarding() throws Exception {
         WaitingCallback<Boolean> onboardingCallback =
                 performActionAsync("onboarding", Bundle.EMPTY);
@@ -147,10 +166,10 @@ public class AutofillAssistantDirectActionHandlerTest {
     /** Calls list_assistant_actions and returns the result. */
     private List<String> listActions() throws Exception {
         WaitingCallback<Bundle> callback = new WaitingCallback<Bundle>();
-        ThreadUtils.runOnUiThreadBlocking(
+        assertTrue(ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> mHandler.performDirectAction(
-                                "list_assistant_actions", Bundle.EMPTY, callback));
+                                "list_assistant_actions", Bundle.EMPTY, callback)));
         return Arrays.asList(TextUtils.split(
                 callback.waitForResult("list_assistant_actions").getString("names", ""), ","));
     }

@@ -22,11 +22,6 @@ namespace content {
 struct FaviconURL;
 }
 
-namespace extensions {
-FORWARD_DECLARE_TEST(BookmarkAppHelperExtensionServiceInstallableSiteTest,
-                     CreateBookmarkAppWithManifestIcons);
-}
-
 namespace gfx {
 class Size;
 }
@@ -59,9 +54,6 @@ class WebAppIconDownloader : public content::WebContentsObserver {
 
  private:
   friend class TestWebAppIconDownloader;
-  FRIEND_TEST_ALL_PREFIXES(
-      extensions::BookmarkAppHelperExtensionServiceInstallableSiteTest,
-      CreateBookmarkAppWithManifestIcons);
 
   // Initiates a download of the image at |url| and returns the download id.
   // This is overridden in testing.

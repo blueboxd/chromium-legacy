@@ -19,8 +19,6 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
-#include "content/browser/loader/resource_message_filter.h"
-#include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
@@ -82,10 +80,6 @@ class URLLoaderInterceptor::IOState
     if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
       NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
           NavigationURLLoaderImpl::URLLoaderFactoryInterceptor());
-    }
-
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      ResourceMessageFilter::SetNetworkFactoryForTesting(nullptr);
     }
 
     if (closure)
@@ -177,9 +171,6 @@ class URLLoaderInterceptor::IOState
   // StoragePartition. Only accessed on IO thread.
   std::set<std::unique_ptr<URLLoaderFactoryGetterWrapper>>
       url_loader_factory_getter_wrappers_;
-  // For intercepting subresources without network service in
-  // ResourceMessageFilter.
-  std::unique_ptr<Interceptor> rmf_interceptor_;
   // For intercepting subresources with network service. There is one per
   // active render frame commit. Only accessed on IO thread.
   std::set<std::unique_ptr<SubresourceWrapper>, base::UniquePtrComparator>
@@ -702,18 +693,6 @@ void URLLoaderInterceptor::IOState::Initialize(
             base::Unretained(this)));
   }
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    rmf_interceptor_ = std::make_unique<Interceptor>(
-        this, base::BindRepeating([]() {
-          return ResourceMessageFilter::GetCurrentForTesting()->child_id();
-        }),
-        base::BindRepeating([]() {
-          network::mojom::URLLoaderFactory* factory =
-              ResourceMessageFilter::GetCurrentForTesting();
-          return factory;
-        }));
-    ResourceMessageFilter::SetNetworkFactoryForTesting(rmf_interceptor_.get());
-  }
   if (closure)
     std::move(closure).Run();
 }

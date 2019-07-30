@@ -114,10 +114,10 @@ void SetAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
         state.AnimationUpdate());
 }
 
-bool HasAnimationsOrTransitions(const StyleResolverState& state,
-                                const Element* animating_element) {
+bool HasAnimationsOrTransitions(const StyleResolverState& state) {
   return state.Style()->Animations() || state.Style()->Transitions() ||
-         (animating_element && animating_element->HasAnimations());
+         (state.GetAnimatingElement() &&
+          state.GetAnimatingElement()->HasAnimations());
 }
 
 }  // namespace
@@ -673,13 +673,12 @@ void StyleResolver::LoadPendingResources(StyleResolverState& state) {
 }
 
 static const ComputedStyle* CalculateBaseComputedStyle(
-    StyleResolverState& state,
-    const Element* animating_element) {
-  if (!animating_element)
+    StyleResolverState& state) {
+  if (!state.GetAnimatingElement())
     return nullptr;
 
   ElementAnimations* element_animations =
-      animating_element->GetElementAnimations();
+      state.GetAnimatingElement()->GetElementAnimations();
   if (!element_animations)
     return nullptr;
 
@@ -694,13 +693,12 @@ static const ComputedStyle* CalculateBaseComputedStyle(
   return element_animations->BaseComputedStyle();
 }
 
-static void UpdateBaseComputedStyle(StyleResolverState& state,
-                                    Element* animating_element) {
-  if (!animating_element)
+static void UpdateBaseComputedStyle(StyleResolverState& state) {
+  if (!state.GetAnimatingElement())
     return;
 
   ElementAnimations* element_animations =
-      animating_element->GetElementAnimations();
+      state.GetAnimatingElement()->GetElementAnimations();
   if (element_animations) {
     if (state.IsAnimatingCustomProperties()) {
       element_animations->ClearBaseComputedStyle();
@@ -730,8 +728,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
                            nullptr /* pseudo_element */, default_parent,
                            default_layout_parent);
 
-  const ComputedStyle* base_computed_style =
-      CalculateBaseComputedStyle(state, element);
+  const ComputedStyle* base_computed_style = CalculateBaseComputedStyle(state);
 
   if (base_computed_style) {
     state.SetStyle(ComputedStyle::Clone(*base_computed_style));
@@ -821,7 +818,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     if (state.HasDirAutoAttribute())
       state.Style()->SetSelfOrAncestorHasDirAutoAttribute(true);
 
-    ApplyMatchedProperties(state, collector.MatchedResult(), element);
+    ApplyMatchedProperties(state, collector.MatchedResult());
     ApplyCallbackSelectors(state);
 
     // Cache our original display.
@@ -829,7 +826,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
 
     StyleAdjuster::AdjustComputedStyle(state, element);
 
-    UpdateBaseComputedStyle(state, element);
+    UpdateBaseComputedStyle(state);
   } else {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   base_styles_used, 1);
@@ -839,7 +836,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
   // applied before important rules, but this currently happens here as we
   // require adjustment to have happened before deciding which properties to
   // transition.
-  if (ApplyAnimatedStandardProperties(state, element)) {
+  if (ApplyAnimatedStandardProperties(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   styles_animated, 1);
     StyleAdjuster::AdjustComputedStyle(state, element);
@@ -900,11 +897,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
 
   SelectorFilterParentScope::EnsureParentStackIsPushed();
 
-  Element* pseudo_element =
-      element.GetPseudoElement(pseudo_style_request.pseudo_id);
-
-  const ComputedStyle* base_computed_style =
-      CalculateBaseComputedStyle(state, pseudo_element);
+  const ComputedStyle* base_computed_style = CalculateBaseComputedStyle(state);
 
   if (base_computed_style) {
     state.SetStyle(ComputedStyle::Clone(*base_computed_style));
@@ -939,7 +932,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
     if (!collector.MatchedResult().HasMatchedProperties())
       return false;
 
-    ApplyMatchedProperties(state, collector.MatchedResult(), pseudo_element);
+    ApplyMatchedProperties(state, collector.MatchedResult());
     ApplyCallbackSelectors(state);
 
     // Cache our original display.
@@ -949,14 +942,14 @@ bool StyleResolver::PseudoStyleForElementInternal(
     // in the StyleAdjuster::AdjustComputedStyle code.
     StyleAdjuster::AdjustComputedStyle(state, nullptr);
 
-    UpdateBaseComputedStyle(state, pseudo_element);
+    UpdateBaseComputedStyle(state);
   }
 
   // FIXME: The CSSWG wants to specify that the effects of animations are
   // applied before important rules, but this currently happens here as we
   // require adjustment to have happened before deciding which properties to
   // transition.
-  if (ApplyAnimatedStandardProperties(state, pseudo_element))
+  if (ApplyAnimatedStandardProperties(state))
     StyleAdjuster::AdjustComputedStyle(state, nullptr);
 
   GetDocument().GetStyleEngine().IncStyleForElementCount();
@@ -1154,22 +1147,21 @@ void StyleResolver::CollectPseudoRulesForElement(
   }
 }
 
-bool StyleResolver::ApplyAnimatedStandardProperties(
-    StyleResolverState& state,
-    const Element* animating_element) {
+bool StyleResolver::ApplyAnimatedStandardProperties(StyleResolverState& state) {
   Element& element = state.GetElement();
 
   // The animating element may be this element, the pseudo element we are
   // resolving style for, or null if we are resolving style for a pseudo
   // element which is not represented by a PseudoElement like scrollbar pseudo
   // elements.
+  const Element* animating_element = state.GetAnimatingElement();
   DCHECK(animating_element == &element || !animating_element ||
          animating_element->ParentOrShadowHostElement() == element);
 
   if (state.Style()->Animations() ||
       (animating_element && animating_element->HasAnimations())) {
     if (!state.IsAnimationInterpolationMapReady())
-      CalculateAnimationUpdate(state, animating_element);
+      CalculateAnimationUpdate(state);
   } else if (!state.Style()->Transitions()) {
     return false;
   }
@@ -1776,8 +1768,9 @@ void StyleResolver::ApplyMatchedAnimationProperties(
       needs_apply_pass);
 }
 
-void StyleResolver::CalculateAnimationUpdate(StyleResolverState& state,
-                                             const Element* animating_element) {
+void StyleResolver::CalculateAnimationUpdate(StyleResolverState& state) {
+  const Element* animating_element = state.GetAnimatingElement();
+
   DCHECK(state.Style()->Animations() || state.Style()->Transitions() ||
          (animating_element && animating_element->HasAnimations()));
   DCHECK(!state.IsAnimationInterpolationMapReady());
@@ -1909,13 +1902,12 @@ void StyleResolver::ApplyMatchedLowPriorityProperties(
 }
 
 void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
-                                           const MatchResult& match_result,
-                                           const Element* animating_element) {
+                                           const MatchResult& match_result) {
   INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                 matched_property_apply, 1);
 
   if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
-    CascadeAndApplyMatchedProperties(state, match_result, animating_element);
+    CascadeAndApplyMatchedProperties(state, match_result);
     return;
   }
 
@@ -1931,7 +1923,7 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
                                        apply_inherited_only, needs_apply_pass);
   }
 
-  if (HasAnimationsOrTransitions(state, animating_element)) {
+  if (HasAnimationsOrTransitions(state)) {
     // Calculate pre-animated computed values for all registered properties.
     // This is needed to calculate the animation update.
     CSSVariableResolver(state).ComputeRegisteredVariables();
@@ -1939,7 +1931,7 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
     // Animation update calculation must happen after application of high
     // priority properties, otherwise we can't resolve em' units, making it
     // impossible to know if we should transition in some cases.
-    CalculateAnimationUpdate(state, animating_element);
+    CalculateAnimationUpdate(state);
 
     if (state.IsAnimatingCustomProperties()) {
       cache_success.SetFailed();
@@ -1966,8 +1958,7 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
 
 void StyleResolver::CascadeAndApplyMatchedProperties(
     StyleResolverState& state,
-    const MatchResult& match_result,
-    const Element* animating_element) {
+    const MatchResult& match_result) {
   DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
 
   CacheSuccess cache_success = ApplyMatchedCache(state, match_result);
@@ -1985,8 +1976,8 @@ void StyleResolver::CascadeAndApplyMatchedProperties(
   if (!cache_success.IsFullCacheHit())
     cascade.Apply();
 
-  if (HasAnimationsOrTransitions(state, animating_element)) {
-    CalculateAnimationUpdate(state, animating_element);
+  if (HasAnimationsOrTransitions(state)) {
+    CalculateAnimationUpdate(state);
 
     // Add animation effects for custom properties to the cascade.
     if (state.IsAnimatingCustomProperties()) {

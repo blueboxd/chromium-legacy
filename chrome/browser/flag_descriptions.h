@@ -921,9 +921,6 @@ extern const char kPassiveDocumentWheelEventListenersDescription[];
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
 
-extern const char kPasswordsMigrateLinuxToLoginDBName[];
-extern const char kPasswordsMigrateLinuxToLoginDBDescription[];
-
 extern const char kPeriodicBackgroundSyncName[];
 extern const char kPeriodicBackgroundSyncDescription[];
 
@@ -1575,6 +1572,9 @@ extern const char kCastMediaRouteProviderDescription[];
 
 extern const char kChromeColorsName[];
 extern const char kChromeColorsDescription[];
+
+extern const char kChromeColorsCustomColorPickerName[];
+extern const char kChromeColorsCustomColorPickerDescription[];
 
 extern const char kDialMediaRouteProviderName[];
 extern const char kDialMediaRouteProviderDescription[];

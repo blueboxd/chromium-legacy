@@ -28,6 +28,8 @@ public class AssistantPaymentRequestPaymentMethodSection
         extends AssistantPaymentRequestSection<AutofillPaymentInstrument> {
     private CardEditor mEditor;
     private boolean mIgnorePaymentMethodsChangeNotifications;
+    private boolean mRequiresBillingPostalCode;
+    private String mBillingPostalCodeMissingText;
 
     AssistantPaymentRequestPaymentMethodSection(Context context, ViewGroup parent) {
         super(context, parent, R.layout.autofill_assistant_payment_method_summary,
@@ -113,7 +115,11 @@ public class AssistantPaymentRequestPaymentMethodSection
         hideIfEmpty(cardExpirationView);
 
         TextView methodIncompleteView = summaryView.findViewById(R.id.incomplete_error);
-        methodIncompleteView.setVisibility(method.isComplete() ? View.GONE : View.VISIBLE);
+        if (!isComplete(method)) {
+            setIncompleteErrorMessage(methodIncompleteView, method);
+        } else {
+            methodIncompleteView.setVisibility(View.GONE);
+        }
     }
 
     void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
@@ -145,11 +151,54 @@ public class AssistantPaymentRequestPaymentMethodSection
         setItems(paymentMethods, selectedMethodIndex);
     }
 
+    void setRequiresBillingPostalCode(boolean requiresBillingPostalCode) {
+        mRequiresBillingPostalCode = requiresBillingPostalCode;
+    }
+
+    void setBillingPostalCodeMissingText(String text) {
+        mBillingPostalCodeMissingText = text;
+    }
+
     private void addAutocompleteInformationToEditor(PersonalDataManager.AutofillProfile profile) {
         // The check for non-null label is necessary to prevent crash in editor when opening.
         if (mEditor == null || profile.getLabel() == null) {
             return;
         }
         mEditor.updateBillingAddressIfComplete(new AutofillAddress(mContext, profile));
+    }
+
+    private boolean isComplete(AutofillPaymentInstrument method) {
+        if (!method.isComplete()) {
+            return false;
+        }
+
+        if (!mRequiresBillingPostalCode) {
+            return true;
+        }
+
+        // TODO: Inject the PersonalDataManager instance.
+        PersonalDataManager personalDataManager = PersonalDataManager.getInstance();
+        String billingAddressId = method.getCard().getBillingAddressId();
+        PersonalDataManager.AutofillProfile profile =
+                personalDataManager.getProfile(billingAddressId);
+        if (profile == null || TextUtils.isEmpty(profile.getPostalCode())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private void setIncompleteErrorMessage(
+            TextView methodIncompleteView, AutofillPaymentInstrument method) {
+        // we have to show an error message either because the payment method is incomplete (missing
+        // information), or because a postcode is required and the billing address does not have
+        // one.
+        if (method.isComplete()) {
+            methodIncompleteView.setText(mBillingPostalCodeMissingText);
+        } else {
+            methodIncompleteView.setText(R.string.autofill_assistant_payment_information_missing);
+        }
+
+        methodIncompleteView.setVisibility(View.VISIBLE);
     }
 }

@@ -13,6 +13,19 @@ using testing::ElementsAreArray;
 
 namespace WTF {
 
+namespace {
+
+String To8BitOrNull(const String& source) {
+  if (source.IsNull() || source.Is8Bit())
+    return source;
+  if (!source.ContainsOnlyLatin1OrEmpty())
+    return String();
+  return String::Make8BitFrom16BitSource(source.Characters16(),
+                                         source.length());
+}
+
+}  // namespace
+
 static struct CaseMapTestData {
   const char16_t* source;
   const char* locale;
@@ -99,6 +112,32 @@ TEST_P(CaseMapTest, ToUpper) {
   const auto data = GetParam();
   CaseMap case_map(data.locale);
   String source(data.source);
+  TextOffsetMap offset_map;
+  String upper = case_map.ToUpper(source, &offset_map);
+  EXPECT_EQ(upper, String(data.upper_expected));
+  EXPECT_THAT(offset_map.Entries(), ElementsAreArray(data.upper_map));
+}
+
+TEST_P(CaseMapTest, ToLower8Bit) {
+  const auto data = GetParam();
+  String source(data.source);
+  source = To8BitOrNull(source);
+  if (!source)
+    return;
+  CaseMap case_map(data.locale);
+  TextOffsetMap offset_map;
+  String lower = case_map.ToLower(source, &offset_map);
+  EXPECT_EQ(lower, String(data.lower_expected));
+  EXPECT_THAT(offset_map.Entries(), ElementsAreArray(data.lower_map));
+}
+
+TEST_P(CaseMapTest, ToUpper8Bit) {
+  const auto data = GetParam();
+  String source(data.source);
+  source = To8BitOrNull(source);
+  if (!source)
+    return;
+  CaseMap case_map(data.locale);
   TextOffsetMap offset_map;
   String upper = case_map.ToUpper(source, &offset_map);
   EXPECT_EQ(upper, String(data.upper_expected));

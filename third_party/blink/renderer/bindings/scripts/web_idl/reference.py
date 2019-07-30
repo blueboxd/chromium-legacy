@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .common import DebugInfo
-from .common import WithIdentifier
+from .composition_parts import DebugInfo
+from .composition_parts import WithIdentifier
 
 
 class Proxy(object):

@@ -5,7 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
-import "skia/public/interfaces/bitmap.mojom";
+import "skia/public/mojom/bitmap.mojom";
 import "url/mojom/url.mojom";
 
 enum ClipboardFormat {

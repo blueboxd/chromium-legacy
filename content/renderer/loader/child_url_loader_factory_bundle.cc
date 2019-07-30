@@ -135,7 +135,7 @@ ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
         pending_appcache_factory,
     SchemeMap pending_scheme_specific_factories,
     OriginMap pending_initiator_specific_factories,
-    PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
+    network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_prefetch_loader_factory,
     bool bypass_redirect_checks)
@@ -179,7 +179,7 @@ ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
 }
 
 ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
-    PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter)
+    FactoryGetterCallback direct_network_factory_getter)
     : direct_network_factory_getter_(std::move(direct_network_factory_getter)) {
 }
 
@@ -347,8 +347,7 @@ ChildURLLoaderFactoryBundle::PassInterface() {
   if (appcache_factory_)
     pending_appcache_factory = appcache_factory_.PassInterface();
 
-  PossiblyAssociatedInterfacePtrInfo<network::mojom::URLLoaderFactory>
-      direct_network_factory_info;
+  network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info;
   if (direct_network_factory_) {
     direct_network_factory_info = direct_network_factory_.PassInterface();
   }

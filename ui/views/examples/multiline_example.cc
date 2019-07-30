@@ -111,9 +111,7 @@ class MultilineExample::RenderTextView : public View {
 
  private:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
-    gfx::Rect bounds = GetLocalBounds();
-    bounds.Inset(GetInsets());
-    render_text_->SetDisplayRect(bounds);
+    render_text_->SetDisplayRect(GetContentsBounds());
   }
 
   std::unique_ptr<gfx::RenderText> render_text_;

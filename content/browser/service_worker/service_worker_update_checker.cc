@@ -124,7 +124,8 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
   }
 
   script_check_results_[script_url] =
-      ComparedScriptInfo(old_resource_id, result, std::move(paused_state));
+      ComparedScriptInfo(old_resource_id, result, std::move(paused_state),
+                         std::move(failure_info));
   if (running_checker_->network_accessed())
     network_accessed_ = true;
 
@@ -209,10 +210,13 @@ ServiceWorkerUpdateChecker::ComparedScriptInfo::ComparedScriptInfo(
     int64_t old_resource_id,
     ServiceWorkerSingleScriptUpdateChecker::Result result,
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
-        paused_state)
+        paused_state,
+    std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+        failure_info)
     : old_resource_id(old_resource_id),
       result(result),
-      paused_state(std::move(paused_state)) {}
+      paused_state(std::move(paused_state)),
+      failure_info(std::move(failure_info)) {}
 
 ServiceWorkerUpdateChecker::ComparedScriptInfo::~ComparedScriptInfo() = default;
 

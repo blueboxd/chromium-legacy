@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
 #include "base/macros.h"
@@ -307,7 +308,7 @@ void PasteFromClipboard(BookmarkModel* model,
     GURL url = GetUrlFromClipboard();
     if (!url.is_valid())
       return;
-    BookmarkNode node(url);
+    BookmarkNode node(/*id=*/0, base::GenerateGUID(), url);
     node.SetTitle(base::ASCIIToUTF16(url.spec()));
     bookmark_data = BookmarkNodeData(&node);
   }

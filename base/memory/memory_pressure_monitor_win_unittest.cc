@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -147,7 +147,8 @@ class WinMemoryPressureMonitorTest : public testing::Test {
               monitor->CalculateCurrentPressureLevel());
   }
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
 };
 
 // Tests the fundamental direct calculation of memory pressure with automatic

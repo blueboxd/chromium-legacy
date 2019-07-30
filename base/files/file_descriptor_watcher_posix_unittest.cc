@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -63,7 +64,7 @@ class FileDescriptorWatcherTest
     if (GetParam() ==
         FileDescriptorWatcherTestType::MESSAGE_PUMP_FOR_IO_ON_OTHER_THREAD) {
       Thread::Options options;
-      options.message_loop_type = MessageLoop::TYPE_IO;
+      options.message_pump_type = MessagePumpType::IO;
       ASSERT_TRUE(other_thread_.StartWithOptions(options));
       file_descriptor_watcher_ =
           std::make_unique<FileDescriptorWatcher>(other_thread_.task_runner());

@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/rtl.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/test/icu_test_util.h"
 #include "components/exo/display.h"
@@ -34,7 +35,7 @@ ServerEnvironment::ServerEnvironment()
 
   base::CommandLine::Init(0, nullptr);
 
-  base::Thread::Options ui_options(base::MessageLoop::TYPE_UI, 0);
+  base::Thread::Options ui_options(base::MessagePumpType::UI, 0);
   ui_thread_.StartWithOptions(ui_options);
   WaylandClientTestHelper::SetUIThreadTaskRunner(ui_thread_.task_runner());
 }

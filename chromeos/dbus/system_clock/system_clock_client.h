@@ -46,6 +46,11 @@ class COMPONENT_EXPORT(SYSTEM_CLOCK) SystemClockClient {
 
     // Calls SystemClockUpdated for observers.
     virtual void NotifyObserversSystemClockUpdated() = 0;
+
+    // If |is_available| is false callbacks passed to
+    // WaitForServiceToBeAvailable will pile up, until |is_available| is set
+    // back to true.
+    virtual void SetServiceIsAvailable(bool is_available) = 0;
   };
 
   // Creates and initializes the global instance. |bus| must not be null.

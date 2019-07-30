@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
@@ -170,16 +170,15 @@ void GamepadProvider::Initialize(std::unique_ptr<GamepadDataFetcher> fetcher) {
 #if defined(OS_LINUX)
   // On Linux, the data fetcher needs to watch file descriptors, so the message
   // loop needs to be a libevent loop.
-  const base::MessageLoop::Type kMessageLoopType = base::MessageLoop::TYPE_IO;
+  const base::MessagePumpType kMessageLoopType = base::MessagePump::Type::IO;
 #elif defined(OS_ANDROID)
   // On Android, keeping a message loop of default type.
-  const base::MessageLoop::Type kMessageLoopType =
-      base::MessageLoop::TYPE_DEFAULT;
+  const base::MessagePumpType kMessageLoopType = base::MessagePumpType::DEFAULT;
 #else
   // On Mac, the data fetcher uses IOKit which depends on CFRunLoop, so the
   // message loop needs to be a UI-type loop. On Windows it must be a UI loop
   // to properly pump the MessageWindow that captures device state.
-  const base::MessageLoop::Type kMessageLoopType = base::MessageLoop::TYPE_UI;
+  const base::MessagePumpType kMessageLoopType = base::MessagePump::Type::UI;
 #endif
   polling_thread_->StartWithOptions(base::Thread::Options(kMessageLoopType, 0));
 

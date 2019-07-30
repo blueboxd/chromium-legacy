@@ -43,7 +43,6 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
   void RequestPermission(bool writable,
                          RequestPermissionCallback callback) override;
   void AsBlob(AsBlobCallback callback) override;
-  void Remove(RemoveCallback callback) override;
   void CreateFileWriter(CreateFileWriterCallback callback) override;
   void Transfer(
       blink::mojom::NativeFileSystemTransferTokenRequest token) override;
@@ -53,7 +52,6 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
                              base::File::Error result,
                              const base::File::Info& info);
 
-  void RemoveImpl(RemoveCallback callback);
   void CreateFileWriterImpl(CreateFileWriterCallback callback);
 
   base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;

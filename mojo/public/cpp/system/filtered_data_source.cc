@@ -18,16 +18,12 @@ FilteredDataSource::~FilteredDataSource() {
     filter_->OnDone();
 }
 
-bool FilteredDataSource::IsValid() const {
-  return source_->IsValid();
-}
-
-int64_t FilteredDataSource::GetLength() const {
+uint64_t FilteredDataSource::GetLength() const {
   return source_->GetLength();
 }
 
 FilteredDataSource::ReadResult FilteredDataSource::Read(
-    int64_t offset,
+    uint64_t offset,
     base::span<char> buffer) {
   ReadResult result = source_->Read(offset, buffer);
   if (filter_)

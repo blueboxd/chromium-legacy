@@ -52,7 +52,7 @@ bool PrimaryAccountMutatorImpl::SetPrimaryAccount(
 }
 
 #if defined(OS_CHROMEOS)
-bool PrimaryAccountMutatorImpl::SetPrimaryAccountAndUpdateAccountInfo(
+bool PrimaryAccountMutatorImpl::DeprecatedSetPrimaryAccountAndUpdateAccountInfo(
     const std::string& gaia_id,
     const std::string& email) {
   CoreAccountId account_id = account_tracker_->SeedAccountInfo(gaia_id, email);

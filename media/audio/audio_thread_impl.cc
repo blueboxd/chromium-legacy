@@ -4,6 +4,7 @@
 
 #include "media/audio/audio_thread_impl.h"
 
+#include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
@@ -20,7 +21,7 @@ AudioThreadImpl::AudioThreadImpl()
   thread_.init_com_with_mta(true);
 #elif defined(OS_FUCHSIA)
   // FIDL-based APIs require async_t, which is initialized on IO thread.
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_options.message_pump_type = base::MessagePumpType::IO;
 #endif
   CHECK(thread_.StartWithOptions(thread_options));
 

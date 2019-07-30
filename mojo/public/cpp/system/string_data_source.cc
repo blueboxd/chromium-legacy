@@ -23,19 +23,15 @@ StringDataSource::StringDataSource(base::StringPiece data,
 
 StringDataSource::~StringDataSource() = default;
 
-bool StringDataSource::IsValid() const {
-  return true;
-}
-
-int64_t StringDataSource::GetLength() const {
+uint64_t StringDataSource::GetLength() const {
   return data_view_.size();
 }
 
 DataPipeProducer::DataSource::ReadResult StringDataSource::Read(
-    int64_t offset,
+    uint64_t offset,
     base::span<char> buffer) {
   ReadResult result;
-  if (static_cast<size_t>(offset) <= data_view_.size()) {
+  if (offset <= data_view_.size()) {
     size_t readable_size = data_view_.size() - offset;
     size_t writable_size = buffer.size();
     size_t copyable_size = std::min(readable_size, writable_size);

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -89,7 +89,7 @@ class InMemoryDownloadTest : public testing::Test {
 
   void SetUp() override {
     io_thread_.reset(new base::Thread("Network and Blob IO thread"));
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     io_thread_->StartWithOptions(options);
 
     base::RunLoop loop;

@@ -14,6 +14,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "net/base/io_buffer.h"
@@ -75,7 +76,7 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
     remoting::SecurityKeyAuthHandler::SetSecurityKeySocketName(socket_path_);
 
     EXPECT_TRUE(file_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+        base::Thread::Options(base::MessagePumpType::IO, 0)));
 
     send_message_callback_ =
         base::Bind(&SecurityKeyAuthHandlerPosixTest::SendMessageToClient,

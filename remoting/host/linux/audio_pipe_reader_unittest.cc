@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -33,7 +34,7 @@ class AudioPipeReaderTest : public testing::Test,
     pipe_path_ = test_dir_.GetPath().AppendASCII("test_pipe");
     audio_thread_.reset(new base::Thread("TestAudioThread"));
     audio_thread_->StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessagePumpType::IO, 0));
     reader_ = AudioPipeReader::Create(audio_thread_->task_runner(),
                                       pipe_path_);
     reader_->AddObserver(this);

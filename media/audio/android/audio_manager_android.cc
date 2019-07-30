@@ -311,6 +311,13 @@ bool AudioManagerAndroid::HasOutputVolumeOverride(double* out_volume) const {
   return output_volume_override_set_;
 }
 
+base::TimeDelta AudioManagerAndroid::GetOutputLatency() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  JNIEnv* env = AttachCurrentThread();
+  return base::TimeDelta::FromMilliseconds(
+      Java_AudioManagerAndroid_getOutputLatency(env, GetJavaAudioManager()));
+}
+
 AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {

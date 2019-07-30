@@ -5,6 +5,7 @@
 package org.chromium.chrome.features.start_surface;
 
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_CLICKLISTENER;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_SELECTED_TAB_POSITION;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.FEED_SURFACE_COORDINATOR;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_EXPLORE_SURFACE_VISIBLE;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_INCOGNITO;
@@ -110,8 +111,10 @@ class StartSurfaceMediator
 
     @Override
     public boolean onBackPressed() {
-        // TODO(crbug.com/982018): Check whether explore surface is shown, if yes, switch back to
-        // home surface.
+        if (mPropertyModel != null && mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)) {
+            setExploreSurfaceVisibility(false);
+            return true;
+        }
         return mGridController.onBackPressed();
     }
 
@@ -159,6 +162,10 @@ class StartSurfaceMediator
         }
 
         mPropertyModel.set(IS_EXPLORE_SURFACE_VISIBLE, isVisible);
+
+        // Update the 'BOTTOM_BAR_SELECTED_TAB_POSITION' property to reflect the change. This is
+        // needed when clicking back button on the explore surface.
+        mPropertyModel.set(BOTTOM_BAR_SELECTED_TAB_POSITION, isVisible ? 1 : 0);
     }
 
     void updateIncognitoMode(boolean isIncognito) {

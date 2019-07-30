@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"
@@ -136,7 +137,7 @@ bool TestServiceProcess::Initialize(
   quit_closure_ = std::move(quit_closure);
   service_process_state_ = std::move(state);
 
-  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessagePumpType::IO, 0);
   io_thread_.reset(new base::Thread("TestServiceProcess_IO"));
   return io_thread_->StartWithOptions(options);
 }

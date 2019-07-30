@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bit_cast.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -53,7 +53,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
 
   void SetUp() override {
     base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
+    options.message_pump_type = base::MessagePumpType::IO;
     io_thread_.StartWithOptions(options);
 
     HttpBridge::SetIOCapableTaskRunnerForTest(io_thread_.task_runner());

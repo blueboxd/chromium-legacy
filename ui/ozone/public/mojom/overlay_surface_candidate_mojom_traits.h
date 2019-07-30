@@ -6,8 +6,8 @@
 #define UI_OZONE_PUBLIC_MOJOM_OVERLAY_SURFACE_CANDIDATE_MOJOM_TRAITS_H_
 
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
-#include "ui/gfx/mojo/buffer_types_struct_traits.h"
-#include "ui/gfx/mojo/overlay_transform_struct_traits.h"
+#include "ui/gfx/mojom/buffer_types_mojom_traits.h"
+#include "ui/gfx/mojom/overlay_transform_mojom_traits.h"
 #include "ui/ozone/public/mojom/overlay_surface_candidate.mojom.h"
 #include "ui/ozone/public/overlay_surface_candidate.h"
 

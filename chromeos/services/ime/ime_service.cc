@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "build/buildflag.h"
+#include "chromeos/services/ime/constants.h"
 #include "chromeos/services/ime/public/cpp/buildflags.h"
 
 #if BUILDFLAG(ENABLE_CROS_IME_DECODER)
@@ -107,7 +108,7 @@ void ImeService::SimpleDownloadFinished(SimpleDownloadCallback callback,
 }
 
 const char* ImeService::GetImeBundleDir() {
-  return "";
+  return kBundledInputMethodsDirPath;
 }
 
 const char* ImeService::GetImeGlobalDir() {
@@ -116,7 +117,7 @@ const char* ImeService::GetImeGlobalDir() {
 }
 
 const char* ImeService::GetImeUserHomeDir() {
-  return "";
+  return kUserInputMethodsDirPath;
 }
 
 int ImeService::SimpleDownloadToFile(const char* url,

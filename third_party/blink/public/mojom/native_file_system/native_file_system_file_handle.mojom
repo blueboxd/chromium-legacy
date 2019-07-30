@@ -24,10 +24,6 @@ interface NativeFileSystemFileHandle {
   // Returns a blob representing the current state of this file.
   AsBlob() => (NativeFileSystemError result, SerializedBlob? blob);
 
-  // Deletes this file.
-  // TODO(oyiptong): Remove this method. It isn't part of the spec anymore.
-  Remove() => (NativeFileSystemError result);
-
   // Returns a FileWriter object. The FileWriter provides write operations on a file.
   CreateFileWriter() => (NativeFileSystemError result, NativeFileSystemFileWriter? writer);
 

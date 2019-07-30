@@ -503,11 +503,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
           compared_script_info_map);
   const std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>&
   compared_script_info_map() const;
-
-  // Take the ownership of the PausedState for changed script from the
-  // compared_script_info_map_.
-  std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
-  TakePausedStateOfChangedScript(const GURL& script_url);
+  ServiceWorkerUpdateChecker::ComparedScriptInfo TakeComparedScriptInfo(
+      const GURL& script_url);
 
   // Called by the EmbeddedWorkerInstance to determine if its worker process
   // should be kept at foreground priority.

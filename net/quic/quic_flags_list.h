@@ -339,4 +339,4 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_restart_flag_quic_dispatcher_hands_chlo_extractor_one_version,
-    true)
+    false)

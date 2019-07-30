@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -130,7 +131,7 @@ class EmbeddedTestServerTest
 
   void SetUp() override {
     base::Thread::Options thread_options;
-    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+    thread_options.message_pump_type = base::MessagePumpType::IO;
     ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
 
     request_context_getter_ = base::MakeRefCounted<TestURLRequestContextGetter>(
@@ -527,7 +528,7 @@ class EmbeddedTestServerThreadingTestDelegate
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner;
     base::Thread io_thread("io_thread");
     base::Thread::Options thread_options;
-    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+    thread_options.message_pump_type = base::MessagePumpType::IO;
     ASSERT_TRUE(io_thread.StartWithOptions(thread_options));
     io_thread_runner = io_thread.task_runner();
 

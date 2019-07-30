@@ -77,8 +77,7 @@ void MediaGalleryCheckboxView::Layout() {
   if (!secondary_text_->GetVisible())
     secondary_text_width = 0;
 
-  gfx::Rect area(GetLocalBounds());
-  area.Inset(GetInsets());
+  gfx::Rect area = GetContentsBounds();
 
   if (secondary_text_width > area.width() / 2) {
     secondary_text_width =

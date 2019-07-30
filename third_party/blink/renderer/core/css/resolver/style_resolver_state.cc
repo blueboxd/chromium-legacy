@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -47,7 +48,8 @@ StyleResolverState::StyleResolverState(
       font_builder_(&document),
       element_style_resources_(GetElement(),
                                document.DevicePixelRatio(),
-                               pseudo_element) {
+                               pseudo_element),
+      pseudo_element_(pseudo_element) {
   DCHECK(!!parent_style_ == !!layout_parent_style_);
 
   if (!parent_style_) {
@@ -188,6 +190,14 @@ StyleResolverState::ParsedPropertiesForPendingSubstitutionCache(
     parsed_properties_for_pending_substitution_cache_.Set(&value, map);
   }
   return *map;
+}
+
+const Element* StyleResolverState::GetAnimatingElement() const {
+  // The animating element may be this element, or the pseudo element we are
+  // resolving style for.
+  DCHECK(!pseudo_element_ ||
+         pseudo_element_->ParentOrShadowHostElement() == GetElement());
+  return pseudo_element_ ? pseudo_element_.Get() : &GetElement();
 }
 
 }  // namespace blink

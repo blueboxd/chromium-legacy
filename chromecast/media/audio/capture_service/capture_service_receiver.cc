@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -161,7 +162,7 @@ CaptureServiceReceiver::CaptureServiceReceiver(
     const ::media::AudioParameters& audio_params)
     : audio_params_(audio_params), io_thread_(__func__) {
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_pump_type = base::MessagePumpType::IO;
   // TODO(b/137106361): Tweak the thread priority once the thread priority for
   // speech processing gets fixed.
   options.priority = base::ThreadPriority::DISPLAY;

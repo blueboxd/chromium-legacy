@@ -377,9 +377,12 @@ bool DesktopWindowTreeHostPlatform::IsVisibleOnAllWorkspaces() const {
 
 bool DesktopWindowTreeHostPlatform::SetWindowTitle(
     const base::string16& title) {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  if (window_title_ == title)
+    return false;
+
+  window_title_ = title;
+  platform_window()->SetTitle(window_title_);
+  return true;
 }
 
 void DesktopWindowTreeHostPlatform::ClearNativeFocus() {

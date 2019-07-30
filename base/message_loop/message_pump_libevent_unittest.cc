@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -32,12 +33,12 @@ namespace base {
 class MessagePumpLibeventTest : public testing::Test {
  protected:
   MessagePumpLibeventTest()
-      : ui_loop_(new MessageLoop(MessageLoop::TYPE_UI)),
+      : ui_loop_(new MessageLoop(MessagePumpType::UI)),
         io_thread_("MessagePumpLibeventTestIOThread") {}
   ~MessagePumpLibeventTest() override = default;
 
   void SetUp() override {
-    Thread::Options options(MessageLoop::TYPE_IO, 0);
+    Thread::Options options(MessagePumpType::IO, 0);
     ASSERT_TRUE(io_thread_.StartWithOptions(options));
     int ret = pipe(pipefds_);
     ASSERT_EQ(0, ret);

@@ -7,7 +7,7 @@
 #include "services/viz/public/cpp/compositing/resource_settings_mojom_traits.h"
 
 #if defined(OS_ANDROID)
-#include "ui/gfx/mojo/color_space_mojom_traits.h"
+#include "ui/gfx/mojom/color_space_mojom_traits.h"
 #endif
 
 namespace mojo {

@@ -600,27 +600,35 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginSearch) {
   const GURL top_level_ntp(chrome::kChromeUINewTabURL);
 
   // "Normal" URLs are not affected by GetCanonicalOrigin.
-  EXPECT_EQ(google_com, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                            google_com, google_com));
-  EXPECT_EQ(google_de, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                           google_de, google_de));
-  EXPECT_EQ(other_url, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                           other_url, other_url));
-  EXPECT_EQ(google_base, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                             google_base, google_base));
+  EXPECT_EQ(google_com,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_com, google_com));
+  EXPECT_EQ(google_de,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_de, google_de));
+  EXPECT_EQ(other_url,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, other_url, other_url));
+  EXPECT_EQ(google_base,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_base, google_base));
 
   // The local NTP URL gets mapped to the Google base URL.
-  EXPECT_EQ(google_base, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                             local_ntp, top_level_ntp));
+  EXPECT_EQ(google_base,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, local_ntp, top_level_ntp));
   // However, other chrome-search:// URLs, including the remote NTP URL, are
   // not affected.
-  EXPECT_EQ(remote_ntp, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                            remote_ntp, top_level_ntp));
-  EXPECT_EQ(google_com, GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                            google_com, top_level_ntp));
+  EXPECT_EQ(remote_ntp,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, remote_ntp, top_level_ntp));
+  EXPECT_EQ(google_com,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, google_com, top_level_ntp));
   EXPECT_EQ(other_chrome_search,
             GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                other_chrome_search, top_level_ntp));
+                CONTENT_SETTINGS_TYPE_GEOLOCATION, other_chrome_search,
+                top_level_ntp));
 }
 
 TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
@@ -636,9 +644,11 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
     // be returned.
     EXPECT_EQ(requesting_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  requesting_origin, embedding_origin));
+                  CONTENT_SETTINGS_TYPE_GEOLOCATION, requesting_origin,
+                  embedding_origin));
     EXPECT_EQ(extensions_requesting_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                  CONTENT_SETTINGS_TYPE_GEOLOCATION,
                   extensions_requesting_origin, embedding_origin));
   }
 
@@ -646,13 +656,20 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
     // With permission delegation, the embedding origin should be returned
-    // except in the case of extensions.
+    // except in the case of extensions; and except for notifications, for which
+    // permission delegation is always off.
     EXPECT_EQ(embedding_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  requesting_origin, embedding_origin));
+                  CONTENT_SETTINGS_TYPE_GEOLOCATION, requesting_origin,
+                  embedding_origin));
     EXPECT_EQ(extensions_requesting_origin,
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                  CONTENT_SETTINGS_TYPE_GEOLOCATION,
                   extensions_requesting_origin, embedding_origin));
+    EXPECT_EQ(requesting_origin,
+              GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                  CONTENT_SETTINGS_TYPE_NOTIFICATIONS, requesting_origin,
+                  embedding_origin));
   }
 }
 

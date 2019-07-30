@@ -17,7 +17,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -175,7 +175,7 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
 
   // Initialize the IO and FILE threads.
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_pump_type = base::MessagePumpType::IO;
   io_thread_.reset(new ServiceIOThread("ServiceProcess_IO"));
   if (!io_thread_->StartWithOptions(options)) {
     NOTREACHED();

@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/process/process_handle.h"
@@ -667,7 +667,7 @@ ServiceManagerContext::ServiceManagerContext(
       scoped_refptr<base::SequencedTaskRunner> task_runner =
           service_manager_thread_task_runner_;
       if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
-        base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+        base::Thread::Options options(base::MessagePumpType::IO, 0);
         network_service_thread_.StartWithOptions(options);
         task_runner = network_service_thread_.task_runner();
       }

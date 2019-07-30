@@ -31,7 +31,10 @@
 #include "third_party/blink/renderer/modules/websockets/web_pepper_socket_impl.h"
 
 #include <stddef.h>
+
 #include <memory>
+
+#include "base/callback.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_array_buffer.h"
@@ -93,7 +96,7 @@ bool WebPepperSocketImpl::SendText(const WebString& message) {
   if (is_closing_or_closed_)
     return true;
 
-  private_->Send(encoded_message);
+  private_->Send(encoded_message, base::OnceClosure());
   return true;
 }
 
@@ -111,7 +114,8 @@ bool WebPepperSocketImpl::SendArrayBuffer(
     return true;
 
   DOMArrayBuffer* array_buffer = web_array_buffer;
-  private_->Send(*array_buffer, 0, array_buffer->ByteLength());
+  private_->Send(*array_buffer, 0, array_buffer->ByteLength(),
+                 base::OnceClosure());
   return true;
 }
 

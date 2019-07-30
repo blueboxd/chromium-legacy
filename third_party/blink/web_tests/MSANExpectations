@@ -312,3 +312,6 @@ crbug.com/856601 [ Linux ] virtual/not-omt-sw-fetch/external/wpt/fetch/api/idl.a
 crbug.com/856601 [ Linux ] virtual/omt-worker-fetch/external/wpt/fetch/cors-rfc1918/idlharness.tentative.any.serviceworker.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/WebCryptoAPI/idlharness.https.any.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] external/wpt/web-animations/interfaces/Animation/idlharness.window.html [ Pass Timeout ]
+
+# Sheriff 2019-07-29
+crbug.com/856601 [ Linux ] external/wpt/web-locks/idlharness.tentative.https.any.serviceworker.html [ Pass Timeout ]

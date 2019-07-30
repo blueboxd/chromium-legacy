@@ -170,7 +170,9 @@ class CONTENT_EXPORT BackgroundSyncManager
   // correct starting point to add to |delay| to so that the resulting
   // |delay_until| for the |registration| ensures the minimum gap between
   // periodicsync events fired for the origin.
+  // |delay| is only updated if |sync_type| is periodic.
   base::Time GetDelayUntilAfterApplyingMinGapForOrigin(
+      blink::mojom::BackgroundSyncType sync_type,
       const url::Origin& origin,
       base::TimeDelta delay) const;
 

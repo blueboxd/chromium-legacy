@@ -121,4 +121,15 @@ class BottomBarView extends FrameLayout {
     public void setOnClickListener(StartSurfaceProperties.BottomBarClickListener listener) {
         mOnClickListener = listener;
     }
+
+    /**
+     * Select the Tab at the specified position if needed.
+     * @param index The specified position.
+     */
+    public void selectTabAt(int index) {
+        assert index >= 0 && index < mTabLayout.getTabCount();
+
+        if (index == mTabLayout.getSelectedTabPosition()) return;
+        mTabLayout.getTabAt(index).select();
+    }
 }

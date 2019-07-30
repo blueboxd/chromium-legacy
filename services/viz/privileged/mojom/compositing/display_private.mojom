@@ -6,10 +6,10 @@ module viz.mojom;
 
 import "gpu/ipc/common/context_result.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/mojo/ca_layer_params.mojom";
-import "ui/gfx/mojo/color_space.mojom";
-import "ui/gfx/mojo/overlay_transform.mojom";
-import "ui/gfx/mojo/transform.mojom";
+import "ui/gfx/mojom/ca_layer_params.mojom";
+import "ui/gfx/mojom/color_space.mojom";
+import "ui/gfx/mojom/overlay_transform.mojom";
+import "ui/gfx/mojom/transform.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/latency/mojom/latency_info.mojom";
 import "services/viz/privileged/mojom/compositing/layered_window_updater.mojom";

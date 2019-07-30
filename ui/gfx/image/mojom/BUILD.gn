@@ -10,7 +10,7 @@ mojom("mojom") {
   ]
 
   public_deps = [
-    "//skia/public/interfaces",
+    "//skia/public/mojom",
   ]
 }
 
@@ -22,7 +22,7 @@ source_set("mojom_traits") {
 
   public_deps = [
     ":mojom_shared_cpp_sources",
-    "//skia/public/interfaces",
+    "//skia/public/mojom",
     "//ui/gfx",
   ]
 }

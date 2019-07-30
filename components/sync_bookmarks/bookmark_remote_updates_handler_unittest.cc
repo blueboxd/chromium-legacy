@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -678,7 +679,7 @@ TEST(BookmarkRemoteUpdatesHandlerTest,
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bookmark_specifics = specifics.mutable_bookmark();
   bookmark_specifics->set_title("Title");
-  bookmarks::BookmarkNode node(/*id=*/1, GURL());
+  bookmarks::BookmarkNode node(/*id=*/1, base::GenerateGUID(), GURL());
   // Track a sync entity (similar to what happens after a local creation). The
   // |originator_client_item_id| is used a temp sync id and mark the entity that
   // it needs to be committed..

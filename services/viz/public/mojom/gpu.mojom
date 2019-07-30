@@ -11,7 +11,7 @@ import "gpu/ipc/common/sync_token.mojom";
 import "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom";
 import "media/mojo/interfaces/video_encode_accelerator.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/buffer_types.mojom";
+import "ui/gfx/mojom/buffer_types.mojom";
 
 interface GpuMemoryBufferFactory {
   // Tells the GPU service to create a new GPU memory buffer.

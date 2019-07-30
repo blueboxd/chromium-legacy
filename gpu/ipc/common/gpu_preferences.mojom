@@ -6,7 +6,7 @@
 module gpu.mojom;
 
 import "mojo/public/mojom/base/message_loop_type.mojom";
-import "ui/gfx/mojo/buffer_types.mojom";
+import "ui/gfx/mojom/buffer_types.mojom";
 
 // Corresponds to gpu::VulkanImplementationName.
 enum VulkanImplementationName {

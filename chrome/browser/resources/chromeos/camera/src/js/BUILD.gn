@@ -11,13 +11,16 @@ group("closure_compile") {
     "device:closure_compile",
     "models:closure_compile",
     "mojo:closure_compile",
+    "views:closure_compile",
   ]
 }
 
 js_type_check("compile_resources") {
   deps = [
+    ":nav",
     ":resolution_event_broker",
     ":state",
+    ":toast",
     ":tooltip",
     ":util",
   ]
@@ -26,7 +29,19 @@ js_type_check("compile_resources") {
 js_library("resolution_event_broker") {
 }
 
+js_library("nav") {
+  deps = [
+    "views:view",
+  ]
+}
+
 js_library("state") {
+}
+
+js_library("toast") {
+  deps = [
+    ":util",
+  ]
 }
 
 js_library("tooltip") {

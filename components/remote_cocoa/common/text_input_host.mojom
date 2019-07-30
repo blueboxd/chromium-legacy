@@ -6,7 +6,7 @@ module remote_cocoa.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/range/mojo/range.mojom";
+import "ui/gfx/range/mojom/range.mojom";
 
 // Interface exposing a views::Widget's currently-focused views::View's
 // ui::TextInputClient to the NSView corresponding to that views::Widget.

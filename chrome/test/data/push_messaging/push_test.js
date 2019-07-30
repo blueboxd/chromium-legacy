@@ -176,12 +176,23 @@ function GetP256dh() {
   }).catch(sendErrorToTest);
 }
 
-function permissionState() {
+function pushManagerPermissionState() {
   navigator.serviceWorker.ready.then(function(swRegistration) {
     return swRegistration.pushManager.permissionState({userVisibleOnly: true})
         .then(function(permission) {
           sendResultToTest('permission status - ' + permission);
         });
+  }).catch(sendErrorToTest);
+}
+
+function notificationPermissionState() {
+  sendResultToTest('permission status - ' + Notification.permission);
+}
+
+function notificationPermissionAPIState() {
+  navigator.permissions.query({name: 'notifications'}).then(
+      permission_status => {
+    sendResultToTest('permission status - ' + permission_status.state);
   }).catch(sendErrorToTest);
 }
 

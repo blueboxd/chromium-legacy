@@ -51,6 +51,7 @@ jumbo_component("chromeos") {
   ]
 
   deps = [
+    "//build:branding_buildflags",
     "//chromeos/constants",
     "//chromeos/ime:gencode",
     "//chromeos/services/ime/public/mojom",

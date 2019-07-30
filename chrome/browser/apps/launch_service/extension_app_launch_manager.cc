@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/apps/platform_apps/platform_app_launch.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_features.h"
 
 namespace apps {
@@ -14,6 +15,11 @@ ExtensionAppLaunchManager::ExtensionAppLaunchManager(Profile* profile)
     : LaunchManager(profile) {}
 
 ExtensionAppLaunchManager::~ExtensionAppLaunchManager() = default;
+
+content::WebContents* ExtensionAppLaunchManager::OpenApplication(
+    const AppLaunchParams& params) {
+  return ::OpenApplication(params);
+}
 
 bool ExtensionAppLaunchManager::OpenApplicationWindow(
     const std::string& app_id,

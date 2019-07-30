@@ -343,7 +343,7 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(1, mLastSelectedContacts.size());
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
-        Assert.assertEquals(null, mLastSelectedContacts.get(0).emails);
+        Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).emails);
 
         dismissDialog();
     }
@@ -366,7 +366,7 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(1, mLastSelectedContacts.size());
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
-        Assert.assertEquals(null, mLastSelectedContacts.get(0).tel);
+        Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).tel);
 
         dismissDialog();
     }

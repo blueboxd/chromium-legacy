@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "ios/web/web_sub_thread.h"
 #include "ios/web/web_thread_impl.h"
 
@@ -61,7 +62,7 @@ void TestWebThread::StartIOThread() {
 
 void TestWebThread::StartIOThreadUnregistered() {
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_pump_type = base::MessagePumpType::IO;
   CHECK(real_thread_->StartWithOptions(options));
 }
 

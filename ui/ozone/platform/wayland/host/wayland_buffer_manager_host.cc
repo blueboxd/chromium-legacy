@@ -228,6 +228,12 @@ class WaylandBufferManagerHost::Surface {
     // surface can tell the gpu about successful swap.
     bool released = true;
 
+    // In some cases, a presentation feedback can come earlier than we fire a
+    // submission callback. Thus, instead of sending it immediately to the GPU
+    // process, we store it and fire as soon as the submission callback is
+    // fired.
+    bool needs_send_feedback = false;
+
     gfx::PresentationFeedback feedback;
 
     DISALLOW_COPY_AND_ASSIGN(WaylandBuffer);
@@ -355,6 +361,11 @@ class WaylandBufferManagerHost::Surface {
   void CompleteSubmission() {
     DCHECK(submitted_buffer_);
     auto id = submitted_buffer_->buffer_id;
+
+    auto feedback = std::move(submitted_buffer_->feedback);
+    bool needs_send_feedback = submitted_buffer_->needs_send_feedback;
+    submitted_buffer_->needs_send_feedback = false;
+
     prev_submitted_buffer_ = submitted_buffer_;
     submitted_buffer_ = nullptr;
     // We can now complete the latest submission. We had to wait for this
@@ -370,14 +381,22 @@ class WaylandBufferManagerHost::Surface {
       OnPresentation(id, gfx::PresentationFeedback(
                              base::TimeTicks::Now(), base::TimeDelta(),
                              GetPresentationKindFlags(0)));
+    } else if (needs_send_feedback) {
+      OnPresentation(id, std::move(feedback));
     }
   }
 
   void OnPresentation(uint32_t buffer_id,
                       const gfx::PresentationFeedback& feedback) {
-    // The order of submission and presentation callbacks is checked on the GPU
-    // side, but it must never happen, because the Submission is called
-    // immediately after the buffer is swapped.
+    // The order of submission and presentation callbacks cannot be controlled.
+    // Some Wayland compositors may fire presentation callbacks earlier than we
+    // are able to send submission callbacks and this is bad. Thus, handle it here.
+    if (submitted_buffer_ && submitted_buffer_->buffer_id == buffer_id) {
+      submitted_buffer_->needs_send_feedback = true;
+      submitted_buffer_->feedback = feedback;
+      return;
+    }
+
     buffer_manager_->OnPresentation(window_->GetWidget(), buffer_id, feedback);
   }
 

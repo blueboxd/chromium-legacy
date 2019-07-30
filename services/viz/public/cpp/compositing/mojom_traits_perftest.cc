@@ -21,7 +21,7 @@
 #include "services/viz/public/mojom/compositing/compositor_frame.mojom.h"
 #include "testing/perf/perf_test.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
-#include "ui/gfx/mojo/selection_bound_struct_traits.h"
+#include "ui/gfx/mojom/selection_bound_mojom_traits.h"
 #include "ui/latency/mojom/latency_info_mojom_traits.h"
 
 namespace viz {

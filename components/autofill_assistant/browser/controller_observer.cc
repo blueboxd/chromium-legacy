@@ -30,7 +30,7 @@ void ControllerObserver::OnTouchableAreaChanged(
     const RectF& visual_viewport,
     const std::vector<RectF>& touchable_areas,
     const std::vector<RectF>& restricted_areas) {}
-void ControllerObserver::OnResizeViewportChanged(bool resize_viewport) {}
+void ControllerObserver::OnViewportModeChanged(ViewportMode mode) {}
 void ControllerObserver::OnPeekModeChanged(
     ConfigureBottomSheetProto::PeekMode peek_mode) {}
 void ControllerObserver::OnOverlayColorsChanged(

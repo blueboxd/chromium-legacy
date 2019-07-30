@@ -15,7 +15,7 @@ include_rules = [
     "+services/network/public/cpp/shared_url_loader_factory.h",
     "+services/network/public/mojom/url_loader.mojom.h",
     "+services/network/public/mojom/url_loader_factory.mojom.h",
-    "+skia/public/interfaces",
+    "+skia/public/mojom",
     "+third_party/blink/public/common",
     "+third_party/blink/public/mojom",
     "+ui/gfx/geometry",

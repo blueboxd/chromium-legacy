@@ -6,8 +6,8 @@ module viz.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/color_space.mojom";
-import "ui/gfx/mojo/buffer_types.mojom";
+import "ui/gfx/mojom/color_space.mojom";
+import "ui/gfx/mojom/buffer_types.mojom";
 
 // Corresponds to viz::ResourceFormat.
 enum ResourceFormat {

@@ -55,7 +55,7 @@ group("web_idl_pylib") {
     "web_idl/attribute.py",
     "web_idl/callback_function.py",
     "web_idl/callback_interface.py",
-    "web_idl/common.py",
+    "web_idl/composition_parts.py",
     "web_idl/constant.py",
     "web_idl/constructor.py",
     "web_idl/database.py",

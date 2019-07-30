@@ -99,6 +99,9 @@ class PasswordStoreXTest : public testing::Test {
 
   void WaitForPasswordStore() { task_environment_.RunUntilIdle(); }
 
+ protected:
+  base::HistogramTester histogram_tester_;
+
  private:
   TestingPrefServiceSimple fake_pref_service_;
   base::test::ScopedTaskEnvironment task_environment_;
@@ -152,6 +155,10 @@ TEST_F(PasswordStoreXTest, MigrationCompleted) {
   // Password values don't match because they have been stored encrypted and
   // read unencrypted.
   EXPECT_NE(kPassword, base::UTF16ToUTF8(stored_forms[0]->password_value));
+  EXPECT_THAT(migration_step_pref_.GetValue(),
+              PasswordStoreX::LOGIN_DB_REPLACED);
+  histogram_tester_.ExpectTotalCount(
+      "PasswordManager.LinuxBackendMigration.AttemptResult", 0);
 }
 
 TEST_F(PasswordStoreXTest, MigrationNotAttemptedEmptyDB) {
@@ -190,6 +197,11 @@ TEST_F(PasswordStoreXTest, MigrationNotAttemptedEmptyDB) {
   // Password values don't match because they have been stored encrypted and
   // read unencrypted.
   EXPECT_NE(kPassword, base::UTF16ToUTF8(stored_forms[0]->password_value));
+  EXPECT_THAT(migration_step_pref_.GetValue(),
+              PasswordStoreX::LOGIN_DB_REPLACED);
+  histogram_tester_.ExpectBucketCount(
+      "PasswordManager.LinuxBackendMigration.AttemptResult",
+      LinuxBackendMigrationStatus::kLoginDBReplaced, 1);
 }
 
 TEST_F(PasswordStoreXTest, MigrationNotAttemptedNonEmptyDB) {
@@ -202,6 +214,7 @@ TEST_F(PasswordStoreXTest, MigrationNotAttemptedNonEmptyDB) {
   // Add existing credential into loginDB.
   auto login_db = std::make_unique<password_manager::LoginDatabase>(
       test_login_db_file_path());
+  login_db->disable_encryption();
   ASSERT_TRUE(login_db->Init());
   ignore_result(login_db->AddLogin(MakePasswordForm()));
   login_db.reset();
@@ -243,4 +256,8 @@ TEST_F(PasswordStoreXTest, MigrationNotAttemptedNonEmptyDB) {
       EXPECT_EQ(kPassword, base::UTF16ToUTF8(stored_form->password_value));
     }
   }
+  EXPECT_THAT(migration_step_pref_.GetValue(), PasswordStoreX::POSTPONED);
+  histogram_tester_.ExpectBucketCount(
+      "PasswordManager.LinuxBackendMigration.AttemptResult",
+      LinuxBackendMigrationStatus::kPostponed, 1);
 }

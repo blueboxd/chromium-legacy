@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/guid.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -93,7 +94,8 @@ void ConvertNSArrayToElements(
       url = GURL(base::SysNSStringToUTF8(url_string));
     }
 
-    auto new_node = std::make_unique<BookmarkNode>(url);
+    auto new_node =
+        std::make_unique<BookmarkNode>(/*id=*/0, base::GenerateGUID(), url);
 
     NSNumber* node_id =
         base::mac::ObjCCast<NSNumber>(bookmark_dict[kChromiumBookmarkIdKey]);

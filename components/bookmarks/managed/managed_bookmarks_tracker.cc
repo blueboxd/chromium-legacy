@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -58,8 +59,8 @@ int64_t ManagedBookmarksTracker::LoadInitial(BookmarkNode* folder,
     if (!LoadBookmark(list, i, &title, &url, &children))
       continue;
 
-    BookmarkNode* child =
-        folder->Add(std::make_unique<BookmarkNode>(next_node_id++, url));
+    BookmarkNode* child = folder->Add(std::make_unique<BookmarkNode>(
+        next_node_id++, base::GenerateGUID(), url));
     child->SetTitle(title);
     if (children) {
       child->set_date_folder_modified(base::Time::Now());

@@ -397,6 +397,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
     @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
+    @FlakyTest(message = "http://crbug.com/988891")
     @RetryOnFailure
     public void testContextMenuRetrievesImageOptions_NoDefaultSearchEngine()
             throws TimeoutException, InterruptedException {

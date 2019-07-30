@@ -10,7 +10,7 @@ import "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom";
 import "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom";
 import "services/viz/privileged/mojom/gl/gpu_host.mojom";
 import "services/viz/privileged/mojom/gl/gpu_service.mojom";
-import "ui/gfx/mojo/font_render_params.mojom";
+import "ui/gfx/mojom/font_render_params.mojom";
 
 struct FrameSinkManagerParams {
   // An id that changes for each viz process restart.

@@ -123,7 +123,7 @@ if (is_android) {
       "//services/device/public/mojom:generic_sensor_java",
       "//services/device/public/mojom:mojom_java",
       "//services/shape_detection:shape_detection_java",
-      "//skia/public/interfaces:interfaces_java",
+      "//skia/public/mojom:mojom_java",
       "//third_party/android_deps:com_android_support_support_annotations_java",
     ]
   }
@@ -148,7 +148,7 @@ if (is_android) {
       "//mojo/public/mojom/base:base_java",
       "//services/shape_detection:shape_detection_java",
       "//services/shape_detection/public/mojom:mojom_java",
-      "//skia/public/interfaces:interfaces_java",
+      "//skia/public/mojom:mojom_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/junit",
       "//ui/gfx/geometry/mojom:mojom_java",

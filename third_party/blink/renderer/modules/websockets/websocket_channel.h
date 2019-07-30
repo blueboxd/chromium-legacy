@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_CHANNEL_H_
 
 #include <memory>
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -48,7 +49,10 @@ class KURL;
 class MODULES_EXPORT WebSocketChannel
     : public GarbageCollectedFinalized<WebSocketChannel> {
  public:
+  enum class SendResult { SENT_SYNCHRONOUSLY, CALLBACK_WILL_BE_CALLED };
+
   WebSocketChannel() = default;
+  virtual ~WebSocketChannel() = default;
 
   enum CloseEventCode {
     kCloseEventCodeNotSpecified = -1,
@@ -70,10 +74,15 @@ class MODULES_EXPORT WebSocketChannel
   };
 
   virtual bool Connect(const KURL&, const String& protocol) = 0;
-  virtual void Send(const std::string&) = 0;
-  virtual void Send(const DOMArrayBuffer&,
-                    unsigned byte_offset,
-                    unsigned byte_length) = 0;
+  virtual SendResult Send(const std::string&,
+                          base::OnceClosure completion_callback) = 0;
+  virtual SendResult Send(const DOMArrayBuffer&,
+                          unsigned byte_offset,
+                          unsigned byte_length,
+                          base::OnceClosure completion_callback) = 0;
+
+  // Blobs are always sent asynchronously. No callers currently need completion
+  // callbacks for Blobs, so they are not implemented.
   virtual void Send(scoped_refptr<BlobDataHandle>) = 0;
 
   // Do not call |Send| after calling this method.
@@ -93,7 +102,14 @@ class MODULES_EXPORT WebSocketChannel
   // Do not call any methods after calling this method.
   virtual void Disconnect() = 0;  // Will suppress didClose().
 
-  virtual ~WebSocketChannel() = default;
+  // Clients can call ApplyBackpressure() to indicate that they want to stop
+  // receiving new messages. WebSocketChannelClient::DidReceive*Message() may
+  // still be called after this, until existing flow control quota is used up.
+  virtual void ApplyBackpressure() = 0;
+
+  // Clients should call RemoveBackpressure() after calling ApplyBackpressure()
+  // to indicate that they are ready to receive new messages.
+  virtual void RemoveBackpressure() = 0;
 
   virtual void Trace(blink::Visitor* visitor) {}
 

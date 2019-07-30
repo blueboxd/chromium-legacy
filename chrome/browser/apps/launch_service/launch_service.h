@@ -11,12 +11,17 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+struct AppLaunchParams;
 class Profile;
 
 namespace base {
 class CommandLine;
 class FilePath;
 }  // namespace base
+
+namespace content {
+class WebContents;
+}
 
 namespace apps {
 
@@ -35,6 +40,9 @@ class LaunchService : public KeyedService {
 
   explicit LaunchService(Profile* profile);
   ~LaunchService() override;
+
+  // Open the application in a way specified by |params|.
+  content::WebContents* OpenApplication(const AppLaunchParams& params);
 
   // Attempt to open |app_id| in a new window.
   bool OpenApplicationWindow(const std::string& app_id,

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread.h"
@@ -165,7 +166,7 @@ class FakeNetstackAsync {
   explicit FakeNetstackAsync(
       fidl::InterfaceRequest<fuchsia::netstack::Netstack> netstack_request)
       : thread_("Netstack Thread") {
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     CHECK(thread_.StartWithOptions(options));
     netstack_ = base::SequenceBound<FakeNetstack>(thread_.task_runner(),
                                                   std::move(netstack_request));

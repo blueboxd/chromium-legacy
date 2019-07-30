@@ -5,8 +5,8 @@
 module ui.ozone.mojom;
 
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/buffer_types.mojom";
-import "ui/gfx/mojo/overlay_transform.mojom";
+import "ui/gfx/mojom/buffer_types.mojom";
+import "ui/gfx/mojom/overlay_transform.mojom";
 
 // ui::OverlayStatus
 enum OverlayStatus {

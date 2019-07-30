@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/test/test_support_android.h"
 #include "base/threading/thread.h"
 #include "components/cronet/android/cronet_tests_jni_headers/QuicTestServer_jni.h"
@@ -88,7 +88,7 @@ void JNI_QuicTestServer_StartQuicTestServer(
 
   g_quic_server_thread = new base::Thread("quic server thread");
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_options.message_pump_type = base::MessagePumpType::IO;
   bool started = g_quic_server_thread->StartWithOptions(thread_options);
   DCHECK(started);
   base::FilePath test_files_root(

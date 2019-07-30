@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .common import WithCodeGeneratorInfo
-from .common import WithComponent
-from .common import WithDebugInfo
-from .common import WithExtendedAttributes
-from .common import WithExposure
-from .common import WithIdentifier
+from .composition_parts import WithCodeGeneratorInfo
+from .composition_parts import WithComponent
+from .composition_parts import WithDebugInfo
+from .composition_parts import WithExtendedAttributes
+from .composition_parts import WithExposure
+from .composition_parts import WithIdentifier
 from .idl_member import IdlMember
 from .idl_type import IdlType
 from .values import ConstantValue

@@ -445,8 +445,6 @@ jumbo_static_library("extensions") {
     "chrome_content_browser_client_extensions_part.h",
     "chrome_content_verifier_delegate.cc",
     "chrome_content_verifier_delegate.h",
-    "chrome_extension_api_frame_id_map_helper.cc",
-    "chrome_extension_api_frame_id_map_helper.h",
     "chrome_extension_browser_constants.cc",
     "chrome_extension_browser_constants.h",
     "chrome_extension_chooser_dialog.h",

@@ -13,6 +13,12 @@ std::ostream& operator<<(std::ostream& stream,
   return stream << "{" << entry.source << ", " << entry.target << "}";
 }
 
+void TextOffsetMap::Append(wtf_size_t source, wtf_size_t target) {
+  DCHECK(IsEmpty() ||
+         (source > entries_.back().source && target > entries_.back().target));
+  entries_.emplace_back(source, target);
+}
+
 void TextOffsetMap::Append(const icu::Edits& edits) {
   DCHECK(IsEmpty());
 

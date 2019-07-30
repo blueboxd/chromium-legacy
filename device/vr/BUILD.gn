@@ -47,7 +47,7 @@ if (enable_vr) {
       "//services/service_manager/public/cpp",
       "//ui/display",
       "//ui/gfx",
-      "//ui/gfx/mojo:mojo",
+      "//ui/gfx/mojom",
     ]
 
     if (enable_gvr_services) {

@@ -93,6 +93,12 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
     MarkHeaderNoTracing(HeapObjectHeader::FromPayload(object));
   }
 
+  // This callback mechanism is needed to account for backing store objects
+  // containing intra-object pointers, all of which must be relocated/rebased
+  // with respect to the moved-to location.
+  //
+  // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
+  // relies on this feature.
   void RegisterBackingStoreCallback(void** slot,
                                     MovingObjectCallback,
                                     void* callback_data) final;
@@ -132,6 +138,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   WeakCallbackWorklist::View weak_callback_worklist_;
   MovableReferenceWorklist::View movable_reference_worklist_;
   WeakTableWorklist::View weak_table_worklist_;
+  BackingStoreCallbackWorklist::View backing_store_callback_worklist_;
   size_t marked_bytes_ = 0;
   const MarkingMode marking_mode_;
 };

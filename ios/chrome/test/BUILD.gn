@@ -82,7 +82,7 @@ source_set("eg_test_support") {
 
 source_set("block_cleanup_test") {
   # TODO(crbug.com/733237): Replace this comment with an explicit disable_arc config.
-  # The files in this target depend on non-ARC memeory management.
+  # The files in this target depend on non-ARC memory management.
   testonly = true
   sources = [
     "block_cleanup_test.h",
@@ -104,6 +104,7 @@ source_set("run_all_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//ios/chrome/app/startup:startup_basic",
     "//mojo/core/embedder",
   ]
 }

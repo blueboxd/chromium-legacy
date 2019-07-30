@@ -62,12 +62,14 @@ def main():
   parser.add_argument('--enable-test-server', action='store_true',
                       default=False,
                       help='Enable Chrome test server spawner.')
-  parser.add_argument('child_args', nargs='*',
-                      help='Arguments for the test process.')
   parser.add_argument('--test-launcher-bot-mode', action='store_true',
                       default=False,
                       help='Informs the TestLauncher to that it should enable '
                       'special allowances for running on a test bot.')
+  parser.add_argument('--child-arg', action='append',
+                      help='Arguments for the test process.')
+  parser.add_argument('child_args', nargs='*',
+                      help='Arguments for the test process.')
   args = parser.parse_args()
   ConfigureLogging(args)
 
@@ -94,11 +96,13 @@ def main():
         '--test-launcher-retry-limit=' + args.test_launcher_retry_limit)
   if args.gtest_break_on_failure:
     child_args.append('--gtest_break_on_failure')
-  if args.child_args:
-    child_args.extend(args.child_args)
-
   if args.test_launcher_summary_output:
     child_args.append('--test-launcher-summary-output=' + TEST_RESULT_PATH)
+
+  if args.child_arg:
+    child_args.extend(args.child_arg)
+  if args.child_args:
+    child_args.extend(args.child_args)
 
   with GetDeploymentTargetForArgs(args) as target:
     target.Start()

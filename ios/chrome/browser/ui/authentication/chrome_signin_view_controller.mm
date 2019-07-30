@@ -137,11 +137,12 @@ enum AuthenticationState {
 
 }  // namespace
 
-@interface ChromeSigninViewController ()<
+@interface ChromeSigninViewController () <
     ChromeIdentityInteractionManagerDelegate,
     ChromeIdentityServiceObserver,
     MDCActivityIndicatorDelegate,
     SigninAccountSelectorViewControllerDelegate,
+    UIAdaptivePresentationControllerDelegate,
     UnifiedConsentCoordinatorDelegate>
 @property(nonatomic, strong) ChromeIdentity* selectedIdentity;
 @end
@@ -215,6 +216,9 @@ enum AuthenticationState {
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));
     _currentState = NULL_STATE;
+
+    self.modalPresentationStyle = UIModalPresentationFormSheet;
+    self.presentationController.delegate = self;
   }
   return self;
 }
@@ -505,6 +509,18 @@ enum AuthenticationState {
     (id)[backgroundColor colorWithAlphaComponent:0].CGColor,
     (id)backgroundColor.CGColor
   ];
+}
+
+#pragma mark - UIAdaptivePresentationController
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
+  return _unifiedConsentEnabled;
+}
+
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  [self onSecondaryButtonPressed:self];
 }
 
 #pragma mark - Accessibility

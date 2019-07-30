@@ -47,7 +47,7 @@ def main():
 
     filepaths = utilities.read_idl_files_list_from_file(options.idl_list_file)
     parser = blink_idl_parser.BlinkIDLParser()
-    ast_group = web_idl.AstGroup(options.component)
+    ast_group = web_idl.AstGroup(web_idl.Component(options.component))
     for filepath in filepaths:
         ast_group.add_ast_node(blink_idl_parser.parse_file(parser, filepath))
     ast_group.write_to_file(options.output)

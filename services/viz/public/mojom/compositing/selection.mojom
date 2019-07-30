@@ -4,7 +4,7 @@
 
 module viz.mojom;
 
-import "ui/gfx/mojo/selection_bound.mojom";
+import "ui/gfx/mojom/selection_bound.mojom";
 
 // See components/viz/common/quads/selection.h.
 struct Selection {

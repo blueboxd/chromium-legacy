@@ -146,6 +146,17 @@ class RequestManagerTest : public ::testing::Test {
     entry->data.assign(as_int8, as_int8 + entry->count * sizeof(int32_t));
     static_metadata->entries->push_back(std::move(entry));
 
+    entry = cros::mojom::CameraMetadataEntry::New();
+    entry->index = 2;
+    entry->tag =
+        cros::mojom::CameraMetadataTag::ANDROID_REQUEST_PIPELINE_MAX_DEPTH;
+    entry->type = cros::mojom::EntryType::TYPE_BYTE;
+    entry->count = 1;
+    uint8_t pipeline_max_depth = 1;
+    entry->data.assign(&pipeline_max_depth,
+                       &pipeline_max_depth + entry->count * sizeof(uint8_t));
+    static_metadata->entries->push_back(std::move(entry));
+
     return static_metadata;
   }
 

@@ -269,7 +269,8 @@ void ChromeSessionManager::Initialize(
     std::string login_user_id = login_account_id.GetUserEmail();
     IdentityManagerFactory::GetForProfile(profile)
         ->GetPrimaryAccountMutator()
-        ->SetPrimaryAccountAndUpdateAccountInfo(login_user_id, login_user_id);
+        ->DeprecatedSetPrimaryAccountAndUpdateAccountInfo(login_user_id,
+                                                          login_user_id);
     StartUserSession(profile, login_user_id);
     return;
   }

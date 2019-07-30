@@ -114,8 +114,6 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
     auto it = compared_script_info_map.find(resource_request.url);
     if (it != compared_script_info_map.end()) {
       switch (it->second.result) {
-        case ServiceWorkerSingleScriptUpdateChecker::Result::kFailed:
-          // Network failure is treated as D.1
         case ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical:
           // Case D.1:
           CopyScript(
@@ -125,6 +123,8 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
                   weak_factory_.GetWeakPtr(), std::move(request), options,
                   resource_request, std::move(client)));
           return;
+        case ServiceWorkerSingleScriptUpdateChecker::Result::kFailed:
+          // Network failure is treated as D.2
         case ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent:
           // Case D.2:
           mojo::MakeStrongBinding(

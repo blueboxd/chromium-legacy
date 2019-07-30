@@ -4,6 +4,7 @@
 
 #include "content/browser/android/content_url_loader_factory.h"
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -40,9 +41,9 @@ constexpr size_t kDefaultContentUrlPipeSize = 65536;
 // This assumes the simplest form of the Range header using a single range.
 // If no byte range was specified, the output range will cover the entire file.
 bool GetRequestedByteRange(const network::ResourceRequest& request,
-                           size_t content_size,
-                           size_t* first_byte_to_send,
-                           size_t* total_bytes_to_send) {
+                           uint64_t content_size,
+                           uint64_t* first_byte_to_send,
+                           uint64_t* total_bytes_to_send) {
   *first_byte_to_send = 0;
   *total_bytes_to_send = content_size;
 
@@ -56,13 +57,15 @@ bool GetRequestedByteRange(const network::ResourceRequest& request,
   }
 
   // Only handle a simple Range header for a single range.
-  net::HttpByteRange byte_range = ranges[0];
-  if (ranges.size() != 1 || !byte_range.ComputeBounds(content_size))
+  if (ranges.size() != 1 || !ranges[0].IsValid() ||
+      !ranges[0].ComputeBounds(content_size)) {
     return false;
+  }
 
-  *first_byte_to_send = static_cast<size_t>(byte_range.first_byte_position());
-  *total_bytes_to_send = static_cast<size_t>(byte_range.last_byte_position()) -
-                         *first_byte_to_send + 1;
+  net::HttpByteRange byte_range = ranges[0];
+  *first_byte_to_send = byte_range.first_byte_position();
+  *total_bytes_to_send =
+      byte_range.last_byte_position() - *first_byte_to_send + 1;
   return true;
 }
 
@@ -132,28 +135,28 @@ class ContentURLLoader : public network::mojom::URLLoader {
     if (!base::GetFileInfo(path, &info))
       return CompleteWithFailure(std::move(client), net::ERR_FILE_NOT_FOUND);
 
-    size_t first_byte_to_send;
-    size_t total_bytes_to_send;
-    if (!GetRequestedByteRange(request, info.size, &first_byte_to_send,
-                               &total_bytes_to_send)) {
+    uint64_t first_byte_to_send;
+    uint64_t total_bytes_to_send;
+    if (!GetRequestedByteRange(request, (info.size > 0) ? info.size : 0,
+                               &first_byte_to_send, &total_bytes_to_send) ||
+        (std::numeric_limits<int64_t>::max() < first_byte_to_send) ||
+        (std::numeric_limits<int64_t>::max() < total_bytes_to_send)) {
       return CompleteWithFailure(std::move(client),
                                  net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
     }
 
     mojo::DataPipe pipe(kDefaultContentUrlPipeSize);
-    if (!pipe.consumer_handle.is_valid()) {
+    if (!pipe.consumer_handle.is_valid())
       return CompleteWithFailure(std::move(client), net::ERR_FAILED);
-    }
 
     base::File file = base::OpenContentUriForRead(path);
     if (!file.IsValid()) {
       return CompleteWithFailure(
           std::move(client), net::FileErrorToNetError(file.error_details()));
-      return;
     }
 
+    head.content_length = total_bytes_to_send;
     total_bytes_written_ = total_bytes_to_send;
-    head.content_length = base::saturated_cast<int64_t>(total_bytes_to_send);
 
     // Set the mimetype of the response.
     GetMimeType(request, path, &head.mime_type);
@@ -177,12 +180,13 @@ class ContentURLLoader : public network::mojom::URLLoader {
     // In case of a range request, seek to the appropriate position before
     // sending the remaining bytes asynchronously. Under normal conditions
     // (i.e., no range request) this Seek is effectively a no-op.
-    file.Seek(base::File::FROM_BEGIN, static_cast<int64_t>(first_byte_to_send));
+    auto data_source = std::make_unique<mojo::FileDataSource>(std::move(file));
+    data_source->SetRange(first_byte_to_send,
+                          first_byte_to_send + total_bytes_to_send);
 
     data_producer_ = std::make_unique<mojo::DataPipeProducer>(
         std::move(pipe.producer_handle));
-    data_producer_->Write(std::make_unique<mojo::FileDataSource>(
-                              std::move(file), total_bytes_to_send),
+    data_producer_->Write(std::move(data_source),
                           base::BindOnce(&ContentURLLoader::OnFileWritten,
                                          base::Unretained(this)));
   }

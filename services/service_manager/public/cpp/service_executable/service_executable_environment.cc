@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
@@ -56,7 +56,7 @@ ServiceExecutableEnvironment::ServiceExecutableEnvironment()
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
       "StandaloneService");
   ipc_thread_.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+      base::Thread::Options(base::MessagePumpType::IO, 0));
 
   ipc_support_.emplace(ipc_thread_.task_runner(),
                        mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);

@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
 #include "third_party/blink/renderer/modules/image_downloader/image_downloader_impl.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 #include "third_party/blink/renderer/modules/indexeddb/inspector_indexed_db_agent.h"
 #include "third_party/blink/renderer/modules/installation/installation_service_impl.h"
 #include "third_party/blink/renderer/modules/installedapp/installed_app_controller.h"
@@ -183,7 +182,6 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
       frame, MakeGarbageCollected<PushMessagingClient>(frame));
   ProvideUserMediaTo(
       frame, std::make_unique<UserMediaClient>(client->UserMediaClient()));
-  ProvideIndexedDBClientTo(frame, MakeGarbageCollected<IndexedDBClient>(frame));
   ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
@@ -203,12 +201,6 @@ void ModulesInitializer::ProvideLocalFileSystemToWorker(
     WorkerClients& worker_clients) const {
   ::blink::ProvideLocalFileSystemToWorker(
       &worker_clients, std::make_unique<LocalFileSystemClient>());
-}
-
-void ModulesInitializer::ProvideIndexedDBClientToWorker(
-    WorkerClients& worker_clients) const {
-  ::blink::ProvideIndexedDBClientToWorker(
-      &worker_clients, MakeGarbageCollected<IndexedDBClient>(worker_clients));
 }
 
 MediaControls* ModulesInitializer::CreateMediaControls(

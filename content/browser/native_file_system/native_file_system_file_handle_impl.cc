@@ -67,19 +67,6 @@ void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void NativeFileSystemFileHandleImpl::Remove(RemoveCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  RunWithWritePermission(
-      base::BindOnce(&NativeFileSystemFileHandleImpl::RemoveImpl,
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce([](RemoveCallback callback) {
-        std::move(callback).Run(
-            NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED));
-      }),
-      std::move(callback));
-}
-
 void NativeFileSystemFileHandleImpl::CreateFileWriter(
     CreateFileWriterCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -148,19 +135,6 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
       NativeFileSystemError::New(base::File::FILE_OK),
       blink::mojom::SerializedBlob::New(uuid, content_type, info.size,
                                         blob_ptr.PassInterface()));
-}
-
-void NativeFileSystemFileHandleImpl::RemoveImpl(RemoveCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_EQ(GetWritePermissionStatus(),
-            blink::mojom::PermissionStatus::GRANTED);
-
-  operation_runner()->RemoveFile(
-      url(), base::BindOnce(
-                 [](RemoveCallback callback, base::File::Error result) {
-                   std::move(callback).Run(NativeFileSystemError::New(result));
-                 },
-                 std::move(callback)));
 }
 
 void NativeFileSystemFileHandleImpl::CreateFileWriterImpl(

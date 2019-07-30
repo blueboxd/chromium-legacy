@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -114,7 +115,7 @@ class ProtocolPerfTest
         encode_thread_("encode"),
         decode_thread_("decode") {
     host_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessagePumpType::IO, 0));
     capture_thread_.Start();
     encode_thread_.Start();
     decode_thread_.Start();

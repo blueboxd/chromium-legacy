@@ -3248,6 +3248,18 @@ if (is_linux) {
       "//third_party/boringssl",
     ]
   }
+
+  executable("quic_client_for_interop_test") {
+    sources = [
+      "third_party/quiche/src/quic/tools/fake_proof_verifier.h",
+      "third_party/quiche/src/quic/tools/quic_client_interop_test_bin.cc",
+    ]
+    deps = [
+      ":epoll_quic_tools",
+      ":net",
+      ":simple_quic_tools",
+    ]
+  }
 }
 
 if (is_android) {

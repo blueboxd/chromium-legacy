@@ -18,10 +18,43 @@ namespace service_worker_loader_helpers {
 
 std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
     const network::ResourceResponseHead& response_head,
+    blink::ServiceWorkerStatusCode* out_service_worker_status,
     network::URLLoaderCompletionStatus* out_completion_status,
     std::string* out_error_message) {
-  net::Error error_code = net::OK;
-  std::string error_message;
+  if (response_head.headers->response_code() / 100 != 2) {
+    // Non-2XX HTTP status code is handled as an error.
+    *out_completion_status =
+        network::URLLoaderCompletionStatus(net::ERR_INVALID_RESPONSE);
+    *out_error_message = base::StringPrintf(
+        ServiceWorkerConsts::kServiceWorkerBadHTTPResponseError,
+        response_head.headers->response_code());
+    *out_service_worker_status = blink::ServiceWorkerStatusCode::kErrorNetwork;
+    return nullptr;
+  }
+
+  if (net::IsCertStatusError(response_head.cert_status) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreCertificateErrors)) {
+    *out_completion_status = network::URLLoaderCompletionStatus(
+        net::MapCertStatusToNetError(response_head.cert_status));
+    *out_error_message = ServiceWorkerConsts::kServiceWorkerSSLError;
+    *out_service_worker_status = blink::ServiceWorkerStatusCode::kErrorNetwork;
+    return nullptr;
+  }
+
+  if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type)) {
+    *out_completion_status =
+        network::URLLoaderCompletionStatus(net::ERR_INSECURE_RESPONSE);
+    *out_error_message =
+        response_head.mime_type.empty()
+            ? ServiceWorkerConsts::kServiceWorkerNoMIMEError
+            : base::StringPrintf(
+                  ServiceWorkerConsts::kServiceWorkerBadMIMEError,
+                  response_head.mime_type.c_str());
+    *out_service_worker_status = blink::ServiceWorkerStatusCode::kErrorSecurity;
+    return nullptr;
+  }
+
   auto response_info = std::make_unique<net::HttpResponseInfo>();
   response_info->headers = response_head.headers;
   if (response_head.ssl_info.has_value())
@@ -33,46 +66,7 @@ std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
   response_info->connection_info = response_head.connection_info;
   response_info->remote_endpoint = response_head.remote_endpoint;
   response_info->response_time = response_head.response_time;
-
-  if (response_head.headers->response_code() / 100 != 2) {
-    // Non-2XX HTTP status code is handled as an error.
-    error_code = net::ERR_INVALID_RESPONSE;
-    error_message = base::StringPrintf(
-        ServiceWorkerConsts::kServiceWorkerBadHTTPResponseError,
-        response_head.headers->response_code());
-  } else if (net::IsCertStatusError(response_head.cert_status) &&
-             !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kIgnoreCertificateErrors)) {
-    error_code = static_cast<net::Error>(
-        net::MapCertStatusToNetError(response_head.cert_status));
-    error_message = ServiceWorkerConsts::kServiceWorkerSSLError;
-  } else if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type)) {
-    error_code = net::ERR_INSECURE_RESPONSE;
-    error_message = response_head.mime_type.empty()
-                        ? ServiceWorkerConsts::kServiceWorkerNoMIMEError
-                        : base::StringPrintf(
-                              ServiceWorkerConsts::kServiceWorkerBadMIMEError,
-                              response_head.mime_type.c_str());
-  }
-  if (out_completion_status)
-    *out_completion_status = network::URLLoaderCompletionStatus(error_code);
-
-  if (out_error_message)
-    *out_error_message = error_message;
-
   return response_info;
-}
-
-blink::ServiceWorkerStatusCode MapNetErrorToServiceWorkerStatus(
-    net::Error error_code) {
-  switch (error_code) {
-    case net::OK:
-      return blink::ServiceWorkerStatusCode::kOk;
-    case net::ERR_INSECURE_RESPONSE:
-      return blink::ServiceWorkerStatusCode::kErrorSecurity;
-    default:
-      return blink::ServiceWorkerStatusCode::kErrorNetwork;
-  }
 }
 
 bool ShouldBypassCacheDueToUpdateViaCache(

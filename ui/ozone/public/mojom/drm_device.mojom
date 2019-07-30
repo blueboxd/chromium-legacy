@@ -11,7 +11,7 @@ import "ui/display/mojom/display_mode.mojom";
 import "ui/display/mojom/display_snapshot.mojom";
 import "ui/display/mojom/gamma_ramp_rgb_entry.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/accelerated_widget.mojom";
+import "ui/gfx/mojom/accelerated_widget.mojom";
 import "ui/ozone/public/mojom/device_cursor.mojom";
 import "ui/ozone/public/mojom/overlay_surface_candidate.mojom";
 

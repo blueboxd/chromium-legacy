@@ -124,7 +124,8 @@ const GURL& WebAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
 
 base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
   NOTIMPLEMENTED();
-  return base::nullopt;
+  WebApp* web_app = GetAppById(app_id);
+  return web_app ? base::Optional<GURL>(web_app->scope()) : base::nullopt;
 }
 
 }  // namespace web_app

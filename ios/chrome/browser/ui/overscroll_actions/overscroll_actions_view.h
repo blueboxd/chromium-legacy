@@ -58,6 +58,8 @@ extern const CGFloat kActionViewBackgroundColorBrightnessIncognito;
 @property(nonatomic, strong, readonly) UIView* backgroundView;
 // Whether cropping is set on the selection circle (true by default).
 @property(nonatomic, assign) BOOL selectionCroppingEnabled;
+// The current style of the overscroll actions UI.
+@property(nonatomic, assign) OverscrollStyle style;
 
 @property(nonatomic, assign) id<OverscrollActionsViewDelegate> delegate;
 
@@ -81,9 +83,6 @@ extern const CGFloat kActionViewBackgroundColorBrightnessIncognito;
 // This starts an "ink response" like animation typically triggered when an
 // action has been selected.
 - (void)displayActionAnimation;
-
-// Sets the style of the overscroll action UI.
-- (void)setStyle:(OverscrollStyle)style;
 
 @end
 

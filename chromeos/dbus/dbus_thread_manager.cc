@@ -8,7 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread.h"
 #include "chromeos/dbus/arc_keymaster_client.h"
@@ -61,7 +61,7 @@ DBusThreadManager::DBusThreadManager(ClientSet client_set,
   if (use_real_clients) {
     // Create the D-Bus thread.
     base::Thread::Options thread_options;
-    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+    thread_options.message_pump_type = base::MessagePumpType::IO;
     dbus_thread_.reset(new base::Thread("D-Bus thread"));
     dbus_thread_->StartWithOptions(thread_options);
 

@@ -77,6 +77,13 @@ class OpenSLESOutputStream : public MuteableAudioOutputStream {
   // the attached AudioOutputCallback::OnError().
   void HandleError(SLresult error);
 
+  // Cache |hardware_latency_in_ms_| by asking |audio_manager_| for it, if the
+  // kUseAudioLatencyFromHAL is enabled.
+  void CacheHardwareLatencyIfNeeded();
+
+  // Adjust |position_in_ms| for hardware latency, and return the result.
+  base::TimeDelta AdjustPositionForHardwareLatency(uint32_t position_in_ms);
+
   base::ThreadChecker thread_checker_;
 
   // Protects |callback_|, |active_buffer_index_|, |audio_data_|,
@@ -139,6 +146,10 @@ class OpenSLESOutputStream : public MuteableAudioOutputStream {
 
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
   std::unique_ptr<AudioBus> audio_bus_;
+
+  // Adjustment for hardware latency.  Needed for some cast targets, since
+  // OpenSLES's GetPosition doesn't properly account for HAL latency.
+  base::TimeDelta hardware_latency_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenSLESOutputStream);
 };

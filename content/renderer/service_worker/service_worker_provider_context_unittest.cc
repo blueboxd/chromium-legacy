@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/public/common/content_features.h"
@@ -26,7 +25,6 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
@@ -268,8 +266,6 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   ServiceWorkerProviderContextTest() = default;
 
   void EnableNetworkService() {
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
     network::mojom::URLLoaderFactoryPtr fake_loader_factory;
     fake_loader_factory_.AddBinding(MakeRequest(&fake_loader_factory));
     loader_factory_ =
@@ -297,7 +293,6 @@ class ServiceWorkerProviderContextTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment task_environment;
-  base::test::ScopedFeatureList scoped_feature_list_;
   FakeURLLoaderFactory fake_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 

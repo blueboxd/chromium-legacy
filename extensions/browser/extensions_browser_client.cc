@@ -44,12 +44,6 @@ ExtensionsBrowserClient::CreateUpdateClient(content::BrowserContext* context) {
   return scoped_refptr<update_client::UpdateClient>(nullptr);
 }
 
-std::unique_ptr<ExtensionApiFrameIdMapHelper>
-ExtensionsBrowserClient::CreateExtensionApiFrameIdMapHelper(
-    ExtensionApiFrameIdMap* map) {
-  return nullptr;
-}
-
 std::unique_ptr<content::BluetoothChooser>
 ExtensionsBrowserClient::CreateBluetoothChooser(
     content::RenderFrameHost* frame,

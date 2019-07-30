@@ -25,7 +25,6 @@
 #include "base/time/time.h"
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -38,7 +37,6 @@
 #include "components/variations/pref_names.h"
 #include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/variations_service.h"
-#include "media/mojo/buildflags.h"
 #include "services/preferences/tracked/segregated_pref_store.h"
 
 namespace android_webview {
@@ -48,9 +46,6 @@ namespace {
 // These prefs go in the JsonPrefStore, and will persist across runs. Other
 // prefs go in the InMemoryPrefStore, and will be lost when the process ends.
 const char* const kPersistentPrefsWhitelist[] = {
-    // Persisted to avoid having to provision MediaDrm every time the
-    // application tries to play protected content after restart.
-    cdm::prefs::kMediaDrmStorage,
     // Randomly-generated GUID which pseudonymously identifies uploaded metrics.
     metrics::prefs::kMetricsClientID,
     // Random seed value for variation's entropy providers. Used to assign
@@ -77,9 +72,6 @@ std::unique_ptr<PrefService> CreatePrefService() {
   metrics::MetricsService::RegisterPrefs(pref_registry.get());
   variations::VariationsService::RegisterPrefs(pref_registry.get());
 
-#if BUILDFLAG(ENABLE_MOJO_CDM)
-  cdm::MediaDrmStorageImpl::RegisterProfilePrefs(pref_registry.get());
-#endif
   AwBrowserProcess::RegisterNetworkContextLocalStatePrefs(pref_registry.get());
 
   PrefServiceFactory pref_service_factory;

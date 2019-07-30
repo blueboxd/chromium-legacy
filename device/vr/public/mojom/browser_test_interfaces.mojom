@@ -5,7 +5,7 @@
 module device_test.mojom;
 
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/transform.mojom";
+import "ui/gfx/mojom/transform.mojom";
 
 struct Color {
   uint8 r;

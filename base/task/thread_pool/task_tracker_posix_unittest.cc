@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/sequence_token.h"
@@ -35,7 +35,7 @@ class ThreadPoolTaskTrackerPosixTest : public testing::Test {
  public:
   ThreadPoolTaskTrackerPosixTest() : service_thread_("ServiceThread") {
     Thread::Options service_thread_options;
-    service_thread_options.message_loop_type = MessageLoop::TYPE_IO;
+    service_thread_options.message_pump_type = MessagePumpType::IO;
     service_thread_.StartWithOptions(service_thread_options);
     tracker_.set_io_thread_task_runner(service_thread_.task_runner());
   }

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
@@ -83,7 +83,7 @@ class TestGpuImpl : public mojom::Gpu {
 class GpuTest : public testing::Test {
  public:
   GpuTest() : io_thread_("GPUIOThread") {
-    base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options thread_options(base::MessagePumpType::IO, 0);
     thread_options.priority = base::ThreadPriority::NORMAL;
     CHECK(io_thread_.StartWithOptions(thread_options));
   }

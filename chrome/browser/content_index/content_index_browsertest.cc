@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/content_index/content_index_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,6 +23,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
@@ -263,6 +265,68 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, UserDeletedEntryDispatchesEvent) {
   provider()->RemoveItem(offline_items().at("my-id").id);
   EXPECT_EQ(RunScript("waitForMessageFromServiceWorker()"), "my-id");
   EXPECT_TRUE(GetAllItems().empty());
+}
+
+IN_PROC_BROWSER_TEST_F(ContentIndexTest, UmaCollected) {
+  // Inititally there is no content.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(GetAllItems().empty());
+    histogram_tester.ExpectUniqueSample("ContentIndex.NumEntriesAvailable", 0,
+                                        1);
+  }
+
+  // Record that two articles were added.
+  {
+    base::HistogramTester histogram_tester;
+    RunScript("AddContent('my-id-1')");
+    RunScript("AddContent('my-id-2')");
+    base::RunLoop()
+        .RunUntilIdle();  // Wait for the provider to get the content.
+    histogram_tester.ExpectBucketCount(
+        "ContentIndex.ContentAdded", blink::mojom::ContentCategory::ARTICLE, 2);
+  }
+
+  // Querying the items should record that there are 2 entries available.
+  {
+    base::HistogramTester histogram_tester;
+    EXPECT_EQ(GetAllItems().size(), 2u);
+    histogram_tester.ExpectUniqueSample("ContentIndex.NumEntriesAvailable", 2,
+                                        1);
+  }
+
+  // User deletion will dispatch an event.
+  {
+    base::HistogramTester histogram_tester;
+    provider()->RemoveItem(offline_items().at("my-id-1").id);
+    EXPECT_EQ(RunScript("waitForMessageFromServiceWorker()"), "my-id-1");
+    base::RunLoop().RunUntilIdle();
+
+    histogram_tester.ExpectBucketCount("ContentIndex.ContentDeleteEvent.Find",
+                                       blink::ServiceWorkerStatusCode::kOk, 1);
+    histogram_tester.ExpectBucketCount("ContentIndex.ContentDeleteEvent.Start",
+                                       blink::ServiceWorkerStatusCode::kOk, 1);
+    histogram_tester.ExpectBucketCount(
+        "ContentIndex.ContentDeleteEvent.Dispatch",
+        blink::ServiceWorkerStatusCode::kOk, 1);
+  }
+
+  // Opening an article is recorded.
+  {
+    base::HistogramTester histogram_tester;
+    provider()->OpenItem(
+        offline_items_collection::LaunchLocation::DOWNLOAD_HOME,
+        offline_items().at("my-id-2").id);
+
+    // Wait for the page to open.
+    base::RunLoop run_loop;
+    SetTabChangeQuitClosure(run_loop.QuitClosure());
+    run_loop.Run();
+
+    histogram_tester.ExpectBucketCount("ContentIndex.ContentOpened",
+                                       blink::mojom::ContentCategory::ARTICLE,
+                                       1);
+  }
 }
 
 }  // namespace

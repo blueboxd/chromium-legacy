@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderMode
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxModel;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -24,6 +25,10 @@ class AssistantModel extends PropertyModel {
     static final WritableBooleanPropertyKey ALLOW_TALKBACK_ON_WEBSITE =
             new WritableBooleanPropertyKey();
     static final WritableBooleanPropertyKey VISIBLE = new WritableBooleanPropertyKey();
+
+    /** The web contents the Autofill Assistant is associated with. */
+    static final WritableObjectPropertyKey<WebContents> WEB_CONTENTS =
+            new WritableObjectPropertyKey<>();
 
     private final AssistantOverlayModel mOverlayModel;
     private final AssistantHeaderModel mHeaderModel = new AssistantHeaderModel();
@@ -40,7 +45,7 @@ class AssistantModel extends PropertyModel {
     }
 
     AssistantModel(AssistantOverlayModel overlayModel) {
-        super(ALLOW_SOFT_KEYBOARD, VISIBLE, ALLOW_TALKBACK_ON_WEBSITE);
+        super(ALLOW_SOFT_KEYBOARD, VISIBLE, WEB_CONTENTS, ALLOW_TALKBACK_ON_WEBSITE);
         mOverlayModel = overlayModel;
     }
 
@@ -100,5 +105,10 @@ class AssistantModel extends PropertyModel {
     @CalledByNative
     private boolean getVisible() {
         return get(VISIBLE);
+    }
+
+    @CalledByNative
+    private void setWebContents(WebContents contents) {
+        set(WEB_CONTENTS, contents);
     }
 }

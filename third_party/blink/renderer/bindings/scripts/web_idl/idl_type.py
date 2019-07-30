@@ -6,10 +6,10 @@ import exceptions
 
 from blinkbuild.name_style_converter import NameStyleConverter
 
-from .common import WithCodeGeneratorInfo
-from .common import WithDebugInfo
-from .common import WithExtendedAttributes
-from .common import WithIdentifier
+from .composition_parts import WithCodeGeneratorInfo
+from .composition_parts import WithDebugInfo
+from .composition_parts import WithExtendedAttributes
+from .composition_parts import WithIdentifier
 from .reference import Proxy
 from .reference import RefById
 from .typedef import Typedef

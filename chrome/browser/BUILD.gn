@@ -337,6 +337,8 @@ jumbo_split_static_library("browser") {
     "component_updater/sw_reporter_installer_win.h",
     "consent_auditor/consent_auditor_factory.cc",
     "consent_auditor/consent_auditor_factory.h",
+    "content_index/content_index_metrics.cc",
+    "content_index/content_index_metrics.h",
     "content_index/content_index_provider_factory.cc",
     "content_index/content_index_provider_factory.h",
     "content_index/content_index_provider_impl.cc",

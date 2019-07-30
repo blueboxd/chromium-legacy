@@ -24,8 +24,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorSurfaceControl
   bool AllowDCLayerOverlays() const override;
   bool NeedsSurfaceOccludingDamageRect() const override;
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override;
-  void AdjustOutputSurfaceOverlay(OverlayProcessor::OutputSurfaceOverlayPlane*
-                                      output_surface_plane) override;
+  void AdjustOutputSurfaceOverlay(OverlayCandidate* candidate) override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override;
   void SetViewportSize(const gfx::Size& viewport_size) override;
   gfx::Rect GetOverlayDamageRectForOutputSurface(

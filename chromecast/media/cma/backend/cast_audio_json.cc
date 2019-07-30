@@ -13,7 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 
@@ -59,7 +59,7 @@ CastAudioJsonProviderImpl::CastAudioJsonProviderImpl()
     : thread_("cast_audio_json_provider"),
       cast_audio_watcher_(std::make_unique<base::FilePathWatcher>()) {
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_pump_type = base::MessagePumpType::IO;
   thread_.StartWithOptions(options);
   task_runner_ = thread_.task_runner();
 }

@@ -15,7 +15,7 @@ public_deps = [
   "//ui/gfx",
   "//ui/gfx/geometry/mojom",
   "//ui/gfx/geometry/mojom:mojom_traits",
-  "//ui/gfx/range/mojo",
+  "//ui/gfx/range/mojom",
 ]
 type_mappings = [
   "ax.mojom.AssistantTree=std::unique_ptr<ui::AssistantTree>[move_only,nullable_is_same_type]",

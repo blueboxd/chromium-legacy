@@ -10,10 +10,10 @@
 #include "gpu/ipc/common/sync_token_struct_traits.h"
 #include "services/viz/public/mojom/compositing/copy_output_result.mojom-shared.h"
 #include "services/viz/public/mojom/compositing/texture_releaser.mojom.h"
-#include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
+#include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
-#include "ui/gfx/mojo/color_space_mojom_traits.h"
+#include "ui/gfx/mojom/color_space_mojom_traits.h"
 
 namespace mojo {
 

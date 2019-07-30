@@ -3,10 +3,11 @@
 # found in the LICENSE file.
 
 import exceptions
-from .common import WithCodeGeneratorInfo
-from .common import WithComponent
-from .common import WithDebugInfo
-from .common import WithExtendedAttributes
+
+from .composition_parts import WithCodeGeneratorInfo
+from .composition_parts import WithComponent
+from .composition_parts import WithDebugInfo
+from .composition_parts import WithExtendedAttributes
 from .identifier_ir_map import IdentifierIRMap
 from .user_defined_type import UserDefinedType
 

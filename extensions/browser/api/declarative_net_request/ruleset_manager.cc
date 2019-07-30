@@ -87,28 +87,24 @@ bool IsRequestPageAllowed(const WebRequestInfo& request,
   if (request.type == content::ResourceType::kMainFrame)
     return allowed_pages.MatchesURL(request.url);
 
-  // This should happen for:
-  //  - Requests not corresponding to a render frame e.g. non-navigation
-  //    browser requests or service worker requests.
-  //  - Requests made by a render frame but when we don't have cached FrameData
-  //    for the request. This should occur rarely and is tracked by the
-  //    "Extensions.ExtensionFrameMapCacheHit" histogram
-  if (!request.frame_data)
+  // This should happen for requests not corresponding to a render frame e.g.
+  // non-navigation browser requests or service worker requests.
+  if (request.frame_data.frame_id == ExtensionApiFrameIdMap::kInvalidFrameId)
     return false;
 
   const bool evaluate_pending_main_frame_url =
-      request.frame_data->pending_main_frame_url &&
-      *request.frame_data->pending_main_frame_url !=
-          request.frame_data->last_committed_main_frame_url;
+      request.frame_data.pending_main_frame_url &&
+      *request.frame_data.pending_main_frame_url !=
+          request.frame_data.last_committed_main_frame_url;
 
   if (!evaluate_pending_main_frame_url) {
     return allowed_pages.MatchesURL(
-        request.frame_data->last_committed_main_frame_url);
+        request.frame_data.last_committed_main_frame_url);
   }
 
   // |pending_main_frame_url| should only be set for main-frame subresource
   // loads.
-  DCHECK_EQ(ExtensionApiFrameIdMap::kTopFrameId, request.frame_data->frame_id);
+  DCHECK_EQ(ExtensionApiFrameIdMap::kTopFrameId, request.frame_data.frame_id);
 
   auto log_uma = [](PageAllowingInitiatorCheck value) {
     UMA_HISTOGRAM_ENUMERATION(
@@ -127,18 +123,17 @@ bool IsRequestPageAllowed(const WebRequestInfo& request,
     log_uma(PageAllowingInitiatorCheck::kInitiatorAbsent);
   } else {
     const bool initiator_matches_pending_url =
-        url::Origin::Create(*request.frame_data->pending_main_frame_url) ==
+        url::Origin::Create(*request.frame_data.pending_main_frame_url) ==
         *request.initiator;
     const bool initiator_matches_committed_url =
-        url::Origin::Create(
-            request.frame_data->last_committed_main_frame_url) ==
+        url::Origin::Create(request.frame_data.last_committed_main_frame_url) ==
         *request.initiator;
 
     if (initiator_matches_pending_url && !initiator_matches_committed_url) {
       // We predict that |pending_main_frame_url| is the actual main frame url.
       log_uma(PageAllowingInitiatorCheck::kPendingCandidateMatchesInitiator);
       return allowed_pages.MatchesURL(
-          *request.frame_data->pending_main_frame_url);
+          *request.frame_data.pending_main_frame_url);
     }
 
     if (initiator_matches_committed_url && !initiator_matches_pending_url) {
@@ -146,7 +141,7 @@ bool IsRequestPageAllowed(const WebRequestInfo& request,
       // frame url.
       log_uma(PageAllowingInitiatorCheck::kCommittedCandidateMatchesInitiator);
       return allowed_pages.MatchesURL(
-          request.frame_data->last_committed_main_frame_url);
+          request.frame_data.last_committed_main_frame_url);
     }
 
     if (initiator_matches_pending_url && initiator_matches_committed_url) {
@@ -163,8 +158,8 @@ bool IsRequestPageAllowed(const WebRequestInfo& request,
   // subresource requests might be incorrectly allowed by the page
   // allowing API.
   return allowed_pages.MatchesURL(
-             request.frame_data->last_committed_main_frame_url) ||
-         allowed_pages.MatchesURL(*request.frame_data->pending_main_frame_url);
+             request.frame_data.last_committed_main_frame_url) ||
+         allowed_pages.MatchesURL(*request.frame_data.pending_main_frame_url);
 }
 
 bool ShouldCollapseResourceType(flat_rule::ElementType type) {
@@ -494,8 +489,7 @@ RulesetManager::Action RulesetManager::EvaluateRequestInternal(
       "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2");
 
   const RequestParams params(request);
-  const int tab_id = request.frame_data ? request.frame_data->tab_id
-                                        : extension_misc::kUnknownTabId;
+  const int tab_id = request.frame_data.tab_id;
 
   // |crosses_incognito| is used to ensure that a split mode extension process
   // can't intercept requests from a cross browser context. Since declarative

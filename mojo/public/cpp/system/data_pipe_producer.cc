@@ -68,10 +68,6 @@ class DataPipeProducer::SequenceState
 
   void StartOnSequence(std::unique_ptr<DataSource> data_source) {
     data_source_ = std::move(data_source);
-    if (!data_source_->IsValid()) {
-      Finish(MOJO_RESULT_UNKNOWN);
-      return;
-    }
     TransferSomeBytes();
     if (producer_handle_.is_valid()) {
       // If we didn't nail it all on the first transaction attempt, setup a
@@ -98,6 +94,7 @@ class DataPipeProducer::SequenceState
     if (result != MOJO_RESULT_OK) {
       // Either the consumer pipe has been closed or something terrible
       // happened. In any case, we'll never be able to write more data.
+      data_source_->Abort();
       Finish(result);
       return;
     }
@@ -110,8 +107,8 @@ class DataPipeProducer::SequenceState
       // Lock as much of the pipe as we can.
       void* pipe_buffer;
       uint32_t size = kDefaultMaxReadSize;
-      int64_t max_data_size = data_source_->GetLength();
-      if (static_cast<int64_t>(size) > max_data_size)
+      uint64_t max_data_size = data_source_->GetLength();
+      if (static_cast<uint64_t>(size) > max_data_size)
         size = static_cast<uint32_t>(max_data_size);
 
       MojoResult mojo_result = producer_handle_->BeginWriteData(
@@ -119,6 +116,7 @@ class DataPipeProducer::SequenceState
       if (mojo_result == MOJO_RESULT_SHOULD_WAIT)
         return;
       if (mojo_result != MOJO_RESULT_OK) {
+        data_source_->Abort();
         Finish(mojo_result);
         return;
       }
@@ -146,8 +144,6 @@ class DataPipeProducer::SequenceState
 
   void Finish(MojoResult result) {
     watcher_.reset();
-    if (result != MOJO_RESULT_OK)
-      data_source_->Abort();
     data_source_.reset();
     callback_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback_),

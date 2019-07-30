@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .common import WithIdentifier
-from .common import WithExtendedAttributes
-from .common import WithCodeGeneratorInfo
-from .common import WithOwner
+from .composition_parts import WithIdentifier
+from .composition_parts import WithExtendedAttributes
+from .composition_parts import WithCodeGeneratorInfo
+from .composition_parts import WithOwner
 from .idl_type import IdlType
 from .values import DefaultValue
 

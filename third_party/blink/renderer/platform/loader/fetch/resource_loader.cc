@@ -435,12 +435,14 @@ void ResourceLoader::Start() {
 
   // Synchronous requests should not work with throttling or stopping. Also,
   // disables throttling for the case that can be used for aka long-polling
-  // requests, but allows stopping for long-polling requests.
+  // requests, but allows stopping for long-polling requests. We don't want
+  // to throttle a request with keepalive set because such a request is
+  // expected to work even when a frame is freezed/detached.
   // Top level frame main resource loads are also not throttleable or
   // stoppable. We also disable throttling and stopping for non-http[s]
   // requests.
   if (resource_->Options().synchronous_policy == kRequestSynchronously ||
-      !request.Url().ProtocolIsInHTTPFamily()) {
+      request.GetKeepalive() || !request.Url().ProtocolIsInHTTPFamily()) {
     throttle_option =
         ResourceLoadScheduler::ThrottleOption::kCanNotBeStoppedOrThrottled;
   } else if (!IsThrottlableRequestContext(request.GetRequestContext())) {

@@ -710,34 +710,6 @@ TEST_F(ProfileOAuth2TokenServiceTest, RequestParametersOrderTest) {
   }
 }
 
-TEST_F(ProfileOAuth2TokenServiceTest, UpdateClearsCache) {
-  const CoreAccountId account_id("test@gmail.com");
-  std::set<std::string> scope_list;
-  scope_list.insert("scope");
-  oauth2_service_->GetDelegate()->UpdateCredentials(account_id, "refreshToken");
-  std::unique_ptr<OAuth2AccessTokenManager::Request> request(
-      oauth2_service_->StartRequest(account_id, scope_list, &consumer_));
-  SimulateOAuthTokenResponse(GetValidTokenResponse("token", 3600));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
-  EXPECT_EQ(0, consumer_.number_of_errors_);
-  EXPECT_EQ("token", consumer_.last_token_);
-  EXPECT_EQ(1, oauth2_service_->GetTokenCacheCountForTesting());
-
-  oauth2_service_->ClearCache();
-
-  EXPECT_EQ(0, oauth2_service_->GetTokenCacheCountForTesting());
-  oauth2_service_->GetDelegate()->UpdateCredentials(account_id, "refreshToken");
-  SimulateOAuthTokenResponse(GetValidTokenResponse("another token", 3600));
-  request = oauth2_service_->StartRequest(account_id, scope_list, &consumer_);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
-  EXPECT_EQ(0, consumer_.number_of_errors_);
-  EXPECT_EQ("another token", consumer_.last_token_);
-  EXPECT_EQ(1, oauth2_service_->GetTokenCacheCountForTesting());
-}
-
 TEST_F(ProfileOAuth2TokenServiceTest, FixRequestErrorIfPossible) {
   oauth2_service_->GetDelegate()->UpdateCredentials(account_id_,
                                                     "refreshToken");

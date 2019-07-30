@@ -712,11 +712,6 @@
           'can_use_on_swarming_builders': False,
         },
       },
-      'clear_site_data_fuzzer': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
       'color_transform_fuzzer': {
         'swarming': {
           'can_use_on_swarming_builders': False,
@@ -2779,6 +2774,11 @@
       'ui_base_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter',
+        ],
+      },
+      'viz_unittests': {
+        'args': [
+          '--child-arg=--ozone-platform=headless',
         ],
       },
       'web_engine_browsertests': {},

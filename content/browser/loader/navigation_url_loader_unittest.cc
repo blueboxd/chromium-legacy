@@ -13,8 +13,6 @@
 #include "base/unguessable_token.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader.h"
-#include "content/browser/loader/test_resource_handler.h"
-#include "content/browser/loader_delegate_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"

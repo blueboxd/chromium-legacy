@@ -81,6 +81,13 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   void SetOutputVolumeOverride(double volume);
   bool HasOutputVolumeOverride(double* out_volume) const;
 
+  // Get the latency introduced by the hardware.  It relies on
+  // AudioManager.getOutputLatency, which is both (a) hidden and (b) not
+  // guaranteed to be meaningful.  Do not use this, except in the context of
+  // b/80326798 to adjust (hackily) for hardware latency that OpenSLES isn't
+  // otherwise accounting for.
+  base::TimeDelta GetOutputLatency();
+
  protected:
   void ShutdownOnAudioThread() override;
   AudioParameters GetPreferredOutputStreamParameters(

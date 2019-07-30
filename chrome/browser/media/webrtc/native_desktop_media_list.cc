@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/hash/hash.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -236,9 +237,9 @@ NativeDesktopMediaList::NativeDesktopMediaList(
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // On Windows/OSX the thread must be a UI thread.
-  base::MessageLoop::Type thread_type = base::MessageLoop::TYPE_UI;
+  base::MessagePumpType thread_type = base::MessagePump::Type::UI;
 #else
-  base::MessageLoop::Type thread_type = base::MessageLoop::TYPE_DEFAULT;
+  base::MessagePumpType thread_type = base::MessagePump::Type::DEFAULT;
 #endif
   thread_.StartWithOptions(base::Thread::Options(thread_type, 0));
 

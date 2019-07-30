@@ -15,7 +15,7 @@
 #include "base/files/scoped_file.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -250,7 +250,7 @@ void CronetEnvironment::Start() {
   // Threads setup.
   file_thread_.reset(new base::Thread("Chrome File Thread"));
   file_thread_->StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+      base::Thread::Options(base::MessagePumpType::IO, 0));
   // Fetching the task_runner will create the shared thread if necessary.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       ios_global_state::GetSharedNetworkIOThreadTaskRunner();
@@ -258,7 +258,7 @@ void CronetEnvironment::Start() {
     network_io_thread_.reset(
         new CronetNetworkThread("Chrome Network IO Thread", this));
     network_io_thread_->StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessagePumpType::IO, 0));
   }
 
   net::SetCookieStoreIOSClient(new CronetCookieStoreIOSClient(

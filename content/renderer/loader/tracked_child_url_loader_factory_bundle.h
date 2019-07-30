@@ -36,7 +36,7 @@ class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundleInfo
           pending_appcache_factory,
       SchemeMap pending_scheme_specific_factories,
       OriginMap pending_initiator_specific_factories,
-      PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
+      network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_prefetch_loader_factory,
       std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,

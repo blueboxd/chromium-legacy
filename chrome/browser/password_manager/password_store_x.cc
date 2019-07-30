@@ -136,19 +136,19 @@ PasswordStoreChangeList PasswordStoreX::DisableAutoSignInForOriginsImpl(
 std::vector<std::unique_ptr<PasswordForm>> PasswordStoreX::FillMatchingLogins(
     const FormDigest& form) {
   CheckMigration();
-    return PasswordStoreDefault::FillMatchingLogins(form);
+  return PasswordStoreDefault::FillMatchingLogins(form);
 }
 
 bool PasswordStoreX::FillAutofillableLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   CheckMigration();
-    return PasswordStoreDefault::FillAutofillableLogins(forms);
+  return PasswordStoreDefault::FillAutofillableLogins(forms);
 }
 
 bool PasswordStoreX::FillBlacklistLogins(
     std::vector<std::unique_ptr<PasswordForm>>* forms) {
   CheckMigration();
-    return PasswordStoreDefault::FillBlacklistLogins(forms);
+  return PasswordStoreDefault::FillBlacklistLogins(forms);
 }
 
 void PasswordStoreX::CheckMigration() {
@@ -165,13 +165,18 @@ void PasswordStoreX::CheckMigration() {
   // it a completed migration.
   if (login_db()->IsEmpty()) {
     UpdateMigrationToLoginDBStep(LOGIN_DB_REPLACED);
-    return;
+  } else {
+    // The migration hasn't completed yes. The records in the database aren't
+    // encrypted, so we must disable the encryption.
+    // TODO(crbug/950267): Handle users who have unencrypted entries in the
+    // database.
+    login_db()->disable_encryption();
+    UpdateMigrationToLoginDBStep(POSTPONED);
   }
-  // The migration hasn't completed yes. The records in the database aren't
-  // encrypted, so we must disable the encryption.
-  // TODO(crbug/950267): Handle users who have unencrypted entries in the
-  // database.
-  login_db()->disable_encryption();
+
+  base::UmaHistogramEnumeration(
+      "PasswordManager.LinuxBackendMigration.AttemptResult",
+      StepForMetrics(migration_to_login_db_step_));
 }
 
 void PasswordStoreX::UpdateMigrationToLoginDBStep(MigrationToLoginDBStep step) {

@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -3030,7 +3031,7 @@ class CertVerifyProcInternalWithNetFetchingTest
   void SetUp() override {
     // Create a network thread to be used for network fetches, and wait for
     // initialization to complete on that thread.
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     network_thread_ = std::make_unique<base::Thread>("network_thread");
     CHECK(network_thread_->StartWithOptions(options));
 

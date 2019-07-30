@@ -66,6 +66,9 @@ content::WebContents* ShowWebApplicationWindow(
   DCHECK(tab_helper);
   tab_helper->SetAppId(app_id);
 
+  // TODO(https://crbug.com/988928): Update SiteEngagementService
+  // and AppBannerSettingsHelper.
+
   browser->window()->Show();
   web_contents->SetInitialFocus();
   return web_contents;
@@ -78,6 +81,19 @@ WebAppLaunchManager::WebAppLaunchManager(Profile* profile)
       provider_(web_app::WebAppProvider::Get(profile)) {}
 
 WebAppLaunchManager::~WebAppLaunchManager() = default;
+
+content::WebContents* WebAppLaunchManager::OpenApplication(
+    const AppLaunchParams& params) {
+  if (!provider_->registrar().IsInstalled(params.app_id))
+    return nullptr;
+
+  Browser* browser = CreateWebApplicationWindow(params.profile, params.app_id);
+
+  return ShowWebApplicationWindow(
+      params, params.app_id,
+      provider_->registrar().GetAppLaunchURL(params.app_id), browser,
+      WindowOpenDisposition::NEW_FOREGROUND_TAB);
+}
 
 bool WebAppLaunchManager::OpenApplicationWindow(
     const std::string& app_id,
@@ -119,15 +135,7 @@ bool WebAppLaunchManager::OpenApplicationTab(const std::string& app_id) {
 }
 
 void WebAppLaunchManager::OpenWebApplication(const ::AppLaunchParams& params) {
-  if (!provider_->registrar().IsInstalled(params.app_id))
-    return;
-
-  Browser* browser = CreateWebApplicationWindow(params.profile, params.app_id);
-
-  ShowWebApplicationWindow(
-      params, params.app_id,
-      provider_->registrar().GetAppLaunchURL(params.app_id), browser,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  OpenApplication(params);
 }
 
 }  // namespace web_app

@@ -36,7 +36,9 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
         int64_t old_resource_id,
         ServiceWorkerSingleScriptUpdateChecker::Result result,
         std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
-            paused_state);
+            paused_state,
+        std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+            failure_info);
     ComparedScriptInfo(ComparedScriptInfo&& other);
     ComparedScriptInfo& operator=(ComparedScriptInfo&& other);
     ~ComparedScriptInfo();
@@ -52,6 +54,11 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
     // ServiceWorkerCacheWriter, and Mojo endpoints for downloading.
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
         paused_state;
+
+    // This is set when |result| is kFailed. This is used to keep the error code
+    // which the update checker saw to the renderer when installing the worker.
+    std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+        failure_info;
   };
 
   // This is to notify the update check result. Value of |result| can be:

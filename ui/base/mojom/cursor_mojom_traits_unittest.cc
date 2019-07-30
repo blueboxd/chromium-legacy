@@ -5,7 +5,7 @@
 #include "ui/base/mojom/cursor_mojom_traits.h"
 
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
+#include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor.mojom.h"

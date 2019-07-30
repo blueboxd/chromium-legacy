@@ -198,31 +198,36 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
 #endif  // DCHECK_IS_ON()
 
   DCHECK(client_);
-  auto paused_state = version_->TakePausedStateOfChangedScript(request_url_);
+  ServiceWorkerUpdateChecker::ComparedScriptInfo info =
+      version_->TakeComparedScriptInfo(request_url_);
+  if (info.result == ServiceWorkerSingleScriptUpdateChecker::Result::kFailed) {
+    DCHECK(!info.paused_state);
+    // A network error received during update checking. This replays it.
+    CommitCompleted(info.failure_info->network_status,
+                    info.failure_info->error_message);
+    return;
+  }
 
-  // TODO(https://crbug.com/648295): Handle the case where it returns nullptr,
-  // which means the imported script was not available when checking the update.
-  DCHECK(paused_state);
-
-  cache_writer_ = std::move(paused_state->cache_writer);
+  cache_writer_ = std::move(info.paused_state->cache_writer);
   DCHECK(cache_writer_);
 
-  network_loader_ = std::move(paused_state->network_loader);
+  network_loader_ = std::move(info.paused_state->network_loader);
   DCHECK(network_loader_);
 
-  network_client_request_ = std::move(paused_state->network_client_request);
+  network_client_request_ =
+      std::move(info.paused_state->network_client_request);
   DCHECK(network_client_request_);
 
-  network_consumer_ = std::move(paused_state->network_consumer);
+  network_consumer_ = std::move(info.paused_state->network_consumer);
 
   // Headers must have already been received during update check.
   header_writer_state_ = WriterState::kCompleted;
 
-  network_loader_state_ = paused_state->network_loader_state;
+  network_loader_state_ = info.paused_state->network_loader_state;
   DCHECK(network_loader_state_ == NetworkLoaderState::kLoadingBody ||
          network_loader_state_ == NetworkLoaderState::kCompleted);
 
-  body_writer_state_ = paused_state->body_writer_state;
+  body_writer_state_ = info.paused_state->body_writer_state;
   DCHECK(body_writer_state_ == WriterState::kWriting ||
          body_writer_state_ == WriterState::kCompleted);
 
@@ -284,12 +289,16 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     return;
   }
 
+  blink::ServiceWorkerStatusCode service_worker_state =
+      blink::ServiceWorkerStatusCode::kOk;
   network::URLLoaderCompletionStatus completion_status;
   std::string error_message;
   std::unique_ptr<net::HttpResponseInfo> response_info =
       service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
-          response_head, &completion_status, &error_message);
-  if (completion_status.error_code != net::OK) {
+          response_head, &service_worker_state, &completion_status,
+          &error_message);
+  if (!response_info) {
+    DCHECK_NE(net::OK, completion_status.error_code);
     CommitCompleted(completion_status, error_message);
     return;
   }

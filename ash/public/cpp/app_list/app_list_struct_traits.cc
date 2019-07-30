@@ -6,7 +6,7 @@
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "ui/gfx/image/mojom/image_skia_mojom_traits.h"
-#include "ui/gfx/range/mojo/range_struct_traits.h"
+#include "ui/gfx/range/mojom/range_mojom_traits.h"
 
 namespace mojo {
 

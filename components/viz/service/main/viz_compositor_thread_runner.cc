@@ -41,7 +41,7 @@ namespace {
 const char kThreadName[] = "VizCompositorThread";
 
 std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread(
-    base::MessageLoop::Type message_loop_type) {
+    base::MessagePumpType message_pump_type) {
   const base::ThreadPriority thread_priority =
       base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)
           ? base::ThreadPriority::DISPLAY
@@ -55,7 +55,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread(
   auto thread = std::make_unique<base::Thread>(kThreadName);
 
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = message_loop_type;
+  thread_options.message_pump_type = message_pump_type;
 
 #if defined(OS_MACOSX)
   // Increase the thread priority to get more reliable values in performance
@@ -77,8 +77,8 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread(
 }  // namespace
 
 VizCompositorThreadRunner::VizCompositorThreadRunner(
-    base::MessageLoop::Type message_loop_type)
-    : thread_(CreateAndStartCompositorThread(message_loop_type)),
+    base::MessagePumpType message_pump_type)
+    : thread_(CreateAndStartCompositorThread(message_pump_type)),
       task_runner_(thread_->task_runner()) {}
 
 VizCompositorThreadRunner::~VizCompositorThreadRunner() {

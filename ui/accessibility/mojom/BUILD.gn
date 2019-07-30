@@ -21,8 +21,8 @@ mojom("mojom") {
     "//ui/accessibility:ax_constants_mojo",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/gfx/geometry/mojom",
-    "//ui/gfx/mojo",
-    "//ui/gfx/range/mojo",
+    "//ui/gfx/mojom",
+    "//ui/gfx/range/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
 }

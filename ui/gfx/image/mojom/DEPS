@@ -1,5 +1,5 @@
 include_rules = [
   "+mojo/public",
-  "+skia/public/interfaces",
+  "+skia/public/mojom",
   "+ui/gfx/image",
 ]

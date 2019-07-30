@@ -250,8 +250,7 @@ void URLLoaderClientImpl::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head) {
   DCHECK(!has_received_response_head_);
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      !bypass_redirect_checks_ &&
+  if (!bypass_redirect_checks_ &&
       !IsRedirectSafe(last_loaded_url_, redirect_info.new_url)) {
     OnComplete(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
     return;

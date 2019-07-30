@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -405,7 +406,7 @@ TEST_F(BookmarkProviderTest, InlineAutocompletion) {
                             TestSchemeClassifier());
     const base::string16 fixed_up_input(
         provider_->FixupUserInput(input).second);
-    BookmarkNode node(GURL(query_data[i].url));
+    BookmarkNode node(/*id=*/0, base::GenerateGUID(), GURL(query_data[i].url));
     node.SetTitle(base::ASCIIToUTF16(query_data[i].url));
     TitledUrlMatch bookmark_match;
     bookmark_match.node = &node;

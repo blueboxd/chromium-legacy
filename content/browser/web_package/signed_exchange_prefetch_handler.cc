@@ -10,7 +10,6 @@
 #include "content/browser/web_package/signed_exchange_loader.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
-#include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -41,14 +40,8 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
           std::move(network_client_request));
   network::mojom::URLLoaderClientPtr client;
   loader_client_binding_.Bind(mojo::MakeRequest(&client));
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    url_loader_factory = base::MakeRefCounted<
-        SignedExchangeURLLoaderFactoryForNonNetworkService>(
-        resource_context, request_context_getter.get());
-  } else {
-    url_loader_factory = std::move(network_loader_factory);
-  }
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      std::move(network_loader_factory);
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       resource_request, response_head, std::move(response_body),
       std::move(client), std::move(endpoints),

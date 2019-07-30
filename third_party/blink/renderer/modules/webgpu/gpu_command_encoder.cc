@@ -36,7 +36,6 @@ DawnRenderPassColorAttachmentDescriptor AsDawnType(
   if (webgpu_desc->loadValue().IsGPULoadOp()) {
     const WTF::String& gpuLoadOp = webgpu_desc->loadValue().GetAsGPULoadOp();
     dawn_desc.loadOp = AsDawnEnum<DawnLoadOp>(gpuLoadOp);
-    dawn_desc.clearColor = AsDawnType(GPUColor::Create());
 
   } else if (webgpu_desc->loadValue().IsGPUColor()) {
     GPUColor* gpuColor = webgpu_desc->loadValue().GetAsGPUColor();

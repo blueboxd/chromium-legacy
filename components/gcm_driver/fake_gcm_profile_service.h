@@ -39,6 +39,10 @@ class FakeGCMProfileService : public GCMProfileService {
     return last_sent_message_;
   }
 
+  const WebPushMessage& last_web_push_message() const {
+    return last_web_push_message_;
+  }
+
   const std::string& last_receiver_id() const { return last_receiver_id_; }
 
   const std::string& last_registered_app_id() const {
@@ -69,6 +73,7 @@ class FakeGCMProfileService : public GCMProfileService {
   std::list<GCMClient::Result> unregister_responses_;
   OutgoingMessage last_sent_message_;
   std::string last_receiver_id_;
+  WebPushMessage last_web_push_message_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMProfileService);
 };

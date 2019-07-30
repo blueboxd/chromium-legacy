@@ -3,11 +3,13 @@
 # found in the LICENSE file.
 
 from .ast_group import AstGroup
+from .composition_parts import Component
 from .database import Database
 from .database_builder import build_database
 
 __all__ = [
     "AstGroup",
+    "Component",
     "Database",
     "build_database",
 ]

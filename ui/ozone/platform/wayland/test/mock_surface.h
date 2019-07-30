@@ -51,9 +51,23 @@ class MockSurface : public ServerObject {
   }
   MockXdgPopup* xdg_popup() const { return xdg_popup_.get(); }
 
+  void set_frame_callback(wl_resource* callback_resource) {
+    DCHECK(!frame_callback_);
+    frame_callback_ = callback_resource;
+  }
+
+  void AttachNewBuffer(wl_resource* buffer_resource, int32_t x, int32_t y);
+  void ReleasePrevAttachedBuffer();
+  void SendFrameCallback();
+
  private:
   std::unique_ptr<MockXdgSurface> xdg_surface_;
   std::unique_ptr<MockXdgPopup> xdg_popup_;
+
+  wl_resource* frame_callback_ = nullptr;
+
+  wl_resource* attached_buffer_ = nullptr;
+  wl_resource* prev_attached_buffer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MockSurface);
 };

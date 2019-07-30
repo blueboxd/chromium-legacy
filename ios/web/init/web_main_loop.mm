@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/power_monitor/power_monitor.h"
@@ -121,7 +122,7 @@ int WebMainLoop::CreateThreads() {
   ios_global_state::StartThreadPool();
 
   base::Thread::Options io_message_loop_options;
-  io_message_loop_options.message_loop_type = base::MessagePump::Type::IO;
+  io_message_loop_options.message_pump_type = base::MessagePumpType::IO;
   io_thread_ = std::make_unique<WebSubThread>(WebThread::IO);
   if (!io_thread_->StartWithOptions(io_message_loop_options))
     LOG(FATAL) << "Failed to start WebThread::IO";

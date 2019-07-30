@@ -10,8 +10,8 @@ import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 [EnableIf=is_chromeos]
-import "ui/gfx/mojo/buffer_types.mojom";
-import "ui/gfx/mojo/color_space.mojom";
+import "ui/gfx/mojom/buffer_types.mojom";
+import "ui/gfx/mojom/color_space.mojom";
 
 enum VideoCapturePixelFormat {
   UNKNOWN,

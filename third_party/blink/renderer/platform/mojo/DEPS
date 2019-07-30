@@ -15,7 +15,7 @@ include_rules = [
     "+mojo/public/cpp/base/time_mojom_traits.h",
     "+mojo/public/cpp/bindings/binding.h",
     "+mojo/public/mojom/base/string16.mojom-blink.h",
-    "+skia/public/interfaces/bitmap_skbitmap_struct_traits.h",
+    "+skia/public/mojom/bitmap_skbitmap_mojom_traits.h",
 
     "+third_party/blink/renderer/platform/blob/blob_data.h",
     "+third_party/blink/renderer/platform/blob/serialized_blob_struct_traits.h",

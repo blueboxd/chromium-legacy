@@ -4,6 +4,7 @@
 
 #include "net/base/network_notification_thread_mac.h"
 
+#include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 #include "base/threading/thread.h"
 
@@ -22,7 +23,7 @@ class NotificationThreadMac {
 
   NotificationThreadMac() : thread_("NetworkNotificationThreadMac") {
     base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_UI;
+    options.message_pump_type = base::MessagePumpType::UI;
     options.joinable = false;
     thread_.StartWithOptions(options);
     task_runner_ = thread_.task_runner();

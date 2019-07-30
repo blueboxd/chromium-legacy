@@ -79,12 +79,19 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     public static final WritableObjectPropertyKey<AssistantVerticalExpander> EXPANDED_SECTION =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableBooleanPropertyKey REQUIRE_BILLING_POSTAL_CODE =
+            new WritableBooleanPropertyKey();
+
+    public static final WritableObjectPropertyKey<String> BILLING_POSTAL_CODE_MISSING_TEXT =
+            new WritableObjectPropertyKey<>();
+
     public AssistantPaymentRequestModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
                 TERMS_STATUS, REQUEST_NAME, REQUEST_EMAIL, REQUEST_PHONE, REQUEST_SHIPPING_ADDRESS,
                 REQUEST_PAYMENT, ACCEPT_TERMS_AND_CONDITIONS_TEXT, SHOW_TERMS_AS_CHECKBOX,
                 AVAILABLE_PROFILES, AVAILABLE_AUTOFILL_PAYMENT_METHODS,
-                SUPPORTED_BASIC_CARD_NETWORKS, SUPPORTED_PAYMENT_METHODS, EXPANDED_SECTION);
+                SUPPORTED_BASIC_CARD_NETWORKS, SUPPORTED_PAYMENT_METHODS, EXPANDED_SECTION,
+                REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -97,6 +104,7 @@ public class AssistantPaymentRequestModel extends PropertyModel {
         set(REQUEST_PHONE, false);
         set(REQUEST_PAYMENT, false);
         set(REQUEST_SHIPPING_ADDRESS, false);
+        set(REQUIRE_BILLING_POSTAL_CODE, false);
     }
 
     @CalledByNative
@@ -132,6 +140,16 @@ public class AssistantPaymentRequestModel extends PropertyModel {
     @CalledByNative
     private void setShowTermsAsCheckbox(boolean showTermsAsCheckbox) {
         set(SHOW_TERMS_AS_CHECKBOX, showTermsAsCheckbox);
+    }
+
+    @CalledByNative
+    private void setRequireBillingPostalCode(boolean requireBillingPostalCode) {
+        set(REQUIRE_BILLING_POSTAL_CODE, requireBillingPostalCode);
+    }
+
+    @CalledByNative
+    private void setBillingPostalCodeMissingText(String text) {
+        set(BILLING_POSTAL_CODE_MISSING_TEXT, text);
     }
 
     @CalledByNative

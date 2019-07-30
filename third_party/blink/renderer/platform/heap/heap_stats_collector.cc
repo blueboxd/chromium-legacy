@@ -134,7 +134,7 @@ void ThreadHeapStatsCollector::NotifySweepingCompleted() {
           ? static_cast<double>(current().marked_bytes) /
                 current_.object_size_in_bytes_before_sweeping
           : 0.0;
-  current_.gc_nested_in_v8_ = gc_nested_in_v8_;
+  current_.gc_nested_in_v8 = gc_nested_in_v8_;
   gc_nested_in_v8_ = base::TimeDelta();
   // Reset the current state.
   static_assert(std::is_trivially_copyable<Event>::value,

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/observer_list.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -571,7 +572,7 @@ TwoWayTest::~TwoWayTest() {
 
 void TwoWayTest::SetUp() {
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_pump_type = base::MessagePumpType::IO;
   io_thread_.StartWithOptions(options);
   plugin_thread_.Start();
 

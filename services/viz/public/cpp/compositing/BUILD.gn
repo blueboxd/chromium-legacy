@@ -19,11 +19,11 @@ source_set("tests") {
     "//mojo/public/cpp/test_support:test_utils",
     "//services/service_manager/public/cpp",
     "//services/viz/public/mojom",
-    "//skia/public/interfaces",
+    "//skia/public/mojom",
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry/mojom:mojom_traits",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
   ]
 }
 

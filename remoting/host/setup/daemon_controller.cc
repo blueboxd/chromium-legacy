@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -29,10 +29,10 @@ DaemonController::DaemonController(std::unique_ptr<Delegate> delegate)
 #if defined(OS_WIN)
   delegate_thread_->SetComInitType(AutoThread::COM_INIT_STA);
   delegate_task_runner_ =
-      delegate_thread_->StartWithType(base::MessageLoop::TYPE_UI);
+      delegate_thread_->StartWithType(base::MessagePumpType::UI);
 #else
   delegate_task_runner_ =
-      delegate_thread_->StartWithType(base::MessageLoop::TYPE_DEFAULT);
+      delegate_thread_->StartWithType(base::MessagePumpType::DEFAULT);
 #endif
 }
 

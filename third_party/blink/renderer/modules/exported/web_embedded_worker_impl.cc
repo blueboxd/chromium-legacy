@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
@@ -383,10 +382,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   const HttpsState starter_https_state =
       CalculateHttpsState(starter_origin.get());
 
-  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
-  ProvideIndexedDBClientToWorker(
-      worker_clients, MakeGarbageCollected<IndexedDBClient>(*worker_clients));
-
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context;
   if (base::FeatureList::IsEnabled(
           features::kOffMainThreadServiceWorkerScriptFetch)) {
@@ -448,7 +443,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         content_security_policy ? content_security_policy->Headers()
                                 : Vector<CSPHeaderAndType>(),
         referrer_policy, starter_origin.get(), starter_secure_context,
-        starter_https_state, worker_clients,
+        starter_https_state, nullptr /* worker_clients */,
         std::move(content_settings_client_),
         main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
@@ -470,7 +465,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         worker_start_data_.user_agent, std::move(web_worker_fetch_context),
         Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
         starter_origin.get(), starter_secure_context, starter_https_state,
-        worker_clients, std::move(content_settings_client_),
+        nullptr /* worker_clients */, std::move(content_settings_client_),
         base::nullopt /* response_address_space */,
         nullptr /* OriginTrialTokens */, devtools_worker_token_,
         std::move(worker_settings),

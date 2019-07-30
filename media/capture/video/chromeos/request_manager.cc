@@ -89,6 +89,13 @@ void RequestManager::SetUpStreamsAndBuffers(
         *reinterpret_cast<int32_t*>((*partial_count)->data.data());
   }
 
+  auto pipeline_depth = GetMetadataEntryAsSpan<uint8_t>(
+      static_metadata,
+      cros::mojom::CameraMetadataTag::ANDROID_REQUEST_PIPELINE_MAX_DEPTH);
+  CHECK_EQ(pipeline_depth.size(), 1u);
+  pipeline_depth_ = pipeline_depth[0];
+  preview_buffers_queued_ = 0;
+
   // Set the last received frame number for each stream types to be undefined.
   for (const auto& stream : streams) {
     StreamType stream_type = StreamIdToStreamType(stream->id);
@@ -96,7 +103,7 @@ void RequestManager::SetUpStreamsAndBuffers(
   }
 
   stream_buffer_manager_->SetUpStreamsAndBuffers(
-      capture_format, std::move(static_metadata), std::move(streams));
+      capture_format, static_metadata, std::move(streams));
 }
 
 cros::mojom::Camera3StreamPtr RequestManager::GetStreamConfiguration(
@@ -294,11 +301,18 @@ void RequestManager::PrepareCaptureRequest() {
   }
 
   if (!is_reprocess_request && !is_oneshot_request && !is_preview_request) {
+    // We have to keep the pipeline full.
+    if (preview_buffers_queued_ < pipeline_depth_) {
+      ipc_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&RequestManager::PrepareCaptureRequest, GetWeakPtr()));
+    }
     return;
   }
 
   auto capture_request = request_builder_->BuildRequest(
       std::move(stream_types), std::move(settings), input_buffer_id);
+  CHECK_GT(capture_request->output_buffers.size(), 0u);
 
   CaptureResult& pending_result =
       pending_results_[capture_request->frame_number];
@@ -316,6 +330,10 @@ void RequestManager::PrepareCaptureRequest() {
     frame_number_reprocess_tasks_map_[capture_request->frame_number] =
         std::move(pending_reprocess_tasks_queue_.front());
     pending_reprocess_tasks_queue_.pop();
+  }
+
+  if (is_preview_request) {
+    ++preview_buffers_queued_;
   }
 
   UpdateCaptureSettings(&capture_request->settings);
@@ -375,8 +393,18 @@ bool RequestManager::TryPrepareReprocessRequest(
 bool RequestManager::TryPreparePreviewRequest(
     std::set<StreamType>* stream_types,
     cros::mojom::CameraMetadataPtr* settings) {
-  if (!stream_buffer_manager_->HasFreeBuffers({StreamType::kPreviewOutput})) {
+  if (preview_buffers_queued_ == pipeline_depth_) {
     return false;
+  }
+  if (!stream_buffer_manager_->HasFreeBuffers({StreamType::kPreviewOutput})) {
+    // Try our best to reserve an usable buffer.  If the reservation still
+    // fails, then we'd have to drop the camera frame.
+    DLOG(WARNING) << "Late request for reserving preview buffer";
+    stream_buffer_manager_->ReserveBuffer(StreamType::kPreviewOutput);
+    if (!stream_buffer_manager_->HasFreeBuffers({StreamType::kPreviewOutput})) {
+      DLOG(WARNING) << "No free buffer for preview stream";
+      return false;
+    }
   }
 
   stream_types->insert({StreamType::kPreviewOutput});
@@ -767,6 +795,11 @@ void RequestManager::SubmitCaptureResult(
     stream_buffer_manager_->ReleaseBufferFromCaptureResult(stream_type,
                                                            buffer_ipc_id);
   }
+
+  if (stream_type == StreamType::kPreviewOutput) {
+    --preview_buffers_queued_;
+  }
+
   pending_result.unsubmitted_buffer_count--;
 
   if (pending_result.unsubmitted_buffer_count == 0) {

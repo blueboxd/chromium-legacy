@@ -13,8 +13,8 @@
 #include "services/viz/public/cpp/compositing/quads_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/render_pass.mojom-shared.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
-#include "ui/gfx/mojo/rrect_f_struct_traits.h"
-#include "ui/gfx/mojo/transform_struct_traits.h"
+#include "ui/gfx/mojom/rrect_f_mojom_traits.h"
+#include "ui/gfx/mojom/transform_mojom_traits.h"
 
 namespace mojo {
 

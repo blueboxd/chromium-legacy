@@ -623,7 +623,7 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)startUpBrowserBasicInitialization {
-  _appLaunchTime = base::TimeTicks::Now();
+  _appLaunchTime = IOSChromeMain::StartTime();
   _isColdStart = YES;
 
   [SetupDebugging setUpDebuggingOptions];

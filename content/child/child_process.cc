@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool.h"
@@ -53,7 +53,7 @@ ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority,
   }
 
   // We can't recover from failing to start the IO thread.
-  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options thread_options(base::MessagePumpType::IO, 0);
   thread_options.priority = io_thread_priority;
 #if defined(OS_ANDROID)
   // TODO(reveman): Remove this in favor of setting it explicitly for each type

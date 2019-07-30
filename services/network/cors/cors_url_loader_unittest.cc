@@ -1705,6 +1705,75 @@ TEST_F(CorsURLLoaderTest, SetProxyAuthorizationHeaderOnRedirectFails) {
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
 }
 
+TEST_F(CorsURLLoaderTest, SameOriginCredentialsModeWithoutInitiator) {
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kNoCors;
+  request.credentials_mode = mojom::CredentialsMode::kSameOrigin;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+
+  BadMessageTestHelper bad_message_helper;
+  CreateLoaderAndStart(request);
+  RunUntilComplete();
+
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(bad_message_helper.bad_message_reports(),
+              ::testing::ElementsAre("CorsURLLoaderFactory: same-origin "
+                                     "credentials mode without initiator"));
+}
+
+TEST_F(CorsURLLoaderTest, SameOriginCredentialsModeOnNavigation) {
+  ResetFactory(base::nullopt /* initiator */, mojom::kBrowserProcessId);
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kNavigate;
+  request.credentials_mode = mojom::CredentialsMode::kSameOrigin;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = url::Origin::Create(request.url);
+
+  BadMessageTestHelper bad_message_helper;
+  CreateLoaderAndStart(request);
+  RunUntilComplete();
+
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(
+      bad_message_helper.bad_message_reports(),
+      ::testing::ElementsAre(
+          "CorsURLLoaderFactory: unsupported credentials mode on navigation"));
+}
+
+TEST_F(CorsURLLoaderTest, OmitCredentialsModeOnNavigation) {
+  ResetFactory(base::nullopt /* initiator */, mojom::kBrowserProcessId);
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kNavigate;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = url::Origin::Create(request.url);
+
+  BadMessageTestHelper bad_message_helper;
+  CreateLoaderAndStart(request);
+  RunUntilComplete();
+
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(
+      bad_message_helper.bad_message_reports(),
+      ::testing::ElementsAre(
+          "CorsURLLoaderFactory: unsupported credentials mode on navigation"));
+}
+
 }  // namespace
 
 }  // namespace cors

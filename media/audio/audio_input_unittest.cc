@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/environment.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/platform_thread.h"
@@ -69,7 +69,7 @@ class TestInputCallback : public AudioInputStream::AudioInputCallback {
 class AudioInputTest : public testing::Test {
  public:
   AudioInputTest()
-      : message_loop_(base::MessageLoop::TYPE_UI),
+      : message_loop_(base::MessagePumpType::UI),
         audio_manager_(AudioManager::CreateForTesting(
             std::make_unique<TestAudioThread>())),
         audio_input_stream_(NULL) {

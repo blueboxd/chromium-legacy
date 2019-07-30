@@ -460,7 +460,7 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
     int frame_id;
     int parent_frame_id;
     std::string last_committed_main_frame_url;
-    base::Optional<std::string> pending_main_frame_url;
+    base::Optional<GURL> pending_main_frame_url;
   };
   struct TestCase {
     std::string url;
@@ -511,7 +511,7 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
        "http://example.com", kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kAllowedPageURL, "http://example.com/xyz"}),
+                        kAllowedPageURL, GURL("http://example.com/xyz")}),
        true},
 
       // Here we'll determine |kAllowedPageURL| to be the main
@@ -520,7 +520,7 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
        "http://google.com", kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kAllowedPageURL, "http://yahoo.com/xyz"}),
+                        kAllowedPageURL, GURL("http://yahoo.com/xyz")}),
        false},
 
       // In these cases both |pending_main_frame_url| and
@@ -530,19 +530,20 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
        "http://google.com", kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        "http://google.com/abc", kAllowedPageURL}),
+                        "http://google.com/abc", GURL(kAllowedPageURL)}),
        false},
       {"http://example.com/script.js", content::ResourceType::kScript,
        base::nullopt, kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kAllowedPageURL, "http://google.com/abc"}),
+                        kAllowedPageURL, GURL("http://google.com/abc")}),
        false},
       {"http://example.com/script.js", content::ResourceType::kScript,
        base::nullopt, kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        "http://yahoo.com/abc", "http://yahoo.com/allow123"}),
+                        "http://yahoo.com/abc",
+                        GURL("http://yahoo.com/allow123")}),
        true},
   };
 
@@ -564,10 +565,8 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
       const FrameDataParams& frame_params = *test_case.frame_data_params;
       params.frame_data = ExtensionApiFrameIdMap::FrameData(
           frame_params.frame_id, frame_params.parent_frame_id, kDummyTabId,
-          kDummyWindowId, GURL(frame_params.last_committed_main_frame_url));
-      if (frame_params.pending_main_frame_url)
-        params.frame_data->pending_main_frame_url =
-            GURL(*frame_params.pending_main_frame_url);
+          kDummyWindowId, GURL(frame_params.last_committed_main_frame_url),
+          frame_params.pending_main_frame_url);
     }
 
     Action expected_action = test_case.expect_blocked_with_allowed_pages

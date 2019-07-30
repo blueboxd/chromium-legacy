@@ -704,10 +704,6 @@
     "label": "//:chromiumos_preflight",
     "type": "additional_compile_target",
   },
-  "clear_site_data_fuzzer": {
-    "label": "//content/test/fuzzer:clear_site_data_fuzzer",
-    "type": "fuzzer",
-  },
   "color_transform_fuzzer": {
     "label": "//ui/gfx:color_transform_fuzzer",
     "type": "fuzzer",

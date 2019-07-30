@@ -5,7 +5,7 @@
 #include "ppapi/proxy/plugin_globals.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -174,7 +174,7 @@ base::TaskRunner* PluginGlobals::GetFileTaskRunner() {
   if (!file_thread_.get()) {
     file_thread_.reset(new base::Thread("Plugin::File"));
     base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
+    options.message_pump_type = base::MessagePumpType::IO;
     file_thread_->StartWithOptions(options);
   }
   return file_thread_->task_runner().get();

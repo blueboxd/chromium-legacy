@@ -45,7 +45,7 @@ _typemap_imports = [
   "//services/viz/privileged/mojom/compositing/typemaps.gni",
   "//services/viz/public/cpp/compositing/typemaps.gni",
   "//services/viz/public/cpp/hit_test/typemaps.gni",
-  "//skia/public/interfaces/typemaps.gni",
+  "//skia/public/mojom/typemaps.gni",
   "//third_party/blink/common/typemaps.gni",
   "//third_party/blink/public/public_typemaps.gni",
   "//ui/accessibility/mojom/typemaps.gni",

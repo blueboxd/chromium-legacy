@@ -300,20 +300,15 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
         }
         break;
       case WebHTTPBody::Element::kTypeBlob: {
-        if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-          DCHECK(element.optional_blob_handle.is_valid());
-          blink::mojom::BlobPtr blob_ptr(
-              blink::mojom::BlobPtrInfo(std::move(element.optional_blob_handle),
-                                        blink::mojom::Blob::Version_));
+        DCHECK(element.optional_blob_handle.is_valid());
+        blink::mojom::BlobPtr blob_ptr(
+            blink::mojom::BlobPtrInfo(std::move(element.optional_blob_handle),
+                                      blink::mojom::Blob::Version_));
 
-          network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
-          blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
+        network::mojom::DataPipeGetterPtr data_pipe_getter_ptr;
+        blob_ptr->AsDataPipeGetter(MakeRequest(&data_pipe_getter_ptr));
 
-          request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
-        } else {
-          request_body->AppendBlob(element.blob_uuid.Utf8(),
-                                   element.blob_length);
-        }
+        request_body->AppendDataPipe(std::move(data_pipe_getter_ptr));
         break;
       }
       case WebHTTPBody::Element::kTypeDataPipe: {

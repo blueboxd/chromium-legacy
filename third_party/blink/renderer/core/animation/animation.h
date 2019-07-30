@@ -121,13 +121,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void setCurrentTime(double new_current_time,
                       bool is_null,
                       ExceptionState& = ASSERT_NO_EXCEPTION);
-
-  double CurrentTimeInternal() const;
   double UnlimitedCurrentTimeInternal() const;
 
-  void SetCurrentTimeInternal(double new_current_time,
-                              TimingUpdateReason = kTimingUpdateOnDemand);
-  bool Paused() const { return paused_ && !is_paused_for_testing_; }
   static const char* PlayStateString(AnimationPlayState);
   String playState() const { return PlayStateString(animation_play_state_); }
 
@@ -143,15 +138,13 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   ScriptPromise finished(ScriptState*);
   ScriptPromise ready(ScriptState*);
 
-  bool Playing() const override {
-    return !(PlayStateInternal() == kIdle || Limited() || paused_ ||
-             is_paused_for_testing_);
+  bool Paused() const {
+    return GetPlayState() == kPaused && !is_paused_for_testing_;
   }
 
-  // TODO(crbug/960944): Deprecate. This version of the play state is not to
-  // spec due to the inclusion of a 'pending' state. Whether or not an animation
-  // is pending is separate from the actual play state.
-  AnimationPlayState PlayStateInternal() const;
+  bool Playing() const override {
+    return GetPlayState() == kRunning && !Limited() && !is_paused_for_testing_;
+  }
 
   // Indicates if the animation is out of sync with the compositor. A change to
   // the play state (running/paused) requires synchronization with the
@@ -252,6 +245,15 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
                           RegisteredEventListener&) override;
 
  private:
+  // TODO(crbug/960944): Deprecate. This version of the play state is not to
+  // spec due to the inclusion of a 'pending' state. Whether or not an animation
+  // is pending is separate from the actual play state.
+  AnimationPlayState PlayStateInternal() const;
+
+  double CurrentTimeInternal() const;
+  void SetCurrentTimeInternal(double new_current_time,
+                              TimingUpdateReason = kTimingUpdateOnDemand);
+
   void ClearOutdated();
   void ForceServiceOnNextFrame();
 

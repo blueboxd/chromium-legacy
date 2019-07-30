@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -67,9 +68,6 @@ class OAuth2LoginManager : public KeyedService,
     // Raised when merge session state changes.
     virtual void OnSessionRestoreStateChanged(Profile* user_profile,
                                               SessionRestoreState state) {}
-
-    // Raised when a new OAuth2 refresh token is available.
-    virtual void OnNewRefreshTokenAvaiable(Profile* user_profile) {}
 
     // Raised when session's GAIA credentials (SID+LSID) are available to
     // other signed in services.

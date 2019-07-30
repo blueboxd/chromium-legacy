@@ -20,7 +20,7 @@ mojom_component("mojom") {
     "//mojo/public/mojom/base",
     "//ui/display/mojom:mojom",
     "//ui/gfx/geometry/mojom",
-    "//ui/gfx/mojo:mojo",
+    "//ui/gfx/mojom",
   ]
 
   enabled_features = []
@@ -48,6 +48,6 @@ mojom_component("test_mojom") {
 
   public_deps = [
     "//ui/gfx/geometry/mojom",
-    "//ui/gfx/mojo:mojo",
+    "//ui/gfx/mojom",
   ]
 }

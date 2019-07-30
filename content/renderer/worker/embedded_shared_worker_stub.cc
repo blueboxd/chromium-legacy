@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/common/possibly_associated_wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/origin_util.h"
@@ -63,7 +62,6 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       url_(info->url),
       renderer_preferences_(renderer_preferences),
       preference_watcher_request_(std::move(preference_watcher_request)) {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(main_script_load_params);
   DCHECK(subresource_loader_factory_bundle_info);
 

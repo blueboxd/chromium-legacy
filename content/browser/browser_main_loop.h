@@ -87,7 +87,6 @@ namespace content {
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
 class BrowserThreadImpl;
-class LoaderDelegateImpl;
 class MediaKeysListenerManagerImpl;
 class MediaStreamManager;
 class SaveFileManager;
@@ -389,7 +388,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<media::DeviceMonitorMac> device_monitor_mac_;
 #endif
 
-  std::unique_ptr<LoaderDelegateImpl> loader_delegate_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   scoped_refptr<SaveFileManager> save_file_manager_;
   std::unique_ptr<content::TracingControllerImpl> tracing_controller_;

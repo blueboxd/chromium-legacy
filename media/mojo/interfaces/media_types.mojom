@@ -9,7 +9,7 @@ import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/color_space.mojom";
+import "ui/gfx/mojom/color_space.mojom";
 
 // See media/base/audio_codecs.h for descriptions.
 [Native]

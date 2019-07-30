@@ -2089,9 +2089,13 @@ ServiceWorkerVersion::compared_script_info_map() const {
   return compared_script_info_map_;
 }
 
-std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
-ServiceWorkerVersion::TakePausedStateOfChangedScript(const GURL& script_url) {
-  return std::move(compared_script_info_map_[script_url].paused_state);
+ServiceWorkerUpdateChecker::ComparedScriptInfo
+ServiceWorkerVersion::TakeComparedScriptInfo(const GURL& script_url) {
+  auto it = compared_script_info_map_.find(script_url);
+  DCHECK(it != compared_script_info_map_.end());
+  ServiceWorkerUpdateChecker::ComparedScriptInfo info = std::move(it->second);
+  compared_script_info_map_.erase(it);
+  return info;
 }
 
 bool ServiceWorkerVersion::ShouldRequireForegroundPriority(

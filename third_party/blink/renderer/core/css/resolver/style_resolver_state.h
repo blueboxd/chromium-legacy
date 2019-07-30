@@ -129,6 +129,8 @@ class CORE_EXPORT StyleResolverState {
     is_animating_custom_properties_ = value;
   }
 
+  const Element* GetAnimatingElement() const;
+
   void SetParentStyle(scoped_refptr<const ComputedStyle>);
   const ComputedStyle* ParentStyle() const { return parent_style_.get(); }
 
@@ -208,6 +210,7 @@ class CORE_EXPORT StyleResolverState {
   std::unique_ptr<CachedUAStyle> cached_ua_style_;
 
   ElementStyleResources element_style_resources_;
+  Member<PseudoElement> pseudo_element_;
 
   mutable HeapHashMap<
       Member<const cssvalue::CSSPendingSubstitutionValue>,

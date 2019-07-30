@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -88,9 +90,6 @@ const CGFloat kDirectTouchFrameExpansion = 20;
 const CGFloat kActionLabelVerticalPadding = 25.0;
 // The minimum distance between the action labels and the side of the screen.
 const CGFloat kActionLabelSidePadding = 15.0;
-// The value to use as the R, B, and B components for the action label text and
-// selection layer animation.
-const CGFloat kSelectionColor = 0.4;
 
 // This function maps a value from a range to another.
 CGFloat MapValueToRange(FloatRange from, FloatRange to, CGFloat value) {
@@ -196,6 +195,8 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
 @property(nonatomic, strong, readwrite) UIView* snapshotView;
 // The parent layer on the selection circle used for cropping purpose.
 @property(nonatomic, strong, readwrite) CALayer* selectionCircleCroppingLayer;
+// Computed property for whether the current state is incognito or not.
+@property(nonatomic, assign, readonly) BOOL incognito;
 
 // An absolute horizontal offset that also takes into account snapping.
 - (CGFloat)absoluteHorizontalOffset;
@@ -249,30 +250,6 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
 
 @implementation OverscrollActionsView
 
-@synthesize selectedAction = _selectedAction;
-@synthesize addTabActionImageView = _addTabActionImageView;
-@synthesize reloadActionImageView = _reloadActionImageView;
-@synthesize closeTabActionImageView = _closeTabActionImageView;
-@synthesize addTabActionImageViewHighlighted =
-    _addTabActionImageViewHighlighted;
-@synthesize reloadActionImageViewHighlighted =
-    _reloadActionImageViewHighlighted;
-@synthesize closeTabActionImageViewHighlighted =
-    _closeTabActionImageViewHighlighted;
-@synthesize addTabLabel = _addTabLabel;
-@synthesize reloadLabel = _reloadLabel;
-@synthesize closeTabLabel = _closeTabLabel;
-@synthesize highlightMaskLayer = _highlightMaskLayer;
-@synthesize selectionCircleLayer = _selectionCircleLayer;
-@synthesize selectionCircleMaskLayer = _selectionCircleMaskLayer;
-@synthesize verticalOffset = _verticalOffset;
-@synthesize horizontalOffset = _horizontalOffset;
-@synthesize overscrollState = _overscrollState;
-@synthesize backgroundView = _backgroundView;
-@synthesize snapshotView = _snapshotView;
-@synthesize selectionCircleCroppingLayer = _selectionCircleCroppingLayer;
-@synthesize delegate = _delegate;
-
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
@@ -291,18 +268,36 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     [_selectionCircleCroppingLayer addSublayer:_selectionCircleLayer];
 
     _addTabActionImageView = [[UIImageView alloc] init];
+    _addTabActionImageView.image = [[UIImage imageNamed:kNewTabActionImage]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _addTabActionImageView.tintColor =
+        [UIColor colorNamed:@"tab_toolbar_button_color"];
+    [_addTabActionImageView sizeToFit];
     [self addSubview:_addTabActionImageView];
     _reloadActionImageView = [[UIImageView alloc] init];
+    _reloadActionImageView.image = [[UIImage imageNamed:kReloadActionImage]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _reloadActionImageView.tintColor =
+        [UIColor colorNamed:@"tab_toolbar_button_color"];
+    [_reloadActionImageView sizeToFit];
     if (UseRTLLayout())
       [_reloadActionImageView setTransform:CGAffineTransformMakeScale(-1, 1)];
     [self addSubview:_reloadActionImageView];
     _closeTabActionImageView = [[UIImageView alloc] init];
+    _closeTabActionImageView.image = [[UIImage imageNamed:kCloseActionImage]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _closeTabActionImageView.tintColor =
+        [UIColor colorNamed:@"tab_toolbar_button_color"];
+    [_closeTabActionImageView sizeToFit];
     [self addSubview:_closeTabActionImageView];
 
     _highlightMaskLayer = [[CALayer alloc] init];
     _highlightMaskLayer.frame = self.bounds;
     _highlightMaskLayer.contentsGravity = kCAGravityCenter;
-    _highlightMaskLayer.backgroundColor = [[UIColor clearColor] CGColor];
+    // Disable the entire highlight mask.
+    // TODO(crbug.com/986804): Remove the highlight mask after dark mode
+    // launches and this design is permanent.
+    _selectionCircleMaskLayer.fillColor = UIColor.clearColor.CGColor;
     [_highlightMaskLayer setMask:_selectionCircleMaskLayer];
     [self.layer addSublayer:_highlightMaskLayer];
 
@@ -325,7 +320,7 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     _addTabLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _addTabLabel.adjustsFontForContentSizeCategory = NO;
-    _addTabLabel.textColor = [UIColor colorWithWhite:kSelectionColor alpha:1.0];
+    _addTabLabel.textColor = [UIColor colorNamed:@"tab_toolbar_button_color"];
     _addTabLabel.text =
         l10n_util::GetNSString(IDS_IOS_OVERSCROLL_NEW_TAB_LABEL);
     [self addSubview:_addTabLabel];
@@ -337,7 +332,7 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     _reloadLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _reloadLabel.adjustsFontForContentSizeCategory = NO;
-    _reloadLabel.textColor = [UIColor colorWithWhite:kSelectionColor alpha:1.0];
+    _reloadLabel.textColor = [UIColor colorNamed:@"tab_toolbar_button_color"];
     _reloadLabel.text = l10n_util::GetNSString(IDS_IOS_OVERSCROLL_RELOAD_LABEL);
     [self addSubview:_reloadLabel];
     _closeTabLabel = [[UILabel alloc] init];
@@ -348,8 +343,7 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
     _closeTabLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
     _closeTabLabel.adjustsFontForContentSizeCategory = NO;
-    _closeTabLabel.textColor =
-        [UIColor colorWithWhite:kSelectionColor alpha:1.0];
+    _closeTabLabel.textColor = [UIColor colorNamed:@"tab_toolbar_button_color"];
     _closeTabLabel.text =
         l10n_util::GetNSString(IDS_IOS_OVERSCROLL_CLOSE_TAB_LABEL);
     [self addSubview:_closeTabLabel];
@@ -505,6 +499,11 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
   [self updateSelectedAction];
   if (disableActionsOnInitialLayout)
     [CATransaction commit];
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  [self updateLayerColors];
 }
 
 #pragma mark - Private
@@ -895,7 +894,7 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
   const CGRect bounds = CGRectMake(0, 0, kSelectionEdge, kSelectionEdge);
   CAShapeLayer* selectionCircleLayer = [[CAShapeLayer alloc] init];
   selectionCircleLayer.bounds = bounds;
-  selectionCircleLayer.backgroundColor = [[UIColor clearColor] CGColor];
+  selectionCircleLayer.backgroundColor = UIColor.clearColor.CGColor;
   selectionCircleLayer.opacity = 0;
   selectionCircleLayer.transform = CATransform3DMakeScale(
       kSelectionInitialDownScale, kSelectionInitialDownScale, 1);
@@ -942,7 +941,8 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
 }
 
 - (void)setStyle:(OverscrollStyle)style {
-  switch (style) {
+  _style = style;
+  switch (self.style) {
     case OverscrollStyle::NTP_NON_INCOGNITO:
       self.backgroundColor = ntp_home::kNTPBackgroundColor();
       break;
@@ -950,54 +950,47 @@ const CGFloat kActionViewBackgroundColorBrightnessIncognito = 80.0 / 256.0;
       self.backgroundColor = [UIColor colorWithWhite:0 alpha:0];
       break;
     case OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO:
-      self.backgroundColor = [UIColor
-          colorWithWhite:kActionViewBackgroundColorBrightnessNonIncognito
-                   alpha:1.0];
+      self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
       break;
     case OverscrollStyle::REGULAR_PAGE_INCOGNITO:
-      self.backgroundColor =
-          [UIColor colorWithWhite:kActionViewBackgroundColorBrightnessIncognito
-                            alpha:1.0];
+      self.backgroundColor = color::IncognitoDynamicColor(
+          true, [UIColor colorNamed:kBackgroundColor],
+          [UIColor colorNamed:kBackgroundDarkColor]);
       break;
   }
 
-  BOOL incognito = style == OverscrollStyle::NTP_INCOGNITO ||
-                   style == OverscrollStyle::REGULAR_PAGE_INCOGNITO;
-  if (incognito) {
-    [_addTabActionImageView
-        setImage:[UIImage imageNamed:kNewTabActionActiveImage]];
-    [_reloadActionImageView
-        setImage:[UIImage imageNamed:kReloadActionActiveImage]];
-    [_closeTabActionImageView
-        setImage:[UIImage imageNamed:kCloseActionActiveImage]];
-    _selectionCircleLayer.fillColor =
-        [UIColor colorWithRed:1 green:1 blue:1 alpha:0.2].CGColor;
-    _selectionCircleMaskLayer.fillColor = [[UIColor clearColor] CGColor];
-    [_addTabLabel setTextColor:[UIColor whiteColor]];
-    [_reloadLabel setTextColor:[UIColor whiteColor]];
-    [_closeTabLabel setTextColor:[UIColor whiteColor]];
-  } else {
-    [_addTabActionImageView setImage:[UIImage imageNamed:kNewTabActionImage]];
-    [_reloadActionImageView setImage:[UIImage imageNamed:kReloadActionImage]];
-    [_closeTabActionImageView setImage:[UIImage imageNamed:kCloseActionImage]];
+  [self updateLayerColors];
+}
 
-    [_addTabActionImageViewHighlighted
-        setImage:[UIImage imageNamed:kNewTabActionActiveImage]];
-    [_reloadActionImageViewHighlighted
-        setImage:[UIImage imageNamed:kReloadActionActiveImage]];
-    [_closeTabActionImageViewHighlighted
-        setImage:[UIImage imageNamed:kCloseActionActiveImage]];
-
-    _selectionCircleLayer.fillColor =
-        [UIColor colorWithWhite:kSelectionColor alpha:1.0].CGColor;
-    _selectionCircleMaskLayer.fillColor = [[UIColor blackColor] CGColor];
+// CGColor doesn't support iOS 13 dynamic colors, so those must be resolved
+// more often.
+- (void)updateLayerColors {
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    [self.traitCollection performAsCurrentTraitCollection:^{
+      _selectionCircleLayer.fillColor =
+          [UIColor colorNamed:kTextfieldBackgroundColor].CGColor;
+    }];
+    return;
   }
-  [_addTabActionImageView sizeToFit];
-  [_reloadActionImageView sizeToFit];
-  [_closeTabActionImageView sizeToFit];
-  [_addTabActionImageViewHighlighted sizeToFit];
-  [_reloadActionImageViewHighlighted sizeToFit];
-  [_closeTabActionImageViewHighlighted sizeToFit];
+#endif
+
+  // Fallback for iOS 12.
+  if (self.incognito) {
+    UIColor* buttonColor =
+        [UIColor colorNamed:@"tab_toolbar_button_color_incognito"];
+    _addTabActionImageView.tintColor = buttonColor;
+    _reloadActionImageView.tintColor = buttonColor;
+    _closeTabActionImageView.tintColor = buttonColor;
+    _addTabLabel.textColor = buttonColor;
+    _reloadLabel.textColor = buttonColor;
+    _closeTabLabel.textColor = buttonColor;
+    _selectionCircleLayer.fillColor =
+        [UIColor colorNamed:kTextfieldBackgroundDarkColor].CGColor;
+  } else {
+    _selectionCircleLayer.fillColor =
+        [UIColor colorNamed:kTextfieldBackgroundColor].CGColor;
+  }
 }
 
 - (OverscrollAction)actionAtLocation:(CGPoint)location {

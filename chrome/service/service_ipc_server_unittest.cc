@@ -95,7 +95,7 @@ ServiceIPCServerTest::ServiceIPCServerTest()
 void ServiceIPCServerTest::SetUp() {
   base::Thread::Options options;
   mojo::MessagePipe channel;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_pump_type = base::MessagePumpType::IO;
   ASSERT_TRUE(io_thread_.StartWithOptions(options));
 
   server_.reset(new ServiceIPCServer(&service_process_client_,

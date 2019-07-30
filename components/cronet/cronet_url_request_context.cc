@@ -23,7 +23,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/single_thread_task_runner.h"
@@ -149,7 +149,7 @@ CronetURLRequestContext::CronetURLRequestContext(
   if (!network_task_runner_) {
     network_thread_ = std::make_unique<base::Thread>("network");
     base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
+    options.message_pump_type = base::MessagePumpType::IO;
     network_thread_->StartWithOptions(options);
     network_task_runner_ = network_thread_->task_runner();
   }

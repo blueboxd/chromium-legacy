@@ -606,7 +606,7 @@ core_dictionary_idl_files =
                     "css/font_face_descriptors.idl",
                     "css/font_face_set_load_event_init.idl",
                     "css/media_query_list_event_init.idl",
-                    "css/property_descriptor.idl",
+                    "css/property_definition.idl",
                     "css/cssom/css_matrix_component_options.idl",
                     "css/cssom/css_numeric_type.idl",
                     "dom/element_creation_options.idl",

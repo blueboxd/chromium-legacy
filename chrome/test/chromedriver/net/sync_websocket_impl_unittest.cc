@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
@@ -29,7 +29,7 @@ class SyncWebSocketImplTest : public testing::Test {
   ~SyncWebSocketImplTest() override {}
 
   void SetUp() override {
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     ASSERT_TRUE(client_thread_.StartWithOptions(options));
     context_getter_ = new URLRequestContextGetter(client_thread_.task_runner());
     ASSERT_TRUE(server_.Start());

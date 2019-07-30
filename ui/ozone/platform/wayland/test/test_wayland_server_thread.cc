@@ -107,6 +107,12 @@ void TestWaylandServerThread::Resume() {
   resume_event_.Signal();
 }
 
+MockWpPresentation* TestWaylandServerThread::EnsureWpPresentation() {
+  if (wp_presentation_.Initialize(display_.get()))
+    return &wp_presentation_;
+  return nullptr;
+}
+
 void TestWaylandServerThread::DoPause() {
   base::RunLoop().RunUntilIdle();
   pause_event_.Signal();

@@ -27,12 +27,14 @@ class TestExtensionRegistryObserver : public ExtensionRegistryObserver {
   ~TestExtensionRegistryObserver() override;
 
   // Waits for the notification, and returns the extension that caused it.
+  // TODO(lazyboy): Return scoped_refptr<const Extension> from all of these
+  // methods for consistency.
   const Extension* WaitForExtensionWillBeInstalled();
   const Extension* WaitForExtensionInstalled();
-  const Extension* WaitForExtensionUninstalled();
+  scoped_refptr<const Extension> WaitForExtensionUninstalled();
   const Extension* WaitForExtensionLoaded();
   const Extension* WaitForExtensionReady();
-  const Extension* WaitForExtensionUnloaded();
+  scoped_refptr<const Extension> WaitForExtensionUnloaded();
 
  private:
   class Waiter;

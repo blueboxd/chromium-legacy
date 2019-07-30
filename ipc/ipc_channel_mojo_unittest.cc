@@ -21,6 +21,7 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_mapping.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
@@ -787,7 +788,7 @@ class ChannelProxyRunner {
 
   void CreateProxy(IPC::Listener* listener) {
     io_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessagePumpType::IO, 0));
     proxy_ = IPC::SyncChannel::Create(listener, io_thread_.task_runner(),
                                       base::ThreadTaskRunnerHandle::Get(),
                                       &never_signaled_);

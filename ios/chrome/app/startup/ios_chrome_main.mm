@@ -19,7 +19,7 @@
 #endif
 
 namespace {
-base::Time* g_start_time;
+base::TimeTicks* g_start_time;
 }  // namespace
 
 IOSChromeMain::IOSChromeMain() {
@@ -57,11 +57,11 @@ IOSChromeMain::~IOSChromeMain() {
 // static
 void IOSChromeMain::InitStartTime() {
   DCHECK(!g_start_time);
-  g_start_time = new base::Time(base::Time::Now());
+  g_start_time = new base::TimeTicks(base::TimeTicks::Now());
 }
 
 // static
-const base::Time& IOSChromeMain::StartTime() {
+const base::TimeTicks& IOSChromeMain::StartTime() {
   CHECK(g_start_time);
   return *g_start_time;
 }

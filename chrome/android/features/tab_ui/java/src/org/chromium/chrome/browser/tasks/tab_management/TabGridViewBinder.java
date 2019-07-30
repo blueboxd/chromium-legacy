@@ -140,6 +140,10 @@ class TabGridViewBinder {
                 item.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(holder.getTabId());
                 selectionHolder.selectableTabGridView.onClick();
             });
+            selectionHolder.itemView.setOnLongClickListener(view -> {
+                item.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(holder.getTabId());
+                return selectionHolder.selectableTabGridView.onLongClick(view);
+            });
         } else if (TabProperties.TITLE == propertyKey) {
             String title = item.get(TabProperties.TITLE);
             selectionHolder.actionButton.setContentDescription(

@@ -944,9 +944,18 @@ message HighlightElementProto {
   optional ElementReferenceProto element = 1;
 }
 
-// Load the given URL in the current tab.
+// Controls the browser navigation.
 message NavigateProto {
-  optional string url = 1;
+  oneof value {
+    // Navigate to the given URL.
+    string url = 1;
+    // Navigate backward in the history. Action will return PRECONDITION_FAILED
+    // if it is not possible.
+    bool go_backward = 2;
+    // Navigate forward in the history. Action will return PRECONDITION_FAILED
+    // if it is not possible.
+    bool go_forward = 3;
+  }
 }
 
 // Specify from which point in the script navigation is expected for the next
@@ -1078,6 +1087,12 @@ message GetPaymentInformationProto {
   // display a "Show terms" button that will navigate the user to the terms and
   // conditions page when clicked.
   repeated UserActionProto additional_actions = 11;
+  // Optionally requests a payment method with a billing address that has a
+  // postcode value.
+  optional bool require_billing_postal_code = 14;
+  // The error message to display when the billing address is missing the
+  // postal code. This field is mandatory if |require_postal_code| is true.
+  optional string billing_postal_code_missing_text = 15;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.
@@ -1272,13 +1287,17 @@ message ConfigureBottomSheetProto {
     // Don't change resizing configuration.
     NO_CHANGE = 0;
 
-    // Resize the viewport such that it is completely visible when the sheet is
-    // in the peek state.
-    RESIZE = 1;
+    // Resize the layout viewport such that it is completely visible when the
+    // sheet is in the peek state.
+    RESIZE_LAYOUT_VIEWPORT = 1;
 
     // Don't resize the viewport such that it is overlaid by the sheet, even in
     // the peek state.
     NO_RESIZE = 2;
+
+    // Dynamically resize the visual viewport by the height of the sheet. This
+    // allows to fully scroll the page above the sheet at any time.
+    RESIZE_VISUAL_VIEWPORT = 3;
   }
 
   // The peek mode allows to set what components are visible when the sheet is
@@ -1303,8 +1322,9 @@ message ConfigureBottomSheetProto {
   optional ViewportResizing viewport_resizing = 1;
 
   // Set the peek mode. This will change the peek height of the sheet. If
-  // resize_viewport is true or was set to true by a previous actions, the
-  // viewport will be resized to match the new peek height.
+  // viewport_resizing is set to RESIZE_LAYOUT_VIEWPORT or was set by a previous
+  // ConfigureBottomSheet action, the viewport will be resized to match the new
+  // peek height.
   optional PeekMode peek_mode = 2;
 
   // Maximum time to wait for the window to resize before continuing with the

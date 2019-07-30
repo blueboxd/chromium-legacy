@@ -271,8 +271,7 @@ TEST_F(OmniboxPerfTest, TestTypeOneCharInTextField) {
 
 // Measures the amount of time it takes to type in the word "google" one
 // letter at a time.
-// TODO(crbug.com/799488): Re-enable this test.
-TEST_F(OmniboxPerfTest, DISABLED_TestTypingInTextField) {
+TEST_F(OmniboxPerfTest, TestTypingInTextField) {
   OmniboxTextFieldIOS* textField = (OmniboxTextFieldIOS*)FindViewByClass(
       coordinator_.viewController.view, [OmniboxTextFieldIOS class]);
   // The characters to type into the omnibox text field.

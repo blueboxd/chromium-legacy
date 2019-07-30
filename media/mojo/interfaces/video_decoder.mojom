@@ -9,7 +9,7 @@ import "media/mojo/interfaces/media_log.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/color_space.mojom";
+import "ui/gfx/mojom/color_space.mojom";
 
 // Serializable rule for matching VideoDecoderConfigs.
 struct SupportedVideoDecoderConfig {

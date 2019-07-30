@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_metrics.h"
@@ -250,14 +251,14 @@ class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
 };
 
 TEST(ChannelTest, PeerShutdownDuringRead) {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessagePumpType::IO);
   PlatformChannel channel;
 
   // Create a "client" Channel with one end of the pipe, and Start() it.
   std::unique_ptr<base::Thread> client_thread =
       std::make_unique<base::Thread>("clientio_thread");
   client_thread->StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+      base::Thread::Options(base::MessagePumpType::IO, 0));
 
   scoped_refptr<Channel> client_channel = Channel::Create(
       nullptr, ConnectionParams(channel.TakeRemoteEndpoint()),
@@ -314,7 +315,7 @@ class RejectHandlesDelegate : public Channel::Delegate {
 };
 
 TEST(ChannelTest, RejectHandles) {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessagePumpType::IO);
   PlatformChannel platform_channel;
 
   RejectHandlesDelegate receiver_delegate;
@@ -422,7 +423,7 @@ class CountingChannelDelegate : public Channel::Delegate {
 TEST(ChannelTest, PeerStressTest) {
   constexpr size_t kLotsOfMessages = 1024;
 
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessagePumpType::IO);
   base::RunLoop run_loop;
 
   // Both channels should receive all the messages that each is sent. When
@@ -441,7 +442,7 @@ TEST(ChannelTest, PeerStressTest) {
 
   // Create a second IO thread for the peer channel.
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_options.message_pump_type = base::MessagePumpType::IO;
   base::Thread peer_thread("peer_b_io");
   peer_thread.StartWithOptions(thread_options);
 
@@ -543,7 +544,7 @@ class SingleMessageWaiterDelegate : public Channel::Delegate {
 };
 
 TEST(ChannelTest, MessageSizeTest) {
-  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessagePumpType::IO);
   PlatformChannel platform_channel;
 
   SingleMessageWaiterDelegate receiver_delegate;

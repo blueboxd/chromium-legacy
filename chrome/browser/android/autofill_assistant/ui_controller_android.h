@@ -97,7 +97,7 @@ class UiControllerAndroid : public ControllerObserver {
       const RectF& visual_viewport,
       const std::vector<RectF>& touchable_areas,
       const std::vector<RectF>& restricted_areas) override;
-  void OnResizeViewportChanged(bool resize_viewport) override;
+  void OnViewportModeChanged(ViewportMode mode) override;
   void OnPeekModeChanged(
       ConfigureBottomSheetProto::PeekMode peek_mode) override;
   void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors) override;

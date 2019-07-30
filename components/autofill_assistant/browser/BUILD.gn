@@ -24,6 +24,7 @@ java_cpp_enum("autofill_assistant_enums_java") {
     "metrics.h",
     "overlay_state.h",
     "payment_request.h",
+    "viewport_mode.h",
   ]
 }
 
@@ -145,6 +146,7 @@ jumbo_static_library("browser") {
     "ui_delegate.h",
     "user_action.cc",
     "user_action.h",
+    "viewport_mode.h",
     "web_controller.cc",
     "web_controller.h",
   ]

@@ -278,23 +278,13 @@ RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactoryBundle() {
                      base::Unretained(this)));
 }
 
-PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
+network::mojom::URLLoaderFactoryPtr
 RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
-  PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
-      url_loader_factory;
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    network::mojom::URLLoaderFactoryPtr factory_ptr;
-    connector_->BindInterface(mojom::kBrowserServiceName, &factory_ptr);
-    url_loader_factory = std::move(factory_ptr);
-  } else {
-    network::mojom::URLLoaderFactoryAssociatedPtr factory_ptr;
-    render_thread->channel()->GetRemoteAssociatedInterface(&factory_ptr);
-    url_loader_factory = std::move(factory_ptr);
-  }
-  return url_loader_factory;
+  network::mojom::URLLoaderFactoryPtr factory_ptr;
+  connector_->BindInterface(mojom::kBrowserServiceName, &factory_ptr);
+  return factory_ptr;
 }
 
 void RendererBlinkPlatformImpl::SetDisplayThreadPriority(

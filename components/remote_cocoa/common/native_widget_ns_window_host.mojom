@@ -11,7 +11,7 @@ import "ui/base/mojom/window_open_disposition.mojom";
 import "ui/display/mojom/display.mojom";
 import "ui/events/mojom/event.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/ca_layer_params.mojom";
+import "ui/gfx/mojom/ca_layer_params.mojom";
 
 struct ValidateUserInterfaceItemResult {
   // Whether or not the specified sender should be enabled.

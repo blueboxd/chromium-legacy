@@ -8,7 +8,7 @@ import "mojo/public/mojom/base/file_path.mojom";
 import "ui/display/mojom/display_constants.mojom";
 import "ui/display/mojom/display_mode.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/color_space.mojom";
+import "ui/gfx/mojom/color_space.mojom";
 
 // Corresponds to display::DisplaySnapshot.
 struct DisplaySnapshot {

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -74,7 +75,7 @@ class TransitionalURLLoaderFactoryOwnerTest : public ::testing::Test {
 TEST_F(TransitionalURLLoaderFactoryOwnerTest, CrossThread) {
   base::Thread io_thread("IO");
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_pump_type = base::MessagePumpType::IO;
   ASSERT_TRUE(io_thread.StartWithOptions(options));
 
   TestOnTaskRunner(io_thread.task_runner(), base::BindLambdaForTesting([&]() {

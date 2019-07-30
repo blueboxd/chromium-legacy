@@ -74,7 +74,7 @@ namespace blink {
 //
 // If the default policy  is in effect for a frame, then it controls how the
 // feature is inherited by any cross-origin iframes embedded by the frame. (See
-// the comments below in FeaturePolicy::DefaultPolicy for specifics)
+// the comments below in FeaturePolicy::FeatureDefault for specifics)
 //
 // Policy Inheritance
 // ------------------
@@ -83,7 +83,7 @@ namespace blink {
 // receive the same set of enables features as the parent frame. Whether or not
 // features are inherited by cross-origin iframes without an explicit policy is
 // determined by the feature's default policy. (Again, see the comments in
-// FeaturePolicy::DefaultPolicy for details)
+// FeaturePolicy::FeatureDefault for details)
 
 // ListValue (PolicyValue)
 // ----------------------
@@ -180,6 +180,8 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   // a feature when neither it nor any parent frame have declared an explicit
   // policy. The three possibilities map directly to Feature Policy Allowlist
   // semantics.
+  //
+  // The default values for each feature are set in GetDefaultFeatureList.
   enum class FeatureDefault {
     // Equivalent to []. If this default policy is in effect for a frame, then
     // the feature will not be enabled for that frame or any of its children.

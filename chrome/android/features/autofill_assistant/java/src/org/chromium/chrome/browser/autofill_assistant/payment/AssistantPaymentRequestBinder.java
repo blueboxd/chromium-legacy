@@ -184,8 +184,9 @@ class AssistantPaymentRequestBinder
             updateAvailablePaymentMethods(model);
         } else if (propertyKey == AssistantPaymentRequestModel.SUPPORTED_PAYMENT_METHODS) {
             updateAvailableAutofillPaymentMethods(model);
-        } else
+        } else {
             assert handled : "Unhandled property detected in AssistantPaymentRequestBinder!";
+        }
     }
 
     private boolean shouldShowContactDetails(AssistantPaymentRequestModel model) {
@@ -225,7 +226,15 @@ class AssistantPaymentRequestBinder
                 view.mShippingAddressSection.onProfilesChanged(autofillProfiles);
             }
             return true;
+        } else if (propertyKey == AssistantPaymentRequestModel.REQUIRE_BILLING_POSTAL_CODE
+                || propertyKey == AssistantPaymentRequestModel.BILLING_POSTAL_CODE_MISSING_TEXT) {
+            view.mPaymentMethodSection.setRequiresBillingPostalCode(
+                    model.get(AssistantPaymentRequestModel.REQUIRE_BILLING_POSTAL_CODE));
+            view.mPaymentMethodSection.setBillingPostalCodeMissingText(
+                    model.get(AssistantPaymentRequestModel.BILLING_POSTAL_CODE_MISSING_TEXT));
+            return true;
         }
+
         return false;
     }
 

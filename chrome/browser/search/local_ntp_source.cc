@@ -616,6 +616,9 @@ class LocalNtpSource::SearchConfigurationProvider
           base::FeatureList::IsEnabled(features::kNtpCustomizationMenuV2));
       config_data.SetBoolean("chromeColors", base::FeatureList::IsEnabled(
                                                  features::kChromeColors));
+      config_data.SetBoolean("chromeColorsCustomColorPicker",
+                             base::FeatureList::IsEnabled(
+                                 features::kChromeColorsCustomColorPicker));
     }
 
     // Serialize the dictionary.

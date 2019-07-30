@@ -22,6 +22,7 @@
 
 #if !defined(OS_MACOSX)
 #include "base/at_exit.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/multiprocess_test.h"
@@ -98,7 +99,7 @@ ServiceProcessStateTest::~ServiceProcessStateTest() {
 }
 
 void ServiceProcessStateTest::SetUp() {
-  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessagePumpType::IO, 0);
   ASSERT_TRUE(io_thread_.StartWithOptions(options));
 }
 
@@ -233,7 +234,7 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
   base::RunLoop run_loop;
   base::Thread io_thread_("ServiceProcessStateTestShutdownIOThread");
-  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessagePumpType::IO, 0);
   EXPECT_TRUE(io_thread_.StartWithOptions(options));
   ServiceProcessState state;
   EXPECT_TRUE(state.Initialize());

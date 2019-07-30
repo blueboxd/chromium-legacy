@@ -44,9 +44,6 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
       OverlayCandidateList* candidate_list,
       std::vector<gfx::Rect>* content_bounds) override;
 
-  void AdjustOutputSurfaceOverlay(OverlayProcessor::OutputSurfaceOverlayPlane*
-                                      output_surface_plane) override;
-
   OverlayStrategy GetUMAEnum() const override;
 
  private:

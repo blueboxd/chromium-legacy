@@ -1460,12 +1460,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     }
   }
 
-  // TODO(http://crbug.com/980774): Investigate if this is necessary.
-  if (!request->frame_data) {
-    request->frame_data = ExtensionApiFrameIdMap::Get()->GetFrameData(
-        request->render_process_id, request->frame_id);
-  }
-  event_details->SetFrameData(request->frame_data.value());
+  event_details->SetFrameData(request->frame_data);
   DispatchEventToListeners(browser_context, std::move(listeners_to_dispatch),
                            std::move(event_details));
 
@@ -1882,10 +1877,10 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
 
     // Check if the tab id and window id match, if they were set in the
     // listener params.
-    if ((listener->filter.tab_id != -1 && request->frame_data &&
-         request->frame_data->tab_id != listener->filter.tab_id) ||
-        (listener->filter.window_id != -1 && request->frame_data &&
-         request->frame_data->window_id != listener->filter.window_id)) {
+    if ((listener->filter.tab_id != -1 &&
+         request->frame_data.tab_id != listener->filter.tab_id) ||
+        (listener->filter.window_id != -1 &&
+         request->frame_data.window_id != listener->filter.window_id)) {
       continue;
     }
 
@@ -1898,9 +1893,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
       PermissionsData::PageAccess access =
           WebRequestPermissions::CanExtensionAccessURL(
               PermissionHelper::Get(browser_context), listener->id.extension_id,
-              request->url,
-              request->frame_data ? request->frame_data->tab_id : -1,
-              crosses_incognito,
+              request->url, request->frame_data.tab_id, crosses_incognito,
               WebRequestPermissions::
                   REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
               request->initiator, request->type);

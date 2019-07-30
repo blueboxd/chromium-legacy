@@ -37,16 +37,14 @@ PaintWorkletGlobalScopeProxy::PaintWorkletGlobalScopeProxy(
   String global_scope_name =
       StringView("PaintWorklet #") + String::Number(global_scope_number);
 
-  // TODO(bashi): Pass nullptr instead of an empty WorkerClients?
-  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
-
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       document->Url(), mojom::ScriptType::kModule,
       OffMainThreadWorkerScriptFetchOption::kEnabled, global_scope_name,
       document->UserAgent(), frame->Client()->CreateWorkerFetchContext(),
       document->GetContentSecurityPolicy()->Headers(),
       document->GetReferrerPolicy(), document->GetSecurityOrigin(),
-      document->IsSecureContext(), document->GetHttpsState(), worker_clients,
+      document->IsSecureContext(), document->GetHttpsState(),
+      nullptr /* worker_clients */,
       frame->Client()->CreateWorkerContentSettingsClient(),
       document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
       base::UnguessableToken::Create(), nullptr /* worker_settings */,

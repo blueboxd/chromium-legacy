@@ -13,7 +13,6 @@
 #include "base/cancelable_callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
@@ -31,14 +30,6 @@
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/latency/latency_info.h"
-
-#if defined(OS_MACOSX)
-#include "components/viz/service/display/ca_layer_overlay.h"
-#endif
-
-#if defined(OS_WIN)
-#include "components/viz/service/display/dc_layer_overlay.h"
-#endif
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -302,23 +293,9 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void ReinitializeGLState();
   void RestoreGLState();
 
-  // TODO(weiliangc): Once overlay processor could schedule overlays, remove
-  // these functions.
-  // Sends over an output surface information as it is a overlay plane. This is
-  // used for BufferQueue. For not-BufferQueue cases, this function will do
-  // nothing.
-  void ScheduleOutputSurfaceAsOverlay();
-  // Schedule overlays sends overlay candidate to the GPU.
-#if defined(OS_ANDROID) || defined(USE_OZONE)
-  void ScheduleOverlays();
-#elif defined(OS_MACOSX)
   void ScheduleCALayers();
-
-  // Schedules the |ca_layer_overlay|, which is guaranteed to have a non-null
-  // |rpdq| parameter. Returns ownership of a GL texture that contains the
-  // output of the RenderPassDrawQuad.
-  std::unique_ptr<OverlayTexture> ScheduleRenderPassDrawQuad(
-      const CALayerOverlay* ca_layer_overlay);
+  void ScheduleDCLayers();
+  void ScheduleOverlays();
 
   // Copies the contents of the render pass draw quad, including filter effects,
   // to a GL texture, returned in |overlay_texture|. The resulting texture may
@@ -335,9 +312,11 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       const gfx::ColorSpace& color_space);
   void ReduceAvailableOverlayTextures();
 
-#elif defined(OS_WIN)
-  void ScheduleDCLayers();
-#endif
+  // Schedules the |ca_layer_overlay|, which is guaranteed to have a non-null
+  // |rpdq| parameter. Returns ownership of a GL texture that contains the
+  // output of the RenderPassDrawQuad.
+  std::unique_ptr<OverlayTexture> ScheduleRenderPassDrawQuad(
+      const CALayerOverlay* ca_layer_overlay);
 
   // Setup/flush all pending overdraw feedback to framebuffer.
   void SetupOverdrawFeedback();

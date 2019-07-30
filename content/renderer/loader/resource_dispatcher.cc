@@ -92,9 +92,6 @@ int GetInitialRequestID() {
 // ThrottlingURLLoader::FollowRedirectForcingRestart.
 bool RedirectRequiresLoaderRestart(const GURL& original_url,
                                    const GURL& redirect_url) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return false;
-
   // Restart is needed if the URL is no longer handled by network service.
   if (IsURLHandledByNetworkService(original_url))
     return !IsURLHandledByNetworkService(redirect_url);

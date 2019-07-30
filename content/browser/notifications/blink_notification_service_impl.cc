@@ -179,6 +179,9 @@ void BlinkNotificationServiceImpl::CloseNonPersistentNotification(
 blink::mojom::PermissionStatus
 BlinkNotificationServiceImpl::CheckPermissionStatus() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TOOD(crbug.com/987654): It is odd that a service instance can be created
+  // for cross-origin subframes, yet the instance is completely oblivious of
+  // whether it is serving a top-level browsing context or an embedded one.
   return BrowserContext::GetPermissionController(browser_context_)
       ->GetPermissionStatus(PermissionType::NOTIFICATIONS, origin_.GetURL(),
                             origin_.GetURL());

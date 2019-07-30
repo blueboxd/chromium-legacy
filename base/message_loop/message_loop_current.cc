@@ -5,9 +5,9 @@
 #include "base/message_loop/message_loop_current.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/threading/thread_local.h"
@@ -114,10 +114,10 @@ MessageLoopCurrentForUI MessageLoopCurrentForUI::Get() {
   auto* sequence_manager = GetCurrentSequenceManagerImpl();
   DCHECK(sequence_manager);
 #if defined(OS_ANDROID)
-  DCHECK(sequence_manager->IsType(MessageLoop::TYPE_UI) ||
-         sequence_manager->IsType(MessageLoop::TYPE_JAVA));
+  DCHECK(sequence_manager->IsType(MessagePumpType::UI) ||
+         sequence_manager->IsType(MessagePumpType::JAVA));
 #else   // defined(OS_ANDROID)
-  DCHECK(sequence_manager->IsType(MessageLoop::TYPE_UI));
+  DCHECK(sequence_manager->IsType(MessagePumpType::UI));
 #endif  // defined(OS_ANDROID)
   return MessageLoopCurrentForUI(sequence_manager);
 }
@@ -128,10 +128,10 @@ bool MessageLoopCurrentForUI::IsSet() {
       GetCurrentSequenceManagerImpl();
   return sequence_manager &&
 #if defined(OS_ANDROID)
-         (sequence_manager->IsType(MessageLoop::TYPE_UI) ||
-          sequence_manager->IsType(MessageLoop::TYPE_JAVA));
+         (sequence_manager->IsType(MessagePumpType::UI) ||
+          sequence_manager->IsType(MessagePumpType::JAVA));
 #else   // defined(OS_ANDROID)
-         sequence_manager->IsType(MessageLoop::TYPE_UI);
+         sequence_manager->IsType(MessagePumpType::UI);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -185,14 +185,14 @@ void MessageLoopCurrentForUI::RemoveMessagePumpObserver(
 MessageLoopCurrentForIO MessageLoopCurrentForIO::Get() {
   auto* sequence_manager = GetCurrentSequenceManagerImpl();
   DCHECK(sequence_manager);
-  DCHECK(sequence_manager->IsType(MessageLoop::TYPE_IO));
+  DCHECK(sequence_manager->IsType(MessagePumpType::IO));
   return MessageLoopCurrentForIO(sequence_manager);
 }
 
 // static
 bool MessageLoopCurrentForIO::IsSet() {
   auto* sequence_manager = GetCurrentSequenceManagerImpl();
-  return sequence_manager && sequence_manager->IsType(MessageLoop::TYPE_IO);
+  return sequence_manager && sequence_manager->IsType(MessagePumpType::IO);
 }
 
 MessagePumpForIO* MessageLoopCurrentForIO::GetMessagePumpForIO() const {

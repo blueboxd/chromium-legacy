@@ -23,7 +23,6 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
  private:
   void InstallSupplements(LocalFrame&) const override;
   void ProvideLocalFileSystemToWorker(WorkerClients&) const override;
-  void ProvideIndexedDBClientToWorker(WorkerClients&) const override;
   MediaControls* CreateMediaControls(HTMLMediaElement&,
                                      ShadowRoot&) const override;
   PictureInPictureController* CreatePictureInPictureController(

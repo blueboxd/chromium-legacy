@@ -747,8 +747,8 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(DragAndDropBrowserTest);
 };
 
-#if defined(OS_CHROMEOS)
-// Flaky: https://crbug.com/835774
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+// Flaky: https://crbug.com/835774, https://crbug.com/988938
 #define MAYBE_DropTextFromOutside DISABLED_DropTextFromOutside
 #else
 #define MAYBE_DropTextFromOutside DropTextFromOutside
@@ -789,8 +789,8 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropTextFromOutside) {
   }
 }
 
-#if defined(OS_CHROMEOS) || !defined(NDEBUG)
-// Flaky: https://crbug.com/835774
+#if defined(OS_CHROMEOS) || !defined(NDEBUG) || defined(OS_WIN)
+// Flaky: https://crbug.com/835774, https://crbug.com/988938
 #define MAYBE_DragStartInFrame DISABLED_DragStartInFrame
 #else
 #define MAYBE_DragStartInFrame DragStartInFrame

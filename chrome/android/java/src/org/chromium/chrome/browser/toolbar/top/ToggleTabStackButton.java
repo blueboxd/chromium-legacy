@@ -8,21 +8,21 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.ImageButton;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.ui.widget.ChromeImageButton;
 
 /**
  * A button displaying the number of open tabs. Clicking the button toggles the tab switcher view.
  * TODO(twellington): Replace with TabSwitcherButtonCoordinator so code can be shared with bottom
  *                    toolbar.
  */
-public class ToggleTabStackButton extends ImageButton implements TabCountProvider.TabCountObserver,
-                                                                 View.OnClickListener,
-                                                                 View.OnLongClickListener {
+public class ToggleTabStackButton
+        extends ChromeImageButton implements TabCountProvider.TabCountObserver,
+                                             View.OnClickListener, View.OnLongClickListener {
     private TabSwitcherDrawable mTabSwitcherButtonDrawable;
     private TabSwitcherDrawable mTabSwitcherButtonDrawableLight;
     private TabCountProvider mTabCountProvider;

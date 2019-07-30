@@ -387,6 +387,7 @@ source_set("eg2_tests") {
   testonly = true
 
   sources = [
+    "child_window_open_by_dom_egtest.mm",
     "error_page_egtest.mm",
   ]
 

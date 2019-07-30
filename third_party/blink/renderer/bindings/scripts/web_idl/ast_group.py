@@ -4,14 +4,14 @@
 
 import pickle
 
-from .common import Component
+from .composition_parts import Component
 
 
 class AstGroup(object):
     """A set of Web IDL ASTs grouped by component."""
 
-    def __init__(self, component=None):
-        assert component is None or isinstance(component, Component)
+    def __init__(self, component):
+        assert isinstance(component, Component)
         self._nodes = []
         self._component = component
 

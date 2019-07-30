@@ -207,6 +207,26 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
   LogConcerningRequestHeaders(request.headers,
                               false /* added_during_redirect */);
 
+  // Specifying CredentialsMode::kSameOrigin without an initiator origin doesn't
+  // make sense.
+  if (request.credentials_mode == mojom::CredentialsMode::kSameOrigin &&
+      !request.request_initiator) {
+    LOG(WARNING) << "same-origin credentials mode without initiator";
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: same-origin credentials mode without initiator");
+    return false;
+  }
+
+  // We only support |kInclude| credentials mode with navigations. See also:
+  // a note at https://fetch.spec.whatwg.org/#concept-request-credentials-mode.
+  if (request.credentials_mode != mojom::CredentialsMode::kInclude &&
+      request.mode == mojom::RequestMode::kNavigate) {
+    LOG(WARNING) << "unsupported credentials mode on a navigation request";
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: unsupported credentials mode on navigation");
+    return false;
+  }
+
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should
   // be "follow".
   return true;

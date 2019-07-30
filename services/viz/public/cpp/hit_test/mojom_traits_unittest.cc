@@ -11,7 +11,7 @@
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
-#include "ui/gfx/mojo/transform_struct_traits.h"
+#include "ui/gfx/mojom/transform_mojom_traits.h"
 
 namespace viz {
 

@@ -230,7 +230,7 @@ component("cpp") {
     "//components/sync:rest_of_sync",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//skia/public/interfaces",
+    "//skia/public/mojom",
     "//ui/aura",
     "//ui/chromeos/strings",
     "//ui/compositor_extra",

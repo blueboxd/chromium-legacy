@@ -32,6 +32,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -105,9 +106,9 @@ class WebSocketChannelImpl::BlobLoader final
 class WebSocketChannelImpl::Message
     : public GarbageCollectedFinalized<WebSocketChannelImpl::Message> {
  public:
-  explicit Message(const std::string&);
+  Message(const std::string&, base::OnceClosure completion_callback);
   explicit Message(scoped_refptr<BlobDataHandle>);
-  explicit Message(DOMArrayBuffer*);
+  Message(DOMArrayBuffer*, base::OnceClosure completion_callback);
   // Close message
   Message(uint16_t code, const String& reason);
 
@@ -120,6 +121,7 @@ class WebSocketChannelImpl::Message
   Member<DOMArrayBuffer> array_buffer;
   uint16_t code;
   String reason;
+  base::OnceClosure completion_callback;
 };
 
 WebSocketChannelImpl::BlobLoader::BlobLoader(
@@ -192,11 +194,7 @@ WebSocketChannelImpl::WebSocketChannelImpl(
       client_(client),
       identifier_(CreateUniqueIdentifier()),
       execution_context_(execution_context),
-      sending_quota_(0),
-      received_data_size_for_flow_control_(0),
-      sent_size_of_top_message_(0),
       location_at_construction_(std::move(location)),
-      throttle_passed_(false),
       file_reading_task_runner_(
           execution_context->GetTaskRunner(TaskType::kFileReading)) {
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_))
@@ -288,13 +286,28 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   return true;
 }
 
-void WebSocketChannelImpl::Send(const std::string& message) {
+WebSocketChannel::SendResult WebSocketChannelImpl::Send(
+    const std::string& message,
+    base::OnceClosure completion_callback) {
   NETWORK_DVLOG(1) << this << " Send(" << message << ") (std::string argument)";
   probe::DidSendWebSocketMessage(execution_context_, identifier_,
                                  WebSocketOpCode::kOpCodeText, true,
                                  message.c_str(), message.length());
-  messages_.push_back(MakeGarbageCollected<Message>(message));
+  if (messages_.empty() &&
+      MaybeSendSynchronously(WebSocketHandle::kMessageTypeText, message)) {
+    return SendResult::SENT_SYNCHRONOUSLY;
+  }
+
+  messages_.push_back(
+      MakeGarbageCollected<Message>(message, std::move(completion_callback)));
+
   ProcessSendQueue();
+
+  // If we managed to flush this message synchronously after all, it would mean
+  // that the callback was fired re-entrantly, which would be bad.
+  DCHECK(!messages_.empty());
+
+  return SendResult::CALLBACK_WILL_BE_CALLED;
 }
 
 void WebSocketChannelImpl::Send(
@@ -313,21 +326,37 @@ void WebSocketChannelImpl::Send(
   ProcessSendQueue();
 }
 
-void WebSocketChannelImpl::Send(const DOMArrayBuffer& buffer,
-                                unsigned byte_offset,
-                                unsigned byte_length) {
+WebSocketChannel::SendResult WebSocketChannelImpl::Send(
+    const DOMArrayBuffer& buffer,
+    unsigned byte_offset,
+    unsigned byte_length,
+    base::OnceClosure completion_callback) {
   NETWORK_DVLOG(1) << this << " Send(" << buffer.Data() << ", " << byte_offset
                    << ", " << byte_length << ") "
                    << "(DOMArrayBuffer argument)";
   probe::DidSendWebSocketMessage(
       execution_context_, identifier_, WebSocketOpCode::kOpCodeBinary, true,
       static_cast<const char*>(buffer.Data()) + byte_offset, byte_length);
-  // buffer.slice copies its contents.
-  // FIXME: Reduce copy by sending the data immediately when we don't need to
-  // queue the data.
+  if (messages_.empty() &&
+      MaybeSendSynchronously(
+          WebSocketHandle::kMessageTypeBinary,
+          base::make_span(static_cast<const char*>(buffer.Data()) + byte_offset,
+                          byte_length))) {
+    return SendResult::SENT_SYNCHRONOUSLY;
+  }
+
+  // buffer.Slice copies its contents.
   messages_.push_back(MakeGarbageCollected<Message>(
-      buffer.Slice(byte_offset, byte_offset + byte_length)));
+      buffer.Slice(byte_offset, byte_offset + byte_length),
+      std::move(completion_callback)));
+
   ProcessSendQueue();
+
+  // If we managed to flush this message synchronously after all, it would mean
+  // that the callback was fired re-entrantly, which would be bad.
+  DCHECK(!messages_.empty());
+
+  return SendResult::CALLBACK_WILL_BE_CALLED;
 }
 
 void WebSocketChannelImpl::Close(int code, const String& reason) {
@@ -383,15 +412,30 @@ void WebSocketChannelImpl::Disconnect() {
   identifier_ = 0;
 }
 
-WebSocketChannelImpl::Message::Message(const std::string& text)
-    : type(kMessageTypeText), text(text) {}
+void WebSocketChannelImpl::ApplyBackpressure() {
+  backpressure_ = true;
+}
+
+void WebSocketChannelImpl::RemoveBackpressure() {
+  backpressure_ = false;
+  AddReceiveFlowControlIfNecessary();
+}
+
+WebSocketChannelImpl::Message::Message(const std::string& text,
+                                       base::OnceClosure completion_callback)
+    : type(kMessageTypeText),
+      text(text),
+      completion_callback(std::move(completion_callback)) {}
 
 WebSocketChannelImpl::Message::Message(
     scoped_refptr<BlobDataHandle> blob_data_handle)
     : type(kMessageTypeBlob), blob_data_handle(std::move(blob_data_handle)) {}
 
-WebSocketChannelImpl::Message::Message(DOMArrayBuffer* array_buffer)
-    : type(kMessageTypeArrayBuffer), array_buffer(array_buffer) {}
+WebSocketChannelImpl::Message::Message(DOMArrayBuffer* array_buffer,
+                                       base::OnceClosure completion_callback)
+    : type(kMessageTypeArrayBuffer),
+      array_buffer(array_buffer),
+      completion_callback(std::move(completion_callback)) {}
 
 WebSocketChannelImpl::Message::Message(uint16_t code, const String& reason)
     : type(kMessageTypeClose), code(code), reason(reason) {}
@@ -413,16 +457,51 @@ void WebSocketChannelImpl::SendInternal(
                static_cast<uint64_t>(total_size - sent_size_of_top_message_)));
   bool final = (sent_size_of_top_message_ + size == total_size);
 
-  handle_->Send(final, frame_type, data + sent_size_of_top_message_, size);
+  SendAndAdjustQuota(final, frame_type,
+                     base::make_span(data + sent_size_of_top_message_, size),
+                     consumed_buffered_amount);
 
   sent_size_of_top_message_ += size;
-  sending_quota_ -= size;
-  *consumed_buffered_amount += size;
 
   if (final) {
+    base::OnceClosure completion_callback =
+        std::move(messages_.front()->completion_callback);
+    if (!completion_callback.is_null())
+      std::move(completion_callback).Run();
     messages_.pop_front();
     sent_size_of_top_message_ = 0;
   }
+}
+
+void WebSocketChannelImpl::SendAndAdjustQuota(
+    bool final,
+    WebSocketHandle::MessageType frame_type,
+    base::span<const char> data,
+    uint64_t* consumed_buffered_amount) {
+  const auto size = data.size();
+
+  // This cast is always valid because the data size is limited by
+  // sending_quota_, which is controlled by the browser process and in practice
+  // is always much smaller than 4GB.
+  // TODO(ricea): Change the type of sending_quota_ to wtf_size_t.
+  handle_->Send(final, frame_type, data.data(), static_cast<wtf_size_t>(size));
+  sending_quota_ -= size;
+  *consumed_buffered_amount += size;
+}
+
+bool WebSocketChannelImpl::MaybeSendSynchronously(
+    WebSocketHandle::MessageType frame_type,
+    base::span<const char> data) {
+  DCHECK(messages_.empty());
+  if (data.size() > sending_quota_)
+    return false;
+
+  uint64_t consumed_buffered_amount = 0;
+  SendAndAdjustQuota(true, frame_type, data, &consumed_buffered_amount);
+  if (client_ && consumed_buffered_amount > 0)
+    client_->DidConsumeBufferedAmount(consumed_buffered_amount);
+
+  return true;
 }
 
 void WebSocketChannelImpl::ProcessSendQueue() {
@@ -618,7 +697,8 @@ void WebSocketChannelImpl::DidReceiveData(WebSocketHandle* handle,
   }
 
   received_data_size_for_flow_control_ += size;
-  AddReceiveFlowControlIfNecessary();
+  if (!backpressure_)
+    AddReceiveFlowControlIfNecessary();
 
   const size_t message_size_so_far =
       (receiving_message_data_ ? receiving_message_data_->size() : 0) + size;
@@ -755,7 +835,8 @@ void WebSocketChannelImpl::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
   DCHECK_GT(messages_.size(), 0u);
   DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
   // We replace it with the loaded blob.
-  messages_.front() = MakeGarbageCollected<Message>(buffer);
+  messages_.front() =
+      MakeGarbageCollected<Message>(buffer, base::OnceClosure());
   ProcessSendQueue();
 }
 

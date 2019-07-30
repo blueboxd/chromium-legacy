@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
@@ -47,7 +48,7 @@ void AshDBusHelper::InitializeDBus() {
 
   // Create the D-Bus thread.
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_options.message_pump_type = base::MessagePumpType::IO;
   dbus_thread_ = std::make_unique<base::Thread>("D-Bus thread");
   dbus_thread_->StartWithOptions(thread_options);
 

@@ -31,6 +31,7 @@
 #include "base/task/post_task.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/download/public/common/in_progress_download_manager.h"
 #include "components/keyed_service/core/simple_key_map.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
@@ -53,6 +54,7 @@
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "media/mojo/buildflags.h"
 #include "net/proxy_resolution/proxy_config_service_android.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "services/network/public/cpp/features.h"
@@ -122,6 +124,17 @@ base::FilePath AwBrowserContext::GetCacheDir() {
   return cache_path;
 }
 
+base::FilePath AwBrowserContext::GetPrefStorePath() {
+  FilePath pref_store_path;
+  base::PathService::Get(base::DIR_ANDROID_APP_DATA, &pref_store_path);
+  // TODO(amalova): Assign a proper file path for non-default profiles
+  // when we support multiple profiles
+  pref_store_path =
+      pref_store_path.Append(FILE_PATH_LITERAL("Default/Preferences"));
+
+  return pref_store_path;
+}
+
 // static
 base::FilePath AwBrowserContext::GetCookieStorePath() {
   FilePath cookie_store_path;
@@ -162,6 +175,10 @@ void AwBrowserContext::RegisterPrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardEnabled,
                                 false);
+
+#if BUILDFLAG(ENABLE_MOJO_CDM)
+  cdm::MediaDrmStorageImpl::RegisterProfilePrefs(registry);
+#endif
 }
 
 void AwBrowserContext::CreateUserPrefService() {
@@ -172,8 +189,16 @@ void AwBrowserContext::CreateUserPrefService() {
   RegisterPrefs(pref_registry.get());
 
   PrefServiceFactory pref_service_factory;
-  pref_service_factory.set_user_prefs(
-      base::MakeRefCounted<InMemoryPrefStore>());
+
+  std::set<std::string> persistent_prefs;
+  // Persisted to avoid having to provision MediaDrm every time the
+  // application tries to play protected content after restart.
+  persistent_prefs.insert(cdm::prefs::kMediaDrmStorage);
+
+  pref_service_factory.set_user_prefs(base::MakeRefCounted<SegregatedPrefStore>(
+      base::MakeRefCounted<InMemoryPrefStore>(),
+      base::MakeRefCounted<JsonPrefStore>(GetPrefStorePath()), persistent_prefs,
+      /*validation_delegate=*/nullptr));
 
   policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry.get());
   pref_service_factory.set_managed_prefs(
@@ -185,7 +210,21 @@ void AwBrowserContext::CreateUserPrefService() {
 
   user_pref_service_ = pref_service_factory.Create(pref_registry);
 
+  // TODO(amalova): Do not call this method for non-default profile.
+  MigrateLocalStatePrefs();
+
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());
+}
+
+void AwBrowserContext::MigrateLocalStatePrefs() {
+  PrefService* local_state = AwBrowserProcess::GetInstance()->local_state();
+  if (!local_state->HasPrefPath(cdm::prefs::kMediaDrmStorage)) {
+    return;
+  }
+
+  user_pref_service_->Set(cdm::prefs::kMediaDrmStorage,
+                          *(local_state->Get(cdm::prefs::kMediaDrmStorage)));
+  local_state->ClearPref(cdm::prefs::kMediaDrmStorage);
 }
 
 // static

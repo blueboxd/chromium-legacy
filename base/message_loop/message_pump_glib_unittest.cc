@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -161,7 +162,7 @@ class MessagePumpGLibTest : public testing::Test {
 
   // Overridden from testing::Test:
   void SetUp() override {
-    loop_ = new MessageLoop(MessageLoop::TYPE_UI);
+    loop_ = new MessageLoop(MessagePumpType::UI);
     injector_ = new EventInjector();
   }
   void TearDown() override {

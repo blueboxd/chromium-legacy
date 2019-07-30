@@ -302,6 +302,15 @@ class CAPTURE_EXPORT RequestManager final
   // shot.
   uint32_t partial_result_count_;
 
+  // The pipeline depth reported in the ANDROID_REQUEST_PIPELINE_MAX_DEPTH
+  // metadata.
+  size_t pipeline_depth_;
+
+  // The number of preview buffers queued to the camera service.  The request
+  // manager needs to try its best to queue |pipeline_depth_| preview buffers to
+  // avoid camera frame drops.
+  size_t preview_buffers_queued_;
+
   // The shutter time of the first frame.  We derive the |timestamp| of a
   // frame using the difference between the frame's shutter time and
   // |first_frame_shutter_time_|.

@@ -2,7 +2,7 @@ include_rules = [
   "+cc",
   "+gpu/ipc",
   "+gpu/ipc/common",
-  "+skia/public/interfaces",
+  "+skia/public/mojom",
   "+third_party/skia/include",
   "+ui/gfx",
   "+ui/latency/mojom",

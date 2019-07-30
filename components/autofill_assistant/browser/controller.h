@@ -109,7 +109,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetProgressVisible(bool visible) override;
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
-  void SetResizeViewport(bool resize_viewport) override;
+  void SetViewportMode(ViewportMode mode) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   bool SetForm(std::unique_ptr<FormProto> form,
                base::RepeatingCallback<void(const FormProto::Result*)> callback)
@@ -163,7 +163,7 @@ class Controller : public ScriptExecutorDelegate,
                     Metrics::DropOutReason reason) override;
   void PerformDelayedShutdownIfNecessary();
   void MaybeReportFirstCheckDone();
-  bool GetResizeViewport() override;
+  ViewportMode GetViewportMode() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
   void GetOverlayColors(OverlayColors* colors) const override;
   const FormProto* GetForm() const override;
@@ -328,8 +328,8 @@ class Controller : public ScriptExecutorDelegate,
   // Current set of user actions. May be null, but never empty.
   std::unique_ptr<std::vector<UserAction>> user_actions_;
 
-  // Whether the viewport should be resized.
-  bool resize_viewport_ = false;
+  // Current viewport mode.
+  ViewportMode viewport_mode_ = ViewportMode::NO_RESIZE;
 
   // Current peek mode.
   ConfigureBottomSheetProto::PeekMode peek_mode_ =

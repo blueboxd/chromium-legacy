@@ -15,7 +15,7 @@ mojom("gl") {
     "//gpu/ipc/common:interfaces",
     "//media/mojo/interfaces",
     "//ui/gfx/geometry/mojom",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
   if (is_chromeos) {

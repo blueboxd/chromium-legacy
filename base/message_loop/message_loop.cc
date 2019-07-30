@@ -25,26 +25,16 @@
 
 namespace base {
 
-// Unfortunately since we're not on C++17 we're required to provide an out of
-// line definition.
-constexpr MessageLoop::Type MessageLoop::TYPE_DEFAULT;
-constexpr MessageLoop::Type MessageLoop::TYPE_UI;
-constexpr MessageLoop::Type MessageLoop::TYPE_CUSTOM;
-constexpr MessageLoop::Type MessageLoop::TYPE_IO;
-#if defined(OS_ANDROID)
-constexpr MessageLoop::Type MessageLoop::TYPE_JAVA;
-#endif
-
-MessageLoop::MessageLoop(Type type) : MessageLoop(type, nullptr) {
+MessageLoop::MessageLoop(MessagePumpType type) : MessageLoop(type, nullptr) {
   // For TYPE_CUSTOM you must either use
   // MessageLoop(std::unique_ptr<MessagePump> pump) or
   // MessageLoop::CreateUnbound()
-  DCHECK_NE(type_, TYPE_CUSTOM);
+  DCHECK_NE(type_, MessagePumpType::CUSTOM);
   BindToCurrentThread();
 }
 
 MessageLoop::MessageLoop(std::unique_ptr<MessagePump> pump)
-    : MessageLoop(TYPE_CUSTOM, std::move(pump)) {
+    : MessageLoop(MessagePumpType::CUSTOM, std::move(pump)) {
   BindToCurrentThread();
 }
 
@@ -73,7 +63,7 @@ MessageLoop::~MessageLoop() {
 #endif  // !defined(OS_IOS)
 }
 
-bool MessageLoop::IsType(Type type) const {
+bool MessageLoop::IsType(MessagePumpType type) const {
   return type_ == type;
 }
 
@@ -101,17 +91,19 @@ bool MessageLoop::IsIdleForTesting() {
 //------------------------------------------------------------------------------
 
 // static
-std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(Type type) {
+std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(MessagePumpType type) {
   return WrapUnique(new MessageLoop(type, nullptr));
 }
 
 // static
 std::unique_ptr<MessageLoop> MessageLoop::CreateUnbound(
     std::unique_ptr<MessagePump> custom_pump) {
-  return WrapUnique(new MessageLoop(TYPE_CUSTOM, std::move(custom_pump)));
+  return WrapUnique(
+      new MessageLoop(MessagePumpType::CUSTOM, std::move(custom_pump)));
 }
 
-MessageLoop::MessageLoop(Type type, std::unique_ptr<MessagePump> custom_pump)
+MessageLoop::MessageLoop(MessagePumpType type,
+                         std::unique_ptr<MessagePump> custom_pump)
     : sequence_manager_(
           sequence_manager::internal::SequenceManagerImpl::CreateUnbound(
               sequence_manager::SequenceManager::Settings::Builder()
@@ -174,11 +166,11 @@ void MessageLoop::SetTaskRunner(
 //------------------------------------------------------------------------------
 // MessageLoopForUI
 
-MessageLoopForUI::MessageLoopForUI(Type type) : MessageLoop(type) {
+MessageLoopForUI::MessageLoopForUI(MessagePumpType type) : MessageLoop(type) {
 #if defined(OS_ANDROID)
-  DCHECK(type == TYPE_UI || type == TYPE_JAVA);
+  DCHECK(type == MessagePumpType::UI || type == MessagePump::Type::JAVA);
 #else
-  DCHECK_EQ(type, TYPE_UI);
+  DCHECK_EQ(type, MessagePumpType::UI);
 #endif
 }
 

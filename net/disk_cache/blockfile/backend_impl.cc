@@ -15,7 +15,7 @@
 #include "base/hash/hash.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -118,7 +118,7 @@ class CacheThread : public base::Thread {
  public:
   CacheThread() : base::Thread("CacheThread_BlockFile") {
     CHECK(
-        StartWithOptions(base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
+        StartWithOptions(base::Thread::Options(base::MessagePumpType::IO, 0)));
   }
 
   ~CacheThread() override {

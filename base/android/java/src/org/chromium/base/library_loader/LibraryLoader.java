@@ -38,6 +38,8 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /**
  * This class provides functionality to load and register the native libraries.
  * Callers are allowed to separate loading the libraries from initializing them.
@@ -74,7 +76,7 @@ public class LibraryLoader {
     // Also, starting with M, the issue doesn't exist if shared libraries are stored
     // uncompressed in the APK (as Chromium does), because the system linker can access them
     // directly, and the PackageManager will thus never extract them in the first place.
-    static public final boolean PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION =
+    public static final boolean PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION =
             Build.VERSION.SDK_INT <= VERSION_CODES.KITKAT;
 
     // Location of extracted native libraries.
@@ -116,6 +118,10 @@ public class LibraryLoader {
     // The number of milliseconds it took to load all the native libraries, which
     // will be reported via UMA. Set once when the libraries are done loading.
     private long mLibraryLoadTimeMs;
+
+    // Stores information about attempts to load the library and eventually emits those bits as
+    // UMA histograms.
+    private static final LoadStatusRecorder sLoadStatusRecorder = new LoadStatusRecorder();
 
     /**
      * Call this method to determine if the chromium project must load the library
@@ -288,15 +294,25 @@ public class LibraryLoader {
     }
 
     // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
-    // Sets UMA flags depending on the results of loading.
-    private void loadLibraryWithCustomLinkerAlreadyLocked(Linker linker, String libFilePath) {
-        assert Thread.holdsLock(mLock);
+    // Records UMA histograms depending on the results of loading.
+    @GuardedBy("mLock")
+    private void loadLibraryWithCustomLinkerAlreadyLocked(
+            Linker linker, String libFilePath, boolean isFirstAttempt) {
         // Attempt shared RELROs, and if that fails then retry without.
+        boolean loadAtFixedAddress = true;
+        boolean success = true;
         try {
             linker.loadLibrary(libFilePath);
         } catch (UnsatisfiedLinkError e) {
             Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
+            sLoadStatusRecorder.recordLoadAttempt(
+                    false /* success */, isFirstAttempt, true /* loadAtFixedAddress */);
+            loadAtFixedAddress = false;
+            success = false;
             linker.loadLibraryNoFixedAddress(libFilePath);
+            success = true;
+        } finally {
+            sLoadStatusRecorder.recordLoadAttempt(success, isFirstAttempt, loadAtFixedAddress);
         }
     }
 
@@ -350,13 +366,13 @@ public class LibraryLoader {
 
                         try {
                             // Load the library using this Linker. May throw UnsatisfiedLinkError.
-                            loadLibraryWithCustomLinkerAlreadyLocked(
-                                    linker, System.mapLibraryName(library));
+                            loadLibraryWithCustomLinkerAlreadyLocked(linker,
+                                    System.mapLibraryName(library), true /* isFirstAttempt */);
                         } catch (UnsatisfiedLinkError e) {
-                            if (!isInZipFile()
-                                    && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-                                loadLibraryWithCustomLinkerAlreadyLocked(
-                                        linker, getExtractedLibraryPath(appInfo, library));
+                            if (!isInZipFile() && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
+                                loadLibraryWithCustomLinkerAlreadyLocked(linker,
+                                        getExtractedLibraryPath(appInfo, library),
+                                        false /* isFirstAttempt */);
                             } else {
                                 Log.e(TAG, "Unable to load library: " + library);
                                 throw(e);
@@ -486,6 +502,7 @@ public class LibraryLoader {
             return;
         }
         mLibraryProcessType = processType;
+        sLoadStatusRecorder.setProcessType(processType);
 
         // Add a switch for the reached code profiler as late as possible since it requires a read
         // from the shared preferences. At this point the shared preferences are usually warmed up.

@@ -303,8 +303,8 @@ class AutofillAssistantUiController {
     }
 
     @CalledByNative
-    private void setResizeViewport(boolean resizeViewport) {
-        mCoordinator.getBottomBarCoordinator().setResizeViewport(resizeViewport);
+    private void setViewportMode(@AssistantViewportMode int mode) {
+        mCoordinator.getBottomBarCoordinator().setViewportMode(mode);
     }
 
     @CalledByNative

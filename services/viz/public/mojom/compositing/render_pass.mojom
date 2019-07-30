@@ -8,9 +8,9 @@ import "services/viz/public/mojom/compositing/copy_output_request.mojom";
 import "services/viz/public/mojom/compositing/filter_operations.mojom";
 import "services/viz/public/mojom/compositing/quads.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/color_space.mojom";
-import "ui/gfx/mojo/rrect_f.mojom";
-import "ui/gfx/mojo/transform.mojom";
+import "ui/gfx/mojom/color_space.mojom";
+import "ui/gfx/mojom/rrect_f.mojom";
+import "ui/gfx/mojom/transform.mojom";
 
 // See components/viz/common/quads/render_pass.h.
 struct RenderPass {

@@ -546,8 +546,8 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
 
   // Push does not allow permission requests from iframes.
   PermissionManager::Get(profile_)->RequestPermission(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, web_contents->GetMainFrame(),
-      requesting_origin, user_gesture,
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, render_frame_host, requesting_origin,
+      user_gesture,
       base::BindOnce(&PushMessagingServiceImpl::DoSubscribe,
                      weak_factory_.GetWeakPtr(), app_identifier,
                      std::move(options), std::move(callback)));

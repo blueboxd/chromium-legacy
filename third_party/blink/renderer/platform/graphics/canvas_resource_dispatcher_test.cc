@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/gfx/mojo/presentation_feedback.mojom-blink.h"
+#include "ui/gfx/mojom/presentation_feedback.mojom-blink.h"
 
 using testing::_;
 using testing::Mock;

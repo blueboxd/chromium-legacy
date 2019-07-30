@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
@@ -15,13 +17,16 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/browser/extension_registry.h"
 
 namespace web_app {
 
 WebAppControllerBrowserTest::WebAppControllerBrowserTest()
     : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-  if (GetParam() == ControllerType::kUnifiedControllerWithBookmarkApp) {
+  if (GetParam() == ControllerType::kUnifiedControllerWithWebApp) {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kDesktopPWAsWithoutExtensions},
+        {predictors::kSpeculativePreconnectFeature});
+  } else if (GetParam() == ControllerType::kUnifiedControllerWithBookmarkApp) {
     scoped_feature_list_.InitWithFeatures(
         {features::kDesktopPWAsUnifiedUiController},
         {predictors::kSpeculativePreconnectFeature});
@@ -68,24 +73,22 @@ AppId WebAppControllerBrowserTest::InstallWebApp(
   return app_id;
 }
 
-Browser* WebAppControllerBrowserTest::LaunchAppBrowser(const AppId& app_id) {
+content::WebContents* WebAppControllerBrowserTest::OpenApplication(
+    const AppId& app_id) {
   auto* provider = web_app::WebAppProvider::Get(profile());
   DCHECK(provider);
   ui_test_utils::UrlLoadObserver url_observer(
       provider->registrar().GetAppLaunchURL(app_id),
       content::NotificationService::AllSources());
 
-  // TODO(https://crbug.com/966290): Avoid relying on extensions.
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile())->GetInstalledExtension(
-          app_id);
-  Browser* app_browser =
-      extensions::browsertest_util::LaunchAppBrowser(profile(), extension);
+  AppLaunchParams params(profile(), app_id,
+                         apps::mojom::LaunchContainer::kLaunchContainerWindow,
+                         WindowOpenDisposition::NEW_WINDOW,
+                         apps::mojom::AppLaunchSource::kSourceTest);
+  content::WebContents* contents =
+      apps::LaunchService::Get(profile())->OpenApplication(params);
   url_observer.Wait();
-
-  CHECK(app_browser);
-  CHECK(app_browser != browser());
-  return app_browser;
+  return contents;
 }
 
 }  // namespace web_app

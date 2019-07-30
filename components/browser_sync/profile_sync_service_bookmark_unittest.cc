@@ -20,6 +20,7 @@
 #include "base/containers/stack.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -1781,7 +1782,7 @@ void ProfileSyncServiceBookmarkTestWithData::CompareWithTestData(
     const BookmarkNode* child_node = node->children()[i].get();
     const TestData& item = data[i];
     GURL url = GURL(item.url == nullptr ? "" : item.url);
-    BookmarkNode test_node(url);
+    BookmarkNode test_node(/*id=*/0, base::GenerateGUID(), url);
     test_node.SetTitle(base::UTF8ToUTF16(item.title));
     EXPECT_EQ(child_node->GetTitle(), test_node.GetTitle());
     if (item.url) {

@@ -73,16 +73,6 @@ fuzzer_test("renderer_tree_fuzzer") {
   ]
 }
 
-fuzzer_test("clear_site_data_fuzzer") {
-  sources = [
-    "clear_site_data_fuzzer.cc",
-  ]
-  deps = [
-    "//content/test:test_support",
-  ]
-  seed_corpus = "//content/test/data/fuzzer_corpus/clear_site_data/"
-}
-
 fuzzer_test("renderer_proto_tree_fuzzer") {
   sources = [
     "renderer_proto_tree_fuzzer.cc",

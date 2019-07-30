@@ -376,7 +376,7 @@ bool ResourceResponse::IsAttachment() const {
 
 AtomicString ResourceResponse::HttpContentType() const {
   return ExtractMIMETypeFromMediaType(
-      HttpHeaderField(http_names::kContentType).DeprecatedLower());
+      HttpHeaderField(http_names::kContentType).LowerASCII());
 }
 
 bool ResourceResponse::WasCached() const {

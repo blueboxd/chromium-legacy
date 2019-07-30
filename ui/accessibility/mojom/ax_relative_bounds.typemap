@@ -14,6 +14,6 @@ public_deps = [
   "//ui/gfx",
   "//ui/gfx/geometry/mojom",
   "//ui/gfx/geometry/mojom:mojom_traits",
-  "//ui/gfx/mojo",
+  "//ui/gfx/mojom",
 ]
 type_mappings = [ "ax.mojom.AXRelativeBounds=ui::AXRelativeBounds" ]

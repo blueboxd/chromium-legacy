@@ -5,6 +5,6 @@ include_rules = [
   "+components/prefs",
   "+services/data_decoder/public",
   "+services/device/public",
-  "+skia/public/interfaces",
+  "+skia/public/mojom",
   "+ui/display",
 ]

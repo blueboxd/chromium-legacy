@@ -360,6 +360,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     template <typename LambdaFunc>
     void IterateAllLayoutOpportunities(const NGBfcOffset& offset,
                                        const LayoutUnit available_inline_size,
+                                       bool is_inline_level,
                                        const LambdaFunc&) const;
 
     // See |NGShelf| for a broad description of what shelves are. We always

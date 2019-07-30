@@ -37,25 +37,21 @@ class MOJO_CPP_SYSTEM_EXPORT DataPipeProducer {
     struct ReadResult {
       // The number of bytes read. If returned |bytes_read| is less than
       // requested size, it means EOF is reached.
-      size_t bytes_read = 0;
+      uint64_t bytes_read = 0;
 
       // MojoResult resulting from this call.
       MojoResult result = MOJO_RESULT_OK;
     };
     virtual ~DataSource() {}
 
-    // Checks if this Reader instance owns a valid content to read.
-    virtual bool IsValid() const = 0;
-
-    // Returns maximum data size. Actual size may be smaller. This should return
-    // a positive value.
-    // TODO(crbug.com/983023): Return size_t.
-    virtual int64_t GetLength() const = 0;
+    // Returns maximum data size. Actual size can be smaller. Used as a hint to
+    // adjust internal read buffer size.
+    virtual uint64_t GetLength() const = 0;
 
     // Similar to base::File::Read(), reads the given number of bytes (or until
     // EOF is reached) starting with the given offset. Returns ReadResult to
     // represent the number of bytes read and errors.
-    virtual ReadResult Read(int64_t offset, base::span<char> buffer) = 0;
+    virtual ReadResult Read(uint64_t offset, base::span<char> buffer) = 0;
 
     // Notifies DataPipeProducer aborts read operations.
     virtual void Abort() {}

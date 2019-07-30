@@ -13,7 +13,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -686,7 +686,7 @@ class UDPProxyImpl : public UDPProxy {
         blocked_(false) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     proxy_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessagePumpType::IO, 0));
     base::WaitableEvent start_event(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);

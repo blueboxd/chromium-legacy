@@ -5,8 +5,8 @@
 module viz.mojom;
 
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/rrect_f.mojom";
-import "ui/gfx/mojo/transform.mojom";
+import "ui/gfx/mojom/rrect_f.mojom";
+import "ui/gfx/mojom/transform.mojom";
 
 struct SharedQuadState {
   // gfx.mojom.Transforms quad rects into the target content space.

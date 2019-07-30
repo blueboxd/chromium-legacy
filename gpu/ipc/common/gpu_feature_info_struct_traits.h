@@ -9,7 +9,7 @@
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/common/gpu_feature_info.mojom.h"
-#include "ui/gfx/mojo/buffer_types_struct_traits.h"
+#include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 
 namespace mojo {
 

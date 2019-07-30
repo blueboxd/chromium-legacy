@@ -1898,6 +1898,14 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
       if (value_id == CSSValueID::kContents)
         context.Count(WebFeature::kCSSValueDisplayContents);
       break;
+    case CSSPropertyID::kOverflowX:
+      if (value_id == CSSValueID::kOverlay)
+        context.Count(WebFeature::kCSSValueOverflowXOverlay);
+      break;
+    case CSSPropertyID::kOverflowY:
+      if (value_id == CSSValueID::kOverlay)
+        context.Count(WebFeature::kCSSValueOverflowYOverlay);
+      break;
     default:
       break;
   }

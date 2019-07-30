@@ -238,8 +238,8 @@ struct URLRequest {
 
   // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
   // Controls whether credentials are attached to this request.
-  // Currently kSameOrigin does not work with |mode: kNavigate|.
-  // TODO(yhirano): Fix this.
+  // |kSameOrigin| credentials mode requires a non-null |request_initiator|.
+  // When |mode| is |kNavigate|, this needs to be |kInclude|.
   CredentialsMode credentials_mode;
 
   // https://fetch.spec.whatwg.org/#concept-request-redirect-mode

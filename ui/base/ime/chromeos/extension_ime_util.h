@@ -15,25 +15,17 @@ namespace chromeos {
 // Extension IME related utilities.
 namespace extension_ime_util {
 
-#if defined(GOOGLE_CHROME_BUILD)
-const char kXkbExtensionId[] = "jkghodnilhceideoidjikpgommlajknk";
-const char kM17nExtensionId[] = "jkghodnilhceideoidjikpgommlajknk";
-const char kHangulExtensionId[] = "bdgdidmhaijohebebipajioienkglgfo";
-const char kMozcExtensionId[] = "jkghodnilhceideoidjikpgommlajknk";
-const char kT13nExtensionId[] = "jkghodnilhceideoidjikpgommlajknk";
-const char kChinesePinyinExtensionId[] = "jkghodnilhceideoidjikpgommlajknk";
-const char kChineseZhuyinExtensionId[] = "jkghodnilhceideoidjikpgommlajknk";
-const char kChineseCangjieExtensionId[] = "jkghodnilhceideoidjikpgommlajknk";
-#else
-const char kXkbExtensionId[] = "fgoepimhcoialccpbmpnnblemnepkkao";
-const char kM17nExtensionId[] = "jhffeifommiaekmbkkjlpmilogcfdohp";
-const char kHangulExtensionId[] = "bdgdidmhaijohebebipajioienkglgfo";
-const char kMozcExtensionId[] = "bbaiamgfapehflhememkfglaehiobjnk";
-const char kT13nExtensionId[] = "gjaehgfemfahhmlgpdfknkhdnemmolop";
-const char kChinesePinyinExtensionId[] = "cpgalbafkoofkjmaeonnfijgpfennjjn";
-const char kChineseZhuyinExtensionId[] = "ekbifjdfhkmdeeajnolmgdlmkllopefi";
-const char kChineseCangjieExtensionId[] = "aeebooiibjahgpgmhkeocbeekccfknbj";
-#endif
+COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) extern const char kXkbExtensionId[];
+COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) extern const char kM17nExtensionId[];
+COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) extern const char kHangulExtensionId[];
+COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) extern const char kMozcExtensionId[];
+COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) extern const char kT13nExtensionId[];
+COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
+extern const char kChinesePinyinExtensionId[];
+COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
+extern const char kChineseZhuyinExtensionId[];
+COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
+extern const char kChineseCangjieExtensionId[];
 
 // Extension id, path (relative to |chrome::DIR_RESOURCES|) and IME engine
 // id for the builtin-in Braille IME extension.

@@ -560,48 +560,31 @@ class FileURLLoader : public network::mojom::URLLoader {
     if (observer)
       observer->OnStart();
 
-    base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-    if (!file.IsValid()) {
+    auto file_data_source = std::make_unique<mojo::FileDataSource>(
+        base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+    mojo::DataPipeProducer::DataSource* data_source = file_data_source.get();
+
+    std::vector<char> initial_read_buffer(net::kMaxBytesToSniff);
+    auto read_result =
+        data_source->Read(0u, base::span<char>(initial_read_buffer));
+    if (read_result.result != MOJO_RESULT_OK) {
+      // This can happen when the file is unreadable (which can happen during
+      // corruption). We need to be sure to inform the observer that we've
+      // finished reading so that it can proceed.
       if (observer) {
-        mojo::DataPipeProducer::DataSource::ReadResult result;
-        result.result = mojo::FileDataSource::ConvertFileErrorToMojoResult(
-            file.error_details());
-        observer->OnRead(base::span<char>(), &result);
+        observer->OnRead(base::span<char>(), &read_result);
         observer->OnDone();
       }
-      net::Error net_error = net::FileErrorToNetError(file.error_details());
-      client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
+      client_->OnComplete(network::URLLoaderCompletionStatus(
+          ConvertMojoResultToNetError(read_result.result)));
       client_.reset();
       MaybeDeleteSelf();
       return;
     }
-    char initial_read_buffer[net::kMaxBytesToSniff];
-    int initial_read_result =
-        file.ReadAtCurrentPos(initial_read_buffer, net::kMaxBytesToSniff);
-    if (initial_read_result < 0) {
-      mojo::DataPipeProducer::DataSource::ReadResult result;
-      result.result = mojo::FileDataSource::ConvertFileErrorToMojoResult(
-          base::File::GetLastFileError());
-      DCHECK_NE(MOJO_RESULT_OK, result.result);
-      if (observer) {
-        // This can happen when the file is unreadable (which can happen during
-        // corruption). We need to be sure to inform
-        // the observer that we've finished reading so that it can proceed.
-        observer->OnRead(base::span<char>(), &result);
-        observer->OnDone();
-      }
-      net::Error net_error = ConvertMojoResultToNetError(result.result);
-      client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
-      client_.reset();
-      MaybeDeleteSelf();
-      return;
-    } else if (observer) {
-      base::span<char> buffer(initial_read_buffer, net::kMaxBytesToSniff);
-      mojo::DataPipeProducer::DataSource::ReadResult result;
-      result.bytes_read = initial_read_result;
-      observer->OnRead(buffer, &result);
-    }
-    size_t initial_read_size = static_cast<size_t>(initial_read_result);
+    if (observer)
+      observer->OnRead(base::span<char>(initial_read_buffer), &read_result);
+
+    uint64_t initial_read_size = read_result.bytes_read;
 
     std::string range_header;
     net::HttpByteRange byte_range;
@@ -613,8 +596,9 @@ class FileURLLoader : public network::mojom::URLLoader {
       if (net::HttpUtil::ParseRangeHeader(range_header, &ranges) &&
           ranges.size() == 1) {
         byte_range = ranges[0];
-        if (!byte_range.ComputeBounds(info.size))
+        if (!byte_range.ComputeBounds(info.size)) {
           fail = true;
+        }
       } else {
         fail = true;
       }
@@ -626,18 +610,16 @@ class FileURLLoader : public network::mojom::URLLoader {
       }
     }
 
-    size_t first_byte_to_send = 0;
-    size_t total_bytes_to_send = static_cast<size_t>(info.size);
+    uint64_t first_byte_to_send = 0;
+    uint64_t total_bytes_to_send = info.size;
 
     if (byte_range.IsValid()) {
-      first_byte_to_send =
-          static_cast<size_t>(byte_range.first_byte_position());
+      first_byte_to_send = byte_range.first_byte_position();
       total_bytes_to_send =
-          static_cast<size_t>(byte_range.last_byte_position()) -
-          first_byte_to_send + 1;
+          byte_range.last_byte_position() - first_byte_to_send + 1;
     }
 
-    total_bytes_written_ = static_cast<size_t>(total_bytes_to_send);
+    total_bytes_written_ = total_bytes_to_send;
 
     head.content_length = base::saturated_cast<int64_t>(total_bytes_to_send);
 
@@ -665,7 +647,8 @@ class FileURLLoader : public network::mojom::URLLoader {
     if (!net::GetMimeTypeFromFile(path, &head.mime_type)) {
       std::string new_type;
       net::SniffMimeType(
-          initial_read_buffer, initial_read_result, request.url, head.mime_type,
+          initial_read_buffer.data(), read_result.bytes_read, request.url,
+          head.mime_type,
           GetContentClient()->browser()->ForceSniffingFileUrlsForHtml()
               ? net::ForceSniffFileUrlsForHtml::kEnabled
               : net::ForceSniffFileUrlsForHtml::kDisabled,
@@ -690,17 +673,15 @@ class FileURLLoader : public network::mojom::URLLoader {
     // In case of a range request, seek to the appropriate position before
     // sending the remaining bytes asynchronously. Under normal conditions
     // (i.e., no range request) this Seek is effectively a no-op.
-    int64_t new_position = file.Seek(base::File::FROM_BEGIN,
-                                     static_cast<int64_t>(first_byte_to_send));
+    file_data_source->SetRange(first_byte_to_send,
+                               first_byte_to_send + total_bytes_to_send);
     if (observer)
-      observer->OnSeekComplete(new_position);
+      observer->OnSeekComplete(first_byte_to_send);
 
     data_producer_ = std::make_unique<mojo::DataPipeProducer>(
         std::move(pipe.producer_handle));
     data_producer_->Write(std::make_unique<mojo::FilteredDataSource>(
-                              std::make_unique<mojo::FileDataSource>(
-                                  std::move(file), total_bytes_to_send),
-                              std::move(observer)),
+                              std::move(file_data_source), std::move(observer)),
                           base::BindOnce(&FileURLLoader::OnFileWritten,
                                          base::Unretained(this), nullptr));
   }
@@ -761,7 +742,7 @@ class FileURLLoader : public network::mojom::URLLoader {
   // a byte range was requested).
   // It is used to set some of the URLLoaderCompletionStatus data passed back
   // to the URLLoaderClients (eg SimpleURLLoader).
-  size_t total_bytes_written_ = 0;
+  uint64_t total_bytes_written_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FileURLLoader);
 };

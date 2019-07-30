@@ -20,7 +20,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -248,7 +248,7 @@ DevToolsPipeHandler::DevToolsPipeHandler()
     : read_fd_(kReadFD), write_fd_(kWriteFD) {
   read_thread_.reset(new base::Thread(kDevToolsPipeHandlerReadThreadName));
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_pump_type = base::MessagePumpType::IO;
   if (!read_thread_->StartWithOptions(options)) {
     read_thread_.reset();
     Shutdown();

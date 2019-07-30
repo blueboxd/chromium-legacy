@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
@@ -41,7 +41,7 @@ class FetchUrlTest : public testing::Test,
         response_(kSendHello),
         scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO) {
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     CHECK(io_thread_.StartWithOptions(options));
 
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,

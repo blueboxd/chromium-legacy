@@ -51,8 +51,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
 
   // The OverlayCandidate for the OutputSurface. Allows the validator to update
   // any properties of the |surface| required by the platform.
-  virtual void AdjustOutputSurfaceOverlay(
-      OverlayProcessor::OutputSurfaceOverlayPlane* output_surface_plane);
+  virtual void AdjustOutputSurfaceOverlay(OverlayCandidate* candidate) {}
 
   // Set the overlay display transform and viewport size. Value only used for
   // Android Surface Control.
@@ -62,7 +61,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   // Returns the overlay damage rect covering the main plane rendered by the
   // OutputSurface. This rect is in the same space where the OutputSurface
   // renders the content for the main plane, including the display transform if
-  // needed. Should only be called after overlays are processed.
+  // needed.
   virtual gfx::Rect GetOverlayDamageRectForOutputSurface(
       const OverlayCandidate& candidate) const;
 
@@ -79,13 +78,12 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
       DisplayResourceProvider* resource_provider,
       RenderPassList* render_pass_list,
       OverlayCandidateList* candidates,
-      std::vector<gfx::Rect>* content_bounds);
+      std::vector<gfx::Rect>* content_bounds) const;
 
  protected:
   OverlayCandidateValidator();
 
   OverlayProcessor::StrategyList strategies_;
-  OverlayProcessor::Strategy* last_successful_strategy_ = nullptr;
 };
 
 }  // namespace viz

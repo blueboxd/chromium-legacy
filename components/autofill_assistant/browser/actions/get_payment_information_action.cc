@@ -50,6 +50,13 @@ void GetPaymentInformationAction::InternalProcessAction(
     ProcessActionCallback callback) {
   callback_ = std::move(callback);
   auto payment_options = CreateOptionsFromProto();
+  if (!payment_options) {
+    UpdateProcessedAction(INVALID_ACTION);
+    action_successful_ = false;
+    std::move(callback).Run(std::move(processed_action_proto_));
+    return;
+  }
+
   auto get_payment_information = proto_.get_payment_information();
   payment_options->confirm_callback = base::BindOnce(
       &GetPaymentInformationAction::OnGetPaymentInformation,
@@ -191,6 +198,14 @@ GetPaymentInformationAction::CreateOptionsFromProto() const {
       !get_payment_information.shipping_address_name().empty();
   payment_options->request_payment_method =
       get_payment_information.ask_for_payment();
+  payment_options->require_billing_postal_code =
+      get_payment_information.require_billing_postal_code();
+  payment_options->billing_postal_code_missing_text =
+      get_payment_information.billing_postal_code_missing_text();
+  if (payment_options->require_billing_postal_code &&
+      payment_options->billing_postal_code_missing_text.empty()) {
+    return nullptr;
+  }
 
   // TODO(crbug.com/806868): Maybe we could refactor this to make the confirm
   // chip and direct_action part of the additional_actions.

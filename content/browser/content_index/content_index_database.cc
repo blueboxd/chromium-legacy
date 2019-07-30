@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
 #include "content/browser/content_index/content_index.pb.h"
+#include "content/browser/content_index/content_index_metrics.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -122,6 +123,7 @@ void ContentIndexDatabase::AddEntry(
   if (blocked_origins_.count(origin)) {
     // TODO(crbug.com/973844): Does this need a more specific error?
     std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR);
+    content_index::RecordRegistrationBlocked(description->category);
     return;
   }
 
@@ -162,6 +164,8 @@ void ContentIndexDatabase::DidAddEntry(
     blink::mojom::ContentIndexService::AddCallback callback,
     ContentIndexEntry entry,
     blink::ServiceWorkerStatusCode status) {
+  content_index::RecordDatabaseOperationStatus("Add", status);
+
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR);
     return;
@@ -196,6 +200,8 @@ void ContentIndexDatabase::DidDeleteEntry(
     const std::string& entry_id,
     blink::mojom::ContentIndexService::DeleteCallback callback,
     blink::ServiceWorkerStatusCode status) {
+  content_index::RecordDatabaseOperationStatus("Delete", status);
+
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR);
     return;
@@ -223,6 +229,8 @@ void ContentIndexDatabase::DidGetDescriptions(
     blink::mojom::ContentIndexService::GetDescriptionsCallback callback,
     const std::vector<std::string>& data,
     blink::ServiceWorkerStatusCode status) {
+  content_index::RecordDatabaseOperationStatus("GetDescriptions", status);
+
   if (status == blink::ServiceWorkerStatusCode::kErrorNotFound) {
     std::move(callback).Run(blink::mojom::ContentIndexError::NONE,
                             /* descriptions= */ {});
@@ -276,6 +284,8 @@ void ContentIndexDatabase::DidGetSerializedIcon(
     base::OnceCallback<void(SkBitmap)> icon_callback,
     const std::vector<std::string>& data,
     blink::ServiceWorkerStatusCode status) {
+  content_index::RecordDatabaseOperationStatus("GetIcon", status);
+
   if (status != blink::ServiceWorkerStatusCode::kOk || data.empty()) {
     std::move(icon_callback).Run(SkBitmap());
     return;
@@ -303,8 +313,9 @@ void ContentIndexDatabase::DidGetEntries(
     ContentIndexContext::GetAllEntriesCallback callback,
     const std::vector<std::pair<int64_t, std::string>>& user_data,
     blink::ServiceWorkerStatusCode status) {
+  content_index::RecordDatabaseOperationStatus("GetAllEntries", status);
+
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    // TODO(crbug.com/973844): Handle or report this error.
     std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR,
                             /* entries= */ {});
     return;
@@ -321,8 +332,8 @@ void ContentIndexDatabase::DidGetEntries(
 
   for (const auto& ud : user_data) {
     auto entry = EntryFromSerializedProto(ud.first, ud.second);
+    // TODO(crbug.com/973844): Clear the storage if there is data corruption.
     if (!entry) {
-      // TODO(crbug.com/973844): Handle or report this error.
       std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR,
                               /* entries= */ {});
       return;
@@ -351,8 +362,9 @@ void ContentIndexDatabase::DidGetEntry(
     ContentIndexContext::GetEntryCallback callback,
     const std::vector<std::string>& data,
     blink::ServiceWorkerStatusCode status) {
+  content_index::RecordDatabaseOperationStatus("GetEntry", status);
+
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    // TODO(crbug.com/973844): Handle or report this error.
     std::move(callback).Run(base::nullopt);
     return;
   }

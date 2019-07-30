@@ -158,8 +158,7 @@ int CredentialsItemView::GetHeightForWidth(int w) const {
 }
 
 void CredentialsItemView::Layout() {
-  gfx::Rect child_area(GetLocalBounds());
-  child_area.Inset(GetInsets());
+  gfx::Rect child_area = GetContentsBounds();
 
   gfx::Size image_size(image_view_->GetPreferredSize());
   image_size.SetToMin(child_area.size());

@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/user_action.h"
+#include "components/autofill_assistant/browser/viewport_mode.h"
 
 namespace autofill_assistant {
 class ControllerObserver;
@@ -142,7 +143,7 @@ class UiDelegate {
                             Metrics::DropOutReason reason) = 0;
 
   // Returns whether the viewport should be resized.
-  virtual bool GetResizeViewport() = 0;
+  virtual ViewportMode GetViewportMode() = 0;
 
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
 

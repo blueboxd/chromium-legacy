@@ -361,8 +361,6 @@ WorkerClients* DedicatedWorker::CreateWorkerClients() {
   auto* worker_clients = MakeGarbageCollected<WorkerClients>();
   CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
       *worker_clients);
-  CoreInitializer::GetInstance().ProvideIndexedDBClientToWorker(
-      *worker_clients);
   return worker_clients;
 }
 

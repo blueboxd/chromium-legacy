@@ -240,13 +240,10 @@ class CORE_EXPORT StyleResolver final
                                          const CacheSuccess&,
                                          bool& apply_inherited_only,
                                          NeedsApplyPass&);
-  void ApplyMatchedProperties(StyleResolverState&,
-                              const MatchResult&,
-                              const Element* animating_element);
+  void ApplyMatchedProperties(StyleResolverState&, const MatchResult&);
 
   void CascadeAndApplyMatchedProperties(StyleResolverState&,
-                                        const MatchResult&,
-                                        const Element* animating_element);
+                                        const MatchResult&);
   void CascadeMatchResult(StyleResolverState&,
                           StyleCascade&,
                           const MatchResult&);
@@ -260,10 +257,9 @@ class CORE_EXPORT StyleResolver final
                              const ActiveInterpolationsMap&,
                              StyleCascade::Origin);
 
-  void CalculateAnimationUpdate(StyleResolverState&,
-                                const Element* animating_element);
+  void CalculateAnimationUpdate(StyleResolverState&);
 
-  bool ApplyAnimatedStandardProperties(StyleResolverState&, const Element*);
+  bool ApplyAnimatedStandardProperties(StyleResolverState&);
 
   void ApplyCallbackSelectors(StyleResolverState&);
 

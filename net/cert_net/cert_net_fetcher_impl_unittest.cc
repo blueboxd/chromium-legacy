@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "net/cert/cert_net_fetcher.h"
@@ -178,7 +178,7 @@ class CertNetFetcherImplTest : public PlatformTest {
   void StartNetworkThread() {
     // Start the network thread.
     network_thread_.reset(new base::Thread("network thread"));
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     EXPECT_TRUE(network_thread_->StartWithOptions(options));
 
     // Initialize the URLRequestContext (and wait till it has completed).

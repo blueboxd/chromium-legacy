@@ -64,9 +64,8 @@ class PrimaryAccountMutator {
   // account is known by IdentityManager. The reason is that there are
   // contexts on ChromeOS where the primary account is not guaranteed to be
   // known by IdentityManager when it is set.
-  // TODO(https://crbug.com/967605): Port callers to SetPrimaryAccount() once
-  // https://crbug.com/867602 is fixed.
-  virtual bool SetPrimaryAccountAndUpdateAccountInfo(
+  // TODO(https://crbug.com/987955): Remove this API.
+  virtual bool DeprecatedSetPrimaryAccountAndUpdateAccountInfo(
       const std::string& gaia_id,
       const std::string& email) = 0;
 #endif

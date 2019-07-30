@@ -8,7 +8,7 @@ traits_headers =
     [ "//services/viz/public/cpp/compositing/resource_settings_mojom_traits.h" ]
 deps = [
   "//components/viz/common",
-  "//ui/gfx/mojo",
+  "//ui/gfx/mojom",
 ]
 sources = [
   "//services/viz/public/cpp/compositing/resource_settings_mojom_traits.cc",

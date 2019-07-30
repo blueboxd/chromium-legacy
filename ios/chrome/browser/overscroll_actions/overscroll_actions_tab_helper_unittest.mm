@@ -10,6 +10,8 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
+#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/test/fakes/fake_overscroll_actions_controller_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -112,9 +114,7 @@ TEST_F(OverscrollActionsTabHelperTest, MAYBE_TestRegularBrowserStateStyle) {
   web_state_.SetBrowserState(browser_state_.get());
   overscroll_tab_helper()->SetDelegate(overscroll_delegate_);
   SimulatePullForRefreshAction();
-  UIColor* expected_color =
-      [UIColor colorWithWhite:kActionViewBackgroundColorBrightnessNonIncognito
-                        alpha:1.0];
+  UIColor* expected_color = [UIColor colorNamed:kBackgroundColor];
   EXPECT_TRUE(action_view());
   EXPECT_NSEQ(expected_color, action_view().backgroundColor);
 }
@@ -135,9 +135,11 @@ TEST_F(OverscrollActionsTabHelperTest,
       browser_state_->GetOffTheRecordChromeBrowserState());
   overscroll_tab_helper()->SetDelegate(overscroll_delegate_);
   SimulatePullForRefreshAction();
+  // For iOS 13 and dark mode, the incognito overscroll actions view uses a
+  // dynamic color.
   UIColor* expected_color =
-      [UIColor colorWithWhite:kActionViewBackgroundColorBrightnessIncognito
-                        alpha:1.0];
+      color::IncognitoDynamicColor(true, [UIColor colorNamed:kBackgroundColor],
+                                   [UIColor colorNamed:kBackgroundDarkColor]);
   EXPECT_TRUE(action_view());
   EXPECT_NSEQ(expected_color, action_view().backgroundColor);
 }

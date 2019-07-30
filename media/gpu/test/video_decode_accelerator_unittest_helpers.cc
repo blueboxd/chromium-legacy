@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/video_decoder_config.h"
@@ -37,7 +38,7 @@ VideoDecodeAcceleratorTestEnvironment::
 
 void VideoDecodeAcceleratorTestEnvironment::SetUp() {
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_UI;
+  options.message_pump_type = base::MessagePumpType::UI;
   rendering_thread_.StartWithOptions(options);
 
   base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,

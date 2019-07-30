@@ -21,12 +21,14 @@ cca.views = cca.views || {};
  * @param {boolean=} dismissByBkgndClick Enable dismissible by background-click.
  * @constructor
  */
-cca.views.View = function(selector, dismissByEsc, dismissByBkgndClick) {
+cca.views.View = function(
+    selector, dismissByEsc = false, dismissByBkgndClick = false) {
   /**
-   * @type {HTMLElement}
+   * @type {!HTMLElement}
    * @private
    */
-  this.rootElement_ = document.querySelector(selector);
+  this.rootElement_ =
+      /** @type {!HTMLElement} */ (document.querySelector(selector));
 
   /**
    * @type {Promise<*>}

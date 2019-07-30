@@ -70,10 +70,7 @@ IN_PROC_BROWSER_TEST_P(ManagementApiNonPersistentApiTest, UninstallSelf) {
       extensions::ExtensionRegistry::Get(browser()->profile()));
 
   base::FilePath path = test_dir.Pack();
-  // NOTE: Do not use a scoped_refptr<Extension> as the |extension| might get
-  // uninstalled right away.
-  const Extension* extension = LoadExtension(path);
-
+  scoped_refptr<const Extension> extension = LoadExtension(path);
   EXPECT_EQ(extension, observer.WaitForExtensionUninstalled());
 }
 

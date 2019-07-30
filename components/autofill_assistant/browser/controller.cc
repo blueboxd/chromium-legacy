@@ -300,13 +300,13 @@ bool Controller::PerformUserActionWithContext(
   return true;
 }
 
-void Controller::SetResizeViewport(bool resize_viewport) {
-  if (resize_viewport == resize_viewport_)
+void Controller::SetViewportMode(ViewportMode mode) {
+  if (mode == viewport_mode_)
     return;
 
-  resize_viewport_ = resize_viewport;
+  viewport_mode_ = mode;
   for (ControllerObserver& observer : observers_) {
-    observer.OnResizeViewportChanged(resize_viewport);
+    observer.OnViewportModeChanged(mode);
   }
 }
 
@@ -440,8 +440,8 @@ void Controller::RemoveObserver(const ControllerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool Controller::GetResizeViewport() {
-  return resize_viewport_;
+ViewportMode Controller::GetViewportMode() {
+  return viewport_mode_;
 }
 
 ConfigureBottomSheetProto::PeekMode Controller::GetPeekMode() {
@@ -1039,12 +1039,20 @@ void Controller::UpdatePaymentRequestActions() {
   bool payment_method_ok = !payment_request_options_->request_payment_method ||
                            payment_request_info_->card;
 
+  bool billing_address_ok =
+      !payment_request_options_->require_billing_postal_code ||
+      (payment_request_info_->billing_address &&
+       !payment_request_info_->billing_address
+            ->GetRawInfo(autofill::ADDRESS_HOME_ZIP)
+            .empty());
+
   bool terms_ok =
       payment_request_info_->terms_and_conditions != NOT_SELECTED ||
       payment_request_options_->accept_terms_and_conditions_text.empty();
 
-  bool confirm_button_enabled =
-      contact_info_ok && shipping_address_ok && payment_method_ok && terms_ok;
+  bool confirm_button_enabled = contact_info_ok && shipping_address_ok &&
+                                payment_method_ok && billing_address_ok &&
+                                terms_ok;
 
   UserAction confirm(payment_request_options_->confirm_action);
   confirm.SetEnabled(confirm_button_enabled);

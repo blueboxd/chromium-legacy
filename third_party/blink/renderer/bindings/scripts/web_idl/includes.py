@@ -3,9 +3,11 @@
 # found in the LICENSE file.
 
 import exceptions
-from .common import WithCodeGeneratorInfo
-from .common import WithComponent
-from .common import WithDebugInfo
+
+from .composition_parts import Identifier
+from .composition_parts import WithCodeGeneratorInfo
+from .composition_parts import WithComponent
+from .composition_parts import WithDebugInfo
 from .identifier_ir_map import IdentifierIRMap
 
 
@@ -20,6 +22,9 @@ class Includes(WithComponent, WithDebugInfo):
                      code_generator_info=None,
                      component=None,
                      debug_info=None):
+            assert isinstance(interface_identifier, Identifier)
+            assert isinstance(mixin_identifier, Identifier)
+
             # Includes statements are treated similarly to partial
             # definitions, and it's convenient for IdlCompiler that
             # 'includes' are grouped by interface's identifier, i.e.

@@ -4,7 +4,7 @@
 
 module viz.mojom;
 
-import "ui/gfx/mojo/presentation_feedback.mojom";
+import "ui/gfx/mojom/presentation_feedback.mojom";
 
 // viz::FrameTimingDetails
 struct FrameTimingDetails {

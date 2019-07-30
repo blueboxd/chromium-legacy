@@ -12,7 +12,7 @@
 #include "ui/base/window_open_disposition.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/chrome_extension_api_frame_id_map_helper.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
 #endif
 
@@ -26,8 +26,11 @@ ChromeNavigationUIData::ChromeNavigationUIData(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   int tab_id = extension_misc::kUnknownTabId;
   int window_id = extension_misc::kUnknownWindowId;
-  extensions::ChromeExtensionApiFrameIdMapHelper::PopulateTabData(
-      web_contents, &tab_id, &window_id);
+  // The browser client can be null in unittests.
+  if (extensions::ExtensionsBrowserClient::Get()) {
+    extensions::ExtensionsBrowserClient::Get()->GetTabAndWindowIdForWebContents(
+        web_contents, &tab_id, &window_id);
+  }
   extension_data_ = std::make_unique<extensions::ExtensionNavigationUIData>(
       navigation_handle, tab_id, window_id);
 #endif
@@ -60,8 +63,11 @@ ChromeNavigationUIData::CreateForMainFrameNavigation(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   int tab_id = extension_misc::kUnknownTabId;
   int window_id = extension_misc::kUnknownWindowId;
-  extensions::ChromeExtensionApiFrameIdMapHelper::PopulateTabData(
-      web_contents, &tab_id, &window_id);
+  // The browser client can be null in unittests.
+  if (extensions::ExtensionsBrowserClient::Get()) {
+    extensions::ExtensionsBrowserClient::Get()->GetTabAndWindowIdForWebContents(
+        web_contents, &tab_id, &window_id);
+  }
 
   navigation_ui_data->extension_data_ =
       extensions::ExtensionNavigationUIData::CreateForMainFrameNavigation(

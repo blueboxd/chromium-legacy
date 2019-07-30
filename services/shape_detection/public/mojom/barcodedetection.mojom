@@ -6,7 +6,7 @@
 
 module shape_detection.mojom;
 
-import "skia/public/interfaces/bitmap.mojom";
+import "skia/public/mojom/bitmap.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // https://wicg.github.io/shape-detection-api/#barcodeformat-section

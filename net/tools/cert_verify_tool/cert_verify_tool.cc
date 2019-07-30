@@ -9,7 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/thread_pool/thread_pool.h"
@@ -354,7 +354,7 @@ int main(int argc, char** argv) {
 
   // Create a network thread to be used for AIA fetches, and wait for a
   // CertNetFetcher to be constructed on that thread.
-  base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options options(base::MessagePumpType::IO, 0);
   base::Thread thread("network_thread");
   CHECK(thread.StartWithOptions(options));
   // Owned by this thread, but initialized, used, and shutdown on the network

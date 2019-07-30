@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/payment_request.h"
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/user_action.h"
+#include "components/autofill_assistant/browser/viewport_mode.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -69,8 +70,8 @@ class ScriptExecutorDelegate {
   virtual void SetProgressVisible(bool visible) = 0;
   virtual void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_action) = 0;
-  virtual bool GetResizeViewport() = 0;
-  virtual void SetResizeViewport(bool resize_viewport) = 0;
+  virtual ViewportMode GetViewportMode() = 0;
+  virtual void SetViewportMode(ViewportMode mode) = 0;
   virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
   virtual bool SetForm(

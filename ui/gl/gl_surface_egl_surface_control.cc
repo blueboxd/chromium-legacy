@@ -191,29 +191,19 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
     return;
   }
 
-  // Mark the intersection of a surface's rect with the damage rect as the dirty
-  // rect for that surface.
-  DCHECK_LE(pending_surfaces_count_, surface_list_.size());
-  const gfx::Rect damage_rect_in_screen_space =
-      ApplyDisplayInverse(damage_rect);
-  for (size_t i = 0; i < pending_surfaces_count_; ++i) {
-    const auto& surface_state = surface_list_[i];
-    if (!surface_state.buffer_updated_in_pending_transaction)
-      continue;
-
-    gfx::Rect surface_damage_rect = surface_state.dst;
-    surface_damage_rect.Intersect(damage_rect_in_screen_space);
-    pending_transaction_->SetDamageRect(*surface_state.surface,
-                                        surface_damage_rect);
-  }
-
   // Surfaces which are present in the current frame but not in the next frame
   // need to be explicitly updated in order to get a release fence for them in
   // the next transaction.
+  DCHECK_LE(pending_surfaces_count_, surface_list_.size());
   for (size_t i = pending_surfaces_count_; i < surface_list_.size(); ++i) {
     pending_transaction_->SetBuffer(*surface_list_[i].surface, nullptr,
                                     base::ScopedFD());
   }
+
+  // TODO(khushalsagar): Consider using the SetDamageRect API for partial
+  // invalidations. Note that the damage rect set should be in the space in
+  // which the content is rendered (including the pre-transform). See
+  // crbug.com/988857 for details.
 
   // Release resources for the current frame once the next frame is acked.
   ResourceRefs resources_to_release;

@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
@@ -76,13 +77,13 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
         RepeatingCallback<std::unique_ptr<MessagePump>()>;
 
     Options();
-    Options(MessageLoop::Type type, size_t size);
+    Options(MessagePumpType type, size_t size);
     Options(Options&& other);
     ~Options();
 
-    // Specifies the type of message loop that will be allocated on the thread.
+    // Specifies the type of message pump that will be allocated on the thread.
     // This is ignored if message_pump_factory.is_null() is false.
-    MessageLoop::Type message_loop_type = MessageLoop::TYPE_DEFAULT;
+    MessagePumpType message_pump_type = MessagePump::Type::DEFAULT;
 
     // An unbound TaskEnvironment that will be bound to the thread. Ownership
     // of |task_environment| will be transferred to the thread.
@@ -94,8 +95,8 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
     // Used to create the MessagePump for the MessageLoop. The callback is Run()
     // on the thread. If message_pump_factory.is_null(), then a MessagePump
-    // appropriate for |message_loop_type| is created. Setting this forces the
-    // MessageLoop::Type to TYPE_CUSTOM. This is not compatible with a non-null
+    // appropriate for |message_pump_type| is created. Setting this forces the
+    // MessagePumpType to TYPE_CUSTOM. This is not compatible with a non-null
     // |task_environment|.
     MessagePumpFactory message_pump_factory;
 

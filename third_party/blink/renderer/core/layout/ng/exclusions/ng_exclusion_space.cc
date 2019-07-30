@@ -120,18 +120,19 @@ bool Intersects(const NGLayoutOpportunity& opportunity,
 // always intersects.
 bool Intersects(const NGExclusionSpaceInternal::NGShelf& shelf,
                 const NGBfcOffset& offset,
-                const LayoutUnit inline_size) {
+                const LayoutUnit inline_size,
+                bool is_inline_level) {
   if (shelf.line_right >= offset.line_offset &&
       shelf.line_left <= offset.line_offset + inline_size)
     return true;
+
   // Negative available space creates a zero-width opportunity at the inline-end
   // of the shelf. Consider such shelf intersects.
-  // TODO(kojii): This is correct to find layout opportunities for zero-width
-  // in-flow inline or block objects (e.g., <br>,) but not correct for
-  // zero-width floats.
-  if (UNLIKELY(shelf.line_left > offset.line_offset ||
-               shelf.line_right < offset.line_offset + inline_size))
+  if (UNLIKELY(is_inline_level &&
+               (shelf.line_left > offset.line_offset ||
+                shelf.line_right < offset.line_offset + inline_size)))
     return true;
+
   return false;
 }
 
@@ -162,8 +163,9 @@ NGLayoutOpportunity CreateLayoutOpportunity(const NGLayoutOpportunity& other,
 NGLayoutOpportunity CreateLayoutOpportunity(
     const NGExclusionSpaceInternal::NGShelf& shelf,
     const NGBfcOffset& offset,
-    const LayoutUnit inline_size) {
-  DCHECK(Intersects(shelf, offset, inline_size));
+    const LayoutUnit inline_size,
+    bool is_inline_level) {
+  DCHECK(Intersects(shelf, offset, inline_size, is_inline_level));
 
   NGBfcOffset start_offset(std::max(shelf.line_left, offset.line_offset),
                            std::max(shelf.block_offset, offset.block_offset));
@@ -550,7 +552,7 @@ NGExclusionSpaceInternal::DerivedGeometry::FindLayoutOpportunity(
 
   NGLayoutOpportunity return_opportunity;
   IterateAllLayoutOpportunities(
-      offset, available_inline_size,
+      offset, available_inline_size, false /* is_inline_level */,
       [&return_opportunity, &minimum_size,
        &available_inline_size](const NGLayoutOpportunity opportunity) -> bool {
         // Determine if this opportunity will fit the given size.
@@ -577,8 +579,9 @@ NGExclusionSpaceInternal::DerivedGeometry::AllLayoutOpportunities(
     const LayoutUnit available_inline_size) const {
   LayoutOpportunityVector opportunities;
 
+  // This method is only used for determining the position of line-boxes.
   IterateAllLayoutOpportunities(
-      offset, available_inline_size,
+      offset, available_inline_size, true /* is_inline_level */,
       [&opportunities](const NGLayoutOpportunity opportunity) -> bool {
         opportunities.push_back(std::move(opportunity));
         return false;
@@ -591,6 +594,7 @@ template <typename LambdaFunc>
 void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
     const NGBfcOffset& offset,
     const LayoutUnit available_inline_size,
+    bool is_inline_level,
     const LambdaFunc& lambda) const {
   auto* shelves_it = shelves_.begin();
   auto* areas_it = areas_.begin();
@@ -604,7 +608,7 @@ void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
     DCHECK_NE(shelves_it, shelves_end);
     const NGShelf& shelf = *shelves_it;
 
-    if (!Intersects(shelf, offset, available_inline_size)) {
+    if (!Intersects(shelf, offset, available_inline_size, is_inline_level)) {
       ++shelves_it;
       continue;
     }
@@ -649,7 +653,8 @@ void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
         HasSolidEdges(shelf.line_right_edges, offset.block_offset,
                       LayoutUnit::Max());
     if (has_solid_edges) {
-      if (lambda(CreateLayoutOpportunity(shelf, offset, available_inline_size)))
+      if (lambda(CreateLayoutOpportunity(shelf, offset, available_inline_size,
+                                         is_inline_level)))
         return;
     }
     ++shelves_it;

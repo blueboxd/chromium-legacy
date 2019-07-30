@@ -209,7 +209,7 @@ mojom("interfaces") {
     ":gpu_preferences_interface",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojom",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
   ]
 }
 
@@ -220,7 +220,7 @@ mojom("gpu_preferences_interface") {
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
   ]
 }
 

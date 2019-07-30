@@ -601,7 +601,8 @@ void ServiceWorkerUpdateCheckTestUtils::SetComparedScriptInfoForVersion(
     ServiceWorkerVersion* version) {
   std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo> info_map;
   info_map[script_url] = ServiceWorkerUpdateChecker::ComparedScriptInfo(
-      resource_id, compare_result, std::move(paused_state));
+      resource_id, compare_result, std::move(paused_state),
+      /*failure_info=*/nullptr);
   version->set_compared_script_info_map(std::move(info_map));
 }
 

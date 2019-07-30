@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .common import WithIdentifier
+from .composition_parts import Identifier
+from .composition_parts import WithIdentifier
 
 
 class IdentifierIRMap(object):
@@ -169,6 +170,7 @@ class IdentifierIRMap(object):
         If |skip_current_phase| is True, skips the current phase when looking
         for the identifier.
         """
+        assert isinstance(identifier, Identifier)
         start_phase = self._current_phase - (1 if skip_current_phase else 0)
         for irs_per_phase in self._single_value_irs[start_phase::-1]:
             for irs_per_kind in irs_per_phase.values():

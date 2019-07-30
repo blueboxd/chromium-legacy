@@ -64,9 +64,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
     AppId app_id = InstallPWA(https_server()->GetURL(
         "/ssl/page_with_in_scope_and_cross_site_frame.html"));
-    Browser* app_browser = LaunchAppBrowser(app_id);
-    content::WebContents* web_contents =
-        app_browser->tab_strip_model()->GetActiveWebContents();
+    content::WebContents* web_contents = OpenApplication(app_id);
     // There should be exactly 3 frames:
     // 1) The main frame.
     // 2) A cross site frame, on https://example.com/
@@ -88,10 +86,9 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
     awaiter_ = std::make_unique<base::RunLoop>();
 
-    Profile* profile = app_browser->profile();
     std::unique_ptr<badging::BadgeManagerDelegate> delegate =
         std::make_unique<TestBadgeManagerDelegate>(
-            profile,
+            profile(),
             base::BindRepeating(&WebAppBadgingBrowserTest::OnBadgeSet,
                                 base::Unretained(this)),
             base::BindRepeating(&WebAppBadgingBrowserTest::OnBadgeCleared,
@@ -99,7 +96,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
             base::BindRepeating(&WebAppBadgingBrowserTest::OnBadgeChangeFailed,
                                 base::Unretained(this)));
     badging::BadgeManagerFactory::GetInstance()
-        ->GetForProfile(profile)
+        ->GetForProfile(profile())
         ->SetDelegate(std::move(delegate));
   }
 
@@ -223,6 +220,7 @@ INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     WebAppBadgingBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp));
+                      ControllerType::kUnifiedControllerWithBookmarkApp,
+                      ControllerType::kUnifiedControllerWithWebApp));
 
 }  // namespace web_app

@@ -265,11 +265,7 @@
                                                    promoAction:promoAction_
                                                 signInIdentity:signInIdentity
                                                     dispatcher:self.dispatcher];
-  [signinViewController_ setDelegate:self];
-  [signinViewController_
-      setModalPresentationStyle:UIModalPresentationFormSheet];
-  [signinViewController_
-      setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
+  signinViewController_.delegate = self;
   signInIdentity_ = signInIdentity;
   identityAdded_ = identityAdded;
 

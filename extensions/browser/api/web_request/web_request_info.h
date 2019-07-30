@@ -71,7 +71,7 @@ struct WebRequestInfoInitParams {
   int web_view_instance_id = -1;
   int web_view_rules_registry_id = -1;
   int web_view_embedder_process_id = -1;
-  base::Optional<ExtensionApiFrameIdMap::FrameData> frame_data;
+  ExtensionApiFrameIdMap::FrameData frame_data;
 
  private:
   void InitializeWebViewAndFrameData(
@@ -120,10 +120,8 @@ struct WebRequestInfo {
   const base::Optional<url::Origin> initiator;
 
   // Extension API frame data corresponding to details of the frame which
-  // initiate this request. May be null for renderer-initiated requests where
-  // some frame details are not known at WebRequestInfo construction time.
-  // Mutable since this is lazily computed.
-  mutable base::Optional<ExtensionApiFrameIdMap::FrameData> frame_data;
+  // initiate this request.
+  ExtensionApiFrameIdMap::FrameData frame_data;
 
   // The type of the request (e.g. main frame, subresource, XHR, etc). May have
   // no value if the request did not originate from a ResourceDispatcher.

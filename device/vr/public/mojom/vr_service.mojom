@@ -10,8 +10,8 @@ import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "ui/display/mojom/display.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/gpu_fence_handle.mojom";
-import "ui/gfx/mojo/transform.mojom";
+import "ui/gfx/mojom/gpu_fence_handle.mojom";
+import "ui/gfx/mojom/transform.mojom";
 
 //
 // WebXR interfaces

@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_mode.h"
@@ -122,7 +122,7 @@ DrmThread::~DrmThread() {
 void DrmThread::Start(base::OnceClosure binding_completer) {
   complete_early_binding_requests_ = std::move(binding_completer);
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_options.message_pump_type = base::MessagePumpType::IO;
   thread_options.priority = base::ThreadPriority::DISPLAY;
 
   if (!StartWithOptions(thread_options))

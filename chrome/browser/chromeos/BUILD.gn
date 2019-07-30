@@ -128,6 +128,7 @@ source_set("chromeos") {
     "//chromeos/services/cros_healthd/public/cpp",
     "//chromeos/services/cros_healthd/public/mojom",
     "//chromeos/services/device_sync/public/cpp",
+    "//chromeos/services/ime:constants",
     "//chromeos/services/ime/public/mojom",
     "//chromeos/services/machine_learning/public/cpp",
     "//chromeos/services/machine_learning/public/mojom",

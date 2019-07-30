@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_index/content_index_metrics.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
@@ -128,6 +129,7 @@ void DidGetAllEntries(base::OnceClosure done_closure,
 void DidGetAllEntriesAcrossStorageParitions(
     std::unique_ptr<ContentIndexProviderImpl::OfflineItemList> item_list,
     ContentIndexProviderImpl::MultipleItemCallback callback) {
+  content_index::RecordContentIndexEntries(item_list->size());
   std::move(callback).Run(*item_list);
 }
 
@@ -163,6 +165,8 @@ void ContentIndexProviderImpl::OnContentAdded(
 
   for (auto& observer : observers_)
     observer.OnItemsAdded(items);
+
+  content_index::RecordContentAdded(entry.description->category);
 }
 
 void ContentIndexProviderImpl::OnContentDeleted(
@@ -211,6 +215,8 @@ void ContentIndexProviderImpl::DidGetEntryToOpen(
                             ui::PAGE_TRANSITION_LINK);
   Navigate(&nav_params);
 #endif
+
+  content_index::RecordContentOpened(entry->description->category);
 }
 
 void ContentIndexProviderImpl::RemoveItem(const ContentId& id) {

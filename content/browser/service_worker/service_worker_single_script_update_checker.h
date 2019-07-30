@@ -43,11 +43,13 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   // This contains detailed error info of update check when it failed.
   struct CONTENT_EXPORT FailureInfo {
     FailureInfo(blink::ServiceWorkerStatusCode status,
-                const std::string& error_message);
+                const std::string& error_message,
+                network::URLLoaderCompletionStatus network_status);
     ~FailureInfo();
 
     const blink::ServiceWorkerStatusCode status;
     const std::string error_message;
+    const network::URLLoaderCompletionStatus network_status;
   };
 
   // The paused state consists of Mojo endpoints and a cache writer
@@ -142,7 +144,8 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
 
   // Called when the update check for this script failed. It calls Finish().
   void Fail(blink::ServiceWorkerStatusCode status,
-            const std::string& error_message);
+            const std::string& error_message,
+            network::URLLoaderCompletionStatus network_status);
 
   // Called when the update check for this script succeeded. It calls Finish().
   void Succeed(Result result);

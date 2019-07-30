@@ -346,7 +346,8 @@ void PermissionManager::Shutdown() {
   }
 }
 
-GURL PermissionManager::GetCanonicalOrigin(const GURL& requesting_origin,
+GURL PermissionManager::GetCanonicalOrigin(ContentSettingsType permission,
+                                           const GURL& requesting_origin,
                                            const GURL& embedding_origin) const {
   if (embedding_origin.GetOrigin() ==
       GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
@@ -358,6 +359,12 @@ GURL PermissionManager::GetCanonicalOrigin(const GURL& requesting_origin,
       return requesting_origin;
     }
   }
+
+  // TODO(crbug.com/987654): Generalize this to other "background permissions",
+  // that is, permissions that can be used by a service worker. This includes
+  // durable storage, background sync, etc.
+  if (permission == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+    return requesting_origin;
 
   if (base::FeatureList::IsEnabled(features::kPermissionDelegation)) {
     // Once permission delegation is enabled by default, it may be possible to
@@ -405,17 +412,16 @@ int PermissionManager::RequestPermissions(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
 
-  GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
-  GURL canonical_requesting_origin =
-      GetCanonicalOrigin(requesting_origin, embedding_origin);
-
   int request_id = pending_requests_.Add(std::make_unique<PendingRequest>(
       render_frame_host, permissions, std::move(callback)));
 
   const PermissionRequestID request(render_frame_host, request_id);
+  const GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
 
   for (size_t i = 0; i < permissions.size(); ++i) {
     const ContentSettingsType permission = permissions[i];
+    const GURL canonical_requesting_origin =
+        GetCanonicalOrigin(permission, requesting_origin, embedding_origin);
 
     auto response_callback =
         std::make_unique<PermissionResponseCallback>(this, request_id, i);
@@ -533,7 +539,7 @@ void PermissionManager::ResetPermission(PermissionType permission,
   if (!context)
     return;
   context->ResetPermission(
-      GetCanonicalOrigin(requesting_origin, embedding_origin),
+      GetCanonicalOrigin(type, requesting_origin, embedding_origin),
       embedding_origin.GetOrigin());
 }
 
@@ -551,7 +557,7 @@ PermissionStatus PermissionManager::GetPermissionStatus(
   PermissionContextBase* context = GetPermissionContext(type);
   if (context) {
     result = context->UpdatePermissionStatusWithDeviceStatus(
-        result, GetCanonicalOrigin(requesting_origin, embedding_origin),
+        result, GetCanonicalOrigin(type, requesting_origin, embedding_origin),
         embedding_origin);
   }
 
@@ -563,9 +569,9 @@ PermissionStatus PermissionManager::GetPermissionStatusForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  ContentSettingsType type = PermissionTypeToContentSetting(permission);
   PermissionResult result =
-      GetPermissionStatusForFrame(PermissionTypeToContentSetting(permission),
-                                  render_frame_host, requesting_origin);
+      GetPermissionStatusForFrame(type, render_frame_host, requesting_origin);
 
   // TODO(benwells): split this into two functions, GetPermissionStatus and
   // GetPermissionStatusForPermissionsAPI.
@@ -576,7 +582,7 @@ PermissionStatus PermissionManager::GetPermissionStatusForFrame(
         content::WebContents::FromRenderFrameHost(render_frame_host);
     GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
     result = context->UpdatePermissionStatusWithDeviceStatus(
-        result, GetCanonicalOrigin(requesting_origin, embedding_origin),
+        result, GetCanonicalOrigin(type, requesting_origin, embedding_origin),
         embedding_origin);
   }
 
@@ -618,7 +624,7 @@ int PermissionManager::SubscribePermissionStatusChange(
 
   subscription->permission = content_type;
   subscription->requesting_origin =
-      GetCanonicalOrigin(requesting_origin, embedding_origin);
+      GetCanonicalOrigin(content_type, requesting_origin, embedding_origin);
   subscription->callback =
       base::BindRepeating(&SubscriptionCallbackWrapper, std::move(callback));
 
@@ -707,7 +713,7 @@ PermissionResult PermissionManager::GetPermissionStatusHelper(
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
   GURL canonical_requesting_origin =
-      GetCanonicalOrigin(requesting_origin, embedding_origin);
+      GetCanonicalOrigin(permission, requesting_origin, embedding_origin);
   auto status =
       GetPermissionOverrideForDevTools(canonical_requesting_origin, permission);
   if (status != CONTENT_SETTING_DEFAULT)

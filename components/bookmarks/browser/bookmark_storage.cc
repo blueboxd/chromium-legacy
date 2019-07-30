@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
@@ -138,6 +139,7 @@ void LoadBookmarks(const base::FilePath& path,
       details->set_computed_checksum(codec.computed_checksum());
       details->set_stored_checksum(codec.stored_checksum());
       details->set_ids_reassigned(codec.ids_reassigned());
+      details->set_guids_reassigned(codec.guids_reassigned());
       details->set_model_meta_info_map(codec.model_meta_info_map());
       details->set_model_sync_transaction_version(
           codec.model_sync_transaction_version());
@@ -206,7 +208,8 @@ BookmarkLoadDetails::BookmarkLoadDetails(BookmarkClient* client)
   // WARNING: do NOT add |client| as a member. Much of this code runs on another
   // thread, and |client_| is not thread safe, and/or may be destroyed before
   // this.
-  root_node_ = std::make_unique<BookmarkNode>(GURL());
+  root_node_ = std::make_unique<BookmarkNode>(
+      /*id=*/0, BookmarkNode::RootNodeGuid(), GURL());
   root_node_ptr_ = root_node_.get();
   // WARNING: order is important here, various places assume the order is
   // constant (but can vary between embedders with the initial visibility

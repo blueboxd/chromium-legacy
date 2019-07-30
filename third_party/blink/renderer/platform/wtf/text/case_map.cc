@@ -30,7 +30,7 @@ inline bool LocaleIdMatchesLang(const AtomicString& locale_id,
          maybe_delimiter == '@';
 }
 
-enum class CaseMapType { kLower, kUpper, kLowerLegacy, kUpperLegacy };
+enum class CaseMapType { kLower, kUpper };
 
 scoped_refptr<StringImpl> CaseConvert(CaseMapType type,
                                       StringImpl* source,
@@ -51,42 +51,26 @@ scoped_refptr<StringImpl> CaseConvert(CaseMapType type,
   while (true) {
     UErrorCode status = U_ZERO_ERROR;
     icu::Edits edits;
-    bool is_edits_valid = false;
     switch (type) {
       case CaseMapType::kLower:
         target_length = icu::CaseMap::toLower(
             locale, /* options */ 0,
             reinterpret_cast<const char16_t*>(source16), source_length,
             reinterpret_cast<char16_t*>(data16), target_length, &edits, status);
-        is_edits_valid = true;
         break;
       case CaseMapType::kUpper:
         target_length = icu::CaseMap::toUpper(
             locale, /* options */ 0,
             reinterpret_cast<const char16_t*>(source16), source_length,
             reinterpret_cast<char16_t*>(data16), target_length, &edits, status);
-        is_edits_valid = true;
-        break;
-      case CaseMapType::kLowerLegacy:
-        DCHECK(!offset_map);
-        target_length = u_strToLower(data16, target_length, source16,
-                                     source_length, locale, &status);
-        break;
-      case CaseMapType::kUpperLegacy:
-        DCHECK(!offset_map);
-        target_length = u_strToUpper(data16, target_length, source16,
-                                     source_length, locale, &status);
         break;
     }
-
     if (U_SUCCESS(status)) {
-      if (is_edits_valid) {
-        if (!edits.hasChanges())
-          return source;
+      if (!edits.hasChanges())
+        return source;
 
-        if (offset_map)
-          offset_map->Append(edits);
-      }
+      if (offset_map)
+        offset_map->Append(edits);
 
       if (source_length == target_length)
         return output;
@@ -132,7 +116,7 @@ CaseMap::Locale::Locale(const AtomicString& locale) {
     case_map_locale_ = nullptr;
 }
 
-scoped_refptr<StringImpl> CaseMap::FastToLowerInvariant(StringImpl* source) {
+scoped_refptr<StringImpl> CaseMap::TryFastToLowerInvariant(StringImpl* source) {
   DCHECK(source);
 
   // Note: This is a hot function in the Dromaeo benchmark, specifically the
@@ -196,27 +180,33 @@ scoped_refptr<StringImpl> CaseMap::FastToLowerInvariant(StringImpl* source) {
     return new_impl;
   }
 
-  // Do a slower implementation for cases that include non-ASCII characters.
-  UChar* data16;
-  scoped_refptr<StringImpl> new_impl =
-      StringImpl::CreateUninitialized(source->length(), data16);
-
-  bool error;
-  int32_t real_length = unicode::ToLower(data16, length, source->Characters16(),
-                                         source->length(), &error);
-  if (!error && real_length == length)
-    return new_impl;
-
-  new_impl = StringImpl::CreateUninitialized(real_length, data16);
-  unicode::ToLower(data16, real_length, source->Characters16(),
-                   source->length(), &error);
-  if (error)
-    return source;
-  return new_impl;
+  // The fast code path was not able to handle this case.
+  return nullptr;
 }
 
-scoped_refptr<StringImpl> CaseMap::FastToUpperInvariant(StringImpl* source) {
+scoped_refptr<StringImpl> CaseMap::FastToLowerInvariant(StringImpl* source) {
+  // Note: This is a hot function in the Dromaeo benchmark.
   DCHECK(source);
+  if (scoped_refptr<StringImpl> result = TryFastToLowerInvariant(source))
+    return result;
+  const char* locale = "";  // "" = root locale.
+  return CaseConvert(CaseMapType::kLower, source, locale);
+}
+
+scoped_refptr<StringImpl> CaseMap::ToLowerInvariant(StringImpl* source,
+                                                    TextOffsetMap* offset_map) {
+  DCHECK(source);
+  DCHECK(!offset_map || offset_map->IsEmpty());
+  if (scoped_refptr<StringImpl> result = TryFastToLowerInvariant(source))
+    return result;
+  const char* locale = "";  // "" = root locale.
+  return CaseConvert(CaseMapType::kLower, source, locale, offset_map);
+}
+
+scoped_refptr<StringImpl> CaseMap::ToUpperInvariant(StringImpl* source,
+                                                    TextOffsetMap* offset_map) {
+  DCHECK(source);
+  DCHECK(!offset_map || offset_map->IsEmpty());
 
   // This function could be optimized for no-op cases the way LowerUnicode() is,
   // but in empirical testing, few actual calls to UpperUnicode() are no-ops, so
@@ -277,6 +267,8 @@ scoped_refptr<StringImpl> CaseMap::FastToUpperInvariant(StringImpl* source) {
       if (c == kSmallLetterSharpSCharacter) {
         *dest++ = 'S';
         *dest++ = 'S';
+        if (offset_map)
+          offset_map->Append(i + 1, dest - data8);
       } else {
         *dest++ = static_cast<LChar>(unicode::ToUpper(c));
       }
@@ -304,66 +296,44 @@ upconvert:
     return new_impl;
 
   // Do a slower implementation for cases that include non-ASCII characters.
-  bool error;
-  int32_t real_length =
-      unicode::ToUpper(data16, length, source16, source->length(), &error);
-  if (!error && real_length == length)
-    return new_impl;
-  new_impl = StringImpl::CreateUninitialized(real_length, data16);
-  unicode::ToUpper(data16, real_length, source16, source->length(), &error);
-  if (error)
-    return source;
-  return new_impl;
+  const char* locale = "";  // "" = root locale.
+  return CaseConvert(CaseMapType::kUpper, source, locale, offset_map);
 }
 
-scoped_refptr<StringImpl> CaseMap::ToLower(StringImpl* source) const {
+scoped_refptr<StringImpl> CaseMap::ToLower(StringImpl* source,
+                                           TextOffsetMap* offset_map) const {
+  DCHECK(source);
+  DCHECK(!offset_map || offset_map->IsEmpty());
+
   if (!case_map_locale_)
-    return FastToLowerInvariant(source);
-
-  return CaseConvert(CaseMapType::kLowerLegacy, source, case_map_locale_);
+    return ToLowerInvariant(source, offset_map);
+  return CaseConvert(CaseMapType::kLower, source, case_map_locale_, offset_map);
 }
 
-scoped_refptr<StringImpl> CaseMap::ToUpper(StringImpl* source) const {
+scoped_refptr<StringImpl> CaseMap::ToUpper(StringImpl* source,
+                                           TextOffsetMap* offset_map) const {
+  DCHECK(source);
+  DCHECK(!offset_map || offset_map->IsEmpty());
+
   if (!case_map_locale_)
-    return FastToUpperInvariant(source);
-
-  return CaseConvert(CaseMapType::kUpperLegacy, source, case_map_locale_);
-}
-
-String CaseMap::ToLower(const String& source) const {
-  if (StringImpl* impl = source.Impl())
-    return ToLower(impl);
-  return String();
-}
-
-String CaseMap::ToUpper(const String& source) const {
-  if (StringImpl* impl = source.Impl())
-    return ToUpper(impl);
-  return String();
+    return ToUpperInvariant(source, offset_map);
+  return CaseConvert(CaseMapType::kUpper, source, case_map_locale_, offset_map);
 }
 
 String CaseMap::ToLower(const String& source, TextOffsetMap* offset_map) const {
-  DCHECK(offset_map && offset_map->IsEmpty());
+  DCHECK(!offset_map || offset_map->IsEmpty());
 
-  if (UNLIKELY(source.IsEmpty()))
-    return source;
-
-  // TODO(kojii): Implement fast-path for simple cases.
-
-  return CaseConvert(CaseMapType::kLower, source.Impl(), case_map_locale_,
-                     offset_map);
+  if (StringImpl* impl = source.Impl())
+    return ToLower(impl, offset_map);
+  return String();
 }
 
 String CaseMap::ToUpper(const String& source, TextOffsetMap* offset_map) const {
-  DCHECK(offset_map && offset_map->IsEmpty());
+  DCHECK(!offset_map || offset_map->IsEmpty());
 
-  if (UNLIKELY(source.IsEmpty()))
-    return source;
-
-  // TODO(kojii): Implement fast-path for simple cases.
-
-  return CaseConvert(CaseMapType::kUpper, source.Impl(), case_map_locale_,
-                     offset_map);
+  if (StringImpl* impl = source.Impl())
+    return ToUpper(impl, offset_map);
+  return String();
 }
 
 }  // namespace WTF

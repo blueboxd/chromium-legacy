@@ -26,6 +26,8 @@ class StartSurfaceProperties {
             new PropertyModel.WritableObjectPropertyKey<BottomBarClickListener>();
     public static final PropertyModel.WritableIntPropertyKey BOTTOM_BAR_HEIGHT =
             new PropertyModel.WritableIntPropertyKey();
+    public static final PropertyModel.WritableIntPropertyKey BOTTOM_BAR_SELECTED_TAB_POSITION =
+            new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey IS_EXPLORE_SURFACE_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey IS_INCOGNITO =
@@ -38,6 +40,6 @@ class StartSurfaceProperties {
     public static final PropertyModel.WritableIntPropertyKey TOP_BAR_HEIGHT =
             new PropertyModel.WritableIntPropertyKey();
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {BOTTOM_BAR_CLICKLISTENER,
-            BOTTOM_BAR_HEIGHT, IS_EXPLORE_SURFACE_VISIBLE, IS_INCOGNITO, IS_SHOWING_OVERVIEW,
-            FEED_SURFACE_COORDINATOR, TOP_BAR_HEIGHT};
+            BOTTOM_BAR_HEIGHT, BOTTOM_BAR_SELECTED_TAB_POSITION, IS_EXPLORE_SURFACE_VISIBLE,
+            IS_INCOGNITO, IS_SHOWING_OVERVIEW, FEED_SURFACE_COORDINATOR, TOP_BAR_HEIGHT};
 }

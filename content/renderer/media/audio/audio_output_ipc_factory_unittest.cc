@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -30,7 +31,7 @@ const int kRenderFrameId = 0;
 
 std::unique_ptr<base::Thread> MakeIOThread() {
   auto io_thread = std::make_unique<base::Thread>("test IO thread");
-  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options thread_options(base::MessagePumpType::IO, 0);
   CHECK(io_thread->StartWithOptions(thread_options));
   return io_thread;
 }

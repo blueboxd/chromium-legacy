@@ -112,6 +112,7 @@ customize.IDS = {
   BACKGROUNDS_UPLOAD: 'backgrounds-upload',
   BACKGROUNDS_UPLOAD_ICON: 'backgrounds-upload-icon',
   CANCEL: 'bg-sel-footer-cancel',
+  COLOR_PICKER_CONTAINER: 'color-picker-container',
   COLORS_BUTTON: 'colors-button',
   COLORS_DEFAULT_ICON: 'colors-default-icon',
   COLORS_THEME: 'colors-theme',
@@ -307,6 +308,9 @@ customize.setMenuVisibility = function() {
   $(customize.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).hidden =
       configData.hideShortcuts;
   $(customize.IDS.COLORS_BUTTON).hidden = !configData.chromeColors;
+  $(customize.IDS.COLOR_PICKER_CONTAINER)
+      .classList.toggle(
+          customize.CLASSES.VISIBLE, configData.chromeColorsCustomColorPicker);
 };
 
 /**
@@ -2074,6 +2078,12 @@ customize.loadColorsMenu = function() {
 
   const colorsColl = ntpApiHandle.getColorsInfo();
   for (let i = 0; i < colorsColl.length; ++i) {
+    // After 4 color tiles create an empty tile to take the place of the color
+    // picker. This is done so that the rest of the colors don't move if color
+    // picker is not present.
+    if (!configData.chromeColorsCustomColorPicker && i == 4) {
+      $(customize.IDS.COLORS_MENU).appendChild(document.createElement('div'));
+    }
     const id = 'color_' + i;
     const imageUrl = colorsColl[i].icon;
     const dataset = {'color': colorsColl[i].color, 'id': colorsColl[i].id};

@@ -612,7 +612,7 @@ TEST_F(DiceTurnSyncOnHelperTest, EnterpriseConfirmationAbort) {
 }
 
 // Continue after the enterprise confirmation prompt.
-TEST_F(DiceTurnSyncOnHelperTest, EnterpriseConfirmationContinue) {
+TEST_F(DiceTurnSyncOnHelperTest, DISABLED_EnterpriseConfirmationContinue) {
   // Set expectations.
   expected_enterprise_confirmation_email_ = kEmail;
   expected_sync_confirmation_shown_ = true;

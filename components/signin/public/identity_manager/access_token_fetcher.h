@@ -92,6 +92,7 @@ struct AccessTokenInfo;
 //       access_token_fetcher_ =
 //           identity_manager_->CreateAccessTokenFetcherForAccount(
 //               account_id, /*consumer_name=*/"MyClass",
+//               scopes,
 //               base::BindOnce(&MyClass::OnAccessTokenRequestCompleted,
 //                              // It is safe to use base::Unretained as
 //                              // |this| owns |access_token_fetcher_|.

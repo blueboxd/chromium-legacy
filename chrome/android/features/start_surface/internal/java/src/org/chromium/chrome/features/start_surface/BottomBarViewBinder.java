@@ -5,6 +5,7 @@
 package org.chromium.chrome.features.start_surface;
 
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_CLICKLISTENER;
+import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_SELECTED_TAB_POSITION;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_INCOGNITO;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 
@@ -14,12 +15,14 @@ import org.chromium.ui.modelutil.PropertyModel;
 /** The view binder of the bottom bar. */
 class BottomBarViewBinder {
     public static void bind(PropertyModel model, BottomBarView view, PropertyKey propertyKey) {
-        if (IS_INCOGNITO == propertyKey) {
+        if (BOTTOM_BAR_CLICKLISTENER == propertyKey) {
+            view.setOnClickListener(model.get(BOTTOM_BAR_CLICKLISTENER));
+        } else if (BOTTOM_BAR_SELECTED_TAB_POSITION == propertyKey) {
+            view.selectTabAt(model.get(BOTTOM_BAR_SELECTED_TAB_POSITION));
+        } else if (IS_INCOGNITO == propertyKey) {
             view.setIncognito(model.get(IS_INCOGNITO));
         } else if (IS_SHOWING_OVERVIEW == propertyKey) {
             view.setVisibility(model.get(IS_SHOWING_OVERVIEW));
-        } else if (BOTTOM_BAR_CLICKLISTENER == propertyKey) {
-            view.setOnClickListener(model.get(BOTTOM_BAR_CLICKLISTENER));
         }
     }
 }

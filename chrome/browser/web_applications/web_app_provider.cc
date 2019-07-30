@@ -154,6 +154,8 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
 
   sync_manager_ = std::make_unique<WebAppSyncManager>();
 
+  system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
+
   registrar_ = std::move(web_app_registrar);
 }
 
@@ -185,9 +187,9 @@ void WebAppProvider::ConnectSubsystems() {
                                         install_finalizer_.get());
     external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
     web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
-    system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
-                                           registrar_.get(), ui_manager_.get());
   }
+  system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
+                                         registrar_.get(), ui_manager_.get());
 
   connected_ = true;
 }

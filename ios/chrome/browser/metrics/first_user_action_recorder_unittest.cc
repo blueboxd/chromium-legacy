@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/run_loop.h"
@@ -22,7 +23,7 @@ using base::UserMetricsAction;
 class FirstUserActionRecorderTest : public PlatformTest {
  protected:
   void SetUp() override {
-    loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
+    loop_.reset(new base::MessageLoop(base::MessagePumpType::DEFAULT));
     ui_thread_.reset(new web::TestWebThread(web::WebThread::UI, loop_.get()));
 
     base::TimeDelta delta = base::TimeDelta::FromSeconds(60);

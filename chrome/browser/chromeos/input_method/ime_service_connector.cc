@@ -9,6 +9,7 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "chromeos/services/ime/constants.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "content/public/browser/system_connector.h"
 
@@ -42,16 +43,23 @@ constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
         "Not implemented, considered not useful."
     })");
 
-bool IsImePathInvalid(const base::FilePath& file_path) {
+bool IsDownloadPathValid(const base::FilePath& file_path) {
   // Only non-empty, relative path which doesn't reference a parent is allowed.
-  return file_path.empty() || file_path.IsAbsolute() ||
-         file_path.ReferencesParent();
+  if (file_path.empty() || file_path.IsAbsolute() ||
+      file_path.ReferencesParent())
+    return false;
+
+  // Target path must be restricted in the provided path.
+  base::FilePath parent(chromeos::ime::kInputMethodsDirName);
+  parent = parent.Append(chromeos::ime::kLanguageDataDirName);
+  return parent.IsParent(file_path);
 }
 
-bool IsURLInvalid(const GURL& url) {
-  // TODO(https://crbug.com/837156): Use URL whitelist instead of the general
+bool IsDownloadURLValid(const GURL& url) {
+  // TODO(https://crbug.com/837156): Whitelist all URLs instead of some general
   // checks below.
-  return !url.DomainIs("dl.google.com") || !url.SchemeIs(url::kHttpsScheme);
+  return url.SchemeIs(url::kHttpsScheme) &&
+         url.DomainIs(chromeos::ime::kGoogleKeyboardDownloadDomain);
 }
 
 }  // namespace
@@ -73,7 +81,8 @@ void ImeServiceConnector::DownloadImeFileTo(
   // downloading task exits.
   // TODO(https://crbug.com/971954): Support multi downloads.
   // Validate url and file_path, return an empty file path if not.
-  if (url_loader_ || IsURLInvalid(url) || IsImePathInvalid(file_path)) {
+  if (url_loader_ || !IsDownloadURLValid(url) ||
+      !IsDownloadPathValid(file_path)) {
     base::FilePath empty_path;
     std::move(callback).Run(empty_path);
     return;

@@ -6,9 +6,9 @@ module ui.ozone.mojom;
 
 import "mojo/public/mojom/base/file_path.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/accelerated_widget.mojom";
-import "ui/gfx/mojo/presentation_feedback.mojom";
-import "ui/gfx/mojo/swap_result.mojom";
+import "ui/gfx/mojom/accelerated_widget.mojom";
+import "ui/gfx/mojom/presentation_feedback.mojom";
+import "ui/gfx/mojom/swap_result.mojom";
 
 // Used by the GPU for communication with the WaylandBufferManagerHost in
 // the browser process.

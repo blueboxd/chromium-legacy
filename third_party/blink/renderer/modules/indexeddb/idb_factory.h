@@ -84,6 +84,8 @@ class MODULES_EXPORT IDBFactory final : public ScriptWrappable {
                                            ExceptionState&,
                                            bool);
 
+  bool AllowIndexedDB(ExecutionContext* execution_context);
+
   std::unique_ptr<WebIDBFactory> web_idb_factory_;
 };
 

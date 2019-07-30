@@ -81,6 +81,14 @@ bool OverlayStrategyUnderlayCast::Attempt(
     VLOG(1) << (found_underlay ? "Overlay activated" : "Overlay deactivated");
   }
 
+  // If the primary plane shows up in the candidates list make sure it isn't
+  // opaque otherwise the content underneath won't be visible.
+  if (!candidate_list->empty()) {
+    DCHECK_EQ(1u, candidate_list->size());
+    DCHECK(candidate_list->front().use_output_surface_for_resource);
+    candidate_list->front().is_opaque = false;
+  }
+
   if (found_underlay) {
     for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
       OverlayCandidate candidate;

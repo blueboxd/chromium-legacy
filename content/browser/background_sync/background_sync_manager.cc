@@ -895,7 +895,7 @@ void BackgroundSyncManager::RegisterDidGetDelay(
   // registration, so set delay_until to override its default value.
   if (registration.sync_type() == BackgroundSyncType::PERIODIC) {
     registration.set_delay_until(GetDelayUntilAfterApplyingMinGapForOrigin(
-        registration.origin(), delay));
+        BackgroundSyncType::PERIODIC, registration.origin(), delay));
   }
 
   ServiceWorkerRegistration* sw_registration =
@@ -1489,11 +1489,15 @@ base::TimeDelta BackgroundSyncManager::MaybeApplyBrowserWakeupCountLimit(
 }
 
 base::Time BackgroundSyncManager::GetDelayUntilAfterApplyingMinGapForOrigin(
+    BackgroundSyncType sync_type,
     const url::Origin& origin,
     base::TimeDelta delay) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::Time now_plus_delay = clock_->Now() + delay;
+  if (sync_type != BackgroundSyncType::PERIODIC)
+    return now_plus_delay;
+
   base::Time soonest_wakeup_time_for_origin =
       GetSoonestPeriodicSyncEventTimeForOrigin(origin);
   if (soonest_wakeup_time_for_origin.is_null())
@@ -1981,7 +1985,7 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
     registration->set_sync_state(blink::mojom::BackgroundSyncState::PENDING);
     registration_completed = false;
     registration->set_delay_until(GetDelayUntilAfterApplyingMinGapForOrigin(
-        registration->origin(), delay));
+        registration->sync_type(), registration->origin(), delay));
 
     std::string event_name = GetSyncEventName(registration->sync_type()) +
                              (succeeded ? " event completed" : " event failed");

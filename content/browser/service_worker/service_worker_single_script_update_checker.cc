@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
@@ -119,7 +120,13 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   // https://fetch.spec.whatwg.org/#concept-request-origin
   // It's needed to be set to the origin of the main script url.
   // https://github.com/w3c/ServiceWorker/issues/1447
-  resource_request.request_initiator = url::Origin::Create(main_script_url);
+  const url::Origin origin = url::Origin::Create(main_script_url);
+  resource_request.request_initiator = origin;
+
+  // This key is used to isolate requests from different contexts in accessing
+  // shared network resources like the http cache.
+  resource_request.trusted_network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
 
   if (is_main_script_) {
     // Set the "Service-Worker" header for the main script request:
@@ -186,9 +193,13 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   network::mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
 
+  // Use NavigationURLLoaderImpl to get a unique request id across
+  // browser-initiated navigations and worker script fetch.
+  const int request_id =
+      NavigationURLLoaderImpl::MakeGlobalRequestID().request_id;
   loader_factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&network_loader_), -1 /* routing_id */,
-      -1 /* request_id */, network::mojom::kURLLoadOptionNone, resource_request,
+      mojo::MakeRequest(&network_loader_), MSG_ROUTING_NONE, request_id,
+      network::mojom::kURLLoadOptionNone, resource_request,
       std::move(network_client),
       net::MutableNetworkTrafficAnnotationTag(kUpdateCheckTrafficAnnotation));
   DCHECK_EQ(network_loader_state_,
@@ -207,16 +218,16 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
   DCHECK_EQ(network_loader_state_,
             ServiceWorkerNewScriptLoader::NetworkLoaderState::kLoadingHeader);
 
+  blink::ServiceWorkerStatusCode service_worker_status;
   network::URLLoaderCompletionStatus completion_status;
   std::string error_message;
   std::unique_ptr<net::HttpResponseInfo> response_info =
       service_worker_loader_helpers::CreateHttpResponseInfoAndCheckHeaders(
-          response_head, &completion_status, &error_message);
-  if (completion_status.error_code != net::OK) {
-    blink::ServiceWorkerStatusCode status_code =
-        service_worker_loader_helpers::MapNetErrorToServiceWorkerStatus(
-            static_cast<net::Error>(completion_status.error_code));
-    Fail(status_code, error_message);
+          response_head, &service_worker_status, &completion_status,
+          &error_message);
+  if (!response_info) {
+    DCHECK_NE(net::OK, completion_status.error_code);
+    Fail(service_worker_status, error_message, completion_status);
     return;
   }
 
@@ -231,7 +242,8 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
     if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
             scope_, script_url_, has_header ? &service_worker_allowed : nullptr,
             &error_message)) {
-      Fail(blink::ServiceWorkerStatusCode::kErrorSecurity, error_message);
+      Fail(blink::ServiceWorkerStatusCode::kErrorSecurity, error_message,
+           network::URLLoaderCompletionStatus(net::ERR_INSECURE_RESPONSE));
       return;
     }
   }
@@ -254,7 +266,8 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveRedirect(
   //
   // TODO(https://crbug.com/889798): Follow redirects for imported scripts.
   Fail(blink::ServiceWorkerStatusCode::kErrorNetwork,
-       ServiceWorkerConsts::kServiceWorkerRedirectError);
+       ServiceWorkerConsts::kServiceWorkerRedirectError,
+       network::URLLoaderCompletionStatus(net::ERR_INVALID_REDIRECT));
 }
 
 void ServiceWorkerSingleScriptUpdateChecker::OnUploadProgress(
@@ -290,7 +303,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnComplete(
       ServiceWorkerNewScriptLoader::NetworkLoaderState::kCompleted;
   if (status.error_code != net::OK) {
     Fail(blink::ServiceWorkerStatusCode::kErrorNetwork,
-         ServiceWorkerConsts::kServiceWorkerFetchScriptError);
+         ServiceWorkerConsts::kServiceWorkerFetchScriptError, status);
     return;
   }
 
@@ -377,7 +390,8 @@ void ServiceWorkerSingleScriptUpdateChecker::OnWriteHeadersComplete(
   header_writer_state_ = ServiceWorkerNewScriptLoader::WriterState::kCompleted;
   if (error != net::OK) {
     Fail(blink::ServiceWorkerStatusCode::kErrorFailed,
-         ServiceWorkerConsts::kServiceWorkerFetchScriptError);
+         ServiceWorkerConsts::kServiceWorkerFetchScriptError,
+         network::URLLoaderCompletionStatus(error));
     return;
   }
 
@@ -504,7 +518,8 @@ void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
   if (error != net::OK) {
     // Something went wrong reading from the disk cache.
     Fail(blink::ServiceWorkerStatusCode::kErrorDiskCache,
-         ServiceWorkerConsts::kServiceWorkerFetchScriptError);
+         ServiceWorkerConsts::kServiceWorkerFetchScriptError,
+         network::URLLoaderCompletionStatus(error));
     return;
   }
 
@@ -520,8 +535,11 @@ void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
 
 void ServiceWorkerSingleScriptUpdateChecker::Fail(
     blink::ServiceWorkerStatusCode status,
-    const std::string& error_message) {
-  Finish(Result::kFailed, std::make_unique<FailureInfo>(status, error_message));
+    const std::string& error_message,
+    network::URLLoaderCompletionStatus network_status) {
+  Finish(Result::kFailed,
+         std::make_unique<FailureInfo>(status, error_message,
+                                       std::move(network_status)));
 }
 
 void ServiceWorkerSingleScriptUpdateChecker::Succeed(Result result) {
@@ -568,8 +586,12 @@ ServiceWorkerSingleScriptUpdateChecker::PausedState::~PausedState() = default;
 
 ServiceWorkerSingleScriptUpdateChecker::FailureInfo::FailureInfo(
     blink::ServiceWorkerStatusCode status,
-    const std::string& error_message)
-    : status(status), error_message(error_message) {}
+    const std::string& error_message,
+    network::URLLoaderCompletionStatus network_status)
+    : status(status),
+      error_message(error_message),
+      network_status(network_status) {}
+
 ServiceWorkerSingleScriptUpdateChecker::FailureInfo::~FailureInfo() = default;
 
 }  // namespace content

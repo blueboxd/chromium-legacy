@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -117,32 +117,32 @@ std::unique_ptr<ChromotingHostContext> ChromotingHostContext::Create(
   // apartment, which requires a UI thread.
   scoped_refptr<AutoThreadTaskRunner> audio_task_runner =
       AutoThread::CreateWithLoopAndComInitTypes(
-          "ChromotingAudioThread", ui_task_runner, base::MessageLoop::TYPE_UI,
+          "ChromotingAudioThread", ui_task_runner, base::MessagePumpType::UI,
           AutoThread::COM_INIT_STA);
 #else   // !defined(OS_WIN)
   scoped_refptr<AutoThreadTaskRunner> audio_task_runner =
       AutoThread::CreateWithType("ChromotingAudioThread", ui_task_runner,
-                                 base::MessageLoop::TYPE_IO);
+                                 base::MessagePumpType::IO);
 #endif  // !defined(OS_WIN)
   scoped_refptr<AutoThreadTaskRunner> file_task_runner =
       AutoThread::CreateWithType("ChromotingFileThread", ui_task_runner,
-                                 base::MessageLoop::TYPE_IO);
+                                 base::MessagePumpType::IO);
 
   scoped_refptr<AutoThreadTaskRunner> network_task_runner =
       AutoThread::CreateWithType("ChromotingNetworkThread", ui_task_runner,
-                                 base::MessageLoop::TYPE_IO);
+                                 base::MessagePumpType::IO);
   network_task_runner->PostTask(FROM_HERE,
                                 base::BindOnce(&DisallowBlockingOperations));
 
   return base::WrapUnique(new ChromotingHostContext(
       ui_task_runner, audio_task_runner, file_task_runner,
       AutoThread::CreateWithType("ChromotingInputThread", ui_task_runner,
-                                 base::MessageLoop::TYPE_IO),
+                                 base::MessagePumpType::IO),
       network_task_runner,
 #if defined(OS_MACOSX)
       // Mac requires a UI thread for the capturer.
       AutoThread::CreateWithType("ChromotingCaptureThread", ui_task_runner,
-                                 base::MessageLoop::TYPE_UI),
+                                 base::MessagePumpType::UI),
 #else
       AutoThread::Create("ChromotingCaptureThread", ui_task_runner),
 #endif

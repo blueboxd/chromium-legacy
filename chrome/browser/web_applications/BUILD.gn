@@ -66,6 +66,7 @@ source_set("web_applications") {
   ]
 }
 
+# This test_support library doesn't use extensions.
 source_set("web_applications_test_support") {
   testonly = true
 
@@ -90,7 +91,8 @@ source_set("web_applications_test_support") {
     "test/test_web_app_ui_manager.h",
     "test/test_web_app_url_loader.cc",
     "test/test_web_app_url_loader.h",
-    "test/web_app_test.cc",
+    "test/web_app_icon_test_utils.cc",
+    "test/web_app_icon_test_utils.h",
     "test/web_app_test.h",
   ]
 
@@ -143,8 +145,8 @@ source_set("web_applications_unit_tests") {
   }
 }
 
-# TODO(loyso): Erase this and move WebAppProvider into web_applications set.
-# crbug.com/877898
+# TODO(crbug.com/877898): Erase this and move WebAppProvider into
+# web_applications set.
 source_set("web_applications_on_extensions") {
   sources = [
     "web_app_provider.cc",
@@ -165,13 +167,34 @@ source_set("web_applications_on_extensions") {
   ]
 }
 
+# TODO(crbug.com/877898): Erase this and move TestWebAppProvider into
+# web_applications_test_support set.
+source_set("web_applications_on_extensions_test_support") {
+  testonly = true
+
+  sources = [
+    "test/test_web_app_provider.cc",
+    "test/test_web_app_provider.h",
+  ]
+
+  deps = [
+    ":web_app_test_group",
+    ":web_applications",
+    ":web_applications_on_extensions",
+    ":web_applications_test_support",
+    "//base",
+    "//chrome/browser",
+    "//chrome/browser/web_applications/components",
+    "//components/keyed_service/content",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
   deps = [
     ":web_app_test_group",
     ":web_applications_unit_tests",
-    "//chrome/browser/web_applications/bookmark_apps:unit_tests",
     "//chrome/browser/web_applications/components:unit_tests",
     "//chrome/browser/web_applications/extensions:unit_tests",
   ]
@@ -182,7 +205,6 @@ source_set("browser_tests") {
 
   deps = [
     ":web_app_test_group",
-    "//chrome/browser/web_applications/bookmark_apps:browser_tests",
     "//chrome/browser/web_applications/components:browser_tests",
     "//chrome/browser/web_applications/extensions:browser_tests",
   ]

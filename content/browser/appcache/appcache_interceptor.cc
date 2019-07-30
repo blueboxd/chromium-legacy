@@ -14,7 +14,6 @@
 #include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/common/appcache_interfaces.h"
 #include "net/url_request/url_request.h"

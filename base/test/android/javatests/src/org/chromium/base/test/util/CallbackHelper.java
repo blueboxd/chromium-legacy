@@ -175,11 +175,11 @@ public class CallbackHelper {
             long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
         assert mCallCount >= currentCallCount;
         assert numberOfCallsToWaitFor > 0;
+        TimeoutTimer timer = new TimeoutTimer(unit.toMillis(timeout));
         synchronized (mLock) {
             int callCountWhenDoneWaiting = currentCallCount + numberOfCallsToWaitFor;
-            long deadline = System.currentTimeMillis() + unit.toMillis(timeout);
-            while (callCountWhenDoneWaiting > mCallCount && System.currentTimeMillis() < deadline) {
-                mLock.wait(deadline - System.currentTimeMillis());
+            while (callCountWhenDoneWaiting > mCallCount && !timer.isTimedOut()) {
+                mLock.wait(timer.getRemainingMs());
                 if (mFailureString != null) {
                     String s = mFailureString;
                     mFailureString = null;

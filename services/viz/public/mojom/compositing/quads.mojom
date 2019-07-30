@@ -9,8 +9,8 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/viz/public/mojom/compositing/surface_range.mojom";
 import "services/viz/public/mojom/compositing/shared_quad_state.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/color_space.mojom";
-import "ui/gfx/mojo/transform.mojom";
+import "ui/gfx/mojom/color_space.mojom";
+import "ui/gfx/mojom/transform.mojom";
 
 enum ProtectedVideoState {
   kClear,

@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/selection_mojom_traits.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
-#include "ui/gfx/mojo/selection_bound_struct_traits.h"
+#include "ui/gfx/mojom/selection_bound_mojom_traits.h"
 
 namespace mojo {
 

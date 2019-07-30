@@ -367,7 +367,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 }
 
 - (void)setStyle:(OverscrollStyle)style {
-  [self.overscrollActionView setStyle:style];
+  self.overscrollActionView.style = style;
 }
 
 #pragma mark - webViewScrollView and UIScrollView delegates implementations

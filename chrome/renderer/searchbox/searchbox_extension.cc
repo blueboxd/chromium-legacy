@@ -76,11 +76,8 @@ SkColor GetContrastingColorForBackground(SkColor bg_color,
   if (hsl.l == 0)
     return SK_ColorWHITE;
 
-  if (hsl.l < 0.2)
-    luminosity_change += 0.1;
-
   // Decrease luminosity, unless color is already dark.
-  if (hsl.l > 0.1)
+  if (hsl.l > 0.15)
     luminosity_change *= -1;
 
   hsl.l *= 1 + luminosity_change;

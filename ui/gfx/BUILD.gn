@@ -722,7 +722,7 @@ test("gfx_unittests") {
       "image/image_mac_unittest.mm",
       "image/image_util_unittest.cc",
       "mac/coordinate_conversion_unittest.mm",
-      "mojo/struct_traits_unittest.cc",
+      "mojom/mojom_traits_unittest.cc",
       "nine_image_painter_unittest.cc",
       "overlay_transform_utils_unittest.cc",
       "paint_vector_icon_unittest.cc",
@@ -840,8 +840,8 @@ test("gfx_unittests") {
       "//mojo/public/cpp/test_support:test_utils",
       "//ui/gfx/geometry/mojom:unit_test",
       "//ui/gfx/image/mojom:unit_test",
-      "//ui/gfx/mojo:test_interfaces",
-      "//ui/gfx/range/mojo:unit_test",
+      "//ui/gfx/mojom:test_interfaces",
+      "//ui/gfx/range/mojom:unit_test",
     ]
   }
 

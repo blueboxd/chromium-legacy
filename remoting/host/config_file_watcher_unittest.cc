@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -78,8 +79,8 @@ void ConfigFileWatcherTest::SetUp() {
       message_loop_.task_runner(), run_loop_.QuitClosure());
 
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
-      AutoThread::CreateWithType(
-          "IPC thread", task_runner, base::MessageLoop::TYPE_IO);
+      AutoThread::CreateWithType("IPC thread", task_runner,
+                                 base::MessagePumpType::IO);
 
   // Create an instance of the config watcher.
   watcher_.reset(

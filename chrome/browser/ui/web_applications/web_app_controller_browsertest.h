@@ -13,14 +13,16 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
-class Browser;
+namespace content {
+class WebContents;
+}
 
 namespace web_app {
 
-// TODO(https://crbug.com/966290): Add kUnifiedControllerWithWebApp.
 enum class ControllerType {
   kHostedAppController,
   kUnifiedControllerWithBookmarkApp,
+  kUnifiedControllerWithWebApp,
 };
 
 // Base class for tests of user interface support for web applications.
@@ -41,7 +43,7 @@ class WebAppControllerBrowserTest
 
   AppId InstallWebApp(std::unique_ptr<WebApplicationInfo>&& web_app_info);
 
-  Browser* LaunchAppBrowser(const AppId&);
+  content::WebContents* OpenApplication(const AppId&);
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 

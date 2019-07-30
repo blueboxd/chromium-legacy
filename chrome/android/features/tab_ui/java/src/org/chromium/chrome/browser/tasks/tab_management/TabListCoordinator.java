@@ -82,6 +82,7 @@ public class TabListCoordinator implements Destroyable {
      * @param dialogHandler A handler to handle requests about updating TabGridDialog.
      * @param itemViewTypeCallback Callback that returns the view type for each item in the list.
      * @param selectionDelegateProvider Provider to provide selected Tabs for a selectable tab list.
+     *                                  It's NULL when selection is not possible.
      * @param parentView {@link ViewGroup} The root view of the UI.
      * @param dynamicResourceLoader The {@link DynamicResourceLoader} to register dynamic UI
      *                              resource for compositor layer animation.
@@ -98,7 +99,7 @@ public class TabListCoordinator implements Destroyable {
                     .GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             @Nullable TabListMediator.TabGridDialogHandler dialogHandler,
             SimpleRecyclerViewMcpBase.ItemViewTypeCallback<PropertyModel> itemViewTypeCallback,
-            TabListMediator.SelectionDelegateProvider selectionDelegateProvider,
+            @Nullable TabListMediator.SelectionDelegateProvider selectionDelegateProvider,
             @NonNull ViewGroup parentView, @Nullable DynamicResourceLoader dynamicResourceLoader,
             boolean attachToParent, String componentName) {
         TabListModel tabListModel = new TabListModel();
@@ -180,7 +181,7 @@ public class TabListCoordinator implements Destroyable {
                 createGroupButtonProvider, selectionDelegateProvider,
                 gridCardOnClickListenerProvider, dialogHandler, componentName);
 
-        if (mMode == TabListMode.GRID) {
+        if (mMode == TabListMode.GRID && selectionDelegateProvider == null) {
             ItemTouchHelper touchHelper = new ItemTouchHelper(mMediator.getItemTouchHelperCallback(
                     context.getResources().getDimension(R.dimen.swipe_to_dismiss_threshold),
                     context.getResources().getDimension(R.dimen.tab_grid_merge_threshold),

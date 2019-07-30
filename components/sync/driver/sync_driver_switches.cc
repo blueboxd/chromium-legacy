@@ -39,15 +39,14 @@ const char kSyncShortInitialRetryOverride[] =
 // This flag significantly shortens the delay between nudge cycles. Its primary
 // purpose is to speed up integration tests. The normal delay allows coalescing
 // and prevention of server overload, so don't use this unless you're really
-// sure
-// that it's what you want.
+// sure that it's what you want.
 const char kSyncShortNudgeDelayForTest[] = "sync-short-nudge-delay-for-test";
 
 // Allows custom passphrase users to receive Wallet data for secondary accounts
 // while in transport-only mode.
 const base::Feature kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
     "SyncAllowAutofillWalletDataInTransportModeWithCustomPassphrase",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, the sync engine will be shut down in the "paused" state.
 const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",

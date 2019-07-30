@@ -1,4 +1,4 @@
 include_rules = [
   "+components/viz",
-  "+ui/gfx/mojo/color_space_mojom_traits.h",
+  "+ui/gfx/mojom/color_space_mojom_traits.h",
 ]

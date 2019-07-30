@@ -125,10 +125,10 @@ cr.define('descriptor_panel', function() {
     /**
      * Adds the reference of the string descriptor panel of the device for
      * string descriptor functionality.
-     * @param {!DescriptorPanel} stringDescriptorPanel
+     * @param {!descriptor_panel.DescriptorPanel} stringDescriptorPanel
      */
     setStringDescriptorPanel(stringDescriptorPanel) {
-      /** @type {!DescriptorPanel} */
+      /** @type {!descriptor_panel.DescriptorPanel} */
       this.stringDescriptorPanel_ = stringDescriptorPanel;
     }
 
@@ -166,7 +166,7 @@ cr.define('descriptor_panel', function() {
           this.stringDescriptorPanel_.stringDescriptorIndexes.add(index);
         }
 
-        const buttonTemplate = document.querySelector('#raw-data-tree-button');
+        const buttonTemplate = queryRequiredElement('#raw-data-tree-button');
         const button = document.importNode(buttonTemplate.content, true)
                            .querySelector('button');
         item.labelElement.appendChild(button);
@@ -200,7 +200,7 @@ cr.define('descriptor_panel', function() {
     renderUrlDescriptorIndexItem_(rawData, offset, item, fieldLabel) {
       const index = rawData[offset];
       if (index > 0) {
-        const buttonTemplate = document.querySelector('#raw-data-tree-button');
+        const buttonTemplate = queryRequiredElement('#raw-data-tree-button');
         const button = document.importNode(buttonTemplate.content, true)
                            .querySelector('button');
         item.labelElement.appendChild(button);
@@ -238,7 +238,7 @@ cr.define('descriptor_panel', function() {
       const msOs20DescriptorSetLength =
           data.getUint16(MS_OS_20_SET_TOTAL_LENGTH_OFFSET, true);
 
-      const buttonTemplate = document.querySelector('#raw-data-tree-button');
+      const buttonTemplate = queryRequiredElement('#raw-data-tree-button');
       const button = document.importNode(buttonTemplate.content, true)
                          .querySelector('button');
       item.labelElement.appendChild(button);
@@ -277,7 +277,7 @@ cr.define('descriptor_panel', function() {
       if (altEnumCode !== 0) {
         const vendorCode = rawData[offset + MS_OS_20_VENDOR_CODE_ITEM_OFFSET];
 
-        const buttonTemplate = document.querySelector('#raw-data-tree-button');
+        const buttonTemplate = queryRequiredElement('#raw-data-tree-button');
         const button = document.importNode(buttonTemplate.content, true)
                            .querySelector('button');
         item.labelElement.appendChild(button);
@@ -451,14 +451,13 @@ cr.define('descriptor_panel', function() {
      */
     async getDeviceDescriptor() {
       /** @type {!device.mojom.UsbControlTransferParams} */
-      const usbControlTransferParams = {};
-      usbControlTransferParams.type =
-          device.mojom.UsbControlTransferType.STANDARD;
-      usbControlTransferParams.recipient =
-          device.mojom.UsbControlTransferRecipient.DEVICE;
-      usbControlTransferParams.request = GET_DESCRIPTOR_REQUEST;
-      usbControlTransferParams.value = (DEVICE_DESCRIPTOR_TYPE << 8);
-      usbControlTransferParams.index = 0;
+      const usbControlTransferParams = {
+        type: device.mojom.UsbControlTransferType.STANDARD,
+        recipient: device.mojom.UsbControlTransferRecipient.DEVICE,
+        request: GET_DESCRIPTOR_REQUEST,
+        value: DEVICE_DESCRIPTOR_TYPE << 8,
+        index: 0,
+      };
 
       try {
         await this.usbDeviceProxy_.open();
@@ -577,14 +576,13 @@ cr.define('descriptor_panel', function() {
      */
     async getConfigurationDescriptor() {
       /** @type {!device.mojom.UsbControlTransferParams} */
-      const usbControlTransferParams = {};
-      usbControlTransferParams.type =
-          device.mojom.UsbControlTransferType.STANDARD;
-      usbControlTransferParams.recipient =
-          device.mojom.UsbControlTransferRecipient.DEVICE;
-      usbControlTransferParams.request = GET_DESCRIPTOR_REQUEST;
-      usbControlTransferParams.value = (CONFIGURATION_DESCRIPTOR_TYPE << 8);
-      usbControlTransferParams.index = 0;
+      const usbControlTransferParams = {
+        type: device.mojom.UsbControlTransferType.STANDARD,
+        recipient: device.mojom.UsbControlTransferRecipient.DEVICE,
+        request: GET_DESCRIPTOR_REQUEST,
+        value: CONFIGURATION_DESCRIPTOR_TYPE << 8,
+        index: 0,
+      };
 
       try {
         await this.usbDeviceProxy_.open();
@@ -683,7 +681,7 @@ cr.define('descriptor_panel', function() {
      * @param {number} offset The start offset of the interface
      *     descriptor.
      * @param {number} indexInterface
-     * @return {!Array<number>}
+     * @return {!cr.ui.TreeItem}
      * @private
      */
     renderInterfaceDescriptor_(
@@ -752,13 +750,12 @@ cr.define('descriptor_panel', function() {
     /**
      * Renders a tree item to display endpoint descriptor at index
      * indexEndpoint.
-     * @param {!cr.ui.Tree} rawDataTreeRoot
+     * @param {!cr.ui.Tree|!cr.ui.TreeItem} rawDataTreeRoot
      * @param {!HTMLElement} rawDataByteElement
      * @param {!Uint8Array} rawData
      * @param {number} offset The start offset of the endpoint
      *     descriptor.
      * @param {number} indexEndpoint
-     * @return {number}
      * @private
      */
     renderEndpointDescriptor_(
@@ -814,7 +811,6 @@ cr.define('descriptor_panel', function() {
      * @param {!Uint8Array} rawData
      * @param {number} originalOffset The start offset of the this descriptor.
      * @param {number} indexUnknown
-     * @return {number}
      * @private
      */
     renderUnknownDescriptor_(
@@ -856,18 +852,17 @@ cr.define('descriptor_panel', function() {
      * Gets all the supported language codes of this device, and adds them as
      * autocompletions for the language code input area in the string descriptor
      * panel.
-     * @return {!Array<string>}
+     * @return {!Promise<!Array<number>>}
      */
     async getAllLanguageCodes() {
       /** @type {!device.mojom.UsbControlTransferParams} */
-      const usbControlTransferParams = {};
-      usbControlTransferParams.type =
-          device.mojom.UsbControlTransferType.STANDARD;
-      usbControlTransferParams.recipient =
-          device.mojom.UsbControlTransferRecipient.DEVICE;
-      usbControlTransferParams.request = GET_DESCRIPTOR_REQUEST;
-      usbControlTransferParams.value = (STRING_DESCRIPTOR_TYPE << 8);
-      usbControlTransferParams.index = 0;
+      const usbControlTransferParams = {
+        type: device.mojom.UsbControlTransferType.STANDARD,
+        recipient: device.mojom.UsbControlTransferRecipient.DEVICE,
+        request: GET_DESCRIPTOR_REQUEST,
+        value: STRING_DESCRIPTOR_TYPE << 8,
+        index: 0,
+      };
 
       let response;
       try {
@@ -886,7 +881,7 @@ cr.define('descriptor_panel', function() {
         showError(e.message, this.rootElement_);
         // Stop rendering autocomplete datalist if failed to read the string
         // descriptor.
-        return new Uint8Array();
+        return [];
       } finally {
         await this.usbDeviceProxy_.close();
       }
@@ -920,20 +915,18 @@ cr.define('descriptor_panel', function() {
      * @param {number} index
      * @param {number} languageCode
      * @param {!cr.ui.TreeItem=} treeItem
-     * @return {{languageCode:string,rawData:!Uint8Array}}
      * @private
      */
     async getStringDescriptorForLanguageCode_(
         index, languageCode, treeItem = undefined) {
       /** @type {!device.mojom.UsbControlTransferParams} */
-      const usbControlTransferParams = {};
-      usbControlTransferParams.type =
-          device.mojom.UsbControlTransferType.STANDARD;
-      usbControlTransferParams.recipient =
-          device.mojom.UsbControlTransferRecipient.DEVICE;
-      usbControlTransferParams.request = GET_DESCRIPTOR_REQUEST;
-      usbControlTransferParams.index = languageCode;
-      usbControlTransferParams.value = (STRING_DESCRIPTOR_TYPE << 8) | index;
+      const usbControlTransferParams = {
+        type: device.mojom.UsbControlTransferType.STANDARD,
+        recipient: device.mojom.UsbControlTransferRecipient.DEVICE,
+        request: GET_DESCRIPTOR_REQUEST,
+        index: languageCode,
+        value: (STRING_DESCRIPTOR_TYPE << 8) | index,
+      };
 
       try {
         await this.usbDeviceProxy_.open();
@@ -1025,18 +1018,18 @@ cr.define('descriptor_panel', function() {
 
       this.indexInput_.value = index;
 
-      /** @type {!Array<number>|undefined} */
+      /** @type {!Array<number>} */
       const languageCodesList = await this.getAllLanguageCodes();
 
       for (const languageCode of languageCodesList) {
         await this.getStringDescriptorForLanguageCode_(
-            index, languageCode, treeItem);
+            index, languageCode, assert(treeItem));
       }
     }
 
     /**
      * Initializes the string descriptor panel for autocomplete functionality.
-     * @param {number} tabId
+     * @param {string} tabId
      */
     initialStringDescriptorPanel(tabId) {
       // Binds the input area and datalist use each tab's unique id.
@@ -1046,21 +1039,22 @@ cr.define('descriptor_panel', function() {
           .forEach(el => el.id = `${el.id}-${tabId}`);
 
       /** @type {!HTMLElement} */
-      const button = this.rootElement_.querySelector('button');
+      const button = queryRequiredElement('button', this.rootElement_);
       /** @type {!HTMLElement} */
-      this.indexInput_ = this.rootElement_.querySelector('#index-input');
+      this.indexInput_ =
+          queryRequiredElement('#index-input', this.rootElement_);
       /** @type {!HTMLElement} */
       const languageCodeInput =
-          this.rootElement_.querySelector('#language-code-input');
+          queryRequiredElement('#language-code-input', this.rootElement_);
 
       button.addEventListener('click', async () => {
         this.clearView();
-        const index = Number.parseInt(this.indexInput_.value);
+        const index = Number.parseInt(this.indexInput_.value, 10);
         if (this.checkParamValid_(index, 'Index', 1, 255)) {
           if (languageCodeInput.value === 'All') {
             await this.getStringDescriptorForAllLanguages_(index);
           } else {
-            const languageCode = Number.parseInt(languageCodeInput.value);
+            const languageCode = Number.parseInt(languageCodeInput.value, 10);
             if (this.checkParamValid_(
                     languageCode, 'Language Code', 0, 65535)) {
               await this.getStringDescriptorForLanguageCode_(
@@ -1074,10 +1068,10 @@ cr.define('descriptor_panel', function() {
       this.stringDescriptorIndexes = new Set();
       /** @type {!HTMLElement} */
       this.indexesListElement =
-          this.rootElement_.querySelector(`#indexes-${tabId}`);
+          queryRequiredElement(`#indexes-${tabId}`, this.rootElement_);
       /** @type {!HTMLElement} */
       this.languageCodesListElement_ =
-          this.rootElement_.querySelector(`#languages-${tabId}`);
+          queryRequiredElement(`#languages-${tabId}`, this.rootElement_);
     }
 
     /**
@@ -1087,14 +1081,13 @@ cr.define('descriptor_panel', function() {
      */
     async getBosDescriptor() {
       /** @type {!device.mojom.UsbControlTransferParams} */
-      const usbControlTransferParams = {};
-      usbControlTransferParams.type =
-          device.mojom.UsbControlTransferType.STANDARD;
-      usbControlTransferParams.recipient =
-          device.mojom.UsbControlTransferRecipient.DEVICE;
-      usbControlTransferParams.request = GET_DESCRIPTOR_REQUEST;
-      usbControlTransferParams.value = (BOS_DESCRIPTOR_TYPE << 8);
-      usbControlTransferParams.index = 0;
+      const usbControlTransferParams = {
+        type: device.mojom.UsbControlTransferType.STANDARD,
+        recipient: device.mojom.UsbControlTransferRecipient.DEVICE,
+        request: GET_DESCRIPTOR_REQUEST,
+        value: BOS_DESCRIPTOR_TYPE << 8,
+        index: 0,
+      };
 
       try {
         await this.usbDeviceProxy_.open();
@@ -1183,13 +1176,13 @@ cr.define('descriptor_panel', function() {
             break;
           } else if (isSameUuid(
                          rawData, offset, MS_OS_20_PLATFORM_CAPABILITY_UUID)) {
-            offset = this.renderMsOs20PlatformDescriptor_(
+            this.renderMsOs20PlatformDescriptor_(
                 rawDataTreeRoot, rawDataByteElement, rawData, offset,
                 indexDevCapability);
             break;
           }
         default:
-          offset = this.renderUnknownBosDescriptor_(
+          this.renderUnknownBosDescriptor_(
               rawDataTreeRoot, rawDataByteElement, rawData, offset,
               indexDevCapability);
       }
@@ -1326,7 +1319,7 @@ cr.define('descriptor_panel', function() {
     /**
      * Renders a tree item to display Microsoft OS 2.0 descriptor set
      * information at index indexMsOs20DescriptorSetInfo.
-     * @param {!cr.ui.Tree} rawDataTreeRoot
+     * @param {!cr.ui.Tree|!cr.ui.TreeItem} rawDataTreeRoot
      * @param {!HTMLElement} rawDataByteElement
      * @param {!Uint8Array} rawData
      * @param {number} offset The start offset of the Microsoft OS 2.0
@@ -1451,16 +1444,15 @@ cr.define('descriptor_panel', function() {
       const urlIndex = rawData[offset + WEB_USB_URL_DESCRIPTOR_INDEX_OFFSET];
 
       /** @type {!device.mojom.UsbControlTransferParams} */
-      const usbControlTransferParams = {};
-      usbControlTransferParams.recipient =
-          device.mojom.UsbControlTransferRecipient.DEVICE;
-      // These constants are defined by the WebUSB specification:
-      // http://wicg.github.io/webusb/
-      usbControlTransferParams.type =
-          device.mojom.UsbControlTransferType.VENDOR;
-      usbControlTransferParams.request = vendorCode;
-      usbControlTransferParams.value = urlIndex;
-      usbControlTransferParams.index = GET_URL_REQUEST;
+      const usbControlTransferParams = {
+        recipient: device.mojom.UsbControlTransferRecipient.DEVICE,
+        // These constants are defined by the WebUSB specification:
+        // http://wicg.github.io/webusb/
+        type: device.mojom.UsbControlTransferType.VENDOR,
+        request: vendorCode,
+        value: urlIndex,
+        index: GET_URL_REQUEST,
+      };
 
       try {
         await this.usbDeviceProxy_.open();
@@ -1509,21 +1501,20 @@ cr.define('descriptor_panel', function() {
     /**
      * Gets the Microsoft OS 2.0 Descriptor vendor-specific descriptor.
      * @param {number} vendorCode
-     * @return {!Uint8Array}
+     * @return {!Promise<!Uint8Array>}
      * @private
      */
     async getMsOs20DescriptorSet_(vendorCode, msOs20DescriptorSetLength) {
       /** @type {!device.mojom.UsbControlTransferParams} */
-      const usbControlTransferParams = {};
-      usbControlTransferParams.recipient =
-          device.mojom.UsbControlTransferRecipient.DEVICE;
-      // These constants are defined by Microsoft OS 2.0 Descriptors
-      // Specification (July, 2018).
-      usbControlTransferParams.type =
-          device.mojom.UsbControlTransferType.VENDOR;
-      usbControlTransferParams.request = vendorCode;
-      usbControlTransferParams.value = 0;
-      usbControlTransferParams.index = MS_OS_20_DESCRIPTOR_INDEX;
+      const usbControlTransferParams = {
+        recipient: device.mojom.UsbControlTransferRecipient.DEVICE,
+        // These constants are defined by Microsoft OS 2.0 Descriptors
+        // Specification (July, 2018).
+        type: device.mojom.UsbControlTransferType.VENDOR,
+        request: vendorCode,
+        value: 0,
+        index: MS_OS_20_DESCRIPTOR_INDEX,
+      };
 
       let response;
       try {
@@ -1541,7 +1532,7 @@ cr.define('descriptor_panel', function() {
         showError(e.message, this.rootElement_);
         // Returns an empty array if failed to read the Microsoft OS 2.0
         // descriptor set.
-        return new Uint8Array();
+        return new Uint8Array(0);
       } finally {
         await this.usbDeviceProxy_.close();
       }
@@ -1557,16 +1548,15 @@ cr.define('descriptor_panel', function() {
      */
     async sendMsOs20DescriptorSetAltEnumCommand_(vendorCode, altEnumCode) {
       /** @type {!device.mojom.UsbControlTransferParams} */
-      const usbControlTransferParams = {};
-      usbControlTransferParams.recipient =
-          device.mojom.UsbControlTransferRecipient.DEVICE;
-      // These constants are defined by Microsoft OS 2.0 Descriptors
-      // Specification (July, 2018).
-      usbControlTransferParams.type =
-          device.mojom.UsbControlTransferType.VENDOR;
-      usbControlTransferParams.request = vendorCode;
-      usbControlTransferParams.value = altEnumCode;
-      usbControlTransferParams.index = MS_OS_20_SET_ALT_ENUMERATION;
+      const usbControlTransferParams = {
+        recipient: device.mojom.UsbControlTransferRecipient.DEVICE,
+        // These constants are defined by Microsoft OS 2.0 Descriptors
+        // Specification (July, 2018).
+        type: device.mojom.UsbControlTransferType.VENDOR,
+        request: vendorCode,
+        value: altEnumCode,
+        index: MS_OS_20_SET_ALT_ENUMERATION,
+      };
 
       try {
         await this.usbDeviceProxy_.open();
@@ -2311,7 +2301,7 @@ cr.define('descriptor_panel', function() {
      * Gets response of the given request.
      * @param {!device.mojom.UsbControlTransferParams} usbControlTransferParams
      * @param {number} length
-     * @param {number} direction
+     * @param {string} direction
      * @private
      */
     async sendTestingRequest_(usbControlTransferParams, length, direction) {
@@ -2333,8 +2323,7 @@ cr.define('descriptor_panel', function() {
           }
 
           const response = await this.usbDeviceProxy_.controlTransferOut(
-              usbControlTransferParams, new Uint8Array(data),
-              CONTROL_TRANSFER_TIMEOUT_MS);
+              usbControlTransferParams, data, CONTROL_TRANSFER_TIMEOUT_MS);
           checkTransferSuccess(
               response.status, 'Failed to send request.', this.rootElement_);
         }
@@ -2387,17 +2376,20 @@ cr.define('descriptor_panel', function() {
         this.clearView();
         const index = testingToolPanelInputTypeSelector.selectedIndex;
         inputTableRows.forEach(row => row.hidden = true);
-        inputTableRows[index].hidden = false;
+        const rowAtIndex = assertInstanceof(inputTableRows[index], HTMLElement);
+        rowAtIndex.hidden = false;
 
-        const direction = getRequestTypeDirection(inputTableRows[index], index);
-        const length = getRequestLength(inputTableRows[index], index);
+        const direction = getRequestTypeDirection(rowAtIndex, index);
+        const length = getRequestLength(rowAtIndex, index);
         this.rootElement_.querySelector('#data-input-area').hidden =
             (direction !== 'Host-to-Device');
         dataInputArea.value = '00'.repeat(length);
         dataInputArea.maxLength = length * 2;
       });
 
-      for (const [i, inputTableRow] of inputTableRows.entries()) {
+
+      inputTableRows.forEach((el, i) => {
+        const inputTableRow = assertInstanceof(el, HTMLElement);
         let directionInputElement;
         switch (i) {
           case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
@@ -2420,19 +2412,20 @@ cr.define('descriptor_panel', function() {
               dataInputArea.value = '00'.repeat(length);
               dataInputArea.maxLength = length * 2;
             });
-      }
+      });
 
-      for (const [i, button] of buttons.entries()) {
+      buttons.forEach((button, i) => {
         button.addEventListener('click', () => {
           this.clearView();
 
-          const direction = getRequestTypeDirection(inputTableRows[i], i);
-          const type = getRequestType(inputTableRows[i], i);
-          const recipient = getRequestTypeRecipient(inputTableRows[i], i);
-          const request = getRequestCode(inputTableRows[i], i);
-          const value = getRequestValue(inputTableRows[i], i);
-          const index = getRequestIndex(inputTableRows[i], i);
-          const dataLength = getRequestLength(inputTableRows[i], i);
+          const row = assertInstanceof(inputTableRows[i], HTMLElement);
+          const direction = getRequestTypeDirection(row, i);
+          const type = getRequestType(row, i);
+          const recipient = getRequestTypeRecipient(row, i);
+          const request = getRequestCode(row, i);
+          const value = getRequestValue(row, i);
+          const index = getRequestIndex(row, i);
+          const dataLength = getRequestLength(row, i);
 
           if (this.checkEnumParamValid_(
                   type, 'Transfer Type', device.mojom.UsbControlTransferType) &&
@@ -2455,7 +2448,7 @@ cr.define('descriptor_panel', function() {
                 usbControlTransferParams, dataLength, direction);
           }
         });
-      }
+      });
     }
 
     /**
@@ -2501,10 +2494,10 @@ cr.define('descriptor_panel', function() {
   function getRequestType(inputRow, inputType) {
     switch (inputType) {
       case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
-        return inputRow.querySelector('#transfer-type').value;
+        return queryRequiredElement('#transfer-type', inputRow).value;
       case INPUT_TYPE_HEX_BYTE:
         const value = Number.parseInt(
-            inputRow.querySelector('#query-request-type').value, 16);
+            queryRequiredElement('#query-request-type', inputRow).value, 16);
         switch (value >> 5 & 0x03) {
           case 0:
             return 'STANDARD';
@@ -2527,10 +2520,10 @@ cr.define('descriptor_panel', function() {
   function getRequestTypeRecipient(inputRow, inputType) {
     switch (inputType) {
       case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
-        return inputRow.querySelector('#transfer-recipient').value;
+        return queryRequiredElement('#transfer-recipient', inputRow).value;
       case INPUT_TYPE_HEX_BYTE:
         const value = Number.parseInt(
-            inputRow.querySelector('#query-request-type').value, 16);
+            queryRequiredElement('#query-request-type', inputRow).value, 16);
         switch (value & 0x1F) {
           case 0:
             return 'DEVICE';
@@ -2551,15 +2544,15 @@ cr.define('descriptor_panel', function() {
    * host-to-device.
    * @param {!HTMLElement} inputRow
    * @param {number} inputType
-   * @return {number}
+   * @return {string}
    */
   function getRequestTypeDirection(inputRow, inputType) {
     switch (inputType) {
       case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
-        return inputRow.querySelector('#transfer-direction').value;
+        return queryRequiredElement('#transfer-direction', inputRow).value;
       case INPUT_TYPE_HEX_BYTE:
         const value = Number.parseInt(
-            inputRow.querySelector('#query-request-type').value, 16);
+            queryRequiredElement('#query-request-type', inputRow).value, 16);
         switch (value >> 7) {
           case CONTROL_TRANSFER_DIRECTION_HOST_TO_DEVICE:
             return 'Host-to-Device';
@@ -2580,10 +2573,11 @@ cr.define('descriptor_panel', function() {
   function getRequestCode(inputRow, inputType) {
     switch (inputType) {
       case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
-        return Number.parseInt(inputRow.querySelector('#query-request').value);
+        return Number.parseInt(
+            queryRequiredElement('#query-request', inputRow).value, 10);
       case INPUT_TYPE_HEX_BYTE:
         return Number.parseInt(
-            inputRow.querySelector('#query-request').value, 16);
+            queryRequiredElement('#query-request', inputRow).value, 16);
       default:
         return Number.NaN;
     }
@@ -2598,10 +2592,11 @@ cr.define('descriptor_panel', function() {
   function getRequestValue(inputRow, inputType) {
     switch (inputType) {
       case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
-        return Number.parseInt(inputRow.querySelector('#query-value').value);
+        return Number.parseInt(
+            queryRequiredElement('#query-value', inputRow).value, 10);
       case INPUT_TYPE_HEX_BYTE:
         return Number.parseInt(
-            inputRow.querySelector('#query-value').value, 16);
+            queryRequiredElement('#query-value', inputRow).value, 16);
       default:
         return Number.NaN;
     }
@@ -2616,10 +2611,11 @@ cr.define('descriptor_panel', function() {
   function getRequestIndex(inputRow, inputType) {
     switch (inputType) {
       case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
-        return Number.parseInt(inputRow.querySelector('#query-index').value);
+        return Number.parseInt(
+            queryRequiredElement('#query-index', inputRow).value, 10);
       case INPUT_TYPE_HEX_BYTE:
         return Number.parseInt(
-            inputRow.querySelector('#query-index').value, 16);
+            queryRequiredElement('#query-index', inputRow).value, 16);
       default:
         return Number.NaN;
     }
@@ -2634,10 +2630,11 @@ cr.define('descriptor_panel', function() {
   function getRequestLength(inputRow, inputType) {
     switch (inputType) {
       case INPUT_TYPE_DECIMAL_WITH_DROPDOWN:
-        return Number.parseInt(inputRow.querySelector('#query-length').value);
+        return Number.parseInt(
+            queryRequiredElement('#query-length', inputRow).value, 10);
       case INPUT_TYPE_HEX_BYTE:
         return Number.parseInt(
-            inputRow.querySelector('#query-length').value, 16);
+            queryRequiredElement('#query-length', inputRow).value, 16);
       default:
         return Number.NaN;
     }
@@ -2652,23 +2649,24 @@ cr.define('descriptor_panel', function() {
   function addNewDescriptorDisplayElement(
       rootElement, descriptorPanelTitle = undefined) {
     const descriptorPanelTemplate =
-        document.querySelector('#descriptor-panel-template');
-    const descriptorPanelClone =
-        document.importNode(descriptorPanelTemplate.content, true);
+        queryRequiredElement('#descriptor-panel-template');
+
+    const descriptorPanelClone = /** @type {!HTMLElement} */
+        (document.importNode(descriptorPanelTemplate.content, true));
 
     /** @type {!HTMLElement} */
     const rawDataTreeRoot =
-        descriptorPanelClone.querySelector('.raw-data-tree-view');
+        queryRequiredElement('.raw-data-tree-view', descriptorPanelClone);
     /** @type {!HTMLElement} */
     const rawDataByteElement =
-        descriptorPanelClone.querySelector('.raw-data-byte-view');
+        queryRequiredElement('.raw-data-byte-view', descriptorPanelClone);
 
     cr.ui.decorate(rawDataTreeRoot, cr.ui.Tree);
     rawDataTreeRoot.detail = {payload: {}, children: {}};
 
     if (descriptorPanelTitle) {
       const descriptorPanelTitleTemplate =
-          document.querySelector('#descriptor-panel-title');
+          queryRequiredElement('#descriptor-panel-title');
       const clone =
           document.importNode(descriptorPanelTitleTemplate.content, true)
               .querySelector('descriptorpaneltitle');
@@ -2774,7 +2772,8 @@ cr.define('descriptor_panel', function() {
       el.addEventListener('pointerenter', () => {
         rawDataByteElement.querySelectorAll(`.${fieldOffsetClass}`)
             .forEach((el) => el.classList.add('hovered-field'));
-        const el = rawDataTreeRoot.querySelector(`.${fieldOffsetClass}`);
+        const el =
+            queryRequiredElement(`.${fieldOffsetClass}`, rawDataTreeRoot);
         if (el) {
           el.classList.add('hover');
         }
@@ -2783,14 +2782,16 @@ cr.define('descriptor_panel', function() {
       el.addEventListener('pointerleave', () => {
         rawDataByteElement.querySelectorAll(`.${fieldOffsetClass}`)
             .forEach((el) => el.classList.remove('hovered-field'));
-        const el = rawDataTreeRoot.querySelector(`.${fieldOffsetClass}`);
+        const el =
+            queryRequiredElement(`.${fieldOffsetClass}`, rawDataTreeRoot);
         if (el) {
           el.classList.remove('hover');
         }
       });
 
       el.addEventListener('click', () => {
-        const el = rawDataTreeRoot.querySelector(`.${fieldOffsetClass}`);
+        const el =
+            queryRequiredElement(`.${fieldOffsetClass}`, rawDataTreeRoot);
         if (el) {
           el.click();
         }
@@ -2857,19 +2858,17 @@ cr.define('descriptor_panel', function() {
    */
   function renderRawDataBytes(rawDataByteElement, rawData) {
     const rawDataByteContainerTemplate =
-        document.querySelector('#raw-data-byte-container-template');
+        queryRequiredElement('#raw-data-byte-container-template');
     const rawDataByteContainerClone =
         document.importNode(rawDataByteContainerTemplate.content, true);
     const rawDataByteContainerElement =
         rawDataByteContainerClone.querySelector('div');
 
-    const rawDataByteTemplate =
-        document.querySelector('#raw-data-byte-template');
+    const rawDataByteTemplate = queryRequiredElement('#raw-data-byte-template');
     for (const value of rawData) {
       const rawDataByteClone =
           document.importNode(rawDataByteTemplate.content, true);
       const rawDataByteElement = rawDataByteClone.querySelector('span');
-
       rawDataByteElement.textContent = toHex(value, 2);
       rawDataByteContainerElement.appendChild(rawDataByteElement);
     }

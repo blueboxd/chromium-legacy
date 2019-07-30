@@ -141,6 +141,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   auto java_web_contents = web_contents->GetJavaWebContents();
   Java_AutofillAssistantUiController_setWebContents(env, java_object_,
                                                     java_web_contents);
+  Java_AssistantModel_setWebContents(env, GetModel(), java_web_contents);
   Java_AssistantPaymentRequestModel_setWebContents(
       env, GetPaymentRequestModel(), java_web_contents);
   if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE) {
@@ -163,7 +164,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     RectF visual_viewport;
     ui_delegate->GetVisualViewport(&visual_viewport);
     OnTouchableAreaChanged(visual_viewport, area, restricted_area);
-    OnResizeViewportChanged(ui_delegate->GetResizeViewport());
+    OnViewportModeChanged(ui_delegate->GetViewportMode());
     OnPeekModeChanged(ui_delegate->GetPeekMode());
     OnFormChanged(ui_delegate->GetForm());
 
@@ -310,9 +311,9 @@ void UiControllerAndroid::OnProgressVisibilityChanged(bool visible) {
                                                GetHeaderModel(), visible);
 }
 
-void UiControllerAndroid::OnResizeViewportChanged(bool resize_viewport) {
-  Java_AutofillAssistantUiController_setResizeViewport(
-      AttachCurrentThread(), java_object_, resize_viewport);
+void UiControllerAndroid::OnViewportModeChanged(ViewportMode mode) {
+  Java_AutofillAssistantUiController_setViewportMode(AttachCurrentThread(),
+                                                     java_object_, mode);
 }
 
 void UiControllerAndroid::OnPeekModeChanged(
@@ -638,7 +639,7 @@ void UiControllerAndroid::OnUnexpectedTaps() {
   ShowSnackbar(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP),
                base::BindOnce(&UiControllerAndroid::Shutdown,
                               weak_ptr_factory_.GetWeakPtr(),
-                              Metrics::DropOutReason::SHEET_CLOSED));
+                              Metrics::DropOutReason::OVERLAY_STOP));
 }
 
 void UiControllerAndroid::UpdateTouchableArea() {
@@ -731,7 +732,12 @@ void UiControllerAndroid::OnPaymentRequestOptionsChanged(
           env, payment_options->accept_terms_and_conditions_text));
   Java_AssistantPaymentRequestModel_setShowTermsAsCheckbox(
       env, jmodel, payment_options->show_terms_as_checkbox);
-
+  Java_AssistantPaymentRequestModel_setRequireBillingPostalCode(
+      env, jmodel, payment_options->require_billing_postal_code);
+  Java_AssistantPaymentRequestModel_setBillingPostalCodeMissingText(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, payment_options->billing_postal_code_missing_text));
   Java_AssistantPaymentRequestModel_setSupportedBasicCardNetworks(
       env, jmodel,
       base::android::ToJavaArrayOfStrings(

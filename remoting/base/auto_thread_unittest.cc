@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
 #include "base/single_thread_task_runner.h"
@@ -137,9 +138,8 @@ TEST_F(AutoThreadTest, ThreadDependency) {
 #if defined(OS_WIN)
 TEST_F(AutoThreadTest, ThreadWithComMta) {
   scoped_refptr<base::TaskRunner> task_runner =
-      AutoThread::CreateWithLoopAndComInitTypes(kThreadName,
-                                                main_task_runner_,
-                                                base::MessageLoop::TYPE_DEFAULT,
+      AutoThread::CreateWithLoopAndComInitTypes(kThreadName, main_task_runner_,
+                                                base::MessagePumpType::DEFAULT,
                                                 AutoThread::COM_INIT_MTA);
   EXPECT_TRUE(task_runner);
 
@@ -158,9 +158,8 @@ TEST_F(AutoThreadTest, ThreadWithComMta) {
 
 TEST_F(AutoThreadTest, ThreadWithComSta) {
   scoped_refptr<base::TaskRunner> task_runner =
-      AutoThread::CreateWithLoopAndComInitTypes(kThreadName,
-                                                main_task_runner_,
-                                                base::MessageLoop::TYPE_UI,
+      AutoThread::CreateWithLoopAndComInitTypes(kThreadName, main_task_runner_,
+                                                base::MessagePumpType::UI,
                                                 AutoThread::COM_INIT_STA);
   EXPECT_TRUE(task_runner);
 

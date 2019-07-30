@@ -61,7 +61,6 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/common/page_messages.h"
-#include "content/common/possibly_associated_wrapper_shared_url_loader_factory.h"
 #include "content/common/renderer_host.mojom.h"
 #include "content/common/savable_subframe.h"
 #include "content/common/swapped_out_messages.h"
@@ -1998,8 +1997,7 @@ void RenderFrameImpl::Initialize() {
     enabled_bindings_ |= BINDINGS_POLICY_DOM_AUTOMATION;
   if (command_line.HasSwitch(switches::kStatsCollectionController))
     enabled_bindings_ |= BINDINGS_POLICY_STATS_COLLECTION;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    frame_request_blocker_ = base::MakeRefCounted<FrameRequestBlocker>();
+  frame_request_blocker_ = base::MakeRefCounted<FrameRequestBlocker>();
 
   // Bind this frame and the message router. This must be called after |frame_|
   // is set since binding requires a per-frame task runner.
@@ -3480,10 +3478,9 @@ void RenderFrameImpl::CommitNavigationInternal(
   }
 
   // Sanity check that the browser always sends us new loader factories on
-  // cross-document navigations with the Network Service enabled.
+  // cross-document navigations.
   DCHECK(common_params->url.SchemeIs(url::kJavaScriptScheme) ||
          common_params->url == GURL(url::kAboutSrcdocURL) ||
-         !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          subresource_loader_factories);
 
   // We only save metrics of the main frame's main resource to the
@@ -4008,17 +4005,14 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
         ->UpdateThisAndAllClones(std::move(subresource_loader_factories));
   } else {
 #if DCHECK_IS_ON()
-    // In presence of the NetworkService, this situation should happen only if
-    // the frame hosts a document that isn't related to a real navigation (i.e.
-    // if the frame should "inherit" the factories from its opener/parent - for
-    // example for about:blank or about:srcdoc or about:blank#someHref frames,
-    // or for frames with no URL - like the initial frame opened by window('',
-    // 'popup')).
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      WebURL url = GetWebFrame()->GetDocument().Url();
-      if (url.IsValid() && !url.IsEmpty())
-        DCHECK(url.ProtocolIs(url::kAboutScheme));
-    }
+    // This situation should happen only if the frame hosts a document that
+    // isn't related to a real navigation (i.e. if the frame should "inherit"
+    // the factories from its opener/parent - for example for about:blank or
+    // about:srcdoc or about:blank#someHref frames, or for frames with no URL
+    // - like the initial frame opened by window('', 'popup')).
+    WebURL url = GetWebFrame()->GetDocument().Url();
+    if (url.IsValid() && !url.IsEmpty())
+      DCHECK(url.ProtocolIs(url::kAboutScheme));
 #endif
     auto partial_bundle = base::MakeRefCounted<ChildURLLoaderFactoryBundle>();
     static_cast<blink::URLLoaderFactoryBundle*>(partial_bundle.get())
@@ -4030,8 +4024,6 @@ void RenderFrameImpl::UpdateSubresourceLoaderFactories(
 void RenderFrameImpl::MarkInitiatorAsRequiringSeparateURLLoaderFactory(
     const url::Origin& initiator_origin,
     network::mojom::URLLoaderFactoryPtr url_loader_factory) {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-
   // Set up |loader_factories_| to be updated by the
   // UpdateSubresourceLoaderFactories() below.
   GetLoaderFactoryBundle();
@@ -7000,12 +6992,9 @@ void RenderFrameImpl::SetupLoaderFactoryBundle(
 
   // In some tests |render_thread| could be null.
   if (render_thread && !info) {
-    // This should only happen for:
-    // 1) non-NetworkService cases, or
-    // 2) With NetworkService, but only for a placeholder document or an
-    // initial empty document cases.
-    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-           GetLoadingUrl().is_empty() ||
+    // This should only happen for a placeholder document or an initial empty
+    // document cases.
+    DCHECK(GetLoadingUrl().is_empty() ||
            GetLoadingUrl().spec() == url::kAboutBlankURL);
     loader_factories_->Update(render_thread->blink_platform_impl()
                                   ->CreateDefaultURLLoaderFactoryBundle()

@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/properties/longhand.h"
-#include "third_party/blink/renderer/core/css/property_descriptor.h"
+#include "third_party/blink/renderer/core/css/property_definition.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
@@ -68,12 +68,12 @@ void RegisterProperty(Document& document,
                       const String& initial_value,
                       bool is_inherited) {
   DummyExceptionStateForTesting exception_state;
-  PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
-  property_descriptor->setName(name);
-  property_descriptor->setSyntax(syntax);
-  property_descriptor->setInitialValue(initial_value);
-  property_descriptor->setInherits(is_inherited);
-  PropertyRegistration::registerProperty(&document, property_descriptor,
+  PropertyDefinition* property_definition = PropertyDefinition::Create();
+  property_definition->setName(name);
+  property_definition->setSyntax(syntax);
+  property_definition->setInitialValue(initial_value);
+  property_definition->setInherits(is_inherited);
+  PropertyRegistration::registerProperty(&document, property_definition,
                                          exception_state);
   ASSERT_FALSE(exception_state.HadException());
 }

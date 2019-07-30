@@ -4,7 +4,7 @@
 
 module gfx.mojom;
 
-import "skia/public/interfaces/bitmap.mojom";
+import "skia/public/mojom/bitmap.mojom";
 
 struct ImageSkiaRep {
   // Transport of the bitmap in this representation.

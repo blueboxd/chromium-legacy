@@ -63,7 +63,7 @@ include_rules = [
     "+services/resource_coordinator/public/cpp/resource_coordinator_features.h",
     "+services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h",
     "+services/service_manager/public",
-    "+skia/public/interfaces/bitmap_skbitmap_struct_traits.h",
+    "+skia/public/mojom/bitmap_skbitmap_mojom_traits.h",
     "+skia/ext/image_operations.h",
     "+skia/ext/skia_utils_mac.h",
     "+third_party/blink/public/common",

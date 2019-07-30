@@ -10,6 +10,7 @@
 #include "base/base_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/threading/platform_thread.h"
 
@@ -29,7 +30,7 @@ class BASE_EXPORT TaskTrackerPosix : public TaskTracker {
 
   // Sets the task runner with which to setup FileDescriptorWatcher in
   // the scope in which tasks run. |io_thread_task_runner| must refer to
-  // a Thread with MessageLoop::TYPE_IO.
+  // a Thread with MessagePumpType::IO.
   // Must be called before starting to run tasks.
   // External synchronization is required between a call to this and a call to
   // RunTask().

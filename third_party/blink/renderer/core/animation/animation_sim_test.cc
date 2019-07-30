@@ -5,7 +5,7 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
-#include "third_party/blink/renderer/core/css/property_descriptor.h"
+#include "third_party/blink/renderer/core/css/property_definition.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -49,12 +49,12 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   //   inherits: false
   // })
   DummyExceptionStateForTesting exception_state;
-  PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
-  property_descriptor->setName("--x");
-  property_descriptor->setSyntax("<percentage>");
-  property_descriptor->setInitialValue("0%");
-  property_descriptor->setInherits(false);
-  PropertyRegistration::registerProperty(&GetDocument(), property_descriptor,
+  PropertyDefinition* property_definition = PropertyDefinition::Create();
+  property_definition->setName("--x");
+  property_definition->setSyntax("<percentage>");
+  property_definition->setInitialValue("0%");
+  property_definition->setInherits(false);
+  PropertyRegistration::registerProperty(&GetDocument(), property_definition,
                                          exception_state);
   EXPECT_FALSE(exception_state.HadException());
 

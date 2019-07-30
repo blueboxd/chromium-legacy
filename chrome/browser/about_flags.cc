@@ -2237,10 +2237,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 #endif  // OS_ANDROID
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    {"passwords-migrate-linux-to-login-db",
-     flag_descriptions::kPasswordsMigrateLinuxToLoginDBName,
-     flag_descriptions::kPasswordsMigrateLinuxToLoginDBDescription, kOsLinux,
-     FEATURE_VALUE_TYPE(password_manager::features::kMigrateLinuxToLoginDB)},
     {"enable-dbus-and-x11-status-icons",
      flag_descriptions::kEnableDbusAndX11StatusIconsName,
      flag_descriptions::kEnableDbusAndX11StatusIconsDescription, kOsLinux,
@@ -2861,6 +2857,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"chrome-colors", flag_descriptions::kChromeColorsName,
      flag_descriptions::kChromeColorsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kChromeColors)},
+
+    {"chrome-colors-custom-color-picker",
+     flag_descriptions::kChromeColorsCustomColorPickerName,
+     flag_descriptions::kChromeColorsCustomColorPickerDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kChromeColorsCustomColorPicker)},
 
     {"grid-layout-for-ntp-shortcuts",
      flag_descriptions::kGridLayoutForNtpShortcutsName,

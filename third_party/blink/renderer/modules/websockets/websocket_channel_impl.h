@@ -34,6 +34,7 @@
 #include <stdint.h>
 #include <memory>
 #include <utility>
+#include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -90,10 +91,12 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
 
   // WebSocketChannel functions.
   bool Connect(const KURL&, const String& protocol) override;
-  void Send(const std::string& message) override;
-  void Send(const DOMArrayBuffer&,
-            unsigned byte_offset,
-            unsigned byte_length) override;
+  SendResult Send(const std::string& message,
+                  base::OnceClosure completion_callback) override;
+  SendResult Send(const DOMArrayBuffer&,
+                  unsigned byte_offset,
+                  unsigned byte_length,
+                  base::OnceClosure completion_callback) override;
   void Send(scoped_refptr<BlobDataHandle>) override;
   // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
   // argument to omit payload.
@@ -102,6 +105,8 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
             mojom::ConsoleMessageLevel,
             std::unique_ptr<SourceLocation>) override;
   void Disconnect() override;
+  void ApplyBackpressure() override;
+  void RemoveBackpressure() override;
 
   ExecutionContext* GetExecutionContext();
 
@@ -184,6 +189,12 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
                     const char* data,
                     wtf_size_t total_size,
                     uint64_t* consumed_buffered_amount);
+  void SendAndAdjustQuota(bool final,
+                          WebSocketHandle::MessageType,
+                          base::span<const char>,
+                          uint64_t* consumed_buffered_amount);
+  bool MaybeSendSynchronously(WebSocketHandle::MessageType,
+                              base::span<const char>);
   void ProcessSendQueue();
   void AddReceiveFlowControlIfNecessary();
   void InitialReceiveFlowControl();
@@ -218,24 +229,25 @@ class MODULES_EXPORT WebSocketChannelImpl final : public WebSocketChannel {
   Member<BlobLoader> blob_loader_;
   HeapDeque<Member<Message>> messages_;
   scoped_refptr<SharedBuffer> receiving_message_data_;
-  Member<ExecutionContext> execution_context_;
+  const Member<ExecutionContext> execution_context_;
 
-  bool receiving_message_type_is_text_;
-  uint64_t sending_quota_;
-  uint64_t received_data_size_for_flow_control_;
-  wtf_size_t sent_size_of_top_message_;
+  bool backpressure_ = false;
+  bool receiving_message_type_is_text_ = false;
+  bool throttle_passed_ = false;
+  uint64_t sending_quota_ = 0;
+  uint64_t received_data_size_for_flow_control_ = 0;
+  wtf_size_t sent_size_of_top_message_ = 0;
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
 
-  std::unique_ptr<SourceLocation> location_at_construction_;
+  const std::unique_ptr<const SourceLocation> location_at_construction_;
   network::mojom::blink::WebSocketHandshakeRequestPtr handshake_request_;
   std::unique_ptr<WebSocketHandshakeThrottle> handshake_throttle_;
   // This field is only initialised if the object is still waiting for a
   // throttle response when DidConnect is called.
   std::unique_ptr<ConnectInfo> connect_info_;
-  bool throttle_passed_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 
   base::Optional<uint64_t> receive_quota_threshold_;
 };

@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/bind_to_task_runner.h"
@@ -483,7 +484,7 @@ CastAudioOutputStream::MixerServiceWrapper::MixerServiceWrapper(
   DETACH_FROM_THREAD(io_thread_checker_);
 
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_pump_type = base::MessagePumpType::IO;
   options.priority = base::ThreadPriority::REALTIME_AUDIO;
   CHECK(io_thread_.StartWithOptions(options));
   io_task_runner_ = io_thread_.task_runner();

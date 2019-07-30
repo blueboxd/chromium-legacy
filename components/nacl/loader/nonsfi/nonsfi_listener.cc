@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -41,7 +41,7 @@ NonSfiListener::NonSfiListener()
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       key_fd_map_(new std::map<std::string, int>) {
   io_thread_.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+      base::Thread::Options(base::MessagePumpType::IO, 0));
 }
 
 NonSfiListener::~NonSfiListener() {

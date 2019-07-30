@@ -15,10 +15,10 @@ mojom("mojom") {
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//skia/public/interfaces:interfaces",
+    "//skia/public/mojom",
     "//ui/display/mojom",
     "//ui/gfx/geometry/mojom",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
   ]
 }
 
@@ -38,7 +38,7 @@ source_set("mojom_traits") {
   ]
   deps = [
     "//ui/gfx/geometry/mojom",
-    "//ui/gfx/mojo:mojo",
+    "//ui/gfx/mojom",
   ]
   public_deps = [
     ":mojom",

@@ -67,7 +67,7 @@ class CONTENT_EXPORT ContentIndexContextImpl
       scoped_refptr<ServiceWorkerVersion> service_worker,
       scoped_refptr<ServiceWorkerRegistration> registration,
       const std::string& description_id,
-      blink::ServiceWorkerStatusCode start_worker_status);
+      blink::ServiceWorkerStatusCode service_worker_status);
 
   void DidDispatchEvent(const url::Origin& origin,
                         blink::ServiceWorkerStatusCode service_worker_status);

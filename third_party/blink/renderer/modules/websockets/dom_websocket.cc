@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/modules/websockets/dom_websocket.h"
 
+#include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "third_party/blink/public/common/features.h"
@@ -478,7 +479,7 @@ void DOMWebSocket::send(const String& message,
 
   DCHECK(channel_);
   buffered_amount_ += encoded_message.length();
-  channel_->Send(encoded_message);
+  channel_->Send(encoded_message, base::OnceClosure());
 }
 
 void DOMWebSocket::send(DOMArrayBuffer* binary_data,
@@ -500,7 +501,8 @@ void DOMWebSocket::send(DOMArrayBuffer* binary_data,
                                  binary_data->ByteLength());
   DCHECK(channel_);
   buffered_amount_ += binary_data->ByteLength();
-  channel_->Send(*binary_data, 0, binary_data->ByteLength());
+  channel_->Send(*binary_data, 0, binary_data->ByteLength(),
+                 base::OnceClosure());
 }
 
 void DOMWebSocket::send(NotShared<DOMArrayBufferView> array_buffer_view,
@@ -523,7 +525,7 @@ void DOMWebSocket::send(NotShared<DOMArrayBufferView> array_buffer_view,
   buffered_amount_ += array_buffer_view.View()->byteLength();
   channel_->Send(*array_buffer_view.View()->buffer(),
                  array_buffer_view.View()->byteOffset(),
-                 array_buffer_view.View()->byteLength());
+                 array_buffer_view.View()->byteLength(), base::OnceClosure());
 }
 
 void DOMWebSocket::send(Blob* binary_data, ExceptionState& exception_state) {

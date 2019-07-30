@@ -491,12 +491,12 @@ void ScriptExecutor::SetInfoBox(const InfoBox& info_box) {
   delegate_->SetInfoBox(info_box);
 }
 
-void ScriptExecutor::SetResizeViewport(bool resize_viewport) {
-  delegate_->SetResizeViewport(resize_viewport);
+void ScriptExecutor::SetViewportMode(ViewportMode mode) {
+  delegate_->SetViewportMode(mode);
 }
 
-bool ScriptExecutor::GetResizeViewport() {
-  return delegate_->GetResizeViewport();
+ViewportMode ScriptExecutor::GetViewportMode() {
+  return delegate_->GetViewportMode();
 }
 
 void ScriptExecutor::SetPeekMode(

@@ -412,7 +412,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateReload) {
 
   TestExtensionRegistryObserver registry_observer(registry());
   EXPECT_TRUE(RunFunction(function, reload_args));
-  const Extension* unloaded_extension =
+  scoped_refptr<const Extension> unloaded_extension =
       registry_observer.WaitForExtensionUnloaded();
   EXPECT_EQ(extension, unloaded_extension);
   const Extension* reloaded_extension =

@@ -38,6 +38,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantPaymentRequestTestHelper.ViewHolder;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantChoiceList;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestModel;
@@ -599,6 +600,81 @@ public class AutofillAssistantPaymentRequestUiTest {
         // Second click will trigger the link.
         onView(acceptMatcher).perform(click());
         assertThat(delegate.mLastLinkClicked, is(42));
+    }
+
+    /**
+     * Test that if the billing address does not have a postal code and the postal code is required,
+     * an error message is displayed.
+     */
+    @Test
+    @MediumTest
+    public void testCreditCardWithoutPostcode() throws Exception {
+        // add credit card without postcode.
+        String profileId = mHelper.addDummyProfile("John Doe", "john@gmail.com", "");
+        mHelper.addDummyCreditCard(profileId);
+
+        // setup the view to require a billing postcode.
+        AutofillAssistantPaymentRequestTestHelper.ViewHolder viewHolder =
+                setupCreditCardPostalCodeTest(/* requireBillingPostalCode: */ true);
+
+        // check that the card is not accepted (i.e. an error message is shown).
+        onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(isDisplayed()));
+        onView(is(getPaymentSummaryErrorView(viewHolder)))
+                .check(matches(withText("Billing postcode missing")));
+
+        // setup the view to not require a billing postcode.
+        // TODO: clean previous view.
+        viewHolder = setupCreditCardPostalCodeTest(/* requireBillingPostalCode: */ false);
+
+        // check that the card is now accepted.
+        onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(not(isDisplayed())));
+    }
+
+    /**
+     * Test that requiring a billing postal code for a billing address that has it does not display
+     * an error message.
+     */
+    @Test
+    @MediumTest
+    public void testCreditCardWithPostcode() throws Exception {
+        // setup a card with a postcode.
+        String profileId = mHelper.addDummyProfile("Jane Doe", "jane@gmail.com", "98004");
+        mHelper.addDummyCreditCard(profileId);
+
+        // setup the view to require a billing postcode.
+        AutofillAssistantPaymentRequestTestHelper.ViewHolder viewHolder =
+                setupCreditCardPostalCodeTest(/* requireBillingPostalCode: */ true);
+
+        // check that the card is accepted.
+        onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(not(isDisplayed())));
+    }
+
+    private AutofillAssistantPaymentRequestTestHelper.ViewHolder setupCreditCardPostalCodeTest(
+            boolean requireBillingPostalCode) throws Exception {
+        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
+        AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
+        AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
+                new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
+        AutofillAssistantPaymentRequestTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantPaymentRequestTestHelper.ViewHolder(coordinator));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantPaymentRequestModel.REQUIRE_BILLING_POSTAL_CODE,
+                    requireBillingPostalCode);
+            model.set(AssistantPaymentRequestModel.BILLING_POSTAL_CODE_MISSING_TEXT,
+                    "Billing postcode missing");
+            model.set(AssistantPaymentRequestModel.REQUEST_PAYMENT, true);
+            model.set(AssistantPaymentRequestModel.DELEGATE, delegate);
+            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+        });
+
+        return viewHolder;
+    }
+
+    private View getPaymentSummaryErrorView(ViewHolder viewHolder) {
+        return viewHolder.mPaymentSection.findViewById(R.id.payment_method_summary)
+                .findViewById(R.id.incomplete_error);
     }
 
     private void testContact(String expectedContactSummary, String expectedContactFullDescription,

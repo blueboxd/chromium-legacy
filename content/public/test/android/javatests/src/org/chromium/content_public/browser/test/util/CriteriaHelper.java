@@ -6,11 +6,10 @@ package org.chromium.content_public.browser.test.util;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.os.SystemClock;
-
 import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.TimeoutTimer;
 
 import java.util.concurrent.Callable;
 
@@ -79,8 +78,8 @@ public class CriteriaHelper {
     public static void pollInstrumentationThread(
             Criteria criteria, long maxTimeoutMs, long checkIntervalMs) {
         boolean isSatisfied = criteria.isSatisfied();
-        long startTime = SystemClock.uptimeMillis();
-        while (!isSatisfied && SystemClock.uptimeMillis() - startTime < maxTimeoutMs) {
+        TimeoutTimer timer = new TimeoutTimer(maxTimeoutMs);
+        while (!isSatisfied && !timer.isTimedOut()) {
             try {
                 Thread.sleep(checkIntervalMs);
             } catch (InterruptedException e) {

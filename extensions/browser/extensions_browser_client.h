@@ -55,8 +55,6 @@ class Extension;
 class ExtensionCache;
 class ExtensionError;
 class ExtensionHostDelegate;
-class ExtensionApiFrameIdMap;
-class ExtensionApiFrameIdMapHelper;
 class ExtensionSet;
 class ExtensionSystem;
 class ExtensionSystemProvider;
@@ -286,9 +284,6 @@ class ExtensionsBrowserClient {
   // Returns a new UpdateClient.
   virtual scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context);
-
-  virtual std::unique_ptr<ExtensionApiFrameIdMapHelper>
-  CreateExtensionApiFrameIdMapHelper(ExtensionApiFrameIdMap* map);
 
   virtual std::unique_ptr<content::BluetoothChooser> CreateBluetoothChooser(
       content::RenderFrameHost* frame,

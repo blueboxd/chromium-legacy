@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "chrome/android/chrome_jni_headers/PartnerBookmarksReader_jni.h"
@@ -170,8 +171,8 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
 
   jlong node_id = 0;
   if (wip_partner_bookmarks_root_.get()) {
-    std::unique_ptr<BookmarkNode> node =
-        std::make_unique<BookmarkNode>(wip_next_available_id_++, GURL(url));
+    std::unique_ptr<BookmarkNode> node = std::make_unique<BookmarkNode>(
+        wip_next_available_id_++, base::GenerateGUID(), GURL(url));
     node->SetTitle(title);
 
     // Handle favicon and touchicon

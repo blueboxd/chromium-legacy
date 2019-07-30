@@ -939,7 +939,7 @@ size_t QuicChromiumClientSession::WriteHeadersOnHeadersStream(
     quic::QuicStreamId id,
     spdy::SpdyHeaderBlock headers,
     bool fin,
-    spdy::SpdyPriority priority,
+    const spdy::SpdyStreamPrecedence& precedence,
     quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
         ack_listener) {
   spdy::SpdyStreamId parent_stream_id = 0;
@@ -947,10 +947,11 @@ size_t QuicChromiumClientSession::WriteHeadersOnHeadersStream(
   bool exclusive = false;
 
   if (headers_include_h2_stream_dependency_) {
-    priority_dependency_state_.OnStreamCreation(id, priority, &parent_stream_id,
-                                                &weight, &exclusive);
+    priority_dependency_state_.OnStreamCreation(id, precedence.spdy3_priority(),
+                                                &parent_stream_id, &weight,
+                                                &exclusive);
   } else {
-    weight = spdy::Spdy3PriorityToHttp2Weight(priority);
+    weight = spdy::Spdy3PriorityToHttp2Weight(precedence.spdy3_priority());
   }
 
   return WriteHeadersOnHeadersStreamImpl(id, std::move(headers), fin,
@@ -968,10 +969,11 @@ void QuicChromiumClientSession::UnregisterStreamPriority(quic::QuicStreamId id,
 
 void QuicChromiumClientSession::UpdateStreamPriority(
     quic::QuicStreamId id,
-    spdy::SpdyPriority new_priority) {
+    const spdy::SpdyStreamPrecedence& new_precedence) {
   if (headers_include_h2_stream_dependency_ ||
       VersionHasStreamType(connection()->transport_version())) {
-    auto updates = priority_dependency_state_.OnStreamUpdate(id, new_priority);
+    auto updates = priority_dependency_state_.OnStreamUpdate(
+        id, new_precedence.spdy3_priority());
     for (auto update : updates) {
       if (!VersionHasStreamType(connection()->transport_version())) {
         WritePriority(update.id, update.parent_stream_id, update.weight,
@@ -988,7 +990,7 @@ void QuicChromiumClientSession::UpdateStreamPriority(
       }
     }
   }
-  quic::QuicSpdySession::UpdateStreamPriority(id, new_priority);
+  quic::QuicSpdySession::UpdateStreamPriority(id, new_precedence);
 }
 
 void QuicChromiumClientSession::OnStreamFrame(

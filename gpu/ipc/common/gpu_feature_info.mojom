@@ -5,7 +5,7 @@
 // gpu/config/gpu_feature_info.h
 module gpu.mojom;
 
-import "ui/gfx/mojo/buffer_types.mojom";
+import "ui/gfx/mojom/buffer_types.mojom";
 
 // gpu::GpuFeatureStatus
 enum GpuFeatureStatus {

@@ -698,7 +698,8 @@ int HttpProxyConnectJob::DoQuicProxyCreateStreamComplete(int result) {
 
   spdy::SpdyPriority spdy_priority =
       ConvertRequestPriorityToQuicPriority(kH2QuicTunnelPriority);
-  quic_stream->SetPriority(spdy_priority);
+  spdy::SpdyStreamPrecedence precedence(spdy_priority);
+  quic_stream->SetPriority(precedence);
 
   transport_socket_ = std::make_unique<QuicProxyClientSocket>(
       std::move(quic_stream), std::move(quic_session_), GetUserAgent(),

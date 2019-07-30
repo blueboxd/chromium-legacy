@@ -18,7 +18,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -363,7 +363,7 @@ class URLFetcherTest : public TestWithScopedTaskEnvironment {
     if (!network_thread_) {
       network_thread_.reset(new base::Thread("network thread"));
       base::Thread::Options network_thread_options;
-      network_thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+      network_thread_options.message_pump_type = base::MessagePumpType::IO;
       bool result = network_thread_->StartWithOptions(network_thread_options);
       CHECK(result);
     }

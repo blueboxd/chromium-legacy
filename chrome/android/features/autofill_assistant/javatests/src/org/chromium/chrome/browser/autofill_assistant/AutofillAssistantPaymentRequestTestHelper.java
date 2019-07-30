@@ -142,15 +142,21 @@ public class AutofillAssistantPaymentRequestTestHelper {
      *
      * @param fullName The full name for the profile to create.
      * @param email The email for the profile to create.
+     * @param postcode The postcode of the billing address.
      * @return the GUID of the created profile.
      */
-    public String addDummyProfile(String fullName, String email)
+    public String addDummyProfile(String fullName, String email, String postcode)
             throws TimeoutException, InterruptedException {
         PersonalDataManager.AutofillProfile profile = new PersonalDataManager.AutofillProfile(
                 "" /* guid */, "https://www.example.com" /* origin */, fullName, "Acme Inc.",
-                "123 Main", "California", "Los Angeles", "", "90210", "", "Uzbekistan",
+                "123 Main", "California", "Los Angeles", "", postcode, "", "Uzbekistan",
                 "555 123-4567", email, "");
         return setProfile(profile);
+    }
+
+    public String addDummyProfile(String fullName, String email)
+            throws TimeoutException, InterruptedException {
+        return addDummyProfile(fullName, email, "90210");
     }
 
     public CreditCard getCreditCard(final String guid) {

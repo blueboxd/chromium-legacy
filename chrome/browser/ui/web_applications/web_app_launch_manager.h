@@ -23,6 +23,8 @@ class WebAppLaunchManager : public apps::LaunchManager {
   ~WebAppLaunchManager() override;
 
   // apps::LaunchManager:
+  content::WebContents* OpenApplication(const AppLaunchParams& params) override;
+
   bool OpenApplicationWindow(const std::string& app_id,
                              const base::CommandLine& command_line,
                              const base::FilePath& current_directory) override;

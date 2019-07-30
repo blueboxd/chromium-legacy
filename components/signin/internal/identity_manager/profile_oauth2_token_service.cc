@@ -104,7 +104,7 @@ ProfileOAuth2TokenService::GetURLLoaderFactory() const {
 void ProfileOAuth2TokenService::OnAccessTokenInvalidated(
     const CoreAccountId& account_id,
     const std::string& client_id,
-    const std::set<std::string>& scopes,
+    const OAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
   delegate_->OnAccessTokenInvalidated(account_id, client_id, scopes,
                                       access_token);
@@ -288,7 +288,7 @@ void ProfileOAuth2TokenService::RevokeAllCredentials(
   base::AutoReset<SourceForRefreshTokenOperation> auto_reset(
       &update_refresh_token_source_, source);
   token_manager_->CancelAllRequests();
-  ClearCache();
+  token_manager_->ClearCache();
   GetDelegate()->RevokeAllCredentials();
 }
 
@@ -341,10 +341,6 @@ void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
   GetDelegate()->UpdateAuthError(account_id, error);
 }
 
-int ProfileOAuth2TokenService::GetTokenCacheCountForTesting() {
-  return token_manager_->token_cache().size();
-}
-
 void ProfileOAuth2TokenService::
     set_max_authorization_token_fetch_retries_for_testing(int max_retries) {
   token_manager_->set_max_authorization_token_fetch_retries_for_testing(
@@ -373,7 +369,7 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
   }
 
   token_manager_->CancelRequestsForAccount(account_id);
-  ClearCacheForAccount(account_id);
+  token_manager_->ClearCacheForAccount(account_id);
 
   signin_metrics::RecordRefreshTokenUpdatedFromSource(
       is_valid, update_refresh_token_source_);
@@ -390,7 +386,7 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
   RecreateDeviceIdIfNeeded();
 
   token_manager_->CancelRequestsForAccount(account_id);
-  ClearCacheForAccount(account_id);
+  token_manager_->ClearCacheForAccount(account_id);
 
   signin_metrics::RecordRefreshTokenRevokedFromSource(
       update_refresh_token_source_);
@@ -414,15 +410,6 @@ void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
   // Ensure the device ID is not empty, and recreate it if all tokens were
   // cleared during the loading process.
   RecreateDeviceIdIfNeeded();
-}
-
-void ProfileOAuth2TokenService::ClearCache() {
-  token_manager_->ClearCache();
-}
-
-void ProfileOAuth2TokenService::ClearCacheForAccount(
-    const CoreAccountId& account_id) {
-  token_manager_->ClearCacheForAccount(account_id);
 }
 
 bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {

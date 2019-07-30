@@ -7,7 +7,7 @@ module viz.mojom;
 import "services/viz/public/mojom/compositing/frame_sink_id.mojom";
 import "services/viz/public/mojom/compositing/surface_id.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/transform.mojom";
+import "ui/gfx/mojom/transform.mojom";
 
 // See src/components/viz/common/hit_test/hit_test_region_list.h.
 struct HitTestRegion {

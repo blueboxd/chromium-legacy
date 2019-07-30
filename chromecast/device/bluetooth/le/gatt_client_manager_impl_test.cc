@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -167,7 +168,7 @@ class GattClientManagerTest : public ::testing::Test {
   void SetUp() override {
     fake_task_runner_ = new base::TestMockTimeTaskRunner();
     message_loop_ =
-        std::make_unique<base::MessageLoop>(base::MessageLoop::TYPE_DEFAULT);
+        std::make_unique<base::MessageLoop>(base::MessagePumpType::DEFAULT);
     message_loop_->SetTaskRunner(fake_task_runner_);
     gatt_client_ = std::make_unique<bluetooth_v2_shlib::MockGattClient>();
     gatt_client_manager_ =

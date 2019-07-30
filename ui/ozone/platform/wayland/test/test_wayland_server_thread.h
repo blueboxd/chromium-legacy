@@ -13,6 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "ui/ozone/platform/wayland/test/global_object.h"
+#include "ui/ozone/platform/wayland/test/mock_wp_presentation.h"
 #include "ui/ozone/platform/wayland/test/mock_xdg_shell.h"
 #include "ui/ozone/platform/wayland/test/mock_zwp_linux_dmabuf.h"
 #include "ui/ozone/platform/wayland/test/test_compositor.h"
@@ -52,6 +53,9 @@ class TestWaylandServerThread : public base::Thread,
 
   // Resumes the server thread after flushing client connections.
   void Resume();
+
+  // Initializes and returns WpPresentation.
+  MockWpPresentation* EnsureWpPresentation();
 
   template <typename T>
   T* GetObject(uint32_t id) {
@@ -104,6 +108,7 @@ class TestWaylandServerThread : public base::Thread,
   MockZxdgShellV6 zxdg_shell_v6_;
   TestZwpTextInputManagerV1 zwp_text_input_manager_v1_;
   MockZwpLinuxDmabufV1 zwp_linux_dmabuf_v1_;
+  MockWpPresentation wp_presentation_;
 
   std::vector<std::unique_ptr<GlobalObject>> globals_;
 

@@ -69,6 +69,12 @@ using CustomCallbackItem = MarkingItem;
 using NotFullyConstructedItem = void*;
 using WeakTableItem = MarkingItem;
 
+struct BackingStoreCallbackItem {
+  void** slot;
+  MovingObjectCallback callback;
+  void* callback_data;
+};
+
 // Segment size of 512 entries necessary to avoid throughput regressions. Since
 // the work list is currently a temporary object this is not a problem.
 using MarkingWorklist = Worklist<MarkingItem, 512 /* local entries */>;
@@ -81,6 +87,8 @@ using WeakCallbackWorklist =
 using MovableReferenceWorklist =
     Worklist<MovableReference*, 512 /* local entries */>;
 using WeakTableWorklist = Worklist<WeakTableItem, 16 /* local entries */>;
+using BackingStoreCallbackWorklist =
+    Worklist<BackingStoreCallbackItem, 16 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
   STATIC_ONLY(HeapAllocHooks);
@@ -227,6 +235,10 @@ class PLATFORM_EXPORT ThreadHeap {
     return weak_table_worklist_.get();
   }
 
+  BackingStoreCallbackWorklist* GetBackingStoreCallbackWorklist() const {
+    return backing_store_callback_worklist_.get();
+  }
+
   // Register an ephemeron table for fixed-point iteration.
   void RegisterWeakTable(void* container_object,
                          EphemeronCallback);
@@ -238,20 +250,7 @@ class PLATFORM_EXPORT ThreadHeap {
   //
   // When compaction moves the object pointed to by |*slot| to |newAddress|,
   // |*slot| must be updated to hold |newAddress| instead.
-  bool ShouldRegisterMovingObjectReference(MovableReference*);
-
-  // Register a callback to be invoked upon moving the object starting at
-  // |reference|; see |MovingObjectCallback| documentation for details.
-  //
-  // This callback mechanism is needed to account for backing store objects
-  // containing intra-object pointers, all of which must be relocated/rebased
-  // with respect to the moved-to location.
-  //
-  // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
-  // relies on this feature.
-  void RegisterMovingObjectCallback(MovableReference*,
-                                    MovingObjectCallback,
-                                    void* callback_data);
+  bool ShouldRegisterMovingObject(MovableReference*);
 
   RegionTree* GetRegionTree() { return region_tree_.get(); }
 
@@ -452,6 +451,10 @@ class PLATFORM_EXPORT ThreadHeap {
   // Worklist of ephemeron callbacks. Used to pass new callbacks from
   // MarkingVisitor to ThreadHeap.
   std::unique_ptr<WeakTableWorklist> weak_table_worklist_;
+
+  // This worklist is used to passing backing store callback to HeapCompact.
+  std::unique_ptr<BackingStoreCallbackWorklist>
+      backing_store_callback_worklist_;
 
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.

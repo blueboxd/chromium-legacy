@@ -119,12 +119,13 @@ class DataPipeProducerTest : public testing::Test {
       std::unique_ptr<DataPipeProducer> producer,
       std::unique_ptr<FilteredDataSource::Filter> filter,
       base::File file,
-      size_t max_bytes) {
+      uint64_t max_bytes) {
     DataPipeProducer* raw_producer = producer.get();
+    auto data_source = std::make_unique<FileDataSource>(std::move(file));
+    data_source->SetRange(0u, max_bytes);
     raw_producer->Write(
-        std::make_unique<FilteredDataSource>(
-            std::make_unique<FileDataSource>(std::move(file), max_bytes),
-            std::move(filter)),
+        std::make_unique<FilteredDataSource>(std::move(data_source),
+                                             std::move(filter)),
         base::BindOnce([](std::unique_ptr<DataPipeProducer> producer,
                           MojoResult result) {},
                        std::move(producer)));
@@ -140,7 +141,7 @@ class DataPipeProducerTest : public testing::Test {
 
 struct DataPipeObserverData {
   int num_read_errors = 0;
-  size_t bytes_read = 0;
+  uint64_t bytes_read = 0;
   int done_called = 0;
 };
 

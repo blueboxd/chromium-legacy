@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -185,7 +186,7 @@ StreamMixer::StreamMixer(
     options.priority = base::ThreadPriority::REALTIME_AUDIO;
 #if defined(OS_FUCHSIA)
     // MixerOutputStreamFuchsia uses FIDL, which works only on IO threads.
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
+    options.message_pump_type = base::MessagePumpType::IO;
 #endif
     mixer_thread_->StartWithOptions(options);
     mixer_task_runner_ = mixer_thread_->task_runner();

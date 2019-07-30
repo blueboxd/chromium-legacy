@@ -99,12 +99,12 @@ void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
   payment_request_options_ = std::move(options);
 }
 
-void FakeScriptExecutorDelegate::SetResizeViewport(bool resize_viewport) {
-  resize_viewport_ = resize_viewport;
+void FakeScriptExecutorDelegate::SetViewportMode(ViewportMode mode) {
+  viewport_mode_ = mode;
 }
 
-bool FakeScriptExecutorDelegate::GetResizeViewport() {
-  return resize_viewport_;
+ViewportMode FakeScriptExecutorDelegate::GetViewportMode() {
+  return viewport_mode_;
 }
 
 void FakeScriptExecutorDelegate::SetPeekMode(

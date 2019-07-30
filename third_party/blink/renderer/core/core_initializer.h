@@ -85,7 +85,6 @@ class CORE_EXPORT CoreInitializer {
   // Supplements installed on a frame using ChromeClient
   virtual void InstallSupplements(LocalFrame&) const = 0;
   virtual void ProvideLocalFileSystemToWorker(WorkerClients&) const = 0;
-  virtual void ProvideIndexedDBClientToWorker(WorkerClients&) const = 0;
   virtual MediaControls* CreateMediaControls(HTMLMediaElement&,
                                              ShadowRoot&) const = 0;
   virtual PictureInPictureController* CreatePictureInPictureController(

@@ -30,25 +30,29 @@ struct ColorInfo {
 // always be in sync with ChromeColorsInfo in enums.xml.
 constexpr ColorInfo kSelectedColorsInfo[] = {
     // 0  - reserved for any color not in this set.
-    ColorInfo(1, SkColorSetRGB(192, 230, 181), "Pistachio"),
-    ColorInfo(2, SkColorSetRGB(158, 228, 233), "Seafoam"),
-    ColorInfo(3, SkColorSetRGB(219, 237, 254), "Mist"),
-    ColorInfo(4, SkColorSetRGB(255, 174, 189), "Flamingo"),
-    ColorInfo(5, SkColorSetRGB(221, 179, 197), "Wine"),
-    ColorInfo(6, SkColorSetRGB(210, 175, 248), "Lavender"),
-    ColorInfo(7, SkColorSetRGB(217, 213, 213), "Elephant"),
-    ColorInfo(8, SkColorSetRGB(246, 97, 12), "Sunset"),
-    ColorInfo(9, SkColorSetRGB(247, 194, 12), "Banana"),
-    ColorInfo(10, SkColorSetRGB(109, 180, 87), "Kiwi"),
-    ColorInfo(11, SkColorSetRGB(25, 157, 169), "Robins Egg"),
-    ColorInfo(12, SkColorSetRGB(93, 147, 228), "Blue"),
-    ColorInfo(13, SkColorSetRGB(23, 94, 26), "Pine"),
-    ColorInfo(14, SkColorSetRGB(10, 110, 119), "Oceanic"),
-    ColorInfo(15, SkColorSetRGB(126, 24, 39), "Bordeaux"),
-    ColorInfo(16, SkColorSetRGB(91, 55, 137), "Eggplant"),
-    ColorInfo(17, SkColorSetRGB(45, 65, 109), "Navy"),
-    ColorInfo(18, SkColorSetRGB(33, 33, 33), "Midnight"),
-    ColorInfo(19, SkColorSetRGB(189, 22, 82), "Raspberry")};
+    ColorInfo(1, SkColorSetRGB(239, 235, 233), "Elephant"),
+    ColorInfo(2, SkColorSetRGB(120, 127, 145), "Light grey"),
+    ColorInfo(3, SkColorSetRGB(55, 71, 79), "Midnight"),
+    ColorInfo(4, SkColorSetRGB(0, 0, 0), "Black"),
+    ColorInfo(5, SkColorSetRGB(252, 219, 201), "Beige/White"),
+    ColorInfo(6, SkColorSetRGB(255, 249, 228), "Yellow/White"),
+    ColorInfo(7, SkColorSetRGB(203, 233, 191), "Green/White"),
+    ColorInfo(8, SkColorSetRGB(221, 244, 249), "Light Teal/White"),
+    ColorInfo(9, SkColorSetRGB(233, 212, 255), "Light Purple/White"),
+    ColorInfo(10, SkColorSetRGB(249, 226, 237), "Pink/White"),
+    ColorInfo(11, SkColorSetRGB(227, 171, 154), "Beige"),
+    ColorInfo(12, SkColorSetRGB(255, 171, 64), "Orange"),
+    ColorInfo(13, SkColorSetRGB(67, 160, 71), "Light Green"),
+    ColorInfo(14, SkColorSetRGB(25, 157, 169), "Light Teal"),
+    ColorInfo(15, SkColorSetRGB(93, 147, 228), "Light Blue"),
+    ColorInfo(16, SkColorSetRGB(255, 174, 189), "Pink"),
+    ColorInfo(17, SkColorSetRGB(189, 22, 92), "Dark Pink/Red"),
+    ColorInfo(18, SkColorSetRGB(183, 28, 28), "Dark Red/Orange"),
+    ColorInfo(19, SkColorSetRGB(46, 125, 50), "Dark Green"),
+    ColorInfo(20, SkColorSetRGB(0, 110, 120), "Dark Teal"),
+    ColorInfo(21, SkColorSetRGB(21, 101, 192), "Dark Blue"),
+    ColorInfo(22, SkColorSetRGB(91, 54, 137), "Dark Purple"),
+};
 
 }  // namespace chrome_colors
 

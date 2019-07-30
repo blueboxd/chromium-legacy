@@ -4,8 +4,6 @@ PASS Partial namespace CSS: original namespace defined
 PASS Partial namespace CSS: valid exposure set
 PASS Partial interface AnimationEffect: original interface defined
 FAIL Partial interface AnimationEffect: valid exposure set Partial AnimationEffect interface is exposed to 'AnimationWorklet', the original interface is not.
-PASS StatelessAnimator interface: existence and properties of interface object
-PASS StatefulAnimator interface: existence and properties of interface object
 PASS AnimationWorkletGlobalScope interface: existence and properties of interface object
 PASS WorkletAnimation interface: existence and properties of interface object
 FAIL WorkletAnimation must be primary interface of new WorkletAnimation("name") assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: WorkletAnimation is not defined"

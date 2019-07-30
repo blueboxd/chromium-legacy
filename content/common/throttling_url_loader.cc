@@ -563,16 +563,11 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       throttle->WillRedirectRequest(&redirect_info_copy, response_head,
                                     &throttle_deferred, &removed_headers,
                                     &modified_headers);
-      if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-          redirect_info_copy.new_url != redirect_info.new_url) {
+      if (redirect_info_copy.new_url != redirect_info.new_url) {
         DCHECK(throttle_will_redirect_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
                "changing the URL.";
         throttle_will_redirect_redirect_url_ = redirect_info_copy.new_url;
-      } else {
-        CHECK_EQ(redirect_info_copy.new_url, redirect_info.new_url)
-            << "Non-network service path doesn't support modifying a redirect "
-               "URL";
       }
 
       if (!weak_ptr)

@@ -11,7 +11,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_preferences.mojom.h"
 #include "mojo/public/cpp/base/message_loop_type_mojom_traits.h"
-#include "ui/gfx/mojo/buffer_types_struct_traits.h"
+#include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 
 namespace mojo {
 

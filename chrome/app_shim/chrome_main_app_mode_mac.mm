@@ -20,6 +20,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -122,7 +123,7 @@ int APP_SHIM_ENTRY_POINT_NAME(const app_mode::ChromeAppModeInfo* info) {
 
   // Launch the IO thread.
   base::Thread::Options io_thread_options;
-  io_thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  io_thread_options.message_pump_type = base::MessagePumpType::IO;
   base::Thread *io_thread = new base::Thread("CrAppShimIO");
   io_thread->StartWithOptions(io_thread_options);
 
@@ -136,8 +137,7 @@ int APP_SHIM_ENTRY_POINT_NAME(const app_mode::ChromeAppModeInfo* info) {
   [AppShimApplication sharedApplication];
   CHECK([NSApp isKindOfClass:[AppShimApplication class]]);
 
-  base::SingleThreadTaskExecutor main_task_executor(
-      base::MessagePump::Type::UI);
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   ui::WindowResizeHelperMac::Get()->Init(main_task_executor.task_runner());
   base::PlatformThread::SetName("CrAppShimMain");
 

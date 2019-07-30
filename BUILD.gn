@@ -1039,7 +1039,7 @@ if (!is_ios) {
       "//services/device/public/mojom:mojom_js_data_deps",
       "//services/device/public/mojom:generic_sensor_js_data_deps",
       "//services/device/public/mojom:usb_js_data_deps",
-      "//skia/public/interfaces:interfaces_js_data_deps",
+      "//skia/public/mojom:mojom_js_data_deps",
       "//testing/buildbot/filters:blink_web_tests_filter",
       "//third_party/blink/public:blink_devtools_frontend_resources_files",
       "//third_party/blink/public/mojom:mojom_platform_js_data_deps",

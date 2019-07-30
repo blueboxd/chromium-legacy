@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -240,8 +241,8 @@ void DesktopProcessTest::RunDesktopProcess() {
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner = new AutoThreadTaskRunner(
       message_loop_.task_runner(), quit_ui_task_runner);
 
-  io_task_runner_ = AutoThread::CreateWithType(
-      "IPC thread", ui_task_runner, base::MessageLoop::TYPE_IO);
+  io_task_runner_ = AutoThread::CreateWithType("IPC thread", ui_task_runner,
+                                               base::MessagePumpType::IO);
 
   mojo::MessagePipe pipe;
   daemon_channel_ = IPC::ChannelProxy::Create(

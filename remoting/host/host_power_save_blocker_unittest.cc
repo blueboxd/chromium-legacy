@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/threading/thread.h"
 #include "remoting/host/host_status_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +34,7 @@ HostPowerSaveBlockerTest::HostPowerSaveBlockerTest()
 
 void HostPowerSaveBlockerTest::SetUp() {
   ASSERT_TRUE(blocking_thread_.StartWithOptions(
-                  base::Thread::Options(base::MessageLoop::TYPE_IO, 0)) &&
+                  base::Thread::Options(base::MessagePumpType::IO, 0)) &&
               blocking_thread_.WaitUntilThreadStarted());
   blocker_.reset(new HostPowerSaveBlocker(monitor_,
                                           ui_message_loop_.task_runner(),

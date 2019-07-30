@@ -5,7 +5,7 @@
 module viz.mojom;
 
 import "services/viz/public/mojom/compositing/paint_filter.mojom";
-import "skia/public/interfaces/blur_image_filter_tile_mode.mojom";
+import "skia/public/mojom/blur_image_filter_tile_mode.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
 enum FilterType {

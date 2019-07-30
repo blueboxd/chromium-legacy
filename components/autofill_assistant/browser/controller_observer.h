@@ -19,6 +19,7 @@
 #include "components/autofill_assistant/browser/state.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
 #include "components/autofill_assistant/browser/user_action.h"
+#include "components/autofill_assistant/browser/viewport_mode.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace autofill_assistant {
@@ -90,8 +91,8 @@ class ControllerObserver : public base::CheckedObserver {
       const std::vector<RectF>& touchable_areas,
       const std::vector<RectF>& restricted_areas);
 
-  // Called when the viewport resize flag has changed.
-  virtual void OnResizeViewportChanged(bool resize_viewport);
+  // Called when the viewport mode has changed.
+  virtual void OnViewportModeChanged(ViewportMode mode);
 
   // Called when the peek mode has changed.
   virtual void OnPeekModeChanged(ConfigureBottomSheetProto::PeekMode peek_mode);

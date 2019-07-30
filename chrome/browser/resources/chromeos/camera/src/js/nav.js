@@ -34,8 +34,10 @@ cca.nav.topmostIndex_ = -1;
 cca.nav.setup = function(views) {
   cca.nav.views_ = views;
   // Manage all tabindex usages in cca.nav for navigation.
-  document.querySelectorAll('[tabindex]').forEach(
-      (element) => cca.util.makeUnfocusableByMouse(element));
+  document.querySelectorAll('[tabindex]')
+      .forEach(
+          (element) => cca.util.makeUnfocusableByMouse(
+              /** @type {!HTMLElement} */ (element)));
 };
 
 /**

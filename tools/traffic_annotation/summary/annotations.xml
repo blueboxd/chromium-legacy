@@ -98,7 +98,7 @@ Refer to README.md for content description and update process.
  <item id="extension_install_signer" hash_code="50464499" type="0" content_hash_code="88088656" os_list="linux,windows" file_path="chrome/browser/extensions/install_signer.cc"/>
  <item id="extension_manifest_fetcher" hash_code="5151071" type="0" content_hash_code="25187227" os_list="linux,windows" file_path="extensions/browser/updater/extension_downloader.cc"/>
  <item id="external_policy_fetcher" hash_code="9459438" type="0" content_hash_code="64260484" os_list="linux,windows" file_path="components/policy/core/common/cloud/external_policy_data_fetcher.cc"/>
- <item id="family_info" hash_code="30913825" type="0" content_hash_code="25369370" os_list="linux,windows" file_path="chrome/browser/supervised_user/child_accounts/family_info_fetcher.cc"/>
+ <item id="family_info" hash_code="30913825" type="0" deprecated="2019-07-30" content_hash_code="25369370" file_path=""/>
  <item id="favicon_loader" hash_code="112189210" type="0" content_hash_code="70773116" os_list="linux,windows" file_path="content/renderer/loader/web_url_loader_impl.cc"/>
  <item id="feed_image_fetcher" hash_code="87439531" type="0" deprecated="2019-01-04" content_hash_code="26756208" file_path=""/>
  <item id="gaia_auth_check_connection_info" hash_code="4598626" type="0" content_hash_code="57347000" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
@@ -140,8 +140,8 @@ Refer to README.md for content description and update process.
  <item id="interest_feed_send" hash_code="76717919" type="0" content_hash_code="34678180" os_list="linux,windows" file_path="components/feed/core/feed_networking_host.cc"/>
  <item id="intranet_redirect_detector" hash_code="21785164" type="0" content_hash_code="62025595" os_list="linux,windows" file_path="chrome/browser/intranet_redirect_detector.cc"/>
  <item id="invalidation_service" hash_code="72354423" type="0" content_hash_code="78425687" os_list="linux,windows" file_path="components/invalidation/impl/gcm_network_channel.cc"/>
- <item id="kids_chrome_management_client_classify_url" hash_code="109987793" type="0" content_hash_code="112740597" os_list="linux,windows" file_path="chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client.cc"/>
- <item id="kids_management_url_checker" hash_code="57474321" type="0" content_hash_code="109271547" os_list="linux,windows" file_path="chrome/browser/supervised_user/kids_management_url_checker_client.cc"/>
+ <item id="kids_chrome_management_client_classify_url" hash_code="109987793" type="0" deprecated="2019-07-30" content_hash_code="112740597" file_path=""/>
+ <item id="kids_management_url_checker" hash_code="57474321" type="0" deprecated="2019-07-30" content_hash_code="109271547" file_path=""/>
  <item id="lib_address_input" hash_code="50816767" type="0" content_hash_code="57977576" os_list="linux,windows" file_path="third_party/libaddressinput/chromium/chrome_metadata_source.cc"/>
  <item id="logo_service" hash_code="35473769" type="0" content_hash_code="20271299" os_list="linux,windows" file_path="components/search_provider_logos/logo_service_impl.cc"/>
  <item id="logo_tracker" hash_code="36859107" type="0" deprecated="2018-12-07" content_hash_code="67588075" file_path=""/>
@@ -189,7 +189,7 @@ Refer to README.md for content description and update process.
  <item id="pepper_udp_socket" hash_code="53512439" type="0" content_hash_code="85431089" os_list="linux,windows" file_path="content/browser/renderer_host/pepper/pepper_socket_utils.cc"/>
  <item id="per_user_topic_registration_request" hash_code="10498172" type="0" content_hash_code="32495619" os_list="linux,windows" file_path="components/invalidation/impl/per_user_topic_registration_request.cc"/>
  <item id="permission_reporting" hash_code="131741641" type="0" deprecated="2018-03-06" content_hash_code="7213535" file_path=""/>
- <item id="permission_request_creator" hash_code="43206794" type="0" content_hash_code="73571699" os_list="linux,windows" file_path="chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.cc"/>
+ <item id="permission_request_creator" hash_code="43206794" type="0" deprecated="2019-07-30" content_hash_code="73571699" file_path=""/>
  <item id="persist_blob_to_indexed_db" hash_code="32030464" type="0" deprecated="2018-08-13" content_hash_code="35410079" file_path=""/>
  <item id="plugins_resource_service" hash_code="49601082" type="0" content_hash_code="6877335" os_list="linux,windows" file_path="chrome/browser/plugins/plugins_resource_service.cc"/>
  <item id="policy_blacklist_service" hash_code="49799644" type="0" content_hash_code="57843386" os_list="linux,windows" file_path="components/policy/content/policy_blacklist_service.cc"/>
@@ -220,7 +220,7 @@ Refer to README.md for content description and update process.
  <item id="render_view_context_menu" hash_code="25844439" type="0" content_hash_code="69471170" os_list="linux,windows" file_path="chrome/browser/renderer_context_menu/render_view_context_menu.cc"/>
  <item id="renderer_initiated_download" hash_code="116443055" type="0" content_hash_code="37846436" os_list="linux,windows" file_path="content/browser/frame_host/render_frame_message_filter.cc"/>
  <item id="reporting" hash_code="109891200" type="0" content_hash_code="125758928" os_list="linux,windows" file_path="net/reporting/reporting_uploader.cc"/>
- <item id="resource_dispatcher_host" hash_code="81157007" type="0" content_hash_code="35725167" os_list="linux,windows" file_path="content/browser/loader/resource_dispatcher_host_impl.cc"/>
+ <item id="resource_dispatcher_host" hash_code="81157007" type="0" deprecated="2019-07-30" content_hash_code="35725167" file_path=""/>
  <item id="resource_prefetch" hash_code="110815970" type="0" deprecated="2018-02-28" content_hash_code="39251261" file_path=""/>
  <item id="rlz_ping" hash_code="99279418" type="0" content_hash_code="102108802" os_list="windows" file_path="rlz/lib/financial_ping.cc"/>
  <item id="safe_browsing_backup_request" hash_code="106980485" type="0" deprecated="2018-08-14" content_hash_code="101760679" file_path=""/>
@@ -259,8 +259,8 @@ Refer to README.md for content description and update process.
  <item id="suggestions_image_manager" hash_code="13211343" type="0" deprecated="2018-11-28" content_hash_code="36271280" file_path=""/>
  <item id="suggestions_service" hash_code="35370363" type="0" content_hash_code="66296423" os_list="linux,windows" file_path="components/suggestions/suggestions_service_impl.cc"/>
  <item id="supervised_user_refresh_token_fetcher" hash_code="136117054" type="0" deprecated="2018-04-18" content_hash_code="101636136" file_path=""/>
- <item id="supervised_user_url_filter" hash_code="14257952" type="0" content_hash_code="30470003" os_list="linux,windows" file_path="chrome/browser/supervised_user/supervised_user_url_filter.cc"/>
- <item id="supervised_users_blacklist" hash_code="78544924" type="0" content_hash_code="10924669" os_list="linux,windows" file_path="chrome/browser/supervised_user/supervised_user_service.cc"/>
+ <item id="supervised_user_url_filter" hash_code="14257952" type="0" deprecated="2019-07-30" content_hash_code="30470003" file_path=""/>
+ <item id="supervised_users_blacklist" hash_code="78544924" type="0" deprecated="2019-07-30" content_hash_code="10924669" file_path=""/>
  <item id="sync_attachment_downloader" hash_code="26372521" type="0" deprecated="2018-02-08" content_hash_code="70097603" file_path=""/>
  <item id="sync_attachment_uploader" hash_code="132657055" type="0" deprecated="2018-02-08" content_hash_code="25152853" file_path=""/>
  <item id="sync_file_system" hash_code="102819690" type="0" content_hash_code="52153962" os_list="linux,windows" file_path="chrome/browser/sync_file_system/drive_backend/sync_engine.cc"/>

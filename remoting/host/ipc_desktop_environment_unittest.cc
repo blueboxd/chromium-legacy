@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -265,8 +266,8 @@ void IpcDesktopEnvironmentTest::SetUp() {
   task_runner_ = new AutoThreadTaskRunner(
       message_loop_.task_runner(), main_run_loop_.QuitClosure());
 
-  io_task_runner_ = AutoThread::CreateWithType(
-      "IPC thread", task_runner_, base::MessageLoop::TYPE_IO);
+  io_task_runner_ = AutoThread::CreateWithType("IPC thread", task_runner_,
+                                               base::MessagePumpType::IO);
 
   setup_run_loop_.reset(new base::RunLoop());
 

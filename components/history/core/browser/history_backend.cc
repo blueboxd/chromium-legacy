@@ -2021,6 +2021,11 @@ bool HistoryBackend::SetFaviconsImpl(const base::flat_set<GURL>& page_urls,
   favicon_base::FaviconID icon_id =
       thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type);
 
+  if (type == FaviconBitmapType::ON_DEMAND) {
+    UMA_HISTOGRAM_BOOLEAN("Favicon.OnDemandIconExistsInDb",
+                          static_cast<bool>(icon_id));
+  }
+
   bool favicon_created = false;
   if (!icon_id) {
     icon_id = thumbnail_db_->AddFavicon(icon_url, icon_type);

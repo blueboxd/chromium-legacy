@@ -202,6 +202,7 @@ void AccountManager::Initialize(
     // invocation of |Initialize| matches the one it is currently being called
     // with.
     DCHECK_EQ(home_dir, writer_->path().DirName());
+    std::move(initialization_callback).Run();
     return;
   }
 
@@ -294,6 +295,11 @@ void AccountManager::InsertAccountsAndRunInitializationCallbacks(
 
 AccountManager::~AccountManager() {
   // AccountManager is supposed to be used as a leaky global.
+}
+
+bool AccountManager::IsInitialized() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return init_state_ == InitializationState::kInitialized;
 }
 
 void AccountManager::RunOnInitialization(base::OnceClosure closure) {

@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -39,7 +40,7 @@ class NonBlockingInvalidatorTestDelegate {
           invalidation_state_tracker) {
     DCHECK(!invalidator_);
     base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
+    options.message_pump_type = base::MessagePumpType::IO;
     io_thread_.StartWithOptions(options);
     net_config_helper_ =
         std::make_unique<jingle_glue::NetworkServiceConfigTestUtil>(

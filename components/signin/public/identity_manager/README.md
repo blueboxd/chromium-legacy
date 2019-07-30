@@ -8,12 +8,33 @@ signin component:
 Implementation files in this directory, however, are additionally allowed to
 depend on //components/signin/internal/identity_manager.
 
-A quick guide through the core concepts:
+Here we take a quick guide through the core concepts (note: Documentation on
+specific IdentityManager and IdentityManager::Observer methods can be found as
+method-level comments in identity_manager.h; this guide defines the core
+concepts themselves and gives a high-level mapping between these core concepts
+and the relevant IdentityManager(::Observer) API surfaces).
 
+# Accounts
 - "Account" always refers to a Gaia account.
-- "Primary account" in IdentityManager refers to what is called the
-  "authenticated account" in PrimaryAccountManager, i.e., the account that has
-  been blessed for sync by the user.
+- An account has three core pieces of information, which are collected together
+  in the CoreAccountInfo struct and are available for the duration of the
+  account being visible to IdentityManager:
+  - The email address.
+  - The Gaia ID.
+  - The account ID. This is an opaque Chrome-specific identifier for the
+    account.
+- The AccountInfo struct contains extra "extended" information about the account
+  that may become available only asynchronously after the account is first added
+  to Chrome. To interact with the extended account info, use the IdentityManager
+  methods with "AccountInfo" in their names. To observe changes in the state of
+  the extended account info for one or more accounts, observe IdentityManager
+  and override one or more of the IdentityManager::Observer methods with
+  "ExtendedAccountInfo" in their names.
+
+# The Primary Account
+- "Primary account" in IdentityManager refers to the account that has been 
+  blessed for sync by the user (what in Chromium historically was often referred
+  to as the "authenticated account").
 - "Unconsented primary account" is intuitively the browsing identity of the user
   that we display to the user; the user may or may not have blessed this account
   for sync. In particular, whenever a primary account exists, the unconsented
@@ -25,6 +46,19 @@ A quick guide through the core concepts:
   "unconsented" in this context is that it means "did not consent"; really, this
   account is the "possibly unconsented, possibly primary, default account", which
   is a mouthful :).
+- To interact with the primary account and/or unconsented primary account, use
+  the IdentityManager methods with "PrimaryAccount" in their names. To observe
+  changes in the presence of either of these accounts, observe IdentityManager
+  and override one or more of the methods with "PrimaryAccount" in their names
+  as desired.
+- PrimaryAccountTokenFetcher is the primary client-side interface for obtaining
+  OAuth2 access tokens for the primary account (see the next section for the
+  discussion of OAuth2 tokens). In particular, it can handle the common use case
+  of "wait until the primary account is available and then fetch an access token
+  for it" transparently on behalf of the client. See
+  primary_account_access_token_fetcher.h for usage explanation and examples.
+
+# OAuth2 Access and Refresh Tokens
 - "OAuth2 tokens" are tokens related to the OAuth2 client-server authorization
   protocol. "OAuth2 refresh tokens" or just "refresh tokens" are long-lived
   tokens that the browser obtains via the user explicitly adding an account.
@@ -37,12 +71,28 @@ A quick guide through the core concepts:
     signed in to the browser and embedder-level code then added the account to
     IdentityManager, or because the user has added an account at the
     system level that embedder-level code then made visible to IdentityManager).
-- PrimaryAccountTokenFetcher is the primary client-side interface for obtaining
-  access tokens for the primary account. In particular, it can take care of
-  waiting until the primary account is available.
+  To interact with these accounts, use the IdentityManager methods with
+  "RefreshToken" in their name. To observe changes in the state of one or more
+  of these accounts, observe IdentityManager and override one or more of the
+  IdentityManager::Observer methods with "RefreshToken" in their name.
 - AccessTokenFetcher is the client-side interface for obtaining access tokens
   for arbitrary accounts; see access_token_fetcher.h for usage explanation and
   examples.
+
+# The Gaia Cookie
+- "The Gaia cookie" refers to the cookie that contains the information of the
+  user's Gaia accounts that are available on the web.
+- "The accounts in the Gaia cookie" and "the accounts in the cookie jar" refer to
+  the set of accounts in this cookie. To interact with these accounts, use the
+  IdentityManager methods with "Cookie" in their name. To observe changes in the
+  state of one or more of these accounts, observe IdentityManager and override
+  one or more of the IdentityManager::Observer methods with "Cookie" in their
+  name. Note that as the information that Chrome has about these accounts is
+  fundamentally different than that which Chrome has about the user's accounts
+  with OAuth2 refresh tokens, the struct encoding this information is also
+  distinct: see accounts_in_cookie_jar_info.h.
+
+# Interacting with IdentityManager and Friends in Tests
 - IdentityTestEnvironment is the preferred test infrastructure for unittests
   of production code that interacts with IdentityManager. It is suitable for
   use in cases where neither the production code nor the unittest is interacting
@@ -56,11 +106,18 @@ A quick guide through the core concepts:
   tests and Profile-based unittests (in the latter case, consider migrating the
   test and production code away from using Profile directly and using
   IdentityTestEnvironment).
+
+# Mutation of Account State
 - Various mutators of account state are available through IdentityManager (e.g.,
   PrimaryAccountMutator). These should in general be used only as part of larger
   embedder-specific flows for mutating the user's account state in ways that are
-  in line with product specifications.
+  in line with product specifications. If you are a consumer of
+  //components/identity/public/identity_manager and you believe that you have a
+  new use case for one of these API surfaces, you should first contact the
+  OWNERS of //components/signin to discuss this use case and how best to realize
+  it.
 
+# Mental Mapping from Chromium's Historical API Surfaces for Signin
 Documentation on the mapping between usage of legacy signin
 classes (notably PrimaryAccountManager and ProfileOAuth2TokenService) and usage
 of IdentityManager is available here:

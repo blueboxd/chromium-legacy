@@ -69,7 +69,10 @@ using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 @end
 
 // ChromeSigninViewController is a view controller that handles all the
-// sign-in UI flow.
+// sign-in UI flow. To support the swipe to dismiss feature, the init method of
+// this class uses the presentation controller. Therefore the presentation style
+// cannot be changed after the init. The style is set to
+// UIModalPresentationFormSheet by the init method.
 @interface ChromeSigninViewController
     : UIViewController<SigninConfirmationViewControllerDelegate>
 

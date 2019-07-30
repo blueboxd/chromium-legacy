@@ -6,6 +6,7 @@
 #define BASE_TEST_TEST_MESSAGE_LOOP_H_
 
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 
 namespace base {
 
@@ -18,7 +19,7 @@ namespace base {
 class TestMessageLoop {
  public:
   TestMessageLoop();
-  explicit TestMessageLoop(MessageLoop::Type type);
+  explicit TestMessageLoop(MessagePumpType type);
   ~TestMessageLoop();
 
   scoped_refptr<SingleThreadTaskRunner> task_runner() {

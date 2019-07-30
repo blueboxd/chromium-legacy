@@ -100,6 +100,7 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       weak_callback_worklist_(nullptr),
       movable_reference_worklist_(nullptr),
       weak_table_worklist_(nullptr),
+      backing_store_callback_worklist_(nullptr),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0) {
   if (ThreadState::Current()->IsMainThread())
@@ -159,6 +160,7 @@ void ThreadHeap::SetupWorklists() {
   weak_callback_worklist_.reset(new WeakCallbackWorklist());
   movable_reference_worklist_.reset(new MovableReferenceWorklist());
   weak_table_worklist_.reset(new WeakTableWorklist);
+  backing_store_callback_worklist_.reset(new BackingStoreCallbackWorklist());
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
@@ -200,6 +202,7 @@ void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {
 
 void ThreadHeap::DestroyCompactionWorklists() {
   movable_reference_worklist_.reset();
+  backing_store_callback_worklist_.reset();
 }
 
 HeapCompact* ThreadHeap::Compaction() {
@@ -208,14 +211,8 @@ HeapCompact* ThreadHeap::Compaction() {
   return compaction_.get();
 }
 
-bool ThreadHeap::ShouldRegisterMovingObjectReference(MovableReference* slot) {
-  return Compaction()->ShouldRegisterMovingObjectReference(slot);
-}
-
-void ThreadHeap::RegisterMovingObjectCallback(MovableReference* slot,
-                                              MovingObjectCallback callback,
-                                              void* callback_data) {
-  Compaction()->RegisterMovingObjectCallback(slot, callback, callback_data);
+bool ThreadHeap::ShouldRegisterMovingObject(MovableReference* slot) {
+  return Compaction()->ShouldRegisterMovingObject(slot);
 }
 
 void ThreadHeap::FlushNotFullyConstructedObjects() {

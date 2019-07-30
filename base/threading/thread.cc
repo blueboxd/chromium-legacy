@@ -42,8 +42,8 @@ base::LazyInstance<base::ThreadLocalBoolean>::Leaky lazy_tls_bool =
 
 Thread::Options::Options() = default;
 
-Thread::Options::Options(MessageLoop::Type type, size_t size)
-    : message_loop_type(type), stack_size(size) {}
+Thread::Options::Options(MessagePumpType type, size_t size)
+    : message_pump_type(type), stack_size(size) {}
 
 Thread::Options::Options(Options&& other) = default;
 
@@ -72,7 +72,7 @@ bool Thread::Start() {
   Options options;
 #if defined(OS_WIN)
   if (com_status_ == STA)
-    options.message_loop_type = MessageLoop::TYPE_UI;
+    options.message_pump_type = MessagePumpType::UI;
 #endif
   return StartWithOptions(options);
 }
@@ -85,7 +85,7 @@ bool Thread::StartWithOptions(const Options& options) {
                      << "not allowed!";
 #if defined(OS_WIN)
   DCHECK((com_status_ != STA) ||
-      (options.message_loop_type == MessageLoop::TYPE_UI));
+         (options.message_pump_type == MessagePumpType::UI));
 #endif
 
   // Reset |id_| here to support restarting the thread.
@@ -104,7 +104,7 @@ bool Thread::StartWithOptions(const Options& options) {
         MessageLoop::CreateUnbound(options.message_pump_factory.Run()));
   } else {
     task_environment_ = std::make_unique<internal::MessageLoopTaskEnvironment>(
-        MessageLoop::CreateUnbound(options.message_loop_type));
+        MessageLoop::CreateUnbound(options.message_pump_type));
   }
 
   start_event_.Reset();

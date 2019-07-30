@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -171,7 +171,7 @@ void ServiceDiscoveryClientMac::StartThreadIfNotStarted() {
     service_discovery_thread_.reset(
         new base::Thread(kServiceDiscoveryThreadName));
     // Only TYPE_UI uses an NSRunLoop.
-    base::Thread::Options options(base::MessageLoop::TYPE_UI, 0);
+    base::Thread::Options options(base::MessagePumpType::UI, 0);
     service_discovery_thread_->StartWithOptions(options);
   }
 }

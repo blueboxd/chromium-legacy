@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -18,47 +19,8 @@ class TimeTicks;
 
 class BASE_EXPORT MessagePump {
  public:
-  // A MessagePump has a particular type, which indicates the set of
-  // asynchronous events it may process in addition to tasks and timers.
-  //
-  // TYPE_DEFAULT
-  //   This type of pump only supports tasks and timers.
-  //
-  // TYPE_UI
-  //   This type of pump also supports native UI events (e.g., Windows
-  //   messages).
-  //
-  // TYPE_IO
-  //   This type of pump also supports asynchronous IO.
-  //
-  // TYPE_JAVA
-  //   This type of pump is backed by a Java message handler which is
-  //   responsible for running the tasks added to the ML. This is only for use
-  //   on Android. TYPE_JAVA behaves in essence like TYPE_UI, except during
-  //   construction where it does not use the main thread specific pump factory.
-  //
-  // TYPE_NS_RUNLOOP
-  //   This type of pump is backed by a NSRunLoop. This is only for use on
-  //   OSX and IOS.
-  //
-  // UI_WITH_WM_QUIT_SUPPORT
-  //   This type of pump supports WM_QUIT messages in addition to other native
-  //   UI events. This is only for use on windows.
-  enum class Type {
-    DEFAULT,
-    UI,
-    CUSTOM,
-    IO,
-#if defined(OS_ANDROID)
-    JAVA,
-#endif  // defined(OS_ANDROID)
-#if defined(OS_MACOSX)
-    NS_RUNLOOP,
-#endif  // defined(OS_MACOSX)
-#if defined(OS_WIN)
-    UI_WITH_WM_QUIT_SUPPORT,
-#endif  // defined(OS_WIN)
-  };
+  // DEPRECATED: Use MessagePumpType instead.
+  using Type = MessagePumpType;
 
   using MessagePumpFactory = std::unique_ptr<MessagePump>();
   // Uses the given base::MessagePumpFactory to override the default MessagePump
@@ -69,7 +31,7 @@ class BASE_EXPORT MessagePump {
   static bool IsMessagePumpForUIFactoryOveridden();
 
   // Creates the default MessagePump based on |type|. Caller owns return value.
-  static std::unique_ptr<MessagePump> Create(Type type);
+  static std::unique_ptr<MessagePump> Create(MessagePumpType type);
 
   // Please see the comments above the Run method for an illustration of how
   // these delegate methods are used.

@@ -66,6 +66,7 @@ class AwBrowserContext : public content::BrowserContext,
       content::WebContents* web_contents);
 
   base::FilePath GetCacheDir();
+  base::FilePath GetPrefStorePath();
   static base::FilePath GetCookieStorePath();
   static base::FilePath GetContextStoragePath();
 
@@ -121,6 +122,7 @@ class AwBrowserContext : public content::BrowserContext,
 
  private:
   void CreateUserPrefService();
+  void MigrateLocalStatePrefs();
 
   // The file path where data for this context is persisted.
   base::FilePath context_storage_path_;

@@ -7,7 +7,7 @@
 
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "services/viz/public/mojom/compositing/shared_quad_state.mojom-shared.h"
-#include "ui/gfx/mojo/rrect_f_struct_traits.h"
+#include "ui/gfx/mojom/rrect_f_mojom_traits.h"
 
 namespace mojo {
 

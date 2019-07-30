@@ -293,6 +293,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   void CompleteSweep();
   void FinishSnapshot();
+  void NotifySweepDone();
   void PostSweep();
 
   // Returns whether it is currently allowed to allocate an object. Mainly used
@@ -499,8 +500,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
                       BlinkGC::MarkingType,
                       BlinkGC::SweepingType,
                       BlinkGC::GCReason);
-
-  void UpdateStatisticsAfterSweeping();
 
   // The version is needed to be able to start incremental marking.
   void MarkPhasePrologue(BlinkGC::StackState,

@@ -327,8 +327,7 @@ HintBox::HintBox(const gfx::Rect& bounds, int border_radius)
             bounds.width() + 2 * base_border_ + arrow_width_,
             bounds.height() + 2 * base_border_);
 
-  rounded_rect_bounds_ = GetLocalBounds();
-  rounded_rect_bounds_.Inset(GetInsets());
+  rounded_rect_bounds_ = GetContentsBounds();
 
   flags_.setColor(SK_ColorWHITE);
   flags_.setStyle(cc::PaintFlags::kFill_Style);
@@ -352,8 +351,7 @@ HintBox::~HintBox() = default;
 
 void HintBox::UpdateWidth(int updated_width) {
   SetSize(gfx::Size(updated_width + 2 * base_border_ + arrow_width_, height()));
-  rounded_rect_bounds_ = GetLocalBounds();
-  rounded_rect_bounds_.Inset(GetInsets());
+  rounded_rect_bounds_ = GetContentsBounds();
 }
 
 void HintBox::SetLabel(const base::string16& text, const SkColor& color) {

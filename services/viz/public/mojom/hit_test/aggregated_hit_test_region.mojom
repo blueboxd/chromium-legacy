@@ -6,7 +6,7 @@ module viz.mojom;
 
 import "services/viz/public/mojom/compositing/frame_sink_id.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojo/transform.mojom";
+import "ui/gfx/mojom/transform.mojom";
 
 // Corresponds to viz::AggregatedHitTestRegion.
 struct AggregatedHitTestRegion {

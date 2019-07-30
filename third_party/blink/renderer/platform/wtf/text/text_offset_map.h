@@ -42,6 +42,7 @@ class WTF_EXPORT TextOffsetMap {
 
   void Clear() { entries_.Shrink(0); }
 
+  void Append(wtf_size_t source, wtf_size_t target);
   void Append(const icu::Edits& edits);
 
  private:

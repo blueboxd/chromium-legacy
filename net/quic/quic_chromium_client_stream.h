@@ -107,8 +107,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
     // stream is open.
     void DisableConnectionMigrationToCellularNetwork();
 
-    // Sets the priority of the stream to |priority|.
-    void SetPriority(spdy::SpdyPriority priority);
+    // Sets the precedence of the stream to |precedence|.
+    void SetPriority(const spdy::SpdyStreamPrecedence& precedence);
 
     // Sends a RST_STREAM frame to the peer and closes the streams.
     void Reset(quic::QuicRstStreamErrorCode error_code);

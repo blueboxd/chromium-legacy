@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "content/browser/content_index/content_index_metrics.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -113,6 +114,8 @@ void ContentIndexContextImpl::StartActiveWorkerForDispatch(
     scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  content_index::RecordDisptachStatus("Find", service_worker_status);
+
   if (service_worker_status != blink::ServiceWorkerStatusCode::kOk)
     return;
 
@@ -130,8 +133,13 @@ void ContentIndexContextImpl::DeliverMessageToWorker(
     scoped_refptr<ServiceWorkerVersion> service_worker,
     scoped_refptr<ServiceWorkerRegistration> registration,
     const std::string& description_id,
-    blink::ServiceWorkerStatusCode start_worker_status) {
+    blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  content_index::RecordDisptachStatus("Start", service_worker_status);
+
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk)
+    return;
 
   // Don't allow DB operations while the `contentdelete` event is firing.
   // This is to prevent re-registering the deleted content within the event.
@@ -151,6 +159,7 @@ void ContentIndexContextImpl::DidDispatchEvent(
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  content_index::RecordDisptachStatus("Dispatch", service_worker_status);
   content_index_database_.UnblockOrigin(origin);
 }
 

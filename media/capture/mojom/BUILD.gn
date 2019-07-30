@@ -14,7 +14,7 @@ mojom("video_capture") {
     "//gpu/ipc/common:interfaces",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojom",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
   ]
 }
 

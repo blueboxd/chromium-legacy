@@ -746,7 +746,7 @@ class TestDriver:
 
     def MakeHTTPResponse(message):
       params = message['params']
-      response_dict = params['response']
+      response_dict = params['response'] if 'response' in params else {}
       http_response_dict = {
         'response_headers': response_dict['headers'] if 'headers' in
           response_dict else {},

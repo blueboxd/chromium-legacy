@@ -182,7 +182,8 @@ int QuicHttpStream::DoHandlePromiseComplete(int rv) {
 
   spdy::SpdyPriority spdy_priority =
       ConvertRequestPriorityToQuicPriority(priority_);
-  stream_->SetPriority(spdy_priority);
+  const spdy::SpdyStreamPrecedence precedence(spdy_priority);
+  stream_->SetPriority(precedence);
 
   next_state_ = STATE_OPEN;
   NetLogQuicPushStream(stream_net_log_, quic_session()->net_log(),
@@ -572,7 +573,8 @@ int QuicHttpStream::DoSetRequestPriority() {
   DCHECK(response_info_);
 
   spdy::SpdyPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
-  stream_->SetPriority(priority);
+  spdy::SpdyStreamPrecedence precedence(priority);
+  stream_->SetPriority(precedence);
   next_state_ = STATE_SEND_HEADERS;
   return OK;
 }

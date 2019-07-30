@@ -58,6 +58,8 @@ LLVM_BUILD_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'llvm-build',
 
 STAMP_FILE = os.path.normpath(
     os.path.join(LLVM_BUILD_DIR, 'cr_build_revision'))
+OLD_STAMP_FILE = os.path.normpath(
+    os.path.join(LLVM_BUILD_DIR, '..', 'cr_build_revision'))
 FORCE_HEAD_REVISION_FILE = os.path.normpath(os.path.join(LLVM_BUILD_DIR, '..',
                                                    'force_head_revision'))
 
@@ -245,6 +247,12 @@ def UpdateClang():
     target_os = env.get('target_os', target_os)
   except:
     pass
+
+  if os.path.exists(OLD_STAMP_FILE):
+    # Delete the old stamp file so it doesn't look like an old version of clang
+    # is available in case the user rolls back to an old version of this script
+    # during a bisect for example (crbug.com/988933).
+    os.remove(OLD_STAMP_FILE)
 
   expected_stamp = ','.join([PACKAGE_VERSION] + target_os)
   if ReadStampFile(STAMP_FILE) == expected_stamp:

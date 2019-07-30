@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -129,14 +130,12 @@ bool DesktopProcess::Start(
 #if defined(OS_WIN)
   // On Windows the AudioCapturer requires COM, so we run a single-threaded
   // apartment, which requires a UI thread.
-  audio_task_runner =
-      AutoThread::CreateWithLoopAndComInitTypes("ChromotingAudioThread",
-                                                caller_task_runner_,
-                                                base::MessageLoop::TYPE_UI,
-                                                AutoThread::COM_INIT_STA);
+  audio_task_runner = AutoThread::CreateWithLoopAndComInitTypes(
+      "ChromotingAudioThread", caller_task_runner_, base::MessagePumpType::UI,
+      AutoThread::COM_INIT_STA);
 #else // !defined(OS_WIN)
   audio_task_runner = AutoThread::CreateWithType(
-      "ChromotingAudioThread", caller_task_runner_, base::MessageLoop::TYPE_IO);
+      "ChromotingAudioThread", caller_task_runner_, base::MessagePumpType::IO);
 #endif  // !defined(OS_WIN)
 
   // Create a desktop agent.

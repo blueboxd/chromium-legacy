@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
 
+#include <atomic>
 #include <memory>
 
 #include "base/macros.h"
@@ -204,7 +205,9 @@ class MODULES_EXPORT VideoTrackRecorder
 
     // While |paused_|, frames are not encoded. Used only from
     // |encoding_thread_|.
-    bool paused_;
+    // Use an atomic variable since it can be set on the main thread and read
+    // on the io thread at the same time.
+    std::atomic_bool paused_;
 
     // This callback should be exercised on IO thread.
     const OnEncodedVideoCB on_encoded_video_callback_;

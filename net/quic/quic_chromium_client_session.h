@@ -465,12 +465,13 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       quic::QuicStreamId id,
       spdy::SpdyHeaderBlock headers,
       bool fin,
-      spdy::SpdyPriority priority,
+      const spdy::SpdyStreamPrecedence& precedence,
       quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
           ack_listener) override;
   void UnregisterStreamPriority(quic::QuicStreamId id, bool is_static) override;
-  void UpdateStreamPriority(quic::QuicStreamId id,
-                            spdy::SpdyPriority new_priority) override;
+  void UpdateStreamPriority(
+      quic::QuicStreamId id,
+      const spdy::SpdyStreamPrecedence& new_precedence) override;
 
   // quic::QuicSession methods:
   void OnStreamFrame(const quic::QuicStreamFrame& frame) override;
@@ -841,7 +842,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool ignore_read_error_;
 
   // If true, client headers will include HTTP/2 stream dependency info derived
-  // from spdy::SpdyPriority.
+  // from spdy::SpdyStreamPrecedence.
   bool headers_include_h2_stream_dependency_;
   Http2PriorityDependencies priority_dependency_state_;
 

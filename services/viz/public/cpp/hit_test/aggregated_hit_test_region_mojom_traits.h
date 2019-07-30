@@ -9,7 +9,7 @@
 #include "services/viz/public/cpp/compositing/frame_sink_id_mojom_traits.h"
 #include "services/viz/public/mojom/hit_test/aggregated_hit_test_region.mojom-shared.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
-#include "ui/gfx/mojo/transform_struct_traits.h"
+#include "ui/gfx/mojom/transform_mojom_traits.h"
 
 namespace mojo {
 

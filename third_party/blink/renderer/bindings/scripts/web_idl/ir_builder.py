@@ -7,8 +7,10 @@ from .ast_group import AstGroup
 from .attribute import Attribute
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
-from .common import DebugInfo
-from .common import Location
+from .composition_parts import Component
+from .composition_parts import DebugInfo
+from .composition_parts import Identifier
+from .composition_parts import Location
 from .constant import Constant
 from .dictionary import Dictionary
 from .dictionary import DictionaryMember
@@ -48,7 +50,7 @@ def load_and_register_idl_definitions(
 
     for filepath in filepaths:
         asts_per_component = AstGroup.read_from_file(filepath)
-        component = asts_per_component.component
+        component = Component(asts_per_component.component)
         builder = _IRBuilder(
             component=component,
             create_ref_to_idl_def=create_ref_to_idl_def,
@@ -128,7 +130,7 @@ class _IRBuilder(object):
         # |property_handlers|.
 
         return Interface.IR(
-            identifier=node.GetName(),
+            identifier=Identifier(node.GetName()),
             is_partial=bool(node.GetProperty('PARTIAL')),
             is_mixin=bool(node.GetProperty('MIXIN')),
             inherited=inherited,
@@ -144,7 +146,7 @@ class _IRBuilder(object):
 
     def _build_namespace(self, node):
         namespace = Namespace.IR(
-            identifier=node.GetName(),
+            identifier=Identifier(node.GetName()),
             is_partial=bool(node.GetProperty('PARTIAL')),
             component=self._component,
             debug_info=self._build_debug_info(node))
@@ -158,7 +160,7 @@ class _IRBuilder(object):
             extended_attributes = self._take_extended_attributes(child_nodes)
             assert len(child_nodes) == 0
             return Attribute.IR(
-                identifier=node.GetName(),
+                identifier=Identifier(node.GetName()),
                 idl_type=idl_type,
                 is_static=bool(node.GetProperty('STATIC')),
                 is_readonly=bool(node.GetProperty('READONLY')),
@@ -176,7 +178,7 @@ class _IRBuilder(object):
             # constant, hence we need to skip one level.
             idl_type = self._build_type_internal(child_nodes)
             return Constant.IR(
-                identifier=node.GetName(),
+                identifier=Identifier(node.GetName()),
                 value=value,
                 idl_type=idl_type,
                 extended_attributes=extended_attributes,
@@ -190,7 +192,7 @@ class _IRBuilder(object):
             extended_attributes = self._take_extended_attributes(child_nodes)
             assert len(child_nodes) == 0
             return Operation.IR(
-                identifier=node.GetName(),
+                identifier=Identifier(node.GetName()),
                 arguments=arguments,
                 return_type=return_type,
                 is_static=bool(node.GetProperty('STATIC')),
@@ -212,7 +214,7 @@ class _IRBuilder(object):
         own_members = map(self._build_dictionary_member, child_nodes)
 
         return Dictionary.IR(
-            identifier=node.GetName(),
+            identifier=Identifier(node.GetName()),
             is_partial=bool(node.GetProperty('PARTIAL')),
             inherited=inherited,
             own_members=own_members,
@@ -231,7 +233,7 @@ class _IRBuilder(object):
         assert len(child_nodes) == 0
 
         return DictionaryMember.IR(
-            identifier=node.GetName(),
+            identifier=Identifier(node.GetName()),
             idl_type=idl_type,
             default_value=default_value,
             extended_attributes=extended_attributes,
@@ -240,7 +242,7 @@ class _IRBuilder(object):
 
     def _build_callback_interface(self, node):
         callback_interface = CallbackInterface.IR(
-            identifier=node.GetName(),
+            identifier=Identifier(node.GetName()),
             component=self._component,
             debug_info=self._build_debug_info(node))
         # TODO(peria): Build members and register them in |callback_interface|
@@ -248,7 +250,7 @@ class _IRBuilder(object):
 
     def _build_callback_function(self, node):
         callback_function = CallbackFunction.IR(
-            identifier=node.GetName(),
+            identifier=Identifier(node.GetName()),
             component=self._component,
             debug_info=self._build_debug_info(node))
         # TODO(peria): Build members and register them in |callback_function|
@@ -256,7 +258,7 @@ class _IRBuilder(object):
 
     def _build_enumeration(self, node):
         enumeration = Enumeration.IR(
-            identifier=node.GetName(),
+            identifier=Identifier(node.GetName()),
             values=[child.GetName() for child in node.GetChildren()],
             component=self._component,
             debug_info=self._build_debug_info(node))
@@ -268,7 +270,7 @@ class _IRBuilder(object):
         assert len(child_nodes) == 0
 
         typedef = Typedef.IR(
-            identifier=node.GetName(),
+            identifier=Identifier(node.GetName()),
             idl_type=idl_type,
             component=self._component,
             debug_info=self._build_debug_info(node))
@@ -276,8 +278,8 @@ class _IRBuilder(object):
 
     def _build_includes(self, node):
         includes = Includes.IR(
-            interface_identifier=node.GetName(),
-            mixin_identifier=node.GetProperty('REFERENCE'),
+            interface_identifier=Identifier(node.GetName()),
+            mixin_identifier=Identifier(node.GetProperty('REFERENCE')),
             component=self._component,
             debug_info=self._build_debug_info(node))
         return includes
@@ -296,7 +298,7 @@ class _IRBuilder(object):
             extended_attributes = self._take_extended_attributes(child_nodes)
             assert len(child_nodes) == 0
             return Argument.IR(
-                identifier=node.GetName(),
+                identifier=Identifier(node.GetName()),
                 index=index,
                 idl_type=idl_type,
                 default_value=default_value,
@@ -329,8 +331,8 @@ class _IRBuilder(object):
 
     def _build_inheritance(self, node):
         assert node.GetClass() == 'Inherit'
-        return self._create_ref_to_idl_def(node.GetName(),
-                                           self._build_debug_info(node))
+        return self._create_ref_to_idl_def(
+            Identifier(node.GetName()), self._build_debug_info(node))
 
     def _build_is_variadic_argument(self, node):
         # idl_parser produces the following tree to indicate an argument is
@@ -434,10 +436,9 @@ class _IRBuilder(object):
                 debug_info=self._build_debug_info(node))
 
         def build_reference_type(node, extended_attributes):
-            identifier = node.GetName()
             return self._idl_type_factory.reference_type(
                 ref_to_idl_type=self._create_ref_to_idl_type(
-                    identifier, self._build_debug_info(node)),
+                    Identifier(node.GetName()), self._build_debug_info(node)),
                 is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))

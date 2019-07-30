@@ -9,6 +9,7 @@
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
@@ -133,7 +134,7 @@ TEST(BusTest, RemoveObjectProxy) {
 
   // Start the D-Bus thread.
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_options.message_pump_type = base::MessagePumpType::IO;
   base::Thread dbus_thread("D-Bus thread");
   dbus_thread.StartWithOptions(thread_options);
 
@@ -211,7 +212,7 @@ TEST(BusTest, GetExportedObject) {
 TEST(BusTest, UnregisterExportedObject) {
   // Start the D-Bus thread.
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_options.message_pump_type = base::MessagePumpType::IO;
   base::Thread dbus_thread("D-Bus thread");
   dbus_thread.StartWithOptions(thread_options);
 
@@ -261,7 +262,7 @@ TEST(BusTest, ShutdownAndBlock) {
 TEST(BusTest, ShutdownAndBlockWithDBusThread) {
   // Start the D-Bus thread.
   base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_options.message_pump_type = base::MessagePumpType::IO;
   base::Thread dbus_thread("D-Bus thread");
   dbus_thread.StartWithOptions(thread_options);
 

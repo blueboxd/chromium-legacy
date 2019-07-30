@@ -34,9 +34,8 @@ class MOJO_CPP_SYSTEM_EXPORT StringDataSource final
 
  private:
   // DataPipeProducer::DataSource:
-  bool IsValid() const override;
-  int64_t GetLength() const override;
-  ReadResult Read(int64_t offset, base::span<char> buffer) override;
+  uint64_t GetLength() const override;
+  ReadResult Read(uint64_t offset, base::span<char> buffer) override;
 
   std::string data_;
   base::span<const char> data_view_;

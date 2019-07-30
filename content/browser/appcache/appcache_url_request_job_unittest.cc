@@ -18,7 +18,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -235,7 +235,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
         std::make_unique<base::test::ScopedTaskEnvironment>();
     io_thread_ =
         std::make_unique<base::Thread>("AppCacheURLRequestJobTest Thread");
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     io_thread_->StartWithOptions(options);
   }
 

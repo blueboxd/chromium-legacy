@@ -5,7 +5,7 @@
 #include "services/viz/public/cpp/compositing/render_pass_mojom_traits.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "ui/gfx/mojo/color_space_mojom_traits.h"
+#include "ui/gfx/mojom/color_space_mojom_traits.h"
 
 namespace mojo {
 

@@ -707,13 +707,14 @@ void ReportInstalledExtensions(JsonParserAPI* json_parser,
   GetNonWhitelistedDefaultExtensions(json_parser, &default_extension_policies,
                                      &default_extensions_done);
 
-  // Wait for all asynchronous parsing to be done
+  // Wait for all asynchronous parsing to be done with a single timeout for all
+  // phases combined.
   const base::TimeTicks end_time =
       base::TimeTicks::Now() +
       base::TimeDelta::FromMilliseconds(kParseAttemptTimeoutMilliseconds);
-  extension_settings_done.TimedWaitUntil(end_time);
-  master_preferences_done.TimedWaitUntil(end_time);
-  default_extensions_done.TimedWaitUntil(end_time);
+  extension_settings_done.TimedWait(end_time - base::TimeTicks::Now());
+  master_preferences_done.TimedWait(end_time - base::TimeTicks::Now());
+  default_extensions_done.TimedWait(end_time - base::TimeTicks::Now());
 
   // Log extensions that were found
   for (const ExtensionPolicyRegistryEntry& policy :

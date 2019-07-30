@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "build/build_config.h"
@@ -34,7 +35,7 @@ ChromotingClientRuntime::ChromotingClientRuntime() {
 
   VLOG(1) << "Starting main message loop";
   ui_task_executor_.reset(
-      new base::SingleThreadTaskExecutor(base::MessagePump::Type::UI));
+      new base::SingleThreadTaskExecutor(base::MessagePumpType::UI));
 
 #if defined(DEBUG)
   net::URLFetcher::SetIgnoreCertificateRequests(true);
@@ -49,7 +50,7 @@ ChromotingClientRuntime::ChromotingClientRuntime() {
   audio_task_runner_ = AutoThread::Create("native_audio", ui_task_runner_);
   display_task_runner_ = AutoThread::Create("native_disp", ui_task_runner_);
   network_task_runner_ = AutoThread::CreateWithType(
-      "native_net", ui_task_runner_, base::MessageLoop::TYPE_IO);
+      "native_net", ui_task_runner_, base::MessagePumpType::IO);
 
   mojo::core::Init();
 }

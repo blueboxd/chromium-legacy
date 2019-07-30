@@ -145,11 +145,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'e68b5bd4e6e9bdf5a69932fafbd17817572971e4',
+  'skia_revision': '9dc0b9e2f86adf9768b9daf2d519a7d1f4d75881',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'bd0b0262ea744a55397d0dafb086ae57c027d24d',
+  'v8_revision': '45872947ee3135833df94a257d3b73fb9c137e06',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -157,11 +157,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'cbabea734cbd5537bdc73a46030462b01485a179',
+  'angle_revision': '70cded6ac635c4bc0250f1b3166572043bc4eb73',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'e6092f3bc901f8c071541ba7a54f21dd4b9d35b0',
+  'swiftshader_revision': '4c2c8d173f382b4269b214b72a54f82eea608d85',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -208,7 +208,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'ff7e2ebc5e4d8aa984e52c228ee9fbabcf4a0cd6',
+  'catapult_revision': 'afb67c64981ee627256bbc8bc1b868484abc2fb5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -264,7 +264,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '9559cdbdf011c487f67f89e2d694bd4a18d5c1e0',
+  'spv_tools_revision': 'ac3d131054ac17d42e388d7e0e321c2c13bc2f13',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -280,11 +280,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '7dec2d1c56894da99ab229dbdf627d121b9c3379',
+  'dawn_revision': '7b57c5bb770fb233cea6a4b6c70b54c4d98e71df',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '753002daef6045500f08066b132da7fd71ab4ca9',
+  'quiche_revision': '7deaf37e9442e433e4d90d11c940f59cdbb184cc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -809,7 +809,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '0395e7c66a5f3f607fcc57609153c916040acc1b',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '1157607f2f5497c37515fcd8b9a18f8cea9065e4',
       'condition': 'checkout_linux',
   },
 
@@ -1416,7 +1416,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@385f490b054e2f115d83e35d0148a51a1a92b7cd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e90f86832eff108d8bb0d9c2189829aebfa9b66c',
     'condition': 'checkout_src_internal',
   },
 

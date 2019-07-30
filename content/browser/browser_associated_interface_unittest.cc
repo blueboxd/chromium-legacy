@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -137,7 +137,7 @@ class TestClientRunner {
   static void RunTestClient(mojo::ScopedMessagePipeHandle pipe) {
     base::Thread io_thread("Client IO thread");
     io_thread.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessagePumpType::IO, 0));
     ProxyRunner proxy(std::move(pipe), false, io_thread.task_runner());
 
     mojom::BrowserAssociatedInterfaceTestDriverAssociatedPtr driver;

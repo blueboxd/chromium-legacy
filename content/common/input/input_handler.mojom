@@ -13,7 +13,7 @@ import "ui/base/ime/mojom/ime_types.mojom";
 import "ui/events/mojom/event.mojom";
 import "ui/events/mojom/event_constants.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/range/mojo/range.mojom";
+import "ui/gfx/range/mojom/range.mojom";
 import "ui/latency/mojom/latency_info.mojom";
 
 

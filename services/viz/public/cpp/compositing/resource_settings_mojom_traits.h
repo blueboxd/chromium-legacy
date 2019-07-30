@@ -9,8 +9,8 @@
 
 #include "components/viz/common/resources/resource_settings.h"
 #include "services/viz/public/mojom/compositing/resource_settings.mojom.h"
-#include "ui/gfx/mojo/buffer_types.mojom.h"
-#include "ui/gfx/mojo/buffer_types_struct_traits.h"
+#include "ui/gfx/mojom/buffer_types.mojom.h"
+#include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 
 namespace mojo {
 

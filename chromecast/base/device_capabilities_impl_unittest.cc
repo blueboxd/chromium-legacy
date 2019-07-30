@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
@@ -238,7 +239,7 @@ void AssertBasicOperationsSuccessful(const DeviceCapabilities* capabilities) {
 class DeviceCapabilitiesImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoop(base::MessagePumpType::IO));
     capabilities_ = DeviceCapabilities::Create();
     mock_capabilities_observer_.reset(new MockCapabilitiesObserver());
     capabilities_->AddCapabilitiesObserver(mock_capabilities_observer_.get());

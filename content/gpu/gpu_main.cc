@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -246,14 +247,14 @@ int GpuMain(const MainFunctionParams& parameters) {
   if (command_line.HasSwitch(switches::kHeadless)) {
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
-            base::MessagePump::Type::DEFAULT);
+            base::MessagePumpType::DEFAULT);
   } else {
 #if defined(OS_WIN)
     // The GpuMain thread should not be pumping Windows messages because no UI
     // is expected to run on this thread.
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
-            base::MessagePump::Type::DEFAULT);
+            base::MessagePumpType::DEFAULT);
 #elif defined(USE_X11)
     // Depending on how Chrome is running there are multiple threads that can
     // make Xlib function calls. Call XInitThreads() here to be safe, even if
@@ -267,7 +268,7 @@ int GpuMain(const MainFunctionParams& parameters) {
       return RESULT_CODE_GPU_DEAD_ON_ARRIVAL;
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
-            base::MessagePump::Type::UI);
+            base::MessagePumpType::UI);
     event_source = ui::PlatformEventSource::CreateDefault();
 #elif defined(USE_OZONE)
     // The MessagePump type required depends on the Ozone platform selected at
@@ -283,14 +284,14 @@ int GpuMain(const MainFunctionParams& parameters) {
     // https://crbug.com/312462#c51 and https://crbug.com/783298
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
-            base::MessagePump::Type::NS_RUNLOOP);
+            base::MessagePumpType::NS_RUNLOOP);
 
     // Tell LaunchServices to continue without a connection to the daemon.
 //    _LSSetApplicationLaunchServicesServerConnectionStatus(0, nullptr);
 #else
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
-            base::MessagePump::Type::DEFAULT);
+            base::MessagePumpType::DEFAULT);
 #endif
   }
 

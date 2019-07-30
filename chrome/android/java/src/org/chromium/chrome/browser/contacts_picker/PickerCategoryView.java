@@ -308,6 +308,28 @@ public class PickerCategoryView extends RelativeLayout
     }
 
     /**
+     * @param isIncluded Whether the property was requested by the API.
+     * @param isEnabled Whether the property was allowed to be shared by the user.
+     * @param selected The property values that are currently selected.
+     * @return The list of property values to share.
+     */
+    private List<String> getContactPropertyValues(
+            boolean isIncluded, boolean isEnabled, List<String> selected) {
+        if (!isIncluded) {
+            // The property wasn't requested in the API so return null.
+            return null;
+        }
+
+        if (!isEnabled) {
+            // The user doesn't want to share this property, so return an empty array.
+            return new ArrayList<String>();
+        }
+
+        // Share whatever was selected.
+        return selected;
+    }
+
+    /**
      * Notifies any listeners that one or more contacts have been selected.
      */
     private void notifyContactsSelected() {
@@ -319,12 +341,11 @@ public class PickerCategoryView extends RelativeLayout
 
         for (ContactDetails contactDetails : selectedContacts) {
             contacts.add(new ContactsPickerListener.Contact(
-                    includeNames ? contactDetails.getDisplayNames() : null,
-                    includeEmails && PickerAdapter.includesEmails() ? contactDetails.getEmails()
-                                                                    : null,
-                    includeTel && PickerAdapter.includesTelephones()
-                            ? contactDetails.getPhoneNumbers()
-                            : null));
+                    getContactPropertyValues(includeNames, true, contactDetails.getDisplayNames()),
+                    getContactPropertyValues(includeEmails, PickerAdapter.includesEmails(),
+                            contactDetails.getEmails()),
+                    getContactPropertyValues(includeTel, PickerAdapter.includesTelephones(),
+                            contactDetails.getPhoneNumbers())));
         }
         executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts);
     }

@@ -15,7 +15,7 @@ mojom("mojom") {
     "//services/viz/privileged/mojom/compositing",
     "//services/viz/privileged/mojom/gl",
     "//services/viz/public/mojom",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
   ]
 }
 

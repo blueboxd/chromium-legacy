@@ -873,12 +873,12 @@ test("skia_unittests") {
   ]
 
   if (!is_ios) {
-    sources += [ "public/interfaces/test/struct_traits_unittest.cc" ]
+    sources += [ "public/mojom/test/mojom_traits_unittest.cc" ]
     deps += [
       # TODO: Fix this test to not depend on cc.
       "//cc:test_support",
       "//mojo/public/cpp/bindings",
-      "//skia/public/interfaces:test_interfaces",
+      "//skia/public/mojom:test_interfaces",
     ]
   }
 

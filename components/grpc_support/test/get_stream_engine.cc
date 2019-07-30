@@ -10,7 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -116,7 +116,7 @@ void CreateRequestContextGetterIfNecessary() {
     static base::Thread* test_io_thread_ =
         new base::Thread("grpc_support_test_io_thread");
     base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
+    options.message_pump_type = base::MessagePumpType::IO;
     bool started = test_io_thread_->StartWithOptions(options);
     DCHECK(started);
 

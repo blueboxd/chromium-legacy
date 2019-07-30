@@ -103,7 +103,6 @@ class ScopedTaskEnvironment {
     // MOCK_TIME as expected, e.g.:
     //   PlatformThread::Sleep
     //   WaitableEvent::TimedWait
-    //   WaitableEvent::TimedWaitUntil
     //   ConditionVariable::TimedWait
     //
     // TODO(crbug.com/905412): Make MOCK_TIME always mock Time/TimeTicks::Now().

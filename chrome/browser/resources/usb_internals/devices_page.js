@@ -18,7 +18,7 @@ cr.define('devices_page', function() {
      * @param {!device.mojom.UsbDeviceManagerProxy} usbManager
      */
     constructor(usbManager) {
-      /** @private {device.mojom.UsbDeviceManagerProxy} */
+      /** @private {!device.mojom.UsbDeviceManagerProxy} */
       this.usbManager_ = usbManager;
       this.renderDeviceList_();
     }
@@ -28,7 +28,7 @@ cr.define('devices_page', function() {
      * @private
      */
     async renderDeviceList_() {
-      const response = await this.usbManager_.getDevices();
+      const response = await this.usbManager_.getDevices(null);
 
       /** @type {!Array<!device.mojom.UsbDeviceInfo>} */
       const devices = response.results;
@@ -39,6 +39,7 @@ cr.define('devices_page', function() {
       const rowTemplate = document.querySelector('#device-row');
 
       for (const device of devices) {
+        /** @type {DocumentFragment|Node} */
         const clone = document.importNode(rowTemplate.content, true);
 
         const td = clone.querySelectorAll('td');
@@ -48,13 +49,13 @@ cr.define('devices_page', function() {
         td[2].textContent = toHex(device.vendorId);
         td[3].textContent = toHex(device.productId);
         if (device.manufacturerName) {
-          td[4].textContent = decodeString16(device.manufacturerName.data);
+          td[4].textContent = decodeString16(device.manufacturerName);
         }
         if (device.productName) {
-          td[5].textContent = decodeString16(device.productName.data);
+          td[5].textContent = decodeString16(device.productName);
         }
         if (device.serialNumber) {
-          td[6].textContent = decodeString16(device.serialNumber.data);
+          td[6].textContent = decodeString16(device.serialNumber);
         }
 
         const inspectButton = clone.querySelector('button');
@@ -94,7 +95,6 @@ cr.define('devices_page', function() {
      * @param {!device.mojom.UsbDeviceInfo} device
      */
     constructor(usbManager, device) {
-      /** @private {device.mojom.UsbDeviceManagerProxy} */
       this.usbManager_ = usbManager;
       this.renderTab_(device);
     }
@@ -105,14 +105,15 @@ cr.define('devices_page', function() {
      * @private
      */
     renderTab_(device) {
-      const tabs = document.querySelector('tabs');
+      const tabs = queryRequiredElement('tabs');
 
-      const tabTemplate = document.querySelector('#tab-template');
+      const tabTemplate = queryRequiredElement('#tab-template');
+      /** @type {DocumentFragment|Node} */
       const tabClone = document.importNode(tabTemplate.content, true);
 
       const tab = tabClone.querySelector('tab');
       if (device.productName) {
-        tab.textContent = decodeString16(device.productName.data);
+        tab.textContent = decodeString16(device.productName);
       } else {
         const vendorId = toHex(device.vendorId).slice(2);
         const productId = toHex(device.productId).slice(2);
@@ -123,23 +124,25 @@ cr.define('devices_page', function() {
       tabs.appendChild(tabClone);
       cr.ui.decorate('tab', cr.ui.Tab);
 
-      const tabPanels = document.querySelector('tabpanels');
+      const tabPanels = queryRequiredElement('tabpanels');
       const tabPanelTemplate =
-          document.querySelector('#device-tabpanel-template');
+          queryRequiredElement('#device-tabpanel-template');
+      /** @type {DocumentFragment|Node} */
       const tabPanelClone = document.importNode(tabPanelTemplate.content, true);
 
       /**
        * Root of the WebContents tree of current device.
-       * @type {?cr.ui.Tree}
        */
-      const treeViewRoot = tabPanelClone.querySelector('.tree-view');
+      const treeViewRoot = assertInstanceof(
+          tabPanelClone.querySelector('.tree-view'), HTMLElement);
       cr.ui.decorate(treeViewRoot, cr.ui.Tree);
       treeViewRoot.detail = {payload: {}, children: {}};
       // Clear the tree first before populating it with the new content.
       treeViewRoot.innerText = '';
       renderDeviceTree(device, treeViewRoot);
 
-      const tabPanel = tabPanelClone.querySelector('tabpanel');
+      const tabPanel = assertInstanceof(
+          tabPanelClone.querySelector('tabpanel'), HTMLElement);
       this.initializeDescriptorPanels_(tabPanel, device.guid);
 
       tabPanels.appendChild(tabPanelClone);
@@ -154,7 +157,8 @@ cr.define('devices_page', function() {
      */
     async initializeDescriptorPanels_(tabPanel, guid) {
       const usbDeviceProxy = new UsbDeviceProxy;
-      await this.usbManager_.getDevice(guid, usbDeviceProxy.$.createRequest());
+      await this.usbManager_.getDevice(
+          guid, usbDeviceProxy.$.createRequest(), null);
 
       const deviceDescriptorPanel = initialInspectorPanel(
           tabPanel, 'device-descriptor', usbDeviceProxy, guid);
@@ -204,18 +208,18 @@ cr.define('devices_page', function() {
         device.deviceVersionMinor}.${device.deviceVersionSubminor}`));
 
     if (device.manufacturerName) {
-      root.add(customTreeItem(`Manufacturer Name: ${
-          decodeString16(device.manufacturerName.data)}`));
+      root.add(customTreeItem(
+          `Manufacturer Name: ${decodeString16(device.manufacturerName)}`));
     }
 
     if (device.productName) {
       root.add(customTreeItem(
-          `Product Name: ${decodeString16(device.productName.data)}`));
+          `Product Name: ${decodeString16(device.productName)}`));
     }
 
     if (device.serialNumber) {
       root.add(customTreeItem(
-          `Serial Number: ${decodeString16(device.serialNumber.data)}`));
+          `Serial Number: ${decodeString16(device.serialNumber)}`));
     }
 
     if (device.webusbLandingPage) {
@@ -239,7 +243,7 @@ cr.define('devices_page', function() {
   /**
    * Renders a tree item to display the device's configuration information.
    * @param {!Array<!device.mojom.UsbConfigurationInfo>} configurationsArray
-   * @param {!cr.ui.TreeItem} root
+   * @param {!cr.ui.Tree} root
    */
   function renderConfigurationTreeItem(configurationsArray, root) {
     for (const configuration of configurationsArray) {
@@ -248,7 +252,7 @@ cr.define('devices_page', function() {
 
       if (configuration.configurationName) {
         configurationItem.add(customTreeItem(`Configuration Name: ${
-            decodeString16(configuration.configurationName.data)}`));
+            decodeString16(configuration.configurationName)}`));
       }
 
       const interfacesArray = configuration.interfaces;
@@ -296,7 +300,7 @@ cr.define('devices_page', function() {
 
       if (alternate.interfaceName) {
         alternateItem.add(customTreeItem(
-            `Interface Name: ${decodeString16(alternate.interfaceName.data)}`));
+            `Interface Name: ${decodeString16(alternate.interfaceName)}`));
       }
 
       const endpointsArray = alternate.endpoints;
@@ -361,8 +365,9 @@ cr.define('devices_page', function() {
    * @return {!descriptor_panel.DescriptorPanel}
    */
   function initialInspectorPanel(tabPanel, panelType, usbDeviceProxy, guid) {
-    const button = tabPanel.querySelector(`.${panelType}-button`);
-    const displayElement = tabPanel.querySelector(`.${panelType}-panel`);
+    const button = queryRequiredElement(`.${panelType}-button`, tabPanel);
+    const displayElement =
+        queryRequiredElement(`.${panelType}-panel`, tabPanel);
     const descriptorPanel =
         new descriptor_panel.DescriptorPanel(usbDeviceProxy, displayElement);
     switch (panelType) {
@@ -405,7 +410,7 @@ cr.define('devices_page', function() {
    * @return {string}
    */
   function decodeString16(arr) {
-    return arr.map(ch => String.fromCodePoint(ch)).join('');
+    return arr.data.map(ch => String.fromCodePoint(ch)).join('');
   }
 
   /**
@@ -424,7 +429,7 @@ cr.define('devices_page', function() {
    * @private
    */
   function customTreeItem(itemLabel) {
-    return item = new cr.ui.TreeItem({
+    return new cr.ui.TreeItem({
       label: itemLabel,
       icon: '',
     });

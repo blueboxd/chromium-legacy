@@ -121,8 +121,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       std::vector<gpu::SyncToken> sync_tokens,
       uint64_t sync_fence_release,
       base::OnceClosure on_finished);
-  void ScheduleOutputSurfaceAsOverlay(
-      const OverlayProcessor::OutputSurfaceOverlayPlane& output_surface_plane);
+  void ScheduleOverlays(const OverlayCandidateList& overlays);
   void SwapBuffers(OutputSurfaceFrame frame);
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }

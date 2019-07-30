@@ -79,7 +79,7 @@ void GLVersionInfo::Initialize(const char* version_str,
       is_es3 = false;
     } else {
       major_version = 3;
-      minor_version = 0;
+      minor_version = 2;
     }
   }
 }

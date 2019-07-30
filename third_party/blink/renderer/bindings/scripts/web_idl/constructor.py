@@ -3,9 +3,10 @@
 # found in the LICENSE file.
 
 import exceptions
-from .common import WithComponent
-from .common import WithDebugInfo
-from .common import WithOwner
+
+from .composition_parts import WithComponent
+from .composition_parts import WithDebugInfo
+from .composition_parts import WithOwner
 from .idl_member import IdlMember
 
 

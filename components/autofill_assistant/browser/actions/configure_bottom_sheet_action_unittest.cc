@@ -32,11 +32,11 @@ class ConfigureBottomSheetActionTest : public testing::Test {
       : task_env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
-    ON_CALL(mock_action_delegate_, GetResizeViewport())
-        .WillByDefault(Invoke([this]() { return resize_viewport_; }));
-    ON_CALL(mock_action_delegate_, SetResizeViewport(_))
+    ON_CALL(mock_action_delegate_, GetViewportMode())
+        .WillByDefault(Invoke([this]() { return viewport_mode_; }));
+    ON_CALL(mock_action_delegate_, SetViewportMode(_))
         .WillByDefault(
-            Invoke([this](bool value) { resize_viewport_ = value; }));
+            Invoke([this](ViewportMode value) { viewport_mode_ = value; }));
     ON_CALL(mock_action_delegate_, GetPeekMode())
         .WillByDefault(Invoke([this]() { return peek_mode_; }));
     ON_CALL(mock_action_delegate_, SetPeekMode(_))
@@ -89,7 +89,7 @@ class ConfigureBottomSheetActionTest : public testing::Test {
   MockActionDelegate mock_action_delegate_;
   MockWebController mock_web_controller_;
   ConfigureBottomSheetProto proto_;
-  bool resize_viewport_ = false;
+  ViewportMode viewport_mode_ = ViewportMode::NO_RESIZE;
   base::OnceCallback<void(const ClientStatus&)> on_resize_cb_;
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
@@ -101,7 +101,7 @@ TEST_F(ConfigureBottomSheetActionTest, NoOp) {
   Run();
 
   EXPECT_EQ(ACTION_APPLIED, processed_action_.status());
-  EXPECT_FALSE(resize_viewport_);
+  EXPECT_EQ(ViewportMode::NO_RESIZE, viewport_mode_);
   EXPECT_EQ(ConfigureBottomSheetProto::HANDLE, peek_mode_);
 }
 
@@ -110,35 +110,48 @@ TEST_F(ConfigureBottomSheetActionTest, ChangePeekMode) {
   Run();
 
   EXPECT_EQ(ACTION_APPLIED, processed_action_.status());
-  EXPECT_FALSE(resize_viewport_);
+  EXPECT_EQ(ViewportMode::NO_RESIZE, viewport_mode_);
   EXPECT_EQ(ConfigureBottomSheetProto::HANDLE_HEADER, peek_mode_);
 }
 
 TEST_F(ConfigureBottomSheetActionTest, EnableResize) {
-  proto_.set_viewport_resizing(ConfigureBottomSheetProto::RESIZE);
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT);
   Run();
 
   EXPECT_EQ(ACTION_APPLIED, processed_action_.status());
-  EXPECT_TRUE(resize_viewport_);
+  EXPECT_EQ(ViewportMode::RESIZE_LAYOUT_VIEWPORT, viewport_mode_);
+  EXPECT_EQ(ConfigureBottomSheetProto::HANDLE, peek_mode_);
+}
+
+TEST_F(ConfigureBottomSheetActionTest, EnableVisualViewportResize) {
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_VISUAL_VIEWPORT);
+  Run();
+
+  EXPECT_EQ(ACTION_APPLIED, processed_action_.status());
+  EXPECT_EQ(ViewportMode::RESIZE_VISUAL_VIEWPORT, viewport_mode_);
   EXPECT_EQ(ConfigureBottomSheetProto::HANDLE, peek_mode_);
 }
 
 TEST_F(ConfigureBottomSheetActionTest, EnableResizeWithPeekMode) {
-  proto_.set_viewport_resizing(ConfigureBottomSheetProto::RESIZE);
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT);
   proto_.set_peek_mode(ConfigureBottomSheetProto::HANDLE_HEADER);
   Run();
 
   EXPECT_EQ(ACTION_APPLIED, processed_action_.status());
-  EXPECT_TRUE(resize_viewport_);
+  EXPECT_EQ(ViewportMode::RESIZE_LAYOUT_VIEWPORT, viewport_mode_);
   EXPECT_EQ(ConfigureBottomSheetProto::HANDLE_HEADER, peek_mode_);
 }
 
 TEST_F(ConfigureBottomSheetActionTest, WaitAfterSettingResize) {
-  proto_.set_viewport_resizing(ConfigureBottomSheetProto::RESIZE);
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT);
 
   RunWithTimeout();
 
-  EXPECT_TRUE(resize_viewport_);
+  EXPECT_EQ(ViewportMode::RESIZE_LAYOUT_VIEWPORT, viewport_mode_);
   ASSERT_TRUE(on_resize_cb_);
 
   std::move(on_resize_cb_).Run(OkClientStatus());
@@ -146,7 +159,8 @@ TEST_F(ConfigureBottomSheetActionTest, WaitAfterSettingResize) {
 }
 
 TEST_F(ConfigureBottomSheetActionTest, WaitFailsAfterSettingResize) {
-  proto_.set_viewport_resizing(ConfigureBottomSheetProto::RESIZE);
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT);
 
   RunWithTimeout();
 
@@ -158,7 +172,8 @@ TEST_F(ConfigureBottomSheetActionTest, WaitFailsAfterSettingResize) {
 }
 
 TEST_F(ConfigureBottomSheetActionTest, WaitTimesOut) {
-  proto_.set_viewport_resizing(ConfigureBottomSheetProto::RESIZE);
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT);
 
   RunWithTimeout();
 
@@ -171,7 +186,8 @@ TEST_F(ConfigureBottomSheetActionTest, WaitTimesOut) {
 }
 
 TEST_F(ConfigureBottomSheetActionTest, TimesOutAfterWindowResized) {
-  proto_.set_viewport_resizing(ConfigureBottomSheetProto::RESIZE);
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT);
 
   RunWithTimeout();
 
@@ -181,11 +197,12 @@ TEST_F(ConfigureBottomSheetActionTest, TimesOutAfterWindowResized) {
   ForceTimeout();
 
   EXPECT_EQ(ACTION_APPLIED, processed_action_.status());
-  EXPECT_TRUE(resize_viewport_);
+  EXPECT_EQ(ViewportMode::RESIZE_LAYOUT_VIEWPORT, viewport_mode_);
 }
 
 TEST_F(ConfigureBottomSheetActionTest, WindowResizedAfterTimeout) {
-  proto_.set_viewport_resizing(ConfigureBottomSheetProto::RESIZE);
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT);
 
   RunWithTimeout();
 
@@ -197,7 +214,7 @@ TEST_F(ConfigureBottomSheetActionTest, WindowResizedAfterTimeout) {
 }
 
 TEST_F(ConfigureBottomSheetActionTest, WaitAfterUnsettingResize) {
-  resize_viewport_ = true;
+  viewport_mode_ = ViewportMode::RESIZE_LAYOUT_VIEWPORT;
   proto_.set_viewport_resizing(ConfigureBottomSheetProto::NO_RESIZE);
 
   RunWithTimeout();
@@ -206,7 +223,7 @@ TEST_F(ConfigureBottomSheetActionTest, WaitAfterUnsettingResize) {
 }
 
 TEST_F(ConfigureBottomSheetActionTest, WaitAfterChangingPeekModeInResizeMode) {
-  resize_viewport_ = true;
+  viewport_mode_ = ViewportMode::RESIZE_LAYOUT_VIEWPORT;
   proto_.set_peek_mode(ConfigureBottomSheetProto::HANDLE_HEADER);
 
   RunWithTimeout();
@@ -224,7 +241,7 @@ TEST_F(ConfigureBottomSheetActionTest, DontWaitAfterChangingPeekIfNoResize) {
 }
 
 TEST_F(ConfigureBottomSheetActionTest, DontWaitIfPeekModeNotChanged) {
-  resize_viewport_ = true;
+  viewport_mode_ = ViewportMode::RESIZE_LAYOUT_VIEWPORT;
   proto_.set_peek_mode(ConfigureBottomSheetProto::HANDLE);
 
   RunWithTimeout();
@@ -233,12 +250,52 @@ TEST_F(ConfigureBottomSheetActionTest, DontWaitIfPeekModeNotChanged) {
 }
 
 TEST_F(ConfigureBottomSheetActionTest, DontWaitIfResizeModeNotChanged) {
-  resize_viewport_ = true;
-  proto_.set_viewport_resizing(ConfigureBottomSheetProto::RESIZE);
+  viewport_mode_ = ViewportMode::RESIZE_LAYOUT_VIEWPORT;
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT);
 
   RunWithTimeout();
 
   ASSERT_FALSE(on_resize_cb_);
+}
+
+TEST_F(ConfigureBottomSheetActionTest, DontWaitIfResizeVisualViewport) {
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_VISUAL_VIEWPORT);
+
+  RunWithTimeout();
+
+  ASSERT_FALSE(on_resize_cb_);
+}
+
+TEST_F(ConfigureBottomSheetActionTest,
+       DontWaitIfDisablingResizeVisualViewport) {
+  viewport_mode_ = ViewportMode::RESIZE_VISUAL_VIEWPORT;
+  proto_.set_viewport_resizing(ConfigureBottomSheetProto::NO_RESIZE);
+
+  RunWithTimeout();
+
+  ASSERT_FALSE(on_resize_cb_);
+}
+
+TEST_F(ConfigureBottomSheetActionTest, WaitIfResizeVisualAfterLayoutViewport) {
+  viewport_mode_ = ViewportMode::RESIZE_LAYOUT_VIEWPORT;
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_VISUAL_VIEWPORT);
+
+  RunWithTimeout();
+
+  ASSERT_TRUE(on_resize_cb_);
+}
+
+TEST_F(ConfigureBottomSheetActionTest, WaitIfResizeLayoutAfterVisualViewport) {
+  viewport_mode_ = ViewportMode::RESIZE_VISUAL_VIEWPORT;
+  proto_.set_viewport_resizing(
+      ConfigureBottomSheetProto::RESIZE_LAYOUT_VIEWPORT);
+
+  RunWithTimeout();
+
+  ASSERT_TRUE(on_resize_cb_);
 }
 
 }  // namespace

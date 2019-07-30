@@ -13,7 +13,8 @@ void Attach(wl_client* client,
             wl_resource* buffer_resource,
             int32_t x,
             int32_t y) {
-  GetUserDataAs<MockSurface>(resource)->Attach(buffer_resource, x, y);
+  auto* surface = GetUserDataAs<MockSurface>(resource);
+  surface->AttachNewBuffer(buffer_resource, x, y);
 }
 
 void SetOpaqueRegion(wl_client* client,
@@ -40,7 +41,13 @@ void Damage(wl_client* client,
 void Frame(struct wl_client* client,
            struct wl_resource* resource,
            uint32_t callback) {
-  GetUserDataAs<MockSurface>(resource)->Frame(callback);
+  auto* surface = GetUserDataAs<MockSurface>(resource);
+
+  wl_resource* callback_resource =
+      wl_resource_create(client, &wl_callback_interface, 1, callback);
+  surface->set_frame_callback(callback_resource);
+
+  surface->Frame(callback);
 }
 
 void Commit(wl_client* client, wl_resource* resource) {
@@ -87,6 +94,39 @@ MockSurface* MockSurface::FromResource(wl_resource* resource) {
                                  &kMockSurfaceImpl))
     return nullptr;
   return GetUserDataAs<MockSurface>(resource);
+}
+
+void MockSurface::AttachNewBuffer(wl_resource* buffer_resource,
+                                  int32_t x,
+                                  int32_t y) {
+  if (attached_buffer_) {
+    DCHECK(!prev_attached_buffer_);
+    prev_attached_buffer_ = attached_buffer_;
+  }
+  attached_buffer_ = buffer_resource;
+
+  Attach(buffer_resource, x, y);
+}
+
+void MockSurface::ReleasePrevAttachedBuffer() {
+  if (!prev_attached_buffer_)
+    return;
+
+  wl_buffer_send_release(prev_attached_buffer_);
+  wl_client_flush(wl_resource_get_client(prev_attached_buffer_));
+  prev_attached_buffer_ = nullptr;
+}
+
+void MockSurface::SendFrameCallback() {
+  if (!frame_callback_)
+    return;
+
+  wl_callback_send_done(
+      frame_callback_,
+      0 /* trequest-specific data for the callback. not used */);
+  wl_client_flush(wl_resource_get_client(frame_callback_));
+  wl_resource_destroy(frame_callback_);
+  frame_callback_ = nullptr;
 }
 
 }  // namespace wl

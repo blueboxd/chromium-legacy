@@ -293,7 +293,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   using EventTarget::DispatchEvent;
   DispatchEventResult DispatchEvent(Event&, EventTarget*);
 
-  void FinishedLoading();
+  void FinishedLoading(FrameLoader::NavigationFinishState);
 
   // Dispatch the (deprecated) orientationchange event to this DOMWindow and
   // recurse on its child frames.

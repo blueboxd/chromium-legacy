@@ -32,7 +32,6 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/resource_context_impl.h"
@@ -61,7 +60,6 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
@@ -180,8 +178,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
   auto new_request = std::make_unique<network::ResourceRequest>();
 
-  new_request->method = request_info->common_params.method;
-  new_request->url = request_info->common_params.url;
+  new_request->method = request_info->common_params->method;
+  new_request->url = request_info->common_params->url;
   new_request->site_for_cookies = request_info->site_for_cookies;
   new_request->trusted_network_isolation_key =
       request_info->network_isolation_key;
@@ -207,10 +205,11 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   // been copied from ResourceDispatcherHostImpl. We did not refactor the
   // common code into a function, because RDHI uses accessor functions on the
   // URLRequest class to set these fields. whereas we use ResourceRequest here.
-  new_request->request_initiator = request_info->common_params.initiator_origin;
-  new_request->referrer = request_info->common_params.referrer.url;
+  new_request->request_initiator =
+      request_info->common_params->initiator_origin;
+  new_request->referrer = request_info->common_params->referrer->url;
   new_request->referrer_policy = Referrer::ReferrerPolicyForUrlRequest(
-      request_info->common_params.referrer.policy);
+      request_info->common_params->referrer->policy);
   new_request->headers.AddHeadersFromString(
       request_info->begin_params->headers);
 
@@ -230,10 +229,10 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
 
   new_request->load_flags = load_flags;
 
-  new_request->request_body = request_info->common_params.post_data.get();
+  new_request->request_body = request_info->common_params->post_data.get();
   new_request->report_raw_headers = request_info->report_raw_headers;
   new_request->allow_download = allow_download;
-  new_request->has_user_gesture = request_info->common_params.has_user_gesture;
+  new_request->has_user_gesture = request_info->common_params->has_user_gesture;
   new_request->enable_load_timing = true;
 
   new_request->mode = network::mojom::RequestMode::kNavigate;
@@ -243,8 +242,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
       static_cast<int>(request_info->begin_params->request_context_type);
   new_request->upgrade_if_insecure = request_info->upgrade_if_insecure;
   new_request->throttling_profile_id = request_info->devtools_frame_token;
-  new_request->transition_type = request_info->common_params.transition;
-  new_request->previews_state = request_info->common_params.previews_state;
+  new_request->transition_type = request_info->common_params->transition;
+  new_request->previews_state = request_info->common_params->previews_state;
   new_request->devtools_request_id =
       request_info->devtools_navigation_token.ToString();
   return new_request;
@@ -449,7 +448,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     // Requests to Blob scheme won't get redirected to/from other schemes
     // or be intercepted, so we just let it go here.
-    if (request_info->common_params.url.SchemeIsBlob() &&
+    if (request_info->common_params->url.SchemeIsBlob() &&
         request_info->blob_url_loader_factory) {
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           network::SharedURLLoaderFactory::Create(
@@ -488,7 +487,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::unique_ptr<NavigationLoaderInterceptor>
           prefetched_signed_exchange_interceptor =
               prefetched_signed_exchange_cache->MaybeCreateInterceptor(
-                  request_info->common_params.url);
+                  request_info->common_params->url);
       if (prefetched_signed_exchange_interceptor) {
         interceptors_.push_back(
             std::move(prefetched_signed_exchange_interceptor));
@@ -499,8 +498,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (service_worker_navigation_handle_) {
       std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
           ServiceWorkerRequestHandler::CreateForNavigationUI(
-              resource_request_->url, service_worker_navigation_handle_,
-              *request_info);
+              resource_request_->url,
+              service_worker_navigation_handle_->AsWeakPtr(), *request_info);
       // The interceptor may not be created in certain cases (e.g., the origin
       // is not secure).
       if (service_worker_interceptor)
@@ -558,7 +557,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::unique_ptr<NavigationLoaderInterceptor>
           prefetched_signed_exchange_interceptor =
               prefetched_signed_exchange_cache->MaybeCreateInterceptor(
-                  request_info->common_params.url);
+                  request_info->common_params->url);
       if (prefetched_signed_exchange_interceptor) {
         interceptors_.push_back(
             std::move(prefetched_signed_exchange_interceptor));
@@ -989,31 +988,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     is_download =
         !head.intercepted_by_plugin && (must_download || !known_mime_type);
 
-    // If NetworkService is on, or an interceptor handled the request, the
-    // request doesn't use ResourceDispatcherHost so
-    // CallOnReceivedResponse and return here.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-        !default_loader_used_) {
-      CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
-                             is_download);
-      return;
-    }
-
-    // NetworkService is off and an interceptor didn't handle the request,
-    // so it went to ResourceDispatcherHost.
-    ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-    net::URLRequest* url_request = rdh->GetURLRequest(global_request_id_);
-
-    // The |url_request| maybe have been removed from the resource dispatcher
-    // host during the time it took for OnReceiveResponse() to be received.
-    if (url_request) {
-      ResourceRequestInfoImpl* info =
-          ResourceRequestInfoImpl::ForRequest(url_request);
-      is_download = !head.intercepted_by_plugin && info->IsDownload();
-    } else {
-      is_download = false;
-    }
-
     CallOnReceivedResponse(head, std::move(url_loader_client_endpoints),
                            is_download);
   }
@@ -1409,13 +1383,13 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
         initial_interceptors)
     : delegate_(delegate),
-      download_policy_(request_info->common_params.download_policy) {
+      download_policy_(request_info->common_params->download_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int frame_tree_node_id = request_info->frame_tree_node_id;
 
   TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
       "navigation", "Navigation timeToResponseStarted", this,
-      request_info->common_params.navigation_start, "FrameTreeNode id",
+      request_info->common_params->navigation_start, "FrameTreeNode id",
       frame_tree_node_id);
 
   ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core =
@@ -1548,7 +1522,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_interceptors), std::move(new_request), browser_context,
-      resource_context, request_info->common_params.url,
+      resource_context, request_info->common_params->url,
       request_info->is_main_frame, std::move(proxied_factory_request),
       std::move(proxied_factory_info), std::move(known_schemes),
       bypass_redirect_checks, weak_factory_.GetWeakPtr());

@@ -3299,14 +3299,13 @@
     {
       "id": 308,
       "cr_bugs": [983787],
-      "description": "D3D11 and GPU video decode cause crashes on AMD Radeon Vega 8",
+      "description": "Delayed copy NV12 causes crashes on GPU main thread when DXVA video decoder runs on another thread",
       "os": {
         "type": "win"
       },
       "vendor_id": "0x1002",
-      "device_id": ["0x15dd"],
       "features": [
-        "disable_d3d11"
+        "disable_delayed_copy_nv12"
       ]
     }
   ]

@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
   // surface information required for event hit testing is ready.
   auto* rwhv_child =
       static_cast<RenderWidgetHostViewBase*>(child_frame_host->GetView());
-  WaitForHitTestDataOrChildSurfaceReady(child_frame_host);
+  WaitForHitTestData(child_frame_host);
 
   // All touches & gestures are sent to the main frame's view, and should be
   // routed appropriately from there.

@@ -83,6 +83,8 @@ enum Event {
   kWindowDeactivated,           // Native
   kWindowVisibilityChanged,     // Native
   kTextSelectionChanged,
+  kTooltipClosed,
+  kTooltipOpened,
   kTreeChanged,  // Accessibility tree changed. Don't
                  // explicitly fire an accessibility event,
                  // only implicitly due to the change.

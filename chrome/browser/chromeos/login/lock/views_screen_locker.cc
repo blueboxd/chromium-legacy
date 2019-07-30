@@ -119,6 +119,19 @@ void ViewsScreenLocker::Init() {
       user_selection_screen_->UpdateAndReturnUserListForAsh());
   ash::LoginScreen::Get()->SetAllowLoginAsGuest(false /*show_guest*/);
 
+  if (user_manager::UserManager::IsInitialized()) {
+    for (user_manager::User* user :
+         user_manager::UserManager::Get()->GetLoggedInUsers()) {
+      const bool enable_challenge_response =
+          ChallengeResponseAuthKeysLoader::CanAuthenticateUser(
+              user->GetAccountId());
+      ash::LoginScreen::Get()
+          ->GetModel()
+          ->SetChallengeResponseAuthEnabledForUser(user->GetAccountId(),
+                                                   enable_challenge_response);
+    }
+  }
+
   user_selection_screen_->InitEasyUnlock();
   UMA_HISTOGRAM_TIMES("LockScreen.LockReady",
                       base::TimeTicks::Now() - lock_time_);
@@ -202,6 +215,13 @@ void ViewsScreenLocker::HandleEnrollUserWithExternalBinary(
 void ViewsScreenLocker::HandleAuthenticateUserWithEasyUnlock(
     const AccountId& account_id) {
   user_selection_screen_->AttemptEasyUnlock(account_id);
+}
+
+void ViewsScreenLocker::HandleAuthenticateUserWithChallengeResponse(
+    const AccountId& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  ScreenLocker::default_screen_locker()->AuthenticateWithChallengeResponse(
+      account_id, std::move(callback));
 }
 
 void ViewsScreenLocker::HandleHardlockPod(const AccountId& account_id) {

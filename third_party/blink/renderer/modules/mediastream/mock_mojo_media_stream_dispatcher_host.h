@@ -25,7 +25,7 @@ class MockMojoMediaStreamDispatcherHost
   mojom::blink::MediaStreamDispatcherHostPtr CreateInterfacePtrAndBind();
 
   void GenerateStream(int32_t request_id,
-                      mojom::blink::StreamControlsPtr controls,
+                      const StreamControls& controls,
                       bool user_gesture,
                       GenerateStreamCallback callback) override;
   void CancelRequest(int32_t request_id) override;
@@ -51,10 +51,10 @@ class MockMojoMediaStreamDispatcherHost
   int stop_audio_device_counter() const { return stop_audio_device_counter_; }
   int stop_video_device_counter() const { return stop_video_device_counter_; }
 
-  const WTF::Vector<mojom::blink::MediaStreamDevicePtr>& audio_devices() const {
+  const WTF::Vector<MediaStreamDevice>& audio_devices() const {
     return audio_devices_;
   }
-  const WTF::Vector<mojom::blink::MediaStreamDevicePtr>& video_devices() const {
+  const WTF::Vector<MediaStreamDevice>& video_devices() const {
     return video_devices_;
   }
 
@@ -65,8 +65,8 @@ class MockMojoMediaStreamDispatcherHost
   int stop_video_device_counter_ = 0;
   base::UnguessableToken session_id_ = base::UnguessableToken::Create();
   bool do_not_run_cb_ = false;
-  WTF::Vector<mojom::blink::MediaStreamDevicePtr> audio_devices_;
-  WTF::Vector<mojom::blink::MediaStreamDevicePtr> video_devices_;
+  WTF::Vector<MediaStreamDevice> audio_devices_;
+  WTF::Vector<MediaStreamDevice> video_devices_;
   GenerateStreamCallback generate_stream_cb_;
   mojo::Binding<mojom::blink::MediaStreamDispatcherHost> binding_;
 

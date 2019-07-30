@@ -12,7 +12,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -153,10 +152,7 @@ void ForwardCertificateCallback(
 class SignedExchangeCertFetcherTest : public testing::Test {
  public:
   SignedExchangeCertFetcherTest()
-      : url_(GURL("https://www.example.com/cert")),
-        resource_dispatcher_host_(CreateDownloadHandlerIntercept(),
-                                  base::ThreadTaskRunnerHandle::Get(),
-                                  true /* enable_resource_scheduler */) {}
+      : url_(GURL("https://www.example.com/cert")) {}
   ~SignedExchangeCertFetcherTest() override {}
 
  protected:
@@ -251,7 +247,6 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ResourceDispatcherHostImpl resource_dispatcher_host_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeCertFetcherTest);

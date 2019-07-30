@@ -1347,7 +1347,7 @@ String AXNodeObject::AriaAutoComplete() const {
   if (IsNativeTextControl() || IsARIATextControl()) {
     const AtomicString& aria_auto_complete =
         GetAOMPropertyOrARIAAttribute(AOMStringProperty::kAutocomplete)
-            .DeprecatedLower();
+            .LowerASCII();
     // Illegal values must be passed through, according to CORE-AAM.
     if (!aria_auto_complete.IsNull())
       return aria_auto_complete == "none" ? String() : aria_auto_complete;

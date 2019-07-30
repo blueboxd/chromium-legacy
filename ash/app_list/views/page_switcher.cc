@@ -190,6 +190,8 @@ PageSwitcher::PageSwitcher(ash::PaginationModel* model,
       buttons_(new views::View),
       vertical_(vertical),
       is_tablet_mode_(is_tablet_mode) {
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
   if (vertical_) {
     buttons_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical, gfx::Insets(),

@@ -9,7 +9,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
-// Next MinVersion: 4
+// Next MinVersion: 6
 
 [Extensible]
 enum MediaPlaybackState {
@@ -61,13 +61,21 @@ struct MediaMetadata {
   mojo_base.mojom.String16 source_title;
 };
 
+// The color type of the bitmap.
+[Extensible]
+enum MediaImageBitmapColorType {
+  kRGBA_8888,  // On Android, this is Bitmap.Config.ARGB_8888
+  kBGRA_8888,
+};
+
 // A bitmap image. We use this instead of SkImage or skia.image.Bitmap so we can
 // use it in ARC and we do not use ArcBitmap because we need to use it in the
 // service.
 struct MediaImageBitmap {
   int32 width;
   int32 height;
-  array<uint8> pixel_data;  // Must be ARGB_8888
+  array<uint8> pixel_data;
+  [MinVersion=5] MediaImageBitmapColorType color_type;
 };
 
 struct MediaPosition {

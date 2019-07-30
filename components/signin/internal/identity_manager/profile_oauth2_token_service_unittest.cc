@@ -54,7 +54,8 @@ class RetryingTestingOAuth2AccessTokenManagerConsumer
   std::unique_ptr<OAuth2AccessTokenManager::Request> request_;
 };
 
-class FakeOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
+class FakeOAuth2TokenServiceObserver
+    : public ProfileOAuth2TokenServiceObserver {
  public:
   MOCK_METHOD2(OnAuthErrorChanged,
                void(const CoreAccountId&, const GoogleServiceAuthError&));
@@ -643,65 +644,6 @@ TEST_F(ProfileOAuth2TokenServiceTest, InvalidateToken) {
   EXPECT_EQ("token2", consumer_.last_token_);
 }
 
-TEST_F(ProfileOAuth2TokenServiceTest, CancelAllRequests) {
-  oauth2_service_->GetDelegate()->UpdateCredentials(account_id_,
-                                                    "refreshToken");
-  std::unique_ptr<OAuth2AccessTokenManager::Request> request(
-      oauth2_service_->StartRequest(
-          account_id_, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
-  const CoreAccountId account_id_2("account_id_2");
-  oauth2_service_->GetDelegate()->UpdateCredentials(account_id_2,
-                                                    "refreshToken2");
-  std::unique_ptr<OAuth2AccessTokenManager::Request> request2(
-      oauth2_service_->StartRequest(
-          account_id_, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
-  EXPECT_EQ(0, consumer_.number_of_errors_);
-
-  oauth2_service_->CancelAllRequests();
-
-  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
-  EXPECT_EQ(2, consumer_.number_of_errors_);
-}
-
-TEST_F(ProfileOAuth2TokenServiceTest, CancelRequestsForAccount) {
-  OAuth2AccessTokenManager::ScopeSet scope_set_1;
-  scope_set_1.insert("scope1");
-  scope_set_1.insert("scope2");
-  OAuth2AccessTokenManager::ScopeSet scope_set_2(scope_set_1.begin(),
-                                                 scope_set_1.end());
-  scope_set_2.insert("scope3");
-
-  oauth2_service_->GetDelegate()->UpdateCredentials(account_id_,
-                                                    "refreshToken");
-  std::unique_ptr<OAuth2AccessTokenManager::Request> request1(
-      oauth2_service_->StartRequest(account_id_, scope_set_1, &consumer_));
-  std::unique_ptr<OAuth2AccessTokenManager::Request> request2(
-      oauth2_service_->StartRequest(account_id_, scope_set_2, &consumer_));
-
-  const CoreAccountId account_id_2("account_id_2");
-  oauth2_service_->GetDelegate()->UpdateCredentials(account_id_2,
-                                                    "refreshToken2");
-  std::unique_ptr<OAuth2AccessTokenManager::Request> request3(
-      oauth2_service_->StartRequest(account_id_2, scope_set_1, &consumer_));
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
-  EXPECT_EQ(0, consumer_.number_of_errors_);
-
-  oauth2_service_->CancelRequestsForAccount(account_id_);
-
-  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
-  EXPECT_EQ(2, consumer_.number_of_errors_);
-
-  oauth2_service_->CancelRequestsForAccount(account_id_2);
-
-  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
-  EXPECT_EQ(3, consumer_.number_of_errors_);
-}
-
 TEST_F(ProfileOAuth2TokenServiceTest, SameScopesRequestedForDifferentClients) {
   std::string client_id_1("client1");
   std::string client_secret_1("secret1");
@@ -726,10 +668,12 @@ TEST_F(ProfileOAuth2TokenServiceTest, SameScopesRequestedForDifferentClients) {
           account_id_, client_id_1, client_secret_1, scope_set, &consumer_));
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(2U, oauth2_service_->GetNumPendingRequestsForTesting(
-                    client_id_1, account_id_, scope_set));
-  ASSERT_EQ(1U, oauth2_service_->GetNumPendingRequestsForTesting(
-                    client_id_2, account_id_, scope_set));
+  ASSERT_EQ(2U,
+            oauth2_service_->token_manager_->GetNumPendingRequestsForTesting(
+                client_id_1, account_id_, scope_set));
+  ASSERT_EQ(1U,
+            oauth2_service_->token_manager_->GetNumPendingRequestsForTesting(
+                client_id_2, account_id_, scope_set));
 }
 
 TEST_F(ProfileOAuth2TokenServiceTest, RequestParametersOrderTest) {

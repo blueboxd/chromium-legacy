@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
-#include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -32,14 +31,12 @@ class CONTENT_EXPORT LevelDBState
  public:
   static scoped_refptr<LevelDBState> CreateForDiskDB(
       const leveldb::Comparator* comparator,
-      const LevelDBComparator* idb_comparator,
       std::unique_ptr<leveldb::DB> database,
       base::FilePath database_path);
 
   static scoped_refptr<LevelDBState> CreateForInMemoryDB(
       std::unique_ptr<leveldb::Env> in_memory_env,
       const leveldb::Comparator* comparator,
-      const LevelDBComparator* idb_comparator,
       std::unique_ptr<leveldb::DB> in_memory_database,
       std::string name_for_tracing);
 
@@ -55,7 +52,6 @@ class CONTENT_EXPORT LevelDBState
   }
 
   const leveldb::Comparator* comparator() const { return comparator_; }
-  const LevelDBComparator* idb_comparator() const { return idb_comparator_; }
   leveldb::DB* db() const { return db_.get(); }
   const std::string& name_for_tracing() const { return name_for_tracing_; }
 
@@ -70,7 +66,6 @@ class CONTENT_EXPORT LevelDBState
 
   LevelDBState(std::unique_ptr<leveldb::Env> optional_in_memory_env,
                const leveldb::Comparator* comparator,
-               const LevelDBComparator* idb_comparator,
                std::unique_ptr<leveldb::DB> database,
                base::FilePath database_path,
                std::string name_for_tracing);
@@ -78,7 +73,6 @@ class CONTENT_EXPORT LevelDBState
 
   const std::unique_ptr<leveldb::Env> in_memory_env_;
   const leveldb::Comparator* comparator_;
-  const LevelDBComparator* idb_comparator_;
   const std::unique_ptr<leveldb::DB> db_;
   const base::FilePath database_path_;
   const std::string name_for_tracing_;

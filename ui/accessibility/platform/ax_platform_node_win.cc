@@ -6664,6 +6664,10 @@ base::Optional<DWORD> AXPlatformNodeWin::MojoEventToMSAAEvent(
       return EVENT_OBJECT_NAMECHANGE;
     case ax::mojom::Event::kTextSelectionChanged:
       return IA2_EVENT_TEXT_CARET_MOVED;
+    case ax::mojom::Event::kTooltipClosed:
+      return EVENT_OBJECT_HIDE;
+    case ax::mojom::Event::kTooltipOpened:
+      return EVENT_OBJECT_SHOW;
     case ax::mojom::Event::kValueChanged:
       return EVENT_OBJECT_VALUECHANGE;
     default:
@@ -6691,6 +6695,10 @@ base::Optional<EVENTID> AXPlatformNodeWin::MojoEventToUIAEvent(
       return UIA_SelectionItem_ElementAddedToSelectionEventId;
     case ax::mojom::Event::kSelectionRemove:
       return UIA_SelectionItem_ElementRemovedFromSelectionEventId;
+    case ax::mojom::Event::kTooltipClosed:
+      return UIA_ToolTipClosedEventId;
+    case ax::mojom::Event::kTooltipOpened:
+      return UIA_ToolTipOpenedEventId;
     default:
       return base::nullopt;
   }

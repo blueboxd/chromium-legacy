@@ -8,11 +8,8 @@ extensions."""
 from __future__ import print_function
 
 from json import JSONEncoder
-import re
-import types
 
 from grit import constants
-from grit import util
 from grit.node import message
 
 def Format(root, lang='en', output_dir='.'):

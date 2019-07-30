@@ -31,6 +31,13 @@ struct PageInsetSizes {
 // |doc_size|'s height.
 void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size);
 
+// Given |page_rect_bottom| and |bottom_rect| in the same coordinate space,
+// return a pp::Rect object representing the portion of |bottom_rect| that is
+// below |page_rect_bottom|. Returns an empty rectangle if |page_rect_bottom|
+// is greater than or equal to |bottom_rect.bottom()|.
+pp::Rect GetBottomGapBetweenRects(int page_rect_bottom,
+                                  const pp::Rect& bottom_rect);
+
 // Given |page_index|, and |num_of_pages|, return the configuration of
 // |single_view_insets| and |horizontal_separator| for the current page in
 // two-up view.
@@ -40,6 +47,7 @@ PageInsetSizes GetPageInsetsForTwoUpView(
     const PageInsetSizes& single_view_insets,
     int horizontal_separator);
 
+// TODO (chinsenj): move Get*FillRect() functions to bottom of coordinates.h.
 // Given |page_rect| in document coordinates, |inset_sizes|, and
 // |bottom_separator|, return a pp::Rect object representing the gap on the
 // left side of the page created by insetting the page. I.e. the difference,

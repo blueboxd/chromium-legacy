@@ -60,12 +60,12 @@ NewTabPageNavigationThrottle::WillFailRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 NewTabPageNavigationThrottle::OpenLocalNewTabPage() {
-  navigation_handle()->GetWebContents()->OpenURL(
-      content::OpenURLParams(GURL(chrome::kChromeSearchLocalNtpUrl),
-                             navigation_handle()->GetReferrer(),
-                             navigation_handle()->GetFrameTreeNodeId(),
-                             WindowOpenDisposition::CURRENT_TAB,
-                             navigation_handle()->GetPageTransition(),
-                             false /* is_renderer_initiated */));
+  navigation_handle()->GetWebContents()->OpenURL(content::OpenURLParams(
+      GURL(chrome::kChromeSearchLocalNtpUrl),
+      content::Referrer(navigation_handle()->GetReferrer()),
+      navigation_handle()->GetFrameTreeNodeId(),
+      WindowOpenDisposition::CURRENT_TAB,
+      navigation_handle()->GetPageTransition(),
+      false /* is_renderer_initiated */));
   return content::NavigationThrottle::CANCEL_AND_IGNORE;
 }

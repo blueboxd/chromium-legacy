@@ -1886,15 +1886,6 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
  public:
   TestResourceDispatcherHost() {}
 
-  std::unique_ptr<ResourceHandler> CreateResourceHandlerForDownload(
-      net::URLRequest* request,
-      bool is_content_initiated,
-      bool must_download,
-      bool is_new_request) override {
-    NOTREACHED();
-    return std::make_unique<TestResourceHandler>();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherHost);
 };

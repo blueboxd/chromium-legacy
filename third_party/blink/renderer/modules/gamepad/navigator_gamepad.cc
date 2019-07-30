@@ -149,11 +149,12 @@ GamepadHapticActuator* NavigatorGamepad::GetVibrationActuatorForGamepad(
     return nullptr;
   }
 
-  uint32_t pad_index = gamepad.index();
   if (!gamepad.HasVibrationActuator()) {
     return nullptr;
   }
 
+  int pad_index = gamepad.index();
+  DCHECK_GE(pad_index, 0);
   if (!vibration_actuators_[pad_index]) {
     ExecutionContext* context =
         DomWindow() ? DomWindow()->GetExecutionContext() : nullptr;

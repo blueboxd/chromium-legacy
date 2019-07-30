@@ -98,9 +98,8 @@ namespace {
 
 Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   Browser* new_browser = GetBrowserNotInSet(excluded_browsers);
-  if (new_browser == NULL) {
-    BrowserAddedObserver observer;
-    new_browser = observer.WaitForSingleNewBrowser();
+  if (!new_browser) {
+    new_browser = WaitForBrowserToOpen();
     // The new browser should never be in |excluded_browsers|.
     DCHECK(!base::Contains(excluded_browsers, new_browser));
   }
@@ -168,31 +167,38 @@ class BrowserChangeObserver : public BrowserListObserver {
     kRemoved,
   };
 
-  BrowserChangeObserver(const Browser* browser, ChangeType type)
+  BrowserChangeObserver(Browser* browser, ChangeType type)
       : browser_(browser), type_(type) {
     BrowserList::AddObserver(this);
   }
 
   ~BrowserChangeObserver() override { BrowserList::RemoveObserver(this); }
 
-  void Wait() { run_loop_.Run(); }
+  Browser* Wait() {
+    run_loop_.Run();
+    return browser_;
+  }
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override {
-    if (type_ == ChangeType::kAdded)
+    if (type_ == ChangeType::kAdded) {
+      browser_ = browser;
       run_loop_.Quit();
+    }
   }
 
   void OnBrowserRemoved(Browser* browser) override {
     if (browser_ && browser_ != browser)
       return;
 
-    if (type_ == ChangeType::kRemoved)
+    if (type_ == ChangeType::kRemoved) {
+      browser_ = browser;
       run_loop_.Quit();
+    }
   }
 
  private:
-  const Browser* browser_;
+  Browser* browser_;
   ChangeType type_;
   base::RunLoop run_loop_;
 
@@ -544,24 +550,6 @@ void UrlLoadObserver::Observe(
   WindowedNotificationObserver::Observe(type, source, details);
 }
 
-BrowserAddedObserver::BrowserAddedObserver()
-    : notification_observer_(
-          chrome::NOTIFICATION_BROWSER_OPENED,
-          content::NotificationService::AllSources()) {
-  for (auto* browser : *BrowserList::GetInstance())
-    original_browsers_.insert(browser);
-}
-
-BrowserAddedObserver::~BrowserAddedObserver() {
-}
-
-Browser* BrowserAddedObserver::WaitForSingleNewBrowser() {
-  notification_observer_.Wait();
-  // Ensure that only a single new browser has appeared.
-  EXPECT_EQ(original_browsers_.size() + 1, chrome::GetTotalBrowserCount());
-  return GetBrowserNotInSet(original_browsers_);
-}
-
 HistoryEnumerator::HistoryEnumerator(Profile* profile) {
   base::RunLoop run_loop;
   base::CancelableTaskTracker tracker;
@@ -620,12 +608,13 @@ void WaitForHistoryToLoad(history::HistoryService* history_service) {
   }
 }
 
-void WaitForBrowserToOpen() {
-  BrowserChangeObserver(nullptr, BrowserChangeObserver::ChangeType::kAdded)
+Browser* WaitForBrowserToOpen() {
+  return BrowserChangeObserver(nullptr,
+                               BrowserChangeObserver::ChangeType::kAdded)
       .Wait();
 }
 
-void WaitForBrowserToClose(const Browser* browser) {
+void WaitForBrowserToClose(Browser* browser) {
   BrowserChangeObserver(browser, BrowserChangeObserver::ChangeType::kRemoved)
       .Wait();
 }

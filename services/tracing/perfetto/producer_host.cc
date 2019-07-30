@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
@@ -17,6 +18,15 @@
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 
 namespace tracing {
+
+// TODO(oysteine): Find a good compromise between performance and
+// data granularity (mainly relevant to running with small buffer sizes
+// when we use background tracing) on Android.
+#if defined(OS_ANDROID)
+constexpr size_t kSMBPageSizeInBytes = 4 * 1024;
+#else
+constexpr size_t kSMBPageSizeInBytes = 32 * 1024;
+#endif
 
 ProducerHost::ProducerHost() = default;
 
@@ -59,7 +69,9 @@ void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
   // TODO(oysteine): Figure out a good buffer size.
   producer_endpoint_ = service->ConnectProducer(
       this, 0 /* uid */, name,
-      4 * 1024 * 1024 /* shared_memory_size_hint_bytes */, is_in_process_);
+      /*shared_memory_size_hint_bytes=*/4 * 1024 * 1024, is_in_process_,
+      perfetto::TracingService::ProducerSMBScrapingMode::kDefault,
+      /*shared_memory_page_size_hint_bytes=*/kSMBPageSizeInBytes);
   DCHECK(producer_endpoint_);
 }
 

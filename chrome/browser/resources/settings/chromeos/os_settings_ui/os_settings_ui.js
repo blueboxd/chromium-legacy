@@ -21,9 +21,11 @@ Polymer({
   is: 'os-settings-ui',
 
   behaviors: [
-    settings.RouteObserverBehavior,
     CrContainerShadowBehavior,
     FindShortcutBehavior,
+    // Calls currentRouteChanged() in attached(), so ensure other behaviors run
+    // their attached() first.
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -223,6 +225,15 @@ Polymer({
 
   /** @param {!settings.Route} route */
   currentRouteChanged: function(route) {
+    if (route.depth <= 1) {
+      // Main page uses scroll visibility to determine shadow.
+      this.enableShadowBehavior(true);
+    } else {
+      // Sub-pages always show the top-container shadow.
+      this.enableShadowBehavior(false);
+      this.showDropShadows();
+    }
+
     const urlSearchQuery = settings.getQueryParameters().get('search') || '';
     if (urlSearchQuery == this.lastSearchQuery_) {
       return;

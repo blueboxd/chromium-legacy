@@ -104,6 +104,12 @@ SecurityLevel GetSecurityLevel(
     return HTTP_SHOW_WARNING;
   }
 
+  // Display DevTools pages as neutral since we can't be confident the page
+  // is secure, but also don't want the "Not secure" badge.
+  if (visible_security_state.is_devtools) {
+    return NONE;
+  }
+
   // Choose the appropriate security level for requests to HTTP and remaining
   // pseudo URLs (blob:, filesystem:). filesystem: is a standard scheme so does
   // not need to be explicitly listed here.
@@ -200,7 +206,8 @@ VisibleSecurityState::VisibleSecurityState()
       ran_content_with_cert_errors(false),
       pkp_bypassed(false),
       is_error_page(false),
-      is_view_source(false) {}
+      is_view_source(false),
+      is_devtools(false) {}
 
 VisibleSecurityState::~VisibleSecurityState() {}
 

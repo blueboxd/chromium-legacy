@@ -146,7 +146,7 @@ public class SelectableListToolbar<E>
     public void destroy() {
         mIsDestroyed = true;
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
-        KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
+        hideKeyboard();
         VrModuleProvider.unregisterVrModeObserver(this);
     }
 
@@ -423,7 +423,7 @@ public class SelectableListToolbar<E>
 
         mIsSearching = false;
         mSearchEditText.setText("");
-        KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
+        hideKeyboard();
         showNormalView();
 
         mSearchDelegate.onEndSearch();
@@ -556,7 +556,7 @@ public class SelectableListToolbar<E>
 
         switchToNumberRollView(selectedItems, wasSelectionEnabled);
 
-        if (mIsSearching) KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
+        if (mIsSearching) hideKeyboard();
 
         updateDisplayStyleIfNecessary();
     }
@@ -669,6 +669,13 @@ public class SelectableListToolbar<E>
             }
             infoMenuItem.setVisible(showItem);
         }
+    }
+
+    /**
+     * Hides the keyboard.
+     */
+    public void hideKeyboard() {
+        KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
     }
 
     @Override

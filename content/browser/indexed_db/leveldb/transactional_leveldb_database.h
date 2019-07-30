@@ -8,48 +8,49 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/containers/mru_cache.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/time/clock.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "content/browser/indexed_db/indexed_db_data_loss_info.h"
 #include "content/browser/indexed_db/scopes/leveldb_state.h"
 #include "content/common/content_export.h"
-#include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace leveldb {
-class Comparator;
 class DB;
-class Iterator;
 class Env;
 class Snapshot;
 }  // namespace leveldb
 
 namespace content {
-class LevelDBComparator;
 class TransactionalLevelDBDatabase;
 class TransactionalLevelDBIterator;
+class TransactionalLevelDBTransaction;
+class LevelDBScopes;
 class LevelDBWriteBatch;
 
 namespace indexed_db {
 class LevelDBFactory;
+class DefaultLevelDBFactory;
 }  // namespace indexed_db
 
-class LevelDBSnapshot {
- private:
-  friend class TransactionalLevelDBDatabase;
-  friend class TransactionalLevelDBTransaction;
-
+// This class manages the acquisition and release of a leveldb snapshot.
+class CONTENT_EXPORT LevelDBSnapshot {
+ public:
   explicit LevelDBSnapshot(TransactionalLevelDBDatabase* db);
   ~LevelDBSnapshot();
 
+  const leveldb::Snapshot* snapshot() const { return snapshot_; }
+
+ private:
   leveldb::DB* db_;
   const leveldb::Snapshot* snapshot_;
 
@@ -63,34 +64,27 @@ class CONTENT_EXPORT TransactionalLevelDBDatabase
   // large. See https://crbug/696055.
   static const size_t kDefaultMaxOpenIteratorsPerDatabase = 50;
 
-  // |max_open_cursors| cannot be 0.
-  // All calls to this class should be done on |task_runner|.
-  TransactionalLevelDBDatabase(
-      scoped_refptr<LevelDBState> level_db_state,
-      indexed_db::LevelDBFactory* factory,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      size_t max_open_iterators);
-
   ~TransactionalLevelDBDatabase() override;
 
   leveldb::Status Put(const base::StringPiece& key, std::string* value);
   leveldb::Status Remove(const base::StringPiece& key);
   virtual leveldb::Status Get(const base::StringPiece& key,
                               std::string* value,
-                              bool* found,
-                              const LevelDBSnapshot* = 0);
-  leveldb::Status Write(const LevelDBWriteBatch& write_batch);
+                              bool* found);
+  virtual leveldb::Status Write(LevelDBWriteBatch* write_batch);
+
+  // This iterator will stay up-to-date with changes made to this database
+  // object (as in, automatically reload when values are modified), but not
+  // from any transactions.
+  // LevelDBIterator must not outlive the LevelDBDatabase.
   // Note: Use DefaultReadOptions() and then adjust any values afterwards.
   std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
-      const leveldb::ReadOptions& options);
-  const LevelDBComparator* Comparator() const {
-    return level_db_state_->idb_comparator();
-  }
+      leveldb::ReadOptions options);
+
   void Compact(const base::StringPiece& start, const base::StringPiece& stop);
   void CompactAll();
 
   leveldb::ReadOptions DefaultReadOptions();
-  leveldb::ReadOptions DefaultReadOptions(const LevelDBSnapshot* snapshot);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -99,6 +93,7 @@ class CONTENT_EXPORT TransactionalLevelDBDatabase
   LevelDBState* leveldb_state() { return level_db_state_.get(); }
   leveldb::DB* db() { return level_db_state_->db(); }
   leveldb::Env* env() { return level_db_state_->in_memory_env(); }
+  LevelDBScopes* scopes() { return scopes_.get(); }
   base::Time LastModified() const { return last_modified_; }
 
   indexed_db::LevelDBFactory* leveldb_class_factory() const {
@@ -107,45 +102,75 @@ class CONTENT_EXPORT TransactionalLevelDBDatabase
 
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
-  base::WeakPtr<TransactionalLevelDBDatabase> AsWeakPtr() {
-    return weak_factory_for_iterators_.GetWeakPtr();
-  }
-
  private:
   friend class LevelDBSnapshot;
-  friend class TransactionalLevelDBIteratorImpl;
+  friend class TransactionalLevelDBIterator;
+  friend class TransactionalLevelDBTransaction;
+  friend class LevelDBTestDatabase;
+  friend class indexed_db::DefaultLevelDBFactory;
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, DeleteFailsIfDirectoryLocked);
+  class IteratorNotifier;
 
-  // Methods for iterator pooling.
-  std::unique_ptr<leveldb::Iterator> CreateLevelDBIterator(
-      const leveldb::Snapshot*);
-  void OnIteratorUsed(TransactionalLevelDBIterator*);
-  void OnIteratorDestroyed(TransactionalLevelDBIterator*);
+  // |max_open_cursors| cannot be 0.
+  // All calls to this class should be done on |task_runner|.
+  TransactionalLevelDBDatabase(
+      scoped_refptr<LevelDBState> level_db_state,
+      std::unique_ptr<LevelDBScopes> leveldb_scopes,
+      indexed_db::LevelDBFactory* factory,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      size_t max_open_iterators);
+
+  void EvictAllIterators();
+
+  void OnIteratorUsed(TransactionalLevelDBIterator* iterator);
+  void OnIteratorLoaded(TransactionalLevelDBIterator* iterator);
+  void OnIteratorEvicted(TransactionalLevelDBIterator* iterator);
+  void OnIteratorDestroyed(TransactionalLevelDBIterator* iterator);
 
   void CloseDatabase();
 
+  // This iterator will stay up-to-date with changes from this |txn| (as
+  // in, automatically reload when values are modified), but not any other
+  // transactions or the database.
+  // LevelDBIterator must not outlive the LevelDBDatabase.
+  // Note: Use DefaultReadOptions() and then adjust any values afterwards.
+  std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
+      base::WeakPtr<TransactionalLevelDBTransaction> txn,
+      leveldb::ReadOptions options);
+
   scoped_refptr<LevelDBState> level_db_state_;
+  std::unique_ptr<LevelDBScopes> scopes_;
   indexed_db::LevelDBFactory* class_factory_;
   base::Time last_modified_;
   std::unique_ptr<base::Clock> clock_;
 
+  // Contains all iterators created by this database directly through
+  // |CreateIterator| WITHOUT a transaction. Iterators created with a
+  // transaction will not be added to this list. Raw pointers are safe here
+  // because the destructor of TransactionalLevelDBIterator removes itself from
+  // its associated database. |db_only_loaded_iterators_| have loaded
+  // leveldb::Iterators, and |db_only_evicted_iterators_| have had their
+  // leveldb::Iterator evicted. It is performant to have
+  // |db_only_loaded_iterators_| as a flat_set, as the iterator pooling feature
+  // of TransactionalLevelDBDatabase ensures a maximum number of
+  // kDefaultMaxOpenIteratorsPerDatabase loaded iterators.
+  base::flat_set<TransactionalLevelDBIterator*> db_only_loaded_iterators_;
+  std::set<TransactionalLevelDBIterator*> db_only_evicted_iterators_;
+  bool is_evicting_all_loaded_iterators_ = false;
+
   struct DetachIteratorOnDestruct {
-    DetachIteratorOnDestruct() {}
-    explicit DetachIteratorOnDestruct(TransactionalLevelDBIterator* it)
-        : it_(it) {}
-    DetachIteratorOnDestruct(DetachIteratorOnDestruct&& that) {
-      it_ = that.it_;
-      that.it_ = nullptr;
-    }
+    DetachIteratorOnDestruct() = default;
+    explicit DetachIteratorOnDestruct(TransactionalLevelDBIterator* it);
+    DetachIteratorOnDestruct(DetachIteratorOnDestruct&& that);
     ~DetachIteratorOnDestruct();
 
-   private:
-    TransactionalLevelDBIterator* it_ = nullptr;
+    TransactionalLevelDBIterator* it = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(DetachIteratorOnDestruct);
   };
-
-  // Despite the type name, this object uses LRU eviction.
+  // Despite the type name, this object uses LRU eviction. Raw pointers are safe
+  // here because the destructor of TransactionalLevelDBIterator removes itself
+  // from its associated database.
   base::HashingMRUCache<TransactionalLevelDBIterator*, DetachIteratorOnDestruct>
       iterator_lru_;
 

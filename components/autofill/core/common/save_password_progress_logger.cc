@@ -482,6 +482,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "HttpAuthManager::SetObserver";
     case SavePasswordProgressLogger::STRING_HTTPAUTH_ON_DETACH_OBSERVER:
       return "HttpAuthManager::DetachObserver";
+    case SavePasswordProgressLogger::STRING_SHOW_ONBOARDING:
+      return "Show onboarding experience and offer to save password";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.

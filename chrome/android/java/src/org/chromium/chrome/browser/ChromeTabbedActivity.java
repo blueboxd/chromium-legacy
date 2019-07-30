@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
@@ -173,8 +174,7 @@ import java.util.Locale;
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
  * are accessible via a chrome specific tab switching UI.
  */
-public class ChromeTabbedActivity
-        extends ChromeActivity implements OverviewModeObserver, ScreenshotMonitorDelegate {
+public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMonitorDelegate {
     @IntDef({BackPressedResult.NOTHING_HAPPENED, BackPressedResult.HELP_URL_CLOSED,
             BackPressedResult.MINIMIZED_NO_TAB_CLOSED, BackPressedResult.MINIMIZED_TAB_CLOSED,
             BackPressedResult.TAB_CLOSED, BackPressedResult.TAB_IS_NULL,
@@ -294,6 +294,8 @@ public class ChromeTabbedActivity
 
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs;
+
+    private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
 
     private final IncognitoTabHost mIncognitoTabHost = new IncognitoTabHost() {
 
@@ -835,7 +837,20 @@ public class ChromeTabbedActivity
     private void addOverviewModeObserver() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.addOverviewModeObserver")) {
             mOverviewModeController.overrideOverviewModeController(mLayoutManager);
-            mOverviewModeController.addOverviewModeObserver(this);
+            mOverviewModeObserver = new EmptyOverviewModeObserver() {
+                @Override
+                public void onOverviewModeStartedShowing(boolean showToolbar) {
+                    if (getAssistStatusHandler() != null)
+                        getAssistStatusHandler().updateAssistState();
+                }
+
+                @Override
+                public void onOverviewModeFinishedHiding() {
+                    if (getAssistStatusHandler() != null)
+                        getAssistStatusHandler().updateAssistState();
+                }
+            };
+            mOverviewModeController.addOverviewModeObserver(mOverviewModeObserver);
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_ENGAGEMENT_REPORTING_ANDROID)) {
                 // The lifecycle of this object is managed by the lifecycle dispatcher.
@@ -2083,8 +2098,9 @@ public class ChromeTabbedActivity
 
     @Override
     public void onDestroyInternal() {
-        if (mOverviewModeController != null)
-            mOverviewModeController.removeOverviewModeObserver(this);
+        if (mOverviewModeController != null && mOverviewModeObserver != null) {
+            mOverviewModeController.removeOverviewModeObserver(mOverviewModeObserver);
+        }
 
         if (mTabModelSelectorTabObserver != null) {
             mTabModelSelectorTabObserver.destroy();
@@ -2255,22 +2271,6 @@ public class ChromeTabbedActivity
     public void onSceneChange(Layout layout) {
         super.onSceneChange(layout);
         if (!layout.shouldDisplayContentOverlay()) mTabModelSelectorImpl.onTabsViewShown();
-    }
-
-    @Override
-    public void onOverviewModeStartedShowing(boolean showToolbar) {
-        if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
-    }
-
-    @Override
-    public void onOverviewModeFinishedShowing() {}
-
-    @Override
-    public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {}
-
-    @Override
-    public void onOverviewModeFinishedHiding() {
-        if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
     }
 
     @Override

@@ -106,9 +106,12 @@ SharedImageFactory::SharedImageFactory(
 
 #if defined(OS_WIN)
   // For Windows
-  bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
-                         gles2::PassthroughCommandDecoderSupported();
-  swap_chain_factory_ = std::make_unique<SwapChainFactoryDXGI>(use_passthrough);
+  if (SwapChainFactoryDXGI::IsSupported()) {
+    bool use_passthrough = gpu_preferences.use_passthrough_cmd_decoder &&
+                           gles2::PassthroughCommandDecoderSupported();
+    swap_chain_factory_ =
+        std::make_unique<SwapChainFactoryDXGI>(use_passthrough);
+  }
 #endif  // OS_WIN
 }
 
@@ -228,7 +231,8 @@ bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
                                          const gfx::Size& size,
                                          const gfx::ColorSpace& color_space,
                                          uint32_t usage) {
-  DCHECK(swap_chain_factory_);
+  if (!swap_chain_factory_)
+    return false;
   bool allow_legacy_mailbox = true;
   auto backings = swap_chain_factory_->CreateSwapChain(
       front_buffer_mailbox, back_buffer_mailbox, format, size, color_space,
@@ -239,7 +243,8 @@ bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
 }
 
 bool SharedImageFactory::PresentSwapChain(const Mailbox& mailbox) {
-  DCHECK(swap_chain_factory_);
+  if (!swap_chain_factory_)
+    return false;
   auto it = shared_images_.find(mailbox);
   if (it == shared_images_.end()) {
     DLOG(ERROR) << "PresentSwapChain: Could not find shared image mailbox";

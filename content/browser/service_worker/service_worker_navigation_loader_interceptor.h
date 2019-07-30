@@ -50,7 +50,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
  public:
   ServiceWorkerNavigationLoaderInterceptor(
       const ServiceWorkerNavigationLoaderInterceptorParams& params,
-      ServiceWorkerNavigationHandle* handle);
+      base::WeakPtr<ServiceWorkerNavigationHandle> handle);
   ~ServiceWorkerNavigationLoaderInterceptor() override;
 
   // NavigationLoaderInterceptor overrides:
@@ -88,8 +88,14 @@ class ServiceWorkerNavigationLoaderInterceptor final
       network::mojom::URLLoaderRequest request,
       network::mojom::URLLoaderClientPtr client);
 
-  // |handle_| owns |this|.
-  ServiceWorkerNavigationHandle* const handle_;
+  // For navigations, |handle_| outlives |this|. It's owned by
+  // NavigationHandleImpl which outlives NavigationURLLoaderImpl which owns
+  // |this|.
+  // For workers, |handle_| may be destroyed during interception. It's owned by
+  // DedicatedWorkerHost or SharedWorkerHost which may be destroyed before
+  // WorkerScriptLoader which owns |this|.
+  // TODO(falken): Arrange things so |handle_| outlives |this| for workers too.
+  const base::WeakPtr<ServiceWorkerNavigationHandle> handle_;
 
   const ServiceWorkerNavigationLoaderInterceptorParams params_;
 

@@ -569,7 +569,7 @@ IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, DispatchInputEvent) {
       static_cast<RenderWidgetHostViewChildFrame*>(portal_frame->GetView());
   TestNavigationObserver navigation_observer(portal_contents);
   navigation_observer.Wait();
-  WaitForHitTestDataOrChildSurfaceReady(portal_frame);
+  WaitForHitTestData(portal_frame);
 
   FailOnInputEvent no_input_to_portal_frame(
       portal_frame->GetRenderWidgetHost());
@@ -622,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AsyncEventTargetingIgnoresPortals) {
       static_cast<RenderWidgetHostViewChildFrame*>(portal_frame->GetView());
   TestNavigationObserver navigation_observer(portal_contents);
   navigation_observer.Wait();
-  WaitForHitTestDataOrChildSurfaceReady(portal_frame);
+  WaitForHitTestData(portal_frame);
 
   viz::mojom::InputTargetClient* target_client =
       main_frame->GetRenderWidgetHost()->input_target_client();
@@ -720,7 +720,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivate) {
       static_cast<RenderWidgetHostViewChildFrame*>(portal_frame->GetView());
   InputEventAckWaiter input_event_ack_waiter(
       render_widget_host, blink::WebInputEvent::Type::kTouchStart);
-  WaitForHitTestDataOrChildSurfaceReady(portal_frame);
+  WaitForHitTestData(portal_frame);
 
   SyntheticTapGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
@@ -778,7 +778,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndAdopt) {
                      "  var portal = e.adoptPredecessor();"
                      "  document.body.appendChild(portal);"
                      "});"));
-  WaitForHitTestDataOrChildSurfaceReady(portal_frame);
+  WaitForHitTestData(portal_frame);
 
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);
@@ -845,7 +845,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndReactivate) {
                      "  document.body.appendChild(portal);"
                      "  portal.activate();"
                      "});"));
-  WaitForHitTestDataOrChildSurfaceReady(portal_frame);
+  WaitForHitTestData(portal_frame);
 
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);
@@ -908,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchStateClearedBeforeActivation) {
                      "  document.body.appendChild(portal);"
                      "  portal.activate();"
                      "});"));
-  WaitForHitTestDataOrChildSurfaceReady(portal_frame);
+  WaitForHitTestData(portal_frame);
 
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::From(portal);

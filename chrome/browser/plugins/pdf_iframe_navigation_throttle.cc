@@ -161,11 +161,11 @@ void PDFIFrameNavigationThrottle::LoadPlaceholderHTML() {
   // Prepare the params to navigate to the placeholder.
   std::string html = GetPDFPlaceholderHTML(navigation_handle()->GetURL());
   GURL data_url("data:text/html," + net::EscapePath(html));
-  content::OpenURLParams params(data_url, navigation_handle()->GetReferrer(),
-                                navigation_handle()->GetFrameTreeNodeId(),
-                                WindowOpenDisposition::CURRENT_TAB,
-                                ui::PAGE_TRANSITION_AUTO_SUBFRAME,
-                                navigation_handle()->IsRendererInitiated());
+  content::OpenURLParams params(
+      data_url, content::Referrer(navigation_handle()->GetReferrer()),
+      navigation_handle()->GetFrameTreeNodeId(),
+      WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_AUTO_SUBFRAME,
+      navigation_handle()->IsRendererInitiated());
   params.initiator_origin = navigation_handle()->GetInitiatorOrigin();
 
   // Post a task to navigate to the placeholder HTML. We don't navigate

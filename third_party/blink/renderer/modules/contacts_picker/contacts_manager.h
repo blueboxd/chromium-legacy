@@ -40,6 +40,7 @@ class ContactsManager final : public ScriptWrappable {
 
   // Created lazily.
   mojom::blink::ContactsManagerPtr contacts_manager_;
+  bool contact_picker_in_use_ = false;
 };
 
 }  // namespace blink

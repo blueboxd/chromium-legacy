@@ -23,8 +23,10 @@
 #include "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #include "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
+#include "chrome/common/process_singleton_lock_posix.h"
 #include "components/remote_cocoa/app_shim/application_bridge.h"
 #include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #include "components/remote_cocoa/common/application.mojom.h"
@@ -45,6 +47,7 @@ constexpr base::TimeDelta kPollTimeoutSeconds =
 // ready.
 constexpr base::TimeDelta kPollPeriodMsec =
     base::TimeDelta::FromMilliseconds(100);
+
 }  // namespace
 
 AppShimController::Params::Params() = default;
@@ -77,7 +80,8 @@ AppShimController::~AppShimController() {
 }
 
 void AppShimController::FindOrLaunchChrome() {
-  DCHECK(!chrome_running_app_);
+  DCHECK(!chrome_to_connect_to_);
+  DCHECK(!chrome_launched_by_app_);
 
   // If this shim was launched by Chrome, open that specified process.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -89,21 +93,19 @@ void AppShimController::FindOrLaunchChrome() {
     if (!base::StringToInt(chrome_pid_string, &chrome_pid))
       LOG(FATAL) << "Invalid PID: " << chrome_pid_string;
 
-    chrome_running_app_.reset([NSRunningApplication
+    chrome_to_connect_to_.reset([NSRunningApplication
         runningApplicationWithProcessIdentifier:chrome_pid]);
-    if (!chrome_running_app_)
-      LOG(FATAL) << "Failed open process with PID: " << chrome_pid;
-  }
-
-  // Find an already running instance of Chrome to open, if one exists.
-  NSArray* running_chrome_instances = [NSRunningApplication
-      runningApplicationsWithBundleIdentifier:[base::mac::OuterBundle()
-                                                  bundleIdentifier]];
-  if ([running_chrome_instances count] > 0) {
-    chrome_running_app_.reset([running_chrome_instances objectAtIndex:0],
-                              base::scoped_policy::RETAIN);
+    if (!chrome_to_connect_to_)
+      LOG(FATAL) << "Failed to open process with PID: " << chrome_pid;
     return;
   }
+
+  // Query the singleton lock. If the lock exists and specifies a running
+  // Chrome, then connect to that process. Otherwise, launch a new Chrome
+  // process.
+  chrome_to_connect_to_ = FindChromeFromSingletonLock();
+  if (chrome_to_connect_to_)
+    return;
 
   // In tests, launching Chrome does nothing.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -111,23 +113,78 @@ void AppShimController::FindOrLaunchChrome() {
     return;
   }
 
-  // Launch Chrome.
+  // Otherwise, launch Chrome.
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kSilentLaunch);
   command_line.AppendSwitchPath(switches::kProfileDirectory,
                                 params_.profile_dir);
-  chrome_running_app_.reset(base::mac::OpenApplicationWithPath(
-      base::mac::OuterBundlePath(), command_line, NSWorkspaceLaunchDefault));
-  if (!chrome_running_app_)
-    LOG(FATAL) << "Failed launch Chrome.";
+  command_line.AppendSwitchPath(switches::kUserDataDir, params_.user_data_dir);
+  chrome_launched_by_app_.reset(base::mac::OpenApplicationWithPath(
+      base::mac::OuterBundlePath(), command_line,
+      NSWorkspaceLaunchNewInstance));
+  if (!chrome_launched_by_app_)
+    LOG(FATAL) << "Failed to launch Chrome.";
+}
+
+base::scoped_nsobject<NSRunningApplication>
+AppShimController::FindChromeFromSingletonLock() const {
+  base::FilePath lock_symlink_path =
+      params_.user_data_dir.Append(chrome::kSingletonLockFilename);
+  std::string hostname;
+  int pid = -1;
+  if (!ParseProcessSingletonLock(lock_symlink_path, &hostname, &pid)) {
+    // This indicates that there is no Chrome process running (or that has been
+    // running long enough to get the lock).
+    return base::scoped_nsobject<NSRunningApplication>();
+  }
+
+  // Open the associated pid. This could be invalid if Chrome terminated
+  // abnormally and didn't clean up.
+  base::scoped_nsobject<NSRunningApplication> process_from_lock(
+      [NSRunningApplication runningApplicationWithProcessIdentifier:pid]);
+  if (!process_from_lock) {
+    LOG(WARNING) << "Singleton lock pid " << pid << " invalid.";
+    return base::scoped_nsobject<NSRunningApplication>();
+  }
+
+  // Check the process' bundle id. As above, the specified pid could have been
+  // reused by some other process.
+  NSString* expected_bundle_id = [base::mac::OuterBundle() bundleIdentifier];
+  NSString* lock_bundle_id = [process_from_lock bundleIdentifier];
+  if (![expected_bundle_id isEqualToString:lock_bundle_id]) {
+    LOG(WARNING) << "Singleton lock pid " << pid
+                 << " has unexpected bundle id.";
+    return base::scoped_nsobject<NSRunningApplication>();
+  }
+
+  return process_from_lock;
 }
 
 void AppShimController::PollForChromeReady(
     const base::TimeDelta& time_until_timeout) {
-  // If the Chrome application we planned to connect to is not running, quit.
-  if ([chrome_running_app_ isTerminated])
+  // If the Chrome process we planned to connect to is not running anymore,
+  // quit.
+  if (chrome_to_connect_to_ && [chrome_to_connect_to_ isTerminated])
     LOG(FATAL) << "Running chrome instance terminated before connecting.";
 
+  // If we launched a Chrome process and it has terminated, then that most
+  // likely means that it did not get the singleton lock (which means that we
+  // should find the processes that did below).
+  bool launched_chrome_is_terminated =
+      chrome_launched_by_app_ && [chrome_launched_by_app_ isTerminated];
+
+  // If we haven't found the Chrome process that got the singleton lock, check
+  // now.
+  if (!chrome_to_connect_to_)
+    chrome_to_connect_to_ = FindChromeFromSingletonLock();
+
+  // If our launched Chrome has terminated, then there should have existed a
+  // process holding the singleton lock.
+  if (launched_chrome_is_terminated && !chrome_to_connect_to_)
+    LOG(FATAL) << "Launched Chrome has exited and singleton lock not taken.";
+
+  // Poll to see if the mojo channel is ready. Of note is that we don't actually
+  // verify that |endpoint| is connected to |chrome_to_connect_to_|.
   mojo::PlatformChannelEndpoint endpoint = GetBrowserEndpoint();
   if (endpoint.is_valid()) {
     InitBootstrapPipe(std::move(endpoint));

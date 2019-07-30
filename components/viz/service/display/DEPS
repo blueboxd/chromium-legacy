@@ -29,6 +29,7 @@ include_rules = [
   "+ui/gl/dc_renderer_layer_params.h",
   "+ui/gl/trace_util.h",
   "+gpu/ipc/common/vulkan_ycbcr_info.h",
+  "+gpu/ipc/scheduler_sequence.h",
 ]
 
 specific_include_rules = {

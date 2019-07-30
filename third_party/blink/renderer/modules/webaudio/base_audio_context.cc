@@ -82,13 +82,6 @@
 
 namespace blink {
 
-BaseAudioContext* BaseAudioContext::Create(
-    Document& document,
-    const AudioContextOptions* context_options,
-    ExceptionState& exception_state) {
-  return AudioContext::Create(document, context_options, exception_state);
-}
-
 // Constructor for rendering to the audio hardware.
 BaseAudioContext::BaseAudioContext(Document* document,
                                    enum ContextType context_type)
@@ -163,7 +156,7 @@ void BaseAudioContext::Uninitialize() {
   // may use destination-related data (e.g. sample rate and channel count)
   // to populate the devtool protocol object.
   if (GraphTracer())
-    GraphTracer()->DidDestroyBaseAudioContext(this);
+    GraphTracer()->WillDestroyBaseAudioContext(this);
 
   // This stops the audio thread and all audio rendering.
   if (destination_node_)

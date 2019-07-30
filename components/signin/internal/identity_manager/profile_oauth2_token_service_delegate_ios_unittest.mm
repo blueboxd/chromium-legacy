@@ -10,6 +10,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/ios/fake_device_accounts_provider.h"
@@ -17,7 +18,6 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -31,7 +31,7 @@ typedef DeviceAccountsProvider::AccountInfo ProviderAccount;
 class ProfileOAuth2TokenServiceIOSDelegateTest
     : public PlatformTest,
       public OAuth2AccessTokenConsumer,
-      public OAuth2TokenServiceObserver {
+      public ProfileOAuth2TokenServiceObserver {
  public:
   ProfileOAuth2TokenServiceIOSDelegateTest()
       : factory_(nullptr),
@@ -77,7 +77,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
     last_access_token_error_ = error;
   }
 
-  // OAuth2TokenServiceObserver implementation.
+  // ProfileOAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override {
     ++token_available_count_;
   }

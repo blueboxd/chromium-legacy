@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_stream_factory.h"
@@ -228,7 +229,13 @@ base::TimeDelta ClientSocketPoolManager::unused_idle_socket_timeout(
     HttpNetworkSession::SocketPoolType pool_type) {
   return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
       net::features::kNetUnusedIdleSocketTimeout,
-      "unused_idle_socket_timeout_seconds", 10));
+      "unused_idle_socket_timeout_seconds",
+#if defined(OS_ANDROID)
+      60
+#else
+      10
+#endif
+      ));
 }
 
 int InitSocketHandleForHttpRequest(

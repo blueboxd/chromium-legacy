@@ -127,7 +127,7 @@ NavigationPredictor::NavigationPredictor(
       is_same_host_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "is_same_host_scale",
-          100)),
+          0)),
       contains_image_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "contains_image_scale",
@@ -211,7 +211,7 @@ NavigationPredictor::NavigationPredictor(
           base::GetFieldTrialParamByFeatureAsBool(
               blink::features::kNavigationPredictor,
               "same_origin_preconnecting_allowed",
-              false)),
+              true)),
       prefetch_after_preconnect_(base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor,
           "prefetch_after_preconnect",
@@ -433,7 +433,7 @@ void NavigationPredictor::MaybePreconnectNow(Action log_action) {
       FROM_HERE,
       base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
           net::features::kNetUnusedIdleSocketTimeout,
-          "unused_idle_socket_timeout_seconds", 10)) +
+          "unused_idle_socket_timeout_seconds", 60)) +
           base::TimeDelta::FromMilliseconds(retry_delay_ms),
       base::BindOnce(&NavigationPredictor::MaybePreconnectNow,
                      base::Unretained(this), Action::kPreconnectAfterTimeout));
@@ -511,6 +511,21 @@ int NavigationPredictor::GetLinearBucketForRatioArea(int value) const {
   return ukm::GetLinearBucketMin(static_cast<int64_t>(value), 5);
 }
 
+void NavigationPredictor::MaybeSendClickMetricsToUkm(
+    const std::string& clicked_url) const {
+  if (!send_ukm_metrics_ || !ukm_recorder_) {
+    return;
+  }
+
+  auto iter = std::find(top_urls_.begin(), top_urls_.end(), clicked_url);
+  int anchor_element_index =
+      (iter == top_urls_.end()) ? 0 : iter - top_urls_.begin() + 1;
+
+  ukm::builders::NavigationPredictorPageLinkClick builder(ukm_source_id_);
+  builder.SetAnchorElementIndex(anchor_element_index);
+  builder.Record(ukm_recorder_);
+}
+
 SiteEngagementService* NavigationPredictor::GetEngagementService() const {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   SiteEngagementService* service = SiteEngagementService::Get(profile);
@@ -568,6 +583,7 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
   }
 
   RecordActionAccuracyOnClick(metrics->target_url);
+  MaybeSendClickMetricsToUkm(metrics->target_url.spec());
 
   // Look up the clicked URL in |navigation_scores_map_|. Record if we find it.
   auto iter = navigation_scores_map_.find(metrics->target_url.spec());
@@ -881,6 +897,7 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
       top_urls_.push_back(url_spec);
     }
   }
+
   // Shuffle the list of top URLs to randomize data sent to the UKM about which
   // link was clicked on.
   base::RandomShuffle(top_urls_.begin(), top_urls_.end());
@@ -1095,7 +1112,7 @@ base::Optional<url::Origin> NavigationPredictor::GetOriginToPreconnect(
 
   if (base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor, "preconnect_skip_link_scores",
-          false)) {
+          true)) {
     return document_origin;
   }
 

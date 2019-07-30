@@ -193,10 +193,12 @@ void ThreadState::DetachCurrentThread() {
 void ThreadState::AttachToIsolate(
     v8::Isolate* isolate,
     V8TraceRootsCallback v8_trace_roots,
+    V8VisitHandleSlotsCallback v8_visit_handle_slots,
     V8BuildEmbedderGraphCallback v8_build_embedder_graph) {
   DCHECK(isolate);
   isolate_ = isolate;
   v8_trace_roots_ = v8_trace_roots;
+  v8_visit_handle_slots_ = v8_visit_handle_slots;
   v8_build_embedder_graph_ = v8_build_embedder_graph;
   unified_heap_controller_.reset(new UnifiedHeapController(this));
   isolate_->SetEmbedderHeapTracer(unified_heap_controller_.get());
@@ -215,6 +217,7 @@ void ThreadState::DetachFromIsolate() {
   }
   isolate_ = nullptr;
   v8_trace_roots_ = nullptr;
+  v8_visit_handle_slots_ = nullptr;
   v8_build_embedder_graph_ = nullptr;
   unified_heap_controller_.reset();
 }
@@ -523,16 +526,6 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
 }
 
 void ThreadState::WillStartV8GC(BlinkGC::V8GCType gc_type) {
-#if defined(ADDRESS_SANITIZER)
-  // In case of running with ASAN we eagerly poison all unmarked objects on
-  // Oilpan garbage collections. Those objects may contain v8 handles which may
-  // be suspect to being removed. Removing requires clearing out the Oilpan
-  // memory. For this reason we need to finish sweeping (which would remove the
-  // handles) before V8 is allowed to continue with its garbage collection.
-  CompleteSweep();
-  return;
-#endif  // ADDRESS_SANITIZER
-
   // Finish Oilpan's complete sweeping before running a V8 major GC.
   // This will let the GC collect more V8 objects.
   if (gc_type == BlinkGC::kV8MajorGC)
@@ -1530,8 +1523,8 @@ void ThreadState::AtomicPauseSweepAndCompact(
   }
 
 #if defined(ADDRESS_SANITIZER)
-  Heap().PoisonAllHeaps();
-#endif
+  PoisonUnmarkedObjects();
+#endif  // ADDRESS_SANITIZER
   DCHECK(IsSweepingInProgress());
   if (sweeping_type == BlinkGC::kEagerSweeping) {
     // Eager sweeping should happen only in testing.
@@ -1542,6 +1535,65 @@ void ThreadState::AtomicPauseSweepAndCompact(
     ScheduleConcurrentAndLazySweep();
   }
 }
+
+#if defined(ADDRESS_SANITIZER)
+namespace {
+
+// Visitor unpoisoning all handles. Unpoisoning is required when dead objects
+// are poisoned until they are later on processed.
+//
+// The raceful operations are:
+// a. Running destructor that clears the handle.
+// b. Running a stand-alone V8 GC (e.g. Scavenger) that clears the handle.
+//
+// Both operations run on the main thread and not concurrent.
+class UnpoisonHandlesVisitor final : public DOMWrapperSlotsVisitor {
+ public:
+  explicit UnpoisonHandlesVisitor(ThreadHeap* heap) : heap_(heap) {}
+
+  void VisitSlot(void* address, size_t size) final {
+    // Filter slots not on the heap.
+    if (!heap_->LookupPageForAddress(reinterpret_cast<Address>(address)))
+      return;
+
+    HeapObjectHeader* header = HeapObjectHeader::FromInnerAddress(address);
+    if (!header->IsMarked()) {
+      DCHECK(ASAN_REGION_IS_POISONED(address, size));
+      ASAN_UNPOISON_MEMORY_REGION(address, size);
+    }
+  }
+
+ private:
+  ThreadHeap* const heap_;
+};
+
+}  // namespace
+
+void ThreadState::PoisonUnmarkedObjects() {
+  {
+    // This lock must be held because other threads may access cross-thread
+    // persistents and should not observe them in a poisoned state.
+    MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+
+    Heap().PoisonUnmarkedObjects();
+
+    // CrossThreadPersistents in unmarked objects may be accessed from other
+    // threads (e.g. in CrossThreadPersistentRegion::ShouldTracePersistent) and
+    // that would be fine.
+    ProcessHeap::GetCrossThreadPersistentRegion()
+        .UnpoisonCrossThreadPersistents();
+    ProcessHeap::GetCrossThreadWeakPersistentRegion()
+        .UnpoisonCrossThreadPersistents();
+  }
+
+  // Similarly, unmarked object may contain handles to V8 that may be accessed
+  // (cleared) until the destructors are run.
+  if (GetIsolate()) {
+    UnpoisonHandlesVisitor visitor(&Heap());
+    v8_visit_handle_slots_(GetIsolate(), &visitor);
+  }
+}
+#endif  // ADDRESS_SANITIZER
 
 void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
                                  BlinkGC::MarkingType marking_type,

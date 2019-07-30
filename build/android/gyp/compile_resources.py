@@ -516,16 +516,11 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/android/java/README
       sys.exit(1)
 
 
-def _ResourceNameFromPath(path):
-  return os.path.splitext(os.path.basename(path))[0]
-
-
-def _CreateKeepPredicate(resource_dirs, resource_blacklist_regex,
+def _CreateKeepPredicate(resource_blacklist_regex,
                          resource_blacklist_exceptions):
   """Return a predicate lambda to determine which resource files to keep.
 
   Args:
-    resource_dirs: list of top-level resource directories.
     resource_blacklist_regex: A regular expression describing all resources
       to exclude, except if they are mip-maps, or if they are listed
       in |resource_blacklist_exceptions|.
@@ -535,35 +530,16 @@ def _CreateKeepPredicate(resource_dirs, resource_blacklist_regex,
     A lambda that takes a path, and returns true if the corresponding file
     must be kept.
   """
-  naive_predicate = lambda path: os.path.basename(path)[0] != '.'
+  predicate = lambda path: os.path.basename(path)[0] != '.'
   if resource_blacklist_regex == '':
     # Do not extract dotfiles (e.g. ".gitkeep"). aapt ignores them anyways.
-    return naive_predicate
+    return predicate
 
-  if resource_blacklist_regex != '':
-    # A simple predicate that only removes (returns False for) paths covered by
-    # the blacklist regex, except if they are mipmaps, or listed as exceptions.
-    naive_predicate = lambda path: (
-        not re.search(resource_blacklist_regex, path) or
-        re.search(r'[/-]mipmap[/-]', path) or
-        build_utils.MatchesGlob(path, resource_blacklist_exceptions))
-
-  # Build a set of all names from drawables kept by naive_predicate().
-  # Used later to ensure that we never exclude drawables from densities
-  # that are filtered-out by naive_predicate().
-  non_filtered_drawables = set()
-  for resource_dir in resource_dirs:
-    for path in _IterFiles(resource_dir):
-      if re.search(r'[/-]drawable[/-]', path) and naive_predicate(path):
-        non_filtered_drawables.add(_ResourceNameFromPath(path))
-
-  # NOTE: Defined as a function, instead of a lambda to avoid the
-  # auto-formatter to put this on a very long line that overflows.
-  def drawable_predicate(path):
-    return (naive_predicate(path)
-            or _ResourceNameFromPath(path) not in non_filtered_drawables)
-
-  return drawable_predicate
+  # A simple predicate that only removes (returns False for) paths covered by
+  # the blacklist regex or listed as exceptions.
+  return lambda path: (
+      not re.search(resource_blacklist_regex, path) or
+      build_utils.MatchesGlob(path, resource_blacklist_exceptions))
 
 
 def _ConvertToWebP(webp_binary, png_files):
@@ -720,8 +696,7 @@ def _PackageApk(options, build):
   # Create a function that selects which resource files should be packaged
   # into the final output. Any file that does not pass the predicate will
   # be removed below.
-  keep_predicate = _CreateKeepPredicate(dep_subdirs,
-                                        options.resource_blacklist_regex,
+  keep_predicate = _CreateKeepPredicate(options.resource_blacklist_regex,
                                         options.resource_blacklist_exceptions)
   png_paths = []
   for directory in dep_subdirs:

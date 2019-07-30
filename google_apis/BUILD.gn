@@ -118,7 +118,6 @@ template("google_apis_tmpl") {
       "gaia/oauth2_id_token_decoder.h",
       "gaia/oauth2_mint_token_flow.cc",
       "gaia/oauth2_mint_token_flow.h",
-      "gaia/oauth2_token_service_observer.h",
       "gaia/oauth_multilogin_result.cc",
       "gaia/oauth_multilogin_result.h",
       "gaia/oauth_request_signer.cc",
@@ -135,6 +134,7 @@ template("google_apis_tmpl") {
     deps = [
       "//base",
       "//base/third_party/dynamic_annotations",
+      "//build:branding_buildflags",
       "//crypto",
       "//mojo/public/cpp/bindings:struct_traits",
       "//services/network/public/cpp",
@@ -231,6 +231,7 @@ test("google_apis_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//build:branding_buildflags",
     "//testing/gmock",
     "//testing/gtest",
   ]

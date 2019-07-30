@@ -31,6 +31,7 @@ namespace autofill {
 
 class AutofillDriver;
 class FormStructure;
+class LogManager;
 
 const size_t kMaxAPIQueryGetSize = 10240;  // 10 KiB
 
@@ -82,7 +83,8 @@ class AutofillDownloadManager {
   //   effect if using API.
   AutofillDownloadManager(AutofillDriver* driver,
                           Observer* observer,
-                          const std::string& api_key);
+                          const std::string& api_key,
+                          LogManager* log_manager);
   virtual ~AutofillDownloadManager();
 
   // Starts a query request to Autofill servers. The observer is called with the
@@ -193,6 +195,9 @@ class AutofillDownloadManager {
 
   // Callback function to retrieve API key.
   const std::string api_key_;
+
+  // Access to leave log messages for chrome://autofill-internals, may be null.
+  LogManager* const log_manager_;  // WEAK
 
   // The autofill server URL root: scheme://host[:port]/path excluding the
   // final path component for the request and the query params.

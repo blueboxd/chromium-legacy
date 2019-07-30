@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -47,7 +48,7 @@ void WebIDBTransactionImpl::Put(int64_t object_store_id,
                                 std::unique_ptr<IDBValue> value,
                                 std::unique_ptr<IDBKey> primary_key,
                                 mojom::IDBPutMode put_mode,
-                                WebIDBCallbacks* callbacks,
+                                std::unique_ptr<WebIDBCallbacks> callbacks,
                                 Vector<IDBIndexKeys> index_keys) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id_, nullptr);
 
@@ -73,21 +74,29 @@ void WebIDBTransactionImpl::Put(int64_t object_store_id,
   callbacks->SetState(nullptr, transaction_id_);
   transaction_->Put(object_store_id, std::move(value), std::move(primary_key),
                     put_mode, std::move(index_keys),
-                    GetCallbacksProxy(base::WrapUnique(callbacks)));
+                    WTF::Bind(&WebIDBTransactionImpl::PutCallback,
+                              WTF::Unretained(this), std::move(callbacks)));
+}
+
+void WebIDBTransactionImpl::PutCallback(
+    std::unique_ptr<WebIDBCallbacks> callbacks,
+    mojom::blink::IDBTransactionPutResultPtr result) {
+  if (result->is_error_result()) {
+    callbacks->Error(result->get_error_result()->error_code,
+                     std::move(result->get_error_result()->error_message));
+    callbacks.reset();
+    return;
+  }
+
+  if (result->is_key()) {
+    callbacks->SuccessKey(std::move(result->get_key()));
+    callbacks.reset();
+    return;
+  }
 }
 
 void WebIDBTransactionImpl::Commit(int64_t num_errors_handled) {
   transaction_->Commit(num_errors_handled);
-}
-
-mojom::blink::IDBCallbacksAssociatedPtrInfo
-WebIDBTransactionImpl::GetCallbacksProxy(
-    std::unique_ptr<WebIDBCallbacks> callbacks) {
-  mojom::blink::IDBCallbacksAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
-  mojo::MakeStrongAssociatedBinding(std::move(callbacks), std::move(request),
-                                    task_runner_);
-  return ptr_info;
 }
 
 }  // namespace blink

@@ -93,7 +93,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                          const base::TimeTicks& proceed_time) override;
   void OnBeginNavigation(
       FrameTreeNode* frame_tree_node,
-      const CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
@@ -127,9 +127,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // Called when a navigation has started in a main frame, to update the pending
   // NavigationEntry if the controller does not currently have a
   // browser-initiated one.
-  void DidStartMainFrameNavigation(const CommonNavigationParams& common_params,
-                                   SiteInstanceImpl* site_instance,
-                                   NavigationHandleImpl* navigation_handle);
+  void DidStartMainFrameNavigation(
+      const mojom::CommonNavigationParams& common_params,
+      SiteInstanceImpl* site_instance,
+      NavigationHandleImpl* navigation_handle);
 
   // The NavigationController that will keep track of session history for all
   // RenderFrameHost objects using this NavigatorImpl.

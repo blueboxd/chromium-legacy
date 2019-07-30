@@ -200,6 +200,7 @@ source_set("app_shell_lib") {
       "browser/api/file_system/shell_file_system_delegate.h",
     ]
     deps += [
+      "//build:branding_buildflags",
       "//components/crash/content/app",
       "//components/crash/core/common",
       "//components/upload_list",

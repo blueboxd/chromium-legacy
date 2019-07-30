@@ -31,6 +31,9 @@ class TestLoginScreenModel : public ash::LoginScreenModel {
   void ForceOnlineSignInForUser(const AccountId& account_id) override;
   void ShowEasyUnlockIcon(const AccountId& user,
                           const ash::EasyUnlockIconOptions& icon) override;
+  void SetChallengeResponseAuthEnabledForUser(const AccountId& user,
+                                              bool enabled) override;
+
   void UpdateWarningMessage(const base::string16& message) override;
   void SetSystemInfo(bool show_if_hidden,
                      const std::string& os_version_label_text,

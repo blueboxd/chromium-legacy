@@ -70,9 +70,14 @@ def main():
           continue
         lib_paths.append(line)
 
+  def LibBasename(path):
+    filename = os.path.split(path)[1]
+    base = os.path.splitext(filename)[0]
+    return base[3:]  # remove lib prefix
+
   # Convert to "base" library names: e.g. libfoo.so -> foo.
   native_libraries_list = (
-      '{%s}' % ','.join(['"%s"' % s[3:-3] for s in lib_paths]))
+      '{%s}' % ','.join(['"%s"' % LibBasename(s) for s in lib_paths]))
 
   def bool_str(value):
     if value:

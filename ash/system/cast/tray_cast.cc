@@ -18,6 +18,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -34,7 +35,7 @@ namespace {
 // for branded builds.
 const gfx::VectorIcon& SinkIconTypeToIcon(SinkIconType icon_type) {
   switch (icon_type) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     case SinkIconType::kCast:
       return kSystemMenuCastDeviceIcon;
     case SinkIconType::kEducation:

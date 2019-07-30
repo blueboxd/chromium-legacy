@@ -27,7 +27,6 @@
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/frame_delete_intention.h"
-#include "content/common/frame_message_enums.h"
 #include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
@@ -119,8 +118,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebScrollIntoViewParams::Behavior,
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::JavaScriptDialogType,
                               content::JAVASCRIPT_DIALOG_TYPE_ALERT,
                               content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
-IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_Navigate_Type::Value,
-                          FrameMsg_Navigate_Type::NAVIGATE_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::kMediaTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::InputFieldType,
@@ -478,30 +475,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::PrefetchedSignedExchangeInfo)
   IPC_STRUCT_TRAITS_MEMBER(inner_url)
   IPC_STRUCT_TRAITS_MEMBER(inner_response)
   IPC_STRUCT_TRAITS_MEMBER(loader_factory_handle)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_origin)
-  IPC_STRUCT_TRAITS_MEMBER(referrer)
-  IPC_STRUCT_TRAITS_MEMBER(transition)
-  IPC_STRUCT_TRAITS_MEMBER(navigation_type)
-  IPC_STRUCT_TRAITS_MEMBER(download_policy)
-  IPC_STRUCT_TRAITS_MEMBER(should_replace_current_entry)
-  IPC_STRUCT_TRAITS_MEMBER(base_url_for_data_url)
-  IPC_STRUCT_TRAITS_MEMBER(history_url_for_data_url)
-  IPC_STRUCT_TRAITS_MEMBER(previews_state)
-  IPC_STRUCT_TRAITS_MEMBER(navigation_start)
-  IPC_STRUCT_TRAITS_MEMBER(method)
-  IPC_STRUCT_TRAITS_MEMBER(post_data)
-  IPC_STRUCT_TRAITS_MEMBER(source_location)
-  IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
-  IPC_STRUCT_TRAITS_MEMBER(started_from_context_menu)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_csp_info)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_origin_trial_features)
-  IPC_STRUCT_TRAITS_MEMBER(href_translate)
-  IPC_STRUCT_TRAITS_MEMBER(input_start)
-  IPC_STRUCT_TRAITS_MEMBER(is_history_navigation_in_new_child_frame)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::NavigationTiming)

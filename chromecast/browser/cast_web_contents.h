@@ -302,6 +302,19 @@ class CastWebContents {
   // This is a no-op if there is no JavaScript snippet identified by |id|.
   virtual void RemoveBeforeLoadJavaScript(base::StringPiece id) = 0;
 
+  // Posts a message to the frame's onMessage handler.
+  //
+  // `target_origin` restricts message delivery to the specified origin.
+  // If `target_origin` is "*", then the message will be sent to the
+  // document regardless of its origin.
+  // See html.spec.whatwg.org/multipage/web-messaging.html sect. 9.4.3
+  // for more details on how the target origin policy is applied.
+  // Should be called on UI thread.
+  virtual void PostMessageToMainFrame(
+      const std::string& target_origin,
+      const std::string& data,
+      std::vector<mojo::ScopedMessagePipeHandle> channels) = 0;
+
   // ===========================================================================
   // Utility Methods
   // ===========================================================================

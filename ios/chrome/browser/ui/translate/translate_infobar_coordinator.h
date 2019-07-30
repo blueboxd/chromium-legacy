@@ -14,6 +14,7 @@ extern NSString* const kLanguageSelectorPopupMenuId;
 // The a11y identifier for the translate infobar's translate options menu.
 extern NSString* const kTranslateOptionsPopupMenuId;
 
+@protocol SnackbarCommands;
 class WebStateList;
 
 // Coordinator responsible for presenting and dismissing the translate infobar's
@@ -26,7 +27,8 @@ class WebStateList;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList;
+                              webStateList:(WebStateList*)webStateList
+                                dispatcher:(id<SnackbarCommands>)dispatcher;
 
 // Unavailable, use -initWithBaseViewController:browserState:webStateList:.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController

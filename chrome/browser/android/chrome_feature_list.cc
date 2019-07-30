@@ -561,7 +561,7 @@ const base::Feature kUmaBackgroundSessions{"UMABackgroundSessions",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUsageStatsFeature{"UsageStats",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};

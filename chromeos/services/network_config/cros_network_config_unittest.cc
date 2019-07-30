@@ -6,14 +6,22 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/shill/fake_shill_device_client.h"
+#include "chromeos/login/login_state/login_state.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/network_type_pattern.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_observer.h"
+#include "components/onc/onc_constants.h"
 #include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -31,14 +39,59 @@ const char* kCellularDevicePath = "/device/stub_cellular_device";
 class CrosNetworkConfigTest : public testing::Test {
  public:
   CrosNetworkConfigTest() {
+    LoginState::Initialize();
+    network_profile_handler_ = NetworkProfileHandler::InitializeForTesting();
     network_device_handler_ = NetworkDeviceHandler::InitializeForTesting(
         helper_.network_state_handler());
+    network_configuration_handler_ =
+        base::WrapUnique<NetworkConfigurationHandler>(
+            NetworkConfigurationHandler::InitializeForTest(
+                helper_.network_state_handler(),
+                network_device_handler_.get()));
+    managed_network_configuration_handler_ =
+        ManagedNetworkConfigurationHandler::InitializeForTesting(
+            helper_.network_state_handler(), network_profile_handler_.get(),
+            network_device_handler_.get(),
+            network_configuration_handler_.get());
     cros_network_config_ = std::make_unique<CrosNetworkConfig>(
-        helper_.network_state_handler(), network_device_handler_.get());
+        helper_.network_state_handler(), network_device_handler_.get(),
+        managed_network_configuration_handler_.get());
+    SetupPolicy();
     SetupNetworks();
   }
 
-  ~CrosNetworkConfigTest() override { cros_network_config_.reset(); }
+  ~CrosNetworkConfigTest() override {
+    cros_network_config_.reset();
+    managed_network_configuration_handler_.reset();
+    network_configuration_handler_.reset();
+    network_device_handler_.reset();
+    network_profile_handler_.reset();
+    LoginState::Shutdown();
+  }
+
+  void SetupPolicy() {
+    managed_network_configuration_handler_->SetPolicy(
+        ::onc::ONC_SOURCE_DEVICE_POLICY,
+        /*userhash=*/std::string(),
+        /*network_configs_onc=*/base::ListValue(),
+        /*global_network_config=*/base::DictionaryValue());
+
+    const std::string user_policy_ssid = "wifi2";
+    base::Value wifi2_onc = base::Value::FromUniquePtrValue(
+        onc::ReadDictionaryFromJson(base::StringPrintf(
+            R"({"GUID": "wifi2_guid", "Type": "WiFi",
+                "Name": "wifi2", "Priority": 0,
+                "WiFi": { "Passphrase": "fake", "SSID": "%s", "HexSSID": "%s",
+                          "Security": "WPA-PSK"}})",
+            user_policy_ssid.c_str(),
+            base::HexEncode(user_policy_ssid.c_str(), user_policy_ssid.size())
+                .c_str())));
+    base::ListValue user_policy_onc;
+    user_policy_onc.GetList().push_back(std::move(wifi2_onc));
+    managed_network_configuration_handler_->SetPolicy(
+        ::onc::ONC_SOURCE_USER_POLICY, helper().UserHash(), user_policy_onc,
+        /*global_network_config=*/base::DictionaryValue());
+  }
 
   void SetupNetworks() {
     // Wifi device exists by default, add Ethernet and Cellular.
@@ -64,8 +117,8 @@ class CrosNetworkConfigTest : public testing::Test {
         R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "ready",
             "Strength": 50})");
     helper().ConfigureService(
-        R"({"GUID": "wifi2_guid", "Type": "wifi", "State": "idle",
-            "SecurityClass": "psk", "Strength": 100,
+        R"({"GUID": "wifi2_guid", "Type": "wifi", "SSID": "wifi2",
+            "State": "idle", "SecurityClass": "psk", "Strength": 100,
             "Profile": "user_profile_path"})");
     helper().ConfigureService(
         R"({"GUID": "cellular_guid", "Type": "cellular",  "State": "idle",
@@ -150,6 +203,22 @@ class CrosNetworkConfigTest : public testing::Test {
     return nullptr;
   }
 
+  mojom::ManagedPropertiesPtr GetManagedProperties(const std::string& guid) {
+    mojom::ManagedPropertiesPtr result;
+    base::RunLoop run_loop;
+    cros_network_config()->GetManagedProperties(
+        guid, base::BindOnce(
+                  [](mojom::ManagedPropertiesPtr* result,
+                     base::OnceClosure quit_closure,
+                     mojom::ManagedPropertiesPtr properties) {
+                    *result = std::move(properties);
+                    std::move(quit_closure).Run();
+                  },
+                  &result, run_loop.QuitClosure()));
+    run_loop.Run();
+    return result;
+  }
+
   bool SetCellularSimState(const std::string& current_pin_or_puk,
                            base::Optional<std::string> new_pin,
                            bool require_pin) {
@@ -177,7 +246,11 @@ class CrosNetworkConfigTest : public testing::Test {
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
+  std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
+  std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
+  std::unique_ptr<ManagedNetworkConfigurationHandler>
+      managed_network_configuration_handler_;
   std::unique_ptr<CrosNetworkConfig> cros_network_config_;
   std::unique_ptr<CrosNetworkConfigTestObserver> observer_;
   std::string wifi1_path_;
@@ -212,7 +285,7 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
   ASSERT_TRUE(network->wifi);
   EXPECT_EQ(mojom::SecurityType::kWpaPsk, network->wifi->security);
   EXPECT_EQ(100, network->wifi->signal_strength);
-  EXPECT_EQ(mojom::OncSource::kUser, network->source);
+  EXPECT_EQ(mojom::OncSource::kUserPolicy, network->source);
 
   network = GetNetworkState("wifi3_guid");
   ASSERT_TRUE(network);
@@ -330,6 +403,89 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
   ASSERT_EQ(3u, devices.size());
   EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
   EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->device_state);
+}
+
+// Test a sampling of properties, ensuring that string property types are
+// translated as strings and not enum values (See ManagedProperties definition
+// in cros_network_config.mojom for details).
+TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
+  mojom::ManagedPropertiesPtr properties = GetManagedProperties("eth_guid");
+  ASSERT_TRUE(properties);
+  EXPECT_EQ("eth_guid", properties->guid);
+  EXPECT_EQ(mojom::NetworkType::kEthernet, properties->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kOnline, properties->connection_state);
+
+  properties = GetManagedProperties("wifi1_guid");
+  ASSERT_TRUE(properties);
+  EXPECT_EQ("wifi1_guid", properties->guid);
+  EXPECT_EQ(mojom::NetworkType::kWiFi, properties->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kConnected,
+            properties->connection_state);
+  ASSERT_TRUE(properties->wifi);
+  EXPECT_EQ(50, properties->wifi->signal_strength);
+
+  properties = GetManagedProperties("wifi2_guid");
+  ASSERT_TRUE(properties);
+  EXPECT_EQ("wifi2_guid", properties->guid);
+  EXPECT_EQ(mojom::NetworkType::kWiFi, properties->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
+            properties->connection_state);
+  ASSERT_TRUE(properties->wifi);
+  EXPECT_EQ(::onc::wifi::kWPA_PSK, properties->wifi->security->active_value);
+  EXPECT_EQ(100, properties->wifi->signal_strength);
+
+  properties = GetManagedProperties("cellular_guid");
+  ASSERT_TRUE(properties);
+  EXPECT_EQ("cellular_guid", properties->guid);
+  EXPECT_EQ(mojom::NetworkType::kCellular, properties->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
+            properties->connection_state);
+  ASSERT_TRUE(properties->cellular);
+  EXPECT_EQ(0, properties->cellular->signal_strength);
+  EXPECT_EQ("LTE", properties->cellular->network_technology);
+  EXPECT_EQ(::onc::cellular::kActivated,
+            properties->cellular->activation_state);
+
+  properties = GetManagedProperties("vpn_guid");
+  ASSERT_TRUE(properties);
+  EXPECT_EQ("vpn_guid", properties->guid);
+  EXPECT_EQ(mojom::NetworkType::kVPN, properties->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kConnecting,
+            properties->connection_state);
+  ASSERT_TRUE(properties->vpn);
+  EXPECT_EQ(::onc::vpn::kTypeL2TP_IPsec, properties->vpn->type->active_value);
+}
+
+// Test managed property policy values.
+TEST_F(CrosNetworkConfigTest, GetManagedPropertiesPolicy) {
+  mojom::ManagedPropertiesPtr properties = GetManagedProperties("wifi2_guid");
+  ASSERT_TRUE(properties);
+  ASSERT_EQ("wifi2_guid", properties->guid);
+  ASSERT_TRUE(properties->name);
+  EXPECT_EQ("wifi2", properties->name->active_value);
+  EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
+            properties->name->policy_source);
+  EXPECT_EQ("wifi2", properties->name->policy_value);
+  ASSERT_TRUE(properties->priority);
+  EXPECT_EQ(0, properties->priority->active_value);
+  EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
+            properties->priority->policy_source);
+  EXPECT_EQ(0, properties->priority->policy_value);
+
+  ASSERT_EQ(mojom::NetworkType::kWiFi, properties->type);
+  ASSERT_TRUE(properties->wifi);
+  EXPECT_EQ(::onc::wifi::kWPA_PSK, properties->wifi->security->active_value);
+  EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
+            properties->wifi->security->policy_source);
+  EXPECT_EQ(::onc::wifi::kWPA_PSK, *properties->wifi->security->policy_value);
+
+  properties = GetManagedProperties("vpn_guid");
+  ASSERT_TRUE(properties);
+  ASSERT_EQ("vpn_guid", properties->guid);
+  ASSERT_EQ(mojom::NetworkType::kVPN, properties->type);
+  ASSERT_TRUE(properties->vpn);
+  EXPECT_EQ(::onc::vpn::kTypeL2TP_IPsec, properties->vpn->type->active_value);
+  EXPECT_EQ(mojom::PolicySource::kNone, properties->vpn->type->policy_source);
 }
 
 TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
@@ -502,7 +658,9 @@ TEST_F(CrosNetworkConfigTest, DeviceListChanged) {
   helper().network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, observer()->device_state_list_changed());
+  // This will trigger two device list updates. Once when wifi is disabled,
+  // and once when Device::available_managed_network_path_ changes.
+  EXPECT_EQ(2, observer()->device_state_list_changed());
 }
 
 TEST_F(CrosNetworkConfigTest, ActiveNetworksChanged) {

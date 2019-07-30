@@ -12,8 +12,7 @@ typedef (WebGLRenderingContext or WebGL2RenderingContext) XRWebGLRenderingContex
     Constructor(XRSession session, XRWebGLRenderingContext context, optional XRWebGLLayerInit layerInit),
     RaisesException=Constructor,
     Measure
-] interface XRWebGLLayer : XRLayer {
-  [SameObject, SaveSameObject, ImplementedAs=getXRWebGLRenderingContext] readonly attribute XRWebGLRenderingContext context;
+] interface XRWebGLLayer {
   readonly attribute boolean antialias;
   readonly attribute boolean ignoreDepthValues;
 

@@ -67,7 +67,7 @@ class Arrow : public Button {
       : Button(listener), color_(color) {
     // Similar to Combobox's TransparentButton.
     SetFocusBehavior(FocusBehavior::NEVER);
-    set_notify_action(PlatformStyle::kMenuNotifyActivationAction);
+    set_notify_action(Button::NOTIFY_ON_PRESS);
 
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
@@ -510,6 +510,8 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
     return;
   }
   if (menu_runner_ && menu_runner_->IsRunning())
+    return;
+  if (!GetWidget())
     return;
 
   // Since we don't capture the mouse, we want to see the events that happen in

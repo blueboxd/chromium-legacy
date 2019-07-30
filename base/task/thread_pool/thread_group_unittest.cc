@@ -589,14 +589,15 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSource) {
       kMaxTasks,
       BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
 
-  auto task_source = MakeRefCounted<test::MockJobTaskSource>(
-      FROM_HERE,
-      BindLambdaForTesting([&threads_running_barrier, &threads_continue]() {
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&threads_running_barrier,
+                            &threads_continue](experimental::JobDelegate*) {
         threads_running_barrier.Run();
         test::WaitWithoutBlockingObserver(&threads_continue);
       }),
-      TaskTraits(), /* num_tasks_to_run */ kMaxTasks,
-      /* max_concurrency */ kMaxTasks);
+      /* num_tasks_to_run */ kMaxTasks);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, TaskTraits());
 
   auto registered_task_source =
       task_tracker_.WillQueueTaskSource(std::move(task_source));
@@ -624,8 +625,8 @@ TEST_P(ThreadGroupTest, JobTaskSourceUpdatePriority) {
       num_tasks_running_lock.CreateConditionVariable();
   size_t num_tasks_running = 0;
 
-  auto task_source = base::MakeRefCounted<test::MockJobTaskSource>(
-      FROM_HERE, BindLambdaForTesting([&]() {
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&](experimental::JobDelegate*) {
         // Increment the number of tasks running.
         {
           CheckedAutoLock auto_lock(num_tasks_running_lock);
@@ -641,8 +642,9 @@ TEST_P(ThreadGroupTest, JobTaskSourceUpdatePriority) {
           num_tasks_running_cv->Wait();
         }
       }),
-      TaskTraits(TaskPriority::BEST_EFFORT), /* num_tasks_to_run */ kMaxTasks,
-      /* max_concurrency */ kMaxTasks);
+      /* num_tasks_to_run */ kMaxTasks);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
 
   auto registered_task_source = task_tracker_.WillQueueTaskSource(task_source);
   EXPECT_TRUE(registered_task_source);

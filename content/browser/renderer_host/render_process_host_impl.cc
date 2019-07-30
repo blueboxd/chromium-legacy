@@ -103,7 +103,6 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
-#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
@@ -301,30 +300,6 @@ void CacheShaderInfo(int32_t id, base::FilePath path) {
 void RemoveShaderInfo(int32_t id) {
   if (GetShaderCacheFactorySingleton())
     GetShaderCacheFactorySingleton()->RemoveCacheInfo(id);
-}
-
-net::URLRequestContext* GetRequestContext(
-    scoped_refptr<net::URLRequestContextGetter> request_context,
-    scoped_refptr<net::URLRequestContextGetter> media_request_context,
-    ResourceType resource_type) {
-  // If the request has resource type of ResourceType::kMedia, we use a request
-  // context specific to media for handling it because these resources have
-  // specific needs for caching.
-  if (resource_type == ResourceType::kMedia)
-    return media_request_context->GetURLRequestContext();
-  return request_context->GetURLRequestContext();
-}
-
-void GetContexts(
-    ResourceContext* resource_context,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
-    scoped_refptr<net::URLRequestContextGetter> media_request_context,
-    ResourceType resource_type,
-    ResourceContext** resource_context_out,
-    net::URLRequestContext** request_context_out) {
-  *resource_context_out = resource_context;
-  *request_context_out =
-      GetRequestContext(request_context, media_request_context, resource_type);
 }
 
 // Allow us to only run the trial in the first renderer.
@@ -1901,29 +1876,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context =
       ChromeBlobStorageContext::GetFor(browser_context);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    scoped_refptr<net::URLRequestContextGetter> request_context(
-        storage_partition_impl_->GetURLRequestContext());
-    ResourceContext* resource_context = browser_context->GetResourceContext();
-
-    scoped_refptr<net::URLRequestContextGetter> media_request_context(
-        GetStoragePartition()->GetMediaURLRequestContext());
-
-    ResourceMessageFilter::GetContextsCallback get_contexts_callback(
-        base::Bind(&GetContexts, resource_context, request_context,
-                   media_request_context));
-
-    resource_message_filter_ = new ResourceMessageFilter(
-        GetID(), storage_partition_impl_->GetAppCacheService(),
-        blob_storage_context.get(),
-        storage_partition_impl_->GetFileSystemContext(),
-        storage_partition_impl_->GetPrefetchURLLoaderService(),
-        std::move(get_contexts_callback),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-
-    AddFilter(resource_message_filter_.get());
-  }
-
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
   AddFilter(peer_connection_tracker_host_.get());
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -2458,14 +2410,6 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
   // it doesn't make sense to associate a URLLoaderFactory with a
   // chrome-guest-based |origin|.
   DCHECK(!origin.has_value() || origin.value().scheme() != kGuestScheme);
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ResourceMessageFilter::Clone, resource_message_filter_,
-                       std::move(request)));
-    return;
-  }
 
   network::mojom::NetworkContext* network_context =
       storage_partition_impl_->GetNetworkContext();

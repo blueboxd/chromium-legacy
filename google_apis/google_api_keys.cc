@@ -16,13 +16,14 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/stringize_macros.h"
+#include "build/branding_buildflags.h"
 #include "google_apis/gaia/gaia_switches.h"
 
 #if defined(OS_MACOSX)
 #include "google_apis/google_api_keys_mac.h"
 #endif
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
 #include "google_apis/internal/google_chrome_api_keys.h"
 #include "google_apis/internal/metrics_signing_key.h"
 #endif
@@ -252,7 +253,7 @@ class APIKeyCache {
     }
 #endif
 
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
     // Don't allow using the environment to override API keys for official
     // Google Chrome builds. There have been reports of mangled environments
     // affecting users (crbug.com/710575).
@@ -270,7 +271,7 @@ class APIKeyCache {
     }
 
     if (key_value == DUMMY_API_TOKEN) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       // No key should be unset in an official build except the
       // GOOGLE_DEFAULT_* keys.  The default keys don't trigger this
       // check as their "unset" value is not DUMMY_API_TOKEN.
@@ -362,7 +363,7 @@ std::string GetSpdyProxyAuthValue() {
 }
 
 bool IsGoogleChromeAPIKeyUsed() {
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
   return true;
 #else
   return false;

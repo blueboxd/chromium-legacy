@@ -542,6 +542,10 @@ void TestGLES2Interface::set_max_texture_size(int size) {
   test_capabilities_.max_texture_size = size;
 }
 
+void TestGLES2Interface::set_supports_oop_raster(bool support) {
+  test_capabilities_.supports_oop_raster = support;
+}
+
 size_t TestGLES2Interface::NumTextures() const {
   return textures_.size();
 }

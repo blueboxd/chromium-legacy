@@ -40,6 +40,9 @@ if ((is_win || is_mac) && (current_cpu == "x86" || current_cpu == "x64")) {
   # Path of Clear Key and Widevine CDMs relative to the output dir.
   clearkey_cdm_path = "ClearKeyCdm/$_platform_specific_path"
   widevine_cdm_path = "WidevineCdm/$_platform_specific_path"
+} else if (is_fuchsia) {
+  clearkey_cdm_path = "lib"
+  widevine_cdm_path = "lib"
 } else {
   clearkey_cdm_path = "."
   widevine_cdm_path = "."

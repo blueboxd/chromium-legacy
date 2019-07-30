@@ -386,7 +386,6 @@ scoped_refptr<LevelDBState> FakeLevelDBFactory::GetBrokenLevelDB(
     const base::FilePath& reported_file_path) {
   return LevelDBState::CreateForDiskDB(
       indexed_db::GetDefaultLevelDBComparator(),
-      indexed_db::GetDefaultIndexedDBComparator(),
       std::make_unique<BrokenDB>(error_to_return), reported_file_path);
 }
 
@@ -420,12 +419,10 @@ void FakeLevelDBFactory::EnqueueNextOpenLevelDBStateResult(
 std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /*disk_full*/>
 FakeLevelDBFactory::OpenLevelDBState(
     const base::FilePath& file_name,
-    const LevelDBComparator* idb_comparator,
     const leveldb::Comparator* ldb_comparator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (next_leveldb_states_.empty()) {
-    return DefaultLevelDBFactory::OpenLevelDBState(file_name, idb_comparator,
-                                                   ldb_comparator);
+    return DefaultLevelDBFactory::OpenLevelDBState(file_name, ldb_comparator);
   }
   auto tuple = std::move(next_leveldb_states_.front());
   next_leveldb_states_.pop();

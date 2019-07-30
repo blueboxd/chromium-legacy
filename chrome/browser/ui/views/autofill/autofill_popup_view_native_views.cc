@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -822,6 +823,13 @@ void AutofillPopupRowView::Init() {
   RefreshStyle();
 }
 
+bool AutofillPopupRowView::HandleAccessibleAction(
+    const ui::AXActionData& action_data) {
+  if (action_data.action == ax::mojom::Action::kFocus)
+    popup_view_->controller()->SetSelectedLine(line_number_);
+  return View::HandleAccessibleAction(action_data);
+}
+
 /************** AutofillPopupViewNativeViews **************/
 
 AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
@@ -839,6 +847,20 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
 
 AutofillPopupViewNativeViews::~AutofillPopupViewNativeViews() {}
 
+void AutofillPopupViewNativeViews::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kMenu;
+  // If controller_ is valid, then the view is expanded.
+  if (controller_) {
+    node_data->AddState(ax::mojom::State::kExpanded);
+  } else {
+    node_data->AddState(ax::mojom::State::kCollapsed);
+    node_data->AddState(ax::mojom::State::kInvisible);
+  }
+  node_data->SetName(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
+}
+
 void AutofillPopupViewNativeViews::OnThemeChanged() {
   SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
   // |body_container_| and |footer_container_| will be null if there is no body
@@ -854,13 +876,14 @@ void AutofillPopupViewNativeViews::OnThemeChanged() {
 }
 
 void AutofillPopupViewNativeViews::Show() {
+  NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
   DoShow();
 }
 
 void AutofillPopupViewNativeViews::Hide() {
   // The controller is no longer valid after it hides us.
   controller_ = nullptr;
-
+  NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
   DoHide();
 }
 

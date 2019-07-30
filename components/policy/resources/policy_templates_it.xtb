@@ -957,7 +957,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Questo criterio consente di specificare le configurazioni dei server di stampa esterni sui dispositivi <ph name="PRODUCT_OS_NAME" /> come file JSON.
 
-      Le dimensioni del file non devono superare 1MB e devono contenere un array di registri (oggetti JSON). Ogni record deve contenere i campi "url" e "display_name".
+      Le dimensioni del file non devono superare 1 MB e devono contenere un array di registri (oggetti JSON). Ogni record deve contenere i campi "url" e "display_name".
 
       Il file viene scaricato e memorizzato nella cache. L'hash di crittografia viene utilizzato per verificare l'integrità del download. Il file viene scaricato nuovamente ogni volta che l'URL o l'hash cambiano.
 

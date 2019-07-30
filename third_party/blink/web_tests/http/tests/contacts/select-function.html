@@ -163,4 +163,34 @@ promise_test(async () => {
   }
 }, 'The Contact API does not include fields that were not requested');
 
+promise_test(async () => {
+  triggerUserGesture();
+
+  // Returns partial information since no e-mail addresses are requested.
+  mockContactsManager.setSelectCallback(async (options) => {
+    return {
+      contacts: [{ name: ['Tim'], email: null, tel: null }]
+    };
+  });
+
+  // First request should work.
+  const promise1 = new Promise((resolve, reject) => {
+    navigator.contacts.select(['name']).then(resolve)
+                                       .catch(e => reject(e.message));
+  });
+
+  // Second request should fail (since the first one didn't complete yet).
+  const promise2 = new Promise((resolve, reject) => {
+    navigator.contacts.select(['name']).then(contacts => reject('This was supposed to fail'))
+                                       .catch(e => resolve(e.message));
+  });
+
+  const results = await Promise.all([promise1, promise2]);
+  const contacts = results[0];
+  assert_equals(contacts.length, 1);
+  const contact = contacts[0];
+  assert_equals(contact.name[0], 'Tim');
+  assert_equals(results[1], 'Contacts Picker is already in use.');
+}, 'The Contact API cannot be used again until the first operation is complete.');
+
 </script>

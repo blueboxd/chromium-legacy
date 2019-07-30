@@ -155,6 +155,7 @@ jumbo_source_set("config_sources") {
   deps = [
     ":process_json",
     "//base",
+    "//build:branding_buildflags",
     "//gpu/ipc/common:gpu_preferences_interface",
     "//media:media_buildflags",
     "//third_party/re2",

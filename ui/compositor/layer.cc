@@ -763,6 +763,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   new_layer->SetTrilinearFiltering(cc_layer_->trilinear_filtering());
   new_layer->SetRoundedCorner(cc_layer_->corner_radii());
   new_layer->SetIsFastRoundedCorner(cc_layer_->is_fast_rounded_corner());
+  new_layer->SetMasksToBounds(cc_layer_->masks_to_bounds());
 
   cc_layer_ = new_layer.get();
   if (content_layer_) {

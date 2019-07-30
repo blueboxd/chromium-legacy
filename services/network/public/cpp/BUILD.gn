@@ -35,6 +35,8 @@ jumbo_component("cpp") {
     "header_util.h",
     "is_potentially_trustworthy.cc",
     "is_potentially_trustworthy.h",
+    "load_info_util.cc",
+    "load_info_util.h",
     "net_adapters.cc",
     "net_adapters.h",
     "network_connection_tracker.cc",

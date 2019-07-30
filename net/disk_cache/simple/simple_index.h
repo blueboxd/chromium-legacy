@@ -185,7 +185,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
                              const EntryMetadata& entry_metadata);
 
   // Executes the |callback| when the index is ready. Allows multiple callbacks.
-  net::Error ExecuteWhenReady(net::CompletionOnceCallback callback);
+  // Never synchronous.
+  void ExecuteWhenReady(net::CompletionOnceCallback callback);
 
   // Returns entries from the index that have last accessed time matching the
   // range between |initial_time| and |end_time| where open intervals are

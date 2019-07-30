@@ -592,9 +592,11 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     // https://crbug.com/713888.
     bool set_self_as_opener = create_data->set_self_as_opener &&  // present?
                               *create_data->set_self_as_opener;  // set to true?
-    navigate_params.opener = set_self_as_opener ? render_frame_host() : nullptr;
-    navigate_params.source_site_instance =
-        render_frame_host()->GetSiteInstance();
+    if (set_self_as_opener) {
+      navigate_params.opener = render_frame_host();
+      navigate_params.source_site_instance =
+          render_frame_host()->GetSiteInstance();
+    }
 
     Navigate(&navigate_params);
   }

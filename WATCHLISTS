@@ -1516,7 +1516,7 @@
                   '|chrome/common/thread_profiler*'\
                   '|chrome/renderer/v8_unwinder*'\
                   '|components/metrics/*call_stack*'\
-                  '|components/metrics/public/interfaces/call_stack*',
+                  '|components/metrics/public/mojom/call_stack*',
     },
     'screen_orientation': {
       'filepath': 'screen_orientation',

@@ -83,16 +83,36 @@ class AppShimController : public chrome::mojom::AppShim {
   // Connects to Chrome and sends a LaunchApp message.
   void InitBootstrapPipe(mojo::PlatformChannelEndpoint endpoint);
 
-  // Find a running instance of Chrome and set |chrome_running_app_| to it. If
-  // none exists, launch Chrome, and set |chrome_running_app_|.
+  // If the app was launched with a specified Chrome pid, then set
+  // |chrome_to_connect_to_| to this process. Otherwise, search for a running
+  // Chrome instance to connect to, and if none is found to, launch Chrome and
+  // set |chrome_launched_by_app_| to the launched process.
   void FindOrLaunchChrome();
+
+  // Search for a Chrome instance holding chrome::kSingletonLockFilename.
+  base::scoped_nsobject<NSRunningApplication> FindChromeFromSingletonLock()
+      const;
 
   // Check to see if Chrome's AppShimHostManager has been initialized. If it
   // has, then connect.
   void PollForChromeReady(const base::TimeDelta& time_until_timeout);
 
   const Params params_;
-  base::scoped_nsobject<NSRunningApplication> chrome_running_app_;
+
+  // This is the Chrome process that this app is committed to connecting to.
+  // The app will quit if this process is terminated before the mojo connection
+  // is established.
+  // This process is determined by either:
+  // - The pid specified to the app's command line (if it exists).
+  // - The pid specified in the chrome::kSingletonLockFilename file.
+  base::scoped_nsobject<NSRunningApplication> chrome_to_connect_to_;
+
+  // The Chrome process that was launched by this app in FindOrLaunchChrome.
+  // Note that the app is not compelled to connect to this process (consider the
+  // case where multiple apps launch at the same time, and all launch their own
+  // Chrome -- only one will grab the chrome::kSingletonLockFilename, and all
+  // apps should connect to that).
+  base::scoped_nsobject<NSRunningApplication> chrome_launched_by_app_;
 
   mojo::IsolatedConnection bootstrap_mojo_connection_;
   chrome::mojom::AppShimHostBootstrapPtr host_bootstrap_;

@@ -64,25 +64,6 @@ class MockMojoIndexedDBCallbacks : public blink::mojom::IDBCallbacks {
     MockedSuccessDatabase(&database_info, metadata);
   }
 
-  MOCK_METHOD4(MockedSuccessCursor,
-               void(blink::mojom::IDBCursorAssociatedPtrInfo* cursor,
-                    const blink::IndexedDBKey& key,
-                    const blink::IndexedDBKey& primary_key,
-                    blink::mojom::IDBValuePtr* value));
-  void SuccessCursor(blink::mojom::IDBCursorAssociatedPtrInfo cursor,
-                     const blink::IndexedDBKey& key,
-                     const blink::IndexedDBKey& primary_key,
-                     blink::mojom::IDBValuePtr value) override {
-    MockedSuccessCursor(&cursor, key, primary_key, &value);
-  }
-
-  MOCK_METHOD1(MockedSuccessValue,
-               void(blink::mojom::IDBReturnValuePtr* value));
-  void SuccessValue(blink::mojom::IDBReturnValuePtr value) override {
-    MockedSuccessValue(&value);
-  }
-
-  MOCK_METHOD1(SuccessKey, void(const blink::IndexedDBKey& key));
   MOCK_METHOD1(SuccessInteger, void(int64_t value));
   MOCK_METHOD0(Success, void());
 

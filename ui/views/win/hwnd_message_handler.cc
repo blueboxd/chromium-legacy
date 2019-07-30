@@ -1276,6 +1276,10 @@ gfx::NativeViewAccessible HWNDMessageHandler::GetParentOfAXFragmentRoot() {
   return nullptr;
 }
 
+bool HWNDMessageHandler::IsAXFragmentRootAControlElement() {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, private:
 

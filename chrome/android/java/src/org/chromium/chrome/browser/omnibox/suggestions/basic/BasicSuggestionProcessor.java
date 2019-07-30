@@ -193,10 +193,6 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
         model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, getSuggestionIconType(suggestion));
         model.set(SuggestionViewProperties.SUGGESTION_ICON_BITMAP, null);
 
-        model.set(SuggestionViewProperties.IS_ANSWER, false);
-        model.set(SuggestionViewProperties.HAS_ANSWER_IMAGE, false);
-        model.set(SuggestionViewProperties.ANSWER_IMAGE, null);
-
         model.set(
                 SuggestionViewProperties.TEXT_LINE_1_TEXT, new SuggestionTextContainer(textLine1));
         model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,

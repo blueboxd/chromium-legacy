@@ -28,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -256,6 +257,23 @@ public class ExploreSitesPageTest {
         mRenderTestRule.render(mRecyclerView, "recycler_layout_focus_back");
         Assert.assertEquals(focusedCategory, getFocusedCategoryPosition());
         Assert.assertEquals(focusedTile, getFocusedTileIndex());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"ExploreSites"})
+    @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
+    public void testRecordTimestamp() throws Exception {
+        int histogramCount =
+                RecordHistogram.getHistogramTotalCountForTesting("ExploreSites.NavBackTime");
+
+        mActivityTestRule.loadUrl("about:blank");
+        navigateBackToESP();
+
+        int newHistogramCount =
+                RecordHistogram.getHistogramTotalCountForTesting("ExploreSites.NavBackTime");
+
+        Assert.assertEquals(histogramCount + 1, newHistogramCount);
     }
 
     private void focusDifferentCard() {

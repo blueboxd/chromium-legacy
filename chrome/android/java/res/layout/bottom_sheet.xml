@@ -5,6 +5,7 @@
 
 <org.chromium.chrome.browser.widget.bottomsheet.BottomSheet
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" >
@@ -27,14 +28,7 @@
             android:src="@drawable/modern_toolbar_shadow"
             android:scaleType="fitXY"
             android:scaleY="-1"
-            android:importantForAccessibility="no" />
-        <ImageView
-            android:id="@+id/bottom_sheet_round_top"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_sheet_corner_radius"
-            android:layout_marginTop="@dimen/bottom_sheet_corner_radius"
-            android:src="@drawable/white_with_top_rounded_corners"
-            android:importantForAccessibility="no" />
+            tools:ignore="ContentDescription" />
 
         <view
             class="org.chromium.chrome.browser.widget.bottomsheet.TouchRestrictingFrameLayout"

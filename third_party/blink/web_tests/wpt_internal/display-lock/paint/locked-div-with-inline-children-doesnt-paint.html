@@ -1,0 +1,51 @@
+<!doctype HTML>
+<html class="reftest-wait">
+<meta charset="utf8">
+<title>Display Locking: iframe locking</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<link rel="match" href="pass-if-nothing-below-ref.html">
+<script src="/common/reftest-wait.js"></script>
+
+<style>
+div {
+  contain: style layout;
+}
+div > div {
+  contain: style layout;
+  position: absolute;
+  top: 50px;
+  left: 10px;
+}
+div > div > div {
+  float: left;
+  background: red;
+  width: 10px;
+  height: 10px;
+}
+</style>
+
+The test passes if there's nothing below.
+<div>
+  <div id=target1><span>This should not be painted.</span></div>
+  <div id=target2><div>float div should be hidden too</div></div>
+</div>
+
+<script>
+async function runTest() {
+  const target1 = document.getElementById("target1");
+  const target2 = document.getElementById("target2");
+  let promises = [];
+  promises.push(target1.displayLock.acquire({ timeout: Infinity, activatable: true }));
+  promises.push(target2.displayLock.acquire({ timeout: Infinity, activatable: true }));
+  await Promise.all(promises);
+  takeScreenshot();
+}
+
+window.onload = () => {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(runTest);
+  });
+};
+</script>
+</html>

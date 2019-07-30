@@ -11,6 +11,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
@@ -22,7 +23,7 @@ import org.chromium.components.feature_engagement.Tracker;
  * coordinators, running most of the business logic associated with the browsing mode bottom
  * toolbar, and updating the model accordingly.
  */
-class BrowsingModeBottomToolbarMediator implements OverviewModeObserver, ThemeColorObserver {
+class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
     /** The amount of time to show the Duet help bubble for. */
     private static final int DUET_IPH_BUBBLE_SHOW_DURATION_MS = 10000;
 
@@ -30,7 +31,8 @@ class BrowsingModeBottomToolbarMediator implements OverviewModeObserver, ThemeCo
     private static final float DUET_IPH_BUBBLE_ALPHA_FRACTION = 0.9f;
 
     /** The model for the browsing mode bottom toolbar that holds all of its state. */
-    private BrowsingModeBottomToolbarModel mModel;
+    private final BrowsingModeBottomToolbarModel mModel;
+    private final OverviewModeObserver mOverviewModeObserver;
 
     /** The overview mode manager. */
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -45,6 +47,17 @@ class BrowsingModeBottomToolbarMediator implements OverviewModeObserver, ThemeCo
      */
     BrowsingModeBottomToolbarMediator(BrowsingModeBottomToolbarModel model) {
         mModel = model;
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStartedShowing(boolean showToolbar) {
+                mModel.set(BrowsingModeBottomToolbarModel.IS_VISIBLE, false);
+            }
+
+            @Override
+            public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
+                mModel.set(BrowsingModeBottomToolbarModel.IS_VISIBLE, true);
+            }
+        };
     }
 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
@@ -54,10 +67,10 @@ class BrowsingModeBottomToolbarMediator implements OverviewModeObserver, ThemeCo
 
     void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
         if (mOverviewModeBehavior != null) {
-            mOverviewModeBehavior.removeOverviewModeObserver(this);
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
         }
         mOverviewModeBehavior = overviewModeBehavior;
-        mOverviewModeBehavior.addOverviewModeObserver(this);
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
     /**
@@ -90,7 +103,7 @@ class BrowsingModeBottomToolbarMediator implements OverviewModeObserver, ThemeCo
      */
     void destroy() {
         if (mOverviewModeBehavior != null) {
-            mOverviewModeBehavior.removeOverviewModeObserver(this);
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
             mOverviewModeBehavior = null;
         }
         if (mThemeColorProvider != null) {
@@ -98,22 +111,6 @@ class BrowsingModeBottomToolbarMediator implements OverviewModeObserver, ThemeCo
             mThemeColorProvider = null;
         }
     }
-
-    @Override
-    public void onOverviewModeStartedShowing(boolean showToolbar) {
-        mModel.set(BrowsingModeBottomToolbarModel.IS_VISIBLE, false);
-    }
-
-    @Override
-    public void onOverviewModeFinishedShowing() {}
-
-    @Override
-    public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
-        mModel.set(BrowsingModeBottomToolbarModel.IS_VISIBLE, true);
-    }
-
-    @Override
-    public void onOverviewModeFinishedHiding() {}
 
     @Override
     public void onThemeColorChanged(int primaryColor, boolean shouldAnimate) {

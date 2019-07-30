@@ -113,12 +113,8 @@ std::unique_ptr<Backend> CreateAndInitBackend(const CacheSpec& spec) {
         &SetSuccessCodeOnCompletion, &index_run_loop, &succeeded);
     SimpleBackendImpl* simple_backend =
         static_cast<SimpleBackendImpl*>(backend.get());
-    const int index_net_error =
-        simple_backend->index()->ExecuteWhenReady(std::move(index_callback));
-    if (index_net_error == net::OK)
-      SetSuccessCodeOnCompletion(&index_run_loop, &succeeded, net::OK);
-    else
-      index_run_loop.Run();
+    simple_backend->index()->ExecuteWhenReady(std::move(index_callback));
+    index_run_loop.Run();
     if (!succeeded) {
       LOG(ERROR) << "Could not initialize Simple Cache in "
                  << spec.path.LossyDisplayName();

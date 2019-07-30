@@ -61,8 +61,7 @@ constexpr float kSuggestionChipOpacityEndProgress = 1;
 AppsContainerView::AppsContainerView(ContentsView* contents_view,
                                      AppListModel* model)
     : contents_view_(contents_view) {
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
+  SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 
   suggestion_chip_container_view_ =
       new SuggestionChipContainerView(contents_view);
@@ -198,7 +197,7 @@ void AppsContainerView::UpdateYPositionAndOpacity() {
               (AppListConfig::instance().all_apps_opacity_end_px() - start_px),
           0.f),
       1.0f);
-  layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
+  page_switcher_->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
 
   const float progress =
       contents_view_->app_list_view()->GetAppListTransitionProgress();

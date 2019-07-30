@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/cpp/service_executable.gni")
 import("//testing/test.gni")
 
 static_library("lib") {
@@ -25,24 +24,7 @@ static_library("lib") {
 
   deps = [
     "//mojo/public/cpp/system",
-    "//services/service_manager/public/cpp",
     "//third_party/leveldatabase",
-  ]
-}
-
-service_executable("leveldb") {
-  sources = [
-    "leveldb_app.cc",
-    "leveldb_app.h",
-    "main.cc",
-  ]
-
-  deps = [
-    ":lib",
-    "//components/services/leveldb/public/mojom",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
-    "//services/service_manager/public/cpp",
   ]
 }
 
@@ -54,24 +36,18 @@ test("leveldb_service_unittests") {
   ]
 
   deps = [
+    ":lib",
     "//base",
     "//base/test:test_support",
-    "//components/services/filesystem/public/cpp:manifest",
+    "//components/services/filesystem:lib",
+    "//components/services/filesystem:test_support",
     "//components/services/filesystem/public/mojom",
     "//components/services/leveldb/public/cpp",
-    "//components/services/leveldb/public/cpp:manifest",
     "//components/services/leveldb/public/mojom",
     "//mojo/core/test:run_all_unittests",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
     "//third_party/leveldatabase",
-  ]
-
-  data_deps = [
-    ":leveldb",
-    "//components/services/filesystem:filesystem",
   ]
 }

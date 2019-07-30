@@ -55,6 +55,7 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds) override {}
   void SetDraggableArea(const gfx::Rect& bounds) override {}
   void AddObserver(ash::KeyboardControllerObserver* observer) override {}
+  void RemoveObserver(ash::KeyboardControllerObserver* observer) override {}
 
  private:
   keyboard::KeyboardConfig keyboard_config_;

@@ -5,7 +5,6 @@
 package org.chromium.webapk.shell_apk;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -280,14 +279,6 @@ public class WebApkUtils {
                 .setAction(Intent.ACTION_VIEW)
                 .addCategory(Intent.CATEGORY_BROWSABLE)
                 .setData(Uri.parse("http://"));
-    }
-
-    public static void finishAndRemoveTask(Activity activity) {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            activity.finishAndRemoveTask();
-        } else {
-            activity.finish();
-        }
     }
 
     public static String getNotificationChannelName(Context context) {

@@ -98,6 +98,11 @@ class ScreenLocker : public AuthStatusConsumer,
   void Authenticate(const UserContext& user_context,
                     AuthenticateCallback callback);
 
+  // Authenticates the user with given |account_id| using the challenge-response
+  // authentication against a security token.
+  void AuthenticateWithChallengeResponse(const AccountId& account_id,
+                                         AuthenticateCallback callback);
+
   // Close message bubble to clear error messages.
   void ClearErrors();
 
@@ -206,7 +211,7 @@ class ScreenLocker : public AuthStatusConsumer,
   // completes building the currently available challenge-response keys. Used
   // only during the challenge-response unlock.
   void OnChallengeResponseKeysPrepared(
-      const UserContext& user_context,
+      const AccountId& account_id,
       std::vector<ChallengeResponseKey> challenge_response_keys);
 
   void OnPinAttemptDone(const UserContext& user_context, bool success);

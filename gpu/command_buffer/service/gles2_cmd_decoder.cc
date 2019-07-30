@@ -86,7 +86,6 @@
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/config/gpu_preferences.h"
-#include "third_party/angle/src/image_util/loadimage.h"
 #include "third_party/smhasher/src/City.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
@@ -117,7 +116,14 @@
 #include <IOSurface/IOSurface.h>
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>
-#endif
+#endif  // OS_MACOSX
+
+#if defined(OS_WIN)
+#include "gpu/command_buffer/service/swap_chain_factory_dxgi.h"
+#endif  // OS_WIN
+
+// Note: this undefs far and near so include this after other Windows headers.
+#include "third_party/angle/src/image_util/loadimage.h"
 
 namespace gpu {
 namespace gles2 {
@@ -4226,7 +4232,9 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
-
+#if defined(OS_WIN)
+  caps.shared_image_swap_chain = SwapChainFactoryDXGI::IsSupported();
+#endif  // OS_WIN
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;
   caps.blend_equation_advanced_coherent =

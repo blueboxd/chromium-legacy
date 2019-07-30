@@ -19,9 +19,6 @@ import node_modules
 def main():
   polymer_dir = os.path.join(_HERE_PATH, 'components-chromium', 'polymer')
 
-  # Final JS bundle.
-  polymer_js = os.path.join(polymer_dir, 'polymer_bundled.min.js')
-
   # Copy the top-level Polymer file that holds all dependencies. This file is
   # not distributed via NPM, it only exists within third_party/polymer
   # repository.
@@ -61,10 +58,28 @@ def main():
 
     # Copy generated JS bundle back to the original location.
     os.makedirs(polymer_dir)
-    shutil.move(minified_js, polymer_js)
+    shutil.move(minified_js, polymer_dir)
 
-    # Copy a few more files.
-    shutil.move(os.path.join(tmp_dir, 'LICENSE.txt'), polymer_dir)
+    # Copy LICENSE file.
+    shutil.copy(os.path.join(tmp_dir, 'LICENSE.txt'), polymer_dir)
+
+    # Copy files needed for type checking.
+    # - |bundled_js| is the JS bundle with JS type annotations.
+    # - various externs files
+    shutil.copy(bundled_js, polymer_dir)
+    externs_to_copy = [
+      os.path.join(tmp_dir, 'externs', 'closure-types.js'),
+      os.path.join(tmp_dir, 'externs', 'polymer-dom-api-externs.js'),
+      os.path.join(tmp_dir, 'externs', 'polymer-externs.js'),
+      os.path.join(tmp_dir, 'externs', 'webcomponents-externs.js'),
+      os.path.join(
+          polymer_dir, '..', 'shadycss', 'externs', 'shadycss-externs.js'),
+    ]
+    externs_dir = os.path.join(polymer_dir, 'externs')
+    os.makedirs(externs_dir)
+    for extern in externs_to_copy:
+      shutil.copy(extern, externs_dir)
+
   finally:
     # Delete component-chromium/shadycss since it ends up in the bundle.
     shutil.rmtree(os.path.join(_HERE_PATH, 'components-chromium', 'shadycss'))

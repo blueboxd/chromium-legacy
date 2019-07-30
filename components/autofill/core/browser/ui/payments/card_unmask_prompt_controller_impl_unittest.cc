@@ -34,19 +34,20 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
   virtual ~TestCardUnmaskDelegate() {}
 
   // CardUnmaskDelegate implementation.
-  void OnUnmaskResponse(const UnmaskResponse& response) override {
-    response_ = response;
+  void OnUnmaskPromptAccepted(
+      const UserProvidedUnmaskDetails& details) override {
+    details_ = details;
   }
   void OnUnmaskPromptClosed() override {}
 
-  const UnmaskResponse& response() { return response_; }
+  const UserProvidedUnmaskDetails& details() { return details_; }
 
   base::WeakPtr<TestCardUnmaskDelegate> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
  private:
-  UnmaskResponse response_;
+  UserProvidedUnmaskDetails details_;
   base::WeakPtrFactory<TestCardUnmaskDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskDelegate);
@@ -106,8 +107,8 @@ class CardUnmaskPromptControllerImplGenericTest {
 
   void ShowPromptAndSimulateResponse(bool should_store_pan) {
     ShowPrompt();
-    controller_->OnUnmaskResponse(ASCIIToUTF16("444"), ASCIIToUTF16("01"),
-                                  ASCIIToUTF16("2050"), should_store_pan);
+    controller_->OnUnmaskPromptAccepted(ASCIIToUTF16("444"), ASCIIToUTF16("01"),
+                                        ASCIIToUTF16("2050"), should_store_pan);
     EXPECT_EQ(should_store_pan,
               pref_service_->GetBoolean(
                   prefs::kAutofillWalletImportStorageCheckboxState));
@@ -232,9 +233,9 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardFirstAttempt) {
 TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardAfterFailure) {
   ShowPromptAndSimulateResponse(false);
   controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
-  controller_->OnUnmaskResponse(ASCIIToUTF16("444"), ASCIIToUTF16("01"),
-                                ASCIIToUTF16("2050"),
-                                false /* should_store_pan */);
+  controller_->OnUnmaskPromptAccepted(ASCIIToUTF16("444"), ASCIIToUTF16("01"),
+                                      ASCIIToUTF16("2050"),
+                                      false /* should_store_pan */);
   base::HistogramTester histogram_tester;
 
   controller_->OnVerificationResult(AutofillClient::SUCCESS);
@@ -384,7 +385,7 @@ TEST_F(CardUnmaskPromptControllerImplTest,
        LogDurationUnmaskedCardAfterFailure) {
   ShowPromptAndSimulateResponse(false);
   controller_->OnVerificationResult(AutofillClient::TRY_AGAIN_FAILURE);
-  controller_->OnUnmaskResponse(
+  controller_->OnUnmaskPromptAccepted(
       base::ASCIIToUTF16("444"), base::ASCIIToUTF16("01"),
       base::ASCIIToUTF16("2050"), false /* should_store_pan */);
   base::HistogramTester histogram_tester;
@@ -487,10 +488,11 @@ TEST_P(CvcInputValidationTest, CvcInputValidation) {
   if (!cvc_case.valid)
     return;
 
-  controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_case.input), ASCIIToUTF16("1"),
-                                ASCIIToUTF16("2050"), false);
+  controller_->OnUnmaskPromptAccepted(ASCIIToUTF16(cvc_case.input),
+                                      ASCIIToUTF16("1"), ASCIIToUTF16("2050"),
+                                      false);
   EXPECT_EQ(ASCIIToUTF16(cvc_case.canonicalized_input),
-            delegate_->response().cvc);
+            delegate_->details().cvc);
 }
 
 INSTANTIATE_TEST_SUITE_P(CardUnmaskPromptControllerImplTest,
@@ -528,10 +530,11 @@ TEST_P(CvcInputAmexValidationTest, CvcInputValidation) {
   if (!cvc_case_amex.valid)
     return;
 
-  controller_->OnUnmaskResponse(ASCIIToUTF16(cvc_case_amex.input),
-                                base::string16(), base::string16(), false);
+  controller_->OnUnmaskPromptAccepted(ASCIIToUTF16(cvc_case_amex.input),
+                                      base::string16(), base::string16(),
+                                      false);
   EXPECT_EQ(ASCIIToUTF16(cvc_case_amex.canonicalized_input),
-            delegate_->response().cvc);
+            delegate_->details().cvc);
 }
 
 INSTANTIATE_TEST_SUITE_P(CardUnmaskPromptControllerImplTest,

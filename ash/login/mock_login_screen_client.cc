@@ -55,6 +55,12 @@ void MockLoginScreenClient::EnrollUserWithExternalBinary(
   }
 }
 
+void MockLoginScreenClient::AuthenticateUserWithChallengeResponse(
+    const AccountId& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  AuthenticateUserWithChallengeResponse_(account_id, callback);
+}
+
 bool MockLoginScreenClient::ValidateParentAccessCode(
     const AccountId& account_id,
     const std::string& code) {

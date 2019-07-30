@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
   // touch event will not get sent to the correct renderer process. However the
   // |child_frame| being used here is not actually a
   // RenderWidgetHostViewChildFrame.
-  WaitForHitTestDataOrChildSurfaceReady(child_frame);
+  WaitForHitTestData(child_frame);
 
   // Send a touch exploration event to the button in the first iframe.
   // A touch exploration event is just a mouse move event with

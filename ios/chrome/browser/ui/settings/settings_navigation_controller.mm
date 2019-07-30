@@ -139,6 +139,13 @@ newUserFeedbackController:(ios::ChromeBrowserState*)browserState
       initWithRootViewController:controller
                     browserState:browserState
                         delegate:delegate];
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  // If the controller overrides overrideUserInterfaceStyle, respect that in the
+  // SettingsNavigationController.
+  if (@available(iOS 13.0, *)) {
+    nc.overrideUserInterfaceStyle = controller.overrideUserInterfaceStyle;
+  }
+#endif
   return nc;
 }
 

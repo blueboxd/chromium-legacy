@@ -213,6 +213,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="7747138024166251722">Trình cài đặt không thể tạo thư mục tạm thời. Vui lòng kiểm tra dung lượng ổ đĩa còn trống và quyền cài đặt phần mềm.</translation>
 <translation id="7773960292263897147">Cảnh báo: Chromium không thể ngăn các tiện ích ghi lại lịch sử duyệt web của bạn. Để vô hiệu hóa tiện ích này trong chế độ ẩn danh, hãy bỏ chọn tiện ích này.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
+<translation id="7827169012280634081">Xóa cookie và dữ liệu trang web khi bạn thoát khỏi Chromium</translation>
 <translation id="7867198900892795913">Chromium không thể cập nhật lên phiên bản mới nhất nên bạn đang bỏ lỡ các tính năng và bản vá bảo mật mới.</translation>
 <translation id="7901117350626490574">Đã có bản cập nhật Chromium mới và bản cập nhật này sẽ áp dụng ngay khi bạn chạy lại.</translation>
 <translation id="7937630085815544518">Bạn đã đăng nhập vào Chromium là <ph name="USER_EMAIL_ADDRESS" />. Vui lòng sử dụng cùng tài khoản để đăng nhập lại.</translation>
@@ -239,6 +240,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để được
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> của bạn đã cập nhật.</translation>
 <translation id="8697124171261953979">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chromium hoặc tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="8704119203788522458">Đây là Chromium của bạn</translation>
+<translation id="8739167630197873875">Bạn xóa cookie khi thoát khỏi Chromium. Để tiếp tục đồng bộ hóa, hãy thay đổi <ph name="COOKIE_SETTINGS_LINK" /> này.</translation>
 <translation id="8748383401829947534">Thoát khỏi tất cả các bản sao của Chromium.</translation>
 <translation id="8796602469536043152">Chromium cần có quyền truy cập vào máy ảnh và micrô của bạn cho trang web này</translation>
 <translation id="8803635938069941624">Điều khoản Chromium OS</translation>

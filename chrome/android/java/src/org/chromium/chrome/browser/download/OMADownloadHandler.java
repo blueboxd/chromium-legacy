@@ -19,7 +19,6 @@ import android.os.ParcelFileDescriptor;
 import android.provider.Browser;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.LongSparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +30,10 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
+import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
@@ -39,6 +41,7 @@ import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueResponse;
 import org.chromium.chrome.download.R;
+import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.ui.UiUtils;
 
 import java.io.DataOutputStream;
@@ -288,8 +291,19 @@ public class OMADownloadHandler extends BroadcastReceiver {
             OMAInfo omaInfo = null;
             final DownloadManager manager =
                     (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+            boolean isContentUri = (mDownloadId == DownloadItem.INVALID_DOWNLOAD_ID)
+                    && ContentUriUtils.isContentUri(mDownloadInfo.getFilePath());
             try {
-                ParcelFileDescriptor fd = manager.openDownloadedFile(mDownloadId);
+                ParcelFileDescriptor fd = null;
+                if (isContentUri) {
+                    int fileDescriptor =
+                            ContentUriUtils.openContentUriForRead(mDownloadInfo.getFilePath());
+                    if (fileDescriptor > 0) {
+                        fd = ParcelFileDescriptor.fromFd(fileDescriptor);
+                    }
+                } else {
+                    fd = manager.openDownloadedFile(mDownloadId);
+                }
                 if (fd != null) {
                     omaInfo = parseDownloadDescriptor(new FileInputStream(fd.getFileDescriptor()));
                     fd.close();
@@ -299,7 +313,10 @@ public class OMADownloadHandler extends BroadcastReceiver {
             } catch (IOException e) {
                 Log.w(TAG, "Cannot read file.", e);
             }
-            manager.remove(mDownloadId);
+
+            if (isContentUri) {
+                ContentUriUtils.delete(mDownloadInfo.getFilePath());
+            }
             mFreeSpace = Environment.getExternalStorageDirectory().getUsableSpace();
             DownloadMetrics.recordDownloadOpen(
                     DownloadMetrics.DownloadOpenSource.ANDROID_DOWNLOAD_MANAGER,
@@ -309,6 +326,9 @@ public class OMADownloadHandler extends BroadcastReceiver {
 
         @Override
         protected void onPostExecute(OMAInfo omaInfo) {
+            DownloadManagerService.getDownloadManagerService().removeDownload(
+                    mDownloadInfo.getDownloadGuid(), mDownloadInfo.isOffTheRecord(),
+                    false /* externallyRemoved */);
             if (omaInfo == null) return;
             // Send notification if required attributes are missing.
             if (omaInfo.getTypes().isEmpty() || getSize(omaInfo) <= 0
@@ -352,7 +372,6 @@ public class OMADownloadHandler extends BroadcastReceiver {
         boolean isInOMASharedPrefs = isDownloadIdInOMASharedPrefs(downloadId);
         if (isPendingOMADownload || isInOMASharedPrefs) {
             clearPendingOMADownload(downloadId, null);
-            removeFromSystemDownloadIdMap(downloadId);
             return;
         }
 
@@ -367,6 +386,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
     }
 
     private void removeFromSystemDownloadIdMap(long downloadId) {
+        if (mSystemDownloadIdMap.size() == 0) return;
         mSystemDownloadIdMap.remove(downloadId);
         if (mSystemDownloadIdMap.size() == 0) {
             mContext.unregisterReceiver(this);
@@ -754,6 +774,13 @@ public class OMADownloadHandler extends BroadcastReceiver {
             return;
         }
 
+        if (!TextUtils.isEmpty(response.filePath)) {
+            DownloadInfo newInfo =
+                    DownloadInfo.Builder.fromDownloadInfo(downloadItem.getDownloadInfo())
+                            .setFilePath(response.filePath)
+                            .build();
+            downloadItem.setDownloadInfo(newInfo);
+        }
         if (mSystemDownloadIdMap.size() == 0) {
             mContext.registerReceiver(
                     this, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
@@ -803,6 +830,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
             item.setDownloadInfo(builder.build());
 
             showDownloadsUi(downloadId, item, result, installNotifyURI);
+            removeFromSystemDownloadIdMap(downloadId);
         });
     }
 
@@ -904,6 +932,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
         @Override
         protected Boolean doInBackground() {
             HttpURLConnection urlConnection = null;
+            boolean success = false;
             try {
                 URL url = new URL(mOMAInfo.getValue(OMA_INSTALL_NOTIFY_URI));
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -928,9 +957,10 @@ public class OMADownloadHandler extends BroadcastReceiver {
                 }
                 int responseCode = urlConnection.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_OK || responseCode == -1) {
-                    return true;
+                    success = true;
+                } else {
+                    success = false;
                 }
-                return false;
             } catch (MalformedURLException e) {
                 Log.w(TAG, "Invalid notification URL.", e);
             } catch (IOException e) {
@@ -940,37 +970,69 @@ public class OMADownloadHandler extends BroadcastReceiver {
             } finally {
                 if (urlConnection != null) urlConnection.disconnect();
             }
-            return false;
+
+            if (success) {
+                String path = mDownloadInfo.getFilePath();
+                if (!TextUtils.isEmpty(path)) {
+                    File fromFile = new File(path);
+                    if (BuildInfo.isAtLeastQ()) {
+                        // Copy the downloaded content to the intermediate URI and publish it.
+                        String pendingUri =
+                                DownloadCollectionBridge.createIntermediateUriForPublish(
+                                        mDownloadInfo.getFileName(), mDownloadInfo.getMimeType(),
+                                        mDownloadInfo.getOriginalUrl(),
+                                        mDownloadInfo.getReferrer());
+                        success = DownloadCollectionBridge.copyFileToIntermediateUri(
+                                path, pendingUri);
+                        if (success) {
+                            DownloadCollectionBridge.publishDownload(pendingUri);
+                            fromFile.delete();
+                        } else {
+                            DownloadCollectionBridge.deleteIntermediateUri(pendingUri);
+                        }
+                    } else {
+                        // Move the downloaded content from the app directory to public directory.
+                        String fileName = fromFile.getName();
+                        DownloadManager manager = (DownloadManager) mContext.getSystemService(
+                                Context.DOWNLOAD_SERVICE);
+                        File toFile = new File(Environment.getExternalStoragePublicDirectory(
+                                                       Environment.DIRECTORY_DOWNLOADS),
+                                fileName);
+                        success = fromFile.renameTo(toFile);
+                        if (success) {
+                            manager.addCompletedDownload(fileName, mDownloadInfo.getDescription(),
+                                    false, mDownloadInfo.getMimeType(), toFile.getPath(),
+                                    mDownloadInfo.getBytesReceived(), true);
+                        }
+                    }
+                    if (!success) {
+                        if (fromFile.delete()) {
+                            if (BuildInfo.isAtLeastQ()) {
+                                Log.w(TAG, "Failed to publish the downloaded file.");
+                            } else {
+                                Log.w(TAG, "Failed to rename the file.");
+                            }
+                        } else {
+                            if (BuildInfo.isAtLeastQ()) {
+                                Log.w(TAG, "Failed to publish and delete the file.");
+                            } else {
+                                Log.w(TAG, "Failed to rename and delete the file.");
+                            }
+                        }
+                    }
+                }
+            }
+            return success;
         }
 
         @Override
         protected void onPostExecute(Boolean success) {
-            DownloadManager manager =
-                    (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
             if (success) {
-                String path = mDownloadInfo.getFilePath();
-                if (!TextUtils.isEmpty(path)) {
-                    // Move the downloaded content from the app directory to public directory.
-                    File fromFile = new File(path);
-                    String fileName = fromFile.getName();
-                    File toFile = new File(Environment.getExternalStoragePublicDirectory(
-                            Environment.DIRECTORY_DOWNLOADS), fileName);
-                    if (fromFile.renameTo(toFile)) {
-                        manager.addCompletedDownload(
-                                fileName, mDownloadInfo.getDescription(), false,
-                                mDownloadInfo.getMimeType(), toFile.getPath(),
-                                mDownloadInfo.getBytesReceived(), true);
-                    } else if (fromFile.delete()) {
-                        Log.w(TAG, "Failed to rename the file.");
-                        return;
-                    } else {
-                        Log.w(TAG, "Failed to rename and delete the file.");
-                    }
-                }
                 showNextUrlDialog(mOMAInfo);
             } else if (mDownloadId != DownloadItem.INVALID_DOWNLOAD_ID) {
                 // Remove the downloaded content.
-                manager.remove(mDownloadId);
+                ((DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE))
+                        .remove(mDownloadId);
             }
         }
     }

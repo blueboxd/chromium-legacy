@@ -5911,6 +5911,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   if (AreAllSitesIsolatedForTesting()) {
     // In site-per-process, we cannot use foo.com's SiteInstance for a.com.
     EXPECT_TRUE(instance1->HasWrongProcessForURL(url1));
+  } else if (AreDefaultSiteInstancesEnabled()) {
+    // Since |instance1| is a default SiteInstance AND this test explicitly
+    // ensures that ShouldAssignSiteForURL(url1) will return false, |url1|
+    // cannot be placed in the default SiteInstance. This also means that |url1|
+    // cannot be placed in the same process as the default SiteInstance.
+    EXPECT_TRUE(instance1->HasWrongProcessForURL(url1));
   } else {
     // If neither foo.com nor a.com require dedicated processes, then we can use
     // the same process.
@@ -5925,7 +5931,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   scoped_refptr<SiteInstanceImpl> new_instance =
       web_contents->GetMainFrame()->GetSiteInstance();
   EXPECT_EQ(url1, web_contents->GetLastCommittedURL());
-  if (AreAllSitesIsolatedForTesting()) {
+  if (AreAllSitesIsolatedForTesting() || AreDefaultSiteInstancesEnabled()) {
     EXPECT_NE(instance1, new_instance);
     EXPECT_EQ(GURL(), new_instance->GetSiteURL());
   } else {

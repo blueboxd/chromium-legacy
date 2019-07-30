@@ -213,6 +213,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查您是否有足够的磁盘空间和权限来安装该软件。</translation>
 <translation id="7773960292263897147">警告：Chromium 无法阻止扩展程序记录您的浏览活动。要在无痕模式下停用该扩展程序，请取消选中此选项。</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
+<translation id="7827169012280634081">退出 Chromium 时清除 Cookie 及网站数据</translation>
 <translation id="7867198900892795913">Chromium 无法更新至最新版本，因此您未能获得最新的功能和安全修复程序。</translation>
 <translation id="7901117350626490574">Chromium 有一项新的可用更新；一旦您重新启动，系统即会应用这项更新。</translation>
 <translation id="7937630085815544518">您之前登录 Chromium 时使用的帐号为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐号再次登录。</translation>
@@ -239,6 +240,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8667808506758191620">您的 <ph name="DEVICE_TYPE" /> 是最新版本。</translation>
 <translation id="8697124171261953979">它还能够控制您启动Chromium后或通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="8704119203788522458">这是您的专属Chromium</translation>
+<translation id="8739167630197873875">退出 Chromium 时会清除 Cookie。要保持同步，请更改此<ph name="COOKIE_SETTINGS_LINK" />。</translation>
 <translation id="8748383401829947534">退出 Chromium 的所有副本。</translation>
 <translation id="8796602469536043152">Chromium 需要获得相应权限，才能允许此网站使用您的摄像头和麦克风</translation>
 <translation id="8803635938069941624">Chromium操作系统条款</translation>

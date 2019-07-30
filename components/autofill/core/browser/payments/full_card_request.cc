@@ -114,23 +114,25 @@ bool FullCardRequest::IsGettingFullCard() const {
   return !!request_;
 }
 
-void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
-  if (!response.exp_month.empty())
-    request_->card.SetRawInfo(CREDIT_CARD_EXP_MONTH, response.exp_month);
+void FullCardRequest::OnUnmaskPromptAccepted(
+    const UserProvidedUnmaskDetails& user_response) {
+  if (!user_response.exp_month.empty())
+    request_->card.SetRawInfo(CREDIT_CARD_EXP_MONTH, user_response.exp_month);
 
-  if (!response.exp_year.empty())
-    request_->card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, response.exp_year);
+  if (!user_response.exp_year.empty())
+    request_->card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                              user_response.exp_year);
 
   if (request_->card.record_type() == CreditCard::LOCAL_CARD &&
       !request_->card.guid().empty() &&
-      (!response.exp_month.empty() || !response.exp_year.empty())) {
+      (!user_response.exp_month.empty() || !user_response.exp_year.empty())) {
     personal_data_manager_->UpdateCreditCard(request_->card);
   }
 
   if (!should_unmask_card_) {
     if (result_delegate_)
       result_delegate_->OnFullCardRequestSucceeded(*this, request_->card,
-                                                   response.cvc);
+                                                   user_response.cvc);
     if (ui_delegate_)
       ui_delegate_->OnUnmaskVerificationResult(AutofillClient::SUCCESS);
     Reset();
@@ -138,7 +140,7 @@ void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
     return;
   }
 
-  request_->user_response = response;
+  request_->user_response = user_response;
   if (!request_->risk_data.empty())
     SendUnmaskCardRequest();
 }

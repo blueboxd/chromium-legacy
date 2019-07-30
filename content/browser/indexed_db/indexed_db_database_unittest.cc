@@ -16,6 +16,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/indexed_db/fake_indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db.h"
@@ -86,7 +87,7 @@ class IndexedDBDatabaseTest : public ::testing::Test {
   std::unique_ptr<IndexedDBFakeBackingStore> backing_store_;
   std::unique_ptr<MockIndexedDBFactory> factory_;
   std::unique_ptr<IndexedDBDatabase> db_;
-  FakeIndexedDBMetadataCoding* metadata_coding_;
+  FakeIndexedDBMetadataCoding* metadata_coding_ = nullptr;
   bool error_called_ = false;
 
  private:
@@ -595,10 +596,9 @@ TEST_F(IndexedDBDatabaseOperationTest, CreatePutDelete) {
   IndexedDBValue value("value1", std::vector<IndexedDBBlobInfo>());
   std::unique_ptr<IndexedDBKey> key(std::make_unique<IndexedDBKey>("key"));
   std::vector<IndexedDBIndexKeys> index_keys;
-  scoped_refptr<MockIndexedDBCallbacks> request(
-      new MockIndexedDBCallbacks(false));
+  base::MockCallback<blink::mojom::IDBTransaction::PutCallback> callback;
   db_->Put(transaction_, store_id, &value, std::move(key),
-           blink::mojom::IDBPutMode::AddOnly, request, index_keys);
+           blink::mojom::IDBPutMode::AddOnly, callback.Get(), index_keys);
 
   // Deletion is asynchronous.
   db_->DeleteObjectStore(transaction_, store_id);

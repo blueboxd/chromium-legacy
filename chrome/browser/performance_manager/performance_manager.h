@@ -29,6 +29,7 @@ class MojoUkmRecorder;
 
 namespace performance_manager {
 
+class GraphOwned;
 class PageNodeImpl;
 
 // The performance manager is a rendezvous point for binding to performance
@@ -40,6 +41,26 @@ class PerformanceManager {
   using FrameNodeCreationCallback = base::OnceCallback<void(FrameNodeImpl*)>;
 
   ~PerformanceManager();
+
+  // Returns true if the performance manager is initialized. This is valid to
+  // call anywhere, but is only really meaningful on the main thread (where it
+  // will not change values within the scope of a task).
+  // TODO(chrisha): Move this to the public interface.
+  static bool IsAvailable();
+
+  // Posts a callback that will run on the PM sequence, and be provided a
+  // pointer to the Graph. Valid to be called from the main thread only, and
+  // only if "IsAvailable" returns true.
+  // TODO(chrisha): Move this to the public interface.
+  using GraphCallback = base::OnceCallback<void(GraphImpl*)>;
+  static void CallOnGraph(const base::Location& from_here,
+                          GraphCallback graph_callback);
+
+  // Passes a GraphOwned object into the Graph on the PM sequence. Should only
+  // be called from the main thread and only if "IsAvailable" returns true.
+  // TODO(chrisha): Move this to the public interface.
+  static void PassToGraph(const base::Location& from_here,
+                          std::unique_ptr<GraphOwned> graph_owned);
 
   // Retrieves the currently registered instance.
   // The caller needs to ensure that the lifetime of the registered instance
@@ -53,12 +74,6 @@ class PerformanceManager {
   // Unregisters |instance| if it's currently registered and arranges for its
   // deletion on its sequence.
   static void Destroy(std::unique_ptr<PerformanceManager> instance);
-
-  // Invokes |graph_callback| on the performance manager's sequence, with the
-  // graph as a parameter.
-  using GraphCallback = base::OnceCallback<void(GraphImpl*)>;
-  void CallOnGraph(const base::Location& from_here,
-                   GraphCallback graph_callback);
 
   // Forwards the binding request to the implementation class.
   template <typename Interface>
@@ -101,7 +116,7 @@ class PerformanceManager {
   // in topological order and destroying them.
   void BatchDeleteNodes(std::vector<std::unique_ptr<NodeBase>> nodes);
 
-  // TODO(siggi): Can this be hidden away?
+  // TODO(chrisha): Hide this after the last consumer stops using it!
   scoped_refptr<base::SequencedTaskRunner> task_runner() const {
     return task_runner_;
   }

@@ -98,11 +98,6 @@
 #include "components/rlz/rlz_tracker.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
-    !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/startup/supervised_users_deprecated_infobar_delegate.h"
-#endif
-
 namespace {
 
 // Utility functions ----------------------------------------------------------
@@ -867,12 +862,6 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
           !local_state->GetBoolean(prefs::kSuppressUnsupportedOSWarning))
         ObsoleteSystemInfoBarDelegate::Create(infobar_service);
     }
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
-    !defined(OS_CHROMEOS)
-    if (profile_->IsLegacySupervised())
-      SupervisedUsersDeprecatedInfoBarDelegate::Create(infobar_service);
-#endif
 
 #if !defined(OS_CHROMEOS)
     if (!command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {

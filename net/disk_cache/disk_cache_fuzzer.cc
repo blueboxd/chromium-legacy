@@ -1145,9 +1145,10 @@ void DiskCacheLPMFuzzer::CreateBackend(
       MAYBE_PRINT << "Waiting for simple cache index to be ready..."
                   << std::endl;
       net::TestCompletionCallback wait_for_index_cb;
-      rv = simple_cache_impl_->index()->ExecuteWhenReady(
+      simple_cache_impl_->index()->ExecuteWhenReady(
           wait_for_index_cb.callback());
-      CHECK_EQ(wait_for_index_cb.GetResult(rv), net::OK);
+      rv = wait_for_index_cb.WaitForResult();
+      CHECK_EQ(rv, net::OK);
     }
   } else {
     MAYBE_PRINT << "Using blockfile cache";

@@ -205,6 +205,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
 #if defined(OS_WIN)
   virtual bool IsWinNativeApiAuthenticator() const = 0;
 #endif  // defined(OS_WIN)
+#if defined(OS_MACOSX)
+  virtual bool IsTouchIdAuthenticator() const = 0;
+#endif  // defined(OS_MACOSX)
   virtual base::WeakPtr<FidoAuthenticator> GetWeakPtr() = 0;
 
  private:

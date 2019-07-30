@@ -4,6 +4,8 @@
 
 #include "content/public/common/content_constants.h"
 
+#include "build/branding_buildflags.h"
+
 namespace content {
 
 const base::FilePath::CharType kAppCacheDirname[] =
@@ -24,7 +26,7 @@ const char kFlashPluginSplDescription[] = "FutureSplash Player";
 const size_t kMaxTitleChars = 4 * 1024;
 const size_t kMaxURLDisplayChars = 32 * 1024;
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kStatsFilename[] = "ChromeStats2";
 #else
 const char kStatsFilename[] = "ChromiumStats2";

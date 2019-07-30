@@ -20,7 +20,8 @@
 namespace views {
 
 // static
-constexpr base::TimeDelta InstallableInkDropAnimator::kAnimationDuration;
+constexpr base::TimeDelta
+    InstallableInkDropAnimator::kHighlightAnimationDuration;
 
 InstallableInkDropAnimator::InstallableInkDropAnimator(
     gfx::Size size,
@@ -34,13 +35,11 @@ InstallableInkDropAnimator::InstallableInkDropAnimator(
       flood_fill_animation_(this),
       fade_out_animation_(this) {
   highlight_animation_.SetContainer(animation_container);
-  highlight_animation_.SetSlideDuration(kAnimationDuration.InMilliseconds());
-
   flood_fill_animation_.SetContainer(animation_container);
-  flood_fill_animation_.SetDuration(kAnimationDuration);
-
   fade_out_animation_.SetContainer(animation_container);
-  fade_out_animation_.SetDuration(kAnimationDuration);
+
+  highlight_animation_.SetSlideDuration(
+      kHighlightAnimationDuration.InMilliseconds());
 }
 
 InstallableInkDropAnimator::~InstallableInkDropAnimator() = default;
@@ -76,8 +75,13 @@ void InstallableInkDropAnimator::AnimateToState(InkDropState target_state) {
       }
       // If we weren't already fading out, start fading out. Otherwise, just
       // continue fading out.
-      if (!fade_out_animation_.is_animating())
-        fade_out_animation_.Start();
+      if (!fade_out_animation_.is_animating()) {
+        const SubAnimation sub_animation =
+            target_state == InkDropState::HIDDEN
+                ? SubAnimation::kHiddenFadeOut
+                : SubAnimation::kDeactivatedFadeOut;
+        StartSubAnimation(sub_animation);
+      }
       break;
 
     case InkDropState::ACTION_PENDING:
@@ -86,19 +90,19 @@ void InstallableInkDropAnimator::AnimateToState(InkDropState target_state) {
         flood_fill_animation_.Stop();
         fade_out_animation_.Stop();
       }
-      flood_fill_animation_.Start();
+      StartSubAnimation(SubAnimation::kActionPendingFloodFill);
       break;
 
     case InkDropState::ACTION_TRIGGERED:
       if (last_state == InkDropState::HIDDEN) {
         // Start the flood fill. On this animation's end, we will start the fade
         // out animation in AnimationEnded().
-        flood_fill_animation_.Start();
+        StartSubAnimation(SubAnimation::kActionPendingFloodFill);
       } else if (last_state == InkDropState::ACTION_PENDING &&
                  !flood_fill_animation_.is_animating()) {
         // If we were done animating to ACTION_PENDING, we must start the fade
         // out animation here.
-        fade_out_animation_.Start();
+        StartSubAnimation(SubAnimation::kActionTriggeredFadeOut);
         // If we were in ACTION_PENDING but weren't done animating, we will
         // start the fade out animation in AnimationEnded().
       } else if (last_state != InkDropState::ACTION_PENDING) {
@@ -122,7 +126,7 @@ void InstallableInkDropAnimator::AnimateToState(InkDropState target_state) {
       }
 
       // Now simply start the flood fill animation again.
-      flood_fill_animation_.Start();
+      StartSubAnimation(SubAnimation::kActivatedFloodFill);
       break;
   }
 
@@ -136,6 +140,43 @@ void InstallableInkDropAnimator::AnimateHighlight(bool fade_in) {
     highlight_animation_.Show();
   } else {
     highlight_animation_.Hide();
+  }
+}
+
+base::TimeDelta InstallableInkDropAnimator::GetSubAnimationDuration(
+    SubAnimation sub_animation) {
+  switch (sub_animation) {
+    case SubAnimation::kHiddenFadeOut:
+      return base::TimeDelta::FromMilliseconds(200);
+    case SubAnimation::kActionPendingFloodFill:
+      return base::TimeDelta::FromMilliseconds(240);
+    case SubAnimation::kActionTriggeredFadeOut:
+      return base::TimeDelta::FromMilliseconds(300);
+    case SubAnimation::kActivatedFloodFill:
+      return base::TimeDelta::FromMilliseconds(200);
+    case SubAnimation::kDeactivatedFadeOut:
+      return base::TimeDelta::FromMilliseconds(300);
+  }
+}
+
+void InstallableInkDropAnimator::StartSubAnimation(SubAnimation sub_animation) {
+  const base::TimeDelta duration = GetSubAnimationDuration(sub_animation);
+  switch (sub_animation) {
+    case SubAnimation::kHiddenFadeOut:
+    case SubAnimation::kActionTriggeredFadeOut:
+    case SubAnimation::kDeactivatedFadeOut:
+      if (!fade_out_animation_.is_animating()) {
+        fade_out_animation_.SetDuration(duration);
+        fade_out_animation_.Start();
+      }
+      break;
+    case SubAnimation::kActionPendingFloodFill:
+    case SubAnimation::kActivatedFloodFill:
+      if (!flood_fill_animation_.is_animating()) {
+        flood_fill_animation_.SetDuration(duration);
+        flood_fill_animation_.Start();
+      }
+      break;
   }
 }
 
@@ -185,7 +226,7 @@ void InstallableInkDropAnimator::AnimationEnded(
 
       case InkDropState::ACTION_TRIGGERED:
         // After filling, the ink drop should fade out.
-        fade_out_animation_.Start();
+        StartSubAnimation(SubAnimation::kActionTriggeredFadeOut);
         break;
 
       case InkDropState::ALTERNATE_ACTION_PENDING:
@@ -244,7 +285,7 @@ void InstallableInkDropAnimator::AnimationProgressed(
   } else if (animation == &flood_fill_animation_) {
     visual_state_->flood_fill_center = gfx::PointF(last_event_location_);
     visual_state_->flood_fill_progress = gfx::Tween::CalculateValue(
-        gfx::Tween::EASE_IN_OUT, flood_fill_animation_.GetCurrentValue());
+        gfx::Tween::FAST_OUT_SLOW_IN, flood_fill_animation_.GetCurrentValue());
   } else if (animation == &fade_out_animation_) {
     // Do nothing for now.
   } else {

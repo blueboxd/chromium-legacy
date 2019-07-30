@@ -273,7 +273,9 @@ void NGBoxFragmentPainter::PaintObject(
   }
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly &&
-      !physical_box_fragment.Children().empty()) {
+      !physical_box_fragment.Children().empty() &&
+      !box_fragment_.GetLayoutObject()->PaintBlockedByDisplayLock(
+          DisplayLockContext::kChildren)) {
     if (physical_box_fragment.ChildrenInline()) {
       DCHECK(paint_fragment_);
       if (paint_phase != PaintPhase::kFloat) {

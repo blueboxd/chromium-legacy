@@ -89,8 +89,6 @@ class NET_EXPORT HostResolverManager
   using MdnsListener = HostResolver::MdnsListener;
   using ResolveHostRequest = HostResolver::ResolveHostRequest;
   using ResolveHostParameters = HostResolver::ResolveHostParameters;
-  using DnsClientFactory =
-      base::RepeatingCallback<std::unique_ptr<DnsClient>(NetLog*)>;
   using SecureDnsMode = DnsConfig::SecureDnsMode;
 
   class CancellableRequest : public ResolveHostRequest {
@@ -112,14 +110,8 @@ class NET_EXPORT HostResolverManager
   // outstanding DNS transactions (not counting retransmissions and retries).
   //
   // |net_log| must remain valid for the life of the HostResolverManager.
-  //
-  // |dns_client_factory_for_testing| may be used to inject a factory to be used
-  // for ManagerOptions::dns_client_enabled and SetDnsClientEnabled(). If not
-  // set, standard DnsClient::CreateClient() will be used.
-  HostResolverManager(
-      const HostResolver::ManagerOptions& options,
-      NetLog* net_log,
-      DnsClientFactory dns_client_factory_for_testing = base::NullCallback());
+  HostResolverManager(const HostResolver::ManagerOptions& options,
+                      NetLog* net_log);
 
   // If any completion callbacks are pending when the resolver is destroyed,
   // the host resolutions are cancelled, and the completion callbacks will not
@@ -148,7 +140,7 @@ class NET_EXPORT HostResolverManager
   // DnsConfig, a new config is fetched from NetworkChangeNotifier.
   //
   // Setting to |true| has no effect if |ENABLE_BUILT_IN_DNS| not defined.
-  virtual void SetDnsClientEnabled(bool enabled);
+  virtual void SetInsecureDnsClientEnabled(bool enabled);
 
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const;
 
@@ -169,6 +161,13 @@ class NET_EXPORT HostResolverManager
   // and aborting actions.
   void AddHostCacheInvalidator(HostCache::Invalidator* invalidator);
   void RemoveHostCacheInvalidator(const HostCache::Invalidator* invalidator);
+
+  // Returns the state of the insecure part of the DnsClient.
+  bool GetInsecureDnsClientEnabledForTesting();
+
+  // Returns the currently configured secure dns mode.  Returns OFF if there is
+  // not a valid config.
+  SecureDnsMode GetSecureDnsModeForTesting();
 
   // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
   // DNS over HTTPS is not enabled.
@@ -193,8 +192,6 @@ class NET_EXPORT HostResolverManager
 
   void SetBaseDnsConfigForTesting(const DnsConfig& base_config);
 
-  // Similar to SetDnsClientEnabled(true) except allows setting |dns_client|
-  // as the instance to be used.
   void SetDnsClientForTesting(std::unique_ptr<DnsClient> dns_client);
 
   // Allows the tests to catch slots leaking out of the dispatcher.  One
@@ -217,6 +214,7 @@ class NET_EXPORT HostResolverManager
 
  private:
   friend class HostResolverManagerTest;
+  friend class HostResolverManagerDnsTest;
   FRIEND_TEST_ALL_PREFIXES(HostResolverManagerDnsTest, ModeForHistogram);
   class Job;
   struct JobKey;
@@ -253,9 +251,10 @@ class NET_EXPORT HostResolverManager
     SECURE_CACHE_LOOKUP,
   };
 
-  // Number of consecutive failures of DnsTask (with successful fallback to
-  // ProcTask) before the DnsClient is disabled until the next DNS change.
-  static const unsigned kMaximumDnsFailures;
+  // Number of consecutive failures of an insecure DnsTask (with successful
+  // fallback to ProcTask) before the insecure portion of the DnsClient is
+  // disabled until the next DNS change.
+  static const unsigned kMaximumInsecureDnsTaskFailures;
 
   // Attempts host resolution for |request|. Generally only expected to be
   // called from RequestImpl::Start().
@@ -268,9 +267,9 @@ class NET_EXPORT HostResolverManager
   // sources.
   //
   // On ERR_DNS_CACHE_MISS and OK, effective request parameters are written to
-  // |out_effective_query_type| and |out_effective_host_resolver_flags|.
-  // |out_tasks| contains the tentative sequence of tasks that a future job
-  // should run.
+  // |out_effective_query_type|, |out_effective_host_resolver_flags|, and
+  // |out_effective_secure_dns_mode|. |out_tasks| contains the tentative
+  // sequence of tasks that a future job should run.
   //
   // If results are returned from the host cache, |out_stale_info| will be
   // filled in with information on how stale or fresh the result is. Otherwise,
@@ -289,6 +288,7 @@ class NET_EXPORT HostResolverManager
       HostCache* cache,
       DnsQueryType* out_effective_query_type,
       HostResolverFlags* out_effective_host_resolver_flags,
+      DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
       std::deque<TaskType>* out_tasks,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
 
@@ -297,6 +297,7 @@ class NET_EXPORT HostResolverManager
   // |request|. On error, marks |request| completed and returns the error.
   int CreateAndStartJob(DnsQueryType effective_query_type,
                         HostResolverFlags effective_host_resolver_flags,
+                        DnsConfig::SecureDnsMode effective_secure_dns_mode,
                         std::deque<TaskType> tasks,
                         RequestImpl* request);
 
@@ -318,12 +319,14 @@ class NET_EXPORT HostResolverManager
       const NetLogWithSource& source_net_log,
       base::Optional<HostCache::EntryStaleness>* out_stale_info);
 
-  // Iff we have a DnsClient with a valid DnsConfig, and |key| can be resolved
-  // from the HOSTS file, return the results.
+  // Iff we have a DnsClient with a valid DnsConfig and we're not about to
+  // attempt a system lookup, then try to resolve the query using the HOSTS
+  // file.
   base::Optional<HostCache::Entry> ServeFromHosts(
       base::StringPiece hostname,
       DnsQueryType query_type,
-      bool default_family_due_to_no_ipv6);
+      bool default_family_due_to_no_ipv6,
+      const std::deque<TaskType>& tasks);
 
   // Iff |key| is for a localhost name (RFC 6761) and address DNS query type,
   // returns a results entry with the loopback IP.
@@ -337,14 +340,21 @@ class NET_EXPORT HostResolverManager
   bool HasAvailableDohServer();
 
   // Returns the secure dns mode to use for a job, taking into account the
-  // global DnsConfig mode and any per-request override.
+  // global DnsConfig mode and any per-request override. Requests matching DoH
+  // server hostnames are downgraded to off mode to avoid infinite loops.
   SecureDnsMode GetEffectiveSecureDnsMode(
+      const std::string& hostname,
       base::Optional<SecureDnsMode> secure_dns_mode_override);
+
+  // Returns true if a catch-all DNS block has been set for unit tests. No
+  // DnsTasks should be issued in this case.
+  bool HaveTestProcOverride();
 
   // Helper method to add DnsTasks and related tasks based on the SecureDnsMode
   // and fallback parameters.
-  void PushDnsTasks(bool allow_proc_fallback,
+  void PushDnsTasks(bool proc_task_allowed,
                     SecureDnsMode secure_dns_mode,
+                    bool insecure_tasks_allowed,
                     ResolveHostParameters::CacheUsage cache_usage,
                     std::deque<TaskType>* out_tasks);
 
@@ -357,6 +367,7 @@ class NET_EXPORT HostResolverManager
       HostResolverFlags flags,
       base::Optional<SecureDnsMode> secure_dns_mode_override,
       ResolveHostParameters::CacheUsage cache_usage,
+      DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
       std::deque<TaskType>* out_tasks);
 
   // Determines "effective" request parameters using manager properties and IPv6
@@ -372,6 +383,7 @@ class NET_EXPORT HostResolverManager
       const NetLogWithSource& net_log,
       DnsQueryType* out_effective_type,
       HostResolverFlags* out_effective_flags,
+      DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
       std::deque<TaskType>* out_tasks);
 
   // Probes IPv6 support and returns true if IPv6 support is enabled.
@@ -405,14 +417,13 @@ class NET_EXPORT HostResolverManager
   // true. Might start new jobs.
   void AbortAllJobs(bool in_progress_only);
 
-  void SetDnsClient(std::unique_ptr<DnsClient> dns_client);
-
-  // Aborts all in progress DnsTasks. In-progress jobs will fall back to
-  // ProcTasks if able and otherwise abort with |error|. Might start new jobs,
-  // if any jobs were taking up two dispatcher slots.
+  // Aborts all in progress insecure DnsTasks. In-progress jobs will fall back
+  // to ProcTasks if able and otherwise abort with |error|. Might start new
+  // jobs, if any jobs were taking up two dispatcher slots.
   //
-  // If |fallback_only|, tasks will only abort if they can fallback to ProcTask.
-  void AbortDnsTasks(int error, bool fallback_only);
+  // If |fallback_only|, insecure DnsTasks will only abort if they can fallback
+  // to ProcTask.
+  void AbortInsecureDnsTasks(int error, bool fallback_only);
 
   // Attempts to serve each Job in |jobs_| from the HOSTS file if we have
   // a DnsClient with a valid DnsConfig.
@@ -437,8 +448,6 @@ class NET_EXPORT HostResolverManager
   // True if have a DnsClient with a valid DnsConfig.
   bool HaveDnsConfig() const;
 
-  // Called on successful DnsTask resolve.
-  void OnDnsTaskResolve();
   // Called on successful resolve after falling back to ProcTask after a failed
   // DnsTask resolve.
   void OnFallbackResolve(int dns_task_error);
@@ -470,9 +479,6 @@ class NET_EXPORT HostResolverManager
 
   NetLog* net_log_;
 
-  // If set, used for construction of DnsClients for SetDnsClientEnabled().
-  const DnsClientFactory dns_client_factory_for_testing_;
-
   // If present, used by DnsTask and ServeFromHosts to resolve requests.
   std::unique_ptr<DnsClient> dns_client_;
 
@@ -489,8 +495,9 @@ class NET_EXPORT HostResolverManager
   // resolution.
   DnsConfigOverrides dns_config_overrides_;
 
-  // Number of consecutive failures of DnsTask, counted when fallback succeeds.
-  unsigned num_dns_failures_;
+  // Number of consecutive failures of insecure DnsTask, counted when fallback
+  // succeeds.
+  unsigned num_insecure_dns_task_failures_;
 
   // False if IPv6 should not be attempted and assumed unreachable when on a
   // WiFi connection. See https://crbug.com/696569 for further context.
@@ -506,14 +513,13 @@ class NET_EXPORT HostResolverManager
   // Any resolver flags that should be added to a request by default.
   HostResolverFlags additional_resolver_flags_;
 
-  // |true| if requests that would otherwise be handled via DnsTask should
-  // instead use ProcTask when able.  Used in cases where there have been
-  // multiple failures in DnsTask that succeeded in ProcTask, leading to the
-  // conclusion that the resolver has a bad DNS configuration.
-  bool use_proctask_by_default_;
-
   // Allow fallback to ProcTask if DnsTask fails.
   bool allow_fallback_to_proctask_;
+
+  // Whether insecure DnsTasks should not be added to the task sequence even if
+  // the insecure part of the DnsClient is enabled. This is set to true when
+  // there are too many successive insecure DnsTask failures.
+  bool bypass_insecure_dns_client_;
 
   // Task runner used for DNS lookups using the system resolver. Normally a
   // ThreadPool task runner, but can be overridden for tests.
@@ -521,6 +527,13 @@ class NET_EXPORT HostResolverManager
 
   // Current resolver mode, useful for breaking down histogram data.
   ModeForHistogram mode_for_histogram_;
+
+  // Whether insecure requests should be issued by DnsClient. This field is
+  // complementary to the SecureDnsMode in DnsConfig. If we're in AUTOMATIC
+  // mode, |insecure_dns_client_enabled_| will determine whether or not we
+  // fallback to the insecure part of DnsClient before falling back to the
+  // system resolver.
+  bool insecure_dns_client_enabled_;
 
   // Shared tick clock, overridden for testing.
   const base::TickClock* tick_clock_;

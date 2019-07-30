@@ -20,8 +20,7 @@ UserGestureToken::UserGestureToken(Status status)
     : consumable_gestures_(0),
       clock_(base::DefaultClock::GetInstance()),
       timestamp_(clock_->Now().ToDoubleT()),
-      timeout_policy_(kDefault),
-      was_forwarded_cross_process_(false) {
+      timeout_policy_(kDefault) {
   if (status == kNewGesture || !UserGestureIndicator::CurrentTokenThreadSafe())
     consumable_gestures_++;
 }
@@ -57,14 +56,6 @@ bool UserGestureToken::HasTimedOut() const {
   if (timeout_policy_ == kHasPaused)
     return false;
   return clock_->Now().ToDoubleT() - timestamp_ > kUserGestureTimeout;
-}
-
-bool UserGestureToken::WasForwardedCrossProcess() const {
-  return was_forwarded_cross_process_;
-}
-
-void UserGestureToken::SetWasForwardedCrossProcess() {
-  was_forwarded_cross_process_ = true;
 }
 
 // This enum is used in a histogram, so its values shouldn't change.
@@ -146,19 +137,6 @@ void UserGestureIndicator::SetTimeoutPolicy(
     UserGestureToken::TimeoutPolicy policy) {
   if (auto* token = CurrentTokenThreadSafe())
     token->SetTimeoutPolicy(policy);
-}
-
-// static
-bool UserGestureIndicator::WasForwardedCrossProcess() {
-  if (auto* token = CurrentTokenThreadSafe())
-    return token->WasForwardedCrossProcess();
-  return false;
-}
-
-// static
-void UserGestureIndicator::SetWasForwardedCrossProcess() {
-  if (auto* token = CurrentTokenThreadSafe())
-    token->SetWasForwardedCrossProcess();
 }
 
 }  // namespace blink

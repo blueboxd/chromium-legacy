@@ -74,6 +74,7 @@ function xr_session_promise_test(
                               let glLayer = new XRWebGLLayer(session, gl, {
                                 compositionDisabled: session.mode == 'inline'
                               });
+                              glLayer.context = gl;
                               // Session must have a baseLayer or frame requests
                               // will be ignored.
                               session.updateRenderState({
@@ -113,7 +114,6 @@ function forEachWebxrObject(callback) {
   callback(window.XRView, 'XRView');
   callback(window.XRViewport, 'XRViewport');
   callback(window.XRViewerPose, 'XRViewerPose');
-  callback(window.XRLayer, 'XRLayer');
   callback(window.XRWebGLLayer, 'XRWebGLLayer');
   callback(window.XRWebGLLayerInit, 'XRWebGLLayerInit');
   callback(window.XRCoordinateSystem, 'XRCoordinateSystem');

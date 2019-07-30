@@ -18,14 +18,14 @@ namespace content {
 
 // Wrapper around leveldb::WriteBatch.
 // This class holds a collection of updates to apply atomically to a database.
+// TODO(dmurph): Remove this and just use a leveldb::WriteBatch.
 class CONTENT_EXPORT LevelDBWriteBatch {
  public:
   static std::unique_ptr<LevelDBWriteBatch> Create();
   ~LevelDBWriteBatch();
 
   void Put(const base::StringPiece& key, const base::StringPiece& value);
-  void Remove(const base::StringPiece& key);  // Add remove operation to the
-                                              // batch.
+  void Remove(const base::StringPiece& key);
   void Clear();
 
  private:

@@ -210,14 +210,11 @@ class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
   void TearDown() override {
     test_bridge_ = nullptr;
     service_->Shutdown();
+    chrome_keyboard_controller_client_test_helper_.reset();
     profile_.reset();
     chromeos::input_method::InputMethodManager::Shutdown();
     ui::IMEBridge::Shutdown();
     ChromeAshTestBase::TearDown();
-    // Needs to be after ash::Shell is destroyed, as
-    // |chrome_keyboard_controller_client_test_helper_| observes the keyboard
-    // destruction.
-    chrome_keyboard_controller_client_test_helper_.reset();
     // To match ChromeBrowserMainExtraPartsAsh, shut down the TabletModeClient
     // after Shell.
     tablet_mode_client_.reset();

@@ -167,7 +167,8 @@ class CORE_EXPORT FrameLoader final {
   void Detach();
 
   void FinishedParsing();
-  void DidFinishNavigation();
+  enum class NavigationFinishState { kSuccess, kFailure };
+  void DidFinishNavigation(NavigationFinishState);
 
   void DidFinishSameDocumentNavigation(const KURL&,
                                        WebFrameLoadType,

@@ -19,7 +19,7 @@ class SmsDialogAndroid : public content::SmsDialog {
             base::OnceClosure on_continue,
             base::OnceClosure on_cancel) override;
   void Close() override;
-  void EnableContinueButton() override;
+  void SmsReceived() override;
 
   // Report the user manually clicks the 'Continue' button.
   void OnContinue(JNIEnv* env);

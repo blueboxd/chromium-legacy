@@ -27,6 +27,7 @@
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -740,12 +741,8 @@ class MediaEngagementSessionRestoreBrowserTest
     CloseBrowserSynchronously(browser());
 
     chrome::NewEmptyWindow(profile);
-    ui_test_utils::BrowserAddedObserver window_observer;
-    SessionRestoreTestHelper restore_observer;
-
-    Browser* new_browser = window_observer.WaitForSingleNewBrowser();
-    restore_observer.Wait();
-    return new_browser;
+    SessionRestoreTestHelper().Wait();
+    return BrowserList::GetInstance()->GetLastActive();
   }
 
   void WaitForTabsToLoad(Browser* browser) {

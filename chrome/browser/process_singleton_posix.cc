@@ -87,6 +87,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/process_singleton_lock_posix.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -118,8 +119,6 @@ const char kShutdownToken[] = "SHUTDOWN";
 const char kTokenDelimiter = '\0';
 const int kMaxMessageLength = 32 * 1024;
 const int kMaxACKMessageLength = base::size(kShutdownToken) - 1;
-
-const char kLockDelimiter = '-';
 
 bool g_disable_prompt = false;
 bool g_skip_is_chrome_process_check = false;
@@ -282,34 +281,6 @@ bool SymlinkPath(const base::FilePath& target, const base::FilePath& path) {
       return false;
     }
   }
-  return true;
-}
-
-// Extract the hostname and pid from the lock symlink.
-// Returns true if the lock existed.
-bool ParseLockPath(const base::FilePath& path,
-                   std::string* hostname,
-                   int* pid) {
-  std::string real_path = ReadLink(path).value();
-  if (real_path.empty())
-    return false;
-
-  std::string::size_type pos = real_path.rfind(kLockDelimiter);
-
-  // If the path is not a symbolic link, or doesn't contain what we expect,
-  // bail.
-  if (pos == std::string::npos) {
-    *hostname = "";
-    *pid = -1;
-    return true;
-  }
-
-  *hostname = real_path.substr(0, pos);
-
-  const std::string& pid_str = real_path.substr(pos + 1);
-  if (!base::StringToInt(pid_str, pid))
-    *pid = -1;
-
   return true;
 }
 
@@ -782,7 +753,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
       // On Mac, we want the open process' pid in case there are
       // Apple Events to forward. See crbug.com/777863.
       std::string hostname;
-      ParseLockPath(lock_path_, &hostname, &pid);
+      ParseProcessSingletonLock(lock_path_, &hostname, &pid);
 #endif
       break;
     }
@@ -793,7 +764,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     // chrome browser.  If so, we loop and try again for |timeout|.
 
     std::string hostname;
-    if (!ParseLockPath(lock_path_, &hostname, &pid)) {
+    if (!ParseProcessSingletonLock(lock_path_, &hostname, &pid)) {
       // No lockfile exists.
       return PROCESS_NONE;
     }
@@ -1000,11 +971,9 @@ bool ProcessSingleton::Create() {
 
   // The symlink lock is pointed to the hostname and process id, so other
   // processes can find it out.
-  base::FilePath symlink_content(base::StringPrintf(
-      "%s%c%u",
-      net::GetHostName().c_str(),
-      kLockDelimiter,
-      current_pid_));
+  base::FilePath symlink_content(
+      base::StringPrintf("%s%c%u", net::GetHostName().c_str(),
+                         kProcessSingletonLockDelimiter, current_pid_));
 
   // Create symbol link before binding the socket, to ensure only one instance
   // can have the socket open.
@@ -1103,7 +1072,7 @@ bool ProcessSingleton::IsSameChromeInstance(pid_t pid) {
 bool ProcessSingleton::KillProcessByLockPath(bool is_connected_to_socket) {
   std::string hostname;
   int pid;
-  ParseLockPath(lock_path_, &hostname, &pid);
+  ParseProcessSingletonLock(lock_path_, &hostname, &pid);
 
   if (!hostname.empty() && hostname != net::GetHostName() &&
       !is_connected_to_socket) {

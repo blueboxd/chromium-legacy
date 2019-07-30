@@ -158,7 +158,7 @@ TEST_F(LayoutShiftTrackerTest, IgnoreAfterInput) {
 TEST_F(LayoutShiftTrackerTest, CompositedElementMovement) {
   SetBodyInnerHTML(R"HTML(
     <style>
-    #jank {
+    #shift {
       position: relative;
       width: 500px;
       height: 200px;
@@ -176,7 +176,7 @@ TEST_F(LayoutShiftTrackerTest, CompositedElementMovement) {
     </style>
     <div id='container' class='tr'>
       <div id='space'></div>
-      <div id='jank' class='tr'></div>
+      <div id='shift' class='tr'></div>
     </div>
   )HTML");
 
@@ -184,14 +184,14 @@ TEST_F(LayoutShiftTrackerTest, CompositedElementMovement) {
       html_names::kStyleAttr, AtomicString("height: 100px"));
   UpdateAllLifecyclePhases();
 
-  // #jank is 400x200 after viewport intersection with correct application of
-  // composited #container offset, and 100px lower after janking, so jank score
-  // is (400 * 300) * (100 / 800) / (viewport size 800 * 600)
+  // #shift is 400x200 after viewport intersection with correct application of
+  // composited #container offset, and 100px lower after shifting, so shift
+  // score is (400 * 300) * (100 / 800) / (viewport size 800 * 600)
   EXPECT_FLOAT_EQ(0.25 * (100.0 / 800.0), GetLayoutShiftTracker().Score());
 }
 
-TEST_F(LayoutShiftTrackerTest, CompositedJankBeforeFirstPaint) {
-  // Tests that we don't crash if a new layer janks during a second compositing
+TEST_F(LayoutShiftTrackerTest, CompositedShiftBeforeFirstPaint) {
+  // Tests that we don't crash if a new layer shifts during a second compositing
   // update before prepaint sets up property tree state.  See crbug.com/881735
   // (which invokes UpdateLifecycleToCompositingCleanPlusScrolling through
   // accessibilityController.accessibleElementById).
@@ -261,7 +261,7 @@ TEST_F(LayoutShiftTrackerTest, IgnoreSVG) {
   EXPECT_FLOAT_EQ(0, GetLayoutShiftTracker().Score());
 }
 
-TEST_F(LayoutShiftTrackerTest, JankWhileScrolled) {
+TEST_F(LayoutShiftTrackerTest, ShiftWhileScrolled) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { height: 1000px; margin: 0; }
@@ -367,7 +367,7 @@ TEST_F(LayoutShiftTrackerTest, ShiftInToViewport) {
                                                   AtomicString("top: 400px"));
   UpdateAllLifecyclePhases();
   // The element moves from outside the viewport to within the viewport, which
-  // should generate jank.
+  // should generate a shift.
   // (width 600) * (height 0 + move 200) * (200 / 800) / (800 * 600 viewport)
   EXPECT_FLOAT_EQ(0.25 * (200.0 / 800.0), GetLayoutShiftTracker().Score());
 }
@@ -386,14 +386,14 @@ TEST_F(LayoutShiftTrackerTest, ClipWithoutPaintLayer) {
   )HTML");
 
   // Increase j's top margin by 100px. Since j is clipped by the scroller, this
-  // should not generate jank. However, due to the issue in crbug/971639, this
-  // case was erroneously reported as janking, before that bug was fixed. This
-  // test ensures we do not regress this behavior.
+  // should not generate a shift. However, due to the issue in crbug.com/971639,
+  // this case was erroneously reported as shifting, before that bug was fixed.
+  // This test ensures we do not regress this behavior.
   GetDocument().getElementById("j")->setAttribute(
       html_names::kStyleAttr, AtomicString("margin-top: 100px"));
 
   UpdateAllLifecyclePhases();
-  // Make sure no jank score is reported, since the element that moved is fully
+  // Make sure no shift score is reported, since the element that moved is fully
   // clipped by the scroller.
   EXPECT_FLOAT_EQ(0.0, GetLayoutShiftTracker().Score());
 }

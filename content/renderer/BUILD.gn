@@ -200,8 +200,6 @@ target(link_target_type, "renderer") {
     "media/stream/apply_constraints_processor.h",
     "media/stream/media_stream_center.cc",
     "media/stream/media_stream_center.h",
-    "media/stream/media_stream_device_observer.cc",
-    "media/stream/media_stream_device_observer.h",
     "media/stream/user_media_client_impl.cc",
     "media/stream/user_media_client_impl.h",
     "media/stream/user_media_processor.cc",

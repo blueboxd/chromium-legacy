@@ -51,6 +51,7 @@ class ContextHostResolverTest : public TestWithScopedTaskEnvironment {
         std::make_unique<MockDnsClient>(DnsConfig(), std::move(rules));
     dns_client_ = dns_client.get();
     manager_->SetDnsClientForTesting(std::move(dns_client));
+    manager_->SetInsecureDnsClientEnabled(true);
 
     scoped_refptr<HostResolverProc> proc = CreateCatchAllHostResolverProc();
     manager_->set_proc_params_for_test(ProcTaskParams(proc.get(), 1u));

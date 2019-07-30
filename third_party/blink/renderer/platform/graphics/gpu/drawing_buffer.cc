@@ -642,7 +642,7 @@ DrawingBuffer::ScopedRGBEmulationForBlitFramebuffer::
 scoped_refptr<CanvasResource> DrawingBuffer::AsCanvasResource(
     base::WeakPtr<CanvasResourceProvider> resource_provider) {
   scoped_refptr<ColorBuffer> canvas_resource_buffer =
-      using_swap_chain_ ? front_color_buffer_ : back_color_buffer_;
+      UsingSwapChain() ? front_color_buffer_ : back_color_buffer_;
   return ExternalCanvasResource::Create(
       canvas_resource_buffer->mailbox, canvas_resource_buffer->size,
       texture_target_, CanvasColorParams(), context_provider_->GetWeakPtr(),
@@ -1418,18 +1418,13 @@ void DrawingBuffer::FlipVertically(uint8_t* framebuffer,
 }
 
 void DrawingBuffer::PresentSwapChain() {
-  if (!using_swap_chain_)
-    return;
-#if defined(OS_WIN)
+  DCHECK(UsingSwapChain());
   gpu::SyncToken sync_token;
   gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
   auto* sii = ContextProvider()->SharedImageInterface();
   sii->PresentSwapChain(sync_token, back_color_buffer_->mailbox);
   sync_token = sii->GenUnverifiedSyncToken();
   gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-#else
-  NOTREACHED();
-#endif  // OS_WIN
 }
 
 scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
@@ -1459,15 +1454,13 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     format = viz::RGBX_8888;
   }
 
-  if (using_swap_chain_) {
-#if defined(OS_WIN)
+  if (UsingSwapChain()) {
     gpu::SharedImageInterface::SwapChainMailboxes mailboxes =
         sii->CreateSwapChain(format, static_cast<gfx::Size>(size),
                              storage_color_space_,
                              usage | gpu::SHARED_IMAGE_USAGE_SCANOUT);
     back_buffer_mailbox = mailboxes.back_buffer;
     front_buffer_mailbox = mailboxes.front_buffer;
-#endif  // OS_WIN
   } else {
     if (ShouldUseChromiumImage()) {
       gfx::BufferFormat buffer_format;
@@ -1509,7 +1502,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
   gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
   gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   if (!front_buffer_mailbox.IsZero()) {
-    DCHECK(using_swap_chain_);
+    DCHECK(UsingSwapChain());
     // Import frontbuffer of swap chain into GL.
     texture_id = gl_->CreateAndTexStorage2DSharedImageCHROMIUM(
         front_buffer_mailbox.name);

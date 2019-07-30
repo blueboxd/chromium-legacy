@@ -21,7 +21,6 @@
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/common/frame_message_enums.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
@@ -34,7 +33,6 @@
 #include "url/origin.h"
 
 namespace content {
-struct CommonNavigationParams;
 struct CommitNavigationParams;
 
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
@@ -176,12 +174,12 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
 
   // Helper functions to construct NavigationParameters for a navigation to this
   // NavigationEntry.
-  CommonNavigationParams ConstructCommonNavigationParams(
+  mojom::CommonNavigationParamsPtr ConstructCommonNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const scoped_refptr<network::ResourceRequestBody>& post_body,
       const GURL& dest_url,
-      const Referrer& dest_referrer,
-      FrameMsg_Navigate_Type::Value navigation_type,
+      blink::mojom::ReferrerPtr dest_referrer,
+      mojom::NavigationType navigation_type,
       PreviewsState previews_state,
       base::TimeTicks navigation_start,
       base::TimeTicks input_start);

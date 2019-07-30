@@ -29,6 +29,11 @@ void LogUMAPutBlobCount(size_t blob_count) {
   UMA_HISTOGRAM_COUNTS_1000("WebCore.IndexedDB.PutBlobsCount", blob_count);
 }
 
+IndexedDBDatabaseError CreateBackendAbortError() {
+  return IndexedDBDatabaseError(blink::kWebIDBDatabaseExceptionAbortError,
+                                "Backend aborted error");
+}
+
 }  // namespace
 
 // Expect to be created on IDB sequence and called/destroyed on IO thread.
@@ -136,7 +141,7 @@ void TransactionImpl::Put(
     const blink::IndexedDBKey& key,
     blink::mojom::IDBPutMode mode,
     const std::vector<blink::IndexedDBIndexKeys>& index_keys,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+    blink::mojom::IDBTransaction::PutCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(dispatcher_host_);
 
@@ -165,16 +170,19 @@ void TransactionImpl::Put(
   }
 
   switch (result.code) {
-    case IOHelper::LoadResultCode::kNoop:
+    case IOHelper::LoadResultCode::kNoop: {
+      IndexedDBDatabaseError error = CreateBackendAbortError();
+      std::move(callback).Run(
+          blink::mojom::IDBTransactionPutResult::NewErrorResult(
+              blink::mojom::IDBError::New(error.code(), error.message())));
       return;
+    }
     case IOHelper::LoadResultCode::kAbort: {
       IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
                                    kInvalidBlobUuid);
-      scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-          dispatcher_host_->AsWeakPtr(), origin_, std::move(callbacks_info),
-          dispatcher_host_->context()->TaskRunner()));
-
-      callbacks->OnError(error);
+      std::move(callback).Run(
+          blink::mojom::IDBTransactionPutResult::NewErrorResult(
+              blink::mojom::IDBError::New(error.code(), error.message())));
 
       if (!transaction_)
         return;
@@ -187,16 +195,33 @@ void TransactionImpl::Put(
       return;
     }
     case IOHelper::LoadResultCode::kInvalidBlobPath: {
+      IndexedDBDatabaseError error = CreateBackendAbortError();
+      std::move(callback).Run(
+          blink::mojom::IDBTransactionPutResult::NewErrorResult(
+              blink::mojom::IDBError::New(error.code(), error.message())));
       mojo::ReportBadMessage(kInvalidBlobFilePath);
       return;
     }
     case IOHelper::LoadResultCode::kSuccess: {
-      if (!transaction_)
+      if (!transaction_) {
+        IndexedDBDatabaseError error(
+            blink::kWebIDBDatabaseExceptionUnknownError,
+            "Unknown transaction.");
+        std::move(callback).Run(
+            blink::mojom::IDBTransactionPutResult::NewErrorResult(
+                blink::mojom::IDBError::New(error.code(), error.message())));
         return;
+      }
 
       IndexedDBConnection* connection = transaction_->connection();
-      if (!connection->IsConnected())
+      if (!connection->IsConnected()) {
+        IndexedDBDatabaseError error(
+            blink::kWebIDBDatabaseExceptionUnknownError, "Not connected.");
+        std::move(callback).Run(
+            blink::mojom::IDBTransactionPutResult::NewErrorResult(
+                blink::mojom::IDBError::New(error.code(), error.message())));
         return;
+      }
 
       // Value size recorded in IDBObjectStore before we can auto-wrap in a
       // blob. 1KB to 10MB.
@@ -212,12 +237,9 @@ void TransactionImpl::Put(
       // Release result.value->bits std::vector.
       result.value->bits.clear();
       swap(value.blob_info, result.blob_info);
-      scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-          dispatcher_host_->AsWeakPtr(), origin_, std::move(callbacks_info),
-          dispatcher_host_->context()->TaskRunner()));
       connection->database()->Put(transaction_.get(), object_store_id, &value,
                                   std::make_unique<blink::IndexedDBKey>(key),
-                                  mode, std::move(callbacks), index_keys);
+                                  mode, std::move(callback), index_keys);
 
       // Size can't be big enough to overflow because it represents the
       // actual bytes passed through IPC.

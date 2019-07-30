@@ -28,6 +28,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
@@ -504,11 +505,11 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // ProfileManager handles setting this to false for new profiles upon
   // creation.
   registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // This will be set for newly created profiles, and is used to indicate which
   // users went through onboarding with the current experiment group.
   registry->RegisterStringPref(prefs::kNaviOnboardGroup, "");
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 // static

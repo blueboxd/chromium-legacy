@@ -425,18 +425,18 @@ void WindowPerformance::DispatchFirstInputTiming(
   first_input_timing_ = entry;
 }
 
-void WindowPerformance::AddLayoutJankFraction(double jank_fraction,
-                                              bool input_detected,
-                                              base::TimeTicks input_timestamp) {
+void WindowPerformance::AddLayoutShiftValue(double value,
+                                            bool input_detected,
+                                            base::TimeTicks input_timestamp) {
   DCHECK(RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
       GetExecutionContext()));
   auto* entry = MakeGarbageCollected<LayoutShift>(
-      now(), jank_fraction, input_detected,
+      now(), value, input_detected,
       input_detected ? MonotonicTimeToDOMHighResTimeStamp(input_timestamp)
                      : 0.0);
   if (HasObserverFor(PerformanceEntry::kLayoutShift))
     NotifyObserversOfEntry(*entry);
-  AddLayoutJankBuffer(*entry);
+  AddLayoutShiftBuffer(*entry);
 }
 
 void WindowPerformance::OnLargestContentfulPaintUpdated(

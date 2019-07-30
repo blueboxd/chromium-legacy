@@ -178,7 +178,7 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
         }];
   }
 
-  _unmaskingController->OnUnmaskResponse(
+  _unmaskingController->OnUnmaskPromptAccepted(
       base::SysNSStringToUTF16(CVC), base::SysNSStringToUTF16(expirationMonth),
       base::SysNSStringToUTF16(expirationYear), storeLocally);
 }

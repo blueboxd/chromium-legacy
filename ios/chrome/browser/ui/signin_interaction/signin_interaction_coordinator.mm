@@ -271,9 +271,14 @@
   if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     [self showAdvancedSigninSettings];
   } else {
+    // The presenting view controller needs to be saved before calling
+    // -[SigninInteractionCoordinator signinDoneWithSuccess:].
+    // That method finishes the sign-in and cleans up the coordinator (and
+    // removes presenting view controller).
+    UIViewController* presentingViewController = self.presentingViewController;
     [self signinDoneWithSuccess:YES];
     [self.dispatcher
-        showAccountsSettingsFromViewController:self.presentingViewController];
+        showAccountsSettingsFromViewController:presentingViewController];
   }
 }
 

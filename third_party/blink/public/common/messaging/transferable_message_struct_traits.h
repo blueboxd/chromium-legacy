@@ -41,10 +41,6 @@ struct BLINK_COMMON_EXPORT
     return input.image_bitmap_contents_array;
   }
 
-  static bool has_user_gesture(blink::TransferableMessage& input) {
-    return input.has_user_gesture;
-  }
-
   static const blink::mojom::UserActivationSnapshotPtr& user_activation(
       blink::TransferableMessage& input) {
     return input.user_activation;

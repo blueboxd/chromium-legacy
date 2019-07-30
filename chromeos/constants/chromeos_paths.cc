@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/system/sys_info.h"
+#include "build/branding_buildflags.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
 
 namespace chromeos {
@@ -15,11 +16,11 @@ namespace chromeos {
 namespace {
 
 const base::FilePath::CharType kDefaultAppOrderFileName[] =
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     FILE_PATH_LITERAL("/usr/share/google-chrome/default_app_order.json");
 #else
     FILE_PATH_LITERAL("/usr/share/chromium/default_app_order.json");
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 const base::FilePath::CharType kMachineHardwareInfoFileName[] =
     FILE_PATH_LITERAL("/tmp/machine-info");

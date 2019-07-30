@@ -46,7 +46,7 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
 
   new_card_link_clicked_ = false;
   shown_timestamp_ = AutofillClock::Now();
-  pending_response_ = CardUnmaskDelegate::UnmaskResponse();
+  pending_details_ = CardUnmaskDelegate::UserProvidedUnmaskDetails();
   card_unmask_view_ = card_unmask_view;
   card_ = card;
   reason_ = reason;
@@ -106,7 +106,7 @@ void CardUnmaskPromptControllerImpl::OnUnmaskDialogClosed() {
     delegate_->OnUnmaskPromptClosed();
 }
 
-void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
+void CardUnmaskPromptControllerImpl::OnUnmaskPromptAccepted(
     const base::string16& cvc,
     const base::string16& exp_month,
     const base::string16& exp_year,
@@ -117,26 +117,26 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
   card_unmask_view_->DisableAndWaitForVerification();
 
   DCHECK(InputCvcIsValid(cvc));
-  base::TrimWhitespace(cvc, base::TRIM_ALL, &pending_response_.cvc);
+  base::TrimWhitespace(cvc, base::TRIM_ALL, &pending_details_.cvc);
   if (ShouldRequestExpirationDate()) {
     DCHECK(InputExpirationIsValid(exp_month, exp_year));
-    pending_response_.exp_month = exp_month;
-    pending_response_.exp_year = exp_year;
+    pending_details_.exp_month = exp_month;
+    pending_details_.exp_year = exp_year;
   }
   if (CanStoreLocally()) {
-    pending_response_.should_store_pan = should_store_pan;
+    pending_details_.should_store_pan = should_store_pan;
     // Remember the last choice the user made (on this device).
     pref_service_->SetBoolean(prefs::kAutofillWalletImportStorageCheckboxState,
                               should_store_pan);
   } else {
     DCHECK(!should_store_pan);
-    pending_response_.should_store_pan = false;
+    pending_details_.should_store_pan = false;
   }
 
   // There is a chance the delegate has disappeared (i.e. tab closed) before the
   // unmask response came in. Avoid a crash.
   if (delegate_)
-    delegate_->OnUnmaskResponse(pending_response_);
+    delegate_->OnUnmaskPromptAccepted(pending_details_);
 }
 
 void CardUnmaskPromptControllerImpl::NewCardLinkClicked() {
@@ -292,7 +292,7 @@ void CardUnmaskPromptControllerImpl::LogOnCloseEvents() {
                                                    verify_timestamp_);
   }
 
-  bool final_should_store_pan = pending_response_.should_store_pan;
+  bool final_should_store_pan = pending_details_.should_store_pan;
   if (unmasking_result_ == AutofillClient::SUCCESS && final_should_store_pan) {
     AutofillMetrics::LogUnmaskPromptEvent(
         AutofillMetrics::UNMASK_PROMPT_SAVED_CARD_LOCALLY);

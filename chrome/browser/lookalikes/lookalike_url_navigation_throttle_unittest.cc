@@ -68,4 +68,37 @@ TEST(LookalikeUrlNavigationThrottleTest, IsEditDistanceAtMostOne) {
   }
 }
 
+// These redirects are safe:
+// - http[s]://sité.test -> http[s]://site.test
+// - http[s]://sité.test/path -> http[s]://site.test
+// - http[s]://subdomain.sité.test -> http[s]://site.test
+// - http[s]://random.test -> http[s]://sité.test -> http[s]://site.test
+// - "subdomain" on either side.
+// This is not safe:
+// - http[s]://[subdomain.]sité.test -> http[s]://[subdomain.]site.test/path
+// because the redirected URL has a path.
+TEST(LookalikeUrlNavigationThrottleTest, IsSafeRedirect) {
+  EXPECT_TRUE(IsSafeRedirect(
+      "example.com", {GURL("http://éxample.com"), GURL("http://example.com")}));
+  EXPECT_TRUE(IsSafeRedirect(
+      "example.com", {GURL("http://éxample.com"), GURL("http://example.com")}));
+  EXPECT_TRUE(IsSafeRedirect(
+      "example.com",
+      {GURL("http://éxample.com"), GURL("http://subdomain.example.com")}));
+
+  // Not a redirect, the chain is too short.
+  EXPECT_FALSE(IsSafeRedirect("example.com", {GURL("http://éxample.com")}));
+  // Not safe: Redirected site is not the same as the matched site.
+  EXPECT_FALSE(IsSafeRedirect("example.com", {GURL("http://éxample.com"),
+                                              GURL("http://other-site.com")}));
+  // Not safe: Initial URL doesn't redirect to the root of the suggested domain.
+  EXPECT_FALSE(IsSafeRedirect(
+      "example.com",
+      {GURL("http://éxample.com"), GURL("http://example.com/path")}));
+  // Not safe: The chain is too long.
+  EXPECT_FALSE(IsSafeRedirect("example.com", {GURL("http://éxample.com"),
+                                              GURL("http://intermediate.com"),
+                                              GURL("http://example.com")}));
+}
+
 }  // namespace lookalikes

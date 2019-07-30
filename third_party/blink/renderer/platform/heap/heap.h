@@ -392,7 +392,7 @@ class PLATFORM_EXPORT ThreadHeap {
   }
 
 #if defined(ADDRESS_SANITIZER)
-  void PoisonAllHeaps();
+  void PoisonUnmarkedObjects();
 #endif
 
 #if DCHECK_IS_ON()

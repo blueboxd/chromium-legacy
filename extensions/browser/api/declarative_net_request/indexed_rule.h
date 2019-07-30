@@ -55,8 +55,13 @@ struct IndexedRule {
   std::vector<std::string> domains;
   std::vector<std::string> excluded_domains;
 
-  // The redirect url, valid iff this is a redirect rule.
-  std::string redirect_url;
+  // The redirect url for the rule. For redirect rules, exactly one of
+  // |redirect_url| or |url_transform| will be valid.
+  base::Optional<std::string> redirect_url;
+
+  // UrlTransform for this rule. For redirect rules, exactly one of
+  // |redirect_url| or |url_transform| will be valid.
+  std::unique_ptr<api::declarative_net_request::URLTransform> url_transform;
 
   // List of headers to remove, valid iff this is a remove headers rule.
   std::set<api::declarative_net_request::RemoveHeaderType> remove_headers_set;

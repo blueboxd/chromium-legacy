@@ -12,6 +12,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/mojom/referrer.mojom.h"
 
 using content::BrowserThread;
 

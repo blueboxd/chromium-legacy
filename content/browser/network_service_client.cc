@@ -16,7 +16,6 @@
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/webrtc_connections_observer.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
@@ -38,6 +37,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/ssl/client_cert_store.h"
+#include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
@@ -567,28 +567,26 @@ void NetworkServiceClient::OnFileUploadRequested(
 void NetworkServiceClient::OnLoadingStateUpdate(
     std::vector<network::mojom::LoadInfoPtr> infos,
     OnLoadingStateUpdateCallback callback) {
-  auto rdh_infos = std::make_unique<ResourceDispatcherHostImpl::LoadInfoList>();
+  std::map<WebContents*, network::mojom::LoadInfo> info_map;
 
-  // TODO(jam): once ResourceDispatcherHost is gone remove the translation
-  // (other than adding the WebContents callback).
   for (auto& info : infos) {
-    ResourceDispatcherHostImpl::LoadInfo load_info;
-    load_info.host = std::move(info->host);
-    load_info.load_state.state = static_cast<net::LoadState>(info->load_state);
-    load_info.load_state.param = std::move(info->state_param);
-    load_info.upload_position = info->upload_position;
-    load_info.upload_size = info->upload_size;
-    load_info.web_contents_getter =
-        base::BindRepeating(GetWebContents, info->process_id, info->routing_id);
-    rdh_infos->push_back(std::move(load_info));
+    auto* web_contents = GetWebContents(info->process_id, info->routing_id);
+    if (!web_contents)
+      continue;
+
+    auto existing = info_map.find(web_contents);
+    if (existing == info_map.end() ||
+        network::LoadInfoIsMoreInteresting(*info, existing->second)) {
+      info_map[web_contents] = *info;
+    }
   }
 
-  std::unique_ptr<ResourceDispatcherHostImpl::LoadInfoMap> info_map =
-      ResourceDispatcherHostImpl::PickMoreInterestingLoadInfos(
-          std::move(rdh_infos));
-  for (const auto& load_info : *info_map) {
+  for (const auto& load_info : info_map) {
+    net::LoadStateWithParam load_state;
+    load_state.state = static_cast<net::LoadState>(load_info.second.load_state);
+    load_state.param = load_info.second.state_param;
     static_cast<WebContentsImpl*>(load_info.first)
-        ->LoadStateChanged(load_info.second.host, load_info.second.load_state,
+        ->LoadStateChanged(load_info.second.host, load_state,
                            load_info.second.upload_position,
                            load_info.second.upload_size);
   }

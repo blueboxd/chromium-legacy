@@ -327,13 +327,13 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
 }
 
 void PaintLayer::UpdateLayerPositionRecursive() {
-  auto old_location = location_;
+  auto old_location = location_without_position_offset_;
   auto old_offset_for_in_flow_rel_position =
       rare_data_ ? rare_data_->offset_for_in_flow_rel_position
                  : PhysicalOffset();
   UpdateLayerPosition();
 
-  if (location_ != old_location) {
+  if (location_without_position_offset_ != old_location) {
     SetNeedsCompositingInputsUpdate();
   } else {
     // TODO(chrishtr): compute this invalidation in layout instead of here.
@@ -826,7 +826,7 @@ void PaintLayer::UpdateLayerPosition() {
   } else if (rare_data_) {
     rare_data_->offset_for_in_flow_rel_position = PhysicalOffset();
   }
-  location_ = local_point;
+  location_without_position_offset_ = local_point;
 
 #if DCHECK_IS_ON()
   needs_position_update_ = false;
@@ -1522,7 +1522,7 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
   if (!containing_layer)
     return nullptr;
 
-  location += layer->Location();
+  location += layer->LocationWithoutPositionOffset();
   if (layer->GetLayoutObject().IsInFlowPositioned())
     location += layer->GetLayoutObject().OffsetForInFlowPosition();
   location -= PhysicalOffset(containing_layer->ScrolledContentOffset());

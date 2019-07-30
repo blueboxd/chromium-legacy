@@ -15,7 +15,6 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_export.h"
-#include "content/common/frame_message_enums.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/visibility.h"
@@ -31,6 +30,7 @@
 #include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_WIN)

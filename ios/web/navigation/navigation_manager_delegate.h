@@ -27,6 +27,10 @@ class NavigationManagerDelegate {
   // navigation.
   virtual void ClearTransientContent() = 0;
 
+  // Instructs the delegate to clear any presented dialogs to prepare for a new
+  // navigation.
+  virtual void ClearDialogs() = 0;
+
   // Instructs the delegate to record page states (e.g. scroll position, form
   // values, whatever can be harvested) from the current page into the
   // navigation item.

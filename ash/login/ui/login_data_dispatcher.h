@@ -52,6 +52,12 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
     virtual void OnPinEnabledForUserChanged(const AccountId& user,
                                             bool enabled);
 
+    // Called when the challenge-response authentication should be enabled or
+    // disabled for |user|. By default, it should be disabled.
+    virtual void OnChallengeResponseAuthEnabledForUserChanged(
+        const AccountId& user,
+        bool enabled);
+
     // Called when fingerprint unlock state changes for user with |account_id|.
     virtual void OnFingerprintStateChanged(const AccountId& account_id,
                                            FingerprintState state);
@@ -150,6 +156,8 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   // overrides.
   void SetUserList(const std::vector<LoginUserInfo>& users) override;
   void SetPinEnabledForUser(const AccountId& user, bool enabled) override;
+  void SetChallengeResponseAuthEnabledForUser(const AccountId& user,
+                                              bool enabled) override;
   void SetFingerprintState(const AccountId& account_id,
                            FingerprintState state) override;
   void SetAvatarForUser(const AccountId& account_id,

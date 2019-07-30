@@ -1177,6 +1177,7 @@ TEST_F(HostResolverTest, TextResults) {
       net::HostResolver::CreateStandaloneContextResolver(&net_log);
   inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
       std::move(dns_client));
+  inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(true);
   inner_resolver->SetBaseDnsConfigForTesting(CreateValidDnsConfig());
 
   HostResolver resolver(inner_resolver.get(), &net_log);
@@ -1216,6 +1217,7 @@ TEST_F(HostResolverTest, HostResults) {
       net::HostResolver::CreateStandaloneContextResolver(&net_log);
   inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
       std::move(dns_client));
+  inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(true);
   inner_resolver->SetBaseDnsConfigForTesting(CreateValidDnsConfig());
 
   HostResolver resolver(inner_resolver.get(), &net_log);

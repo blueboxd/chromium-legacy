@@ -299,9 +299,10 @@ void IndexedDBTransaction::Start() {
 
   RunTasksIfStarted();
 }
+
 void IndexedDBTransaction::EnsureBackingStoreTransactionBegun() {
   if (!backing_store_transaction_begun_) {
-    transaction_->Begin();
+    transaction_->Begin(std::move(locks_receiver_.locks));
     backing_store_transaction_begun_ = true;
   }
 }
@@ -542,7 +543,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     // This can delete |this|.
     leveldb::Status result = Commit();
     if (!result.ok())
-      error_callback_.Run(result, "ERror committing the transaction.");
+      error_callback_.Run(result, "Error committing the transaction.");
     return;
   }
 

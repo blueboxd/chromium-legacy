@@ -510,7 +510,6 @@ modules_idl_files =
           "xr/xr_input_source_array.idl",
           "xr/xr_input_source_event.idl",
           "xr/xr_input_sources_change_event.idl",
-          "xr/xr_layer.idl",
           "xr/xr_plane.idl",
           "xr/xr_plane_detection_state.idl",
           "xr/xr_plane_set.idl",

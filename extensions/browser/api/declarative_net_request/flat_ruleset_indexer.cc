@@ -54,6 +54,89 @@ CreateIndexBuilders(flatbuffers::FlatBufferBuilder* builder) {
   return result;
 }
 
+FlatOffset<flat::UrlTransform> BuildTransformOffset(
+    flatbuffers::FlatBufferBuilder* builder,
+    const dnr_api::URLTransform& transform) {
+  auto create_string_offset =
+      [builder](const std::unique_ptr<std::string>& str) {
+        if (!str)
+          return FlatStringOffset();
+
+        return builder->CreateSharedString(*str);
+      };
+
+  auto skip_separator_and_create_string_offset =
+      [builder](const std::unique_ptr<std::string>& str, char separator) {
+        if (!str)
+          return FlatStringOffset();
+
+        DCHECK(!str->empty());
+        DCHECK_EQ(separator, str->at(0));
+
+        return builder->CreateSharedString(str->c_str() + 1, str->length() - 1);
+      };
+
+  auto should_clear_component = [](const std::unique_ptr<std::string>& str) {
+    return str && str->empty();
+  };
+
+  const FlatStringOffset kNullOffset;
+
+  FlatStringOffset scheme = create_string_offset(transform.scheme);
+  FlatStringOffset host = create_string_offset(transform.host);
+
+  bool clear_port = should_clear_component(transform.port);
+  FlatStringOffset port =
+      clear_port ? kNullOffset : create_string_offset(transform.port);
+
+  // Don't skip separator for path. Not all paths begin with '/'.
+  bool clear_path = should_clear_component(transform.path);
+  FlatStringOffset path =
+      clear_path ? kNullOffset : create_string_offset(transform.path);
+
+  bool clear_query = should_clear_component(transform.query);
+  FlatStringOffset query =
+      clear_query
+          ? kNullOffset
+          : skip_separator_and_create_string_offset(transform.query, '?');
+
+  bool clear_fragment = should_clear_component(transform.fragment);
+  FlatStringOffset fragment =
+      clear_fragment
+          ? kNullOffset
+          : skip_separator_and_create_string_offset(transform.fragment, '#');
+
+  FlatStringOffset username = create_string_offset(transform.username);
+  FlatStringOffset password = create_string_offset(transform.password);
+
+  FlatStringListOffset remove_query_params;
+  if (transform.query_transform && transform.query_transform->remove_params) {
+    remove_query_params = BuildVectorOfSharedStrings(
+        builder, *transform.query_transform->remove_params);
+  }
+
+  FlatVectorOffset<flat::QueryKeyValue> add_or_replace_params;
+  if (transform.query_transform &&
+      transform.query_transform->add_or_replace_params &&
+      !transform.query_transform->add_or_replace_params->empty()) {
+    std::vector<FlatOffset<flat::QueryKeyValue>> add_or_replace_queries;
+    add_or_replace_queries.reserve(
+        transform.query_transform->add_or_replace_params->size());
+    for (const dnr_api::QueryKeyValue& query_pair :
+         *transform.query_transform->add_or_replace_params) {
+      add_or_replace_queries.push_back(flat::CreateQueryKeyValue(
+          *builder, builder->CreateSharedString(query_pair.key),
+          builder->CreateSharedString(query_pair.value)));
+    }
+    add_or_replace_params = builder->CreateVector(add_or_replace_queries);
+  }
+
+  return flat::CreateUrlTransform(*builder, scheme, host, clear_port, port,
+                                  clear_path, path, clear_query, query,
+                                  remove_query_params, add_or_replace_params,
+                                  clear_fragment, fragment, username, password);
+}
+
 }  // namespace
 
 FlatRulesetIndexer::FlatRulesetIndexer()
@@ -87,11 +170,22 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
 
   // Store additional metadata required for a redirect rule.
   if (indexed_rule.action_type == dnr_api::RULE_ACTION_TYPE_REDIRECT) {
-    DCHECK(!indexed_rule.redirect_url.empty());
-    FlatStringOffset redirect_url_offset =
-        builder_.CreateSharedString(indexed_rule.redirect_url);
-    metadata_.push_back(flat::CreateUrlRuleMetadata(builder_, indexed_rule.id,
-                                                    redirect_url_offset));
+    DCHECK(indexed_rule.redirect_url || indexed_rule.url_transform);
+
+    if (indexed_rule.redirect_url) {
+      DCHECK(!indexed_rule.redirect_url->empty());
+      FlatStringOffset redirect_url_offset =
+          builder_.CreateSharedString(*indexed_rule.redirect_url);
+      metadata_.push_back(flat::CreateUrlRuleMetadata(
+          builder_, indexed_rule.id, redirect_url_offset,
+          FlatOffset<flat::UrlTransform>()));
+    } else {
+      FlatOffset<flat::UrlTransform> transform_offset =
+          BuildTransformOffset(&builder_, *indexed_rule.url_transform);
+      metadata_.push_back(flat::CreateUrlRuleMetadata(
+          builder_, indexed_rule.id, FlatStringOffset() /* redirect_url */,
+          transform_offset));
+    }
   }
 }
 

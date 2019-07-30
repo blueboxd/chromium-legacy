@@ -7,8 +7,6 @@
 
 from __future__ import print_function
 
-from grit.node import message
-
 
 def Format(root, lang='en', output_dir='.'):
   yield '''\

@@ -2158,7 +2158,7 @@
 <translation id="4170314459383239649">ล้างเมื่อออก</translation>
 <translation id="4172051516777682613">แสดงทุกครั้ง</translation>
 <translation id="4175737294868205930">พื้นที่เก็บข้อมูลถาวร</translation>
-<translation id="4176463684765177261">ปิดการใช้งานแล้ว</translation>
+<translation id="4176463684765177261">ปิดการทำงาน</translation>
 <translation id="4180788401304023883">ลบใบรับรองของผู้ออกใบรับรอง "<ph name="CERTIFICATE_NAME" />" หรือไม่</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">ภาษา</translation>
@@ -3276,7 +3276,7 @@
   Public Exponent (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> บิต):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="5916664084637901428">เปิด</translation>
-<translation id="59174027418879706">เปิดใช้งานแล้ว</translation>
+<translation id="59174027418879706">เปิดใช้งาน</translation>
 <translation id="5920543303088087579">ผู้ดูแลระบบปิดใช้การเชื่อมต่อเครือข่ายนี้</translation>
 <translation id="5920835625712313205">ตัวเขียนอิมเมจระบบ Chrome OS</translation>
 <translation id="5924047253200400718">รับความช่วยเหลือ<ph name="SCANNING_STATUS" /></translation>

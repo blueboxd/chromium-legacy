@@ -679,7 +679,8 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     CHECK(net_log) << "All DNS-related experiments require NetLog.";
     std::unique_ptr<net::HostResolver> host_resolver;
     net::HostResolver::ManagerOptions host_resolver_manager_options;
-    host_resolver_manager_options.dns_client_enabled = async_dns_enable;
+    host_resolver_manager_options.insecure_dns_client_enabled =
+        async_dns_enable;
     host_resolver_manager_options.check_ipv6_on_wifi = !disable_ipv6_on_wifi;
     // TODO(crbug.com/934402): Consider using a shared HostResolverManager for
     // Cronet HostResolvers.

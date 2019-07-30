@@ -26,6 +26,7 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/origin.h"
 
@@ -176,6 +177,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
                                      base::FilePath data_directory,
                                      base::FilePath database_path,
                                      base::FilePath blob_path,
+                                     LevelDBScopesOptions scopes_options,
+                                     LevelDBScopesFactory* scopes_factory,
                                      bool is_first_attempt);
 
   void RemoveOriginState(const url::Origin& origin);

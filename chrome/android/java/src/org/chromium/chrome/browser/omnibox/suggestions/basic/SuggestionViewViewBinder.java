@@ -44,15 +44,6 @@ public class SuggestionViewViewBinder {
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION.equals(propertyKey)) {
             ViewCompat.setLayoutDirection(
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
-        } else if (SuggestionViewProperties.IS_ANSWER.equals(propertyKey)) {
-            updateSuggestionLayoutType(view, model);
-        } else if (SuggestionViewProperties.HAS_ANSWER_IMAGE.equals(propertyKey)) {
-            int visibility =
-                    model.get(SuggestionViewProperties.HAS_ANSWER_IMAGE) ? View.VISIBLE : View.GONE;
-            view.getAnswerImageView().setVisibility(visibility);
-        } else if (SuggestionViewProperties.ANSWER_IMAGE.equals(propertyKey)) {
-            view.getAnswerImageView().setImageBitmap(
-                    model.get(SuggestionViewProperties.ANSWER_IMAGE));
         } else if (SuggestionViewProperties.REFINABLE.equals(propertyKey)) {
             boolean refinable = model.get(SuggestionViewProperties.REFINABLE);
             view.setRefinable(refinable);
@@ -66,7 +57,6 @@ public class SuggestionViewViewBinder {
             Pair<Integer, Integer> sizing = model.get(SuggestionViewProperties.TEXT_LINE_1_SIZING);
             view.getTextLine1().setTextSize(sizing.first, sizing.second);
         } else if (SuggestionViewProperties.TEXT_LINE_1_MAX_LINES.equals(propertyKey)) {
-            updateSuggestionLayoutType(view, model);
             updateSuggestionViewTextMaxLines(
                     view.getTextLine1(), model.get(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES));
         } else if (SuggestionViewProperties.TEXT_LINE_1_TEXT_COLOR.equals(propertyKey)) {
@@ -82,7 +72,6 @@ public class SuggestionViewViewBinder {
             Pair<Integer, Integer> sizing = model.get(SuggestionViewProperties.TEXT_LINE_2_SIZING);
             view.getTextLine2().setTextSize(sizing.first, sizing.second);
         } else if (SuggestionViewProperties.TEXT_LINE_2_MAX_LINES.equals(propertyKey)) {
-            updateSuggestionLayoutType(view, model);
             updateSuggestionViewTextMaxLines(
                     view.getTextLine2(), model.get(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES));
         } else if (SuggestionViewProperties.TEXT_LINE_2_TEXT_COLOR.equals(propertyKey)) {
@@ -123,22 +112,6 @@ public class SuggestionViewViewBinder {
             view.setSingleLine(false);
             view.setEllipsize(TextUtils.TruncateAt.END);
             view.setMaxLines(lines);
-        }
-    }
-
-    private static void updateSuggestionLayoutType(SuggestionView view, PropertyModel model) {
-        boolean isAnswer = model.get(SuggestionViewProperties.IS_ANSWER);
-        // Note: only one of these fields will report line count > 0; this depends on the selected
-        // suggestion layout. Old layout allows multiline response in line 2, new answer layout - in
-        // line 1.
-        boolean isMultiline = model.get(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES) > 1
-                || model.get(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES) > 1;
-        if (!isAnswer) {
-            view.setSuggestionLayoutType(SuggestionView.SuggestionLayoutType.TEXT_SUGGESTION);
-        } else {
-            view.setSuggestionLayoutType(isMultiline
-                            ? SuggestionView.SuggestionLayoutType.MULTI_LINE_ANSWER
-                            : SuggestionView.SuggestionLayoutType.ANSWER);
         }
     }
 

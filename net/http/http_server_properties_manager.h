@@ -58,11 +58,11 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
     virtual void SetServerProperties(const base::DictionaryValue& value,
                                      base::OnceClosure callback) = 0;
 
-    // Starts listening for external storage changes. There will only be one
-    // callback active at a time. The first time the |callback| is invoked is
-    // expected to mean the initial pref store values have been loaded.
-    virtual void StartListeningForUpdates(
-        const base::RepeatingClosure& callback) = 0;
+    // Starts listening for prefs to be loaded. If prefs are already loaded,
+    // |pref_loaded_callback| will be invoked asynchronously. Callback will be
+    // invoked even if prefs fail to load. Will only be called once by the
+    // HttpServerPropertiesManager.
+    virtual void WaitForPrefLoad(base::OnceClosure pref_loaded_callback) = 0;
   };
 
   // Create an instance of the HttpServerPropertiesManager.
@@ -140,17 +140,9 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       size_t max_server_configs_stored_in_properties) override;
   bool IsInitialized() const override;
 
-  static base::TimeDelta GetUpdateCacheDelayForTesting();
   static base::TimeDelta GetUpdatePrefsDelayForTesting();
 
-  void ScheduleUpdateCacheForTesting();
-
  protected:
-  // These are used to delay updating of the cached data in
-  // |http_server_properties_impl_| while the preferences are changing, and
-  // execute only one update per simultaneous prefs changes.
-  void ScheduleUpdateCache();
-
   // Update cached prefs in |http_server_properties_impl_| with data from
   // preferences.
   void UpdateCacheFromPrefs();
@@ -175,8 +167,6 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
                            DoNotLoadAltSvcForInsecureOrigins);
   FRIEND_TEST_ALL_PREFIXES(HttpServerPropertiesManagerTest,
                            DoNotLoadExpiredAlternativeService);
-  void OnHttpServerPropertiesChanged();
-
   bool AddServersData(const base::DictionaryValue& server_dict,
                       SpdyServersMap* spdy_servers_map,
                       AlternativeServiceMap* alternative_service_map,
@@ -233,13 +223,9 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
           recently_broken_alternative_services,
       base::DictionaryValue* http_server_properties_dict);
 
-  // Used to post cache update tasks.
-  base::OneShotTimer pref_cache_update_timer_;
+  void OnHttpServerPropertiesLoaded();
 
   std::unique_ptr<PrefDelegate> pref_delegate_;
-  // Set to true while modifying prefs, to avoid loading those prefs again as a
-  // result of them being changed by the changes just made by this class.
-  bool setting_prefs_ = false;
 
   const base::TickClock* clock_;  // Unowned
 
@@ -254,6 +240,9 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   const NetLogWithSource net_log_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<HttpServerPropertiesManager> pref_load_weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(HttpServerPropertiesManager);
 };

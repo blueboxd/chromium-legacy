@@ -16,7 +16,6 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_data_loss_info.h"
-#include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
@@ -60,20 +59,24 @@ leveldb::Status InvalidDBKeyStatus();
 
 leveldb::Status IOErrorStatus();
 
+// Note - this uses DecodeInt, which is a 'dumb' varint decoder. See DecodeInt.
 template <typename DBOrTransaction>
 leveldb::Status CONTENT_EXPORT GetInt(DBOrTransaction* db,
                                       const base::StringPiece& key,
                                       int64_t* found_int,
                                       bool* found);
 
-void PutBool(TransactionalLevelDBTransaction* transaction,
-             const base::StringPiece& key,
-             bool value);
+WARN_UNUSED_RESULT leveldb::Status PutBool(
+    TransactionalLevelDBTransaction* transaction,
+    const base::StringPiece& key,
+    bool value);
 
+// Note - this uses EncodeInt, which is a 'dumb' varint encoder. See EncodeInt.
 template <typename TransactionOrWriteBatch>
-void CONTENT_EXPORT PutInt(TransactionOrWriteBatch* transaction,
-                           const base::StringPiece& key,
-                           int64_t value);
+WARN_UNUSED_RESULT leveldb::Status CONTENT_EXPORT
+PutInt(TransactionOrWriteBatch* transaction,
+       const base::StringPiece& key,
+       int64_t value);
 
 template <typename DBOrTransaction>
 WARN_UNUSED_RESULT leveldb::Status GetVarInt(DBOrTransaction* db,
@@ -82,9 +85,10 @@ WARN_UNUSED_RESULT leveldb::Status GetVarInt(DBOrTransaction* db,
                                              bool* found);
 
 template <typename TransactionOrWriteBatch>
-void PutVarInt(TransactionOrWriteBatch* transaction,
-               const base::StringPiece& key,
-               int64_t value);
+WARN_UNUSED_RESULT leveldb::Status PutVarInt(
+    TransactionOrWriteBatch* transaction,
+    const base::StringPiece& key,
+    int64_t value);
 
 template <typename DBOrTransaction>
 WARN_UNUSED_RESULT leveldb::Status GetString(DBOrTransaction* db,
@@ -92,13 +96,15 @@ WARN_UNUSED_RESULT leveldb::Status GetString(DBOrTransaction* db,
                                              base::string16* found_string,
                                              bool* found);
 
-void PutString(TransactionalLevelDBTransaction* transaction,
-               const base::StringPiece& key,
-               const base::string16& value);
+WARN_UNUSED_RESULT leveldb::Status PutString(
+    TransactionalLevelDBTransaction* transaction,
+    const base::StringPiece& key,
+    const base::string16& value);
 
-void PutIDBKeyPath(TransactionalLevelDBTransaction* transaction,
-                   const base::StringPiece& key,
-                   const blink::IndexedDBKeyPath& value);
+WARN_UNUSED_RESULT leveldb::Status PutIDBKeyPath(
+    TransactionalLevelDBTransaction* transaction,
+    const base::StringPiece& key,
+    const blink::IndexedDBKeyPath& value);
 
 template <typename DBOrTransaction>
 WARN_UNUSED_RESULT leveldb::Status GetMaxObjectStoreId(
@@ -168,9 +174,9 @@ WARN_UNUSED_RESULT leveldb::Status GetEarliestSweepTime(
     base::Time* earliest_sweep);
 
 template <typename Transaction>
-void SetEarliestSweepTime(Transaction* txn, base::Time earliest_sweep);
-
-CONTENT_EXPORT const LevelDBComparator* GetDefaultIndexedDBComparator();
+WARN_UNUSED_RESULT leveldb::Status SetEarliestSweepTime(
+    Transaction* txn,
+    base::Time earliest_sweep);
 
 CONTENT_EXPORT const leveldb::Comparator* GetDefaultLevelDBComparator();
 

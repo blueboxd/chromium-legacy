@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 namespace scheduler {
@@ -123,6 +124,9 @@ MainThreadTaskQueue::MainThreadTaskQueue(
     // MainThreadSchedulerImpl::OnTaskStarted/Completed. At the moment this
     // is not possible due to task queue being created inside
     // MainThreadScheduler's constructor.
+    GetTaskQueueImpl()->SetOnTaskReadyHandler(
+        base::BindRepeating(&MainThreadTaskQueue::OnTaskReady,
+                            base::Unretained(this), frame_scheduler_));
     GetTaskQueueImpl()->SetOnTaskStartedHandler(base::BindRepeating(
         &MainThreadTaskQueue::OnTaskStarted, base::Unretained(this)));
     GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::BindRepeating(
@@ -131,6 +135,14 @@ MainThreadTaskQueue::MainThreadTaskQueue(
 }
 
 MainThreadTaskQueue::~MainThreadTaskQueue() = default;
+
+void MainThreadTaskQueue::OnTaskReady(
+    const void* frame_scheduler,
+    const base::sequence_manager::Task& task,
+    base::sequence_manager::LazyNow* lazy_now) {
+  if (main_thread_scheduler_)
+    main_thread_scheduler_->OnTaskReady(frame_scheduler, task, lazy_now);
+}
 
 void MainThreadTaskQueue::OnTaskStarted(
     const base::sequence_manager::Task& task,
@@ -157,6 +169,11 @@ void MainThreadTaskQueue::DetachFromMainThreadScheduler() {
     return;
 
   if (GetTaskQueueImpl()) {
+    // Since the OnTaskReadyHandler can be invoked from any thread, it is not
+    // possible to bind it to a WeakPtr. Simply stop invoking it once the
+    // MainThreadScheduler is detached. This is not a problem since it is only
+    // used to record histograms.
+    GetTaskQueueImpl()->SetOnTaskReadyHandler({});
     GetTaskQueueImpl()->SetOnTaskStartedHandler(
         base::BindRepeating(&MainThreadSchedulerImpl::OnTaskStarted,
                             main_thread_scheduler_->GetWeakPtr(), nullptr));
@@ -181,6 +198,7 @@ void MainThreadTaskQueue::ClearReferencesToSchedulers() {
 }
 
 FrameSchedulerImpl* MainThreadTaskQueue::GetFrameScheduler() const {
+  DCHECK(task_runner()->BelongsToCurrentThread());
   return frame_scheduler_;
 }
 

@@ -105,7 +105,7 @@ void InspectorWebAudioAgent::DidCreateBaseAudioContext(
   GetFrontend()->contextCreated(BuildProtocolContext(context));
 }
 
-void InspectorWebAudioAgent::DidDestroyBaseAudioContext(
+void InspectorWebAudioAgent::WillDestroyBaseAudioContext(
     BaseAudioContext* context) {
   GetFrontend()->contextDestroyed(context->Uuid());
 }

@@ -70,6 +70,8 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
                                           OnAuthenticateCallback callback);
   void EnrollUserWithExternalBinary(OnAuthenticateCallback callback);
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id);
+  void AuthenticateUserWithChallengeResponse(const AccountId& account_id,
+                                             OnAuthenticateCallback callback);
   bool ValidateParentAccessCode(const AccountId& account_id,
                                 const std::string& code);
   void HardlockPod(const AccountId& account_id);

@@ -151,7 +151,7 @@ NavigationHandleImpl::GetResourceRequestBody() {
   return navigation_request_->common_params().post_data;
 }
 
-const Referrer& NavigationHandleImpl::GetReferrer() {
+const blink::mojom::Referrer& NavigationHandleImpl::GetReferrer() {
   return navigation_request_->sanitized_referrer();
 }
 

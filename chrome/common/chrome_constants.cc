@@ -12,7 +12,7 @@
 
 #if defined(OS_MACOSX)
 #define CHROMIUM_PRODUCT_STRING "Chromium"
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #define PRODUCT_STRING "Google Chrome"
 #elif BUILDFLAG(CHROMIUM_BRANDING)
 #define PRODUCT_STRING "Chromium"

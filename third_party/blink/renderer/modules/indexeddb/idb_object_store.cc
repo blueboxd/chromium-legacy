@@ -580,7 +580,8 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
   request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
   transaction_->transaction_backend()->Put(
       Id(), std::move(idb_value), IDBKey::Clone(key), put_mode,
-      request->CreateWebCallbacks().release(), std::move(index_keys));
+      base::WrapUnique(request->CreateWebCallbacks().release()),
+      std::move(index_keys));
 
   return request;
 }

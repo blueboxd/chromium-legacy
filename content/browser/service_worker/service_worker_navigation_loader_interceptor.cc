@@ -163,10 +163,11 @@ void MaybeCreateLoaderOnIO(
 ServiceWorkerNavigationLoaderInterceptor::
     ServiceWorkerNavigationLoaderInterceptor(
         const ServiceWorkerNavigationLoaderInterceptorParams& params,
-        ServiceWorkerNavigationHandle* handle)
-    : handle_(handle), params_(params) {
+        base::WeakPtr<ServiceWorkerNavigationHandle> handle)
+    : handle_(std::move(handle)), params_(params) {
   DCHECK(NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled());
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(handle_);
 }
 
 ServiceWorkerNavigationLoaderInterceptor::
@@ -182,6 +183,7 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
     FallbackCallback fallback_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!resource_context);
+  DCHECK(handle_);
 
   bool initialize_provider_only = false;
   if (!handle_->context_wrapper()->HasRegistrationForOrigin(
@@ -216,6 +218,16 @@ void ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper(
     LoaderCallback loader_callback,
     SingleRequestURLLoaderFactory::RequestHandler handler_on_io) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // For worker main script requests, |handle_| can be destroyed during
+  // interception. The initiator of this interceptor (i.e., WorkerScriptLoader)
+  // will handle the case.
+  // For navigation requests, this case should not happen because it's
+  // guaranteed that this interceptor is destroyed before |handle_|.
+  if (!handle_) {
+    std::move(loader_callback).Run({});
+    return;
+  }
 
   // |provider_info| is non-null if this is the first request before redirects,
   // which makes the provider host for this navigation.

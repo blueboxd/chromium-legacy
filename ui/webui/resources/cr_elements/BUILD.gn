@@ -52,4 +52,7 @@ js_library("cr_scrollable_behavior") {
 }
 
 js_library("cr_container_shadow_behavior") {
+  deps = [
+    "//ui/webui/resources/js:assert",
+  ]
 }

@@ -81,6 +81,11 @@ bool WebViewPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   return true;
 }
 
+bool WebViewPasswordManagerClient::ShowOnboarding(
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
+  return false;
+}
+
 void WebViewPasswordManagerClient::ShowManualFallbackForSaving(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool has_generated_password,

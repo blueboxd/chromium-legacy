@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
 
+#include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -75,11 +76,61 @@ bool IsBlacklisted(const GURL& url) {
   return false;
 }
 
+void DumpDistillability(content::RenderFrame* render_frame,
+                        const WebDistillabilityFeatures& features,
+                        const std::vector<double>& derived,
+                        double score,
+                        bool distillable,
+                        double long_score,
+                        bool long_page,
+                        bool blacklisted) {
+  base::DictionaryValue dict;
+  std::string msg;
+
+  std::unique_ptr<base::DictionaryValue> raw_features(
+      new base::DictionaryValue);
+  raw_features->SetInteger("is_mobile_friendly", features.is_mobile_friendly);
+  raw_features->SetInteger("open_graph", features.open_graph);
+  raw_features->SetInteger("element_count", features.element_count);
+  raw_features->SetInteger("anchor_count", features.anchor_count);
+  raw_features->SetInteger("form_count", features.form_count);
+  raw_features->SetInteger("text_input_count", features.text_input_count);
+  raw_features->SetInteger("password_input_count",
+                           features.password_input_count);
+  raw_features->SetInteger("p_count", features.p_count);
+  raw_features->SetInteger("pre_count", features.pre_count);
+  raw_features->SetDouble("moz_score", features.moz_score);
+  raw_features->SetDouble("moz_score_all_sqrt", features.moz_score_all_sqrt);
+  raw_features->SetDouble("moz_score_all_linear",
+                          features.moz_score_all_linear);
+  dict.Set("features", std::move(raw_features));
+
+  std::unique_ptr<base::ListValue> derived_features(new base::ListValue());
+  for (double value : derived) {
+    derived_features->AppendDouble(value);
+  }
+  dict.Set("derived_features", std::move(derived_features));
+
+  dict.SetDouble("score", score);
+  dict.SetInteger("distillable", distillable);
+  dict.SetDouble("long_score", long_score);
+  dict.SetInteger("long_page", long_page);
+  dict.SetInteger("blacklisted", blacklisted);
+  base::JSONWriter::WriteWithOptions(
+      dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &msg);
+  msg = "adaboost_classification = " + msg;
+
+  render_frame->AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kVerbose,
+                                    msg);
+}
+
 bool IsDistillablePageAdaboost(WebDocument& doc,
                                const DistillablePageDetector* detector,
                                const DistillablePageDetector* long_page,
                                bool is_last,
-                               bool& is_mobile_friendly) {
+                               bool& is_mobile_friendly,
+                               content::RenderFrame* render_frame,
+                               bool dump_info) {
   GURL parsed_url(doc.Url());
   if (!parsed_url.is_valid()) {
     return false;
@@ -95,6 +146,11 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
   bool distillable = score > 0;
   bool long_article = long_score > 0;
   bool blacklisted = IsBlacklisted(parsed_url);
+
+  if (dump_info) {
+    DumpDistillability(render_frame, features, derived, score, distillable,
+                       long_score, long_article, blacklisted);
+  }
 
   if (!features.is_mobile_friendly) {
     int score_int = std::round(score * 100);
@@ -154,7 +210,9 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
 
 bool IsDistillablePage(WebDocument& doc,
                        bool is_last,
-                       bool& is_mobile_friendly) {
+                       bool& is_mobile_friendly,
+                       content::RenderFrame* render_frame,
+                       bool dump_info) {
   switch (GetDistillerHeuristicsType()) {
     case DistillerHeuristicsType::ALWAYS_TRUE:
       return true;
@@ -165,7 +223,7 @@ bool IsDistillablePage(WebDocument& doc,
       return IsDistillablePageAdaboost(
           doc, DistillablePageDetector::GetNewModel(),
           DistillablePageDetector::GetLongPageModel(), is_last,
-          is_mobile_friendly);
+          is_mobile_friendly, render_frame, dump_info);
     case DistillerHeuristicsType::NONE:
     default:
       return false;
@@ -174,8 +232,9 @@ bool IsDistillablePage(WebDocument& doc,
 
 }  // namespace
 
-DistillabilityAgent::DistillabilityAgent(content::RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame) {}
+DistillabilityAgent::DistillabilityAgent(content::RenderFrame* render_frame,
+                                         bool dump_info)
+    : RenderFrameObserver(render_frame), dump_info_(dump_info) {}
 
 void DistillabilityAgent::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
   if (layout_type != WebMeaningfulLayout::kFinishedParsing &&
@@ -205,7 +264,8 @@ void DistillabilityAgent::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
   if (!distillability_service.is_bound())
     return;
   bool is_mobile_friendly = false;
-  bool is_distillable = IsDistillablePage(doc, is_last, is_mobile_friendly);
+  bool is_distillable = IsDistillablePage(doc, is_last, is_mobile_friendly,
+                                          render_frame(), dump_info_);
   distillability_service->NotifyIsDistillable(is_distillable, is_last,
                                               is_mobile_friendly);
 }

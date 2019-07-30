@@ -51,6 +51,21 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
       Polymer.dom.flush();
     });
 
+    test('top container shadow always shows for sub-pages', () => {
+      const element = ui.$$('#cr-container-shadow-top');
+      assertTrue(!!element, 'Shadow container element always exists');
+
+      assertFalse(
+          element.classList.contains('has-shadow'),
+          'Main page should not show shadow ' + element.className);
+
+      settings.navigateTo(settings.routes.POWER);
+      Polymer.dom.flush();
+      assertTrue(
+          element.classList.contains('has-shadow'),
+          'Sub-page should show shadow ' + element.className);
+    });
+
     test('showing menu in toolbar is dependent on narrow mode', () => {
       const toolbar = assert(ui.$$('cr-toolbar'));
       toolbar.narrow = true;

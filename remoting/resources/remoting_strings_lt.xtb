@@ -72,7 +72,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="2405928220797050937">Ši programa nebepalaikoma. Norėdami būti tikri, kad gausite naujausias funkcijas ir saugos naujinius, naudokite <ph name="LINK_BEGIN" />„Chrome“ nuotolinio kompiuterio valdymo žiniatinklio programą<ph name="LINK_END" />.</translation>
 <translation id="2431841749166974386">Kad galėtumėte valdyti šį prietaisą nuotoliniu būdu naudodami „<ph name="PRODUCT_NAME" />“, būtina atlikti papildomą konfigūracijos veiksmą.
 
-Jei norite įgalinti šias funkcijas, pasirinkite „<ph name="BUTTON_NAME" />“, kad būtų parodytas saugos ir privatumo nuostatų polangis, ir jame pažymėkite laukelį šalia parinkties „<ph name="SERVICE_SCRIPT_NAME" />“.
+Jei norite įgalinti šias funkcijas, pasirinkite „<ph name="BUTTON_NAME" />“, kad būtų parodyta saugos ir privatumo nuostatų sritis, ir joje pažymėkite laukelį šalia parinkties „<ph name="SERVICE_SCRIPT_NAME" />“.
 
 Jei „<ph name="SERVICE_SCRIPT_NAME" />“ jau nurodytas ir patikrintas, gali reikėti jį pašalinti ir pridėti iš naujo.</translation>
 <translation id="2499160551253595098">Leidę mums kaupti naudojimo statistiką ir strigčių ataskaitas, padėsite tobulinti „Chrome“ nuotolinį kompiuterio valdymą.</translation>

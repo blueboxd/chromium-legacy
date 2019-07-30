@@ -20,7 +20,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -39,16 +38,6 @@ import java.lang.annotation.RetentionPolicy;
 @VisibleForTesting
 public class SuggestionView extends ViewGroup implements OnClickListener {
     private static final float ANSWER_IMAGE_SCALING_FACTOR = 1.15f;
-
-    @IntDef({SuggestionLayoutType.TEXT_SUGGESTION, SuggestionLayoutType.ANSWER,
-            SuggestionLayoutType.MULTI_LINE_ANSWER})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface SuggestionLayoutType {
-        int TEXT_SUGGESTION = 0;
-        int ANSWER = 1;
-        int MULTI_LINE_ANSWER = 2;
-    }
-
     @IntDef({SuggestionIconType.FALLBACK, SuggestionIconType.FAVICON})
     @Retention(RetentionPolicy.SOURCE)
     @interface SuggestionIconType {
@@ -59,8 +48,6 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
     private final int mSuggestionHeight;
     private final int mSuggestionAnswerHeight;
     private final int mSuggestionMaxHeight;
-    @SuggestionLayoutType
-    private int mSuggestionLayoutType;
     private SuggestionViewDelegate mSuggestionDelegate;
 
     private int mRefineViewOffsetPx;
@@ -185,25 +172,15 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
         int height = mSuggestionHeight;
         boolean refineVisible = mRefineView.getVisibility() == VISIBLE;
         int refineWidth = refineVisible ? mRefineWidth : 0;
-        if (mSuggestionLayoutType == SuggestionLayoutType.MULTI_LINE_ANSWER) {
-            mContentsView.measure(
-                    MeasureSpec.makeMeasureSpec(width - refineWidth, MeasureSpec.EXACTLY),
-                    MeasureSpec.makeMeasureSpec(mSuggestionMaxHeight, MeasureSpec.AT_MOST));
-            height = mContentsView.getMeasuredHeight();
-        } else if (mSuggestionLayoutType == SuggestionLayoutType.ANSWER) {
-            height = mSuggestionAnswerHeight;
-        }
         setMeasuredDimension(width, height);
 
         // The width will be specified as 0 when determining the height of the popup, so exit early
         // after setting the height.
         if (width == 0) return;
 
-        if (mSuggestionLayoutType != SuggestionLayoutType.MULTI_LINE_ANSWER) {
-            mContentsView.measure(
-                    MeasureSpec.makeMeasureSpec(width - refineWidth, MeasureSpec.EXACTLY),
-                    MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
-        }
+        mContentsView.measure(MeasureSpec.makeMeasureSpec(width - refineWidth, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
+
         mContentsView.getLayoutParams().width = mContentsView.getMeasuredWidth();
         mContentsView.getLayoutParams().height = mContentsView.getMeasuredHeight();
 
@@ -249,11 +226,6 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
         mSuggestionDelegate = delegate;
     }
 
-    /** Set the type of layout this view is rendering. */
-    void setSuggestionLayoutType(@SuggestionLayoutType int type) {
-        mSuggestionLayoutType = type;
-    }
-
     /** Get the View containing the first line of text. */
     TextView getTextLine1() {
         return mContentsView.mTextLine1;
@@ -262,11 +234,6 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
     /** Get the View containing the second line of text. */
     TextView getTextLine2() {
         return mContentsView.mTextLine2;
-    }
-
-    /** Get the View containing the answer image to be shown. */
-    ImageView getAnswerImageView() {
-        return mContentsView.mAnswerImage;
     }
 
     /**
@@ -397,7 +364,6 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
 
         private final TextView mTextLine1;
         private final TextView mTextLine2;
-        private final ImageView mAnswerImage;
 
         private boolean mForceIsFocused;
 
@@ -443,11 +409,6 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
             mTextLine2.setVisibility(INVISIBLE);
             mTextLine2.setTextAlignment(TEXT_ALIGNMENT_VIEW_START);
             addView(mTextLine2);
-
-            mAnswerImage = new ImageView(context);
-            mAnswerImage.setVisibility(GONE);
-            mAnswerImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            addView(mAnswerImage);
         }
 
         @Override
@@ -470,16 +431,6 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
 
         @Override
         protected void onLayout(boolean changed, int l, int t, int r, int b) {
-            int imageWidth = 0;
-            int imageSpacing = 0;
-            if (mAnswerImage.getVisibility() == VISIBLE) {
-                imageWidth = mAnswerImage.getMeasuredWidth();
-                if (imageWidth > 0) {
-                    imageSpacing = getResources().getDimensionPixelOffset(
-                            R.dimen.omnibox_suggestion_answer_image_horizontal_spacing);
-                }
-            }
-
             final int height = getMeasuredHeight();
             final int line1Height = mTextLine1.getMeasuredHeight();
             final int line2Height =
@@ -496,16 +447,6 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
 
             int line2VerticalOffset = line1VerticalOffset + line1Height;
             int answerVerticalOffset = line2VerticalOffset;
-            if (mAnswerImage.getVisibility() == VISIBLE) {
-                // The image is positioned vertically aligned with the second text line but
-                // requires a small additional offset to align with the ascent of the text
-                // instead of the top of the text which includes some whitespace.
-                answerVerticalOffset += getResources().getDimensionPixelOffset(
-                        R.dimen.omnibox_suggestion_answer_image_vertical_spacing);
-
-                line2VerticalOffset += getResources().getDimensionPixelOffset(
-                        R.dimen.omnibox_suggestion_answer_line2_vertical_spacing);
-            }
 
             // The text lines total height is larger than this view, snap them to the top and
             // bottom of the view.
@@ -521,8 +462,6 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
             final int line1Bottom = line1Top + line1Height;
             final int line2Top = t + line2VerticalOffset;
             final int line2Bottom = line2Top + line2Height;
-            final int answerImageTop = t + answerVerticalOffset;
-            final int answerImageBottom = answerImageTop + mAnswerImage.getMeasuredHeight();
             final int line1AdditionalStartPadding =
                     mSuggestionDelegate.getAdditionalTextLine1StartPadding(
                             mTextLine1, r - l - mSuggestionIconAreaSizePx);
@@ -531,17 +470,11 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
                 int rightStartPos = r - l - mSuggestionIconAreaSizePx;
                 mTextLine1.layout(
                         0, line1Top, rightStartPos - line1AdditionalStartPadding, line1Bottom);
-                mAnswerImage.layout(rightStartPos - imageWidth, answerImageTop, rightStartPos,
-                        answerImageBottom);
-                mTextLine2.layout(
-                        0, line2Top, rightStartPos - (imageWidth + imageSpacing), line2Bottom);
+                mTextLine2.layout(0, line2Top, rightStartPos, line2Bottom);
             } else {
                 mTextLine1.layout(mSuggestionIconAreaSizePx + line1AdditionalStartPadding, line1Top,
                         r - l, line1Bottom);
-                mAnswerImage.layout(mSuggestionIconAreaSizePx, answerImageTop,
-                        mSuggestionIconAreaSizePx + imageWidth, answerImageBottom);
-                mTextLine2.layout(mSuggestionIconAreaSizePx + imageWidth + imageSpacing, line2Top,
-                        r - l, line2Bottom);
+                mTextLine2.layout(mSuggestionIconAreaSizePx, line2Top, r - l, line2Bottom);
             }
         }
 
@@ -557,21 +490,10 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
             mTextLine2.measure(MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST),
                     MeasureSpec.makeMeasureSpec(mSuggestionHeight, MeasureSpec.AT_MOST));
 
-            if (mAnswerImage.getVisibility() == VISIBLE) {
-                float textSize = mContentsView.mTextLine2.getTextSize();
-                int imageSize = (int) (textSize * ANSWER_IMAGE_SCALING_FACTOR);
-                mAnswerImage.measure(MeasureSpec.makeMeasureSpec(imageSize, MeasureSpec.EXACTLY),
-                        MeasureSpec.makeMeasureSpec(imageSize, MeasureSpec.EXACTLY));
-            }
-
             if (MeasureSpec.getMode(heightMeasureSpec) == MeasureSpec.AT_MOST) {
                 int desiredHeight = mTextLine1.getMeasuredHeight() + mTextLine2.getMeasuredHeight();
                 int additionalPadding = (int) getResources().getDimension(
                         R.dimen.omnibox_suggestion_text_vertical_padding);
-                if (mSuggestionLayoutType != SuggestionLayoutType.TEXT_SUGGESTION) {
-                    additionalPadding += (int) getResources().getDimension(
-                            R.dimen.omnibox_suggestion_multiline_text_vertical_padding);
-                }
                 desiredHeight += additionalPadding;
                 desiredHeight = Math.min(MeasureSpec.getSize(heightMeasureSpec), desiredHeight);
                 super.onMeasure(widthMeasureSpec,

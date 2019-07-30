@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/stl_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -343,7 +344,7 @@ TEST_F(BrowserCommandControllerFullscreenTest,
     { IDC_FOCUS_PREVIOUS_PANE,     true,     false,     false,     false    },
     { IDC_FOCUS_BOOKMARKS,         true,     false,     false,     false    },
     { IDC_DEVELOPER_MENU,          true,     false,     false,     false    },
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     { IDC_FEEDBACK,                true,     false,     false,     false    },
 #endif
     { IDC_OPTIONS,                 true,     false,     false,     false    },

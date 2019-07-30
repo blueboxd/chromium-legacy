@@ -211,6 +211,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="7747138024166251722">نصب‌کننده نتوانست دایرکتوری موقت ایجاد کند. لطفاً فضای خالی دیسک و اجازه نصب نرم‌افزار را بررسی کنید.</translation>
 <translation id="7773960292263897147">‏هشدار: Chromium نمی‌تواند مانع از ثبت سابقه مرورتان توسط افزونه‌ها شود. برای غیرفعال کردن این افزونه در حالت ناشناس، این گزینه را لغو انتخاب کنید.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
+<translation id="7827169012280634081">‏هنگام خروج از Chromium، کوکی‌ها و داده‌های سایت را پاک کنید</translation>
 <translation id="7867198900892795913">‏Chromium به جدیدترین نسخه به‌روزرسانی نشد، بنابراین قابلیت‌های جدید و رفع اشکال‌های امنیتی را ندارید.</translation>
 <translation id="7901117350626490574">‏به‌روزرسانی جدیدی برای Chromium دردسترس است و به‌محض راه‌اندازی مجدد اعمال خواهد شد.</translation>
 <translation id="7937630085815544518">‏شما بعنوان <ph name="USER_EMAIL_ADDRESS" /> وارد سیستم Chromium شده‌اید. لطفاً برای ورود به سیستم مجدد از همان حساب استفاده کنید.</translation>
@@ -237,6 +238,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" /> شما به‌ روز است.</translation>
 <translation id="8697124171261953979">‏این برنامه همچنین صفحه‌ای را که هنگام راه‌اندازی Chromium یا جستجو از Omnibox نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="8704119203788522458">‏این Chromium شماست</translation>
+<translation id="8739167630197873875">‏هنگام خروج از Chromium، کوکی‌ها را پاک می‌کنید. برای اینکه همگام‌سازی ادامه یابد، این <ph name="COOKIE_SETTINGS_LINK" /> را تغییر دهید.</translation>
 <translation id="8748383401829947534">‏از همه نسخه‌های Chromium خارج شوید.</translation>
 <translation id="8796602469536043152">‏Chromium به مجوز دسترسی به دوربین و میکروفون برای این سایت نیاز دارد</translation>
 <translation id="8803635938069941624">‏شرایط Chromium OS</translation>

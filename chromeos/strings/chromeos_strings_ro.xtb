@@ -4,6 +4,7 @@
 <translation id="1510238584712386396">Lansator</translation>
 <translation id="1734367976349034509">Acest dispozitiv este gestionat de companie</translation>
 <translation id="1930797645656624981">Serviciul metodei de introducere a textului din sistemul de operare Chrome</translation>
+<translation id="1979103255016296513">Ai depășit timpul limită pentru schimbarea parolei</translation>
 <translation id="2049639323467105390">Acest dispozitiv este gestionat de <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">Nu s-a găsit nimic pe ecran</translation>
 <translation id="2338501278241028356">Pentru a descoperi dispozitivele din apropiere, activează Bluetooth</translation>
@@ -11,6 +12,7 @@
 <translation id="2872961005593481000">Închide</translation>
 <translation id="3008341117444806826">ACTUALIZEAZĂ</translation>
 <translation id="3838338534323494292">Parolă nouă</translation>
+<translation id="4227825898293920515">Parola expiră în <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Tichetul Kerberos expiră în curând</translation>
 <translation id="445059817448385655">Parolă veche</translation>
 <translation id="467510802200863975">Parolele nu se potrivesc</translation>

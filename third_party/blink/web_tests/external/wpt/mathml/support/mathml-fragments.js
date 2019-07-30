@@ -55,18 +55,18 @@ var MathMLFragments = {
     "msqrt": "<msqrt class='element mathml-container'></msqrt>",
     "mstyle": "<mstyle class='element mathml-container'></mstyle>",
     "msub": "\
-<msub class='element mathml-container'>\
+<msub class='element'>\
   <mrow class='mathml-container'></mrow>\
   <mrow class='mathml-container'></mrow>\
 </msub>",
     "msubsup": "\
-<msubsup class='element mathml-container'>\
+<msubsup class='element'>\
   <mrow class='mathml-container'></mrow>\
   <mrow class='mathml-container'></mrow>\
   <mrow class='mathml-container'></mrow>\
 </msubsup>",
     "msup": "\
-<msup class='element mathml-container'>\
+<msup class='element'>\
   <mrow class='mathml-container'></mrow>\
   <mrow class='mathml-container'></mrow>\
 </msup>",
@@ -110,8 +110,42 @@ var MathMLFragments = {
   <mrow class='mathml-container'></mrow>\
 </mmultiscripts>",
     "semantics": "\
-<semantics class='element>\
+<semantics class='element'>\
   <mrow class='mathml-container'></mrow>\
   <annotation class='text-container'></annotation>\
 </semantics>"
 };
+
+var FragmentHelper = {
+    createElement: function(tag) {
+        return document.createElementNS("http://www.w3.org/1998/Math/MathML", tag);
+    },
+
+    isValidChildOfMrow: function(tag) {
+        return !(tag == "annotation" ||
+                 tag == "annotation-xml" ||
+                 tag == "mprescripts" ||
+                 tag == "none" ||
+                 tag == "mtr" ||
+                 tag == "mtd");
+    },
+
+    isEmpty: function(tag) {
+        return tag === "mspace" || tag == "mprescripts" || tag == "none";
+    },
+
+    element: function(fragment) {
+        return fragment.getElementsByClassName('element')[0];
+    },
+
+    forceNonEmptyElement: function(fragment) {
+        var element = this.element(fragment) || fragment;
+        if (element.firstElementChild)
+            return element.firstElementChild;
+        if (element.classList.contains("mathml-container"))
+            return element.appendChild(this.createElement("mrow"));
+        if (element.classList.contains("foreign-container"))
+            return element.appendChild(document.createElement("span"));
+        throw "Cannot make the element nonempty";
+    }
+}

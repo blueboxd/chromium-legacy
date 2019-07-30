@@ -582,6 +582,12 @@ LegacyRenderWidgetHostHWND::GetParentOfAXFragmentRoot() {
   return nullptr;
 }
 
+bool LegacyRenderWidgetHostHWND::IsAXFragmentRootAControlElement() {
+  // Treat LegacyRenderWidgetHostHWND as a non-control element so that clients
+  // don't read out "Chrome Legacy Window" for it.
+  return false;
+}
+
 gfx::NativeViewAccessible
 LegacyRenderWidgetHostHWND::GetOrCreateWindowRootAccessible() {
   if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled()) {

@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.graphics.drawable.Drawable;
+import android.support.v7.content.res.AppCompatResources;
 import android.widget.Button;
 
 import org.chromium.base.Log;
@@ -26,16 +28,47 @@ public class SmsReceiverDialog {
     private static final boolean DEBUG = false;
     private long mNativeSmsDialogAndroid;
     private ProgressDialog mDialog;
-
-    private SmsReceiverDialog(long nativeSmsDialogAndroid) {
-        mNativeSmsDialogAndroid = nativeSmsDialogAndroid;
-    }
+    private Activity mActivity;
 
     @VisibleForTesting
     @CalledByNative
     static SmsReceiverDialog create(long nativeSmsDialogAndroid) {
         if (DEBUG) Log.d(TAG, "SmsReceiverDialog.create()");
         return new SmsReceiverDialog(nativeSmsDialogAndroid);
+    }
+
+    private static ProgressDialog createDialog(Activity activity, long nativeSmsDialogAndroid) {
+        ProgressDialog dialog = new ProgressDialog(activity);
+        dialog.setIndeterminate(true);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.setTitle(activity.getText(R.string.sms_dialog_title));
+        dialog.setMessage(activity.getText(R.string.sms_dialog_status_waiting));
+
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getText(R.string.cancel),
+                new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface prompt, int which) {
+                        assert nativeSmsDialogAndroid != 0;
+                        prompt.dismiss();
+                        SmsReceiverDialogJni.get().onCancel(nativeSmsDialogAndroid);
+                    }
+                });
+        dialog.setButton(DialogInterface.BUTTON_POSITIVE,
+                activity.getText(R.string.sms_dialog_continue_button_text), new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface prompt, int which) {
+                        assert nativeSmsDialogAndroid != 0;
+                        prompt.dismiss();
+                        SmsReceiverDialogJni.get().onContinue(nativeSmsDialogAndroid);
+                    }
+                });
+
+        return dialog;
+    }
+
+    private SmsReceiverDialog(long nativeSmsDialogAndroid) {
+        mNativeSmsDialogAndroid = nativeSmsDialogAndroid;
     }
 
     @VisibleForTesting
@@ -53,32 +86,8 @@ public class SmsReceiverDialog {
 
         assert mNativeSmsDialogAndroid != 0 : "open() called after object was destroyed";
 
-        Activity activity = window.getActivity().get();
-
-        mDialog = new ProgressDialog(activity);
-        mDialog.setIndeterminate(true);
-        mDialog.setCancelable(false);
-        mDialog.setCanceledOnTouchOutside(false);
-        mDialog.setTitle(activity.getText(R.string.sms_dialog_title));
-        mDialog.setMessage(activity.getText(R.string.sms_dialog_status_waiting));
-        mDialog.setButton(DialogInterface.BUTTON_NEGATIVE, activity.getText(R.string.cancel),
-                new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface prompt, int which) {
-                        assert mNativeSmsDialogAndroid != 0;
-                        prompt.dismiss();
-                        SmsReceiverDialogJni.get().onCancel(mNativeSmsDialogAndroid);
-                    }
-                });
-        mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
-                activity.getText(R.string.sms_dialog_continue_button_text), new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface prompt, int which) {
-                        assert mNativeSmsDialogAndroid != 0;
-                        prompt.dismiss();
-                        SmsReceiverDialogJni.get().onContinue(mNativeSmsDialogAndroid);
-                    }
-                });
+        mActivity = window.getActivity().get();
+        mDialog = createDialog(mActivity, mNativeSmsDialogAndroid);
         mDialog.show();
         Button continueButton = mDialog.getButton(DialogInterface.BUTTON_POSITIVE);
         continueButton.setEnabled(false);
@@ -96,8 +105,16 @@ public class SmsReceiverDialog {
 
     @VisibleForTesting
     @CalledByNative
-    void enableContinueButton() {
-        if (DEBUG) Log.d(TAG, "SmsReceiverDialog.enableContinueButton()");
+    void smsReceived() {
+        if (DEBUG) Log.d(TAG, "SmsReceiverDialog.smsReceived()");
+
+        mDialog.dismiss();
+        mDialog = createDialog(mActivity, mNativeSmsDialogAndroid);
+        Drawable smsReceivedDrawable =
+                AppCompatResources.getDrawable(mActivity, R.drawable.ic_check_circle_blue_18dp);
+        mDialog.setIndeterminateDrawable(smsReceivedDrawable);
+        mDialog.setMessage(mActivity.getText(R.string.sms_dialog_status_sms_received));
+        mDialog.show();
 
         Button continueButton = mDialog.getButton(DialogInterface.BUTTON_POSITIVE);
         continueButton.setEnabled(true);

@@ -10,8 +10,10 @@
 #include <atomic>
 
 #include "base/base_export.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/task/post_job.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/sequence_sort_key.h"
 #include "base/task/thread_pool/task.h"
@@ -23,28 +25,30 @@ namespace internal {
 // A JobTaskSource generates many Tasks from a single RepeatingClosure.
 //
 // Derived classes control the intended concurrency with GetMaxConcurrency().
-// Increase in concurrency is not supported and should never happen.
-// TODO(etiennep): Support concurrency increase.
 class BASE_EXPORT JobTaskSource : public TaskSource {
  public:
   JobTaskSource(const Location& from_here,
-                base::RepeatingClosure task,
-                const TaskTraits& traits);
+                const TaskTraits& traits,
+                RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
+                RepeatingCallback<size_t()> max_concurrency_callback);
+
+  // Notifies this task source that max concurrency was increased, and the
+  // number of worker should be adjusted.
+  void NotifyConcurrencyIncrease();
 
   // TaskSource:
   RunIntent WillRunTask() override;
   ExecutionEnvironment GetExecutionEnvironment() override;
   size_t GetRemainingConcurrency() const override;
 
- protected:
+ private:
   ~JobTaskSource() override;
 
   // Returns the maximum number of tasks from this TaskSource that can run
   // concurrently. The implementation can only return values lower than or equal
   // to previously returned values.
-  virtual size_t GetMaxConcurrency() const = 0;
+  size_t GetMaxConcurrency() const;
 
- private:
   // TaskSource:
   Optional<Task> TakeTask() override;
   bool DidProcessTask(RunResult run_result) override;
@@ -57,6 +61,7 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   std::atomic_size_t worker_count_{0U};
 
   const Location from_here_;
+  base::RepeatingCallback<size_t()> max_concurrency_callback_;
   base::RepeatingClosure worker_task_;
   const TimeTicks queue_time_;
 

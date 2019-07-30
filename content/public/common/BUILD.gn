@@ -248,6 +248,7 @@ jumbo_source_set("common_sources") {
   ]
   deps = [
     ":content_descriptor_keys",
+    "//build:branding_buildflags",
 
     # This looks needless as we have //content/common in public_deps, but it's
     # needed because of allow_circular_includes_from.

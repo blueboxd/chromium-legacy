@@ -76,7 +76,7 @@ base::ThreadLocalStorage::Slot& DangerousPatternTLS() {
   return *dangerous_pattern_tls;
 }
 
-#include "components/url_formatter/top_domains/alexa_domains-trie-inc.cc"
+#include "components/url_formatter/spoof_checks/top_domains/alexa_domains-trie-inc.cc"
 
 // All the domains in the above file have 3 or fewer labels.
 const size_t kNumberOfLabelsToCheck = 3;

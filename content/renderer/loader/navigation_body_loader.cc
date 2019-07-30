@@ -20,7 +20,7 @@ constexpr uint32_t NavigationBodyLoader::kMaxNumConsumedBytesInTask;
 
 // static
 void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-    const CommonNavigationParams& common_params,
+    const mojom::CommonNavigationParams& common_params,
     const CommitNavigationParams& commit_params,
     int request_id,
     const network::ResourceResponseHead& response_head,
@@ -38,7 +38,7 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
       render_frame_id, request_id, url,
       !commit_params.original_method.empty() ? commit_params.original_method
                                              : common_params.method,
-      common_params.referrer.url,
+      common_params.referrer->url,
       is_main_frame ? ResourceType::kMainFrame : ResourceType::kSubFrame,
       is_main_frame ? net::HIGHEST : net::LOWEST);
   size_t redirect_count = commit_params.redirect_response.size();

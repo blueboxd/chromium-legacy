@@ -346,9 +346,8 @@ void ThreadHeap::WeakProcessing(Visitor* visitor) {
       stats_collector(), ThreadHeapStatsCollector::kMarkWeakProcessing);
 
   // Weak processing may access unmarked objects but are forbidden from
-  // ressurecting them.
-  ThreadState::ObjectResurrectionForbiddenScope object_resurrection_forbidden(
-      ThreadState::Current());
+  // resurrecting them or allocating new ones.
+  ThreadState::NoAllocationScope allocation_forbidden(ThreadState::Current());
 
   // Call weak callbacks on objects that may now be pointing to dead objects.
   CustomCallbackItem item;
@@ -498,21 +497,10 @@ void ThreadHeap::PromptlyFreed(uint32_t gc_info_index) {
 }
 
 #if defined(ADDRESS_SANITIZER)
-void ThreadHeap::PoisonAllHeaps() {
-  // This lock must be held because other threads may access cross-thread
-  // persistents and should not observe them in a poisoned state.
-  MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
-
+void ThreadHeap::PoisonUnmarkedObjects() {
   // Poisoning all unmarked objects in the other arenas.
   for (int i = 1; i < BlinkGC::kNumberOfArenas; i++)
-    arenas_[i]->PoisonArena();
-  // CrossThreadPersistents in unmarked objects may be accessed from other
-  // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
-  // that would be fine.
-  ProcessHeap::GetCrossThreadPersistentRegion()
-      .UnpoisonCrossThreadPersistents();
-  ProcessHeap::GetCrossThreadWeakPersistentRegion()
-      .UnpoisonCrossThreadPersistents();
+    arenas_[i]->PoisonUnmarkedObjects();
 }
 #endif
 

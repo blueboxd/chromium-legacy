@@ -64,7 +64,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/service.h"
 #include "services/file/file_service.h"
@@ -220,9 +219,7 @@ StoragePartition* GetStoragePartitionFromConfig(
                             can_create);
 }
 
-void SaveSessionStateOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
-    AppCacheServiceImpl* appcache_service) {
+void SaveSessionStateOnIOThread(AppCacheServiceImpl* appcache_service) {
   appcache_service->set_force_keep_session_state();
 }
 
@@ -604,12 +601,9 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
                      base::WrapRefCounted(database_tracker)));
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    scoped_refptr<net::URLRequestContextGetter> context_getter;
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-      context_getter = storage_partition->GetURLRequestContext();
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&SaveSessionStateOnIOThread, context_getter,
+        base::BindOnce(&SaveSessionStateOnIOThread,
                        static_cast<AppCacheServiceImpl*>(
                            storage_partition->GetAppCacheService())));
   }

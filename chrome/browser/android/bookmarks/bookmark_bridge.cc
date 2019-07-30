@@ -586,17 +586,24 @@ void BookmarkBridge::SearchBookmarks(JNIEnv* env,
                                       jint max_results) {
   DCHECK(bookmark_model_->loaded());
 
-  std::vector<bookmarks::TitledUrlMatch> results;
-  bookmark_model_->GetBookmarksMatching(
-      base::android::ConvertJavaStringToUTF16(env, j_query),
-      max_results,
-      query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH,
-      &results);
-  for (const bookmarks::TitledUrlMatch& match : results) {
-    const BookmarkNode* node = static_cast<const BookmarkNode*>(match.node);
+  std::vector<const BookmarkNode*> results;
 
-    Java_BookmarkBridge_addToBookmarkIdList(env, j_list, node->id(),
-                                            node->type());
+  bookmarks::QueryFields query;
+  query.word_phrase_query.reset(new base::string16(
+      base::android::ConvertJavaStringToUTF16(env, j_query)));
+
+  GetBookmarksMatchingProperties(bookmark_model_, query, max_results, &results);
+
+  for (const bookmarks::BookmarkNode* match : results) {
+    // If this bookmark is a partner bookmark
+    if (partner_bookmarks_shim_->IsPartnerBookmark(match) &&
+        IsReachable(match)) {
+      Java_BookmarkBridge_addToBookmarkIdList(
+          env, j_list, match->id(), BookmarkType::BOOKMARK_TYPE_PARTNER);
+    } else {
+      Java_BookmarkBridge_addToBookmarkIdList(
+          env, j_list, match->id(), BookmarkType::BOOKMARK_TYPE_NORMAL);
+    }
   }
 }
 

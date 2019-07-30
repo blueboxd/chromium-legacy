@@ -401,7 +401,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
 TEST_F(ThreatDetailsTest, ThreatSubResource) {
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
       GURL(kLandingURL), web_contents());
-  navigation->SetReferrer(content::Referrer(
+  navigation->SetReferrer(blink::mojom::Referrer::New(
       GURL(kReferrerURL), network::mojom::ReferrerPolicy::kDefault));
   navigation->Commit();
 
@@ -449,7 +449,7 @@ TEST_F(ThreatDetailsTest, ThreatSubResource) {
 TEST_F(ThreatDetailsTest, SuspiciousSiteWithReferrerChain) {
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
       GURL(kLandingURL), web_contents());
-  navigation->SetReferrer(content::Referrer(
+  navigation->SetReferrer(blink::mojom::Referrer::New(
       GURL(kReferrerURL), network::mojom::ReferrerPolicy::kDefault));
   navigation->Commit();
 
@@ -1407,7 +1407,7 @@ TEST_F(ThreatDetailsTest, ThreatOnMainPageLoadBlocked) {
   // navigation entry.
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
       GURL(kUnrelatedURL), web_contents());
-  navigation->SetReferrer(content::Referrer(
+  navigation->SetReferrer(blink::mojom::Referrer::New(
       GURL(kUnrelatedReferrerURL), network::mojom::ReferrerPolicy::kDefault));
   navigation->Commit();
 
@@ -1469,7 +1469,7 @@ TEST_F(ThreatDetailsTest, ThreatWithPendingLoad) {
   // Load and commit the landing URL with a referrer.
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
       GURL(kLandingURL), web_contents());
-  navigation->SetReferrer(content::Referrer(
+  navigation->SetReferrer(blink::mojom::Referrer::New(
       GURL(kReferrerURL), network::mojom::ReferrerPolicy::kDefault));
   navigation->Commit();
 

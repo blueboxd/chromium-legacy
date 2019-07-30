@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -68,6 +69,18 @@ const base::Feature kVeryHighPriorityForCompositingWhenFast{
 const base::Feature kVeryHighPriorityForCompositingAlternating{
     "BlinkSchedulerVeryHighPriorityForCompositingAlternating",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, compositor priority will be set to kVeryHighPriority if no
+// compositor task has run for some time determined by the finch parameter
+// kCompositingDelayLength. Once a compositor task runs, it will be reset
+// to kNormalPriority.
+const base::Feature kVeryHighPriorityForCompositingAfterDelay{
+    "BlinkSchedulerVeryHighPriorityForCompositingAfterDelay",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Param for kVeryHighPriorityForCompositingAfterDelay experiment.
+constexpr base::FeatureParam<int> kCompositingDelayLength{
+    &kVeryHighPriorityForCompositingAfterDelay, "CompositingDelayLength", 100};
 
 // LOAD PRIORITY EXPERIMENT CONTROLS
 

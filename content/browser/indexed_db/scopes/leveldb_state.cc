@@ -13,36 +13,31 @@ namespace content {
 // static
 scoped_refptr<LevelDBState> LevelDBState::CreateForDiskDB(
     const leveldb::Comparator* comparator,
-    const LevelDBComparator* idb_comparator,
     std::unique_ptr<leveldb::DB> database,
     base::FilePath database_path) {
   return base::WrapRefCounted(new LevelDBState(
-      nullptr, comparator, idb_comparator, std::move(database),
-      std::move(database_path), database_path.BaseName().AsUTF8Unsafe()));
+      nullptr, comparator, std::move(database), std::move(database_path),
+      database_path.BaseName().AsUTF8Unsafe()));
 }
 
 // static
 scoped_refptr<LevelDBState> LevelDBState::CreateForInMemoryDB(
     std::unique_ptr<leveldb::Env> in_memory_env,
     const leveldb::Comparator* comparator,
-    const LevelDBComparator* idb_comparator,
     std::unique_ptr<leveldb::DB> in_memory_database,
     std::string name_for_tracing) {
-  return base::WrapRefCounted(
-      new LevelDBState(std::move(in_memory_env), comparator, idb_comparator,
-                       std::move(in_memory_database), base::FilePath(),
-                       std::move(name_for_tracing)));
+  return base::WrapRefCounted(new LevelDBState(
+      std::move(in_memory_env), comparator, std::move(in_memory_database),
+      base::FilePath(), std::move(name_for_tracing)));
 }
 
 LevelDBState::LevelDBState(std::unique_ptr<leveldb::Env> optional_in_memory_env,
                            const leveldb::Comparator* comparator,
-                           const LevelDBComparator* idb_comparator,
                            std::unique_ptr<leveldb::DB> database,
                            base::FilePath database_path,
                            std::string name_for_tracing)
     : in_memory_env_(std::move(optional_in_memory_env)),
       comparator_(comparator),
-      idb_comparator_(idb_comparator),
       db_(std::move(database)),
       database_path_(std::move(database_path)),
       name_for_tracing_(std::move(name_for_tracing)),

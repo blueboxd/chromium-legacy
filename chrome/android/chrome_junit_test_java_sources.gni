@@ -75,6 +75,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorNotificationBridgeUiTest.java",
   "junit/src/org/chromium/chrome/browser/explore_sites/ExploreSitesBackgroundTaskUnitTest.java",
   "junit/src/org/chromium/chrome/browser/explore_sites/ExploreSitesCategoryUnitTest.java",
+  "junit/src/org/chromium/chrome/browser/explore_sites/ExploreSitesPageStateUnitTest.java",
   "junit/src/org/chromium/chrome/browser/explore_sites/ExploreSitesSectionUnitTest.java",
   "junit/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtilsTest.java",
   "junit/src/org/chromium/chrome/browser/feedback/FeedbackCollectorTest.java",

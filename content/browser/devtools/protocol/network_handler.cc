@@ -1852,8 +1852,9 @@ void NetworkHandler::NavigationRequestWillBeSent(
   for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
 
-  const CommonNavigationParams& common_params = nav_request.common_params();
-  GURL referrer = common_params.referrer.url;
+  const mojom::CommonNavigationParams& common_params =
+      nav_request.common_params();
+  GURL referrer = common_params.referrer->url;
   // This is normally added down the stack, so we have to fake it here.
   if (!referrer.is_empty())
     headers_dict->setString(net::HttpRequestHeaders::kReferer, referrer.spec());
@@ -1873,7 +1874,7 @@ void NetworkHandler::NavigationRequestWillBeSent(
           .SetMethod(common_params.method)
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
           .SetInitialPriority(resourcePriority(net::HIGHEST))
-          .SetReferrerPolicy(referrerPolicy(common_params.referrer.policy))
+          .SetReferrerPolicy(referrerPolicy(common_params.referrer->policy))
           .Build();
   if (!url_fragment.empty())
     request->SetUrlFragment(url_fragment);

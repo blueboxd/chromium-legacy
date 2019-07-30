@@ -5,5 +5,4 @@
 dictionary XRInputSourceEventInit : EventInit {
   required XRFrame frame;
   required XRInputSource inputSource;
-  long? buttonIndex = null;
 };

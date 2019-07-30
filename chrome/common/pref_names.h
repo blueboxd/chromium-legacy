@@ -9,6 +9,7 @@
 
 #include <stddef.h>
 
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "components/offline_pages/buildflags/buildflags.h"
@@ -466,9 +467,9 @@ extern const char kHasSeenWelcomePage[];
 extern const char kShowFirstRunDefaultSearchShortcut[];
 #endif
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 extern const char kNaviOnboardGroup[];
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Deprecated preference for metric / crash reporting on Android. Use
 // kMetricsReportingEnabled instead.
@@ -878,11 +879,11 @@ extern const char kDSEWasDisabledByPolicy[];
 extern const char kWebShareVisitedTargets[];
 
 #if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 extern const char kIncompatibleApplications[];
 extern const char kModuleBlacklistCacheMD5Digest[];
 extern const char kThirdPartyBlockingEnabled[];
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
 
 extern const char kSettingsResetPromptPromptWave[];

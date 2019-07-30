@@ -28,6 +28,6 @@ mojom("types") {
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//ui/gfx/image/mojo:interfaces",
+    "//ui/gfx/image/mojom",
   ]
 }

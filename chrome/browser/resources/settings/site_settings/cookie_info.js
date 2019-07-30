@@ -53,10 +53,6 @@ const cookieInfo = {
     ['origin', 'fileSystemOrigin'], ['persistent', 'fileSystemPersistentUsage'],
     ['temporary', 'fileSystemTemporaryUsage']
   ],
-  'channel_id': [
-    ['serverId', 'channelIdServerId'], ['certType', 'channelIdType'],
-    ['created', 'channelIdCreated']
-  ],
   'service_worker':
       [['origin', 'serviceWorkerOrigin'], ['size', 'serviceWorkerSize']],
   'shared_worker':

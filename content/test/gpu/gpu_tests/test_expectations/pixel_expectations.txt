@@ -173,9 +173,6 @@ crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
 crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 
-# Fails when the browser feature SkiaRenderer is enabled
-crbug.com/976370 [ skia-renderer ] Pixel_CSS3DBlueBox [ Skip ]
-
 # Fails when the browser features SkiaRenderer & Vulkan are enabled on Linux
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGBUnaccelerated2D [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Skip ]

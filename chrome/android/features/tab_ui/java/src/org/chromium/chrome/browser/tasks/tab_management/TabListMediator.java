@@ -315,11 +315,7 @@ class TabListMediator {
 
         @Override
         public void onFaviconUpdated(Tab updatedTab, Bitmap icon) {
-            int index = mModel.indexFromId(updatedTab.getId());
-            if (index == TabModel.INVALID_TAB_INDEX) return;
-            Drawable drawable = mTabListFaviconProvider.getFaviconForUrlSync(
-                    updatedTab.getUrl(), updatedTab.isIncognito(), icon);
-            mModel.get(index).set(TabProperties.FAVICON, drawable);
+            updateFaviconForTab(updatedTab, icon);
         }
     };
 
@@ -782,14 +778,7 @@ class TabListMediator {
         mModel.get(index).set(TabProperties.IS_SELECTED, isSelected);
         mModel.get(index).set(TabProperties.TITLE, mTitleProvider.getTitle(tab));
 
-        Callback<Drawable> faviconCallback = drawable -> {
-            int modelIndex = mModel.indexFromId(tab.getId());
-            if (modelIndex != Tab.INVALID_TAB_ID && drawable != null) {
-                mModel.get(modelIndex).set(TabProperties.FAVICON, drawable);
-            }
-        };
-        mTabListFaviconProvider.getFaviconForUrlAsync(
-                tab.getUrl(), tab.isIncognito(), faviconCallback);
+        updateFaviconForTab(tab, null);
         boolean forceUpdate = isSelected && !quickMode;
         if (mThumbnailProvider != null && mVisible
                 && (mModel.get(index).get(TabProperties.THUMBNAIL_FETCHER) == null || forceUpdate
@@ -897,14 +886,7 @@ class TabListMediator {
             mModel.add(index, tabInfo);
         }
 
-        Callback<Drawable> faviconCallback = drawable -> {
-            int modelIndex = mModel.indexFromId(tab.getId());
-            if (modelIndex != Tab.INVALID_TAB_ID && drawable != null) {
-                mModel.get(modelIndex).set(TabProperties.FAVICON, drawable);
-            }
-        };
-        mTabListFaviconProvider.getFaviconForUrlAsync(
-                tab.getUrl(), tab.isIncognito(), faviconCallback);
+        updateFaviconForTab(tab, null);
 
         if (mThumbnailProvider != null && mVisible) {
             ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, isSelected,
@@ -934,5 +916,30 @@ class TabListMediator {
     int indexOfSelected() {
         if (mNextTabIndex != INVALID_INDEX) return mNextTabIndex;
         return mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index();
+    }
+
+    private void updateFaviconForTab(Tab tab, @Nullable Bitmap icon) {
+        int modelIndex = mModel.indexFromId(tab.getId());
+        if (modelIndex == Tab.INVALID_TAB_ID) return;
+        // For tab group card in grid tab switcher, the favicon is set to be null.
+        if (mActionsOnAllRelatedTabs && getRelatedTabsForId(tab.getId()).size() > 1) {
+            mModel.get(modelIndex).set(TabProperties.FAVICON, null);
+            return;
+        }
+        // If there is an available icon, we fetch favicon synchronously; otherwise asynchronously.
+        if (icon != null) {
+            Drawable drawable = mTabListFaviconProvider.getFaviconForUrlSync(
+                    tab.getUrl(), tab.isIncognito(), icon);
+            mModel.get(modelIndex).set(TabProperties.FAVICON, drawable);
+            return;
+        }
+        Callback<Drawable> faviconCallback = drawable -> {
+            assert drawable != null;
+            if (drawable != null) {
+                mModel.get(modelIndex).set(TabProperties.FAVICON, drawable);
+            }
+        };
+        mTabListFaviconProvider.getFaviconForUrlAsync(
+                tab.getUrl(), tab.isIncognito(), faviconCallback);
     }
 }

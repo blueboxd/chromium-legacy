@@ -1064,8 +1064,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
 scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing) {
-  bool using_swap_chain = RuntimeEnabledFeatures::WebGLSwapChainEnabled() &&
-                          CreationAttributes().desynchronized;
   bool premultiplied_alpha = CreationAttributes().premultiplied_alpha;
   bool want_alpha_channel = CreationAttributes().alpha;
   bool want_depth_buffer = CreationAttributes().depth;
@@ -1096,6 +1094,11 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
   DrawingBuffer::ChromiumImageUsage chromium_image_usage =
       Host()->IsOffscreenCanvas() ? DrawingBuffer::kDisallowChromiumImage
                                   : DrawingBuffer::kAllowChromiumImage;
+
+  bool using_swap_chain =
+      RuntimeEnabledFeatures::WebGLSwapChainEnabled() &&
+      context_provider->GetCapabilities().shared_image_swap_chain &&
+      CreationAttributes().desynchronized;
 
   return DrawingBuffer::Create(
       std::move(context_provider), using_gpu_compositing, using_swap_chain,
@@ -1400,7 +1403,7 @@ void WebGLRenderingContextBase::PushFrame() {
 }
 
 void WebGLRenderingContextBase::FinalizeFrame() {
-  if (GetDrawingBuffer())
+  if (GetDrawingBuffer() && GetDrawingBuffer()->UsingSwapChain())
     GetDrawingBuffer()->PresentSwapChain();
   marked_canvas_dirty_ = false;
 }
@@ -1523,6 +1526,10 @@ void WebGLRenderingContextBase::RestoreColorMask() {
 void WebGLRenderingContextBase::MarkLayerComposited() {
   if (!isContextLost())
     GetDrawingBuffer()->ResetBuffersToAutoClear();
+}
+
+bool WebGLRenderingContextBase::UsingSwapChain() const {
+  return GetDrawingBuffer() && GetDrawingBuffer()->UsingSwapChain();
 }
 
 bool WebGLRenderingContextBase::IsOriginTopLeft() const {

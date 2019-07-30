@@ -206,6 +206,7 @@
 #endif  // defined(TOOLKIT_VIEWS)
 
 using flags_ui::FeatureEntry;
+using flags_ui::kEnterprise;
 using flags_ui::kOsAndroid;
 using flags_ui::kOsCrOS;
 using flags_ui::kOsCrOSOwnerOnly;
@@ -3781,8 +3782,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kDisableBestEffortTasks)},
     {"enable-sync-uss-passwords",
      flag_descriptions::kEnableSyncUSSPasswordsName,
-     flag_descriptions::kEnableSyncUSSPasswordsDescription,
-     kOsMac | kOsWin | kOsCrOS | kOsAndroid,
+     flag_descriptions::kEnableSyncUSSPasswordsDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSPasswords)},
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -4012,7 +4012,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"allow-popups-during-page-unload",
      flag_descriptions::kAllowPopupsDuringPageUnloadName,
-     flag_descriptions::kAllowPopupsDuringPageUnloadDescription, kOsAll,
+     flag_descriptions::kAllowPopupsDuringPageUnloadDescription,
+     kOsAll | kEnterprise,
      SINGLE_VALUE_TYPE(switches::kAllowPopupsDuringPageUnload)},
 #if defined(OS_CHROMEOS)
     {"enable-advanced-ppd-attributes",
@@ -4216,6 +4217,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUpdateHoverAtBeginFrameDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kUpdateHoverAtBeginFrame)},
 
+#if defined(OS_ANDROID)
+    {"usage-stats", flag_descriptions::kUsageStatsName,
+     flag_descriptions::kUsageStatsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kUsageStatsFeature)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -4241,6 +4248,10 @@ class FlagsStateSingleton {
 
   DISALLOW_COPY_AND_ASSIGN(FlagsStateSingleton);
 };
+
+bool ShouldSkipNonEnterpriseFeatureEntry(const FeatureEntry& entry) {
+  return ~entry.supported_platforms & kEnterprise;
+}
 
 bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   version_info::Channel channel = chrome::GetChannel();
@@ -4362,6 +4373,15 @@ void GetFlagFeatureEntries(flags_ui::FlagsStorage* flags_storage,
   FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
       flags_storage, access, supported_entries, unsupported_entries,
       base::Bind(&SkipConditionalFeatureEntry));
+}
+
+void GetFlagFeatureEntriesForEnterprises(flags_ui::FlagsStorage* flags_storage,
+                                         flags_ui::FlagAccess access,
+                                         base::ListValue* supported_entries,
+                                         base::ListValue* unsupported_entries) {
+  FlagsStateSingleton::GetFlagsState()->GetFlagFeatureEntries(
+      flags_storage, access, supported_entries, unsupported_entries,
+      base::Bind(&ShouldSkipNonEnterpriseFeatureEntry));
 }
 
 bool IsRestartNeededToCommitChanges() {

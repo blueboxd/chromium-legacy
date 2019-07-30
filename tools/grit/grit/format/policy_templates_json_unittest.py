@@ -20,7 +20,6 @@ import unittest
 import StringIO
 
 from grit import grd_reader
-from grit import util
 from grit.tool import build
 
 

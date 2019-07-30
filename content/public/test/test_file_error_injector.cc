@@ -17,7 +17,6 @@
 #include "components/download/public/common/download_interrupt_reasons_utils.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/service_manager/public/cpp/connector.h"

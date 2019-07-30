@@ -24,6 +24,8 @@ AuthMethodSwitchType SwitchFromPasswordTo(AuthMethod current) {
       return AuthMethodSwitchType::kPasswordToSmartlock;
     case AuthMethod::kFingerprint:
       return AuthMethodSwitchType::kPasswordToFingerprint;
+    case AuthMethod::kChallengeResponse:
+      return AuthMethodSwitchType::kPasswordToChallengeResponse;
     case AuthMethod::kPassword:
     case AuthMethod::kMethodCount:
       NOTREACHED();
@@ -41,6 +43,7 @@ AuthMethodSwitchType SwitchFromPinTo(AuthMethod current) {
     case AuthMethod::kFingerprint:
       return AuthMethodSwitchType::kPinToFingerprint;
     case AuthMethod::kPin:
+    case AuthMethod::kChallengeResponse:
     case AuthMethod::kMethodCount:
       NOTREACHED();
       return AuthMethodSwitchType::kSwitchTypeCount;
@@ -57,6 +60,7 @@ AuthMethodSwitchType SwitchFromSmartlockTo(AuthMethod current) {
     case AuthMethod::kFingerprint:
       return AuthMethodSwitchType::kSmartlockToFingerprint;
     case AuthMethod::kSmartlock:
+    case AuthMethod::kChallengeResponse:
     case AuthMethod::kMethodCount:
       NOTREACHED();
       return AuthMethodSwitchType::kSwitchTypeCount;
@@ -73,6 +77,7 @@ AuthMethodSwitchType SwitchFromFingerprintTo(AuthMethod current) {
     case AuthMethod::kPin:
       return AuthMethodSwitchType::kFingerprintToPin;
     case AuthMethod::kFingerprint:
+    case AuthMethod::kChallengeResponse:
     case AuthMethod::kMethodCount:
       NOTREACHED();
       return AuthMethodSwitchType::kSwitchTypeCount;
@@ -90,6 +95,7 @@ AuthMethodSwitchType FindSwitchType(AuthMethod previous, AuthMethod current) {
       return SwitchFromSmartlockTo(current);
     case AuthMethod::kFingerprint:
       return SwitchFromFingerprintTo(current);
+    case AuthMethod::kChallengeResponse:
     case AuthMethod::kMethodCount:
       NOTREACHED();
       return AuthMethodSwitchType::kSwitchTypeCount;
@@ -113,7 +119,7 @@ void LoginAuthRecorder::RecordAuthMethod(AuthMethod method) {
     return;
   }
 
-  // Record usage of PIN / Password / Smartlock / Fingerprint in lock screen.
+  // Record usage of the authentication method in lock screen.
   const bool is_tablet_mode = TabletModeClient::Get()->tablet_mode_enabled();
   if (is_tablet_mode) {
     UMA_HISTOGRAM_ENUMERATION("Ash.Login.Lock.AuthMethod.Used.TabletMode",

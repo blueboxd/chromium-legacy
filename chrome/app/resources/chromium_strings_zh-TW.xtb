@@ -213,6 +213,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
 <translation id="7773960292263897147">警告：Chromium 無法禁止擴充功能記錄你的瀏覽活動。如要在無痕模式中停用這個擴充功能，請取消選取這個選項。</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary 版</translation>
+<translation id="7827169012280634081">當你關閉 Chromium 時，清除 Cookie 和網站資料</translation>
 <translation id="7867198900892795913">Chromium 無法更新至最新版本，因此你並未取得最新功能和安全性問題修正。</translation>
 <translation id="7901117350626490574">有可用的 Chromium 更新，只要重新啟動 Chromium 即可套用。</translation>
 <translation id="7937630085815544518">你使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chromium，請使用相同帳戶重新登入。</translation>
@@ -239,6 +240,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="8667808506758191620">您的 <ph name="DEVICE_TYPE" /> 已搭載最新版作業系統。</translation>
 <translation id="8697124171261953979">這個擴充功能也會控管 Chromium 啟動時或你使用網址列搜尋時所顯示的網頁。</translation>
 <translation id="8704119203788522458">這是你專屬的 Chromium</translation>
+<translation id="8739167630197873875">當你關閉 Chromium 時，系統會清除 Cookie。如要保持同步，請變更這項<ph name="COOKIE_SETTINGS_LINK" />。</translation>
 <translation id="8748383401829947534">請關閉所有 Chromium 瀏覽器。</translation>
 <translation id="8796602469536043152">Chromium 需要相關權限，才能讓這個網站使用你的攝影機和麥克風</translation>
 <translation id="8803635938069941624">Chromium 作業系統條款</translation>

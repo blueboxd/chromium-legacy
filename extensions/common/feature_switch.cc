@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "extensions/common/switches.h"
 
@@ -41,11 +42,11 @@ class CommonSwitches {
                          FeatureSwitch::DEFAULT_ENABLED),
         load_media_router_component_extension(
             kLoadMediaRouterComponentExtensionFlag,
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
             FeatureSwitch::DEFAULT_ENABLED)
 #else
             FeatureSwitch::DEFAULT_DISABLED)
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   {
   }
 

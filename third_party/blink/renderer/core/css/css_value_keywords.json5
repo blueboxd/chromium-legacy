@@ -131,9 +131,10 @@
     "large",
     "x-large",
     "xx-large",
-    "-webkit-xxx-large",
+    "xxx-large",
     "smaller",
     "larger",
+    "-webkit-xxx-large",
 
     //
     // font-family (<generic-family> in CSS 2.1)

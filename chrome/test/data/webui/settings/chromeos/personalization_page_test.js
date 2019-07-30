@@ -88,42 +88,35 @@ suite('PersonalizationHandler', function() {
     personalizationPage.remove();
   });
 
-  test('wallpaperManager', function() {
+  test('wallpaperManager', async () => {
     personalizationBrowserProxy.setIsWallpaperPolicyControlled(false);
     // TODO(dschuyler): This should notice the policy change without needing
     // the page to be recreated.
     createPersonalizationPage();
-    return personalizationBrowserProxy.whenCalled('isWallpaperPolicyControlled')
-        .then(() => {
-          const button = personalizationPage.$.wallpaperButton;
-          assertTrue(!!button);
-          assertFalse(button.disabled);
-          button.click();
-          return personalizationBrowserProxy.whenCalled('openWallpaperManager');
-        });
+    await personalizationBrowserProxy.whenCalled('isWallpaperPolicyControlled');
+    const button = personalizationPage.$.wallpaperButton;
+    assertTrue(!!button);
+    assertFalse(button.disabled);
+    button.click();
+    await personalizationBrowserProxy.whenCalled('openWallpaperManager');
   });
 
-  test('wallpaperSettingVisible', function() {
+  test('wallpaperSettingVisible', async () => {
     personalizationPage.set('pageVisibility.setWallpaper', false);
-    return personalizationBrowserProxy.whenCalled('isWallpaperSettingVisible')
-        .then(function() {
-          Polymer.dom.flush();
-          assertTrue(personalizationPage.$$('#wallpaperButton').hidden);
-        });
+    await personalizationBrowserProxy.whenCalled('isWallpaperSettingVisible');
+    Polymer.dom.flush();
+    assertTrue(personalizationPage.$$('#wallpaperButton').hidden);
   });
 
-  test('wallpaperPolicyControlled', function() {
+  test('wallpaperPolicyControlled', async () => {
     // Should show the wallpaper policy indicator and disable the toggle
     // button if the wallpaper is policy controlled.
     personalizationBrowserProxy.setIsWallpaperPolicyControlled(true);
     createPersonalizationPage();
-    return personalizationBrowserProxy.whenCalled('isWallpaperPolicyControlled')
-        .then(function() {
-          Polymer.dom.flush();
-          assertFalse(
-              personalizationPage.$$('#wallpaperPolicyIndicator').hidden);
-          assertTrue(personalizationPage.$$('#wallpaperButton').disabled);
-        });
+    await personalizationBrowserProxy.whenCalled('isWallpaperPolicyControlled');
+    Polymer.dom.flush();
+    assertFalse(personalizationPage.$$('#wallpaperPolicyIndicator').hidden);
+    assertTrue(personalizationPage.$$('#wallpaperButton').disabled);
   });
 
   test('changePicture', function() {

@@ -30,12 +30,21 @@ enum class ParseResult {
   ERROR_INVALID_REDIRECT_URL,
   ERROR_DUPLICATE_IDS,
   ERROR_PERSISTING_RULESET,
+
   // Parse errors related to fields containing non-ascii characters.
   ERROR_NON_ASCII_URL_FILTER,
   ERROR_NON_ASCII_DOMAIN,
   ERROR_NON_ASCII_EXCLUDED_DOMAIN,
+
   ERROR_INVALID_URL_FILTER,
   ERROR_EMPTY_REMOVE_HEADERS_LIST,
+  ERROR_INVALID_REDIRECT,
+  ERROR_INVALID_EXTENSION_PATH,
+  ERROR_INVALID_TRANSFORM_SCHEME,
+  ERROR_INVALID_TRANSFORM_PORT,
+  ERROR_INVALID_TRANSFORM_QUERY,
+  ERROR_INVALID_TRANSFORM_FRAGMENT,
+  ERROR_QUERY_AND_TRANSFORM_BOTH_SPECIFIED,
 };
 
 // Describes the ways in which updating dynamic rules can fail.
@@ -80,6 +89,9 @@ enum RemoveHeadersMask : uint8_t {
   kRemoveHeadersMask_Max = (kRemoveHeadersMask_Last << 1) - 1,
 };
 
+// Schemes which can be used as part of url transforms.
+extern const char* const kAllowedTransformSchemes[4];
+
 // Rule parsing errors.
 extern const char kErrorResourceTypeDuplicated[];
 extern const char kErrorEmptyRedirectRuleKey[];
@@ -92,8 +104,10 @@ extern const char kErrorInvalidRedirectUrl[];
 extern const char kErrorDuplicateIDs[];
 extern const char kErrorPersisting[];
 extern const char kErrorNonAscii[];
-extern const char kErrorInvalidUrlFilter[];
 extern const char kErrorEmptyRemoveHeadersList[];
+extern const char kErrorInvalidKey[];
+extern const char kErrorInvalidTransformScheme[];
+extern const char kErrorQueryAndTransformBothSpecified[];
 
 extern const char kErrorListNotPassed[];
 

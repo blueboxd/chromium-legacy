@@ -944,6 +944,7 @@ jumbo_source_set("test_support") {
       "test/widget_test_aura.cc",
     ]
     deps += [
+      "//ui/accessibility",
       "//ui/aura",
       "//ui/aura:test_support",
       "//ui/wm",

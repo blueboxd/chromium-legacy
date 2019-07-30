@@ -17,6 +17,15 @@ void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size) {
   doc_size->Enlarge(width_diff, rect_size.height());
 }
 
+pp::Rect GetBottomGapBetweenRects(int page_rect_bottom,
+                                  const pp::Rect& bottom_rect) {
+  if (page_rect_bottom >= bottom_rect.bottom())
+    return pp::Rect(0, 0, 0, 0);
+
+  return pp::Rect(bottom_rect.x(), page_rect_bottom, bottom_rect.width(),
+                  bottom_rect.bottom() - page_rect_bottom);
+}
+
 PageInsetSizes GetPageInsetsForTwoUpView(
     size_t page_index,
     size_t num_of_pages,

@@ -13,10 +13,10 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/tick_clock.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
-#include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/mock_level_db.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,11 +140,10 @@ class IndexedDBTombstoneSweeperTest : public testing::Test {
     leveldb::Status s;
     std::tie(level_db_state, s, std::ignore) =
         indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
-            base::FilePath(), indexed_db::GetDefaultIndexedDBComparator(),
-            indexed_db::GetDefaultLevelDBComparator());
+            base::FilePath(), indexed_db::GetDefaultLevelDBComparator());
     ASSERT_TRUE(s.ok());
-    in_memory_db_ = std::make_unique<TransactionalLevelDBDatabase>(
-        std::move(level_db_state), indexed_db::LevelDBFactory::Get(), nullptr,
+    in_memory_db_ = indexed_db::LevelDBFactory::Get()->CreateLevelDBDatabase(
+        std::move(level_db_state), nullptr, nullptr,
         TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
     sweeper_ = std::make_unique<IndexedDBTombstoneSweeper>(
         kRoundIterations, kMaxIterations, in_memory_db_->db());

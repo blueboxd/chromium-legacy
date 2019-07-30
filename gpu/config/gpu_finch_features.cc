@@ -55,13 +55,8 @@ const base::Feature kDefaultEnableGpuRasterization{
 
 // Enable out of process rasterization by default.  This can still be overridden
 // by --enable-oop-rasterization or --disable-oop-rasterization.
-#if defined(OS_ANDROID)
-const base::Feature kDefaultEnableOopRasterization{
-    "DefaultEnableOopRasterization", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
 const base::Feature kDefaultEnableOopRasterization{
     "DefaultEnableOopRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Allow putting a video swapchain underneath the main swapchain, so overlays
 // can be used even if there are controls on top of the video. It can be

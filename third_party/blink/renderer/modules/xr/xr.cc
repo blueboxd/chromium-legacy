@@ -260,8 +260,8 @@ void XR::AddEnvironmentProviderErrorHandler(
 }
 
 void XR::ExitPresent() {
-  DCHECK(device_);
-  device_->ExitPresent();
+  DCHECK(service_);
+  service_->ExitPresent();
 }
 
 ScriptPromise XR::supportsSession(ScriptState* script_state,
@@ -305,37 +305,25 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
     // `inline` sessions are always supported if not blocked by feature policy.
     query->Resolve();
   } else {
-    // For all other modes we need to check with the service.
-    if (!device_) {
-      pending_mode_queries_.push_back(query);
-
-      // The pending queries will be resolved once the device is returned.
-      EnsureDevice();
-    } else {
-      DispatchSupportsSession(query);
+    if (!service_) {
+      // If we don't have a service at the time we reach this call it indicates
+      // that there's no WebXR hardware. Reject as not supported.
+      query->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
+      return promise;
     }
+
+    device::mojom::blink::XRSessionOptionsPtr session_options =
+        convertModeToMojo(query->mode());
+
+    outstanding_support_queries_.insert(query);
+    service_->SupportsSession(
+        std::move(session_options),
+        WTF::Bind(&XR::OnSupportsSessionReturned, WrapPersistent(this),
+                  WrapPersistent(query)));
   }
 
   return promise;
-}
-
-void XR::DispatchSupportsSession(PendingSupportsSessionQuery* query) {
-  if (!device_) {
-    // If we don't have a device by the time we reach this call it indicates
-    // that there's no WebXR hardware. Reject as not supported.
-    query->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
-    return;
-  }
-
-  device::mojom::blink::XRSessionOptionsPtr session_options =
-      convertModeToMojo(query->mode());
-
-  outstanding_support_queries_.insert(query);
-  device_->SupportsSession(
-      std::move(session_options),
-      WTF::Bind(&XR::OnSupportsSessionReturned, WrapPersistent(this),
-                WrapPersistent(query)));
 }
 
 ScriptPromise XR::requestSession(ScriptState* script_state,
@@ -422,32 +410,13 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
     return promise;
   }
 
-  if (!device_) {
-    pending_session_requests_.push_back(query);
-
-    // The pending queries will be resolved once the device is returned.
-    EnsureDevice();
-  } else {
-    DispatchRequestSession(query);
-  }
-
-  return promise;
-}
-
-void XR::DispatchRequestSession(PendingRequestSessionQuery* query) {
-  // TODO(https://crbug.com/968622): Make sure we don't forget to call
-  // metrics-related methods when the promise gets resolved/rejected.
-
-  if (!device_) {
-    // If we don't have a device by the time we reach this call, there is no XR
-    // hardware. Attempt to create a sensorless session.
-    // TODO(https://crbug.com/944987): When device_ is eliminated, unify with
-    // OnRequestSessionReturned() and inline CreateSensorlessInlineSession().
+  if (!service_) {
+    // If we don't have a service by the time we reach this call, there is no XR
+    // hardware. Create a sensorless session.
     if (query->mode() == XRSession::kModeInline) {
       XRSession* session = CreateSensorlessInlineSession();
-
       query->Resolve(session);
-      return;
+      return promise;
     }
 
     // TODO(https://crbug.com/962991): The spec says to reject with null.
@@ -455,33 +424,19 @@ void XR::DispatchRequestSession(PendingRequestSessionQuery* query) {
     // service we return kNotSupportedError.
     query->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotSupportedError, kSessionNotSupported));
-    return;
+    return promise;
   }
 
   device::mojom::blink::XRSessionOptionsPtr session_options =
       convertModeToMojo(query->mode());
 
   outstanding_request_queries_.insert(query);
-  device_->RequestSession(
+  service_->RequestSession(
       std::move(session_options),
       WTF::Bind(&XR::OnRequestSessionReturned, WrapWeakPersistent(this),
                 WrapPersistent(query)));
-}
 
-void XR::EnsureDevice() {
-  // Exit if we have a device or are waiting for a device.
-  if (device_ || pending_device_) {
-    return;
-  }
-
-  if (!service_) {
-    OnRequestDeviceReturned(nullptr);
-    return;
-  }
-
-  service_->RequestDevice(
-      WTF::Bind(&XR::OnRequestDeviceReturned, WrapPersistent(this)));
-  pending_device_ = true;
+  return promise;
 }
 
 // This will be called when the XR hardware or capabilities have potentially
@@ -489,43 +444,6 @@ void XR::EnsureDevice() {
 // it might be able to support immersive sessions, where it couldn't before.
 void XR::OnDeviceChanged() {
   DispatchEvent(*blink::Event::Create(event_type_names::kDevicechange));
-}
-
-void XR::OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device) {
-  pending_device_ = false;
-  if (device) {
-    device_ = std::move(device);
-    device_.set_connection_error_handler(
-        WTF::Bind(&XR::OnDeviceDisconnect, WrapWeakPersistent(this)));
-
-    // Log metrics
-    if (!did_log_supports_immersive_) {
-      device::mojom::blink::XRSessionOptionsPtr session_options =
-          device::mojom::blink::XRSessionOptions::New();
-      session_options->immersive = true;
-
-      // TODO(http://crbug.com/872086) This shouldn't need to be called.
-      // This information should be logged on the browser side.
-      device_->SupportsSession(
-          std::move(session_options),
-          WTF::Bind(&XR::ReportImmersiveSupported, WrapPersistent(this)));
-    }
-  }
-
-  DispatchPendingSessionCalls();
-}
-
-void XR::DispatchPendingSessionCalls() {
-  // Process any calls that were waiting for the device query to be returned.
-  for (auto& query : pending_mode_queries_) {
-    DispatchSupportsSession(query);
-  }
-  pending_mode_queries_.clear();
-
-  for (auto& query : pending_session_requests_) {
-    DispatchRequestSession(query);
-  }
-  pending_session_requests_.clear();
 }
 
 void XR::OnSupportsSessionReturned(PendingSupportsSessionQuery* query,
@@ -555,10 +473,8 @@ void XR::OnRequestSessionReturned(
   // TODO(https://crbug.com/872316) Improve the error messaging to indicate why
   // a request failed.
   if (!session_ptr) {
-    // |device_| does not support the requested mode. Attempt to create a
+    // |service_| does not support the requested mode. Attempt to create a
     // sensorless session.
-    // TODO(https://crbug.com/944987): When device_ is eliminated, unify with
-    // DispatchRequestSession() and inline CreateSensorlessInlineSession().
     if (query->mode() == XRSession::kModeInline) {
       XRSession* session = CreateSensorlessInlineSession();
 
@@ -653,9 +569,6 @@ void XR::AddedEventListener(const AtomicString& event_type,
       binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
       service_->SetClient(std::move(client));
     }
-
-    // Make sure we have an active device to listen for changes with.
-    EnsureDevice();
   }
 }
 
@@ -699,21 +612,6 @@ void XR::Dispose() {
   if (frame_provider_)
     frame_provider_->Dispose();
 
-  OnDeviceDisconnect();
-
-  // If we failed out with an outstanding call to RequestDevice, we may have
-  // pending promises that need to be resolved.  Fake a call that we found no
-  // devices to free up those promises.
-  if (pending_device_)
-    OnRequestDeviceReturned(nullptr);
-}
-
-void XR::OnDeviceDisconnect() {
-  if (!device_)
-    return;
-
-  device_ = nullptr;
-
   HeapHashSet<Member<PendingSupportsSessionQuery>> support_queries =
       outstanding_support_queries_;
   for (const auto& query : support_queries) {
@@ -724,7 +622,6 @@ void XR::OnDeviceDisconnect() {
   HeapHashSet<Member<PendingRequestSessionQuery>> request_queries =
       outstanding_request_queries_;
   for (const auto& query : request_queries) {
-    // We had a device, so rejecting the session request.
     // TODO(https://crbug.com/962991): The spec should specify
     // what is returned here.
     OnRequestSessionReturned(
@@ -756,8 +653,6 @@ void XR::OnMagicWindowProviderDisconnect() {
 }
 
 void XR::Trace(blink::Visitor* visitor) {
-  visitor->Trace(pending_mode_queries_);
-  visitor->Trace(pending_session_requests_);
   visitor->Trace(frame_provider_);
   visitor->Trace(sessions_);
   visitor->Trace(outstanding_support_queries_);

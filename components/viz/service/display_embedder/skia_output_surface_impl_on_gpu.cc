@@ -432,7 +432,6 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
     shared_image_factory_.DestroySharedImage(mailbox);
   }
 
-#if defined(OS_WIN)
   SwapChainMailboxes CreateSwapChain(ResourceFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
@@ -445,7 +444,6 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
                         const gpu::Mailbox& mailbox) override {
     NOTREACHED();
   }
-#endif  // OS_WIN
 
   gpu::SyncToken GenUnverifiedSyncToken() override {
     return gpu::SyncToken(sync_point_client_state_->namespace_id(),

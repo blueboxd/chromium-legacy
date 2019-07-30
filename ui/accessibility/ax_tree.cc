@@ -1047,7 +1047,7 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
                                      const AXNode* local_parent,
                                      std::vector<const AXNode*>& items,
                                      const AXNode& original_node) const {
-  // ignored nodes are not a part of ordered sets.
+  // Ignored nodes are not a part of ordered sets.
   if (original_node.data().HasState(ax::mojom::State::kIgnored))
     return;
 
@@ -1126,9 +1126,10 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
     if (!node_is_radio_button && child->SetRoleMatchesItemRole(ordered_set))
       items.push_back(child);
 
-    // Recurse if there is a generic container or is ignored.
+    // Recurse if there is a generic container, ignored, or unknown.
     if (child->data().role == ax::mojom::Role::kGenericContainer ||
-        child->data().role == ax::mojom::Role::kIgnored) {
+        child->data().role == ax::mojom::Role::kIgnored ||
+        child->data().role == ax::mojom::Role::kUnknown) {
       PopulateOrderedSetItems(ordered_set, child, items, original_node);
     }
   }

@@ -22,7 +22,8 @@
 
 FlagsUIHandler::FlagsUIHandler()
     : access_(flags_ui::kGeneralAccessFlagsOnly),
-      experimental_features_requested_(false) {}
+      experimental_features_requested_(false),
+      enterprise_features_only_(false) {}
 
 FlagsUIHandler::~FlagsUIHandler() {}
 
@@ -72,9 +73,15 @@ void FlagsUIHandler::HandleRequestExperimentalFeatures(
   std::unique_ptr<base::ListValue> supported_features(new base::ListValue);
   std::unique_ptr<base::ListValue> unsupported_features(new base::ListValue);
 
-  about_flags::GetFlagFeatureEntries(flags_storage_.get(), access_,
-                                     supported_features.get(),
-                                     unsupported_features.get());
+  if (enterprise_features_only_) {
+    about_flags::GetFlagFeatureEntriesForEnterprises(
+        flags_storage_.get(), access_, supported_features.get(),
+        unsupported_features.get());
+  } else {
+    about_flags::GetFlagFeatureEntries(flags_storage_.get(), access_,
+                                       supported_features.get(),
+                                       unsupported_features.get());
+  }
 
   results.Set(flags_ui::kSupportedFeatures, std::move(supported_features));
   results.Set(flags_ui::kUnsupportedFeatures, std::move(unsupported_features));

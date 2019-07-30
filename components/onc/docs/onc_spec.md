@@ -1470,10 +1470,6 @@ ONC configuration of of **Cellular** networks is not yet supported.
     * Properties describing the online payment portal (OLP) at which a user can
       sign up for or modify a mobile data plan.
 
-* **PRLVersion**
-    * (optional, read-only) - **integer**
-    * The revision of the Preferred Roaming List that is loaded in the modem.
-
 * **RoamingState**
     * (optional, read-only) - **string**
     * The roaming status of the cellular modem on the current network.

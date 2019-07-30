@@ -377,6 +377,8 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
   state->is_error_page = entry->GetPageType() == content::PAGE_TYPE_ERROR;
   state->is_view_source =
       entry->GetVirtualURL().SchemeIs(content::kViewSourceScheme);
+  state->is_devtools =
+      entry->GetVirtualURL().SchemeIs(content::kChromeDevToolsScheme);
   state->url = entry->GetURL();
 
   if (!entry->GetSSL().initialized)

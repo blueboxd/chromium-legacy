@@ -78,38 +78,26 @@ cr.define('settings_main_page', function() {
       settingsMain.remove();
     });
 
-    test('searchContents() triggers SearchManager', function() {
+    test('searchContents() triggers SearchManager', async () => {
       Polymer.dom.flush();
 
       const expectedQuery1 = 'foo';
       const expectedQuery2 = 'bar';
       const expectedQuery3 = '';
 
-      return settingsMain.searchContents(expectedQuery1)
-          .then(function() {
-            return searchManager.whenCalled('search');
-          })
-          .then(function(query) {
-            assertEquals(expectedQuery1, query);
+      await settingsMain.searchContents(expectedQuery1);
+      const query1 = await searchManager.whenCalled('search');
+      assertEquals(expectedQuery1, query1);
 
-            searchManager.resetResolver('search');
-            return settingsMain.searchContents(expectedQuery2);
-          })
-          .then(function() {
-            return searchManager.whenCalled('search');
-          })
-          .then(function(query) {
-            assertEquals(expectedQuery2, query);
+      searchManager.resetResolver('search');
+      await settingsMain.searchContents(expectedQuery2);
+      const query2 = await searchManager.whenCalled('search');
+      assertEquals(expectedQuery2, query2);
 
-            searchManager.resetResolver('search');
-            return settingsMain.searchContents(expectedQuery3);
-          })
-          .then(function() {
-            return searchManager.whenCalled('search');
-          })
-          .then(function(query) {
-            assertEquals(expectedQuery3, query);
-          });
+      searchManager.resetResolver('search');
+      await settingsMain.searchContents(expectedQuery3);
+      const query3 = await searchManager.whenCalled('search');
+      assertEquals(expectedQuery3, query3);
     });
 
     function showManagedHeader() {
@@ -118,22 +106,18 @@ cr.define('settings_main_page', function() {
           settingsMain.showPages_.about);
     }
 
-    test('managed header hides when searching', function() {
+    test('managed header hides when searching', async () => {
       Polymer.dom.flush();
 
       assertTrue(showManagedHeader());
 
       searchManager.setMatchesFound(false);
-      return settingsMain.searchContents('Query1')
-          .then(() => {
-            assertFalse(showManagedHeader());
+      await settingsMain.searchContents('Query1');
+      assertFalse(showManagedHeader());
 
-            searchManager.setMatchesFound(true);
-            return settingsMain.searchContents('Query2');
-          })
-          .then(() => {
-            assertFalse(showManagedHeader());
-          });
+      searchManager.setMatchesFound(true);
+      await settingsMain.searchContents('Query2');
+      assertFalse(showManagedHeader());
     });
 
     test('managed header hides when showing subpage', function() {
@@ -179,7 +163,7 @@ cr.define('settings_main_page', function() {
       }
     }
 
-    test('no results page shows and hides', function() {
+    test('no results page shows and hides', async () => {
       Polymer.dom.flush();
       const noSearchResults = settingsMain.$.noSearchResults;
       assertTrue(!!noSearchResults);
@@ -188,22 +172,18 @@ cr.define('settings_main_page', function() {
       assertToggleContainerVisible(true);
 
       searchManager.setMatchesFound(false);
-      return settingsMain.searchContents('Query1')
-          .then(function() {
-            assertFalse(noSearchResults.hidden);
-            assertToggleContainerVisible(false);
+      await settingsMain.searchContents('Query1');
+      assertFalse(noSearchResults.hidden);
+      assertToggleContainerVisible(false);
 
-            searchManager.setMatchesFound(true);
-            return settingsMain.searchContents('Query2');
-          })
-          .then(function() {
-            assertTrue(noSearchResults.hidden);
-          });
+      searchManager.setMatchesFound(true);
+      await settingsMain.searchContents('Query2');
+      assertTrue(noSearchResults.hidden);
     });
 
     // Ensure that when the user clears the search box, the "no results" page
     // is hidden and the "advanced page toggle" is visible again.
-    test('no results page hides on clear', function() {
+    test('no results page hides on clear', async () => {
       Polymer.dom.flush();
       const noSearchResults = settingsMain.$.noSearchResults;
       assertTrue(!!noSearchResults);
@@ -213,65 +193,56 @@ cr.define('settings_main_page', function() {
 
       searchManager.setMatchesFound(false);
       // Clearing the search box is effectively a search for the empty string.
-      return settingsMain.searchContents('').then(function() {
-        Polymer.dom.flush();
-        assertTrue(noSearchResults.hidden);
-        assertToggleContainerVisible(true);
-      });
+      await settingsMain.searchContents('');
+      Polymer.dom.flush();
+      assertTrue(noSearchResults.hidden);
+      assertToggleContainerVisible(true);
     });
 
     /**
      * Asserts the visibility of the basic and advanced pages.
      * @param {string} Expected 'display' value for the basic page.
      * @param {string} Expected 'display' value for the advanced page.
-     * @return {!Promise}
      */
-    function assertPageVisibility(expectedBasic, expectedAdvanced) {
+    async function assertPageVisibility(expectedBasic, expectedAdvanced) {
       Polymer.dom.flush();
       const page = settingsMain.$$('os-settings-page');
       assertEquals(
           expectedBasic, getComputedStyle(page.$$('#basicPage')).display);
 
-      return page.$$('#advancedPageTemplate')
-          .get()
-          .then(function(advancedPage) {
-            assertEquals(
-                expectedAdvanced, getComputedStyle(advancedPage).display);
-          });
+      const advancedPage = await page.$$('#advancedPageTemplate').get();
+      assertEquals(expectedAdvanced, getComputedStyle(advancedPage).display);
     }
 
     /**
      * Asserts the visibility of the basic and advanced pages after exiting
      * search mode.
      * @param {string} Expected 'display' value for the advanced page.
-     * @return {!Promise}
      */
-    function assertAdvancedVisibilityAfterSearch(expectedAdvanced) {
+    async function assertAdvancedVisibilityAfterSearch(expectedAdvanced) {
       searchManager.setMatchesFound(true);
-      return settingsMain.searchContents('Query1')
-          .then(function() {
-            searchManager.setMatchesFound(false);
-            return settingsMain.searchContents('');
-          })
-          .then(function() {
-            // Imitate behavior of clearing search.
-            settings.navigateTo(settings.routes.BASIC);
-            Polymer.dom.flush();
-            return assertPageVisibility('block', expectedAdvanced);
-          });
+      await settingsMain.searchContents('Query1');
+
+      searchManager.setMatchesFound(false);
+      await settingsMain.searchContents('');
+
+      // Imitate behavior of clearing search.
+      settings.navigateTo(settings.routes.BASIC);
+      Polymer.dom.flush();
+      await assertPageVisibility('block', expectedAdvanced);
     }
 
-    test('exiting search mode, advanced collapsed', function() {
+    test('exiting search mode, advanced collapsed', async () => {
       // Simulating searching while the advanced page is collapsed.
       settingsMain.currentRouteChanged(settings.routes.BASIC);
       Polymer.dom.flush();
-      return assertAdvancedVisibilityAfterSearch('none');
+      await assertAdvancedVisibilityAfterSearch('none');
     });
 
     // Ensure that clearing the search results restores both "basic" and
     // "advanced" page, when the search has been initiated from a subpage
     // whose parent is the "advanced" page.
-    test('exiting search mode, advanced expanded', function() {
+    test('exiting search mode, advanced expanded', async () => {
       // Trigger basic page to be rendered once.
       settings.navigateTo(settings.routes.DEVICE);
       Polymer.dom.flush();
@@ -279,30 +250,29 @@ cr.define('settings_main_page', function() {
       // Navigate to an "advanced" subpage.
       settings.navigateTo(settings.routes.DATETIME);
       Polymer.dom.flush();
-      return assertAdvancedVisibilityAfterSearch('block');
+      await assertAdvancedVisibilityAfterSearch('block');
     });
 
     // Ensure that searching, then entering a subpage, then going back
     // lands the user in a page where both basic and advanced sections are
     // visible, because the page is still in search mode.
-    test('returning from subpage to search results', function() {
+    test('returning from subpage to search results', async () => {
       settings.navigateTo(settings.routes.BASIC);
       Polymer.dom.flush();
 
       searchManager.setMatchesFound(true);
-      return settingsMain.searchContents('Query1').then(function() {
-        // Simulate navigating into a subpage.
-        settings.navigateTo(settings.routes.DISPLAY);
-        settingsMain.$$('os-settings-page').fire('subpage-expand');
-        Polymer.dom.flush();
+      await settingsMain.searchContents('Query1');
+      // Simulate navigating into a subpage.
+      settings.navigateTo(settings.routes.DISPLAY);
+      settingsMain.$$('os-settings-page').fire('subpage-expand');
+      Polymer.dom.flush();
 
-        // Simulate clicking the left arrow to go back to the search results.
-        settings.navigateTo(settings.routes.BASIC);
-        return assertPageVisibility('block', 'block');
-      });
+      // Simulate clicking the left arrow to go back to the search results.
+      settings.navigateTo(settings.routes.BASIC);
+      await assertPageVisibility('block', 'block');
     });
 
-    test('navigating to a basic page does not collapse advanced', function() {
+    test('navigating to a basic page does not collapse advanced', async () => {
       settings.navigateTo(settings.routes.DATETIME);
       Polymer.dom.flush();
 
@@ -311,7 +281,7 @@ cr.define('settings_main_page', function() {
       settings.navigateTo(settings.routes.DEVICE);
       Polymer.dom.flush();
 
-      return assertPageVisibility('block', 'block');
+      await assertPageVisibility('block', 'block');
     });
 
     test('updates the title based on current route', function() {

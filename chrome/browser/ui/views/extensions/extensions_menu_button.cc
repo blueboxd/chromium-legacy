@@ -112,7 +112,7 @@ void ExtensionsMenuButton::RunExtensionContextMenu(
                                  base::Unretained(this)));
 
   menu_runner_ = std::make_unique<views::MenuRunner>(
-      model, views::MenuRunner::HAS_MNEMONICS);
+      menu_adapter_->CreateMenu(), views::MenuRunner::HAS_MNEMONICS);
   menu_runner_->RunMenuAt(GetWidget(),
                           context_menu_button_->button_controller(),
                           context_menu_button_->GetAnchorBoundsInScreen(),

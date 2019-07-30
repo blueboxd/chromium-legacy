@@ -17,6 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -1175,7 +1176,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
   EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 class LocalNTPFRESearchShortcutTest : public LocalNTPTest {
  public:
   LocalNTPFRESearchShortcutTest()

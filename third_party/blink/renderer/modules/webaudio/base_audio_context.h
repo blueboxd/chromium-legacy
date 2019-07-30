@@ -59,7 +59,6 @@ namespace blink {
 class AnalyserNode;
 class AudioBuffer;
 class AudioBufferSourceNode;
-class AudioContextOptions;
 class AudioGraphTracer;
 class AudioListener;
 class AudioWorklet;
@@ -104,11 +103,6 @@ class MODULES_EXPORT BaseAudioContext
   // valid transitions are from Suspended to either Running or Closed; Running
   // to Suspended or Closed. Once Closed, there are no valid transitions.
   enum AudioContextState { kSuspended, kRunning, kClosed };
-
-  // Create an AudioContext for rendering to the audio hardware.
-  static BaseAudioContext* Create(Document&,
-                                  const AudioContextOptions*,
-                                  ExceptionState&);
 
   ~BaseAudioContext() override;
 

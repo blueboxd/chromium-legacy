@@ -178,7 +178,7 @@ public class DownloadCollectionBridge {
      * @param referrer Referrer of the download.
      */
     @CalledByNative
-    private static String createIntermediateUriForPublish(final String fileName,
+    public static String createIntermediateUriForPublish(final String fileName,
             final String mimeType, final String originalUrl, final String referrer) {
         Uri uri = getDownloadCollectionBridge().createPendingSession(
                 fileName, mimeType, originalUrl, referrer);
@@ -202,7 +202,7 @@ public class DownloadCollectionBridge {
      * @return True on success, or false otherwise.
      */
     @CalledByNative
-    private static boolean copyFileToIntermediateUri(
+    public static boolean copyFileToIntermediateUri(
             final String sourcePath, final String destinationUri) {
         return getDownloadCollectionBridge().copyFileToPendingUri(sourcePath, destinationUri);
     }
@@ -212,7 +212,7 @@ public class DownloadCollectionBridge {
      * @param uri Intermediate Uri that is going to be deleted.
      */
     @CalledByNative
-    private static void deleteIntermediateUri(final String uri) {
+    public static void deleteIntermediateUri(final String uri) {
         getDownloadCollectionBridge().abandonPendingUri(uri);
     }
 
@@ -222,7 +222,7 @@ public class DownloadCollectionBridge {
      * @return Uri of the published file.
      */
     @CalledByNative
-    private static String publishDownload(final String intermediateUri) {
+    public static String publishDownload(final String intermediateUri) {
         Uri uri = getDownloadCollectionBridge().publishCompletedDownload(intermediateUri);
         return uri == null ? null : uri.toString();
     }

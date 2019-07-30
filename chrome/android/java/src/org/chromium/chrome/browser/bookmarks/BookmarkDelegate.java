@@ -132,4 +132,9 @@ interface BookmarkDelegate {
      * @param bookmarkId The bookmark to move.
      */
     void moveUpOne(BookmarkId bookmarkId);
+
+    /**
+     * Notified when the menu is opened for a bookmark row displayed in the UI.
+     */
+    void onBookmarkItemMenuOpened();
 }

@@ -158,6 +158,7 @@ static_library("common") {
     "multi_process_lock_win.cc",
     "origin_trials/chrome_origin_trial_policy.cc",
     "origin_trials/chrome_origin_trial_policy.h",
+    "page_load_metrics/page_end_reason.h",
     "page_load_metrics/page_load_metrics_constants.h",
     "page_load_metrics/page_load_metrics_util.cc",
     "page_load_metrics/page_load_metrics_util.h",
@@ -465,6 +466,13 @@ static_library("common") {
     ]
 
     libs = [ "wintrust.lib" ]
+  }
+
+  if (is_posix && !is_android) {
+    sources += [
+      "process_singleton_lock_posix.cc",
+      "process_singleton_lock_posix.h",
+    ]
   }
 
   if (is_mac) {

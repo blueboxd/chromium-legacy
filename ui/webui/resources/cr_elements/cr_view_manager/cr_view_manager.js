@@ -38,7 +38,7 @@ viewAnimations.set('fade-out', element => {
   // of the current closure version, only one of them is supported. See
   // https://crbug.com/987842 for more info.
   const animation = element.animate(
-      [{opacity: 0}, {opacity: 1}],
+      [{opacity: 1}, {opacity: 0}],
       /** @type {!KeyframeAnimationOptions} */ ({
         duration: 180,
         easing: 'ease-in-out',

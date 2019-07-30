@@ -78,10 +78,11 @@ class CONTENT_EXPORT IndexedDBMetadataCoding {
       blink::IndexedDBDatabaseMetadata* metadata);
 
   // Changes the database version to |version|.
-  virtual void SetDatabaseVersion(TransactionalLevelDBTransaction* transaction,
-                                  int64_t row_id,
-                                  int64_t version,
-                                  blink::IndexedDBDatabaseMetadata* metadata);
+  virtual leveldb::Status SetDatabaseVersion(
+      TransactionalLevelDBTransaction* transaction,
+      int64_t row_id,
+      int64_t version,
+      blink::IndexedDBDatabaseMetadata* metadata) WARN_UNUSED_RESULT;
 
   // Reads only the database id, if found.
   virtual leveldb::Status FindDatabaseId(TransactionalLevelDBDatabase* db,

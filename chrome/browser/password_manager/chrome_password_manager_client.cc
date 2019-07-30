@@ -299,7 +299,7 @@ bool ChromePasswordManagerClient::OnCredentialManagerUsed() {
 bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool update_password) {
-  // Save password infobar and the password bubble prompts in case of
+  // The save password infobar and the password bubble prompt in case of
   // "webby" URLs and do not prompt in case of "non-webby" URLS (e.g. file://).
   if (!CanShowBubbleOnURL(web_contents()->GetLastCommittedURL()))
     return false;
@@ -327,6 +327,23 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   }
 #endif  // !defined(OS_ANDROID)
   return true;
+}
+
+bool ChromePasswordManagerClient::ShowOnboarding(
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
+  // The save password infobar and the password bubble prompt in case of
+  // "webby" URLs and do not prompt in case of "non-webby" URLS (e.g. file://).
+  if (!CanShowBubbleOnURL(web_contents()->GetLastCommittedURL()))
+    return false;
+#if defined(OS_ANDROID)
+  if (form_to_save->IsBlacklisted()) {
+    return false;
+  }
+  // TODO(crbug.com/983445): Wire onboarding UI
+  return PromptUserToSaveOrUpdatePassword(std::move(form_to_save), false);
+#else
+  return false;
+#endif  // defined(OS_ANDROID)
 }
 
 void ChromePasswordManagerClient::ShowManualFallbackForSaving(

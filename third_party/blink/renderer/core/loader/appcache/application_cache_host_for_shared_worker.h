@@ -12,13 +12,14 @@ namespace blink {
 class ApplicationCacheHostForSharedWorker final : public ApplicationCacheHost {
  public:
   ApplicationCacheHostForSharedWorker(
-      DocumentLoader* document_loader,
+      const base::UnguessableToken& appcache_host_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplicationCacheHostForSharedWorker() override;
 
   // ApplicationCacheHost:
   bool Update() override;
   bool SwapCache() override;
+  void SetApplicationCache(ApplicationCache*) override;
   void LogMessage(mojom::blink::ConsoleMessageLevel log_level,
                   const String& message) override;
   void SetSubresourceFactory(

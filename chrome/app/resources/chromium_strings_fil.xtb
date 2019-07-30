@@ -215,6 +215,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="7747138024166251722">Hindi makalikha ng pansamantalang direktoryo ang installer. Paki-suri para sa puwang sa disk na walang laman at pahintulot upang i-install ang software.</translation>
 <translation id="7773960292263897147">Babala: Hindi mapipigilan ng Chromium ang pagtatala ng mga extension sa iyong history ng pag-browse. Upang i-disable ang extension na ito sa incognito mode, alisin sa pagkakapili ang opsyong ito.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
+<translation id="7827169012280634081">I-clear ang cookies at data ng site kapag umalis ka sa Chromium</translation>
 <translation id="7867198900892795913">Hindi ma-update ang Chromium sa pinakabagong bersyon, kaya may napapalampas kang mga bagong feature at pag-aayos sa seguridad.</translation>
 <translation id="7901117350626490574">May available na bagong update para sa Chromium at ilalapat ito sa sandaling muli kang maglunsad.</translation>
 <translation id="7937630085815544518">Naka-sign in ka sa Chromium bilang <ph name="USER_EMAIL_ADDRESS" />. Pakigamit ang parehong account upang mag-sign in muli.</translation>
@@ -241,6 +242,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="8667808506758191620">Napapanahon ang iyong <ph name="DEVICE_TYPE" />.</translation>
 <translation id="8697124171261953979">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chromium o naghanap mula sa Omnibox.</translation>
 <translation id="8704119203788522458">Ito ang iyong Chromium</translation>
+<translation id="8739167630197873875">Naki-clear mo ang cookies kapag umalis ka sa Chromium. Para patuloy na mag-sync, baguhin ang <ph name="COOKIE_SETTINGS_LINK" /> na ito.</translation>
 <translation id="8748383401829947534">Ihinto ang lahat ng kopya ng Chromium.</translation>
 <translation id="8796602469536043152">Kailangan ng Chromium ng pahintulot na i-access ang iyong camera at mikropono para sa site na ito</translation>
 <translation id="8803635938069941624">Mga tuntunin ng Chromium OS</translation>

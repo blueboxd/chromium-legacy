@@ -9,6 +9,7 @@
 #include "base/message_loop/message_pump.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
@@ -20,33 +21,56 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace {
 
-int RunHelper(base::TestSuite* testSuite) {
-  base::FeatureList::InitializeInstance(std::string(), std::string());
+class GlTestsSuite : public base::TestSuite {
+ public:
+  GlTestsSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+
+ protected:
+  void Initialize() override {
+    base::TestSuite::Initialize();
+
+    base::FeatureList::InitializeInstance(std::string(), std::string());
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI);
 #if defined(USE_OZONE)
-  base::SingleThreadTaskExecutor executor(base::MessagePump::Type::UI);
-#else
-  base::SingleThreadTaskExecutor executor(base::MessagePump::Type::IO);
+    // Make Ozone run in single-process mode.
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    params.using_mojo = true;
+
+    // This initialization must be done after ScopedTaskEnvironment has
+    // initialized the UI thread.
+    ui::OzonePlatform::InitializeForUI(params);
+    ui::OzonePlatform::InitializeForGPU(params);
 #endif
   gpu::GLTestHelper::InitializeGLDefault();
 
   ::gles2::Initialize();
-  return testSuite->Run();
-}
+  }
+
+ private:
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+};
 
 }  // namespace
 
 int main(int argc, char** argv) {
-  base::TestSuite test_suite(argc, argv);
   base::CommandLine::Init(argc, argv);
-
   mojo::core::Init();
 
+  GlTestsSuite gl_tests_suite(argc, argv);
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
   testing::InitGoogleMock(&argc, argv);
   return base::LaunchUnitTestsSerially(
-      argc, argv, base::BindOnce(&RunHelper, base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindOnce(&GlTestsSuite::Run, base::Unretained(&gl_tests_suite)));
 }

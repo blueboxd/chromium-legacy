@@ -42,8 +42,7 @@ class RemoteDOMWindow final : public DOMWindow {
 
   void ForwardPostMessage(MessageEvent*,
                           scoped_refptr<const SecurityOrigin> target,
-                          Document* source,
-                          bool has_user_gesture);
+                          Document* source);
 };
 
 template <>

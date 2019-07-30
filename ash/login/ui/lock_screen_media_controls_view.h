@@ -24,6 +24,10 @@ class ToggleImageButton;
 class ImageButton;
 }  // namespace views
 
+namespace media_message_center {
+class MediaControlsProgressView;
+}
+
 namespace ash {
 
 class MediaControlsHeaderView;
@@ -78,7 +82,7 @@ class ASH_EXPORT LockScreenMediaControlsView
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override;
   void MediaSessionPositionChanged(
-      const base::Optional<media_session::MediaPosition>& position) override {}
+      const base::Optional<media_session::MediaPosition>& position) override;
 
   // media_session::mojom::MediaControllerImageObserver:
   void MediaControllerImageChanged(
@@ -161,6 +165,7 @@ class ASH_EXPORT LockScreenMediaControlsView
   NonAccessibleView* button_row_ = nullptr;
   views::ToggleImageButton* play_pause_button_ = nullptr;
   views::ImageButton* close_button_ = nullptr;
+  media_message_center::MediaControlsProgressView* progress_ = nullptr;
 
   // Callbacks.
   const MediaControlsEnabled media_controls_enabled_;

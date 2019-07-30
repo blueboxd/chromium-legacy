@@ -377,16 +377,14 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   CloseBrowserSynchronously(browser());
 
   chrome::NewEmptyWindow(profile);
-  ui_test_utils::BrowserAddedObserver window_observer;
-  SessionRestoreTestHelper restore_observer;
+  SessionRestoreTestHelper().Wait();
 
-  Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
 
   // Check that a layout occurs.
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForBrowser(new_browser);
   Widget* widget = browser_view->GetWidget();
-  restore_observer.Wait();
 
   BrowserNonClientFrameViewAsh* frame_view =
       static_cast<BrowserNonClientFrameViewAsh*>(

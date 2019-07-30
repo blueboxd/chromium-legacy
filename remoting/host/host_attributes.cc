@@ -44,7 +44,7 @@ inline constexpr bool IsDebug() {
 }
 
 inline constexpr bool IsChromeBranded() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return true;
 #elif BUILDFLAG(CHROMIUM_BRANDING)
   return false;

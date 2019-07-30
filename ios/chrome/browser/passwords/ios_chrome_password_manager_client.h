@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_PASSWORDS_IOS_CHROME_PASSWORD_MANAGER_CLIENT_H_
 #define IOS_CHROME_BROWSER_PASSWORDS_IOS_CHROME_PASSWORD_MANAGER_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
@@ -72,6 +74,9 @@ class IOSChromePasswordManagerClient
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool update_password) override;
+  bool ShowOnboarding(
+      std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save)
+      override;
   void ShowManualFallbackForSaving(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool has_generated_password,

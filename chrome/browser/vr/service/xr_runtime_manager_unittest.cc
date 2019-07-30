@@ -23,8 +23,6 @@ namespace vr {
 
 class XRRuntimeManagerTest : public testing::Test {
  public:
-  static void onDeviceReturned(device::mojom::XRDevicePtr ptr) {}
-
  protected:
   XRRuntimeManagerTest() = default;
   ~XRRuntimeManagerTest() override = default;
@@ -46,8 +44,6 @@ class XRRuntimeManagerTest : public testing::Test {
     device::mojom::VRServiceClientPtr proxy;
     device::FakeVRServiceClient client(mojo::MakeRequest(&proxy));
     auto service = base::WrapUnique(new VRServiceImpl());
-    service->RequestDevice(
-        base::BindRepeating(&XRRuntimeManagerTest::onDeviceReturned));
     service->SetClient(std::move(proxy));
     return service;
   }

@@ -11,7 +11,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
-#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
@@ -49,6 +48,10 @@ const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
 // Enables fetching optimization hints from a remote Optimization Guide Service.
 const base::Feature kOptimizationHintsFetching{
     "OptimizationHintsFetching", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the initialization of the Optimization Guide Keyed Service.
+const base::Feature kOptimizationGuideKeyedService{
+    "OptimizationGuideKeyedService", base::FEATURE_DISABLED_BY_DEFAULT};
 
 size_t MaxHintsFetcherTopHostBlacklistSize() {
   // The blacklist will be limited to the most engaged hosts and will hold twice
@@ -110,6 +113,10 @@ bool IsOptimizationHintsEnabled() {
 
 bool IsHintsFetchingEnabled() {
   return base::FeatureList::IsEnabled(features::kOptimizationHintsFetching);
+}
+
+bool IsOptimizationGuideKeyedServiceEnabled() {
+  return base::FeatureList::IsEnabled(features::kOptimizationGuideKeyedService);
 }
 
 }  // namespace features

@@ -77,6 +77,7 @@ class ASH_EXPORT KeyboardControllerImpl
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds) override;
   void SetDraggableArea(const gfx::Rect& bounds) override;
   void AddObserver(KeyboardControllerObserver* observer) override;
+  void RemoveObserver(KeyboardControllerObserver* observer) override;
 
   // keyboard::KeyboardLayoutDelegate:
   aura::Window* GetContainerForDefaultDisplay() override;

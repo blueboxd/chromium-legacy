@@ -5,7 +5,7 @@
 #include "ash/public/cpp/app_list/app_list_struct_traits.h"
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
-#include "ui/gfx/image/mojo/image_skia_struct_traits.h"
+#include "ui/gfx/image/mojom/image_skia_mojom_traits.h"
 #include "ui/gfx/range/mojo/range_struct_traits.h"
 
 namespace mojo {

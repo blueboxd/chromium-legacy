@@ -12,7 +12,9 @@ namespace autofill {
 // Generator for log message. If you need to find the call site for a log
 // message, take the first parameter (e.g. ParsedForms) and search for
 // that name prefixed with a k (e.g. kParsedForms) in code search.
-#define AUTOFILL_LOG_MESSAGE_TEMPLATES(T) T(ParsedForms, "Parsed forms:")
+#define AUTOFILL_LOG_MESSAGE_TEMPLATES(T) \
+  T(ParsedForms, "Parsed forms:")         \
+  T(SendAutofillUpload, "Sending Autofill Upload Request:")
 
 // Log messages for chrome://autofill-internals.
 #define AUTOFILL_TEMPLATE(NAME, MESSAGE) k##NAME,

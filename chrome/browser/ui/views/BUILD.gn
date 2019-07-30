@@ -25,6 +25,7 @@ component("views") {
 
   deps = [
     "//base",
+    "//build:branding_buildflags",
     "//chrome/app:command_ids",
     "//components/keep_alive_registry",
     "//components/vector_icons",

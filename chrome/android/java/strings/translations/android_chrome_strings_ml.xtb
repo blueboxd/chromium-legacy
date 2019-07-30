@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">പേജ് പുതുക്കുക</translation>
 <translation id="2709516037105925701">ഓട്ടോഫില്‍</translation>
 <translation id="271033894570825754">പുതിയത്</translation>
+<translation id="2714850608275780394">കോഡിനായി കാത്തിരിക്കുന്നു</translation>
 <translation id="2728754400939377704">സൈറ്റ് അനുസരിച്ച് അടുക്കുക</translation>
 <translation id="2744248271121720757">പെട്ടെന്ന് തിരയാനോ ബന്ധപ്പെട്ട പ്രവർത്തനങ്ങൾ കാണാനോ ഒരു വാക്കിൽ ടാപ്പ് ചെയ്യുക</translation>
+<translation id="2760989362628427051">നിങ്ങളുടെ ഉപകരണത്തിന്റെ ഇരുണ്ട തീമോ ബാറ്ററി ലാഭിക്കലോ ഓണായിരിക്കുമ്പോൾ ഇരുണ്ട തീം ഓണാക്കുക</translation>
 <translation id="2762000892062317888">ഇപ്പോൾ</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> സെക്കൻഡ് ശേഷിക്കുന്നു</translation>
 <translation id="2779651927720337254">പരാജയപ്പെട്ടു</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">ഒരു മിനിറ്റ് ശേഷിക്കുന്നു</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">ഈ പേജ് ബുക്‌മാര്‍ക്ക് ചെയ്യുക</translation>
+<translation id="3254626532848657899">താഴേക്ക് നീക്കുക</translation>
 <translation id="3259831549858767975">പേജിൽ എല്ലാം ചെറുതായി നൽകുക</translation>
 <translation id="3269093882174072735">ചിത്രം ലോഡ് ചെയ്യുക</translation>
 <translation id="3269956123044984603">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിൽ നിന്നുള്ള ടാബുകൾ ലഭിക്കാൻ, Android അക്കൗണ്ട് ക്രമീകരണത്തിൽ "ഡാറ്റ സ്വയം സമന്വയിപ്പിക്കുക" ഓണാക്കുക.</translation>
@@ -441,6 +444,7 @@
 <translation id="4378154925671717803">ഫോൺ</translation>
 <translation id="4384468725000734951">തിരയാൻ Sogou ഉപയോഗിക്കുന്നു</translation>
 <translation id="4404568932422911380">ബുക്ക്‌മാർക്കുകളൊന്നുമില്ല</translation>
+<translation id="4405224443901389797">ഇതിലേക്ക് നീക്കുക…</translation>
 <translation id="4411535500181276704">ലൈറ്റ് മോഡ്</translation>
 <translation id="4415276339145661267">നിങ്ങളുടെ Google അക്കൗണ്ട് മാനേജ് ചെയ്യുക</translation>
 <translation id="4432792777822557199">ഇനിമുതൽ <ph name="SOURCE_LANGUAGE" /> ഭാഷയിലുള്ള പേജുകൾ <ph name="TARGET_LANGUAGE" /> ഭാഷയിലേക്ക് വിവർത്തനം ചെയ്യപ്പെടും</translation>
@@ -621,6 +625,7 @@
 <translation id="5578795271662203820">ഈ ചിത്രത്തിനായി <ph name="SEARCH_ENGINE" />-ൽ തിരയുക</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> ടാബുകൾ ഗ്രൂപ്പ് ചെയ്‌തു</translation>
 <translation id="5581519193887989363">എന്തൊക്കെ സമന്വയിക്കണമെന്നത് <ph name="BEGIN_LINK1" />ക്രമീകരണത്തിൽ<ph name="END_LINK1" /> നിങ്ങൾക്ക് എപ്പോഴും തിരഞ്ഞെടുക്കാം.</translation>
+<translation id="5586306159936941448">ടാബുകൾ ഗ്രൂപ്പ് ചെയ്യാൻ ഒരു ടാബ് മറ്റൊരു ടാബിലേക്ക് വലിച്ചിടുക</translation>
 <translation id="5595485650161345191">വിലാസം എഡിറ്റുചെയ്യുക</translation>
 <translation id="5596627076506792578">കൂടുതൽ‍ ഓപ്‌ഷനുകൾ</translation>
 <translation id="5599455543593328020">അദൃശ്യ മോഡ്</translation>
@@ -651,6 +656,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# മണിക്കൂര്‍ മുമ്പ്}other{# മണിക്കൂര്‍ മുമ്പ്}}</translation>
 <translation id="5810288467834065221">പകർപ്പവകാശം <ph name="YEAR" /> Google LLC. എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്‍തം.</translation>
 <translation id="5817918615728894473">ജോടിയാക്കുക</translation>
+<translation id="58326064309361797">ടാബുകൾ ഗ്രൂപ്പ് ചെയ്യാൻ അവ വലിച്ചിടുക</translation>
 <translation id="583281660410589416">അജ്ഞാതം</translation>
 <translation id="5833984609253377421">ലിങ്ക് പങ്കിടുക</translation>
 <translation id="5836192821815272682">Chrome അപ്‌ഡേറ്റ് ഡൗൺലോഡ് ചെയ്യുന്നു…</translation>
@@ -845,7 +851,6 @@
 <translation id="7233236755231902816">നിങ്ങളുടെ ഭാഷയിൽ വെബ് കാണാൻ Chrome-ൻ്റെ ഏറ്റവും പുതിയ പതിപ്പ് നേടൂ</translation>
 <translation id="7243308994586599757">സ്‌ക്രീനിന്റെ ചുവടെ ഓപ്‌ഷനുകൾ ലഭ്യമാണ്</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> എണ്ണം തിരഞ്ഞെടുത്തു</translation>
-<translation id="7253272406652746122">നിങ്ങളുടെ ഉപകരണത്തിലെ ക്രമീകരണം ആപ്പിലെ, 'അക്കൗണ്ടുകൾ' എന്ന പേജിൽ നിന്ന് ഒരു Google അക്കൗണ്ട് ചേർക്കുക.</translation>
 <translation id="7274013316676448362">സൈറ്റ് ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="7290209999329137901">പേര് മാറ്റൽ ലഭ്യമല്ല</translation>
 <translation id="7291387454912369099">അസിസ്‌റ്റന്റ് ചെക്ക് ഔട്ട് ചെയ്യാൻ പ്രേരിപ്പിച്ചു</translation>
@@ -1011,6 +1016,7 @@
 <translation id="8380167699614421159">ഈ സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്നു</translation>
 <translation id="8393700583063109961">സന്ദേശം അയയ്ക്കുക</translation>
 <translation id="8413126021676339697">മുഴുവന്‍ ചരിത്രവും കാണിക്കുക</translation>
+<translation id="8425955042390522843">ഫോൺ നമ്പർ പരിശോധിച്ചുറപ്പിക്കൽ</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8438566539970814960">തിരയലുകളും ബ്രൗസിംഗും മികച്ചതാക്കുക</translation>
 <translation id="8441146129660941386">പുറകിലേക്ക് സീക്കുചെയ്യുക</translation>
@@ -1118,6 +1124,7 @@
 <translation id="945632385593298557">നിങ്ങളുടെ മൈക്രോഫോൺ ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="951339005376969845">നിലവിലുള്ള വിവരങ്ങൾ ഇല്ലാതാക്കുക. <ph name="FROM_ACCOUNT" /> എന്നതിലേക്ക് വീണ്ടും മാറുന്നതിലൂടെ നിങ്ങൾക്ക് ഇത് വീണ്ടെടുക്കാം.</translation>
 <translation id="95817756606698420"><ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> ഉപയോഗിച്ച് Chrome-ന് ചൈനയിൽ തിരയാനാവും. നിങ്ങൾക്കിത്‌ <ph name="BEGIN_LINK" />ക്രമീകരണത്തിൽ<ph name="END_LINK" /> മാറ്റാനാവും.</translation>
+<translation id="959682366969460160">ഓർഗനൈസ് ചെയ്‌ത നിലയിൽ തുടരുക</translation>
 <translation id="965817943346481315">സൈറ്റ്, അനാവശ്യമോ തെറ്റിദ്ധരിപ്പിക്കുന്നതോ ആയ പരസ്യങ്ങള്‍ കാണിക്കുന്നുണ്ടെങ്കില്‍ ബ്ലോക്ക് ചെയ്യുക (ശുപാര്‍ശ ചെയ്യുന്നു)</translation>
 <translation id="968900484120156207">നിങ്ങൾ സന്ദർശിക്കുന്ന പേജുകൾ ഇവിടെ ദൃശ്യമാകും</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> മിനിറ്റ് ശേഷിക്കുന്നു</translation>

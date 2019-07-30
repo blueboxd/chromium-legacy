@@ -12,9 +12,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/scoped_observer.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/identity/public/cpp/scope_set.h"
 
 namespace network {
@@ -136,7 +136,7 @@ struct AccessTokenInfo;
 //     // the test can now perform any desired validation of expected actions
 //     // |MyClass| took in response.
 //   }
-class AccessTokenFetcher : public OAuth2TokenServiceObserver,
+class AccessTokenFetcher : public ProfileOAuth2TokenServiceObserver,
                            public OAuth2AccessTokenManager::Consumer {
  public:
   // Specifies how this instance should behave:
@@ -214,7 +214,7 @@ class AccessTokenFetcher : public OAuth2TokenServiceObserver,
 
   void StartAccessTokenRequest();
 
-  // OAuth2TokenServiceObserver implementation.
+  // ProfileOAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
 
   // OAuth2AccessTokenManager::Consumer implementation.

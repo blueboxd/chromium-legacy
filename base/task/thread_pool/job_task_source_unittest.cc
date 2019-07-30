@@ -9,35 +9,28 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/thread_pool/test_utils.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 namespace internal {
 
-// Verifies the normal flow of running 2 tasks in series.
+// Verifies the normal flow of running 2 tasks one after the other.
 TEST(ThreadPoolJobTaskSourceTest, RunTasks) {
-  scoped_refptr<test::MockJobTaskSource> task_source =
-      MakeRefCounted<test::MockJobTaskSource>(
-          FROM_HERE, DoNothing(), TaskTraits(TaskPriority::BEST_EFFORT),
-          /* num_tasks_to_run */ 2, /* max_concurrency */ 1);
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      DoNothing(), /* num_tasks_to_run */ 2);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
 
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
-
   {
     auto run_intent = task_source->WillRunTask();
     EXPECT_TRUE(run_intent);
-    EXPECT_TRUE(run_intent.IsSaturated());
-
-    // An attempt to run an additional task is not allowed until this task
-    // is processed.
-    EXPECT_FALSE(task_source->WillRunTask());
+    EXPECT_FALSE(run_intent.IsSaturated());
 
     auto task = task_source_transaction.TakeTask(&run_intent);
-
-    EXPECT_FALSE(task_source->WillRunTask());
-
     std::move(task->task).Run();
     EXPECT_TRUE(task_source_transaction.DidProcessTask(std::move(run_intent)));
   }
@@ -45,8 +38,14 @@ TEST(ThreadPoolJobTaskSourceTest, RunTasks) {
     auto run_intent = task_source->WillRunTask();
     EXPECT_TRUE(run_intent);
     EXPECT_TRUE(run_intent.IsSaturated());
+
+    // An attempt to run an additional task is not allowed.
+    EXPECT_FALSE(task_source->WillRunTask());
     auto task = task_source_transaction.TakeTask(&run_intent);
+    EXPECT_FALSE(task_source->WillRunTask());
+
     std::move(task->task).Run();
+    // Returns false because the task source is out of tasks.
     EXPECT_FALSE(task_source_transaction.DidProcessTask(std::move(run_intent)));
   }
 }
@@ -54,10 +53,10 @@ TEST(ThreadPoolJobTaskSourceTest, RunTasks) {
 // Verifies that a job task source doesn't get reenqueued when a task is not
 // run.
 TEST(ThreadPoolJobTaskSourceTest, SkipTask) {
-  scoped_refptr<test::MockJobTaskSource> task_source =
-      MakeRefCounted<test::MockJobTaskSource>(
-          FROM_HERE, DoNothing(), TaskTraits(TaskPriority::BEST_EFFORT),
-          /* num_tasks_to_run */ 2, /* max_concurrency */ 1);
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      DoNothing(), /* num_tasks_to_run */ 1);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
 
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
@@ -72,10 +71,10 @@ TEST(ThreadPoolJobTaskSourceTest, SkipTask) {
 
 // Verifies that multiple tasks can run in parallel up to |max_concurrency|.
 TEST(ThreadPoolJobTaskSourceTest, RunTasksInParallel) {
-  scoped_refptr<test::MockJobTaskSource> task_source =
-      MakeRefCounted<test::MockJobTaskSource>(
-          FROM_HERE, DoNothing(), TaskTraits(TaskPriority::BEST_EFFORT),
-          /* num_tasks_to_run */ 3, /* max_concurrency */ 2);
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      DoNothing(), /* num_tasks_to_run */ 2);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
 
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
@@ -95,6 +94,9 @@ TEST(ThreadPoolJobTaskSourceTest, RunTasksInParallel) {
   EXPECT_FALSE(task_source->WillRunTask());
 
   std::move(task_a->task).Run();
+  // Adding a task before closing the first run intent should cause the task
+  // source to re-enqueue.
+  job_task->SetNumTasksToRun(2);
   EXPECT_TRUE(task_source_transaction.DidProcessTask(std::move(run_intent_a)));
 
   std::move(task_b->task).Run();
@@ -110,10 +112,11 @@ TEST(ThreadPoolJobTaskSourceTest, RunTasksInParallel) {
 }
 
 TEST(ThreadPoolJobTaskSourceTest, InvalidTakeTask) {
-  scoped_refptr<test::MockJobTaskSource> task_source =
-      MakeRefCounted<test::MockJobTaskSource>(
-          FROM_HERE, DoNothing(), TaskTraits(TaskPriority::BEST_EFFORT),
-          /* num_tasks_to_run */ 1, /* max_concurrency */ 1);
+  auto job_task =
+      base::MakeRefCounted<test::MockJobTask>(DoNothing(),
+                                              /* num_tasks_to_run */ 1);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
 
@@ -123,14 +126,17 @@ TEST(ThreadPoolJobTaskSourceTest, InvalidTakeTask) {
   // Can not be called with an invalid RunIntent.
   EXPECT_DCHECK_DEATH(
       { auto task = task_source_transaction.TakeTask(&run_intent_b); });
-  run_intent_a.ReleaseForTesting();
+
+  auto task = task_source_transaction.TakeTask(&run_intent_a);
+  task_source_transaction.DidProcessTask(std::move(run_intent_a));
 }
 
 TEST(ThreadPoolJobTaskSourceTest, InvalidDidProcessTask) {
-  scoped_refptr<test::MockJobTaskSource> task_source =
-      MakeRefCounted<test::MockJobTaskSource>(
-          FROM_HERE, DoNothing(), TaskTraits(TaskPriority::BEST_EFFORT),
-          /* num_tasks_to_run */ 1, /* max_concurrency */ 1);
+  auto job_task =
+      base::MakeRefCounted<test::MockJobTask>(DoNothing(),
+                                              /* num_tasks_to_run */ 1);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
 
@@ -139,7 +145,9 @@ TEST(ThreadPoolJobTaskSourceTest, InvalidDidProcessTask) {
   // Can not be called before TakeTask().
   EXPECT_DCHECK_DEATH(
       task_source_transaction.DidProcessTask(std::move(run_intent)));
-  run_intent.ReleaseForTesting();
+
+  auto task = task_source_transaction.TakeTask(&run_intent);
+  task_source_transaction.DidProcessTask(std::move(run_intent));
 }
 
 }  // namespace internal

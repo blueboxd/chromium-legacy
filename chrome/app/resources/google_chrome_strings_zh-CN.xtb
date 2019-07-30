@@ -7,6 +7,7 @@
 <translation id="1051826050538111504">您的计算机上存在有害软件。Chrome 可以移除该软件、恢复您的设置并停用扩展程序，以确保您的浏览器能够重新正常运行。</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> 之前使用的是 Chrome</translation>
+<translation id="1097330777386562916">退出 Chrome 时清除 Cookie 及网站数据</translation>
 <translation id="1104959162601287462">关于 Chrome 操作系统(&amp;C)</translation>
 <translation id="110877069173485804">这是您的专属Chrome</translation>
 <translation id="1142745911746664600">无法更新 Chrome</translation>
@@ -26,6 +27,7 @@
 <translation id="1590588151039584890">若要更新，Chrome 需要在此计算机上停止运行。这可能会导致登录此计算机的其他用户丢失未保存的更改。</translation>
 <translation id="1619887657840448962">为了提高 Chrome 的安全性，我们停用了以下扩展程序（该扩展程序未列在<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中，并且可能是在您不知情的情况下添加的）。</translation>
 <translation id="1628000112320670027">获取有关 Chrome 的帮助</translation>
+<translation id="1635734105302489219">退出 Chrome 时会清除 Cookie。要保持同步，请更改此<ph name="COOKIE_SETTINGS_LINK" />。</translation>
 <translation id="1662639173275167396">Chrome 操作系统是借助了其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />才得以问世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux（测试版）<ph name="END_LINK_LINUX_OSS" />也是如此。</translation>
 <translation id="1674870198290878346">在 Chrome 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="1682634494516646069">Google Chrome 无法对其数据目录 <ph name="USER_DATA_DIRECTORY" /> 执行读写操作</translation>
@@ -123,8 +125,7 @@
 <translation id="4251625577313994583">在 iPhone 上下载 Chrome</translation>
 <translation id="4293420128516039005">登录即可在您的所有设备上同步并个性化设置 Chrome</translation>
 <translation id="4328355335528187361">Google Chrome 开发者版 (mDNS-In)</translation>
-<translation id="4331809312908958774">Chrome OS
-</translation>
+<translation id="4331809312908958774">Chrome 操作系统</translation>
 <translation id="4343195214584226067">“<ph name="EXTENSION_NAME" />”已添加到 Chrome</translation>
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>
 <translation id="4458462641685292929">Google Chrome 正在执行另一项操作，请稍后重试。</translation>

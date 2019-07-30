@@ -85,15 +85,13 @@ class VRDisplay final : public EventTargetWithInlineData,
   USING_PRE_FINALIZER(VRDisplay, Dispose);
 
  public:
-  static VRDisplay* Create(NavigatorVR* navigator,
-                           device::mojom::blink::XRDevicePtr device) {
-    VRDisplay* display =
-        MakeGarbageCollected<VRDisplay>(navigator, std::move(device));
+  static VRDisplay* Create(NavigatorVR* navigator) {
+    VRDisplay* display = MakeGarbageCollected<VRDisplay>(navigator);
     display->UpdateStateIfNeeded();
     return display;
   }
 
-  VRDisplay(NavigatorVR*, device::mojom::blink::XRDevicePtr);
+  VRDisplay(NavigatorVR*);
   ~VRDisplay() override;
 
   // We hand out at most one VRDisplay, so hardcode displayId to 1.
@@ -102,7 +100,6 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   VRDisplayCapabilities* capabilities() const { return capabilities_; }
   VRStageParameters* stageParameters() const { return stage_parameters_; }
-  device::mojom::blink::XRDevice* device() { return device_ptr_.get(); }
 
   bool isPresenting() const { return is_presenting_; }
   bool canPresent() const { return capabilities_->canPresent(); }
@@ -170,10 +167,11 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   VRController* Controller();
 
+  void SetNonImmersiveSession(
+      device::mojom::blink::RequestSessionResultPtr result);
+
  private:
   void OnRequestImmersiveSessionReturned(
-      device::mojom::blink::RequestSessionResultPtr result);
-  void OnNonImmersiveSessionRequestReturned(
       device::mojom::blink::RequestSessionResultPtr result);
 
   void OnConnected();
@@ -263,8 +261,6 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   bool non_immersive_session_initialized_ = false;
   device::mojom::blink::XRFrameDataProviderPtr non_immersive_provider_;
-
-  device::mojom::blink::XRDevicePtr device_ptr_;
 
   bool present_image_needs_copy_ = false;
 

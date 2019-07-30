@@ -22,7 +22,7 @@ class CONTENT_EXPORT SmsDialog {
                     base::OnceClosure on_continue,
                     base::OnceClosure on_cancel) = 0;
   virtual void Close() = 0;
-  virtual void EnableContinueButton() = 0;
+  virtual void SmsReceived() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SmsDialog);

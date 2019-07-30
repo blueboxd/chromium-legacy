@@ -63,6 +63,10 @@ class CastWebContentsImpl : public CastWebContents,
                                const std::vector<std::string>& origins,
                                base::StringPiece script) override;
   void RemoveBeforeLoadJavaScript(base::StringPiece id) override;
+  void PostMessageToMainFrame(
+      const std::string& target_origin,
+      const std::string& data,
+      std::vector<mojo::ScopedMessagePipeHandle> channels) override;
 
   // Observer interface:
   void AddObserver(Observer* observer) override;

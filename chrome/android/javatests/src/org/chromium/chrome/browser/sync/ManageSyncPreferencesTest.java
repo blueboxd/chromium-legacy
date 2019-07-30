@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -185,6 +186,7 @@ public class ManageSyncPreferencesTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/988622")
     @Feature({"Sync"})
     public void testPaymentsIntegrationCheckboxEnablesPaymentsIntegration() {
         mSyncTestRule.setUpTestAccountAndSignIn();

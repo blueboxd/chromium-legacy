@@ -44,8 +44,7 @@ class RemoteFrameClient : public FrameClient {
   // Forwards a postMessage for a remote frame.
   virtual void ForwardPostMessage(MessageEvent*,
                                   scoped_refptr<const SecurityOrigin> target,
-                                  LocalFrame* source_frame,
-                                  bool has_user_gesture) const = 0;
+                                  LocalFrame* source_frame) const = 0;
 
   // Forwards a change to the rects of a remote frame. |local_frame_rect| is the
   // size of the frame in its parent's coordinate space prior to applying CSS

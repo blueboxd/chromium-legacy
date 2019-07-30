@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -29,6 +30,9 @@
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
+#include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -202,6 +206,20 @@ class IndexedDBBackingStoreTest : public testing::Test {
     }
     backing_store_ = static_cast<TestableIndexedDBBackingStore*>(
         origin_state_handle_.origin_state()->backing_store());
+    lock_manager_ = origin_state_handle_.origin_state()->lock_manager();
+  }
+
+  std::vector<ScopeLock> CreateDummyLock() {
+    base::RunLoop loop;
+    ScopesLocksHolder locks_receiver;
+    bool success = lock_manager_->AcquireLocks(
+        {{0, {"01", "11"}, ScopesLockManager::LockType::kShared}},
+        locks_receiver.AsWeakPtr(),
+        base::BindLambdaForTesting([&loop]() { loop.Quit(); }));
+    EXPECT_TRUE(success);
+    if (success)
+      loop.Run();
+    return std::move(locks_receiver.locks);
   }
 
   void DestroyFactoryAndBackingStore() {
@@ -212,11 +230,49 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
   void TearDown() override {
     DestroyFactoryAndBackingStore();
-
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
+
+    if (idb_context_ && !idb_context_->IsInMemoryContext()) {
+      IndexedDBFactoryImpl* factory = idb_context_->GetIDBFactory();
+
+      // Loop through all open origins, and force close them, and request the
+      // deletion of the leveldb state. Once the states are no longer around,
+      // delete all of the databases on disk.
+      auto open_factory_origins = factory->GetOpenOrigins();
+
+      for (auto origin : open_factory_origins) {
+        base::RunLoop loop;
+        IndexedDBOriginState* per_origin_factory =
+            factory->GetOriginFactory(origin);
+        per_origin_factory->backing_store()
+            ->db()
+            ->leveldb_state()
+            ->RequestDestruction(loop.QuitClosure(),
+                                 base::SequencedTaskRunnerHandle::Get());
+        idb_context_->ForceClose(
+            origin, IndexedDBContextImpl::FORCE_CLOSE_DELETE_ORIGIN);
+        loop.Run();
+      }
+      // All leveldb databases are closed, and they can be deleted.
+      for (auto origin : idb_context_->GetAllOrigins()) {
+        idb_context_->DeleteForOrigin(origin);
+      }
+    }
+    if (temp_dir_.IsValid())
+      ASSERT_TRUE(temp_dir_.Delete());
   }
 
   TestableIndexedDBBackingStore* backing_store() { return backing_store_; }
+
+  // Cycle the idb runner to help clean up tasks, which allows for a clean
+  // shutdown of the leveldb database. This ensures that all file handles are
+  // released and the folder can be deleted on windows (which doesn't allow
+  // folders to be deleted when inside files are in use/exist).
+  void CycleIDBTaskRunner() {
+    base::RunLoop cycle_loop;
+    idb_context_->TaskRunner()->PostTask(FROM_HERE, cycle_loop.QuitClosure());
+    cycle_loop.Run();
+  }
 
  protected:
   TestBrowserThreadBundle thread_bundle_;
@@ -226,6 +282,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   std::unique_ptr<TestIDBFactory> idb_factory_;
+  DisjointRangeLockManager* lock_manager_;
 
   IndexedDBOriginStateHandle origin_state_handle_;
   TestableIndexedDBBackingStore* backing_store_ = nullptr;
@@ -399,7 +456,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
         IndexedDBValue value = value1_;
         {
           IndexedDBBackingStore::Transaction transaction1(backing_store());
-          transaction1.Begin();
+          transaction1.Begin(CreateDummyLock());
           IndexedDBBackingStore::RecordIdentifier record;
           leveldb::Status s = backing_store()->PutRecord(&transaction1, 1, 1,
                                                          key, &value, &record);
@@ -415,7 +472,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
 
         {
           IndexedDBBackingStore::Transaction transaction2(backing_store());
-          transaction2.Begin();
+          transaction2.Begin(CreateDummyLock());
           IndexedDBValue result_value;
           EXPECT_TRUE(backing_store()
                           ->GetRecord(&transaction2, 1, 1, key, &result_value)
@@ -432,6 +489,8 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
         loop.Quit();
       }));
   loop.Run();
+
+  CycleIDBTaskRunner();
 }
 
 TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
@@ -445,7 +504,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
         // Initiate transaction1 - writing blobs.
         transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store());
-        transaction1->Begin();
+        transaction1->Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record;
         EXPECT_TRUE(
             backing_store()
@@ -467,7 +526,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
 
         // Initiate transaction2, reading blobs.
         IndexedDBBackingStore::Transaction transaction2(backing_store());
-        transaction2.Begin();
+        transaction2.Begin(CreateDummyLock());
         IndexedDBValue result_value;
         EXPECT_TRUE(backing_store()
                         ->GetRecord(&transaction2, 1, 1, key3_, &result_value)
@@ -488,7 +547,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
         // Initiate transaction3, deleting blobs.
         transaction3 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store());
-        transaction3->Begin();
+        transaction3->Begin(CreateDummyLock());
         EXPECT_TRUE(backing_store()
                         ->DeleteRange(transaction3.get(), 1, 1,
                                       IndexedDBKeyRange(key3_))
@@ -496,7 +555,6 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
         EXPECT_TRUE(
             transaction3->CommitPhaseOne(callback_creator3.CreateCallback())
                 .ok());
-
       }));
   RunAllTasksUntilIdle();
 
@@ -570,7 +628,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
           // Initiate transaction1 - write records.
           transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
               backing_store());
-          transaction1->Begin();
+          transaction1->Begin(CreateDummyLock());
           IndexedDBBackingStore::RecordIdentifier record;
           for (size_t i = 0; i < values.size(); ++i) {
             EXPECT_TRUE(backing_store()
@@ -597,7 +655,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
           // Initiate transaction 2 - delete range.
           transaction2 = std::make_unique<IndexedDBBackingStore::Transaction>(
               backing_store());
-          transaction2->Begin();
+          transaction2->Begin(CreateDummyLock());
           IndexedDBValue result_value;
           EXPECT_TRUE(backing_store()
                           ->DeleteRange(transaction2.get(), database_id,
@@ -689,7 +747,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
           // Initiate transaction1 - write records.
           transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
               backing_store());
-          transaction1->Begin();
+          transaction1->Begin(CreateDummyLock());
 
           IndexedDBBackingStore::RecordIdentifier record;
           for (size_t i = 0; i < values.size(); ++i) {
@@ -716,7 +774,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
           // Initiate transaction 2 - delete range.
           transaction2 = std::make_unique<IndexedDBBackingStore::Transaction>(
               backing_store());
-          transaction2->Begin();
+          transaction2->Begin(CreateDummyLock());
           IndexedDBValue result_value;
           EXPECT_TRUE(backing_store()
                           ->DeleteRange(transaction2.get(), database_id,
@@ -759,7 +817,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
         // Initiate transaction1.
         transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store());
-        transaction1->Begin();
+        transaction1->Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record1;
         EXPECT_TRUE(
             backing_store()
@@ -782,7 +840,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
         // Initiate transaction2.
         transaction2 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store());
-        transaction2->Begin();
+        transaction2->Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record2;
         EXPECT_TRUE(
             backing_store()
@@ -827,7 +885,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
       FROM_HERE, base::BindLambdaForTesting([&]() {
         transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store());
-        transaction1->Begin();
+        transaction1->Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record;
         EXPECT_TRUE(
             backing_store()
@@ -847,7 +905,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
         EXPECT_TRUE(transaction1->CommitPhaseTwo().ok());
 
         IndexedDBBackingStore::Transaction transaction2(backing_store());
-        transaction2.Begin();
+        transaction2.Begin(CreateDummyLock());
         EXPECT_TRUE(
             backing_store()
                 ->GetRecord(&transaction2, 1, 1, key3_, &read_result_value)
@@ -868,7 +926,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, LiveBlobJournal) {
 
         transaction3 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store());
-        transaction3->Begin();
+        transaction3->Begin(CreateDummyLock());
         EXPECT_TRUE(backing_store()
                         ->DeleteRange(transaction3.get(), 1, 1,
                                       IndexedDBKeyRange(key3_))
@@ -941,7 +999,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
         EncodeIDBKey(index_key, &index_key_raw);
         {
           IndexedDBBackingStore::Transaction transaction1(backing_store());
-          transaction1.Begin();
+          transaction1.Begin(CreateDummyLock());
           IndexedDBBackingStore::RecordIdentifier record;
           leveldb::Status s = backing_store()->PutRecord(
               &transaction1, high_database_id, high_object_store_id, key1,
@@ -969,7 +1027,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
 
         {
           IndexedDBBackingStore::Transaction transaction2(backing_store());
-          transaction2.Begin();
+          transaction2.Begin(CreateDummyLock());
           IndexedDBValue result_value;
           leveldb::Status s = backing_store()->GetRecord(
               &transaction2, high_database_id, high_object_store_id, key1,
@@ -1000,6 +1058,8 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
         loop.Quit();
       }));
   loop.Run();
+
+  CycleIDBTaskRunner();
 }
 
 // Make sure that other invalid ids do not crash.
@@ -1019,7 +1079,7 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
         IndexedDBValue result_value;
 
         IndexedDBBackingStore::Transaction transaction1(backing_store());
-        transaction1.Begin();
+        transaction1.Begin(CreateDummyLock());
 
         IndexedDBBackingStore::RecordIdentifier record;
         leveldb::Status s = backing_store()->PutRecord(
@@ -1109,7 +1169,7 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
           database_id = database.id;
 
           IndexedDBBackingStore::Transaction transaction(backing_store());
-          transaction.Begin();
+          transaction.Begin(CreateDummyLock());
 
           IndexedDBObjectStoreMetadata object_store;
           s = metadata_coding.CreateObjectStore(
@@ -1163,6 +1223,13 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
         loop.Quit();
       }));
   loop.Run();
+
+  {
+    // Cycle the idb runner to help clean up tasks for the Windows tests.
+    base::RunLoop cycle_loop;
+    idb_context_->TaskRunner()->PostTask(FROM_HERE, cycle_loop.QuitClosure());
+    cycle_loop.Run();
+  }
 }
 
 TEST_F(IndexedDBBackingStoreTest, GetDatabaseNames) {
@@ -1302,7 +1369,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
           database_id = database.id;
 
           IndexedDBBackingStore::Transaction transaction(backing_store());
-          transaction.Begin();
+          transaction.Begin(CreateDummyLock());
 
           IndexedDBObjectStoreMetadata object_store;
           s = metadata_coding.CreateObjectStore(
@@ -1328,7 +1395,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
 
         // Save a value.
         IndexedDBBackingStore::Transaction transaction1(backing_store());
-        transaction1.Begin();
+        transaction1.Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record;
         leveldb::Status s = backing_store()->PutRecord(
             &transaction1, database_id, object_store_id, key, &value, &record);
@@ -1342,12 +1409,12 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
         EXPECT_TRUE(transaction1.CommitPhaseTwo().ok());
 
         // Set the schema to 2, which was before blob support.
-        auto transaction =
-            indexed_db::LevelDBFactory::Get()->CreateLevelDBTransaction(
-                backing_store()->db());
+        std::unique_ptr<LevelDBWriteBatch> write_batch =
+            LevelDBWriteBatch::Create();
         const std::string schema_version_key = SchemaVersionKey::Encode();
-        indexed_db::PutInt(transaction.get(), schema_version_key, 2);
-        ASSERT_TRUE(transaction->Commit().ok());
+        ignore_result(
+            indexed_db::PutInt(write_batch.get(), schema_version_key, 2));
+        ASSERT_TRUE(backing_store()->db()->Write(write_batch.get()).ok());
       }));
   RunAllTasksUntilIdle();
 
@@ -1360,7 +1427,7 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
         IndexedDBValue value = value1_;
 
         IndexedDBBackingStore::Transaction transaction2(backing_store());
-        transaction2.Begin();
+        transaction2.Begin(CreateDummyLock());
         IndexedDBValue result_value;
         EXPECT_TRUE(backing_store()
                         ->GetRecord(&transaction2, database_id, object_store_id,
@@ -1376,17 +1443,14 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
         EXPECT_EQ(value.bits, result_value.bits);
 
         // Test that we upgraded.
-        auto transaction =
-            indexed_db::LevelDBFactory::Get()->CreateLevelDBTransaction(
-                backing_store()->db());
         const std::string schema_version_key = SchemaVersionKey::Encode();
         int64_t found_int = 0;
         bool found = false;
-        bool success = indexed_db::GetInt(transaction.get(), schema_version_key,
-                                          &found_int, &found)
-                           .ok();
+        bool success =
+            indexed_db::GetInt(backing_store()->db(), schema_version_key,
+                               &found_int, &found)
+                .ok();
         ASSERT_TRUE(success);
-        ASSERT_TRUE(transaction->Commit().ok());
 
         EXPECT_TRUE(found);
         EXPECT_EQ(3, found_int);
@@ -1429,7 +1493,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
           database_id = database.id;
 
           IndexedDBBackingStore::Transaction transaction(backing_store());
-          transaction.Begin();
+          transaction.Begin(CreateDummyLock());
 
           IndexedDBObjectStoreMetadata object_store;
           s = metadata_coding.CreateObjectStore(
@@ -1454,7 +1518,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
         // Initiate transaction1 - writing blobs.
         transaction1 = std::make_unique<IndexedDBBackingStore::Transaction>(
             backing_store());
-        transaction1->Begin();
+        transaction1->Begin(CreateDummyLock());
         IndexedDBBackingStore::RecordIdentifier record;
         EXPECT_TRUE(backing_store()
                         ->PutRecord(transaction1.get(), database_id,
@@ -1475,12 +1539,12 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
         EXPECT_TRUE(transaction1->CommitPhaseTwo().ok());
 
         // Set the schema to 2, which was before blob support.
-        auto transaction =
-            indexed_db::LevelDBFactory::Get()->CreateLevelDBTransaction(
-                backing_store()->db());
+        std::unique_ptr<LevelDBWriteBatch> write_batch =
+            LevelDBWriteBatch::Create();
         const std::string schema_version_key = SchemaVersionKey::Encode();
-        indexed_db::PutInt(transaction.get(), schema_version_key, 2);
-        ASSERT_TRUE(transaction->Commit().ok());
+        ignore_result(
+            indexed_db::PutInt(write_batch.get(), schema_version_key, 2));
+        ASSERT_TRUE(backing_store()->db()->Write(write_batch.get()).ok());
 
         // Clean up on the IDB sequence.
         transaction1.reset();

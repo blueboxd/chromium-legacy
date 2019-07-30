@@ -149,4 +149,16 @@ const CrContainerShadowBehavior = {
       }
     });
   },
+
+  /**
+   * Shows the shadows. The shadow behavior must be disabled before calling this
+   * method, otherwise the intersection observer might show the shadows again.
+   */
+  showDropShadows: function() {
+    assert(!this.intersectionObserver_);
+    assert(this.sides_);
+    for (const side of this.sides_) {
+      this.dropShadows_.get(side).classList.toggle('has-shadow', true);
+    }
+  },
 };

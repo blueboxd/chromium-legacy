@@ -17,7 +17,6 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "build/build_config.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "components/viz/test/test_context_support.h"
@@ -65,15 +64,12 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   void DestroySharedImage(const gpu::SyncToken& sync_token,
                           const gpu::Mailbox& mailbox) override;
 
-#if defined(OS_WIN)
   SwapChainMailboxes CreateSwapChain(ResourceFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
                                      uint32_t usage) override;
-
   void PresentSwapChain(const gpu::SyncToken& sync_token,
                         const gpu::Mailbox& mailbox) override;
-#endif  // OS_WIN
 
   gpu::SyncToken GenVerifiedSyncToken() override;
   gpu::SyncToken GenUnverifiedSyncToken() override;

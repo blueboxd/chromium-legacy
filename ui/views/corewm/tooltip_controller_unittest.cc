@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_types.h"
@@ -59,7 +60,7 @@ views::Widget* CreateWidget(aura::Window* root) {
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
   params.parent = root;
 #endif
   params.bounds = gfx::Rect(0, 0, 200, 100);
@@ -91,7 +92,7 @@ class TooltipControllerTest : public ViewsTestBase {
 
     if (root_window)
       new wm::DefaultActivationClient(root_window);
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
     if (root_window) {
       tooltip_aura_ = new views::corewm::TooltipAura();
       controller_.reset(new TooltipController(
@@ -111,7 +112,7 @@ class TooltipControllerTest : public ViewsTestBase {
   }
 
   void TearDown() override {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
     aura::Window* root_window = GetContext();
     if (root_window) {
       root_window->RemovePreTargetHandler(controller_.get());
@@ -163,7 +164,7 @@ class TooltipControllerTest : public ViewsTestBase {
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
  protected:
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
   TooltipAura* tooltip_aura_;  // not owned.
 #endif
 
@@ -235,7 +236,7 @@ TEST_F(TooltipControllerTest, DontShowTooltipOnTouch) {
   EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 // crbug.com/664370.
 TEST_F(TooltipControllerTest, MaxWidth) {
   base::string16 text = base::ASCIIToUTF16(
@@ -252,6 +253,21 @@ TEST_F(TooltipControllerTest, MaxWidth) {
 
   int max = helper_->controller()->GetMaxWidth(center);
   EXPECT_EQ(max, render_text->display_rect().width());
+}
+
+TEST_F(TooltipControllerTest, AccessibleNodeData) {
+  base::string16 text = base::ASCIIToUTF16("Tooltip Text");
+  view_->set_tooltip_text(text);
+  gfx::Point center = GetWindow()->bounds().CenterPoint();
+
+  generator_->MoveMouseTo(center);
+
+  EXPECT_TRUE(helper_->IsTooltipVisible());
+  ui::AXNodeData node_data;
+  test::TooltipAuraTestApi(tooltip_aura_).GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(ax::mojom::Role::kTooltip, node_data.role);
+  EXPECT_EQ(text, base::ASCIIToUTF16(node_data.GetStringAttribute(
+                      ax::mojom::StringAttribute::kName)));
 }
 #endif
 

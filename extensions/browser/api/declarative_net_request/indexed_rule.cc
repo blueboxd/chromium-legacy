@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "components/url_pattern_index/url_pattern_index.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -260,6 +262,110 @@ bool IsRedirectUrlRelative(const std::string& redirect_url) {
   return !redirect_url.empty() && redirect_url[0] == '/';
 }
 
+bool IsValidTransformScheme(const std::unique_ptr<std::string>& scheme) {
+  if (!scheme)
+    return true;
+
+  for (size_t i = 0; i < base::size(kAllowedTransformSchemes); ++i) {
+    if (*scheme == kAllowedTransformSchemes[i])
+      return true;
+  }
+  return false;
+}
+
+bool IsValidPort(const std::unique_ptr<std::string>& port) {
+  if (!port || port->empty())
+    return true;
+
+  unsigned port_num = 0;
+  return base::StringToUint(*port, &port_num) && port_num <= 65535;
+}
+
+bool IsEmptyOrStartsWith(const std::unique_ptr<std::string>& str,
+                         char starts_with) {
+  return !str || str->empty() || str->at(0) == starts_with;
+}
+
+// Validates the given url |transform|.
+ParseResult ValidateTransform(const dnr_api::URLTransform& transform) {
+  if (!IsValidTransformScheme(transform.scheme))
+    return ParseResult::ERROR_INVALID_TRANSFORM_SCHEME;
+
+  if (!IsValidPort(transform.port))
+    return ParseResult::ERROR_INVALID_TRANSFORM_PORT;
+
+  if (!IsEmptyOrStartsWith(transform.query, '?'))
+    return ParseResult::ERROR_INVALID_TRANSFORM_QUERY;
+
+  if (!IsEmptyOrStartsWith(transform.fragment, '#'))
+    return ParseResult::ERROR_INVALID_TRANSFORM_FRAGMENT;
+
+  // Only one of |query| or |query_transform| should be specified.
+  if (transform.query && transform.query_transform)
+    return ParseResult::ERROR_QUERY_AND_TRANSFORM_BOTH_SPECIFIED;
+
+  return ParseResult::SUCCESS;
+}
+
+// Parses the "action.redirect" dictionary of a dnr_api::Rule.
+ParseResult ParseRedirect(dnr_api::Redirect redirect,
+                          const GURL& base_url,
+                          IndexedRule* indexed_rule) {
+  DCHECK(indexed_rule);
+
+  if (redirect.url) {
+    if (!GURL(*redirect.url).is_valid())
+      return ParseResult::ERROR_INVALID_REDIRECT_URL;
+
+    indexed_rule->redirect_url = std::move(*redirect.url);
+    return ParseResult::SUCCESS;
+  }
+
+  if (redirect.extension_path) {
+    if (!IsRedirectUrlRelative(*redirect.extension_path))
+      return ParseResult::ERROR_INVALID_EXTENSION_PATH;
+
+    GURL redirect_url = base_url.Resolve(*redirect.extension_path);
+    if (!redirect_url.is_valid())
+      return ParseResult::ERROR_INVALID_EXTENSION_PATH;
+
+    indexed_rule->redirect_url = redirect_url.spec();
+    return ParseResult::SUCCESS;
+  }
+
+  if (redirect.transform) {
+    indexed_rule->url_transform = std::move(redirect.transform);
+    return ValidateTransform(*indexed_rule->url_transform);
+  }
+
+  return ParseResult::ERROR_INVALID_REDIRECT;
+}
+
+// Parses the "action.redirectUrl" key of a dnr_api::Rule.
+ParseResult ParseRedirectUrl(std::string redirect_url,
+                             const GURL& base_url,
+                             base::Optional<std::string>* parsed_redirect_url) {
+  DCHECK(parsed_redirect_url);
+
+  if (redirect_url.empty())
+    return ParseResult::ERROR_EMPTY_REDIRECT_URL;
+
+  if (IsRedirectUrlRelative(redirect_url)) {
+    GURL url = base_url.Resolve(redirect_url);
+    if (!url.is_valid())
+      return ParseResult::ERROR_INVALID_REDIRECT_URL;
+    *parsed_redirect_url = url.spec();
+    return ParseResult::SUCCESS;
+  }
+
+  if (GURL(redirect_url).is_valid()) {
+    *parsed_redirect_url = std::move(redirect_url);
+    return ParseResult::SUCCESS;
+  }
+
+  return ParseResult::ERROR_INVALID_REDIRECT_URL;
+}
+
 }  // namespace
 
 IndexedRule::IndexedRule() = default;
@@ -292,15 +398,20 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   }
 
   if (is_redirect_rule) {
-    if (!parsed_rule.action.redirect_url ||
-        parsed_rule.action.redirect_url->empty()) {
-      return ParseResult::ERROR_EMPTY_REDIRECT_URL;
+    // Either the redirect url or the redirect dictionary should be specified.
+    // TODO(crbug.com/983685): Prevent extensions from specifying redirects to
+    // Javascript urls.
+    ParseResult result = ParseResult::ERROR_EMPTY_REDIRECT_URL;
+    if (parsed_rule.action.redirect_url) {
+      result = ParseRedirectUrl(std::move(*parsed_rule.action.redirect_url),
+                                base_url, &indexed_rule->redirect_url);
+    } else if (parsed_rule.action.redirect) {
+      result = ParseRedirect(std::move(*parsed_rule.action.redirect), base_url,
+                             indexed_rule);
     }
 
-    if (!IsRedirectUrlRelative(*parsed_rule.action.redirect_url) &&
-        !GURL(*parsed_rule.action.redirect_url).is_valid()) {
-      return ParseResult::ERROR_INVALID_REDIRECT_URL;
-    }
+    if (result != ParseResult::SUCCESS)
+      return result;
   }
 
   if (parsed_rule.condition.domains && parsed_rule.condition.domains->empty())
@@ -341,17 +452,6 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   if (!CanonicalizeDomains(std::move(parsed_rule.condition.excluded_domains),
                            &indexed_rule->excluded_domains)) {
     return ParseResult::ERROR_NON_ASCII_EXCLUDED_DOMAIN;
-  }
-
-  if (is_redirect_rule) {
-    if (IsRedirectUrlRelative(*parsed_rule.action.redirect_url)) {
-      GURL::Replacements relative_path;
-      relative_path.SetPathStr(parsed_rule.action.redirect_url->c_str());
-      indexed_rule->redirect_url =
-          base_url.ReplaceComponents(relative_path).spec();
-    } else {
-      indexed_rule->redirect_url = std::move(*parsed_rule.action.redirect_url);
-    }
   }
 
   // Parse the |anchor_left|, |anchor_right|, |url_pattern_type| and

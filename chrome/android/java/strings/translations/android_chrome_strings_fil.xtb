@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">I-refresh ang page</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="271033894570825754">Bago</translation>
+<translation id="2714850608275780394">Hinihintay ang code</translation>
 <translation id="2728754400939377704">Pagbukud-bukurin ayon sa site</translation>
 <translation id="2744248271121720757">Mag-tap ng salita upang hanapin agad ito o tingnan ang mga nauugnay na pagkilos</translation>
+<translation id="2760989362628427051">I-on ang madilim na tema kapag naka-on ang madilim na tema o Pangtipid sa Baterya ng iyong device</translation>
 <translation id="2762000892062317888">ngayon lang</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> (na) segundo na lang ang natitira</translation>
 <translation id="2779651927720337254">nabigo</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">1 minuto na lang ang natitira</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">I-bookmark ang page na ito</translation>
+<translation id="3254626532848657899">Ilipat sa ibaba</translation>
 <translation id="3259831549858767975">Paliitin ang lahat ng nasa page</translation>
 <translation id="3269093882174072735">I-load ang larawan</translation>
 <translation id="3269956123044984603">Upang makuha ang iyong mga tab mula sa iba mo pang mga device, i-on ang "I-auto sync ang data" sa mga setting ng Android account.</translation>
@@ -441,6 +444,7 @@ Para isaayos ang iyong termino para sa paghahanap, pumindot nang matagal para pu
 <translation id="4378154925671717803">Telepono</translation>
 <translation id="4384468725000734951">Ginagamit ang Sogou para sa paghahanap</translation>
 <translation id="4404568932422911380">Walang bookmark</translation>
+<translation id="4405224443901389797">Ilipat sa…</translation>
 <translation id="4411535500181276704">Lite mode</translation>
 <translation id="4415276339145661267">Pamahalaan ang iyong Google Account</translation>
 <translation id="4432792777822557199">Simula ngayon ay isasalin na sa <ph name="TARGET_LANGUAGE" /> ang mga page na nasa <ph name="SOURCE_LANGUAGE" /></translation>
@@ -621,6 +625,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5578795271662203820">Hanapin sa <ph name="SEARCH_ENGINE" /> ang larawan</translation>
 <translation id="5580090775658607195">Naigrupo ang <ph name="TAB_COUNT" /> tab</translation>
 <translation id="5581519193887989363">Mapipili mo kung ano ang isi-sync anumang oras sa <ph name="BEGIN_LINK1" />mga setting<ph name="END_LINK1" />.</translation>
+<translation id="5586306159936941448">I-drag ang tab sa isa pang tab para pagsamahin ang mga ito</translation>
 <translation id="5595485650161345191">Mag-edit ng address</translation>
 <translation id="5596627076506792578">Higit pang opsyon</translation>
 <translation id="5599455543593328020">Incognito mode</translation>
@@ -651,6 +656,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5809361687334836369">{HOURS,plural, =1{# oras ang nakalipas}one{# oras ang nakalipas}other{# na oras ang nakalipas}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="5817918615728894473">Ipares</translation>
+<translation id="58326064309361797">I-drag ang mga tab para pagsamahin ang mga ito</translation>
 <translation id="583281660410589416">Hindi-alam</translation>
 <translation id="5833984609253377421">Ibahagi ang link</translation>
 <translation id="5836192821815272682">Dina-download ang Update sa Chrome…</translation>
@@ -845,7 +851,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7233236755231902816">Para makita ang web sa iyong wika, kunin ang pinakabagong bersyon ng Chrome</translation>
 <translation id="7243308994586599757">May mga opsyon malapit sa ibaba ng screen</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ang napili</translation>
-<translation id="7253272406652746122">Magdagdag ng Google Account mula sa page na Mga Account sa app na Mga Setting ng iyong device.</translation>
 <translation id="7274013316676448362">Naka-block na site</translation>
 <translation id="7290209999329137901">Hindi available ang pag-rename</translation>
 <translation id="7291387454912369099">Assistant Triggered na Pag-check out</translation>
@@ -1011,6 +1016,7 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="8380167699614421159">Nagpapakita ang site na ito ng mga nakakasagabal o nakakapanlinlang na ad</translation>
 <translation id="8393700583063109961">Ipadala ang mensahe</translation>
 <translation id="8413126021676339697">Ipakita ang buong history</translation>
+<translation id="8425955042390522843">Pag-verify sa numero ng telepono</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8438566539970814960">Mas pahusayin ang mga paghahanap at pag-browse</translation>
 <translation id="8441146129660941386">Maghanap nang pabalik</translation>
@@ -1118,6 +1124,7 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="945632385593298557">I-access ang iyong mikropono</translation>
 <translation id="951339005376969845">I-delete ang kasalukuyang data. Mababawi mo ito sa pamamagitan ng paglipat pabalik sa <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Maaaring gamitin ng Chrome ang <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para sa paghahanap sa China. Maaari mo itong baguhin sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>
+<translation id="959682366969460160">Maging organisado</translation>
 <translation id="965817943346481315">I-block kung nagpapakita ang site ng mga nakakasagabal o nakakapanlinlang na ad (inirerekomenda)</translation>
 <translation id="968900484120156207">Lalabas dito ang mga page na binibisita mo</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> (na) minuto na lang ang natitira</translation>

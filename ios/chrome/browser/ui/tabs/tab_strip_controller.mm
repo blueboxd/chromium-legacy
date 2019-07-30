@@ -564,17 +564,7 @@ UIColor* BackgroundColor() {
     [view setTransform:CGAffineTransformMakeScale(-1, 1)];
   [view setIncognitoStyle:(_style == INCOGNITO)];
   [view setContentMode:UIViewContentModeRedraw];
-  [[view titleLabel] setText:tab_util::GetTabTitle(webState)];
-  [view setFavicon:nil];
-
-  favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(webState);
-  if (faviconDriver && faviconDriver->FaviconIsValid()) {
-    gfx::Image favicon = faviconDriver->GetFavicon();
-    if (!favicon.IsEmpty())
-      [view setFavicon:favicon.ToUIImage()];
-  }
-
+  [self updateTabView:view withWebState:webState];
   // Install a long press gesture recognizer to handle drag and drop.
   UILongPressGestureRecognizer* longPress =
       [[UILongPressGestureRecognizer alloc]
@@ -754,6 +744,20 @@ UIColor* BackgroundColor() {
         [_tabSwitcherButton.superview convertRect:_tabSwitcherButton.frame
                                            toView:tabSwitcherGuide.owningView];
   }
+}
+
+// Updates the title and the favicon of the |view| with data from |webState|.
+- (void)updateTabView:(TabView*)view withWebState:(web::WebState*)webState {
+  [[view titleLabel] setText:tab_util::GetTabTitle(webState)];
+  [view setFavicon:nil];
+  favicon::FaviconDriver* faviconDriver =
+      favicon::WebFaviconDriver::FromWebState(webState);
+  if (faviconDriver && faviconDriver->FaviconIsValid()) {
+    gfx::Image favicon = faviconDriver->GetFavicon();
+    if (!favicon.IsEmpty())
+      [view setFavicon:favicon.ToUIImage()];
+  }
+  [_tabStripView setNeedsLayout];
 }
 
 #pragma mark -
@@ -1111,6 +1115,15 @@ UIColor* BackgroundColor() {
   [self updateContentOffsetForWebStateIndex:index isNewWebState:YES];
 
   [self updateTabCount];
+}
+
+// Observer method, WebState replaced in |webStateList|.
+- (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  TabView* view = [self tabViewForWebState:newWebState];
+  [self updateTabView:view withWebState:newWebState];
 }
 
 #pragma mark -

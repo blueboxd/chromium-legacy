@@ -41,6 +41,7 @@
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_com_initializer.h"
+#include "build/branding_buildflags.h"
 #include "gpu/config/nvml_info.h"
 #include "third_party/vulkan/include/vulkan/vulkan.h"
 
@@ -158,7 +159,7 @@ std::string GetDeviceFileTimeProperty(DEVINST dev_inst,
 
 }  // namespace
 
-#if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD)
 // This function has a real implementation for official builds that can
 // be found in src/third_party/amd.
 bool GetAMDSwitchableInfo(bool* is_switchable,

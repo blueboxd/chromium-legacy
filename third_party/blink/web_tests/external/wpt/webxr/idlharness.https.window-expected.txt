@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 202 tests; 197 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 202 tests; 199 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
@@ -154,10 +154,10 @@ PASS XRInputSourceArray interface: existence and properties of interface prototy
 PASS XRInputSourceArray interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRInputSourceArray interface: iterable<XRInputSource>
 PASS XRInputSourceArray interface: attribute length
-FAIL XRWebGLLayer interface: existence and properties of interface object assert_equals: prototype of self's property "XRWebGLLayer" is not Function.prototype expected function "function () { [native code] }" but got function "function XRLayer() { [native code] }"
+PASS XRWebGLLayer interface: existence and properties of interface object
 PASS XRWebGLLayer interface object length
 PASS XRWebGLLayer interface object name
-FAIL XRWebGLLayer interface: existence and properties of interface prototype object assert_equals: prototype of XRWebGLLayer.prototype is not Object.prototype expected object "[object Object]" but got object "[object XRLayer]"
+PASS XRWebGLLayer interface: existence and properties of interface prototype object
 PASS XRWebGLLayer interface: existence and properties of interface prototype object's "constructor" property
 PASS XRWebGLLayer interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRWebGLLayer interface: attribute antialias

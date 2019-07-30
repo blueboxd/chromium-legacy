@@ -30,6 +30,8 @@ class TestFragmentRootDelegate : public ui::AXFragmentRootDelegateWin {
     return nullptr;
   }
 
+  bool IsAXFragmentRootAControlElement() override { return true; }
+
   BrowserAccessibilityManager* browser_accessibility_manager_;
 };
 

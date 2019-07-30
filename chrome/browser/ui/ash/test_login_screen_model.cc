@@ -29,6 +29,9 @@ void TestLoginScreenModel::ForceOnlineSignInForUser(
 void TestLoginScreenModel::ShowEasyUnlockIcon(
     const AccountId& account_id,
     const ash::EasyUnlockIconOptions& icon) {}
+void TestLoginScreenModel::SetChallengeResponseAuthEnabledForUser(
+    const AccountId& user,
+    bool enabled) {}
 void TestLoginScreenModel::UpdateWarningMessage(const base::string16& message) {
 }
 void TestLoginScreenModel::SetSystemInfo(

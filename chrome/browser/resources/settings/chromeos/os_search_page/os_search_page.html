@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -94,18 +94,14 @@
 
         <!-- Google Assistant -->
         <template is="dom-if" if="[[isAssistantAllowed_]]">
-          <div id="assistantSubpageTrigger" class="settings-box two-line"
-              on-click="onGoogleAssistantTap_" actionable>
-            <div class="start">
-              $i18n{searchGoogleAssistant}
-              <div class="secondary">
-                [[getAssistantEnabledDisabledLabel_(
-                    prefs.settings.voice_interaction.enabled.value)]]
-              </div>
-            </div>
-            <cr-icon-button class="subpage-arrow"
-                aria-label="$i18n{searchGoogleAssistant}"></cr-icon-button>
-          </div>
+          <cr-link-row
+              class="hr"
+              id="assistantSubpageTrigger"
+              label="$i18n{searchGoogleAssistant}"
+              sub-label="[[getAssistantEnabledDisabledLabel_(
+                  prefs.settings.voice_interaction.enabled.value)]]"
+              on-click="onGoogleAssistantTap_">
+          </cr-link-row>
         </template>
       </div>
       <template is="dom-if" if="[[isAssistantAllowed_]]">

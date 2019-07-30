@@ -11,7 +11,6 @@ a while and its output checked in. See tools/gritsettings/README.md for details.
 
 from __future__ import print_function
 
-import fnmatch
 import os
 import re
 import sys

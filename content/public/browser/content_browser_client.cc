@@ -868,12 +868,6 @@ ContentBrowserClient::GetWebAuthenticationRequestDelegate(
   return std::make_unique<AuthenticatorRequestClientDelegate>();
 }
 
-#if defined(OS_MACOSX)
-bool ContentBrowserClient::IsWebAuthenticationTouchIdAuthenticatorSupported() {
-  return false;
-}
-#endif
-
 std::unique_ptr<net::ClientCertStore>
 ContentBrowserClient::CreateClientCertStore(ResourceContext* resource_context) {
   return nullptr;

@@ -50,10 +50,11 @@ class FakeIndexedDBMetadataCoding : public IndexedDBMetadataCoding {
       int64_t version,
       blink::IndexedDBDatabaseMetadata* metadata) override;
 
-  void SetDatabaseVersion(TransactionalLevelDBTransaction* transaction,
-                          int64_t row_id,
-                          int64_t version,
-                          blink::IndexedDBDatabaseMetadata* metadata) override;
+  leveldb::Status SetDatabaseVersion(
+      TransactionalLevelDBTransaction* transaction,
+      int64_t row_id,
+      int64_t version,
+      blink::IndexedDBDatabaseMetadata* metadata) override;
 
   leveldb::Status FindDatabaseId(TransactionalLevelDBDatabase* db,
                                  const std::string& origin_identifier,

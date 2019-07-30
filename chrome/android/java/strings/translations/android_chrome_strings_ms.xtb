@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">Muat semula halaman</translation>
 <translation id="2709516037105925701">Autoisi</translation>
 <translation id="271033894570825754">Baharu</translation>
+<translation id="2714850608275780394">Menunggu kod</translation>
 <translation id="2728754400939377704">Isih mengikut tapak</translation>
 <translation id="2744248271121720757">Ketik perkataan untuk mencari dengan serta-merta atau melihat tindakan yang berkaitan</translation>
+<translation id="2760989362628427051">Hidupkan tema gelap apabila tema gelap atau Penjimat Bateri peranti anda dihidupkan</translation>
 <translation id="2762000892062317888">sebentar tadi</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> saat lagi</translation>
 <translation id="2779651927720337254">gagal</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">1 minit lagi</translation>
 <translation id="3244271242291266297">BB</translation>
 <translation id="3254409185687681395">Tanda halaman ini</translation>
+<translation id="3254626532848657899">Alih ke paling bawah</translation>
 <translation id="3259831549858767975">Jadikan semua yang ada pada halaman lebih kecil</translation>
 <translation id="3269093882174072735">Muatkan imej</translation>
 <translation id="3269956123044984603">Untuk mendapatkan tab daripada peranti anda yang lain, hidupkan "Auto segerak data" dalam tetapan akaun Android.</translation>
@@ -441,6 +444,7 @@ Untuk melaraskan istilah carian anda, tekan lama untuk memilih. Untuk memperhalu
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Menggunakan Sogou untuk carian</translation>
 <translation id="4404568932422911380">Tiada penanda halaman</translation>
+<translation id="4405224443901389797">Alihkan ke…</translation>
 <translation id="4411535500181276704">Mod Ringkas</translation>
 <translation id="4415276339145661267">Urus Akaun Google anda</translation>
 <translation id="4432792777822557199">Halaman dalam <ph name="SOURCE_LANGUAGE" /> akan diterjemahkan kepada <ph name="TARGET_LANGUAGE" /> bermula dari sekarang</translation>
@@ -621,6 +625,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5578795271662203820">Cari imej ini di <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> tab dihimpunkan</translation>
 <translation id="5581519193887989363">Anda boleh memilih item yang hendak disegerakkan dalam <ph name="BEGIN_LINK1" />tetapan<ph name="END_LINK1" /> pada bila-bila masa.</translation>
+<translation id="5586306159936941448">Seret tab ke atas tab satu lagi untuk menghimpunkannya</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="5596627076506792578">Lagi pilihan</translation>
 <translation id="5599455543593328020">Mod inkognito</translation>
@@ -651,6 +656,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5809361687334836369">{HOURS,plural, =1{# jam yang lalu}other{# jam yang lalu}}</translation>
 <translation id="5810288467834065221">Hak Cipta <ph name="YEAR" /> Google LLC. Hak cipta terpelihara.</translation>
 <translation id="5817918615728894473">Gandingkan</translation>
+<translation id="58326064309361797">Seret tab untuk menghimpunkannya</translation>
 <translation id="583281660410589416">Tidak diketahui</translation>
 <translation id="5833984609253377421">Kongsi pautan</translation>
 <translation id="5836192821815272682">Memuat Turun Kemas Kini Chrome…</translation>
@@ -845,7 +851,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="7233236755231902816">Untuk melihat web dalam bahasa anda, dapatkan versi terkini Chrome</translation>
 <translation id="7243308994586599757">Pilihan tersedia berhampiran bahagian bawah skrin</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
-<translation id="7253272406652746122">Tambahkan Akaun Google daripada halaman Akaun dalam apl Tetapan peranti anda.</translation>
 <translation id="7274013316676448362">Tapak yang disekat</translation>
 <translation id="7290209999329137901">Penamaan semula tidak tersedia</translation>
 <translation id="7291387454912369099">Assistant Mencetuskan Pembayaran</translation>
@@ -1011,6 +1016,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="8380167699614421159">Tapak ini menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="8393700583063109961">Hantar mesej</translation>
 <translation id="8413126021676339697">Paparkan sejarah penuh</translation>
+<translation id="8425955042390522843">Pengesahan nombor telefon</translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8438566539970814960">Mempertingkatkan carian dan penyemakan imbas</translation>
 <translation id="8441146129660941386">Cari ke belakang</translation>
@@ -1118,6 +1124,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="945632385593298557">Akses mikrofon anda</translation>
 <translation id="951339005376969845">Padam data sedia ada. Anda boleh mendapatkannya semula dengan beralih semula kepada <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome boleh menggunakan <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> untuk melakukan carian di China. Anda boleh menukarnya dalam <ph name="BEGIN_LINK" />Tetapan<ph name="END_LINK" />.</translation>
+<translation id="959682366969460160">Jadi teratur</translation>
 <translation id="965817943346481315">Sekat jika tapak menyiarkan iklan yang mengganggu atau mengelirukan (disyorkan)</translation>
 <translation id="968900484120156207">Halaman yang anda lawati dipaparkan di sini</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minit lagi</translation>

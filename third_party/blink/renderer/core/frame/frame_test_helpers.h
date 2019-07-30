@@ -494,8 +494,7 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
   void ForwardPostMessage(WebLocalFrame* source_frame,
                           WebRemoteFrame* target_frame,
                           WebSecurityOrigin target_origin,
-                          WebDOMMessageEvent,
-                          bool has_user_gesture) override {}
+                          WebDOMMessageEvent) override {}
 
  private:
   // If set to a non-null value, self-deletes on frame detach.

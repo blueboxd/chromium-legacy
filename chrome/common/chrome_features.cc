@@ -241,9 +241,16 @@ const base::Feature kDesktopPWAsWithoutExtensions{
 const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables unconditional use of new Desktop PWAs launch manager
-// for all bookmark apps (including extensions-based bookmark apps).
-// Only relevant if kDesktopPWAsWithoutExtensions is disabled.
+// Enables or disables use of new Desktop PWAs browser controller (that uses the
+// universal web_app::AppRegistrar) by extensions-based bookmark apps. Note that
+// the new Desktop PWAs implementation (not based on extensions) always uses the
+// new browser controller.
+const base::Feature kDesktopPWAsUnifiedUiController{
+    "DesktopPWAsUnifiedUiController", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables use of new Desktop PWAs launch manager by
+// extensions-based bookmark apps. (Note that Bookmark apps not based
+// on extensions unconditionally use the new launch manager.)
 const base::Feature kDesktopPWAsUnifiedLaunch{
     "DesktopPWAsUnifiedLaunch", base::FEATURE_DISABLED_BY_DEFAULT};
 

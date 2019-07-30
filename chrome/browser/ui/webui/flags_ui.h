@@ -33,4 +33,16 @@ class FlagsUI : public content::WebUIController {
   DISALLOW_COPY_AND_ASSIGN(FlagsUI);
 };
 
+class FlagsEnterpriseUI : public content::WebUIController {
+ public:
+  explicit FlagsEnterpriseUI(content::WebUI* web_ui);
+  ~FlagsEnterpriseUI() override;
+
+  static bool IsEnterpriseUrl(const GURL& url);
+
+ private:
+  base::WeakPtrFactory<FlagsEnterpriseUI> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlagsEnterpriseUI);
+};
 #endif  // CHROME_BROWSER_UI_WEBUI_FLAGS_UI_H_

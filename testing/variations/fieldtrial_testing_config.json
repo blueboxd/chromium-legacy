@@ -1523,6 +1523,21 @@
             ]
         }
     ],
+    "ContextualSearchSimplifiedServer": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ContextualSearchSimplifiedServer",
+                    "enable_features": [
+                        "ContextualSearchSimplifiedServer"
+                    ]
+                }
+            ]
+        }
+    ],
     "CopylessPaste": [
         {
             "platforms": [
@@ -5200,6 +5215,7 @@
                 "android",
                 "chromeos",
                 "ios",
+                "linux",
                 "mac",
                 "windows"
             ],
@@ -5617,24 +5633,6 @@
                     "params": {
                         "min_required_storage_for_update_mb": "500"
                     }
-                }
-            ]
-        }
-    ],
-    "UseAPDownloadProtection": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "UseAPDownloadProtection",
-                    "enable_features": [
-                        "UseAPDownloadProtection"
-                    ]
                 }
             ]
         }

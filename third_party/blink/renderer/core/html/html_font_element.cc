@@ -160,7 +160,7 @@ bool HTMLFontElement::CssValueFromFontSizeNumber(const String& s,
       size = CSSValueID::kXxLarge;
       break;
     case 7:
-      size = CSSValueID::kWebkitXxxLarge;
+      size = CSSValueID::kXxxLarge;
       break;
     default:
       NOTREACHED();

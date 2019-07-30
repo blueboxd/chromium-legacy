@@ -202,6 +202,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                            TabUiAlwaysTranslateLanguageMenuItem);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            TabUiTabSelectedAfterTranslation);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           TabUiAlwaysTranslateTriggerTranslation);
   FRIEND_TEST_ALL_PREFIXES(TranslateLanguageBrowserTest, TranslateAndRevert);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewBrowserTest,
                            CheckNeverTranslateThisSiteBlacklist);
@@ -271,11 +273,14 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // Three options depending on UI selection in kUseButtonTranslateBubbleUI.
   std::unique_ptr<views::View> CreateViewAdvanced();
 
-  // Creates source language label and combobox for Tab Ui advanced view
+  // Creates source language label and combobox for Tab UI advanced view
   std::unique_ptr<views::View> TabUiCreateViewAdvanedSource();
 
-  // Creates source language label and combobox for Tab Ui advanced view
+  // Creates source language label and combobox for Tab UI advanced view
   std::unique_ptr<views::View> TabUiCreateViewAdvanedTarget();
+
+  // Tab UI present the same view for before/during/after translate state.
+  bool TabUiIsEquivalentState(TranslateBubbleModel::ViewState view_state);
 
   // Creates the skeleton view for GM2 UI.
   std::unique_ptr<views::View> GM2CreateView(

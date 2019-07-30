@@ -469,6 +469,11 @@ public class BookmarkManager
         mAdapter.moveUpOne(bookmarkId);
     }
 
+    @Override
+    public void onBookmarkItemMenuOpened() {
+        mToolbar.hideKeyboard();
+    }
+
     // BookmarkDelegate implementations.
 
     @Override

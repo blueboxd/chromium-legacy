@@ -904,7 +904,7 @@ class PLATFORM_EXPORT BaseArena {
   size_t ObjectPayloadSizeForTesting();
   void PrepareForSweep();
 #if defined(ADDRESS_SANITIZER)
-  void PoisonArena();
+  void PoisonUnmarkedObjects();
 #endif
   Address LazySweep(size_t, size_t gc_info_index);
   bool SweepUnsweptPage(BasePage*);

@@ -177,6 +177,7 @@ class SavePasswordProgressLogger {
     STRING_HTTPAUTH_ON_PROMPT_USER,
     STRING_HTTPAUTH_ON_SET_OBSERVER,
     STRING_HTTPAUTH_ON_DETACH_OBSERVER,
+    STRING_SHOW_ONBOARDING,
     STRING_INVALID,  // Represents a string returned in a case of an error.
     STRING_MAX = STRING_INVALID
   };

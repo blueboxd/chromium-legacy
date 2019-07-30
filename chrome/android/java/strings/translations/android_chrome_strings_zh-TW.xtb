@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">重新整理頁面</translation>
 <translation id="2709516037105925701">自動填入</translation>
 <translation id="271033894570825754">新</translation>
+<translation id="2714850608275780394">正在等待驗證碼</translation>
 <translation id="2728754400939377704">依網站排序</translation>
 <translation id="2744248271121720757">只要輕觸字詞就能立即展開搜尋或查看相關的動作</translation>
+<translation id="2760989362628427051">當裝置開啟深色主題或節約耗電量功能時，啟用深色主題</translation>
 <translation id="2762000892062317888">剛剛</translation>
 <translation id="2777555524387840389">還剩 <ph name="SECONDS" /> 秒</translation>
 <translation id="2779651927720337254">失敗</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">還剩 1 分鐘</translation>
 <translation id="3244271242291266297">月</translation>
 <translation id="3254409185687681395">把此頁加入書籤</translation>
+<translation id="3254626532848657899">移至底部</translation>
 <translation id="3259831549858767975">縮小網頁上的所有內容</translation>
 <translation id="3269093882174072735">載入圖片</translation>
 <translation id="3269956123044984603">如要存取您在其他裝置上開啟的分頁，請前往 Android 帳戶設定開啟 [自動同步處理資料]。</translation>
@@ -441,6 +444,7 @@
 <translation id="4378154925671717803">電話</translation>
 <translation id="4384468725000734951">現已使用 Sogou 搜尋</translation>
 <translation id="4404568932422911380">沒有書籤</translation>
+<translation id="4405224443901389797">移至…</translation>
 <translation id="4411535500181276704">精簡模式</translation>
 <translation id="4415276339145661267">管理你的 Google 帳戶</translation>
 <translation id="4432792777822557199">從現在起，系統會將<ph name="SOURCE_LANGUAGE" />網頁內容翻譯成<ph name="TARGET_LANGUAGE" /></translation>
@@ -621,6 +625,7 @@
 <translation id="5578795271662203820">透過 <ph name="SEARCH_ENGINE" /> 搜尋這張圖片</translation>
 <translation id="5580090775658607195">已將 <ph name="TAB_COUNT" /> 個分頁加入群組</translation>
 <translation id="5581519193887989363">你隨時可以在<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />中選擇要同步處理的資料。</translation>
+<translation id="5586306159936941448">將分頁拖曳至另一個分頁，即可將它們歸為同一個群組</translation>
 <translation id="5595485650161345191">編輯地址</translation>
 <translation id="5596627076506792578">更多選項</translation>
 <translation id="5599455543593328020">無痕模式</translation>
@@ -651,6 +656,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小時前}other{# 小時前}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. 保留所有權利。</translation>
 <translation id="5817918615728894473">配對</translation>
+<translation id="58326064309361797">拖曳分頁即可進行分組</translation>
 <translation id="583281660410589416">未知</translation>
 <translation id="5833984609253377421">分享連結</translation>
 <translation id="5836192821815272682">正在下載 Chrome 更新…</translation>
@@ -845,7 +851,6 @@
 <translation id="7233236755231902816">如要以你偏好的語言查看網頁，請取得最新版本的 Chrome</translation>
 <translation id="7243308994586599757">選項在接近畫面底部的位置</translation>
 <translation id="7250468141469952378">已選取 <ph name="ITEM_COUNT" /> 個項目</translation>
-<translation id="7253272406652746122">在裝置的「設定」應用程式中，透過「帳戶」頁面新增 Google 帳戶。</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
 <translation id="7290209999329137901">無法重新命名</translation>
 <translation id="7291387454912369099">Google 助理自動填入功能</translation>
@@ -1011,6 +1016,7 @@
 <translation id="8380167699614421159">這個網站會顯示干擾性或誤導性的廣告</translation>
 <translation id="8393700583063109961">傳送訊息</translation>
 <translation id="8413126021676339697">顯示完整記錄</translation>
+<translation id="8425955042390522843">驗證電話號碼</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8438566539970814960">改善搜尋和瀏覽體驗</translation>
 <translation id="8441146129660941386">倒轉到特定的播放時間點</translation>
@@ -1118,6 +1124,7 @@
 <translation id="945632385593298557">存取您的麥克風</translation>
 <translation id="951339005376969845">刪除現有資料。你可以切換回 <ph name="FROM_ACCOUNT" />，重新取得現有資料。</translation>
 <translation id="95817756606698420">Chrome 可以在中國使用 <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> 搜尋。你可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中變更這項設定。</translation>
+<translation id="959682366969460160">保持井然有序</translation>
 <translation id="965817943346481315">封鎖干擾性或誤導性的網站廣告 (建議)</translation>
 <translation id="968900484120156207">你曾造訪的頁面會顯示在這裡</translation>
 <translation id="970715775301869095">還剩 <ph name="MINUTES" /> 分鐘</translation>

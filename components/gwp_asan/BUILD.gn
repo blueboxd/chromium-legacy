@@ -7,7 +7,7 @@ source_set("unit_tests") {
   deps = [
     "//components/gwp_asan/common:unit_tests",
   ]
-  if (is_win || is_mac) {
+  if (is_win || is_mac || is_linux) {
     deps += [
       "//components/gwp_asan/client:unit_tests",
       "//components/gwp_asan/crash_handler:unit_tests",

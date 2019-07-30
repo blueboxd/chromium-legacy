@@ -238,6 +238,11 @@ class EarliestSweepKey {
   static std::string Encode();
 };
 
+class ScopesPrefix {
+ public:
+  CONTENT_EXPORT static std::vector<uint8_t> Encode();
+};
+
 class DatabaseFreeListKey {
  public:
   DatabaseFreeListKey();
@@ -519,6 +524,8 @@ class IndexDataKey {
   CONTENT_EXPORT static std::string EncodeMinKey(int64_t database_id,
                                                  int64_t object_store_id,
                                                  int64_t index_id);
+
+  // An index's keys are guaranteed to fall in [EncodeMinKey(), EncodeMaxKey()]
   CONTENT_EXPORT static std::string EncodeMaxKey(int64_t database_id,
                                                  int64_t object_store_id,
                                                  int64_t index_id);

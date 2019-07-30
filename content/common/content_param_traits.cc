@@ -291,7 +291,6 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.stack_trace_debugger_id_second);
   WriteParam(m, p->data.ports);
   WriteParam(m, p->data.stream_channels);
-  WriteParam(m, p->data.has_user_gesture);
   WriteParam(m, !!p->data.user_activation);
   WriteParam(m, p->data.transfer_user_activation);
   WriteParam(m, p->data.allow_autoplay);
@@ -324,7 +323,6 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_second) ||
       !ReadParam(m, iter, &(*r)->data.ports) ||
       !ReadParam(m, iter, &(*r)->data.stream_channels) ||
-      !ReadParam(m, iter, &(*r)->data.has_user_gesture) ||
       !ReadParam(m, iter, &has_activation) ||
       !ReadParam(m, iter, &(*r)->data.transfer_user_activation) ||
       !ReadParam(m, iter, &(*r)->data.allow_autoplay)) {

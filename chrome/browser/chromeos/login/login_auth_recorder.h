@@ -25,6 +25,7 @@ class LoginAuthRecorder : public session_manager::SessionManagerObserver {
     kPin,
     kSmartlock,
     kFingerprint,
+    kChallengeResponse,
     kMethodCount,
   };
 
@@ -44,6 +45,7 @@ class LoginAuthRecorder : public session_manager::SessionManagerObserver {
     kFingerprintToPassword,
     kFingerprintToPin,
     kFingerprintToSmartlock,
+    kPasswordToChallengeResponse,
     kSwitchTypeCount,
   };
 

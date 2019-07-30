@@ -289,7 +289,8 @@
     {
       name: "ContactsManager",
       origin_trial_feature_name: "ContactsManager",
-      status: "experimental",
+      origin_trial_os: ["android"],
+      status: {"Android": "experimental", "default": "test"},
     },
     {
       name: "ContentIndex",
@@ -1370,6 +1371,11 @@
       name: "RTCStatsRelativePacketArrivalDelay",
       origin_trial_feature_name: "RTCStatsRelativePacketArrivalDelay",
       status: "experimental",
+    },
+    // Enables the use of SVC scalability mode in WebRTC.
+    // Spec: https://w3c.github.io/webrtc-svc/
+    {
+      name: "RTCSvcScalabilityMode",
     },
     // Enables the use of |RTCConfiguration::sdpSemantics| to override the
     // default SDP semantics at RTCPeerConnection construction.

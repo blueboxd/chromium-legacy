@@ -302,38 +302,37 @@ void CopyReplacedNavigationEntryDataIfPreviouslyEmpty(
   output_entry->set_replaced_entry_data(data);
 }
 
-FrameMsg_Navigate_Type::Value GetNavigationType(
-    const GURL& old_url,
-    const GURL& new_url,
-    ReloadType reload_type,
-    NavigationEntryImpl* entry,
-    const FrameNavigationEntry& frame_entry,
-    bool is_same_document_history_load) {
+mojom::NavigationType GetNavigationType(const GURL& old_url,
+                                        const GURL& new_url,
+                                        ReloadType reload_type,
+                                        NavigationEntryImpl* entry,
+                                        const FrameNavigationEntry& frame_entry,
+                                        bool is_same_document_history_load) {
   // Reload navigations
   switch (reload_type) {
     case ReloadType::NORMAL:
-      return FrameMsg_Navigate_Type::RELOAD;
+      return mojom::NavigationType::RELOAD;
     case ReloadType::BYPASSING_CACHE:
-      return FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE;
+      return mojom::NavigationType::RELOAD_BYPASSING_CACHE;
     case ReloadType::ORIGINAL_REQUEST_URL:
-      return FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+      return mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
     case ReloadType::NONE:
       break;  // Fall through to rest of function.
   }
 
   if (entry->restore_type() == RestoreType::LAST_SESSION_EXITED_CLEANLY) {
     if (entry->GetHasPostData())
-      return FrameMsg_Navigate_Type::RESTORE_WITH_POST;
+      return mojom::NavigationType::RESTORE_WITH_POST;
     else
-      return FrameMsg_Navigate_Type::RESTORE;
+      return mojom::NavigationType::RESTORE;
   }
 
   // History navigations.
   if (frame_entry.page_state().IsValid()) {
     if (is_same_document_history_load)
-      return FrameMsg_Navigate_Type::HISTORY_SAME_DOCUMENT;
+      return mojom::NavigationType::HISTORY_SAME_DOCUMENT;
     else
-      return FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
+      return mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
   }
   DCHECK(!is_same_document_history_load);
 
@@ -350,9 +349,9 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
   // are classified before this check.
   if (new_url.has_ref() && old_url.EqualsIgnoringRef(new_url) &&
       frame_entry.method() == "GET") {
-    return FrameMsg_Navigate_Type::SAME_DOCUMENT;
+    return mojom::NavigationType::SAME_DOCUMENT;
   } else {
-    return FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
+    return mojom::NavigationType::DIFFERENT_DOCUMENT;
   }
 }
 
@@ -3052,7 +3051,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   // will be updated when the BeforeUnload ack is received.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
 
-  FrameMsg_Navigate_Type::Value navigation_type =
+  mojom::NavigationType navigation_type =
       GetNavigationType(node->current_url(),  // old_url
                         url_to_load,          // new_url
                         reload_type,          // reload_type
@@ -3072,20 +3071,24 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
   const GURL& history_url_for_data_url =
       params.base_url_for_data_url.is_empty() ? GURL() : virtual_url;
-  CommonNavigationParams common_params(
-      url_to_load, params.initiator_origin, params.referrer,
-      params.transition_type, navigation_type, download_policy,
-      should_replace_current_entry, params.base_url_for_data_url,
-      history_url_for_data_url, previews_state, navigation_start,
-      params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
-      params.post_data, base::Optional<SourceLocation>(),
-      params.started_from_context_menu, has_user_gesture, InitiatorCSPInfo(),
-      std::vector<int>(), params.href_translate,
-      false /* is_history_navigation_in_new_child_frame */, params.input_start);
+  mojom::CommonNavigationParamsPtr common_params =
+      mojom::CommonNavigationParams::New(
+          url_to_load, params.initiator_origin,
+          blink::mojom::Referrer::New(params.referrer.url,
+                                      params.referrer.policy),
+          params.transition_type, navigation_type, download_policy,
+          should_replace_current_entry, params.base_url_for_data_url,
+          history_url_for_data_url, previews_state, navigation_start,
+          params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
+          params.post_data, base::Optional<SourceLocation>(),
+          params.started_from_context_menu, has_user_gesture,
+          InitiatorCSPInfo(), std::vector<int>(), params.href_translate,
+          false /* is_history_navigation_in_new_child_frame */,
+          params.input_start);
 
   CommitNavigationParams commit_params(
       frame_entry->committed_origin(), override_user_agent,
-      params.redirect_chain, common_params.url, common_params.method,
+      params.redirect_chain, common_params->url, common_params->method,
       params.can_load_local_resources, frame_entry->page_state(),
       entry->GetUniqueID(), entry->GetSubframeUniqueNames(node),
       true /* intended_as_new_entry */, -1 /* pending_history_list_offset */,
@@ -3109,8 +3112,9 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   base::ReplaceChars(params.extra_headers, "\n", "\r\n", &extra_headers_crlf);
 
   auto navigation_request = NavigationRequest::CreateBrowserInitiated(
-      node, common_params, commit_params, !params.is_renderer_initiated,
-      extra_headers_crlf, *frame_entry, entry, request_body,
+      node, std::move(common_params), commit_params,
+      !params.is_renderer_initiated, extra_headers_crlf, *frame_entry, entry,
+      request_body,
       params.navigation_ui_data ? params.navigation_ui_data->Clone() : nullptr);
   navigation_request->set_from_download_cross_origin_redirect(
       params.from_download_cross_origin_redirect);
@@ -3175,7 +3179,7 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   // will be updated when the BeforeUnload ack is received.
   base::TimeTicks navigation_start = base::TimeTicks::Now();
 
-  FrameMsg_Navigate_Type::Value navigation_type = GetNavigationType(
+  mojom::NavigationType navigation_type = GetNavigationType(
       frame_tree_node->current_url(),  // old_url
       dest_url,                        // new_url
       reload_type,                     // reload_type
@@ -3196,24 +3200,27 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   }
 
   // Create the NavigationParams based on |entry| and |frame_entry|.
-  CommonNavigationParams common_params = entry->ConstructCommonNavigationParams(
-      *frame_entry, request_body, dest_url, dest_referrer, navigation_type,
-      previews_state, navigation_start, base::TimeTicks() /* input_start */);
-  common_params.is_history_navigation_in_new_child_frame =
+  mojom::CommonNavigationParamsPtr common_params =
+      entry->ConstructCommonNavigationParams(
+          *frame_entry, request_body, dest_url,
+          blink::mojom::Referrer::New(dest_referrer.url, dest_referrer.policy),
+          navigation_type, previews_state, navigation_start,
+          base::TimeTicks() /* input_start */);
+  common_params->is_history_navigation_in_new_child_frame =
       is_history_navigation_in_new_child_frame;
 
   // TODO(clamy): |intended_as_new_entry| below should always be false once
   // Reload no longer leads to this being called for a pending NavigationEntry
   // of index -1.
   CommitNavigationParams commit_params = entry->ConstructCommitNavigationParams(
-      *frame_entry, common_params.url, origin_to_commit, common_params.method,
+      *frame_entry, common_params->url, origin_to_commit, common_params->method,
       entry->GetSubframeUniqueNames(frame_tree_node),
       GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
       GetIndexOfEntry(entry), GetLastCommittedEntryIndex(), GetEntryCount());
   commit_params.post_content_type = post_content_type;
 
   return NavigationRequest::CreateBrowserInitiated(
-      frame_tree_node, common_params, commit_params,
+      frame_tree_node, std::move(common_params), commit_params,
       !entry->is_renderer_initiated(), entry->extra_headers(), *frame_entry,
       entry, request_body, nullptr /* navigation_ui_data */);
 }

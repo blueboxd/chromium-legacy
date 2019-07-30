@@ -4,8 +4,8 @@
 
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 ProfileOAuth2TokenServiceDelegate::ScopedBatchChange::ScopedBatchChange(
@@ -43,12 +43,12 @@ bool ProfileOAuth2TokenServiceDelegate::ValidateAccountId(
 }
 
 void ProfileOAuth2TokenServiceDelegate::AddObserver(
-    OAuth2TokenServiceObserver* observer) {
+    ProfileOAuth2TokenServiceObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
 void ProfileOAuth2TokenServiceDelegate::RemoveObserver(
-    OAuth2TokenServiceObserver* observer) {
+    ProfileOAuth2TokenServiceObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 

@@ -137,13 +137,11 @@ void RemoteFrameClientImpl::CheckCompleted() {
 void RemoteFrameClientImpl::ForwardPostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> target,
-    LocalFrame* source_frame,
-    bool has_user_gesture) const {
+    LocalFrame* source_frame) const {
   if (web_frame_->Client()) {
     web_frame_->Client()->ForwardPostMessage(
         WebLocalFrameImpl::FromFrame(source_frame), web_frame_,
-        WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event),
-        has_user_gesture);
+        WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
   }
 }
 

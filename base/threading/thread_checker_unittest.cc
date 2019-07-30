@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_token.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/simple_thread.h"
@@ -192,6 +193,40 @@ TEST(ThreadCheckerTest, DetachFromThreadWithSequenceToken) {
       BindOnce(&ExpectCalledOnValidThread, Unretained(&thread_checker)));
 
   EXPECT_FALSE(thread_checker.CalledOnValidThread());
+}
+
+// Owns a ThreadCheckerImpl and asserts that CalledOnValidThread() is valid
+// in ~ThreadCheckerOwner.
+class ThreadCheckerOwner {
+ public:
+  explicit ThreadCheckerOwner(bool detach_from_thread) {
+    if (detach_from_thread)
+      checker_.DetachFromThread();
+  }
+  ~ThreadCheckerOwner() { EXPECT_TRUE(checker_.CalledOnValidThread()); }
+
+ private:
+  ThreadCheckerImpl checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadCheckerOwner);
+};
+
+// Verifies ThreadCheckerImpl::CalledOnValidThread() returns true if called
+// during thread destruction.
+TEST(ThreadCheckerTest, CalledOnValidThreadFromThreadDestruction) {
+  ThreadLocalOwnedPointer<ThreadCheckerOwner> thread_local_owner;
+  RunCallbackOnNewThreadSynchronously(BindLambdaForTesting([&]() {
+    thread_local_owner.Set(std::make_unique<ThreadCheckerOwner>(false));
+  }));
+}
+
+// Variant of CalledOnValidThreadFromThreadDestruction that calls
+// ThreadCheckerImpl::DetachFromThread().
+TEST(ThreadCheckerTest, CalledOnValidThreadFromThreadDestructionDetached) {
+  ThreadLocalOwnedPointer<ThreadCheckerOwner> thread_local_owner;
+  RunCallbackOnNewThreadSynchronously(BindLambdaForTesting([&]() {
+    thread_local_owner.Set(std::make_unique<ThreadCheckerOwner>(true));
+  }));
 }
 
 namespace {

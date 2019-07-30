@@ -16,7 +16,7 @@ function addLog(logText) {
 // Converts an internal representation of nodes to actual DOM nodes that can
 // be attached to the DOM. The internal representation has the following
 // properties for each node:
-// - type: 'node' | 'text'
+// - type: 'element' | 'text'
 // - value: name of tag | text content
 // - children (opt): list of child nodes
 // - attributes (opt): dictionary of name/value pairs
@@ -24,7 +24,7 @@ function nodeToDomNode(node) {
   if (node.type === 'text') {
     return document.createTextNode(node.value);
   }
-  // Else the node is of type 'node'.
+  // Else the node is of type 'element'.
   var domNode = document.createElement(node.value);
   if ('children' in node) {
     node.children.forEach((child) => {

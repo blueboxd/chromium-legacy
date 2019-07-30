@@ -171,15 +171,12 @@
 
   <dialog id="customization-menu" class="customize-dialog">
     <div id="menu-header">
-      <div id="menu-back-wrapper">
-        <div id="menu-back-circle" tabindex="0" role="button" aria-label="$i18n{backLabel}">
-          <div id="menu-back"></div>
-        </div>
+      <div id="menu-back-circle" tabindex="0" role="button"
+          aria-label="$i18n{backLabel}">
+        <div id="menu-back"></div>
       </div>
-      <div id="menu-title-wrapper">
-        <div id="menu-title">$i18n{customizeMenu}</div>
-      </div>
-      <div id="refresh-daily-wrapper" hidden>
+      <div id="menu-title">$i18n{customizeMenu}</div>
+      <div id="refresh-daily-wrapper">
         <div id="refresh-toggle-wrapper">
           <label class="switch">
             <input id="refresh-daily-toggle" type="checkbox"
@@ -190,9 +187,7 @@
             </span>
           </label>
         </div>
-        <div id="refresh-text-wrapper">
-          <div id="refresh-text">$i18n{refreshDaily}</div>
-        </div>
+        <div id="refresh-text">$i18n{refreshDaily}</div>
       </div>
     </div>
     <div id="menu-nav-panel" role="tablist" aria-label="$i18n{customizeMenu}">
@@ -231,8 +226,8 @@
       <div id="backgrounds-menu" class="menu-panel" tabindex="0"
           role="tabpanel" aria-label="$i18n{backgroundsOption}">
         <div id="backgrounds-upload" class="bg-sel-tile-bg">
-          <div id="backgrounds-upload-wrapper" class="bg-sel-tile" tabindex="-1">
-            <div id="backgrounds-upload-icon"></div>
+          <div id="backgrounds-upload-icon" class="bg-sel-tile" tabindex="-1">
+            <div id="backgrounds-upload-arrow"></div>
             <div id="backgrounds-upload-text">$i18n{uploadImage}</div>
           </div>
         </div>

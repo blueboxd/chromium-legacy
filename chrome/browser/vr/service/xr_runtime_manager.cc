@@ -115,14 +115,14 @@ void XRRuntimeManager::ExitImmersivePresentation() {
     return;
   }
 
-  browser_xr_runtime->ExitVrFromPresentingRendererDevice();
+  browser_xr_runtime->ExitVrFromPresentingService();
 }
 
 void XRRuntimeManager::AddService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Loop through any currently active devices and send Connected messages to
-  // the service. Future devices that come online will send a Connected message
+  // Loop through any currently active runtimes and send Connected messages to
+  // the service. Future runtimes that come online will send a Connected message
   // when they are created.
   InitializeProviders();
 
@@ -135,6 +135,10 @@ void XRRuntimeManager::AddService(VRServiceImpl* service) {
 void XRRuntimeManager::RemoveService(VRServiceImpl* service) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   services_.erase(service);
+
+  for (const auto& runtime : runtimes_) {
+    runtime.second->OnServiceRemoved(service);
+  }
 }
 
 BrowserXRRuntime* XRRuntimeManager::GetRuntime(device::mojom::XRDeviceId id) {
@@ -155,7 +159,7 @@ BrowserXRRuntime* XRRuntimeManager::GetRuntimeForOptions(
       DVLOG(1) << __func__ << ": non-immersive AR mode is unsupported";
       return nullptr;
     }
-    // Return the ARCore device.
+    // Return the ARCore runtime.
     return GetRuntime(device::mojom::XRDeviceId::ARCORE_DEVICE_ID);
   }
 
@@ -211,46 +215,46 @@ BrowserXRRuntime* XRRuntimeManager::GetImmersiveRuntime() {
 }
 
 device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
-    XRDeviceImpl* device) {
+    VRServiceImpl* service) {
   DVLOG(1) << __func__;
-  // Get an immersive_runtime device if there is one.
+  // Get an immersive runtime if there is one.
   auto* immersive_runtime = GetImmersiveRuntime();
   if (immersive_runtime) {
-    // Listen to changes for this device.
-    immersive_runtime->OnRendererDeviceAdded(device);
+    // Listen to changes for this runtime.
+    immersive_runtime->OnServiceAdded(service);
 
-    // If we don't have display info for the immersive device, get display info
-    // from a different device.
+    // If we don't have display info for the immersive runtime, get display info
+    // from a different runtime.
     if (!immersive_runtime->GetVRDisplayInfo()) {
       immersive_runtime = nullptr;
     }
   }
 
-  // Get an AR device if there is one.
+  // Get an AR runtime if there is one.
   device::mojom::XRSessionOptions options = {};
   options.environment_integration = true;
   auto* ar_runtime = GetRuntimeForOptions(&options);
   if (ar_runtime) {
-    // Listen to  changes for this device.
-    ar_runtime->OnRendererDeviceAdded(device);
+    // Listen to  changes for this runtime.
+    ar_runtime->OnServiceAdded(service);
   }
 
-  // If there is neither, use the generic non-immersive device.
+  // If there is neither, use the generic non-immersive runtime.
   if (!ar_runtime && !immersive_runtime) {
     device::mojom::XRSessionOptions options = {};
     auto* non_immersive_runtime = GetRuntimeForOptions(&options);
     if (non_immersive_runtime) {
-      // Listen to changes for this device.
-      non_immersive_runtime->OnRendererDeviceAdded(device);
+      // Listen to changes for this runtime.
+      non_immersive_runtime->OnServiceAdded(service);
     }
 
-    // If we don't have an AR or immersive device, return the generic non-
-    // immersive device's DisplayInfo if we have it.
+    // If we don't have an AR or immersive runtime, return the generic non-
+    // immersive runtime's DisplayInfo if we have it.
     return non_immersive_runtime ? non_immersive_runtime->GetVRDisplayInfo()
                                  : nullptr;
   }
 
-  // Use the immersive or AR device.
+  // Use the immersive or AR runtime.
   device::mojom::VRDisplayInfoPtr device_info =
       immersive_runtime ? immersive_runtime->GetVRDisplayInfo()
                         : ar_runtime->GetVRDisplayInfo();
@@ -258,25 +262,19 @@ device::mojom::VRDisplayInfoPtr XRRuntimeManager::GetCurrentVRDisplayInfo(
   return device_info;
 }
 
-void XRRuntimeManager::OnRendererDeviceRemoved(XRDeviceImpl* device) {
-  for (const auto& runtime : runtimes_) {
-    runtime.second->OnRendererDeviceRemoved(device);
-  }
-}
-
-bool XRRuntimeManager::IsOtherDevicePresenting(XRDeviceImpl* device) {
-  DCHECK(device);
+bool XRRuntimeManager::IsOtherClientPresenting(VRServiceImpl* service) {
+  DCHECK(service);
 
   auto* runtime = GetImmersiveRuntime();
   if (!runtime)
     return false;  // No immersive runtime to be presenting.
 
-  XRDeviceImpl* presenting_device = runtime->GetPresentingRendererDevice();
-  if (!presenting_device)
-    return false;  // No XRDeviceImpl is presenting.
+  VRServiceImpl* presenting_service = runtime->GetPresentingVRService();
+  if (!presenting_service)
+    return false;  // No VRServiceImpl is presenting.
 
-  // True if some other XRDeviceImpl is presenting.
-  return (presenting_device != device);
+  // True if some other VRServiceImpl is presenting.
+  return (presenting_service != service);
 }
 
 bool XRRuntimeManager::HasAnyRuntime() {
@@ -285,7 +283,7 @@ bool XRRuntimeManager::HasAnyRuntime() {
 
 void XRRuntimeManager::SupportsSession(
     device::mojom::XRSessionOptionsPtr options,
-    device::mojom::XRDevice::SupportsSessionCallback callback) {
+    device::mojom::VRService::SupportsSessionCallback callback) {
   auto* runtime = GetRuntimeForOptions(options.get());
 
   if (!runtime) {
@@ -293,8 +291,7 @@ void XRRuntimeManager::SupportsSession(
     return;
   }
 
-  // TODO(http://crbug.com/842025): Pass supports session on to the device
-  // runtimes.
+  // TODO(http://crbug.com/842025): Pass supports session on to the runtimes.
   std::move(callback).Run(true);
 }
 
@@ -391,9 +388,9 @@ void XRRuntimeManager::RemoveRuntime(device::mojom::XRDeviceId id) {
   auto it = runtimes_.find(id);
   DCHECK(it != runtimes_.end());
 
-  // Remove the device from runtimes_ before notifying services that it was
-  // removed, since they will query for devices in RuntimesChanged.
-  std::unique_ptr<BrowserXRRuntime> removed_device = std::move(it->second);
+  // Remove the runtime from runtimes_ before notifying services that it was
+  // removed, since they will query for runtimes in RuntimesChanged.
+  std::unique_ptr<BrowserXRRuntime> removed_runtime = std::move(it->second);
   runtimes_.erase(it);
 
   for (VRServiceImpl* service : services_)

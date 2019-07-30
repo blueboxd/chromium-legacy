@@ -7,6 +7,7 @@
 
 #include "base/task/sequence_manager/task_queue.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/common/cancelable_closure_holder.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -28,7 +29,8 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
     kNone,
     kVeryHighPriorityForCompositingAlways,
     kVeryHighPriorityForCompositingWhenFast,
-    kVeryHighPriorityForCompositingAlternating
+    kVeryHighPriorityForCompositingAlternating,
+    kVeryHighPriorityForCompositingAfterDelay
   };
 
   bool IsExperimentActive() const;
@@ -44,10 +46,16 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
     return alternating_compositor_priority_;
   }
 
+  void OnMainThreadSchedulerInitialized();
+
  private:
   MainThreadSchedulerImpl* scheduler_;  // Not owned.
 
   static Experiment GetExperimentFromFeatureList();
+
+  void DoPrioritizeCompositingAfterDelay();
+
+  void PostPrioritizeCompositingAfterDelayTask();
 
   const Experiment experiment_;
 
@@ -55,6 +63,12 @@ class PLATFORM_EXPORT CompositorPriorityExperiments {
       QueuePriority::kVeryHighPriority;
 
   bool compositing_is_fast_ = false;
+
+  QueuePriority delay_compositor_priority_ = QueuePriority::kNormalPriority;
+
+  CancelableClosureHolder do_prioritize_compositing_after_delay_callback_;
+
+  base::TimeDelta prioritize_compositing_after_delay_length_;
 };
 
 }  // namespace scheduler

@@ -65,6 +65,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
+  bool CanProcessEventsWithinSubtree() const override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

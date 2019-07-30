@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +21,8 @@
 // mobile where refresh tokens are not accessible. This test checks that refresh
 // tokens are not affected on INVALID_TOKENS Multilogin error.
 TEST(ProfileOAuth2TokenServiceDelegateTest, InvalidateTokensForMultilogin) {
-  class TestOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
+  class TestOAuth2TokenServiceObserver
+      : public ProfileOAuth2TokenServiceObserver {
    public:
     MOCK_METHOD2(OnAuthErrorChanged,
                  void(const CoreAccountId&, const GoogleServiceAuthError&));

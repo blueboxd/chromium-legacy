@@ -453,7 +453,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
       mojom::WebFeature blocked_cross_origin,
       mojom::WebFeature blocked_same_origin);
 
-  void FinishedLoading();
+  void FinishedLoading(FrameLoader::NavigationFinishState);
 
  private:
   friend class FrameNavigationDisabler;

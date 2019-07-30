@@ -298,11 +298,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // The physical offset from this PaintLayer to its ContainingLayer.
   // Does not include any scroll offset of the ContainingLayer. Also does not
   // include offsets for positioned elements.
-  const PhysicalOffset& Location() const {
+  const PhysicalOffset& LocationWithoutPositionOffset() const {
 #if DCHECK_IS_ON()
     DCHECK(!needs_position_update_);
 #endif
-    return location_;
+    return location_without_position_offset_;
   }
 
   LayoutSize ScrolledContentOffset() const;
@@ -1370,8 +1370,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* first_;
   PaintLayer* last_;
 
-  // Our (x,y) coordinates are in our containing layer's coordinate space.
-  PhysicalOffset location_;
+  // Our (x,y) coordinates are in our containing layer's coordinate space,
+  // excluding positioning offset and scroll.
+  PhysicalOffset location_without_position_offset_;
 
   // The layer's size.
   //

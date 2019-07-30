@@ -134,7 +134,7 @@ public class WebApkActivity extends WebappActivity {
     protected boolean handleBackPressed() {
         if (super.handleBackPressed()) return true;
 
-        if (getWebappInfo().isSplashProvidedByWebApk()) {
+        if (getWebappInfo().isSplashProvidedByWebApk() && isSplashShowing()) {
             // When the WebAPK provides the splash screen, the splash screen activity is stacked
             // underneath the WebAPK. The splash screen finishes itself in
             // {@link Activity#onResume()}. When finishing the WebApkActivity, there is sometimes a

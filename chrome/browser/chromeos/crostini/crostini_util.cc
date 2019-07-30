@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/crostini/crostini_app_launch_observer.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -108,11 +108,11 @@ void LaunchContainerApplication(
     bool display_scaled) {
   ChromeLauncherController* chrome_launcher_controller =
       ChromeLauncherController::instance();
-  DCHECK_NE(chrome_launcher_controller, nullptr);
-  CrostiniAppLaunchObserver* observer =
+  DCHECK(chrome_launcher_controller);
+  CrostiniAppWindowShelfController* shelf_controller =
       chrome_launcher_controller->crostini_app_window_shelf_controller();
-  DCHECK_NE(observer, nullptr);
-  observer->OnAppLaunchRequested(app_id, display_id);
+  DCHECK(shelf_controller);
+  shelf_controller->OnAppLaunchRequested(app_id, display_id);
   crostini::CrostiniManager::GetForProfile(profile)->LaunchContainerApplication(
       registration.VmName(), registration.ContainerName(),
       registration.DesktopFileId(), files, display_scaled,

@@ -858,17 +858,19 @@ TEST_F(PageSchedulerImplTest, NestedMessageLoop_DETERMINISTIC_LOADING) {
       VirtualTimePolicy::kDeterministicLoading);
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  scheduler_->OnTaskStarted(
-      nullptr, FakeTask(),
-      FakeTaskTiming(base::TimeTicks(), base::TimeTicks()));
+  FakeTask fake_task;
+  fake_task.set_enqueue_order(
+      base::sequence_manager::EnqueueOrder::FromIntForTesting(42));
+  const base::TimeTicks start = scheduler_->real_time_domain()->Now();
+  scheduler_->OnTaskStarted(nullptr, fake_task,
+                            FakeTaskTiming(start, base::TimeTicks()));
   scheduler_->OnBeginNestedRunLoop();
   EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
   scheduler_->OnExitNestedRunLoop();
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
-  FakeTaskTiming task_timing(base::TimeTicks(),
-                             scheduler_->real_time_domain()->Now());
-  scheduler_->OnTaskCompleted(nullptr, FakeTask(), &task_timing, nullptr);
+  FakeTaskTiming task_timing(start, scheduler_->real_time_domain()->Now());
+  scheduler_->OnTaskCompleted(nullptr, fake_task, &task_timing, nullptr);
 }
 
 TEST_F(PageSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
@@ -1006,9 +1008,12 @@ TEST_F(PageSchedulerImplTest,
   page_scheduler_->SetMaxVirtualTimeTaskStarvationCount(100);
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kAdvance);
 
-  scheduler_->OnTaskStarted(
-      nullptr, FakeTask(),
-      FakeTaskTiming(base::TimeTicks(), base::TimeTicks()));
+  FakeTask fake_task;
+  fake_task.set_enqueue_order(
+      base::sequence_manager::EnqueueOrder::FromIntForTesting(42));
+  const base::TimeTicks start = scheduler_->real_time_domain()->Now();
+  scheduler_->OnTaskStarted(nullptr, fake_task,
+                            FakeTaskTiming(start, base::TimeTicks()));
   scheduler_->OnBeginNestedRunLoop();
 
   int count = 0;

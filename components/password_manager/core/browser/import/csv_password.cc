@@ -17,8 +17,8 @@ namespace password_manager {
 
 using ::autofill::PasswordForm;
 
-CSVPassword::CSVPassword(ColumnMap map, base::StringPiece csv_row)
-    : map_(std::move(map)), row_(csv_row) {}
+CSVPassword::CSVPassword(const ColumnMap& map, base::StringPiece csv_row)
+    : map_(map), row_(csv_row) {}
 
 CSVPassword::~CSVPassword() = default;
 

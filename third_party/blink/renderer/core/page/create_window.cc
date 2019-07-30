@@ -254,6 +254,14 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
     }
   }
 
+  if (!opener_frame.GetDocument()->GetSecurityOrigin()->CanDisplay(url)) {
+    opener_frame.GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
+        "Not allowed to load local resource: " + url.ElidedString()));
+    return nullptr;
+  }
+
   const WebWindowFeatures& features = request.GetWindowFeatures();
   request.SetNavigationPolicy(NavigationPolicyForCreateWindow(features));
   probe::WindowOpen(opener_frame.GetDocument(), url, frame_name, features,

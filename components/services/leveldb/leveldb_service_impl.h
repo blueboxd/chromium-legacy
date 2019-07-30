@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/services/leveldb/leveldb_mojo_proxy.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -22,7 +21,8 @@ class LevelDBServiceImpl : public mojom::LevelDBService {
   // The |file_task_runner| is used to run tasks to interact with the
   // file_service. Specifically this task runner must NOT be the same as the
   // task runner this implementation runs on, or deadlock might occur.
-  LevelDBServiceImpl(scoped_refptr<base::SequencedTaskRunner> file_task_runner);
+  explicit LevelDBServiceImpl(
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
   ~LevelDBServiceImpl() override;
 
   // Overridden from LevelDBService:

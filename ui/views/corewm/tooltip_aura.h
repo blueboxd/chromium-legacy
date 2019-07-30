@@ -16,6 +16,10 @@ class RenderText;
 class Size;
 }  // namespace gfx
 
+namespace ui {
+struct AXNodeData;
+}  // namespace ui
+
 namespace views {
 
 class Widget;
@@ -36,6 +40,7 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
 
   friend class test::TooltipAuraTestApi;
   gfx::RenderText* GetRenderTextForTest();
+  void GetAccessibleNodeDataForTest(ui::AXNodeData* node_data);
 
   // Adjusts the bounds given by the arguments to fit inside the desktop
   // and returns the adjusted bounds.

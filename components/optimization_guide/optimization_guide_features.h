@@ -20,6 +20,7 @@ extern const base::Feature kOptimizationHintsExperiments;
 constexpr char kOptimizationHintsExperimentNameParam[] = "experiment_name";
 extern const base::Feature kSlowPageTriggering;
 extern const base::Feature kOptimizationHintsFetching;
+extern const base::Feature kOptimizationGuideKeyedService;
 
 // The maximum number of hosts that can be stored in the
 // |kHintsFetcherTopHostBlacklist| dictionary pref when initialized. The top
@@ -48,6 +49,10 @@ bool IsOptimizationHintsEnabled();
 // Returns true if the feature to fetch hints from the remote Optimization Guide
 // Service is enabled.
 bool IsHintsFetchingEnabled();
+
+// Returns true if the initialization of the Optimization Guide Keyed Service is
+// enabled.
+bool IsOptimizationGuideKeyedServiceEnabled();
 
 }  // namespace features
 }  // namespace optimization_guide

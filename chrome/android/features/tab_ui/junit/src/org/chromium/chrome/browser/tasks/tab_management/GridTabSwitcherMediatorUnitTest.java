@@ -182,7 +182,6 @@ public class GridTabSwitcherMediatorUnitTest {
                 mFullscreenManager, mCompositorViewHolder, null);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
-        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
     }
 
     @After
@@ -264,6 +263,7 @@ public class GridTabSwitcherMediatorUnitTest {
     @Test
     public void hidesWithAnimation() {
         initAndAssertAllProperties();
+        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
         mMediator.showOverview(true);
 
         assertThat(
@@ -282,6 +282,7 @@ public class GridTabSwitcherMediatorUnitTest {
     @Test
     public void hidesWithoutAnimation() {
         initAndAssertAllProperties();
+        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
         mMediator.showOverview(true);
 
         assertThat(
@@ -344,13 +345,29 @@ public class GridTabSwitcherMediatorUnitTest {
     }
 
     @Test
-    public void resetsAfterNewTabModelSelected() {
+    public void resetsAfterNewTabModelSelected_DialogEnabled() {
         initAndAssertAllProperties();
+        // Setup dialog reset handler. Default setup is that dialog handler is null.
+        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
 
         doReturn(true).when(mTabModelFilter).isIncognito();
         mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
         verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false));
         verify(mTabGridDialogResetHandler).hideDialog(eq(false));
+        assertThat(mModel.get(TabListContainerProperties.IS_INCOGNITO), equalTo(true));
+
+        // Switching TabModels by itself shouldn't cause visibility changes.
+        assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(false));
+    }
+
+    @Test
+    public void resetsAfterNewTabModelSelected_DialogNotEnabled() {
+        initAndAssertAllProperties();
+
+        doReturn(true).when(mTabModelFilter).isIncognito();
+        mTabModelSelectorObserverCaptor.getValue().onTabModelSelected(mTabModel, null);
+        verify(mResetHandler).resetWithTabList(eq(mTabModelFilter), eq(false));
+        verify(mTabGridDialogResetHandler, never()).hideDialog(eq(false));
         assertThat(mModel.get(TabListContainerProperties.IS_INCOGNITO), equalTo(true));
 
         // Switching TabModels by itself shouldn't cause visibility changes.

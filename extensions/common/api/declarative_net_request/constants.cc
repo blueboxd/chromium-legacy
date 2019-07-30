@@ -24,6 +24,14 @@ const char kDomainTypeKey[] = "domainType";
 const char kRuleActionTypeKey[] = "type";
 const char kRedirectUrlKey[] = "redirectUrl";
 const char kRemoveHeadersListKey[] = "removeHeadersList";
+const char kRedirectPath[] = "action.redirect";
+const char kExtensionPathPath[] = "action.redirect.extensionPath";
+const char kTransformSchemePath[] = "action.redirect.transform.scheme";
+const char kTransformPortPath[] = "action.redirect.transform.port";
+const char kTransformQueryPath[] = "action.redirect.transform.query";
+const char kTransformFragmentPath[] = "action.redirect.transform.fragment";
+const char kTransformQueryTransformPath[] =
+    "action.redirect.transform.queryTransform";
 
 }  // namespace declarative_net_request
 }  // namespace extensions

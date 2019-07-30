@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -96,7 +97,7 @@ void UserManagerUI::GetLocalizedStrings(
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   localized_strings->SetString("buildType", "chrome");
 #else
   localized_strings->SetString("buildType", "chromium");

@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_context.h"
@@ -32,12 +33,17 @@
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "mojo/public/cpp/bindings/connector.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/messaging/string_message_codec.h"
+#include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/common/messaging/transferable_message_struct_traits.h"
+#include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "url/gurl.h"
 
 using ::testing::_;
@@ -79,6 +85,17 @@ std::unique_ptr<net::test_server::HttpResponse> DefaultHandler(
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(status_code);
   return http_response;
+}
+
+// TODO(lijiawei): Move mojo_message_port_util upstream to remove duplicate
+// helper functions. (b/138150191)
+mojo::Message MojoMessageFromUtf8(base::StringPiece message_utf8) {
+  blink::TransferableMessage transfer_message;
+  transfer_message.owned_encoded_message =
+      blink::EncodeStringMessage(base::UTF8ToUTF16(message_utf8));
+  transfer_message.encoded_message = transfer_message.owned_encoded_message;
+  return blink::mojom::TransferableMessage::SerializeAsMessage(
+      &transfer_message);
 }
 
 // =============================================================================
@@ -163,6 +180,67 @@ class TitleChangeObserver : public CastWebContents::Observer {
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TitleChangeObserver);
+};
+
+class TestMessageReceiver : public mojo::MessageReceiver {
+ public:
+  TestMessageReceiver() = default;
+  ~TestMessageReceiver() override = default;
+
+  void WaitForNextIncomingMessage(
+      base::OnceCallback<void(std::string,
+                              base::Optional<mojo::ScopedMessagePipeHandle>)>
+          callback) {
+    DCHECK(message_received_callback_.is_null())
+        << "Only one waiting event is allowed.";
+    message_received_callback_ = std::move(callback);
+  }
+
+ private:
+  bool Accept(mojo::Message* message) override {
+    blink::TransferableMessage transferable_message;
+    if (!blink::mojom::TransferableMessage::DeserializeFromMessage(
+            std::move(*message), &transferable_message)) {
+      return false;
+    }
+
+    base::string16 data_utf16;
+    if (!blink::DecodeStringMessage(transferable_message.encoded_message,
+                                    &data_utf16)) {
+      return false;
+    }
+
+    std::string message_text;
+    if (!base::UTF16ToUTF8(data_utf16.data(), data_utf16.size(),
+                           &message_text)) {
+      return false;
+    }
+
+    base::Optional<mojo::ScopedMessagePipeHandle> incoming_port = base::nullopt;
+    // Only one MessagePort should be sent to here.
+    if (!transferable_message.ports.empty()) {
+      DCHECK(transferable_message.ports.size() == 1)
+          << "Only one control port can be provided";
+
+      blink::MessagePortChannel message_port_channel =
+          std::move(transferable_message.ports[0]);
+      incoming_port = base::make_optional<mojo::ScopedMessagePipeHandle>(
+          message_port_channel.ReleaseHandle());
+    }
+
+    if (message_received_callback_) {
+      std::move(message_received_callback_)
+          .Run(message_text, std::move(incoming_port));
+    }
+    return true;
+  }
+
+  base::OnceCallback<void(
+      std::string,
+      base::Optional<mojo::ScopedMessagePipeHandle> incoming_port)>
+      message_received_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMessageReceiver);
 };
 
 }  // namespace
@@ -890,6 +968,160 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest,
   // Navigate back and see if both scripts are working.
   cast_web_contents_->LoadUrl(gurl);
   title_change_observer_.RunUntilTitleEquals(kExpectedTitle2);
+}
+
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, PostMessageToMainFrame) {
+  // ===========================================================================
+  // Test: Tests that we can trigger onmessage event on a web page. This test
+  // would post a message to the test page to redirect it to |title1.html|.
+  // ===========================================================================
+  constexpr char kOriginalTitle[] = "postmessage";
+  constexpr char kPage1Path[] = "title1.html";
+  constexpr char kPage1Title[] = "title 1";
+
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kPage1Title)));
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
+
+  GURL gurl = content::GetFileUrlWithQuery(
+      GetTestDataFilePath("window_post_message.html"), "");
+
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kOriginalTitle);
+
+  cast_web_contents_->PostMessageToMainFrame(
+      gurl.GetOrigin().spec(), std::string(kPage1Path),
+      std::vector<mojo::ScopedMessagePipeHandle>());
+  title_change_observer_.RunUntilTitleEquals(kPage1Title);
+}
+
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, PostMessagePassMessagePort) {
+  // ===========================================================================
+  // Test: Send a MessagePort to the page, then perform bidirectional messaging
+  // through the port.
+  // ===========================================================================
+  constexpr char kOriginalTitle[] = "messageport";
+  constexpr char kHelloMsg[] = "hi";
+  constexpr char kPingMsg[] = "ping";
+
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
+
+  // Load test page.
+  GURL gurl = content::GetFileUrlWithQuery(
+      GetTestDataFilePath("message_port.html"), "");
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kOriginalTitle);
+
+  mojo::MessagePipe message_pipe;
+  auto platform_port = std::move(message_pipe.handle0);
+  auto page_port = std::move(message_pipe.handle1);
+
+  TestMessageReceiver message_receiver;
+  auto connector = std::make_unique<mojo::Connector>(
+      std::move(platform_port), mojo::Connector::SINGLE_THREADED_SEND,
+      base::ThreadTaskRunnerHandle::Get());
+  connector->set_incoming_receiver(&message_receiver);
+
+  // Make sure we could send a MessagePort (ScopedMessagePipeHandle) to the
+  // page.
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    auto received_message_callback = base::BindOnce(
+        [](base::OnceClosure loop_quit_closure, std::string port_msg,
+           base::Optional<mojo::ScopedMessagePipeHandle> incoming_port) {
+          EXPECT_EQ("got_port", port_msg);
+          std::move(loop_quit_closure).Run();
+        },
+        std::move(quit_closure));
+    message_receiver.WaitForNextIncomingMessage(
+        std::move(received_message_callback));
+    std::vector<mojo::ScopedMessagePipeHandle> message_ports;
+    message_ports.push_back(std::move(page_port));
+    cast_web_contents_->PostMessageToMainFrame(
+        gurl.GetOrigin().spec(), kHelloMsg, std::move(message_ports));
+    run_loop.Run();
+  }
+  // Test whether we could receive the right response from the page after we
+  // send messages through mojo::Connector which has binded to |platform_port|.
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    auto received_message_callback = base::BindOnce(
+        [](base::OnceClosure loop_quit_closure, std::string port_msg,
+           base::Optional<mojo::ScopedMessagePipeHandle> incoming_port) {
+          EXPECT_EQ("ack ping", port_msg);
+          std::move(loop_quit_closure).Run();
+        },
+        std::move(quit_closure));
+    message_receiver.WaitForNextIncomingMessage(
+        std::move(received_message_callback));
+    mojo::Message mojo_message = MojoMessageFromUtf8(kPingMsg);
+    connector->Accept(&mojo_message);
+    run_loop.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest,
+                       PostMessageMessagePortDisconnected) {
+  // ===========================================================================
+  // Test: Send a MessagePort to the page, then perform bidirectional messaging
+  // through the port. Make sure mojo counterpart pipe handle could receive the
+  // MessagePort disconnection event.
+  // ===========================================================================
+  constexpr char kOriginalTitle[] = "messageport";
+  constexpr char kHelloMsg[] = "hi";
+
+  EXPECT_CALL(mock_cast_wc_observer_,
+              UpdateTitle(base::ASCIIToUTF16(kOriginalTitle)));
+  // Load test page.
+  GURL gurl = content::GetFileUrlWithQuery(
+      GetTestDataFilePath("message_port.html"), "");
+  cast_web_contents_->LoadUrl(gurl);
+  title_change_observer_.RunUntilTitleEquals(kOriginalTitle);
+
+  mojo::MessagePipe message_pipe;
+  auto platform_port = std::move(message_pipe.handle0);
+  auto page_port = std::move(message_pipe.handle1);
+  // Bind platform side port
+  TestMessageReceiver message_receiver;
+  auto connector = std::make_unique<mojo::Connector>(
+      std::move(platform_port), mojo::Connector::SINGLE_THREADED_SEND,
+      base::ThreadTaskRunnerHandle::Get());
+  connector->set_incoming_receiver(&message_receiver);
+
+  // Make sure we could post a MessagePort (ScopedMessagePipeHandle) to
+  // the page.
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    auto received_message_callback = base::BindOnce(
+        [](base::OnceClosure loop_quit_closure, std::string port_msg,
+           base::Optional<mojo::ScopedMessagePipeHandle> incoming_port) {
+          EXPECT_EQ("got_port", port_msg);
+          std::move(loop_quit_closure).Run();
+        },
+        std::move(quit_closure));
+    message_receiver.WaitForNextIncomingMessage(
+        std::move(received_message_callback));
+    std::vector<mojo::ScopedMessagePipeHandle> message_ports;
+    message_ports.push_back(std::move(page_port));
+    cast_web_contents_->PostMessageToMainFrame(
+        gurl.GetOrigin().spec(), kHelloMsg, std::move(message_ports));
+    run_loop.Run();
+  }
+  // Navigating off-page should tear down the MessageChannel, native side
+  // should be able to receive disconnected event.
+  {
+    base::RunLoop run_loop;
+    connector->set_connection_error_handler(base::BindOnce(
+        [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
+        run_loop.QuitClosure()));
+    cast_web_contents_->LoadUrl(GURL(url::kAboutBlankURL));
+    run_loop.Run();
+  }
 }
 
 }  // namespace chromecast

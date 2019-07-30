@@ -137,12 +137,6 @@ TEST_F(CrashAnalyzerTest, StackTraceCollection) {
                   proto.deallocation().stack_trace_size() - i),
               reinterpret_cast<uintptr_t>(trace[trace_len - i]));
   }
-
-  // Allocate() and Deallocate() were called from different points in this test.
-  ASSERT_NE(proto.allocation().stack_trace(
-                proto.allocation().stack_trace_size() - (trace_len + 1)),
-            proto.deallocation().stack_trace(
-                proto.deallocation().stack_trace_size() - (trace_len + 1)));
 }
 
 TEST_F(CrashAnalyzerTest, InternalError) {

@@ -63,7 +63,6 @@ from __future__ import print_function
 
 import os
 import re
-import types
 import xml.sax.saxutils
 
 from grit import lazy_re

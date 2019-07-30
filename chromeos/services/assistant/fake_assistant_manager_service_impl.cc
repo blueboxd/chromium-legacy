@@ -13,14 +13,18 @@ FakeAssistantManagerServiceImpl::FakeAssistantManagerServiceImpl() = default;
 
 FakeAssistantManagerServiceImpl::~FakeAssistantManagerServiceImpl() = default;
 
+void FakeAssistantManagerServiceImpl::FinishStart() {
+  DCHECK(start_callback_);
+  state_ = State::RUNNING;
+  std::move(start_callback_).Run();
+}
+
 void FakeAssistantManagerServiceImpl::Start(
     const base::Optional<std::string>& access_token,
     bool enable_hotword,
     base::OnceClosure callback) {
-  state_ = State::RUNNING;
-
-  if (callback)
-    std::move(callback).Run();
+  state_ = State::STARTED;
+  start_callback_ = std::move(callback);
 }
 
 void FakeAssistantManagerServiceImpl::Stop() {

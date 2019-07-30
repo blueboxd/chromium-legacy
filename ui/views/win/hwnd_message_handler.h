@@ -245,6 +245,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // Overridden from AXFragmentRootDelegateWin.
   gfx::NativeViewAccessible GetChildOfAXFragmentRoot() override;
   gfx::NativeViewAccessible GetParentOfAXFragmentRoot() override;
+  bool IsAXFragmentRootAControlElement() override;
 
   void ApplyPanGestureEvent(int scroll_x,
                             int scroll_y,

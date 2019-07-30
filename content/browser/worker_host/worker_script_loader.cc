@@ -59,7 +59,7 @@ WorkerScriptLoader::WorkerScriptLoader(
       return;
     }
     service_worker_interceptor = ServiceWorkerRequestHandler::CreateForWorkerUI(
-        resource_request_, process_id, service_worker_handle_.get());
+        resource_request_, process_id, service_worker_handle_);
   } else {
     if (!service_worker_handle_core_) {
       // The DedicatedWorkerHost or SharedWorkerHost is already destroyed.
@@ -101,6 +101,18 @@ void WorkerScriptLoader::Abort() {
 void WorkerScriptLoader::Start() {
   DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   DCHECK(!completed_);
+
+  // The DedicatedWorkerHost or SharedWorkerHost is already destroyed.
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled() &&
+      !service_worker_handle_) {
+    Abort();
+    return;
+  }
+  if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled() &&
+      !service_worker_handle_core_) {
+    Abort();
+    return;
+  }
 
   BrowserContext* browser_context = nullptr;
   if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {

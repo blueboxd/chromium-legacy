@@ -15,7 +15,6 @@ if __name__ == '__main__':
 import unittest
 import xml.dom.minidom
 
-from grit import grd_reader
 from grit import util
 from grit.node import empty
 from grit.node import message

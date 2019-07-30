@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/compositor_priority_experiments.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/deadline_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_interference_recorder.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/idle_time_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
@@ -367,6 +368,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 
+  void OnTaskReady(const void* frame_scheduler,
+                   const base::sequence_manager::Task& task,
+                   base::sequence_manager::LazyNow* lazy_now);
+
   void OnTaskStarted(
       MainThreadTaskQueue* queue,
       const base::sequence_manager::Task& task,
@@ -396,6 +401,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // The primary use case here is batching – to allow updates to be processed
   // only once per task.
   void ExecuteAfterCurrentTask(base::OnceClosure on_completion_task);
+
+  void OnFrameSchedulerDestroyed(FrameSchedulerImpl* frame_scheduler);
 
   base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
@@ -791,6 +798,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
 
   QueueingTimeEstimator queueing_time_estimator_;
+  FrameInterferenceRecorder frame_interference_recorder_;
 
   // We have decided to improve thread safety at the cost of some boilerplate
   // (the accessors) for the following data members.

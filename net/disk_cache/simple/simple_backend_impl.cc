@@ -528,9 +528,10 @@ net::Error SimpleBackendImpl::DoomEntriesBetween(
     const Time initial_time,
     const Time end_time,
     CompletionOnceCallback callback) {
-  return index_->ExecuteWhenReady(
-      base::BindOnce(&SimpleBackendImpl::IndexReadyForDoom, AsWeakPtr(),
-                     initial_time, end_time, std::move(callback)));
+  index_->ExecuteWhenReady(base::BindOnce(&SimpleBackendImpl::IndexReadyForDoom,
+                                          AsWeakPtr(), initial_time, end_time,
+                                          std::move(callback)));
+  return net::ERR_IO_PENDING;
 }
 
 net::Error SimpleBackendImpl::DoomEntriesSince(
@@ -541,18 +542,20 @@ net::Error SimpleBackendImpl::DoomEntriesSince(
 
 int64_t SimpleBackendImpl::CalculateSizeOfAllEntries(
     Int64CompletionOnceCallback callback) {
-  return index_->ExecuteWhenReady(
+  index_->ExecuteWhenReady(
       base::BindOnce(&SimpleBackendImpl::IndexReadyForSizeCalculation,
                      AsWeakPtr(), std::move(callback)));
+  return net::ERR_IO_PENDING;
 }
 
 int64_t SimpleBackendImpl::CalculateSizeOfEntriesBetween(
     base::Time initial_time,
     base::Time end_time,
     Int64CompletionOnceCallback callback) {
-  return index_->ExecuteWhenReady(
+  index_->ExecuteWhenReady(
       base::BindOnce(&SimpleBackendImpl::IndexReadyForSizeBetweenCalculation,
                      AsWeakPtr(), initial_time, end_time, std::move(callback)));
+  return net::ERR_IO_PENDING;
 }
 
 class SimpleBackendImpl::SimpleIterator final : public Iterator {
@@ -568,7 +571,8 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
     CompletionOnceCallback open_next_entry_impl = base::BindOnce(
         &SimpleIterator::OpenNextEntryImpl, weak_factory_.GetWeakPtr(),
         next_entry, std::move(callback));
-    return backend_->index_->ExecuteWhenReady(std::move(open_next_entry_impl));
+    backend_->index_->ExecuteWhenReady(std::move(open_next_entry_impl));
+    return net::ERR_IO_PENDING;
   }
 
   void OpenNextEntryImpl(Entry** next_entry,

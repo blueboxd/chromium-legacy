@@ -374,6 +374,10 @@ test("gl_tests") {
     "//ui/gl/init",
   ]
 
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
   if (use_dawn) {
     deps += [ "//third_party/dawn/src/dawn:libdawn" ]
   }

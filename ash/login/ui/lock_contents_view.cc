@@ -726,6 +726,25 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
     LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
+void LockContentsView::OnChallengeResponseAuthEnabledForUserChanged(
+    const AccountId& user,
+    bool enabled) {
+  LockContentsView::UserState* state = FindStateForUser(user);
+  if (!state) {
+    LOG(ERROR)
+        << "Unable to find user when changing challenge-response auth state to "
+        << enabled;
+    return;
+  }
+
+  state->show_challenge_response_auth = enabled;
+
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, /*require_auth_active=*/true);
+  if (big_user && big_user->auth_user())
+    LayoutAuth(big_user, /*opt_to_hide=*/nullptr, /*animate=*/true);
+}
+
 void LockContentsView::OnFingerprintStateChanged(const AccountId& account_id,
                                                  FingerprintState state) {
   UserState* user_state = FindStateForUser(account_id);
@@ -1507,6 +1526,10 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
         to_update_auth = LoginAuthUserView::AUTH_ONLINE_SIGN_IN;
       } else if (state->disable_auth) {
         to_update_auth = LoginAuthUserView::AUTH_DISABLED;
+      } else if (state->show_challenge_response_auth) {
+        // Currently the challenge-response authentication can't be combined
+        // with the password or PIN based one.
+        to_update_auth = LoginAuthUserView::AUTH_CHALLENGE_RESPONSE;
       } else {
         to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
         // Need to check |GetKeyboardControllerForView| as the keyboard may be

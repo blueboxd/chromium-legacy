@@ -47,6 +47,12 @@ void TaskForwardingSequence::ScheduleTask(
       false /* out_of_order */);
 }
 
+void TaskForwardingSequence::ScheduleOrRetainTask(
+    base::OnceClosure task,
+    std::vector<gpu::SyncToken> sync_token_fences) {
+  ScheduleTask(std::move(task), std::move(sync_token_fences));
+}
+
 // Should not be called because tasks aren't reposted to wait for sync tokens,
 // or for yielding execution since ShouldYield() returns false.
 void TaskForwardingSequence::ContinueTask(base::OnceClosure task) {

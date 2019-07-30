@@ -96,8 +96,14 @@ const base::Feature kMojoBlobURLs{"MojoBlobURLs",
 // anchor element will be extracted and recorded. Additionally, navigation
 // predictor may preconnect/prefetch to resources/origins to make the
 // future navigations faster.
-const base::Feature kNavigationPredictor{"NavigationPredictor",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNavigationPredictor {
+  "NavigationPredictor",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enable off-the-main-thread dedicated worker script fetch.
 // (https://crbug.com/835717)

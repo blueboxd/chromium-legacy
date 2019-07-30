@@ -411,10 +411,10 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
     yearText = [@(inputYear) stringValue];
   }
 
-  controller->OnUnmaskResponse(base::SysNSStringToUTF16(_CVCItem.CVCText),
-                               base::SysNSStringToUTF16(_CVCItem.monthText),
-                               base::SysNSStringToUTF16(yearText),
-                               _storageSwitchItem.on);
+  controller->OnUnmaskPromptAccepted(
+      base::SysNSStringToUTF16(_CVCItem.CVCText),
+      base::SysNSStringToUTF16(_CVCItem.monthText),
+      base::SysNSStringToUTF16(yearText), _storageSwitchItem.on);
 }
 
 - (void)onCancel:(id)sender {

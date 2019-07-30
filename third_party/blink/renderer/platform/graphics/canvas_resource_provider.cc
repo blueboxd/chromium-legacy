@@ -910,7 +910,6 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
           color_params.GetBufferFormat(),
           context_provider_wrapper->ContextProvider()->GetCapabilities());
 
-  // TODO(ashithasantosh): Include checks for capabilities, format and size.
   const bool is_swap_chain_allowed =
       presentation_mode == kAllowSwapChainPresentationMode;
 

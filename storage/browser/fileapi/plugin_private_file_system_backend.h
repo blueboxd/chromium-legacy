@@ -133,12 +133,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
                                         int64_t* total_size,
                                         base::Time* last_modified_time);
 
+  ObfuscatedFileUtilMemoryDelegate* obfuscated_file_util_memory_delegate();
+
  private:
   friend class content::PluginPrivateFileSystemBackendTest;
-  friend class SandboxFileStreamWriter;
 
   ObfuscatedFileUtil* obfuscated_file_util();
-  ObfuscatedFileUtilMemoryDelegate* obfuscated_file_util_memory_delegate();
   const base::FilePath& base_path() const { return base_path_; }
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;

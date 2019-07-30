@@ -171,7 +171,6 @@ void TestSharedImageInterface::DestroySharedImage(
   most_recent_destroy_token_ = sync_token;
 }
 
-#if defined(OS_WIN)
 gpu::SharedImageInterface::SwapChainMailboxes
 TestSharedImageInterface::CreateSwapChain(ResourceFormat format,
                                           const gfx::Size& size,
@@ -186,7 +185,6 @@ void TestSharedImageInterface::PresentSwapChain(
     const gpu::Mailbox& mailbox) {
   NOTREACHED();
 }
-#endif  // OS_WIN
 
 gpu::SyncToken TestSharedImageInterface::GenVerifiedSyncToken() {
   most_recent_generated_token_ =

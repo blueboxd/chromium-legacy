@@ -571,6 +571,12 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   if (URL.SchemeIs(kChromeUIScheme) && URL.host() == kChromeUIOfflineHost) {
     return YES;
   }
+  // Do not show site info for NTP.
+  if (URL.spec() == kChromeUIAboutNewTabURL ||
+      URL.spec() == kChromeUINewTabURL) {
+    return NO;
+  }
+
   return navItem->GetVirtualURL().is_valid();
 }
 

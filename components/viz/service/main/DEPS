@@ -3,6 +3,7 @@
 include_rules = [
   "+components/discardable_memory/client",
   "+components/ui_devtools",
+  "+components/viz/common/features.h",
   "+components/viz/common/switches.h",
   "+components/viz/service",
   "+gpu/command_buffer",

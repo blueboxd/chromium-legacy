@@ -11,7 +11,7 @@ license.
 
 Therefore, if you want to add a trademarked resource, check it into the
 internal repository, and pick a resource based on the branding
-(`is_chrome_branded` in GN, `#if defined(GOOGLE_CHROME_BUILD)` in cpp). If
+(`is_chrome_branded` in GN, `#if BUILDFLAG(GOOGLE_CHROME_BRANDING)` in cpp). If
 possible, check an open source version into Chromium, so the feature
 continues to work as expected in the open source build.
 

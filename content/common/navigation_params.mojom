@@ -4,13 +4,63 @@
 
 module content.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "services/network/public/mojom/url_loader.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
+import "third_party/blink/public/mojom/referrer.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
+
+[Native]
+struct InitiatorCSPInfo;
+
 [Native]
 enum MixedContentContextType;
+
+[Native]
+struct NavigationDownloadPolicy;
+
+[Native]
+enum PageTransition;
+
+[Native]
+struct SourceLocation;
+
+enum NavigationType {
+  // Reload the page, validating only cache entry for the main resource.
+  RELOAD,
+
+  // Reload the page, bypassing any cache entries.
+  RELOAD_BYPASSING_CACHE,
+
+  // Reload the page using the original request URL.
+  RELOAD_ORIGINAL_REQUEST_URL,
+
+  // The navigation is the result of session restore and should honor the
+  // page's cache policy while restoring form state. This is set to true if
+  // restoring a tab/session from the previous session and the previous
+  // session did not crash. If this is not set and the page was restored then
+  // the page's cache policy is ignored and we load from the cache.
+  RESTORE,
+
+  // Like RESTORE, except that the navigation contains POST data.
+  RESTORE_WITH_POST,
+
+  // History navigation inside the same document.
+  HISTORY_SAME_DOCUMENT,
+
+  // History navigation to a different document.
+  HISTORY_DIFFERENT_DOCUMENT,
+
+  // Navigation inside the same document. It occurs when the part of the url
+  // that is modified is after the '#' part.
+  SAME_DOCUMENT,
+
+  // Navigation to another document.
+  DIFFERENT_DOCUMENT,
+};
 
 // Provided by the renderer ----------------------------------------------------
 //
@@ -60,3 +110,99 @@ struct BeginNavigationParams {
   mojo_base.mojom.DictionaryValue? devtools_initiator;
 };
 
+// Provided by the browser or the renderer -------------------------------------
+
+// Used by all navigation IPCs.
+struct CommonNavigationParams {
+  // The URL to navigate to.
+  // May be modified when the navigation is ready to commit.
+  url.mojom.Url url;
+
+  // When a frame navigates another frame, this is the origin of the document
+  // which initiated the navigation. This parameter can be null for
+  // browser-initiated navigations.
+  url.mojom.Origin? initiator_origin;
+
+  // The URL to send in the "Referer" header field. Can be empty if there is
+  // no referrer.
+  blink.mojom.Referrer referrer;
+
+  // The type of transition.
+  PageTransition transition;
+
+  // Type of navigation.
+  NavigationType navigation_type = DIFFERENT_DOCUMENT;
+
+  // Governs how downloads are handled by this navigation.
+  NavigationDownloadPolicy download_policy;
+
+  // Informs the RenderView the pending navigation should replace the current
+  // history entry when it commits.  This is used by client-side redirects to
+  // indicate that when the navigation commits, it should commit in the existing
+  // page.
+  bool should_replace_current_entry = false;
+
+  // Base URL for use in Blink's SubstituteData.
+  // Is only used with data: URLs.
+  url.mojom.Url base_url_for_data_url;
+
+  // History URL for use in Blink's SubstituteData.
+  // Is only used with data: URLs.
+  url.mojom.Url history_url_for_data_url;
+
+  // Bitmask that has whether or not to request a Preview version of the
+  // document for various preview types or let the browser decide.
+  // Defined in content/public/common/previews_state.h.
+  int32 previews_state;
+
+  // The navigationStart time exposed through the Navigation Timing API to JS.
+  // If this is for a browser-initiated navigation, this can override the
+  // navigation_start value in Blink.
+  // For renderer initiated navigations, this will be set on the
+  // renderer side and sent with FrameHost::BeginNavigation.
+  mojo_base.mojom.TimeTicks navigation_start;
+
+  // The request method: GET, POST, etc.
+  string method = "GET";
+
+  // Body of HTTP POST request.
+  network.mojom.URLRequestBody? post_data;
+
+  // Information about the Javascript source for this navigation. Used for
+  // providing information in console error messages triggered by the
+  // navigation. If the navigation was not caused by Javascript, this should
+  // not be set.
+  SourceLocation? source_location;
+
+  // Whether or not this navigation was started from a context menu.
+  bool started_from_context_menu = false;
+
+  // True if the request was user initiated.
+  bool has_user_gesture = false;
+
+  // We require a copy of the relevant CSP to perform navigation checks.
+  InitiatorCSPInfo initiator_csp_info;
+
+  // The origin trial features activated in the initiator that should be applied
+  // in the document being navigated to. The int values are blink
+  // OriginTrialFeature enum values. OriginTrialFeature enum is not visible
+  // outside of blink (and doesn't need to be) so these values are casted to int
+  // as they are passed through content across navigations.
+  array<int32> initiator_origin_trial_features;
+
+  // The value of the hrefTranslate attribute if this navigation was initiated
+  // from a link that had that attribute set.
+  string href_translate;
+
+  // Whether this is a history navigation in a newly created child frame, in
+  // which case the browser process is instructing the renderer process to load
+  // a URL from a session history item.  Defaults to false.
+  // TODO(ahemery): Move this to BeginNavigationParams once we default to
+  // IsPerNavigationMojoInterface().
+  bool is_history_navigation_in_new_child_frame = false;
+
+  // The time the input event leading to the navigation occurred. This will
+  // not always be set; it depends on the creator of the CommonNavigationParams
+  // setting it.
+  mojo_base.mojom.TimeTicks input_start;
+};

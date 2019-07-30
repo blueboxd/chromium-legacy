@@ -122,7 +122,6 @@ void ManagePasswordsForPage(Browser* browser);
 void SendTabToSelfFromPageAction(Browser* browser);
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
-void ShowFindBar(Browser* browser);
 void Print(Browser* browser);
 bool CanPrint(Browser* browser);
 #if BUILDFLAG(ENABLE_PRINTING)

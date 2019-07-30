@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/discover_window_observer.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
@@ -31,6 +30,7 @@ class AppWindowLauncherController;
 class BrowserShortcutLauncherItemController;
 class BrowserStatusMonitor;
 class ChromeLauncherControllerUserSwitchObserver;
+class CrostiniAppWindowShelfController;
 class GURL;
 class Profile;
 class LauncherControllerHelper;

@@ -75,7 +75,6 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
   result.ports.AppendRange(message.ports.begin(), message.ports.end());
   result.message->GetStreamChannels().AppendRange(
       message.stream_channels.begin(), message.stream_channels.end());
-  result.has_user_gesture = message.has_user_gesture;
   if (message.user_activation) {
     result.user_activation = mojom::blink::UserActivationSnapshot::New(
         message.user_activation->has_been_active,
@@ -144,7 +143,6 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
   result.ports.assign(message.ports.begin(), message.ports.end());
   auto& stream_channels = message.message->GetStreamChannels();
   result.stream_channels.assign(stream_channels.begin(), stream_channels.end());
-  result.has_user_gesture = message.has_user_gesture;
   if (message.user_activation) {
     result.user_activation = mojom::UserActivationSnapshot::New(
         message.user_activation->has_been_active,

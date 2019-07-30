@@ -27,6 +27,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   FakeAssistantManagerServiceImpl();
   ~FakeAssistantManagerServiceImpl() override;
 
+  void FinishStart();
+
   // assistant::AssistantManagerService overrides
   void Start(const base::Optional<std::string>& access_token,
              bool enable_hotword,
@@ -63,6 +65,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
 
  private:
   State state_ = State::STOPPED;
+  base::OnceClosure start_callback_;
   FakeAssistantSettingsManagerImpl assistant_settings_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantManagerServiceImpl);

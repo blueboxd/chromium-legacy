@@ -36,7 +36,8 @@ void CrosNetworkConfigTestHelper::SetupCrosNetworkConfig() {
       network_state_helper_.network_state_handler());
   cros_network_config_impl_ = std::make_unique<CrosNetworkConfig>(
       network_state_helper_.network_state_handler(),
-      network_device_handler_.get());
+      network_device_handler_.get(),
+      /*network_configuration_handler=*/nullptr);
 }
 
 void CrosNetworkConfigTestHelper::SetupServiceInterface() {

@@ -29,6 +29,7 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/leveldb/fake_leveldb_factory.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -224,10 +225,12 @@ TEST_F(IndexedDBFactoryTest, BasicFactoryCreationAndTearDown) {
   std::tie(origin_state1_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin1, context()->data_path());
   EXPECT_TRUE(origin_state1_handle.IsHeld()) << s.ToString();
+  EXPECT_TRUE(s.ok()) << s.ToString();
 
   std::tie(origin_state2_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin2, context()->data_path());
   EXPECT_TRUE(origin_state2_handle.IsHeld()) << s.ToString();
+  EXPECT_TRUE(s.ok()) << s.ToString();
 
   std::vector<StorageUsageInfo> origin_info = context()->GetAllOriginsInfo();
   EXPECT_EQ(2ul, origin_info.size());

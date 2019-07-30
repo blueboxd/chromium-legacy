@@ -65,6 +65,8 @@ struct StructTraits<media_session::mojom::MediaImageBitmapDataView, SkBitmap> {
   static const base::span<const uint8_t> pixel_data(const SkBitmap& r);
   static int width(const SkBitmap& r) { return r.width(); }
   static int height(const SkBitmap& r) { return r.height(); }
+  static media_session::mojom::MediaImageBitmapColorType color_type(
+      const SkBitmap& r);
 
   static bool Read(media_session::mojom::MediaImageBitmapDataView data,
                    SkBitmap* out);

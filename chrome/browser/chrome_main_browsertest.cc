@@ -33,9 +33,8 @@ class ChromeMainTest : public InProcessBrowserTest {
 
 // Make sure that the second invocation creates a new window.
 IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunch) {
-  ui_test_utils::BrowserAddedObserver observer;
   Relaunch(GetCommandLineForRelaunch());
-  observer.WaitForSingleNewBrowser();
+  ui_test_utils::WaitForBrowserToOpen();
   ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 }
 
@@ -75,9 +74,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, MAYBE_SecondLaunchWithIncognitoUrl) {
   Relaunch(new_command_line);
 
   // There should be one normal and one incognito window now.
-  ui_test_utils::BrowserAddedObserver observer;
   Relaunch(new_command_line);
-  observer.WaitForSingleNewBrowser();
+  ui_test_utils::WaitForBrowserToOpen();
   ASSERT_EQ(2u, chrome::GetTotalBrowserCount());
   ASSERT_EQ(1u, chrome::GetTabbedBrowserCount(browser()->profile()));
 }

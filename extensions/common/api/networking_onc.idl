@@ -453,8 +453,6 @@ namespace networking.onc {
     // Online payment portal a user can use to sign-up for or modify a mobile
     // data plan.
     PaymentPortal? PaymentPortal;
-    // The revision of the Preferred Roaming List loaded in the modem.
-    long? PRLVersion;
     // The roaming state of the cellular modem on the current network.
     DOMString? RoamingState;
     // True when a cellular network scan is in progress.
@@ -499,8 +497,6 @@ namespace networking.onc {
     DOMString? NetworkTechnology;
     // See $(ref:CellularProperties.PaymentPortal).
     PaymentPortal? PaymentPortal;
-    // See $(ref:CellularProperties.PRLVersion).
-    long? PRLVersion;
     // See $(ref:CellularProperties.RoamingState).
     DOMString? RoamingState;
     // See $(ref:CellularProperties.Scanning).

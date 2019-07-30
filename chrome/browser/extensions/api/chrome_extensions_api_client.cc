@@ -103,7 +103,7 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
 
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
-  if (performance_manager::PerformanceManager::GetInstance()) {
+  if (performance_manager::PerformanceManager::IsAvailable()) {
     performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
         web_contents);
   }

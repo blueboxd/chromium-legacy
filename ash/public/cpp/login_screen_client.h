@@ -55,6 +55,13 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
   // the other auth methods above.
   virtual void AuthenticateUserWithEasyUnlock(const AccountId& account_id) = 0;
 
+  // Try to authenticate |account_id| using the challenge-response protocol
+  // against a security token.
+  // |account_id|: The account id of the user we are authenticating.
+  virtual void AuthenticateUserWithChallengeResponse(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> callback) = 0;
+
   // Validates parent access code for the user identified by |account_id|. When
   // |account_id| is empty it tries to validate the access code for any child
   // that is signed in the device. Returns validation result.

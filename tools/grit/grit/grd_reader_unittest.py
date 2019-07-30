@@ -18,7 +18,6 @@ import StringIO
 from grit import exception
 from grit import grd_reader
 from grit import util
-from grit.node import base
 from grit.node import empty
 from grit.node import message
 

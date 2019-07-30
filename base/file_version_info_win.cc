@@ -119,28 +119,12 @@ base::string16 FileVersionInfoWin::product_short_name() {
   return GetStringValue(STRING16_LITERAL("ProductShortName"));
 }
 
-base::string16 FileVersionInfoWin::comments() {
-  return GetStringValue(STRING16_LITERAL("Comments"));
-}
-
-base::string16 FileVersionInfoWin::legal_copyright() {
-  return GetStringValue(STRING16_LITERAL("LegalCopyright"));
-}
-
 base::string16 FileVersionInfoWin::product_version() {
   return GetStringValue(STRING16_LITERAL("ProductVersion"));
 }
 
 base::string16 FileVersionInfoWin::file_description() {
   return GetStringValue(STRING16_LITERAL("FileDescription"));
-}
-
-base::string16 FileVersionInfoWin::legal_trademarks() {
-  return GetStringValue(STRING16_LITERAL("LegalTrademarks"));
-}
-
-base::string16 FileVersionInfoWin::private_build() {
-  return GetStringValue(STRING16_LITERAL("PrivateBuild"));
 }
 
 base::string16 FileVersionInfoWin::file_version() {
@@ -153,15 +137,6 @@ base::string16 FileVersionInfoWin::original_filename() {
 
 base::string16 FileVersionInfoWin::special_build() {
   return GetStringValue(STRING16_LITERAL("SpecialBuild"));
-}
-
-base::string16 FileVersionInfoWin::last_change() {
-  return GetStringValue(STRING16_LITERAL("LastChange"));
-}
-
-bool FileVersionInfoWin::is_official_build() {
-  return GetStringValue(STRING16_LITERAL("Official Build")) ==
-         STRING16_LITERAL("1");
 }
 
 bool FileVersionInfoWin::GetValue(const base::char16* name,

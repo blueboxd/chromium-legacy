@@ -374,8 +374,9 @@ InternalPageInfoBubbleView::InternalPageInfoBubbleView(
     text = IDS_PAGE_INFO_VIEW_SOURCE_PAGE;
   } else if (url.SchemeIs(url::kFileScheme)) {
     text = IDS_PAGE_INFO_FILE_PAGE;
-  } else if (!url.SchemeIs(content::kChromeUIScheme) &&
-             !url.SchemeIs(content::kChromeDevToolsScheme)) {
+  } else if (url.SchemeIs(content::kChromeDevToolsScheme)) {
+    text = IDS_PAGE_INFO_DEVTOOLS_PAGE;
+  } else if (!url.SchemeIs(content::kChromeUIScheme)) {
     NOTREACHED();
   }
 

@@ -652,6 +652,12 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
           this, base::ASCIIToUTF16("Enroll with external binary"))
           .release();
 
+  // TODO(crbug.com/983103): Replace with the real UI.
+  challenge_response_auth_button_ =
+      views::MdTextButton::Create(this,
+                                  base::ASCIIToUTF16("Unlock with smart card"))
+          .release();
+
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
   // Build layout.
@@ -680,6 +686,9 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   auto wrapped_external_binary_enrollment_view =
       login_views_utils::WrapViewForPreferredSize(
           base::WrapUnique(external_binary_enrollment_button_));
+  auto wrapped_challenge_response_view =
+      login_views_utils::WrapViewForPreferredSize(
+          base::WrapUnique(challenge_response_auth_button_));
   auto wrapped_padding_below_password_view =
       login_views_utils::WrapViewForPreferredSize(
           std::move(padding_below_password_view));
@@ -698,6 +707,8 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
       AddChildView(std::move(wrapped_external_binary_view));
   views::View* wrapped_external_binary_enrollment_view_ptr =
       AddChildView(std::move(wrapped_external_binary_enrollment_view));
+  views::View* wrapped_challenge_response_view_ptr =
+      AddChildView(std::move(wrapped_challenge_response_view));
   views::View* wrapped_user_view_ptr =
       AddChildView(std::move(wrapped_user_view));
   views::View* wrapped_padding_below_password_view_ptr =
@@ -731,6 +742,7 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   add_view(wrapped_fingerprint_view_ptr);
   add_view(wrapped_external_binary_view_ptr);
   add_view(wrapped_external_binary_enrollment_view_ptr);
+  add_view(wrapped_challenge_response_view_ptr);
   add_padding(kDistanceFromPinKeyboardToBigUserViewBottomDp);
 
   // Update authentication UI.
@@ -752,6 +764,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   bool force_online_sign_in = HasAuthMethod(AUTH_ONLINE_SIGN_IN);
   bool has_fingerprint = HasAuthMethod(AUTH_FINGERPRINT);
   bool has_external_binary = HasAuthMethod(AUTH_EXTERNAL_BINARY);
+  bool has_challenge_response = HasAuthMethod(AUTH_CHALLENGE_RESPONSE);
   bool auth_disabled = HasAuthMethod(AUTH_DISABLED);
   bool hide_auth = auth_disabled || force_online_sign_in;
 
@@ -778,6 +791,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
   fingerprint_view_->SetVisible(has_fingerprint);
   external_binary_auth_button_->SetVisible(has_external_binary);
   external_binary_enrollment_button_->SetVisible(has_external_binary);
+  challenge_response_auth_button_->SetVisible(has_challenge_response);
 
   if (has_external_binary) {
     power_manager_client_observer_.Add(chromeos::PowerManagerClient::Get());
@@ -994,7 +1008,9 @@ void LoginAuthUserView::RequestFocus() {
 void LoginAuthUserView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
   DCHECK(sender == online_sign_in_message_ ||
-         sender == external_binary_auth_button_);
+         sender == external_binary_auth_button_ ||
+         sender == external_binary_enrollment_button_ ||
+         sender == challenge_response_auth_button_);
   if (sender == online_sign_in_message_) {
     OnOnlineSignInMessageTap();
   } else if (sender == external_binary_auth_button_) {
@@ -1006,6 +1022,8 @@ void LoginAuthUserView::ButtonPressed(views::Button* sender,
     Shell::Get()->login_screen_controller()->EnrollUserWithExternalBinary(
         base::BindOnce(&LoginAuthUserView::OnEnrollmentComplete,
                        weak_factory_.GetWeakPtr()));
+  } else if (sender == challenge_response_auth_button_) {
+    AttemptAuthenticateWithChallengeResponse();
   }
 }
 
@@ -1043,6 +1061,7 @@ void LoginAuthUserView::OnAuthComplete(base::Optional<bool> auth_success) {
     password_view_->SetReadOnly(false);
     external_binary_auth_button_->SetEnabled(true);
     external_binary_enrollment_button_->SetEnabled(true);
+    challenge_response_auth_button_->SetEnabled(true);
   }
 
   on_auth_.Run(auth_success.value());
@@ -1096,6 +1115,16 @@ void LoginAuthUserView::AttemptAuthenticateWithExternalBinary() {
       current_user().basic_user_info.account_id,
       base::BindOnce(&LoginAuthUserView::OnAuthComplete,
                      weak_factory_.GetWeakPtr()));
+}
+
+void LoginAuthUserView::AttemptAuthenticateWithChallengeResponse() {
+  challenge_response_auth_button_->SetEnabled(false);
+  Shell::Get()
+      ->login_screen_controller()
+      ->AuthenticateUserWithChallengeResponse(
+          current_user().basic_user_info.account_id,
+          base::BindOnce(&LoginAuthUserView::OnAuthComplete,
+                         weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace ash

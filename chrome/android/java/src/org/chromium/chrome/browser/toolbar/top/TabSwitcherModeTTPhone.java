@@ -387,7 +387,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
                             .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
                                     "tab_grid_layout_android_new_tab")
                             .equals("NewTabVariation")
-                || FeatureUtilities.isBottomToolbarEnabled()) {
+                || FeatureUtilities.isBottomToolbarEnabled() || mIncognitoToggleTabLayout == null) {
             return;
         }
         boolean hasIncognitoTabs = hasIncognitoTabs();

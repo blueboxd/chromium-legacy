@@ -17,6 +17,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/app_banner_manager.h"
@@ -74,7 +75,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/native_theme.h"
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(OS_CHROMEOS)
 #include "base/feature_list.h"
 #endif
 
@@ -157,7 +158,7 @@ void ZoomMenuModel::Build() {
 ////////////////////////////////////////////////////////////////////////////////
 // HelpMenuModel
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 const base::Feature kIncludeBetaForumMenuItem{
     "IncludeBetaForumMenuItem", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -200,7 +201,7 @@ class AppMenuModel::HelpMenuModel : public ui::SimpleMenuModel {
   DISALLOW_COPY_AND_ASSIGN(HelpMenuModel);
 };
 
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 ////////////////////////////////////////////////////////////////////////////////
 // ToolsMenuModel
@@ -588,7 +589,7 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.HelpPage", delta);
       LogMenuAction(MENU_ACTION_HELP_PAGE_VIA_MENU);
       break;
-  #if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     case IDC_SHOW_BETA_FORUM:
       if (!uma_action_recorded_)
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.BetaForum", delta);
@@ -817,7 +818,7 @@ void AppMenuModel::Build() {
 // The help submenu is only displayed on official Chrome builds. As the
 // 'About' item has been moved to this submenu, it's reinstated here for
 // Chromium builds.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   help_menu_model_.reset(new HelpMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_HELP_MENU, IDS_HELP_MENU,
                          help_menu_model_.get());

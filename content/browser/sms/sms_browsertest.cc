@@ -37,7 +37,7 @@ class MockSmsDialog : public SmsDialog {
   MOCK_METHOD3(Open,
                void(RenderFrameHost*, base::OnceClosure, base::OnceClosure));
   MOCK_METHOD0(Close, void());
-  MOCK_METHOD0(EnableContinueButton, void());
+  MOCK_METHOD0(SmsReceived, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSmsDialog);
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
         on_continue_callback = std::move(on_continue);
       }));
 
-  EXPECT_CALL(*dialog, EnableContinueButton())
+  EXPECT_CALL(*dialog, SmsReceived())
       .WillOnce(Invoke([&on_continue_callback]() {
         std::move(on_continue_callback).Run();
       }));
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
         on_continue_callback = std::move(on_continue);
       }));
 
-  EXPECT_CALL(*dialog, EnableContinueButton())
+  EXPECT_CALL(*dialog, SmsReceived())
       .WillOnce(Invoke([&on_continue_callback]() {
         std::move(on_continue_callback).Run();
       }));

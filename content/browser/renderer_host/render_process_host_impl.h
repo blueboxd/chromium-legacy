@@ -99,7 +99,6 @@ class PushMessagingManager;
 class RenderFrameMessageFilter;
 class RenderProcessHostFactory;
 class RenderWidgetHelper;
-class ResourceMessageFilter;
 class SiteInstance;
 class SiteInstanceImpl;
 class StoragePartition;
@@ -851,7 +850,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool channel_connected_;
   bool sent_render_process_ready_;
 
-  scoped_refptr<ResourceMessageFilter> resource_message_filter_;
   std::unique_ptr<FileSystemManagerImpl, BrowserThread::DeleteOnIOThread>
       file_system_manager_impl_;
   std::unique_ptr<viz::GpuClient, BrowserThread::DeleteOnIOThread> gpu_client_;

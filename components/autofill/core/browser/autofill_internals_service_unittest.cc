@@ -17,7 +17,7 @@ TEST(AutofillInternalsService, Scope) {
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
   EXPECT_EQ(R"({"attributes":{"class":"log-entry","scope":"Context"},)"
-            R"("type":"node","value":"div"})",
+            R"("type":"element","value":"div"})",
             json);
 }
 
@@ -28,7 +28,7 @@ TEST(AutofillInternalsService, Message) {
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
   EXPECT_EQ(R"({"attributes":{"class":"log-message","message":"ParsedForms"},)"
             R"("children":[{"type":"text","value":"Parsed forms:"}],)"
-            R"("type":"node","value":"div"})",
+            R"("type":"element","value":"div"})",
             json);
 }
 

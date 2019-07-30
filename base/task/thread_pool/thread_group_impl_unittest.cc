@@ -303,14 +303,16 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
       kMaxTasks,
       BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
 
-  auto task_source = base::MakeRefCounted<test::MockJobTaskSource>(
-      FROM_HERE,
-      BindLambdaForTesting([&threads_running_barrier, &threads_continue]() {
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&threads_running_barrier, &threads_continue](
+                               experimental::JobDelegate* delegate) {
         threads_running_barrier.Run();
         test::WaitWithoutBlockingObserver(&threads_continue);
       }),
-      TaskPriority::USER_VISIBLE, /* num_tasks_to_run */ kMaxTasks,
-      /* max_concurrency */ kMaxTasks);
+      /* num_tasks_to_run */ kMaxTasks);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::USER_VISIBLE);
+
   auto registered_task_source = task_tracker_.WillQueueTaskSource(task_source);
   ASSERT_TRUE(registered_task_source);
   static_cast<ThreadGroup*>(thread_group_.get())

@@ -165,7 +165,11 @@ class AutofillDownloadManagerWithCustomPayloadSize
                                                Observer* observer,
                                                const std::string& api_key,
                                                size_t length)
-      : AutofillDownloadManager(driver, observer, api_key), length_(length) {}
+      : AutofillDownloadManager(driver,
+                                observer,
+                                api_key,
+                                /*log_manager=*/nullptr),
+        length_(length) {}
 
  protected:
   size_t GetPayloadLength(base::StringPiece payload) const override {
@@ -345,7 +349,8 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   form_structures.push_back(std::make_unique<FormStructure>(form));
 
   // Make download manager.
-  AutofillDownloadManager download_manager(&driver_, this, "dummykey");
+  AutofillDownloadManager download_manager(&driver_, this, "dummykey",
+                                           /*log_manager=*/nullptr);
 
   // Request with id 0.
   base::HistogramTester histogram;
@@ -542,7 +547,8 @@ TEST_F(AutofillDownloadManagerTest, QueryAPITest) {
   std::vector<std::unique_ptr<FormStructure>> form_structures;
   form_structures.push_back(std::make_unique<FormStructure>(form));
 
-  AutofillDownloadManager download_manager(&driver_, this, "dummykey");
+  AutofillDownloadManager download_manager(&driver_, this, "dummykey",
+                                           /*log_manager=*/nullptr);
 
   // Start the query request and look if it is successful. No response was
   // received yet.
@@ -755,7 +761,8 @@ TEST_F(AutofillDownloadManagerTest, UploadToAPITest) {
   form_structure.set_submission_source(SubmissionSource::FORM_SUBMISSION);
 
   std::unique_ptr<PrefService> pref_service = test::PrefServiceForTesting();
-  AutofillDownloadManager download_manager(&driver_, this, "dummykey");
+  AutofillDownloadManager download_manager(&driver_, this, "dummykey",
+                                           /*log_manager=*/nullptr);
   EXPECT_TRUE(download_manager.StartUploadRequest(form_structure, true,
                                                   ServerFieldTypeSet(), "",
                                                   true, pref_service.get()));

@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/data_url_loader_factory.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
@@ -155,7 +154,7 @@ void SignedExchangeCertFetcher::Start() {
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory_), std::move(throttles_),
       0 /* routing_id */,
-      ResourceDispatcherHostImpl::MakeRequestID() /* request_id */,
+      signed_exchange_utils::MakeRequestID() /* request_id */,
       network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
       kCertFetcherTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
 }

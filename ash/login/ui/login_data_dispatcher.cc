@@ -19,6 +19,10 @@ void LoginDataDispatcher::Observer::OnPinEnabledForUserChanged(
     const AccountId& user,
     bool enabled) {}
 
+void LoginDataDispatcher::Observer::
+    OnChallengeResponseAuthEnabledForUserChanged(const AccountId& user,
+                                                 bool enabled) {}
+
 void LoginDataDispatcher::Observer::OnFingerprintStateChanged(
     const AccountId& account_id,
     FingerprintState state) {}
@@ -114,6 +118,13 @@ void LoginDataDispatcher::SetPinEnabledForUser(const AccountId& user,
   // LockScreen is destroyed in the case of authentication success.
   for (auto& observer : observers_)
     observer.OnPinEnabledForUserChanged(user, enabled);
+}
+
+void LoginDataDispatcher::SetChallengeResponseAuthEnabledForUser(
+    const AccountId& user,
+    bool enabled) {
+  for (auto& observer : observers_)
+    observer.OnChallengeResponseAuthEnabledForUserChanged(user, enabled);
 }
 
 void LoginDataDispatcher::SetFingerprintState(const AccountId& account_id,

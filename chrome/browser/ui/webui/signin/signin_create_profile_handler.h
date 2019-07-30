@@ -12,9 +12,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/common/buildflags.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
@@ -25,14 +24,35 @@ class ListValue;
 
 // Handler for the 'create profile' page.
 class SigninCreateProfileHandler : public content::WebUIMessageHandler,
-                                   public content::NotificationObserver {
+                                   public BrowserListObserver {
  public:
   SigninCreateProfileHandler();
   ~SigninCreateProfileHandler() override;
 
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
+  // WebUIMessageHandler:
+  void RegisterMessages() override;
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override;
+
  protected:
+  // These methods are virtual for testing.
+  // Opens a new window for |profile|.
+  virtual void OpenNewWindowForProfile(Profile* profile,
+                                       Profile::CreateStatus status);
+
+  // Opens a new signin dialog for |profile|.
+  virtual void OpenForceSigninDialogForProfile(Profile* profile);
+
+  // Asynchronously creates and initializes a new profile.
+  virtual void DoCreateProfile(const base::string16& name,
+                               const std::string& icon_url,
+                               bool create_shortcut);
+
+ private:
+  friend class TestSigninCreateProfileHandler;
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
                            ReturnDefaultProfileIcons);
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
@@ -41,15 +61,6 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                            CreateProfile);
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
                            CreateProfileWithForceSignin);
-
-  // WebUIMessageHandler implementation.
-  void RegisterMessages() override;
-
-  // content::NotificationObserver implementation:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // Represents the final profile creation status. It is used to map
   // the status to the javascript method to be called.
   enum ProfileCreationStatus {
@@ -92,13 +103,6 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
   void CreateShortcutAndShowSuccess(bool create_shortcut,
                                     Profile* profile);
 
-  // Opens a new window for |profile|.
-  virtual void OpenNewWindowForProfile(Profile* profile,
-                                       Profile::CreateStatus status);
-
-  // Opens a new signin dialog for |profile|.
-  virtual void OpenForceSigninDialogForProfile(Profile* profile);
-
   // This callback is run after a new browser (but not the window) has been
   // created for the new profile.
   void OnBrowserReadyCallback(Profile* profile, Profile::CreateStatus status);
@@ -123,18 +127,10 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
 
   // Indicates the type of the in progress profile creation operation.
   // The value is only relevant while we are creating/importing a profile.
-  ProfileCreationOperationType profile_creation_type_;
-
-  // Asynchronously creates and initializes a new profile.
-  virtual void DoCreateProfile(const base::string16& name,
-                               const std::string& icon_url,
-                               bool create_shortcut);
-
-  content::NotificationRegistrar registrar_;
+  ProfileCreationOperationType profile_creation_type_ = NO_CREATION_IN_PROGRESS;
 
   base::WeakPtrFactory<SigninCreateProfileHandler> weak_ptr_factory_{this};
 
- private:
   DISALLOW_COPY_AND_ASSIGN(SigninCreateProfileHandler);
 };
 

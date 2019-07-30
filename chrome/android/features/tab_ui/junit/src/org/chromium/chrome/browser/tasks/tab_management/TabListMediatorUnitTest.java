@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.ChromeFeatureList.TAB_GROUPS_ANDROID;
 import static org.chromium.chrome.browser.ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -114,6 +115,10 @@ public class TabListMediatorUnitTest {
     TabListMediator.CreateGroupButtonProvider mCreateGroupButtonProvider;
     @Mock
     TabListMediator.GridCardOnClickListenerProvider mGridCardOnClickListenerProvider;
+    @Mock
+    Drawable mFaviconDrawable;
+    @Mock
+    Bitmap mFaviconBitmap;
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
     @Captor
@@ -177,6 +182,9 @@ public class TabListMediatorUnitTest {
         doNothing()
                 .when(mTabListFaviconProvider)
                 .getFaviconForUrlAsync(anyString(), anyBoolean(), mCallbackCaptor.capture());
+        doReturn(mFaviconDrawable)
+                .when(mTabListFaviconProvider)
+                .getFaviconForUrlSync(anyString(), anyBoolean(), any(Bitmap.class));
         doReturn(mTab1).when(mTabModelSelector).getTabById(TAB1_ID);
         doReturn(mTab2).when(mTabModelSelector).getTabById(TAB2_ID);
         doReturn(tabs1).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
@@ -217,12 +225,41 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
-    public void updatesFavicon() {
+    public void updatesFavicon_SingleTab_GTS() {
         initAndAssertAllProperties();
+        mMediator.setActionOnAllRelatedTabsForTest(true);
+
+        mModel.get(0).set(TabProperties.FAVICON, null);
+        assertNull(mModel.get(0).get(TabProperties.FAVICON));
+
+        mTabObserverCaptor.getValue().onFaviconUpdated(mTab1, mFaviconBitmap);
 
         assertNotNull(mModel.get(0).get(TabProperties.FAVICON));
+    }
 
-        mTabObserverCaptor.getValue().onFaviconUpdated(mTab1, null);
+    @Test
+    public void updatesFavicon_SingleTab_NonGTS() {
+        initAndAssertAllProperties();
+
+        mModel.get(0).set(TabProperties.FAVICON, null);
+        assertNull(mModel.get(0).get(TabProperties.FAVICON));
+
+        mTabObserverCaptor.getValue().onFaviconUpdated(mTab1, mFaviconBitmap);
+
+        assertNotNull(mModel.get(0).get(TabProperties.FAVICON));
+    }
+
+    @Test
+    public void updatesFavicon_TabGroup_GTS() {
+        initAndAssertAllProperties();
+        mMediator.setActionOnAllRelatedTabsForTest(true);
+
+        assertNotNull(mModel.get(0).get(TabProperties.FAVICON));
+        // Assert that tab1 is in a group.
+        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        doReturn(Arrays.asList(mTab1, newTab)).when(mTabModelFilter).getRelatedTabList(eq(TAB1_ID));
+
+        mTabObserverCaptor.getValue().onFaviconUpdated(mTab1, mFaviconBitmap);
 
         assertNull(mModel.get(0).get(TabProperties.FAVICON));
     }
@@ -573,12 +610,15 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.get(1).get(TabProperties.TITLE), equalTo(TAB2_TITLE));
         assertThat(mModel.indexFromId(TAB1_ID), equalTo(POSITION1));
         assertThat(mModel.indexFromId(TAB2_ID), equalTo(POSITION2));
+        assertNotNull(mModel.get(0).get(TabProperties.FAVICON));
+        assertNotNull(mModel.get(1).get(TabProperties.FAVICON));
 
         mTabGroupModelFilterObserverCaptor.getValue().didMergeTabToGroup(mTab1, TAB2_ID);
 
         assertThat(mModel.size(), equalTo(1));
         assertThat(mModel.get(0).get(TabProperties.TAB_ID), equalTo(TAB1_ID));
         assertThat(mModel.get(0).get(TabProperties.TITLE), equalTo(TAB1_TITLE));
+        assertNull(mModel.get(0).get(TabProperties.FAVICON));
     }
 
     @Test

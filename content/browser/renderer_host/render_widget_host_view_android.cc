@@ -2375,13 +2375,19 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
 
 void RenderWidgetHostViewAndroid::OnCursorVisibilityChanged(bool visible) {
   DCHECK(observing_root_window_);
-  if (host())
+  // The fallback_cursor_mode check should really happen higher up in the
+  // stack. We do it here because the call comes from Java ui/touchless which
+  // can't access the value of the blink Feature.
+  if (host() && fallback_cursor_mode_enabled_)
     host()->OnCursorVisibilityStateChanged(visible);
 }
 
 void RenderWidgetHostViewAndroid::OnFallbackCursorModeToggled(bool is_on) {
   DCHECK(observing_root_window_);
-  if (host())
+  // The fallback_cursor_mode check should really happen higher up in the
+  // stack. We do it here because the call comes from Java ui/touchless which
+  // can't access the value of the blink Feature.
+  if (host() && fallback_cursor_mode_enabled_)
     host()->OnFallbackCursorModeToggled(is_on);
 }
 

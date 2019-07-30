@@ -148,7 +148,12 @@ template("chrome_public_common_apk_or_module_tmpl") {
     }
     target_sdk_version = android_sdk_version
 
-    resource_blacklist_regex = "[/-]xxxhdpi[/-]"
+    # Match drawables, but not mipmaps.
+    resource_blacklist_regex = "drawable[^/]*-xxxhdpi"
+    if (min_sdk_version >= 21) {
+      # Resources used by AndroidManifest.xml only for pre-21.
+      resource_blacklist_regex += "|app_single_page_icon"
+    }
 
     # Exception rationale in https://crbug.com/691733.
     resource_blacklist_exceptions = [
@@ -156,6 +161,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
       "*.9.*",  # Most nine-patches contain shadows.
       "*ic_file_download_white*",  # Bottom edge seems misaligned.
       "*ic_lock.*",  # Bottom edge seems misaligned.
+      "*ic_group_*",  # Appear only in xxxhdpi.
     ]
 
     if (!_is_monochrome) {

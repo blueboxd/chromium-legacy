@@ -199,10 +199,10 @@ EBreakBetween NGBoxFragmentBuilder::JoinedBreakBetweenValue(
   return JoinFragmentainerBreakValues(previous_break_after_, break_before);
 }
 
-NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
+void NGBoxFragmentBuilder::PropagateBreak(
     const NGLayoutResult& child_layout_result) {
   if (LIKELY(!has_block_fragmentation_))
-    return *this;
+    return;
   if (!did_break_) {
     const auto* token = child_layout_result.PhysicalFragment().BreakToken();
     did_break_ = token && !token->IsFinished();
@@ -211,7 +211,6 @@ NGBoxFragmentBuilder& NGBoxFragmentBuilder::PropagateBreak(
     SetHasForcedBreak();
   else
     PropagateSpaceShortage(child_layout_result.MinimalSpaceShortage());
-  return *this;
 }
 
 scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(

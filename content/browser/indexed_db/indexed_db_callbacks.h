@@ -38,7 +38,6 @@ class IndexedDBConnection;
 class IndexedDBCursor;
 class IndexedDBDatabase;
 struct IndexedDBDataLossInfo;
-struct IndexedDBReturnValue;
 struct IndexedDBValue;
 
 class CONTENT_EXPORT IndexedDBCallbacks
@@ -108,19 +107,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
                                const IndexedDBDataLossInfo& data_loss_info);
   virtual void OnSuccess(std::unique_ptr<IndexedDBConnection> connection,
                          const blink::IndexedDBDatabaseMetadata& metadata);
-
-  // IndexedDBDatabase::OpenCursor
-  virtual void OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
-                         const blink::IndexedDBKey& key,
-                         const blink::IndexedDBKey& primary_key,
-                         IndexedDBValue* value);
-
-  // IndexedDBDatabase::Get
-  // IndexedDBCursor::Advance
-  virtual void OnSuccess(IndexedDBReturnValue* value);
-
-  // IndexedDBDatabase::Put / IndexedDBCursor::Update
-  virtual void OnSuccess(const blink::IndexedDBKey& key);
 
   // IndexedDBDatabase::Count
   // IndexedDBFactory::DeleteDatabase

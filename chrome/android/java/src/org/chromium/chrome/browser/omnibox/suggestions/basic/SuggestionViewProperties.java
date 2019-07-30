@@ -97,15 +97,6 @@ public class SuggestionViewProperties {
     public static final WritableObjectPropertyKey<SuggestionViewDelegate> DELEGATE =
             new WritableObjectPropertyKey<>();
 
-    /** Whether the suggestion is for an answer. */
-    public static final WritableBooleanPropertyKey IS_ANSWER = new WritableBooleanPropertyKey();
-    /** Whether an answer image will be shown. */
-    public static final WritableBooleanPropertyKey HAS_ANSWER_IMAGE =
-            new WritableBooleanPropertyKey();
-    /** The answer image to be shown. */
-    public static final WritableObjectPropertyKey<Bitmap> ANSWER_IMAGE =
-            new WritableObjectPropertyKey<>();
-
     /** Whether the suggestion supports refinement. */
     public static final WritableBooleanPropertyKey REFINABLE = new WritableBooleanPropertyKey();
 
@@ -155,11 +146,11 @@ public class SuggestionViewProperties {
     public static final WritableObjectPropertyKey<SuggestionTextContainer> TEXT_LINE_2_TEXT =
             new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {DELEGATE, IS_ANSWER,
-            HAS_ANSWER_IMAGE, ANSWER_IMAGE, REFINABLE, SUGGESTION_ICON_TYPE, TEXT_LINE_1_SIZING,
-            TEXT_LINE_1_MAX_LINES, TEXT_LINE_1_TEXT_COLOR, TEXT_LINE_1_TEXT_DIRECTION,
-            TEXT_LINE_1_TEXT, TEXT_LINE_2_SIZING, TEXT_LINE_2_MAX_LINES, TEXT_LINE_2_TEXT_COLOR,
-            TEXT_LINE_2_TEXT_DIRECTION, TEXT_LINE_2_TEXT, SUGGESTION_ICON_BITMAP};
+    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {DELEGATE, REFINABLE,
+            SUGGESTION_ICON_TYPE, TEXT_LINE_1_SIZING, TEXT_LINE_1_MAX_LINES, TEXT_LINE_1_TEXT_COLOR,
+            TEXT_LINE_1_TEXT_DIRECTION, TEXT_LINE_1_TEXT, TEXT_LINE_2_SIZING, TEXT_LINE_2_MAX_LINES,
+            TEXT_LINE_2_TEXT_COLOR, TEXT_LINE_2_TEXT_DIRECTION, TEXT_LINE_2_TEXT,
+            SUGGESTION_ICON_BITMAP};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);

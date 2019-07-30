@@ -42,8 +42,9 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
   virtual ~TestCardUnmaskDelegate() {}
 
   // CardUnmaskDelegate:
-  void OnUnmaskResponse(const UnmaskResponse& response) override {
-    response_ = response;
+  void OnUnmaskPromptAccepted(
+      const UserProvidedUnmaskDetails& details) override {
+    details_ = details;
   }
   void OnUnmaskPromptClosed() override {}
 
@@ -51,10 +52,10 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
     return weak_factory_.GetWeakPtr();
   }
 
-  UnmaskResponse response() { return response_; }
+  UserProvidedUnmaskDetails details() { return details_; }
 
  private:
-  UnmaskResponse response_;
+  UserProvidedUnmaskDetails details_;
 
   base::WeakPtrFactory<TestCardUnmaskDelegate> weak_factory_{this};
 
@@ -73,13 +74,13 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
 
   // CardUnmaskPromptControllerImpl:.
   // When the confirm button is clicked.
-  void OnUnmaskResponse(const base::string16& cvc,
-                        const base::string16& exp_month,
-                        const base::string16& exp_year,
-                        bool should_store_pan) override {
+  void OnUnmaskPromptAccepted(const base::string16& cvc,
+                              const base::string16& exp_month,
+                              const base::string16& exp_year,
+                              bool should_store_pan) override {
     // Call the original implementation.
-    CardUnmaskPromptControllerImpl::OnUnmaskResponse(cvc, exp_month, exp_year,
-                                                     should_store_pan);
+    CardUnmaskPromptControllerImpl::OnUnmaskPromptAccepted(
+        cvc, exp_month, exp_year, should_store_pan);
 
     // Wait some time and show verification result. An empty message means
     // success is shown.
@@ -221,10 +222,10 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, DisplayUI) {
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
                        EarlyCloseAfterSuccess) {
   ShowUi(kExpiryExpired);
-  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
-                                 base::ASCIIToUTF16("10"),
-                                 base::ASCIIToUTF16("2020"), false);
-  EXPECT_EQ(base::ASCIIToUTF16("123"), delegate()->response().cvc);
+  controller()->OnUnmaskPromptAccepted(base::ASCIIToUTF16("123"),
+                                       base::ASCIIToUTF16("10"),
+                                       base::ASCIIToUTF16("2020"), false);
+  EXPECT_EQ(base::ASCIIToUTF16("123"), delegate()->details().cvc);
   controller()->OnVerificationResult(AutofillClient::SUCCESS);
 
   // Simulate the user clicking [x] before the "Success!" message disappears.

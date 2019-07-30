@@ -40,17 +40,16 @@ class FrameHostInterceptor::FrameAgent
   FrameHost* GetForwardingInterface() override { return impl_; }
 
   void BeginNavigation(
-      const CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       blink::mojom::BlobURLTokenPtr blob_url_token,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
       blink::mojom::NavigationInitiatorPtr navigation_initiator) override {
-    CommonNavigationParams overrideable_common_params = common_params;
     if (interceptor_->WillDispatchBeginNavigation(
-            rfhi_, &overrideable_common_params, &begin_params, &blob_url_token,
+            rfhi_, &common_params, &begin_params, &blob_url_token,
             &navigation_client, &navigation_initiator)) {
       GetForwardingInterface()->BeginNavigation(
-          overrideable_common_params, std::move(begin_params),
+          std::move(common_params), std::move(begin_params),
           std::move(blob_url_token), std::move(navigation_client),
           std::move(navigation_initiator));
     }
@@ -77,7 +76,7 @@ FrameHostInterceptor::~FrameHostInterceptor() = default;
 
 bool FrameHostInterceptor::WillDispatchBeginNavigation(
     RenderFrameHost* render_frame_host,
-    CommonNavigationParams* common_params,
+    mojom::CommonNavigationParamsPtr* common_params,
     mojom::BeginNavigationParamsPtr* begin_params,
     blink::mojom::BlobURLTokenPtr* blob_url_token,
     mojom::NavigationClientAssociatedPtrInfo* navigation_client,

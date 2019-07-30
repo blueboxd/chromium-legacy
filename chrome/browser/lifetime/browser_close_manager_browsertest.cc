@@ -1105,11 +1105,12 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   // When the shutdown is cancelled, the downloads page should be opened in a
   // browser for that profile. Because there are no browsers for that profile, a
   // new browser should be opened.
-  ui_test_utils::BrowserAddedObserver new_browser_observer;
   TestBrowserCloseManager::AttemptClose(
       TestBrowserCloseManager::USER_CHOICE_USER_CANCELS_CLOSE);
   EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
-  Browser* opened_browser = new_browser_observer.WaitForSingleNewBrowser();
+  Browser* opened_browser = BrowserList::GetInstance()->GetLastActive();
+  ASSERT_TRUE(opened_browser);
+  EXPECT_NE(other_profile_ptr, opened_browser->profile());
   EXPECT_EQ(
       GURL(chrome::kChromeUIDownloadsURL),
       opened_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
@@ -1199,9 +1200,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerWithBackgroundModeBrowserTest,
   EXPECT_TRUE(IsBackgroundModeSuspended());
 
   // Background mode should be resumed when a new browser window is opened.
-  ui_test_utils::BrowserAddedObserver new_browser_observer;
   chrome::NewEmptyWindow(profile);
-  new_browser_observer.WaitForSingleNewBrowser();
+  ui_test_utils::WaitForBrowserToOpen();
   tmp_keep_alive.reset();
   EXPECT_FALSE(IsBackgroundModeSuspended());
 

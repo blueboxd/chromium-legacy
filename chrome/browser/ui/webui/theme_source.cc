@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resources_util.h"
 #include "chrome/browser/search/instant_io_context.h"
@@ -100,7 +101,7 @@ void ThemeSource::StartDataRequest(
   int resource_id = -1;
   if (parsed_path == "current-channel-logo") {
     switch (chrome::GetChannel()) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       case version_info::Channel::CANARY:
         resource_id = IDR_PRODUCT_LOGO_32_CANARY;
         break;

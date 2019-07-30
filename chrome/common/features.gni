@@ -58,8 +58,7 @@ declare_args() {
   enable_simple_browser_service_out_of_process =
       is_chromeos && (is_debug || dcheck_always_on)
 
-  # TODO(crbug.com/980869): Change this to is_chromeos || is_android.
-  enable_supervised_users = !is_chromecast
+  enable_supervised_users = is_chromeos || is_android
 
   # Indicates if Wayland display server support is enabled.
   enable_wayland_server = is_chromeos

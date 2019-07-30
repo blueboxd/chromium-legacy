@@ -16,6 +16,7 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
 #include "chrome/browser/page_load_metrics/resource_tracker.h"
 #include "chrome/browser/scoped_visibility_tracker.h"
+#include "chrome/common/page_load_metrics/page_end_reason.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -203,7 +204,22 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // PageLoadMetricsDelegate implementation:
   content::WebContents* GetWebContents() const override;
   base::TimeTicks GetNavigationStart() const override;
+  const base::Optional<base::TimeDelta>& GetFirstBackgroundTime()
+      const override;
+  const base::Optional<base::TimeDelta>& GetFirstForegroundTime()
+      const override;
+  bool StartedInForeground() const override;
+  const UserInitiatedInfo& GetUserInitiatedInfo() const override;
+  const GURL& GetUrl() const override;
+  const GURL& GetStartUrl() const override;
   bool DidCommit() const override;
+  PageEndReason GetPageEndReason() const override;
+  const UserInitiatedInfo& GetPageEndUserInitiatedInfo() const override;
+  base::Optional<base::TimeDelta> GetPageEndTime() const override;
+  const mojom::PageLoadMetadata& GetMainFrameMetadata() const override;
+  const mojom::PageLoadMetadata& GetSubframeMetadata() const override;
+  const PageRenderData& GetPageRenderData() const override;
+  const PageRenderData& GetMainFrameRenderData() const override;
   const ScopedVisibilityTracker& GetVisibilityTracker() const override;
   const ResourceTracker& GetResourceTracker() const override;
   ukm::SourceId GetSourceId() const override;
@@ -394,8 +410,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // We record separate metrics for events that occur after a background,
   // because metrics like layout/paint are delayed artificially
   // when they occur in the background.
-  base::TimeTicks background_time_;
-  base::TimeTicks foreground_time_;
+  base::Optional<base::TimeDelta> first_background_time_;
+  base::Optional<base::TimeDelta> first_foreground_time_;
   bool started_in_foreground_;
 
   mojom::PageLoadTimingPtr last_dispatched_merged_page_timing_;

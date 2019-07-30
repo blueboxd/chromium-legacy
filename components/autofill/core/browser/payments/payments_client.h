@@ -90,7 +90,7 @@ class PaymentsClient {
     AutofillClient::UnmaskCardReason reason;
     CreditCard card;
     std::string risk_data;
-    CardUnmaskDelegate::UnmaskResponse user_response;
+    CardUnmaskDelegate::UserProvidedUnmaskDetails user_response;
     base::Value fido_assertion_info;
   };
 

@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
@@ -92,7 +93,7 @@ void OpenBookmarkManagerForNode(Browser* browser, int64_t node_id) {
   ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void LaunchReleaseNotesInTab(Profile* profile) {
   GURL url(kChromeReleaseNotesURL);
   auto displayer = std::make_unique<ScopedTabbedBrowserDisplayer>(profile);
@@ -130,7 +131,7 @@ const std::string BuildQueryString(Profile* profile) {
 }
 #endif
 
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void LaunchReleaseNotesImpl(Profile* profile) {
   base::RecordAction(UserMetricsAction("ReleaseNotes.ShowReleaseNotes"));
   const extensions::Extension* extension =
@@ -156,7 +157,7 @@ void LaunchReleaseNotesImpl(Profile* profile) {
 // is created.
 void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
   base::RecordAction(UserMetricsAction("ShowHelpTab"));
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
           extension_misc::kGeniusAppId,
@@ -334,7 +335,7 @@ void ShowHelpForProfile(Profile* profile, HelpSource source) {
 }
 
 void LaunchReleaseNotes(Profile* profile) {
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   LaunchReleaseNotesImpl(profile);
 #endif
 }

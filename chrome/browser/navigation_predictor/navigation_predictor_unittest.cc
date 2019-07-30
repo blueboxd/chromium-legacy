@@ -411,24 +411,6 @@ TEST_F(NavigationPredictorTest, MultipleAnchorElementMetricsOnLoad) {
                                     5);
 }
 
-TEST_F(NavigationPredictorTest, ActionTaken_NoSameHost_Prefetch) {
-  const std::string source = "https://example.com";
-  const std::string href_xlarge = "https://example2.com/xlarge";
-
-  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
-  metrics.push_back(CreateMetricsPtr(source, href_xlarge, 0.1));
-
-  base::HistogramTester histogram_tester;
-  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
-                                                        GetDefaultViewport());
-  base::RunLoop().RunUntilIdle();
-
-  histogram_tester.ExpectUniqueSample(
-      "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kNone, 1);
-  EXPECT_FALSE(prefetch_url().has_value());
-}
-
 // URL with highest prefetch score is from the same origin. Prefetch is done.
 TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch) {
   const std::string source = "https://example.com";
@@ -464,7 +446,7 @@ TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch) {
 }
 
 // URL with highest prefetch score is from a different origin. So, prefetch is
-// not done.
+// not done, only preconnect.
 TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch_NotSameOrigin) {
   const std::string source = "https://example.com";
   const std::string same_origin_href_small = "https://example.com/small";
@@ -483,7 +465,7 @@ TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch_NotSameOrigin) {
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kNone, 1);
+      NavigationPredictor::Action::kPreconnect, 1);
   EXPECT_FALSE(prefetch_url().has_value());
 
   auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
@@ -493,7 +475,8 @@ TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch_NotSameOrigin) {
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
-      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
+      NavigationPredictor::ActionAccuracy::kPreconnectActionClickToSameOrigin,
+      1);
 }
 
 TEST_F(NavigationPredictorTest,
@@ -513,7 +496,7 @@ TEST_F(NavigationPredictorTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kNone, 1);
+      NavigationPredictor::Action::kPreconnect, 1);
   EXPECT_FALSE(prefetch_url().has_value());
 }
 
@@ -627,6 +610,53 @@ TEST_F(NavigationPredictorSendUkmMetricsEnabledTest, SendLinkUkmMetrics) {
               ::testing::Contains(GetTestMetricsAsVector(anchor_2_metrics)));
   EXPECT_THAT(vector_actual,
               ::testing::Contains(GetTestMetricsAsVector(anchor_3_metrics)));
+}
+
+// Checks that metrics about which link was clicked are sent to the ukm
+// on-click, and that that index corresponds to a valid url.
+TEST_F(NavigationPredictorSendUkmMetricsEnabledTest, SendClickUkmMetrics) {
+  using ClickUkmEntry = ukm::builders::NavigationPredictorPageLinkClick;
+  using LoadUkmEntry = ukm::builders::NavigationPredictorAnchorElementMetrics;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+
+  const std::string source = "https://example1.com";
+  const std::string clicked_url = "https://example1.com/large";
+
+  std::vector<blink::mojom::AnchorElementMetricsPtr> metrics;
+  metrics.push_back(CreateMetricsPtr(source, clicked_url, 1));
+  metrics.push_back(CreateMetricsPtr(source, "https://example2.com/small", .5));
+  metrics.push_back(
+      CreateMetricsPtr(source, "https://neworigin.com/xsmall", .05));
+
+  predictor_service()->ReportAnchorElementMetricsOnLoad(std::move(metrics),
+                                                        GetDefaultViewport());
+  base::RunLoop().RunUntilIdle();
+
+  // Because NavigationPredictor randomizes the list of all anchor elements,
+  // retrieve the index of the element the test clicks on by looking at the
+  // UKM entry in NavigationPredictorAnchorElementMetrics that has the same
+  // ratio area.
+  auto all_ukm_entries =
+      test_ukm_recorder.GetEntriesByName(LoadUkmEntry::kEntryName);
+  int index = 1;
+  for (auto* entry : all_ukm_entries) {
+    int entry_ratio_area = static_cast<int>(*test_ukm_recorder.GetEntryMetric(
+        entry, LoadUkmEntry::kPercentClickableAreaName));
+    if (entry_ratio_area == 100) {
+      break;
+    } else {
+      index++;
+    }
+  }
+
+  auto metrics_clicked = CreateMetricsPtr(source, clicked_url, 0.01);
+  predictor_service()->ReportAnchorElementMetricsOnClick(
+      std::move(metrics_clicked));
+  base::RunLoop().RunUntilIdle();
+
+  test_ukm_recorder.ExpectEntryMetric(
+      test_ukm_recorder.GetEntriesByName(ClickUkmEntry::kEntryName)[0],
+      ClickUkmEntry::kAnchorElementIndexName, index);
 }
 
 // Checks that per-page link aggregate information is sent to the UKM on page
@@ -792,8 +822,7 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
 }
 
 // Disables prefetch and loads a page where the preconnect score of a cross
-// origin is highest among all origins. Verifies that navigation predictor does
-// not preconnect to the cross origin.
+// origin is highest among all origins.
 TEST_F(NavigationPredictorPrefetchDisabledTest,
        ActionTaken_PreconnectHighScoreIsCrossOrigin) {
   const std::string source = "https://example.com";
@@ -816,9 +845,9 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kNone, 1);
+      NavigationPredictor::Action::kPreconnect, 1);
   EXPECT_FALSE(prefetch_url().has_value());
-  EXPECT_FALSE(preconnect_origin().has_value());
+  EXPECT_TRUE(preconnect_origin().has_value());
 
   auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
   predictor_service()->ReportAnchorElementMetricsOnClick(
@@ -827,7 +856,8 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
-      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
+      NavigationPredictor::ActionAccuracy::kPreconnectActionClickToSameOrigin,
+      1);
 }
 
 // Framework for testing cases where preconnect and prefetch are effectively
@@ -848,8 +878,7 @@ class NavigationPredictorPreconnectPrefetchDisabledTest
   }
 };
 
-// No action should be taken when both preconnect and prefetch are effectively
-// disabled.
+// Only preconnect should happen when a prefetch score is below the threshold.
 TEST_F(NavigationPredictorPreconnectPrefetchDisabledTest,
        ActionTaken_SameOrigin_Prefetch_BelowThreshold) {
   const std::string source = "https://example.com";
@@ -869,7 +898,7 @@ TEST_F(NavigationPredictorPreconnectPrefetchDisabledTest,
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kNone, 1);
+      NavigationPredictor::Action::kPreconnect, 1);
   EXPECT_FALSE(prefetch_url().has_value());
 
   auto metrics_clicked = CreateMetricsPtr(source, same_origin_href_small, 0.01);
@@ -881,5 +910,6 @@ TEST_F(NavigationPredictorPreconnectPrefetchDisabledTest,
       "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
-      NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
+      NavigationPredictor::ActionAccuracy::kPreconnectActionClickToSameOrigin,
+      1);
 }

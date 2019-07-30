@@ -50,7 +50,6 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
   out->message->GetStreamChannels().AppendRange(
       std::make_move_iterator(stream_channels.begin()),
       std::make_move_iterator(stream_channels.end()));
-  out->has_user_gesture = data.has_user_gesture();
   out->transfer_user_activation = data.transfer_user_activation();
   out->allow_autoplay = data.allow_autoplay();
 

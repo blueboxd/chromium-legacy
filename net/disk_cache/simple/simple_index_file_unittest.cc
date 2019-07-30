@@ -591,8 +591,9 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
   net::TestCompletionCallback cb;
   int rv = simple_cache->Init(cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsOk());
-  rv = simple_cache->index()->ExecuteWhenReady(cb.callback());
-  EXPECT_THAT(cb.GetResult(rv), IsOk());
+  simple_cache->index()->ExecuteWhenReady(cb.callback());
+  rv = cb.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
   delete simple_cache;
   cleanup_tracker = nullptr;
 

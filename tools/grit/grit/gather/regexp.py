@@ -7,8 +7,6 @@
 
 from __future__ import print_function
 
-import re
-
 from grit.gather import skeleton_gatherer
 
 

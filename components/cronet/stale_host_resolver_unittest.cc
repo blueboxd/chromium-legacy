@@ -185,8 +185,10 @@ class StaleHostResolverTest : public testing::Test {
     if (dns_client) {
       inner_resolver->GetManagerForTesting()->SetDnsClientForTesting(
           std::move(dns_client));
+      inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(true);
     } else {
-      inner_resolver->GetManagerForTesting()->SetDnsClientEnabled(false);
+      inner_resolver->GetManagerForTesting()->SetInsecureDnsClientEnabled(
+          false);
     }
     return inner_resolver;
   }

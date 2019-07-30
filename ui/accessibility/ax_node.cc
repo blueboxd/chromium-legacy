@@ -749,12 +749,12 @@ int AXNode::UpdateUnignoredCachedValuesRecursive(int startIndex) {
 // Is not required for set's role to match node's role.
 AXNode* AXNode::GetOrderedSet() const {
   AXNode* result = parent();
-
-  // Continue walking up while parent is invalid, ignored, or is a generic
-  // container.
+  // Continue walking up while parent is invalid, ignored, a generic container,
+  // or unknown.
   while (result && (result->data().HasState(ax::mojom::State::kIgnored) ||
                     result->data().role == ax::mojom::Role::kGenericContainer ||
-                    result->data().role == ax::mojom::Role::kIgnored)) {
+                    result->data().role == ax::mojom::Role::kIgnored ||
+                    result->data().role == ax::mojom::Role::kUnknown)) {
     result = result->parent();
   }
   return result;

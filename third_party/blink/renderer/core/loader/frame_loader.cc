@@ -362,7 +362,7 @@ void FrameLoader::FinishedParsing() {
 // TODO(dgozman): we are calling this method too often, hoping that it
 // does not do anything when navigation is in progress, or when loading
 // has finished already. We should call it at the right times.
-void FrameLoader::DidFinishNavigation() {
+void FrameLoader::DidFinishNavigation(NavigationFinishState state) {
   // We should have either finished the provisional or committed navigation if
   // this is called. Only delcare the whole frame finished if neither is in
   // progress.
@@ -383,7 +383,7 @@ void FrameLoader::DidFinishNavigation() {
     RestoreScrollPositionAndViewState();
     if (document_loader_)
       document_loader_->SetLoadType(WebFrameLoadType::kStandard);
-    frame_->FinishedLoading();
+    frame_->FinishedLoading(state);
   }
 
   // When a subframe finishes loading, the parent should check if *all*
@@ -893,7 +893,7 @@ void FrameLoader::CommitNavigation(
 
   FillStaticResponseIfNeeded(navigation_params.get(), frame_);
   if (!ShouldNavigate(navigation_params.get(), frame_)) {
-    DidFinishNavigation();
+    DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
     return;
   }
 
@@ -988,7 +988,7 @@ void FrameLoader::StopAllLoaders() {
     document_loader_->StopLoading();
   DetachDocumentLoader(provisional_document_loader_);
   CancelClientNavigation();
-  DidFinishNavigation();
+  DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
 
   TakeObjectSnapshot();
 }
@@ -1212,7 +1212,7 @@ void FrameLoader::Detach() {
   }
   ClearClientNavigation();
   committing_navigation_ = false;
-  DidFinishNavigation();
+  DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
 
   if (progress_tracker_) {
     progress_tracker_->Dispose();
@@ -1242,7 +1242,7 @@ bool FrameLoader::MaybeRenderFallbackContent() {
 
   frame_->Owner()->RenderFallbackContent(frame_);
   ClearClientNavigation();
-  DidFinishNavigation();
+  DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
   return true;
 }
 
@@ -1367,7 +1367,7 @@ void FrameLoader::DidDropNavigation() {
   // TODO(dgozman): should we ClearClientNavigation instead and not
   // notify the client in response to its own call?
   CancelClientNavigation();
-  DidFinishNavigation();
+  DidFinishNavigation(FrameLoader::NavigationFinishState::kSuccess);
 
   // Forcibly instantiate WindowProxy for initial frame document.
   // This is only required when frame navigation is aborted, e.g. due to

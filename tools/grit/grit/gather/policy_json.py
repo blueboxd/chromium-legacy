@@ -8,7 +8,6 @@ generator as a source for generating ADM,ADMX,etc files.'''
 from __future__ import print_function
 
 import json
-import types
 import sys
 
 from grit.gather import skeleton_gatherer

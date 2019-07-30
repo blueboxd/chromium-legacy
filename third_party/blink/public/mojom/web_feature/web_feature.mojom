@@ -2359,6 +2359,7 @@ enum WebFeature {
   kAutoplayDynamicDelegation = 2977,
   kToggleEventHandlerDuringParsing = 2978,
   kFragmentDoubleHash = 2979,
+  kV8RegExpMatchAllWithNonGlobalRegExp = 2980,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

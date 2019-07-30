@@ -1219,8 +1219,13 @@ void PasswordManager::OnLoginSuccessful() {
     if (logger)
       logger->LogMessage(Logger::STRING_DECISION_ASK);
     bool update_password = submitted_manager->IsPasswordUpdate();
-    if (client_->PromptUserToSaveOrUpdatePassword(MoveOwnedSubmittedManager(),
-                                                  update_password)) {
+    if (ShouldShowOnboarding(client_->GetPrefs(), update_password)) {
+      if (client_->ShowOnboarding(MoveOwnedSubmittedManager())) {
+        if (logger)
+          logger->LogMessage(Logger::STRING_SHOW_ONBOARDING);
+      }
+    } else if (client_->PromptUserToSaveOrUpdatePassword(
+                   MoveOwnedSubmittedManager(), update_password)) {
       if (logger)
         logger->LogMessage(Logger::STRING_SHOW_PASSWORD_PROMPT);
     }

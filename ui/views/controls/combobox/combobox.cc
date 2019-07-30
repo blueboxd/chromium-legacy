@@ -58,7 +58,7 @@ class TransparentButton : public Button {
  public:
   explicit TransparentButton(ButtonListener* listener) : Button(listener) {
     SetFocusBehavior(FocusBehavior::NEVER);
-    set_notify_action(PlatformStyle::kMenuNotifyActivationAction);
+    set_notify_action(Button::NOTIFY_ON_PRESS);
 
     SetInkDropMode(InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);

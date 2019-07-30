@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/crostini/crostini_app_restart_view.h"
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -178,6 +178,11 @@ void KeyboardControllerImpl::AddObserver(KeyboardControllerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
+void KeyboardControllerImpl::RemoveObserver(
+    KeyboardControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 // SessionObserver
 void KeyboardControllerImpl::OnSessionStateChanged(
     session_manager::SessionState state) {

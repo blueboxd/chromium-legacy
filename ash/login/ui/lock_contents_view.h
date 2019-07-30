@@ -140,6 +140,8 @@ class ASH_EXPORT LockContentsView
   void OnUserAvatarChanged(const AccountId& account_id,
                            const UserAvatar& avatar) override;
   void OnPinEnabledForUserChanged(const AccountId& user, bool enabled) override;
+  void OnChallengeResponseAuthEnabledForUserChanged(const AccountId& user,
+                                                    bool enabled) override;
   void OnFingerprintStateChanged(const AccountId& account_id,
                                  FingerprintState state) override;
   void OnFingerprintAuthResult(const AccountId& account_id,
@@ -213,6 +215,7 @@ class ASH_EXPORT LockContentsView
 
     AccountId account_id;
     bool show_pin = false;
+    bool show_challenge_response_auth = false;
     bool enable_tap_auth = false;
     bool force_online_sign_in = false;
     bool disable_auth = false;

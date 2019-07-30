@@ -7,6 +7,7 @@
 <translation id="1051826050538111504">Ai software dăunător pe computer. Chrome poate să îl elimine, să restabilească setările și să dezactiveze extensiile pentru ca browserul să funcționeze normal din nou.</translation>
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> a folosit Chrome anterior</translation>
+<translation id="1097330777386562916">Șterge cookie-urile și datele privind site-urile când închizi Chrome</translation>
 <translation id="1104959162601287462">Despre sistemul de operare &amp;Chrome</translation>
 <translation id="110877069173485804">Acesta este browserul dvs. Chrome</translation>
 <translation id="1142745911746664600">Chrome nu se poate actualiza</translation>
@@ -26,6 +27,7 @@
 <translation id="1590588151039584890">Pentru a se actualiza, Chrome trebuie să nu mai ruleze pe acest computer. Din acest motiv, alți utilizatori conectați la acest computer pot pierde modificări nesalvate.</translation>
 <translation id="1619887657840448962">Pentru mai multă siguranță în Chrome, am dezactivat următoarea extensie care nu este inclusă în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugată fără știrea ta.</translation>
 <translation id="1628000112320670027">Obține ajutor privind Chrome</translation>
+<translation id="1635734105302489219">Când închizi Chromie, cookie-urile sunt șterse. Modifică <ph name="COOKIE_SETTINGS_LINK" /> pentru a continua sincronizarea.</translation>
 <translation id="1662639173275167396">Sistemul de operare Chrome este posibil datorită unui <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> suplimentar, cum ar fi <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Deschide linkul într-o fereastră Chrome inco&amp;gnito</translation>
 <translation id="1682634494516646069">Google Chrome nu poate citi și scrie în directorul propriu de date: <ph name="USER_DATA_DIRECTORY" /></translation>

@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">Uppdatera sidan</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="271033894570825754">Ny</translation>
+<translation id="2714850608275780394">Väntar på koden</translation>
 <translation id="2728754400939377704">Sortera efter webbplats</translation>
 <translation id="2744248271121720757">Tryck på ett ord om du vill söka direkt eller visa relaterade åtgärder</translation>
+<translation id="2760989362628427051">Aktivera mörkt tema när batterisparläget eller mörkt tema aktiveras på enheten</translation>
 <translation id="2762000892062317888">nyss</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="2779651927720337254">misslyckades</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">1 minut kvar</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Bokmärk sidan</translation>
+<translation id="3254626532848657899">Flytta längst ned</translation>
 <translation id="3259831549858767975">Gör allt på sidan mindre</translation>
 <translation id="3269093882174072735">Läs in bild</translation>
 <translation id="3269956123044984603">Aktivera Automatisk synkronisering av data i kontoinställningarna för Android om du vill ha samma flikar tillgängliga på alla enheter.</translation>
@@ -441,6 +444,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4378154925671717803">Mobil</translation>
 <translation id="4384468725000734951">Du söker med Sogou</translation>
 <translation id="4404568932422911380">Inga bokmärken</translation>
+<translation id="4405224443901389797">Flytta till …</translation>
 <translation id="4411535500181276704">Begränsat läge</translation>
 <translation id="4415276339145661267">Hantera Google-kontot</translation>
 <translation id="4432792777822557199">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu</translation>
@@ -621,6 +625,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE" /> efter denna bild</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> flikar har grupperats</translation>
 <translation id="5581519193887989363">Du kan alltid välja vad som ska synkroniseras i <ph name="BEGIN_LINK1" />inställningarna<ph name="END_LINK1" />.</translation>
+<translation id="5586306159936941448">Gruppera flikar genom att dra den ena ovanpå den andra</translation>
 <translation id="5595485650161345191">Redigera adress</translation>
 <translation id="5596627076506792578">Fler alternativ</translation>
 <translation id="5599455543593328020">Inkognitoläge</translation>
@@ -651,6 +656,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5809361687334836369">{HOURS,plural, =1{för # timme sedan}other{för # timmar sedan}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Med ensamrätt.</translation>
 <translation id="5817918615728894473">Koppla</translation>
+<translation id="58326064309361797">Gruppera flikar genom att dra dem</translation>
 <translation id="583281660410589416">Okänd</translation>
 <translation id="5833984609253377421">Dela länk</translation>
 <translation id="5836192821815272682">Uppdatering för Chrome laddas ned …</translation>
@@ -845,7 +851,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7233236755231902816">Skaffa den senaste versionen av Chrome och få webben översatt till ditt språk</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> har valts</translation>
-<translation id="7253272406652746122">Lägg till ett Google-konto från kontosidan i appen Inställningar på enheten.</translation>
 <translation id="7274013316676448362">Blockerad webbplats</translation>
 <translation id="7290209999329137901">Det går inte att byta namn</translation>
 <translation id="7291387454912369099">Betalning med assistenten</translation>
@@ -1011,6 +1016,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8380167699614421159">Påträngande eller vilseledande annonser visas på den här webbplatsen</translation>
 <translation id="8393700583063109961">Skicka meddelande</translation>
 <translation id="8413126021676339697">Visa fullständig historik</translation>
+<translation id="8425955042390522843">Verifiering av telefonnummer</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8438566539970814960">Förbättra sökningar och surfandet</translation>
 <translation id="8441146129660941386">Sök bakåt</translation>
@@ -1118,6 +1124,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="945632385593298557">Tillgång till din mikrofon</translation>
 <translation id="951339005376969845">Radera befintlig data. Om du byter tillbaka till <ph name="FROM_ACCOUNT" /> finns den kvar där.</translation>
 <translation id="95817756606698420">Chrome kan använda <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> som sökmotor i Kina. Du kan ändra detta i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
+<translation id="959682366969460160">Håll ordning</translation>
 <translation id="965817943346481315">Blockera om påträngande eller vilseledande annonser visas på webbplatsen (rekommenderas)</translation>
 <translation id="968900484120156207">Sidor som du besöker visas här</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> minuter kvar</translation>

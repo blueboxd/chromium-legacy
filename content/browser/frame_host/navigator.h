@@ -33,7 +33,6 @@ class FrameNavigationEntry;
 class FrameTreeNode;
 class PrefetchedSignedExchangeCache;
 class RenderFrameHostImpl;
-struct CommonNavigationParams;
 
 // Implementations of this interface are responsible for performing navigations
 // in a node of the FrameTree. Its lifetime is bound to all FrameTreeNode
@@ -147,7 +146,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // BeginNavigation IPC from the renderer.
   virtual void OnBeginNavigation(
       FrameTreeNode* frame_tree_node,
-      const CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,

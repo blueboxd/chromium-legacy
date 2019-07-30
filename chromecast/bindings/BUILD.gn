@@ -44,3 +44,62 @@ if (is_fuchsia) {
     ]
   }
 }
+
+if (is_linux) {
+  source_set("bindings_manager_cast") {
+    sources = [
+      "bindings_manager_cast.cc",
+      "bindings_manager_cast.h",
+    ]
+
+    deps = [
+      "//base",
+      "//chromecast/browser:public",
+      "//mojo/public/cpp/system",
+      "//third_party/blink/public/common",
+    ]
+
+    data = [
+      "named_message_port_connector.js",
+    ]
+
+    public_deps = [
+      ":bindings_manager",
+    ]
+  }
+
+  source_set("browsertests_cast") {
+    testonly = true
+    sources = [
+      "bindings_manager_cast_browsertest.cc",
+    ]
+
+    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+    data = [
+      "//chromecast/bindings/testdata",
+    ]
+
+    deps = [
+      "//base",
+      "//chromecast:chromecast_buildflags",
+      "//chromecast/base",
+      "//chromecast/base:chromecast_switches",
+      "//chromecast/bindings:bindings_manager_cast",
+      "//chromecast/bindings:named_message_port_connector_resources",
+      "//chromecast/browser:browser",
+      "//chromecast/browser:public",
+      "//content/public/browser",
+      "//content/test:test_support",
+      "//net:test_support",
+    ]
+  }
+}
+
+source_set("browsertests") {
+  testonly = true
+  deps = []
+  if (is_linux) {
+    deps += [ "//chromecast/bindings:browsertests_cast" ]
+  }
+}

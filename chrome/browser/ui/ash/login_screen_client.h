@@ -36,6 +36,9 @@ class LoginScreenClient : public ash::LoginScreenClient {
         base::OnceCallback<void(bool)> callback) = 0;
     virtual void HandleAuthenticateUserWithEasyUnlock(
         const AccountId& account_id) = 0;
+    virtual void HandleAuthenticateUserWithChallengeResponse(
+        const AccountId& account_id,
+        base::OnceCallback<void(bool)> callback) = 0;
     virtual void HandleHardlockPod(const AccountId& account_id) = 0;
     virtual void HandleOnFocusPod(const AccountId& account_id) = 0;
     virtual void HandleOnNoPodFocused() = 0;
@@ -85,6 +88,9 @@ class LoginScreenClient : public ash::LoginScreenClient {
   void EnrollUserWithExternalBinary(
       base::OnceCallback<void(bool)> callback) override;
   void AuthenticateUserWithEasyUnlock(const AccountId& account_id) override;
+  void AuthenticateUserWithChallengeResponse(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> callback) override;
   bool ValidateParentAccessCode(const AccountId& account_id,
                                 const std::string& access_code) override;
   void HardlockPod(const AccountId& account_id) override;

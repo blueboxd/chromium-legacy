@@ -44,7 +44,6 @@
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_delete_intention.h"
-#include "content/common/frame_message_enums.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/navigation_params.mojom.h"
@@ -167,7 +166,6 @@ class SensorProviderProxyImpl;
 class SerialService;
 class TimeoutMonitor;
 class WebBluetoothServiceImpl;
-struct CommonNavigationParams;
 struct ContextMenuParams;
 struct FrameOwnerProperties;
 struct PendingNavigation;
@@ -693,7 +691,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // process, e.g. by AppCache etc.
   void CommitNavigation(
       NavigationRequest* navigation_request,
-      const CommonNavigationParams& common_params,
+      const mojom::CommonNavigationParams& common_params,
       const CommitNavigationParams& commit_params,
       network::ResourceResponse* response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
@@ -709,7 +707,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Indicates that a navigation failed and that this RenderFrame should display
   // an error page.
   void FailedNavigation(NavigationRequest* navigation_request,
-                        const CommonNavigationParams& common_params,
+                        const mojom::CommonNavigationParams& common_params,
                         const CommitNavigationParams& commit_params,
                         bool has_stale_copy_in_cache,
                         int error_code,
@@ -1025,7 +1023,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   virtual void SendCommitNavigation(
       mojom::NavigationClient* navigation_client,
       NavigationRequest* navigation_request,
-      const content::CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       const content::CommitNavigationParams& commit_params,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
@@ -1043,7 +1041,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   virtual void SendCommitFailedNavigation(
       mojom::NavigationClient* navigation_client,
       NavigationRequest* navigation_request,
-      const content::CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       const content::CommitNavigationParams& commit_params,
       bool has_stale_copy_in_cache,
       int32_t error_code,
@@ -1264,7 +1262,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params) override;
   void BeginNavigation(
-      const CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       blink::mojom::BlobURLTokenPtr blob_url_token,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
@@ -1346,7 +1344,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const network::ResourceRequestBody& body);
 
   void UpdatePermissionsForNavigation(
-      const CommonNavigationParams& common_params,
+      const mojom::CommonNavigationParams& common_params,
       const CommitNavigationParams& commit_params);
 
   // Creates a Network Service-backed factory from appropriate |NetworkContext|

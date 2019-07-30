@@ -4844,6 +4844,16 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="NavigationPredictorPageLinkClick">
+  <summary>
+    Sent on an in-page link click. An integer from 0-10 (1-indexed),
+    corresponding to the index of that anchor element in the list of top ten
+    anchor elements on that page, sorted by their navigation scores. If an
+    anchor element is clicked that is not on the top ten list, 0 is returned.
+  </summary>
+  <metric name="AnchorElementIndex"/>
+</event>
+
 <event name="NavigationPredictorPageLinkMetrics" singular="True">
   <owner>ryansturm@chromium.com</owner>
   <summary>

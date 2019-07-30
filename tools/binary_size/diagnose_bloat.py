@@ -39,6 +39,8 @@ _LLVM_TOOLS_DIR = os.path.join(
     _SRC_ROOT, 'third_party', 'llvm-build', 'Release+Asserts', 'bin')
 _DOWNLOAD_OBJDUMP_PATH = os.path.join(
     _SRC_ROOT, 'tools', 'clang', 'scripts', 'download_objdump.py')
+_GN_PATH = os.path.join(_SRC_ROOT, 'third_party', 'depot_tools', 'gn')
+_NINJA_PATH = os.path.join(_SRC_ROOT, 'third_party', 'depot_tools', 'ninja')
 
 
 _DiffResult = collections.namedtuple('DiffResult', ['name', 'value', 'units'])
@@ -337,10 +339,10 @@ class _BuildHelper(object):
       gn_args += (' enable_chrome_android_internal=%s' %
                   str(self.enable_chrome_android_internal).lower())
     gn_args += self.extra_gn_args_str
-    return ['gn', 'gen', self.output_directory, '--args=%s' % gn_args]
+    return [_GN_PATH, 'gen', self.output_directory, '--args=%s' % gn_args]
 
   def _GenNinjaCmd(self):
-    cmd = ['ninja', '-C', self.output_directory]
+    cmd = [_NINJA_PATH, '-C', self.output_directory]
     cmd += ['-j', self.max_jobs] if self.max_jobs else []
     cmd += ['-l', self.max_load_average] if self.max_load_average else []
     cmd += [self.target]
@@ -351,7 +353,7 @@ class _BuildHelper(object):
     logging.info('Building %s within %s (this might take a while).',
                  self.target, os.path.relpath(self.output_directory))
     if self.clean:
-      _RunCmd(['gn', 'clean', self.output_directory])
+      _RunCmd([_GN_PATH, 'clean', self.output_directory])
     retcode = _RunCmd(
         self._GenGnCmd(), verbose=True, exit_on_failure=False)[1]
     if retcode:

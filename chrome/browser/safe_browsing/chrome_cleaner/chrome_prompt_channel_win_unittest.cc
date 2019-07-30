@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -27,24 +28,30 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_for_tests.pb.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::StrictMock;
-
 namespace safe_browsing {
 namespace {
+
+using ::testing::Contains;
+using ::testing::Key;
+using ::testing::Not;
+using ::testing::StrictMock;
+using ErrorCategory = ChromePromptChannelProtobuf::ErrorCategory;
+using CustomErrors = ChromePromptChannelProtobuf::CustomErrors;
+using ErrorExpectationMap = std::map<ErrorCategory, uint32_t>;
 
 static constexpr uint8_t kVersion = 1U;
 static constexpr uint32_t kErrorMoreData =
     0xEA;  // Equivalent to Windows ERROR_MORE_DATA
 
 // Get the error category from a histogram sample.
-ChromePromptChannelProtobuf::ErrorCategory SampleToCategory(
-    int histogram_sample) {
-  return static_cast<ChromePromptChannelProtobuf::ErrorCategory>(
-      histogram_sample >> (sizeof(uint16_t) * CHAR_BIT));
+ErrorCategory SampleToCategory(int histogram_sample) {
+  return static_cast<ErrorCategory>(histogram_sample >>
+                                    (sizeof(uint16_t) * CHAR_BIT));
 }
 
 class MockCleanerProcessDelegate
@@ -110,9 +117,7 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
   }
 
   template <typename T>
-  void ExpectUniqueSample(ChromePromptChannelProtobuf::ErrorCategory category,
-                          T error,
-                          int count = 1) {
+  void ExpectUniqueSample(ErrorCategory category, T error, int count = 1) {
     histogram_tester_.ExpectUniqueSample(
         ChromePromptChannelProtobuf::kErrorHistogramName,
         ChromePromptChannelProtobuf::GetErrorCodeInt(category, error), count);
@@ -123,23 +128,24 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
         ChromePromptChannelProtobuf::kErrorHistogramName, 0);
   }
 
-  // This is used when we want to validate that an operation failed a certain
-  // number of times without needing to know the specific error code. Not to be
-  // used with CustomErrors as those are well-known.
-  void ExpectCategoryErrorCount(
-      ChromePromptChannelProtobuf::ErrorCategory category,
-      uint32_t expected_count) {
-    std::vector<base::Bucket> buckets = histogram_tester_.GetAllSamples(
+  // This is used when we want to validate that certain operations failed a
+  // precise number of times without needing to know the specific error code.
+  void ExpectCategoryErrorCount(const ErrorExpectationMap& expected_counts) {
+    // Not to be used with CustomErrors as those are well-known.
+    EXPECT_THAT(expected_counts,
+                Not(Contains(Key(ErrorCategory::kCustomError))))
+        << "For custom errors please use ExpectUniqueSample";
+
+    const std::vector<base::Bucket> buckets = histogram_tester_.GetAllSamples(
         ChromePromptChannelProtobuf::kErrorHistogramName);
 
-    uint32_t samples_found = 0;
+    ErrorExpectationMap actual_counts;
     for (const base::Bucket& bucket : buckets) {
-      if (SampleToCategory(bucket.min) == category) {
-        samples_found += bucket.count;
-      }
+      EXPECT_THAT(expected_counts, Contains(Key(SampleToCategory(bucket.min))));
+      actual_counts[SampleToCategory(bucket.min)] += bucket.count;
     }
 
-    EXPECT_EQ(expected_count, samples_found);
+    EXPECT_EQ(expected_counts, actual_counts);
   }
 
   // Closes the cleaner process pipe handles to simulate the cleaner process
@@ -169,6 +175,18 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
     ASSERT_EQ(bytes_written, sizeof(value));
   }
 
+  // Writes bytes taken by value to the pipe without blocking the main test
+  // thread.
+  template <typename T>
+  void PostWriteByValue(T value) {
+    channel_->task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ChromePromptChannelProtobufTest::WriteByValue<T>,
+                       base::Unretained(this), value));
+  }
+
+  // Writes bytes taken by pointer to the pipe without blocking the main test
+  // thread.
   template <typename T>
   void WriteByPointer(const T* ptr, uint32_t size, bool should_succeed) {
     DWORD bytes_written = 0;
@@ -192,14 +210,34 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
                        base::Unretained(this), ptr, size, should_succeed));
   }
 
-  // Writes bytes taken by value to the pipe without blocking the main test
-  // thread.
-  template <typename T>
-  void PostWriteByValue(T value) {
-    channel_->task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ChromePromptChannelProtobufTest::WriteByValue<T>,
-                       base::Unretained(this), value));
+  // Write a request to the pipe without blocking the main thread. This function
+  // does not own the buffer and does not need to transfer its ownership.
+  // The caller should insure request_content is not deleted until the task is
+  // done executing.
+  void PostRequestWrite(
+      const chrome_cleaner_test_only::ChromePromptRequest& request,
+      std::string* request_content) {
+    ASSERT_TRUE(request.SerializeToString(request_content));
+
+    PostWriteByValue(static_cast<uint32_t>(request_content->size()));
+    PostWriteByPointer(request_content->data(), request_content->size(), true);
+  }
+
+  // Fully read the next incoming message on the pipe in a blocking way.
+  void ExpectReadSucceeds() {
+    DWORD bytes_read = 0;
+    uint32_t response_length = 0;
+    ASSERT_TRUE(::ReadFile(response_read_handle_.Get(), &response_length,
+                           sizeof(response_length), &bytes_read, nullptr));
+
+    // There might not be any actual message if the answer is an empty proto.
+    if (response_length != 0) {
+      std::string response_content;
+      EXPECT_TRUE(
+          ::ReadFile(response_read_handle_.Get(),
+                     base::WriteInto(&response_content, response_length + 1),
+                     sizeof(response_length), &bytes_read, nullptr));
+    }
   }
 
   void ExpectReadFails() {
@@ -279,9 +317,8 @@ TEST_F(ChromePromptChannelProtobufTest, VersionIsTooLarge) {
   WaitForDisconnect();
 
   // We expect the the handshake to have failed because of the version.
-  ExpectUniqueSample(
-      ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
-      ChromePromptChannelProtobuf::CustomErrors::kWrongHandshakeVersion);
+  ExpectUniqueSample(ErrorCategory::kCustomError,
+                     CustomErrors::kWrongHandshakeVersion);
 
   ExpectReadFails();
 }
@@ -296,9 +333,8 @@ TEST_F(ChromePromptChannelProtobufTest, VersionIsZero) {
   WaitForDisconnect();
 
   // We expect the the handshake to have failed because of the version.
-  ExpectUniqueSample(
-      ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
-      ChromePromptChannelProtobuf::CustomErrors::kWrongHandshakeVersion);
+  ExpectUniqueSample(ErrorCategory::kCustomError,
+                     CustomErrors::kWrongHandshakeVersion);
   ExpectReadFails();
 }
 
@@ -314,10 +350,7 @@ TEST_F(ChromePromptChannelProtobufTest, ExitAfterVersion) {
 
   WaitForDisconnect();
 
-  ExpectCategoryErrorCount(
-      ChromePromptChannelProtobuf::ErrorCategory::kReadRequestLengthWinError,
-      1);
-
+  ExpectCategoryErrorCount({{ErrorCategory::kReadRequestLengthWinError, 1}});
   ExpectReadFails();
 }
 
@@ -332,9 +365,8 @@ TEST_F(ChromePromptChannelProtobufTest, PostSizeOfZero) {
   PostWriteByValue(0U);
   WaitForDisconnect();
 
-  ExpectUniqueSample(
-      ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
-      ChromePromptChannelProtobuf::CustomErrors::kRequestInvalidSize);
+  ExpectUniqueSample(ErrorCategory::kCustomError,
+                     CustomErrors::kRequestInvalidSize);
   ExpectReadFails();
 }
 
@@ -349,9 +381,8 @@ TEST_F(ChromePromptChannelProtobufTest, PostSizeMoreThanMax) {
   PostWriteByValue(ChromePromptChannelProtobuf::kMaxMessageLength + 1);
   WaitForDisconnect();
 
-  ExpectUniqueSample(
-      ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
-      ChromePromptChannelProtobuf::CustomErrors::kRequestInvalidSize);
+  ExpectUniqueSample(ErrorCategory::kCustomError,
+                     CustomErrors::kRequestInvalidSize);
   ExpectReadFails();
 }
 
@@ -373,9 +404,7 @@ TEST_F(ChromePromptChannelProtobufTest, PostExtraData) {
 
   WaitForDisconnect();
 
-  ExpectUniqueSample(
-      ChromePromptChannelProtobuf::ErrorCategory::kReadRequestWinError,
-      kErrorMoreData);
+  ExpectUniqueSample(ErrorCategory::kReadRequestWinError, kErrorMoreData);
 
   ExpectReadFails();
 }
@@ -398,9 +427,7 @@ TEST_F(ChromePromptChannelProtobufTest, VersionSentBeforeConnection) {
   // request. That is because the sending of the version was successful (unless
   // we see an error in the histogram which will cause a test failure) and we
   // disconnect before sending a length.
-  ExpectCategoryErrorCount(
-      ChromePromptChannelProtobuf::ErrorCategory::kReadRequestLengthWinError,
-      1);
+  ExpectCategoryErrorCount({{ErrorCategory::kReadRequestLengthWinError, 1}});
 
   ExpectReadFails();
 }
@@ -421,9 +448,8 @@ TEST_F(ChromePromptChannelProtobufTest, LengthShortWrite) {
 
   WaitForDisconnect();
 
-  ExpectUniqueSample(
-      ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
-      ChromePromptChannelProtobuf::CustomErrors::kRequestLengthShortRead);
+  ExpectUniqueSample(ErrorCategory::kCustomError,
+                     CustomErrors::kRequestLengthShortRead);
 
   ExpectReadFails();
 }
@@ -446,9 +472,8 @@ TEST_F(ChromePromptChannelProtobufTest, RequestShortWrite) {
 
   WaitForDisconnect();
 
-  ExpectUniqueSample(
-      ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
-      ChromePromptChannelProtobuf::CustomErrors::kRequestShortRead);
+  ExpectUniqueSample(ErrorCategory::kCustomError,
+                     CustomErrors::kRequestShortRead);
 
   ExpectReadFails();
 }
@@ -461,8 +486,110 @@ TEST_F(ChromePromptChannelProtobufTest, ExitBeforeVersion) {
   PostCloseCleanerHandles();
   WaitForDisconnect();
 
-  ExpectCategoryErrorCount(
-      ChromePromptChannelProtobuf::ErrorCategory::kReadVersionWinError, 1);
+  ExpectCategoryErrorCount({{ErrorCategory::kReadVersionWinError, 1}});
+  ExpectReadFails();
+}
+
+TEST_F(ChromePromptChannelProtobufTest, PostEmptyData) {
+  SetupCommunicationFailure();
+  channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
+
+  // Valid version
+  PostWriteByValue(kVersion);
+
+  constexpr uint32_t kSize = 10;
+  const std::vector<uint8_t> bytes(kSize, 0U);
+
+  // Post a valid size and data pair.
+  PostWriteByValue(kSize);
+  PostWriteByPointer(bytes.data(), bytes.size(), true);
+
+  WaitForDisconnect();
+
+  // A buffer filled with zeroes is not a valid request.
+  ExpectUniqueSample(ErrorCategory::kCustomError,
+                     CustomErrors::kRequestContentInvalid);
+
+  ExpectReadFails();
+}
+
+TEST_F(ChromePromptChannelProtobufTest, PostExtraPromptRequestField) {
+  SetupCommunicationFailure();
+  channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
+
+  // Valid version
+  PostWriteByValue(kVersion);
+
+  // Post request that contains a capabilities query.
+  chrome_cleaner_test_only::ChromePromptRequest request;
+  request.mutable_prompt_user()->add_for_tests_only("TEST");
+
+  std::string request_content;
+  PostRequestWrite(request, &request_content);
+  PostCloseCleanerHandles();
+
+  WaitForDisconnect();
+
+  // Having extra fields in PromptUserRequest should not cause any problems.
+  // This means the handling of the first message does not generate errors. The
+  // only error we see is the reading of the next request length which cannot
+  // succeed because we closed the pipes.
+  ExpectCategoryErrorCount({{ErrorCategory::kReadRequestLengthWinError, 1}});
+
+  ExpectReadFails();
+}
+
+TEST_F(ChromePromptChannelProtobufTest, PostQueryCapabilities) {
+  SetupCommunicationFailure();
+  channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
+
+  // Valid version
+  PostWriteByValue(kVersion);
+
+  // Post request that contains a capabilities query.
+  chrome_cleaner_test_only::ChromePromptRequest request;
+  request.mutable_query_capability()->set_for_tests_only(true);
+
+  std::string request_content;
+  PostRequestWrite(request, &request_content);
+
+  // Block until we successfully read a response.
+  ExpectReadSucceeds();
+
+  // Post closing which is now guaranteed to happen after the response.
+  PostCloseCleanerHandles();
+
+  WaitForDisconnect();
+
+  // Having extra fields in QueryCapabilities should not cause any problems.
+  // This means the handling of the first message does not generate errors. The
+  // only error we see is the reading of the next request length which cannot
+  // succeed because we closed the pipes.
+  ExpectCategoryErrorCount({{ErrorCategory::kReadRequestLengthWinError, 1}});
+
+  ExpectReadFails();
+}
+
+TEST_F(ChromePromptChannelProtobufTest, PostInvalidRequest) {
+  SetupCommunicationFailure();
+  channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
+
+  // Valid version
+  PostWriteByValue(kVersion);
+
+  // Post request that contains an unsupported request.
+  chrome_cleaner_test_only::ChromePromptRequest request;
+  request.mutable_test_message()->set_dummy_value(true);
+
+  std::string request_content;
+  PostRequestWrite(request, &request_content);
+
+  // The parsing will fail, wait for ensuing disconnect
+  WaitForDisconnect();
+
+  ExpectUniqueSample(ErrorCategory::kCustomError,
+                     CustomErrors::kRequestUnknown);
+
   ExpectReadFails();
 }
 

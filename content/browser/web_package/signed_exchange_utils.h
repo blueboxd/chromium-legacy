@@ -93,6 +93,10 @@ network::ResourceResponseHead CreateRedirectResponseHead(
     const network::ResourceResponseHead& outer_response,
     bool is_fallback_redirect);
 
+// Creates a new request ID for browser initiated requests. Can be called on
+// any thread.
+int MakeRequestID();
+
 }  // namespace signed_exchange_utils
 }  // namespace content
 

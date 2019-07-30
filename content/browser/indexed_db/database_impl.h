@@ -83,7 +83,7 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
       blink::mojom::IDBCursorDirection direction,
       bool key_only,
       blink::mojom::IDBTaskType task_type,
-      blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) override;
+      blink::mojom::IDBDatabase::OpenCursorCallback callback) override;
   void Count(int64_t transaction_id,
              int64_t object_store_id,
              int64_t index_id,

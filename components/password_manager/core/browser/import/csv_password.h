@@ -24,7 +24,7 @@ class CSVPassword {
   // Number of values in the Label enum.
   static constexpr size_t kLabelCount = 3;
 
-  CSVPassword(ColumnMap map, base::StringPiece csv_row);
+  CSVPassword(const ColumnMap& map, base::StringPiece csv_row);
   CSVPassword(const CSVPassword&) = delete;
   CSVPassword(CSVPassword&&) = delete;
   CSVPassword& operator=(const CSVPassword&) = delete;
@@ -45,7 +45,7 @@ class CSVPassword {
   // operator=().
 
   // |map_| stores the meaning of particular columns in the row.
-  ColumnMap map_;
+  const ColumnMap& map_;
   // |row_| contains the CSV row from which the PasswordForm is parsed.
   base::StringPiece row_;
 };

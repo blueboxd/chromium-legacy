@@ -7,6 +7,7 @@
 <translation id="1051826050538111504">你的電腦安裝了有害軟體。Chrome 可以移除該軟體、復原設定及停用擴充功能，讓你的瀏覽器恢復正常運作。</translation>
 <translation id="1065672644894730302">系統無法讀取你的偏好設定。部分功能可能無法使用，且系統也不會儲存任何偏好設定的變更。</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> 先前使用的是 Chrome</translation>
+<translation id="1097330777386562916">當你關閉 Chrome 時，清除 Cookie 和網站資料</translation>
 <translation id="1104959162601287462">關於 Chrome 作業系統(&amp;C)</translation>
 <translation id="110877069173485804">這是你專屬的 Chrome</translation>
 <translation id="1142745911746664600">無法更新 Chrome</translation>
@@ -26,6 +27,7 @@
 <translation id="1590588151039584890">這台電腦上的 Chrome 必須停止執行，才能進行更新。這可能會導致其他登入這台電腦的使用者遺失尚未儲存的變更。</translation>
 <translation id="1619887657840448962">為了讓 Chrome 的安全性更有保障，我們停用了以下這個未列在「<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />」中的擴充功能 (它可能是在您不知情的情況下加入瀏覽器)。</translation>
 <translation id="1628000112320670027">前往 Chrome 說明頁面</translation>
+<translation id="1635734105302489219">當你關閉 Chrome 時，系統會清除 Cookie。如要保持同步，請變更這項<ph name="COOKIE_SETTINGS_LINK" />。</translation>
 <translation id="1662639173275167396">Chrome 作業系統藉助了其他<ph name="BEGIN_LINK_CROS_OSS" />開放原始碼軟體<ph name="END_LINK_CROS_OSS" />的相關技術才得以問世，<ph name="BEGIN_LINK_LINUX_OSS" />Linux (測試版)<ph name="END_LINK_LINUX_OSS" /> 也是如此。</translation>
 <translation id="1674870198290878346">在 Chrome 無痕式視窗中開啟連結(&amp;G)</translation>
 <translation id="1682634494516646069">Google Chrome 無法讀取及寫入資料目錄：<ph name="USER_DATA_DIRECTORY" /></translation>
@@ -123,7 +125,7 @@
 <translation id="4251625577313994583">在 iPhone 上使用 Chrome</translation>
 <translation id="4293420128516039005">登入即可進行同步處理，讓你在所有裝置上享有個人化的 Chrome 體驗</translation>
 <translation id="4328355335528187361">Google Chrome 開發人員版 (mDNS-In)</translation>
-<translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4331809312908958774">Chrome 作業系統</translation>
 <translation id="4343195214584226067">已將「<ph name="EXTENSION_NAME" />」加到 Chrome</translation>
 <translation id="4407807842708586359">Google Chrome 作業系統</translation>
 <translation id="4458462641685292929">Google Chrome 正在執行另一項作業，請稍後再試。</translation>

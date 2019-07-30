@@ -19,7 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy/csp_disposition_enum.h"
-#include "content/common/frame_message_enums.h"
+#include "content/common/navigation_params.mojom-forward.h"
 #include "content/common/prefetched_signed_exchange_info.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/page_state.h"
@@ -79,128 +79,6 @@ struct CONTENT_EXPORT InitiatorCSPInfo {
   // The relevant CSP policies and the initiator 'self' source to be used.
   std::vector<ContentSecurityPolicy> initiator_csp;
   base::Optional<CSPSource> initiator_self_source;
-};
-
-// Used by all navigation IPCs.
-struct CONTENT_EXPORT CommonNavigationParams {
-  CommonNavigationParams();
-  CommonNavigationParams(
-      const GURL& url,
-      const base::Optional<url::Origin>& initiator_origin,
-      const Referrer& referrer,
-      ui::PageTransition transition,
-      FrameMsg_Navigate_Type::Value navigation_type,
-      NavigationDownloadPolicy download_policy,
-      bool should_replace_current_entry,
-      const GURL& base_url_for_data_url,
-      const GURL& history_url_for_data_url,
-      PreviewsState previews_state,
-      base::TimeTicks navigation_start,
-      std::string method,
-      const scoped_refptr<network::ResourceRequestBody>& post_data,
-      base::Optional<SourceLocation> source_location,
-      bool started_from_context_menu,
-      bool has_user_gesture,
-      const InitiatorCSPInfo& initiator_csp_info,
-      const std::vector<int>& initiator_origin_trial_features,
-      const std::string& href_translate,
-      bool is_history_navigation_in_new_child_frame,
-      base::TimeTicks input_start = base::TimeTicks());
-  CommonNavigationParams(const CommonNavigationParams& other);
-  ~CommonNavigationParams();
-
-  // The URL to navigate to.
-  // May be modified when the navigation is ready to commit.
-  GURL url;
-
-  // When a frame navigates another frame, this is the origin of the document
-  // which initiated the navigation. This parameter can be null for
-  // browser-initiated navigations.
-  base::Optional<url::Origin> initiator_origin;
-
-  // The URL to send in the "Referer" header field. Can be empty if there is
-  // no referrer.
-  Referrer referrer;
-
-  // The type of transition.
-  ui::PageTransition transition = ui::PAGE_TRANSITION_LINK;
-
-  // Type of navigation.
-  FrameMsg_Navigate_Type::Value navigation_type =
-      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-
-  // Governs how downloads are handled by this navigation.
-  NavigationDownloadPolicy download_policy;
-
-  // Informs the RenderView the pending navigation should replace the current
-  // history entry when it commits. This is used for cross-process redirects so
-  // the transferred navigation can recover the navigation state.
-  // This is used by client-side redirects to indicate that when
-  // the navigation commits, it should commit in the existing page.
-  bool should_replace_current_entry = false;
-
-  // Base URL for use in Blink's SubstituteData.
-  // Is only used with data: URLs.
-  GURL base_url_for_data_url;
-
-  // History URL for use in Blink's SubstituteData.
-  // Is only used with data: URLs.
-  GURL history_url_for_data_url;
-
-  // Bitmask that has whether or not to request a Preview version of the
-  // document for various preview types or let the browser decide.
-  PreviewsState previews_state = PREVIEWS_UNSPECIFIED;
-
-  // The navigationStart time exposed through the Navigation Timing API to JS.
-  // If this is for a browser-initiated navigation, this can override the
-  // navigation_start value in Blink.
-  // For renderer initiated navigations, this will be set on the
-  // renderer side and sent with FrameHostMsg_BeginNavigation.
-  base::TimeTicks navigation_start = base::TimeTicks::Now();
-
-  // The request method: GET, POST, etc.
-  std::string method = "GET";
-
-  // Body of HTTP POST request.
-  scoped_refptr<network::ResourceRequestBody> post_data;
-
-  // Information about the Javascript source for this navigation. Used for
-  // providing information in console error messages triggered by the
-  // navigation. If the navigation was not caused by Javascript, this should
-  // not be set.
-  base::Optional<SourceLocation> source_location;
-
-  // Whether or not this navigation was started from a context menu.
-  bool started_from_context_menu = false;
-
-  // True if the request was user initiated.
-  bool has_user_gesture = false;
-
-  // We require a copy of the relevant CSP to perform navigation checks.
-  InitiatorCSPInfo initiator_csp_info;
-
-  // The origin trial features activated in the initiator that should be applied
-  // in the document being navigated to. The int values are blink
-  // OriginTrialFeature enum values. OriginTrialFeature enum is not visible
-  // outside of blink (and doesn't need to be) so these values are casted to int
-  // as they are passed through content across navigations.
-  std::vector<int> initiator_origin_trial_features;
-
-  // The value of the hrefTranslate attribute if this navigation was initiated
-  // from a link that had that attribute set.
-  std::string href_translate;
-
-  // Whether this is a history navigation in a newly created child frame, in
-  // which case the browser process is instructing the renderer process to load
-  // a URL from a session history item.  Defaults to false.
-  // TODO(ahemery): Move this to BeginNavigationParams once we default to
-  // IsPerNavigationMojoInterface().
-  bool is_history_navigation_in_new_child_frame = false;
-
-  // The time the input event leading to the navigation occurred. This will
-  // not always be set; it depends on the creator of the CommonNavigationParams
-  // setting it.
-  base::TimeTicks input_start;
 };
 
 // Provided by the browser -----------------------------------------------------

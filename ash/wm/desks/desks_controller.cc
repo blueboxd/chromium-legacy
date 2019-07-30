@@ -339,8 +339,15 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
     animator->TakeStartingDeskScreenshot();
 }
 
-void DesksController::ActivateAdjacentDesk(bool going_left,
+bool DesksController::ActivateAdjacentDesk(bool going_left,
                                            DesksSwitchSource source) {
+  // An on-going desk switch animation might be in progress. For now skip this
+  // accelerator or touchpad event. Later we might want to consider queueing
+  // these animations, or cancelling the on-going ones and start over.
+  // TODO(afakhry): Discuss with UX.
+  if (AreDesksBeingModified())
+    return false;
+
   const Desk* desk_to_activate = going_left ? GetPreviousDesk() : GetNextDesk();
   if (desk_to_activate) {
     ActivateDesk(desk_to_activate, source);
@@ -348,6 +355,8 @@ void DesksController::ActivateAdjacentDesk(bool going_left,
     for (auto* root : Shell::GetAllRootWindows())
       desks_animations::PerformHitTheWallAnimation(root, going_left);
   }
+
+  return true;
 }
 
 void DesksController::MoveWindowFromActiveDeskTo(

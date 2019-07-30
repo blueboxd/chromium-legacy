@@ -15,8 +15,12 @@
 #include "base/macros.h"
 #include "base/sequence_token.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/simple_thread.h"
+#include "base/threading/thread_local.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -177,6 +181,35 @@ TEST(SequenceCheckerMacroTest, Macros) {
   // Don't expect a DCHECK death when a SequenceChecker is used for the first
   // time after having been detached.
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker) << "Error message.";
+}
+
+// Owns a SequenceCheckerImpl, and asserts that CalledOnValidSequence() is valid
+// in ~SequenceCheckerOwner.
+class SequenceCheckerOwner {
+ public:
+  SequenceCheckerOwner() = default;
+  ~SequenceCheckerOwner() { EXPECT_TRUE(checker_.CalledOnValidSequence()); }
+
+ private:
+  SequenceCheckerImpl checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(SequenceCheckerOwner);
+};
+
+// Verifies SequenceCheckerImpl::CalledOnValidSequence() returns true if called
+// during thread destruction.
+TEST(SequenceCheckerTest, CalledOnValidSequenceFromThreadDestruction) {
+  ThreadLocalOwnedPointer<SequenceCheckerOwner> thread_local_owner;
+  {
+    test::ScopedTaskEnvironment task_environment;
+    auto task_runner = CreateSequencedTaskRunner({});
+    task_runner->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          thread_local_owner.Set(std::make_unique<SequenceCheckerOwner>());
+        }));
+    task_runner = nullptr;
+    task_environment.RunUntilIdle();
+  }
 }
 
 }  // namespace base

@@ -82,8 +82,7 @@ class NavigationPredictorBrowserTest
   NavigationPredictorBrowserTest()
       : subresource_filter::SubresourceFilterBrowserTest() {
     feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kNavigationPredictor,
-        {{"same_origin_preconnecting_allowed", "true"}});
+        blink::features::kNavigationPredictor, {});
   }
 
   void SetUp() override {
@@ -263,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, ClickAnchorElement) {
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kNone, 1);
+      NavigationPredictor::Action::kPreconnect, 1);
 }
 
 // Simulate a click at the anchor element.
@@ -436,7 +435,6 @@ IN_PROC_BROWSER_TEST_F(
         ActionAccuracy_DifferentOrigin_VisibilityChangedPreconnectEnabled)) {
   std::map<std::string, std::string> parameters;
   base::test::ScopedFeatureList feature_list;
-  parameters["same_origin_preconnecting_allowed"] = "true";
   feature_list.InitAndEnableFeatureWithParameters(
       blink::features::kNavigationPredictor, parameters);
 
@@ -489,7 +487,6 @@ IN_PROC_BROWSER_TEST_F(
     DISABLE_ON_CHROMEOS(NoPreconnectNonSearchOnOtherHostLinks)) {
   std::map<std::string, std::string> parameters;
   base::test::ScopedFeatureList feature_list;
-  parameters["same_origin_preconnecting_allowed"] = "true";
   parameters["preconnect_skip_link_scores"] = "false";
   feature_list.InitAndEnableFeatureWithParameters(
       blink::features::kNavigationPredictor, parameters);
@@ -510,8 +507,6 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        DISABLE_ON_CHROMEOS(PreconnectNonSearch)) {
   std::map<std::string, std::string> parameters;
   base::test::ScopedFeatureList feature_list;
-  parameters["same_origin_preconnecting_allowed"] = "true";
-  parameters["preconnect_skip_link_scores"] = "true";
   feature_list.InitAndEnableFeatureWithParameters(
       blink::features::kNavigationPredictor, parameters);
 
@@ -538,7 +533,6 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
   std::map<std::string, std::string> parameters;
   base::test::ScopedFeatureList feature_list;
-  parameters["same_origin_preconnecting_allowed"] = "true";
   parameters["prefetch_after_preconnect"] = "true";
   feature_list.InitAndEnableFeatureWithParameters(
       blink::features::kNavigationPredictor, parameters);
@@ -587,8 +581,6 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   // Force Preconnect on
   std::map<std::string, std::string> parameters;
   base::test::ScopedFeatureList feature_list;
-  parameters["same_origin_preconnecting_allowed"] = "true";
-  parameters["preconnect_skip_link_scores"] = "true";
   feature_list.InitAndEnableFeatureWithParameters(
       blink::features::kNavigationPredictor, parameters);
 
@@ -837,7 +829,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
       "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
-      NavigationPredictor::Action::kNone, 1);
+      NavigationPredictor::Action::kPreconnect, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,

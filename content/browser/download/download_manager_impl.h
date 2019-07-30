@@ -45,8 +45,6 @@ class DownloadRequestHandleInterface;
 }
 
 namespace content {
-class ResourceContext;
-
 class CONTENT_EXPORT DownloadManagerImpl
     : public DownloadManager,
       public download::UrlDownloadHandler::Delegate,
@@ -159,16 +157,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   void SetDownloadFileFactoryForTesting(
       std::unique_ptr<download::DownloadFileFactory> file_factory);
   virtual download::DownloadFileFactory* GetDownloadFileFactoryForTesting();
-
-  // Helper function to initiate a download request. This function initiates
-  // the download using functionality provided by the
-  // ResourceDispatcherHostImpl::BeginURLRequest function. The function returns
-  // the result of the downoad operation. Please see the
-  // DownloadInterruptReason enum for information on possible return values.
-  static download::DownloadInterruptReason BeginDownloadRequest(
-      std::unique_ptr<net::URLRequest> url_request,
-      ResourceContext* resource_context,
-      download::DownloadUrlParameters* params);
 
   // Continue a navigation that ends up to be a download after it reaches the
   // OnResponseStarted() step. It has to be called on the UI thread.

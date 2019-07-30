@@ -223,11 +223,14 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   // NavigationRequest and NavigationHandleImpl.
   void CreateNavigationHandle() {
     auto frame_entry = base::MakeRefCounted<FrameNavigationEntry>();
-    CommonNavigationParams common_params;
-    common_params.initiator_origin =
+    mojom::CommonNavigationParamsPtr common_params =
+        mojom::CommonNavigationParams::New();
+    common_params->navigation_start = base::TimeTicks::Now();
+    common_params->referrer = blink::mojom::Referrer::New();
+    common_params->initiator_origin =
         url::Origin::Create(GURL("https://initiator.example.com"));
     request_ = NavigationRequest::CreateBrowserInitiated(
-        main_test_rfh()->frame_tree_node(), common_params,
+        main_test_rfh()->frame_tree_node(), std::move(common_params),
         CommitNavigationParams(), false /* browser-initiated */, std::string(),
         *frame_entry, nullptr, nullptr, nullptr);
     request_->CreateNavigationHandle(true);

@@ -293,8 +293,8 @@ void CvcUnmaskViewController::ButtonPressed(views::Button* sender,
 void CvcUnmaskViewController::CvcConfirmed() {
   const base::string16& cvc = cvc_field_->GetText();
   if (unmask_delegate_) {
-    autofill::CardUnmaskDelegate::UnmaskResponse response;
-    response.cvc = cvc;
+    autofill::CardUnmaskDelegate::UserProvidedUnmaskDetails details;
+    details.cvc = cvc;
     if (credit_card_.ShouldUpdateExpiration(autofill::AutofillClock::Now())) {
       views::Combobox* month = static_cast<views::Combobox*>(
           dialog()->GetViewByID(static_cast<int>(DialogViewID::CVC_MONTH)));
@@ -303,10 +303,10 @@ void CvcUnmaskViewController::CvcConfirmed() {
           dialog()->GetViewByID(static_cast<int>(DialogViewID::CVC_YEAR)));
       DCHECK(year);
 
-      response.exp_month = month->GetTextForRow(month->GetSelectedIndex());
-      response.exp_year = year->GetTextForRow(year->GetSelectedIndex());
+      details.exp_month = month->GetTextForRow(month->GetSelectedIndex());
+      details.exp_year = year->GetTextForRow(year->GetSelectedIndex());
     }
-    unmask_delegate_->OnUnmaskResponse(response);
+    unmask_delegate_->OnUnmaskPromptAccepted(details);
   }
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/common/pref_names.h"
 
 #include "base/stl_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_font_webkit_names.h"
@@ -1420,12 +1421,12 @@ const char kShowFirstRunDefaultSearchShortcut[] =
     "profile.show_first_run_default_search_shortcut";
 #endif
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Put the user into an onboarding group that's decided when they go through
 // the first run onboarding experience. Only users in a group will have their
 // finch group pinged to keep track of them for the experiment.
 const char kNaviOnboardGroup[] = "browser.navi_onboard_group";
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
@@ -2521,7 +2522,7 @@ const char kDSEWasDisabledByPolicy[] = "dse_was_disabled_by_policy";
 const char kWebShareVisitedTargets[] = "profile.web_share.visited_targets";
 
 #if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Acts as a cache to remember incompatible applications through restarts. Used
 // for the Incompatible Applications Warning feature.
 const char kIncompatibleApplications[] = "incompatible_applications";
@@ -2534,7 +2535,7 @@ const char kModuleBlacklistCacheMD5Digest[] =
 // A boolean value, controlling whether third party software is allowed to
 // inject into Chrome's processes.
 const char kThirdPartyBlockingEnabled[] = "third_party_blocking_enabled";
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
 
 // An integer that keeps track of prompt waves for the settings reset

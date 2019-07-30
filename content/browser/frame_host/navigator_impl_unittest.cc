@@ -295,7 +295,7 @@ TEST_F(NavigatorTest, BeginNavigation) {
   ASSERT_TRUE(subframe_loader);
   EXPECT_EQ(NavigationRequest::STARTED, subframe_request->state());
   EXPECT_EQ(kUrl2, subframe_request->common_params().url);
-  EXPECT_EQ(kUrl2, subframe_loader->request_info()->common_params.url);
+  EXPECT_EQ(kUrl2, subframe_loader->request_info()->common_params->url);
   // First party for cookies url should be that of the main frame.
   EXPECT_EQ(kUrl1, subframe_loader->request_info()->site_for_cookies);
 
@@ -335,7 +335,7 @@ TEST_F(NavigatorTest, BeginNavigation) {
   TestNavigationURLLoader* main_loader =
       GetLoaderForNavigationRequest(main_request);
   EXPECT_EQ(kUrl3, main_request->common_params().url);
-  EXPECT_EQ(kUrl3, main_loader->request_info()->common_params.url);
+  EXPECT_EQ(kUrl3, main_loader->request_info()->common_params->url);
   EXPECT_EQ(kUrl3, main_loader->request_info()->site_for_cookies);
   EXPECT_TRUE(main_loader->request_info()->is_main_frame);
   EXPECT_FALSE(main_loader->request_info()->parent_is_main_frame);
@@ -820,7 +820,7 @@ TEST_F(NavigatorTest, Reload) {
   // A NavigationRequest should have been generated.
   NavigationRequest* main_request = node->navigation_request();
   ASSERT_TRUE(main_request != nullptr);
-  EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD,
+  EXPECT_EQ(mojom::NavigationType::RELOAD,
             main_request->common_params().navigation_type);
   reload1->ReadyToCommit();
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -834,7 +834,7 @@ TEST_F(NavigatorTest, Reload) {
   // A NavigationRequest should have been generated.
   main_request = node->navigation_request();
   ASSERT_TRUE(main_request != nullptr);
-  EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE,
+  EXPECT_EQ(mojom::NavigationType::RELOAD_BYPASSING_CACHE,
             main_request->common_params().navigation_type);
   reload2->ReadyToCommit();
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));

@@ -7,6 +7,7 @@
 <translation id="1051826050538111504">Há um software nocivo no seu computador. O Chrome pode removê-lo, restaurar as configurações e desativar as extensões para que o navegador volte a funcionar normalmente.</translation>
 <translation id="1065672644894730302">Não foi possível ler suas preferências. Alguns recursos podem não estar disponíveis e as alterações nas preferências não serão salvas.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> estava usando o Chrome anteriormente</translation>
+<translation id="1097330777386562916">Limpar cookies e dados de sites ao sair do Chrome</translation>
 <translation id="1104959162601287462">Sobre o Chrome OS</translation>
 <translation id="110877069173485804">Este é seu Chrome</translation>
 <translation id="1142745911746664600">Não é possível atualizar o Chrome</translation>
@@ -26,6 +27,7 @@
 <translation id="1590588151039584890">Para atualizar, é necessário interromper o Chrome neste computador. Essa ação pode causar perda de dados não salvos de outros usuários conectados a esta máquina.</translation>
 <translation id="1619887657840448962">Para tornar o Chrome mais seguro, desativamos a extensão a seguir, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e pode ter sido adicionada sem seu conhecimento.</translation>
 <translation id="1628000112320670027">Ajuda com o Chrome</translation>
+<translation id="1635734105302489219">Você limpa os cookies ao sair do Chrome. Para retomar a sincronização, altere as <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">O Chrome OS tornou-se possível graças a um outro <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" />, como o <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Abrir link na janela &amp;sem rastros do Chrome</translation>
 <translation id="1682634494516646069">O Google Chrome não pode ler e gravar neste diretório de dados: <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -123,8 +125,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="4251625577313994583">use o Chrome no seu iPhone</translation>
 <translation id="4293420128516039005">Faça login para sincronizar e personalizar o Chrome em todos os seus dispositivos</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
-<translation id="4331809312908958774">Chrome OS
-</translation>
+<translation id="4331809312908958774">Sistema operacional Chrome</translation>
 <translation id="4343195214584226067">A extensão <ph name="EXTENSION_NAME" /> foi adicionada ao Chrome</translation>
 <translation id="4407807842708586359">Sistema operacional (OS) do Google Chrome</translation>
 <translation id="4458462641685292929">Outra operação está em andamento no Google Chrome. Tente novamente mais tarde.</translation>

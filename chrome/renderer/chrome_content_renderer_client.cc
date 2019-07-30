@@ -522,7 +522,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   if (command_line->HasSwitch(switches::kEnableDistillabilityService)) {
     // Create DistillabilityAgent to send distillability updates to
     // DistillabilityDriver in the browser process.
-    new dom_distiller::DistillabilityAgent(render_frame);
+    new dom_distiller::DistillabilityAgent(render_frame, DCHECK_IS_ON());
   }
 
   // Set up a mojo service to test if this page is a contextual search page.

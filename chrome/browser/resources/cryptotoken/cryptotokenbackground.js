@@ -9,9 +9,6 @@
 'use strict';
 
 /** @const */
-var BROWSER_SUPPORTS_TLS_CHANNEL_ID = true;
-
-/** @const */
 var HTTP_ORIGINS_ALLOWED = false;
 
 /** @const */

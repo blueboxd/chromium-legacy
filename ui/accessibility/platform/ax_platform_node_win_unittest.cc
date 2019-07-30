@@ -421,6 +421,10 @@ TestFragmentRootDelegate::GetParentOfAXFragmentRoot() {
   return parent_;
 }
 
+bool TestFragmentRootDelegate::IsAXFragmentRootAControlElement() {
+  return is_control_element_;
+}
+
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
   AXNodeData root;
   root.id = 1;

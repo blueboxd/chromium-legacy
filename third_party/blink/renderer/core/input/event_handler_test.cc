@@ -2324,6 +2324,79 @@ TEST_F(EventHandlerSimTest, DoNotScrollWithTouchpadIfOverflowIsHidden) {
   EXPECT_EQ(0, GetDocument().getElementById("outer")->scrollLeft());
 }
 
+TEST_F(EventHandlerSimTest, GestureScrollUpdateModifiedScrollChain) {
+  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #scroller {
+        width: 50vw;
+        height: 50vh;
+        overflow-y: scroll;
+    }
+    .inline {
+        display:inline;
+    }
+    .content {
+        height: 300vh;
+    }
+    </style>
+    <body>
+      <div id='scroller'>
+        <div class='content'>
+      </div>
+    </body>
+  )HTML");
+  Compositor().BeginFrame();
+
+  WebGestureEvent scroll_begin_event(
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(),
+      blink::WebGestureDevice::kTouchpad);
+  scroll_begin_event.SetPositionInWidget(WebFloatPoint(10, 10));
+  scroll_begin_event.SetPositionInScreen(WebFloatPoint(10, 10));
+  scroll_begin_event.SetFrameScale(1);
+
+  WebGestureEvent scroll_update_event(
+      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+      WebInputEvent::GetStaticTimeStampForTests(),
+      blink::WebGestureDevice::kTouchpad);
+  scroll_update_event.data.scroll_update.delta_x = 0;
+  scroll_update_event.data.scroll_update.delta_y = -100;
+  scroll_update_event.SetPositionInWidget(WebFloatPoint(10, 10));
+  scroll_update_event.SetPositionInScreen(WebFloatPoint(10, 10));
+  scroll_update_event.SetFrameScale(1);
+
+  WebGestureEvent scroll_end_event(WebInputEvent::kGestureScrollEnd,
+                                   WebInputEvent::kNoModifiers,
+                                   WebInputEvent::GetStaticTimeStampForTests(),
+                                   blink::WebGestureDevice::kTouchpad);
+  scroll_end_event.SetPositionInWidget(WebFloatPoint(10, 10));
+  scroll_end_event.SetPositionInScreen(WebFloatPoint(10, 10));
+
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_begin_event));
+
+  // Between the GSB (when the scroll chain is computed) and GSU, update the
+  // scroller to be display:inline. Applying the scroll should handle this
+  // by detecting a non-box LayoutObject in the scroll chain and not crash.
+  Element* const scroller = GetDocument().getElementById("scroller");
+  scroller->setAttribute("class", "inline");
+
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_update_event));
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(scroll_end_event));
+
+  EXPECT_EQ(scroller->scrollTop(), 0);
+
+  // Since the scroller is now display:inline, the scroll should be routed to
+  // the document instead.
+  EXPECT_EQ(GetDocument().documentElement()->scrollTop(), 100);
+}
+
 TEST_F(EventHandlerSimTest, ElementTargetedGestureScroll) {
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");

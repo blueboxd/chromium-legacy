@@ -2743,7 +2743,7 @@
           如果未设置此政策，系统将会对所有网站使用“DefaultPluginsSetting”政策中的全局默认值（倘若已设置“DefaultPluginsSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultPluginsSetting”政策）。</translation>
 <translation id="6190022522129724693">默认弹出式窗口设置</translation>
 <translation id="6190367314942602985">报告用户标识信息</translation>
-<translation id="6195802366906945965">确定是否将会使用内置的证书验证程序来验证服务器证书</translation>
+<translation id="6195802366906945965">确定是否会使用内置的证书验证程序来验证服务器证书</translation>
 <translation id="6197453924249895891">向扩展程序授予对企业密钥的使用权限。
 
       在受管理的帐号中使用 chrome.enterprise.platformKeys API 生成的密钥会被指定为供企业使用（导入或以其他方式生成的密钥则不会被指定为供企业使用）。
@@ -3124,7 +3124,7 @@
       如果停用了此政策，<ph name="PRODUCT_OS_NAME" />将会使用平台提供的旧版证书验证程序来验证服务器证书。
       如果未设置此政策，<ph name="PRODUCT_OS_NAME" />可能会使用内置的证书验证程序，也可能会使用旧版证书验证程序。
 
-      按照我们的计划，此政策将会被从 <ph name="PRODUCT_OS_NAME" />版本 81 中移除 - 因为这一版本的 <ph name="PRODUCT_OS_NAME" />将不再支持旧版证书验证程序。
+      按照我们的计划，此政策将会从 <ph name="PRODUCT_OS_NAME" />版本 81 中移除 - 因为这一版本的 <ph name="PRODUCT_OS_NAME" />将不再支持旧版证书验证程序。
       </translation>
 <translation id="7027785306666625591">配置<ph name="PRODUCT_OS_NAME" />中的电源管理设置。
 

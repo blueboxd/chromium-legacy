@@ -322,7 +322,7 @@ bool CardUnmaskPromptViews::Accept() {
   if (!controller_)
     return true;
 
-  controller_->OnUnmaskResponse(
+  controller_->OnUnmaskPromptAccepted(
       cvc_input_->GetText(),
       month_input_->GetVisible()
           ? month_input_->GetTextForRow(month_input_->GetSelectedIndex())

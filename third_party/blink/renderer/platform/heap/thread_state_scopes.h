@@ -43,26 +43,6 @@ class ThreadState::SweepForbiddenScope final {
   ThreadState* const state_;
 };
 
-// Used to denote when access to unmarked objects is allowed but we shouldn't
-// resurrect it by making new references (e.g. during weak processing and pre
-// finalizer).
-class ThreadState::ObjectResurrectionForbiddenScope final {
-  STACK_ALLOCATED();
-  DISALLOW_COPY_AND_ASSIGN(ObjectResurrectionForbiddenScope);
-
- public:
-  explicit ObjectResurrectionForbiddenScope(ThreadState* state)
-      : state_(state) {
-    state_->EnterObjectResurrectionForbiddenScope();
-  }
-  ~ObjectResurrectionForbiddenScope() {
-    state_->LeaveObjectResurrectionForbiddenScope();
-  }
-
- private:
-  ThreadState* const state_;
-};
-
 class ThreadState::MainThreadGCForbiddenScope final {
   STACK_ALLOCATED();
 

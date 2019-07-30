@@ -5,6 +5,7 @@
 #include "chromeos/services/assistant/service.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "ash/public/cpp/session/session_controller.h"
@@ -14,6 +15,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
@@ -25,6 +27,7 @@
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
+#include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -35,7 +38,6 @@
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -73,6 +75,7 @@ Service::Service(service_manager::mojom::ServiceRequest request,
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       power_manager_observer_(this),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
+      pref_connection_delegate_(std::make_unique<PrefConnectionDelegate>()),
       weak_ptr_factory_(this) {
   registry_.AddInterface<mojom::AssistantPlatform>(base::BindRepeating(
       &Service::BindAssistantPlatformConnection, base::Unretained(this)));
@@ -86,6 +89,7 @@ Service::Service(service_manager::mojom::ServiceRequest request,
 }
 
 Service::~Service() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto* const session_controller = ash::SessionController::Get();
   if (observing_ash_session_ && session_controller) {
     session_controller->RemoveSessionActivationObserverForAccountId(account_id_,
@@ -94,6 +98,8 @@ Service::~Service() {
 }
 
 void Service::RequestAccessToken() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Bypass access token fetching under signed out mode.
   if (is_signed_out_mode_)
     return;
@@ -104,6 +110,8 @@ void Service::RequestAccessToken() {
 }
 
 bool Service::ShouldEnableHotword() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   bool dsp_available = chromeos::CrasAudioHandler::Get()->HasHotwordDevice();
 
   // Disable hotword if hotword is not set to always on and power source is not
@@ -122,44 +130,48 @@ void Service::SetIdentityAccessorForTesting(
   identity_accessor_ = std::move(identity_accessor);
 }
 
-void Service::SetAssistantManagerForTesting(
-    std::unique_ptr<AssistantManagerService> assistant_manager_service) {
-  assistant_manager_service_ = std::move(assistant_manager_service);
-}
-
 void Service::SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) {
   token_refresh_timer_ = std::move(timer);
 }
 
-void Service::OnStart() {
-  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-  prefs::RegisterProfilePrefsForeign(pref_registry.get());
-  ::prefs::mojom::PrefStoreConnectorPtr pref_store_connector;
-
-  ::prefs::ConnectToPrefService(
-      service_binding_.GetConnector(), std::move(pref_registry),
-      base::Bind(&Service::OnPrefServiceConnected, base::Unretained(this)),
-      ::prefs::mojom::kServiceName);
+void Service::SetPrefConnectionDelegateForTesting(
+    std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate) {
+  pref_connection_delegate_ = std::move(pref_connection_delegate);
 }
 
-void Service::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
+void Service::OnStart() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+  prefs::RegisterProfilePrefsForeign(pref_registry.get());
+
+  pref_connection_delegate_->ConnectToPrefService(
+      service_binding_.GetConnector(), std::move(pref_registry),
+      base::Bind(&Service::OnPrefServiceConnected, base::Unretained(this)));
+}
+
+void Service::OnConnect(const service_manager::BindSourceInfo& source_info,
+                        const std::string& interface_name,
+                        mojo::ScopedMessagePipeHandle interface_pipe) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   registry_.BindInterface(interface_name, std::move(interface_pipe));
 }
 
 void Service::BindAssistantConnection(mojom::AssistantRequest request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(assistant_manager_service_);
   bindings_.AddBinding(assistant_manager_service_.get(), std::move(request));
 }
 
 void Service::BindAssistantPlatformConnection(
     mojom::AssistantPlatformRequest request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   platform_binding_.Bind(std::move(request));
 }
 
 void Service::PowerChanged(const power_manager::PowerSupplyProperties& prop) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const bool power_source_connected =
       prop.external_power() == power_manager::PowerSupplyProperties::AC;
   if (power_source_connected == power_source_connected_)
@@ -170,6 +182,7 @@ void Service::PowerChanged(const power_manager::PowerSupplyProperties& prop) {
 }
 
 void Service::SuspendDone(const base::TimeDelta& sleep_duration) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // |token_refresh_timer_| may become stale during sleeping, so we immediately
   // request a new token to make sure it is fresh.
   if (token_refresh_timer_->IsRunning()) {
@@ -179,6 +192,7 @@ void Service::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 void Service::OnSessionActivated(bool activated) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(client_);
   session_active_ = activated;
 
@@ -192,11 +206,13 @@ void Service::OnSessionActivated(bool activated) {
 }
 
 void Service::OnLockStateChanged(bool locked) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   locked_ = locked;
   UpdateListeningState();
 }
 
 void Service::OnAssistantHotwordAlwaysOn() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // No need to update hotword status if power source is connected.
   if (power_source_connected_)
     return;
@@ -225,8 +241,11 @@ void Service::OnLockedFullScreenStateChanged(bool enabled) {
 }
 
 void Service::UpdateAssistantManagerState() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!pref_service_)
     return;
+
   if (!assistant_state_.hotword_enabled().has_value() ||
       !assistant_state_.settings_enabled().has_value() ||
       !assistant_state_.locale().has_value() ||
@@ -239,7 +258,8 @@ void Service::UpdateAssistantManagerState() {
   if (!assistant_manager_service_)
     CreateAssistantManagerService();
 
-  switch (assistant_manager_service_->GetState()) {
+  auto state = assistant_manager_service_->GetState();
+  switch (state) {
     case AssistantManagerService::State::STOPPED:
       if (assistant_state_.settings_enabled().value()) {
         assistant_manager_service_->Start(
@@ -256,8 +276,17 @@ void Service::UpdateAssistantManagerState() {
         DVLOG(1) << "Request Assistant start";
       }
       break;
-    case AssistantManagerService::State::RUNNING:
     case AssistantManagerService::State::STARTED:
+      // Wait if |assistant_manager_service_| is not at a stable state.
+      update_assistant_manager_callback_.Cancel();
+      update_assistant_manager_callback_.Reset(
+          base::BindOnce(&Service::UpdateAssistantManagerState,
+                         weak_ptr_factory_.GetWeakPtr()));
+      main_task_runner_->PostDelayedTask(
+          FROM_HERE, update_assistant_manager_callback_.callback(),
+          kUpdateAssistantManagerDelay);
+      break;
+    case AssistantManagerService::State::RUNNING:
       if (assistant_state_.settings_enabled().value()) {
         if (!is_signed_out_mode_)
           assistant_manager_service_->SetAccessToken(access_token_.value());
@@ -273,6 +302,7 @@ void Service::UpdateAssistantManagerState() {
 
 void Service::BindAssistantSettingsManager(
     mojom::AssistantSettingsManagerRequest request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(assistant_manager_service_);
   assistant_manager_service_->GetAssistantSettingsManager()->BindRequest(
       std::move(request));
@@ -281,6 +311,7 @@ void Service::BindAssistantSettingsManager(
 void Service::Init(mojom::ClientPtr client,
                    mojom::DeviceActionsPtr device_actions,
                    bool is_test) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_test_ = is_test;
   client_ = std::move(client);
   device_actions_ = std::move(device_actions);
@@ -299,6 +330,8 @@ void Service::Init(mojom::ClientPtr client,
 
 void Service::OnPrefServiceConnected(
     std::unique_ptr<::PrefService> pref_service) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // TODO(b/110211045): Add testing support for Assistant prefs.
   if (!pref_service)
     return;
@@ -315,6 +348,7 @@ void Service::OnPrefServiceConnected(
 }
 
 identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!identity_accessor_) {
     service_binding_.GetConnector()->BindInterface(
         identity::mojom::kServiceName, mojo::MakeRequest(&identity_accessor_));
@@ -327,6 +361,7 @@ void Service::GetPrimaryAccountInfoCallback(
     const base::Optional<std::string>& gaia,
     const base::Optional<std::string>& email,
     const identity::AccountState& account_state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Validate the remotely-supplied parameters before using them below: if
   // |account_id| is non-null, the other two should be non-null as well per
   // the stated contract of IdentityAccessor::GetPrimaryAccountInfo().
@@ -353,6 +388,8 @@ void Service::GetPrimaryAccountInfoCallback(
 void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
                                      base::Time expiration_time,
                                      const GoogleServiceAuthError& error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!token.has_value()) {
     LOG(ERROR) << "Failed to retrieve token, error: " << error.ToString();
     RetryRefreshToken();
@@ -366,6 +403,8 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
 }
 
 void Service::RetryRefreshToken() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   base::TimeDelta backoff_delay =
       std::min(kMinTokenRefreshDelay *
                    (1 << (token_refresh_error_backoff_factor - 1)),
@@ -378,6 +417,8 @@ void Service::RetryRefreshToken() {
 }
 
 void Service::CreateAssistantManagerService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   if (is_test_) {
     // Use fake service in browser tests.
@@ -402,6 +443,8 @@ void Service::CreateAssistantManagerService() {
 }
 
 void Service::FinalizeAssistantManagerService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DCHECK(assistant_manager_service_->GetState() ==
          AssistantManagerService::State::RUNNING);
 
@@ -444,18 +487,27 @@ void Service::FinalizeAssistantManagerService() {
 }
 
 void Service::StopAssistantManagerService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   assistant_manager_service_->Stop();
   weak_ptr_factory_.InvalidateWeakPtrs();
   client_->OnAssistantStatusChanged(false /* running */);
 }
 
 void Service::AddAshSessionObserver() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   observing_ash_session_ = true;
-  ash::SessionController::Get()->AddSessionActivationObserverForAccountId(
-      account_id_, this);
+  // No session controller in unittest.
+  if (ash::SessionController::Get()) {
+    ash::SessionController::Get()->AddSessionActivationObserverForAccountId(
+        account_id_, this);
+  }
 }
 
 void Service::UpdateListeningState() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (assistant_manager_service_->GetState() !=
       AssistantManagerService::State::RUNNING) {
     return;

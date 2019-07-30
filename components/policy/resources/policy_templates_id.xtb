@@ -1892,7 +1892,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
           Jika kebijakan ini tidak ditetapkan, opsi Aksesibilitas tidak akan muncul di menu baki sistem, tetapi pengguna dapat menyebabkan munculnya opsi Aksesibilitas melalui halaman Setelan.
 
-          Jika fitur aksesibilitas diaktifkan dengan cara lain (misalnya dengan kombinasi kunci), opsi Aksesibilitas akan selalu muncul di menu baki sistem.</translation>
+          Jika fitur aksesibilitas diaktifkan dengan cara lain (misalnya dengan kombinasi tombol), opsi Aksesibilitas akan selalu muncul di menu baki sistem.</translation>
 <translation id="436581050240847513">Melaporkan antarmuka jaringan perangkat</translation>
 <translation id="4372704773119750918">Jangan izinkan pengguna perusahaan untuk menjadi bagian dari multiprofil (primer atau sekunder)</translation>
 <translation id="4377599627073874279">Izinkan semua situs menampilkan semua gambar</translation>
@@ -3176,7 +3176,7 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
       Jika kebijakan ini tidak disetel, jalur profil default akan digunakan dan pengguna dapat menggantinya dengan tanda baris perintah '--user-data-dir'.</translation>
 <translation id="7011669683779011760">Ketika setelan ini diaktifkan, <ph name="PRODUCT_OS_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat bawaan.
       Ketika setelan ini dinonaktifkan, <ph name="PRODUCT_OS_NAME" /> akan menjalankan verifikasi sertifikat server menggunakan pemverifikasi sertifikat lama yang disediakan oleh platform.
-      Ketika setelan tidak ditetapkan, Anda dapat menggunakan pemverifikasi sertifikat bawaan ataupun yang lama dari <ph name="PRODUCT_OS_NAME" />.
+      Ketika setelan tidak ditetapkan, <ph name="PRODUCT_OS_NAME" /> dapat menggunakan pemverifikasi sertifikat bawaan ataupun yang lama.
 
       Kebijakan ini direncanakan akan dihapus dari <ph name="PRODUCT_OS_NAME" /> versi 81, ketika dukungan untuk pemverifikasi sertifikat lama di <ph name="PRODUCT_OS_NAME" /> direncanakan akan dihapus.
       </translation>

@@ -14,6 +14,7 @@ static_library("network_config") {
 
   deps = [
     "//base",
+    "//chromeos/login/login_state",
     "//chromeos/network",
     "//chromeos/services/network_config/public/cpp",
     "//chromeos/services/network_config/public/mojom",
@@ -38,8 +39,10 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/dbus/shill:test_support",
+    "//chromeos/login/login_state",
     "//chromeos/network:test_support",
     "//chromeos/services/network_config/public/cpp:test_support",
+    "//components/onc",
     "//services/network/public/mojom:mojom_ip_address",
     "//testing/gtest",
   ]

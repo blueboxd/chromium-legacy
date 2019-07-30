@@ -35,8 +35,7 @@ class WebRemoteFrameClient {
   virtual void ForwardPostMessage(WebLocalFrame* source_frame,
                                   WebRemoteFrame* target_frame,
                                   WebSecurityOrigin target_origin,
-                                  WebDOMMessageEvent,
-                                  bool has_user_gesture) {}
+                                  WebDOMMessageEvent) {}
 
   // A remote frame was asked to start a navigation.
   virtual void Navigate(

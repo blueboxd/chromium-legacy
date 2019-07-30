@@ -7,6 +7,7 @@
 <translation id="1051826050538111504">お使いのパソコンに有害なソフトウェアが見つかりました。Chrome では、ブラウザを正常な動作に戻すためにこのソフトウェアを削除し、設定を復元して、拡張機能を無効化することができます。</translation>
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
 <translation id="1088300314857992706">Chrome の前回の使用者は <ph name="USER_EMAIL_ADDRESS" /> です</translation>
+<translation id="1097330777386562916">Chrome の終了時に Cookie とサイトデータを削除する</translation>
 <translation id="1104959162601287462">Chrome OS について(&amp;C)</translation>
 <translation id="110877069173485804">自分好みに設定</translation>
 <translation id="1142745911746664600">Chrome を更新できません</translation>
@@ -26,6 +27,7 @@
 <translation id="1590588151039584890">更新するには、このパソコン上の Chrome を終了する必要があります。このパソコンにログインしているユーザーが他にいる場合、保存していない変更が失われる可能性があります。</translation>
 <translation id="1619887657840448962">Chrome をより安全にご利用いただくために、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない次の拡張機能を無効にしました。これは知らないうちに追加された可能性があります。</translation>
 <translation id="1628000112320670027">Chrome のヘルプを見る</translation>
+<translation id="1635734105302489219">Chrome の終了時に Cookie を削除するよう設定しています。同期を継続するにはこちらの<ph name="COOKIE_SETTINGS_LINK" />を変更してください。</translation>
 <translation id="1662639173275167396">Chrome OS も <ph name="BEGIN_LINK_LINUX_OSS" />Linux（ベータ版）<ph name="END_LINK_LINUX_OSS" />も追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
 <translation id="1674870198290878346">Chrome のシークレット ウインドウでリンクを開く(&amp;G)</translation>
 <translation id="1682634494516646069">Google Chrome はこのデータ ディレクトリへの読み書きを実行できません: <ph name="USER_DATA_DIRECTORY" /></translation>

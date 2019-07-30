@@ -130,8 +130,7 @@ import java.util.List;
  * with the rest of the application to ensure the toolbar is always visually up to date.
  */
 public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlFocusChangeListener,
-                                       ThemeColorObserver, MenuButtonDelegate,
-                                       TemplateUrlService.TemplateUrlServiceObserver {
+                                       ThemeColorObserver, MenuButtonDelegate {
     /**
      * Handle UI updates of menu icons. Only applicable for phones.
      */
@@ -238,10 +237,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private boolean mIsBottomToolbarVisible;
 
     private AppMenuHandler mAppMenuHandler;
-
-    private String mSearchEngineUrl = "";
-    private boolean mShouldShowSearchEngineLogo;
-    private boolean mIsSearchEngineGoogle;
 
     /**
      * Creates a ToolbarManager object.
@@ -1304,21 +1299,14 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 }
 
                 mSearchEngine = searchEngine;
+                mLocationBar.updateSearchEngineStatusIcon(
+                        SearchEngineLogoUtils.shouldShowSearchEngineLogo(),
+                        TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
+                        SearchEngineLogoUtils.getSearchLogoUrl());
                 mToolbar.onDefaultSearchEngineChanged();
             }
         };
         templateUrlService.addObserver(mTemplateUrlObserver);
-    }
-
-    @Override
-    public void onTemplateURLServiceChanged() {
-        mShouldShowSearchEngineLogo = SearchEngineLogoUtils.shouldShowSearchEngineLogo();
-        mIsSearchEngineGoogle = TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle();
-        mSearchEngineUrl = TemplateUrlServiceFactory.get().getUrlForSearchQuery(
-                /* search query which is stripped out later */ "foo");
-
-        mLocationBar.updateSearchEngineStatusIcon(
-                mShouldShowSearchEngineLogo, mIsSearchEngineGoogle, mSearchEngineUrl);
     }
 
     private void onNativeLibraryReady() {
@@ -1349,11 +1337,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mTabCountProvider.setTabModelSelector(mTabModelSelector);
         mIncognitoStateProvider.setTabModelSelector(mTabModelSelector);
         mAppThemeColorProvider.setIncognitoStateProvider(mIncognitoStateProvider);
-
-        // Listen for possible changes to the DSE.
-        TemplateUrlServiceFactory.get().addObserver(this);
-        TemplateUrlServiceFactory.get().runWhenLoaded(() -> onTemplateURLServiceChanged());
-        TemplateUrlServiceFactory.get().load();
     }
 
     private void handleTabRestoreCompleted() {

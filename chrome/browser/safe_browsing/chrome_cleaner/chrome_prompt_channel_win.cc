@@ -42,6 +42,8 @@ using base::win::ScopedHandle;
 using chrome_cleaner::ChromePromptRequest;
 using content::BrowserThread;
 using CleanerProcessDelegate = ChromePromptChannel::CleanerProcessDelegate;
+using ErrorCategory = ChromePromptChannelProtobuf::ErrorCategory;
+using CustomErrors = ChromePromptChannelProtobuf::CustomErrors;
 
 constexpr char ChromePromptChannelProtobuf::kErrorHistogramName[] =
     "SoftwareReporter.Cleaner.ChromePromptChannelError";
@@ -49,9 +51,8 @@ constexpr char ChromePromptChannelProtobuf::kErrorHistogramName[] =
 namespace {
 
 template <typename ErrorType>
-void WriteStatusErrorCodeToHistogram(
-    ChromePromptChannelProtobuf::ErrorCategory category,
-    ErrorType error_type) {
+void WriteStatusErrorCodeToHistogram(ErrorCategory category,
+                                     ErrorType error_type) {
   base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
       ChromePromptChannelProtobuf::kErrorHistogramName,
       base::HistogramBase::kUmaTargetedHistogramFlag);
@@ -161,12 +162,11 @@ void AppendHandleToCommandLine(base::CommandLine* command_line,
 // Reads |buffer_size| bytes from a pipe of PIPE_TYPE_MESSAGE.
 // Uses |error_category| to report WinAPI errors if needed.
 // Uses |custom_error| to report short reads if needed.
-bool ReadMessageFromPipe(
-    HANDLE handle,
-    LPVOID buffer,
-    DWORD buffer_size,
-    ChromePromptChannelProtobuf::ErrorCategory error_category,
-    ChromePromptChannelProtobuf::CustomErrors short_read_error) {
+bool ReadMessageFromPipe(HANDLE handle,
+                         LPVOID buffer,
+                         DWORD buffer_size,
+                         ErrorCategory error_category,
+                         CustomErrors short_read_error) {
   // If the process at the other end of the pipe is behaving correctly it will
   // write exactly |buffer_size| bytes to the pipe and PIPE_TYPE_MESSAGE
   // ensures that we read all of them at once. If the process writes more bytes
@@ -185,9 +185,8 @@ bool ReadMessageFromPipe(
     LOG(ERROR) << "Short read (read " << bytes_read << " of " << buffer_size
                << ")";
 
-    WriteStatusErrorCodeToHistogram(
-        ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
-        short_read_error);
+    WriteStatusErrorCodeToHistogram(ErrorCategory::kCustomError,
+                                    short_read_error);
     return false;
   }
   return true;
@@ -244,18 +243,16 @@ void ServiceChromePromptRequests(
 
   if (!::ReadFile(request_read_handle, &version, sizeof(version), &bytes_read,
                   nullptr)) {
-    WriteStatusErrorCodeToHistogram(
-        ChromePromptChannelProtobuf::ErrorCategory::kReadVersionWinError,
-        logging::GetLastSystemErrorCode());
+    WriteStatusErrorCodeToHistogram(ErrorCategory::kReadVersionWinError,
+                                    logging::GetLastSystemErrorCode());
     PLOG(ERROR) << "Failed to read protocol version";
     return;
   }
 
   CHECK_EQ(bytes_read, sizeof(version));
   if (version != 1) {
-    WriteStatusErrorCodeToHistogram(
-        ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
-        ChromePromptChannelProtobuf::CustomErrors::kWrongHandshakeVersion);
+    WriteStatusErrorCodeToHistogram(ErrorCategory::kCustomError,
+                                    CustomErrors::kWrongHandshakeVersion);
 
     LOG(ERROR) << "Cleaner requested unsupported version " << version;
     return;
@@ -267,36 +264,34 @@ void ServiceChromePromptRequests(
     uint32_t request_length = 0;
     if (!ReadMessageFromPipe(request_read_handle, &request_length,
                              sizeof(request_length),
-                             ChromePromptChannelProtobuf::ErrorCategory::
-                                 kReadRequestLengthWinError,
-                             ChromePromptChannelProtobuf::CustomErrors::
-                                 kRequestLengthShortRead)) {
+                             ErrorCategory::kReadRequestLengthWinError,
+                             CustomErrors::kRequestLengthShortRead)) {
       return;
     }
 
     if (request_length < 1 ||
         request_length > ChromePromptChannelProtobuf::kMaxMessageLength) {
-      WriteStatusErrorCodeToHistogram(
-          ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
-          ChromePromptChannelProtobuf::CustomErrors::kRequestInvalidSize);
-
+      WriteStatusErrorCodeToHistogram(ErrorCategory::kCustomError,
+                                      CustomErrors::kRequestInvalidSize);
       LOG(ERROR) << "Bad request length: " << request_length;
       return;
     }
     std::string request;
     if (!ReadMessageFromPipe(
             request_read_handle, base::WriteInto(&request, request_length + 1),
-            request_length,
-            ChromePromptChannelProtobuf::ErrorCategory::kReadRequestWinError,
-            ChromePromptChannelProtobuf::CustomErrors::kRequestShortRead)) {
+            request_length, ErrorCategory::kReadRequestWinError,
+            CustomErrors::kRequestShortRead)) {
       return;
     }
 
     ChromePromptRequest chrome_prompt_request;
     if (!chrome_prompt_request.ParseFromString(request)) {
-      PLOG(ERROR) << "Read invalid message";
+      LOG(ERROR) << "Read invalid message";
+      WriteStatusErrorCodeToHistogram(ErrorCategory::kCustomError,
+                                      CustomErrors::kRequestContentInvalid);
       return;
     }
+
     switch (chrome_prompt_request.request_case()) {
       case ChromePromptRequest::kQueryCapability:
         task_runner->PostTask(
@@ -333,7 +328,10 @@ void ServiceChromePromptRequests(
         return;
       }
       default:
-        PLOG(ERROR) << "Read unknown request";
+        LOG(ERROR) << "Read unknown request";
+
+        WriteStatusErrorCodeToHistogram(ErrorCategory::kCustomError,
+                                        CustomErrors::kRequestUnknown);
         return;
     }
   }
@@ -571,12 +569,16 @@ void ChromePromptChannelProtobuf::WriteResponseMessage(
   uint32_t message_size = response_string.size();
   if (!::WriteFile(response_write_handle_.Get(), &message_size,
                    sizeof(uint32_t), &bytes_written, nullptr)) {
+    WriteStatusErrorCodeToHistogram(ErrorCategory::kWriteResponseLengthWinError,
+                                    logging::GetLastSystemErrorCode());
     PLOG(ERROR) << "Failed to write message size";
     return;
   }
   CHECK_EQ(bytes_written, sizeof(uint32_t));
   if (!::WriteFile(response_write_handle_.Get(), response_string.data(),
                    message_size, &bytes_written, nullptr)) {
+    WriteStatusErrorCodeToHistogram(ErrorCategory::kWriteResponseWinError,
+                                    logging::GetLastSystemErrorCode());
     PLOG(ERROR) << "Failed to write message of length " << message_size;
     return;
   }

@@ -14,6 +14,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_embedder/output_surface_provider_impl.h"
@@ -23,6 +24,7 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
+#include "gpu/ipc/scheduler_sequence.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/gfx/switches.h"
 
@@ -139,6 +141,8 @@ void VizCompositorThreadRunner::CreateFrameSinkManagerOnCompositorThread(
     GpuServiceImpl* gpu_service) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!frame_sink_manager_);
+  if (features::IsUsingSkiaRenderer())
+    gpu::SchedulerSequence::DefaultDisallowScheduleTaskOnCurrentThread();
 
   server_shared_bitmap_manager_ = std::make_unique<ServerSharedBitmapManager>();
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

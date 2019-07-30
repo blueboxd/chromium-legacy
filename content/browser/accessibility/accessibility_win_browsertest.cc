@@ -3820,4 +3820,71 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest, TestGetFragmentRoot) {
   ASSERT_NE(nullptr, fragment_root.Get());
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
+                       RootElementPropertyValues) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+        <title>Page title</title>
+      </html>)HTML");
+
+  // Request an automation element for the root element.
+  Microsoft::WRL::ComPtr<IUIAutomation> uia;
+  ASSERT_HRESULT_SUCCEEDED(CoCreateInstance(CLSID_CUIAutomation, nullptr,
+                                            CLSCTX_INPROC_SERVER,
+                                            IID_IUIAutomation, &uia));
+
+  HWND hwnd = shell()->window()->GetHost()->GetAcceleratedWidget();
+  ASSERT_NE(gfx::kNullAcceleratedWidget, hwnd);
+  Microsoft::WRL::ComPtr<IUIAutomationElement> element;
+  ASSERT_HRESULT_SUCCEEDED(uia->ElementFromHandle(hwnd, &element));
+  ASSERT_NE(nullptr, element.Get());
+
+  // The control type should be Window and the name should be the same as the
+  // window title. These values come from UIA's built-in provider; this test
+  // validates that we aren't overriding them.
+  CONTROLTYPEID control_type;
+  ASSERT_HRESULT_SUCCEEDED(element->get_CurrentControlType(&control_type));
+  EXPECT_EQ(UIA_WindowControlTypeId, control_type);
+
+  wchar_t window_text[100] = {0};
+  ::GetWindowTextW(hwnd, window_text, _countof(window_text));
+  base::string16 window_text_str16(window_text);
+  base::win::ScopedBstr name;
+  ASSERT_HRESULT_SUCCEEDED(element->get_CurrentName(name.Receive()));
+  base::string16 name_str16(name, name.Length());
+  EXPECT_EQ(window_text_str16, name_str16);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
+                       LegacyWindowIsNotControlElement) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+        <html>
+        </html>)HTML");
+
+  // Request an automation element for the legacy window.
+  Microsoft::WRL::ComPtr<IUIAutomation> uia;
+  ASSERT_HRESULT_SUCCEEDED(CoCreateInstance(CLSID_CUIAutomation, nullptr,
+                                            CLSCTX_INPROC_SERVER,
+                                            IID_IUIAutomation, &uia));
+
+  RenderWidgetHostViewAura* render_widget_host_view_aura =
+      static_cast<RenderWidgetHostViewAura*>(
+          shell()->web_contents()->GetRenderWidgetHostView());
+  ASSERT_NE(nullptr, render_widget_host_view_aura);
+  HWND hwnd = render_widget_host_view_aura->AccessibilityGetAcceleratedWidget();
+  ASSERT_NE(gfx::kNullAcceleratedWidget, hwnd);
+  Microsoft::WRL::ComPtr<IUIAutomationElement> element;
+  ASSERT_HRESULT_SUCCEEDED(uia->ElementFromHandle(hwnd, &element));
+  ASSERT_NE(nullptr, element.Get());
+
+  // The legacy window should not be in the control or content trees.
+  BOOL result;
+  ASSERT_HRESULT_SUCCEEDED(element->get_CurrentIsControlElement(&result));
+  EXPECT_EQ(FALSE, result);
+  ASSERT_HRESULT_SUCCEEDED(element->get_CurrentIsContentElement(&result));
+  EXPECT_EQ(FALSE, result);
+}
+
 }  // namespace content

@@ -10,6 +10,7 @@
 #include <UIAutomationCoreApi.h>
 
 #include "base/win/scoped_safearray.h"
+#include "base/win/scoped_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using Microsoft::WRL::ComPtr;
@@ -213,6 +214,44 @@ TEST_F(AXFragmentRootTest, TestGetParent) {
       AXPlatformNodeFromNode(GetRootNode())->GetNativeViewAccessible();
   test_fragment_root_delegate_->parent_ = native_view_accessible;
   EXPECT_EQ(native_view_accessible, fragment_root->GetParent());
+}
+
+TEST_F(AXFragmentRootTest, TestGetPropertyValue) {
+  AXNodeData root;
+  Init(root);
+  InitFragmentRoot();
+
+  ComPtr<IRawElementProviderSimple> root_provider;
+  ax_fragment_root_->GetNativeViewAccessible()->QueryInterface(
+      IID_PPV_ARGS(&root_provider));
+
+  // IsControlElement and IsContentElement should follow the setting on the
+  // fragment root delegate.
+  test_fragment_root_delegate_->is_control_element_ = true;
+  base::win::ScopedVariant result;
+  EXPECT_HRESULT_SUCCEEDED(root_provider->GetPropertyValue(
+      UIA_IsControlElementPropertyId, result.Receive()));
+  EXPECT_EQ(result.type(), VT_BOOL);
+  EXPECT_EQ(result.ptr()->boolVal, VARIANT_TRUE);
+  EXPECT_HRESULT_SUCCEEDED(root_provider->GetPropertyValue(
+      UIA_IsContentElementPropertyId, result.Receive()));
+  EXPECT_EQ(result.type(), VT_BOOL);
+  EXPECT_EQ(result.ptr()->boolVal, VARIANT_TRUE);
+
+  test_fragment_root_delegate_->is_control_element_ = false;
+  EXPECT_HRESULT_SUCCEEDED(root_provider->GetPropertyValue(
+      UIA_IsControlElementPropertyId, result.Receive()));
+  EXPECT_EQ(result.type(), VT_BOOL);
+  EXPECT_EQ(result.ptr()->boolVal, VARIANT_FALSE);
+  EXPECT_HRESULT_SUCCEEDED(root_provider->GetPropertyValue(
+      UIA_IsContentElementPropertyId, result.Receive()));
+  EXPECT_EQ(result.type(), VT_BOOL);
+  EXPECT_EQ(result.ptr()->boolVal, VARIANT_FALSE);
+
+  // Other properties should return VT_EMPTY.
+  EXPECT_HRESULT_SUCCEEDED(root_provider->GetPropertyValue(
+      UIA_ControlTypePropertyId, result.Receive()));
+  EXPECT_EQ(result.type(), VT_EMPTY);
 }
 
 }  // namespace ui

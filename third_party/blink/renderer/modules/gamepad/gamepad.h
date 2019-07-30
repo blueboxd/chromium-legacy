@@ -52,7 +52,7 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   };
 
   Gamepad(Client* client,
-          unsigned index,
+          int index,
           base::TimeTicks time_origin,
           base::TimeTicks time_floor);
   ~Gamepad() override;
@@ -64,7 +64,7 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   const String& id() const { return id_; }
   void SetId(const String& id) { id_ = id; }
 
-  unsigned index() const { return index_; }
+  int index() const { return index_; }
 
   bool connected() const { return connected_; }
   void SetConnected(bool val) { connected_ = val; }
@@ -109,7 +109,7 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
   String id_;
 
   // The index of this gamepad within the GamepadList.
-  const unsigned index_;
+  const int index_;
 
   // True if this gamepad was still connected when gamepad state was captured.
   bool connected_;

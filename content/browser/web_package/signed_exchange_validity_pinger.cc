@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/throttling_url_loader.h"
@@ -101,7 +100,7 @@ void SignedExchangeValidityPinger::Start(
 
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(url_loader_factory), std::move(throttles), 0 /* routing_id */,
-      ResourceDispatcherHostImpl::MakeRequestID() /* request_id */,
+      signed_exchange_utils::MakeRequestID() /* request_id */,
       network::mojom::kURLLoadOptionNone, resource_request.get(), this,
       kValidityPingerTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
 }

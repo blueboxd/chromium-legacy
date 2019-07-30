@@ -49,6 +49,35 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
     return UiaHostProviderFromHwnd(hwnd, host_element_provider);
   }
 
+  STDMETHOD(GetPropertyValue)
+  (PROPERTYID property_id, VARIANT* result) override {
+    UIA_VALIDATE_CALL_1_ARG(result);
+
+    switch (property_id) {
+      default:
+        // UIA has a built-in provider that will expose values for several
+        // properties based on the HWND. This information is useful to someone
+        // examining the accessibility tree using tools such as Inspect. Return
+        // VT_EMPTY for most properties so that we don't override values from
+        // the default provider with blank data.
+        result->vt = VT_EMPTY;
+        break;
+
+      case UIA_IsControlElementPropertyId:
+      case UIA_IsContentElementPropertyId:
+        // Override IsControlElement and IsContentElement to fine tune which
+        // fragment roots appear in the control and content views.
+        result->vt = VT_BOOL;
+        result->boolVal =
+            static_cast<AXFragmentRootWin*>(GetDelegate())->IsControlElement()
+                ? VARIANT_TRUE
+                : VARIANT_FALSE;
+        break;
+    }
+
+    return S_OK;
+  }
+
   //
   // IRawElementProviderFragment methods.
   //
@@ -196,6 +225,10 @@ AXFragmentRootWin* AXFragmentRootWin::GetForAcceleratedWidget(
 
 gfx::NativeViewAccessible AXFragmentRootWin::GetNativeViewAccessible() {
   return platform_node_.Get();
+}
+
+bool AXFragmentRootWin::IsControlElement() {
+  return delegate_->IsAXFragmentRootAControlElement();
 }
 
 gfx::NativeViewAccessible AXFragmentRootWin::GetParent() {

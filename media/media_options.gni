@@ -136,16 +136,21 @@ declare_args() {
 # Enables the use of library CDMs that implements the interface defined at
 # media/cdm/api/content_decryption_module.h. If true, the actually library CDM
 # will be hosted in the mojo CDM service running in the CDM (utility) process.
-enable_library_cdms = (is_linux && !is_chromecast) || is_mac || is_win
+# On Fuchsia, this is only enabled to build libclearkeycdm.so, the mojo CDM
+# service is not used.
+enable_library_cdms =
+    (is_linux && !is_chromecast) || is_mac || is_win || is_fuchsia
 
 declare_args() {
   # Experiment to enable mojo media services (e.g. "renderer", "cdm", see
   # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
   # the media pipeline and corresponding services will hosted in the selected
   # remote process (e.g. "utility" process, see |mojo_media_host|).
+  # This is explicitly disabled for Fuchsia.
   enable_mojo_media =
-      is_android || is_chromeos || is_mac || is_win || enable_library_cdms ||
-      (is_desktop_linux && use_vaapi) || (is_chromecast && !is_fuchsia)
+      !is_fuchsia &&
+      (is_android || is_chromeos || is_mac || is_win || enable_library_cdms ||
+       (is_desktop_linux && use_vaapi) || is_chromecast)
 
   # Enable the TestMojoMediaClient to be used in mojo MediaService. This is for
   # testing only and will override the default platform MojoMediaClient, if any.

@@ -2479,9 +2479,6 @@
     <message name="IDS_ONC_CELLULAR_NETWORK_TECHNOLOGY" desc="ONC Property label for Cellular.NetworkTechnology">
       Technology
     </message>
-    <message name="IDS_ONC_CELLULAR_PRL_VERSION" desc="ONC Property label for Cellular.PRLVersion">
-      PRL Version
-    </message>
     <message name="IDS_ONC_CELLULAR_ROAMING_STATE" desc="ONC Property label for Cellular.RoamingState">
       Roaming status
     </message>
@@ -3710,21 +3707,6 @@
   </message>
   <message name="IDS_SETTINGS_COOKIES_FILE_SYSTEM_PERSISTENT_USAGE_LABEL" desc="Label for a persistent file system's disk usage.">
     Persistent storage
-  </message>
-  <message name="IDS_SETTINGS_COOKIES_CHANNEL_ID" desc="The text shown when there is a channel id in the Cookies table">
-    Channel ID
-  </message>
-  <message name="IDS_SETTINGS_COOKIES_CHANNEL_ID_ORIGIN_LABEL" desc="The channel id label for the server domain">
-    Domain
-  </message>
-  <message name="IDS_SETTINGS_COOKIES_CHANNEL_ID_TYPE_LABEL" desc="The channel id Type label">
-    Certificate Type
-  </message>
-  <message name="IDS_SETTINGS_COOKIES_CHANNEL_ID_CREATED_LABEL" desc="The channel id Created label">
-    Created
-  </message>
-  <message name="IDS_SETTINGS_COOKIES_CHANNEL_ID_EXPIRES_LABEL" desc="The channel id Expires label">
-    Expires
   </message>
   <message name="IDS_SETTINGS_COOKIES_SERVICE_WORKER" desc="The text shown when there is data for Service Workers within an origin (name of a Web standard) in the Cookies table">
     Service Workers

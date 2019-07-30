@@ -151,7 +151,7 @@ class MockFrameHost : public mojom::FrameHost {
     last_commit_params_ = std::move(params);
   }
 
-  void BeginNavigation(const CommonNavigationParams& common_params,
+  void BeginNavigation(mojom::CommonNavigationParamsPtr common_params,
                        mojom::BeginNavigationParamsPtr begin_params,
                        blink::mojom::BlobURLTokenPtr blob_url_token,
                        mojom::NavigationClientAssociatedPtrInfo,
@@ -261,10 +261,10 @@ void TestRenderFrame::SetHTMLOverrideForNextNavigation(
 }
 
 void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
-                               const CommonNavigationParams& common_params,
+                               mojom::CommonNavigationParamsPtr common_params,
                                const CommitNavigationParams& commit_params) {
   if (!IsPerNavigationMojoInterfaceEnabled()) {
-    CommitNavigation(common_params, commit_params, head,
+    CommitNavigation(std::move(common_params), commit_params, head,
                      mojo::ScopedDataPipeConsumerHandle(),
                      network::mojom::URLLoaderClientEndpointsPtr(),
                      std::make_unique<blink::URLLoaderFactoryBundleInfo>(),
@@ -277,7 +277,7 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
     BindNavigationClient(
         mojo::MakeRequestAssociatedWithDedicatedPipe(&mock_navigation_client_));
     CommitPerNavigationMojoInterfaceNavigation(
-        common_params, commit_params, head,
+        std::move(common_params), commit_params, head,
         mojo::ScopedDataPipeConsumerHandle(),
         network::mojom::URLLoaderClientEndpointsPtr(),
         std::make_unique<blink::URLLoaderFactoryBundleInfo>(), base::nullopt,
@@ -290,26 +290,28 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
   }
 }
 
-void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
+void TestRenderFrame::Navigate(mojom::CommonNavigationParamsPtr common_params,
                                const CommitNavigationParams& commit_params) {
-  Navigate(network::ResourceResponseHead(), common_params, commit_params);
+  Navigate(network::ResourceResponseHead(), std::move(common_params),
+           commit_params);
 }
 
 void TestRenderFrame::NavigateWithError(
-    const CommonNavigationParams& common_params,
+    mojom::CommonNavigationParamsPtr common_params,
     const CommitNavigationParams& commit_params,
     int error_code,
     const base::Optional<std::string>& error_page_content) {
   if (!IsPerNavigationMojoInterfaceEnabled()) {
-    CommitFailedNavigation(common_params, commit_params,
+    CommitFailedNavigation(std::move(common_params), commit_params,
                            false /* has_stale_copy_in_cache */, error_code,
                            error_page_content, nullptr, base::DoNothing());
   } else {
     BindNavigationClient(
         mojo::MakeRequestAssociatedWithDedicatedPipe(&mock_navigation_client_));
     mock_navigation_client_->CommitFailedNavigation(
-        common_params, commit_params, false /* has_stale_copy_in_cache */,
-        error_code, error_page_content, nullptr,
+        std::move(common_params), commit_params,
+        false /* has_stale_copy_in_cache */, error_code, error_page_content,
+        nullptr,
         base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
                        base::Unretained(mock_frame_host_.get())));
   }

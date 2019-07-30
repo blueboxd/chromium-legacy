@@ -55,8 +55,9 @@ class FakeCardUnmaskDelegate : public autofill::CardUnmaskDelegate {
   virtual ~FakeCardUnmaskDelegate() {}
 
   // CardUnmaskDelegate implementation.
-  void OnUnmaskResponse(const UnmaskResponse& unmask_response) override {
-    unmask_response_ = unmask_response;
+  void OnUnmaskPromptAccepted(
+      const UserProvidedUnmaskDetails& unmask_details) override {
+    unmask_details_ = unmask_details;
     // Fake the actual verification and just respond with success.
     base::PostTaskWithTraits(
         FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
@@ -75,14 +76,16 @@ class FakeCardUnmaskDelegate : public autofill::CardUnmaskDelegate {
     credit_card_verifier_ = credit_card_verifier;
   }
 
-  const UnmaskResponse& GetUnmaskResponse() { return unmask_response_; }
+  const UserProvidedUnmaskDetails& GetUserProvidedUnmaskDetails() {
+    return unmask_details_;
+  }
 
  private:
   // Used to pass fake verification result back.
   __weak CWVCreditCardVerifier* credit_card_verifier_;
 
   // Used to verify unmask response matches.
-  UnmaskResponse unmask_response_;
+  UserProvidedUnmaskDetails unmask_details_;
 
   base::WeakPtrFactory<FakeCardUnmaskDelegate> weak_factory_;
 
@@ -209,10 +212,10 @@ TEST_F(CWVCreditCardVerifierTest, VerifyCard) {
              delegate:nil];
   EXPECT_TRUE(credit_card_verifier_.lastStoreLocallyValue);
 
-  const FakeCardUnmaskDelegate::UnmaskResponse& unmask_response_ =
-      card_unmask_delegate_.GetUnmaskResponse();
-  EXPECT_NSEQ(cvc, base::SysUTF16ToNSString(unmask_response_.cvc));
-  EXPECT_EQ(store_locally, unmask_response_.should_store_pan);
+  const FakeCardUnmaskDelegate::UserProvidedUnmaskDetails& unmask_details_ =
+      card_unmask_delegate_.GetUserProvidedUnmaskDetails();
+  EXPECT_NSEQ(cvc, base::SysUTF16ToNSString(unmask_details_.cvc));
+  EXPECT_EQ(store_locally, unmask_details_.should_store_pan);
 }
 
 // Tests CWVCreditCardVerifier properly invokes its delegate.

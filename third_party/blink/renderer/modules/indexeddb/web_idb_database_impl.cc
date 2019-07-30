@@ -177,7 +177,8 @@ void WebIDBDatabaseImpl::OpenCursor(int64_t transaction_id,
                                     mojom::IDBCursorDirection direction,
                                     bool key_only,
                                     mojom::IDBTaskType task_type,
-                                    WebIDBCallbacks* callbacks) {
+                                    WebIDBCallbacks* callbacks_ptr) {
+  std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
   mojom::blink::IDBKeyRangePtr key_range_ptr =
@@ -186,7 +187,33 @@ void WebIDBDatabaseImpl::OpenCursor(int64_t transaction_id,
   database_->OpenCursor(transaction_id, object_store_id, index_id,
                         std::move(key_range_ptr), direction, key_only,
                         task_type,
-                        GetCallbacksProxy(base::WrapUnique(callbacks)));
+                        WTF::Bind(&WebIDBDatabaseImpl::OpenCursorCallback,
+                                  WTF::Unretained(this), std::move(callbacks)));
+}
+
+void WebIDBDatabaseImpl::OpenCursorCallback(
+    std::unique_ptr<WebIDBCallbacks> callbacks,
+    mojom::blink::IDBDatabaseOpenCursorResultPtr result) {
+  if (result->is_error_result()) {
+    callbacks->Error(result->get_error_result()->error_code,
+                     std::move(result->get_error_result()->error_message));
+    callbacks.reset();
+    return;
+  }
+
+  if (result->is_empty()) {
+    CHECK(result->get_empty());  // Only true values are allowed.
+    callbacks->SuccessValue(nullptr);
+    callbacks.reset();
+    return;
+  }
+
+  CHECK(result->is_value());
+  callbacks->SuccessCursor(std::move(result->get_value()->cursor),
+                           std::move(result->get_value()->key),
+                           std::move(result->get_value()->primary_key),
+                           std::move(result->get_value()->value));
+  callbacks.reset();
 }
 
 void WebIDBDatabaseImpl::Count(int64_t transaction_id,

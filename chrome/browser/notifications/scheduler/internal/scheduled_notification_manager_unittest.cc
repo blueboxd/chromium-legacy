@@ -4,6 +4,9 @@
 
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
@@ -66,12 +69,19 @@ class MockIconStore : public IconStore {
   MockIconStore() {}
 
   MOCK_METHOD1(Init, void(IconStore::InitCallback));
-  MOCK_METHOD2(Load, void(const std::string&, IconStore::LoadCallback));
-  MOCK_METHOD3(Add,
-               void(const std::string&,
-                    std::unique_ptr<IconEntry>,
+  MOCK_METHOD2(Load, void(const std::string&, IconStore::LoadIconCallback));
+  MOCK_METHOD2(LoadIcons,
+               void(const std::vector<std::string>&,
+                    IconStore::LoadIconsCallback));
+  MOCK_METHOD2(Add,
+               void(std::unique_ptr<IconEntry>, IconStore::UpdateCallback));
+  MOCK_METHOD2(AddIcons,
+               void(std::vector<std::unique_ptr<IconEntry>>,
                     IconStore::UpdateCallback));
   MOCK_METHOD2(Delete, void(const std::string&, IconStore::UpdateCallback));
+  MOCK_METHOD2(DeleteIcons,
+               void(const std::vector<std::string>&,
+                    IconStore::UpdateCallback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIconStore);

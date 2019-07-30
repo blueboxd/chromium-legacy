@@ -20,7 +20,6 @@ class WebHistoryItem;
 
 namespace content {
 
-struct CommonNavigationParams;
 class MockFrameHost;
 struct CommitNavigationParams;
 
@@ -41,11 +40,11 @@ class TestRenderFrame : public RenderFrameImpl {
   void SetHTMLOverrideForNextNavigation(const std::string& html);
 
   void Navigate(const network::ResourceResponseHead& head,
-                const CommonNavigationParams& common_params,
+                mojom::CommonNavigationParamsPtr common_params,
                 const CommitNavigationParams& commit_params);
-  void Navigate(const CommonNavigationParams& common_params,
+  void Navigate(mojom::CommonNavigationParamsPtr common_params,
                 const CommitNavigationParams& commit_params);
-  void NavigateWithError(const CommonNavigationParams& common_params,
+  void NavigateWithError(mojom::CommonNavigationParamsPtr common_params,
                          const CommitNavigationParams& request_params,
                          int error_code,
                          const base::Optional<std::string>& error_page_content);

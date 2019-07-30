@@ -436,6 +436,7 @@ test("cast_shell_browsertests") {
   deps = [
     ":cast_shell_lib",
     "//chromecast/app:test_support",
+    "//chromecast/bindings:browsertests",
     "//chromecast/browser:browsertests",
   ]
 

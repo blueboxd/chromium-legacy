@@ -34,7 +34,7 @@ struct FeatureEntry;
 class FlagsStorage;
 struct SwitchEntry;
 
-// Enumeration of OSs.
+// Enumeration of flag filters.
 enum {
   kOsMac = 1 << 0,
   kOsWin = 1 << 1,
@@ -43,6 +43,7 @@ enum {
   kOsAndroid = 1 << 4,
   kOsCrOSOwnerOnly = 1 << 5,
   kOsIos = 1 << 6,
+  kEnterprise = 1 << 7,
 };
 
 // A flag controlling the behavior of the |ConvertFlagsToSwitches| function -

@@ -134,9 +134,11 @@ class InfoTable extends GamepadTable {
 
     this.id = gamepad.id;
     this.mapping = gamepad.mapping;
+    this.index = gamepad.index;
 
     this.id_cell = this.AddRow(["id", gamepad.id])[1];
     this.mapping_cell = this.AddRow(["mapping", gamepad.mapping])[1];
+    this.index_cell = this.AddRow(["index", gamepad.index])[1];
   }
 
   update(gamepad) {
@@ -147,6 +149,10 @@ class InfoTable extends GamepadTable {
     if (this.mapping != gamepad.mapping) {
       this.mapping_cell.innerHTML = gamepad.mapping;
       this.mapping = gamepad.mapping;
+    }
+    if (this.index != gamepad.index) {
+      this.index_cell.innerHTML = gamepad.index;
+      this.index = gamepad.index;
     }
   }
 }

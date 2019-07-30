@@ -30,9 +30,6 @@ struct TransferableMessage {
   array<SerializedArrayBufferContents> array_buffer_contents_array;
   // Any ImageBitmaps being transferred as part of this message.
   array<skia.mojom.Bitmap> image_bitmap_contents_array;
-  // Whether the recipient should have a user gesture when it processes this
-  // message.
-  bool has_user_gesture;
   // The user activation state, null if the frame isn't providing it.
   UserActivationSnapshot? user_activation;
   // Whether the state of user activation should be transferred to the

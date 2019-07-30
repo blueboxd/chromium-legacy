@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import os
 
-from grit import exception
 from grit import util
 import grit.format.html_inline
 import grit.format.rc

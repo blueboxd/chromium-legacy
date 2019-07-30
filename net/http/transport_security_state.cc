@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
 #include "net/base/hash_value.h"
@@ -411,7 +412,7 @@ TransportSecurityState::TransportSecurityState()
       sent_expect_ct_reports_cache_(kMaxReportCacheEntries) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID) || defined(OS_IOS)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(OS_ANDROID) || defined(OS_IOS)
   enable_static_pins_ = false;
   enable_static_expect_ct_ = false;
 #endif

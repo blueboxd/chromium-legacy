@@ -55,9 +55,9 @@ bool MockJobTaskRunner::PostDelayedTask(const Location& from_here,
   if (!PooledTaskRunnerDelegate::Exists())
     return false;
 
-  scoped_refptr<MockJobTaskSource> task_source =
-      MakeRefCounted<test::MockJobTaskSource>(from_here, std::move(closure),
-                                              traits_);
+  auto job_task = base::MakeRefCounted<MockJobTask>(std::move(closure));
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(from_here, traits_);
   return pooled_task_runner_delegate_->EnqueueJobTaskSource(
       std::move(task_source));
 }
@@ -256,43 +256,41 @@ void MockPooledTaskRunnerDelegate::SetThreadGroup(ThreadGroup* thread_group) {
   thread_group_ = thread_group;
 }
 
-MockJobTaskSource::~MockJobTaskSource() = default;
+MockJobTask::~MockJobTask() = default;
 
-MockJobTaskSource::MockJobTaskSource(const Location& from_here,
-                                     base::RepeatingClosure worker_task,
-                                     const TaskTraits& traits,
-                                     size_t num_tasks_to_run,
-                                     size_t max_concurrency)
-    : JobTaskSource(FROM_HERE,
-                    BindLambdaForTesting([this, worker_task]() {
-                      worker_task.Run();
-                      size_t before = remaining_num_tasks_to_run_.fetch_sub(1);
-                      DCHECK_GT(before, 0U);
-                    }),
-                    traits),
-      remaining_num_tasks_to_run_(num_tasks_to_run),
-      max_concurrency_(max_concurrency) {}
+MockJobTask::MockJobTask(
+    base::RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
+    size_t num_tasks_to_run)
+    : worker_task_(std::move(worker_task)),
+      remaining_num_tasks_to_run_(num_tasks_to_run) {}
 
-MockJobTaskSource::MockJobTaskSource(const Location& from_here,
-                                     base::OnceClosure worker_task,
-                                     const TaskTraits& traits)
-    : JobTaskSource(FROM_HERE,
-                    base::BindRepeating(
-                        [](MockJobTaskSource* self,
-                           base::OnceClosure&& worker_task) mutable {
-                          std::move(worker_task).Run();
-                          size_t before =
-                              self->remaining_num_tasks_to_run_.fetch_sub(1);
-                          DCHECK_EQ(before, 1U);
-                        },
-                        Unretained(this),
-                        base::Passed(std::move(worker_task))),
-                    traits),
-      remaining_num_tasks_to_run_(1),
-      max_concurrency_(1) {}
+MockJobTask::MockJobTask(base::OnceClosure worker_task)
+    : worker_task_(base::BindRepeating(
+          [](base::OnceClosure&& worker_task,
+             experimental::JobDelegate*) mutable {
+            std::move(worker_task).Run();
+          },
+          base::Passed(std::move(worker_task)))),
+      remaining_num_tasks_to_run_(1) {}
 
-size_t MockJobTaskSource::GetMaxConcurrency() const {
-  return std::min(remaining_num_tasks_to_run_.load(), max_concurrency_);
+size_t MockJobTask::GetMaxConcurrency() const {
+  return remaining_num_tasks_to_run_.load();
+}
+
+void MockJobTask::Run(experimental::JobDelegate* delegate) {
+  if (delegate->ShouldYield())
+    return;
+  worker_task_.Run(delegate);
+  size_t before = remaining_num_tasks_to_run_.fetch_sub(1);
+  DCHECK_GT(before, 0U);
+}
+
+scoped_refptr<JobTaskSource> MockJobTask::GetJobTaskSource(
+    const Location& from_here,
+    const TaskTraits& traits) {
+  return MakeRefCounted<JobTaskSource>(
+      from_here, traits, base::BindRepeating(&test::MockJobTask::Run, this),
+      base::BindRepeating(&test::MockJobTask::GetMaxConcurrency, this));
 }
 
 RegisteredTaskSource QueueAndRunTaskSource(

@@ -115,7 +115,8 @@ class FullCardRequest final : public CardUnmaskDelegate {
                    base::Value fido_assertion_info);
 
   // CardUnmaskDelegate:
-  void OnUnmaskResponse(const UnmaskResponse& response) override;
+  void OnUnmaskPromptAccepted(
+      const UserProvidedUnmaskDetails& user_response) override;
   void OnUnmaskPromptClosed() override;
 
   // Called by autofill client when the risk data has been loaded.

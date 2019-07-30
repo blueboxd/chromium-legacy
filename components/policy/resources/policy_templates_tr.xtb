@@ -998,7 +998,7 @@
 
       Dosyanın boyutu 1 MB'ı aşmamalı ve kayıt (JSON nesneleri) dizisi içermelidir. Her kayıt "url" ve "display_name" alanları içermelidir.
 
-      Dosya indirildi ve önbelleğe alındı. İndirmenin bütünlüğünü doğrulamak için şifreleme karma değeri kullanılır. URL veya karma her değiştiğinde dosya tekrar indirilir.
+      Dosya indirilir ve önbelleğe alınır. İndirmenin bütünlüğünü doğrulamak için şifreleme karma değeri kullanılır. URL veya karma her değiştiğinde dosya tekrar indirilir.
 
       Bu politika doğru değere ayarlandığında, cihazlar mevcut yazıcılar için IPP protokolünü kullanarak belirtilen yazdırma sunucularını sorgulamayı denerler.
 
@@ -1929,7 +1929,7 @@ politikayı geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa, Erişilebilirlik seçenekleri sistem tepsisi menüsünde görüntülenmez, ancak kullanıcı, Ayarlar sayfasını kullanarak Erişilebilirlik seçeneklerinin görüntülenmesini sağlayabilir.
 
-          Erişilebilirlik özellikleri etkinleştirildiğinde (ör. bir tuş kombinasyonu ile), Erişilebilirlik seçenekleri her zaman sistem tepsisi menüsünde görünür.</translation>
+          Erişilebilirlik özellikleri etkinleştirildiğinde (ör. bir tuş kombinasyonu ile), Erişilebilirlik seçenekleri sistem tepsisi menüsünde her zaman görünür.</translation>
 <translation id="436581050240847513">Cihaz ağ arayüzlerini rapor etme</translation>
 <translation id="4372704773119750918">Kurumsal kullanıcının çok profilli oturumun parçası olmasına izin verme (birincil veya ikincil)</translation>
 <translation id="4377599627073874279">Tüm sitelerin tüm resimleri görüntülemesine izin ver</translation>
@@ -3272,11 +3272,11 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Kullanılabilecek değişkenlerin bir listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
 
       Bu politika ayarlanmadan bırakılırsa varsayılan profil yolu kullanılır ve kullanıcı, "--user-data-dir" komut satırı bayrağıyla bunu geçersiz kılabilir.</translation>
-<translation id="7011669683779011760">Bu ayarlar etkinleştirildiğinde <ph name="PRODUCT_OS_NAME" /> sunucu sertifikalarının doğrulamasını yerleşik sertifika doğrulayıcıyı kullanarak yerine getirir.
-      Bu ayarlar devre dışı bırakıldığında <ph name="PRODUCT_OS_NAME" /> sunucu sertifikalarının doğrulamasını platform tarafından sağlanan eski sertifika doğrulayıcıyı kullanarak yerine getirir.
-      Bu ayarlar belirtilmezse <ph name="PRODUCT_OS_NAME" /> yerleşik veya eski sertifika doğrulayıcıyı kullanabilir.
+<translation id="7011669683779011760">Bu ayar etkinleştirildiğinde <ph name="PRODUCT_OS_NAME" /> sunucu sertifikalarının doğrulamasını yerleşik sertifika doğrulayıcıyı kullanarak yerine getirir.
+      Bu ayar devre dışı bırakıldığında <ph name="PRODUCT_OS_NAME" /> sunucu sertifikalarının doğrulamasını platform tarafından sağlanan eski sertifika doğrulayıcıyı kullanarak yerine getirir.
+      Bu ayar belirtilmezse <ph name="PRODUCT_OS_NAME" /> yerleşik veya eski sertifika doğrulayıcıyı kullanabilir.
 
-      <ph name="PRODUCT_OS_NAME" /> için eski sertifika doğrulayıcı desteğinin kaldırılması planlandığında bu politikanın <ph name="PRODUCT_OS_NAME" /> sürüm 81'de kaldırılması planlandı.
+      <ph name="PRODUCT_OS_NAME" /> için eski sertifika doğrulayıcı desteğinin <ph name="PRODUCT_OS_NAME" /> sürüm 81'de kaldırılması planlandığından bu politikanın da aynı sürümde kaldırılması planlanmıştır.
       </translation>
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" /> sisteminde güç yönetimini yapılandırın.
 

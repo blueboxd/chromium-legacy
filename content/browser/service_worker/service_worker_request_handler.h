@@ -35,7 +35,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler {
   // navigation cannot use service workers. Called on the UI thread.
   static std::unique_ptr<NavigationLoaderInterceptor> CreateForNavigationUI(
       const GURL& url,
-      ServiceWorkerNavigationHandle* navigation_handle,
+      base::WeakPtr<ServiceWorkerNavigationHandle> navigation_handle,
       const NavigationRequestInfo& request_info);
 
   // Returns a loader interceptor for a navigation. May return nullptr if the
@@ -52,7 +52,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler {
   static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorkerUI(
       const network::ResourceRequest& resource_request,
       int process_id,
-      ServiceWorkerNavigationHandle* navigation_handle);
+      base::WeakPtr<ServiceWorkerNavigationHandle> navigation_handle);
 
   // Returns a loader interceptor for a dedicated worker or shared worker. May
   // return nullptr if the worker cannot use service workers. Called on the UI

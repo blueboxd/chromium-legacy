@@ -1307,7 +1307,7 @@ CSSValue* ConsumeFontSize(CSSParserTokenRange& range,
   if (range.Peek().Id() == CSSValueID::kWebkitXxxLarge)
     context.Count(WebFeature::kFontSizeWebkitXxxLarge);
   if (range.Peek().Id() >= CSSValueID::kXxSmall &&
-      range.Peek().Id() <= CSSValueID::kLarger)
+      range.Peek().Id() <= CSSValueID::kWebkitXxxLarge)
     return css_property_parser_helpers::ConsumeIdent(range);
   return css_property_parser_helpers::ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative, unitless);

@@ -3,21 +3,21 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/services/filesystem/public/cpp/manifest.h"
+#include "components/services/filesystem/directory_test_helper.h"
 #include "components/services/filesystem/public/mojom/directory.mojom.h"
-#include "components/services/filesystem/public/mojom/file_system.mojom.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
-#include "components/services/leveldb/public/cpp/manifest.h"
+#include "components/services/leveldb/leveldb_service_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/service_manager/public/cpp/test/test_service.h"
-#include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_features.h"
 
@@ -158,54 +158,36 @@ void AddKeyPrefixToGetManyRequest(const std::string& key_prefix,
   list->emplace_back(mojom::GetManyRequest::NewKeyPrefix(in_arg));
 }
 
-const char kTestServiceName[] = "leveldb_service_unittests";
-
 class LevelDBServiceTest : public testing::Test {
  public:
   LevelDBServiceTest()
-      : test_service_manager_(
-            {GetManifest(), filesystem::GetManifest(),
-             service_manager::ManifestBuilder()
-                 .WithServiceName(kTestServiceName)
-                 .RequireCapability("filesystem", "filesystem:filesystem")
-                 .RequireCapability("leveldb", "leveldb:leveldb")
-                 .Build()}),
-        test_service_(
-            test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
+      : leveldb_service_(base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+        leveldb_receiver_(&leveldb_service_,
+                          leveldb_remote_.BindNewPipeAndPassReceiver()) {}
   ~LevelDBServiceTest() override = default;
 
  protected:
-  service_manager::Connector* connector() { return test_service_.connector(); }
-
   void SetUp() override {
     // TODO(dullweber): This doesn't seem to work. The reason is probably that
     // the LevelDB service is a separate executable here. How should we set
     // features that affect a service?
     feature_list_.InitAndEnableFeature(leveldb::kLevelDBRewriteFeature);
-    connector()->BindInterface("filesystem", &files_);
-    connector()->BindInterface("leveldb", &leveldb_);
   }
 
-  // Note: This has an out parameter rather than returning the |DirectoryPtr|,
-  // since |ASSERT_...()| doesn't work with return values.
-  void GetTempDirectory(filesystem::mojom::DirectoryPtr* directory) {
-    base::File::Error error = base::File::Error::FILE_ERROR_FAILED;
-    bool handled = files()->OpenTempDirectory(MakeRequest(directory), &error);
-    ASSERT_TRUE(handled);
-    ASSERT_EQ(base::File::Error::FILE_OK, error);
+  mojo::Remote<filesystem::mojom::Directory> CreateTempDir() {
+    return directory_helper_.CreateTempDir();
   }
 
-  filesystem::mojom::FileSystemPtr& files() { return files_; }
-  mojom::LevelDBServicePtr& leveldb() { return leveldb_; }
+  mojo::Remote<mojom::LevelDBService>& leveldb() { return leveldb_remote_; }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  service_manager::TestServiceManager test_service_manager_;
-  service_manager::TestService test_service_;
-
   base::test::ScopedFeatureList feature_list_;
-  filesystem::mojom::FileSystemPtr files_;
-  mojom::LevelDBServicePtr leveldb_;
+  filesystem::DirectoryTestHelper directory_helper_;
+  LevelDBServiceImpl leveldb_service_;
+  mojo::Remote<mojom::LevelDBService> leveldb_remote_;
+  mojo::Receiver<mojom::LevelDBService> leveldb_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBServiceTest);
 };
@@ -388,8 +370,7 @@ TEST_F(LevelDBServiceTest, WriteBatchPrefixesAndDeletes) {
 TEST_F(LevelDBServiceTest, Reconnect) {
   mojom::DatabaseError error;
 
-  filesystem::mojom::DirectoryPtr temp_directory;
-  GetTempDirectory(&temp_directory);
+  mojo::Remote<filesystem::mojom::Directory> temp_directory = CreateTempDir();
 
   {
     filesystem::mojom::DirectoryPtr directory;
@@ -439,8 +420,7 @@ TEST_F(LevelDBServiceTest, Reconnect) {
 TEST_F(LevelDBServiceTest, Destroy) {
   mojom::DatabaseError error;
 
-  filesystem::mojom::DirectoryPtr temp_directory;
-  GetTempDirectory(&temp_directory);
+  mojo::Remote<filesystem::mojom::Directory> temp_directory = CreateTempDir();
 
   {
     filesystem::mojom::DirectoryPtr directory;
@@ -721,8 +701,7 @@ TEST_F(LevelDBServiceTest, Prefixed) {
 
 TEST_F(LevelDBServiceTest, RewriteDB) {
   mojom::DatabaseError error;
-  filesystem::mojom::DirectoryPtr directory;
-  GetTempDirectory(&directory);
+  filesystem::mojom::DirectoryPtr directory(CreateTempDir().Unbind());
 
   mojom::LevelDBDatabaseAssociatedPtr database;
   leveldb_env::Options options;

@@ -221,6 +221,7 @@ void NavigationManagerImpl::GoToIndex(int index,
     delegate_->RecordPageStateInNavigationItem();
   }
   delegate_->ClearTransientContent();
+  delegate_->ClearDialogs();
 
   // Notify delegate if the new navigation will use a different user agent.
   UserAgentType to_item_user_agent_type =
@@ -290,6 +291,7 @@ void NavigationManagerImpl::LoadURLWithParams(
     const NavigationManager::WebLoadParams& params) {
   DCHECK(!(params.transition_type & ui::PAGE_TRANSITION_FORWARD_BACK));
   delegate_->ClearTransientContent();
+  delegate_->ClearDialogs();
   delegate_->RecordPageStateInNavigationItem();
 
   NavigationInitiationType initiation_type =
@@ -357,6 +359,8 @@ void NavigationManagerImpl::Reload(ReloadType reload_type,
 
   if (!GetTransientItem() && !GetPendingItem() && !GetLastCommittedItem())
     return;
+
+  delegate_->ClearDialogs();
 
   // Reload with ORIGINAL_REQUEST_URL type should reload with the original
   // request url of the transient item, or pending item if transient doesn't

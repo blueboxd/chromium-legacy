@@ -47,6 +47,37 @@ const BackgroundInfo& GetBackgroundInfo(const Extension* extension) {
   return *info;
 }
 
+// Checks features that are restricted to manifest v2, populating |error| if
+// the |extension|'s manifest version is too high.
+// TODO(devlin): It's unfortunate that the features system doesn't handle this
+// automatically, but it only adds a warning (rather than an error). Depending
+// on how many keys we want to error on, it may make sense to change that.
+bool CheckManifestV2RestrictedFeatures(const Extension* extension,
+                                       base::string16* error) {
+  if (extension->manifest_version() < 3) {
+    // No special restrictions for manifest v2 extensions (or v1, if the legacy
+    // commandline flag is being used).
+    return true;
+  }
+
+  auto check_path = [error, extension](const char* path) {
+    if (extension->manifest()->HasPath(path)) {
+      *error = base::UTF8ToUTF16(ErrorUtils::FormatErrorMessage(
+          errors::kBackgroundSpecificationInvalidForManifestV3, path));
+      return false;
+    }
+    return true;
+  };
+
+  if (!check_path(keys::kBackgroundPage) ||
+      !check_path(keys::kBackgroundScripts) ||
+      !check_path(keys::kBackgroundPersistent)) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 BackgroundInfo::BackgroundInfo()
@@ -114,7 +145,8 @@ bool BackgroundInfo::IsServiceWorkerBased(const Extension* extension) {
 bool BackgroundInfo::Parse(const Extension* extension, base::string16* error) {
   const std::string& bg_scripts_key = extension->is_platform_app() ?
       keys::kPlatformAppBackgroundScripts : keys::kBackgroundScripts;
-  if (!LoadBackgroundScripts(extension, bg_scripts_key, error) ||
+  if (!CheckManifestV2RestrictedFeatures(extension, error) ||
+      !LoadBackgroundScripts(extension, bg_scripts_key, error) ||
       !LoadBackgroundPage(extension, error) ||
       !LoadBackgroundServiceWorkerScript(extension, error) ||
       !LoadBackgroundPersistent(extension, error) ||
@@ -239,8 +271,9 @@ bool BackgroundInfo::LoadBackgroundPersistent(const Extension* extension,
 
   const base::Value* background_persistent = NULL;
   if (!extension->manifest()->Get(keys::kBackgroundPersistent,
-                                  &background_persistent))
+                                  &background_persistent)) {
     return true;
+  }
 
   if (!background_persistent->GetAsBoolean(&is_persistent_)) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundPersistent);

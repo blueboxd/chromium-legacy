@@ -64,7 +64,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="1062407476771304334">바꾸기</translation>
 <translation id="1079801999187584280">Developer Tools 사용 금지</translation>
 <translation id="1087437665304381368">이 정책은 <ph name="PRODUCT_OS_NAME" /> 개발자 모드만 제어합니다. Android 개발자 옵션에 액세스하지 못하게 하려면 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 정책을 설정해야 합니다.</translation>
-<translation id="1087707496788636333">Chrome Enterprise 정책 목록이 이동됩니다. 북마크를 <ph name="POLICY_DOCUMENTATION_URL" />(으)로 업데이트하세요.</translation>
+<translation id="1087707496788636333">Chrome Enterprise 정책 목록이 이동됩니다. 북마크를 <ph name="POLICY_DOCUMENTATION_URL" /> 페이지로 업데이트하세요.</translation>
 <translation id="1093082332347834239">이 설정을 사용 설정하면 <ph name="UIACCESS_PERMISSION_NAME" /> 권한을 사용하여 원격 지원 호스트가 실행됩니다. 이 경우 원격 사용자가 로컬 사용자의 데스크톱에서 관리자 창으로 상호 작용하도록 허용합니다.
 
           이 설정을 사용 중지하거나 설정하지 않으면 원격 지원 호스트가 사용자의 컨텍스트에서 실행되며 원격 사용자는 데스크톱에서 관리자 창으로 상호 작용할 수 없습니다.</translation>
@@ -1944,7 +1944,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           정책이 설정되면 사용자가 변경하거나 재정의할 수 없습니다.
 
-          정책을 설정하지 않으면 작업 표시줄 메뉴에 접근성 옵션이 표시되지 않지만 사용자가 설정 페이지에서 접근성 옵션이 표시되도록 설정할 수 있습니다.
+          정책을 설정하지 않으면 작업 표시줄 메뉴에 접근성 옵션이 표시되지 않지만, 사용자가 설정 페이지에서 접근성 옵션이 표시되도록 설정할 수 있습니다.
 
           다른 방법으로 접근성 기능이 사용 설정되면(예: 키 조합을 눌러 사용 설정) 접근성 옵션이 작업 표시줄 메뉴에 항상 표시됩니다.</translation>
 <translation id="436581050240847513">기기 네트워크 인터페이스 보고</translation>
@@ -2915,7 +2915,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책을 설정하지 않으면 'DefaultPluginsSetting' 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 모든 사이트에 사용됩니다.</translation>
 <translation id="6190022522129724693">기본 팝업 설정</translation>
 <translation id="6190367314942602985">사용자 식별 정보 보고</translation>
-<translation id="6195802366906945965">서버 인증서 확인을 위해 내장 인증서 확인 도구를 사용할지 결정</translation>
+<translation id="6195802366906945965">서버 인증서 확인을 위해 내장 인증서 확인 기능을 사용할지 결정</translation>
 <translation id="6197453924249895891">회사 키에 대한 액세스 권한을 확장 프로그램에 부여합니다.
 
       키가 관리 계정에서 chrome.enterprise.platformKeys API를 사용하여 생성된 경우 회사용으로 지정됩니다. 가져오거나 다른 방식으로 생성된 키는 회사용으로 지정되지 않습니다.
@@ -3306,11 +3306,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수 목록을 참조하세요.
 
       이 정책을 설정하지 않으면 기본 프로필 경로가 사용되며 사용자는 '--user-data-dir' 명령줄 플래그를 사용하여 이를 재정의할 수 있습니다.</translation>
-<translation id="7011669683779011760">이 설정을 사용하면 <ph name="PRODUCT_OS_NAME" />에서 내장 인증서 확인 도구를 사용하여 서버 인증서를 확인합니다.
-      설정을 사용 중지하면 <ph name="PRODUCT_OS_NAME" />에서 플랫폼에서 제공하는 레거시 인증서 확인 도구를 사용하여 서버 인증서를 확인합니다.
-      설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에서 내장 또는 레거시 인증서 확인 도구를 사용할 수 있습니다.
+<translation id="7011669683779011760">이 설정을 사용하면 <ph name="PRODUCT_OS_NAME" />에서 내장 인증서 확인 기능을 사용하여 서버 인증서를 확인합니다.
+      설정을 사용 중지하면 <ph name="PRODUCT_OS_NAME" />에서 플랫폼에서 제공하는 레거시 인증서 확인 기능을 사용하여 서버 인증서를 확인합니다.
+      설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에서 내장 또는 레거시 인증서 확인 기능을 사용할 수 있습니다.
 
-      이 정책은 <ph name="PRODUCT_OS_NAME" />의 레거시 인증서 확인 도구가 지원 중단되는 <ph name="PRODUCT_OS_NAME" /> 버전 81에서 삭제될 예정입니다.
+      이 정책은 <ph name="PRODUCT_OS_NAME" />의 레거시 인증서 확인 기능이 지원 중단되는 <ph name="PRODUCT_OS_NAME" /> 버전 81에서 삭제될 예정입니다.
       </translation>
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" />에서 전원 관리를 설정합니다.
 

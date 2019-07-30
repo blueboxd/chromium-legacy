@@ -37,7 +37,6 @@ class XRInputSourceEvent final : public Event {
 
   XRFrame* frame() const { return frame_.Get(); }
   XRInputSource* inputSource() const { return input_source_.Get(); }
-  int32_t buttonIndex(bool& is_null) const;
 
   const AtomicString& InterfaceName() const override;
 
@@ -46,7 +45,6 @@ class XRInputSourceEvent final : public Event {
  private:
   Member<XRFrame> frame_;
   Member<XRInputSource> input_source_;
-  base::Optional<int32_t> button_index_;
 };
 
 }  // namespace blink

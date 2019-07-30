@@ -41,7 +41,7 @@ bool SchemeMaySupportRedirectingToHTTPS(const GURL& url) {
 std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerRequestHandler::CreateForNavigationUI(
     const GURL& url,
-    ServiceWorkerNavigationHandle* navigation_handle,
+    base::WeakPtr<ServiceWorkerNavigationHandle> navigation_handle,
     const NavigationRequestInfo& request_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -61,7 +61,7 @@ ServiceWorkerRequestHandler::CreateForNavigationUI(
   params.frame_tree_node_id = request_info.frame_tree_node_id;
 
   return std::make_unique<ServiceWorkerNavigationLoaderInterceptor>(
-      params, navigation_handle);
+      params, std::move(navigation_handle));
 }
 
 // static
@@ -109,7 +109,7 @@ std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerRequestHandler::CreateForWorkerUI(
     const network::ResourceRequest& resource_request,
     int process_id,
-    ServiceWorkerNavigationHandle* navigation_handle) {
+    base::WeakPtr<ServiceWorkerNavigationHandle> navigation_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto resource_type =
@@ -131,7 +131,7 @@ ServiceWorkerRequestHandler::CreateForWorkerUI(
   params.process_id = process_id;
 
   return std::make_unique<ServiceWorkerNavigationLoaderInterceptor>(
-      params, navigation_handle);
+      params, std::move(navigation_handle));
 }
 
 // static

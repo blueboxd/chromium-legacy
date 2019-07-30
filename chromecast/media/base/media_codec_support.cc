@@ -61,6 +61,8 @@ VideoCodec ToCastVideoCodec(const ::media::VideoCodec video_codec,
       }
       LOG(ERROR) << "Unsupported video codec profile " << codec_profile;
       break;
+    case ::media::kCodecAV1:
+      return kCodecAV1;
     default:
       LOG(ERROR) << "Unsupported video codec " << video_codec;
   }
@@ -116,6 +118,12 @@ VideoProfile ToCastVideoProfile(
       return kDolbyVisionNonCompatible_BL_MD;
     case ::media::DOLBYVISION_PROFILE7:
       return kDolbyVisionNonCompatible_BL_EL_MD;
+    case ::media::AV1PROFILE_PROFILE_MAIN:
+      return kAV1ProfileMain;
+    case ::media::AV1PROFILE_PROFILE_HIGH:
+      return kAV1ProfileHigh;
+    case ::media::AV1PROFILE_PROFILE_PRO:
+      return kAV1ProfilePro;
     default:
       LOG(INFO) << "Unsupported video codec profile " << codec_profile;
   }

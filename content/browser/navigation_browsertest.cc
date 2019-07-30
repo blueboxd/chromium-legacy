@@ -741,19 +741,22 @@ IN_PROC_BROWSER_TEST_P(NavigationDisableWebSecurityTest,
   feature_list.InitAndEnableFeature(
       features::kAllowContentInitiatedDataUrlNavigations);
   // Setup a BeginNavigate IPC with non-empty base_url_for_data_url.
-  CommonNavigationParams common_params(
-      data_url, url::Origin::Create(data_url), Referrer(),
-      ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT,
-      NavigationDownloadPolicy(), false /* should_replace_current_entry */,
-      file_url, /* base_url_for_data_url */
-      GURL() /* history_url_for_data_url */, PREVIEWS_UNSPECIFIED,
-      base::TimeTicks::Now() /* navigation_start */, "GET",
-      nullptr /* post_data */, base::Optional<SourceLocation>(),
-      false /* started_from_context_menu */, false /* has_user_gesture */,
-      InitiatorCSPInfo(),
-      std::vector<int>() /* initiator_origin_trial_features */,
-      std::string() /* href_translate */,
-      false /* is_history_navigation_in_new_child_frame */);
+  mojom::CommonNavigationParamsPtr common_params =
+      mojom::CommonNavigationParams::New(
+          data_url, url::Origin::Create(data_url),
+          blink::mojom::Referrer::New(), ui::PAGE_TRANSITION_LINK,
+          mojom::NavigationType::DIFFERENT_DOCUMENT, NavigationDownloadPolicy(),
+          false /* should_replace_current_entry */,
+          file_url, /* base_url_for_data_url */
+          GURL() /* history_url_for_data_url */, PREVIEWS_UNSPECIFIED,
+          base::TimeTicks::Now() /* navigation_start */, "GET",
+          nullptr /* post_data */, base::Optional<SourceLocation>(),
+          false /* started_from_context_menu */, false /* has_user_gesture */,
+          InitiatorCSPInfo(),
+          std::vector<int>() /* initiator_origin_trial_features */,
+          std::string() /* href_translate */,
+          false /* is_history_navigation_in_new_child_frame */,
+          base::TimeTicks());
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New(
           std::string() /* headers */, net::LOAD_NORMAL,
@@ -776,11 +779,12 @@ IN_PROC_BROWSER_TEST_P(NavigationDisableWebSecurityTest,
     auto navigation_client_request =
         mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client);
     rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
-        common_params, std::move(begin_params), nullptr,
+        std::move(common_params), std::move(begin_params), nullptr,
         navigation_client.PassInterface(), nullptr);
   } else {
     rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
-        common_params, std::move(begin_params), nullptr, nullptr, nullptr);
+        std::move(common_params), std::move(begin_params), nullptr, nullptr,
+        nullptr);
   }
   EXPECT_EQ(bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED,
             process_kill_waiter.Wait());

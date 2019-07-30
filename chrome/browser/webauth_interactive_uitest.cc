@@ -8,6 +8,7 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/webauthn/authenticator_request_scheduler.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -161,9 +162,8 @@ IN_PROC_BROWSER_TEST_F(WebAuthFocusTest, Focus) {
   DevToolsWindowTesting::CloseDevToolsWindowSync(dev_tools_window);
 
   // Open a second browser window.
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   chrome::NewWindow(browser());
-  Browser* new_window = browser_added_observer.WaitForSingleNewBrowser();
+  Browser* new_window = BrowserList::GetInstance()->GetLastActive();
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(new_window));
 
   // Operations in the (now unfocused) window should still succeed, as the

@@ -25,15 +25,15 @@ public abstract class WebXrTestFramework extends XrTestFramework {
     }
 
     /**
-     * Checks whether an XRDevice was actually found. Needs to be non-static despite not using any
-     * member variables in order for the WebContents-less helper version to work properly in
-     * subclasses.
+     * WebVrTestFramework derives from this and overrides to allow WebVR tests
+     * to fail early if no VRDisplay's were found.  WebXR has no concept of a
+     * device, and inline support is always available, so return true.
      *
      * @param webContents The WebContents to run the JavaScript through.
      * @return Whether an XRDevice was found.
      */
     public boolean xrDeviceFound(WebContents webContents) {
-        return !runJavaScriptOrFail("xrDevice", POLL_TIMEOUT_SHORT_MS, webContents).equals("null");
+        return true;
     }
 
     /**

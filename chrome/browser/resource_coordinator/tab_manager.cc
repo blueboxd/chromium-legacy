@@ -209,11 +209,10 @@ void TabManager::Start() {
 
   // Create the graph observer. This is the source of page almost idle data and
   // EQT measurements.
-  if (auto* perf_man = performance_manager::PerformanceManager::GetInstance()) {
-    // The performance manager is torn down on its own sequence so its safe to
-    // pass it unretained. The observer itself learns of the tab manager tear
-    // down via the weak ptr it is given.
-    perf_man->CallOnGraph(
+  // TODO(sebmarchand): Remove the "IsAvailable" check, or merge the TM into the
+  // PM. The TM and PM must always exist together.
+  if (performance_manager::PerformanceManager::IsAvailable()) {
+    performance_manager::PerformanceManager::CallOnGraph(
         FROM_HERE, base::BindOnce(
                        [](std::unique_ptr<ResourceCoordinatorSignalObserver>
                               rc_signal_observer,

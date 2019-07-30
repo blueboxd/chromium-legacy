@@ -20,6 +20,10 @@
 
 namespace content {
 
+namespace indexed_db {
+class LevelDBFactory;
+}
+
 class LevelDBScopesTestBase : public testing::Test {
  public:
   static constexpr const size_t kWriteBatchSizeForTesting = 1024;
@@ -99,6 +103,7 @@ class LevelDBScopesTestBase : public testing::Test {
   const std::vector<uint8_t> metadata_prefix_ = {'a'};
   const std::vector<uint8_t> db_prefix_ = {'b'};
 
+  indexed_db::LevelDBFactory* leveldb_factory_ = nullptr;
   scoped_refptr<LevelDBState> leveldb_;
   std::string large_string_;
   LevelDBScopesUndoTask undo_task_buffer_;

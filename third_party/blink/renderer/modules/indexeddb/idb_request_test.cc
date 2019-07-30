@@ -124,7 +124,7 @@ class BackendDatabaseWithMockedClose
       mojom::blink::IDBCursorDirection direction,
       bool key_only,
       mojom::blink::IDBTaskType task_type,
-      mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+      mojom::blink::IDBDatabase::OpenCursorCallback callback) override {}
   void Count(int64_t transaction_id,
              int64_t object_store_id,
              int64_t index_id,

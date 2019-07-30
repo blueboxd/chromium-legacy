@@ -27,8 +27,7 @@
 #include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
+#include "content/browser/indexed_db/scopes/scope_lock.h"
 #include "content/common/content_export.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
@@ -52,9 +51,10 @@ class FileWriterDelegate;
 
 namespace content {
 class IndexedDBFactory;
-class LevelDBComparator;
-class TransactionalLevelDBDatabase;
 struct IndexedDBValue;
+class TransactionalLevelDBDatabase;
+class TransactionalLevelDBIterator;
+class TransactionalLevelDBTransaction;
 
 namespace indexed_db {
 class LevelDBFactory;
@@ -75,13 +75,6 @@ enum class V2SchemaCorruptionStatus {
 // Open.
 class CONTENT_EXPORT IndexedDBBackingStore {
  public:
-  class CONTENT_EXPORT Comparator : public LevelDBComparator {
-   public:
-    int Compare(const base::StringPiece& a,
-                const base::StringPiece& b) const override;
-    const char* Name() const override;
-  };
-
   class CONTENT_EXPORT RecordIdentifier {
    public:
     RecordIdentifier(const std::string& primary_key, int64_t version);
@@ -134,7 +127,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     explicit Transaction(IndexedDBBackingStore* backing_store);
     virtual ~Transaction();
 
-    virtual void Begin();
+    virtual void Begin(std::vector<ScopeLock> locks);
 
     // CommitPhaseOne determines what blobs (if any) need to be written to disk
     // and updates the primary blob journal, and kicks off the async writing
@@ -151,10 +144,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     virtual leveldb::Status CommitPhaseTwo();
 
     virtual void Rollback();
-    void Reset() {
-      backing_store_ = NULL;
-      transaction_ = NULL;
-    }
+    void Reset();
     leveldb::Status PutBlobInfoIfNeeded(
         int64_t database_id,
         int64_t object_store_id,
@@ -256,9 +246,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // Called by CommitPhaseOne: Kicks off the asynchronous writes of blobs
     // identified in HandleBlobPreTransaction. The callback will be called
     // eventually on success or failure.
-    void WriteNewBlobs(BlobEntryKeyValuePairVec* new_blob_entries,
-                       WriteDescriptorVec* new_files_to_write,
-                       BlobWriteCallback callback);
+    leveldb::Status WriteNewBlobs(BlobEntryKeyValuePairVec* new_blob_entries,
+                                  WriteDescriptorVec* new_files_to_write,
+                                  BlobWriteCallback callback);
 
     // Called by CommitPhaseTwo: Partition blob references in blobs_to_remove_
     // into live (active references) and dead (no references).
@@ -422,7 +412,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
   // Compact is public for testing.
   virtual void Compact();
-  virtual leveldb::Status DeleteDatabase(const base::string16& name);
+  virtual leveldb::Status DeleteDatabase(
+      const base::string16& name,
+      TransactionalLevelDBTransaction* transaction);
 
   static bool RecordCorruptionInfo(const base::FilePath& path_base,
                                    const url::Origin& origin,
@@ -576,7 +568,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   friend class IndexedDBOriginState;
 
   leveldb::Status AnyDatabaseContainsBlobs(
-      TransactionalLevelDBTransaction* transaction,
+      TransactionalLevelDBDatabase* database,
       bool* blobs_exist);
 
   // TODO(dmurph): Move this completely to IndexedDBMetadataFactory.

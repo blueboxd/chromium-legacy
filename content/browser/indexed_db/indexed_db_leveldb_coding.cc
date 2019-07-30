@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/big_endian.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -65,6 +66,7 @@ constexpr unsigned char kLiveBlobJournalTypeByte = 4;
 constexpr unsigned char kEarliestSweepTimeTypeByte = 5;
 constexpr unsigned char kMaxSimpleGlobalMetaDataTypeByte =
     6;  // Insert before this and increment.
+constexpr unsigned char kScopesPrefixByte = 50;
 constexpr unsigned char kDatabaseFreeListTypeByte = 100;
 constexpr unsigned char kDatabaseNameTypeByte = 201;
 
@@ -588,7 +590,7 @@ static blink::mojom::IDBKeyType KeyTypeByteToKeyType(unsigned char type) {
       return blink::mojom::IDBKeyType::Min;
   }
 
-  NOTREACHED();
+  NOTREACHED() << "Got invalid type " << type;
   return blink::mojom::IDBKeyType::Invalid;
 }
 
@@ -877,6 +879,9 @@ int Compare(const StringPiece& a,
         return x;
       if (type_byte_a < kMaxSimpleGlobalMetaDataTypeByte)
         return 0;
+
+      if (type_byte_a == kScopesPrefixByte)
+        return slice_a.compare(slice_b);
 
       // Compare<> is used (which re-decodes the prefix) rather than an
       // specialized CompareSuffix<> because metadata is relatively uncommon
@@ -1253,6 +1258,13 @@ std::string EarliestSweepKey::Encode() {
   std::string ret = KeyPrefix::EncodeEmpty();
   ret.push_back(kEarliestSweepTimeTypeByte);
   return ret;
+}
+
+std::vector<uint8_t> ScopesPrefix::Encode() {
+  std::string ret = KeyPrefix::EncodeEmpty();
+  ret.push_back(kScopesPrefixByte);
+  auto span = base::make_span(ret);
+  return std::vector<uint8_t>(span.begin(), span.end());
 }
 
 DatabaseFreeListKey::DatabaseFreeListKey() : database_id_(-1) {}

@@ -8,6 +8,7 @@
 
 #include "base/debug/activity_tracker.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/debug/profiler.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -146,6 +147,10 @@ bool CreateThreadInternal(size_t stack_size,
   }
 
   if (!thread_handle) {
+    DWORD last_error = ::GetLastError();
+    base::debug::Alias(&last_error);
+    base::debug::DumpWithoutCrashing();
+
     delete params;
     return false;
   }
@@ -386,10 +391,12 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
       FALLTHROUGH;
     case kWin8AboveBackgroundThreadModePriority:
     case THREAD_PRIORITY_LOWEST:
+    case THREAD_PRIORITY_BELOW_NORMAL:
       return ThreadPriority::BACKGROUND;
     case THREAD_PRIORITY_NORMAL:
       return ThreadPriority::NORMAL;
     case THREAD_PRIORITY_ABOVE_NORMAL:
+    case THREAD_PRIORITY_HIGHEST:
       return ThreadPriority::DISPLAY;
     case THREAD_PRIORITY_TIME_CRITICAL:
       return ThreadPriority::REALTIME_AUDIO;

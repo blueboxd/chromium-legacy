@@ -37,6 +37,10 @@ namespace gfx {
 class Size;
 }
 
+namespace gpu {
+class ScopedAllowScheduleGpuTask;
+}
+
 namespace viz {
 class DirectRenderer;
 class DisplayClient;
@@ -197,6 +201,10 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   bool swapped_since_resize_ = false;
   bool output_is_secure_ = false;
 
+#if DCHECK_IS_ON()
+  std::unique_ptr<gpu::ScopedAllowScheduleGpuTask>
+      allow_schedule_gpu_task_during_destruction_;
+#endif
   std::unique_ptr<OutputSurface> output_surface_;
   SkiaOutputSurface* const skia_output_surface_;
   std::unique_ptr<DisplayScheduler> scheduler_;

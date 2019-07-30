@@ -5,7 +5,7 @@
 module apps.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/image/mojo/image.mojom";
+import "ui/gfx/image/mojom/image.mojom";
 
 // Information about an app. See chrome/services/app_service/README.md.
 struct App {

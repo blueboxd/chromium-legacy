@@ -132,6 +132,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
      */
     public void setSearchMode(boolean searchMode) {
         mSearchMode = searchMode;
+        notifyDataSetChanged();
     }
 
     /**

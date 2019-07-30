@@ -189,7 +189,6 @@ TEST_F(DelayloadsTest, ChromeChildDllDelayloadsCheck) {
       "WINSPOOL.DRV",
       "WINTRUST.dll",
       "WS2_32.dll",
-      "WTSAPI32.dll",
       // On 64 bit the Version API's like VerQueryValue come from VERSION.dll.
       // It depends on kernel32, advapi32 and api-ms-win-crt*.dll. This should
       // be ok.

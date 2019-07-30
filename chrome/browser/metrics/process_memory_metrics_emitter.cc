@@ -547,10 +547,6 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
         ->RequestGlobalDump(mad_list, callback);
   }
 
-  // The callback keeps this object alive until the callback is invoked.
-  performance_manager::PerformanceManager* performance_manager =
-      performance_manager::PerformanceManager::GetInstance();
-
   // Use a lambda adapter to post the results back to this sequence.
   GetProcessToPageInfoMapCallback callback2 = base::BindOnce(
       [](scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -564,7 +560,7 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
       base::SequencedTaskRunnerHandle::Get(),
       scoped_refptr<ProcessMemoryMetricsEmitter>(this));
 
-  performance_manager->CallOnGraph(
+  performance_manager::PerformanceManager::CallOnGraph(
       FROM_HERE,
       base::BindOnce(&ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap,
                      std::move(callback2)));

@@ -87,7 +87,8 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 // after finishing it the UI can be properly populated. This function is the
 // callback for whether the owner is signed in. It will respectively pick the
 // proper PrefService for the flags interface.
-void FinishInitialization(base::WeakPtr<FlagsUI> flags_ui,
+template <class T>
+void FinishInitialization(base::WeakPtr<T> flags_ui,
                           Profile* profile,
                           FlagsUIHandler* dom_handler,
                           bool current_user_is_owner) {
@@ -117,9 +118,10 @@ void FinishInitialization(base::WeakPtr<FlagsUI> flags_ui,
 
 }  // namespace
 
-FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  Profile* profile = Profile::FromWebUI(web_ui);
-
+template <class T>
+FlagsUIHandler* InitializeHandler(content::WebUI* web_ui,
+                                  Profile* profile,
+                                  base::WeakPtrFactory<T>& weak_factory) {
   auto handler_owner = std::make_unique<FlagsUIHandler>();
   FlagsUIHandler* handler = handler_owner.get();
   web_ui->AddMessageHandler(std::move(handler_owner));
@@ -133,11 +135,11 @@ FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
     chromeos::OwnerSettingsServiceChromeOS* service =
         chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
             original_profile);
-    service->IsOwnerAsync(base::Bind(&FinishInitialization,
-                                     weak_factory_.GetWeakPtr(),
+    service->IsOwnerAsync(base::Bind(&FinishInitialization<T>,
+                                     weak_factory.GetWeakPtr(),
                                      original_profile, handler));
   } else {
-    FinishInitialization(weak_factory_.GetWeakPtr(), original_profile, handler,
+    FinishInitialization(weak_factory.GetWeakPtr(), original_profile, handler,
                          false /* current_user_is_owner */);
   }
 #else
@@ -145,6 +147,15 @@ FlagsUI::FlagsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
       new flags_ui::PrefServiceFlagsStorage(g_browser_process->local_state()),
       flags_ui::kOwnerAccessToFlags);
 #endif
+  return handler;
+}
+
+FlagsUI::FlagsUI(content::WebUI* web_ui)
+    : WebUIController(web_ui), weak_factory_(this) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  auto* handler = InitializeHandler(web_ui, profile, weak_factory_);
+  DCHECK(handler);
+  handler->set_enterprise_features_only(false);
 
   // Set up the about:flags source.
   content::WebUIDataSource::Add(profile, CreateFlagsUIHTMLSource());
@@ -158,4 +169,22 @@ base::RefCountedMemory* FlagsUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_FLAGS_FAVICON, scale_factor);
+}
+
+FlagsEnterpriseUI::FlagsEnterpriseUI(content::WebUI* web_ui)
+    : WebUIController(web_ui), weak_factory_(this) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  auto* handler = InitializeHandler(web_ui, profile, weak_factory_);
+  DCHECK(handler);
+  handler->set_enterprise_features_only(true);
+
+  // Set up the about:enterprise-flags source.
+  content::WebUIDataSource::Add(profile, CreateFlagsUIHTMLSource());
+}
+
+FlagsEnterpriseUI::~FlagsEnterpriseUI() {}
+
+// static
+bool FlagsEnterpriseUI::IsEnterpriseUrl(const GURL& url) {
+  return url.path() == "/enterprise" || url.path() == "/enterprise/";
 }

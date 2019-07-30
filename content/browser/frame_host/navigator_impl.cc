@@ -28,6 +28,7 @@
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_params_utils.h"
 #include "content/common/page_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -361,7 +362,7 @@ void NavigatorImpl::Navigate(std::unique_ptr<NavigationRequest> request,
   // is_history_navigation_in_new_child is true. This indicates a newly created
   // child frame which does not have a beforeunload handler.
   bool should_dispatch_beforeunload =
-      !FrameMsg_Navigate_Type::IsSameDocument(
+      !NavigationTypeUtils::IsSameDocument(
           request->common_params().navigation_type) &&
       !request->common_params().is_history_navigation_in_new_child_frame &&
       frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload(
@@ -615,7 +616,7 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
 
 void NavigatorImpl::OnBeginNavigation(
     FrameTreeNode* frame_tree_node,
-    const CommonNavigationParams& common_params,
+    mojom::CommonNavigationParamsPtr common_params,
     mojom::BeginNavigationParamsPtr begin_params,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
@@ -627,7 +628,7 @@ void NavigatorImpl::OnBeginNavigation(
   // This is a renderer-initiated navigation.
   DCHECK(frame_tree_node);
 
-  if (common_params.is_history_navigation_in_new_child_frame) {
+  if (common_params->is_history_navigation_in_new_child_frame) {
     // Try to find a FrameNavigationEntry that matches this frame instead, based
     // on the frame's unique name.  If this can't be found, fall back to the
     // default path below.
@@ -653,7 +654,7 @@ void NavigatorImpl::OnBeginNavigation(
 
   // Verify this navigation has precedence.
   if (ShouldIgnoreIncomingRendererRequest(ongoing_navigation_request,
-                                          common_params.has_user_gesture)) {
+                                          common_params->has_user_gesture)) {
     DropNavigation(frame_tree_node);
     return;
   }
@@ -669,8 +670,8 @@ void NavigatorImpl::OnBeginNavigation(
     // DidStartMainFrameNavigation with the SiteInstance from the current
     // RenderFrameHost.
     DidStartMainFrameNavigation(
-        common_params, frame_tree_node->current_frame_host()->GetSiteInstance(),
-        nullptr);
+        *common_params,
+        frame_tree_node->current_frame_host()->GetSiteInstance(), nullptr);
     navigation_data_.reset();
   }
   NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
@@ -684,7 +685,7 @@ void NavigatorImpl::OnBeginNavigation(
           : delegate_ && delegate_->ShouldOverrideUserAgentInNewTabs();
   frame_tree_node->CreatedNavigationRequest(
       NavigationRequest::CreateRendererInitiated(
-          frame_tree_node, pending_entry, common_params,
+          frame_tree_node, pending_entry, std::move(common_params),
           std::move(begin_params), controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount(), override_user_agent,
           std::move(blob_url_loader_factory), std::move(navigation_client),
@@ -695,7 +696,7 @@ void NavigatorImpl::OnBeginNavigation(
   // This frame has already run beforeunload before it sent this IPC.  See if
   // any of its cross-process subframes also need to run beforeunload.  If so,
   // delay the navigation until receiving beforeunload ACKs from those frames.
-  DCHECK(!FrameMsg_Navigate_Type::IsSameDocument(
+  DCHECK(!NavigationTypeUtils::IsSameDocument(
       navigation_request->common_params().navigation_type));
   bool should_dispatch_beforeunload =
       frame_tree_node->current_frame_host()->ShouldDispatchBeforeUnload(
@@ -704,7 +705,8 @@ void NavigatorImpl::OnBeginNavigation(
     frame_tree_node->navigation_request()->SetWaitingForRendererResponse();
     frame_tree_node->current_frame_host()->DispatchBeforeUnload(
         RenderFrameHostImpl::BeforeUnloadType::RENDERER_INITIATED_NAVIGATION,
-        FrameMsg_Navigate_Type::IsReload(common_params.navigation_type));
+        NavigationTypeUtils::IsReload(
+            navigation_request->common_params().navigation_type));
     return;
   }
 
@@ -874,7 +876,7 @@ void NavigatorImpl::RecordNavigationMetrics(
 }
 
 void NavigatorImpl::DidStartMainFrameNavigation(
-    const CommonNavigationParams& common_params,
+    const mojom::CommonNavigationParams& common_params,
     SiteInstanceImpl* site_instance,
     NavigationHandleImpl* navigation_handle) {
   // If there is no browser-initiated pending entry for this navigation and it

@@ -58,7 +58,12 @@ class TabGridViewBinder {
                         item.get(TabProperties.IS_SELECTED) ? drawable : null);
             }
         } else if (TabProperties.FAVICON == propertyKey) {
-            holder.favicon.setImageDrawable(item.get(TabProperties.FAVICON));
+            Drawable favicon = item.get(TabProperties.FAVICON);
+            holder.favicon.setImageDrawable(favicon);
+            int padding = favicon == null ? 0
+                                          : (int) holder.itemView.getResources().getDimension(
+                                                  R.dimen.tab_list_card_padding);
+            holder.favicon.setPadding(padding, padding, padding, padding);
         } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
             updateThumbnail(holder, item);
         } else if (TabProperties.TAB_ID == propertyKey) {

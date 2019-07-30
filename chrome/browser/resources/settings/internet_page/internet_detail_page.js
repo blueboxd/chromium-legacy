@@ -1466,7 +1466,7 @@ Polymer({
       'Cellular.HomeProvider.Code', 'Cellular.Manufacturer', 'Cellular.ModelID',
       'Cellular.FirmwareRevision', 'Cellular.HardwareRevision', 'Cellular.ESN',
       'Cellular.ICCID', 'Cellular.IMEI', 'Cellular.IMSI', 'Cellular.MDN',
-      'Cellular.MEID', 'Cellular.MIN', 'Cellular.PRLVersion'
+      'Cellular.MEID', 'Cellular.MIN'
     ];
   },
 

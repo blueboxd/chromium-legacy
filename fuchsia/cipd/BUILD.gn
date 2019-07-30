@@ -145,6 +145,49 @@ cipd_archive("http") {
   ]
 }
 
+_stripped_chromedriver_file = "${root_out_dir}/clang_x64/stripped/chromedriver"
+
+action("strip_chromedriver_binary") {
+  testonly = true
+
+  prog_name = "${root_out_dir}/clang_x64/chromedriver"
+
+  deps = [
+    "//chrome/test/chromedriver:chromedriver($host_toolchain)",
+  ]
+  script = "//build/gn_run_binary.py"
+  sources = [
+    "//buildtools/third_party/eu-strip/bin/eu-strip",
+    prog_name,
+  ]
+  outputs = [
+    _stripped_chromedriver_file,
+  ]
+  args = [
+    rebase_path("//buildtools/third_party/eu-strip/bin/eu-strip",
+                root_build_dir),
+    "-o",
+    rebase_path(_stripped_chromedriver_file, root_build_dir),
+    rebase_path(prog_name, root_build_dir),
+  ]
+
+  visibility = [ ":*" ]
+}
+
+cipd_archive("chromedriver") {
+  cipd_manifest_name = "chromedriver.yaml"
+  cipd_path = "chromium/fuchsia/chromedriver-\${os}-\${arch}"
+  cipd_description = "Prebuilt Chromedriver binary for Fuchsia host."
+
+  deps = [
+    ":strip_chromedriver_binary",
+  ]
+
+  sources = [
+    _stripped_chromedriver_file,
+  ]
+}
+
 cipd_archive("tests") {
   _manifest_path = "${target_gen_dir}/test_manifest.json"
   cipd_manifest_name = "tests.yaml"
@@ -216,10 +259,26 @@ cipd_archive("debug_symbols") {
   sources = [ _symbol_manifest ] + _symbol_tarballs
 }
 
+cipd_archive("clear_key_cdm") {
+  cipd_manifest_name = "clear_key_cdm.yaml"
+  cipd_path = "chromium/fuchsia/libclearkeycdm-\${targetarch}"
+  cipd_description = "Prebuilt libclearkeycdm.so binary for Fuchsia."
+
+  deps = [
+    "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm",
+  ]
+
+  sources = [
+    "${root_out_dir}/lib/libclearkeycdm.so",
+  ]
+}
+
 group("cipd") {
   testonly = true
   deps = [
     ":castrunner",
+    ":chromedriver",
+    ":clear_key_cdm",
     ":debug_symbols",
     ":http",
     ":tests",

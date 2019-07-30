@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/simple_message_box.h"
@@ -17,7 +18,7 @@
 
 namespace {
 
-#if !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
+#if !defined(OS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 constexpr char kProfileErrorFeedbackCategory[] = "FEEDBACK_PROFILE_ERROR";
 
 bool g_is_showing_profile_error_dialog = false;
@@ -37,7 +38,7 @@ void OnProfileErrorDialogDismissed(const std::string& diagnostics,
                            std::string() /* description_placeholder_text */,
                            kProfileErrorFeedbackCategory, diagnostics);
 }
-#endif  // !defined(OS_ANDROID) && defined(GOOGLE_CHROME_BUILD)
+#endif  // !defined(OS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace
 
@@ -54,7 +55,7 @@ void ShowProfileErrorDialog(ProfileErrorType type,
     return;
   }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (g_is_showing_profile_error_dialog)
     return;
 
@@ -64,11 +65,11 @@ void ShowProfileErrorDialog(ProfileErrorType type,
       l10n_util::GetStringUTF16(message_id),
       l10n_util::GetStringUTF16(IDS_PROFILE_ERROR_DIALOG_CHECKBOX),
       base::Bind(&OnProfileErrorDialogDismissed, diagnostics));
-#else   // defined(GOOGLE_CHROME_BUILD)
+#else   // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   chrome::ShowWarningMessageBox(
       nullptr, l10n_util::GetStringUTF16(IDS_PROFILE_ERROR_DIALOG_TITLE),
       l10n_util::GetStringUTF16(message_id));
-#endif  // !defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAGdefined(GOOGLE_CHROME_BUILD)
 
 #endif  // !defined(OS_ANDROID)
 }

@@ -47,6 +47,7 @@
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "cc/base/histograms.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
@@ -65,7 +66,6 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/viz_process_transport_factory.h"
 #include "content/browser/dom_storage/storage_area_impl.h"
-#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_client_delegate.h"
@@ -826,7 +826,7 @@ int BrowserMainLoop::PreCreateThreads() {
       GpuDataManagerImpl::GetInstance()));
 #endif
 
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(OS_ANDROID)
   // Single-process is an unsupported and not fully tested mode, so
   // don't enable it for official Chrome builds (except on Android).
   if (parsed_command_line_.HasSwitch(switches::kSingleProcess))

@@ -14,20 +14,25 @@
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/account_id/account_id.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
+#include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -53,6 +58,11 @@ namespace chromeos {
 namespace assistant {
 
 class AssistantManagerService;
+
+// |AssistantManagerService|'s state won't update if it's currently in the
+// process of starting up. This is the delay before we will try to update
+// |AssistantManagerService| again.
+constexpr auto kUpdateAssistantManagerDelay = base::TimeDelta::FromSeconds(1);
 
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
     : public service_manager::Service,
@@ -107,18 +117,19 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void SetIdentityAccessorForTesting(
       identity::mojom::IdentityAccessorPtr identity_accessor);
 
-  void SetAssistantManagerForTesting(
-      std::unique_ptr<AssistantManagerService> assistant_manager_service);
-
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
+  void SetPrefConnectionDelegateForTesting(
+      std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
+
  private:
-  friend class ServiceTest;
+  friend class AssistantServiceTest;
+
   // service_manager::Service overrides
   void OnStart() override;
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void OnConnect(const service_manager::BindSourceInfo& source_info,
+                 const std::string& interface_name,
+                 mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindAssistantConnection(mojom::AssistantRequest request);
   void BindAssistantPlatformConnection(mojom::AssistantPlatformRequest request);
 
@@ -222,8 +233,14 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   std::unique_ptr<PrefService> pref_service_;
 
+  std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate_;
+
   // Observes user profile prefs for the Assistant.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  base::CancelableOnceClosure update_assistant_manager_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 

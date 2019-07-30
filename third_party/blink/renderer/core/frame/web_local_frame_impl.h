@@ -236,8 +236,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,
-      const WebDOMMessageEvent&,
-      bool has_user_gesture) override;
+      const WebDOMMessageEvent&) override;
 
   WebRect GetSelectionBoundsRectForTesting() const override;
 

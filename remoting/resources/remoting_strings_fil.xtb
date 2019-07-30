@@ -70,6 +70,11 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2366718077645204424">Hindi maabot ang host. Malamang na dahil ito sa configuration ng network na iyong ginagamit.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Huling nakitang naka-online noong <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2405928220797050937">Hindi na sinusuportahan ang app na ito. Upang matiyak na makukuha mo ang mga pinakabagong feature at update sa seguridad, pakigamit ang <ph name="LINK_BEGIN" />web app na Remote na Desktop ng Chrome<ph name="LINK_END" />.</translation>
+<translation id="2431841749166974386">Kinakailangan ang karagdagang hakbang sa configuration bago mo makontrol nang malayuan ang machine na ito gamit ang <ph name="PRODUCT_NAME" />.
+
+Para i-enable ang functionality na ito, piliin ang '<ph name="BUTTON_NAME" />' para ipakita ang pane ng mga kagustuhan ng Seguridad at Privacy, pagkatapos ay lagyan ng check ang kahon sa tabi ng '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Kung mayroon nang '<ph name="SERVICE_SCRIPT_NAME" />' at may nakalagay nang check, puwede mong alisin ito at pagkatapos ay idagdag itong muli.</translation>
 <translation id="2499160551253595098">Tumulong sa amin na pahusayin ang Remote na Desktop ng Chrome sa pamamagitan ng pagbibigay-daan sa amin na mangolekta ng mga statistics sa paggamit at mga ulat ng pag-crash.</translation>
 <translation id="2509394361235492552">Nakakonekta sa <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">TANDAAN: Upang matiyak na available ang lahat ng keyboard shortcut, maaari mong i-configure ang Remote na Desktop ng Chrome sa ‘Buksan bilang window’.</translation>

@@ -60,7 +60,7 @@ TEST(LogBuffer, UnclosedTag) {
   buffer << Tag{"foo"};
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
-  EXPECT_EQ(R"({"type":"node","value":"foo"})", json);
+  EXPECT_EQ(R"({"type":"element","value":"foo"})", json);
 }
 
 TEST(LogBuffer, ClosedTag) {
@@ -68,7 +68,7 @@ TEST(LogBuffer, ClosedTag) {
   buffer << Tag{"foo"} << CTag{};
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
-  EXPECT_EQ(R"({"type":"node","value":"foo"})", json);
+  EXPECT_EQ(R"({"type":"element","value":"foo"})", json);
 }
 
 TEST(LogBuffer, NestedTag) {
@@ -76,8 +76,8 @@ TEST(LogBuffer, NestedTag) {
   buffer << Tag{"foo"} << Tag{"bar"} << CTag{} << CTag{};
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
-  EXPECT_EQ(R"({"children":[{"type":"node","value":"bar"}],)"
-            R"("type":"node","value":"foo"})",
+  EXPECT_EQ(R"({"children":[{"type":"element","value":"bar"}],)"
+            R"("type":"element","value":"foo"})",
             json);
 }
 
@@ -86,8 +86,8 @@ TEST(LogBuffer, NestedTagClosingTooOften) {
   buffer << Tag{"foo"} << Tag{"bar"} << CTag{} << CTag{} << CTag{};
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
-  EXPECT_EQ(R"({"children":[{"type":"node","value":"bar"}],)"
-            R"("type":"node","value":"foo"})",
+  EXPECT_EQ(R"({"children":[{"type":"element","value":"bar"}],)"
+            R"("type":"element","value":"foo"})",
             json);
 }
 
@@ -96,8 +96,8 @@ TEST(LogBuffer, NestedTagClosingNotAtAll) {
   buffer << Tag{"foo"} << Tag{"bar"};
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
-  EXPECT_EQ(R"({"children":[{"type":"node","value":"bar"}],)"
-            R"("type":"node","value":"foo"})",
+  EXPECT_EQ(R"({"children":[{"type":"element","value":"bar"}],)"
+            R"("type":"element","value":"foo"})",
             json);
 }
 
@@ -107,10 +107,11 @@ TEST(LogBuffer, NestedTagWithAttributes) {
          << CTag{} << Attrib{"f1", "1"};
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
-  EXPECT_EQ(R"({"attributes":{"f1":"1"},"children":[)"
-            R"({"attributes":{"b1":"1","b2":"2"},"type":"node","value":"bar"})"
-            R"(],"type":"node","value":"foo"})",
-            json);
+  EXPECT_EQ(
+      R"({"attributes":{"f1":"1"},"children":[)"
+      R"({"attributes":{"b1":"1","b2":"2"},"type":"element","value":"bar"})"
+      R"(],"type":"element","value":"foo"})",
+      json);
 }
 
 TEST(LogBuffer, DivWithBr) {
@@ -119,8 +120,19 @@ TEST(LogBuffer, DivWithBr) {
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
   EXPECT_EQ(R"({"children":[{"type":"text","value":"foo"},)"
-            R"({"type":"node","value":"br"},{"type":"text","value":"bar"}],)"
-            R"("type":"node","value":"div"})",
+            R"({"type":"element","value":"br"},{"type":"text","value":"bar"}],)"
+            R"("type":"element","value":"div"})",
+            json);
+}
+
+TEST(LogBuffer, CoalesceStrings) {
+  LogBuffer buffer;
+  buffer << Tag{"div"} << "foo"
+         << "bar";
+  std::string json;
+  EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
+  EXPECT_EQ(R"({"children":[{"type":"text","value":"foobar"}],)"
+            R"("type":"element","value":"div"})",
             json);
 }
 
@@ -145,21 +157,35 @@ TEST(LogBuffer, CanStreamCustomObjects) {
   buffer << o;
   std::string json;
   EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
-  EXPECT_EQ(
-      R"({"children":[)"                                      // table
-      /**/ R"({"children":[)"                                 // tr
-      /****/ R"({"children":[{"type":"text","value":"x"}],)"  // td
-      /******/ R"("type":"node","value":"td"},)"
-      /****/ R"({"children":[{"type":"text","value":"42"}],)"  // td
-      /******/ R"("type":"node","value":"td"}],)"
-      /****/ R"("type":"node","value":"tr"},)"  // continuation of tr
-      /**/ R"({"children":[)"                   // tr
-      /****/ R"({"children":[{"type":"text","value":"y"}],)"
-      /******/ R"("type":"node","value":"td"},)"
-      /****/ R"({"children":[{"type":"text","value":"foobar\u003C!--"}],)"
-      /******/ R"("type":"node","value":"td"}],)"
-      /**/ R"("type":"node","value":"tr"}],"type":"node","value":"table"})",
-      json);
+  EXPECT_EQ(R"({"children":[)"                                      // table
+            /**/ R"({"children":[)"                                 // tr
+            /****/ R"({"children":[{"type":"text","value":"x"}],)"  // td
+            /******/ R"("type":"element","value":"td"},)"
+            /****/ R"({"children":[{"type":"text","value":"42"}],)"  // td
+            /******/ R"("type":"element","value":"td"}],)"
+            /****/ R"("type":"element","value":"tr"},)"  // continuation of tr
+            /**/ R"({"children":[)"                      // tr
+            /****/ R"({"children":[{"type":"text","value":"y"}],)"
+            /******/ R"("type":"element","value":"td"},)"
+            /****/ R"({"children":[{"type":"text","value":"foobar\u003C!--"}],)"
+            /******/ R"("type":"element","value":"td"}],)"
+            /**/ R"("type":"element","value":"tr"}],"type":"element",)"
+            /****/ R"("value":"table"})",
+            json);
+}
+
+TEST(LogBuffer, LogTableRowBuffer) {
+  LogBuffer expected;
+  expected << Tag{"table"};
+  expected << Tag{"tr"} << Attrib{"class", "awesome"} << Tag{"td"} << "Foo"
+           << CTag{"td"} << Tag{"td"} << "Bar" << CTag{"td"} << CTag{"tr"};
+  expected << CTag{"table"};
+  LogBuffer actual;
+  actual << Tag{"table"};
+  actual << Tr{} << Attrib{"class", "awesome"} << "Foo"
+         << "Bar";
+  actual << CTag{"table"};
+  EXPECT_EQ(expected.RetrieveResult(), actual.RetrieveResult());
 }
 
 }  // namespace autofill

@@ -133,8 +133,6 @@ class NavigationURLLoaderImplTest : public testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         network_change_notifier_(
             net::test::MockNetworkChangeNotifier::Create()) {
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-
     // Because the network service is enabled we need a system Connector or
     // BrowserContext::GetDefaultStoragePartition will segfault when
     // ContentBrowserClient::CreateNetworkContext tries to call
@@ -177,16 +175,18 @@ class NavigationURLLoaderImplTest : public testing::Test {
             GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */);
 
-    CommonNavigationParams common_params;
-    common_params.url = url;
-    common_params.initiator_origin = url::Origin::Create(url);
-    common_params.method = method;
-    common_params.download_policy = download_policy;
+    auto common_params = mojom::CommonNavigationParams::New();
+    common_params->referrer = blink::mojom::Referrer::New();
+    common_params->navigation_start = base::TimeTicks::Now();
+    common_params->url = url;
+    common_params->initiator_origin = url::Origin::Create(url);
+    common_params->method = method;
+    common_params->download_policy = download_policy;
     url::Origin origin = url::Origin::Create(url);
 
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(
-            common_params, std::move(begin_params), url,
+            std::move(common_params), std::move(begin_params), url,
             net::NetworkIsolationKey(origin, origin), is_main_frame,
             false /* parent_is_main_frame */, false /* are_ancestors_secure */,
             -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
@@ -296,7 +296,6 @@ class NavigationURLLoaderImplTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>

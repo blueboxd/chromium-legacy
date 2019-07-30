@@ -632,3 +632,12 @@ OncMojo.DeviceStateProperties;
 
 /** @typedef {chromeos.networkConfig.mojom.NetworkStateProperties} */
 OncMojo.NetworkStateProperties;
+
+/**
+ * @typedef {chromeos.networkConfig.mojom.ManagedBoolean|
+ *           chromeos.networkConfig.mojom.ManagedInt32|
+ *           chromeos.networkConfig.mojom.ManagedString|
+ *           chromeos.networkConfig.mojom.ManagedStringList|
+ *           chromeos.networkConfig.mojom.ManagedApnList}
+ */
+OncMojo.ManagedProperty;

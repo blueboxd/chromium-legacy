@@ -70,4 +70,17 @@ void UpdateOnboardingState(scoped_refptr<password_manager::PasswordStore> store,
       delay);
 }
 
+bool ShouldShowOnboarding(PrefService* prefs, bool is_password_update) {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordManagerOnboardingAndroid)) {
+    return false;
+  }
+  if (is_password_update) {
+    return false;
+  }
+  return prefs->GetInteger(
+             password_manager::prefs::kPasswordManagerOnboardingState) ==
+         static_cast<int>(OnboardingState::kShouldShow);
+}
+
 }  // namespace password_manager

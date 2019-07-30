@@ -161,7 +161,7 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
                            WebGLFramebuffer* framebuffer,
                            double framebuffer_scale,
                            bool ignore_depth_values)
-    : XRLayer(session, kXRWebGLLayerType),
+    : session_(session),
       webgl_context_(webgl_context),
       framebuffer_(framebuffer),
       framebuffer_scale_(framebuffer_scale),
@@ -203,17 +203,6 @@ bool XRWebGLLayer::antialias() const {
     return drawing_buffer_->antialias();
   }
   return webgl_context_->GetDrawingBuffer()->Multisample();
-}
-
-void XRWebGLLayer::getXRWebGLRenderingContext(
-    WebGLRenderingContextOrWebGL2RenderingContext& result) const {
-  if (webgl_context_->ContextType() == Platform::kWebGL2ContextType) {
-    result.SetWebGL2RenderingContext(
-        static_cast<WebGL2RenderingContext*>(webgl_context_.Get()));
-  } else {
-    result.SetWebGLRenderingContext(
-        static_cast<WebGLRenderingContext*>(webgl_context_.Get()));
-  }
 }
 
 XRViewport* XRWebGLLayer::getViewport(XRView* view) {
@@ -331,11 +320,12 @@ scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage(
 }
 
 void XRWebGLLayer::Trace(blink::Visitor* visitor) {
+  visitor->Trace(session_);
   visitor->Trace(left_viewport_);
   visitor->Trace(right_viewport_);
   visitor->Trace(webgl_context_);
   visitor->Trace(framebuffer_);
-  XRLayer::Trace(visitor);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

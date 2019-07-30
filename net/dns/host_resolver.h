@@ -69,6 +69,9 @@ class NET_EXPORT HostResolver {
     // an incompatible IP literal (e.g. IPv6 is disabled and it is an IPv6
     // literal).
     //
+    // Results in ERR_DNS_CACHE_MISS if only fast local sources are to be
+    // queried and a cache lookup attempt fails.
+    //
     // The parent HostResolver must still be alive when Start() is called,  but
     // if it is destroyed before an asynchronous result completes, the request
     // will be automatically cancelled.
@@ -131,10 +134,10 @@ class NET_EXPORT HostResolver {
     // |kDefaultRetryAttempts| for the resolver to choose a default value.
     size_t max_system_retry_attempts = kDefaultRetryAttempts;
 
-    // Initial setting for whether the built-in asynchronous DnsClient is
-    // enabled or disabled. See HostResolverManager::SetDnsClientEnabled() for
-    // details.
-    bool dns_client_enabled = false;
+    // Initial setting for whether the insecure portion of the built-in
+    // asynchronous DnsClient is enabled or disabled. See HostResolverManager::
+    // SetInsecureDnsClientEnabled() for details.
+    bool insecure_dns_client_enabled = false;
 
     // Initial configuration overrides for the built-in asynchronous DnsClient.
     // See HostResolverManager::SetDnsConfigOverrides() for details.

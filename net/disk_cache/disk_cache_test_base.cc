@@ -387,9 +387,10 @@ void DiskCacheTestWithCache::CreateBackend(uint32_t flags) {
     cache_ = std::move(simple_backend);
     if (simple_cache_wait_for_index_) {
       net::TestCompletionCallback wait_for_index_cb;
-      rv = simple_cache_impl_->index()->ExecuteWhenReady(
+      simple_cache_impl_->index()->ExecuteWhenReady(
           wait_for_index_cb.callback());
-      ASSERT_THAT(wait_for_index_cb.GetResult(rv), IsOk());
+      rv = wait_for_index_cb.WaitForResult();
+      ASSERT_THAT(rv, IsOk());
     }
     return;
   }

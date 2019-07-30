@@ -666,12 +666,13 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   return copy;
 }
 
-CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
+mojom::CommonNavigationParamsPtr
+NavigationEntryImpl::ConstructCommonNavigationParams(
     const FrameNavigationEntry& frame_entry,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
     const GURL& dest_url,
-    const Referrer& dest_referrer,
-    FrameMsg_Navigate_Type::Value navigation_type,
+    blink::mojom::ReferrerPtr dest_referrer,
+    mojom::NavigationType navigation_type,
     PreviewsState previews_state,
     base::TimeTicks navigation_start,
     base::TimeTicks input_start) {
@@ -679,8 +680,8 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
   if (IsViewSourceMode())
     download_policy.SetDisallowed(NavigationDownloadType::kViewSource);
 
-  return CommonNavigationParams(
-      dest_url, frame_entry.initiator_origin(), dest_referrer,
+  return mojom::CommonNavigationParams::New(
+      dest_url, frame_entry.initiator_origin(), std::move(dest_referrer),
       GetTransitionType(), navigation_type, download_policy,
       should_replace_entry(), GetBaseURLForDataURL(), GetHistoryURLForDataURL(),
       previews_state, navigation_start, frame_entry.method(),

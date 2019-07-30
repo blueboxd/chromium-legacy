@@ -41,6 +41,7 @@
 #include "chrome/grit/os_settings_resources.h"
 #include "chrome/grit/os_settings_resources_map.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -50,7 +51,10 @@ namespace chromeos {
 namespace settings {
 
 OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui, /*enable_chrome_send =*/true) {
+    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true),
+      webui_load_timer_(web_ui->GetWebContents(),
+                        "ChromeOS.Settings.LoadDocumentTime",
+                        "ChromeOS.Settings.LoadCompletedTime") {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIOSSettingsHost);

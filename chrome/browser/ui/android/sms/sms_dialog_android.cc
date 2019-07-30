@@ -44,9 +44,8 @@ void SmsDialogAndroid::Close() {
   Java_SmsReceiverDialog_close(AttachCurrentThread(), java_dialog_);
 }
 
-void SmsDialogAndroid::EnableContinueButton() {
-  Java_SmsReceiverDialog_enableContinueButton(AttachCurrentThread(),
-                                              java_dialog_);
+void SmsDialogAndroid::SmsReceived() {
+  Java_SmsReceiverDialog_smsReceived(AttachCurrentThread(), java_dialog_);
 }
 
 void SmsDialogAndroid::OnContinue(JNIEnv* env) {

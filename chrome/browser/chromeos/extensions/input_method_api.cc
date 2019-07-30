@@ -396,7 +396,7 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngineBase* engine =
-      event_router ? event_router->GetActiveEngine(extension_id()) : nullptr;
+      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
   if (engine) {
     const auto parent_params = SetCompositionRange::Params::Create(*args_);
     const auto& params = parent_params->parameters;

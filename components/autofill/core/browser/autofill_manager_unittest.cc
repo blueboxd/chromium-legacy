@@ -5765,10 +5765,10 @@ TEST_F(AutofillManagerTest, DontOfferToSavePaymentsCard) {
       form.fields[i].value = ASCIIToUTF16("2017");
   }
 
-  CardUnmaskDelegate::UnmaskResponse response;
-  response.should_store_pan = false;
-  response.cvc = ASCIIToUTF16("123");
-  full_card_unmask_delegate()->OnUnmaskResponse(response);
+  CardUnmaskDelegate::UserProvidedUnmaskDetails details;
+  details.should_store_pan = false;
+  details.cvc = ASCIIToUTF16("123");
+  full_card_unmask_delegate()->OnUnmaskPromptAccepted(details);
   OnDidGetRealPan(AutofillClient::SUCCESS, "4012888888881881");
   autofill_manager_->OnFormSubmitted(form, false,
                                      SubmissionSource::FORM_SUBMISSION);
@@ -5779,12 +5779,12 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
   CreditCard card;
   PrepareForRealPanResponse(&form, &card);
 
-  CardUnmaskDelegate::UnmaskResponse response;
-  response.should_store_pan = false;
-  response.cvc = ASCIIToUTF16("123");
-  response.exp_month = ASCIIToUTF16("02");
-  response.exp_year = ASCIIToUTF16("2018");
-  full_card_unmask_delegate()->OnUnmaskResponse(response);
+  CardUnmaskDelegate::UserProvidedUnmaskDetails details;
+  details.should_store_pan = false;
+  details.cvc = ASCIIToUTF16("123");
+  details.exp_month = ASCIIToUTF16("02");
+  details.exp_year = ASCIIToUTF16("2018");
+  full_card_unmask_delegate()->OnUnmaskPromptAccepted(details);
   OnDidGetRealPan(AutofillClient::SUCCESS, "4012888888881881");
 }
 

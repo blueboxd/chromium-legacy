@@ -179,7 +179,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   bool IsEventTimingBufferFull() const;
   void AddEventTimingBuffer(PerformanceEventTiming&);
 
-  void AddLayoutJankBuffer(LayoutShift&);
+  void AddLayoutShiftBuffer(LayoutShift&);
 
   void AddLargestContentfulPaint(LargestContentfulPaint*);
 
@@ -350,7 +350,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   unsigned event_timing_buffer_max_size_;
   PerformanceEntryVector element_timing_buffer_;
   unsigned element_timing_buffer_max_size_;
-  PerformanceEntryVector layout_jank_buffer_;
+  PerformanceEntryVector layout_shift_buffer_;
   PerformanceEntryVector largest_contentful_paint_buffer_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;

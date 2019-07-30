@@ -18,6 +18,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -25,6 +28,7 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
@@ -33,8 +37,9 @@ import org.chromium.chrome.browser.download.DownloadTestRule.CustomMainActivityS
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.InfoBarUtil;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -45,14 +50,22 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Tests Chrome download feature by attempting to download some files.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class DownloadTest implements CustomMainActivityStart {
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations
+        .UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+        @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+        public class DownloadTest implements CustomMainActivityStart {
+    @ParameterAnnotations.ClassParameter
+    private static List<ParameterSet> sClassParams = Arrays.asList(
+            new ParameterSet().value(true).name("UseDownloadOfflineContentProviderEnabled"),
+            new ParameterSet().value(false).name("UseDownloadOfflineContentProviderDisabled"));
+
     @Rule
     public DownloadTestRule mDownloadTestRule = new DownloadTestRule(this);
 
@@ -76,6 +89,8 @@ public class DownloadTest implements CustomMainActivityStart {
         FILENAME_GZIP
     };
 
+    private boolean mUseDownloadOfflineContentProvider;
+
     static class DownloadManagerRequestInterceptorForTest
             implements DownloadManagerService.DownloadManagerRequestInterceptor {
         public DownloadItem mDownloadItem;
@@ -85,6 +100,10 @@ public class DownloadTest implements CustomMainActivityStart {
             mDownloadItem = item;
             Assert.assertTrue(notifyComplete);
         }
+    }
+
+    public DownloadTest(boolean useDownloadOfflineContentProvider) {
+        mUseDownloadOfflineContentProvider = useDownloadOfflineContentProvider;
     }
 
     @Before
@@ -101,6 +120,11 @@ public class DownloadTest implements CustomMainActivityStart {
 
     @Override
     public void customMainActivityStart() throws InterruptedException {
+        if (mUseDownloadOfflineContentProvider) {
+            Features.getInstance().enable(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER);
+        } else {
+            Features.getInstance().disable(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER);
+        }
         mDownloadTestRule.startMainActivityOnBlankPage();
     }
 

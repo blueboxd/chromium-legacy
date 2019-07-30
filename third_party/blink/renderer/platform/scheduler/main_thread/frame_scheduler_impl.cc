@@ -260,6 +260,10 @@ FrameSchedulerImpl::~FrameSchedulerImpl() {
     if (opted_out_from_aggressive_throttling())
       parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
   }
+
+  // Can be null in tests.
+  if (main_thread_scheduler_)
+    main_thread_scheduler_->OnFrameSchedulerDestroyed(this);
 }
 
 void FrameSchedulerImpl::DetachFromPageScheduler() {

@@ -63,11 +63,9 @@ class LocalSiteCharacteristicsWebContentsObserver::GraphObserver
 LocalSiteCharacteristicsWebContentsObserver::
     LocalSiteCharacteristicsWebContentsObserver(
         content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      performance_manager_(
-          performance_manager::PerformanceManager::GetInstance()) {
+    : content::WebContentsObserver(web_contents) {
   // May not be present in some tests.
-  if (performance_manager_) {
+  if (performance_manager::PerformanceManager::IsAvailable()) {
     // The performance manager has to be enabled in order to properly track the
     // non-persistent notification events.
     TabLoadTracker::Get()->AddObserver(this);
@@ -101,9 +99,8 @@ void LocalSiteCharacteristicsWebContentsObserver::OnVisibilityChanged(
 
 void LocalSiteCharacteristicsWebContentsObserver::WebContentsDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (performance_manager_) {
+  if (performance_manager::PerformanceManager::IsAvailable())
     TabLoadTracker::Get()->RemoveObserver(this);
-  }
   writer_.reset();
   writer_origin_ = url::Origin();
 }
@@ -226,7 +223,7 @@ void LocalSiteCharacteristicsWebContentsObserver::OnLoadingStateChange(
 void LocalSiteCharacteristicsWebContentsObserver::
     OnNonPersistentNotificationCreated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(nullptr, performance_manager_);
+  DCHECK(performance_manager::PerformanceManager::IsAvailable());
 
   MaybeNotifyBackgroundFeatureUsage(
       &SiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground,

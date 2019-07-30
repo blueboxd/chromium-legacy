@@ -25,7 +25,7 @@ class SharedURLLoaderFactory;
 
 class OAuth2AccessTokenFetcher;
 class OAuth2AccessTokenConsumer;
-class OAuth2TokenServiceObserver;
+class ProfileOAuth2TokenServiceObserver;
 class ProfileOAuth2TokenService;
 
 // Abstract base class to fetch and maintain refresh tokens from various
@@ -87,8 +87,8 @@ class ProfileOAuth2TokenServiceDelegate {
   bool ValidateAccountId(const CoreAccountId& account_id) const;
 
   // Add or remove observers of this token service.
-  void AddObserver(OAuth2TokenServiceObserver* observer);
-  void RemoveObserver(OAuth2TokenServiceObserver* observer);
+  void AddObserver(ProfileOAuth2TokenServiceObserver* observer);
+  void RemoveObserver(ProfileOAuth2TokenServiceObserver* observer);
 
   // Returns a pointer to its instance of net::BackoffEntry if it has one, or
   // a nullptr otherwise.
@@ -169,7 +169,7 @@ class ProfileOAuth2TokenServiceDelegate {
  private:
   // List of observers to notify when refresh token availability changes.
   // Makes sure list is empty on destruction.
-  base::ObserverList<OAuth2TokenServiceObserver, true>::Unchecked
+  base::ObserverList<ProfileOAuth2TokenServiceObserver, true>::Unchecked
       observer_list_;
 
   // The state of the load credentials operation.

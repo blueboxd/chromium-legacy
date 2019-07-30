@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/format_macros.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -420,8 +421,9 @@ TEST_F(IndexedRuleTest, RedirectUrlParsing) {
       {nullptr, ParseResult::ERROR_EMPTY_REDIRECT_URL, ""},
       {std::make_unique<std::string>("http://google.com"), ParseResult::SUCCESS,
        "http://google.com"},
-      {std::make_unique<std::string>("/relative/url"), ParseResult::SUCCESS,
-       "chrome-extension://" + std::string(kTestExtensionId) + "/relative/url"},
+      {std::make_unique<std::string>("/relative/url?q=1"), ParseResult::SUCCESS,
+       "chrome-extension://" + std::string(kTestExtensionId) +
+           "/relative/url?q=1"},
       {std::make_unique<std::string>("abc"),
        ParseResult::ERROR_INVALID_REDIRECT_URL, ""}};
 
@@ -483,6 +485,140 @@ TEST_F(IndexedRuleTest, RemoveHeadersParsing) {
     EXPECT_EQ(dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS,
               indexed_rule.action_type);
     EXPECT_EQ(cases[i].expected_types, indexed_rule.remove_headers_set);
+  }
+}
+
+TEST_F(IndexedRuleTest, RedirectParsing) {
+  struct {
+    std::string redirect_dictionary_json;
+    ParseResult expected_result;
+  } cases[] = {// clang-format off
+    {
+      "{}",
+      ParseResult::ERROR_INVALID_REDIRECT
+    },
+    {
+      R"({"url": "xyz"})",
+      ParseResult::ERROR_INVALID_REDIRECT_URL
+    },
+    {
+      R"({"url": "http://google.com"})",
+      ParseResult::SUCCESS
+    },
+    {
+      R"({"extensionPath": "foo/xyz/"})",
+      ParseResult::ERROR_INVALID_EXTENSION_PATH
+    },
+    {
+      R"({"extensionPath": "/foo/xyz?q=1"})",
+      ParseResult::SUCCESS
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "",
+          "host": "foo.com"
+        }
+      })", ParseResult::ERROR_INVALID_TRANSFORM_SCHEME
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "javascript",
+          "host": "foo.com"
+        }
+      })", ParseResult::ERROR_INVALID_TRANSFORM_SCHEME
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "http",
+          "port": "-1"
+        }
+      })", ParseResult::ERROR_INVALID_TRANSFORM_PORT
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "http",
+          "query": "abc"
+        }
+      })", ParseResult::ERROR_INVALID_TRANSFORM_QUERY
+    },
+    {
+      R"({"transform": {"path": "abc"}})",
+      ParseResult::SUCCESS
+    },
+    {
+      R"({"transform": {"fragment": "abc"}})",
+      ParseResult::ERROR_INVALID_TRANSFORM_FRAGMENT
+    },
+    {
+      R"({"transform": {"path": ""}})",
+      ParseResult::SUCCESS
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "http",
+          "query": "?abc",
+          "queryTransform": {
+            "removeParams": ["abc"]
+          }
+        }
+      })", ParseResult::ERROR_QUERY_AND_TRANSFORM_BOTH_SPECIFIED
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "https",
+          "host": "foo.com",
+          "port": "80",
+          "path": "/foo",
+          "queryTransform": {
+            "removeParams": ["x1", "x2"],
+            "addOrReplaceParams": [
+              {"key": "y1", "value": "foo"}
+            ]
+          },
+          "fragment": "",
+          "username": "user"
+        }
+      })", ParseResult::SUCCESS
+    }
+  };
+  // clang-format on
+
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
+    rule.priority = std::make_unique<int>(kMinValidPriority);
+
+    base::Optional<base::Value> redirect_val =
+        base::JSONReader::Read(cases[i].redirect_dictionary_json);
+    ASSERT_TRUE(redirect_val);
+
+    base::string16 error;
+    rule.action.redirect = dnr_api::Redirect::FromValue(*redirect_val, &error);
+    ASSERT_TRUE(rule.action.redirect);
+    ASSERT_TRUE(error.empty());
+
+    IndexedRule indexed_rule;
+    ParseResult result = IndexedRule::CreateIndexedRule(
+        std::move(rule), GetBaseURL(), &indexed_rule);
+    EXPECT_EQ(cases[i].expected_result, result) << static_cast<int>(result);
+    if (result != ParseResult::SUCCESS)
+      continue;
+
+    EXPECT_TRUE(indexed_rule.url_transform || indexed_rule.redirect_url);
+    EXPECT_FALSE(indexed_rule.url_transform && indexed_rule.redirect_url);
   }
 }
 

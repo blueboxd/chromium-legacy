@@ -1189,7 +1189,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
                                                 "Text in iframe");
 
-  WaitForHitTestDataOrChildSurfaceReady(iframe_node->current_frame_host());
+  WaitForHitTestData(iframe_node->current_frame_host());
   FrameTreeVisualizer visualizer;
   ASSERT_EQ(
       " Site A ------------ proxies for B\n"

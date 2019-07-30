@@ -457,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewBrowserPluginTest,
 
   // Don't send events that need to be routed until we know the child's surface
   // is ready for hit testing.
-  content::WaitForHitTestDataOrGuestSurfaceReady(guest_web_contents());
+  content::WaitForHitTestData(guest_web_contents());
 
   // 1) BrowserPlugin should not be focused at start.
   ASSERT_FALSE(IsWebContentsBrowserPluginFocused(guest_web_contents()));

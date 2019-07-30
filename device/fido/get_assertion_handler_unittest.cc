@@ -66,6 +66,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     ble_discovery_ = fake_discovery_factory_->ForgeNextBleDiscovery();
     cable_discovery_ = fake_discovery_factory_->ForgeNextCableDiscovery();
     nfc_discovery_ = fake_discovery_factory_->ForgeNextNfcDiscovery();
+    platform_discovery_ = fake_discovery_factory_->ForgeNextPlatformDiscovery();
   }
 
   CtapGetAssertionRequest CreateTestRequestWithCableExtension() {
@@ -102,8 +103,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
         nullptr /* connector */, fake_discovery_factory_.get(),
         supported_transports_, std::move(request),
         get_assertion_cb_.callback());
-    handler->SetPlatformAuthenticatorOrMarkUnavailable(
-        CreatePlatformAuthenticator());
     return handler;
   }
 
@@ -119,6 +118,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
       cable_discovery()->WaitForCallToStartAndSimulateSuccess();
     if (base::Contains(transports, Transport::kNearFieldCommunication))
       nfc_discovery()->WaitForCallToStartAndSimulateSuccess();
+    if (base::Contains(transports, Transport::kInternal))
+      platform_discovery()->WaitForCallToStartAndSimulateSuccess();
 
     scoped_task_environment_.FastForwardUntilNoTasksRemain();
     EXPECT_FALSE(get_assertion_callback().was_called());
@@ -132,11 +133,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
       EXPECT_FALSE(cable_discovery()->is_start_requested());
     if (!base::Contains(transports, Transport::kNearFieldCommunication))
       EXPECT_FALSE(nfc_discovery()->is_start_requested());
-
-    // Even with FidoTransportProtocol::kInternal allowed, unless the platform
-    // authenticator factory returns a FidoAuthenticator instance (which it will
-    // not be default), the transport will be marked `unavailable`.
-    transports.erase(Transport::kInternal);
+    if (!base::Contains(transports, Transport::kInternal))
+      EXPECT_FALSE(platform_discovery()->is_start_requested());
 
     EXPECT_THAT(
         request_handler->transport_availability_info().available_transports,
@@ -153,12 +151,11 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   test::FakeFidoDiscovery* ble_discovery() const { return ble_discovery_; }
   test::FakeFidoDiscovery* cable_discovery() const { return cable_discovery_; }
   test::FakeFidoDiscovery* nfc_discovery() const { return nfc_discovery_; }
+  test::FakeFidoDiscovery* platform_discovery() const {
+    return platform_discovery_;
+  }
   TestGetAssertionRequestCallback& get_assertion_callback() {
     return get_assertion_cb_;
-  }
-
-  void set_mock_platform_device(std::unique_ptr<MockFidoDevice> device) {
-    pending_mock_platform_device_ = std::move(device);
   }
 
   void set_supported_transports(
@@ -167,15 +164,6 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   }
 
  protected:
-  base::Optional<PlatformAuthenticatorInfo> CreatePlatformAuthenticator() {
-    if (!pending_mock_platform_device_)
-      return base::nullopt;
-    return PlatformAuthenticatorInfo(
-        std::make_unique<FidoDeviceAuthenticator>(
-            std::move(pending_mock_platform_device_)),
-        false /* has_recognized_mac_touch_id_credential_available */);
-  }
-
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
@@ -184,8 +172,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   test::FakeFidoDiscovery* ble_discovery_;
   test::FakeFidoDiscovery* cable_discovery_;
   test::FakeFidoDiscovery* nfc_discovery_;
+  test::FakeFidoDiscovery* platform_discovery_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
-  std::unique_ptr<MockFidoDevice> pending_mock_platform_device_;
   TestGetAssertionRequestCallback get_assertion_cb_;
   base::flat_set<FidoTransportProtocol> supported_transports_ =
       GetAllTransportProtocols();
@@ -654,6 +642,9 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyInternalTransportAllowed) {
 
   set_supported_transports({FidoTransportProtocol::kInternal});
 
+  auto request_handler =
+      CreateGetAssertionHandlerWithRequest(std::move(request));
+
   auto device = MockFidoDevice::MakeCtap(
       ReadCTAPGetInfoResponse(test_data::kTestGetInfoResponsePlatformDevice));
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
@@ -664,10 +655,9 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyInternalTransportAllowed) {
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetAssertion,
       test_data::kTestGetAssertionResponse);
-  set_mock_platform_device(std::move(device));
+  platform_discovery()->WaitForCallToStartAndSimulateSuccess();
+  platform_discovery()->AddDevice(std::move(device));
 
-  auto request_handler =
-      CreateGetAssertionHandlerWithRequest(std::move(request));
   get_assertion_callback().WaitForCallback();
 
   EXPECT_EQ(FidoReturnCode::kSuccess, get_assertion_callback().status());
@@ -684,6 +674,8 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyInternalTransportAllowed) {
 // cancelled.
 TEST_F(FidoGetAssertionHandlerTest,
        TestRequestWithOperationDeniedErrorPlatform) {
+  auto request_handler = CreateGetAssertionHandlerCtap();
+
   auto platform_device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
       test_data::kTestGetInfoResponsePlatformDevice);
   platform_device->SetDeviceTransport(FidoTransportProtocol::kInternal);
@@ -691,14 +683,14 @@ TEST_F(FidoGetAssertionHandlerTest,
       CtapRequestCommand::kAuthenticatorGetAssertion,
       CtapDeviceResponseCode::kCtap2ErrOperationDenied,
       base::TimeDelta::FromMicroseconds(10));
-  set_mock_platform_device(std::move(platform_device));
+  platform_discovery()->WaitForCallToStartAndSimulateSuccess();
+  platform_discovery()->AddDevice(std::move(platform_device));
 
   auto other_device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
   other_device->ExpectCtap2CommandAndDoNotRespond(
       CtapRequestCommand::kAuthenticatorGetAssertion);
   EXPECT_CALL(*other_device, Cancel);
 
-  auto request_handler = CreateGetAssertionHandlerCtap();
   discovery()->WaitForCallToStartAndSimulateSuccess();
   discovery()->AddDevice(std::move(other_device));
 
@@ -821,7 +813,6 @@ TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
       base::flat_set<FidoTransportProtocol>(
           {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
       std::move(request), cb.callback());
-  request_handler->SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
 
   scoped_task_environment.FastForwardUntilNoTasksRemain();
   EXPECT_FALSE(cb.was_called());

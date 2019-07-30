@@ -7,6 +7,7 @@
 #import <MediaPlayer/MediaPlayer.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "build/branding_buildflags.h"
 
 @interface NowPlayingInfoCenterDelegateCocoa ()
 
@@ -49,7 +50,7 @@
                       forKey:MPNowPlayingInfoPropertyPlaybackRate];
   [nowPlayingInfo_ setObject:[NSNumber numberWithDouble:0]
                       forKey:MPMediaItemPropertyPlaybackDuration];
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   [nowPlayingInfo_ setObject:@"Chrome" forKey:MPMediaItemPropertyTitle];
 #else
   [nowPlayingInfo_ setObject:@"Chromium" forKey:MPMediaItemPropertyTitle];

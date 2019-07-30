@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator_impl.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string16.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -30,12 +30,14 @@
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
+#include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
@@ -61,6 +63,7 @@ const bool kSyncWrites = true;
 // See http://crbug.com/338385.
 const bool kSyncWrites = true;
 #endif
+
 }  // namespace
 
 LevelDBSnapshot::LevelDBSnapshot(TransactionalLevelDBDatabase* db)
@@ -76,10 +79,12 @@ constexpr const size_t
 
 TransactionalLevelDBDatabase::TransactionalLevelDBDatabase(
     scoped_refptr<LevelDBState> level_db_state,
+    std::unique_ptr<LevelDBScopes> leveldb_scopes,
     indexed_db::LevelDBFactory* class_factory,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     size_t max_open_iterators)
     : level_db_state_(std::move(level_db_state)),
+      scopes_(std::move(leveldb_scopes)),
       class_factory_(class_factory),
       clock_(new base::DefaultClock()),
       iterator_lru_(max_open_iterators) {
@@ -114,6 +119,8 @@ leveldb::Status TransactionalLevelDBDatabase::Put(const StringPiece& key,
   else
     UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.PutTime",
                         base::TimeTicks::Now() - begin_time);
+
+  EvictAllIterators();
   last_modified_ = clock_->Now();
   return s;
 }
@@ -126,20 +133,17 @@ leveldb::Status TransactionalLevelDBDatabase::Remove(const StringPiece& key) {
       db()->Delete(write_options, leveldb_env::MakeSlice(key));
   if (!s.ok() && !s.IsNotFound())
     LOG(ERROR) << "LevelDB remove failed: " << s.ToString();
+
+  EvictAllIterators();
   last_modified_ = clock_->Now();
   return s;
 }
 
-leveldb::Status TransactionalLevelDBDatabase::Get(
-    const StringPiece& key,
-    std::string* value,
-    bool* found,
-    const LevelDBSnapshot* snapshot) {
+leveldb::Status TransactionalLevelDBDatabase::Get(const StringPiece& key,
+                                                  std::string* value,
+                                                  bool* found) {
   *found = false;
-  leveldb::ReadOptions read_options;
-  read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
-                                         // performance impact is too great.
-  read_options.snapshot = snapshot ? snapshot->snapshot_ : nullptr;
+  leveldb::ReadOptions read_options = DefaultReadOptions();
 
   const leveldb::Status s =
       db()->Get(read_options, leveldb_env::MakeSlice(key), value);
@@ -155,13 +159,14 @@ leveldb::Status TransactionalLevelDBDatabase::Get(
 }
 
 leveldb::Status TransactionalLevelDBDatabase::Write(
-    const LevelDBWriteBatch& write_batch) {
+    LevelDBWriteBatch* write_batch) {
+  DCHECK(write_batch);
   base::TimeTicks begin_time = base::TimeTicks::Now();
   leveldb::WriteOptions write_options;
   write_options.sync = kSyncWrites;
 
   const leveldb::Status s =
-      db()->Write(write_options, write_batch.write_batch_.get());
+      db()->Write(write_options, write_batch->write_batch_.get());
   if (!s.ok()) {
     indexed_db::ReportLevelDBError("WebCore.IndexedDB.LevelDBWriteErrors", s);
     LOG(ERROR) << "LevelDB write failed: " << s.ToString();
@@ -169,20 +174,49 @@ leveldb::Status TransactionalLevelDBDatabase::Write(
     UMA_HISTOGRAM_TIMES("WebCore.IndexedDB.LevelDB.WriteTime",
                         base::TimeTicks::Now() - begin_time);
   }
+  EvictAllIterators();
   last_modified_ = clock_->Now();
   return s;
 }
 
 std::unique_ptr<TransactionalLevelDBIterator>
-TransactionalLevelDBDatabase::CreateIterator(
-    const leveldb::ReadOptions& options) {
+TransactionalLevelDBDatabase::CreateIterator(leveldb::ReadOptions options) {
+  DCHECK(!options.snapshot);
   num_iterators_++;
   max_iterators_ = std::max(max_iterators_, num_iterators_);
-  // Iterator isn't added to lru cache until it is used, as memory isn't loaded
-  // for the iterator until it's first Seek call.
+  std::unique_ptr<LevelDBSnapshot> snapshot =
+      std::make_unique<LevelDBSnapshot>(this);
+  options.snapshot = snapshot->snapshot();
+  // Iterator isn't added to |iterator_lru_| until it is used, as memory isn't
+  // loaded for the iterator until its first Seek call.
   std::unique_ptr<leveldb::Iterator> i(db()->NewIterator(options));
-  return class_factory_->CreateIteratorImpl(std::move(i), this,
-                                            options.snapshot);
+  auto it = class_factory_->CreateIterator(
+      std::move(i), weak_factory_for_iterators_.GetWeakPtr(),
+      base::WeakPtr<TransactionalLevelDBTransaction>(), std::move(snapshot));
+  db_only_loaded_iterators_.insert(it.get());
+  return it;
+}
+
+std::unique_ptr<TransactionalLevelDBIterator>
+TransactionalLevelDBDatabase::CreateIterator(
+    base::WeakPtr<TransactionalLevelDBTransaction> txn,
+    leveldb::ReadOptions options) {
+  DCHECK(!options.snapshot);
+  // Note - this iterator is NOT added to |db_only_*_iterators_|, as it is
+  // associated with a transaction, and will be in that transaction's
+  // iterator lists. The implementation assumes that the iterator lives in
+  // either the database list or the transaction list, and not both.
+  num_iterators_++;
+  max_iterators_ = std::max(max_iterators_, num_iterators_);
+  std::unique_ptr<LevelDBSnapshot> snapshot =
+      std::make_unique<LevelDBSnapshot>(this);
+  options.snapshot = snapshot->snapshot();
+  // Iterator isn't added to |iterator_lru_| until it is used, as memory isn't
+  // loaded for the iterator until its first Seek call.
+  std::unique_ptr<leveldb::Iterator> i(db()->NewIterator(options));
+  return class_factory_->CreateIterator(
+      std::move(i), weak_factory_for_iterators_.GetWeakPtr(), std::move(txn),
+      std::move(snapshot));
 }
 
 void TransactionalLevelDBDatabase::Compact(const base::StringPiece& start,
@@ -200,15 +234,11 @@ void TransactionalLevelDBDatabase::CompactAll() {
 }
 
 leveldb::ReadOptions TransactionalLevelDBDatabase::DefaultReadOptions() {
-  return DefaultReadOptions(nullptr);
-}
-
-leveldb::ReadOptions TransactionalLevelDBDatabase::DefaultReadOptions(
-    const LevelDBSnapshot* snapshot) {
   leveldb::ReadOptions read_options;
-  read_options.verify_checksums = true;  // TODO(jsbell): Disable this if the
-                                         // performance impact is too great.
-  read_options.snapshot = snapshot ? snapshot->snapshot_ : nullptr;
+  // Always verify checksums on leveldb blocks for IndexedDB databases, which
+  // detects corruptions.
+  read_options.verify_checksums = true;
+  read_options.snapshot = nullptr;
   return read_options;
 }
 
@@ -262,19 +292,30 @@ void TransactionalLevelDBDatabase::SetClockForTesting(
   clock_ = std::move(clock);
 }
 
-std::unique_ptr<leveldb::Iterator>
-TransactionalLevelDBDatabase::CreateLevelDBIterator(
-    const leveldb::Snapshot* snapshot) {
-  leveldb::ReadOptions read_options;
-  read_options.verify_checksums = true;
-  read_options.snapshot = snapshot;
-  return base::WrapUnique(db()->NewIterator(read_options));
+TransactionalLevelDBDatabase::DetachIteratorOnDestruct::
+    DetachIteratorOnDestruct(TransactionalLevelDBIterator* it)
+    : it(it) {}
+TransactionalLevelDBDatabase::DetachIteratorOnDestruct::
+    DetachIteratorOnDestruct(DetachIteratorOnDestruct&& that) {
+  it = that.it;
+  that.it = nullptr;
 }
-
 TransactionalLevelDBDatabase::DetachIteratorOnDestruct::
     ~DetachIteratorOnDestruct() {
-  if (it_)
-    it_->Detach();
+  if (it)
+    it->EvictLevelDBIterator();
+}
+
+void TransactionalLevelDBDatabase::EvictAllIterators() {
+  if (db_only_loaded_iterators_.empty())
+    return;
+  is_evicting_all_loaded_iterators_ = true;
+  base::flat_set<TransactionalLevelDBIterator*> to_be_evicted =
+      std::move(db_only_loaded_iterators_);
+  for (TransactionalLevelDBIterator* iter : to_be_evicted) {
+    iter->EvictLevelDBIterator();
+  }
+  is_evicting_all_loaded_iterators_ = false;
 }
 
 void TransactionalLevelDBDatabase::OnIteratorUsed(
@@ -286,14 +327,36 @@ void TransactionalLevelDBDatabase::OnIteratorUsed(
   iterator_lru_.Put(iter, std::move(purger));
 }
 
+void TransactionalLevelDBDatabase::OnIteratorLoaded(
+    TransactionalLevelDBIterator* iterator) {
+  DCHECK(db_only_evicted_iterators_.find(iterator) !=
+         db_only_evicted_iterators_.end());
+  db_only_loaded_iterators_.insert(iterator);
+  db_only_evicted_iterators_.erase(iterator);
+}
+
+void TransactionalLevelDBDatabase::OnIteratorEvicted(
+    TransactionalLevelDBIterator* iterator) {
+  DCHECK(db_only_loaded_iterators_.find(iterator) !=
+             db_only_loaded_iterators_.end() ||
+         is_evicting_all_loaded_iterators_);
+  db_only_loaded_iterators_.erase(iterator);
+  db_only_evicted_iterators_.insert(iterator);
+}
+
 void TransactionalLevelDBDatabase::OnIteratorDestroyed(
     TransactionalLevelDBIterator* iter) {
   DCHECK_GT(num_iterators_, 0u);
+  db_only_loaded_iterators_.erase(iter);
+  db_only_evicted_iterators_.erase(iter);
   --num_iterators_;
-  auto it = iterator_lru_.Peek(iter);
-  if (it == iterator_lru_.end())
+  auto lru_iterator = iterator_lru_.Peek(iter);
+  if (lru_iterator == iterator_lru_.end())
     return;
-  iterator_lru_.Erase(it);
+  // Set the |lru_iterator|'s stored iterator to |nullptr| to avoid it
+  // unnecessarily calling EvictLevelDBIterator.
+  lru_iterator->second.it = nullptr;
+  iterator_lru_.Erase(lru_iterator);
 }
 
 }  // namespace content

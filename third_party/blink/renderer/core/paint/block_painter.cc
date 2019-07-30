@@ -221,7 +221,8 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
   // above).
   if (paint_phase != PaintPhase::kSelfOutlineOnly &&
       paint_phase != PaintPhase::kSelfBlockBackgroundOnly &&
-      paint_phase != PaintPhase::kMask) {
+      paint_phase != PaintPhase::kMask &&
+      !layout_block_.PaintBlockedByDisplayLock(DisplayLockContext::kChildren)) {
     // Actually paint the contents.
     if (layout_block_.IsLayoutBlockFlow()) {
       // All floating descendants will be LayoutBlockFlow objects, and will get

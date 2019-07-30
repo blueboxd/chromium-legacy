@@ -95,10 +95,10 @@ void ImeObserver::OnKeyEvent(
 
   extensions::InputImeEventRouter* event_router =
       extensions::GetInputImeEventRouter(profile_);
-  if (!event_router || !event_router->GetActiveEngine(extension_id_))
+  if (!event_router || !event_router->GetEngineIfActive(extension_id_))
     return;
   const std::string request_id =
-      event_router->GetActiveEngine(extension_id_)
+      event_router->GetEngineIfActive(extension_id_)
           ->AddRequest(component_id, std::move(key_data));
 
   input_ime::KeyboardEvent key_data_value;
@@ -312,7 +312,7 @@ ExtensionFunction::ResponseAction InputImeKeyEventHandledFunction::Run() {
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngineBase* engine =
-      event_router ? event_router->GetActiveEngine(extension_id()) : nullptr;
+      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
   if (engine) {
     engine->KeyEventHandled(extension_id(), params->request_id,
                             params->response);
@@ -324,7 +324,7 @@ ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngineBase* engine =
-      event_router ? event_router->GetActiveEngine(extension_id()) : nullptr;
+      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
   if (engine) {
     std::unique_ptr<SetComposition::Params> parent_params(
         SetComposition::Params::Create(*args_));
@@ -372,7 +372,7 @@ ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngineBase* engine =
-      event_router ? event_router->GetActiveEngine(extension_id()) : nullptr;
+      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
   if (engine) {
     std::unique_ptr<CommitText::Params> parent_params(
         CommitText::Params::Create(*args_));
@@ -392,7 +392,7 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngineBase* engine =
-      event_router ? event_router->GetActiveEngine(extension_id()) : nullptr;
+      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
   if (!engine)
     return RespondNow(Error(kInputImeApiErrorEngineNotAvailable));
 

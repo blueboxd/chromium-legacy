@@ -4,6 +4,7 @@
 <translation id="1510238584712386396">啟動器</translation>
 <translation id="1734367976349034509">這個裝置受到企業管理</translation>
 <translation id="1930797645656624981">Chrome 作業系統輸入法服務</translation>
+<translation id="1979103255016296513">已超過密碼變更期限</translation>
 <translation id="2049639323467105390">這個裝置由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2083960536266308407">在畫面上找不到任何相符內容</translation>
 <translation id="2338501278241028356">開啟藍牙即可偵測附近的裝置</translation>
@@ -11,6 +12,7 @@
 <translation id="2872961005593481000">關閉</translation>
 <translation id="3008341117444806826">更新</translation>
 <translation id="3838338534323494292">新密碼</translation>
+<translation id="4227825898293920515">密碼將在 <ph name="TIME" />後到期</translation>
 <translation id="4429881212383817840">Kerberos 票證即將到期</translation>
 <translation id="445059817448385655">舊密碼</translation>
 <translation id="467510802200863975">密碼不相符</translation>

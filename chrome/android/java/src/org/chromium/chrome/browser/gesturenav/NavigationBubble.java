@@ -4,6 +4,7 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import android.content.Context;
+import android.os.Build;
 import android.support.annotation.DrawableRes;
 import android.util.AttributeSet;
 import android.view.View;
@@ -37,6 +38,13 @@ public class NavigationBubble extends LinearLayout {
 
     public NavigationBubble(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        // Workaround to a bug that makes this view sometimes stay invisible after animation.
+        // https://stackoverflow.com/questions/24258832
+        // https://stackoverflow.com/questions/25099043
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
 
         // Reset icon and background. Height is used as corner radius to ensure we have a circle.
         mRippleBackgroundHelper = new RippleBackgroundHelper(this,

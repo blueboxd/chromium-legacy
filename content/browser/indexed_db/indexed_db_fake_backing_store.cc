@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 
 namespace content {
 namespace {
@@ -37,7 +38,8 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 
 leveldb::Status IndexedDBFakeBackingStore::DeleteDatabase(
-    const base::string16& name) {
+    const base::string16& name,
+    TransactionalLevelDBTransaction* transaction) {
   return leveldb::Status::OK();
 }
 
@@ -155,7 +157,8 @@ IndexedDBFakeBackingStore::OpenIndexCursor(
 IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(
     leveldb::Status result)
     : IndexedDBBackingStore::Transaction(nullptr), result_(result) {}
-void IndexedDBFakeBackingStore::FakeTransaction::Begin() {}
+void IndexedDBFakeBackingStore::FakeTransaction::Begin(
+    std::vector<ScopeLock> locks) {}
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseOne(
     BlobWriteCallback callback) {
   return std::move(callback).Run(

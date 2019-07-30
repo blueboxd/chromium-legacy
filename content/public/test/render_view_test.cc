@@ -648,18 +648,19 @@ void RenderViewTest::SetFocused(const blink::WebElement& element) {
 }
 
 void RenderViewTest::Reload(const GURL& url) {
-  CommonNavigationParams common_params(
-      url, base::nullopt, Referrer(), ui::PAGE_TRANSITION_LINK,
-      FrameMsg_Navigate_Type::RELOAD, NavigationDownloadPolicy(), false, GURL(),
-      GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
-      base::Optional<SourceLocation>(), false /* started_from_context_menu */,
-      false /* has_user_gesture */, InitiatorCSPInfo(), std::vector<int>(),
-      std::string(), false /* is_history_navigation_in_new_child_frame */);
+  auto common_params = mojom::CommonNavigationParams::New(
+      url, base::nullopt, blink::mojom::Referrer::New(),
+      ui::PAGE_TRANSITION_LINK, mojom::NavigationType::RELOAD,
+      NavigationDownloadPolicy(), false, GURL(), GURL(), PREVIEWS_UNSPECIFIED,
+      base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
+      false /* started_from_context_menu */, false /* has_user_gesture */,
+      InitiatorCSPInfo(), std::vector<int>(), std::string(),
+      false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
   FrameLoadWaiter waiter(frame);
-  frame->Navigate(common_params, CommitNavigationParams());
+  frame->Navigate(std::move(common_params), CommitNavigationParams());
   waiter.Wait();
   view_->GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
       blink::WebWidget::LifecycleUpdateReason::kTest);
@@ -793,14 +794,15 @@ void RenderViewTest::GoToOffset(int offset,
       impl->HistoryBackListCount() + impl->HistoryForwardListCount() + 1;
   int pending_offset = offset + impl->history_list_offset_;
 
-  CommonNavigationParams common_params(
-      url, base::nullopt, Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
-      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT,
+  auto common_params = mojom::CommonNavigationParams::New(
+      url, base::nullopt, blink::mojom::Referrer::New(),
+      ui::PAGE_TRANSITION_FORWARD_BACK,
+      mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT,
       NavigationDownloadPolicy(), false, GURL(), GURL(), PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       InitiatorCSPInfo(), std::vector<int>(), std::string(),
-      false /* is_history_navigation_in_new_child_frame */);
+      false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
   CommitNavigationParams commit_params;
   commit_params.page_state = state;
   commit_params.nav_entry_id = pending_offset + 1;
@@ -811,7 +813,7 @@ void RenderViewTest::GoToOffset(int offset,
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
   FrameLoadWaiter waiter(frame);
-  frame->Navigate(common_params, commit_params);
+  frame->Navigate(std::move(common_params), commit_params);
   // The load may actually happen asynchronously, so we pump messages to process
   // the pending continuation.
   waiter.Wait();

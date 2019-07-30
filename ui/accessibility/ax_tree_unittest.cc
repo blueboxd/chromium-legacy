@@ -2708,6 +2708,8 @@ TEST(AXTreeTest, TestSetSizePosInSetRadioButtons) {
   tree_update.nodes.resize(13);
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].child_ids = {2, 3, 4, 10, 13};
+  // This test passes because the root node is a kRadioGroup.
+  tree_update.nodes[0].role = ax::mojom::Role::kRadioGroup;  // Setsize = 5;
 
   // Radio buttons are not required to be contained within an ordered set.
   tree_update.nodes[1].id = 2;
@@ -3027,6 +3029,37 @@ TEST(AXTreeTest, TestSetSizePosInSetPopUpButton) {
   // that it wraps has a SetSize of 2.
   AXNode* popup_button_2 = tree.GetFromId(3);
   EXPECT_OPTIONAL_EQ(2, popup_button_2->GetSetSize());
+}
+
+// Tests that PosInSet and SetSize are still correctly calculated when there
+// are nodes with role of kUnknown layered between items and ordered set.
+TEST(AXTreeTest, TestSetSizePosInSetUnkown) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(5);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2};
+  initial_state.nodes[0].role = ax::mojom::Role::kMenu;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kUnknown;
+  initial_state.nodes[1].child_ids = {3};
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kUnknown;
+  initial_state.nodes[2].child_ids = {4, 5};
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kMenuItem;
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kMenuItem;
+  AXTree tree(initial_state);
+
+  AXNode* menu = tree.GetFromId(1);
+  EXPECT_OPTIONAL_EQ(2, menu->GetSetSize());
+  AXNode* item1 = tree.GetFromId(4);
+  EXPECT_OPTIONAL_EQ(1, item1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, item1->GetSetSize());
+  AXNode* item2 = tree.GetFromId(5);
+  EXPECT_OPTIONAL_EQ(2, item2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(2, item2->GetSetSize());
 }
 
 }  // namespace ui

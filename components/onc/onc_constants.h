@@ -136,7 +136,6 @@ ONC_EXPORT extern const char kMIN[];
 ONC_EXPORT extern const char kModelID[];
 ONC_EXPORT extern const char kNetworkTechnology[];
 ONC_EXPORT extern const char kPaymentPortal[];
-ONC_EXPORT extern const char kPRLVersion[];
 ONC_EXPORT extern const char kRoamingHome[];
 ONC_EXPORT extern const char kRoamingRequired[];
 ONC_EXPORT extern const char kRoamingRoaming[];

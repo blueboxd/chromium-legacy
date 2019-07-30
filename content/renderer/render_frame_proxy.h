@@ -181,8 +181,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void ForwardPostMessage(blink::WebLocalFrame* sourceFrame,
                           blink::WebRemoteFrame* targetFrame,
                           blink::WebSecurityOrigin target,
-                          blink::WebDOMMessageEvent event,
-                          bool has_user_gesture) override;
+                          blink::WebDOMMessageEvent event) override;
   void Navigate(
       const blink::WebURLRequest& request,
       bool should_replace_current_entry,

@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 
@@ -33,6 +34,7 @@ class AutofillPopupRowView : public views::View {
   void SetSelected(bool is_selected);
 
   // views::View:
+  bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
   void OnThemeChanged() override;
   // Drags and presses on any row should be a no-op; subclasses instead rely on
   // entry/release events. Returns true to indicate that those events have been
@@ -72,6 +74,7 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   }
 
   // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
 
   // AutofillPopupView:

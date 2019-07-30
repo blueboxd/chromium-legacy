@@ -6,7 +6,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/pixel/skia_gold_pixel_diff.h"
+#include "chrome/test/pixel/browser_skia_gold_pixel_diff.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 class SkiaGoldDemoPixelTest : public InProcessBrowserTest {
@@ -23,14 +23,15 @@ class SkiaGoldDemoPixelTest : public InProcessBrowserTest {
 
     // Initialize the class here. Follow the best practice to use
     // the class name as the screenshot prefix.
-    ASSERT_NO_FATAL_FAILURE(
-        pixel_diff_.Init(browser()->window(), "SkiaGoldDemoPixelTest"));
+    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
+        browser()->window()->GetNativeWindow());
+    ASSERT_NO_FATAL_FAILURE(pixel_diff_.Init(widget, "SkiaGoldDemoPixelTest"));
   }
 
-  SkiaGoldPixelDiff& GetPixelDiff() { return pixel_diff_; }
+  const BrowserSkiaGoldPixelDiff& GetPixelDiff() const { return pixel_diff_; }
 
-private:
-  SkiaGoldPixelDiff pixel_diff_;
+ private:
+  BrowserSkiaGoldPixelDiff pixel_diff_;
 };
 
 // This is a demo test to ensure the omnibox looks as expected.
@@ -50,4 +51,3 @@ IN_PROC_BROWSER_TEST_F(SkiaGoldDemoPixelTest, TestOmnibox) {
       browser_view->GetLocationBarView());
   EXPECT_TRUE(ret);
 }
-

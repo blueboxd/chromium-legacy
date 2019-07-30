@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_COMMANDS_SNACKBAR_COMMANDS_H_
 #define IOS_CHROME_BROWSER_UI_COMMANDS_SNACKBAR_COMMANDS_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @class MDCSnackbarMessage;
 

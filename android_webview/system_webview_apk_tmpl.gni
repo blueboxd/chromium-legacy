@@ -101,7 +101,8 @@ template("system_webview_apk_tmpl") {
 
     aapt_locale_whitelist = locales
 
-    resource_blacklist_regex = "[/-]xxxhdpi[/-]"
+    # Match drawables, but not mipmaps.
+    resource_blacklist_regex = "drawable[^/]*-xxxhdpi"
 
     # Exception rationale in https://crbug.com/691733.
     resource_blacklist_exceptions = [

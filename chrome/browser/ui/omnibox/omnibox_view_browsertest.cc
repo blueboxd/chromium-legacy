@@ -211,7 +211,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
       ASSERT_NO_FATAL_FAILURE(SendKey(*keys, 0));
   }
 
-  void ExpectBrowserClosed(const Browser* browser,
+  void ExpectBrowserClosed(Browser* browser,
                            ui::KeyboardCode key,
                            int modifiers) {
     // Press the accelerator after starting to wait for a browser to close as

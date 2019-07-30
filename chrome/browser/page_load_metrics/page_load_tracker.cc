@@ -302,13 +302,16 @@ void PageLoadTracker::LogAbortChainHistograms(
 
 void PageLoadTracker::WebContentsHidden() {
   // Only log the first time we background in a given page load.
-  if (background_time_.is_null()) {
+  if (!first_background_time_.has_value()) {
     // Make sure we either started in the foreground and haven't been
     // foregrounded yet, or started in the background and have already been
     // foregrounded.
-    DCHECK_EQ(started_in_foreground_, foreground_time_.is_null());
-    background_time_ = base::TimeTicks::Now();
-    ClampBrowserTimestampIfInterProcessTimeTickSkew(&background_time_);
+    base::TimeTicks background_time;
+    DCHECK_EQ(started_in_foreground_, !first_foreground_time_.has_value());
+    background_time = base::TimeTicks::Now();
+    ClampBrowserTimestampIfInterProcessTimeTickSkew(&background_time);
+    DCHECK_GE(background_time, navigation_start_);
+    first_background_time_ = background_time - navigation_start_;
   }
   visibility_tracker_.OnHidden();
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
@@ -318,13 +321,16 @@ void PageLoadTracker::WebContentsHidden() {
 
 void PageLoadTracker::WebContentsShown() {
   // Only log the first time we foreground in a given page load.
-  if (foreground_time_.is_null()) {
+  if (!first_foreground_time_.has_value()) {
     // Make sure we either started in the background and haven't been
     // backgrounded yet, or started in the foreground and have already been
     // backgrounded.
-    DCHECK_NE(started_in_foreground_, background_time_.is_null());
-    foreground_time_ = base::TimeTicks::Now();
-    ClampBrowserTimestampIfInterProcessTimeTickSkew(&foreground_time_);
+    base::TimeTicks foreground_time;
+    DCHECK_NE(started_in_foreground_, !first_background_time_.has_value());
+    foreground_time = base::TimeTicks::Now();
+    ClampBrowserTimestampIfInterProcessTimeTickSkew(&foreground_time);
+    DCHECK_GE(foreground_time, navigation_start_);
+    first_foreground_time_ = foreground_time - navigation_start_;
   }
 
   visibility_tracker_.OnShown();
@@ -524,19 +530,7 @@ void PageLoadTracker::ClampBrowserTimestampIfInterProcessTimeTickSkew(
 }
 
 PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() const {
-  base::Optional<base::TimeDelta> first_background_time;
-  base::Optional<base::TimeDelta> first_foreground_time;
   base::Optional<base::TimeDelta> page_end_time;
-
-  if (!background_time_.is_null()) {
-    DCHECK_GE(background_time_, navigation_start_);
-    first_background_time = background_time_ - navigation_start_;
-  }
-
-  if (!foreground_time_.is_null()) {
-    DCHECK_GE(foreground_time_, navigation_start_);
-    first_foreground_time = foreground_time_ - navigation_start_;
-  }
 
   if (page_end_reason_ != END_NONE) {
     DCHECK_GE(page_end_time_, navigation_start_);
@@ -551,7 +545,7 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() const {
          (!page_end_user_initiated_info_.browser_initiated &&
           !page_end_user_initiated_info_.user_gesture));
   return PageLoadExtraInfo(
-      navigation_start_, first_background_time, first_foreground_time,
+      navigation_start_, first_background_time_, first_foreground_time_,
       started_in_foreground_, user_initiated_info_, url(), start_url_,
       did_commit_, page_end_reason_, page_end_user_initiated_info_,
       page_end_time, metrics_update_dispatcher_.main_frame_metadata(),
@@ -758,8 +752,71 @@ base::TimeTicks PageLoadTracker::GetNavigationStart() const {
   return navigation_start_;
 }
 
+const base::Optional<base::TimeDelta>& PageLoadTracker::GetFirstBackgroundTime()
+    const {
+  return first_background_time_;
+}
+
+const base::Optional<base::TimeDelta>& PageLoadTracker::GetFirstForegroundTime()
+    const {
+  return first_foreground_time_;
+}
+
+bool PageLoadTracker::StartedInForeground() const {
+  return started_in_foreground_;
+}
+
+const UserInitiatedInfo& PageLoadTracker::GetUserInitiatedInfo() const {
+  return user_initiated_info_;
+}
+
+const GURL& PageLoadTracker::GetUrl() const {
+  return url();
+}
+
+const GURL& PageLoadTracker::GetStartUrl() const {
+  return start_url_;
+}
+
 bool PageLoadTracker::DidCommit() const {
   return did_commit_;
+}
+
+PageEndReason PageLoadTracker::GetPageEndReason() const {
+  return page_end_reason_;
+}
+
+const UserInitiatedInfo& PageLoadTracker::GetPageEndUserInitiatedInfo() const {
+  return page_end_user_initiated_info_;
+}
+
+base::Optional<base::TimeDelta> PageLoadTracker::GetPageEndTime() const {
+  base::Optional<base::TimeDelta> page_end_time;
+
+  if (page_end_reason_ != END_NONE) {
+    DCHECK_GE(page_end_time_, navigation_start_);
+    page_end_time = page_end_time_ - navigation_start_;
+  } else {
+    DCHECK(page_end_time_.is_null());
+  }
+
+  return page_end_time;
+}
+
+const mojom::PageLoadMetadata& PageLoadTracker::GetMainFrameMetadata() const {
+  return metrics_update_dispatcher_.main_frame_metadata();
+}
+
+const mojom::PageLoadMetadata& PageLoadTracker::GetSubframeMetadata() const {
+  return metrics_update_dispatcher_.subframe_metadata();
+}
+
+const PageRenderData& PageLoadTracker::GetPageRenderData() const {
+  return metrics_update_dispatcher_.page_render_data();
+}
+
+const PageRenderData& PageLoadTracker::GetMainFrameRenderData() const {
+  return metrics_update_dispatcher_.main_frame_render_data();
 }
 
 const ScopedVisibilityTracker& PageLoadTracker::GetVisibilityTracker() const {

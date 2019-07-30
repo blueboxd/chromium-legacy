@@ -39,8 +39,10 @@ class TestFragmentRootDelegate : public AXFragmentRootDelegateWin {
   virtual ~TestFragmentRootDelegate();
   gfx::NativeViewAccessible GetChildOfAXFragmentRoot() override;
   gfx::NativeViewAccessible GetParentOfAXFragmentRoot() override;
+  bool IsAXFragmentRootAControlElement() override;
   gfx::NativeViewAccessible child_ = nullptr;
   gfx::NativeViewAccessible parent_ = nullptr;
+  bool is_control_element_ = true;
 };
 
 class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {

@@ -42,7 +42,17 @@ class ScopesLockManager;
 class CONTENT_EXPORT LevelDBScopes {
  public:
   using FailureCallback = base::RepeatingCallback<void(leveldb::Status)>;
+  using EmptyRange = std::pair<std::string, std::string>;
   static constexpr const size_t kDefaultMaxWriteBatchSizeBytes = 1024 * 1024;
+
+  enum class TaskRunnerMode {
+    // No new sequence runners are created. Both the cleanup and the revert
+    // tasks are run using the sequence runner that is calling this class.
+    kUseCurrentSequence,
+    // A new sequence runner is created for both the cleanup tasks and the
+    // revert tasks.
+    kNewCleanupAndRevertSequences,
+  };
 
   // |lock_manager| is expected to be alive during the lifetime of this class.
   // |failure_callback| will not be called after the destruction of this class.
@@ -58,18 +68,24 @@ class CONTENT_EXPORT LevelDBScopes {
   // the revert tasks if necessary.
   leveldb::Status Initialize();
 
-  // This starts the task runners associated with aborting and cleaning up
-  // previous logs, and runs any pending cleanup or revert tasks.
-  void StartRecoveryAndCleanupTasks();
+  // This starts (or adopts) the task runners associated with aborting and
+  // cleaning up previous logs based on the given |mode|, and schedules any
+  // pending cleanup or revert tasks.
+  void StartRecoveryAndCleanupTasks(TaskRunnerMode mode);
 
   // In |empty_ranges|, |pair.first| is the inclusive range begin, and
   // |pair.end| is the exclusive range end. The ranges must be disjoint (they
   // cannot overlap).
   std::unique_ptr<LevelDBScope> CreateScope(
       std::vector<ScopeLock> locks,
-      std::vector<std::pair<std::string, std::string>> empty_ranges);
+      std::vector<EmptyRange> empty_ranges);
 
   leveldb::Status Commit(std::unique_ptr<LevelDBScope> scope);
+
+  // |on_complete| will be called when the cleanup task for the scope has
+  // finished operating.
+  leveldb::Status Commit(std::unique_ptr<LevelDBScope> scope,
+                         base::OnceClosure on_complete);
 
   base::SequencedTaskRunner* RevertRunnerForTesting() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -79,6 +95,10 @@ class CONTENT_EXPORT LevelDBScopes {
   base::SequencedTaskRunner* CleanupRunnerForTesting() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return cleanup_runner_.get();
+  }
+
+  const std::vector<uint8_t>& metadata_key_prefix() const {
+    return metadata_key_prefix_;
   }
 
  private:
@@ -96,7 +116,8 @@ class CONTENT_EXPORT LevelDBScopes {
 
   void Rollback(int64_t scope_id, std::vector<ScopeLock> locks);
 
-  void OnCleanupTaskResult(leveldb::Status result);
+  void OnCleanupTaskResult(base::OnceClosure on_complete,
+                           leveldb::Status result);
 
   void StartRevertTask(int64_t scope_id, std::vector<ScopeLock> locks);
 

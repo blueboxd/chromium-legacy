@@ -448,20 +448,24 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
   // Verifies navigation to a URL with preset zoom level indeed sets the level.
   // Regression test for http://crbug.com/139559, where the level was not
   // properly set when it is out of the default zoom limits of WebView.
-  CommonNavigationParams common_params;
-  common_params.url = GURL("data:text/html,min_zoomlimit_test");
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  GetMainRenderFrame()->SetHostZoomLevel(common_params.url, kMinZoomLevel);
-  GetMainRenderFrame()->Navigate(common_params, CommitNavigationParams());
+  auto common_params = mojom::CommonNavigationParams::New();
+  common_params->referrer = blink::mojom::Referrer::New();
+  common_params->navigation_start = base::TimeTicks::Now();
+  common_params->url = GURL("data:text/html,min_zoomlimit_test");
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  GetMainRenderFrame()->SetHostZoomLevel(common_params->url, kMinZoomLevel);
+  GetMainRenderFrame()->Navigate(common_params.Clone(),
+                                 CommitNavigationParams());
   base::RunLoop().RunUntilIdle();
   EXPECT_DOUBLE_EQ(kMinZoomLevel, view_->GetWebView()->ZoomLevel());
 
   // It should work even when the zoom limit is temporarily changed in the page.
   view_->GetWebView()->ZoomLimitsChanged(ZoomFactorToZoomLevel(1.0),
                                          ZoomFactorToZoomLevel(1.0));
-  common_params.url = GURL("data:text/html,max_zoomlimit_test");
-  GetMainRenderFrame()->SetHostZoomLevel(common_params.url, kMaxZoomLevel);
-  GetMainRenderFrame()->Navigate(common_params, CommitNavigationParams());
+  common_params->url = GURL("data:text/html,max_zoomlimit_test");
+  GetMainRenderFrame()->SetHostZoomLevel(common_params->url, kMaxZoomLevel);
+  GetMainRenderFrame()->Navigate(common_params.Clone(),
+                                 CommitNavigationParams());
   base::RunLoop().RunUntilIdle();
   EXPECT_DOUBLE_EQ(kMaxZoomLevel, view_->GetWebView()->ZoomLevel());
 }

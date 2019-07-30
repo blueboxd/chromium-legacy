@@ -127,7 +127,7 @@ void PluginPrivateFileSystemBackend::OpenPrivateFileSystem(
     const std::string& plugin_id,
     OpenFileSystemMode mode,
     StatusCallback callback) {
-  if (!CanHandleType(type) || file_system_options_.is_incognito()) {
+  if (!CanHandleType(type)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), base::File::FILE_ERROR_SECURITY));

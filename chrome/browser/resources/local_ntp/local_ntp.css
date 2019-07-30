@@ -699,6 +699,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
               0 4px 8px 3px rgba(var(--GG800-rgb), .15);
   color: rgb(var(--GG700-rgb));
+  font-size: 0;  /* Remove extra spacing between inline-block elements. */
   height: 528px;
   min-width: 800px;
   padding: 0;
@@ -711,6 +712,10 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
     box-shadow: var(--dark-mode-shadow);
     color: rgb(var(--GG200-rgb));
   }
+}
+
+#customization-menu > div {
+  font-size: 13px;
 }
 
 #menu-nav-panel {
@@ -835,13 +840,9 @@ html[dir=rtl] .menu-option {
 #menu-header {
   display: flex;
   height: 80px;
-}
-
-#menu-title-wrapper {
-  display: block;
-  height: 80px;
   line-height: 80px;
-  margin-inline-start: -12px;
+  padding-inline-end: 24px;
+  padding-inline-start: 232px;
 }
 
 #menu-title {
@@ -850,15 +851,14 @@ html[dir=rtl] .menu-option {
   width: fit-content;
 }
 
-.on-img-menu #menu-title {
-  margin-inline-start: 16px;
-}
-
 #menu-footer {
   border-top: 1px solid rgb(var(--GG200-rgb));
   bottom: 0;
+  box-sizing: border-box;
   color: rgb(var(--GG800-rgb));
+  display: flex;
   height: 64px;
+  justify-content: flex-end;
   left: 0;
   padding-inline-start: 0;
   position: absolute;
@@ -873,30 +873,31 @@ html[dir=rtl] .menu-option {
   }
 }
 
-#menu-done {
+#menu-footer > button {
   height: 32px;
   line-height: 32px;
+}
+
+#menu-done {
   margin-inline-end: 16px;
 }
 
 #menu-cancel {
-  height: 32px;
-  line-height: 32px;
   margin-inline-end: 8px;
 }
 
 #menu-contents {
   display: inline-block;
   height: 384px;
-  margin-inline-start: 37px;
+  margin-inline-start: 40px;
   position: relative;
-  width: 584px;
+  width: 568px;
 }
 
 .menu-panel {
   height: 100%;
   left: 0;
-  overflow-y: scroll;
+  overflow-y: auto;
   position: absolute;
   top: 0;
   visibility: hidden;
@@ -916,6 +917,12 @@ html[dir=rtl] .menu-option {
   margin-inline-start: 0;
   margin-top: 0;
   width: 176px;
+}
+
+/* Remove left/right spacing from the last tile in each row. */
+#backgrounds-menu .bg-sel-tile-bg:nth-of-type(3n),
+#backgrounds-image-menu .bg-sel-tile-bg:nth-of-type(3n) {
+  margin-inline-end: 0;
 }
 
 #backgrounds-image-menu .bg-sel-tile-bg {
@@ -1005,12 +1012,6 @@ html[dir=rtl] .menu-option {
   vertical-align: top;
 }
 
-#menu-back-wrapper {
-  display: block;
-  height: 80px;
-  vertical-align: top;
-}
-
 #menu-back {
   -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_arrow_back.svg);
   -webkit-mask-repeat: no-repeat;
@@ -1032,25 +1033,17 @@ html[dir=rtl] .menu-option {
 
 #menu-back-circle {
   border-radius: 50%;
-  display: inline-block;
+  display: none;
   height: 36px;
-  margin-inline-start: 209px;
+  margin-inline-end: 4px;
+  margin-inline-start: -12px;
   margin-top: 22px;
   outline: none;
-  visibility: hidden;
   width: 36px;
 }
 
-@media (prefers-color-scheme: dark) {
-  #menu-back-circle:active,
-  #menu-back-circle:focus {
-    background: rgb(var(--GG800-rgb));
-  }
-}
-
 .on-img-menu #menu-back-circle {
-  margin-inline-start: 229px;
-  visibility: visible;
+  display: inline-block;
 }
 
 #menu-back-circle:active,
@@ -1061,6 +1054,11 @@ html[dir=rtl] .menu-option {
 }
 
 @media (prefers-color-scheme: dark) {
+  #menu-back-circle:active,
+  #menu-back-circle:focus {
+    background: rgb(var(--GG800-rgb));
+  }
+
   #menu-back {
     background-color: rgb(var(--GG200-rgb));
   }
@@ -1070,32 +1068,35 @@ html[dir=rtl] #menu-back {
   transform: scaleX(-1);
 }
 
-#backgrounds-upload-wrapper {
+#backgrounds-upload-icon {
+  background: white;
   border: 1px solid rgb(var(--GG300-rgb));
   box-sizing: border-box;
   display: inline-block;
   left: 0;
   opacity: 1;
-  position: relative;
   top: 0;
 }
 
 @media (prefers-color-scheme: dark) {
-  #backgrounds-upload-wrapper {
+  #backgrounds-upload-icon {
+    background-color: rgb(var(--dark-mode-bg-rgb));
     border-color: rgb(var(--GG700-rgb));
   }
 }
 
-#backgrounds-upload-icon {
+#backgrounds-upload-arrow {
   -webkit-mask-image: url(icons/upload.svg);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
   background: 32px 32px rgb(var(--GG700-rgb));
   height: 32px;
-  margin-bottom: 8px;
-  margin-inline-start: 72px;
-  margin-top: 61px;
+  margin: 61px auto 8px;
   width: 32px;
+}
+
+.selected #backgrounds-upload-arrow {
+  margin-top: 45px;
 }
 
 #backgrounds-upload-text {
@@ -1201,11 +1202,6 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   width: 116px;
 }
 
-#backgrounds-default.selected #backgrounds-default-icon {
-  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
-      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
-}
-
 #backgrounds-default:not(.selected) .mini-page {
   padding-top: 32px;
 }
@@ -1225,8 +1221,6 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
 
 #shortcuts-menu {
   line-height: 20px;
-  overflow-y: unset;
-  width: calc(100% - 24px);
 }
 
 #sh-options {
@@ -1719,28 +1713,20 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
 }
 
 #refresh-daily-wrapper {
-  height: 80px;
-  line-height: 80px;
-  margin-inline-end: 24px;
+  display: none;
   margin-inline-start: auto;
-  position: relative;
-  vertical-align: top;
+}
+
+.on-img-menu #refresh-daily-wrapper {
+  display: flex;
 }
 
 #refresh-toggle-wrapper {
-  display: inline-block;
   height: 16px;
   margin-inline-end: 12px;
   margin-top: 31px;
   position: relative;
   width: 34px;
-}
-
-#refresh-text-wrapper {
-  display: inline-block;
-  height: 80px;
-  line-height: 80px;
-  vertical-align: top;
 }
 
 #refresh-text {

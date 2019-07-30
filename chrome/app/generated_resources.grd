@@ -6711,12 +6711,6 @@ the Bookmarks menu.">
       <message name="IDS_COOKIES_LAST_ACCESSED_LABEL" desc="The last access date label">
         Last accessed:
       </message>
-      <message name="IDS_COOKIES_CHANNEL_ID" desc="The text shown when there is a channel id in the Cookies table">
-        Channel ID
-      </message>
-      <message name="IDS_COOKIES_CHANNEL_IDS" desc="Label for the folder under which a list of TLS Channel IDs (name of an internet standard) are displayed">
-        Channel IDs
-      </message>
       <message name="IDS_COOKIES_SERVICE_WORKER" desc="The text shown when there is data for Service Workers within an origin (name of a Web standard) in the Cookies table">
         Service Workers
       </message>

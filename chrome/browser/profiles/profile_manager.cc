@@ -41,6 +41,8 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -1261,6 +1263,16 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   auto* proto_db_provider =
       leveldb_proto::ProtoDatabaseProviderFactory::GetInstance()->GetForKey(
           profile->GetProfileKey());
+
+  // Creates the Optimization Guide Keyed Service and begins loading the
+  // hint cache from persistent memory.
+  auto* optimization_guide_keyed_service =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
+  if (optimization_guide_keyed_service) {
+    optimization_guide_keyed_service->Initialize(
+        g_browser_process->optimization_guide_service(), proto_db_provider,
+        profile->GetPath());
+  }
 
   // Create the Previews Service and begin loading opt out history from
   // persistent memory.

@@ -10,114 +10,46 @@
 
 #include <memory>
 
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/path_service.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/omnibox/browser/test_location_bar_model.h"
-#include "components/prefs/testing_pref_service.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/sessions/core/tab_restore_service.h"
-#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
-#include "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/ui/activity_services/share_protocol.h"
-#import "ios/chrome/browser/ui/activity_services/share_to_data.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_helper.h"
+#import "ios/chrome/browser/ui/browser_view/key_commands_provider.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
-#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
-#include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#include "ios/chrome/test/testing_application_context.h"
-#import "ios/net/protocol_handler_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
-#import "ios/web/public/deprecated/crw_native_content_provider.h"
-#include "ios/web/public/navigation/referrer.h"
-#import "ios/web/public/test/fakes/fake_navigation_context.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
-#import "ios/web/web_state/web_state_impl.h"
-#import "net/base/mac/url_conversions.h"
-#include "net/url_request/url_request_test_util.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/test/ios/ui_image_test_utils.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using web::NavigationManagerImpl;
-using web::WebStateImpl;
-
-@class ToolbarButtonUpdater;
-
 // Private methods in BrowserViewController to test.
-@interface BrowserViewController (Testing) <CRWNativeContentProvider>
-- (void)pageLoadStarted:(NSNotification*)notification;
-- (void)pageLoadComplete:(NSNotification*)notification;
+@interface BrowserViewController (Testing)
+
 - (void)webStateSelected:(web::WebState*)webState
            notifyToolbar:(BOOL)notifyToolbar;
-- (void)tabCountChanged:(NSNotification*)notification;
-@end
-
-@interface BVCTestTabMock : OCMockComplexTypeHelper {
-  WebStateImpl* _webState;
-}
-
-@property(nonatomic, assign) WebStateImpl* webState;
-
-- (web::NavigationManager*)navigationManager;
-- (web::NavigationManagerImpl*)navigationManagerImpl;
-
-@end
-
-@implementation BVCTestTabMock
-- (WebStateImpl*)webState {
-  return _webState;
-}
-- (void)setWebState:(WebStateImpl*)webState {
-  _webState = webState;
-}
-- (web::NavigationManager*)navigationManager {
-  return &(_webState->GetNavigationManagerImpl());
-}
-- (web::NavigationManagerImpl*)navigationManagerImpl {
-  return &(_webState->GetNavigationManagerImpl());
-}
 @end
 
 @interface BVCTestTabModel : OCMockComplexTypeHelper
@@ -130,7 +62,6 @@ using web::WebStateImpl;
   FakeWebStateListDelegate _webStateListDelegate;
   std::unique_ptr<WebStateList> _webStateList;
 }
-@synthesize browserState = _browserState;
 
 - (instancetype)init {
   if ((self = [super
@@ -168,13 +99,8 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         IOSChromeLargeIconServiceFactory::GetInstance(),
         IOSChromeLargeIconServiceFactory::GetDefaultFactory());
     chrome_browser_state_ = test_cbs_builder.Build();
-    chrome_browser_state_->CreateBookmarkModel(false);
-    bookmarks::BookmarkModel* bookmark_model =
-        ios::BookmarkModelFactory::GetForBrowserState(
-            chrome_browser_state_.get());
-    bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
 
-    // Set up mock TabModel, Tab, and CRWWebController.
+    // Set up mock TabModel.
     id tabModel = [[BVCTestTabModel alloc] init];
     [tabModel setBrowserState:chrome_browser_state_.get()];
 
@@ -205,19 +131,18 @@ class BrowserViewControllerTest : public BlockCleanupTest {
                                       forProtocol:@protocol(PageInfoCommands)];
     id mockApplicationCommandHandler =
         OCMProtocolMock(@protocol(ApplicationCommands));
-    // Stub methods for TabModel.
-    NSUInteger tabCount = 1;
-    [[[tabModel stub] andReturnValue:OCMOCK_VALUE(tabCount)] count];
     [[tabModel stub] saveSessionImmediately:NO];
     [[tabModel stub] closeAllTabs];
 
-    web::WebState::CreateParams params(chrome_browser_state_.get());
-    std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
-    webStateImpl_ = static_cast<web::WebStateImpl*>(webState.get());
-    AttachTabHelpers(webStateImpl_, NO);
-    tabModel_.webStateList->InsertWebState(0, std::move(webState), 0,
-                                           WebStateOpener());
-    tabModel_.webStateList->ActivateWebStateAt(0);
+    // Create three web states.
+    for (int i = 0; i < 3; i++) {
+      web::WebState::CreateParams params(chrome_browser_state_.get());
+      std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
+      AttachTabHelpers(webState.get(), NO);
+      tabModel_.webStateList->InsertWebState(0, std::move(webState), 0,
+                                             WebStateOpener());
+      tabModel_.webStateList->ActivateWebStateAt(0);
+    }
 
     // Load TemplateURLService.
     TemplateURLService* template_url_service =
@@ -253,16 +178,8 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     BlockCleanupTest::TearDown();
   }
 
-  // Returns a new unique_ptr containing a test webstate.
-  std::unique_ptr<web::TestWebState> CreateTestWebState() {
-    auto web_state = std::make_unique<web::TestWebState>();
-    web_state->SetBrowserState(chrome_browser_state_.get());
-    web_state->SetNavigationManager(
-        std::make_unique<web::TestNavigationManager>());
-    id mockJsInjectionReceiver = OCMClassMock([CRWJSInjectionReceiver class]);
-    web_state->SetJSInjectionReceiver(mockJsInjectionReceiver);
-    AttachTabHelpers(web_state.get(), false);
-    return web_state;
+  web::WebState* ActiveWebState() {
+    return tabModel_.webStateList->GetActiveWebState();
   }
 
   MOCK_METHOD0(OnCompletionCalled, void());
@@ -270,7 +187,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  WebStateImpl* webStateImpl_;
   TabModel* tabModel_;
   BrowserViewControllerHelper* bvcHelper_;
   PKAddPassesViewController* passKitViewController_;
@@ -281,9 +197,9 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 };
 
 TEST_F(BrowserViewControllerTest, TestWebStateSelected) {
-  [bvc_ webStateSelected:webStateImpl_ notifyToolbar:YES];
-  EXPECT_EQ([webStateImpl_->GetView() superview], [bvc_ contentArea]);
-  EXPECT_TRUE(webStateImpl_->IsVisible());
+  [bvc_ webStateSelected:ActiveWebState() notifyToolbar:YES];
+  EXPECT_EQ([ActiveWebState()->GetView() superview], [bvc_ contentArea]);
+  EXPECT_TRUE(ActiveWebState()->IsVisible());
 }
 
 // TODO(altse): Needs a testing |Profile| that implements AutocompleteClassifier
@@ -310,7 +226,7 @@ TEST_F(BrowserViewControllerTest,
   // The tab should stop loading on iPhones.
   [bvc_ locationBarBeganEdit];
   if (!IsIPadIdiom())
-    EXPECT_FALSE(webStateImpl_->IsLoading());
+    EXPECT_FALSE(ActiveWebState()->IsLoading());
 }
 
 TEST_F(BrowserViewControllerTest, TestClearPresentedState) {
@@ -320,6 +236,32 @@ TEST_F(BrowserViewControllerTest, TestClearPresentedState) {
         this->OnCompletionCalled();
       }
                          dismissOmnibox:YES];
+}
+
+// Verifies the the next/previous tab commands from the keyboard work OK.
+TEST_F(BrowserViewControllerTest, TestFocusNextPrevious) {
+  // Add more web states.
+  WebStateList* web_state_list = tabModel_.webStateList;
+  // This test assumes there are exactly three web states in the list.
+  ASSERT_EQ(web_state_list->count(), 3);
+
+  ASSERT_TRUE([bvc_ conformsToProtocol:@protocol(KeyCommandsPlumbing)]);
+
+  id<KeyCommandsPlumbing> keyHandler =
+      static_cast<id<KeyCommandsPlumbing>>(bvc_);
+
+  [keyHandler focusNextTab];
+  EXPECT_EQ(web_state_list->active_index(), 1);
+  [keyHandler focusNextTab];
+  EXPECT_EQ(web_state_list->active_index(), 2);
+  [keyHandler focusNextTab];
+  EXPECT_EQ(web_state_list->active_index(), 0);
+  [keyHandler focusPreviousTab];
+  EXPECT_EQ(web_state_list->active_index(), 2);
+  [keyHandler focusPreviousTab];
+  EXPECT_EQ(web_state_list->active_index(), 1);
+  [keyHandler focusPreviousTab];
+  EXPECT_EQ(web_state_list->active_index(), 0);
 }
 
 }  // namespace

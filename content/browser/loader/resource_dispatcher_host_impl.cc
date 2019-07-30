@@ -356,7 +356,6 @@ ResourceDispatcherHost* ResourceDispatcherHost::Get() {
 }
 
 ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
-    CreateDownloadHandlerIntercept download_handler_intercept,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner,
     bool enable_resource_scheduler)
     : is_shutdown_(false),
@@ -369,7 +368,6 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
           kMaxOutstandingRequestsCostPerProcess),
       delegate_(nullptr),
       loader_delegate_(nullptr),
-      create_download_handler_intercept_(download_handler_intercept),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_thread_task_runner_(io_thread_runner) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
@@ -390,8 +388,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
 // The default ctor is only used by unittests. It is reasonable to assume that
 // the main thread and the IO thread are the same for unittests.
 ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
-    : ResourceDispatcherHostImpl(CreateDownloadHandlerIntercept(),
-                                 base::ThreadTaskRunnerHandle::Get(),
+    : ResourceDispatcherHostImpl(base::ThreadTaskRunnerHandle::Get(),
                                  /* enable_resource_scheduler */ true) {}
 
 ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
@@ -513,24 +510,6 @@ void ResourceDispatcherHostImpl::Shutdown() {
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ResourceDispatcherHostImpl::OnShutdown,
                                 base::Unretained(this)));
-}
-
-std::unique_ptr<ResourceHandler>
-ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
-    net::URLRequest* request,
-    bool is_content_initiated,
-    bool must_download,
-    bool is_new_request) {
-  DCHECK(!create_download_handler_intercept_.is_null());
-  // TODO(ananta)
-  // Find a better way to create the download handler and notifying the
-  // delegate of the download start.
-  std::unique_ptr<ResourceHandler> handler =
-      create_download_handler_intercept_.Run(request);
-  handler =
-      HandleDownloadStarted(request, std::move(handler), is_content_initiated,
-                            must_download, is_new_request);
-  return handler;
 }
 
 std::unique_ptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
@@ -1418,12 +1397,12 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   bool is_external_protocol =
-      info.common_params.url.is_valid() &&
+      info.common_params->url.is_valid() &&
       !request_context->job_factory()->IsHandledProtocol(
-          info.common_params.url.scheme());
+          info.common_params->url.scheme());
   bool non_web_url_in_guest =
       info.is_for_guests_only &&
-      !policy->IsWebSafeScheme(info.common_params.url.scheme()) &&
+      !policy->IsWebSafeScheme(info.common_params->url.scheme()) &&
       !is_external_protocol;
 
   if (is_shutdown_ || non_web_url_in_guest) {
@@ -1434,12 +1413,12 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   std::unique_ptr<net::URLRequest> new_request;
   new_request = request_context->CreateRequest(
-      info.common_params.url, net_priority, nullptr, GetTrafficAnnotation());
+      info.common_params->url, net_priority, nullptr, GetTrafficAnnotation());
 
-  new_request->set_method(info.common_params.method);
+  new_request->set_method(info.common_params->method);
   new_request->set_site_for_cookies(info.site_for_cookies);
   new_request->set_network_isolation_key(info.network_isolation_key);
-  new_request->set_initiator(info.common_params.initiator_origin);
+  new_request->set_initiator(info.common_params->initiator_origin);
   new_request->set_upgrade_if_insecure(info.upgrade_if_insecure);
   if (info.is_main_frame) {
     new_request->set_first_party_url_policy(
@@ -1451,7 +1430,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
           new_request->net_log().source().id, info.devtools_frame_token);
 
   Referrer::SetReferrerForRequest(new_request.get(),
-                                  info.common_params.referrer);
+                                  Referrer(*info.common_params->referrer));
 
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(info.begin_params->headers);
@@ -1463,7 +1442,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       GetChromeBlobStorageContextForResourceContext(resource_context));
 
   // Resolve elements from request_body and prepare upload data.
-  network::ResourceRequestBody* body = info.common_params.post_data.get();
+  network::ResourceRequestBody* body = info.common_params->post_data.get();
   BlobHandles blob_handles;
   if (body) {
     if (!GetBodyBlobDataHandles(body, resource_context, &blob_handles)) {
@@ -1491,22 +1470,22 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       global_request_id.request_id,
       -1,                      // request_data.render_frame_id,
       info.is_main_frame, {},  // fetch_window_id
-      resource_type, info.common_params.transition,
+      resource_type, info.common_params->transition,
       false,  // is download
-      info.common_params.download_policy.GetResourceInterceptPolicy(),
-      info.common_params.has_user_gesture,
+      info.common_params->download_policy.GetResourceInterceptPolicy(),
+      info.common_params->has_user_gesture,
       true,   // enable_load_timing
       false,  // enable_upload_progress
       false,  // do_not_prompt_for_login
       false,  // keepalive
-      info.common_params.referrer.policy, info.is_prerendering,
+      info.common_params->referrer->policy, info.is_prerendering,
       resource_context, info.report_raw_headers,
       // For navigation requests, security info is reported whenever raw headers
       // are. This behavior is different for subresources; see
       // ContinuePendingBeginRequest.
       info.report_raw_headers,
       true,  // is_async
-      info.common_params.previews_state, info.common_params.post_data,
+      info.common_params->previews_state, info.common_params->post_data,
       // TODO(mek): Currently initiated_in_secure_context is only used for
       // subresource requests, so it doesn't matter what value it gets here.
       // If in the future this changes this should be updated to somehow get a

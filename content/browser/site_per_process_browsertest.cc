@@ -1494,8 +1494,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
           nested_iframe_node->current_frame_host()
               ->GetRenderWidgetHost()
               ->GetView());
-  WaitForHitTestDataOrChildSurfaceReady(
-      nested_iframe_node->current_frame_host());
+  WaitForHitTestData(nested_iframe_node->current_frame_host());
 
   float scale_factor =
       frame_observer.LastRenderFrameMetadata().page_scale_factor;
@@ -1555,8 +1554,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   InputEventAckWaiter gesture_fling_start_ack_observer(
       child_rwh, blink::WebInputEvent::kGestureFlingStart);
 
-  WaitForHitTestDataOrChildSurfaceReady(
-      child_iframe_node->current_frame_host());
+  WaitForHitTestData(child_iframe_node->current_frame_host());
 
   gesture_fling_start_ack_observer.Reset();
 
@@ -1665,8 +1663,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
               ->GetRenderWidgetHost()
               ->GetView());
 
-  WaitForHitTestDataOrChildSurfaceReady(
-      nested_iframe_node->current_frame_host());
+  WaitForHitTestData(nested_iframe_node->current_frame_host());
 
   // Save the original offset as a point of reference.
   filter->WaitForRect();
@@ -1913,8 +1910,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   RenderWidgetHost* child_rwh =
       child_iframe_node->current_frame_host()->GetRenderWidgetHost();
-  WaitForHitTestDataOrChildSurfaceReady(
-      child_iframe_node->current_frame_host());
+  WaitForHitTestData(child_iframe_node->current_frame_host());
 
   GenerateTapDownGesture(child_rwh);
   // Send a GSB to start scrolling sequence.
@@ -2066,8 +2062,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
               ->GetRenderWidgetHost()
               ->GetView());
 
-  WaitForHitTestDataOrChildSurfaceReady(
-      nested_iframe_node->current_frame_host());
+  WaitForHitTestData(nested_iframe_node->current_frame_host());
 
   InputEventAckWaiter ack_observer(
       root->current_frame_host()->GetRenderWidgetHost(),
@@ -2129,7 +2124,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL url_domain_b(
       embedded_test_server()->GetURL("b.com", "/body_overflow_hidden.html"));
   NavigateFrameToURL(iframe_node, url_domain_b);
-  WaitForHitTestDataOrChildSurfaceReady(iframe_node->current_frame_host());
+  WaitForHitTestData(iframe_node->current_frame_host());
 
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
@@ -2207,8 +2202,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
           ->GetRenderWidgetHost()
           ->GetView());
 
-  WaitForHitTestDataOrChildSurfaceReady(
-      parent_iframe_node->current_frame_host());
+  WaitForHitTestData(parent_iframe_node->current_frame_host());
 
   // When we scroll the inner frame, we should have the GSB be consumed.
   // The outer iframe not being scrollable should not cause the GSB to go
@@ -10681,8 +10675,7 @@ class TouchSelectionControllerClientAndroidSiteIsolationTest
     // The child will change with the cross-site navigation. It shouldn't change
     // after this.
     child_frame_tree_node_ = root->child_at(0);
-    WaitForHitTestDataOrChildSurfaceReady(
-        child_frame_tree_node_->current_frame_host());
+    WaitForHitTestData(child_frame_tree_node_->current_frame_host());
 
     child_rwhv_ = static_cast<RenderWidgetHostViewChildFrame*>(
         child_frame_tree_node_->current_frame_host()
@@ -11024,7 +11017,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
        document.body.addEventListener('touchend', touch_handler,\
                                       { passive : false });"));
 
-  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+  WaitForHitTestData(child_node->current_frame_host());
 
   auto* root_host = static_cast<RenderWidgetHostImpl*>(
       root->current_frame_host()->GetRenderWidgetHost());
@@ -11959,7 +11952,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       DepictFrameTree(root));
 
   FrameTreeNode* nested_child = root->child_at(0)->child_at(0);
-  WaitForHitTestDataOrChildSurfaceReady(nested_child->current_frame_host());
+  WaitForHitTestData(nested_child->current_frame_host());
 
   EXPECT_TRUE(
       ExecuteScript(nested_child->current_frame_host(), "startTest();"));
@@ -12896,7 +12889,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   EXPECT_TRUE(
       ExecuteScript(shell(), "document.body.style.touchAction = 'none'"));
   // Waits for the next frame.
-  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  WaitForHitTestData(child->current_frame_host());
   std::unique_ptr<MainThreadFrameObserver> child_thread_observer(
       new MainThreadFrameObserver(
           child->current_frame_host()->GetRenderWidgetHost()));
@@ -12984,7 +12977,7 @@ IN_PROC_BROWSER_TEST_F(
       ExecuteScript(shell(), "document.body.style.touchAction = 'none'"));
 
   // Wait for child frame ready in order to get the correct point inside child.
-  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  WaitForHitTestData(child->current_frame_host());
   std::unique_ptr<MainThreadFrameObserver> child_thread_observer(
       new MainThreadFrameObserver(
           child->current_frame_host()->GetRenderWidgetHost()));
@@ -13103,7 +13096,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
       ExecuteScript(shell(), "document.body.style.touchAction = 'none'"));
 
   // Wait for child frame ready in order to get the correct point inside child.
-  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  WaitForHitTestData(child->current_frame_host());
   std::unique_ptr<MainThreadFrameObserver> child_thread_observer(
       new MainThreadFrameObserver(
           child->current_frame_host()->GetRenderWidgetHost()));
@@ -13138,7 +13131,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   // RenderWidgetHost being observed.
   child_thread_observer.reset();
   NavigateFrameToURL(child, new_url);
-  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  WaitForHitTestData(child->current_frame_host());
   // Navigation destroys the previous RenderWidgetHost, so we need to begin
   // observing the new renderer main thread associated with the child frame.
   child_thread_observer.reset(new MainThreadFrameObserver(
@@ -14110,7 +14103,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       observer_a.LastRenderFrameMetadata().page_scale_factor;
 
   // Must do this before it's safe to use the coordinate transform functions.
-  WaitForHitTestDataOrChildSurfaceReady(child_b->current_frame_host());
+  WaitForHitTestData(child_b->current_frame_host());
 
   // Select a tap point inside the OOPIF.
   gfx::PointF tap_position =

@@ -24,9 +24,9 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
 
 struct AccountInfo;
 class AccountTrackerService;
@@ -40,7 +40,7 @@ enum ProfileSignout : int;
 enum class SignoutDelete;
 }  // namespace signin_metrics
 
-class PrimaryAccountManager : public OAuth2TokenServiceObserver {
+class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
  public:
   typedef base::RepeatingCallback<void(const AccountInfo&)>
       AccountSigninCallback;
@@ -183,7 +183,7 @@ class PrimaryAccountManager : public OAuth2TokenServiceObserver {
   // Send all observers |GoogleSignedOut| notifications.
   void FireGoogleSignedOut(const AccountInfo& account_info);
 
-  // OAuth2TokenServiceObserver:
+  // ProfileOAuth2TokenServiceObserver:
   void OnRefreshTokensLoaded() override;
 #endif
 

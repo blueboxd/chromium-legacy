@@ -112,7 +112,6 @@ public class SideSlideLayout extends ViewGroup {
 
     private AnimationSet mHidingAnimation;
     private int mAnimationViewWidth;
-    private AnimationListener mCancelAnimationListener;
 
     private boolean mIsForward;
     private boolean mCloseIndicatorEnabled;
@@ -280,7 +279,6 @@ public class SideSlideLayout extends ViewGroup {
      */
     public boolean start() {
         if (!isEnabled() || mNavigating || mListener == null) return false;
-        mArrowView.clearAnimation();
         mTotalMotion = 0;
         mIsBeingDragged = true;
         initializeOffset();
@@ -357,25 +355,10 @@ public class SideSlideLayout extends ViewGroup {
         }
         // Cancel navigation
         mNavigating = false;
-        if (mCancelAnimationListener == null) {
-            mCancelAnimationListener = new AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {}
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    startHidingAnimation(mNavigateListener);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {}
-            };
-        }
         mFrom = mCurrentTargetOffset;
         mAnimateToStartPosition.reset();
         mAnimateToStartPosition.setDuration(ANIMATE_TO_START_DURATION_MS);
         mAnimateToStartPosition.setInterpolator(mDecelerateInterpolator);
-        mArrowView.setAnimationListener(mCancelAnimationListener);
         mArrowView.clearAnimation();
         mArrowView.startAnimation(mAnimateToStartPosition);
 

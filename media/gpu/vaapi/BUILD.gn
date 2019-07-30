@@ -41,10 +41,10 @@ source_set("vaapi") {
     "vaapi_dmabuf_video_frame_mapper.h",
     "vaapi_h264_accelerator.cc",
     "vaapi_h264_accelerator.h",
+    "vaapi_image_decode_accelerator_worker.cc",
+    "vaapi_image_decode_accelerator_worker.h",
     "vaapi_image_decoder.cc",
     "vaapi_image_decoder.h",
-    "vaapi_jpeg_decode_accelerator_worker.cc",
-    "vaapi_jpeg_decode_accelerator_worker.h",
     "vaapi_jpeg_decoder.cc",
     "vaapi_jpeg_decoder.h",
     "vaapi_jpeg_encoder.cc",
@@ -162,7 +162,7 @@ source_set("vaapi_test_utils") {
 source_set("unit_test") {
   testonly = true
   sources = [
-    "vaapi_jpeg_decode_accelerator_worker_unittest.cc",
+    "vaapi_image_decode_accelerator_worker_unittest.cc",
     "vaapi_video_decode_accelerator_unittest.cc",
   ]
   deps = [

@@ -32,9 +32,9 @@ using base::ASCIIToUTF16;
 
 namespace password_manager {
 
-class OnboardingStateUpdateTest : public testing::Test {
+class PasswordManagerOnboardingTest : public testing::Test {
  public:
-  OnboardingStateUpdateTest() = default;
+  PasswordManagerOnboardingTest() = default;
 
   void SetUp() override {
     store_ = new TestPasswordStore;
@@ -81,7 +81,7 @@ class OnboardingStateUpdateTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
 };
 
-TEST_F(OnboardingStateUpdateTest, CredentialsCountUnderThreshold) {
+TEST_F(PasswordManagerOnboardingTest, CredentialsCountUnderThreshold) {
   // Check that the count of credentials is handled correctly.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -100,7 +100,8 @@ TEST_F(OnboardingStateUpdateTest, CredentialsCountUnderThreshold) {
             static_cast<int>(OnboardingState::kShouldShow));
 }
 
-TEST_F(OnboardingStateUpdateTest, CredentialsCountThresholdHitAfterDoNotShow) {
+TEST_F(PasswordManagerOnboardingTest,
+       CredentialsCountThresholdHitAfterDoNotShow) {
   // Check that the threshold is handled correctly.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -115,7 +116,8 @@ TEST_F(OnboardingStateUpdateTest, CredentialsCountThresholdHitAfterDoNotShow) {
             static_cast<int>(OnboardingState::kDoNotShow));
 }
 
-TEST_F(OnboardingStateUpdateTest, CredentialsCountThresholdHitAfterShouldShow) {
+TEST_F(PasswordManagerOnboardingTest,
+       CredentialsCountThresholdHitAfterShouldShow) {
   // Check that the threshold is handled correctly
   // in case the current state is |kShouldShow|.
   base::test::ScopedFeatureList feature_list;
@@ -133,7 +135,7 @@ TEST_F(OnboardingStateUpdateTest, CredentialsCountThresholdHitAfterShouldShow) {
             static_cast<int>(OnboardingState::kDoNotShow));
 }
 
-TEST_F(OnboardingStateUpdateTest, CredentialsCountThresholdHitAfterShown) {
+TEST_F(PasswordManagerOnboardingTest, CredentialsCountThresholdHitAfterShown) {
   // Check that the threshold is handled correctly
   // in case the current state is |kShown|.
   base::test::ScopedFeatureList feature_list;
@@ -151,7 +153,7 @@ TEST_F(OnboardingStateUpdateTest, CredentialsCountThresholdHitAfterShown) {
             static_cast<int>(OnboardingState::kShown));
 }
 
-TEST_F(OnboardingStateUpdateTest, DoNotShowAfterShown) {
+TEST_F(PasswordManagerOnboardingTest, DoNotShowAfterShown) {
   // If the current state is |kShown| it should stay this way,
   // so that the onboarding won't be shown twice.
   base::test::ScopedFeatureList feature_list;
@@ -165,7 +167,7 @@ TEST_F(OnboardingStateUpdateTest, DoNotShowAfterShown) {
             static_cast<int>(OnboardingState::kShown));
 }
 
-TEST_F(OnboardingStateUpdateTest, FeatureDisabledNotShown) {
+TEST_F(PasswordManagerOnboardingTest, FeatureDisabledNotShown) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       features::kPasswordManagerOnboardingAndroid);
@@ -175,7 +177,7 @@ TEST_F(OnboardingStateUpdateTest, FeatureDisabledNotShown) {
             static_cast<int>(OnboardingState::kDoNotShow));
 }
 
-TEST_F(OnboardingStateUpdateTest, FeatureDisabledAfterShowing) {
+TEST_F(PasswordManagerOnboardingTest, FeatureDisabledAfterShowing) {
   prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
                      static_cast<int>(OnboardingState::kShown));
   base::test::ScopedFeatureList feature_list;
@@ -185,6 +187,37 @@ TEST_F(OnboardingStateUpdateTest, FeatureDisabledAfterShowing) {
   RunAllPendingTasks();
   EXPECT_EQ(prefs_->GetInteger(prefs::kPasswordManagerOnboardingState),
             static_cast<int>(OnboardingState::kShown));
+}
+
+TEST_F(PasswordManagerOnboardingTest, ShouldShowOnboardingState) {
+  // Check that the |kPasswordManagerOnboardingState| pref is handled correctly.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kPasswordManagerOnboardingAndroid);
+  EXPECT_FALSE(
+      ShouldShowOnboarding(GetPrefs(), /* is_password_update */ false));
+
+  prefs_->SetInteger(password_manager::prefs::kPasswordManagerOnboardingState,
+                     static_cast<int>(OnboardingState::kShouldShow));
+  EXPECT_TRUE(ShouldShowOnboarding(GetPrefs(), /* is_password_update */ false));
+
+  prefs_->SetInteger(password_manager::prefs::kPasswordManagerOnboardingState,
+                     static_cast<int>(OnboardingState::kDoNotShow));
+  EXPECT_FALSE(
+      ShouldShowOnboarding(GetPrefs(), /* is_password_update */ false));
+
+  prefs_->SetInteger(password_manager::prefs::kPasswordManagerOnboardingState,
+                     static_cast<int>(OnboardingState::kShown));
+  EXPECT_FALSE(
+      ShouldShowOnboarding(GetPrefs(), /* is_password_update */ false));
+}
+
+TEST_F(PasswordManagerOnboardingTest, ShouldShowOnboardingPasswordUpdate) {
+  // Password update ==> don't show.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kPasswordManagerOnboardingAndroid);
+  EXPECT_FALSE(ShouldShowOnboarding(GetPrefs(), /* is_password_update */ true));
 }
 
 }  // namespace password_manager

@@ -116,6 +116,10 @@ const char* ToString(ax::mojom::Event event) {
       return "textChanged";
     case ax::mojom::Event::kTextSelectionChanged:
       return "textSelectionChanged";
+    case ax::mojom::Event::kTooltipClosed:
+      return "tooltipClosed";
+    case ax::mojom::Event::kTooltipOpened:
+      return "tooltipOpened";
     case ax::mojom::Event::kWindowActivated:
       return "windowActivated";
     case ax::mojom::Event::kWindowDeactivated:
@@ -240,6 +244,10 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kTextChanged;
   if (0 == strcmp(event, "textSelectionChanged"))
     return ax::mojom::Event::kTextSelectionChanged;
+  if (0 == strcmp(event, "tooltipClosed"))
+    return ax::mojom::Event::kTooltipClosed;
+  if (0 == strcmp(event, "tooltipOpened"))
+    return ax::mojom::Event::kTooltipOpened;
   if (0 == strcmp(event, "windowActivated"))
     return ax::mojom::Event::kWindowActivated;
   if (0 == strcmp(event, "windowDeactivated"))

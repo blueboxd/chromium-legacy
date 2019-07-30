@@ -10413,6 +10413,87 @@ TEST_F(LayerTreeHostImplTest,
   EXPECT_FALSE(host_impl_->EvictedUIResourcesExist());
 }
 
+TEST_F(LayerTreeHostImplTest, ObeyMSAACaps) {
+  LayerTreeSettings msaaSettings = DefaultSettings();
+  msaaSettings.gpu_rasterization_msaa_sample_count = 4;
+
+  // gpu raster, msaa on
+  {
+    bool msaa_is_slow = false;
+    EXPECT_TRUE(CreateHostImpl(
+        msaaSettings,
+        FakeLayerTreeFrameSink::Create3dForGpuRasterization(
+            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
+
+    host_impl_->SetHasGpuRasterizationTrigger(true);
+    host_impl_->SetContentHasSlowPaths(true);
+    host_impl_->CommitComplete();
+
+    EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
+              host_impl_->gpu_rasterization_status());
+    EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl_->use_oop_rasterization());
+    EXPECT_TRUE(host_impl_->use_msaa());
+  }
+
+  // gpu raster, msaa off
+  {
+    bool msaa_is_slow = true;
+    EXPECT_TRUE(CreateHostImpl(
+        msaaSettings,
+        FakeLayerTreeFrameSink::Create3dForGpuRasterization(
+            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
+
+    host_impl_->SetHasGpuRasterizationTrigger(true);
+    host_impl_->SetContentHasSlowPaths(true);
+    host_impl_->CommitComplete();
+
+    EXPECT_EQ(GpuRasterizationStatus::ON,
+              host_impl_->gpu_rasterization_status());
+    EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl_->use_oop_rasterization());
+    EXPECT_FALSE(host_impl_->use_msaa());
+  }
+
+  // oop raster, msaa on
+  {
+    bool msaa_is_slow = false;
+    EXPECT_TRUE(CreateHostImpl(
+        msaaSettings,
+        FakeLayerTreeFrameSink::Create3dForOopRasterization(
+            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
+
+    host_impl_->SetHasGpuRasterizationTrigger(true);
+    host_impl_->SetContentHasSlowPaths(true);
+    host_impl_->CommitComplete();
+
+    EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
+              host_impl_->gpu_rasterization_status());
+    EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl_->use_oop_rasterization());
+    EXPECT_TRUE(host_impl_->use_msaa());
+  }
+
+  // oop raster, msaa off
+  {
+    bool msaa_is_slow = true;
+    EXPECT_TRUE(CreateHostImpl(
+        msaaSettings,
+        FakeLayerTreeFrameSink::Create3dForOopRasterization(
+            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
+
+    host_impl_->SetHasGpuRasterizationTrigger(true);
+    host_impl_->SetContentHasSlowPaths(true);
+    host_impl_->CommitComplete();
+
+    EXPECT_EQ(GpuRasterizationStatus::ON,
+              host_impl_->gpu_rasterization_status());
+    EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl_->use_oop_rasterization());
+    EXPECT_FALSE(host_impl_->use_msaa());
+  }
+}
+
 class FrameSinkClient : public TestLayerTreeFrameSinkClient {
  public:
   explicit FrameSinkClient(

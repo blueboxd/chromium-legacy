@@ -43,6 +43,7 @@ std::unique_ptr<SiteDataCacheFactory, base::OnTaskRunnerDeleter>
 SiteDataCacheFactory::Create() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(nullptr, g_instance);
+  // TODO(sebmarchand): Make this GraphOwned!
   auto task_runner = PerformanceManager::GetInstance()->task_runner();
   std::unique_ptr<SiteDataCacheFactory, base::OnTaskRunnerDeleter> instance(
       new SiteDataCacheFactory(task_runner),

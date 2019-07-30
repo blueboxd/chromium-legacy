@@ -88,6 +88,11 @@ void UiaAccessibilityEventWaiter::Thread::ThreadMain() {
   CHECK(SUCCEEDED(cache_request_->AddProperty(UIA_NamePropertyId)));
   CHECK(SUCCEEDED(cache_request_->AddProperty(UIA_AriaRolePropertyId)));
 
+  // Match AccEvent by using Raw View
+  Microsoft::WRL::ComPtr<IUIAutomationCondition> pRawCond;
+  CHECK(SUCCEEDED(uia_->get_RawViewCondition(&pRawCond)));
+  CHECK(SUCCEEDED(cache_request_->put_TreeFilter(pRawCond.Get())));
+
   // Subscribe to focus events.
   uia_->AddFocusChangedEventHandler(cache_request_.Get(),
                                     uia_event_handler_.Get());
@@ -195,7 +200,12 @@ STDMETHODIMP
 UiaAccessibilityEventWaiter::Thread::EventHandler::HandleAutomationEvent(
     IUIAutomationElement* sender,
     EVENTID event_id) {
-  // Add automation event handling code here.
+  if (owner_ &&
+      event_id ==
+          ui::AXPlatformNodeWin::MojoEventToUIAEvent(owner_->info_.event) &&
+      MatchesNameRole(sender)) {
+    owner_->SendShutdownSignal();
+  }
   return S_OK;
 }
 

@@ -10699,7 +10699,6 @@ interface XRInputSourceArray
     method values
 interface XRInputSourceEvent : Event
     attribute @@toStringTag
-    getter buttonIndex
     getter frame
     getter inputSource
     method constructor
@@ -10708,9 +10707,6 @@ interface XRInputSourcesChangeEvent : Event
     getter added
     getter removed
     getter session
-    method constructor
-interface XRLayer
-    attribute @@toStringTag
     method constructor
 interface XRPose
     attribute @@toStringTag
@@ -10798,11 +10794,10 @@ interface XRViewport
     getter x
     getter y
     method constructor
-interface XRWebGLLayer : XRLayer
+interface XRWebGLLayer
     static method getNativeFramebufferScaleFactor
     attribute @@toStringTag
     getter antialias
-    getter context
     getter framebuffer
     getter framebufferHeight
     getter framebufferWidth

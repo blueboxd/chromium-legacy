@@ -51,7 +51,7 @@ void ChromeExtensionHostDelegate::OnExtensionHostCreated(
   PrefsTabHelper::CreateForWebContents(web_contents);
   apps::AudioFocusWebContentsObserver::CreateForWebContents(web_contents);
 
-  if (performance_manager::PerformanceManager::GetInstance()) {
+  if (performance_manager::PerformanceManager::IsAvailable()) {
     performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
         web_contents);
   }

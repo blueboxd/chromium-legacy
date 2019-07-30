@@ -522,6 +522,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                        int* max_msaa_samples,
                                        bool* supports_disable_msaa);
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
+  bool use_oop_rasterization() const { return use_oop_rasterization_; }
   bool use_msaa() const { return use_msaa_; }
 
   GpuRasterizationStatus gpu_rasterization_status() const {

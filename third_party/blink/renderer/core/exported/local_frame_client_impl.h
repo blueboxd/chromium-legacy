@@ -329,6 +329,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) override;
   WebLocalFrameClient::AppCacheType GetAppCacheType() override;
+  base::UnguessableToken GetAppCacheHostIDForSharedWorker() override;
 
  private:
   struct DocumentInterfaceBrokerForwarderTraits {

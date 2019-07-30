@@ -41,9 +41,6 @@ class VIEWS_EXPORT PlatformStyle {
   // Whether right clicking inside an unfocused text view selects all the text.
   static const bool kSelectAllOnRightClickWhenUnfocused;
 
-  // The menu button's action to show the menu.
-  static const Button::NotifyAction kMenuNotifyActivationAction;
-
   // Whether the Space key clicks a button on key press or key release.
   static const Button::KeyClickAction kKeyClickActionOnSpace;
 

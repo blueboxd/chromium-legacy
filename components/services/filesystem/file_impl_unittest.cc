@@ -8,18 +8,33 @@
 #include <vector>
 
 #include "base/files/file.h"
-#include "components/services/filesystem/files_test_base.h"
+#include "base/macros.h"
+#include "base/test/scoped_task_environment.h"
+#include "components/services/filesystem/directory_test_helper.h"
 #include "components/services/filesystem/public/mojom/directory.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace filesystem {
 namespace {
 
-using FileImplTest = FilesTestBase;
+class FileImplTest : public testing::Test {
+ public:
+  FileImplTest() = default;
+
+  mojo::Remote<mojom::Directory> CreateTempDir() {
+    return test_helper_.CreateTempDir();
+  }
+
+ private:
+  base::test::ScopedTaskEnvironment task_environment_;
+  DirectoryTestHelper test_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileImplTest);
+};
 
 TEST_F(FileImplTest, CreateWriteCloseRenameOpenRead) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
   bool handled = false;
 
@@ -88,8 +103,7 @@ TEST_F(FileImplTest, CreateWriteCloseRenameOpenRead) {
 }
 
 TEST_F(FileImplTest, CantWriteInReadMode) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   std::vector<uint8_t> bytes_to_write;
@@ -154,8 +168,7 @@ TEST_F(FileImplTest, CantWriteInReadMode) {
 }
 
 TEST_F(FileImplTest, OpenInAppendMode) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   {
@@ -250,8 +263,7 @@ TEST_F(FileImplTest, OpenInAppendMode) {
 }
 
 TEST_F(FileImplTest, OpenInTruncateMode) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   {
@@ -348,8 +360,7 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
 // Note: Ignore nanoseconds, since it may not always be supported. We expect at
 // least second-resolution support though.
 TEST_F(FileImplTest, StatTouch) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   // Create my_file.
@@ -419,8 +430,7 @@ TEST_F(FileImplTest, StatTouch) {
 }
 
 TEST_F(FileImplTest, TellSeek) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   // Create my_file.
@@ -505,8 +515,7 @@ TEST_F(FileImplTest, TellSeek) {
 }
 
 TEST_F(FileImplTest, Dup) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   // Create my_file.
@@ -599,8 +608,7 @@ TEST_F(FileImplTest, Truncate) {
   const uint32_t kInitialSize = 1000;
   const uint32_t kTruncatedSize = 654;
 
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   // Create my_file.
@@ -648,8 +656,7 @@ TEST_F(FileImplTest, Truncate) {
 }
 
 TEST_F(FileImplTest, AsHandle) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   {
@@ -700,8 +707,7 @@ TEST_F(FileImplTest, AsHandle) {
 }
 
 TEST_F(FileImplTest, SimpleLockUnlock) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   // Create my_file.
@@ -727,8 +733,7 @@ TEST_F(FileImplTest, SimpleLockUnlock) {
 }
 
 TEST_F(FileImplTest, CantDoubleLock) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   // Create my_file.
@@ -754,8 +759,7 @@ TEST_F(FileImplTest, CantDoubleLock) {
 }
 
 TEST_F(FileImplTest, ClosingFileClearsLock) {
-  mojo::Remote<mojom::Directory> directory;
-  GetTemporaryRoot(&directory);
+  mojo::Remote<mojom::Directory> directory = CreateTempDir();
   base::File::Error error;
 
   {

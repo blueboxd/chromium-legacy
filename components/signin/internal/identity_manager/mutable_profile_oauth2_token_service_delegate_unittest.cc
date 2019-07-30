@@ -80,7 +80,7 @@ AccountInfo CreateTestAccountInfo(const std::string& name,
 class MutableProfileOAuth2TokenServiceDelegateTest
     : public testing::Test,
       public OAuth2AccessTokenConsumer,
-      public OAuth2TokenServiceObserver,
+      public ProfileOAuth2TokenServiceObserver,
       public WebDataServiceConsumer {
  public:
   MutableProfileOAuth2TokenServiceDelegateTest()
@@ -184,7 +184,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
     access_token_failure_ = error;
   }
 
-  // OAuth2TokenServiceObserver implementation.
+  // ProfileOAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override {
     ++token_available_count_;
   }
@@ -872,7 +872,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, UpdateInvalidToken) {
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        InvalidateTokensForMultilogin) {
-  class TokenServiceErrorObserver : public OAuth2TokenServiceObserver {
+  class TokenServiceErrorObserver : public ProfileOAuth2TokenServiceObserver {
    public:
     MOCK_METHOD2(OnAuthErrorChanged,
                  void(const CoreAccountId&, const GoogleServiceAuthError&));
@@ -1334,7 +1334,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 // Checks that OnAuthErrorChanged() is called during UpdateCredentials(), and
 // that RefreshTokenIsAvailable() can be used at this time.
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, OnAuthErrorChanged) {
-  class TokenServiceErrorObserver : public OAuth2TokenServiceObserver {
+  class TokenServiceErrorObserver : public ProfileOAuth2TokenServiceObserver {
    public:
     explicit TokenServiceErrorObserver(
         MutableProfileOAuth2TokenServiceDelegate* delegate)
@@ -1404,7 +1404,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GetAuthError) {
 // Regression test for https://crbug.com/824791.
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        InvalidTokenObserverCallsOrdering) {
-  class TokenServiceErrorObserver : public OAuth2TokenServiceObserver {
+  class TokenServiceErrorObserver : public ProfileOAuth2TokenServiceObserver {
    public:
     explicit TokenServiceErrorObserver(
         MutableProfileOAuth2TokenServiceDelegate* delegate)

@@ -39,7 +39,6 @@
 #include "components/download/public/common/download_task_runner.h"
 #include "components/download/public/common/parallel_download_configs.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -100,6 +99,9 @@ namespace {
 
 // Default request count for parallel download tests.
 constexpr int kTestRequestCount = 3;
+
+// Offset for download to pause.
+const int kPauseOffset = 100 * 1024;
 
 const std::string kOriginOne = "one.example";
 const std::string kOriginTwo = "two.example";
@@ -1170,7 +1172,7 @@ class ParallelDownloadTest : public DownloadContentTest {
     parameters.on_pause_handler = request_pause_handler.GetOnPauseHandler();
     // Send some data for the first request and pause it so download won't
     // complete before other parallel requests are created.
-    parameters.pause_offset = DownloadRequestCore::kDownloadByteStreamSize;
+    parameters.pause_offset = kPauseOffset;
     TestDownloadHttpResponse::StartServing(parameters, server_url);
 
     download::DownloadItem* download =

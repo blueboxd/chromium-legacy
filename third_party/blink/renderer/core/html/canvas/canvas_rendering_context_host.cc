@@ -109,7 +109,7 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         }
 
         CanvasResourceProvider::PresentationMode presentation_mode;
-        if (RuntimeEnabledFeatures::WebGLSwapChainEnabled()) {
+        if (RenderingContext() && RenderingContext()->UsingSwapChain()) {
           presentation_mode =
               CanvasResourceProvider::kAllowSwapChainPresentationMode;
         } else if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {

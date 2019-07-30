@@ -349,6 +349,13 @@ void LoginDisplayHostMojo::HandleAuthenticateUserWithEasyUnlock(
   user_selection_screen_->AttemptEasyUnlock(account_id);
 }
 
+void LoginDisplayHostMojo::HandleAuthenticateUserWithChallengeResponse(
+    const AccountId& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  // TODO(crbug.com/826417): Implement the challenge-response system for login.
+  std::move(callback).Run(false);
+}
+
 void LoginDisplayHostMojo::HandleHardlockPod(const AccountId& account_id) {
   user_selection_screen_->HardLockPod(account_id);
 }

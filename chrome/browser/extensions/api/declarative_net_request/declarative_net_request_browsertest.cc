@@ -1198,7 +1198,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       {"def.com", 4, "block", base::nullopt},
       {"def.com", 5, "redirect", get_url_for_host("xyz.com")},
       {"ghi*", 6, "redirect", get_url_for_host("ghijk.com")},
-      {"ijk*", 7, "redirect", "/manifest.json"},
+      {"ijk*", 7, "redirect", "/manifest.json?q=1#fragment"},
   };
 
   // Load the extension.
@@ -1241,7 +1241,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
       // script to load.
       {"ijklm.com", false,
        GURL("chrome-extension://" + last_loaded_extension_id() +
-            "/manifest.json"),
+            "/manifest.json?q=1#fragment"),
        2}};
 
   for (const auto& test_case : test_cases) {

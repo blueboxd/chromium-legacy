@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/frame.mojom.h"
+#include "content/common/navigation_params.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
@@ -59,8 +60,9 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
 // returns false if the CommonNavigationParams are invalid.
 //
 // This function has to be called on the UI thread.
-bool VerifyBeginNavigationCommonParams(SiteInstance* site_instance,
-                                       CommonNavigationParams* common_params);
+bool VerifyBeginNavigationCommonParams(
+    SiteInstance* site_instance,
+    mojom::CommonNavigationParams* common_params);
 
 }  // namespace content
 

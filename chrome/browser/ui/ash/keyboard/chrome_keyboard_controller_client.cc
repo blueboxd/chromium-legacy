@@ -112,9 +112,15 @@ void ChromeKeyboardControllerClient::InitializePrefObserver() {
 }
 
 void ChromeKeyboardControllerClient::Shutdown() {
+  if (keyboard_controller_) {
+    keyboard_controller_->RemoveObserver(this);
+    keyboard_controller_ = nullptr;
+  }
+
   if (session_manager::SessionManager::Get())
     session_manager::SessionManager::Get()->RemoveObserver(this);
   pref_change_registrar_.RemoveAll();
+
   if (keyboard::KeyboardUIController::HasInstance()) {
     // In classic Ash, keyboard::KeyboardController owns ChromeKeyboardUI which
     // accesses this class, so make sure that the UI has been destroyed.

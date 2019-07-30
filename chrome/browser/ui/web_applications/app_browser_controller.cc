@@ -5,10 +5,16 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/manifest_web_app_browser_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -18,10 +24,39 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
 namespace web_app {
+
+// static
+std::unique_ptr<web_app::AppBrowserController>
+AppBrowserController::MaybeCreateWebAppController(Browser* browser) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  const AppId app_id =
+      web_app::GetAppIdFromApplicationName(browser->app_name());
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+    auto* provider = web_app::WebAppProvider::Get(browser->profile());
+    if (provider && provider->registrar().IsInstalled(app_id))
+      return std::make_unique<web_app::WebAppBrowserController>(browser);
+  }
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(browser->profile())
+          ->GetExtensionById(app_id, extensions::ExtensionRegistry::EVERYTHING);
+  if (extension && extension->is_hosted_app()) {
+    if (base::FeatureList::IsEnabled(
+            features::kDesktopPWAsUnifiedUiController) &&
+        extension->from_bookmark()) {
+      return std::make_unique<web_app::WebAppBrowserController>(browser);
+    }
+    return std::make_unique<extensions::HostedAppBrowserController>(browser);
+  }
+#endif
+  if (browser->is_focus_mode())
+    return std::make_unique<ManifestWebAppBrowserController>(browser);
+  return nullptr;
+}
 
 // static
 bool AppBrowserController::IsForWebAppBrowser(const Browser* browser) {

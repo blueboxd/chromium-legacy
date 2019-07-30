@@ -23,19 +23,12 @@ XRInputSourceEvent::XRInputSourceEvent(
     frame_ = initializer->frame();
   if (initializer->hasInputSource())
     input_source_ = initializer->inputSource();
-  if (initializer->hasButtonIndex())
-    button_index_ = initializer->buttonIndex();
 }
 
 XRInputSourceEvent::~XRInputSourceEvent() {}
 
 const AtomicString& XRInputSourceEvent::InterfaceName() const {
   return event_interface_names::kXRInputSourceEvent;
-}
-
-int32_t XRInputSourceEvent::buttonIndex(bool& is_null) const {
-  is_null = !button_index_;
-  return button_index_ ? *button_index_ : 0;
 }
 
 void XRInputSourceEvent::Trace(blink::Visitor* visitor) {

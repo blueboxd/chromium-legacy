@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/task_features.h"
@@ -15,15 +16,32 @@
 namespace base {
 namespace internal {
 
-JobTaskSource::JobTaskSource(const Location& from_here,
-                             base::RepeatingClosure worker_task,
-                             const TaskTraits& traits)
+JobTaskSource::JobTaskSource(
+    const Location& from_here,
+    const TaskTraits& traits,
+    RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
+    RepeatingCallback<size_t()> max_concurrency_callback)
     : TaskSource(traits, nullptr, TaskSourceExecutionMode::kJob),
       from_here_(from_here),
-      worker_task_(std::move(worker_task)),
+      max_concurrency_callback_(std::move(max_concurrency_callback)),
+      worker_task_(base::BindRepeating(
+          [](JobTaskSource* self,
+             const RepeatingCallback<void(experimental::JobDelegate*)>&
+                 worker_task) {
+            // Each worker task has its own delegate with associated state.
+            // TODO(crbug.com/839091): Implement assertions on max concurrency
+            // increase in the delegate.
+            experimental::JobDelegate job_delegate{self};
+            worker_task.Run(&job_delegate);
+          },
+          base::Unretained(this),
+          std::move(worker_task))),
       queue_time_(ThreadPoolClock::Now()) {}
 
-JobTaskSource::~JobTaskSource() = default;
+JobTaskSource::~JobTaskSource() {
+  // Make sure there's no outstanding run intent left.
+  DCHECK_EQ(0U, worker_count_.load(std::memory_order_relaxed));
+}
 
 ExecutionEnvironment JobTaskSource::GetExecutionEnvironment() {
   return {SequenceToken::Create(), nullptr};
@@ -59,6 +77,14 @@ size_t JobTaskSource::GetRemainingConcurrency() const {
   return GetMaxConcurrency() - worker_count_.load(std::memory_order_relaxed);
 }
 
+void JobTaskSource::NotifyConcurrencyIncrease() {
+  // TODO(839091): Implement this.
+}
+
+size_t JobTaskSource::GetMaxConcurrency() const {
+  return max_concurrency_callback_.Run();
+}
+
 Optional<Task> JobTaskSource::TakeTask() {
   DCHECK_GT(worker_count_.load(std::memory_order_relaxed), 0U);
   DCHECK(worker_task_);
@@ -83,7 +109,10 @@ SequenceSortKey JobTaskSource::GetSortKey() const {
 }
 
 void JobTaskSource::Clear() {
+  // Reset callbacks to release any reference held by this task source and
+  // prevent further calls to WillRunTask().
   worker_task_.Reset();
+  max_concurrency_callback_.Reset();
 }
 
 }  // namespace internal

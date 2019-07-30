@@ -200,6 +200,12 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // is true.
   void MaybeSendMetricsToUkm() const;
 
+  // After an in-page click, sends the index of the url that was clicked to the
+  // UKM id at |ukm_source_id_| if |send_ukm_metrics_| is true. The index sent
+  // corresponds to the index of that url in |top_urls_|, and is 1-indexed.
+  // If the url does not appear in top_urls_, a 0 is returned.
+  void MaybeSendClickMetricsToUkm(const std::string& clicked_url) const;
+
   // Returns the minimum of the bucket that |value| belongs in, for page-wide
   // metrics, excluding |median_link_location_|.
   int GetBucketMinForPageMetrics(int value) const;
@@ -219,9 +225,9 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   std::unordered_map<std::string, std::unique_ptr<NavigationScore>>
       navigation_scores_map_;
 
-  // The urls of the top anchor elements in the page, sorted by navigation
-  // score in descending order. If there are 10 or more urls on the page,
-  // |top_urls_| contains 10 urls. Otherwise, it contains all the urls.
+  // The urls of the top anchor elements in the page, in a random order.
+  // If there are 10 or more urls on the page, |top_urls_| contains 10 urls.
+  // Otherwise, it contains all the urls.
   std::vector<std::string> top_urls_;
 
   // Total number of anchors that: href has the same host as the document,

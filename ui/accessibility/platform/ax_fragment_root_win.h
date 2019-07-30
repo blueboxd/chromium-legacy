@@ -38,8 +38,14 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
   static AXFragmentRootWin* GetForAcceleratedWidget(
       gfx::AcceleratedWidget widget);
 
-  // Return the NativeViewAccessible for this fragment root.
+  // Returns the NativeViewAccessible for this fragment root.
   gfx::NativeViewAccessible GetNativeViewAccessible();
+
+  // Assistive technologies will typically use UI Automation's control or
+  // content view rather than the raw view.
+  // Returns true if the fragment root should be included in the control and
+  // content views or false if it should be excluded.
+  bool IsControlElement();
 
  private:
   // AXPlatformNodeDelegate overrides.

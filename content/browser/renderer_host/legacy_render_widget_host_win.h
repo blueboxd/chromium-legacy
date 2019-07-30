@@ -176,6 +176,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   // Overridden from AXFragmentRootDelegateWin.
   gfx::NativeViewAccessible GetChildOfAXFragmentRoot() override;
   gfx::NativeViewAccessible GetParentOfAXFragmentRoot() override;
+  bool IsAXFragmentRootAControlElement() override;
 
   gfx::NativeViewAccessible GetOrCreateBrowserAccessibilityRoot();
 

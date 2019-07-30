@@ -22,13 +22,16 @@ namespace content {
 
 class IndexedDBConnection;
 class IndexedDBMetadataCoding;
+class LevelDBDirectTransaction;
 class TransactionalLevelDBTransaction;
 class TransactionalLevelDBDatabase;
 
 enum FailClass {
   FAIL_CLASS_NOTHING,
   FAIL_CLASS_LEVELDB_ITERATOR,
+  FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION,
   FAIL_CLASS_LEVELDB_TRANSACTION,
+  FAIL_CLASS_LEVELDB_DATABASE,
 };
 
 enum FailMethod {
@@ -37,6 +40,7 @@ enum FailMethod {
   FAIL_METHOD_COMMIT_DISK_FULL,
   FAIL_METHOD_GET,
   FAIL_METHOD_SEEK,
+  FAIL_METHOD_WRITE,
 };
 
 class MockBrowserTestIndexedDBClassFactory
@@ -64,12 +68,21 @@ class MockBrowserTestIndexedDBClassFactory
       blink::mojom::IDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction) override;
 
-  scoped_refptr<TransactionalLevelDBTransaction> CreateLevelDBTransaction(
+  std::unique_ptr<TransactionalLevelDBDatabase> CreateLevelDBDatabase(
+      scoped_refptr<LevelDBState> state,
+      std::unique_ptr<LevelDBScopes> scopes,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      size_t max_open_iterators) override;
+  std::unique_ptr<LevelDBDirectTransaction> CreateLevelDBDirectTransaction(
       TransactionalLevelDBDatabase* db) override;
-  std::unique_ptr<TransactionalLevelDBIteratorImpl> CreateIteratorImpl(
-      std::unique_ptr<leveldb::Iterator> iterator,
+  scoped_refptr<TransactionalLevelDBTransaction> CreateLevelDBTransaction(
       TransactionalLevelDBDatabase* db,
-      const leveldb::Snapshot* snapshot) override;
+      std::unique_ptr<LevelDBScope> scope) override;
+  std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
+      std::unique_ptr<leveldb::Iterator> it,
+      base::WeakPtr<TransactionalLevelDBDatabase> db,
+      base::WeakPtr<TransactionalLevelDBTransaction> txn,
+      std::unique_ptr<LevelDBSnapshot> snapshot) override;
 
   void FailOperation(FailClass failure_class,
                      FailMethod failure_method,

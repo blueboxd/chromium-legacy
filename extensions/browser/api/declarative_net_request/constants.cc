@@ -4,8 +4,15 @@
 
 #include "extensions/browser/api/declarative_net_request/constants.h"
 
+#include "extensions/common/constants.h"
+#include "url/url_constants.h"
+
 namespace extensions {
 namespace declarative_net_request {
+
+const char* const kAllowedTransformSchemes[4] = {
+    url::kHttpScheme, url::kHttpsScheme, url::kFtpScheme,
+    extensions::kExtensionScheme};
 
 const char kErrorResourceTypeDuplicated[] =
     "Rule with id * includes and excludes the same resource.";
@@ -32,11 +39,16 @@ const char kErrorDuplicateIDs[] = "Rule with id * does not have a unique ID.";
 const char kErrorPersisting[] = "Internal error while parsing rules.";
 const char kErrorNonAscii[] =
     "Rule with id * cannot have non-ascii characters as part of \"*\" key.";
-const char kErrorInvalidUrlFilter[] =
-    "Rule with id * has an invalid value for \"*\" key.";
 const char kErrorEmptyRemoveHeadersList[] =
     "Rule with id * does not specify the value for \"*\" key. This is required "
     "for \"removeHeaders\" rules.";
+const char kErrorInvalidKey[] =
+    "Rule with id * specifies an incorrect value for the \"*\" key.";
+const char kErrorInvalidTransformScheme[] =
+    "Rule with id * specifies an incorrect value for the \"*\" key. Allowed "
+    "values are: [*].";
+const char kErrorQueryAndTransformBothSpecified[] =
+    "Rule with id * cannot specify both \"*\" and \"*\" keys.";
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =

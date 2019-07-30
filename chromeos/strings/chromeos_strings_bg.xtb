@@ -4,6 +4,7 @@
 <translation id="1510238584712386396">Стартов панел</translation>
 <translation id="1734367976349034509">Това устройство се управлява корпоративно</translation>
 <translation id="1930797645656624981">Услуга за метод на въвеждане в Chrome OS</translation>
+<translation id="1979103255016296513">Срокът за промяна на паролата е изтекъл</translation>
 <translation id="2049639323467105390">Това устройство се управлява от <ph name="DOMAIN" />.</translation>
 <translation id="2083960536266308407">На екрана не бе намерено нищо</translation>
 <translation id="2338501278241028356">Включете Bluetooth, за да бъдат открити устройствата в близост</translation>
@@ -11,6 +12,7 @@
 <translation id="2872961005593481000">Изключване</translation>
 <translation id="3008341117444806826">ОПРЕСНЯВАНЕ</translation>
 <translation id="3838338534323494292">Нова парола</translation>
+<translation id="4227825898293920515">Паролата изтича след <ph name="TIME" /></translation>
 <translation id="4429881212383817840">Пропускът за Kerberos изтича скоро</translation>
 <translation id="445059817448385655">Стара парола</translation>
 <translation id="467510802200863975">Паролите не са идентични</translation>

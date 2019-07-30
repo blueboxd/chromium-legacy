@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/json_pref_store.h"
@@ -21,11 +22,12 @@ class PrefServiceAdapter
  public:
   explicit PrefServiceAdapter(scoped_refptr<JsonPrefStore> pref_store)
       : pref_store_(std::move(pref_store)),
-        path_(prefs::kHttpServerProperties) {
-    pref_store_->AddObserver(this);
-  }
+        path_(prefs::kHttpServerProperties) {}
 
-  ~PrefServiceAdapter() override { pref_store_->RemoveObserver(this); }
+  ~PrefServiceAdapter() override {
+    if (on_pref_load_callback_)
+      pref_store_->RemoveObserver(this);
+  }
 
   // PrefDelegate implementation.
   const base::DictionaryValue* GetServerProperties() const override {
@@ -45,26 +47,35 @@ class PrefServiceAdapter
     if (callback)
       pref_store_->CommitPendingWrite(std::move(callback));
   }
-  void StartListeningForUpdates(
-      const base::RepeatingClosure& callback) override {
-    on_changed_callback_ = callback;
+  void WaitForPrefLoad(base::OnceClosure callback) override {
+    DCHECK(!on_pref_load_callback_);
+    if (!pref_store_->IsInitializationComplete()) {
+      on_pref_load_callback_ = std::move(callback);
+      pref_store_->AddObserver(this);
+      return;
+    }
+
+    // If prefs have already loaded, invoke the pref observer asynchronously.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     std::move(callback));
   }
 
   // PrefStore::Observer implementation.
-  void OnPrefValueChanged(const std::string& key) override {
-    if (key == path_ && on_changed_callback_)
-      on_changed_callback_.Run();
-  }
+  void OnPrefValueChanged(const std::string& key) override {}
   void OnInitializationCompleted(bool succeeded) override {
-    if (succeeded && on_changed_callback_)
-      on_changed_callback_.Run();
+    if (on_pref_load_callback_) {
+      pref_store_->RemoveObserver(this);
+      std::move(on_pref_load_callback_).Run();
+    }
   }
 
  private:
   scoped_refptr<JsonPrefStore> pref_store_;
   const std::string path_;
 
-  base::Closure on_changed_callback_;
+  // Only non-null while waiting for initial pref load. |this| is observes the
+  // |pref_store_| exactly when non-null.
+  base::OnceClosure on_pref_load_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceAdapter);
 };

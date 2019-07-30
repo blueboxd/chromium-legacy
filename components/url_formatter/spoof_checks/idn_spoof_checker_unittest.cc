@@ -1068,7 +1068,7 @@ const IDNTestCase kIdnCases[] = {
     {"xn--123456789-yzg.com", L"123456789θ.com", false}};
 
 namespace test {
-#include "components/url_formatter/top_domains/test_domains-trie-inc.cc"
+#include "components/url_formatter/spoof_checks/top_domains/test_domains-trie-inc.cc"
 }
 
 }  // namespace

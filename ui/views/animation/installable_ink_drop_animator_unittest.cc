@@ -67,7 +67,8 @@ TEST_F(InstallableInkDropAnimatorTest, AnimateToTriggeredFromHidden) {
 
   callback_called_ = false;
   animation_tester_.IncrementTime(
-      InstallableInkDropAnimator::kAnimationDuration);
+      InstallableInkDropAnimator::GetSubAnimationDurationForTesting(
+          InstallableInkDropAnimator::SubAnimation::kActionPendingFloodFill));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(InkDropState::ACTION_TRIGGERED, animator.target_state());
   EXPECT_EQ(1.0f, visual_state_.flood_fill_progress);
@@ -75,7 +76,8 @@ TEST_F(InstallableInkDropAnimatorTest, AnimateToTriggeredFromHidden) {
 
   callback_called_ = false;
   animation_tester_.IncrementTime(
-      InstallableInkDropAnimator::kAnimationDuration);
+      InstallableInkDropAnimator::GetSubAnimationDurationForTesting(
+          InstallableInkDropAnimator::SubAnimation::kActionTriggeredFadeOut));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(InkDropState::HIDDEN, animator.target_state());
   EXPECT_EQ(0.0f, visual_state_.flood_fill_progress);
@@ -94,7 +96,8 @@ TEST_F(InstallableInkDropAnimatorTest,
 
   callback_called_ = false;
   animation_tester_.IncrementTime(
-      InstallableInkDropAnimator::kAnimationDuration);
+      InstallableInkDropAnimator::GetSubAnimationDurationForTesting(
+          InstallableInkDropAnimator::SubAnimation::kActionPendingFloodFill));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(InkDropState::ACTION_PENDING, animator.target_state());
   EXPECT_EQ(1.0f, visual_state_.flood_fill_progress);
@@ -103,7 +106,8 @@ TEST_F(InstallableInkDropAnimatorTest,
   // The animation should be finished now and the visual state should *not*
   // change; ACTION_PENDING lasts indefinitely.
   animation_tester_.IncrementTime(
-      InstallableInkDropAnimator::kAnimationDuration);
+      InstallableInkDropAnimator::GetSubAnimationDurationForTesting(
+          InstallableInkDropAnimator::SubAnimation::kActionTriggeredFadeOut));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(InkDropState::ACTION_PENDING, animator.target_state());
   EXPECT_EQ(1.0f, visual_state_.flood_fill_progress);
@@ -115,7 +119,8 @@ TEST_F(InstallableInkDropAnimatorTest,
   EXPECT_EQ(1.0f, visual_state_.flood_fill_progress);
 
   animation_tester_.IncrementTime(
-      InstallableInkDropAnimator::kAnimationDuration);
+      InstallableInkDropAnimator::GetSubAnimationDurationForTesting(
+          InstallableInkDropAnimator::SubAnimation::kActionTriggeredFadeOut));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(InkDropState::HIDDEN, animator.target_state());
   EXPECT_EQ(0.0f, visual_state_.flood_fill_progress);
@@ -123,10 +128,12 @@ TEST_F(InstallableInkDropAnimatorTest,
 
 TEST_F(InstallableInkDropAnimatorTest,
        AnimateToPendingWhileAnimatingToTriggered) {
-  const base::TimeDelta kHalfAnimationDuration =
-      InstallableInkDropAnimator::kAnimationDuration / 2;
+  const base::TimeDelta kPendingAnimationDuration =
+      InstallableInkDropAnimator::GetSubAnimationDurationForTesting(
+          InstallableInkDropAnimator::SubAnimation::kActionPendingFloodFill);
+  const base::TimeDelta kHalfAnimationDuration = kPendingAnimationDuration / 2;
   const base::TimeDelta kRemainingAnimationDuration =
-      InstallableInkDropAnimator::kAnimationDuration - kHalfAnimationDuration;
+      kPendingAnimationDuration - kHalfAnimationDuration;
 
   InstallableInkDropAnimator animator(gfx::Size(10, 10), &visual_state_,
                                       animation_container_.get(), callback_);
@@ -170,7 +177,8 @@ TEST_F(InstallableInkDropAnimatorTest, AnimateToActivatedThenDeactivated) {
 
   callback_called_ = false;
   animation_tester_.IncrementTime(
-      InstallableInkDropAnimator::kAnimationDuration);
+      InstallableInkDropAnimator::GetSubAnimationDurationForTesting(
+          InstallableInkDropAnimator::SubAnimation::kActivatedFloodFill));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(InkDropState::ACTIVATED, animator.target_state());
   EXPECT_EQ(1.0f, visual_state_.flood_fill_progress);
@@ -178,7 +186,8 @@ TEST_F(InstallableInkDropAnimatorTest, AnimateToActivatedThenDeactivated) {
 
   // The state should stay the same indefinitely.
   animation_tester_.IncrementTime(
-      InstallableInkDropAnimator::kAnimationDuration);
+      InstallableInkDropAnimator::GetSubAnimationDurationForTesting(
+          InstallableInkDropAnimator::SubAnimation::kDeactivatedFadeOut));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(InkDropState::ACTIVATED, animator.target_state());
   EXPECT_EQ(1.0f, visual_state_.flood_fill_progress);
@@ -190,7 +199,8 @@ TEST_F(InstallableInkDropAnimatorTest, AnimateToActivatedThenDeactivated) {
 
   callback_called_ = false;
   animation_tester_.IncrementTime(
-      InstallableInkDropAnimator::kAnimationDuration);
+      InstallableInkDropAnimator::GetSubAnimationDurationForTesting(
+          InstallableInkDropAnimator::SubAnimation::kDeactivatedFadeOut));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(InkDropState::HIDDEN, animator.target_state());
   EXPECT_EQ(0.0f, visual_state_.flood_fill_progress);
@@ -200,13 +210,14 @@ TEST_F(InstallableInkDropAnimatorTest,
        FloodFillAnimationExpandsFromEventLocation) {
   constexpr gfx::Point kEventLocation(3, 7);
 
-  // Split |InstallableInkDrop::kAnimationDuration| into three chunks.
-  const base::TimeDelta kFirstDuration =
-      InstallableInkDropAnimator::kAnimationDuration / 3;
+  const base::TimeDelta kActivatedAnimationDuration =
+      InstallableInkDropAnimator::GetSubAnimationDurationForTesting(
+          InstallableInkDropAnimator::SubAnimation::kActivatedFloodFill);
+  // Split |kActivatedAnimationDuration| into three chunks.
+  const base::TimeDelta kFirstDuration = kActivatedAnimationDuration / 3;
   const base::TimeDelta kSecondDuration = kFirstDuration;
   const base::TimeDelta kLastDuration =
-      InstallableInkDropAnimator::kAnimationDuration - kFirstDuration -
-      kSecondDuration;
+      kActivatedAnimationDuration - kFirstDuration - kSecondDuration;
 
   InstallableInkDropAnimator animator(gfx::Size(10, 10), &visual_state_,
                                       animation_container_.get(), callback_);
@@ -248,7 +259,7 @@ TEST_F(InstallableInkDropAnimatorTest, HighlightAnimationFadesInAndOut) {
 
   callback_called_ = false;
   animation_tester_.IncrementTime(
-      InstallableInkDropAnimator::kAnimationDuration);
+      InstallableInkDropAnimator::kHighlightAnimationDuration);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1.0f, visual_state_.highlighted_ratio);
   EXPECT_TRUE(callback_called_);
@@ -258,7 +269,7 @@ TEST_F(InstallableInkDropAnimatorTest, HighlightAnimationFadesInAndOut) {
 
   callback_called_ = false;
   animation_tester_.IncrementTime(
-      InstallableInkDropAnimator::kAnimationDuration);
+      InstallableInkDropAnimator::kHighlightAnimationDuration);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0.0f, visual_state_.highlighted_ratio);
   EXPECT_TRUE(callback_called_);

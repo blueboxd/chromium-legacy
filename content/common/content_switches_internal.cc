@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -86,7 +87,7 @@ blink::mojom::V8CacheOptions GetV8CacheOptions() {
 
 void WaitForDebugger(const std::string& label) {
 #if defined(OS_WIN)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   std::string title = "Google Chrome";
 #else   // BUILDFLAG(CHROMIUM_BRANDING)
   std::string title = "Chromium";

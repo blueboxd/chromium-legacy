@@ -188,7 +188,7 @@ void XRInputSource::UpdateGamepad(
     if (!gamepad_) {
       // TODO(https://crbug.com/955104): Is the Gamepad object creation time the
       // correct time floor?
-      gamepad_ = MakeGarbageCollected<Gamepad>(this, 0, state_.base_timestamp,
+      gamepad_ = MakeGarbageCollected<Gamepad>(this, -1, state_.base_timestamp,
                                                base::TimeTicks::Now());
     }
 

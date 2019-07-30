@@ -768,14 +768,12 @@ void RenderFrameProxy::ForwardPostMessage(
     blink::WebLocalFrame* source_frame,
     blink::WebRemoteFrame* target_frame,
     blink::WebSecurityOrigin target_origin,
-    blink::WebDOMMessageEvent event,
-    bool has_user_gesture) {
+    blink::WebDOMMessageEvent event) {
   DCHECK(!web_frame_ || web_frame_ == target_frame);
 
   FrameMsg_PostMessage_Params params;
   params.message =
       new base::RefCountedData<blink::TransferableMessage>(event.AsMessage());
-  params.message->data.has_user_gesture = has_user_gesture;
   params.source_origin = event.Origin().Utf16();
   if (!target_origin.IsNull())
     params.target_origin = target_origin.ToString().Utf16();

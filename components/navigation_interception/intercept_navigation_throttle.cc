@@ -115,13 +115,14 @@ bool InterceptNavigationThrottle::ShouldCheckAsynchronously() const {
 
 NavigationParams InterceptNavigationThrottle::GetNavigationParams(
     bool is_redirect) const {
-  return NavigationParams(
-      navigation_handle()->GetURL(), navigation_handle()->GetReferrer(),
-      navigation_handle()->HasUserGesture(), navigation_handle()->IsPost(),
-      navigation_handle()->GetPageTransition(), is_redirect,
-      navigation_handle()->IsExternalProtocol(), true,
-      navigation_handle()->IsRendererInitiated(),
-      navigation_handle()->GetBaseURLForDataURL());
+  return NavigationParams(navigation_handle()->GetURL(),
+                          content::Referrer(navigation_handle()->GetReferrer()),
+                          navigation_handle()->HasUserGesture(),
+                          navigation_handle()->IsPost(),
+                          navigation_handle()->GetPageTransition(), is_redirect,
+                          navigation_handle()->IsExternalProtocol(), true,
+                          navigation_handle()->IsRendererInitiated(),
+                          navigation_handle()->GetBaseURLForDataURL());
 }
 
 }  // namespace navigation_interception

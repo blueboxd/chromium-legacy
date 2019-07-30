@@ -19,7 +19,6 @@
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/stream/user_media_client_impl.h"
 #include "content/renderer/media/video_capture/local_video_capturer_source.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
@@ -47,6 +46,7 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
@@ -447,7 +447,8 @@ void UserMediaProcessor::RequestInfo::OnAudioSourceStarted(
 UserMediaProcessor::UserMediaProcessor(
     RenderFrameImpl* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
-    std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
+    std::unique_ptr<blink::WebMediaStreamDeviceObserver>
+        media_stream_device_observer,
     MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : dependency_factory_(dependency_factory),
@@ -1088,7 +1089,7 @@ UserMediaProcessor::CreateVideoSource(
 void UserMediaProcessor::StartTracks(const std::string& label) {
   DCHECK(!current_request_info_->web_request().IsNull());
   media_stream_device_observer_->AddStream(
-      label, current_request_info_->audio_devices(),
+      blink::WebString::FromUTF8(label), current_request_info_->audio_devices(),
       current_request_info_->video_devices(), weak_factory_.GetWeakPtr());
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(

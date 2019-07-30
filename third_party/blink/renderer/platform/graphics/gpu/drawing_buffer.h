@@ -248,6 +248,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // Restore all state that may have been dirtied by any call.
   void RestoreAllState();
 
+  bool UsingSwapChain() const { return using_swap_chain_; }
   void PresentSwapChain();
 
   // This class helps implement correct semantics for BlitFramebuffer

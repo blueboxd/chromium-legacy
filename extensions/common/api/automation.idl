@@ -66,6 +66,8 @@
     stateChanged,
     textChanged,
     textSelectionChanged,
+    tooltipClosed,
+    tooltipOpened,
     windowActivated,
     windowDeactivated,
     windowVisibilityChanged,

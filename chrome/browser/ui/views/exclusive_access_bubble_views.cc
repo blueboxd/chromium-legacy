@@ -65,6 +65,17 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   gfx::Size size = GetPopupRect(true).size();
   // Bounds are in screen coordinates.
   popup_->SetBounds(GetPopupRect(false));
+  // Why is this special enough to require the "security surface" level? A
+  // decision was made a long time ago to not require confirmation when a site
+  // asks to go fullscreen, and that's not changing. However, a site going
+  // fullscreen is a big security risk, allowing phishing and other UI fakery.
+  // This bubble is the only defense that Chromium can provide against this
+  // attack, so it's important to order it above everything.
+  //
+  // On some platforms, pages can put themselves into fullscreen and then
+  // trigger other elements to cover up this bubble, elements that aren't fully
+  // under Chromium's control. See https://crbug.com/927150 for an example.
+  popup_->SetZOrderLevel(ui::ZOrderLevel::kSecuritySurface);
   view_->SetBounds(0, 0, size.width(), size.height());
   popup_->AddObserver(this);
 

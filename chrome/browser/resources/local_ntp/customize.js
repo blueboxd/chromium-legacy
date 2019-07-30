@@ -110,7 +110,7 @@ customize.IDS = {
   BACKGROUNDS_IMAGE_MENU: 'backgrounds-image-menu',
   BACKGROUNDS_MENU: 'backgrounds-menu',
   BACKGROUNDS_UPLOAD: 'backgrounds-upload',
-  BACKGROUNDS_UPLOAD_WRAPPER: 'backgrounds-upload-wrapper',
+  BACKGROUNDS_UPLOAD_ICON: 'backgrounds-upload-icon',
   CANCEL: 'bg-sel-footer-cancel',
   COLORS_BUTTON: 'colors-button',
   COLORS_DEFAULT_ICON: 'colors-default-icon',
@@ -138,7 +138,6 @@ customize.IDS = {
   LINK_ICON: 'link-icon',
   MENU: 'bg-sel-menu',
   OPTIONS_TITLE: 'edit-bg-title',
-  REFRESH_DAILY_WRAPPER: 'refresh-daily-wrapper',
   RESTORE_DEFAULT: 'edit-bg-restore-default',
   RESTORE_DEFAULT_TEXT: 'edit-bg-restore-default-text',
   SHORTCUTS_BUTTON: 'shortcuts-button',
@@ -477,7 +476,6 @@ customize.richerPicker_resetImageMenu = function() {
       customize.IDS.BACKGROUNDS_MENU;
   customize.richerPicker_openBackgroundSubmenu.title = '';
   backgroundMenu.scrollTop = 0;
-  $(customize.IDS.REFRESH_DAILY_WRAPPER).hidden = true;
 };
 
 /**
@@ -816,11 +814,11 @@ customize.showCollectionSelectionDialog = function() {
   }
 
   // Attach event listeners for upload and default tiles
-  $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).onkeydown =
+  $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).onkeydown =
       customize.tileOnKeyDownInteraction;
   $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onkeydown =
       customize.tileOnKeyDownInteraction;
-  $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).onClickOverride =
+  $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).onClickOverride =
       $(customize.IDS.BACKGROUNDS_UPLOAD).onkeydown;
   $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onClickOverride =
       $(customize.IDS.BACKGROUNDS_DEFAULT).onkeydown;
@@ -1208,7 +1206,6 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
   } else {
     $(customize.IDS.TILES).focus();
   }
-  $(customize.IDS.REFRESH_DAILY_WRAPPER).hidden = false;
 };
 
 /**
@@ -1346,7 +1343,7 @@ customize.richerPicker_resetSelectedOptions = function() {
   // Reset color selection.
   customize.richerPicker_removeSelectedState(customize.selectedOptions.color);
   customize.selectedOptions.color = null;
-  customize.colorsPreselectedTile = null;
+  customize.preselectedOptions.colorsMenuTile = null;
 
   customize.richerPicker_preselectShortcutOptions();
 };
@@ -1850,7 +1847,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
 
   $(customize.IDS.BACKGROUNDS_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
-      $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).focus();
+      $(customize.IDS.BACKGROUNDS_UPLOAD_ICON).focus();
     }
   };
 
@@ -2148,8 +2145,8 @@ customize.colorsMenuPreselectTile = function() {
   }
 
   if (tile && tile !== customize.selectedOptions.color) {
-    if (!customize.colorsPreselectedTile) {
-      customize.colorsPreselectedTile = tile;
+    if (!customize.preselectedOptions.colorsMenuTile) {
+      customize.preselectedOptions.colorsMenuTile = tile;
     }
     customize.updateColorsMenuTileSelection(
         /** @type HTMLElement */ (tile));
@@ -2161,11 +2158,11 @@ customize.colorsMenuPreselectTile = function() {
  * menu.
  */
 customize.isColorOptionSelected = function() {
-  return (!customize.colorsPreselectedTile &&
+  return (!customize.preselectedOptions.colorsMenuTile &&
           customize.selectedOptions.color) ||
-      (customize.colorsPreselectedTile &&
+      (customize.preselectedOptions.colorsMenuTile &&
        customize.selectedOptions.color.id !==
-           customize.colorsPreselectedTile.id);
+           customize.preselectedOptions.colorsMenuTile.id);
 };
 
 /**

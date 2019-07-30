@@ -519,8 +519,14 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
   if (!GetLayoutObject())
     return;
 
-  // All elements in the scroll chain should be boxes.
-  DCHECK(GetLayoutObject()->IsBox());
+  // All elements in the scroll chain should be boxes. However, in a scroll
+  // gesture sequence, the scroll chain is only computed on GestureScrollBegin.
+  // The type of layout object of the nodes in the scroll chain can change
+  // between GestureScrollUpdate and GestureScrollBegin (e.g. from script
+  // setting one of the nodes to display:inline). If there is no box there will
+  // not be a scrollable area to scroll, so just return.
+  if (!GetLayoutObject()->IsBox())
+    return;
 
   if (scroll_state.FullyConsumed())
     return;

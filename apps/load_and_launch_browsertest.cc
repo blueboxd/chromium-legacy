@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -190,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(LoadAndLaunchExtensionBrowserTest,
   const std::vector<base::string16>* errors =
       extensions::LoadErrorReporter::GetInstance()->GetErrors();
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // The error is skipped on official builds.
   EXPECT_TRUE(errors->empty());
 #else

@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">ページを更新</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="271033894570825754">新しいファイル</translation>
+<translation id="2714850608275780394">コードを待っています</translation>
 <translation id="2728754400939377704">サイトで並べ替え</translation>
 <translation id="2744248271121720757">単語をタップすると、検索をすばやく実行したり、関連する操作メニューを確認したりできます</translation>
+<translation id="2760989362628427051">デバイスのダークテーマまたはバッテリー セーバーがオンのときにダークテーマをオンにする</translation>
 <translation id="2762000892062317888">たった今</translation>
 <translation id="2777555524387840389">残り <ph name="SECONDS" /> 秒</translation>
 <translation id="2779651927720337254">失敗</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">残り 1 分</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">このページをブックマークに追加します</translation>
+<translation id="3254626532848657899">一番下に移動</translation>
 <translation id="3259831549858767975">ページ上のすべての要素を縮小する</translation>
 <translation id="3269093882174072735">画像を読み込む</translation>
 <translation id="3269956123044984603">他のデバイスと同じタブを使用するには、Android のアカウント設定で [データの自動同期] を有効にします。</translation>
@@ -441,6 +444,7 @@
 <translation id="4378154925671717803">電話</translation>
 <translation id="4384468725000734951">検索に Sogou を使用します</translation>
 <translation id="4404568932422911380">ブックマークがありません</translation>
+<translation id="4405224443901389797">移動…</translation>
 <translation id="4411535500181276704">ライトモード</translation>
 <translation id="4415276339145661267">Google アカウントの管理</translation>
 <translation id="4432792777822557199">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます</translation>
@@ -621,6 +625,7 @@
 <translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> 個のタブがグループ化されました</translation>
 <translation id="5581519193887989363">同期する項目はいつでも [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で選択できます。</translation>
+<translation id="5586306159936941448">タブをグループ化するには片方のタブをもう片方のタブにドラッグします</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
 <translation id="5599455543593328020">シークレット モード</translation>
@@ -651,6 +656,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# 時間前}other{# 時間前}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="5817918615728894473">ペア設定</translation>
+<translation id="58326064309361797">タブをグループ化するにはドラッグします</translation>
 <translation id="583281660410589416">不明</translation>
 <translation id="5833984609253377421">リンクを共有</translation>
 <translation id="5836192821815272682">Chrome のアップデートをダウンロードしています…</translation>
@@ -845,7 +851,6 @@
 <translation id="7233236755231902816">お使いの言語でウェブを表示するには、Chrome の最新バージョンを入手してください</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> 件選択されています</translation>
-<translation id="7253272406652746122">デバイスの設定アプリのアカウント ページで Google アカウントを追加してください。</translation>
 <translation id="7274013316676448362">ブロック中のサイト</translation>
 <translation id="7290209999329137901">名前の変更はできません</translation>
 <translation id="7291387454912369099">アシスタントによる購入手続き</translation>
@@ -1011,6 +1016,7 @@
 <translation id="8380167699614421159">このサイトでは煩わしい広告や誤解を招く広告が表示されます</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>
 <translation id="8413126021676339697">全履歴を表示</translation>
+<translation id="8425955042390522843">電話番号の確認</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8438566539970814960">検索とブラウジングを改善する</translation>
 <translation id="8441146129660941386">後方にシーク再生</translation>
@@ -1118,6 +1124,7 @@
 <translation id="945632385593298557">マイクへのアクセス</translation>
 <translation id="951339005376969845">既存のデータを削除します。<ph name="FROM_ACCOUNT" /> に切り替えると、削除したデータを取得できます。</translation>
 <translation id="95817756606698420">中国のユーザーは Chrome での検索に <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> を使用できます。この設定は [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で変更可能です。</translation>
+<translation id="959682366969460160">タブを整理</translation>
 <translation id="965817943346481315">煩わしい広告や誤解を招く広告が表示されるサイトの場合にブロック（推奨）</translation>
 <translation id="968900484120156207">アクセスしたページがここに表示されます</translation>
 <translation id="970715775301869095">残り <ph name="MINUTES" /> 分</translation>

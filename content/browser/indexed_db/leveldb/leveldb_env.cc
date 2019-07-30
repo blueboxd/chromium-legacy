@@ -11,8 +11,11 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator_impl.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
+#include "content/browser/indexed_db/scopes/leveldb_scope.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 
@@ -75,7 +78,6 @@ DefaultLevelDBFactory::OpenDB(const leveldb_env::Options& options,
 std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
 DefaultLevelDBFactory::OpenLevelDBState(
     const base::FilePath& file_name,
-    const LevelDBComparator* idb_comparator,
     const leveldb::Comparator* ldb_comparator) {
   // Please see docs/open_and_verify_leveldb_database.code2flow, and the
   // generated pdf (from https://code2flow.com).
@@ -83,7 +85,6 @@ DefaultLevelDBFactory::OpenLevelDBState(
   // where the flowchart should be seen as the 'master' logic template. Please
   // check the git history of both to make sure they are supposed to be in sync.
   IDB_TRACE("indexed_db::OpenLDB");
-  DCHECK(strcmp(ldb_comparator->Name(), idb_comparator->Name()) == 0);
   base::TimeTicks begin_time = base::TimeTicks::Now();
   leveldb::Status status;
   std::unique_ptr<leveldb::DB> db;
@@ -105,9 +106,9 @@ DefaultLevelDBFactory::OpenLevelDBState(
       return {nullptr, status, false};
     }
 
-    return {LevelDBState::CreateForInMemoryDB(
-                std::move(in_memory_env), ldb_comparator, idb_comparator,
-                std::move(db), "in-memory-database"),
+    return {LevelDBState::CreateForInMemoryDB(std::move(in_memory_env),
+                                              ldb_comparator, std::move(db),
+                                              "in-memory-database"),
             status, false};
   }
 
@@ -142,24 +143,43 @@ DefaultLevelDBFactory::OpenLevelDBState(
                              base::TimeTicks::Now() - begin_time);
 
   // Must match the other returns in this function for RVO.
-  return {LevelDBState::CreateForDiskDB(ldb_comparator, idb_comparator,
-                                        std::move(db), std::move(file_name)),
+  return {LevelDBState::CreateForDiskDB(ldb_comparator, std::move(db),
+                                        std::move(file_name)),
           status, false};
+}
+
+std::unique_ptr<TransactionalLevelDBDatabase>
+DefaultLevelDBFactory::CreateLevelDBDatabase(
+    scoped_refptr<LevelDBState> state,
+    std::unique_ptr<LevelDBScopes> scopes,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    size_t max_open_iterators) {
+  return base::WrapUnique(new TransactionalLevelDBDatabase(
+      std::move(state), std::move(scopes), this, std::move(task_runner),
+      max_open_iterators));
+}
+std::unique_ptr<LevelDBDirectTransaction>
+DefaultLevelDBFactory::CreateLevelDBDirectTransaction(
+    TransactionalLevelDBDatabase* db) {
+  return base::WrapUnique(new LevelDBDirectTransaction(db));
 }
 
 scoped_refptr<TransactionalLevelDBTransaction>
 DefaultLevelDBFactory::CreateLevelDBTransaction(
-    TransactionalLevelDBDatabase* db) {
-  return base::WrapRefCounted(new TransactionalLevelDBTransaction(db));
+    TransactionalLevelDBDatabase* db,
+    std::unique_ptr<LevelDBScope> scope) {
+  return base::WrapRefCounted(
+      new TransactionalLevelDBTransaction(db, std::move(scope)));
 }
 
-std::unique_ptr<TransactionalLevelDBIteratorImpl>
-DefaultLevelDBFactory::CreateIteratorImpl(
-    std::unique_ptr<leveldb::Iterator> iterator,
-    TransactionalLevelDBDatabase* db,
-    const leveldb::Snapshot* snapshot) {
-  return base::WrapUnique(
-      new TransactionalLevelDBIteratorImpl(std::move(iterator), db, snapshot));
+std::unique_ptr<TransactionalLevelDBIterator>
+DefaultLevelDBFactory::CreateIterator(
+    std::unique_ptr<leveldb::Iterator> it,
+    base::WeakPtr<TransactionalLevelDBDatabase> db,
+    base::WeakPtr<TransactionalLevelDBTransaction> txn,
+    std::unique_ptr<LevelDBSnapshot> snapshot) {
+  return base::WrapUnique(new TransactionalLevelDBIterator(
+      std::move(it), std::move(db), std::move(txn), std::move(snapshot)));
 }
 
 leveldb::Status DefaultLevelDBFactory::DestroyLevelDB(

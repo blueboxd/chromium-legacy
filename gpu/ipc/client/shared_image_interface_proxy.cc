@@ -5,6 +5,7 @@
 #include "gpu/ipc/client/shared_image_interface_proxy.h"
 
 #include "base/bits.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -314,12 +315,12 @@ bool SharedImageInterfaceProxy::GetSHMForPixelData(
   return true;
 }
 
-#if defined(OS_WIN)
 SharedImageInterface::SwapChainMailboxes
 SharedImageInterfaceProxy::CreateSwapChain(viz::ResourceFormat format,
                                            const gfx::Size& size,
                                            const gfx::ColorSpace& color_space,
                                            uint32_t usage) {
+#if defined(OS_WIN)
   GpuChannelMsg_CreateSwapChain_Params params;
   params.front_buffer_mailbox = Mailbox::GenerateForSharedImage();
   params.back_buffer_mailbox = Mailbox::GenerateForSharedImage();
@@ -334,10 +335,15 @@ SharedImageInterfaceProxy::CreateSwapChain(viz::ResourceFormat format,
         GpuChannelMsg_CreateSwapChain(route_id_, params));
   }
   return {params.front_buffer_mailbox, params.back_buffer_mailbox};
+#else
+  NOTREACHED();
+  return {};
+#endif  // OS_WIN
 }
 
 void SharedImageInterfaceProxy::PresentSwapChain(const SyncToken& sync_token,
                                                  const Mailbox& mailbox) {
+#if defined(OS_WIN)
   std::vector<SyncToken> dependencies;
   if (sync_token.HasData()) {
     dependencies.push_back(sync_token);
@@ -358,7 +364,9 @@ void SharedImageInterfaceProxy::PresentSwapChain(const SyncToken& sync_token,
         GpuChannelMsg_PresentSwapChain(route_id_, mailbox, release_id),
         std::move(dependencies));
   }
-}
+#else
+  NOTREACHED();
 #endif  // OS_WIN
+}
 
 }  // namespace gpu

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/webui_load_timer.h"
 
 #include "base/metrics/histogram.h"
+#include "base/timer/elapsed_timer.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 

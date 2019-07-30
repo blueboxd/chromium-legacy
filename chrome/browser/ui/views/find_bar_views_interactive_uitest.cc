@@ -24,7 +24,9 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -37,7 +39,29 @@ using content::WebContents;
 using ui_test_utils::IsViewFocused;
 
 namespace {
-static const char kSimplePage[] = "/find_in_page/simple.html";
+const char kSimplePage[] = "/find_in_page/simple.html";
+
+class WebContentsFocusChangedWatcher : public content::WebContentsObserver {
+ public:
+  explicit WebContentsFocusChangedWatcher(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {
+    EXPECT_TRUE(web_contents != nullptr);
+  }
+  ~WebContentsFocusChangedWatcher() override {}
+
+  // Waits until focus changes in the page.
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  // Overridden WebContentsObserver methods.
+  void OnFocusChangedInPage(content::FocusedNodeDetails* details) override {
+    run_loop_.Quit();
+  }
+
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsFocusChangedWatcher);
+};
 }  // namespace
 
 class FindInPageTest : public InProcessBrowserTest {
@@ -93,6 +117,24 @@ class FindInPageTest : public InProcessBrowserTest {
       if (details.final_update())
         return details;
     }
+  }
+
+  bool SendKeyPressAndWait(const Browser* browser,
+                           ui::KeyboardCode key,
+                           bool control,
+                           bool shift,
+                           bool alt,
+                           bool command,
+                           int type,
+                           const content::NotificationSource& source) {
+    content::WindowedNotificationObserver observer(type, source);
+
+    if (!ui_test_utils::SendKeyPressSync(browser, key, control, shift, alt,
+                                         command))
+      return false;
+
+    observer.Wait();
+    return !testing::Test::HasFatalFailure();
   }
 
  private:
@@ -576,6 +618,39 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_CtrlEnter) {
   observer.Wait();
 }
 
+// FindInPage on Mac doesn't use prepopulated values. Search there is global.
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(FindInPageTest, SelectionDuringFind) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  // Make sure Chrome is in the foreground, otherwise sending input
+  // won't do anything and the test will hang.
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/find_in_page/find_from_selection.html"));
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  WebContentsFocusChangedWatcher watcher(web_contents);
+
+  // Tab to the input (which selects the text inside)
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
+                                              false, false, false));
+
+  watcher.Wait();
+
+  browser()->GetFindBarController()->Show();
+  EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
+
+  // verify the text matches the selection
+  EXPECT_EQ(ASCIIToUTF16("text"), GetFindBarText());
+  FindNotificationDetails details = WaitForFindResult();
+  EXPECT_TRUE(details.number_of_matches() > 0);
+}
+#endif
+
 IN_PROC_BROWSER_TEST_F(FindInPageTest, GlobalEscapeClosesFind) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Make sure Chrome is in the foreground, otherwise sending input
@@ -586,7 +661,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, GlobalEscapeClosesFind) {
                                embedded_test_server()->GetURL(kSimplePage));
 
   // Open find
-  browser()->GetFindBarController()->Show();
+  browser()->GetFindBarController()->Show(false, true);
   EXPECT_TRUE(IsViewFocused(browser(), VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Put focus into location bar

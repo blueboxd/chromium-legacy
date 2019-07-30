@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/welcome/bookmark_handler.h"
@@ -142,7 +143,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                                  kOnboardingWelcomeResources[i].value);
   }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Load unscaled images.
   html_source->AddResourcePath("images/module_icons/google_dark.svg",
                                IDR_WELCOME_MODULE_ICONS_GOOGLE_DARK);
@@ -170,7 +171,7 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                                IDR_WELCOME_SET_DEFAULT_DARK);
   html_source->AddResourcePath("images/set_default_light.svg",
                                IDR_WELCOME_SET_DEFAULT_LIGHT);
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   // chrome://welcome
   html_source->SetDefaultResource(IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);

@@ -53,6 +53,7 @@ source_set("translate_ui") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/chrome/browser/ui/toolbar/buttons",

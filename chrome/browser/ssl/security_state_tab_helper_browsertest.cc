@@ -604,6 +604,22 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HttpsPage) {
       false /* expect cert status error */);
 }
 
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, DevToolsPage) {
+  GURL devtools_url("devtools://devtools/bundled/");
+  ui_test_utils::NavigateToURL(browser(), devtools_url);
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(contents);
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
+      helper->GetVisibleSecurityState();
+  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
+  EXPECT_TRUE(visible_security_state->is_devtools);
+}
+
 // Tests that interstitial.ssl.visited_site_after_warning is being logged to
 // correctly.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, UMALogsVisitsAfterWarning) {

@@ -99,6 +99,10 @@ circumstances.
 
         if (verificationFunction) {
           let gamepad = currentImmersiveSession().inputSources[0].gamepad;
+          if (gamepad.index !== -1) {
+            // The spec requires all WebXR Gamepads to have index -1.
+            return false;
+          }
           if (!verificationFunction(gamepad)) {
             return false;
           }

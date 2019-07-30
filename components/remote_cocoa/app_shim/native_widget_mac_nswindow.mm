@@ -58,7 +58,8 @@
 
 @implementation NativeWidgetMacNSWindowTitledFrame
 - (void)mouseDown:(NSEvent*)event {
-  [self cr_mouseDownOnFrameView:event];
+  if (self.window.isMovable)
+    [self cr_mouseDownOnFrameView:event];
   [super mouseDown:event];
 }
 - (BOOL)usesCustomDrawing {

@@ -335,9 +335,10 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
   // Do not attempt authentication if it is disabled for the user.
   if (base::Contains(users_with_disabled_auth_, user_context.GetAccountId())) {
     VLOG(1) << "Authentication disabled for user.";
-    if (auth_status_consumer_)
+    if (auth_status_consumer_) {
       auth_status_consumer_->OnAuthFailure(
           AuthFailure(AuthFailure::AUTH_DISABLED));
+    }
     if (callback)
       std::move(callback).Run(false);
     return;
@@ -350,19 +351,6 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
   authentication_start_time_ = base::Time::Now();
   if (user_context.IsUsingPin())
     unlock_attempt_type_ = AUTH_PIN;
-
-  // TODO(crbug.com/826417): Remove this, and instead add a new UI control that
-  // calls ScreenLocker via a separate code path.
-  if (ChallengeResponseAuthKeysLoader::CanAuthenticateUser(
-          user_context.GetAccountId())) {
-    unlock_attempt_type_ = AUTH_CHALLENGE_RESPONSE;
-    challenge_response_auth_keys_loader_.LoadAvailableKeys(
-        user_context.GetAccountId(),
-        base::BindOnce(&ScreenLocker::OnChallengeResponseKeysPrepared,
-                       weak_factory_.GetWeakPtr(), user_context));
-    // OnChallengeResponseKeysPrepared will call ContinueAuthenticate.
-    return;
-  }
 
   const user_manager::User* user = FindUnlockUser(user_context.GetAccountId());
   if (user) {
@@ -380,8 +368,45 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
   ContinueAuthenticate(user_context);
 }
 
+void ScreenLocker::AuthenticateWithChallengeResponse(
+    const AccountId& account_id,
+    AuthenticateCallback callback) {
+  LOG_ASSERT(IsUserLoggedIn(account_id)) << "Invalid user trying to unlock.";
+
+  // Do not attempt authentication if it is disabled for the user.
+  if (base::Contains(users_with_disabled_auth_, account_id)) {
+    VLOG(1) << "Authentication disabled for user.";
+    if (auth_status_consumer_) {
+      auth_status_consumer_->OnAuthFailure(
+          AuthFailure(AuthFailure::AUTH_DISABLED));
+    }
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (!ChallengeResponseAuthKeysLoader::CanAuthenticateUser(account_id)) {
+    LOG(ERROR)
+        << "Challenge-response authentication isn't supported for the user";
+    if (auth_status_consumer_) {
+      auth_status_consumer_->OnAuthFailure(
+          AuthFailure(AuthFailure::UNLOCK_FAILED));
+    }
+    std::move(callback).Run(false);
+    return;
+  }
+
+  DCHECK(!on_auth_complete_);
+  on_auth_complete_ = std::move(callback);
+
+  unlock_attempt_type_ = AUTH_CHALLENGE_RESPONSE;
+  challenge_response_auth_keys_loader_.LoadAvailableKeys(
+      account_id, base::BindOnce(&ScreenLocker::OnChallengeResponseKeysPrepared,
+                                 weak_factory_.GetWeakPtr(), account_id));
+  // OnChallengeResponseKeysPrepared will call ContinueAuthenticate.
+}
+
 void ScreenLocker::OnChallengeResponseKeysPrepared(
-    const UserContext& user_context,
+    const AccountId& account_id,
     std::vector<ChallengeResponseKey> challenge_response_keys) {
   if (challenge_response_keys.empty()) {
     // TODO(crbug.com/826417): Indicate the error in the UI.
@@ -389,10 +414,14 @@ void ScreenLocker::OnChallengeResponseKeysPrepared(
       std::move(on_auth_complete_).Run(false /* auth_success */);
     return;
   }
-  UserContext new_user_context = user_context;
-  *new_user_context.GetMutableChallengeResponseKeys() =
+
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  DCHECK(user);
+  UserContext user_context(*user);
+  *user_context.GetMutableChallengeResponseKeys() =
       std::move(challenge_response_keys);
-  ContinueAuthenticate(new_user_context);
+  ContinueAuthenticate(user_context);
 }
 
 void ScreenLocker::OnPinAttemptDone(const UserContext& user_context,

@@ -43,34 +43,45 @@ namespace {
 
 bool g_disable_initial_delay = false;
 
-// The color of the window cycle highlight.
-constexpr SkColor kHighlightColor = SkColorSetARGB(36, 255, 255, 255);
+// The color of the window thumbnail backdrop and window cycle highlight - white
+// at 14% opacity.
+constexpr SkColor kHighlightAndBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
+
+// The color of the window title.
+constexpr SkColor kTitleColor = SkColorSetRGB(241, 243, 244);
 
 // Used for the shield (black background).
 constexpr float kBackgroundCornerRadius = 4.f;
 
 // Corner radius applied to the alt-tab selector border.
-constexpr gfx::RoundedCornersF kWindowSelectionCornerRadii{2};
+constexpr gfx::RoundedCornersF kWindowSelectionCornerRadii{9};
 
-// Horizontal spacing between the icon and label views.
-constexpr int kIconLabelSpacingDp = 12;
+// Horizontal spacing between header child views.
+constexpr int kHeaderChildPaddingDp = 12;
 
-// Vertical padding for the label
-constexpr int kAboveLabelPadding = 5;
-constexpr int kBelowLabelPadding = 10;
+// Vertical padding for the label views.
+constexpr int kVerticalLabelPaddingDp = 12;
 
 // The size in dp of the window icon shown on the alt tab window next to the
 // title.
 constexpr gfx::Size kIconSize{24, 24};
 
-// The font delta of the window title.
+// The font delta of the window title. The base font is 12pt (for English) so
+// this comes out to 14pt.
 constexpr int kLabelFontDelta = 2;
 
 // All previews are the same height (this is achieved via a combination of
 // scaling and padding).
 constexpr int kFixedPreviewHeightDp = 256;
 
-// The min and max width size are in relation to the fixed height.
+// Padding between the alt-tab bandshield and the window previews.
+constexpr int kInsideBorderHorizontalPaddingDp = 64;
+constexpr int kInsideBorderVerticalPaddingDp = 60;
+
+// Padding between the window previews within the alt-tab bandshield.
+constexpr int kBetweenChildPaddingDp = 10;
+
+// The min and max width for preview size are in relation to the fixed height.
 constexpr int kMinPreviewWidthDp = kFixedPreviewHeightDp / 2;
 constexpr int kMaxPreviewWidthDp = kFixedPreviewHeightDp * 2;
 
@@ -82,7 +93,7 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
  public:
   explicit WindowCycleItemView(aura::Window* window)
       : window_title_(new views::Label),
-        preview_background_(new views::View),
+        window_thumbnail_backdrop_(new views::View),
         preview_view_(
             new WindowPreviewView(window,
                                   /*trilinear_filtering_on_init=*/
@@ -92,7 +103,7 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
     views::BoxLayout* layout =
         header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-            kIconLabelSpacingDp));
+            kHeaderChildPaddingDp));
     AddChildView(header_view_);
 
     gfx::ImageSkia* icon = window->GetProperty(aura::client::kAppIconKey);
@@ -109,22 +120,21 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
     window_observer_.Add(window);
     window_title_->SetText(window->GetTitle());
     window_title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    window_title_->SetEnabledColor(SK_ColorWHITE);
+    window_title_->SetEnabledColor(kTitleColor);
     window_title_->SetAutoColorReadabilityEnabled(false);
     // Background is not fully opaque, so subpixel rendering won't look good.
     window_title_->SetSubpixelRenderingEnabled(false);
-    // The base font is 12pt (for English) so this comes out to 14pt.
     window_title_->SetFontList(gfx::FontList().Derive(
         kLabelFontDelta, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
-    window_title_->SetBorder(
-        views::CreateEmptyBorder(kAboveLabelPadding, 0, kBelowLabelPadding, 0));
+    window_title_->SetBorder(views::CreateEmptyBorder(
+        kVerticalLabelPaddingDp, 0, kVerticalLabelPaddingDp,
+        kHeaderChildPaddingDp));
     header_view_->AddChildView(window_title_);
     layout->SetFlexForView(window_title_, 1);
 
-    // Preview padding is black at 50% opacity.
-    preview_background_->SetBackground(
-        views::CreateSolidBackground(SkColorSetA(SK_ColorBLACK, 0xFF / 2)));
-    AddChildView(preview_background_);
+    window_thumbnail_backdrop_->SetBackground(
+        views::CreateSolidBackground(kHighlightAndBackdropColor));
+    AddChildView(window_thumbnail_backdrop_);
 
     AddChildView(preview_view_);
 
@@ -152,14 +162,14 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
       // Padding is not needed, hide the background and set the mirror view
       // to take up the entire preview area.
       preview_view_->SetPosition(preview_area_bounds.origin());
-      preview_background_->SetVisible(false);
+      window_thumbnail_backdrop_->SetVisible(false);
       return;
     }
 
     // Padding is needed, so show the background and set the mirror view to be
     // centered within it.
-    preview_background_->SetBoundsRect(preview_area_bounds);
-    preview_background_->SetVisible(true);
+    window_thumbnail_backdrop_->SetBoundsRect(preview_area_bounds);
+    window_thumbnail_backdrop_->SetVisible(true);
     preview_area_bounds.ClampToCenteredSize(preview_view_->size());
     preview_view_->SetPosition(preview_area_bounds.origin());
   }
@@ -223,9 +233,9 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
   views::ImageView* image_view_ = nullptr;
   // Displays the title of the window above the preview.
   views::Label* window_title_;
-  // When visible, shows a darkened background area behind |preview_view_|
+  // When visible, shows a darkened backdrop area behind |preview_view_|
   // (effectively padding the preview to fit the desired bounds).
-  views::View* preview_background_;
+  views::View* window_thumbnail_backdrop_;
   // The view that actually renders a thumbnail version of the window.
   WindowPreviewView* preview_view_;
 
@@ -253,11 +263,11 @@ class WindowCycleView : public views::WidgetDelegateView {
       layer()->SetOpacity(1.0);
     }
 
-    const int kInsideBorderPaddingDip = 64;
-    const int kBetweenChildPaddingDip = 10;
     auto layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal,
-        gfx::Insets(kInsideBorderPaddingDip), kBetweenChildPaddingDip);
+        gfx::Insets(kInsideBorderVerticalPaddingDp,
+                    kInsideBorderHorizontalPaddingDp),
+        kBetweenChildPaddingDp);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStart);
     mirror_container_->SetLayoutManager(std::move(layout));
@@ -275,7 +285,7 @@ class WindowCycleView : public views::WidgetDelegateView {
     highlight_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     highlight_view_->layer()->SetRoundedCornerRadius(
         kWindowSelectionCornerRadii);
-    highlight_view_->layer()->SetColor(kHighlightColor);
+    highlight_view_->layer()->SetColor(kHighlightAndBackdropColor);
     highlight_view_->layer()->SetFillsBoundsOpaquely(false);
 
     AddChildView(highlight_view_);

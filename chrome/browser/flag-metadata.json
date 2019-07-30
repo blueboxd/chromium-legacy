@@ -3123,6 +3123,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "usage-stats",
+    "owners": [ "pnoland", "chromeshine@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "use-angle",
     "owners": [ "angle-team@google.com" ],
     // This flag is used by certain customers to set ANGLE to use its OpenGL

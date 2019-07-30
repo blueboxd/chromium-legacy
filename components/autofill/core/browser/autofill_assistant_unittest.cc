@@ -315,9 +315,9 @@ TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_SubmitCvc) {
 
   autofill_assistant_->ShowAssistForCreditCard(card);
 
-  CardUnmaskDelegate::UnmaskResponse unmask_response;
-  unmask_response.cvc = base::ASCIIToUTF16("123");
-  full_card_unmask_delegate()->OnUnmaskResponse(unmask_response);
+  CardUnmaskDelegate::UserProvidedUnmaskDetails unmask_details;
+  unmask_details.cvc = base::ASCIIToUTF16("123");
+  full_card_unmask_delegate()->OnUnmaskPromptAccepted(unmask_details);
 }
 
 }  // namespace autofill

@@ -67,8 +67,7 @@ class TracingSamplerProfilerDataSource
 
     if (is_started_) {
       profiler->StartTracing(
-          perfetto_producer_->CreateTraceWriter(
-              data_source_config_.target_buffer()),
+          producer_->CreateTraceWriter(data_source_config_.target_buffer()),
           data_source_config_.chrome_config().privacy_filtering_enabled());
     } else if (is_startup_tracing_) {
       profiler->StartTracing(nullptr, /*should_enable_filtering=*/true);
@@ -105,7 +104,6 @@ class TracingSamplerProfilerDataSource
     DCHECK(!is_started_);
     is_started_ = true;
     is_startup_tracing_ = false;
-    perfetto_producer_ = producer;
     data_source_config_ = data_source_config;
 
     bool should_enable_filtering =
@@ -123,7 +121,7 @@ class TracingSamplerProfilerDataSource
     DCHECK(is_started_);
     is_started_ = false;
     is_startup_tracing_ = false;
-    perfetto_producer_ = nullptr;
+    producer_ = nullptr;
 
     for (auto* profiler : profilers_) {
       profiler->StopTracing();
@@ -149,7 +147,6 @@ class TracingSamplerProfilerDataSource
   std::set<TracingSamplerProfiler*> profilers_;
   bool is_startup_tracing_ = false;
   bool is_started_ = false;
-  PerfettoProducer* perfetto_producer_ = nullptr;
   perfetto::DataSourceConfig data_source_config_;
 
   static std::atomic<uint32_t> incremental_state_reset_id_;
@@ -488,8 +485,8 @@ void TracingSamplerProfiler::RegisterDataSource() {
 // static
 void TracingSamplerProfiler::StartTracingForTesting(
     PerfettoProducer* producer) {
-  TracingSamplerProfilerDataSource::Get()->StartTracing(
-      producer, perfetto::DataSourceConfig());
+  TracingSamplerProfilerDataSource::Get()->StartTracingWithID(
+      1, producer, perfetto::DataSourceConfig());
 }
 
 // static

@@ -12,11 +12,11 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/ubertoken_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/identity/public/cpp/scope_set.h"
 
 #if defined(OS_ANDROID)
@@ -60,7 +60,7 @@ struct CookieParamsForTest;
 // ./README.md for detailed documentation.
 class IdentityManager : public KeyedService,
                         public OAuth2AccessTokenManager::DiagnosticsObserver,
-                        public OAuth2TokenServiceObserver {
+                        public ProfileOAuth2TokenServiceObserver {
  public:
   class Observer {
    public:
@@ -622,7 +622,7 @@ class IdentityManager : public KeyedService,
   void AuthenticatedAccountSet(const AccountInfo& account_info);
   void AuthenticatedAccountCleared();
 
-  // OAuth2TokenServiceObserver:
+  // ProfileOAuth2TokenServiceObserver:
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;

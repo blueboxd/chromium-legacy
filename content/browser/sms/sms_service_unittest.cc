@@ -77,7 +77,7 @@ class MockSmsDialog : public SmsDialog {
   MOCK_METHOD3(Open,
                void(RenderFrameHost*, base::OnceClosure, base::OnceClosure));
   MOCK_METHOD0(Close, void());
-  MOCK_METHOD0(EnableContinueButton, void());
+  MOCK_METHOD0(SmsReceived, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSmsDialog);
@@ -132,7 +132,7 @@ class Service {
               on_continue_callback_ = std::move(on_continue);
             }));
 
-    EXPECT_CALL(*dialog, EnableContinueButton()).WillOnce(Invoke([&]() {
+    EXPECT_CALL(*dialog, SmsReceived()).WillOnce(Invoke([&]() {
       // Simulates user clicking the "Continue" button to verify received
       // sms.
       std::move(on_continue_callback_).Run();
@@ -552,7 +552,7 @@ TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
 
   EXPECT_CALL(*dialog2, Open(main_rfh(), _, _)).Times(1);
 
-  EXPECT_CALL(*dialog1, EnableContinueButton())
+  EXPECT_CALL(*dialog1, SmsReceived())
       .WillOnce(Invoke([&on_continue_callback]() {
         std::move(on_continue_callback).Run();
       }));
@@ -683,7 +683,7 @@ TEST_F(SmsServiceTest, RecordCancelOnSuccessTimeMetric) {
           on_cancel_callback = std::move(on_cancel);
         }));
 
-    EXPECT_CALL(*dialog, EnableContinueButton()).WillOnce(Invoke([&]() {
+    EXPECT_CALL(*dialog, SmsReceived()).WillOnce(Invoke([&]() {
       // Simulates user clicking the "Cancel" once the SMS has been received.
       std::move(on_cancel_callback).Run();
     }));

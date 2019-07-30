@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
-#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -101,7 +100,6 @@ class SharedImageInterface {
   virtual void DestroySharedImage(const SyncToken& sync_token,
                                   const Mailbox& mailbox) = 0;
 
-#if defined(OS_WIN)
   struct SwapChainMailboxes {
     Mailbox front_buffer;
     Mailbox back_buffer;
@@ -125,7 +123,6 @@ class SharedImageInterface {
   // presenting the swap chain.
   virtual void PresentSwapChain(const SyncToken& sync_token,
                                 const Mailbox& mailbox) = 0;
-#endif  // OS_WIN
 
   // Generates an unverified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.

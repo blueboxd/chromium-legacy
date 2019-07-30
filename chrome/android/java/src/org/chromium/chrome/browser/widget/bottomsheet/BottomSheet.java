@@ -149,9 +149,6 @@ public class BottomSheet
     /** The height of the shadow that sits above the toolbar. */
     private final int mToolbarShadowHeight;
 
-    /** The radius of the rounded corner at the top of the sheet. */
-    private final int mRoundedCornerRadius;
-
     /** The {@link BottomSheetMetrics} used to record user actions and histograms. */
     private final BottomSheetMetrics mMetrics;
 
@@ -423,8 +420,7 @@ public class BottomSheet
                 getResources().getDimensionPixelSize(R.dimen.bottom_sheet_min_full_half_distance);
         mToolbarShadowHeight =
                 getResources().getDimensionPixelOffset(R.dimen.toolbar_shadow_height);
-        mRoundedCornerRadius =
-                getResources().getDimensionPixelOffset(R.dimen.bottom_sheet_corner_radius);
+
         mMetrics = new BottomSheetMetrics();
         addObserver(mMetrics);
 
@@ -647,7 +643,6 @@ public class BottomSheet
                 }
 
                 if (!mGestureDetector.isScrolling()) {
-                    cancelAnimation();
 
                     // This onLayoutChange() will be called after the user enters fullscreen video
                     // mode. Ensure the sheet state is reset to peek so that the sheet does not
@@ -656,6 +651,7 @@ public class BottomSheet
                             && mFullscreenManager.getPersistentFullscreenMode() && isSheetOpen()) {
                         setSheetState(SheetState.PEEK, false);
                     } else {
+                        if (isRunningSettleAnimation()) return;
                         setSheetState(mCurrentState, false);
                     }
                 }
@@ -1157,8 +1153,16 @@ public class BottomSheet
             // If the toolbar is not laid out yet and has a fixed height layout parameter, we assume
             // that the toolbar will have this height in the future.
             ViewGroup.LayoutParams layoutParams = toolbarView.getLayoutParams();
-            if (layoutParams != null && layoutParams.height > 0) {
-                toolbarHeight = layoutParams.height;
+            if (layoutParams != null) {
+                if (layoutParams.height > 0) {
+                    toolbarHeight = layoutParams.height;
+                } else {
+                    toolbarView.measure(
+                            MeasureSpec.makeMeasureSpec((int) mContainerWidth, MeasureSpec.EXACTLY),
+                            MeasureSpec.makeMeasureSpec(
+                                    (int) mContainerHeight, MeasureSpec.AT_MOST));
+                    toolbarHeight = toolbarView.getMeasuredHeight();
+                }
             }
         }
         return (toolbarHeight + mToolbarShadowHeight) / mContainerHeight;
@@ -1185,7 +1189,7 @@ public class BottomSheet
     @VisibleForTesting
     float getFullRatio() {
         if (mContainerHeight <= 0) return 0;
-        return (mContainerHeight + mToolbarShadowHeight - mRoundedCornerRadius) / mContainerHeight;
+        return (mContainerHeight + mToolbarShadowHeight) / mContainerHeight;
     }
 
     /**
@@ -1266,7 +1270,14 @@ public class BottomSheet
      */
     public void setSheetState(
             @SheetState int state, boolean animate, @StateChangeReason int reason) {
-        assert state != SheetState.SCROLLING && state != SheetState.NONE;
+        assert state != SheetState.NONE;
+
+        // Setting state to SCROLLING is not a valid operation. This can happen only when
+        // we're already in the scrolling state. Make it no-op.
+        if (state == SheetState.SCROLLING) {
+            assert mCurrentState == SheetState.SCROLLING && isRunningSettleAnimation();
+            return;
+        }
 
         if (state == SheetState.HALF && shouldSkipHalfState()) {
             state = SheetState.FULL;
@@ -1401,8 +1412,7 @@ public class BottomSheet
         mSheetContent.getContentView().measure(
                 MeasureSpec.makeMeasureSpec((int) mContainerWidth, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec((int) mContainerHeight, MeasureSpec.AT_MOST));
-        mContentDesiredHeight =
-                mSheetContent.getContentView().getMeasuredHeight() - mRoundedCornerRadius;
+        mContentDesiredHeight = mSheetContent.getContentView().getMeasuredHeight();
     }
 
     private float getRatioForState(int state) {
@@ -1591,18 +1601,11 @@ public class BottomSheet
 
         // The SCROLLING state is used when animating the sheet height or when the user is swiping
         // the sheet. If it is the latter, we should not change the sheet height.
-        cancelAnimation();
-        if (mCurrentState == SheetState.SCROLLING) return;
-
+        if (!isRunningSettleAnimation() && mCurrentState == SheetState.SCROLLING) return;
         setSheetState(mCurrentState, animate);
     }
 
     private void invalidateContentDesiredHeight() {
         mContentDesiredHeight = HEIGHT_UNSPECIFIED;
-    }
-
-    @VisibleForTesting
-    int getRoundedCornerRadius() {
-        return mRoundedCornerRadius;
     }
 }

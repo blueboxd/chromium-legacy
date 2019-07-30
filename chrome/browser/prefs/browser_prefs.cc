@@ -467,6 +467,16 @@ const char kNtpActivateHideShortcutsFieldTrial[] =
     "ntp.activate_hide_shortcuts_field_trial";
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+// Deprecated 7/2019
+// WebAuthn prefs were being erroneously stored on Android. They are registered
+// on other platforms.
+const char kWebAuthnLastTransportUsedPrefName[] =
+    "webauthn.last_transport_used";
+const char kWebAuthnBlePairedMacAddressesPrefName[] =
+    "webauthn.ble.paired_mac_addresses";
+#endif  // defined(OS_ANDROID)
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -527,6 +537,12 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kMediaCacheSize, 0);
 
   registry->RegisterInt64Pref(kSignedInTime, 0);
+
+#if defined(OS_ANDROID)
+  registry->RegisterStringPref(kWebAuthnLastTransportUsedPrefName,
+                               std::string());
+  registry->RegisterListPref(kWebAuthnBlePairedMacAddressesPrefName);
+#endif  // defined(OS_ANDROID)
 }
 
 }  // namespace
@@ -700,7 +716,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   autofill::prefs::RegisterProfilePrefs(registry);
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
   certificate_transparency::prefs::RegisterPrefs(registry);
-  ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeSSLHostStateDelegate::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);
@@ -833,6 +848,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
 #if !defined(OS_ANDROID)
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
+  ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
   first_run::RegisterProfilePrefs(registry);
   HatsService::RegisterProfilePrefs(registry);
   InstantService::RegisterProfilePrefs(registry);
@@ -1110,4 +1126,10 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   syncer::MigrateSyncSuppressedPref(profile_prefs);
   profile_prefs->ClearPref(kSignedInTime);
   syncer::ClearObsoleteMemoryPressurePrefs(profile_prefs);
+
+#if defined(OS_ANDROID)
+  // Added 7/2019.
+  profile_prefs->ClearPref(kWebAuthnLastTransportUsedPrefName);
+  profile_prefs->ClearPref(kWebAuthnBlePairedMacAddressesPrefName);
+#endif  // defined(OS_ANDROID)
 }

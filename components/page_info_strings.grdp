@@ -28,6 +28,9 @@
   <message name="IDS_PAGE_INFO_VIEW_SOURCE_PAGE" desc="Message to display in the page info bubble when you are viewing page sources by using |View page source| option from the right click menu.">
     You're viewing the source of a web page
   </message>
+  <message name="IDS_PAGE_INFO_DEVTOOLS_PAGE" desc="Message to display in the page info bubble when the page you are on is a devtools:// page.">
+    You're viewing a developer tools page
+  </message>
 
   <!-- Safety Tip summary strings -->
   <message name="IDS_PAGE_INFO_SAFETY_TIP_NAME" desc="Name of safety tips, displayed in bold as part of the title of the safety tip bubble.">

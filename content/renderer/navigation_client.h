@@ -19,7 +19,7 @@ class NavigationClient : mojom::NavigationClient {
 
   // mojom::NavigationClient implementation:
   void CommitNavigation(
-      const CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       const CommitNavigationParams& commit_params,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
@@ -35,7 +35,7 @@ class NavigationClient : mojom::NavigationClient {
       const base::UnguessableToken& devtools_navigation_token,
       CommitNavigationCallback callback) override;
   void CommitFailedNavigation(
-      const CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       const CommitNavigationParams& commit_params,
       bool has_stale_copy_in_cache,
       int error_code,

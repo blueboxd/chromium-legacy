@@ -126,7 +126,6 @@
 #include "chrome/browser/ui/color_chooser.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
@@ -135,7 +134,6 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/manifest_web_app_browser_controller.h"
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -155,7 +153,6 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
@@ -292,23 +289,6 @@ const extensions::Extension* GetExtensionForOrigin(
 #else
   return nullptr;
 #endif
-}
-
-std::unique_ptr<web_app::AppBrowserController> MaybeCreateWebAppController(
-    Browser* browser) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  const std::string extension_id =
-      web_app::GetAppIdFromApplicationName(browser->app_name());
-  const Extension* extension =
-      extensions::ExtensionRegistry::Get(browser->profile())
-          ->GetExtensionById(extension_id,
-                             extensions::ExtensionRegistry::EVERYTHING);
-  if (extension && extension->is_hosted_app())
-    return std::make_unique<extensions::HostedAppBrowserController>(browser);
-#endif
-  if (browser->is_focus_mode())
-    return std::make_unique<ManifestWebAppBrowserController>(browser);
-  return nullptr;
 }
 
 // Returns whether a browser window can be created for the specified profile.
@@ -448,7 +428,8 @@ Browser::Browser(const CreateParams& params)
       location_bar_model_delegate_(new BrowserLocationBarModelDelegate(this)),
       live_tab_context_(new BrowserLiveTabContext(this)),
       synced_window_delegate_(new BrowserSyncedWindowDelegate(this)),
-      app_controller_(MaybeCreateWebAppController(this)),
+      app_controller_(
+          web_app::AppBrowserController::MaybeCreateWebAppController(this)),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
       command_controller_(new chrome::BrowserCommandController(this)),
       window_has_shown_(false)

@@ -43,8 +43,6 @@ void MockIndexedDBCallbacks::OnSuccess(
   info_called_ = true;
 }
 
-void MockIndexedDBCallbacks::OnSuccess(const IndexedDBKey& key) {}
-
 void MockIndexedDBCallbacks::OnSuccess(
     std::unique_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata) {

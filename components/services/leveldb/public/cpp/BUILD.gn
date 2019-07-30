@@ -13,20 +13,6 @@ static_library("cpp") {
   deps = [
     "//base",
     "//components/services/leveldb/public/mojom",
-    "//services/service_manager/public/cpp",
     "//third_party/leveldatabase",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/services/leveldb/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
 }

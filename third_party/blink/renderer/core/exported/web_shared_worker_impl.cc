@@ -225,6 +225,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
   shadow_page_ = std::make_unique<WorkerShadowPage>(
       this, std::move(loader_factory), std::move(privacy_preferences),
       appcache_host_id_);
+  // TODO(https://crbug.com/982996): Create ApplicationCacheHostForSharedWorker
+  // here without depending on WorkerShadowPage and DocumentLoader.
 
   // If we were asked to pause worker context on start and wait for debugger
   // then now is a good time to do that.

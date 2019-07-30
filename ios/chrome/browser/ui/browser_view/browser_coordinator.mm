@@ -258,7 +258,9 @@
   self.translateInfobarCoordinator = [[TranslateInfobarCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState
-                    webStateList:self.tabModel.webStateList];
+                    webStateList:self.tabModel.webStateList
+                      dispatcher:static_cast<id<SnackbarCommands>>(
+                                     self.dispatcher)];
   [self.translateInfobarCoordinator start];
 
   self.pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]

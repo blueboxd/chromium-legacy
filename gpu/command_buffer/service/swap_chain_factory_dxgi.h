@@ -10,9 +10,9 @@
 #include <wrl/client.h>
 #include <memory>
 
+#include "base/macros.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/gpu_gles2_export.h"
-#include "ui/gl/gl_bindings.h"
 
 namespace gfx {
 class Size;

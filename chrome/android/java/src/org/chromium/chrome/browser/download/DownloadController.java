@@ -65,17 +65,9 @@ public class DownloadController {
     }
 
     private static DownloadNotificationService sDownloadNotificationService;
-    private static Boolean sEnableNewDownloadBackendForTesting;
-
-    /** For testing only. */
-    public static void enableNewDownloadBackendForTesting(boolean enabled) {
-        sEnableNewDownloadBackendForTesting = enabled;
-    }
 
     public static void setDownloadNotificationService(DownloadNotificationService service) {
-        if ((sEnableNewDownloadBackendForTesting != null && sEnableNewDownloadBackendForTesting)
-                || ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
             return;
         }
 

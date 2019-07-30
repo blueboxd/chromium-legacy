@@ -1,0 +1,89 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/web_applications/web_app_browser_controller.h"
+
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "ui/gfx/image/image_skia.h"
+#include "url/gurl.h"
+
+namespace web_app {
+
+WebAppBrowserController::WebAppBrowserController(Browser* browser)
+    : AppBrowserController(browser),
+      registrar_(WebAppProvider::Get(browser->profile())->registrar()),
+      app_id_(GetAppIdFromApplicationName(browser->app_name())) {}
+
+WebAppBrowserController::~WebAppBrowserController() = default;
+
+base::Optional<AppId> WebAppBrowserController::GetAppId() const {
+  return app_id_;
+}
+
+bool WebAppBrowserController::CreatedForInstalledPwa() const {
+  return true;
+}
+
+bool WebAppBrowserController::IsHostedApp() const {
+  return true;
+}
+
+bool WebAppBrowserController::ShouldShowCustomTabBar() const {
+  // TODO(https://crbug.com/966290): Complete implementation.
+  return false;
+}
+
+bool WebAppBrowserController::ShouldShowHostedAppButtonContainer() const {
+  return true;
+}
+
+gfx::ImageSkia WebAppBrowserController::GetWindowAppIcon() const {
+  // TODO(https://crbug.com/966290): Complete implementation.
+  return gfx::ImageSkia();
+}
+
+gfx::ImageSkia WebAppBrowserController::GetWindowIcon() const {
+  // TODO(https://crbug.com/966290): Complete implementation.
+  return gfx::ImageSkia();
+}
+
+base::Optional<SkColor> WebAppBrowserController::GetThemeColor() const {
+  base::Optional<SkColor> web_theme_color =
+      AppBrowserController::GetThemeColor();
+  if (web_theme_color)
+    return web_theme_color;
+
+  return registrar_.GetAppThemeColor(app_id_);
+}
+
+GURL WebAppBrowserController::GetAppLaunchURL() const {
+  return registrar_.GetAppLaunchURL(app_id_);
+}
+
+bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
+  // TODO(https://crbug.com/966290): Complete implementation.
+  return true;
+}
+
+std::string WebAppBrowserController::GetAppShortName() const {
+  return registrar_.GetAppShortName(app_id_);
+}
+
+base::string16 WebAppBrowserController::GetFormattedUrlOrigin() const {
+  return FormatUrlOrigin(GetAppLaunchURL());
+}
+
+bool WebAppBrowserController::CanUninstall() const {
+  // TODO(https://crbug.com/966290): Complete implementation.
+  return false;
+}
+
+bool WebAppBrowserController::IsInstalled() const {
+  // TODO(https://crbug.com/966290): Complete implementation.
+  return true;
+}
+
+}  // namespace web_app

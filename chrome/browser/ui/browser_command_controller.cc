@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -656,7 +657,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       TakeScreenshot();
       break;
 #endif
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     case IDC_FEEDBACK:
       OpenFeedbackDialog(browser_, kFeedbackSourceBrowserCommand);
       break;
@@ -1246,7 +1247,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   command_updater_.UpdateCommandEnabled(
       IDC_FEEDBACK, show_main_ui || browser_->is_devtools());
 #endif

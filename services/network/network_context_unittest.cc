@@ -880,15 +880,15 @@ TEST_F(NetworkContextTest, HttpServerPropertiesToDisk) {
                    ->http_server_properties()
                    ->GetSupportsSpdy(kSchemeHostPort));
 
-  // Clear destroy the network context and let any pending writes complete
-  // before destroying |temp_dir|, to avoid leaking any files.
+  // Destroy the network context and let any pending writes complete before
+  // destroying |temp_dir|, to avoid leaking any files.
   network_context.reset();
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(temp_dir.Delete());
 }
 
-// Checks that ClearNetworkingHistorySince() works clears in-memory pref stores,
-// and invokes the closure passed to it.
+// Checks that ClearNetworkingHistorySince() clears in-memory pref stores and
+// invokes the closure passed to it.
 TEST_F(NetworkContextTest, ClearHttpServerPropertiesInMemory) {
   const url::SchemeHostPort kSchemeHostPort("https", "foo", 443);
 

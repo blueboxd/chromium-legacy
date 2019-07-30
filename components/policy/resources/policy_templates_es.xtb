@@ -3304,7 +3304,7 @@ Si no se establece esta política, el teclado en pantalla se inhabilitará la pr
       Si se inhabilita esta opción, <ph name="PRODUCT_OS_NAME" /> verificará los certificados de los servidores utilizando el verificador de certificados antiguo proporcionado por la plataforma.
       Si no se configura esta opción, <ph name="PRODUCT_OS_NAME" /> podrá utilizar el verificador de certificados integrado o el antiguo.
 
-      Esta política se eliminará en la versión 81 de <ph name="PRODUCT_OS_NAME" />, en la que se eliminará la compatibilidad con el verificador de certificados antiguo para <ph name="PRODUCT_OS_NAME" />.
+      Esta política se eliminará en la versión 81 de <ph name="PRODUCT_OS_NAME" />, en la que el verificador de certificados antiguo dejará de ser compatible con <ph name="PRODUCT_OS_NAME" />.
       </translation>
 <translation id="7027785306666625591">Configura la administración de energía en <ph name="PRODUCT_OS_NAME" />.
 

@@ -33,8 +33,21 @@ class GL_IN_PROCESS_CONTEXT_EXPORT SingleTaskSequence {
   // Schedule a task with provided sync token dependencies. The dependencies
   // are hints for sync token waits within the task, and can be ignored by the
   // implementation.
+  // For scheduling from viz thread, due to limitations in Android WebView,
+  // ScheduleTask is only available to be called inside initialization,
+  // teardown, and DrawAndSwap.
   virtual void ScheduleTask(base::OnceClosure task,
                             std::vector<SyncToken> sync_token_fences) = 0;
+
+  // If |ScheduleGpuTask| is available, then this is equivalent to
+  // ScheduleGpuTask. Otherwise, the |task| and |sync_tokens| are retained
+  // and run when |ScheduleGpuTask| becomes available. Either case, tasks in
+  // |ScheduleTask| and |ScheduleOrRetainTask| are sequenced by the call order;
+  // calling this instead of |ScheduleTask| can only delay but not reorder
+  // tasks.
+  virtual void ScheduleOrRetainTask(
+      base::OnceClosure task,
+      std::vector<SyncToken> sync_token_fences) = 0;
 
   // Continue running the current task after yielding execution.
   virtual void ContinueTask(base::OnceClosure task) = 0;

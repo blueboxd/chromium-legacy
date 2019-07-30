@@ -18,6 +18,8 @@
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/navigation_params.h"
+#include "content/common/navigation_params_utils.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_constants.h"
@@ -348,23 +350,25 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
           base::nullopt /* devtools_initiator_info */);
-  CommonNavigationParams common_params;
-  common_params.url = url;
-  common_params.initiator_origin = GetLastCommittedOrigin();
-  common_params.referrer =
-      Referrer(GURL(), network::mojom::ReferrerPolicy::kDefault);
-  common_params.transition = ui::PAGE_TRANSITION_LINK;
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.has_user_gesture = has_user_gesture;
+  mojom::CommonNavigationParamsPtr common_params =
+      mojom::CommonNavigationParams::New();
+  common_params->navigation_start = base::TimeTicks::Now();
+  common_params->url = url;
+  common_params->initiator_origin = GetLastCommittedOrigin();
+  common_params->referrer = blink::mojom::Referrer::New(
+      GURL(), network::mojom::ReferrerPolicy::kDefault);
+  common_params->transition = ui::PAGE_TRANSITION_LINK;
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->has_user_gesture = has_user_gesture;
 
   mojom::NavigationClientAssociatedPtr navigation_client_ptr;
   if (IsPerNavigationMojoInterfaceEnabled()) {
     GetRemoteAssociatedInterfaces()->GetInterface(&navigation_client_ptr);
-    BeginNavigation(common_params, std::move(begin_params), nullptr,
+    BeginNavigation(std::move(common_params), std::move(begin_params), nullptr,
                     navigation_client_ptr.PassInterface(), nullptr);
   } else {
-    BeginNavigation(common_params, std::move(begin_params), nullptr, nullptr,
-                    nullptr);
+    BeginNavigation(std::move(common_params), std::move(begin_params), nullptr,
+                    nullptr, nullptr);
   }
 }
 
@@ -406,7 +410,7 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   CHECK(request);
   bool have_to_make_network_request =
       IsURLHandledByNetworkStack(request->common_params().url) &&
-      !FrameMsg_Navigate_Type::IsSameDocument(
+      !NavigationTypeUtils::IsSameDocument(
           request->common_params().navigation_type);
 
   // Simulate a beforeUnload ACK from the renderer if the browser is waiting for
@@ -534,7 +538,7 @@ void TestRenderFrameHost::SendFramePolicy(
 void TestRenderFrameHost::SendCommitNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
-    const content::CommonNavigationParams& common_params,
+    mojom::CommonNavigationParamsPtr common_params,
     const content::CommitNavigationParams& commit_params,
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
@@ -562,7 +566,7 @@ void TestRenderFrameHost::SendCommitNavigation(
 void TestRenderFrameHost::SendCommitFailedNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
-    const content::CommonNavigationParams& common_params,
+    mojom::CommonNavigationParamsPtr common_params,
     const content::CommitNavigationParams& commit_params,
     bool has_stale_copy_in_cache,
     int32_t error_code,

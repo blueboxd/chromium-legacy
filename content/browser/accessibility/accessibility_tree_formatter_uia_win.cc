@@ -357,10 +357,10 @@ AccessibilityTreeFormatterUia::BuildAccessibilityTree(
   // Find the root element's first child, which should be provided by
   // BrowserAccessibility. We'll use that element's RuntimeId as a template for
   // the RuntimeId of the element we're looking for.
-  Microsoft::WRL::ComPtr<IUIAutomationCondition> true_condition;
-  uia_->CreateTrueCondition(&true_condition);
+  Microsoft::WRL::ComPtr<IUIAutomationTreeWalker> tree_walker;
+  uia_->get_RawViewWalker(&tree_walker);
   Microsoft::WRL::ComPtr<IUIAutomationElement> first_child;
-  root->FindFirst(TreeScope_Children, true_condition.Get(), &first_child);
+  tree_walker->GetFirstChildElement(root.Get(), &first_child);
   CHECK(first_child.Get());
 
   // Get first_child's RuntimeId and swap out the last element in its SAFEARRAY

@@ -25,6 +25,10 @@
 #include "ui/gfx/skia_font_delegate.h"
 #include "ui/gfx/text_utils.h"
 
+#if defined(OS_WIN)
+#include "ui/gfx/system_fonts_win.h"
+#endif
+
 namespace gfx {
 namespace {
 
@@ -170,7 +174,12 @@ void PlatformFontSkia::SetDefaultFontDescription(
 Font PlatformFontSkia::DeriveFont(int size_delta,
                                   int style,
                                   Font::Weight weight) const {
+#if defined(OS_WIN)
+  const int new_size = win::AdjustFontSize(font_size_pixels_, size_delta);
+#else
   const int new_size = font_size_pixels_ + size_delta;
+#endif
+
   DCHECK_GT(new_size, 0);
 
   // If the style changed, we may need to load a new face.

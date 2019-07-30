@@ -1,0 +1,91 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+
+#include "base/test/bind_test_util.h"
+#include "chrome/browser/extensions/browsertest_util.h"
+#include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/predictors/loading_predictor_config.h"
+#include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/web_application_info.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_registry.h"
+
+namespace web_app {
+
+WebAppControllerBrowserTest::WebAppControllerBrowserTest()
+    : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+  if (GetParam() == ControllerType::kUnifiedControllerWithBookmarkApp) {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kDesktopPWAsUnifiedUiController},
+        {predictors::kSpeculativePreconnectFeature});
+  } else {
+    scoped_feature_list_.InitWithFeatures(
+        {}, {features::kDesktopPWAsUnifiedUiController,
+             predictors::kSpeculativePreconnectFeature});
+  }
+}
+
+WebAppControllerBrowserTest::~WebAppControllerBrowserTest() = default;
+
+void WebAppControllerBrowserTest::SetUp() {
+  https_server_.AddDefaultHandlers(GetChromeTestDataDir());
+
+  extensions::ExtensionBrowserTest::SetUp();
+}
+
+AppId WebAppControllerBrowserTest::InstallPWA(const GURL& app_url) {
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = app_url;
+  web_app_info->scope = app_url.GetWithoutFilename();
+  web_app_info->open_as_window = true;
+  return InstallWebApp(std::move(web_app_info));
+}
+
+AppId WebAppControllerBrowserTest::InstallWebApp(
+    std::unique_ptr<WebApplicationInfo>&& web_app_info) {
+  AppId app_id;
+  base::RunLoop run_loop;
+  auto* provider = web_app::WebAppProvider::Get(profile());
+  DCHECK(provider);
+  provider->install_manager().InstallWebAppFromInfo(
+      std::move(web_app_info),
+      /*no_network_install=*/true, WebappInstallSource::OMNIBOX_INSTALL_ICON,
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, web_app::InstallResultCode code) {
+            EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
+            app_id = installed_app_id;
+            run_loop.Quit();
+          }));
+
+  run_loop.Run();
+  return app_id;
+}
+
+Browser* WebAppControllerBrowserTest::LaunchAppBrowser(const AppId& app_id) {
+  auto* provider = web_app::WebAppProvider::Get(profile());
+  DCHECK(provider);
+  ui_test_utils::UrlLoadObserver url_observer(
+      provider->registrar().GetAppLaunchURL(app_id),
+      content::NotificationService::AllSources());
+
+  // TODO(https://crbug.com/966290): Avoid relying on extensions.
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile())->GetInstalledExtension(
+          app_id);
+  Browser* app_browser =
+      extensions::browsertest_util::LaunchAppBrowser(profile(), extension);
+  url_observer.Wait();
+
+  CHECK(app_browser);
+  CHECK(app_browser != browser());
+  return app_browser;
+}
+
+}  // namespace web_app

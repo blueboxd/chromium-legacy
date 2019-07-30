@@ -54,6 +54,8 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
     translateOptionSelectionDelegate;
 // YES if the coordinator has been started.
 @property(nonatomic) BOOL started;
+// The dispatcher used by this Coordinator.
+@property(nonatomic, weak) id<SnackbarCommands> dispatcher;
 
 @end
 
@@ -62,12 +64,14 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
-                              webStateList:(WebStateList*)webStateList {
+                              webStateList:(WebStateList*)webStateList
+                                dispatcher:(id<SnackbarCommands>)dispatcher {
   DCHECK(webStateList);
   self = [super initWithBaseViewController:viewController
                               browserState:browserState];
   if (self) {
     _webStateList = webStateList;
+    _dispatcher = dispatcher;
   }
   return self;
 }
@@ -78,7 +82,8 @@ NSString* const kTranslateOptionsPopupMenuId = @"kTranslateOptionsPopupMenuId";
   if (self.started)
     return;
 
-  self.notificationPresenter = [[TranslateNotificationPresenter alloc] init];
+  self.notificationPresenter = [[TranslateNotificationPresenter alloc]
+      initWithDispatcher:self.dispatcher];
 
   self.mediator = [[TranslateInfobarMediator alloc]
       initWithSelectionHandler:self

@@ -165,8 +165,6 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/webauthn/authenticator_request_scheduler.h"
-#include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -473,6 +471,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/google_password_manager_navigation_throttle.h"
 #include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
+#include "chrome/browser/webauthn/authenticator_request_scheduler.h"
+#include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #endif  //  !defined(OS_ANDROID)
@@ -5192,7 +5192,6 @@ content::HidDelegate* ChromeContentBrowserClient::GetHidDelegate() {
     hid_delegate_ = std::make_unique<ChromeHidDelegate>();
   return hid_delegate_.get();
 }
-#endif
 
 std::unique_ptr<content::AuthenticatorRequestClientDelegate>
 ChromeContentBrowserClient::GetWebAuthenticationRequestDelegate(
@@ -5200,12 +5199,6 @@ ChromeContentBrowserClient::GetWebAuthenticationRequestDelegate(
     const std::string& relying_party_id) {
   return AuthenticatorRequestScheduler::CreateRequestDelegate(render_frame_host,
                                                               relying_party_id);
-}
-
-#if defined(OS_MACOSX)
-bool ChromeContentBrowserClient::
-    IsWebAuthenticationTouchIdAuthenticatorSupported() {
-  return true;
 }
 #endif
 

@@ -71,6 +71,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   }
 
   MOCK_METHOD0(ClearTransientContent, void());
+  MOCK_METHOD0(ClearDialogs, void());
   MOCK_METHOD0(RecordPageStateInNavigationItem, void());
   MOCK_METHOD2(OnGoToIndexSameDocumentNavigation,
                void(NavigationInitiationType type, bool has_user_gesture));

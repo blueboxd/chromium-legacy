@@ -8,6 +8,7 @@
 
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "printing/buildflags/buildflags.h"
@@ -154,7 +155,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
     {ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, IDC_FOCUS_SEARCH},
 #endif  // !OS_CHROMEOS
 
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_MACOSX)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_MACOSX)
     {ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK},
 #endif  // GOOGLE_CHROME_BUILD && !OS_MACOSX
     {ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_PLATFORM_ACCELERATOR,

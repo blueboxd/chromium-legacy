@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/modules/xr/xr_hit_result.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
-#include "third_party/blink/renderer/modules/xr/xr_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_ray.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state.h"
@@ -53,7 +52,7 @@ const char kReferenceSpaceNotSupported[] =
     "This device does not support the requested reference space type.";
 
 const char kIncompatibleLayer[] =
-    "XRLayer was created with a different session.";
+    "XRWebGLLayer was created with a different session.";
 
 const char kInlineVerticalFOVNotSupported[] =
     "This session does not support inlineVerticalFieldOfView";
@@ -579,7 +578,7 @@ void XRSession::DetachOutputCanvas(HTMLCanvasElement* canvas) {
 
 void XRSession::ApplyPendingRenderState() {
   if (pending_render_state_.size() > 0) {
-    XRLayer* prev_base_layer = render_state_->baseLayer();
+    XRWebGLLayer* prev_base_layer = render_state_->baseLayer();
     HTMLCanvasElement* prev_ouput_canvas = render_state_->output_canvas();
     update_views_next_frame_ = true;
 
@@ -650,7 +649,7 @@ void XRSession::OnFrame(
 
     // Don't allow frames to be processed if there's no layers attached to the
     // session. That would allow tracking with no associated visuals.
-    XRLayer* frame_base_layer = render_state_->baseLayer();
+    XRWebGLLayer* frame_base_layer = render_state_->baseLayer();
     if (!frame_base_layer)
       return;
 

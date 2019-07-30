@@ -90,7 +90,7 @@ bool SmsService::OnReceive(const url::Origin& origin, const std::string& sms) {
 
   sms_ = sms;
   receive_time_ = base::TimeTicks::Now();
-  prompt_->EnableContinueButton();
+  prompt_->SmsReceived();
   return true;
 }
 

@@ -227,18 +227,6 @@ interface IDBCallbacks {
   SuccessDatabase(associated IDBDatabase? database,
                   IDBDatabaseMetadata metadata);
 
-  // Database::OpenCursor
-  SuccessCursor(associated IDBCursor cursor,
-                IDBKey key,
-                IDBKey primary_key,
-                IDBValue? value);
-
-  // Database::Get / Cursor::Advance
-  SuccessValue(IDBReturnValue? value);
-
-  // Database::Put / Cursor::Update
-  SuccessKey(IDBKey key);
-
   // Database::Count / DeleteRange
   // Factory::DeleteDatabase
   SuccessInteger(int64 value);
@@ -289,6 +277,11 @@ interface IDBCursor {
   PrefetchReset(int32 used_prefetches, int32 unused_prefetches);
 };
 
+union IDBTransactionPutResult {
+  IDBError error_result;  // |error| is reserved, so call this |error_result|.
+  IDBKey key;
+};
+
 interface IDBTransaction {
   CreateObjectStore(int64 object_store_id,
                     mojo_base.mojom.String16 name,
@@ -299,8 +292,8 @@ interface IDBTransaction {
       IDBValue value,
       IDBKey key,
       IDBPutMode mode,
-      array<IDBIndexKeys> index_keys,
-      associated IDBCallbacks callbacks);
+      array<IDBIndexKeys> index_keys)
+    => (IDBTransactionPutResult result);
   Commit(int64 num_errors_handled);
 };
 
@@ -315,6 +308,19 @@ union IDBDatabaseGetAllResult {
   IDBError error_result;  // |error| is reserved, so call this |error_result|.
   IDBKey key;
   array<IDBReturnValue> values;
+};
+
+struct IDBDatabaseOpenCursorValue {
+  associated IDBCursor cursor;
+  IDBKey key;
+  IDBKey primary_key;
+  IDBValue? value;
+};
+
+union IDBDatabaseOpenCursorResult {
+  IDBError error_result;  // |error| is reserved, so call this |error_result|.
+  bool empty;  // Only true values are allowed.
+  IDBDatabaseOpenCursorValue value;
 };
 
 interface IDBDatabase {
@@ -360,8 +366,8 @@ interface IDBDatabase {
              IDBKeyRange key_range,
              IDBCursorDirection direction,
              bool key_only,
-             IDBTaskType task_type,
-             associated IDBCallbacks callbacks);
+             IDBTaskType task_type)
+    => (IDBDatabaseOpenCursorResult result);
   Count(int64 transaction_id,
         int64 object_store_id,
         int64 index_id,

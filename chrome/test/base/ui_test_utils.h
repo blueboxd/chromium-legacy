@@ -189,12 +189,12 @@ int FindInPage(content::WebContents* tab,
 void WaitForHistoryToLoad(history::HistoryService* history_service);
 
 // Blocks until a Browser is added to the BrowserList.
-void WaitForBrowserToOpen();
+Browser* WaitForBrowserToOpen();
 
 // Blocks until a Browser is removed from the BrowserList. If |browser| is null,
 // the removal of any browser will suffice; otherwise the removed browser must
 // match |browser|.
-void WaitForBrowserToClose(const Browser* browser = nullptr);
+void WaitForBrowserToClose(Browser* browser = nullptr);
 
 // Download the given file and waits for the download to complete.
 void DownloadURL(Browser* browser, const GURL& download_url);
@@ -275,24 +275,6 @@ class UrlLoadObserver : public content::WindowedNotificationObserver {
   GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlLoadObserver);
-};
-
-// Convenience class for waiting for a new browser to be created.
-// Like WindowedNotificationObserver, this class provides a safe, non-racey
-// way to wait for a new browser to be created.
-class BrowserAddedObserver {
- public:
-  BrowserAddedObserver();
-  ~BrowserAddedObserver();
-
-  // Wait for a new browser to be created, and return a pointer to it.
-  Browser* WaitForSingleNewBrowser();
-
- private:
-  content::WindowedNotificationObserver notification_observer_;
-  std::set<Browser*> original_browsers_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserAddedObserver);
 };
 
 // A helper that will wait until a tab is added to a specific Browser.

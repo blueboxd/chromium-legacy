@@ -4,6 +4,7 @@
 <translation id="1510238584712386396">启动器</translation>
 <translation id="1734367976349034509">此设备是受企业管理的设备</translation>
 <translation id="1930797645656624981">Chrome 操作系统输入法服务</translation>
+<translation id="1979103255016296513">密码更改期限已过</translation>
 <translation id="2049639323467105390">此设备由 <ph name="DOMAIN" /> 管理。</translation>
 <translation id="2083960536266308407">在屏幕上找不到任何相符的内容</translation>
 <translation id="2338501278241028356">开启蓝牙以发现附近的设备</translation>
@@ -11,6 +12,7 @@
 <translation id="2872961005593481000">关机</translation>
 <translation id="3008341117444806826">刷新</translation>
 <translation id="3838338534323494292">新密码</translation>
+<translation id="4227825898293920515">密码将于 <ph name="TIME" />后到期</translation>
 <translation id="4429881212383817840">Kerberos 票据即将过期</translation>
 <translation id="445059817448385655">旧密码</translation>
 <translation id="467510802200863975">输入的两个密码不相同</translation>

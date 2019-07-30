@@ -9,9 +9,10 @@
 #include "ash/system/model/system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "ui/message_center/message_center.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #define SYSTEM_APP_NAME "Chrome OS"
 #else
 #define SYSTEM_APP_NAME "Chromium OS"
@@ -94,7 +95,7 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterUpdate) {
   EXPECT_EQ("Restart to update", GetNotificationButton(0));
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 TEST_F(UpdateNotificationControllerTest, VisibilityAfterFlashUpdate) {
   // The system starts with no update pending, so the notification isn't
   // visible.

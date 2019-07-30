@@ -808,6 +808,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self setDocumentURL:URL context:context.get()];
   context->SetHasCommitted(true);
   self.webStateImpl->OnNavigationFinished(context.get());
+  self.navigationHandler.navigationState = web::WKNavigationState::FINISHED;
   [_requestController didFinishWithURL:URL
                            loadSuccess:YES
                                context:context.get()];

@@ -14,12 +14,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/buildflag.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "net/base/backoff_entry.h"
 
 namespace signin {
@@ -60,7 +60,7 @@ class ProfileOAuth2TokenServiceDelegate;
 //
 // Note: requests should be started from the UI thread.
 class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
-                                  public OAuth2TokenServiceObserver {
+                                  public ProfileOAuth2TokenServiceObserver {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */,
                                        bool /* is_refresh_token_valid */,
@@ -98,8 +98,8 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   const ProfileOAuth2TokenServiceDelegate* GetDelegate() const;
 
   // Add or remove observers of this token service.
-  void AddObserver(OAuth2TokenServiceObserver* observer);
-  void RemoveObserver(OAuth2TokenServiceObserver* observer);
+  void AddObserver(ProfileOAuth2TokenServiceObserver* observer);
+  void RemoveObserver(ProfileOAuth2TokenServiceObserver* observer);
 
   // Add or remove observers of access token manager.
   void AddAccessTokenDiagnosticsObserver(
@@ -254,12 +254,6 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
 
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
 
-  // Returns the current number of pending fetchers matching given params.
-  size_t GetNumPendingRequestsForTesting(
-      const std::string& client_id,
-      const CoreAccountId& account_id,
-      const OAuth2AccessTokenManager::ScopeSet& scopes) const;
-
   // Override |token_manager_| for testing.
   void OverrideAccessTokenManagerForTesting(
       std::unique_ptr<OAuth2AccessTokenManager> token_manager);
@@ -270,7 +264,7 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
  private:
   friend class signin::IdentityManager;
 
-  // OAuth2TokenServiceObserver implementation.
+  // ProfileOAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
   void OnRefreshTokenRevoked(const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
@@ -282,12 +276,6 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   // cache. It does not matter what other parameters, like |client_id| were
   // used to request the tokens.
   void ClearCacheForAccount(const CoreAccountId& account_id);
-
-  // Cancels all requests that are currently in progress.
-  void CancelAllRequests();
-
-  // Cancels all requests related to a given |account_id|.
-  void CancelRequestsForAccount(const CoreAccountId& account_id);
 
   // Creates a new device ID if there are no accounts, or if the current device
   // ID is empty.
@@ -310,9 +298,8 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown;
 
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest, UpdateClearsCache);
-  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest, CancelAllRequests);
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
-                           CancelRequestsForAccount);
+                           SameScopesRequestedForDifferentClients);
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };

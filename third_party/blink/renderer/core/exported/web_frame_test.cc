@@ -1077,16 +1077,14 @@ TEST_F(WebFrameTest, DispatchMessageEventWithOriginCheck) {
   WebDOMMessageEvent message(data, "http://origin.com");
   web_view_helper.GetWebView()
       ->MainFrameImpl()
-      ->DispatchMessageEventWithOriginCheck(correct_origin, message,
-                                            false /* has_user_gesture */);
+      ->DispatchMessageEventWithOriginCheck(correct_origin, message);
 
   // Send another message with incorrect origin.
   WebSecurityOrigin incorrect_origin(
       WebSecurityOrigin::Create(ToKURL(chrome_url_)));
   web_view_helper.GetWebView()
       ->MainFrameImpl()
-      ->DispatchMessageEventWithOriginCheck(incorrect_origin, message,
-                                            false /* has_user_gesture */);
+      ->DispatchMessageEventWithOriginCheck(incorrect_origin, message);
 
   // Verify that only the first addition is in the body of the page.
   std::string content = WebFrameContentDumper::DumpWebViewAsText(

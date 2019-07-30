@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_APP_BROWSER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_APP_BROWSER_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -33,6 +34,9 @@ class AppBrowserController : public TabStripModelObserver,
                              public content::WebContentsObserver {
  public:
   ~AppBrowserController() override;
+
+  static std::unique_ptr<AppBrowserController> MaybeCreateWebAppController(
+      Browser* browser);
 
   // Returns whether |browser| uses the experimental hosted app experience.
   // Convenience wrapper for checking IsForExperimentalWebAppBrowser() on

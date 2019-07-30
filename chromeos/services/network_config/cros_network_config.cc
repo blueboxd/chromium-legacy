@@ -4,7 +4,9 @@
 
 #include "chromeos/services/network_config/cros_network_config.h"
 
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -33,8 +35,7 @@ std::string ShillToOnc(const std::string& shill_string,
   return onc_string;
 }
 
-mojom::NetworkType ShillTypeToMojo(const std::string& shill_type) {
-  NetworkTypePattern type = NetworkTypePattern::Primitive(shill_type);
+mojom::NetworkType NetworkPatternToMojo(NetworkTypePattern type) {
   if (type.Equals(NetworkTypePattern::Cellular()))
     return mojom::NetworkType::kCellular;
   if (type.MatchesPattern(NetworkTypePattern::EthernetOrEthernetEAP()))
@@ -47,8 +48,17 @@ mojom::NetworkType ShillTypeToMojo(const std::string& shill_type) {
     return mojom::NetworkType::kWiFi;
   if (type.Equals(NetworkTypePattern::Wimax()))
     return mojom::NetworkType::kWiMAX;
-  NOTREACHED() << "Unsupported shill network type: " << shill_type;
+  NOTREACHED() << "Unsupported network type: " << type.ToDebugString();
   return mojom::NetworkType::kAll;  // Unsupported
+}
+
+mojom::NetworkType ShillTypeToMojo(const std::string& shill_type) {
+  return NetworkPatternToMojo(NetworkTypePattern::Primitive(shill_type));
+}
+
+mojom::NetworkType OncTypeToMojo(const std::string& onc_type) {
+  return NetworkPatternToMojo(NetworkTypePattern::Primitive(
+      network_util::TranslateONCTypeToShill(onc_type)));
 }
 
 NetworkTypePattern MojoTypeToPattern(mojom::NetworkType type) {
@@ -88,6 +98,14 @@ mojom::ConnectionStateType GetMojoConnectionStateType(
   if (network->IsConnectingState())
     return mojom::ConnectionStateType::kConnecting;
   return mojom::ConnectionStateType::kNotConnected;
+}
+
+mojom::ConnectionStateType GetConnectionState(const NetworkState* network,
+                                              bool technology_enabled) {
+  // If a network technology is not enabled, always use NotConnected as the
+  // connection state to avoid any edge cases during device enable/disable.
+  return technology_enabled ? GetMojoConnectionStateType(network)
+                            : mojom::ConnectionStateType::kNotConnected;
 }
 
 mojom::VPNType ShillVpnTypeToMojo(const std::string& shill_vpn_type) {
@@ -156,11 +174,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
   result->type = type;
   result->connectable = network->connectable();
   result->connect_requested = network->connect_requested();
-  // If a network technology is not enabled, always use NotConnected as the
-  // connection state to avoid any edge cases during device enable/disable.
-  result->connection_state = technology_enabled
-                                 ? GetMojoConnectionStateType(network)
-                                 : mojom::ConnectionStateType::kNotConnected;
+  result->connection_state = GetConnectionState(network, technology_enabled);
   if (!network->GetError().empty())
     result->error_state = network->GetError();
   result->guid = network->guid();
@@ -295,6 +309,925 @@ mojom::DeviceStatePropertiesPtr DeviceStateToMojo(
   return result;
 }
 
+void SetValueIfKeyPresent(const base::Value* dict,
+                          const char* key,
+                          base::Value* out) {
+  const base::Value* v = dict->FindKey(key);
+  if (v)
+    *out = v->Clone();
+}
+
+base::Optional<std::string> GetString(const base::Value* dict,
+                                      const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (v && !v->is_string()) {
+    NET_LOG(ERROR) << "Expected string, found: " << *v;
+    return base::nullopt;
+  }
+  return v ? base::make_optional<std::string>(v->GetString()) : base::nullopt;
+}
+
+std::string GetRequiredString(const base::Value* dict, const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (!v) {
+    NOTREACHED() << "Required key missing: " << key;
+    return std::string();
+  }
+  if (!v->is_string()) {
+    NET_LOG(ERROR) << "Expected string, found: " << *v;
+    return std::string();
+  }
+  return v->GetString();
+}
+
+bool GetBoolean(const base::Value* dict, const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (v && !v->is_bool()) {
+    NET_LOG(ERROR) << "Expected bool, found: " << *v;
+    return false;
+  }
+  return v ? v->GetBool() : false;
+}
+
+int32_t GetInt32(const base::Value* dict, const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (v && !v->is_int()) {
+    NET_LOG(ERROR) << "Expected int, found: " << *v;
+    return false;
+  }
+  return v ? v->GetInt() : false;
+}
+
+std::vector<int32_t> GetInt32List(const base::Value* dict, const char* key) {
+  std::vector<int32_t> result;
+  const base::Value* v = dict->FindKey(key);
+  if (v && !v->is_list()) {
+    NET_LOG(ERROR) << "Expected list, found: " << *v;
+    return result;
+  }
+  if (v) {
+    for (const base::Value& e : v->GetList())
+      result.push_back(e.GetInt());
+  }
+  return result;
+}
+
+const base::Value* GetDictionary(const base::Value* dict, const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (v && !v->is_dict()) {
+    NET_LOG(ERROR) << "Expected dictionary, found: " << *v;
+    return nullptr;
+  }
+  return v;
+}
+
+base::Optional<std::vector<std::string>> GetStringList(const base::Value* dict,
+                                                       const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (!v)
+    return base::nullopt;
+  if (!v->is_list()) {
+    NET_LOG(ERROR) << "Expected list, found: " << *v;
+    return base::nullopt;
+  }
+  std::vector<std::string> result;
+  for (const base::Value& e : v->GetList())
+    result.push_back(e.GetString());
+  return result;
+}
+
+// GetManagedDictionary() returns a ManagedDictionary representing the active
+// and policy values for a managed property. The types of |active_value| and
+// |policy_value| are expected to match the ONC signature for the property type.
+
+struct ManagedDictionary {
+  base::Value active_value;
+  mojom::PolicySource policy_source = mojom::PolicySource::kNone;
+  base::Value policy_value;
+};
+
+ManagedDictionary GetManagedDictionary(const base::Value* onc_dict) {
+  ManagedDictionary result;
+
+  // When available, the active value (i.e. the value from Shill) is used.
+  SetValueIfKeyPresent(onc_dict, ::onc::kAugmentationActiveSetting,
+                       &result.active_value);
+
+  base::Optional<std::string> effective =
+      GetString(onc_dict, ::onc::kAugmentationEffectiveSetting);
+  if (!effective)
+    return result;
+
+  // If no active value is set (e.g. the network is not visible), use the
+  // effective value.
+  if (result.active_value.is_none())
+    SetValueIfKeyPresent(onc_dict, effective->c_str(), &result.active_value);
+  if (result.active_value.is_none()) {
+    // No active or effective value, return a default dictionary.
+    return result;
+  }
+
+  // If the effective value is set by an extension, use kActiveExtension.
+  if (effective == ::onc::kAugmentationActiveExtension) {
+    result.policy_source = mojom::PolicySource::kActiveExtension;
+    result.policy_value = result.active_value.Clone();
+    return result;
+  }
+
+  // Set policy properties based on the effective source and policies.
+  // NOTE: This does not enforce valid ONC. See onc_merger.cc for details.
+  const base::Value* user_policy =
+      onc_dict->FindKey(::onc::kAugmentationUserPolicy);
+  const base::Value* device_policy =
+      onc_dict->FindKey(::onc::kAugmentationDevicePolicy);
+  bool user_enforced = !GetBoolean(onc_dict, ::onc::kAugmentationUserEditable);
+  bool device_enforced =
+      !GetBoolean(onc_dict, ::onc::kAugmentationDeviceEditable);
+  if (effective == ::onc::kAugmentationUserPolicy ||
+      (user_policy && effective != ::onc::kAugmentationDevicePolicy)) {
+    // Set the policy source to "User" when:
+    // * The effective value is set to "UserPolicy" OR
+    // * A User policy exists and the effective value is not "DevicePolicy",
+    //   i.e. no enforced device policy is overriding a recommended user policy.
+    result.policy_source = user_enforced
+                               ? mojom::PolicySource::kUserPolicyEnforced
+                               : mojom::PolicySource::kUserPolicyRecommended;
+    if (user_policy)
+      result.policy_value = user_policy->Clone();
+  } else if (effective == ::onc::kAugmentationDevicePolicy || device_policy) {
+    // Set the policy source to "Device" when:
+    // * The effective value is set to "DevicePolicy" OR
+    // * A Device policy exists (since we checked for a user policy first).
+    result.policy_source = device_enforced
+                               ? mojom::PolicySource::kDevicePolicyEnforced
+                               : mojom::PolicySource::kDevicePolicyRecommended;
+    if (device_policy)
+      result.policy_value = device_policy->Clone();
+  } else {
+    // Unexpected ONC. No policy source or value will be set.
+    NET_LOG(ERROR) << "Unexpected ONC property: " << *onc_dict;
+  }
+
+  DCHECK(result.policy_value.is_none() ||
+         result.policy_value.type() == result.active_value.type());
+  return result;
+}
+
+mojom::ManagedStringPtr GetManagedString(const base::Value* dict,
+                                         const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (!v)
+    return nullptr;
+  if (v->is_string()) {
+    auto result = mojom::ManagedString::New();
+    result->active_value = v->GetString();
+    return result;
+  }
+  if (v->is_dict()) {
+    ManagedDictionary managed_dict = GetManagedDictionary(v);
+    if (!managed_dict.active_value.is_string()) {
+      NET_LOG(ERROR) << "No active or effective value for: " << key;
+      return nullptr;
+    }
+    auto result = mojom::ManagedString::New();
+    result->active_value = managed_dict.active_value.GetString();
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none())
+      result->policy_value = managed_dict.policy_value.GetString();
+    return result;
+  }
+  NET_LOG(ERROR) << "Expected string or dictionary, found: " << *v;
+  return nullptr;
+}
+
+mojom::ManagedStringListPtr GetManagedStringList(const base::Value* dict,
+                                                 const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (!v)
+    return nullptr;
+  if (v->is_list()) {
+    auto result = mojom::ManagedStringList::New();
+    std::vector<std::string> active;
+    for (const base::Value& e : v->GetList())
+      active.push_back(e.GetString());
+    result->active_value = std::move(active);
+    return result;
+  }
+  if (v->is_dict()) {
+    ManagedDictionary managed_dict = GetManagedDictionary(v);
+    if (!managed_dict.active_value.is_list()) {
+      NET_LOG(ERROR) << "No active or effective value for: " << key;
+      return nullptr;
+    }
+    auto result = mojom::ManagedStringList::New();
+    for (const base::Value& e : managed_dict.active_value.GetList())
+      result->active_value.push_back(e.GetString());
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none()) {
+      result->policy_value = std::vector<std::string>();
+      for (const base::Value& e : managed_dict.policy_value.GetList())
+        result->policy_value->push_back(e.GetString());
+    }
+    return result;
+  }
+  NET_LOG(ERROR) << "Expected list or dictionary, found: " << *v;
+  return nullptr;
+}
+
+mojom::ManagedBooleanPtr GetManagedBoolean(const base::Value* dict,
+                                           const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (!v)
+    return nullptr;
+  if (v->is_bool()) {
+    auto result = mojom::ManagedBoolean::New();
+    result->active_value = v->GetBool();
+    return result;
+  }
+  if (v->is_dict()) {
+    ManagedDictionary managed_dict = GetManagedDictionary(v);
+    if (!managed_dict.active_value.is_bool()) {
+      NET_LOG(ERROR) << "No active or effective value for: " << key;
+      return nullptr;
+    }
+    auto result = mojom::ManagedBoolean::New();
+    result->active_value = managed_dict.active_value.GetBool();
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none())
+      result->policy_value = managed_dict.policy_value.GetBool();
+    return result;
+  }
+  NET_LOG(ERROR) << "Expected bool or dictionary, found: " << *v;
+  return nullptr;
+}
+
+mojom::ManagedInt32Ptr GetManagedInt32(const base::Value* dict,
+                                       const char* key) {
+  const base::Value* v = dict->FindKey(key);
+  if (!v)
+    return nullptr;
+  if (v->is_int()) {
+    auto result = mojom::ManagedInt32::New();
+    result->active_value = v->GetInt();
+    return result;
+  }
+  if (v->is_dict()) {
+    ManagedDictionary managed_dict = GetManagedDictionary(v);
+    if (!managed_dict.active_value.is_int()) {
+      NET_LOG(ERROR) << "No active or effective value for: " << key;
+      return nullptr;
+    }
+    auto result = mojom::ManagedInt32::New();
+    result->active_value = managed_dict.active_value.GetInt();
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none())
+      result->policy_value = managed_dict.policy_value.GetInt();
+    return result;
+  }
+  NET_LOG(ERROR) << "Expected int or dictionary, found: " << *v;
+  return nullptr;
+}
+
+mojom::IPConfigPropertiesPtr GetIPConfig(const base::Value* dict) {
+  auto ip_config = mojom::IPConfigProperties::New();
+  ip_config->gateway = GetString(dict, ::onc::ipconfig::kGateway);
+  ip_config->ip_address = GetString(dict, ::onc::ipconfig::kIPAddress);
+  ip_config->excluded_routes =
+      GetStringList(dict, ::onc::ipconfig::kExcludedRoutes);
+  ip_config->included_routes =
+      GetStringList(dict, ::onc::ipconfig::kIncludedRoutes);
+  ip_config->name_servers = GetStringList(dict, ::onc::ipconfig::kNameServers);
+  ip_config->search_domains =
+      GetStringList(dict, ::onc::ipconfig::kSearchDomains);
+  ip_config->routing_prefix = GetInt32(dict, ::onc::ipconfig::kRoutingPrefix);
+  ip_config->type = GetString(dict, ::onc::ipconfig::kType);
+  ip_config->web_proxy_auto_discovery_url =
+      GetString(dict, ::onc::ipconfig::kWebProxyAutoDiscoveryUrl);
+  return ip_config;
+}
+
+mojom::ManagedIPConfigPropertiesPtr GetManagedIPConfig(
+    const base::Value* dict) {
+  auto ip_config = mojom::ManagedIPConfigProperties::New();
+  ip_config->gateway = GetManagedString(dict, ::onc::ipconfig::kGateway);
+  ip_config->ip_address = GetManagedString(dict, ::onc::ipconfig::kIPAddress);
+  ip_config->name_servers =
+      GetManagedStringList(dict, ::onc::ipconfig::kNameServers);
+  ip_config->routing_prefix =
+      GetManagedInt32(dict, ::onc::ipconfig::kRoutingPrefix);
+  ip_config->type = GetManagedString(dict, ::onc::ipconfig::kType);
+  ip_config->web_proxy_auto_discovery_url =
+      GetManagedString(dict, ::onc::ipconfig::kWebProxyAutoDiscoveryUrl);
+  return ip_config;
+}
+
+mojom::ManagedProxyLocationPtr GetManagedProxyLocation(const base::Value* dict,
+                                                       const char* key) {
+  const base::Value* location_dict = GetDictionary(dict, key);
+  if (!location_dict)
+    return nullptr;
+  auto proxy_location = mojom::ManagedProxyLocation::New();
+  proxy_location->host = GetManagedString(location_dict, ::onc::proxy::kHost);
+  proxy_location->port = GetManagedInt32(location_dict, ::onc::proxy::kPort);
+  return proxy_location;
+}
+
+mojom::ManagedProxySettingsPtr GetManagedProxySettings(
+    const base::Value* dict) {
+  auto proxy_settings = mojom::ManagedProxySettings::New();
+  proxy_settings->type = GetManagedString(dict, ::onc::proxy::kType);
+  const base::Value* manual_dict = GetDictionary(dict, ::onc::proxy::kManual);
+  if (manual_dict) {
+    auto manual_proxy_settings = mojom::ManagedManualProxySettings::New();
+    manual_proxy_settings->http_proxy =
+        GetManagedProxyLocation(manual_dict, ::onc::proxy::kHttp);
+    manual_proxy_settings->secure_http_proxy =
+        GetManagedProxyLocation(manual_dict, ::onc::proxy::kHttps);
+    manual_proxy_settings->ftp_proxy =
+        GetManagedProxyLocation(manual_dict, ::onc::proxy::kFtp);
+    manual_proxy_settings->socks =
+        GetManagedProxyLocation(manual_dict, ::onc::proxy::kSocks);
+    proxy_settings->manual = std::move(manual_proxy_settings);
+  }
+  proxy_settings->exclude_domains =
+      GetManagedStringList(dict, ::onc::proxy::kExcludeDomains);
+  proxy_settings->pac = GetManagedString(dict, ::onc::proxy::kPAC);
+  return proxy_settings;
+}
+
+mojom::ApnPropertiesPtr GetApnProperties(const base::Value* dict) {
+  auto apn = mojom::ApnProperties::New();
+  apn->access_point_name =
+      GetRequiredString(dict, ::onc::cellular_apn::kAccessPointName);
+  apn->authentication = GetString(dict, ::onc::cellular_apn::kAuthentication);
+  apn->language = GetString(dict, ::onc::cellular_apn::kLanguage);
+  apn->localized_name = GetString(dict, ::onc::cellular_apn::kLocalizedName);
+  apn->name = GetString(dict, ::onc::cellular_apn::kName);
+  apn->password = GetString(dict, ::onc::cellular_apn::kPassword);
+  apn->username = GetString(dict, ::onc::cellular_apn::kUsername);
+  return apn;
+}
+
+mojom::ManagedApnPropertiesPtr GetManagedApnProperties(const base::Value* dict,
+                                                       const char* key) {
+  const base::Value* apn_dict = dict->FindKey(key);
+  if (!apn_dict)
+    return nullptr;
+  if (!apn_dict->is_dict()) {
+    NET_LOG(ERROR) << "Expected dictionary, found: " << *apn_dict;
+    return nullptr;
+  }
+  auto apn = mojom::ManagedApnProperties::New();
+  apn->access_point_name =
+      GetManagedString(apn_dict, ::onc::cellular_apn::kAccessPointName);
+  CHECK(apn->access_point_name);
+  apn->authentication =
+      GetManagedString(apn_dict, ::onc::cellular_apn::kAuthentication);
+  apn->language = GetManagedString(apn_dict, ::onc::cellular_apn::kLanguage);
+  apn->localized_name =
+      GetManagedString(apn_dict, ::onc::cellular_apn::kLocalizedName);
+  apn->name = GetManagedString(apn_dict, ::onc::cellular_apn::kName);
+  apn->password = GetManagedString(apn_dict, ::onc::cellular_apn::kPassword);
+  apn->username = GetManagedString(apn_dict, ::onc::cellular_apn::kUsername);
+  return apn;
+}
+
+mojom::ManagedApnListPtr GetManagedApnList(const base::Value* value) {
+  if (!value)
+    return nullptr;
+  if (value->is_list()) {
+    auto result = mojom::ManagedApnList::New();
+    std::vector<mojom::ApnPropertiesPtr> active;
+    for (const base::Value& value : value->GetList())
+      active.push_back(GetApnProperties(&value));
+    result->active_value = std::move(active);
+    return result;
+  } else if (value->is_dict()) {
+    ManagedDictionary managed_dict = GetManagedDictionary(value);
+    if (!managed_dict.active_value.is_list()) {
+      NET_LOG(ERROR) << "No active or effective value for APNList";
+      return nullptr;
+    }
+    auto result = mojom::ManagedApnList::New();
+    for (const base::Value& e : managed_dict.active_value.GetList())
+      result->active_value.push_back(GetApnProperties(&e));
+    result->policy_source = managed_dict.policy_source;
+    if (!managed_dict.policy_value.is_none()) {
+      result->policy_value = std::vector<mojom::ApnPropertiesPtr>();
+      for (const base::Value& e : managed_dict.policy_value.GetList())
+        result->policy_value->push_back(GetApnProperties(&e));
+    }
+    return result;
+  }
+  NET_LOG(ERROR) << "Expected list or dictionary, found: " << *value;
+  return nullptr;
+}
+
+std::vector<mojom::FoundNetworkPropertiesPtr> GetFoundNetworksList(
+    const base::Value* dict,
+    const char* key) {
+  std::vector<mojom::FoundNetworkPropertiesPtr> result;
+  const base::Value* v = dict->FindKey(key);
+  if (!v)
+    return result;
+  if (!v->is_list()) {
+    NET_LOG(ERROR) << "Expected list, found: " << *v;
+    return result;
+  }
+  for (const base::Value& e : v->GetList()) {
+    auto found_network = mojom::FoundNetworkProperties::New();
+    found_network->status =
+        GetRequiredString(&e, ::onc::cellular_found_network::kStatus);
+    found_network->network_id =
+        GetRequiredString(&e, ::onc::cellular_found_network::kNetworkId);
+    found_network->technology =
+        GetRequiredString(&e, ::onc::cellular_found_network::kTechnology);
+    found_network->short_name =
+        GetString(&e, ::onc::cellular_found_network::kShortName);
+    found_network->long_name =
+        GetString(&e, ::onc::cellular_found_network::kLongName);
+    result.push_back(std::move(found_network));
+  }
+  return result;
+}
+
+mojom::CellularProviderPropertiesPtr GetCellularProviderProperties(
+    const base::Value* dict,
+    const char* key) {
+  const base::Value* provider_dict = dict->FindKey(key);
+  if (!provider_dict)
+    return nullptr;
+  auto provider = mojom::CellularProviderProperties::New();
+  provider->name =
+      GetRequiredString(provider_dict, ::onc::cellular_provider::kName);
+  provider->code =
+      GetRequiredString(provider_dict, ::onc::cellular_provider::kCode);
+  provider->country =
+      GetString(provider_dict, ::onc::cellular_provider::kCountry);
+  return provider;
+}
+
+mojom::ManagedIssuerSubjectPatternPtr GetManagedIssuerSubjectPattern(
+    const base::Value* dict,
+    const char* key) {
+  const base::Value* pattern_dict = dict->FindKey(key);
+  if (!pattern_dict)
+    return nullptr;
+  if (!pattern_dict->is_dict()) {
+    NET_LOG(ERROR) << "Expected dictionary, found: " << *pattern_dict;
+    return nullptr;
+  }
+  auto pattern = mojom::ManagedIssuerSubjectPattern::New();
+  pattern->common_name =
+      GetManagedString(pattern_dict, ::onc::client_cert::kCommonName);
+  pattern->locality =
+      GetManagedString(pattern_dict, ::onc::client_cert::kLocality);
+  pattern->organization =
+      GetManagedString(pattern_dict, ::onc::client_cert::kOrganization);
+  pattern->organizational_unit =
+      GetManagedString(pattern_dict, ::onc::client_cert::kOrganizationalUnit);
+  return pattern;
+}
+
+mojom::ManagedCertificatePatternPtr GetManagedCertificatePattern(
+    const base::Value* dict,
+    const char* key) {
+  const base::Value* pattern_dict = dict->FindKey(key);
+  if (!pattern_dict)
+    return nullptr;
+  if (!pattern_dict->is_dict()) {
+    NET_LOG(ERROR) << "Expected dictionary, found: " << *pattern_dict;
+    return nullptr;
+  }
+  auto pattern = mojom::ManagedCertificatePattern::New();
+  pattern->enrollment_uri =
+      GetManagedStringList(pattern_dict, ::onc::client_cert::kEnrollmentURI);
+  pattern->issuer =
+      GetManagedIssuerSubjectPattern(pattern_dict, ::onc::client_cert::kIssuer);
+  pattern->issuer_ca_ref =
+      GetManagedStringList(pattern_dict, ::onc::client_cert::kIssuerCARef);
+  pattern->subject = GetManagedIssuerSubjectPattern(
+      pattern_dict, ::onc::client_cert::kSubject);
+  return pattern;
+}
+
+mojom::ManagedEAPPropertiesPtr GetManagedEAPProperties(const base::Value* dict,
+                                                       const char* key) {
+  const base::Value* eap_dict = dict->FindKey(key);
+  if (!eap_dict)
+    return nullptr;
+  if (!eap_dict->is_dict()) {
+    NET_LOG(ERROR) << "Expected dictionary, found: " << *eap_dict;
+    return nullptr;
+  }
+  auto eap = mojom::ManagedEAPProperties::New();
+  eap->anonymous_identity =
+      GetManagedString(eap_dict, ::onc::eap::kAnonymousIdentity);
+  eap->client_cert_pattern = GetManagedCertificatePattern(
+      eap_dict, ::onc::client_cert::kClientCertPattern);
+  eap->client_cert_pkcs11_id =
+      GetManagedString(eap_dict, ::onc::client_cert::kClientCertPKCS11Id);
+  eap->client_cert_ref =
+      GetManagedString(eap_dict, ::onc::client_cert::kClientCertRef);
+  eap->client_cert_type =
+      GetManagedString(eap_dict, ::onc::client_cert::kClientCertType);
+  eap->identity = GetManagedString(eap_dict, ::onc::eap::kIdentity);
+  eap->inner = GetManagedString(eap_dict, ::onc::eap::kInner);
+  eap->outer = GetManagedString(eap_dict, ::onc::eap::kOuter);
+  eap->save_credentials =
+      GetManagedBoolean(eap_dict, ::onc::eap::kSaveCredentials);
+  eap->server_ca_pems =
+      GetManagedStringList(eap_dict, ::onc::eap::kServerCAPEMs);
+  eap->server_ca_refs =
+      GetManagedStringList(eap_dict, ::onc::eap::kServerCARefs);
+  eap->subject_match = GetManagedString(eap_dict, ::onc::eap::kSubjectMatch);
+  eap->tls_version_max = GetManagedString(eap_dict, ::onc::eap::kTLSVersionMax);
+  eap->use_proactive_key_caching =
+      GetManagedBoolean(eap_dict, ::onc::eap::kUseProactiveKeyCaching);
+  eap->use_system_cas = GetManagedBoolean(eap_dict, ::onc::eap::kUseSystemCAs);
+  return eap;
+}
+
+mojom::ManagedIPSecPropertiesPtr GetManagedIPSecProperties(
+    const base::Value* dict,
+    const char* key) {
+  const base::Value* ipsec_dict = dict->FindKey(key);
+  if (!ipsec_dict)
+    return nullptr;
+  if (!ipsec_dict->is_dict()) {
+    NET_LOG(ERROR) << "Expected dictionary, found: " << *ipsec_dict;
+    return nullptr;
+  }
+  auto ipsec = mojom::ManagedIPSecProperties::New();
+  ipsec->authentication_type =
+      GetManagedString(ipsec_dict, ::onc::ipsec::kAuthenticationType);
+  ipsec->client_cert_pattern = GetManagedCertificatePattern(
+      ipsec_dict, ::onc::client_cert::kClientCertPattern);
+  ipsec->client_cert_pkcs11_id =
+      GetManagedString(ipsec_dict, ::onc::client_cert::kClientCertPKCS11Id);
+  ipsec->client_cert_ref =
+      GetManagedString(ipsec_dict, ::onc::client_cert::kClientCertRef);
+  ipsec->client_cert_type =
+      GetManagedString(ipsec_dict, ::onc::client_cert::kClientCertType);
+  ipsec->eap = GetManagedEAPProperties(ipsec_dict, ::onc::ipsec::kEAP);
+  ipsec->group = GetManagedString(ipsec_dict, ::onc::ipsec::kGroup);
+  ipsec->ike_version = GetManagedInt32(ipsec_dict, ::onc::ipsec::kIKEVersion);
+  ipsec->psk = GetManagedString(ipsec_dict, ::onc::ipsec::kPSK);
+  ipsec->save_credentials =
+      GetManagedBoolean(ipsec_dict, ::onc::vpn::kSaveCredentials);
+  ipsec->server_ca_pems =
+      GetManagedStringList(ipsec_dict, ::onc::ipsec::kServerCAPEMs);
+  ipsec->server_ca_refs =
+      GetManagedStringList(ipsec_dict, ::onc::ipsec::kServerCARefs);
+  return ipsec;
+}
+
+mojom::ManagedL2TPPropertiesPtr GetManagedL2TPProperties(
+    const base::Value* dict,
+    const char* key) {
+  const base::Value* l2tp_dict = dict->FindKey(key);
+  if (!l2tp_dict)
+    return nullptr;
+  if (!l2tp_dict->is_dict()) {
+    NET_LOG(ERROR) << "Expected dictionary, found: " << *l2tp_dict;
+    return nullptr;
+  }
+  auto l2tp = mojom::ManagedL2TPProperties::New();
+  l2tp->lcp_echo_disabled =
+      GetManagedBoolean(l2tp_dict, ::onc::l2tp::kLcpEchoDisabled);
+  l2tp->save_credentials =
+      GetManagedBoolean(l2tp_dict, ::onc::l2tp::kSaveCredentials);
+  l2tp->username = GetManagedString(l2tp_dict, ::onc::l2tp::kUsername);
+  return l2tp;
+}
+
+mojom::ManagedOpenVPNPropertiesPtr GetManagedOpenVPNProperties(
+    const base::Value* dict,
+    const char* key) {
+  const base::Value* openvpn_dict = dict->FindKey(key);
+  if (!openvpn_dict)
+    return nullptr;
+  if (!openvpn_dict->is_dict()) {
+    NET_LOG(ERROR) << "Expected dictionary, found: " << *openvpn_dict;
+    return nullptr;
+  }
+  auto openvpn = mojom::ManagedOpenVPNProperties::New();
+  openvpn->auth = GetManagedString(openvpn_dict, ::onc::openvpn::kAuth);
+  openvpn->auth_retry =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kAuthRetry);
+  openvpn->auth_no_cache =
+      GetManagedBoolean(openvpn_dict, ::onc::openvpn::kAuthNoCache);
+  openvpn->cipher = GetManagedString(openvpn_dict, ::onc::openvpn::kCipher);
+  openvpn->client_cert_pkcs11_id =
+      GetManagedString(openvpn_dict, ::onc::client_cert::kClientCertPKCS11Id);
+  openvpn->client_cert_pattern = GetManagedCertificatePattern(
+      openvpn_dict, ::onc::client_cert::kClientCertPattern);
+  openvpn->client_cert_ref =
+      GetManagedString(openvpn_dict, ::onc::client_cert::kClientCertRef);
+  openvpn->client_cert_type =
+      GetManagedString(openvpn_dict, ::onc::client_cert::kClientCertType);
+  openvpn->comp_lzo = GetManagedString(openvpn_dict, ::onc::openvpn::kCompLZO);
+  openvpn->comp_no_adapt =
+      GetManagedBoolean(openvpn_dict, ::onc::openvpn::kCompNoAdapt);
+  openvpn->extra_hosts =
+      GetManagedStringList(openvpn_dict, ::onc::openvpn::kExtraHosts);
+  openvpn->ignore_default_route =
+      GetManagedBoolean(openvpn_dict, ::onc::openvpn::kIgnoreDefaultRoute);
+  openvpn->key_direction =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kKeyDirection);
+  openvpn->ns_cert_type =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kNsCertType);
+  openvpn->port = GetManagedInt32(openvpn_dict, ::onc::openvpn::kPort);
+  openvpn->proto = GetManagedString(openvpn_dict, ::onc::openvpn::kProto);
+  openvpn->push_peer_info =
+      GetManagedBoolean(openvpn_dict, ::onc::openvpn::kPushPeerInfo);
+  openvpn->remote_cert_eku =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kRemoteCertEKU);
+  openvpn->remote_cert_ku =
+      GetManagedStringList(openvpn_dict, ::onc::openvpn::kRemoteCertKU);
+  openvpn->remote_cert_tls =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kRemoteCertTLS);
+  openvpn->reneg_sec = GetManagedInt32(openvpn_dict, ::onc::openvpn::kRenegSec);
+  openvpn->save_credentials =
+      GetManagedBoolean(openvpn_dict, ::onc::vpn::kSaveCredentials);
+  openvpn->server_ca_pems =
+      GetManagedStringList(openvpn_dict, ::onc::openvpn::kServerCAPEMs);
+  openvpn->server_ca_refs =
+      GetManagedStringList(openvpn_dict, ::onc::openvpn::kServerCARefs);
+  openvpn->server_cert_ref =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kServerCertRef);
+  openvpn->server_poll_timeout =
+      GetManagedInt32(openvpn_dict, ::onc::openvpn::kServerPollTimeout);
+  openvpn->shaper = GetManagedInt32(openvpn_dict, ::onc::openvpn::kShaper);
+  openvpn->static_challenge =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kStaticChallenge);
+  openvpn->tls_auth_contents =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kTLSAuthContents);
+  openvpn->tls_remote =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kTLSRemote);
+  openvpn->tls_version_min =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kTLSVersionMin);
+  openvpn->user_authentication_type =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kUserAuthenticationType);
+  openvpn->username = GetManagedString(openvpn_dict, ::onc::vpn::kUsername);
+  openvpn->verb = GetManagedString(openvpn_dict, ::onc::openvpn::kVerb);
+  openvpn->verify_hash =
+      GetManagedString(openvpn_dict, ::onc::openvpn::kVerifyHash);
+  const base::Value* verify_x509_dict =
+      openvpn_dict->FindKey(::onc::openvpn::kVerifyX509);
+  if (verify_x509_dict) {
+    auto verify_x509 = mojom::ManagedVerifyX509Properties::New();
+    verify_x509->name =
+        GetManagedString(verify_x509_dict, ::onc::verify_x509::kName);
+    verify_x509->type =
+        GetManagedString(verify_x509_dict, ::onc::verify_x509::kType);
+    openvpn->verify_x509 = std::move(verify_x509);
+  }
+  return openvpn;
+}
+
+mojom::ManagedThirdPartyVPNPropertiesPtr GetManagedThirdPartyVPNProperties(
+    const base::Value* dict,
+    const char* key) {
+  const base::Value* third_party_dict = dict->FindKey(key);
+  if (!third_party_dict)
+    return nullptr;
+  if (!third_party_dict->is_dict()) {
+    NET_LOG(ERROR) << "Expected dictionary, found: " << *third_party_dict;
+    return nullptr;
+  }
+  auto third_party = mojom::ManagedThirdPartyVPNProperties::New();
+  third_party->extension_id =
+      GetManagedString(third_party_dict, ::onc::third_party_vpn::kExtensionID);
+  third_party->provider_name =
+      GetString(third_party_dict, ::onc::third_party_vpn::kProviderName);
+  return third_party;
+}
+
+mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
+    const NetworkState* network_state,
+    const base::DictionaryValue* properties) {
+  DCHECK(network_state);
+  DCHECK(properties);
+  base::Optional<std::string> onc_type =
+      GetString(properties, ::onc::network_config::kType);
+  if (!onc_type) {
+    NET_LOG(ERROR) << "Malformed ONC dictionary: missing 'Type'";
+    return nullptr;
+  }
+  mojom::NetworkType type = OncTypeToMojo(*onc_type);
+  if (type == mojom::NetworkType::kAll) {
+    NET_LOG(ERROR) << "Unexpected network type: " << *onc_type;
+    return nullptr;
+  }
+  auto result = mojom::ManagedProperties::New();
+
+  // |network_state| and |properties| guid should be the same.
+  base::Optional<std::string> guid =
+      GetString(properties, ::onc::network_config::kGUID);
+  if (!guid) {
+    NET_LOG(ERROR) << "Malformed ONC dictionary: missing 'GUID'";
+    return nullptr;
+  }
+  DCHECK_EQ(network_state->guid(), *guid);
+  result->guid = network_state->guid();
+
+  // Typed properties (compatible with NetworkStateProperties):
+  result->connection_state =
+      GetConnectionState(network_state, /*technology_enabled=*/true);
+  result->source = mojom::OncSource(network_state->onc_source());
+  result->type = type;
+
+  // Unmanaged properties
+  result->connectable =
+      GetBoolean(properties, ::onc::network_config::kConnectable);
+  result->error_state =
+      GetString(properties, ::onc::network_config::kErrorState);
+  const base::Value* ip_configs_list =
+      properties->FindKey(::onc::network_config::kIPConfigs);
+  if (ip_configs_list) {
+    std::vector<mojom::IPConfigPropertiesPtr> ip_configs;
+    for (const base::Value& ip_config_value : ip_configs_list->GetList())
+      ip_configs.push_back(GetIPConfig(&ip_config_value));
+    result->ip_configs = std::move(ip_configs);
+  }
+  result->restricted_connectivity =
+      GetBoolean(properties, ::onc::network_config::kRestrictedConnectivity);
+  const base::Value* saved_ip_config =
+      GetDictionary(properties, ::onc::network_config::kSavedIPConfig);
+  if (saved_ip_config)
+    result->saved_ip_config = GetIPConfig(saved_ip_config);
+
+  // Managed properties
+  result->ip_address_config_type =
+      GetManagedString(properties, ::onc::network_config::kIPAddressConfigType);
+  result->name = GetManagedString(properties, ::onc::network_config::kName);
+  result->name_servers_config_type = GetManagedString(
+      properties, ::onc::network_config::kNameServersConfigType);
+  result->priority =
+      GetManagedInt32(properties, ::onc::network_config::kPriority);
+
+  // Managed dictionaries (not type specific)
+  const base::Value* proxy_settings =
+      GetDictionary(properties, ::onc::network_config::kProxySettings);
+  if (proxy_settings)
+    result->proxy_settings = GetManagedProxySettings(proxy_settings);
+  const base::Value* static_ip_config =
+      GetDictionary(properties, ::onc::network_config::kStaticIPConfig);
+  if (static_ip_config)
+    result->static_ip_config = GetManagedIPConfig(static_ip_config);
+
+  // Type specific dictionaries
+  switch (type) {
+    case mojom::NetworkType::kCellular: {
+      auto cellular = mojom::ManagedCellularProperties::New();
+      const base::Value* cellular_dict =
+          GetDictionary(properties, ::onc::network_config::kCellular);
+      if (!cellular_dict) {
+        result->cellular = std::move(cellular);
+        break;
+      }
+      cellular->auto_connect =
+          GetManagedBoolean(cellular_dict, ::onc::cellular::kAutoConnect);
+      cellular->apn =
+          GetManagedApnProperties(cellular_dict, ::onc::cellular::kAPN);
+      cellular->apn_list =
+          GetManagedApnList(cellular_dict->FindKey(::onc::cellular::kAPNList));
+      cellular->activation_state =
+          GetString(cellular_dict, ::onc::cellular::kActivationState);
+      cellular->allow_roaming =
+          GetBoolean(properties, ::onc::cellular::kAllowRoaming);
+      cellular->esn = GetString(cellular_dict, ::onc::cellular::kESN);
+      cellular->family = GetString(cellular_dict, ::onc::cellular::kFamily);
+      cellular->firmware_revision =
+          GetString(cellular_dict, ::onc::cellular::kFirmwareRevision);
+      cellular->found_networks =
+          GetFoundNetworksList(cellular_dict, ::onc::cellular::kFoundNetworks);
+      cellular->hardware_revision =
+          GetString(cellular_dict, ::onc::cellular::kHardwareRevision);
+      cellular->home_provider = GetCellularProviderProperties(
+          cellular_dict, ::onc::cellular::kHomeProvider);
+      cellular->iccid = GetString(cellular_dict, ::onc::cellular::kICCID);
+      cellular->imei = GetString(cellular_dict, ::onc::cellular::kIMEI);
+      const base::Value* apn_dict =
+          GetDictionary(cellular_dict, ::onc::cellular::kLastGoodAPN);
+      if (apn_dict)
+        cellular->last_good_apn = GetApnProperties(apn_dict);
+      cellular->manufacturer =
+          GetString(cellular_dict, ::onc::cellular::kManufacturer);
+      cellular->mdn = GetString(cellular_dict, ::onc::cellular::kMDN);
+      cellular->meid = GetString(cellular_dict, ::onc::cellular::kMEID);
+      cellular->min = GetString(cellular_dict, ::onc::cellular::kMIN);
+      cellular->model_id = GetString(cellular_dict, ::onc::cellular::kModelID);
+      cellular->network_technology =
+          GetString(cellular_dict, ::onc::cellular::kNetworkTechnology);
+      const base::Value* payment_portal_dict =
+          cellular_dict->FindKey(::onc::cellular::kPaymentPortal);
+      if (payment_portal_dict) {
+        auto payment_portal = mojom::PaymentPortalProperties::New();
+        payment_portal->method = GetRequiredString(
+            payment_portal_dict, ::onc::cellular_payment_portal::kMethod);
+        payment_portal->post_data = GetRequiredString(
+            payment_portal_dict, ::onc::cellular_payment_portal::kPostData);
+        payment_portal->url = GetString(payment_portal_dict,
+                                        ::onc::cellular_payment_portal::kUrl);
+        cellular->payment_portal = std::move(payment_portal);
+      }
+      cellular->roaming_state =
+          GetString(cellular_dict, ::onc::cellular::kRoamingState);
+      cellular->serving_operator = GetCellularProviderProperties(
+          cellular_dict, ::onc::cellular::kServingOperator);
+      cellular->signal_strength =
+          GetInt32(cellular_dict, ::onc::cellular::kSignalStrength);
+      cellular->support_network_scan =
+          GetBoolean(cellular_dict, ::onc::cellular::kSupportNetworkScan);
+      result->cellular = std::move(cellular);
+      break;
+    }
+    case mojom::NetworkType::kEthernet: {
+      auto ethernet = mojom::ManagedEthernetProperties::New();
+      const base::Value* ethernet_dict =
+          GetDictionary(properties, ::onc::network_config::kEthernet);
+      if (!ethernet_dict) {
+        result->ethernet = std::move(ethernet);
+        break;
+      }
+      ethernet->authentication =
+          GetManagedString(ethernet_dict, ::onc::ethernet::kAuthentication);
+      ethernet->eap =
+          GetManagedEAPProperties(ethernet_dict, ::onc::ethernet::kEAP);
+      result->ethernet = std::move(ethernet);
+      break;
+    }
+    case mojom::NetworkType::kTether:
+      // No Tether specific managed properties.
+      break;
+    case mojom::NetworkType::kVPN: {
+      auto vpn = mojom::ManagedVPNProperties::New();
+      const base::Value* vpn_dict =
+          GetDictionary(properties, ::onc::network_config::kVPN);
+      if (!vpn_dict) {
+        result->vpn = std::move(vpn);
+        break;
+      }
+      vpn->auto_connect = GetManagedBoolean(vpn_dict, ::onc::vpn::kAutoConnect);
+      vpn->host = GetManagedString(vpn_dict, ::onc::vpn::kHost);
+      vpn->ip_sec = GetManagedIPSecProperties(vpn_dict, ::onc::vpn::kIPsec);
+      vpn->l2tp = GetManagedL2TPProperties(vpn_dict, ::onc::vpn::kL2TP);
+      vpn->open_vpn =
+          GetManagedOpenVPNProperties(vpn_dict, ::onc::vpn::kOpenVPN);
+      vpn->third_party_vpn = GetManagedThirdPartyVPNProperties(
+          vpn_dict, ::onc::vpn::kThirdPartyVpn);
+      vpn->type = GetManagedString(vpn_dict, ::onc::vpn::kType);
+      CHECK(vpn->type);
+      result->vpn = std::move(vpn);
+      break;
+    }
+    case mojom::NetworkType::kWiFi: {
+      auto wifi = mojom::ManagedWiFiProperties::New();
+      const base::Value* wifi_dict =
+          GetDictionary(properties, ::onc::network_config::kWiFi);
+      if (!wifi_dict) {
+        result->wifi = std::move(wifi);
+        break;
+      }
+      wifi->allow_gateway_arp_polling =
+          GetManagedBoolean(wifi_dict, ::onc::wifi::kAllowGatewayARPPolling);
+      wifi->auto_connect =
+          GetManagedBoolean(wifi_dict, ::onc::wifi::kAutoConnect);
+      wifi->bssid = GetString(wifi_dict, ::onc::wifi::kBSSID);
+      wifi->eap = GetManagedEAPProperties(wifi_dict, ::onc::wifi::kEAP);
+      wifi->frequency = GetInt32(wifi_dict, ::onc::wifi::kFrequency);
+      wifi->frequency_list =
+          GetInt32List(wifi_dict, ::onc::wifi::kFrequencyList);
+      wifi->ft_enabled = GetManagedBoolean(wifi_dict, ::onc::wifi::kFTEnabled);
+      wifi->hex_ssid = GetManagedString(wifi_dict, ::onc::wifi::kHexSSID);
+      wifi->hidden_ssid =
+          GetManagedBoolean(wifi_dict, ::onc::wifi::kHiddenSSID);
+      wifi->roam_threshold =
+          GetManagedInt32(wifi_dict, ::onc::wifi::kRoamThreshold);
+      wifi->ssid = GetManagedString(wifi_dict, ::onc::wifi::kSSID);
+      CHECK(wifi->ssid);
+      wifi->security = GetManagedString(wifi_dict, ::onc::wifi::kSecurity);
+      CHECK(wifi->security);
+      wifi->signal_strength = GetInt32(wifi_dict, ::onc::wifi::kSignalStrength);
+      wifi->tethering_state =
+          GetString(wifi_dict, ::onc::wifi::kTetheringState);
+      result->wifi = std::move(wifi);
+      break;
+    }
+    case mojom::NetworkType::kWiMAX:
+      break;
+    case mojom::NetworkType::kAll:
+    case mojom::NetworkType::kMobile:
+    case mojom::NetworkType::kWireless:
+      NOTREACHED() << "NetworkStateProperties can not be of type: " << type;
+      break;
+  }
+
+  return result;
+}
+
 bool NetworkTypeCanBeDisabled(mojom::NetworkType type) {
   switch (type) {
     case mojom::NetworkType::kCellular:
@@ -317,9 +1250,11 @@ bool NetworkTypeCanBeDisabled(mojom::NetworkType type) {
 
 CrosNetworkConfig::CrosNetworkConfig(
     NetworkStateHandler* network_state_handler,
-    NetworkDeviceHandler* network_device_handler)
+    NetworkDeviceHandler* network_device_handler,
+    ManagedNetworkConfigurationHandler* network_configuration_handler)
     : network_state_handler_(network_state_handler),
-      network_device_handler_(network_device_handler) {
+      network_device_handler_(network_device_handler),
+      network_configuration_handler_(network_configuration_handler) {
   CHECK(network_state_handler);
 }
 
@@ -421,6 +1356,71 @@ void CrosNetworkConfig::GetDeviceStateList(
   std::move(callback).Run(std::move(result));
 }
 
+void CrosNetworkConfig::GetManagedProperties(
+    const std::string& guid,
+    GetManagedPropertiesCallback callback) {
+  if (!network_configuration_handler_) {
+    NET_LOG(ERROR) << "GetManagedProperties called with no handler";
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(guid);
+  if (!network) {
+    NET_LOG(ERROR) << "Network not found: " << guid;
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  int callback_id = callback_id_++;
+  get_managed_properties_callbacks_[callback_id] = std::move(callback);
+
+  network_configuration_handler_->GetManagedProperties(
+      chromeos::LoginState::Get()->primary_user_hash(), network->path(),
+      base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccess,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      base::Bind(&CrosNetworkConfig::GetManagedPropertiesFailure,
+                 weak_factory_.GetWeakPtr(), guid, callback_id));
+}
+
+void CrosNetworkConfig::GetManagedPropertiesSuccess(
+    int callback_id,
+    const std::string& service_path,
+    const base::DictionaryValue& properties) {
+  auto iter = get_managed_properties_callbacks_.find(callback_id);
+  if (iter == get_managed_properties_callbacks_.end()) {
+    LOG(ERROR) << "Unexpected callback id not found (success): " << callback_id;
+    return;
+  }
+  const NetworkState* network_state =
+      network_state_handler_->GetNetworkState(service_path);
+  if (!network_state) {
+    NET_LOG(ERROR) << "Network not found: " << service_path;
+    std::move(iter->second).Run(nullptr);
+    return;
+  }
+  std::move(iter->second)
+      .Run(ManagedPropertiesToMojo(network_state, &properties));
+  get_managed_properties_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::GetManagedPropertiesFailure(
+    std::string guid,
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = get_managed_properties_callbacks_.find(callback_id);
+  if (iter == get_managed_properties_callbacks_.end()) {
+    LOG(ERROR) << "Unexpected callback id not found (failure): " << callback_id;
+    return;
+  }
+  NET_LOG(ERROR) << "Failed to get network properties: " << guid
+                 << " Error: " << error_name;
+  std::move(iter->second).Run(nullptr);
+  get_managed_properties_callbacks_.erase(iter);
+}
+
 void CrosNetworkConfig::SetNetworkTypeEnabledState(
     mojom::NetworkType type,
     bool enabled,
@@ -467,7 +1467,7 @@ void CrosNetworkConfig::SetCellularSimState(
     return;
   }
 
-  int callback_id = set_cellular_sim_state_callback_id_++;
+  int callback_id = callback_id_++;
   set_cellular_sim_state_callbacks_[callback_id] = std::move(callback);
 
   if (lock_type == shill::kSIMLockPuk) {

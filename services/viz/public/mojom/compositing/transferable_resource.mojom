@@ -31,6 +31,7 @@ enum ResourceFormat {
   YVU_420,
   YUV_420_BIPLANAR,
   UYVY_422,
+  P010,
 };
 
 // See components/viz/common/resources/transferable_resource.h.

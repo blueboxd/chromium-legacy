@@ -159,6 +159,9 @@ public class DownloadManagerService
 
         /** Called when a download has been removed. */
         void onDownloadItemRemoved(String guid, boolean isOffTheRecord);
+
+        /** Only for testing */
+        default void broadcastDownloadSuccessfulForTesting(DownloadInfo downloadInfo) {}
     }
 
     @VisibleForTesting protected final List<String> mAutoResumableDownloadIds =
@@ -428,7 +431,11 @@ public class DownloadManagerService
      * Broadcast that a download was successful.
      * @param downloadInfo info about the download.
      */
-    protected void broadcastDownloadSuccessful(DownloadInfo downloadInfo) {}
+    protected void broadcastDownloadSuccessful(DownloadInfo downloadInfo) {
+        for (DownloadObserver observer : mDownloadObservers) {
+            observer.broadcastDownloadSuccessfulForTesting(downloadInfo);
+        }
+    }
 
     /**
      * Gets download information from SharedPreferences.

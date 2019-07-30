@@ -80,9 +80,6 @@ struct NavigationRequestInfo;
 struct Referrer;
 struct ResourceRequest;
 
-using CreateDownloadHandlerIntercept =
-    base::Callback<std::unique_ptr<ResourceHandler>(net::URLRequest*)>;
-
 class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
       public ResourceLoaderDelegate {
@@ -92,7 +89,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Work on moving creation of download handlers out of
   // ResourceDispatcherHostImpl.
   ResourceDispatcherHostImpl(
-      CreateDownloadHandlerIntercept download_handler_intercept,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner,
       bool enable_resource_scheduler);
   ResourceDispatcherHostImpl();
@@ -176,17 +172,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   ResourceDispatcherHostDelegate* delegate() {
     return delegate_;
   }
-
-  // Must be called after the ResourceRequestInfo has been created
-  // and associated with the request.
-  // This is marked virtual so it can be overriden in testing.
-  // TODO(ananta)
-  // This method should be removed or moved outside this class.
-  virtual std::unique_ptr<ResourceHandler> CreateResourceHandlerForDownload(
-      net::URLRequest* request,
-      bool is_content_initiated,
-      bool must_download,
-      bool is_new_request);
 
   network::ResourceScheduler* scheduler() { return scheduler_.get(); }
 
@@ -686,9 +671,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   HeaderInterceptorMap http_header_interceptor_map_;
 
   network::KeepaliveStatisticsRecorder keepalive_statistics_recorder_;
-
-  // Points to the registered download handler intercept.
-  CreateDownloadHandlerIntercept create_download_handler_intercept_;
 
   // Task runner for the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

@@ -35,7 +35,7 @@ class MODULES_EXPORT InspectorWebAudioAgent final
 
   // API for InspectorInstrumentation (modules/webaudio -> agent)
   void DidCreateBaseAudioContext(BaseAudioContext*);
-  void DidDestroyBaseAudioContext(BaseAudioContext*);
+  void WillDestroyBaseAudioContext(BaseAudioContext*);
   void DidChangeBaseAudioContext(BaseAudioContext*);
 
   void Trace(blink::Visitor*) override;

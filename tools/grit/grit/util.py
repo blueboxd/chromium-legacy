@@ -14,8 +14,6 @@ import re
 import shutil
 import sys
 import tempfile
-import time
-import types
 from xml.sax import saxutils
 
 from grit import lazy_re

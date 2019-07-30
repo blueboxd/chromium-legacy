@@ -14,6 +14,7 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/mock_callback.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/default_clock.h"
@@ -436,6 +437,13 @@ TEST_F(IndexedDBDispatcherHostTest, OpenNewConnectionWhileUpgrading) {
   loop3.Run();
 }
 
+MATCHER_P(IsCallbackError, error_code, "") {
+  if (arg->is_error_result() &&
+      arg->get_error_result()->error_code == error_code)
+    return true;
+  return false;
+}
+
 TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
@@ -471,7 +479,7 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
   EXPECT_EQ(connection->version, metadata.version);
   EXPECT_EQ(connection->db_name, metadata.name);
 
-  std::unique_ptr<StrictMock<MockMojoIndexedDBCallbacks>> put_callbacks;
+  base::MockCallback<blink::mojom::IDBTransaction::PutCallback> put_callback;
 
   base::RunLoop loop2;
   base::RepeatingClosure quit_closure2 =
@@ -480,11 +488,9 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
       FROM_HERE, base::BindLambdaForTesting([&]() {
         ::testing::InSequence dummy;
 
-        put_callbacks =
-            std::make_unique<StrictMock<MockMojoIndexedDBCallbacks>>();
-
-        EXPECT_CALL(*put_callbacks,
-                    Error(blink::kWebIDBDatabaseExceptionUnknownError, _))
+        EXPECT_CALL(
+            put_callback,
+            Run(IsCallbackError(blink::kWebIDBDatabaseExceptionUnknownError)))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
 
@@ -526,8 +532,7 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
             kObjectStoreId, std::move(new_value),
             IndexedDBKey(base::UTF8ToUTF16("hello")),
             blink::mojom::IDBPutMode::AddOnly,
-            std::vector<IndexedDBIndexKeys>(),
-            put_callbacks->CreateInterfacePtrAndBind());
+            std::vector<IndexedDBIndexKeys>(), put_callback.Get());
         connection->version_change_transaction->Commit(0);
       }));
   loop2.Run();
@@ -535,7 +540,6 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
   base::RunLoop loop3;
   context_impl_->TaskRunner()->PostTask(FROM_HERE,
                                         base::BindLambdaForTesting([&]() {
-                                          put_callbacks.reset();
                                           connection.reset();
                                           loop3.Quit();
                                         }));
@@ -1170,6 +1174,10 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
   context_impl_->RemoveObserver(&observer);
 }
 
+MATCHER(IsSuccessKey, "") {
+  return arg->is_key();
+}
+
 // The test is flaky. See https://crbug.com/879213
 TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
   const int64_t kDBVersion1 = 1;
@@ -1214,7 +1222,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
   EXPECT_EQ(connection1->version, metadata1.version);
   EXPECT_EQ(connection1->db_name, metadata1.name);
 
-  std::unique_ptr<StrictMock<MockMojoIndexedDBCallbacks>> put_callbacks;
+  base::MockCallback<blink::mojom::IDBTransaction::PutCallback> put_callback;
 
   // Add object store entry.
   base::RunLoop loop2;
@@ -1224,10 +1232,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
       FROM_HERE, base::BindLambdaForTesting([&]() {
         ::testing::InSequence dummy;
 
-        put_callbacks =
-            std::make_unique<StrictMock<MockMojoIndexedDBCallbacks>>();
-
-        EXPECT_CALL(*put_callbacks, SuccessKey(_))
+        EXPECT_CALL(put_callback, Run(IsSuccessKey()))
             .Times(1)
             .WillOnce(RunClosure(quit_closure2));
         EXPECT_CALL(*connection1->connection_callbacks,
@@ -1261,8 +1266,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
             kObjectStoreId, std::move(new_value),
             IndexedDBKey(base::UTF8ToUTF16("key")),
             blink::mojom::IDBPutMode::AddOnly,
-            std::vector<IndexedDBIndexKeys>(),
-            put_callbacks->CreateInterfacePtrAndBind());
+            std::vector<IndexedDBIndexKeys>(), put_callback.Get());
         connection1->version_change_transaction->Commit(0);
       }));
   loop2.Run();
@@ -1274,7 +1278,6 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
   context_impl_->TaskRunner()->PostTask(FROM_HERE,
                                         base::BindLambdaForTesting([&]() {
                                           connection1->database->Close();
-                                          put_callbacks.reset();
                                           connection1.reset();
                                           loop3.Quit();
                                         }));

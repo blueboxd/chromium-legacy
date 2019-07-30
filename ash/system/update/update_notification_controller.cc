@@ -11,6 +11,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "base/bind.h"
+#include "build/branding_buildflags.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
@@ -112,7 +113,7 @@ base::string16 UpdateNotificationController::GetNotificationMessage() const {
 }
 
 base::string16 UpdateNotificationController::GetNotificationTitle() const {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (model_->update_type() == UpdateType::kFlash) {
     return l10n_util::GetStringUTF16(
         IDS_UPDATE_NOTIFICATION_TITLE_FLASH_PLAYER);

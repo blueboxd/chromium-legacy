@@ -527,6 +527,7 @@ source_set("unit_tests") {
   deps = [
     ":common",
     ":test_support",
+    "//build:branding_buildflags",
     "//remoting/host/file_transfer:unit_tests",
     "//remoting/host/it2me:common",
     "//remoting/host/native_messaging",

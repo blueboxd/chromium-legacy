@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "content/renderer/media/stream/apply_constraints_processor.h"
-#include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -24,6 +23,7 @@
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
@@ -116,7 +116,8 @@ UserMediaClientImpl::UserMediaClientImpl(
 UserMediaClientImpl::UserMediaClientImpl(
     RenderFrameImpl* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
-    std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
+    std::unique_ptr<blink::WebMediaStreamDeviceObserver>
+        media_stream_device_observer,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : UserMediaClientImpl(
           render_frame,

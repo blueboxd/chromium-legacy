@@ -86,7 +86,6 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
       {"OncCellular-Manufacturer", IDS_ONC_CELLULAR_MANUFACTURER},
       {"OncCellular-ModelID", IDS_ONC_CELLULAR_MODEL_ID},
       {"OncCellular-NetworkTechnology", IDS_ONC_CELLULAR_NETWORK_TECHNOLOGY},
-      {"OncCellular-PRLVersion", IDS_ONC_CELLULAR_PRL_VERSION},
       {"OncCellular-RoamingState", IDS_ONC_CELLULAR_ROAMING_STATE},
       {"OncCellular-RoamingState_Home", IDS_ONC_CELLULAR_ROAMING_STATE_HOME},
       {"OncCellular-RoamingState_Roaming",

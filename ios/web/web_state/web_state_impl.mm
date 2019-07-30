@@ -864,6 +864,10 @@ void WebStateImpl::ClearTransientContent() {
   [web_controller_ clearTransientContentView];
 }
 
+void WebStateImpl::ClearDialogs() {
+  CancelDialogs();
+}
+
 void WebStateImpl::RecordPageStateInNavigationItem() {
   [web_controller_ recordStateInHistory];
 }

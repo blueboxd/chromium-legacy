@@ -79,7 +79,7 @@ void MessagePortProvider::PostMessageToFrame(
 }
 #endif
 
-#if defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
 // static
 void MessagePortProvider::PostMessageToFrame(
     WebContents* web_contents,

@@ -18,7 +18,8 @@ NetworkConfigService::NetworkConfigService(
     : service_binding_(this, std::move(request)),
       cros_network_config_(std::make_unique<CrosNetworkConfig>(
           NetworkHandler::Get()->network_state_handler(),
-          NetworkHandler::Get()->network_device_handler())) {}
+          NetworkHandler::Get()->network_device_handler(),
+          NetworkHandler::Get()->managed_network_configuration_handler())) {}
 
 NetworkConfigService::~NetworkConfigService() = default;
 

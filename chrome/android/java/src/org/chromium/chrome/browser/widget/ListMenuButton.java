@@ -18,6 +18,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.ui.widget.AnchoredPopupWindow;
 import org.chromium.ui.widget.ChromeImageButton;
@@ -96,10 +97,14 @@ public class ListMenuButton
         void onItemSelected(Item item);
     }
 
+    /** A listener that is notified when the popup menu is shown. */
+    public interface PopupMenuShownListener { void onPopupMenuShown(); }
+
     private final int mMenuWidth;
 
     private AnchoredPopupWindow mPopupMenu;
     private Delegate mDelegate;
+    private ObserverList<PopupMenuShownListener> mPopupListeners = new ObserverList<>();
 
     /**
      * Creates a new {@link ListMenuButton}.
@@ -239,5 +244,31 @@ public class ListMenuButton
         mPopupMenu.addOnDismissListener(() -> { mPopupMenu = null; });
 
         mPopupMenu.show();
+        notifyPopupListeners();
+    }
+
+    /** Notify all of the PopupMenuShownListeners of a popup menu action. */
+    private void notifyPopupListeners() {
+        for (PopupMenuShownListener l : mPopupListeners) {
+            l.onPopupMenuShown();
+        }
+    }
+
+    /**
+     * Adds a listener which will be notified when the popup menu is shown.
+     *
+     * @param l The listener of interest
+     */
+    public void addPopupListener(PopupMenuShownListener l) {
+        mPopupListeners.addObserver(l);
+    }
+
+    /**
+     * Removes a popup menu listener.
+     *
+     * @param l The listener of interest
+     */
+    public void removePopupListener(PopupMenuShownListener l) {
+        mPopupListeners.removeObserver(l);
     }
 }

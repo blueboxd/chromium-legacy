@@ -15,6 +15,7 @@ component("mpris") {
 
   deps = [
     "//base",
+    "//build:branding_buildflags",
     "//components/dbus/thread_linux",
     "//dbus",
   ]

@@ -4,6 +4,7 @@
 <translation id="1510238584712386396">ランチャー</translation>
 <translation id="1734367976349034509">このデバイスは会社が管理しています</translation>
 <translation id="1930797645656624981">Chrome OS の入力方法サービス</translation>
+<translation id="1979103255016296513">パスワードの変更期限を過ぎました</translation>
 <translation id="2049639323467105390">このデバイスは <ph name="DOMAIN" /> によって管理されています。</translation>
 <translation id="2083960536266308407">画面では何も見つかりませんでした</translation>
 <translation id="2338501278241028356">近くのデバイスを検出するには Bluetooth をオンにしてください</translation>
@@ -11,6 +12,7 @@
 <translation id="2872961005593481000">終了</translation>
 <translation id="3008341117444806826">更新</translation>
 <translation id="3838338534323494292">新しいパスワード</translation>
+<translation id="4227825898293920515">パスワードの有効期限はあと <ph name="TIME" />です</translation>
 <translation id="4429881212383817840">Kerberos チケットはまもなく有効期限が切れます</translation>
 <translation id="445059817448385655">古いパスワード</translation>
 <translation id="467510802200863975">パスワードが一致しません</translation>

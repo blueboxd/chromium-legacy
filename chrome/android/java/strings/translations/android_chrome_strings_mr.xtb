@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">पृष्ठ रिफ्रेश करा</translation>
 <translation id="2709516037105925701">ऑटोफिल</translation>
 <translation id="271033894570825754">नवीन</translation>
+<translation id="2714850608275780394">कोडची प्रतीक्षा करत आहे</translation>
 <translation id="2728754400939377704">साइटनुसार क्रमाने लावा</translation>
 <translation id="2744248271121720757">झटपट शोधण्यासाठी किंवा संबंधित ॲक्‍शन पाहण्यासाठी एखाद्या शब्दावर टॅप करा</translation>
+<translation id="2760989362628427051">तुमच्या डिव्हाइसची गडद थीम किंवा बॅटरी सेव्हर सुरू असताना गडद थीम सुरू करा</translation>
 <translation id="2762000892062317888">आत्ताच</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> सेकंद शिल्लक</translation>
 <translation id="2779651927720337254">अयशस्वी झाले</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">1 मिनिट शिल्लक</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">या पृष्ठास बुकमार्क करा</translation>
+<translation id="3254626532848657899">तळाशी हलवा</translation>
 <translation id="3259831549858767975">पृष्ठावरील प्रत्येकगोष्ट आणखी लहान बनवा</translation>
 <translation id="3269093882174072735">इमेज लोड करा</translation>
 <translation id="3269956123044984603">तुमच्या अन्य डिव्हाइसवरून तुमचे टॅब मिळविण्यासाठी, Android खाते सेटिंग्ज मधील “डेटा अॉटो-सिंक करा” चालू करा.</translation>
@@ -441,6 +444,7 @@
 <translation id="4378154925671717803">फोन</translation>
 <translation id="4384468725000734951">शोध करण्‍यासाठी Sogou वापरत आहे</translation>
 <translation id="4404568932422911380">कोणतेही बुकमार्क नाहीत</translation>
+<translation id="4405224443901389797">यामध्ये हलवा…</translation>
 <translation id="4411535500181276704">लाइट मोड</translation>
 <translation id="4415276339145661267">तुमचे Google खाते व्यवस्थापित करा</translation>
 <translation id="4432792777822557199">आतापासून पेज <ph name="SOURCE_LANGUAGE" />मधून <ph name="TARGET_LANGUAGE" />मध्ये भाषांतरित केली जातील</translation>
@@ -621,6 +625,7 @@
 <translation id="5578795271662203820">या इमेजसाठी <ph name="SEARCH_ENGINE" /> शोधा</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> टॅबची गटामध्ये विभागणी केली आहे</translation>
 <translation id="5581519193887989363">तुम्ही काय सिंक करायचे हे <ph name="BEGIN_LINK1" />सेटिंग्ज<ph name="END_LINK1" /> मध्ये कधीही निवडू शकता.</translation>
+<translation id="5586306159936941448">त्यांना समूहित करण्यासाठी टॅबला दुसऱ्या टॅबवर ड्रॅग करा</translation>
 <translation id="5595485650161345191">पत्ता संपादित करा</translation>
 <translation id="5596627076506792578">अधिक पर्याय</translation>
 <translation id="5599455543593328020">गुप्त मोड</translation>
@@ -651,6 +656,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# तासापूर्वी}other{# तासांपूर्वी}}</translation>
 <translation id="5810288467834065221">कॉपीराइट <ph name="YEAR" /> Google LLC. सर्व हक्क राखीव.</translation>
 <translation id="5817918615728894473">जोडा</translation>
+<translation id="58326064309361797">त्यांचा गट बनवण्यासाठी टॅबना ड्रॅग करा</translation>
 <translation id="583281660410589416">अज्ञात</translation>
 <translation id="5833984609253377421">लिंक शेअर करा</translation>
 <translation id="5836192821815272682">Chrome अपडेट डाउनलोड करत आहे…</translation>
@@ -845,7 +851,6 @@
 <translation id="7233236755231902816">तुमच्या भाषेत वेब पाहण्यासाठी, Chrome ची नवीनतम आवृत्ती मिळवा</translation>
 <translation id="7243308994586599757">स्क्रीनच्या तळाशी पर्याय उपलब्ध आहेत</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> निवडले</translation>
-<translation id="7253272406652746122">आपल्या डिव्हाइसच्या सेटिंग्ज ॲप मधील खाती पृष्‍ठांंमधून एक Google खाते जोडा.</translation>
 <translation id="7274013316676448362">अवरोधित केलेली साइट</translation>
 <translation id="7290209999329137901">नाव बदलणे उपलब्ध नाही</translation>
 <translation id="7291387454912369099">असिस्टंटने ट्रिगर केलेला चेकआउट</translation>
@@ -1011,6 +1016,7 @@
 <translation id="8380167699614421159">ही साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवते</translation>
 <translation id="8393700583063109961">संदेश पाठवा</translation>
 <translation id="8413126021676339697">संपूर्ण इतिहास दर्शवा</translation>
+<translation id="8425955042390522843">फोन नंबरची पडताळणी</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8438566539970814960">शोध आणि ब्राउझ करणे चांगले करा</translation>
 <translation id="8441146129660941386">मागे शोधा</translation>
@@ -1118,6 +1124,7 @@
 <translation id="945632385593298557">तुमचा मायक्रोफोन अॅक्सेस करा</translation>
 <translation id="951339005376969845">सद्य डेटा हटवा. <ph name="FROM_ACCOUNT" /> वर परत स्विच करून तुम्ही तो रिट्रीव्ह करू शकता.</translation>
 <translation id="95817756606698420">Chrome चीनमध्ये शोध करण्‍यासाठी <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> चा वापर करू शकते. तुम्ही हे <ph name="BEGIN_LINK" />सेटिंग्जमध्ये<ph name="END_LINK" /> बदलू शकता.</translation>
+<translation id="959682366969460160">व्यवस्‍थापित केलेले मिळवा</translation>
 <translation id="965817943346481315">साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवत असल्यास ब्लॉक करा (शिफारस केलेले)</translation>
 <translation id="968900484120156207">तुम्ही भेट देता ती पेज येथे दिसतील</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> मिनिटे शिल्लक</translation>

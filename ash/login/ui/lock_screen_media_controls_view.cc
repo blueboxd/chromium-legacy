@@ -10,6 +10,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "components/media_message_center/media_controls_progress_view.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/cpp/util.h"
@@ -46,14 +47,14 @@ constexpr int kMediaControlsCornerRadius = 8;
 constexpr int kMinimumIconSize = 16;
 constexpr int kDesiredIconSize = 20;
 constexpr int kIconSize = 20;
-constexpr gfx::Insets kArtworkInsets = gfx::Insets(0, 25, 0, 25);
+constexpr gfx::Insets kArtworkInsets = gfx::Insets(0, 25, 20, 25);
 constexpr int kMinimumArtworkSize = 200;
 constexpr int kDesiredArtworkSize = 300;
 constexpr int kArtworkViewWidth = 270;
 constexpr int kArtworkViewHeight = 200;
 constexpr gfx::Size kMediaButtonSize = gfx::Size(45, 45);
 constexpr int kMediaButtonRowSeparator = 10;
-constexpr gfx::Insets kButtonRowInsets = gfx::Insets(25, 25, 30, 25);
+constexpr gfx::Insets kButtonRowInsets = gfx::Insets(10, 25, 25, 25);
 constexpr int kPlayPauseIconSize = 32;
 constexpr int kChangeTrackIconSize = 16;
 constexpr int kSeekingIconsSize = 28;
@@ -181,6 +182,9 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   session_artwork->SetBorder(views::CreateEmptyBorder(kArtworkInsets));
   session_artwork_ = AddChildView(std::move(session_artwork));
 
+  progress_ = AddChildView(
+      std::make_unique<media_message_center::MediaControlsProgressView>());
+
   // |button_row_| contains the buttons for controlling playback.
   auto button_row = std::make_unique<NonAccessibleView>();
   auto* button_row_layout =
@@ -239,6 +243,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   // Set child view data to default values initially, until the media controller
   // observers are triggered by a change in media session state.
   MediaSessionMetadataChanged(base::nullopt);
+  MediaSessionPositionChanged(base::nullopt);
   MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kSourceIcon, SkBitmap());
   SetArtwork(base::nullopt);
@@ -373,6 +378,20 @@ void LockScreenMediaControlsView::MediaSessionChanged(
   }
 
   media_session_id_ = request_id;
+}
+
+void LockScreenMediaControlsView::MediaSessionPositionChanged(
+    const base::Optional<media_session::MediaPosition>& position) {
+  if (hide_controls_timer_->IsRunning())
+    return;
+
+  if (!position.has_value()) {
+    progress_->SetVisible(false);
+    return;
+  }
+
+  progress_->UpdateProgress(*position);
+  progress_->SetVisible(true);
 }
 
 void LockScreenMediaControlsView::MediaControllerImageChanged(

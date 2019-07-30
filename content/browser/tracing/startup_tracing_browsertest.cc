@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(StartupTracingInProcessTest, TestFilledStartupBuffer) {
     TRACE_EVENT1("toplevel", "bar", "data", std::move(data));
   }
 
-  config.SetTraceBufferSizeInKb(12);
+  config.SetTraceBufferSizeInKb(32);
 
   base::RunLoop wait_for_tracing;
   TracingControllerImpl::GetInstance()->StartTracing(

@@ -9,7 +9,6 @@ from __future__ import print_function
 import types
 
 from grit import grd_reader
-from grit import tclib
 from grit import util
 from grit import xtb_reader
 from grit.tool import interface

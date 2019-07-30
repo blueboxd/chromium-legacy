@@ -56,11 +56,11 @@ const base::FilePath::CharType kPepperFlashSystemBaseDirectory[] =
 // The path to the external extension <id>.json files.
 // /usr/share seems like a good choice, see: http://www.pathname.com/fhs/
 const base::FilePath::CharType kFilepathSinglePrefExtensions[] =
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     FILE_PATH_LITERAL("/usr/share/google-chrome/extensions");
 #else
     FILE_PATH_LITERAL("/usr/share/chromium/extensions");
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // The path to the hint file that tells the pepper plugin loader
 // where it can find the latest component updated flash.
@@ -461,7 +461,7 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
     case chrome::DIR_POLICY_FILES: {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       cur = base::FilePath(FILE_PATH_LITERAL("/etc/opt/chrome/policies"));
 #else
       cur = base::FilePath(FILE_PATH_LITERAL("/etc/chromium/policies"));
@@ -516,7 +516,7 @@ bool PathProvider(int key, base::FilePath* result) {
 #if defined(OS_LINUX) || defined(OS_MACOSX)
     case chrome::DIR_NATIVE_MESSAGING:
 #if defined(OS_MACOSX)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       cur = base::FilePath(FILE_PATH_LITERAL(
            "/Library/Google/Chrome/NativeMessagingHosts"));
 #else
@@ -524,7 +524,7 @@ bool PathProvider(int key, base::FilePath* result) {
           "/Library/Application Support/Chromium/NativeMessagingHosts"));
 #endif
 #else  // defined(OS_MACOSX)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       cur = base::FilePath(FILE_PATH_LITERAL(
           "/etc/opt/chrome/native-messaging-hosts"));
 #else

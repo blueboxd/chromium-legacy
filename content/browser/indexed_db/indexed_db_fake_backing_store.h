@@ -33,7 +33,9 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
                             base::SequencedTaskRunner* task_runner);
   ~IndexedDBFakeBackingStore() override;
 
-  leveldb::Status DeleteDatabase(const base::string16& name) override;
+  leveldb::Status DeleteDatabase(
+      const base::string16& name,
+      TransactionalLevelDBTransaction* transaction) override;
 
   leveldb::Status PutRecord(IndexedDBBackingStore::Transaction* transaction,
                             int64_t database_id,
@@ -113,7 +115,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
   class FakeTransaction : public IndexedDBBackingStore::Transaction {
    public:
     explicit FakeTransaction(leveldb::Status phase_two_result);
-    void Begin() override;
+    void Begin(std::vector<ScopeLock> locks) override;
     leveldb::Status CommitPhaseOne(BlobWriteCallback) override;
     leveldb::Status CommitPhaseTwo() override;
     uint64_t GetTransactionSize() override;

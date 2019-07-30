@@ -77,6 +77,8 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
                   bool key_only,
                   mojom::IDBTaskType,
                   WebIDBCallbacks*) override;
+  void OpenCursorCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
+                          mojom::blink::IDBDatabaseOpenCursorResultPtr result);
   void Count(int64_t transaction_id,
              int64_t object_store_id,
              int64_t index_id,

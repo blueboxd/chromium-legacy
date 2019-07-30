@@ -17,8 +17,7 @@
     ],
     "ids": [
       "fjajfjhkeibgmiggdfehjplbhmfkialk"
-    ],
-    "accepts_tls_channel_id": true
+    ]
   },
   "background": {
     "persistent": false,

@@ -75,10 +75,13 @@ class DummyFrameScheduler : public FrameScheduler {
   GetActiveFeaturesTrackedForBackForwardCacheMetrics() override {
     return WTF::HashSet<SchedulingPolicy::Feature>();
   }
-  base::WeakPtr<FrameScheduler> GetWeakPtr() override { return nullptr; }
+  base::WeakPtr<FrameScheduler> GetWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  private:
   PageScheduler* page_scheduler_;
+  base::WeakPtrFactory<FrameScheduler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DummyFrameScheduler);
 };

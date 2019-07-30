@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -66,7 +67,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "chrome/browser/ui/webui/settings/chrome_cleanup_handler_win.h"
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/ui/webui/settings/incompatible_applications_handler_win.h"
 #include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
 #include "chrome/browser/win/conflicts/token_util.h"
@@ -220,7 +221,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   AddSettingsPageUIHandler(
       std::make_unique<MediaDevicesSelectionHandler>(profile));
-#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(std::make_unique<MetricsReportingHandler>());
 #endif
   AddSettingsPageUIHandler(std::make_unique<OnStartupHandler>(profile));
@@ -256,7 +257,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<ChromeCleanupHandler>(profile));
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   bool has_incompatible_applications =
       IncompatibleApplicationsUpdater::HasCachedApplications();
   html_source->AddBoolean("showIncompatibleApplications",
@@ -266,7 +267,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   if (has_incompatible_applications)
     AddSettingsPageUIHandler(
         std::make_unique<IncompatibleApplicationsHandler>());
-#endif  // OS_WIN && defined(GOOGLE_CHROME_BUILD)
+#endif  // OS_WIN && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   bool password_protection_available = false;
 #if BUILDFLAG(FULL_SAFE_BROWSING)

@@ -22,6 +22,7 @@
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
 #include "chromecast/common/queryable_data.h"
 #include "chromecast/net/connectivity_checker.h"
+#include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -292,6 +293,26 @@ void CastWebContentsImpl::RemoveBeforeLoadJavaScript(base::StringPiece id) {
       return;
     }
   }
+}
+
+void CastWebContentsImpl::PostMessageToMainFrame(
+    const std::string& target_origin,
+    const std::string& data,
+    std::vector<mojo::ScopedMessagePipeHandle> channels) {
+  DCHECK(!data.empty());
+
+  base::string16 data_utf16;
+  data_utf16 = base::UTF8ToUTF16(data);
+
+  // If origin is set as wildcard, no origin scoping would be applied.
+  constexpr char kWildcardOrigin[] = "*";
+  base::Optional<base::string16> target_origin_utf16;
+  if (target_origin != kWildcardOrigin)
+    target_origin_utf16 = base::UTF8ToUTF16(target_origin);
+
+  content::MessagePortProvider::PostMessageToFrame(
+      web_contents(), base::string16(), target_origin_utf16, data_utf16,
+      std::move(channels));
 }
 
 void CastWebContentsImpl::AddObserver(CastWebContents::Observer* observer) {

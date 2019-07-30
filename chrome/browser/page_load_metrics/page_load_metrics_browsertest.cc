@@ -47,6 +47,7 @@
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1665,12 +1666,8 @@ class SessionRestorePageLoadMetricsBrowserTest
 
     // Create a new window, which should trigger session restore.
     chrome::NewEmptyWindow(profile);
-    ui_test_utils::BrowserAddedObserver window_observer;
-    SessionRestoreTestHelper restore_observer;
-
-    Browser* new_browser = window_observer.WaitForSingleNewBrowser();
-    restore_observer.Wait();
-    return new_browser;
+    SessionRestoreTestHelper().Wait();
+    return BrowserList::GetInstance()->GetLastActive();
   }
 
   void WaitForTabsToLoad(Browser* browser) {
@@ -1997,15 +1994,15 @@ IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
 
   // Restore the session window with 2 tabs.
   session.push_back(static_cast<const sessions::SessionWindow*>(&window));
-  ui_test_utils::BrowserAddedObserver window_observer;
   SessionRestorePaintWaiter session_restore_paint_waiter;
   SessionRestore::RestoreForeignSessionWindows(profile, session.begin(),
                                                session.end());
-  Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+  session_restore_paint_waiter.WaitForForegroundTabs(1);
+
+  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
   ASSERT_TRUE(new_browser);
   ASSERT_EQ(2, new_browser->tab_strip_model()->count());
 
-  session_restore_paint_waiter.WaitForForegroundTabs(1);
   ASSERT_NO_FATAL_FAILURE(WaitForTabsToLoad(new_browser));
   ExpectFirstPaintMetricsTotalCount(1);
 }

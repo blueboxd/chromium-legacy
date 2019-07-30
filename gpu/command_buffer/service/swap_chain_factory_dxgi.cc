@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/gl_angle_util_win.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_dxgi_swap_chain.h"
 #include "ui/gl/trace_util.h"
 

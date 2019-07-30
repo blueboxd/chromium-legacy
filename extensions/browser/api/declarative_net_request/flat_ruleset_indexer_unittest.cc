@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/format_macros.h"
+#include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -43,6 +44,71 @@ std::vector<std::string> ToVector(
   return result;
 }
 
+// Helper to create a generic URLTransform.
+std::unique_ptr<dnr_api::URLTransform> CreateUrlTransform() {
+  const char* transform = R"(
+    {
+      "scheme" : "http",
+      "host" : "foo.com",
+      "port" : "80",
+      "path" : "",
+      "queryTransform" : {
+        "removeParams" : ["x1", "x2"],
+        "addOrReplaceParams" : [
+          {"key": "y1", "value" : "foo"}
+        ]
+      },
+      "fragment" : "#xx",
+      "username" : "user",
+      "password" : "pass"
+    }
+  )";
+
+  base::Optional<base::Value> value = base::JSONReader::Read(transform);
+  CHECK(value);
+
+  base::string16 error;
+  auto result = dnr_api::URLTransform::FromValue(*value, &error);
+  CHECK(result);
+  CHECK(error.empty());
+  return result;
+}
+
+// Helper to verify the indexed form of URlTransform created by
+// |CreateUrlTransform()|.
+bool VerifyUrlTransform(const flat::UrlTransform& flat_transform) {
+  auto is_string_equal = [](base::StringPiece str,
+                            const flatbuffers::String* flat_str) {
+    return flat_str && ToString(flat_str) == str;
+  };
+
+  auto verify_add_or_replace_params = [&flat_transform, &is_string_equal]() {
+    if (!flat_transform.add_or_replace_query_params() ||
+        flat_transform.add_or_replace_query_params()->size() != 1) {
+      return false;
+    }
+
+    const flat::QueryKeyValue* query_pair =
+        flat_transform.add_or_replace_query_params()->Get(0);
+    return query_pair && is_string_equal("y1", query_pair->key()) &&
+           is_string_equal("foo", query_pair->value());
+  };
+
+  return is_string_equal("http", flat_transform.scheme()) &&
+         is_string_equal("foo.com", flat_transform.host()) &&
+         !flat_transform.clear_port() &&
+         is_string_equal("80", flat_transform.port()) &&
+         flat_transform.clear_path() && !flat_transform.path() &&
+         !flat_transform.clear_query() && !flat_transform.query() &&
+         flat_transform.remove_query_params() &&
+         std::vector<std::string>{"x1", "x2"} ==
+             ToVector(flat_transform.remove_query_params()) &&
+         verify_add_or_replace_params() && !flat_transform.clear_fragment() &&
+         is_string_equal("xx", flat_transform.fragment()) &&
+         is_string_equal("user", flat_transform.username()) &&
+         is_string_equal("pass", flat_transform.password());
+}
+
 // Helper to create an IndexedRule.
 IndexedRule CreateIndexedRule(
     uint32_t id,
@@ -56,9 +122,10 @@ IndexedRule CreateIndexedRule(
     std::string url_pattern,
     std::vector<std::string> domains,
     std::vector<std::string> excluded_domains,
-    std::string redirect_url,
+    base::Optional<std::string> redirect_url,
     dnr_api::RuleActionType action_type,
-    std::set<dnr_api::RemoveHeaderType> remove_headers_set) {
+    std::set<dnr_api::RemoveHeaderType> remove_headers_set,
+    std::unique_ptr<dnr_api::URLTransform> url_transform = nullptr) {
   IndexedRule rule;
   rule.id = id;
   rule.priority = priority;
@@ -74,6 +141,7 @@ IndexedRule CreateIndexedRule(
   rule.redirect_url = std::move(redirect_url);
   rule.action_type = action_type;
   rule.remove_headers_set = std::move(remove_headers_set);
+  rule.url_transform = std::move(url_transform);
   return rule;
 }
 
@@ -81,6 +149,9 @@ IndexedRule CreateIndexedRule(
 // since it's not stored as part of flat_rule::UrlRule.
 bool AreRulesEqual(const IndexedRule* indexed_rule,
                    const flat_rule::UrlRule* rule) {
+  CHECK(indexed_rule);
+  CHECK(rule);
+
   return indexed_rule->id == rule->id() &&
          indexed_rule->priority == rule->priority() &&
          indexed_rule->options == rule->options() &&
@@ -177,12 +248,25 @@ void VerifyExtensionMetadata(
     previous_id = current_id;
   }
 
+  // Returns whether the metadata for the given rule was correctly indexed.
+  auto is_metadata_correct = [](const MetadataPair& pair) {
+    CHECK(pair.indexed_rule->redirect_url || pair.indexed_rule->url_transform);
+
+    if (pair.indexed_rule->redirect_url) {
+      if (!pair.metadata->redirect_url())
+        return false;
+      return pair.indexed_rule->redirect_url ==
+             ToString(pair.metadata->redirect_url());
+    }
+
+    return pair.metadata->transform() &&
+           VerifyUrlTransform(*pair.metadata->transform());
+  };
+
   // Iterate over the map and verify equality of the redirect rules.
   for (const auto& elem : map) {
-    EXPECT_EQ(elem.second.indexed_rule->redirect_url,
-              ToString(elem.second.metadata->redirect_url()))
-        << base::StringPrintf(
-               "Redirect rule with id %u was incorrectly indexed", elem.first);
+    EXPECT_TRUE(is_metadata_correct(elem.second)) << base::StringPrintf(
+        "Redirect rule with id %u was incorrectly indexed", elem.first);
   }
 }
 
@@ -235,14 +319,14 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
       7, kMinValidPriority, flat_rule::OptionFlag_NONE,
       flat_rule::ElementType_OBJECT, flat_rule::ActivationType_NONE,
       flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_NONE,
-      flat_rule::AnchorType_BOUNDARY, "google.com", {"a.com"}, {"x.a.com"}, "",
-      dnr_api::RULE_ACTION_TYPE_BLOCK, {}));
+      flat_rule::AnchorType_BOUNDARY, "google.com", {"a.com"}, {"x.a.com"},
+      base::nullopt, dnr_api::RULE_ACTION_TYPE_BLOCK, {}));
   rules_to_index.push_back(CreateIndexedRule(
       2, kMinValidPriority, flat_rule::OptionFlag_APPLIES_TO_THIRD_PARTY,
       flat_rule::ElementType_IMAGE | flat_rule::ElementType_WEBSOCKET,
       flat_rule::ActivationType_NONE, flat_rule::UrlPatternType_WILDCARDED,
       flat_rule::AnchorType_NONE, flat_rule::AnchorType_NONE, "*google*",
-      {"a.com"}, {}, "", dnr_api::RULE_ACTION_TYPE_BLOCK, {}));
+      {"a.com"}, {}, base::nullopt, dnr_api::RULE_ACTION_TYPE_BLOCK, {}));
 
   // Redirect rules.
   rules_to_index.push_back(CreateIndexedRule(
@@ -263,6 +347,12 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
       flat_rule::ActivationType_NONE, flat_rule::UrlPatternType_WILDCARDED,
       flat_rule::AnchorType_NONE, flat_rule::AnchorType_NONE, "*", {}, {},
       "http://example2.com", dnr_api::RULE_ACTION_TYPE_REDIRECT, {}));
+  rules_to_index.push_back(CreateIndexedRule(
+      100, 3, flat_rule::OptionFlag_NONE, flat_rule::ElementType_NONE,
+      flat_rule::ActivationType_NONE, flat_rule::UrlPatternType_WILDCARDED,
+      flat_rule::AnchorType_NONE, flat_rule::AnchorType_NONE, "*", {}, {},
+      base::nullopt, dnr_api::RULE_ACTION_TYPE_REDIRECT, {},
+      CreateUrlTransform()));
 
   // Allow rules.
   rules_to_index.push_back(CreateIndexedRule(
@@ -270,15 +360,15 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
       flat_rule::ElementType_PING | flat_rule::ElementType_SCRIPT,
       flat_rule::ActivationType_NONE, flat_rule::UrlPatternType_SUBSTRING,
       flat_rule::AnchorType_SUBDOMAIN, flat_rule::AnchorType_NONE,
-      "example1.com", {"xyz.com"}, {}, "", dnr_api::RULE_ACTION_TYPE_ALLOW,
-      {}));
+      "example1.com", {"xyz.com"}, {}, base::nullopt,
+      dnr_api::RULE_ACTION_TYPE_ALLOW, {}));
   rules_to_index.push_back(CreateIndexedRule(
       16, kMinValidPriority,
       flat_rule::OptionFlag_IS_WHITELIST |
           flat_rule::OptionFlag_IS_CASE_INSENSITIVE,
       flat_rule::ElementType_IMAGE, flat_rule::ActivationType_NONE,
       flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_NONE,
-      flat_rule::AnchorType_NONE, "example3", {}, {}, "",
+      flat_rule::AnchorType_NONE, "example3", {}, {}, base::nullopt,
       dnr_api::RULE_ACTION_TYPE_ALLOW, {}));
 
   // Remove request header rules.
@@ -286,7 +376,7 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
       20, kMinValidPriority, flat_rule::OptionFlag_IS_CASE_INSENSITIVE,
       flat_rule::ElementType_SUBDOCUMENT, flat_rule::ActivationType_NONE,
       flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_SUBDOMAIN,
-      flat_rule::AnchorType_NONE, "abc", {}, {}, "",
+      flat_rule::AnchorType_NONE, "abc", {}, {}, base::nullopt,
       dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS,
       {dnr_api::REMOVE_HEADER_TYPE_COOKIE,
        dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE}));
@@ -294,7 +384,7 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
       21, kMinValidPriority, flat_rule::OptionFlag_NONE,
       flat_rule::ElementType_NONE, flat_rule::ActivationType_NONE,
       flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_NONE,
-      flat_rule::AnchorType_BOUNDARY, "xyz", {}, {"exclude.com"}, "",
+      flat_rule::AnchorType_BOUNDARY, "xyz", {}, {"exclude.com"}, base::nullopt,
       dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS,
       {dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE,
        dnr_api::REMOVE_HEADER_TYPE_COOKIE,
@@ -308,15 +398,16 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
   expected_index_lists[flat::ActionIndex_block] = {&rules_to_index[0],
                                                    &rules_to_index[1]};
   expected_index_lists[flat::ActionIndex_redirect] = {
-      &rules_to_index[2], &rules_to_index[3], &rules_to_index[4]};
-  expected_index_lists[flat::ActionIndex_allow] = {&rules_to_index[5],
-                                                   &rules_to_index[6]};
+      &rules_to_index[2], &rules_to_index[3], &rules_to_index[4],
+      &rules_to_index[5]};
+  expected_index_lists[flat::ActionIndex_allow] = {&rules_to_index[6],
+                                                   &rules_to_index[7]};
   expected_index_lists[flat::ActionIndex_remove_cookie_header] = {
-      &rules_to_index[7], &rules_to_index[8]};
+      &rules_to_index[8], &rules_to_index[9]};
   expected_index_lists[flat::ActionIndex_remove_referer_header] = {
-      &rules_to_index[8]};
+      &rules_to_index[9]};
   expected_index_lists[flat::ActionIndex_remove_set_cookie_header] = {
-      &rules_to_index[7], &rules_to_index[8]};
+      &rules_to_index[8], &rules_to_index[9]};
 
   AddRulesAndVerifyIndex(rules_to_index, expected_index_lists);
 }

@@ -7,6 +7,7 @@
 <translation id="1051826050538111504">Máy tính của bạn có phần mềm độc hại. Chrome có thể xóa phần mềm này, khôi phục các tùy chọn cài đặt của bạn và tắt tiện ích để giúp trình duyệt hoạt động lại bình thường.</translation>
 <translation id="1065672644894730302">Không thể đọc tùy chọn của bạn. Một số tính năng có thể không khả dụng và các thay đổi đối với tùy chọn sẽ không được lưu.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> trước đó đã sử dụng Chrome</translation>
+<translation id="1097330777386562916">Xóa cookie và dữ liệu trang web khi bạn thoát khỏi Chrome</translation>
 <translation id="1104959162601287462">Giới thiệu về &amp;hệ điều hành Chrome</translation>
 <translation id="110877069173485804">Đây là Chrome của bạn</translation>
 <translation id="1142745911746664600">Không thể cập nhật Chrome</translation>
@@ -26,6 +27,7 @@
 <translation id="1590588151039584890">Để cập nhật, bạn cần ngừng chạy Chrome trên máy tính này. Nếu ngừng chạy, những người dùng khác đăng nhập vào máy tính này có thể bị mất các thay đổi chưa lưu.</translation>
 <translation id="1619887657840448962">Để làm cho Chrome an toàn hơn, chúng tôi đã vô hiệu hóa tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
 <translation id="1628000112320670027">Nhận trợ giúp về Chrome</translation>
+<translation id="1635734105302489219">Bạn xóa cookie khi thoát khỏi Chrome. Để tiếp tục đồng bộ hóa, hãy thay đổi <ph name="COOKIE_SETTINGS_LINK" /> này.</translation>
 <translation id="1662639173275167396">Chrome OS có thể hoạt động được là nhờ <ph name="BEGIN_LINK_CROS_OSS" />phần mềm nguồn mở<ph name="END_LINK_CROS_OSS" /> bổ sung, tương tự như <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Bản beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Mở liên kết trong cửa sổ ẩn &amp;danh của Chrome</translation>
 <translation id="1682634494516646069">Google Chrome không thể đọc và ghi vào thư mục dữ liệu:
@@ -125,8 +127,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="4251625577313994583">tải Chrome trên iPhone của bạn</translation>
 <translation id="4293420128516039005">Đăng nhập để đồng bộ hóa và cá nhân hóa Chrome trên các thiết bị của bạn</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
-<translation id="4331809312908958774">Chrome OS
-</translation>
+<translation id="4331809312908958774">Hệ điều hành Chrome</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> đã được thêm vào Chrome</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">Một hoạt động khác trên Google Chrome đang diễn ra. Vui lòng thử lại sau.</translation>

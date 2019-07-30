@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -1129,7 +1130,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
         bookmark_menu_ = item;
         break;
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       case IDC_FEEDBACK:
         DCHECK(!feedback_menu_item_);
         feedback_menu_item_ = item;

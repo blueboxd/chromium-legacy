@@ -58,7 +58,6 @@ class FakeLevelDBFactory : public DefaultLevelDBFactory {
 
   std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /*disk_full*/>
   OpenLevelDBState(const base::FilePath& file_name,
-                   const LevelDBComparator* idb_comparator,
                    const leveldb::Comparator* ldb_comparator) override;
 
  private:

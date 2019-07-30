@@ -773,7 +773,7 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
 
   if (IsRestrictedCrosSettingForChildUser(profile_, name)) {
     pref_object->controlled_by =
-        settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTIONS;
+        settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTION;
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
     pref_object->value = std::make_unique<base::Value>(
         GetRestrictedCrosSettingValueForChildUser(profile_, name)->Clone());

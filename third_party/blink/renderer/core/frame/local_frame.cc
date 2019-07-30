@@ -1725,8 +1725,8 @@ void LocalFrame::CountUseIfFeatureWouldBeBlockedByFeaturePolicy(
   }
 }
 
-void LocalFrame::FinishedLoading() {
-  DomWindow()->FinishedLoading();
+void LocalFrame::FinishedLoading(FrameLoader::NavigationFinishState state) {
+  DomWindow()->FinishedLoading(state);
 
   if (pending_lifecycle_state_) {
     DCHECK(!IsLoading());

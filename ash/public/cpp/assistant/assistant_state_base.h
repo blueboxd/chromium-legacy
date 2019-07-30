@@ -53,6 +53,8 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
     return locked_full_screen_enabled_;
   }
 
+  std::string ToString() const;
+
  protected:
   base::Optional<mojom::VoiceInteractionState> voice_interaction_state_;
 

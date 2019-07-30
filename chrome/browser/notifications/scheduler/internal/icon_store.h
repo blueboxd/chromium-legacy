@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -31,8 +32,10 @@ namespace notifications {
 // be loaded into memory.
 class IconStore {
  public:
-  using LoadCallback =
+  using LoadIconCallback =
       base::OnceCallback<void(bool, std::unique_ptr<IconEntry>)>;
+  using LoadIconsCallback =
+      base::OnceCallback<void(bool, std::unique_ptr<std::vector<IconEntry>>)>;
   using InitCallback = base::OnceCallback<void(bool)>;
   using UpdateCallback = base::OnceCallback<void(bool)>;
 
@@ -40,15 +43,26 @@ class IconStore {
   virtual void Init(InitCallback callback) = 0;
 
   // Loads one icon.
-  virtual void Load(const std::string& key, LoadCallback callback) = 0;
+  virtual void Load(const std::string& key, LoadIconCallback callback) = 0;
+
+  // Loads multiple icons.
+  virtual void LoadIcons(const std::vector<std::string>& keys,
+                         LoadIconsCallback callback) = 0;
 
   // Adds one icon to storage.
-  virtual void Add(const std::string& key,
-                   std::unique_ptr<IconEntry> entry,
+  virtual void Add(std::unique_ptr<IconEntry> entry,
                    UpdateCallback callback) = 0;
+
+  // Adds multiple icons to storage.
+  virtual void AddIcons(std::vector<std::unique_ptr<IconEntry>> entries,
+                        UpdateCallback callback) = 0;
 
   // Deletes an icon.
   virtual void Delete(const std::string& key, UpdateCallback callback) = 0;
+
+  // Deletes multiple icons.
+  virtual void DeleteIcons(const std::vector<std::string>& keys,
+                           UpdateCallback callback) = 0;
 
   IconStore() = default;
   virtual ~IconStore() = default;
@@ -67,20 +81,30 @@ class IconProtoDbStore : public IconStore {
  private:
   // IconStore implementation.
   void Init(InitCallback callback) override;
-  void Load(const std::string& key, LoadCallback callback) override;
-  void Add(const std::string& key,
-           std::unique_ptr<IconEntry> entry,
-           UpdateCallback callback) override;
+  void Load(const std::string& key, LoadIconCallback callback) override;
+  void LoadIcons(const std::vector<std::string>& keys,
+                 LoadIconsCallback callback) override;
+  void Add(std::unique_ptr<IconEntry> entry, UpdateCallback callback) override;
+  void AddIcons(std::vector<std::unique_ptr<IconEntry>> entries,
+                UpdateCallback callback) override;
   void Delete(const std::string& key, UpdateCallback callback) override;
+  void DeleteIcons(const std::vector<std::string>& keys,
+                   UpdateCallback callback) override;
 
   // Called when the proto database is initialized.
   void OnDbInitialized(InitCallback callback,
                        leveldb_proto::Enums::InitStatus status);
 
   // Called when the icon is retrieved from the database.
-  void OnIconEntryLoaded(LoadCallback callback,
+  void OnIconEntryLoaded(LoadIconCallback callback,
                          bool success,
                          std::unique_ptr<IconEntry> icon_entry);
+
+  // Called when the icon is retrieved from the database.
+  void OnIconEntriesLoaded(
+      LoadIconsCallback callback,
+      bool success,
+      std::unique_ptr<std::vector<IconEntry>> icon_entries);
 
   // The proto database instance that persists data.
   std::unique_ptr<leveldb_proto::ProtoDatabase<proto::Icon, IconEntry>> db_;

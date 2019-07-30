@@ -1099,69 +1099,9 @@ class HostedAppBadgingTest : public HostedAppTest {
   std::unique_ptr<base::RunLoop> awaiter_;
 };
 
-// Tests that setting the badge to an integer will be propagated across
-// processes.
-IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeSetToAnInteger) {
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(99)", main_frame_);
-  ASSERT_FALSE(was_cleared_);
-  ASSERT_FALSE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
-  ASSERT_EQ(base::Optional<uint64_t>(99u), last_badge_content_);
-}
-
-// Tests that calls to |Badge.clear| are propagated across processes.
-IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeClearedWithClearMethod) {
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(55)", main_frame_);
-  ASSERT_FALSE(was_cleared_);
-  ASSERT_FALSE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
-  ASSERT_EQ(base::Optional<uint64_t>(55u), last_badge_content_);
-
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()", main_frame_);
-  ASSERT_TRUE(was_cleared_);
-  ASSERT_FALSE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
-  ASSERT_EQ(base::nullopt, last_badge_content_);
-}
-
-// Tests that calling Badge.set(0) is equivalent to calling |Badge.clear| and
-// that it propagates across processes.
-IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeClearedWithZero) {
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(0)", main_frame_);
-  ASSERT_TRUE(was_cleared_);
-  ASSERT_FALSE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
-  ASSERT_EQ(base::nullopt, last_badge_content_);
-}
-
-// Tests that setting the badge without content is propagated across processes.
-IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest, BadgeCanBeSetWithoutAValue) {
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set()", main_frame_);
-  ASSERT_FALSE(was_cleared_);
-  ASSERT_TRUE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
-  ASSERT_EQ(base::nullopt, last_badge_content_);
-}
-
-// Tests that the badge can be set and cleared from an in scope frame.
-IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest,
-                       BadgeCanBeSetAndClearedFromInScopeFrame) {
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set()",
-                                     in_scope_frame_);
-  ASSERT_FALSE(was_cleared_);
-  ASSERT_TRUE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
-  ASSERT_EQ(base::nullopt, last_badge_content_);
-
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()",
-                                     in_scope_frame_);
-  ASSERT_TRUE(was_cleared_);
-  ASSERT_FALSE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
-  ASSERT_EQ(base::nullopt, last_badge_content_);
-}
-
 // Tests that the badge cannot be set and cleared from a cross site frame.
+// TODO(https://crbug.com/966290): Move to web_app_badging_browsertest.cc
+// when WebAppBrowserController::IsUrlInAppScope is implemented.
 IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest,
                        BadgeCannotBeChangedFromCrossSiteFrame) {
   // Clearing from cross site frame should be a no-op.

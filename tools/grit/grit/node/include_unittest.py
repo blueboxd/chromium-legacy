@@ -9,17 +9,15 @@ from __future__ import print_function
 
 import os
 import sys
-if __name__ == '__main__':
-  sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-
-import os
 import unittest
 import zlib
+
+if __name__ == '__main__':
+  sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 from grit.node import misc
 from grit.node import include
 from grit.node import empty
-from grit import grd_reader
 from grit import util
 
 

@@ -84,7 +84,7 @@ ExtensionViewHost::ExtensionViewHost(
       autofill::ChromeAutofillClient::FromWebContents(host_contents()),
       g_browser_process->GetApplicationLocale(),
       autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-  if (performance_manager::PerformanceManager::GetInstance()) {
+  if (performance_manager::PerformanceManager::IsAvailable()) {
     performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
         host_contents());
   }

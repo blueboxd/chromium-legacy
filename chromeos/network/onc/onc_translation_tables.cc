@@ -416,7 +416,6 @@ const FieldTranslationEntry kCellularDeviceTable[] = {
     {::onc::cellular::kMEID, shill::kMeidProperty},
     {::onc::cellular::kMIN, shill::kMinProperty},
     {::onc::cellular::kModelID, shill::kModelIdProperty},
-    {::onc::cellular::kPRLVersion, shill::kPRLVersionProperty},
     {::onc::cellular::kScanning, shill::kScanningProperty},
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kSIMLockStatus, shill::kSIMLockStatusProperty},

@@ -32,16 +32,15 @@ class MODULES_EXPORT WebIDBTransactionImpl : public WebIDBTransaction {
            std::unique_ptr<IDBValue> value,
            std::unique_ptr<IDBKey> primary_key,
            mojom::IDBPutMode,
-           WebIDBCallbacks*,
+           std::unique_ptr<WebIDBCallbacks> callbacks,
            Vector<IDBIndexKeys>) override;
+  void PutCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
+                   mojom::blink::IDBTransactionPutResultPtr result);
   void Commit(int64_t num_errors_handled) override;
 
   mojom::blink::IDBTransactionAssociatedRequest CreateRequest() override;
 
  private:
-  mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
-      std::unique_ptr<WebIDBCallbacks> callbacks);
-
   FRIEND_TEST_ALL_PREFIXES(WebIDBTransactionImplTest, ValueSizeTest);
   FRIEND_TEST_ALL_PREFIXES(WebIDBTransactionImplTest, KeyAndValueSizeTest);
 

@@ -298,6 +298,14 @@
                file="cr_elements/policy/cr_policy_network_behavior.js"
                type="chrome_html"
                compress="gzip" />
+    <structure name="IDR_CR_ELEMENTS_CR_POLICY_NETWORK_BEHAVIOR_MOJO_HTML"
+               file="cr_elements/policy/cr_policy_network_behavior_mojo.html"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_CR_ELEMENTS_CR_POLICY_NETWORK_BEHAVIOR_MOJO_JS"
+               file="cr_elements/policy/cr_policy_network_behavior_mojo.js"
+               type="chrome_html"
+               compress="gzip" />
     <structure name="IDR_CR_ELEMENTS_CR_POLICY_NETWORK_INDICATOR_JS"
                file="cr_elements/policy/cr_policy_network_indicator.js"
                type="chrome_html"

@@ -11,6 +11,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -49,7 +50,7 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD0(IsPost, bool());
   MOCK_METHOD0(GetResourceRequestBody,
                const scoped_refptr<network::ResourceRequestBody>&());
-  const Referrer& GetReferrer() override { return referrer_; }
+  const blink::mojom::Referrer& GetReferrer() override { return referrer_; }
   MOCK_METHOD0(HasUserGesture, bool());
   ui::PageTransition GetPageTransition() override { return page_transition_; }
   MOCK_METHOD0(GetNavigationUIData, NavigationUIData*());
@@ -151,7 +152,7 @@ class MockNavigationHandle : public NavigationHandle {
   SiteInstance* starting_site_instance_ = nullptr;
   WebContents* web_contents_ = nullptr;
   GURL base_url_for_data_url_;
-  Referrer referrer_;
+  blink::mojom::Referrer referrer_;
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
   net::Error net_error_code_ = net::OK;
   RenderFrameHost* render_frame_host_ = nullptr;

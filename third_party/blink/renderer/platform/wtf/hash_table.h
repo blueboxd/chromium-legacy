@@ -888,7 +888,6 @@ class HashTable final {
     // expensive.
     return key_count_ * kMinLoad < table_size_ &&
            table_size_ > KeyTraits::kMinimumTableSize &&
-           !Allocator::IsObjectResurrectionForbidden() &&
            Allocator::IsAllocationAllowed();
   }
   ValueType* Expand(ValueType* entry = nullptr);
@@ -1710,7 +1709,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     ExpandBuffer(unsigned new_table_size, Value* entry, bool& success) {
   success = false;
   DCHECK_LT(table_size_, new_table_size);
-  CHECK(!Allocator::IsObjectResurrectionForbidden());
+  CHECK(Allocator::IsAllocationAllowed());
   if (!Allocator::ExpandHashTableBacking(table_,
                                          new_table_size * sizeof(ValueType)))
     return nullptr;

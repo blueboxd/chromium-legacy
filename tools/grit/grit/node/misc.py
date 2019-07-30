@@ -15,7 +15,6 @@ from grit import constants
 from grit import exception
 from grit import util
 from grit.extern import FP
-import grit.format.rc_header
 from grit.node import base
 from grit.node import message
 from grit.node import node_io
@@ -95,7 +94,7 @@ def _ComputeIds(root, predetermined_tids):
   Args:
     predetermined_tids: Dict of textual id -> numeric id to use in return dict.
   """
-  from grit.node import empty, include, message, misc, structure
+  from grit.node import empty, include, misc, structure
 
   ids = {}  # Maps numeric id to textual id
   tids = {}  # Maps textual id to numeric id

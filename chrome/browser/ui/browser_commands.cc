@@ -983,10 +983,6 @@ bool CanSavePage(const Browser* browser) {
          !(GetContentRestrictions(browser) & CONTENT_RESTRICTION_SAVE);
 }
 
-void ShowFindBar(Browser* browser) {
-  browser->GetFindBarController()->Show();
-}
-
 void Print(Browser* browser) {
 #if BUILDFLAG(ENABLE_PRINTING)
   auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
@@ -1081,7 +1077,7 @@ void CutCopyPaste(Browser* browser, int command_id) {
 
 void Find(Browser* browser) {
   base::RecordAction(UserMetricsAction("Find"));
-  FindInPage(browser, false, false);
+  FindInPage(browser, false, true);
 }
 
 void FindNext(Browser* browser) {
@@ -1095,21 +1091,7 @@ void FindPrevious(Browser* browser) {
 }
 
 void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
-  ShowFindBar(browser);
-  if (find_next) {
-    base::string16 find_text;
-    FindTabHelper* find_helper = FindTabHelper::FromWebContents(
-        browser->tab_strip_model()->GetActiveWebContents());
-#if defined(OS_MACOSX)
-    // We always want to search for the current contents of the find bar on
-    // OS X. For regular profile it's always the current find pboard. For
-    // Incognito window it's the newest value of the find pboard content and
-    // user-typed text.
-    FindBar* find_bar = browser->GetFindBarController()->find_bar();
-    find_text = find_bar->GetFindText();
-#endif
-    find_helper->StartFinding(find_text, forward_direction, false);
-  }
+  browser->GetFindBarController()->Show(find_next, forward_direction);
 }
 
 bool CanCloseFind(Browser* browser) {

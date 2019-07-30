@@ -62,7 +62,7 @@ Wenn die Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Unte
 <translation id="1062407476771304334">Ersetzen</translation>
 <translation id="1079801999187584280">Nutzung der Entwicklertools nicht zulassen</translation>
 <translation id="1087437665304381368">Mit dieser Richtlinie wird nur der <ph name="PRODUCT_OS_NAME" />-Entwicklermodus gesteuert. Wenn Sie den Zugriff auf Android-Entwickleroptionen verhindern möchten, müssen Sie die Richtlinie "<ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />" konfigurieren.</translation>
-<translation id="1087707496788636333">Die Adresse der Chrome Enterprise-Richtlinienliste wird geändert. Ändern Sie sie in Ihren Lesezeichen zu <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
+<translation id="1087707496788636333">Die Adresse der Chrome Enterprise-Richtlinienliste wird geändert. Bitte ändern Sie sie in Ihren Lesezeichen zu <ph name="POLICY_DOCUMENTATION_URL" />.</translation>
 <translation id="1093082332347834239">Ist diese Einstellung aktiviert, läuft der Host für Remote-Unterstützung in einem Prozess mit <ph name="UIACCESS_PERMISSION_NAME" />-Berechtigungen. So kann der Remote-Nutzer mit geöffneten Fenstern auf dem lokalen Desktop arbeiten.
 
           Ist diese Einstellung deaktiviert oder nicht konfiguriert, läuft der Host für Remote-Unterstützung nur im Nutzerbereich. Remote-Nutzer können nicht mit geöffneten Fenstern auf dem Desktop arbeiten.</translation>
@@ -981,7 +981,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Das Format des Werts entspricht den Namen der Zeitzonen in der Zeitzonen-Datenbank der IANA (https://de.wikipedia.org/wiki/Zeitzonen-Datenbank). Auf die meisten Zeitzonen kann über "continent/large_city" oder "ocean/large_city" verwiesen werden.
 
       Durch das Festlegen dieser Richtlinie wird die automatische Auflösung der Zeitzone nach Gerätestandort komplett deaktiviert. Dabei wird auch die Richtlinie "SystemTimezoneAutomaticDetection" überschrieben.</translation>
-<translation id="2758218632193192525">Mit dieser Richtlinie können Konfigurationen verfügbarer Druckserver bereitgestellt werden.
+<translation id="2758218632193192525">Mit dieser Richtlinie können Konfigurationen verfügbarer Druckserver zur Verfügung gestellt werden.
 
       Sie haben damit die Möglichkeit, <ph name="PRODUCT_OS_NAME" />-Geräten Konfigurationen externer Druckserver als JSON-Datei zur Verfügung zu stellen.
 
@@ -1896,7 +1896,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
-          Ist diese Richtlinie nicht konfiguriert, erscheinen keine Optionen für Bedienungshilfen im Taskleistenmenü, der Nutzer kann deren Anzeige jedoch auf der Seite "Einstellungen" aktivieren.
+          Ist diese Richtlinie nicht konfiguriert, erscheinen keine Optionen für Bedienungshilfen im Taskleistenmenü, der Nutzer kann sie jedoch auf der Seite "Einstellungen" aktivieren.
 
           Werden Bedienungshilfen anderweitig aktiviert, z. B. über eine Tastenkombination, erscheinen die Optionen für Bedienungshilfen immer im Taskleistenmenü.</translation>
 <translation id="436581050240847513">Gerätenetzwerk-Schnittstellen melden</translation>
@@ -3192,9 +3192,9 @@ Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-
 Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad verwendet und der Nutzer kann ihn mit der Befehlszeilenmarkierung "--user-data-dir" ändern.</translation>
 <translation id="7011669683779011760">Wenn diese Einstellung aktiviert ist, verifiziert <ph name="PRODUCT_OS_NAME" /> Serverzertifikate anhand der integrierten Zertifikatsprüfung.
       Ist sie deaktiviert, verifiziert <ph name="PRODUCT_OS_NAME" /> Serverzertifikate mit der von der Plattform stammenden Legacy-Zertifikatsprüfung.
-      Falls diese Einstellung nicht konfiguriert wird, nutzt <ph name="PRODUCT_OS_NAME" /> entweder die integrierte oder die Legacy-Zertifikatsprüfung.
+      Wenn diese Einstellung nicht konfiguriert wird, nutzt <ph name="PRODUCT_OS_NAME" /> entweder die integrierte oder die Legacy-Zertifikatsprüfung.
 
-      Diese Richtlinie wird voraussichtlich in Version 81 von <ph name="PRODUCT_OS_NAME" /> entfernt, zur gleichen Zeit, zu der auch die Legacy-Zertifikatsprüfung aus <ph name="PRODUCT_OS_NAME" /> entfernt werden soll.
+      Diese Richtlinie wird voraussichtlich in Version 81 von <ph name="PRODUCT_OS_NAME" /> entfernt, wenn auch die Legacy-Zertifikatsprüfung in <ph name="PRODUCT_OS_NAME" /> voraussichtlich nicht mehr unterstützt wird.
       </translation>
 <translation id="7027785306666625591">Hiermit wird die Energieverwaltung in <ph name="PRODUCT_OS_NAME" /> konfiguriert.
 

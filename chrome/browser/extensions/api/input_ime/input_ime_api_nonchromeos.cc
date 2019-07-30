@@ -122,13 +122,13 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
 
 namespace extensions {
 
-InputMethodEngine* GetActiveEngine(content::BrowserContext* browser_context,
-                                   const std::string& extension_id) {
+InputMethodEngine* GetEngineIfActive(content::BrowserContext* browser_context,
+                                     const std::string& extension_id) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
   InputMethodEngine* engine =
       event_router ? static_cast<InputMethodEngine*>(
-                         event_router->GetActiveEngine(extension_id))
+                         event_router->GetEngineIfActive(extension_id))
                    : nullptr;
   return engine;
 }
@@ -174,7 +174,7 @@ InputImeEventRouter::~InputImeEventRouter() {
     DeleteInputMethodEngine(active_engine_->GetExtensionId());
 }
 
-InputMethodEngineBase* InputImeEventRouter::GetActiveEngine(
+InputMethodEngineBase* InputImeEventRouter::GetEngineIfActive(
     const std::string& extension_id) {
   return (ui::IMEBridge::Get()->GetCurrentEngineHandler() &&
           active_engine_ &&
@@ -324,7 +324,7 @@ void InputImeActivateFunction::OnPermissionBubbleFinished(
 
 ExtensionFunction::ResponseAction InputImeDeactivateFunction::Run() {
   InputMethodEngine* engine =
-      GetActiveEngine(browser_context(), extension_id());
+      GetEngineIfActive(browser_context(), extension_id());
   ui::IMEBridge::Get()->SetCurrentEngineHandler(nullptr);
   if (engine)
     engine->CloseImeWindows();
@@ -352,7 +352,7 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
   }
 
   InputMethodEngine* engine =
-      GetActiveEngine(browser_context(), extension_id());
+      GetEngineIfActive(browser_context(), extension_id());
   if (!engine)
     return RespondNow(Error(kErrorNoActiveEngine));
 
@@ -375,7 +375,7 @@ ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
 
 ExtensionFunction::ResponseAction InputImeShowWindowFunction::Run() {
   InputMethodEngine* engine =
-      GetActiveEngine(browser_context(), extension_id());
+      GetEngineIfActive(browser_context(), extension_id());
   if (!engine)
     return RespondNow(Error(kErrorNoActiveEngine));
 
@@ -388,7 +388,7 @@ ExtensionFunction::ResponseAction InputImeShowWindowFunction::Run() {
 
 ExtensionFunction::ResponseAction InputImeHideWindowFunction::Run() {
   InputMethodEngine* engine =
-      GetActiveEngine(browser_context(), extension_id());
+      GetEngineIfActive(browser_context(), extension_id());
   if (!engine)
     return RespondNow(Error(kErrorNoActiveEngine));
 

@@ -56,6 +56,71 @@ namespace declarativeNetRequest {
     removeHeaders
   };
 
+  // TODO(crbug.com/983685): Remove nodoc.
+  // Represents a query key-value pair.
+  [nodoc]
+  dictionary QueryKeyValue {
+    DOMString key;
+    DOMString value;
+  };
+
+  // TODO(crbug.com/983685): Remove nodoc.
+  // Describes modification to the url query.
+  [nodoc]
+  dictionary QueryTransform {
+     // The list of query keys to be removed.
+     DOMString[]? removeParams;
+     // The list of query key-value pairs to be added or replaced.
+     QueryKeyValue[]? addOrReplaceParams;
+  };
+
+  // TODO(crbug.com/983685): Remove nodoc.
+  // Describes modification to various url components.
+  [nodoc]
+  dictionary URLTransform {
+     // The new scheme for the request.
+     DOMString? scheme;
+
+     // The new host for the request.
+     DOMString? host;
+
+     // The new port for the request. If empty, the existing port is cleared.
+     DOMString? port;
+
+     // The new path for the request. If empty, the existing path is cleared.
+     // For urls with schemes like "http" or "https", this should include the
+     // preceding slash '/'.
+     DOMString? path;
+
+     // The new query for the request. Should be either empty, in which case the
+     // existing query is cleared; or should begin with '?'.
+     DOMString? query;
+
+     // Add, remove or replace query key-value pairs.
+     QueryTransform? queryTransform;
+
+     // The new fragment for the request. Should be either empty, in which case
+     // the existing fragment is cleared; or should begin with '#'.
+     DOMString? fragment;
+
+     // The new username for the request.
+     DOMString? username;
+
+     // The new password for the request.
+     DOMString? password;
+  };
+
+  // TODO(crbug.com/983685): Remove nodoc.
+  [nodoc]
+  dictionary Redirect {
+     // Path relative to the extension directory. Should start with '/'.
+     DOMString? extensionPath;
+     // Url transformations to perform.
+     URLTransform? transform;
+     // The redirect url.
+     DOMString? url;
+  };
+
   dictionary RuleCondition {
 
     // The pattern which is matched against the network request url.
@@ -132,6 +197,12 @@ namespace declarativeNetRequest {
     // specified as an absolute url or a relative url (starting with '/'), which
     // is relative to the extension which specified the rule.
     DOMString? redirectUrl;
+
+    // TODO(crbug.com/983685): Remove nodoc.
+    // Describes how the redirect should be performed. Only valid for redirect
+    // rules.
+    [nodoc]
+    Redirect? redirect;
 
     // The headers to remove from the request. Only valid if RuleActionType is
     // "removeHeaders".

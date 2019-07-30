@@ -9,6 +9,7 @@
 
 ചില സവിശേഷതകൾ ലഭ്യമല്ലായിരിക്കാം ഒപ്പം മുൻഗണനകളിലേക്കുള്ള മാറ്റങ്ങൾ സംരക്ഷിക്കപ്പെടുന്നതുമല്ല.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> മുമ്പ് Chrome ഉപയോഗിച്ചിട്ടുണ്ട്</translation>
+<translation id="1097330777386562916">നിങ്ങൾ Chrome-ൽ നിന്ന് പുറത്തുകടക്കുമ്പോൾ കുക്കികളും സൈറ്റ് ഡാറ്റയും മായ്‌ക്കുക</translation>
 <translation id="1104959162601287462">&amp;Chrome OS-നെക്കുറിച്ച്</translation>
 <translation id="110877069173485804">ഇതാണ് നിങ്ങളുടെ Chrome</translation>
 <translation id="1142745911746664600">Chrome അപ്‌ഡേറ്റ് ചെയ്യാനാവില്ല</translation>
@@ -28,6 +29,7 @@
 <translation id="1590588151039584890">അപ്‌ഡേറ്റ് ചെയ്യാൻ, ഈ കമ്പ്യൂട്ടറിൽ Chrome റൺ ചെയ്യുന്നത് നിർത്തേണ്ടതുണ്ട്. ഈ കമ്പ്യൂട്ടറിൽ ലോഗിൻ ചെയ്‌തിരിക്കുന്ന മറ്റ് ഉപയോക്താക്കളുടെ സംരക്ഷിക്കാത്ത മാറ്റങ്ങൾ നഷ്‌ടപ്പെടാൻ ഇത് കാരണമായേക്കാം.</translation>
 <translation id="1619887657840448962">Chrome സുരക്ഷിതമാക്കാൻ, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> എന്നതിൽ ലിസ്റ്റ് ചെയ്യാത്ത ചില വിപുലീകരണങ്ങൾ ഞങ്ങൾ പ്രവർത്തനരഹിതമാക്കി, അവ നിങ്ങളുടെ അറിവില്ലാതെ ചേർത്തിരിക്കാനിടയുണ്ട്.</translation>
 <translation id="1628000112320670027">Chrome ഉപയോഗിക്കുന്നതിനുള്ള സഹായം തേടുക</translation>
+<translation id="1635734105302489219">Chrome-ൽ നിന്ന് പുറത്തുകടക്കുമ്പോൾ കുക്കികൾ മായ്‌ക്കുക. സമന്വയിപ്പിക്കുന്നത് തുടരാൻ, <ph name="COOKIE_SETTINGS_LINK" /> ഇത് മാറ്റുക.</translation>
 <translation id="1662639173275167396"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (ബീറ്റ)<ph name="END_LINK_LINUX_OSS" /> പോലെ അധിക <ph name="BEGIN_LINK_CROS_OSS" />ഓപ്പൺ സോഴ്‌സ് സോഫ്‌റ്റ്‌വെയർ<ph name="END_LINK_CROS_OSS" /> ഉപയോഗിച്ചാണ് Chrome OS സാധ്യമാക്കിയിട്ടുള്ളത്.</translation>
 <translation id="1674870198290878346">Chrome അദൃശ്യ വിൻഡോയിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="1682634494516646069">Google Chrome-ന് ഇതിന്റെ ഡാറ്റാ ഡയറക്റ്ററി വായിക്കാനോ അതിൽ എഴുതാനോ കഴിയില്ല:

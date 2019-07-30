@@ -899,6 +899,10 @@ public class WebappActivity extends SingleTabActivity {
                 getWindowAndroid(), (byte) mWebappInfo.orientation());
     }
 
+    protected boolean isSplashShowing() {
+        return mSplashController.isSplashShowing();
+    }
+
     /**
      * Register an observer to the splashscreen hidden/visible events for this activity.
      */

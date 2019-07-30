@@ -259,10 +259,16 @@ struct AutocompleteMatch {
   // - If the match's keyword is known, it can be provided in |keyword|.
   //   Otherwise, it can be left empty and the template URL (if any) is
   //   determined from the destination's hostname.
-  static GURL GURLToStrippedGURL(const GURL& url,
-                                 const AutocompleteInput& input,
-                                 const TemplateURLService* template_url_service,
-                                 const base::string16& keyword);
+  // - If |additional_query_params| is provided, these will be added to the
+  //   resulting URL in the cases where a template URL is used. This is used to
+  //   distinguish cases such as entity suggestions where the response contains
+  //   additional meaningful parameters beyond the search terms themselves.
+  static GURL GURLToStrippedGURL(
+      const GURL& url,
+      const AutocompleteInput& input,
+      const TemplateURLService* template_url_service,
+      const base::string16& keyword,
+      const std::string& additional_query_params = "");
 
   // Sets the |match_in_scheme| and |match_in_subdomain| flags based on the
   // provided |url| and list of substring |match_positions|. |match_positions|

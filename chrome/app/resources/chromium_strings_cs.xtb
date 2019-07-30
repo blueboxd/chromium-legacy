@@ -215,6 +215,7 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>
 <translation id="7773960292263897147">Upozornění: Chromium nemůže rozšířením zabránit v zaznamenávání vaší historie procházení. Chcete-li toto rozšíření v anonymním režimu deaktivovat, zrušte výběr této možnosti.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
+<translation id="7827169012280634081">Při ukončení prohlížeče Chromium vymazat soubory cookie a data webů</translation>
 <translation id="7867198900892795913">Chromium nebylo možné aktualizovat na nejnovější verzi. Nemáte proto k dispozici nové funkce a opravy zabezpečení.</translation>
 <translation id="7901117350626490574">Je k dispozici nová aktualizace prohlížeče Chromium, která bude použita po restartování.</translation>
 <translation id="7937630085815544518">K prohlížeči Chromium jste byli přihlášeni s účtem <ph name="USER_EMAIL_ADDRESS" />. Přihlaste se prosím znovu pomocí stejného účtu.</translation>
@@ -241,6 +242,7 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="8667808506758191620">Vaše zařízení <ph name="DEVICE_TYPE" /> je aktuální.</translation>
 <translation id="8697124171261953979">Také řídí, která stránka se zobrazí po spuštění prohlížeče Chromium nebo při vyhledávání v omniboxu.</translation>
 <translation id="8704119203788522458">Toto je váš prohlížeč Chromium</translation>
+<translation id="8739167630197873875">Při ukončení prohlížeče Chromium mažete soubory cookie. Chcete-li pokračovat v synchronizaci, změňte toto <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="8748383401829947534">Ukončete všechny kopie prohlížeče Chromium</translation>
 <translation id="8796602469536043152">Chromium pro tento web potřebuje oprávnění k přístupu k fotoaparátu a mikrofonu</translation>
 <translation id="8803635938069941624">Smluvní podmínky systému Chromium OS</translation>

@@ -32,16 +32,10 @@ class BASE_EXPORT FileVersionInfoWin : public FileVersionInfo {
   base::string16 product_short_name() override;
   base::string16 internal_name() override;
   base::string16 product_version() override;
-  base::string16 private_build() override;
   base::string16 special_build() override;
-  base::string16 comments() override;
   base::string16 original_filename() override;
   base::string16 file_description() override;
   base::string16 file_version() override;
-  base::string16 legal_copyright() override;
-  base::string16 legal_trademarks() override;
-  base::string16 last_change() override;
-  bool is_official_build() override;
 
   // Lets you access other properties not covered above.
   bool GetValue(const base::char16* name, base::string16* value);

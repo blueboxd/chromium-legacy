@@ -9,10 +9,10 @@
 
 #include "base/callback.h"
 #include "base/task/common/checked_lock.h"
+#include "base/task/post_job.h"
 #include "base/task/task_features.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/delayed_task_manager.h"
-#include "base/task/thread_pool/job_task_source.h"
 #include "base/task/thread_pool/pooled_task_runner_delegate.h"
 #include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task_tracker.h"
@@ -76,31 +76,41 @@ class MockPooledTaskRunnerDelegate : public PooledTaskRunnerDelegate {
   ThreadGroup* thread_group_ = nullptr;
 };
 
-// A simple JobTaskSource that will give |worker_task| a fixed number of times,
+// A simple MockJobTask that will give |worker_task| a fixed number of times,
 // possibly in parallel.
-class MockJobTaskSource : public JobTaskSource {
+class MockJobTask : public base::RefCountedThreadSafe<MockJobTask> {
  public:
   // Gives |worker_task| to requesting workers |num_tasks_to_run| times.
-  // Allowing at most |max_concurrency| workers to be running |worker_task| in
-  // parallel.
-  MockJobTaskSource(const Location& from_here,
-                    base::RepeatingClosure worker_task,
-                    const TaskTraits& traits,
-                    size_t num_tasks_to_run,
-                    size_t max_concurrency);
+  // ShouldYield() is automatically called on JobDelegate before running
+  // |worker_task| so that DoNothing() may be passed.
+  MockJobTask(
+      base::RepeatingCallback<void(experimental::JobDelegate*)> worker_task,
+      size_t num_tasks_to_run);
 
   // Gives |worker_task| to a single requesting worker.
-  MockJobTaskSource(const Location& from_here,
-                    base::OnceClosure worker_task,
-                    const TaskTraits& traits);
+  MockJobTask(base::OnceClosure worker_task);
 
-  size_t GetMaxConcurrency() const override;
+  // Updates the remaining number of time |worker_task| runs to
+  // |num_tasks_to_run|.
+  void SetNumTasksToRun(size_t num_tasks_to_run) {
+    remaining_num_tasks_to_run_ = num_tasks_to_run;
+  }
+
+  size_t GetMaxConcurrency() const;
+  void Run(experimental::JobDelegate* delegate);
+
+  scoped_refptr<JobTaskSource> GetJobTaskSource(const Location& from_here,
+                                                const TaskTraits& traits);
 
  private:
-  ~MockJobTaskSource() override;
+  friend class base::RefCountedThreadSafe<MockJobTask>;
 
+  ~MockJobTask();
+
+  base::RepeatingCallback<void(experimental::JobDelegate*)> worker_task_;
   std::atomic_size_t remaining_num_tasks_to_run_;
-  const size_t max_concurrency_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockJobTask);
 };
 
 // An enumeration of possible thread pool types. Used to parametrize relevant

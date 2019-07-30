@@ -2368,7 +2368,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest,
   content::WaitForLoadStop(tab);
 
   for (auto* frame : GetInspectedTab()->GetAllFrames()) {
-    content::WaitForHitTestDataOrChildSurfaceReady(frame);
+    content::WaitForHitTestData(frame);
   }
   DevToolsWindow* window =
       DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(), false);

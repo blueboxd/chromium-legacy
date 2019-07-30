@@ -2619,6 +2619,12 @@ const char kUpdateMenuTypeInlineUpdateDownloadCanceled[] =
 const char kUpdateMenuTypeInlineUpdateInstallFailed[] =
     "Inline Update Error: Install Failed";
 
+const char kUsageStatsDescription[] =
+    "When set, enables sharing of per-domain usage stats with the Digital "
+    "Wellbeing app on Android, and allows Digital Wellbeing to suspend access "
+    "to websites in order to enforce user-defined time limits.";
+const char kUsageStatsName[] = "Share Usage Stats with Digital Wellbeing";
+
 const char kInlineUpdateFlowName[] = "Enable Google Play inline update flow";
 const char kInlineUpdateFlowDescription[] =
     "When this flag is set, instead of taking the user to the Google Play "

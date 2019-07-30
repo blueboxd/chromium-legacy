@@ -34,45 +34,43 @@ cr.define('os_languages_page_tests', function() {
       CrSettingsPrefs.deferInitialization = true;
     });
 
-    setup(function() {
+    setup(async () => {
       const settingsPrefs = document.createElement('settings-prefs');
       const settingsPrivate =
           new settings.FakeSettingsPrivate(settings.getFakeLanguagePrefs());
       settingsPrefs.initialize(settingsPrivate);
       document.body.appendChild(settingsPrefs);
-      return CrSettingsPrefs.initialized.then(function() {
-        // Set up test browser proxy.
-        browserProxy = new settings.TestLanguagesBrowserProxy();
-        settings.LanguagesBrowserProxyImpl.instance_ = browserProxy;
+      await CrSettingsPrefs.initialized;
+      // Set up test browser proxy.
+      browserProxy = new settings.TestLanguagesBrowserProxy();
+      settings.LanguagesBrowserProxyImpl.instance_ = browserProxy;
 
-        // Set up fake languageSettingsPrivate API.
-        const languageSettingsPrivate =
-            browserProxy.getLanguageSettingsPrivate();
-        languageSettingsPrivate.setSettingsPrefs(settingsPrefs);
+      // Set up fake languageSettingsPrivate API.
+      const languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
+      languageSettingsPrivate.setSettingsPrefs(settingsPrefs);
 
-        // Instantiate the data model with data bindings for prefs.
-        const settingsLanguages = document.createElement('settings-languages');
-        settingsLanguages.prefs = settingsPrefs.prefs;
-        test_util.fakeDataBind(settingsPrefs, settingsLanguages, 'prefs');
-        document.body.appendChild(settingsLanguages);
+      // Instantiate the data model with data bindings for prefs.
+      const settingsLanguages = document.createElement('settings-languages');
+      settingsLanguages.prefs = settingsPrefs.prefs;
+      test_util.fakeDataBind(settingsPrefs, settingsLanguages, 'prefs');
+      document.body.appendChild(settingsLanguages);
 
-        // Create page with data bindings for prefs and data model.
-        languagesPage = document.createElement('os-settings-languages-page');
-        languagesPage.prefs = settingsPrefs.prefs;
-        test_util.fakeDataBind(settingsPrefs, languagesPage, 'prefs');
-        languagesPage.languages = settingsLanguages.languages;
-        test_util.fakeDataBind(settingsLanguages, languagesPage, 'languages');
-        languagesPage.languageHelper = settingsLanguages.languageHelper;
-        test_util.fakeDataBind(
-            settingsLanguages, languagesPage, 'language-helper');
-        document.body.appendChild(languagesPage);
+      // Create page with data bindings for prefs and data model.
+      languagesPage = document.createElement('os-settings-languages-page');
+      languagesPage.prefs = settingsPrefs.prefs;
+      test_util.fakeDataBind(settingsPrefs, languagesPage, 'prefs');
+      languagesPage.languages = settingsLanguages.languages;
+      test_util.fakeDataBind(settingsLanguages, languagesPage, 'languages');
+      languagesPage.languageHelper = settingsLanguages.languageHelper;
+      test_util.fakeDataBind(
+          settingsLanguages, languagesPage, 'language-helper');
+      document.body.appendChild(languagesPage);
 
-        languagesList = languagesPage.$.languagesList;
-        actionMenu = languagesPage.$.menu.get();
+      languagesList = languagesPage.$.languagesList;
+      actionMenu = languagesPage.$.menu.get();
 
-        languageHelper = languagesPage.languageHelper;
-        return languageHelper.whenReady();
-      });
+      languageHelper = languagesPage.languageHelper;
+      await languageHelper.whenReady();
     });
 
     teardown(function() {

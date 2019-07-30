@@ -168,6 +168,9 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
+    // Needs to destroyed before ash::Shell keyboard.
+    chrome_keyboard_controller_client_test_helper_.reset();
+
     BrowserWithTestWindowTest::TearDown();
 
     ui::ShutdownInputMethodForTesting();
@@ -176,9 +179,6 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     candidate_window_controller_ = nullptr;
     keyboard_ = nullptr;
     manager_.reset();
-
-    // Needs to destroyed after ash::Shell keyboard.
-    chrome_keyboard_controller_client_test_helper_.reset();
   }
 
   scoped_refptr<InputMethodManagerImpl::StateImpl> GetActiveIMEState() {

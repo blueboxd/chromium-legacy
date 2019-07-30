@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">Sayfayı yenile</translation>
 <translation id="2709516037105925701">Otomatik doldurma</translation>
 <translation id="271033894570825754">Yeni</translation>
+<translation id="2714850608275780394">Kod bekleniyor</translation>
 <translation id="2728754400939377704">Siteye göre sırala</translation>
 <translation id="2744248271121720757">Anında aramak veya ilgili işlemleri görmek için bir kelimeye dokunun</translation>
+<translation id="2760989362628427051">Cihazınızın koyu tema veya Pil Tasarrufu özelliği açık olduğunda koyu tema açılır</translation>
 <translation id="2762000892062317888">az önce</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sn. kaldı</translation>
 <translation id="2779651927720337254">başarısız</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">1 dk. kaldı</translation>
 <translation id="3244271242291266297">AA</translation>
 <translation id="3254409185687681395">Bu sayfaya yer işareti koy</translation>
+<translation id="3254626532848657899">En alta taşı</translation>
 <translation id="3259831549858767975">Sayfadaki her şeyi küçültür</translation>
 <translation id="3269093882174072735">Resim yükle</translation>
 <translation id="3269956123044984603">Diğer cihazlarınızdaki sekmelerinize ulaşmak için Android hesap ayarlarından "Verileri otomatik senkronize et" seçeneğini etkinleştirin.</translation>
@@ -441,6 +444,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Arama için Sogou kullanılıyor</translation>
 <translation id="4404568932422911380">Yer işareti yok</translation>
+<translation id="4405224443901389797">Klasöre taşı…</translation>
 <translation id="4411535500181276704">Basit mod</translation>
 <translation id="4415276339145661267">Google Hesabınızı yönetin</translation>
 <translation id="4432792777822557199"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfalar artık <ph name="TARGET_LANGUAGE" /> diline çevrilecek</translation>
@@ -621,6 +625,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5578795271662203820">Bu resmi, <ph name="SEARCH_ENGINE" /> üzerinde ara</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> sekme gruplandı</translation>
 <translation id="5581519193887989363">Neyin senkronize edileceğini istediğiniz zaman <ph name="BEGIN_LINK1" />ayarlardan<ph name="END_LINK1" /> seçebilirsiniz.</translation>
+<translation id="5586306159936941448">Sekmeleri gruplandırmak için birini diğerinin üzerine sürükleyin</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>
 <translation id="5596627076506792578">Diğer seçenekler</translation>
 <translation id="5599455543593328020">Gizli mod</translation>
@@ -651,6 +656,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5809361687334836369">{HOURS,plural, =1{# saat önce}other{# saat önce}}</translation>
 <translation id="5810288467834065221">Telif hakkı <ph name="YEAR" /> Google LLC. Tüm hakları saklıdır.</translation>
 <translation id="5817918615728894473">Eşle</translation>
+<translation id="58326064309361797">Gruplandırmak için sekmeleri sürükleyin</translation>
 <translation id="583281660410589416">Bilinmiyor</translation>
 <translation id="5833984609253377421">Bağlantıyı paylaş</translation>
 <translation id="5836192821815272682">Chrome Güncellemesi indiriliyor…</translation>
@@ -845,7 +851,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7233236755231902816">Web'i kendi dilinizde görmek için Chrome'un en son sürümünü edinin</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> öğe seçildi</translation>
-<translation id="7253272406652746122">Cihazınızın Ayarlar uygulamasındaki Hesaplar sayfasından bir Google Hesabı ekleyin.</translation>
 <translation id="7274013316676448362">Engellenmiş site</translation>
 <translation id="7290209999329137901">Yeniden adlandırma yapılamıyor</translation>
 <translation id="7291387454912369099">Asistan'ın Başlattığı Ödeme</translation>
@@ -1011,6 +1016,7 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="8380167699614421159">Bu site, araya giren veya yanıltıcı reklamlar gösteriyor</translation>
 <translation id="8393700583063109961">İleti gönder</translation>
 <translation id="8413126021676339697">Tüm geçmişi göster</translation>
+<translation id="8425955042390522843">Telefon numarası doğrulaması</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8438566539970814960">Aramaları ve göz atmayı daha iyi yap</translation>
 <translation id="8441146129660941386">Geriye doğru git</translation>
@@ -1118,6 +1124,7 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="945632385593298557">Mikrofonunuza erişim</translation>
 <translation id="951339005376969845">Mevcut veriler silinir. İlgili verileri tekrar <ph name="FROM_ACCOUNT" /> hesabına geçerek alabilirsiniz.</translation>
 <translation id="95817756606698420">Chrome, Çin'de arama yapmak için <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" />'yu kullanabilir. Bu seçimi <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'da değiştirebilirsiniz.</translation>
+<translation id="959682366969460160">Organize çalışın</translation>
 <translation id="965817943346481315">Site, araya giren veya yanıltıcı reklamlar gösteriyorsa engelle (önerilen)</translation>
 <translation id="968900484120156207">Ziyaret ettiğiniz sayfalar burada görünür</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> dk. kaldı</translation>

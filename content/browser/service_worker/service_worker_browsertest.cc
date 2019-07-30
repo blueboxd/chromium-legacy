@@ -57,7 +57,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
@@ -2034,16 +2033,6 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
       const net::test_server::HttpRequest& request) {
     DCHECK(HasNavigationPreloadHeader(request));
     return request.headers.find(kNavigationPreloadHeaderName)->second;
-  }
-
-  static void CancellingInterceptorCallback(
-      const std::string& header,
-      const std::string& value,
-      int child_process_id,
-      content::ResourceContext* resource_context,
-      OnHeaderProcessedCallback callback) {
-    DCHECK_EQ(kNavigationPreloadHeaderName, header);
-    std::move(callback).Run(HeaderInterceptorResult::KILL);
   }
 
   void SetupForNavigationPreloadTest(const GURL& scope,

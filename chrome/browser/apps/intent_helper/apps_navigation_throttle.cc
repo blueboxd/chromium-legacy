@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "url/origin.h"
 
 namespace {

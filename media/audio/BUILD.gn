@@ -279,6 +279,8 @@ source_set("audio") {
       "pulse/pulse_util.h",
     ]
 
+    deps += [ "//build:branding_buildflags" ]
+
     if (link_pulseaudio) {
       configs += [ ":libpulse" ]
     } else {

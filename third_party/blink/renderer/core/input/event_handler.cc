@@ -2424,10 +2424,7 @@ void EventHandler::ReleaseMouseCaptureFromCurrentFrame() {
 }
 
 void EventHandler::SetIsFallbackCursorModeOn(bool is_on) {
-  if (!RuntimeEnabledFeatures::FallbackCursorModeEnabled()) {
-    // TODO(crbug.com/987353): can happen during tests.
-    return;
-  }
+  DCHECK(RuntimeEnabledFeatures::FallbackCursorModeEnabled());
   // TODO(crbug.com/944575) Should support oopif.
   DCHECK(frame_->IsMainFrame());
   fallback_cursor_event_manager_->SetIsFallbackCursorModeOn(is_on);

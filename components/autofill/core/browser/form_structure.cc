@@ -2186,31 +2186,31 @@ void FormStructure::RationalizeTypeRelationships() {
 LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
   buffer << Tag{"div"} << Attrib{"class", "form"};
   buffer << Tag{"table"};
-  buffer << MakeTr2Cells("Form signature:", form.form_signature());
-  buffer << MakeTr2Cells("Form name:", form.form_name());
-  buffer << MakeTr2Cells("Target URL:", form.target_url());
+  buffer << Tr{} << "Form signature:" << form.form_signature();
+  buffer << Tr{} << "Form name:" << form.form_name();
+  buffer << Tr{} << "Target URL:" << form.target_url();
   for (size_t i = 0; i < form.field_count(); ++i) {
     buffer << Tag{"tr"};
     buffer << Tag{"td"} << "Field " << i << ": " << CTag{};
     const AutofillField* field = form.field(i);
     buffer << Tag{"td"};
     buffer << Tag{"table"};
-    buffer << MakeTr2Cells("Signature:", field->GetFieldSignature());
-    buffer << MakeTr2Cells("Name:", field->parseable_name());
+    buffer << Tr{} << "Signature:" << field->GetFieldSignature();
+    buffer << Tr{} << "Name:" << field->parseable_name();
 
     auto type = field->Type().ToString();
     auto heuristic_type = AutofillType(field->heuristic_type()).ToString();
     auto server_type = AutofillType(field->server_type()).ToString();
 
-    buffer << MakeTr2Cells("Type:",
-                           base::StrCat({type, " (heuristic: ", heuristic_type,
-                                         ", server: ", server_type, ")"}));
-    buffer << MakeTr2Cells("Section:", field->section);
+    buffer << Tr{} << "Type:"
+           << base::StrCat({type, " (heuristic: ", heuristic_type,
+                            ", server: ", server_type, ")"});
+    buffer << Tr{} << "Section:" << field->section;
 
     constexpr size_t kMaxLabelSize = 100;
     const base::string16 truncated_label =
         field->label.substr(0, std::min(field->label.length(), kMaxLabelSize));
-    buffer << MakeTr2Cells("Label:", truncated_label);
+    buffer << Tr{} << "Label:" << truncated_label;
     buffer << CTag{"table"};
     buffer << CTag{"td"};
     buffer << CTag{"tr"};

@@ -61,6 +61,21 @@ TEST(CoordinateTest, ExpandDocumentSize) {
   CompareSize({250, 1450}, doc_size);
 }
 
+TEST(CoordinateTest, GetBottomGapBetweenRects) {
+  CompareRect({95, 600, 350, 50},
+              GetBottomGapBetweenRects(600, {95, 200, 350, 450}));
+
+  CompareRect({200, 500, 350, 10},
+              GetBottomGapBetweenRects(500, {200, 0, 350, 510}));
+
+  // Test rectangle with a negative bottom value.
+  CompareRect({150, -100, 400, 150},
+              GetBottomGapBetweenRects(-100, {150, 0, 400, 50}));
+
+  // Test case where |page_rect_bottom| >= |dirty_rect.bottom()|.
+  CompareRect({0, 0, 0, 0}, GetBottomGapBetweenRects(1400, {0, 10, 300, 500}));
+}
+
 TEST(CoordinateTest, GetPageInsetsForTwoUpView) {
   // Page is on the left side and isn't the last page in the document.
   CompareInsetSizes(kLeftInsets,

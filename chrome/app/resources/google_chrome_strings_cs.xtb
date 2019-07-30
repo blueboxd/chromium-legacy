@@ -9,6 +9,7 @@
 
 Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</translation>
 <translation id="1088300314857992706">Před vámi prohlížeč Chrome používal uživatel <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="1097330777386562916">Při ukončení Chromu vymazat soubory cookie a data webů</translation>
 <translation id="1104959162601287462">O operačním systému &amp;Chrome</translation>
 <translation id="110877069173485804">Toto je váš Chrome</translation>
 <translation id="1142745911746664600">Chrome nelze aktualizovat</translation>
@@ -28,6 +29,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1590588151039584890">Aby Chrome bylo možné aktualizovat, je třeba ho na tomto počítači ukončit. Může to vést ke ztrátě neuložených změn u ostatních uživatelů, kteří jsou na tomto počítači přihlášeni.</translation>
 <translation id="1619887657840448962">Aby byl prohlížeč Chrome bezpečnější, deaktivovali jsme následující rozšíření, které není uvedeno na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo být přidáno bez vašeho vědomí.</translation>
 <translation id="1628000112320670027">Pomoc s prohlížečem Chrome</translation>
+<translation id="1635734105302489219">Při ukončení Chromu mažete soubory cookie. Chcete-li pokračovat v synchronizaci, změňte toto <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">Chrome OS by nemohl existovat bez dalšího <ph name="BEGIN_LINK_CROS_OSS" />softwaru s otevřeným zdrojovým kódem<ph name="END_LINK_CROS_OSS" />, jako je <ph name="BEGIN_LINK_LINUX_OSS" />Linux (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Otevřít odkaz v &amp;anonymním okně Chrome</translation>
 <translation id="1682634494516646069">Aplikace Google Chrome nemůže číst ani zapisovat do svého datového adresáře:

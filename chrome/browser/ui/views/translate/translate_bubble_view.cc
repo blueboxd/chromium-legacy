@@ -539,8 +539,10 @@ void TranslateBubbleView::ExecuteCommand(int command_id, int event_flags) {
       model_->SetAlwaysTranslate(should_always_translate_);
 
       if (should_always_translate_ &&
-          model_->GetViewState() ==
-              TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE) {
+          ((model_->GetViewState() ==
+            TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE) ||
+           (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB &&
+            TabUiIsEquivalentState(model_->GetViewState())))) {
         model_->Translate();
         SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
       }
@@ -1655,6 +1657,13 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   UpdateAdvancedView();
 
   return view;
+}
+
+bool TranslateBubbleView::TabUiIsEquivalentState(
+    TranslateBubbleModel::ViewState view_state) {
+  return view_state == TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE ||
+         view_state == TranslateBubbleModel::VIEW_STATE_TRANSLATING ||
+         view_state == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE;
 }
 
 views::Checkbox* TranslateBubbleView::GetAlwaysTranslateCheckbox() {

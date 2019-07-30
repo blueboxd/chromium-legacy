@@ -80,7 +80,6 @@ MenuButtonController::MenuButtonController(
     : ButtonController(button, std::move(delegate)), listener_(listener) {
   // Triggers on button press by default, unless drag-and-drop is enabled, see
   // MenuButtonController::IsTriggerableEventType.
-  // TODO(cyan): Investigate using PlatformStyle::kMenuNotifyActivationAction.
   // TODO(cyan): Move NotifyAction into ButtonController.
   button->set_notify_action(Button::NOTIFY_ON_PRESS);
 }

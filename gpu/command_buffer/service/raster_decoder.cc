@@ -881,6 +881,7 @@ gl::GLSurface* RasterDecoderImpl::GetGLSurface() {
 }
 
 Capabilities RasterDecoderImpl::GetCapabilities() {
+  // TODO(enne): reconcile this with gles2_cmd_decoder's capability settings.
   Capabilities caps;
   caps.gpu_rasterization = supports_gpu_raster_;
   caps.supports_oop_raster = supports_oop_raster_;
@@ -925,6 +926,9 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
                  feature_info()->workarounds().max_3d_array_texture_size);
   }
   caps.sync_query = feature_info()->feature_flags().chromium_sync_query;
+  caps.msaa_is_slow = feature_info()->workarounds().msaa_is_slow;
+  caps.avoid_stencil_buffers =
+      feature_info()->workarounds().avoid_stencil_buffers;
 
   if (gr_context()) {
     caps.context_supports_distance_field_text =
@@ -2363,12 +2367,15 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   raster_canvas_ = nullptr;
 
   if (use_ddl_) {
+    TRACE_EVENT0("gpu",
+                 "RasterDecoderImpl::DoEndRasterCHROMIUM::DetachAndDrawDDL");
     auto ddl = recorder_->detach();
     recorder_ = nullptr;
     sk_surface_->draw(ddl.get());
   }
 
   {
+    TRACE_EVENT0("gpu", "RasterDecoderImpl::DoEndRasterCHROMIUM::Flush");
     // This is a slow operation since skia will execute the GPU work for the
     // complete tile. Make sure the progress reporter is notified to avoid
     // hangs.

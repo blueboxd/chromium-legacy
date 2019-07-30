@@ -9,6 +9,7 @@
 
 Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna sparas inte.</translation>
 <translation id="1088300314857992706">Chrome användes tidigare av <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="1097330777386562916">Radera cookies och webbplatsdata när du avslutar Chrome</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="110877069173485804">Det här är Chrome</translation>
 <translation id="1142745911746664600">Det gick inte att uppdatera Chrome</translation>
@@ -28,6 +29,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1590588151039584890">Chrome måste avslutas på datorn före uppdateringen. Detta kan leda till att andra användare som är inloggade på datorn förlorar ändringar som inte har sparats.</translation>
 <translation id="1619887657840448962">Vi har gjort Chromium säkrare genom att inaktivera följande tillägg som inte anges i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
 <translation id="1628000112320670027">Få hjälp med Chrome</translation>
+<translation id="1635734105302489219">Cookies raderas när du avslutar Chrome. Ändra <ph name="COOKIE_SETTINGS_LINK" /> om du vill fortsätta synkronisera.</translation>
 <translation id="1662639173275167396">Chrome OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS" />program med öppen källkod<ph name="END_LINK_CROS_OSS" />, liksom <ph name="BEGIN_LINK_LINUX_OSS" />Linux (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Öppna länken i ett inko&amp;gnitofönster i Chrome</translation>
 <translation id="1682634494516646069">Google Chrome kan inte läsa och skriva till datakatalogen:

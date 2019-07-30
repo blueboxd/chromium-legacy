@@ -24,6 +24,8 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/navigation_params.h"
+#include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
@@ -428,7 +430,7 @@ void FrameTreeNode::CreatedNavigationRequest(
   }
   render_manager()->DidCreateNavigationRequest(navigation_request_.get());
 
-  bool to_different_document = !FrameMsg_Navigate_Type::IsSameDocument(
+  bool to_different_document = !NavigationTypeUtils::IsSameDocument(
       navigation_request_->common_params().navigation_type);
 
   DidStartLoading(to_different_document, was_previously_loading);

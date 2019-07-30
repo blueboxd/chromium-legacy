@@ -25,6 +25,10 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/gl_version_info.h"
 
+#if defined(OS_WIN)
+#include "gpu/command_buffer/service/swap_chain_factory_dxgi.h"
+#endif  // OS_WIN
+
 namespace gpu {
 namespace gles2 {
 
@@ -1385,6 +1389,9 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
+#if defined(OS_WIN)
+  caps.shared_image_swap_chain = SwapChainFactoryDXGI::IsSupported();
+#endif  // OS_WIN
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.texture_storage_image =
       feature_info_->feature_flags().chromium_texture_storage_image;

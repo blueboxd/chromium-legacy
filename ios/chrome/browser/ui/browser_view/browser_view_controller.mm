@@ -4056,7 +4056,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)focusNextTab {
   int activeIndex = self.tabModel.webStateList->active_index();
-  if (activeIndex < self.tabModel.webStateList->count()) {
+  if (activeIndex == WebStateList::kInvalidIndex)
+    return;
+
+  // If the active index isn't the last index, activate the next index.
+  // (the last index is always |count() - 1|).
+  // Otherwise activate the first index.
+  if (activeIndex < (self.tabModel.webStateList->count() - 1)) {
     self.tabModel.webStateList->ActivateWebStateAt(activeIndex + 1);
   } else {
     self.tabModel.webStateList->ActivateWebStateAt(0);
@@ -4065,7 +4071,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)focusPreviousTab {
   int activeIndex = self.tabModel.webStateList->active_index();
+  if (activeIndex == WebStateList::kInvalidIndex)
+    return;
 
+  // If the active index isn't the first index, activate the prior index.
+  // Otherwise index the last index (|count() - 1|).
   if (activeIndex > 0) {
     self.tabModel.webStateList->ActivateWebStateAt(activeIndex - 1);
   } else {

@@ -318,7 +318,6 @@ const OncFieldSignature cellular_with_state_fields[] = {
     {::onc::cellular::kModelID, &kStringSignature},
     {::onc::cellular::kNetworkTechnology, &kStringSignature},
     {::onc::cellular::kPaymentPortal, &kCellularPaymentPortalSignature},
-    {::onc::cellular::kPRLVersion, &kIntegerSignature},
     {::onc::cellular::kRoamingState, &kStringSignature},
     {::onc::cellular::kScanning, &kBoolSignature},
     {::onc::cellular::kServingOperator, &kCellularProviderSignature},

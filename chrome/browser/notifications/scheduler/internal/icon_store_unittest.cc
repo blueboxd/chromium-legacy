@@ -28,8 +28,6 @@
 namespace notifications {
 namespace {
 
-const char kEntryKey[] = "guid_key1";
-const char kEntryKey2[] = "guid_key2";
 const char kEntryId[] = "proto_id_1";
 const char kEntryId2[] = "proto_id_2";
 const char kEntryData[] = "data_1";
@@ -46,7 +44,7 @@ class IconStoreTest : public testing::Test {
     entry.data = kEntryData;
     proto::Icon proto;
     leveldb_proto::DataToProto(&entry, &proto);
-    db_entries_.emplace(kEntryKey, proto);
+    db_entries_.emplace(kEntryId, proto);
 
     auto db =
         std::make_unique<leveldb_proto::test::FakeDB<proto::Icon, IconEntry>>(
@@ -107,7 +105,7 @@ TEST_F(IconStoreTest, InitFailed) {
 
 TEST_F(IconStoreTest, LoadOne) {
   InitDb();
-  Load(kEntryKey);
+  Load(kEntryId);
   db()->GetCallback(true);
 
   // Verify data is loaded.
@@ -118,7 +116,7 @@ TEST_F(IconStoreTest, LoadOne) {
 
 TEST_F(IconStoreTest, LoadFailed) {
   InitDb();
-  Load(kEntryKey);
+  Load(kEntryId);
   db()->GetCallback(false);
 
   // Verify load failure.
@@ -133,11 +131,11 @@ TEST_F(IconStoreTest, MAYBE_Add) {
   new_entry->uuid = kEntryId2;
   new_entry->data = kEntryData;
 
-  store()->Add(kEntryKey2, std::move(new_entry), base::DoNothing());
+  store()->Add(std::move(new_entry), base::DoNothing());
   db()->UpdateCallback(true);
 
   // Verify the entry is added.
-  Load(kEntryKey2);
+  Load(kEntryId2);
   db()->GetCallback(true);
   EXPECT_TRUE(load_result());
   VerifyEntry(kEntryId2, kEntryData);
@@ -150,11 +148,11 @@ TEST_F(IconStoreTest, MAYBE_AddDuplicate) {
   new_entry->uuid = kEntryId;
   new_entry->data = kEntryData2;
 
-  store()->Add(kEntryKey, std::move(new_entry), base::DoNothing());
+  store()->Add(std::move(new_entry), base::DoNothing());
   db()->UpdateCallback(true);
 
   // Add a duplicate id is currently allowed, we just update the entry.
-  Load(kEntryKey);
+  Load(kEntryId);
   db()->GetCallback(true);
   EXPECT_TRUE(load_result());
   VerifyEntry(kEntryId, kEntryData2);
@@ -164,12 +162,12 @@ TEST_F(IconStoreTest, Delete) {
   InitDb();
 
   // Delete the only entry.
-  store()->Delete(kEntryKey,
+  store()->Delete(kEntryId,
                   base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
   db()->UpdateCallback(true);
 
   // No entry can be loaded, move nullptr as result.
-  Load(kEntryKey);
+  Load(kEntryId);
   db()->GetCallback(true);
   EXPECT_FALSE(loaded_entry());
   EXPECT_TRUE(load_result());

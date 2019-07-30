@@ -294,12 +294,13 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
     helper.SetForceBrowserNotAliveWithNoWindows(true);
     helper.ReleaseService();
 
-    // Create a new window, which should trigger session restore.
-    ui_test_utils::BrowserAddedObserver window_observer;
+    // Create a new window, which may trigger session restore.
+    size_t count = BrowserList::GetInstance()->size();
     chrome::NewEmptyWindow(profile);
-    Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+    if (count == BrowserList::GetInstance()->size())
+      return ui_test_utils::WaitForBrowserToOpen();
 
-    return new_browser;
+    return BrowserList::GetInstance()->get(count);
   }
 
   std::string fake_server_address() {

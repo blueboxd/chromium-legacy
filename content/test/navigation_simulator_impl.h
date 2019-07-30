@@ -15,13 +15,13 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/referrer.h"
 #include "content/public/test/navigation_simulator.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
+#include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "url/gurl.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
@@ -85,7 +85,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetMethod(const std::string& method) override;
   void SetIsFormSubmission(bool is_form_submission) override;
   void SetWasInitiatedByLinkClick(bool was_initiated_by_link_click) override;
-  void SetReferrer(const Referrer& referrer) override;
+  void SetReferrer(blink::mojom::ReferrerPtr referrer) override;
   void SetSocketAddress(const net::IPEndPoint& remote_endpoint) override;
   void SetWasFetchedViaCache(bool was_fetched_via_cache) override;
   void SetIsSignedExchangeInnerResponse(
@@ -268,7 +268,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   bool was_initiated_by_link_click_ = false;
   bool browser_initiated_;
   bool same_document_ = false;
-  Referrer referrer_;
+  blink::mojom::ReferrerPtr referrer_;
   ui::PageTransition transition_;
   ReloadType reload_type_ = ReloadType::NONE;
   int session_history_offset_ = 0;

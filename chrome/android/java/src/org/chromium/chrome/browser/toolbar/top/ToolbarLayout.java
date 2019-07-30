@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansio
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
-import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.UiUtils;
@@ -888,9 +887,7 @@ public abstract class ToolbarLayout
         TextBubble textBubble = new TextBubble(getContext(), experimentalButton, stringId,
                 accessibilityStringId, experimentalButton);
         textBubble.setDismissOnTouchInteraction(true);
-        ViewHighlighter.turnOnHighlight(experimentalButton, true);
         textBubble.addOnDismissListener(() -> {
-            ViewHighlighter.turnOffHighlight(experimentalButton);
             dismissedCallback.run();
         });
         textBubble.show();

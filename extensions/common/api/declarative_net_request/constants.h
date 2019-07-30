@@ -39,6 +39,13 @@ extern const char kDomainTypeKey[];
 extern const char kRuleActionTypeKey[];
 extern const char kRedirectUrlKey[];
 extern const char kRemoveHeadersListKey[];
+extern const char kRedirectPath[];
+extern const char kExtensionPathPath[];
+extern const char kTransformSchemePath[];
+extern const char kTransformPortPath[];
+extern const char kTransformQueryPath[];
+extern const char kTransformFragmentPath[];
+extern const char kTransformQueryTransformPath[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions

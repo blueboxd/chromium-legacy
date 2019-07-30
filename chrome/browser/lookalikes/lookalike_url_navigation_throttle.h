@@ -32,6 +32,14 @@ struct DomainInfo;
 bool IsEditDistanceAtMostOne(const base::string16& str1,
                              const base::string16& str2);
 
+// Returns true if the redirect is deemed to be safe. These are generally
+// defensive registrations where the domain owner redirects the IDN to the ASCII
+// domain. See the unit tests for examples.
+// In short, |url| must redirect to the root of |safe_url_host| or one
+// of its subdomains.
+bool IsSafeRedirect(const std::string& safe_url_host,
+                    const std::vector<GURL>& redirect_chain);
+
 // Observes navigations and shows an interstitial if the navigated domain name
 // is visually similar to a top domain or a domain with a site engagement score.
 class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
@@ -69,18 +77,23 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
   FRIEND_TEST_ALL_PREFIXES(LookalikeUrlNavigationThrottleTest,
                            IsEditDistanceAtMostOne);
 
-  ThrottleCheckResult HandleThrottleRequest(const GURL& url);
+  // Checks whether the navigation to |url| can proceed. If
+  // |check_safe_redirect| is true, will check if a safe redirect led to |url|.
+  ThrottleCheckResult HandleThrottleRequest(const GURL& url,
+                                            bool check_safe_redirect);
 
   // Performs synchronous top domain and engaged site checks on the navigated
   // |url|. Uses |engaged_sites| for the engaged site checks.
   ThrottleCheckResult PerformChecks(
       const GURL& url,
       const DomainInfo& navigated_domain,
+      bool check_safe_redirect,
       const std::vector<DomainInfo>& engaged_sites);
 
   // A void-returning variant, only used with deferred throttle results.
   void PerformChecksDeferred(const GURL& url,
                              const DomainInfo& navigated_domain,
+                             bool check_safe_redirect,
                              const std::vector<DomainInfo>& engaged_sites);
 
   bool ShouldDisplayInterstitial(

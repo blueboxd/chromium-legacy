@@ -28,10 +28,10 @@ namespace views {
 // InstallableInkDropPainter passed in. The animations are currently minimal.
 class VIEWS_EXPORT InstallableInkDropAnimator : public gfx::AnimationDelegate {
  public:
-  // Placeholder duration used for all animations. TODO(crbug.com/933384):
-  // remove this and replace it with separate durations for different
-  // animations.
-  static constexpr base::TimeDelta kAnimationDuration =
+  // Placeholder duration used for highlight animation. TODO(crbug.com/933384):
+  // remove this and make highlight animation duration controllable, like in
+  // InkDropHighlight.
+  static constexpr base::TimeDelta kHighlightAnimationDuration =
       base::TimeDelta::FromMilliseconds(500);
 
   // We use a shared gfx::AnimationContainer for our animations to allow them to
@@ -57,7 +57,27 @@ class VIEWS_EXPORT InstallableInkDropAnimator : public gfx::AnimationDelegate {
 
   InkDropState target_state() const { return target_state_; }
 
+  // The sub-animations used when animating to an |InkDropState|. These are used
+  // to look up the animation durations. This is mainly meant for internal use
+  // but is public for tests.
+  enum class SubAnimation {
+    kHiddenFadeOut,
+    kActionPendingFloodFill,
+    kActionTriggeredFadeOut,
+    kActivatedFloodFill,
+    kDeactivatedFadeOut,
+  };
+
+  static base::TimeDelta GetSubAnimationDurationForTesting(
+      SubAnimation sub_animation) {
+    return GetSubAnimationDuration(sub_animation);
+  }
+
  private:
+  static base::TimeDelta GetSubAnimationDuration(SubAnimation sub_animation);
+
+  void StartSubAnimation(SubAnimation sub_animation);
+
   // Checks that the states of our animations make sense given
   // |target_state_|. DCHECKs if something is wrong.
   void VerifyAnimationState() const;

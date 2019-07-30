@@ -43,12 +43,13 @@ leveldb::Status FakeIndexedDBMetadataCoding::CreateDatabase(
   return Status::OK();
 }
 
-void FakeIndexedDBMetadataCoding::SetDatabaseVersion(
+leveldb::Status FakeIndexedDBMetadataCoding::SetDatabaseVersion(
     TransactionalLevelDBTransaction* transaction,
     int64_t row_id,
     int64_t version,
     IndexedDBDatabaseMetadata* metadata) {
   metadata->version = version;
+  return leveldb::Status::OK();
 }
 
 leveldb::Status FakeIndexedDBMetadataCoding::FindDatabaseId(

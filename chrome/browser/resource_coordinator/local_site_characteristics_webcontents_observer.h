@@ -18,10 +18,6 @@ namespace content {
 class NavigationHandle;
 }
 
-namespace performance_manager {
-class PerformanceManager;
-}
-
 namespace resource_coordinator {
 
 // WebContents observer that manages a SiteCharacteristicsDataWriter associated
@@ -102,8 +98,6 @@ class LocalSiteCharacteristicsWebContentsObserver
   // always supposed to happen.
   bool first_time_favicon_set_ = false;
   bool first_time_title_set_ = false;
-
-  performance_manager::PerformanceManager* performance_manager_ = nullptr;
 
   // The time at which this tab switched to the loaded state, null if this tab
   // is not currently loaded.

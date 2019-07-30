@@ -101,9 +101,10 @@ enum VideoCodec : int {
   kCodecHEVC,
   kCodecDolbyVisionH264,
   kCodecDolbyVisionHEVC,
+  kCodecAV1,
 
   kVideoCodecMin = kVideoCodecUnknown,
-  kVideoCodecMax = kCodecDolbyVisionHEVC,
+  kVideoCodecMax = kCodecAV1,
 };
 
 // Profile for Video codec.
@@ -132,9 +133,12 @@ enum VideoProfile : int {
   kHEVCMain,
   kHEVCMain10,
   kHEVCMainStillPicture,
+  kAV1ProfileMain,
+  kAV1ProfileHigh,
+  kAV1ProfilePro,
 
   kVideoProfileMin = kVideoProfileUnknown,
-  kVideoProfileMax = kHEVCMainStillPicture,
+  kVideoProfileMax = kAV1ProfilePro,
 };
 
 struct CodecProfileLevel {

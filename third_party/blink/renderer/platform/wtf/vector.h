@@ -1661,7 +1661,7 @@ void Vector<T, inlineCapacity, Allocator>::ReserveCapacity(
     return;
   }
   // Reallocating a backing buffer may resurrect a dead object.
-  CHECK(!Allocator::IsObjectResurrectionForbidden());
+  CHECK(Allocator::IsAllocationAllowed());
 
   T* old_end = end();
   Base::AllocateExpandedBuffer(new_capacity);
@@ -1703,7 +1703,7 @@ void Vector<T, inlineCapacity, Allocator>::ShrinkCapacity(
       return;
     }
 
-    if (Allocator::IsObjectResurrectionForbidden())
+    if (!Allocator::IsAllocationAllowed())
       return;
 
     T* old_end = end();

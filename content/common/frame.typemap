@@ -8,7 +8,5 @@ traits_headers = [ "//content/common/frame_messages.h" ]
 deps = [
   "//content:export",
 ]
-type_mappings = [
-  "content.mojom.CommonNavigationParams=content::CommonNavigationParams",
-  "content.mojom.CommitNavigationParams=content::CommitNavigationParams",
-]
+type_mappings =
+    [ "content.mojom.CommitNavigationParams=content::CommitNavigationParams" ]

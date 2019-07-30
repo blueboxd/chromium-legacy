@@ -44,13 +44,13 @@ void AudioGraphTracer::DidCreateBaseAudioContext(
     inspector_agent_->DidCreateBaseAudioContext(context);
 }
 
-void AudioGraphTracer::DidDestroyBaseAudioContext(
+void AudioGraphTracer::WillDestroyBaseAudioContext(
     BaseAudioContext* context) {
   DCHECK(contexts_.Contains(context));
 
   contexts_.erase(context);
   if (inspector_agent_)
-    inspector_agent_->DidDestroyBaseAudioContext(context);
+    inspector_agent_->WillDestroyBaseAudioContext(context);
 }
 
 void AudioGraphTracer::DidChangeBaseAudioContext(

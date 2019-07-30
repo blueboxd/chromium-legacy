@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/os_crypt/os_crypt_switches.h"
@@ -672,7 +673,7 @@ int HeadlessShellMain(int argc, const char** argv) {
     return EXIT_FAILURE;
 
 // Crash reporting in headless mode is enabled by default in official builds.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   builder.SetCrashReporterEnabled(true);
   base::FilePath dumps_path;
   base::PathService::Get(base::DIR_TEMP, &dumps_path);

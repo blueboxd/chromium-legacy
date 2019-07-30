@@ -32,7 +32,7 @@ class MockWebIDBTransaction : public testing::StrictMock<WebIDBTransaction> {
                     std::unique_ptr<IDBValue> value,
                     std::unique_ptr<IDBKey> primary_key,
                     mojom::IDBPutMode,
-                    WebIDBCallbacks*,
+                    std::unique_ptr<WebIDBCallbacks>,
                     Vector<IDBIndexKeys>));
   MOCK_METHOD1(Commit, void(int64_t num_errors_handled));
 

@@ -21,8 +21,11 @@
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
+namespace blink {
+class WebMediaStreamDeviceObserver;
+}  // namespace blink
+
 namespace content {
-class MediaStreamDeviceObserver;
 
 class PepperMediaDeviceManager
     : public PepperDeviceEnumerationHostHelper::Delegate,
@@ -100,7 +103,7 @@ class PepperMediaDeviceManager
 
   const blink::mojom::MediaStreamDispatcherHostPtr&
   GetMediaStreamDispatcherHost();
-  MediaStreamDeviceObserver* GetMediaStreamDeviceObserver() const;
+  blink::WebMediaStreamDeviceObserver* GetMediaStreamDeviceObserver() const;
   const blink::mojom::MediaDevicesDispatcherHostPtr&
   GetMediaDevicesDispatcher();
 

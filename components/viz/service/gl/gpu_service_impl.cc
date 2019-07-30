@@ -63,7 +63,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator_worker.h"
+#include "media/gpu/vaapi/vaapi_image_decode_accelerator_worker.h"
 #endif  // BUILDFLAG(USE_VAAPI)
 
 #if defined(OS_ANDROID)

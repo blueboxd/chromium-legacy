@@ -73,6 +73,13 @@ void UpdateOnboardingState(scoped_refptr<password_manager::PasswordStore> store,
                            PrefService* prefs,
                            base::TimeDelta delay);
 
+// Return true if the password manager onboarding experience should be shown to
+// the user. Conditions (all must apply):
+//      1. The PasswordManagerOnboardingAndroid feature is enabled.
+//      2. We are dealing with a new set of credentials.
+//      3. |kPasswordManagerOnboardingState| is |kShouldShow|.
+bool ShouldShowOnboarding(PrefService* prefs, bool is_password_update);
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_ONBOARDING_H_

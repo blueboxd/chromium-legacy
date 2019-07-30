@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -35,6 +34,7 @@
 #include "content/browser/indexed_db/indexed_db_origin_state.h"
 #include "content/browser/indexed_db/indexed_db_origin_state_handle.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -701,18 +701,10 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginIncognito) {
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DiskFullOnCommit) {
   // Ignore several preceding transactions:
   // * The test calls deleteDatabase() which opens the backing store:
-  //   #1: IndexedDBBackingStore::OpenBackingStore
-  //       => IndexedDBBackingStore::SetUpMetadata
-  //   #2: IndexedDBBackingStore::OpenBackingStore
-  //       => IndexedDBBackingStore::CleanUpBlobJournal (no-op)
-  // * The test calls open(), to create a new database:
-  //   #3: IndexedDBFactoryImpl::Open
-  //       => IndexedDBDatabase::Create
-  //       => IndexedDBBackingStore::CreateIDBDatabaseMetaData
-  //   #4: IndexedDBTransaction::Commit - initial "versionchange" transaction
+  //   #1: IndexedDBTransaction::Commit - initial "versionchange" transaction
   // * Once the connection is opened, the test runs:
-  //   #5: IndexedDBTransaction::Commit - the test's "readwrite" transaction)
-  const int instance_num = 5;
+  //   #2: IndexedDBTransaction::Commit - the test's "readwrite" transaction)
+  const int instance_num = 2;
   const int call_num = 1;
   FailOperation(FAIL_CLASS_LEVELDB_TRANSACTION, FAIL_METHOD_COMMIT_DISK_FULL,
                 instance_num, call_num);
@@ -871,6 +863,18 @@ std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
         failure_method = FAIL_METHOD_SEEK;
       else
         NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
+    } else if (fail_class == "LevelDBDatabase") {
+      failure_class = FAIL_CLASS_LEVELDB_DATABASE;
+      if (fail_method == "Write")
+        failure_method = FAIL_METHOD_WRITE;
+      else
+        NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
+    } else if (fail_class == "LevelDBDirectTransaction") {
+      failure_class = FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION;
+      if (fail_method == "Get")
+        failure_method = FAIL_METHOD_GET;
+      else
+        NOTREACHED() << "Unknown method: \"" << fail_method << "\"";
     } else {
       NOTREACHED() << "Unknown class: \"" << fail_class << "\"";
     }
@@ -934,10 +938,23 @@ INSTANTIATE_TEST_SUITE_P(IndexedDBBrowserTestInstantiation,
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
   const GURL test_url = GetTestUrl("indexeddb", "delete_compact.html");
   SimpleTest(GURL(test_url.spec() + "#fill"));
+  {
+    // Cycle through the task runner to ensure that all IDB tasks are completed.
+    base::RunLoop loop;
+    GetContext()->TaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
+  }
   int64_t after_filling = RequestUsage(kFileOrigin);
   EXPECT_GT(after_filling, 0);
 
   SimpleTest(GURL(test_url.spec() + "#purge"));
+  {
+    // Cycle through the task runner to ensure that the cleanup task is
+    // executed.
+    base::RunLoop loop;
+    GetContext()->TaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
+  }
   int64_t after_deleting = RequestUsage(kFileOrigin);
   EXPECT_LT(after_deleting, after_filling);
 
@@ -949,10 +966,12 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
   // metadata and log data remains after a deletion. It is possible that
   // changes to the implementation may require these constants to be tweaked.
 
-  const int kTestFillBytes = 1024 * 1024 * 5;  // 5MB
+  // 1MB, as sometimes the leveldb log is compacted to .ldb files, which are
+  // compressed.
+  const int kTestFillBytes = 1 * 1024 * 1024;
   EXPECT_GT(after_filling, kTestFillBytes);
 
-  const int kTestCompactBytes = 1024 * 10;  // 10kB
+  const int kTestCompactBytes = 300 * 1024;  // 300kB
   EXPECT_LT(after_deleting, kTestCompactBytes);
 }
 

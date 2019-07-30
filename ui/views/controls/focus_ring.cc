@@ -67,6 +67,10 @@ void FocusRing::Layout() {
   gfx::Rect focus_bounds = parent()->GetLocalBounds();
   focus_bounds.Inset(gfx::Insets(PlatformStyle::kFocusHaloInset));
   SetBoundsRect(focus_bounds);
+
+  // Need to match canvas direction with the parent. This is required to ensure
+  // asymmetric focus ring shapes match their respective buttons in RTL mode.
+  EnableCanvasFlippingForRTLUI(parent()->flip_canvas_on_paint_for_rtl_ui());
 }
 
 void FocusRing::ViewHierarchyChanged(
@@ -101,6 +105,8 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
     path = GetHighlightPath(parent());
 
   DCHECK(IsPathUseable(path));
+  DCHECK_EQ(flip_canvas_on_paint_for_rtl_ui(),
+            parent()->flip_canvas_on_paint_for_rtl_ui());
   SkRect bounds;
   SkRRect rbounds;
   if (path.isRect(&bounds)) {

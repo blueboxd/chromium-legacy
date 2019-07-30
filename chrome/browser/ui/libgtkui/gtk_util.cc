@@ -21,6 +21,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "build/branding_buildflags.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -84,7 +85,7 @@ void GtkInitFromCommandLine(const base::CommandLine& command_line) {
 // of how this library is structured as a stand alone .so, we can't call code
 // from browser and above.
 std::string GetDesktopName(base::Environment* env) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return "google-chrome.desktop";
 #else  // BUILDFLAG(CHROMIUM_BRANDING)
   // Allow $CHROME_DESKTOP to override the built-in value, so that development

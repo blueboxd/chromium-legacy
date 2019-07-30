@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/mojom/referrer.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -23,12 +24,16 @@ struct CONTENT_EXPORT Referrer {
   Referrer(const GURL& url, network::mojom::ReferrerPolicy policy)
       : url(url), policy(policy) {}
   Referrer() : policy(network::mojom::ReferrerPolicy::kDefault) {}
+  explicit Referrer(const blink::mojom::Referrer& referrer);
 
   GURL url;
   network::mojom::ReferrerPolicy policy;
 
   static Referrer SanitizeForRequest(const GURL& request,
                                      const Referrer& referrer);
+  static blink::mojom::ReferrerPtr SanitizeForRequest(
+      const GURL& request,
+      const blink::mojom::Referrer& referrer);
 
   static void SetReferrerForRequest(net::URLRequest* request,
                                     const Referrer& referrer);

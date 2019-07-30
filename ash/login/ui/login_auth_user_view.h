@@ -87,15 +87,17 @@ class ASH_EXPORT LoginAuthUserView
 
   // Flags which describe the set of currently visible auth methods.
   enum AuthMethods {
-    AUTH_NONE = 0,                  // No extra auth methods.
-    AUTH_PASSWORD = 1 << 0,         // Display password.
-    AUTH_PIN = 1 << 1,              // Display PIN keyboard.
-    AUTH_TAP = 1 << 2,              // Tap to unlock.
-    AUTH_ONLINE_SIGN_IN = 1 << 3,   // Force online sign-in.
-    AUTH_FINGERPRINT = 1 << 4,      // Use fingerprint to unlock.
-    AUTH_EXTERNAL_BINARY = 1 << 5,  // Authenticate via an external binary.
-    AUTH_DISABLED = 1 << 6,         // Disable all the auth methods and show a
-                                    // message to user.
+    AUTH_NONE = 0,                     // No extra auth methods.
+    AUTH_PASSWORD = 1 << 0,            // Display password.
+    AUTH_PIN = 1 << 1,                 // Display PIN keyboard.
+    AUTH_TAP = 1 << 2,                 // Tap to unlock.
+    AUTH_ONLINE_SIGN_IN = 1 << 3,      // Force online sign-in.
+    AUTH_FINGERPRINT = 1 << 4,         // Use fingerprint to unlock.
+    AUTH_EXTERNAL_BINARY = 1 << 5,     // Authenticate via an external binary.
+    AUTH_CHALLENGE_RESPONSE = 1 << 6,  // Authenticate via challenge-response
+                                       // protocol using security token.
+    AUTH_DISABLED = 1 << 7,  // Disable all the auth methods and show a
+                             // message to user.
   };
 
   LoginAuthUserView(const LoginUserInfo& user, const Callbacks& callbacks);
@@ -175,6 +177,10 @@ class ASH_EXPORT LoginAuthUserView
   // struct instead.
   void AttemptAuthenticateWithExternalBinary();
 
+  // Called when the user triggered the challenge-response authentication. It
+  // starts the asynchronous authentication process against a security token.
+  void AttemptAuthenticateWithChallengeResponse();
+
   AuthMethods auth_methods_ = AUTH_NONE;
   // True if the user's password might be a PIN. PIN is hashed differently from
   // password. The PIN keyboard may not always be visible even when the user
@@ -188,6 +194,7 @@ class ASH_EXPORT LoginAuthUserView
   FingerprintView* fingerprint_view_ = nullptr;
   views::LabelButton* external_binary_auth_button_ = nullptr;
   views::LabelButton* external_binary_enrollment_button_ = nullptr;
+  views::LabelButton* challenge_response_auth_button_ = nullptr;
 
   // Displays padding between:
   // 1. Password field and pin keyboard

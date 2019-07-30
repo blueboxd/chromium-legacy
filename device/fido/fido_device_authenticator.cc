@@ -662,6 +662,12 @@ bool FidoDeviceAuthenticator::IsWinNativeApiAuthenticator() const {
 }
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX)
+bool FidoDeviceAuthenticator::IsTouchIdAuthenticator() const {
+  return false;
+}
+#endif  // defined(OS_MACOSX)
+
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {
   task_ = std::move(task);

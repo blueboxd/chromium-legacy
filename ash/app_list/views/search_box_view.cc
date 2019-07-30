@@ -119,7 +119,7 @@ void SearchBoxView::ResetForShow() {
   if (!is_search_box_active() && is_tablet_mode())
     return;
 
-  ClearSearch();
+  ClearSearchAndDeactivateSearchBox();
   SetSearchBoxBackgroundCornerRadius(
       GetSearchBoxBorderCornerRadiusForState(contents_view_->GetActiveState()));
 }
@@ -221,6 +221,13 @@ void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
 
 const char* SearchBoxView::GetClassName() const {
   return "SearchBoxView";
+}
+
+bool SearchBoxView::CanProcessEventsWithinSubtree() const {
+  if (!view_delegate_->CanProcessEventsOnApplistViews())
+    return false;
+
+  return views::View::CanProcessEventsWithinSubtree();
 }
 
 // static

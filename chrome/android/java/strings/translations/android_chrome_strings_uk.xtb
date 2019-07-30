@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">Оновити сторінку</translation>
 <translation id="2709516037105925701">Автозаповнення</translation>
 <translation id="271033894570825754">Новий</translation>
+<translation id="2714850608275780394">Очікування коду</translation>
 <translation id="2728754400939377704">Сортувати за сайтом</translation>
 <translation id="2744248271121720757">Торкніться слова для миттєвого пошуку або перегляду схожих дій</translation>
+<translation id="2760989362628427051">Активувати нічний режим, якщо його налаштовано або ввімкнено режим енергозбереження</translation>
 <translation id="2762000892062317888">щойно</translation>
 <translation id="2777555524387840389">Залишилося <ph name="SECONDS" /> с</translation>
 <translation id="2779651927720337254">не завантажено</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">Залишилась 1 хв</translation>
 <translation id="3244271242291266297">ММ</translation>
 <translation id="3254409185687681395">Додати цю сторінку до закладок</translation>
+<translation id="3254626532848657899">Перейти вниз</translation>
 <translation id="3259831549858767975">Зменшити всі елементи на сторінці</translation>
 <translation id="3269093882174072735">Завантажити зображення</translation>
 <translation id="3269956123044984603">Щоб мати доступ до вкладок з інших пристроїв, увімкніть опцію "Автоматично синхронізувати дані" в налаштуваннях облікового запису на Android.</translation>
@@ -441,6 +444,7 @@
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4384468725000734951">Пошук за допомогою Sogou</translation>
 <translation id="4404568932422911380">Немає закладок</translation>
+<translation id="4405224443901389797">Перемістити в папку…</translation>
 <translation id="4411535500181276704">Спрощений режим</translation>
 <translation id="4415276339145661267">Керуйте обліковим записом Google</translation>
 <translation id="4432792777822557199">Надалі сторінки цією мовою (<ph name="SOURCE_LANGUAGE" />) перекладатимуться такою мовою: <ph name="TARGET_LANGUAGE" /></translation>
@@ -621,6 +625,7 @@
 <translation id="5578795271662203820">Шукати зображення в <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5580090775658607195">Згруповано стільки вкладок: <ph name="TAB_COUNT" /></translation>
 <translation id="5581519193887989363">Ви можете будь-коли вибрати дані для синхронізації в <ph name="BEGIN_LINK1" />налаштуваннях<ph name="END_LINK1" />.</translation>
+<translation id="5586306159936941448">Перетягніть одну вкладку на іншу, щоб згрупувати їх</translation>
 <translation id="5595485650161345191">Редагувати адресу</translation>
 <translation id="5596627076506792578">Інші опції</translation>
 <translation id="5599455543593328020">Режим анонімного перегляду</translation>
@@ -651,6 +656,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
 <translation id="5810288467834065221">Авторське право <ph name="YEAR" /> Google LLC. Усі права захищено.</translation>
 <translation id="5817918615728894473">Підключити</translation>
+<translation id="58326064309361797">Перетягуйте вкладки, щоб групувати їх</translation>
 <translation id="583281660410589416">Невідомий</translation>
 <translation id="5833984609253377421">Поділитися посиланням</translation>
 <translation id="5836192821815272682">Завантажується оновлення Chrome…</translation>
@@ -845,7 +851,6 @@
 <translation id="7233236755231902816">Щоб переглядати сторінки вашою мовою, установіть останню версію Chrome</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
 <translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
-<translation id="7253272406652746122">Додайте обліковий запис Google зі сторінки "Облікові записи" в додатку Налаштування на пристрої.</translation>
 <translation id="7274013316676448362">Заблокований сайт</translation>
 <translation id="7290209999329137901">Не можна перейменувати</translation>
 <translation id="7291387454912369099">Оплата за допомогою Асистента</translation>
@@ -1011,6 +1016,7 @@
 <translation id="8380167699614421159">Цей сайт показує нав’язливі чи оманливі оголошення</translation>
 <translation id="8393700583063109961">Надіслати повідомлення</translation>
 <translation id="8413126021676339697">Показати повну історію</translation>
+<translation id="8425955042390522843">Підтвердження номера телефону</translation>
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8438566539970814960">Покращувати пошук і веб-перегляд</translation>
 <translation id="8441146129660941386">Назад</translation>
@@ -1118,6 +1124,7 @@
 <translation id="945632385593298557">Доступ до мікрофона</translation>
 <translation id="951339005376969845">Видалити наявні дані. Щоб відновити їх, поверніться в обліковий запис <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome може використовувати <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> для пошуку в Китаї. Це можна змінити в <ph name="BEGIN_LINK" />Налаштуваннях<ph name="END_LINK" />.</translation>
+<translation id="959682366969460160">Упорядковуйте свої дані</translation>
 <translation id="965817943346481315">Блокувати, якщо сайт показує нав’язливі чи оманливі оголошення (рекомендовано)</translation>
 <translation id="968900484120156207">Відвідані сторінки з'являються тут</translation>
 <translation id="970715775301869095">Залишилося <ph name="MINUTES" /> хв</translation>

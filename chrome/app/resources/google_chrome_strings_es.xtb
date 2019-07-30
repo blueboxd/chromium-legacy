@@ -9,6 +9,7 @@
 
 Es posible que algunas funciones no estén disponibles y que no se guarden los cambios que hagas en las preferencias.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> usaba Chrome anteriormente</translation>
+<translation id="1097330777386562916">Borrar las cookies y los datos de sitios web al salir de Chrome</translation>
 <translation id="1104959162601287462">Información de &amp;Chrome OS</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
 <translation id="1142745911746664600">No se puede actualizar Chrome</translation>
@@ -28,6 +29,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1590588151039584890">Para actualizar, es necesario que Chrome deje de estar en uso en este ordenador. Es posible que otros usuarios que hayan iniciado sesión en este ordenador pierdan los cambios que no han guardado.</translation>
 <translation id="1619887657840448962">Para aumentar la seguridad de Chrome, hemos inhabilitado la siguiente extensión que no figura en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que puede haberse añadido sin tu conocimiento.</translation>
 <translation id="1628000112320670027">Obtener ayuda de Chrome</translation>
+<translation id="1635734105302489219">Borras las cookies al salir de Chrome. Para continuar la sincronización, cambia esta <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">Chrome OS se ha creado gracias a <ph name="BEGIN_LINK_CROS_OSS" />software libre<ph name="END_LINK_CROS_OSS" /> adicional, como <ph name="BEGIN_LINK_LINUX_OSS" />Linux (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Abrir enlace en una ventana de incó&amp;gnito de Chrome</translation>
 <translation id="1682634494516646069">Google Chrome no puede leer el directorio de datos ni escribir en él:
@@ -127,7 +129,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="4251625577313994583">descarga Chrome en tu iPhone</translation>
 <translation id="4293420128516039005">Inicia sesión para sincronizar y personalizar Chrome en todos tus dispositivos</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
-<translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4331809312908958774">SO de Chrome</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> se ha añadido a Chrome</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">Hay otra operación en curso en Google Chrome. Vuelve a intentarlo más tarde.</translation>

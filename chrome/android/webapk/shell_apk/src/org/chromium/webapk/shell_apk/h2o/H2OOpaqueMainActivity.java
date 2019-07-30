@@ -35,5 +35,6 @@ public class H2OOpaqueMainActivity extends Activity {
         overridePendingTransition(0, 0);
         H2OLauncher.copyIntentExtrasAndLaunch(
                 appContext, getIntent(), null, new ComponentName(appContext, SplashActivity.class));
+        finish();
     }
 }

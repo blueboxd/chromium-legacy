@@ -458,8 +458,7 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void CheckCompleted() override {}
   void ForwardPostMessage(MessageEvent*,
                           scoped_refptr<const SecurityOrigin> target,
-                          LocalFrame* source_frame,
-                          bool has_user_gesture) const override {}
+                          LocalFrame* source_frame) const override {}
   void FrameRectsChanged(const IntRect& local_frame_rect,
                          const IntRect& transformed_frame_rect) override {}
   void UpdateRemoteViewportIntersection(

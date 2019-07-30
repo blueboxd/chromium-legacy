@@ -34,11 +34,10 @@ class MODULES_EXPORT AudioGraphTracer final
 
   void SetInspectorAgent(InspectorWebAudioAgent*);
 
-  // Notify an associated inspector agent when a BaseAudioContext is created.
+  // Graph events: notifies an associated inspector agent about object
+  // lifecycle of BaseAudioContext.
   void DidCreateBaseAudioContext(BaseAudioContext*);
-
-  // Notify an associated inspector agent when a BaseAudioContext is destroyed.
-  void DidDestroyBaseAudioContext(BaseAudioContext*);
+  void WillDestroyBaseAudioContext(BaseAudioContext*);
 
   // Notify an associated inspector agent when a BaseAudioContext is changed.
   void DidChangeBaseAudioContext(BaseAudioContext*);

@@ -223,12 +223,23 @@ class CrashHandlerTest : public base::MultiProcessTest,
     base::Process process =
         base::SpawnMultiProcessTestChild("CrashingProcess", cmd_line, options);
 
+#if !defined(OS_ANDROID)
     int exit_code = -1;
     EXPECT_TRUE(WaitForMultiprocessTestChildExit(
         process, TestTimeouts::action_max_timeout(), &exit_code));
     EXPECT_NE(exit_code, kSuccess);
-
     return (exit_code != kSuccess);
+#else
+    // TODO(https://crbug.com/976063): Android's implementation of
+    // WaitForMultiprocessTestChildExit can't detect child process crashes, this
+    // can be fixed after minSdkVersion >= Q.
+    for (int i = 0; i < TestTimeouts::action_max_timeout().InSeconds(); i++) {
+      if (kill(process.Pid(), 0) && errno == ESRCH)
+        return true;
+      sleep(1);
+    }
+    return false;
+#endif
   }
 
   // Given a directory with a single crashpad exception, read and parse the

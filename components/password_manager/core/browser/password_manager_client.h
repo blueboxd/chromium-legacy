@@ -120,6 +120,12 @@ class PasswordManagerClient {
       std::unique_ptr<PasswordFormManagerForUI> form_to_save,
       bool is_update) = 0;
 
+  // Informs the embedder that the onboarding experience should be shown.
+  // This will also offer the ability to actually save the password.
+  // Returns true if both the onboarding and the saving prompt were displayed.
+  virtual bool ShowOnboarding(
+      std::unique_ptr<PasswordFormManagerForUI> form_to_save) = 0;
+
   // Informs the embedder that the user started typing a password and a password
   // prompt should be available on click on the omnibox icon.
   virtual void ShowManualFallbackForSaving(

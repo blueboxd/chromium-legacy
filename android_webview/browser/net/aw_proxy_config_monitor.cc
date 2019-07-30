@@ -15,6 +15,9 @@
 namespace android_webview {
 
 namespace {
+const char kProxyServerSwitch[] = "proxy-server";
+const char kProxyBypassListSwitch[] = "proxy-bypass-list";
+
 base::LazyInstance<AwProxyConfigMonitor>::Leaky g_instance;
 }  // namespace
 
@@ -36,16 +39,31 @@ AwProxyConfigMonitor* AwProxyConfigMonitor::GetInstance() {
 
 void AwProxyConfigMonitor::AddProxyToNetworkContextParams(
     network::mojom::NetworkContextParamsPtr& network_context_params) {
-  network::mojom::ProxyConfigClientPtr proxy_config_client;
-  network_context_params->proxy_config_client_request =
-      mojo::MakeRequest(&proxy_config_client);
-  proxy_config_client_set_.AddPtr(std::move(proxy_config_client));
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(kProxyServerSwitch)) {
+    std::string proxy = command_line.GetSwitchValueASCII(kProxyServerSwitch);
+    net::ProxyConfig proxy_config;
+    proxy_config.proxy_rules().ParseFromString(proxy);
+    if (command_line.HasSwitch(kProxyBypassListSwitch)) {
+      std::string bypass_list =
+          command_line.GetSwitchValueASCII(kProxyBypassListSwitch);
+      proxy_config.proxy_rules().bypass_rules.ParseFromString(bypass_list);
+    }
 
-  net::ProxyConfigWithAnnotation proxy_config;
-  net::ProxyConfigService::ConfigAvailability availability =
-      proxy_config_service_android_->GetLatestProxyConfig(&proxy_config);
-  if (availability == net::ProxyConfigService::CONFIG_VALID) {
-    network_context_params->initial_proxy_config = proxy_config;
+    network_context_params->initial_proxy_config =
+        net::ProxyConfigWithAnnotation(proxy_config, NO_TRAFFIC_ANNOTATION_YET);
+  } else {
+    network::mojom::ProxyConfigClientPtr proxy_config_client;
+    network_context_params->proxy_config_client_request =
+        mojo::MakeRequest(&proxy_config_client);
+    proxy_config_client_set_.AddPtr(std::move(proxy_config_client));
+
+    net::ProxyConfigWithAnnotation proxy_config;
+    net::ProxyConfigService::ConfigAvailability availability =
+        proxy_config_service_android_->GetLatestProxyConfig(&proxy_config);
+    if (availability == net::ProxyConfigService::CONFIG_VALID)
+      network_context_params->initial_proxy_config = proxy_config;
   }
 }
 

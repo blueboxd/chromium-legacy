@@ -22,11 +22,6 @@ namespace net {
 
 namespace {
 
-// Time to wait before starting an update the http_server_properties_impl_ cache
-// from preferences. Scheduling another update during this period will be a
-// no-op.
-constexpr base::TimeDelta kUpdateCacheDelay = base::TimeDelta::FromSeconds(1);
-
 // Time to wait before starting an update the preferences from the
 // http_server_properties_impl_ cache. Scheduling another update during this
 // period will be a no-op.
@@ -120,9 +115,9 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
   DCHECK(pref_delegate_);
   DCHECK(clock_);
 
-  pref_delegate_->StartListeningForUpdates(base::BindRepeating(
-      &HttpServerPropertiesManager::OnHttpServerPropertiesChanged,
-      base::Unretained(this)));
+  pref_delegate_->WaitForPrefLoad(
+      base::BindOnce(&HttpServerPropertiesManager::OnHttpServerPropertiesLoaded,
+                     pref_load_weak_ptr_factory_.GetWeakPtr()));
   net_log_.BeginEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_INITIALIZATION);
 
   http_server_properties_impl_.reset(
@@ -132,11 +127,19 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
 HttpServerPropertiesManager::~HttpServerPropertiesManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Flush settings on destruction.
+  is_initialized_ = true;
   UpdatePrefsFromCache(base::OnceClosure());
 }
 
 void HttpServerPropertiesManager::Clear(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Stop waiting for initial load. UpdatePrefsFromCache() would otherwise
+  // result in a reentrant call to OnHttpServerPropertiesLoaded() with empty
+  // prefs, which should be safe, except for DCHECKs, but seems safest to avoid
+  // it.
+  pref_load_weak_ptr_factory_.InvalidateWeakPtrs();
+  is_initialized_ = true;
 
   http_server_properties_impl_->Clear(base::OnceClosure());
   UpdatePrefsFromCache(std::move(callback));
@@ -405,42 +408,17 @@ bool HttpServerPropertiesManager::IsInitialized() const {
 }
 
 // static
-base::TimeDelta HttpServerPropertiesManager::GetUpdateCacheDelayForTesting() {
-  return kUpdateCacheDelay;
-}
-
-// static
 base::TimeDelta HttpServerPropertiesManager::GetUpdatePrefsDelayForTesting() {
   return kUpdatePrefsDelay;
-}
-
-void HttpServerPropertiesManager::ScheduleUpdateCacheForTesting() {
-  ScheduleUpdateCache();
-}
-
-void HttpServerPropertiesManager::ScheduleUpdateCache() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Do not schedule a new update if there is already one scheduled.
-  if (pref_cache_update_timer_.IsRunning())
-    return;
-
-  if (!is_initialized_) {
-    UpdateCacheFromPrefs();
-    return;
-  }
-
-  pref_cache_update_timer_.Start(
-      FROM_HERE, kUpdateCacheDelay, this,
-      &HttpServerPropertiesManager::UpdateCacheFromPrefs);
 }
 
 void HttpServerPropertiesManager::UpdateCacheFromPrefs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!is_initialized_) {
-    net_log_.EndEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_INITIALIZATION);
-    is_initialized_ = true;
-  }
+  DCHECK(!is_initialized_);
+  is_initialized_ = true;
+
+  net_log_.EndEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_INITIALIZATION);
 
   const base::DictionaryValue* http_server_properties_dict =
       pref_delegate_->GetServerProperties();
@@ -941,8 +919,9 @@ bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
 
 void HttpServerPropertiesManager::ScheduleUpdatePrefs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Do not schedule a new update if there is already one scheduled.
-  if (network_prefs_update_timer_.IsRunning())
+  // Do not schedule an update if prefs are still loading, or there is already
+  // an update scheduled.
+  if (!is_initialized_ || network_prefs_update_timer_.IsRunning())
     return;
 
   network_prefs_update_timer_.Start(
@@ -954,6 +933,9 @@ void HttpServerPropertiesManager::ScheduleUpdatePrefs() {
 void HttpServerPropertiesManager::UpdatePrefsFromCache(
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Shouldn't update prefs until the initial prefs have been loaded.
+  DCHECK(is_initialized_);
 
   typedef base::MRUCache<url::SchemeHostPort, ServerPref> ServerPrefMap;
   ServerPrefMap server_pref_map(ServerPrefMap::NO_AUTO_EVICT);
@@ -1077,10 +1059,8 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache(
       http_server_properties_impl_->recently_broken_alternative_services(),
       &http_server_properties_dict);
 
-  setting_prefs_ = true;
   pref_delegate_->SetServerProperties(http_server_properties_dict,
                                       std::move(callback));
-  setting_prefs_ = false;
 
   net_log_.AddEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_UPDATE_PREFS,
                     [&] { return http_server_properties_dict.Clone(); });
@@ -1240,10 +1220,9 @@ void HttpServerPropertiesManager::SaveBrokenAlternativeServicesToPrefs(
       kBrokenAlternativeServicesKey, std::move(json_list));
 }
 
-void HttpServerPropertiesManager::OnHttpServerPropertiesChanged() {
+void HttpServerPropertiesManager::OnHttpServerPropertiesLoaded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!setting_prefs_)
-    ScheduleUpdateCache();
+  UpdateCacheFromPrefs();
 }
 
 }  // namespace net

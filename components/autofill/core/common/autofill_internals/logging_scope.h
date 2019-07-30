@@ -19,7 +19,9 @@ namespace autofill {
   /* Log messages related to filling of forms. */                      \
   T(Filling)                                                           \
   /* Log messages related to the submission of forms. */               \
-  T(Submission)
+  T(Submission)                                                        \
+  /* Log messages related to communication with autofill server. */    \
+  T(AutofillServer)
 
 // Define a bunch of logging scopes: kContext, kParsing, ...
 #define AUTOFILL_TEMPLATE(NAME) k##NAME,

@@ -159,15 +159,9 @@ class XR final : public EventTargetWithInlineData,
     DISALLOW_COPY_AND_ASSIGN(PendingSupportsSessionQuery);
   };
 
-  void OnRequestDeviceReturned(device::mojom::blink::XRDevicePtr device);
-  void DispatchPendingSessionCalls();
-
-  void DispatchRequestSession(PendingRequestSessionQuery*);
   void OnRequestSessionReturned(
       PendingRequestSessionQuery*,
       device::mojom::blink::RequestSessionResultPtr result);
-
-  void DispatchSupportsSession(PendingSupportsSessionQuery*);
   void OnSupportsSessionReturned(PendingSupportsSessionQuery*,
                                  bool supports_session);
 
@@ -188,15 +182,12 @@ class XR final : public EventTargetWithInlineData,
 
   void Dispose();
 
-  void OnDeviceDisconnect();
   void OnEnvironmentProviderDisconnect();
   void OnMagicWindowProviderDisconnect();
 
   // Reports that session request has returned.
   void ReportRequestSessionResult(XRSession::SessionMode session_mode,
                                   SessionRequestStatus status);
-
-  bool pending_device_ = false;
 
   // Indicates whether use of requestDevice has already been logged.
   bool did_log_supports_immersive_ = false;
@@ -205,12 +196,6 @@ class XR final : public EventTargetWithInlineData,
   bool did_log_request_immersive_session_ = false;
 
   const int64_t ukm_source_id_;
-
-  // Track calls that were made prior to the internal device successfully being
-  // queried. Can be removed once the service has been updated to allow the
-  // respective calls to be made directly.
-  HeapVector<Member<PendingSupportsSessionQuery>> pending_mode_queries_;
-  HeapVector<Member<PendingRequestSessionQuery>> pending_session_requests_;
 
   HeapHashSet<Member<PendingSupportsSessionQuery>> outstanding_support_queries_;
   HeapHashSet<Member<PendingRequestSessionQuery>> outstanding_request_queries_;
@@ -221,7 +206,6 @@ class XR final : public EventTargetWithInlineData,
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;
   device::mojom::blink::VRServicePtr service_;
-  device::mojom::blink::XRDevicePtr device_;
   device::mojom::blink::XRFrameDataProviderPtr magic_window_provider_;
   device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr
       environment_provider_;

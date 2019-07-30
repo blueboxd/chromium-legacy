@@ -204,12 +204,13 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
 
   PaintLayer* content_layer = GetPaintLayerByElementId("content");
   EXPECT_EQ(kNotComposited, content_layer->GetCompositingState());
-  EXPECT_EQ(PhysicalOffset(), content_layer->Location());
+  EXPECT_EQ(PhysicalOffset(), content_layer->LocationWithoutPositionOffset());
 
   scroll_layer->GetScrollableArea()->SetScrollOffset(ScrollOffset(1000, 1000),
                                                      kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_EQ(PhysicalOffset(0, 0), content_layer->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0),
+            content_layer->LocationWithoutPositionOffset());
   EXPECT_EQ(LayoutSize(1000, 1000),
             content_layer->ContainingLayer()->ScrolledContentOffset());
   EXPECT_FALSE(content_layer->NeedsRepaint());
@@ -236,12 +237,13 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
 
   PaintLayer* content_layer = GetPaintLayerByElementId("content");
   EXPECT_EQ(kNotComposited, scroll_layer->GetCompositingState());
-  EXPECT_EQ(PhysicalOffset(), content_layer->Location());
+  EXPECT_EQ(PhysicalOffset(), content_layer->LocationWithoutPositionOffset());
 
   scroll_layer->GetScrollableArea()->SetScrollOffset(ScrollOffset(1000, 1000),
                                                      kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_EQ(PhysicalOffset(0, 0), content_layer->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0),
+            content_layer->LocationWithoutPositionOffset());
   EXPECT_EQ(LayoutSize(1000, 1000),
             content_layer->ContainingLayer()->ScrolledContentOffset());
 
@@ -1326,19 +1328,20 @@ TEST_P(PaintLayerTest, FloatLayerAndAbsoluteUnderInlineLayer) {
   EXPECT_EQ(container, span->ContainingLayer());
 
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    EXPECT_EQ(PhysicalOffset(0, 0), floating->Location());
+    EXPECT_EQ(PhysicalOffset(0, 0), floating->LocationWithoutPositionOffset());
     EXPECT_EQ(PhysicalOffset(50, 50),
               floating->GetLayoutObject().OffsetForInFlowPosition());
   } else {
-    EXPECT_EQ(PhysicalOffset(33, 33), floating->Location());
+    EXPECT_EQ(PhysicalOffset(33, 33),
+              floating->LocationWithoutPositionOffset());
     EXPECT_EQ(PhysicalOffset(50, 50),
               floating->GetLayoutObject().OffsetForInFlowPosition());
   }
-  EXPECT_EQ(PhysicalOffset(50, 50), absolute->Location());
-  EXPECT_EQ(PhysicalOffset(33, 33), span->Location());
+  EXPECT_EQ(PhysicalOffset(50, 50), absolute->LocationWithoutPositionOffset());
+  EXPECT_EQ(PhysicalOffset(33, 33), span->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(100, 100),
             span->GetLayoutObject().OffsetForInFlowPosition());
-  EXPECT_EQ(PhysicalOffset(20, 20), container->Location());
+  EXPECT_EQ(PhysicalOffset(20, 20), container->LocationWithoutPositionOffset());
 
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     EXPECT_EQ(PhysicalOffset(50, 50), floating->VisualOffsetFromAncestor(span));
@@ -1382,20 +1385,20 @@ TEST_P(PaintLayerTest, FloatLayerUnderInlineLayerScrolled) {
   EXPECT_EQ(container, span->Parent());
   EXPECT_EQ(container, span->ContainingLayer());
 
-  EXPECT_EQ(PhysicalOffset(0, 0), span->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0), span->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(100, 100),
             span->GetLayoutObject().OffsetForInFlowPosition());
   EXPECT_EQ(LayoutSize(0, 400),
             span->ContainingLayer()->ScrolledContentOffset());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    EXPECT_EQ(PhysicalOffset(0, 0), floating->Location());
+    EXPECT_EQ(PhysicalOffset(0, 0), floating->LocationWithoutPositionOffset());
     EXPECT_EQ(PhysicalOffset(50, 50),
               floating->GetLayoutObject().OffsetForInFlowPosition());
     EXPECT_EQ(PhysicalOffset(50, 50), floating->VisualOffsetFromAncestor(span));
     EXPECT_EQ(PhysicalOffset(150, -250),
               floating->VisualOffsetFromAncestor(container));
   } else {
-    EXPECT_EQ(PhysicalOffset(0, 0), floating->Location());
+    EXPECT_EQ(PhysicalOffset(0, 0), floating->LocationWithoutPositionOffset());
     EXPECT_EQ(PhysicalOffset(50, 50),
               floating->GetLayoutObject().OffsetForInFlowPosition());
     EXPECT_EQ(LayoutSize(0, 400),
@@ -1425,10 +1428,10 @@ TEST_P(PaintLayerTest, FloatLayerUnderBlockUnderInlineLayer) {
   EXPECT_EQ(span, floating->Parent());
   EXPECT_EQ(span, floating->ContainingLayer());
 
-  EXPECT_EQ(PhysicalOffset(33, 33), floating->Location());
+  EXPECT_EQ(PhysicalOffset(33, 33), floating->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(50, 50),
             floating->GetLayoutObject().OffsetForInFlowPosition());
-  EXPECT_EQ(PhysicalOffset(0, 0), span->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0), span->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(100, 100),
             span->GetLayoutObject().OffsetForInFlowPosition());
   EXPECT_EQ(PhysicalOffset(83, 83), floating->VisualOffsetFromAncestor(span));
@@ -1459,10 +1462,10 @@ TEST_P(PaintLayerTest, FloatLayerUnderFloatUnderInlineLayer) {
     EXPECT_EQ(span->Parent(), floating->ContainingLayer());
   }
 
-  EXPECT_EQ(PhysicalOffset(33, 33), floating->Location());
+  EXPECT_EQ(PhysicalOffset(33, 33), floating->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(50, 50),
             floating->GetLayoutObject().OffsetForInFlowPosition());
-  EXPECT_EQ(PhysicalOffset(0, 0), span->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0), span->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(100, 100),
             span->GetLayoutObject().OffsetForInFlowPosition());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
@@ -1505,11 +1508,12 @@ TEST_P(PaintLayerTest, FloatLayerUnderFloatLayerUnderInlineLayer) {
     EXPECT_EQ(span->Parent(), floating_parent->ContainingLayer());
   }
 
-  EXPECT_EQ(PhysicalOffset(0, 0), floating->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0), floating->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(50, 50),
             floating->GetLayoutObject().OffsetForInFlowPosition());
-  EXPECT_EQ(PhysicalOffset(33, 33), floating_parent->Location());
-  EXPECT_EQ(PhysicalOffset(0, 0), span->Location());
+  EXPECT_EQ(PhysicalOffset(33, 33),
+            floating_parent->LocationWithoutPositionOffset());
+  EXPECT_EQ(PhysicalOffset(0, 0), span->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(100, 100),
             span->GetLayoutObject().OffsetForInFlowPosition());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
@@ -1553,10 +1557,10 @@ TEST_P(PaintLayerTest, LayerUnderFloatUnderInlineLayer) {
     EXPECT_EQ(span->Parent(), child->ContainingLayer());
   }
 
-  EXPECT_EQ(PhysicalOffset(33, 33), child->Location());
+  EXPECT_EQ(PhysicalOffset(33, 33), child->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(50, 50),
             child->GetLayoutObject().OffsetForInFlowPosition());
-  EXPECT_EQ(PhysicalOffset(0, 0), span->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0), span->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(100, 100),
             span->GetLayoutObject().OffsetForInFlowPosition());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
@@ -1658,13 +1662,13 @@ TEST_P(PaintLayerTest, ColumnSpanLayerUnderExtraLayerScrolled) {
   EXPECT_EQ(columns, extra_layer->Parent()->Parent());
   EXPECT_EQ(columns, extra_layer->ContainingLayer()->Parent());
 
-  EXPECT_EQ(PhysicalOffset(0, 0), spanner->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0), spanner->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(50, 50),
             spanner->GetLayoutObject().OffsetForInFlowPosition());
 
   EXPECT_EQ(LayoutSize(200, 0),
             spanner->ContainingLayer()->ScrolledContentOffset());
-  EXPECT_EQ(PhysicalOffset(0, 0), extra_layer->Location());
+  EXPECT_EQ(PhysicalOffset(0, 0), extra_layer->LocationWithoutPositionOffset());
   EXPECT_EQ(PhysicalOffset(100, 100),
             extra_layer->GetLayoutObject().OffsetForInFlowPosition());
   // -60 = 2nd-column-x(40) - scroll-offset-x(200) + x-location(100)

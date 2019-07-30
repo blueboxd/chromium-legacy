@@ -116,7 +116,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
       deleted_observer.WaitUntilDeleted();
     }
 
-    WaitForHitTestDataOrChildSurfaceReady(iframe_node->current_frame_host());
+    WaitForHitTestData(iframe_node->current_frame_host());
     FrameTreeVisualizer visualizer;
     ASSERT_EQ(
         " Site A ------------ proxies for B\n"

@@ -12,6 +12,7 @@
 #include "base/process/process.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "components/dbus/thread_linux/dbus_thread_linux.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -123,7 +124,7 @@ void MprisServiceImpl::InitializeProperties() {
   media_player2_properties_["CanRaise"] = base::Value(false);
   media_player2_properties_["HasTrackList"] = base::Value(false);
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   media_player2_properties_["Identity"] = base::Value("Chrome");
 #else
   media_player2_properties_["Identity"] = base::Value("Chromium");

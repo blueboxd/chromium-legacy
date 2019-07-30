@@ -20,7 +20,7 @@ namespace settingsPrivate {
 
     // Preferences are controlled neither by parent nor the child user.
     // Preference values are hard-coded values and can not be changed.
-    CHILD_RESTRICTIONS
+    CHILD_RESTRICTION
   };
 
   enum Enforcement { ENFORCED, RECOMMENDED };

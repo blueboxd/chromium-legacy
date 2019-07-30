@@ -243,6 +243,28 @@ void V8GCController::CollectAllGarbageForTesting(
 
 namespace {
 
+// Visitor forwarding all handle slots to the provided Blink visitor.
+class DOMWrapperSlotsForwardingVisitor final
+    : public v8::PersistentHandleVisitor,
+      public v8::EmbedderHeapTracer::TracedGlobalHandleVisitor {
+ public:
+  explicit DOMWrapperSlotsForwardingVisitor(DOMWrapperSlotsVisitor* visitor)
+      : visitor_(visitor) {}
+
+  void VisitPersistentHandle(v8::Persistent<v8::Value>* value,
+                             uint16_t class_id) final {
+    visitor_->VisitSlot(value, sizeof(v8::Persistent<v8::Value>));
+  }
+
+  void VisitTracedGlobalHandle(const v8::TracedGlobal<v8::Value>& value) final {
+    visitor_->VisitSlot(&const_cast<v8::TracedGlobal<v8::Value>&>(value),
+                        sizeof(v8::TracedGlobal<v8::Value>));
+  }
+
+ private:
+  DOMWrapperSlotsVisitor* const visitor_;
+};
+
 // Visitor forwarding all DOM wrapper handles to the provided Blink visitor.
 class DOMWrapperForwardingVisitor final
     : public v8::PersistentHandleVisitor,
@@ -286,13 +308,25 @@ class DOMWrapperForwardingVisitor final
 
 }  // namespace
 
-void V8GCController::TraceDOMWrappers(v8::Isolate* isolate,
-                                      Visitor* parent_visitor) {
-  DOMWrapperForwardingVisitor visitor(parent_visitor);
-  isolate->VisitHandlesWithClassIds(&visitor);
+// static
+void V8GCController::TraceDOMWrappers(v8::Isolate* isolate, Visitor* visitor) {
+  DCHECK(isolate);
+  DOMWrapperForwardingVisitor forwarding_visitor(visitor);
+  isolate->VisitHandlesWithClassIds(&forwarding_visitor);
   v8::EmbedderHeapTracer* const tracer = static_cast<v8::EmbedderHeapTracer*>(
       ThreadState::Current()->unified_heap_controller());
-  tracer->IterateTracedGlobalHandles(&visitor);
+  tracer->IterateTracedGlobalHandles(&forwarding_visitor);
+}
+
+// static
+void V8GCController::TraceDOMWrapperSlots(v8::Isolate* isolate,
+                                          DOMWrapperSlotsVisitor* visitor) {
+  DCHECK(isolate);
+  DOMWrapperSlotsForwardingVisitor forwarding_visitor(visitor);
+  isolate->VisitHandlesWithClassIds(&forwarding_visitor);
+  v8::EmbedderHeapTracer* const tracer = static_cast<v8::EmbedderHeapTracer*>(
+      ThreadState::Current()->unified_heap_controller());
+  tracer->IterateTracedGlobalHandles(&forwarding_visitor);
 }
 
 }  // namespace blink

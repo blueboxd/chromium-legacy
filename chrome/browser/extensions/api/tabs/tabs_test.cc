@@ -2238,4 +2238,87 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_NoOpener) {
   // (we hope this can be limited to background pages / contents).
 }
 
+// Tests the origin of tabs created through chrome.windows.create().
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_OpenerAndOrigin) {
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("../simple_with_file"));
+  ASSERT_TRUE(extension);
+
+  // Navigate a tab to an extension page.
+  GURL extension_url = extension->GetResourceURL("file.html");
+  ui_test_utils::NavigateToURL(browser(), extension_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  const std::string extension_origin_str =
+      url::Origin::Create(extension->url()).Serialize();
+  constexpr char kDataURL[] = "data:text/html,<html>test</html>";
+  std::string extension_url_str = extension_url.spec();
+  struct TestCase {
+    // The url to use in chrome.windows.create().
+    std::string url;
+    // If set, its value will be used to specify |setSelfAsOpener|.
+    base::Optional<bool> set_self_as_opener;
+    // The origin we expect the new tab to be in, opaque origins will be "null".
+    std::string expected_origin_str;
+  } test_cases[] = {
+      // about:blank URLs.
+      // With opener relationship, about:blank urls will get the extension's
+      // origin, without opener relationship, they will get opaque/"null"
+      // origin.
+      {url::kAboutBlankURL, true, extension_origin_str},
+      {url::kAboutBlankURL, false, "null"},
+      {url::kAboutBlankURL, base::nullopt, "null"},
+
+      // data:... URLs.
+      // With opener relationship or not, "data:..." URLs always gets unique
+      // origin, so origin will always be "null" in these cases.
+      {kDataURL, true, "null"},
+      {kDataURL, false, "null"},
+      {kDataURL, base::nullopt, "null"},
+
+      // chrome-extension:// URLs.
+      // These always get extension origin.
+      {extension_url_str, true, extension_origin_str},
+      {extension_url_str, false, extension_origin_str},
+      {extension_url_str, base::nullopt, extension_origin_str},
+  };
+
+  auto run_test_case = [&web_contents](const TestCase& test_case) {
+    std::string maybe_specify_set_self_as_opener = "";
+    if (test_case.set_self_as_opener) {
+      maybe_specify_set_self_as_opener =
+          base::StringPrintf(", setSelfAsOpener: %s",
+                             *test_case.set_self_as_opener ? "true" : "false");
+    }
+    std::string script = base::StringPrintf(
+        R"( chrome.windows.create({url: '%s'%s}); )", test_case.url.c_str(),
+        maybe_specify_set_self_as_opener.c_str());
+
+    content::WebContents* new_contents = nullptr;
+    {
+      content::WebContentsAddedObserver observer;
+      ASSERT_TRUE(content::ExecuteScript(web_contents, script));
+      new_contents = observer.GetWebContents();
+    }
+    ASSERT_TRUE(new_contents);
+    ASSERT_TRUE(content::WaitForLoadStop(new_contents));
+
+    std::string actual_origin_str;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        new_contents, "window.domAutomationController.send(origin);",
+        &actual_origin_str));
+    EXPECT_EQ(test_case.expected_origin_str, actual_origin_str);
+    const bool is_opaque_origin =
+        new_contents->GetMainFrame()->GetLastCommittedOrigin().opaque();
+    EXPECT_EQ(test_case.expected_origin_str == "null", is_opaque_origin);
+  };
+  for (size_t i = 0; i < base::size(test_cases); ++i) {
+    const auto& test_case = test_cases[i];
+    SCOPED_TRACE(
+        base::StringPrintf("#%" PRIuS " %s", i, test_case.url.c_str()));
+    run_test_case(test_case);
+  }
+}
+
 }  // namespace extensions

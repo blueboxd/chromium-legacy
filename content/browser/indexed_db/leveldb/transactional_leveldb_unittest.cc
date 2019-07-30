@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <content/browser/indexed_db/scopes/leveldb_state.h>
 #include <stddef.h>
 
 #include <algorithm>
@@ -10,18 +11,20 @@
 #include <tuple>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_piece.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
-#include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
-#include "content/browser/indexed_db/scopes/leveldb_state.h"
+#include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -31,20 +34,6 @@ namespace content {
 namespace leveldb_unittest {
 
 static const size_t kDefaultMaxOpenIteratorsPerDatabase = 50;
-
-class SimpleComparator : public LevelDBComparator {
- public:
-  static const SimpleComparator* Get() {
-    static const base::NoDestructor<SimpleComparator> simple_comparator;
-    return simple_comparator.get();
-  }
-  int Compare(const base::StringPiece& a,
-              const base::StringPiece& b) const override {
-    size_t len = std::min(a.size(), b.size());
-    return memcmp(a.begin(), b.begin(), len);
-  }
-  const char* Name() const override { return "temp_comparator"; }
-};
 
 class SimpleLDBComparator : public leveldb::Comparator {
  public:
@@ -65,10 +54,37 @@ class SimpleLDBComparator : public leveldb::Comparator {
 std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
 OpenLevelDB(base::FilePath file_name) {
   return indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
-      file_name, SimpleComparator::Get(), SimpleLDBComparator::Get());
+      file_name, SimpleLDBComparator::Get());
 }
 
-TEST(LevelDBDatabaseTest, CorruptionTest) {
+class TransactionalLevelDBDatabaseTest : public testing::Test {
+ public:
+  TransactionalLevelDBDatabaseTest() = default;
+  ~TransactionalLevelDBDatabaseTest() override = default;
+
+  leveldb::Status OpenLevelDBDatabase(scoped_refptr<LevelDBState> ldb_state) {
+    lock_manager_ = std::make_unique<DisjointRangeLockManager>(1);
+    std::unique_ptr<LevelDBScopes> scopes = std::make_unique<LevelDBScopes>(
+        std::vector<uint8_t>{'a'}, 1024ul, ldb_state, lock_manager_.get(),
+        base::DoNothing());
+    leveldb::Status status = scopes->Initialize();
+    if (!status.ok())
+      return status;
+    scopes->StartRecoveryAndCleanupTasks(
+        LevelDBScopes::TaskRunnerMode::kUseCurrentSequence);
+    leveldb_database_ =
+        indexed_db::LevelDBFactory::Get()->CreateLevelDBDatabase(
+            std::move(ldb_state), std::move(scopes), nullptr,
+            kDefaultMaxOpenIteratorsPerDatabase);
+    return leveldb::Status::OK();
+  }
+
+  base::test::ScopedTaskEnvironment task_env_;
+  std::unique_ptr<DisjointRangeLockManager> lock_manager_;
+  std::unique_ptr<TransactionalLevelDBDatabase> leveldb_database_;
+};
+
+TEST_F(TransactionalLevelDBDatabaseTest, CorruptionTest) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
 
@@ -82,31 +98,28 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
       OpenLevelDB(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
 
-  std::unique_ptr<TransactionalLevelDBDatabase> leveldb =
-      std::make_unique<TransactionalLevelDBDatabase>(
-          std::move(ldb_state), nullptr, nullptr,
-          kDefaultMaxOpenIteratorsPerDatabase);
-  EXPECT_TRUE(leveldb);
-  put_value = value;
-  status = leveldb->Put(key, &put_value);
+  status = OpenLevelDBDatabase(ldb_state);
   EXPECT_TRUE(status.ok());
-  leveldb.reset();
-  EXPECT_FALSE(leveldb);
+  EXPECT_TRUE(leveldb_database_);
+  put_value = value;
+  status = leveldb_database_->Put(key, &put_value);
+  EXPECT_TRUE(status.ok());
+  leveldb_database_.reset();
+  ldb_state.reset();
 
   std::tie(ldb_state, status, std::ignore) =
       OpenLevelDB(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
-  leveldb = std::make_unique<TransactionalLevelDBDatabase>(
-      std::move(ldb_state), nullptr, nullptr,
-      kDefaultMaxOpenIteratorsPerDatabase);
-  EXPECT_TRUE(leveldb);
+
+  OpenLevelDBDatabase(ldb_state);
+  EXPECT_TRUE(status.ok());
   bool found = false;
-  status = leveldb->Get(key, &got_value, &found);
+  status = leveldb_database_->Get(key, &got_value, &found);
   EXPECT_TRUE(status.ok());
   EXPECT_TRUE(found);
   EXPECT_EQ(value, got_value);
-  leveldb.reset();
-  EXPECT_FALSE(leveldb);
+  leveldb_database_.reset();
+  ldb_state.reset();
 
   EXPECT_TRUE(
       leveldb_chrome::CorruptClosedDBForTesting(temp_directory.GetPath()));
@@ -123,11 +136,11 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   std::tie(ldb_state, status, std::ignore) =
       OpenLevelDB(temp_directory.GetPath());
   EXPECT_TRUE(status.ok());
-  leveldb = std::make_unique<TransactionalLevelDBDatabase>(
-      std::move(ldb_state), nullptr, nullptr,
-      kDefaultMaxOpenIteratorsPerDatabase);
-  ASSERT_TRUE(leveldb);
-  status = leveldb->Get(key, &got_value, &found);
+
+  status = OpenLevelDBDatabase(ldb_state);
+  EXPECT_TRUE(status.ok());
+  ASSERT_TRUE(leveldb_database_);
+  status = leveldb_database_->Get(key, &got_value, &found);
   EXPECT_TRUE(status.ok());
   EXPECT_FALSE(found);
 }
@@ -156,11 +169,10 @@ TEST(LevelDB, Locking) {
   EXPECT_TRUE(status.ok());
 }
 
-TEST(LevelDBDatabaseTest, LastModified) {
+TEST_F(TransactionalLevelDBDatabaseTest, LastModified) {
   const std::string key("key");
   const std::string value("value");
   std::string put_value;
-  SimpleComparator comparator;
   auto test_clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* clock_ptr = test_clock.get();
   clock_ptr->Advance(base::TimeDelta::FromHours(2));
@@ -170,25 +182,23 @@ TEST(LevelDBDatabaseTest, LastModified) {
   std::tie(ldb_state, status, std::ignore) = OpenLevelDB(base::FilePath());
   EXPECT_TRUE(status.ok());
 
-  std::unique_ptr<TransactionalLevelDBDatabase> leveldb =
-      std::make_unique<TransactionalLevelDBDatabase>(
-          std::move(ldb_state), nullptr, nullptr,
-          kDefaultMaxOpenIteratorsPerDatabase);
-  ASSERT_TRUE(leveldb);
-  leveldb->SetClockForTesting(std::move(test_clock));
+  status = OpenLevelDBDatabase(ldb_state);
+  EXPECT_TRUE(status.ok());
+  ASSERT_TRUE(leveldb_database_);
+  leveldb_database_->SetClockForTesting(std::move(test_clock));
   // Calling |Put| sets time modified.
   put_value = value;
   base::Time now_time = clock_ptr->Now();
-  status = leveldb->Put(key, &put_value);
+  status = leveldb_database_->Put(key, &put_value);
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ(now_time, leveldb->LastModified());
+  EXPECT_EQ(now_time, leveldb_database_->LastModified());
 
   // Calling |Remove| sets time modified.
   clock_ptr->Advance(base::TimeDelta::FromSeconds(200));
   now_time = clock_ptr->Now();
-  status = leveldb->Remove(key);
+  status = leveldb_database_->Remove(key);
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ(now_time, leveldb->LastModified());
+  EXPECT_EQ(now_time, leveldb_database_->LastModified());
 
   // Calling |Write| sets time modified
   clock_ptr->Advance(base::TimeDelta::FromMinutes(15));
@@ -196,9 +206,9 @@ TEST(LevelDBDatabaseTest, LastModified) {
   auto batch = LevelDBWriteBatch::Create();
   batch->Put(key, value);
   batch->Remove(key);
-  status = leveldb->Write(*batch);
+  status = leveldb_database_->Write(batch.get());
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ(now_time, leveldb->LastModified());
+  EXPECT_EQ(now_time, leveldb_database_->LastModified());
 }
 
 }  // namespace leveldb_unittest

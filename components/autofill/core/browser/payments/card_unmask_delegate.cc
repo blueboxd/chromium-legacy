@@ -6,12 +6,12 @@
 
 namespace autofill {
 
-CardUnmaskDelegate::UnmaskResponse::UnmaskResponse()
+CardUnmaskDelegate::UserProvidedUnmaskDetails::UserProvidedUnmaskDetails()
     : should_store_pan(false) {}
 
-CardUnmaskDelegate::UnmaskResponse::UnmaskResponse(
-    const UnmaskResponse& other) = default;
+CardUnmaskDelegate::UserProvidedUnmaskDetails::UserProvidedUnmaskDetails(
+    const UserProvidedUnmaskDetails& other) = default;
 
-CardUnmaskDelegate::UnmaskResponse::~UnmaskResponse() {}
+CardUnmaskDelegate::UserProvidedUnmaskDetails::~UserProvidedUnmaskDetails() {}
 
 }  // namespace autofill

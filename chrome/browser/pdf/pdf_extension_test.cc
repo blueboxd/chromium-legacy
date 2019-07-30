@@ -1934,7 +1934,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
   ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
       embedder_contents, base::Bind(&GetGuestCallback, &guest_contents)));
   ASSERT_NE(nullptr, guest_contents);
-  content::WaitForHitTestDataOrGuestSurfaceReady(guest_contents);
+  content::WaitForHitTestData(guest_contents);
 
   gfx::Point point_in_parent(250, 25);
   gfx::Point point_in_pdf(250, 250);
@@ -1985,7 +1985,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
       embedder_contents, base::Bind(&GetGuestCallback, &guest_contents)));
   ASSERT_NE(nullptr, guest_contents);
-  content::WaitForHitTestDataOrGuestSurfaceReady(guest_contents);
+  content::WaitForHitTestData(guest_contents);
 
   content::RenderProcessHost* guest_process_host =
       guest_contents->GetMainFrame()->GetProcess();
@@ -2103,7 +2103,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_EmbeddedPdfGetsFocus) {
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
-  WaitForHitTestDataOrGuestSurfaceReady(guest_contents);
+  WaitForHitTestData(guest_contents);
 
   // Verify it's not focused.
   EXPECT_FALSE(IsWebContentsBrowserPluginFocused(guest_contents));

@@ -129,6 +129,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
  private:
   friend class AutoConnectHandlerTest;
   friend class ClientCertResolverTest;
+  friend class ManagedNetworkConfigurationHandler;
   friend class ManagedNetworkConfigurationHandlerTest;
   friend class ManagedNetworkConfigurationHandlerMockTest;
   friend class NetworkConnectionHandlerImplTest;
@@ -148,7 +149,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
 
   ManagedNetworkConfigurationHandlerImpl();
 
-  // Handlers may be NULL in tests so long as they do not execute any paths
+  // Handlers may be null in tests so long as they do not execute any paths
   // that require the handlers.
   void Init(NetworkStateHandler* network_state_handler,
             NetworkProfileHandler* network_profile_handler,
@@ -230,11 +231,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
   UserToPoliciesMap policies_by_user_;
 
   // Local references to the associated handler instances.
-  NetworkStateHandler* network_state_handler_;
-  NetworkProfileHandler* network_profile_handler_;
-  NetworkConfigurationHandler* network_configuration_handler_;
-  NetworkDeviceHandler* network_device_handler_;
-  ProhibitedTechnologiesHandler* prohibited_technologies_handler_;
+  NetworkStateHandler* network_state_handler_ = nullptr;
+  NetworkProfileHandler* network_profile_handler_ = nullptr;
+  NetworkConfigurationHandler* network_configuration_handler_ = nullptr;
+  NetworkDeviceHandler* network_device_handler_ = nullptr;
+  ProhibitedTechnologiesHandler* prohibited_technologies_handler_ = nullptr;
 
   // Owns the currently running PolicyApplicators.
   UserToPolicyApplicatorMap policy_applicators_;
@@ -248,12 +249,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ManagedNetworkConfigurationHandlerImpl
 
   base::ObserverList<NetworkPolicyObserver, true>::Unchecked observers_;
 
-  bool user_policy_applied_;
-  bool device_policy_applied_;
+  bool user_policy_applied_ = false;
+  bool device_policy_applied_ = false;
 
   // For Shill client callbacks
   base::WeakPtrFactory<ManagedNetworkConfigurationHandlerImpl>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ManagedNetworkConfigurationHandlerImpl);
 };

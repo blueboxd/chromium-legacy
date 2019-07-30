@@ -300,7 +300,7 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnGetAccounts(
 
   set_load_credentials_state(
       signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
-  // The typical order of |OAuth2TokenServiceObserver| callbacks is:
+  // The typical order of |ProfileOAuth2TokenServiceObserver| callbacks is:
   // 1. OnRefreshTokenAvailable
   // 2. OnEndBatchChanges
   // 3. OnRefreshTokensLoaded
@@ -351,7 +351,7 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted(
 
   ScopedBatchChange batch(this);
   FireRefreshTokenAvailable(account_id);
-  // See |OAuth2TokenServiceObserver::OnAuthErrorChanged|.
+  // See |ProfileOAuth2TokenServiceObserver::OnAuthErrorChanged|.
   // |OnAuthErrorChanged| must be always called after
   // |OnRefreshTokenAvailable|, when refresh token is updated.
   FireAuthErrorChanged(account_id, error);

@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
+import org.chromium.chrome.browser.widget.ListMenuButton.PopupMenuShownListener;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.bookmarks.BookmarkId;
 
@@ -37,6 +38,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     protected BookmarkId mBookmarkId;
     private boolean mIsAttachedToWindow;
     private final boolean mReorderBookmarksEnabled;
+    private PopupMenuShownListener mPopupListener;
     @Location
     private int mLocation;
 
@@ -126,10 +128,13 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
     private void initialize() {
         mDelegate.addUIObserver(this);
+        mPopupListener = () -> mDelegate.onBookmarkItemMenuOpened();
+        mMoreIcon.addPopupListener(mPopupListener);
     }
 
     private void cleanup() {
         mMoreIcon.dismiss();
+        mMoreIcon.removePopupListener(mPopupListener);
         if (mDelegate != null) mDelegate.removeUIObserver(this);
     }
 

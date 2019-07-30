@@ -31,9 +31,10 @@
             android:layout_margin="2dp">
             <ImageView
                 android:id="@+id/tab_favicon"
-                android:layout_width="@dimen/tab_grid_favicon_size"
+                android:layout_width="wrap_content"
                 android:layout_height="@dimen/tab_grid_favicon_size"
-                android:padding="8dp"
+                android:minWidth="8dp"
+                android:adjustViewBounds="true"
                 android:importantForAccessibility="no"
                 android:src="@drawable/ic_omnibox_page"/>
             <TextView

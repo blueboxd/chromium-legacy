@@ -42,15 +42,11 @@
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/download/byte_stream_input_stream.h"
-#include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/file_download_url_loader_factory_getter.h"
 #include "content/browser/download/file_system_download_url_loader_factory_getter.h"
 #include "content/browser/download/network_download_url_loader_factory_getter.h"
-#include "content/browser/download/url_downloader.h"
-#include "content/browser/download/url_downloader_factory.h"
 #include "content/browser/download/web_ui_download_url_loader_factory_getter.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -151,57 +147,6 @@ void CreateInterruptedDownload(
           std::move(failed_created_info),
           std::make_unique<ByteStreamInputStream>(std::move(empty_byte_stream)),
           nullptr, params->callback()));
-}
-
-void BeginDownload(
-    std::unique_ptr<download::DownloadUrlParameters> params,
-    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
-    content::ResourceContext* resource_context,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
-    bool is_new_download,
-    base::WeakPtr<DownloadManagerImpl> download_manager) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader(
-      nullptr, base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
-
-  params->set_blob_storage_context_getter(
-      base::BindOnce(&BlobStorageContextGetter, resource_context));
-  std::unique_ptr<net::URLRequest> url_request =
-      DownloadRequestCore::CreateRequestOnIOThread(
-          is_new_download, params.get(), std::move(url_request_context_getter));
-  if (blob_data_handle) {
-    storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
-        url_request.get(), std::move(blob_data_handle));
-  }
-
-  // If there's a valid renderer process associated with the request, then the
-  // request should be driven by the ResourceLoader. Pass it over to the
-  // ResourceDispatcherHostImpl which will in turn pass it along to the
-  // ResourceLoader.
-  if (params->render_process_host_id() >= 0) {
-    download::DownloadInterruptReason reason =
-        DownloadManagerImpl::BeginDownloadRequest(
-            std::move(url_request), resource_context, params.get());
-
-    // If the download was accepted, the DownloadResourceHandler is now
-    // responsible for driving the request to completion.
-    // Otherwise, create an interrupted download.
-    if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
-      CreateInterruptedDownload(std::move(params), reason, download_manager);
-      return;
-    }
-  } else {
-    downloader.reset(UrlDownloader::BeginDownload(download_manager,
-                                                  std::move(url_request),
-                                                  params.get(), false)
-                         .release());
-  }
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &download::UrlDownloadHandler::Delegate::OnUrlDownloadHandlerCreated,
-          download_manager, std::move(downloader)));
 }
 
 class DownloadItemFactoryImpl : public download::DownloadItemFactory {
@@ -358,8 +303,6 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
   DCHECK(browser_context);
   download::SetIOTaskRunner(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    download::UrlDownloadHandlerFactory::Install(new UrlDownloaderFactory());
 
   if (!in_progress_manager_) {
     in_progress_manager_ =
@@ -851,60 +794,6 @@ void DownloadManagerImpl::OnUrlDownloadHandlerCreated(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (downloader)
     url_download_handlers_.push_back(std::move(downloader));
-}
-
-// static
-download::DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
-    std::unique_ptr<net::URLRequest> url_request,
-    ResourceContext* resource_context,
-    download::DownloadUrlParameters* params) {
-  if (ResourceDispatcherHostImpl::Get()->is_shutdown())
-    return download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
-
-  // The URLRequest needs to be initialized with the referrer and other
-  // information prior to issuing it.
-  ResourceDispatcherHostImpl::Get()->InitializeURLRequest(
-      url_request.get(),
-      Referrer(params->referrer(),
-               Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-                   params->referrer_policy())),
-      true,  // download.
-      params->render_process_host_id(), params->render_view_host_routing_id(),
-      params->render_frame_host_routing_id(), params->frame_tree_node_id(),
-      PREVIEWS_OFF, resource_context);
-
-  // We treat a download as a main frame load, and thus update the policy URL on
-  // redirects.
-  //
-  // TODO(davidben): Is this correct? If this came from a
-  // ViewHostMsg_DownloadUrl in a frame, should it have first-party URL set
-  // appropriately?
-  url_request->set_first_party_url_policy(
-      net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
-
-  const GURL& url = url_request->original_url();
-
-  const net::URLRequestContext* request_context = url_request->context();
-  if (!request_context->job_factory()->IsHandledProtocol(url.scheme())) {
-    DVLOG(1) << "Download request for unsupported protocol: "
-             << url.possibly_invalid_spec();
-    return download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
-  }
-
-  // From this point forward, the |DownloadResourceHandler| is responsible for
-  // |started_callback|.
-  // TODO(ananta)
-  // Find a better way to create the DownloadResourceHandler instance.
-  std::unique_ptr<ResourceHandler> handler(
-      DownloadResourceHandler::CreateForNewRequest(
-          url_request.get(), params->request_origin(),
-          params->download_source(), params->follow_cross_origin_redirects()));
-
-  ResourceDispatcherHostImpl::Get()->BeginURLRequest(
-      std::move(url_request), std::move(handler), true,  // download
-      params->content_initiated(), params->do_not_prompt_for_login(),
-      resource_context);
-  return download::DOWNLOAD_INTERRUPT_REASON_NONE;
 }
 
 void DownloadManagerImpl::InterceptNavigation(
@@ -1437,55 +1326,42 @@ void DownloadManagerImpl::BeginDownloadInternal(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Ideally everywhere a blob: URL is downloaded a URLLoaderFactory for that
-    // blob URL is also passed, but since that isn't always the case, create
-    // a new factory if we don't have one already.
-    if (!blob_url_loader_factory && params->url().SchemeIsBlob()) {
-      blob_url_loader_factory =
-          ChromeBlobStorageContext::URLLoaderFactoryForUrl(browser_context_,
-                                                           params->url());
-    }
-
-    auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
-                                        params->render_frame_host_routing_id());
-    bool content_initiated = params->content_initiated();
-    // If it's from the web, we don't trust it, so we push the throttle on.
-    if (rfh && content_initiated) {
-      ResourceRequestInfo::WebContentsGetter web_contents_getter =
-          base::BindRepeating(WebContents::FromFrameTreeNodeId,
-                              rfh->GetFrameTreeNodeId());
-      const GURL& url = params->url();
-      const std::string& method = params->method();
-
-      base::OnceCallback<void(bool /* download allowed */)>
-          on_can_download_checks_done = base::BindOnce(
-              &DownloadManagerImpl::BeginResourceDownloadOnChecksComplete,
-              weak_factory_.GetWeakPtr(), std::move(params),
-              std::move(blob_url_loader_factory), is_new_download, site_url);
-      if (delegate_) {
-        delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url,
-                                        method,
-                                        base::nullopt /*request_initiator*/,
-                                        std::move(on_can_download_checks_done));
-        return;
-      }
-    }
-
-    BeginResourceDownloadOnChecksComplete(
-        std::move(params), std::move(blob_url_loader_factory), is_new_download,
-        site_url, rfh ? !content_initiated : true);
-  } else {
-    StoragePartition* storage_partition =
-        BrowserContext::GetStoragePartitionForSite(browser_context_, site_url);
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &BeginDownload, std::move(params), std::move(blob_data_handle),
-            browser_context_->GetResourceContext(),
-            base::WrapRefCounted(storage_partition->GetURLRequestContext()),
-            is_new_download, weak_factory_.GetWeakPtr()));
+  // Ideally everywhere a blob: URL is downloaded a URLLoaderFactory for that
+  // blob URL is also passed, but since that isn't always the case, create
+  // a new factory if we don't have one already.
+  if (!blob_url_loader_factory && params->url().SchemeIsBlob()) {
+    blob_url_loader_factory = ChromeBlobStorageContext::URLLoaderFactoryForUrl(
+        browser_context_, params->url());
   }
+
+  auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
+                                      params->render_frame_host_routing_id());
+  bool content_initiated = params->content_initiated();
+  // If it's from the web, we don't trust it, so we push the throttle on.
+  if (rfh && content_initiated) {
+    ResourceRequestInfo::WebContentsGetter web_contents_getter =
+        base::BindRepeating(WebContents::FromFrameTreeNodeId,
+                            rfh->GetFrameTreeNodeId());
+    const GURL& url = params->url();
+    const std::string& method = params->method();
+
+    base::OnceCallback<void(bool /* download allowed */)>
+        on_can_download_checks_done = base::BindOnce(
+            &DownloadManagerImpl::BeginResourceDownloadOnChecksComplete,
+            weak_factory_.GetWeakPtr(), std::move(params),
+            std::move(blob_url_loader_factory), is_new_download, site_url);
+    if (delegate_) {
+      delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url,
+                                      method,
+                                      base::nullopt /*request_initiator*/,
+                                      std::move(on_can_download_checks_done));
+      return;
+    }
+  }
+
+  BeginResourceDownloadOnChecksComplete(
+      std::move(params), std::move(blob_url_loader_factory), is_new_download,
+      site_url, rfh ? !content_initiated : true);
 }
 
 bool DownloadManagerImpl::IsNextIdInitialized() const {

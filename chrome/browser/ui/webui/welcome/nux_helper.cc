@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/policy/browser_signin_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -93,7 +94,7 @@ bool CanShowSigninModuleForTesting(const policy::PolicyMap& policies) {
   return CanShowSigninModule(policies);
 }
 
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 // These feature flags are used to tie our experiment to specific studies.
 // go/navi-app-variation for details.
 // TODO(hcarmona): find a solution that scales better.
@@ -105,7 +106,7 @@ const base::Feature kNaviNTPVariationEnabled = {
     "NaviNTPVariationEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kNaviShortcutVariationEnabled = {
     "NaviShortcutVariationEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 
 // This feature flag is used to force the feature to be turned on for non-win
 // and non-branded builds, like with tests or development on other platforms.
@@ -154,7 +155,7 @@ std::string GetOnboardingGroup(Profile* profile) {
                                        "onboarding-group");
 }
 
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 void JoinOnboardingGroup(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
 
@@ -188,16 +189,16 @@ void JoinOnboardingGroup(Profile* profile) {
   else if (onboard_group.compare("ShortcutVariationSynthetic-008") == 0)
     base::FeatureList::IsEnabled(kNaviShortcutVariationEnabled);
 }
-#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 
 bool IsNuxOnboardingEnabled(Profile* profile) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return base::FeatureList::IsEnabled(nux::kNuxOnboardingFeature) ||
          base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled);
 #else
   // Allow enabling outside official builds for testing purposes.
   return base::FeatureList::IsEnabled(nux::kNuxOnboardingForceEnabled);
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 bool IsAppVariationEnabled() {

@@ -34,7 +34,7 @@
 namespace blink {
 
 Gamepad::Gamepad(Client* client,
-                 unsigned index,
+                 int index,
                  base::TimeTicks time_origin,
                  base::TimeTicks time_floor)
     : client_(client),

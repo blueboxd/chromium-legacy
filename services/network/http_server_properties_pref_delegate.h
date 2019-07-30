@@ -29,8 +29,7 @@ class HttpServerPropertiesPrefDelegate
   const base::DictionaryValue* GetServerProperties() const override;
   void SetServerProperties(const base::DictionaryValue& value,
                            base::OnceClosure callback) override;
-  void StartListeningForUpdates(
-      const base::RepeatingClosure& callback) override;
+  void WaitForPrefLoad(base::OnceClosure callback) override;
 
  private:
   PrefService* pref_service_;

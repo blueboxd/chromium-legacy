@@ -3753,10 +3753,10 @@ The site does NOT gain access to the camera. The camera images are only visible 
         See how much data you've saved from the More Options button
       </message>
       <message name="IDS_IPH_IDENTITY_DISC_TEXT" desc="The in-product-help text prompting the user that tapping identity disc will navigate to 'Sync and Google services' settings page.">
-        Tap here to manage your accounts
+        Manage your account
       </message>
       <message name="IDS_IPH_IDENTITY_DISC_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility text prompting the user that tapping identity disc will navigate to 'Sync and Google services' settings page.">
-        Tap the "Manage account" button to manage your accounts
+        To manage your Google account, tap the "Manage account" button
       </message>
       <message name="IDS_IPH_PREVIEWS_OMNIBOX_UI_TEXT" desc="The in-product-help text informing the user that the displayed page was modified to make it load faster or use less data. Prompts the user to tap the message and load the original, unaltered, page if they would like. The 'Lite page provided by Google.' sentence should match TC ID 373879247902731825">
         Lite page provided by Google. Tap to load the original.
@@ -4045,7 +4045,10 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Phone number verification
       </message>
       <message name="IDS_SMS_DIALOG_STATUS_WAITING" desc="Message shown when Chrome is waiting for an SMS on the user's behalf">
-        Waiting for code
+        Waiting for text message
+      </message>
+      <message name="IDS_SMS_DIALOG_STATUS_SMS_RECEIVED" desc="Message shown when Chrome has received an SMS on the user's behalf">
+        Text message received
       </message>
       <message name="IDS_SMS_DIALOG_CONTINUE_BUTTON_TEXT" desc="Label on the button that users can click to continue SMS verification by passing the incoming SMS to the site.">
         Continue

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+assert(is_mac, "This code is macOS-only.")
+
 config("media_player_weak_link") {
   ldflags = [
     "-weak_framework",
@@ -33,6 +35,7 @@ component("now_playing") {
 
   deps = [
     "//base",
+    "//build:branding_buildflags",
   ]
 
   libs = [ "Foundation.framework" ]

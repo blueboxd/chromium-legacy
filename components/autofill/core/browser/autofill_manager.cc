@@ -1375,8 +1375,8 @@ AutofillManager::AutofillManager(
                                           credit_card_form_event_logger_.get());
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
     version_info::Channel channel = client_->GetChannel();
-    download_manager_.reset(
-        new AutofillDownloadManager(driver, this, GetAPIKeyForUrl(channel)));
+    download_manager_.reset(new AutofillDownloadManager(
+        driver, this, GetAPIKeyForUrl(channel), client_->GetLogManager()));
   }
   CountryNames::SetLocaleString(app_locale_);
 }

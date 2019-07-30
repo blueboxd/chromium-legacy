@@ -189,10 +189,6 @@ class PLATFORM_EXPORT HeapAllocator {
     return ThreadState::Current()->IsAllocationAllowed();
   }
 
-  static bool IsObjectResurrectionForbidden() {
-    return ThreadState::Current()->IsObjectResurrectionForbidden();
-  }
-
   static bool IsSweepForbidden() {
     return ThreadState::Current()->SweepForbidden();
   }

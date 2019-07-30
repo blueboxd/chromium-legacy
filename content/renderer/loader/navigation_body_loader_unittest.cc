@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
+#include "content/common/navigation_params.mojom.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
@@ -44,8 +45,11 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
     endpoints->url_loader_client = mojo::MakeRequest(&client_ptr_);
     blink::WebNavigationParams navigation_params;
+    auto common_params = mojom::CommonNavigationParams::New();
+    common_params->referrer = blink::mojom::Referrer::New();
+    common_params->navigation_start = base::TimeTicks::Now();
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-        CommonNavigationParams(), CommitNavigationParams(), 1 /* request_id */,
+        *common_params, CommitNavigationParams(), 1 /* request_id */,
         network::ResourceResponseHead(),
         mojo::ScopedDataPipeConsumerHandle() /* response_body */,
         std::move(endpoints),
@@ -308,13 +312,15 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
                                      &response.ssl_info->connection_status);
 
-  CommonNavigationParams common_params;
-  common_params.url = GURL("https://example.test");
+  auto common_params = mojom::CommonNavigationParams::New();
+  common_params->referrer = blink::mojom::Referrer::New();
+  common_params->navigation_start = base::TimeTicks::Now();
+  common_params->url = GURL("https://example.test");
 
   blink::WebNavigationParams navigation_params;
   auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
   NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-      common_params, CommitNavigationParams(), 1 /* request_id */, response,
+      *common_params, CommitNavigationParams(), 1 /* request_id */, response,
       mojo::ScopedDataPipeConsumerHandle() /* response_body */,
       std::move(endpoints),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),

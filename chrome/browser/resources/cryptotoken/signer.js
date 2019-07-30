@@ -445,8 +445,7 @@ Signer.prototype.doSign_ = async function() {
     }
     var keyHandle = challenge['keyHandle'];
 
-    var browserData = makeSignBrowserData(
-        serverChallenge, this.sender_.origin, this.sender_.tlsChannelId);
+    var browserData = makeSignBrowserData(serverChallenge, this.sender_.origin);
     this.browserData_[keyHandle] = browserData;
     this.serverChallenges_[keyHandle] = challenge;
   }

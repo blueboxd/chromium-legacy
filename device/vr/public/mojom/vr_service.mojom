@@ -336,29 +336,6 @@ enum VRDisplayEventReason {
   UNMOUNTED = 3
 };
 
-// Interface for requesting XRDevice interfaces and registering for
-// notifications that the XRDevice has changed
-interface VRService {
-  // Returns the XRDevice interface which is used for creating XRSessions. This
-  // is not expected to be called once per renderer, unless the returned
-  // XRDevice is destroyed, then it might be called again to get another one.
-  RequestDevice() => (XRDevice? device);
-  // Optionally supply a VRServiceClient to listen for changes to the XRDevice.
-  // The last provided listener will have events called on it.
-  SetClient(VRServiceClient client);
-
-  // WebVR 1.1 functionality compatibility method. To stop listening pass a null
-  // client.
-  SetListeningForActivate(VRDisplayClient? client);
-};
-
-// The interface for the renderer to listen to top level XR events, events that
-// can be listened to and triggered without the renderer calling requestDevice.
-interface VRServiceClient {
-  // Signals changes to the available physical device runtimes.
-  OnDeviceChanged();
-};
-
 enum RequestSessionError {
   ORIGIN_NOT_SECURE = 1,
   IMMERSIVE_SESSION_REQUEST_FROM_OFF_FOCUS_PAGE = 2,
@@ -374,9 +351,18 @@ union RequestSessionResult {
   RequestSessionError failure_reason;
 };
 
-// Supplies XRSessions and session support information. Implemented in the
-// browser process, consumed in the renderer process.
-interface XRDevice {
+// Interface for requesting XRDevice interfaces and registering for
+// notifications that the XRDevice has changed. Implemented in the browser
+// process and consumed in the renderer process.
+interface VRService {
+  // Optionally supply a VRServiceClient to listen for changes to the XRDevice.
+  // A bad message will be reported if this is called multiple times.
+  SetClient(VRServiceClient client);
+
+  // WebVR 1.1 functionality compatibility method. To stop listening pass a null
+  // client.
+  SetListeningForActivate(VRDisplayClient? client);
+
   // Request to initialize a session in the browser process. If successful, the
   // XRSession struct with the requisite interfaces will be returned.
   RequestSession(XRSessionOptions options) => (RequestSessionResult result);
@@ -389,6 +375,13 @@ interface XRDevice {
   GetImmersiveVRDisplayInfo() => (VRDisplayInfo? info);
 
   ExitPresent();
+};
+
+// The interface for the renderer to listen to top level XR events, events that
+// can be listened to and triggered without the renderer calling requestDevice.
+interface VRServiceClient {
+  // Signals changes to the available physical device runtimes.
+  OnDeviceChanged();
 };
 
 // Provides functionality for integrating environment information into an

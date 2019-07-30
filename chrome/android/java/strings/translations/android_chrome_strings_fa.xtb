@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">بازخوانی صفحه</translation>
 <translation id="2709516037105925701">تکمیل خودکار</translation>
 <translation id="271033894570825754">جدید</translation>
+<translation id="2714850608275780394">در انتظار کد</translation>
 <translation id="2728754400939377704">مرتب‌سازی براساس سایت</translation>
 <translation id="2744248271121720757">برای جستجوی فوری، روی کلمه‌ای ضربه بزنید یا اقدام‌های مرتبط را ببینید</translation>
+<translation id="2760989362628427051">روشن شدن طرح زمینه تیره وقتی طرح زمینه تیره دستگاه یا «بهینه‌سازی باتری» روشن است</translation>
 <translation id="2762000892062317888">هم‌اکنون</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> ثانیه باقی‌مانده است</translation>
 <translation id="2779651927720337254">انجام نشد</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">۱ دقیقه باقی‌مانده است</translation>
 <translation id="3244271242291266297">ماه</translation>
 <translation id="3254409185687681395">نشانک گذاری این صفحه</translation>
+<translation id="3254626532848657899">انتقال به آخر</translation>
 <translation id="3259831549858767975">کوچک‌تر کردن همه‌چیز در صفحه</translation>
 <translation id="3269093882174072735">بارگیری تصویر</translation>
 <translation id="3269956123044984603">‏برای دسترسی به برگه‌ها از دستگاه‌های دیگرتان، «همگام‌سازی خودکار داده‌ها» را در تنظیمات حساب Android روشن کنید.</translation>
@@ -441,6 +444,7 @@
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="4384468725000734951">‏استفاده از Sogou برای جستجو</translation>
 <translation id="4404568932422911380">هیچ نشانکی موجود نیست</translation>
+<translation id="4405224443901389797">انتقال به…</translation>
 <translation id="4411535500181276704">حالت ساده</translation>
 <translation id="4415276339145661267">‏مدیریت حساب Google</translation>
 <translation id="4432792777822557199">از این به بعد، صفحه‌های <ph name="SOURCE_LANGUAGE" />، به <ph name="TARGET_LANGUAGE" /> ترجمه خواهند شد</translation>
@@ -621,6 +625,7 @@
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> برگه گروه‌بندی شد</translation>
 <translation id="5581519193887989363">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /> انتخاب کنید.</translation>
+<translation id="5586306159936941448">برای گروه‌بندی برگه‌ها، برگه‌ای را روی برگه دیگر بکشید</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
 <translation id="5599455543593328020">حالت ناشناس</translation>
@@ -651,6 +656,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
 <translation id="5810288467834065221">‏حق نسخه‌برداری <ph name="YEAR" /> Google LLC.‎ کلیه حقوق محفوظ است.</translation>
 <translation id="5817918615728894473">مرتبط‌سازی</translation>
+<translation id="58326064309361797">برای گروه‌بندی برگه‌ها، آن‌ها را بکشید</translation>
 <translation id="583281660410589416">ناشناس</translation>
 <translation id="5833984609253377421">اشتراک‌گذاری پیوند</translation>
 <translation id="5836192821815272682">‏درحال بارگیری به‌روزرسانی Chrome…</translation>
@@ -845,7 +851,6 @@
 <translation id="7233236755231902816">‏برای اینکه وب را به زبان خود ببینید، آخرین نسخه Chrome را دریافت کنید</translation>
 <translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
-<translation id="7253272406652746122">‏از صفحه «حساب‌ها» در برنامه «تنظیمات» دستگاه، یک حساب Google اضافه کنید.</translation>
 <translation id="7274013316676448362">سایت مسدودشده</translation>
 <translation id="7290209999329137901">عدم‌دسترسی به تغییر نام</translation>
 <translation id="7291387454912369099">تسویه‌حساب فعال‌شده ازسوی دستیار</translation>
@@ -1011,6 +1016,7 @@
 <translation id="8380167699614421159">این سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد</translation>
 <translation id="8393700583063109961">ارسال پیام</translation>
 <translation id="8413126021676339697">نمایش کل سابقه</translation>
+<translation id="8425955042390522843">راستی‌آزمایی شماره تلفن</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8438566539970814960">بهبود جستجوها و مرور</translation>
 <translation id="8441146129660941386">جستجو به عقب</translation>
@@ -1118,6 +1124,7 @@
 <translation id="945632385593298557">دسترسی به میکروفن</translation>
 <translation id="951339005376969845">حذف داده‌های موجود. می‌توانید با جابه‌جایی به <ph name="FROM_ACCOUNT" /> آن را بازیابی کنید.</translation>
 <translation id="95817756606698420">‏Chrome می‌تواند از <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> برای جستجو در چین استفاده کند. در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> می‌توانید این را تغییر دهید.</translation>
+<translation id="959682366969460160">سازمان‌دهی شوید</translation>
 <translation id="965817943346481315">اگر سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد مسدود شود (توصیه می‌شود)</translation>
 <translation id="968900484120156207">صفحاتی را که بازدید کرده‌اید، اینجا نمایش داده می‌شوند</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> دقیقه باقی‌مانده است</translation>

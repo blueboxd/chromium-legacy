@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
   RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
       child->current_frame_host()->GetView());
 
-  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  WaitForHitTestData(child->current_frame_host());
 
   // Add a mouse move event listener to the root frame.
   EXPECT_TRUE(ExecJs(
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
   RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
       child->current_frame_host()->GetView());
 
-  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  WaitForHitTestData(child->current_frame_host());
 
   // Add a mouse move event listener to the root frame.
   EXPECT_TRUE(ExecJs(
@@ -524,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWidgetHidden) {
   RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
       child->current_frame_host()->GetView());
 
-  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  WaitForHitTestData(child->current_frame_host());
 
   // Request a pointer lock on the child frame's body.
   EXPECT_TRUE(ExecJs(child, "document.body.requestPointerLock()"));

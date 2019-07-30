@@ -13,8 +13,11 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator_impl.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_transaction.h"
+#include "content/browser/indexed_db/scopes/leveldb_scope.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
@@ -102,12 +105,89 @@ class IndexedDBTestTransaction : public IndexedDBTransaction {
   }
 };
 
+class LevelDBTestDatabase : public TransactionalLevelDBDatabase {
+ public:
+  LevelDBTestDatabase(scoped_refptr<LevelDBState> level_db_state,
+                      std::unique_ptr<LevelDBScopes> leveldb_scopes,
+                      indexed_db::LevelDBFactory* factory,
+                      scoped_refptr<base::SequencedTaskRunner> task_runner,
+                      size_t max_open_iterators,
+                      FailMethod fail_method,
+                      int fail_on_call_num)
+      : TransactionalLevelDBDatabase(std::move(level_db_state),
+                                     std::move(leveldb_scopes),
+                                     factory,
+                                     std::move(task_runner),
+                                     max_open_iterators),
+        fail_method_(fail_method),
+        fail_on_call_num_(fail_on_call_num),
+        current_call_num_(0) {
+    DCHECK(fail_method != FAIL_METHOD_NOTHING);
+    DCHECK_GT(fail_on_call_num, 0);
+  }
+  ~LevelDBTestDatabase() override {}
+
+  leveldb::Status Get(const base::StringPiece& key,
+                      std::string* value,
+                      bool* found) override {
+    if (fail_method_ != FAIL_METHOD_GET ||
+        ++current_call_num_ != fail_on_call_num_)
+      return TransactionalLevelDBDatabase::Get(key, value, found);
+    *found = false;
+    return leveldb::Status::Corruption("Corrupted for the test");
+  }
+
+  leveldb::Status Write(LevelDBWriteBatch* write_batch) override {
+    if ((fail_method_ != FAIL_METHOD_WRITE) ||
+        ++current_call_num_ != fail_on_call_num_)
+      return TransactionalLevelDBDatabase::Write(write_batch);
+    return leveldb::Status::Corruption("Corrupted for the test");
+  }
+
+ private:
+  FailMethod fail_method_;
+  int fail_on_call_num_;
+  int current_call_num_;
+};
+
+class LevelDBTestDirectTransaction : public LevelDBDirectTransaction {
+ public:
+  LevelDBTestDirectTransaction(TransactionalLevelDBDatabase* db,
+                               FailMethod fail_method,
+                               int fail_on_call_num)
+      : LevelDBDirectTransaction(db),
+        fail_method_(fail_method),
+        fail_on_call_num_(fail_on_call_num),
+        current_call_num_(0) {
+    DCHECK(fail_method != FAIL_METHOD_NOTHING);
+    DCHECK_GT(fail_on_call_num, 0);
+  }
+  ~LevelDBTestDirectTransaction() override {}
+
+  leveldb::Status Get(const base::StringPiece& key,
+                      std::string* value,
+                      bool* found) override {
+    if (fail_method_ != FAIL_METHOD_GET ||
+        ++current_call_num_ != fail_on_call_num_)
+      return LevelDBTestDirectTransaction::Get(key, value, found);
+
+    *found = false;
+    return leveldb::Status::Corruption("Corrupted for the test");
+  }
+
+ private:
+  FailMethod fail_method_;
+  int fail_on_call_num_;
+  int current_call_num_;
+};
+
 class LevelDBTestTransaction : public TransactionalLevelDBTransaction {
  public:
   LevelDBTestTransaction(TransactionalLevelDBDatabase* db,
+                         std::unique_ptr<LevelDBScope> scope,
                          FailMethod fail_method,
                          int fail_on_call_num)
-      : TransactionalLevelDBTransaction(db),
+      : TransactionalLevelDBTransaction(db, std::move(scope)),
         fail_method_(fail_method),
         fail_on_call_num_(fail_on_call_num),
         current_call_num_(0) {
@@ -152,8 +232,10 @@ class LevelDBTestTransaction : public TransactionalLevelDBTransaction {
 
 class LevelDBTraceTransaction : public TransactionalLevelDBTransaction {
  public:
-  LevelDBTraceTransaction(TransactionalLevelDBDatabase* db, int tx_num)
-      : TransactionalLevelDBTransaction(db),
+  LevelDBTraceTransaction(TransactionalLevelDBDatabase* db,
+                          std::unique_ptr<LevelDBScope> scope,
+                          int tx_num)
+      : TransactionalLevelDBTransaction(db, std::move(scope)),
         commit_tracer_(s_class_name, "Commit", tx_num),
         get_tracer_(s_class_name, "Get", tx_num) {}
 
@@ -180,13 +262,17 @@ class LevelDBTraceTransaction : public TransactionalLevelDBTransaction {
 
 const std::string LevelDBTraceTransaction::s_class_name = "LevelDBTransaction";
 
-class LevelDBTraceIteratorImpl : public TransactionalLevelDBIteratorImpl {
+class LevelDBTraceIterator : public TransactionalLevelDBIterator {
  public:
-  LevelDBTraceIteratorImpl(std::unique_ptr<leveldb::Iterator> iterator,
-                           TransactionalLevelDBDatabase* db,
-                           const leveldb::Snapshot* snapshot,
-                           int inst_num)
-      : TransactionalLevelDBIteratorImpl(std::move(iterator), db, snapshot),
+  LevelDBTraceIterator(std::unique_ptr<leveldb::Iterator> iterator,
+                       base::WeakPtr<TransactionalLevelDBDatabase> db,
+                       base::WeakPtr<TransactionalLevelDBTransaction> txn,
+                       std::unique_ptr<LevelDBSnapshot> snapshot,
+                       int inst_num)
+      : TransactionalLevelDBIterator(std::move(iterator),
+                                     std::move(db),
+                                     std::move(txn),
+                                     std::move(snapshot)),
         is_valid_tracer_(s_class_name, "IsValid", inst_num),
         seek_to_last_tracer_(s_class_name, "SeekToLast", inst_num),
         seek_tracer_(s_class_name, "Seek", inst_num),
@@ -194,38 +280,38 @@ class LevelDBTraceIteratorImpl : public TransactionalLevelDBIteratorImpl {
         prev_tracer_(s_class_name, "Prev", inst_num),
         key_tracer_(s_class_name, "Key", inst_num),
         value_tracer_(s_class_name, "Value", inst_num) {}
-  ~LevelDBTraceIteratorImpl() override {}
+  ~LevelDBTraceIterator() override {}
 
  private:
   static const std::string s_class_name;
 
   bool IsValid() const override {
     is_valid_tracer_.log_call();
-    return TransactionalLevelDBIteratorImpl::IsValid();
+    return TransactionalLevelDBIterator::IsValid();
   }
   leveldb::Status SeekToLast() override {
     seek_to_last_tracer_.log_call();
-    return TransactionalLevelDBIteratorImpl::SeekToLast();
+    return TransactionalLevelDBIterator::SeekToLast();
   }
   leveldb::Status Seek(const base::StringPiece& target) override {
     seek_tracer_.log_call();
-    return TransactionalLevelDBIteratorImpl::Seek(target);
+    return TransactionalLevelDBIterator::Seek(target);
   }
   leveldb::Status Next() override {
     next_tracer_.log_call();
-    return TransactionalLevelDBIteratorImpl::Next();
+    return TransactionalLevelDBIterator::Next();
   }
   leveldb::Status Prev() override {
     prev_tracer_.log_call();
-    return TransactionalLevelDBIteratorImpl::Prev();
+    return TransactionalLevelDBIterator::Prev();
   }
   base::StringPiece Key() const override {
     key_tracer_.log_call();
-    return TransactionalLevelDBIteratorImpl::Key();
+    return TransactionalLevelDBIterator::Key();
   }
   base::StringPiece Value() const override {
     value_tracer_.log_call();
-    return TransactionalLevelDBIteratorImpl::Value();
+    return TransactionalLevelDBIterator::Value();
   }
 
   mutable FunctionTracer is_valid_tracer_;
@@ -237,27 +323,30 @@ class LevelDBTraceIteratorImpl : public TransactionalLevelDBIteratorImpl {
   mutable FunctionTracer value_tracer_;
 };
 
-const std::string LevelDBTraceIteratorImpl::s_class_name = "LevelDBIterator";
+const std::string LevelDBTraceIterator::s_class_name = "LevelDBIterator";
 
-class LevelDBTestIteratorImpl
-    : public content::TransactionalLevelDBIteratorImpl {
+class LevelDBTestIterator : public content::TransactionalLevelDBIterator {
  public:
-  LevelDBTestIteratorImpl(std::unique_ptr<leveldb::Iterator> iterator,
-                          TransactionalLevelDBDatabase* db,
-                          const leveldb::Snapshot* snapshot,
-                          FailMethod fail_method,
-                          int fail_on_call_num)
-      : TransactionalLevelDBIteratorImpl(std::move(iterator), db, snapshot),
+  LevelDBTestIterator(std::unique_ptr<leveldb::Iterator> iterator,
+                      base::WeakPtr<TransactionalLevelDBDatabase> db,
+                      base::WeakPtr<TransactionalLevelDBTransaction> txn,
+                      std::unique_ptr<LevelDBSnapshot> snapshot,
+                      FailMethod fail_method,
+                      int fail_on_call_num)
+      : TransactionalLevelDBIterator(std::move(iterator),
+                                     std::move(db),
+                                     std::move(txn),
+                                     std::move(snapshot)),
         fail_method_(fail_method),
         fail_on_call_num_(fail_on_call_num),
         current_call_num_(0) {}
-  ~LevelDBTestIteratorImpl() override {}
+  ~LevelDBTestIterator() override {}
 
  private:
   leveldb::Status Seek(const base::StringPiece& target) override {
     if (fail_method_ != FAIL_METHOD_SEEK ||
         ++current_call_num_ != fail_on_call_num_)
-      return TransactionalLevelDBIteratorImpl::Seek(target);
+      return TransactionalLevelDBIterator::Seek(target);
     return leveldb::Status::Corruption("Corrupted for test");
   }
 
@@ -309,49 +398,89 @@ MockBrowserTestIndexedDBClassFactory::CreateIndexedDBTransaction(
       backing_store_transaction);
 }
 
+std::unique_ptr<TransactionalLevelDBDatabase>
+MockBrowserTestIndexedDBClassFactory::CreateLevelDBDatabase(
+    scoped_refptr<LevelDBState> state,
+    std::unique_ptr<LevelDBScopes> scopes,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    size_t max_open_iterators) {
+  instance_count_[FAIL_CLASS_LEVELDB_DATABASE] =
+      instance_count_[FAIL_CLASS_LEVELDB_DATABASE] + 1;
+  if (failure_class_ == FAIL_CLASS_LEVELDB_DATABASE &&
+      instance_count_[FAIL_CLASS_LEVELDB_DATABASE] ==
+          fail_on_instance_num_[FAIL_CLASS_LEVELDB_DATABASE]) {
+    return std::make_unique<LevelDBTestDatabase>(
+        std::move(state), std::move(scopes), this, std::move(task_runner),
+        max_open_iterators, failure_method_,
+        fail_on_call_num_[FAIL_CLASS_LEVELDB_DATABASE]);
+  } else {
+    return DefaultLevelDBFactory::CreateLevelDBDatabase(
+        std::move(state), std::move(scopes), std::move(task_runner),
+        max_open_iterators);
+  }
+}
+
+std::unique_ptr<LevelDBDirectTransaction>
+MockBrowserTestIndexedDBClassFactory::CreateLevelDBDirectTransaction(
+    TransactionalLevelDBDatabase* db) {
+  instance_count_[FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION] =
+      instance_count_[FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION] + 1;
+  if (failure_class_ == FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION &&
+      instance_count_[FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION] ==
+          fail_on_instance_num_[FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION]) {
+    return std::make_unique<LevelDBTestDirectTransaction>(
+        db, failure_method_,
+        fail_on_call_num_[FAIL_CLASS_LEVELDB_DIRECT_TRANSACTION]);
+  } else {
+    return DefaultLevelDBFactory::CreateLevelDBDirectTransaction(db);
+  }
+}
+
 scoped_refptr<TransactionalLevelDBTransaction>
 MockBrowserTestIndexedDBClassFactory::CreateLevelDBTransaction(
-    TransactionalLevelDBDatabase* db) {
+    TransactionalLevelDBDatabase* db,
+    std::unique_ptr<LevelDBScope> scope) {
   instance_count_[FAIL_CLASS_LEVELDB_TRANSACTION] =
       instance_count_[FAIL_CLASS_LEVELDB_TRANSACTION] + 1;
   if (only_trace_calls_) {
-    return new LevelDBTraceTransaction(
-        db, instance_count_[FAIL_CLASS_LEVELDB_TRANSACTION]);
+    return base::MakeRefCounted<LevelDBTraceTransaction>(
+        db, std::move(scope), instance_count_[FAIL_CLASS_LEVELDB_TRANSACTION]);
   } else {
     if (failure_class_ == FAIL_CLASS_LEVELDB_TRANSACTION &&
         instance_count_[FAIL_CLASS_LEVELDB_TRANSACTION] ==
             fail_on_instance_num_[FAIL_CLASS_LEVELDB_TRANSACTION]) {
-      return new LevelDBTestTransaction(
-          db,
-          failure_method_,
+      return base::MakeRefCounted<LevelDBTestTransaction>(
+          db, std::move(scope), failure_method_,
           fail_on_call_num_[FAIL_CLASS_LEVELDB_TRANSACTION]);
     } else {
-      return DefaultLevelDBFactory::CreateLevelDBTransaction(db);
+      return DefaultLevelDBFactory::CreateLevelDBTransaction(db,
+                                                             std::move(scope));
     }
   }
 }
 
-std::unique_ptr<TransactionalLevelDBIteratorImpl>
-MockBrowserTestIndexedDBClassFactory::CreateIteratorImpl(
+std::unique_ptr<TransactionalLevelDBIterator>
+MockBrowserTestIndexedDBClassFactory::CreateIterator(
     std::unique_ptr<leveldb::Iterator> iterator,
-    TransactionalLevelDBDatabase* db,
-    const leveldb::Snapshot* snapshot) {
+    base::WeakPtr<TransactionalLevelDBDatabase> db,
+    base::WeakPtr<TransactionalLevelDBTransaction> txn,
+    std::unique_ptr<LevelDBSnapshot> snapshot) {
   instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] =
       instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] + 1;
   if (only_trace_calls_) {
-    return std::make_unique<LevelDBTraceIteratorImpl>(
-        std::move(iterator), db, snapshot,
+    return std::make_unique<LevelDBTraceIterator>(
+        std::move(iterator), db, std::move(txn), std::move(snapshot),
         instance_count_[FAIL_CLASS_LEVELDB_ITERATOR]);
   } else {
     if (failure_class_ == FAIL_CLASS_LEVELDB_ITERATOR &&
         instance_count_[FAIL_CLASS_LEVELDB_ITERATOR] ==
             fail_on_instance_num_[FAIL_CLASS_LEVELDB_ITERATOR]) {
-      return std::make_unique<LevelDBTestIteratorImpl>(
-          std::move(iterator), db, snapshot, failure_method_,
-          fail_on_call_num_[FAIL_CLASS_LEVELDB_ITERATOR]);
+      return std::make_unique<LevelDBTestIterator>(
+          std::move(iterator), db, std::move(txn), std::move(snapshot),
+          failure_method_, fail_on_call_num_[FAIL_CLASS_LEVELDB_ITERATOR]);
     } else {
-      return DefaultLevelDBFactory::CreateIteratorImpl(std::move(iterator), db,
-                                                       snapshot);
+      return DefaultLevelDBFactory::CreateIterator(
+          std::move(iterator), db, std::move(txn), std::move(snapshot));
     }
   }
 }

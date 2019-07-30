@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/scopes/leveldb_scope.h"
 
 #include <memory>
+#include <sstream>
 
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
@@ -33,7 +34,6 @@ bool IsKeyBeforeEndOfRange(const leveldb::Comparator* comparator,
   return (end_exclusive ? comparator->Compare(key, end) < 0
                         : comparator->Compare(key, end) <= 0);
 }
-
 }  // namespace
 
 // Adds undo log tasks to the given LevelDBScope for every entry found in the
@@ -156,7 +156,9 @@ LevelDBScope::~LevelDBScope() {
     DCHECK(undo_sequence_number_ < std::numeric_limits<int64_t>::max() ||
            cleanup_sequence_number_ > 0)
         << "A reverting scope that has written to disk must have either an "
-           "undo or cleanup task written to it.";
+           "undo or cleanup task written to it. undo_sequence_number_: "
+        << undo_sequence_number_
+        << ", cleanup_sequence_number_: " << cleanup_sequence_number_;
     std::move(rollback_callback_).Run(scope_id_, std::move(locks_));
   }
 }
@@ -176,7 +178,7 @@ leveldb::Status LevelDBScope::Put(const leveldb::Slice& key,
   buffer_batch_.Put(key, value);
   buffer_batch_empty_ = false;
   if (GetMemoryUsage() > write_batch_size_)
-    return WriteChangesAndUndoLog();
+    return WriteChangesAndUndoLogInternal(false);
   return leveldb::Status::OK();
 }
 
@@ -194,7 +196,7 @@ leveldb::Status LevelDBScope::Delete(const leveldb::Slice& key) {
   buffer_batch_.Delete(key);
   buffer_batch_empty_ = false;
   if (GetMemoryUsage() > write_batch_size_)
-    return WriteChangesAndUndoLog();
+    return WriteChangesAndUndoLogInternal(false);
   return leveldb::Status::OK();
 }
 
@@ -232,13 +234,14 @@ leveldb::Status LevelDBScope::DeleteRange(const leveldb::Slice& begin,
       end_exclusive = false;
       break;
   }
-  // This method uses its own algorithm to generate the undo log tasks, so
-  // process any existing changes (and generate any needed undo log tasks).
-  leveldb::Status s = WriteChangesAndUndoLog();
+  // This method uses its own algorithm to generate the undo log tasks because
+  // it can take advantage of the current |value()| already loaded in the
+  // iterator. So process any existing changes (and generate any needed undo log
+  // tasks) to start with an empty |buffer_batch_|.
+  leveldb::Status s = WriteChangesAndUndoLogInternal(false);
   DCHECK(!s.IsNotFound());
   if (UNLIKELY(!s.ok() && !s.IsNotFound()))
     return s;
-  SetModeToUndoLog();
   leveldb::ReadOptions options;
   options.verify_checksums = true;
   // Since these are keys that are being deleted, this should not fill the
@@ -252,6 +255,9 @@ leveldb::Status LevelDBScope::DeleteRange(const leveldb::Slice& begin,
        (s = it->status(), s.ok()) && it->Valid() &&
        IsKeyBeforeEndOfRange(comparator, it->key(), end, end_exclusive);
        it->Next()) {
+    // To avoid setting mode to UndoLog if there are no keys to delete, call the
+    // function here inside of the loop.
+    SetModeToUndoLog();
     // Undo log.
     AddUndoPutTask(it->key().ToString(), it->value().ToString());
     // Removal.
@@ -275,16 +281,7 @@ leveldb::Status LevelDBScope::DeleteRange(const leveldb::Slice& begin,
 
 leveldb::Status LevelDBScope::WriteChangesAndUndoLog() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (buffer_batch_empty_)
-    return leveldb::Status::OK();
-  SetModeToUndoLog();
-
-  leveldb::WriteBatch changes = buffer_batch_;
-  UndoLogWriter undo_writer(this, level_db_->db());
-  changes.Iterate(&undo_writer);
-  changes.Clear();
-
-  return WriteBufferBatch(false);
+  return WriteChangesAndUndoLogInternal(false);
 }
 
 std::pair<leveldb::Status, LevelDBScope::Mode> LevelDBScope::Commit() {
@@ -298,7 +295,7 @@ std::pair<leveldb::Status, LevelDBScope::Mode> LevelDBScope::Commit() {
       break;
     case Mode::kUndoLogOnDisk:
       AddCommitPoint();
-      s = WriteChangesAndUndoLog();
+      s = WriteChangesAndUndoLogInternal(true);
       break;
     default:
       NOTREACHED();
@@ -307,6 +304,19 @@ std::pair<leveldb::Status, LevelDBScope::Mode> LevelDBScope::Commit() {
   locks_.clear();
   committed_ = true;
   return {s, mode_};
+}
+
+leveldb::Status LevelDBScope::WriteChangesAndUndoLogInternal(bool sync) {
+  if (buffer_batch_empty_)
+    return leveldb::Status::OK();
+  SetModeToUndoLog();
+
+  leveldb::WriteBatch changes = buffer_batch_;
+  UndoLogWriter undo_writer(this, level_db_->db());
+  changes.Iterate(&undo_writer);
+  changes.Clear();
+
+  return WriteBufferBatch(sync);
 }
 
 void LevelDBScope::AddUndoPutTask(std::string key, std::string value) {

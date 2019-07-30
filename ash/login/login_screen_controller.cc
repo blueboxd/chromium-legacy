@@ -177,6 +177,25 @@ void LoginScreenController::AuthenticateUserWithEasyUnlock(
   client_->AuthenticateUserWithEasyUnlock(account_id);
 }
 
+void LoginScreenController::AuthenticateUserWithChallengeResponse(
+    const AccountId& account_id,
+    OnAuthenticateCallback callback) {
+  LOG_IF(FATAL, IsAuthenticating())
+      << "Duplicate authentication attempt; current authentication stage is "
+      << static_cast<int>(authentication_stage_);
+
+  if (!client_) {
+    std::move(callback).Run(/*success=*/base::nullopt);
+    return;
+  }
+
+  authentication_stage_ = AuthenticationStage::kDoAuthenticate;
+  client_->AuthenticateUserWithChallengeResponse(
+      account_id,
+      base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 bool LoginScreenController::ValidateParentAccessCode(
     const AccountId& account_id,
     const std::string& code) {

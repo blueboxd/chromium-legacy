@@ -136,6 +136,8 @@ struct VisibleSecurityState {
   bool is_error_page;
   // True if the page is a view-source page.
   bool is_view_source;
+  // True if the page is a devtools page.
+  bool is_devtools;
   // Contains information about input events that may impact the security
   // level of the page.
   InsecureInputEventData insecure_input_events;

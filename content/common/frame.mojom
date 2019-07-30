@@ -80,10 +80,6 @@ interface Frame {
 
 // See src/content/common/navigation_params.h
 [Native]
-struct CommonNavigationParams;
-
-// See src/content/common/navigation_params.h
-[Native]
 struct CommitNavigationParams;
 
 // Implemented by the frame provider and currently must be associated with the

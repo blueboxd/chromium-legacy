@@ -213,6 +213,7 @@
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="7773960292263897147">警告: 拡張機能による閲覧履歴の記録を Chromium で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
+<translation id="7827169012280634081">Chromium の終了時に Cookie とサイトデータを削除する</translation>
 <translation id="7867198900892795913">Chromium を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。</translation>
 <translation id="7901117350626490574">Chromium の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="7937630085815544518">Chromium に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
@@ -239,6 +240,7 @@
 <translation id="8667808506758191620">お使いの <ph name="DEVICE_TYPE" /> は最新です。</translation>
 <translation id="8697124171261953979">この拡張機能では、Chromium の起動時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
 <translation id="8704119203788522458">自分好みに設定</translation>
+<translation id="8739167630197873875">Chromium の終了時に Cookie を削除するよう設定しています。同期を継続するにはこちらの<ph name="COOKIE_SETTINGS_LINK" />を変更してください。</translation>
 <translation id="8748383401829947534">Chromium のすべてのコピーを終了します。</translation>
 <translation id="8796602469536043152">このサイトを利用するには、Chromium でカメラとマイクの使用を許可する必要があります</translation>
 <translation id="8803635938069941624">Chromium OS 利用規約</translation>

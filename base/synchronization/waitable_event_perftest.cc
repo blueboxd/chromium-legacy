@@ -94,15 +94,15 @@ class SignalerThread : public SimpleThread {
 void PrintPerfWaitableEvent(const TraceWaitableEvent* event,
                             const std::string& trace) {
   perf_test::PrintResult(
-      "WaitableEvent_SignalTime", "", trace,
-      static_cast<size_t>(event->total_signal_time().InMicroseconds()) /
+      "WaitableEvent_SignalTime_ns", "", trace,
+      static_cast<size_t>(event->total_signal_time().InNanoseconds()) /
           event->signal_samples(),
-      "us/sample", true);
+      "ns/sample", true);
   perf_test::PrintResult(
-      "WaitableEvent_WaitTime", "", trace,
-      static_cast<size_t>(event->total_wait_time().InMicroseconds()) /
+      "WaitableEvent_WaitTime_ns", "", trace,
+      static_cast<size_t>(event->total_wait_time().InNanoseconds()) /
           event->wait_samples(),
-      "us/sample", true);
+      "ns/sample", true);
 }
 
 }  // namespace

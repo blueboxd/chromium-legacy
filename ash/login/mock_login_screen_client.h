@@ -26,6 +26,9 @@ class MockLoginScreenClient : public LoginScreenClient {
                     base::OnceCallback<void(bool)>& callback));
   MOCK_METHOD1(EnrollUserWithExternalBinary_,
                void(base::OnceCallback<void(bool)>& callback));
+  MOCK_METHOD2(AuthenticateUserWithChallengeResponse_,
+               void(const AccountId& account_id,
+                    base::OnceCallback<void(bool)>& callback));
   MOCK_METHOD2(ValidateParentAccessCode_,
                bool(const AccountId& account_id,
                     const std::string& access_code));
@@ -68,6 +71,9 @@ class MockLoginScreenClient : public LoginScreenClient {
       const AccountId& account_id,
       base::OnceCallback<void(bool)> callback) override;
   void EnrollUserWithExternalBinary(
+      base::OnceCallback<void(bool)> callback) override;
+  void AuthenticateUserWithChallengeResponse(
+      const AccountId& account_id,
       base::OnceCallback<void(bool)> callback) override;
   bool ValidateParentAccessCode(const AccountId& account_id,
                                 const std::string& code) override;

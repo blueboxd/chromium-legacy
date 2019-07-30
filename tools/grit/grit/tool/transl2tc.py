@@ -7,8 +7,6 @@
 
 from __future__ import print_function
 
-import sys
-
 from grit import grd_reader
 from grit import util
 from grit.tool import interface

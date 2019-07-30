@@ -60,6 +60,12 @@ public class TabGroupModelFilterUnitTest {
     private static final int TAB4_ROOT_ID = TAB4_ID;
     private static final int TAB5_ROOT_ID = TAB5_ID;
     private static final int TAB6_ROOT_ID = TAB5_ID;
+    private static final int TAB1_PARENT_TAB_ID = Tab.INVALID_TAB_ID;
+    private static final int TAB2_PARENT_TAB_ID = Tab.INVALID_TAB_ID;
+    private static final int TAB3_PARENT_TAB_ID = TAB2_ID;
+    private static final int TAB4_PARENT_TAB_ID = Tab.INVALID_TAB_ID;
+    private static final int TAB5_PARENT_TAB_ID = Tab.INVALID_TAB_ID;
+    private static final int TAB6_PARENT_TAB_ID = TAB5_ID;
     private static final int POSITION1 = 0;
     private static final int POSITION2 = 1;
     private static final int POSITION3 = 2;
@@ -88,7 +94,7 @@ public class TabGroupModelFilterUnitTest {
 
     private TabGroupModelFilter mTabGroupModelFilter;
 
-    private Tab prepareTab(int tabId, int rootId) {
+    private Tab prepareTab(int tabId, int rootId, int parentTabId) {
         Tab tab = mock(Tab.class);
 
         doAnswer(new Answer() {
@@ -101,6 +107,7 @@ public class TabGroupModelFilterUnitTest {
         }).when(tab).setRootId(anyInt());
 
         doReturn(tabId).when(tab).getId();
+        doReturn(parentTabId).when(tab).getParentId();
         tab.setRootId(rootId);
 
         return tab;
@@ -118,12 +125,12 @@ public class TabGroupModelFilterUnitTest {
     }
 
     private void setUpTab() {
-        mTab1 = prepareTab(TAB1_ID, TAB1_ROOT_ID);
-        mTab2 = prepareTab(TAB2_ID, TAB2_ROOT_ID);
-        mTab3 = prepareTab(TAB3_ID, TAB3_ROOT_ID);
-        mTab4 = prepareTab(TAB4_ID, TAB4_ROOT_ID);
-        mTab5 = prepareTab(TAB5_ID, TAB5_ROOT_ID);
-        mTab6 = prepareTab(TAB6_ID, TAB6_ROOT_ID);
+        mTab1 = prepareTab(TAB1_ID, TAB1_ROOT_ID, TAB1_PARENT_TAB_ID);
+        mTab2 = prepareTab(TAB2_ID, TAB2_ROOT_ID, TAB2_PARENT_TAB_ID);
+        mTab3 = prepareTab(TAB3_ID, TAB3_ROOT_ID, TAB3_PARENT_TAB_ID);
+        mTab4 = prepareTab(TAB4_ID, TAB4_ROOT_ID, TAB4_PARENT_TAB_ID);
+        mTab5 = prepareTab(TAB5_ID, TAB5_ROOT_ID, TAB5_PARENT_TAB_ID);
+        mTab6 = prepareTab(TAB6_ID, TAB6_ROOT_ID, TAB6_PARENT_TAB_ID);
     }
 
     private void setUpTabModel() {
@@ -181,7 +188,7 @@ public class TabGroupModelFilterUnitTest {
     }
 
     private Tab addTabToTabModel() {
-        Tab tab = prepareTab(NEW_TAB_ID, NEW_TAB_ID);
+        Tab tab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, Tab.INVALID_TAB_ID);
         mTabModel.addTab(tab, -1, TabLaunchType.FROM_CHROME_UI);
         mTabModelObserverCaptor.getValue().didAddTab(tab, TabLaunchType.FROM_CHROME_UI);
         return tab;
@@ -253,8 +260,7 @@ public class TabGroupModelFilterUnitTest {
 
     @Test
     public void addTab_ToExistingGroup() {
-        Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID);
-        doReturn(TAB1_ID).when(newTab).getParentId();
+        Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, TAB1_ID);
         doReturn(TabLaunchType.FROM_CHROME_UI).when(newTab).getLaunchType();
         assertThat(mTabGroupModelFilter.getTabGroupCount(), equalTo(2));
 
@@ -267,8 +273,7 @@ public class TabGroupModelFilterUnitTest {
 
     @Test
     public void addTab_ToNewGroup() {
-        Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID);
-        doReturn(Tab.INVALID_TAB_ID).when(newTab).getParentId();
+        Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, Tab.INVALID_TAB_ID);
         doReturn(TabLaunchType.FROM_CHROME_UI).when(newTab).getLaunchType();
         assertThat(mTabGroupModelFilter.getTabGroupCount(), equalTo(2));
         assertThat(mTabGroupModelFilter.getCount(), equalTo(4));
@@ -282,8 +287,7 @@ public class TabGroupModelFilterUnitTest {
 
     @Test
     public void addTab_SetRootId() {
-        Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID);
-        doReturn(TAB1_ID).when(newTab).getParentId();
+        Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, TAB1_ID);
         doReturn(TabLaunchType.FROM_CHROME_UI).when(newTab).getLaunchType();
 
         mTabGroupModelFilter.addTab(newTab);
@@ -293,8 +297,7 @@ public class TabGroupModelFilterUnitTest {
 
     @Test
     public void addTab_DuringRestore() {
-        Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID);
-        doReturn(TAB1_ID).when(newTab).getParentId();
+        Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, TAB1_ID);
         doReturn(TabLaunchType.FROM_RESTORE).when(newTab).getLaunchType();
 
         mTabGroupModelFilter.addTab(newTab);
@@ -302,9 +305,15 @@ public class TabGroupModelFilterUnitTest {
         assertThat(newTab.getRootId(), equalTo(NEW_TAB_ID));
     }
 
+    @Test
+    public void addTab_DuringResettingFilterState() {
+        mTabGroupModelFilter.resetFilterState();
+        verify(mock(Tab.class), never()).setRootId(anyInt());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void addTab_ToWrongModel() {
-        Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID);
+        Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, Tab.INVALID_TAB_ID);
         doReturn(false).when(mTabModel).isIncognito();
         doReturn(true).when(newTab).isIncognito();
         mTabGroupModelFilter.addTab(newTab);
@@ -677,5 +686,13 @@ public class TabGroupModelFilterUnitTest {
                 mTabGroupModelFilter.getTabsWithNoOtherRelatedTabs();
         assertArrayEquals(expectedNonGroupedTabs_AfterUnGrouping,
                 nonGroupedTabs_AfterUnGrouping.toArray());
+    }
+
+    @Test
+    public void resetFilterStateTest() {
+        assertThat(mTab3.getRootId(), equalTo(TAB2_ROOT_ID));
+        mTab3.setRootId(TAB1_ROOT_ID);
+        mTabGroupModelFilter.resetFilterState();
+        assertThat(mTab3.getRootId(), equalTo(TAB1_ROOT_ID));
     }
 }

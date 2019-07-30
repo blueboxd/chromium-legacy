@@ -50,8 +50,6 @@ class ScriptWrappable;
   X(SameObject, PerformanceLongTaskTimingAttribution)   \
   X(SameObject, PerformanceObserverSupportedEntryTypes) \
   X(SameObject, PushManagerSupportedContentEncodings)   \
-  X(SameObject, XRPresentationContextCanvas)            \
-  X(SameObject, XRWebGLLayerContext)                    \
   SCRIPT_PROMISE_PROPERTIES(X, Promise)                 \
   SCRIPT_PROMISE_PROPERTIES(X, Resolver)
 

@@ -239,8 +239,10 @@
 <translation id="2707726405694321444">Actualizar página</translation>
 <translation id="2709516037105925701">Autocompletar</translation>
 <translation id="271033894570825754">Nuevo</translation>
+<translation id="2714850608275780394">Esperando el código</translation>
 <translation id="2728754400939377704">Ordenar por sitio web</translation>
 <translation id="2744248271121720757">Toca una palabra para buscarla de forma instantánea o ver acciones relacionadas</translation>
+<translation id="2760989362628427051">Habilita el tema oscuro cuando esté activado el tema oscuro del dispositivo o el dispositivo esté en modo de ahorro de batería</translation>
 <translation id="2762000892062317888">ahora mismo</translation>
 <translation id="2777555524387840389">Quedan <ph name="SECONDS" /> segundos</translation>
 <translation id="2779651927720337254">ha fallado</translation>
@@ -304,6 +306,7 @@
 <translation id="3236059992281584593">Queda 1 minuto</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Añadir esta página a marcadores</translation>
+<translation id="3254626532848657899">Mover al final</translation>
 <translation id="3259831549858767975">Reduce todo el contenido de la página</translation>
 <translation id="3269093882174072735">Cargar imagen</translation>
 <translation id="3269956123044984603">Para ver las pestañas de tus otros dispositivos, activa la opción Sincronización automática en la configuración de la cuenta de Android.</translation>
@@ -441,6 +444,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="4384468725000734951">Sogou se ha establecido como motor de búsqueda predeterminado</translation>
 <translation id="4404568932422911380">Sin marcadores</translation>
+<translation id="4405224443901389797">Mover a…</translation>
 <translation id="4411535500181276704">Modo básico</translation>
 <translation id="4415276339145661267">Gestionar tu cuenta de Google</translation>
 <translation id="4432792777822557199">Las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /> a partir de ahora</translation>
@@ -621,6 +625,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5580090775658607195">Se han agrupado <ph name="TAB_COUNT" /> pestañas</translation>
 <translation id="5581519193887989363">Siempre puedes seleccionar qué contenido quieres sincronizar desde <ph name="BEGIN_LINK1" />Ajustes<ph name="END_LINK1" />.</translation>
+<translation id="5586306159936941448">Arrastra una pestaña y suéltala sobre otra para agruparlas</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5596627076506792578">Más opciones</translation>
 <translation id="5599455543593328020">Modo de incógnito</translation>
@@ -651,6 +656,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5809361687334836369">{HOURS,plural, =1{Hace # hora}other{Hace # horas}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Todos los derechos reservados.</translation>
 <translation id="5817918615728894473">Vincular</translation>
+<translation id="58326064309361797">Arrastra las pestañas para agruparlas</translation>
 <translation id="583281660410589416">Desconocido</translation>
 <translation id="5833984609253377421">Compartir enlace</translation>
 <translation id="5836192821815272682">Descargando actualización de Chrome…</translation>
@@ -845,7 +851,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7233236755231902816">Si quieres ver la Web en tu idioma, consigue la última versión de Chrome</translation>
 <translation id="7243308994586599757">Opciones disponibles cerca de la parte inferior de la pantalla</translation>
 <translation id="7250468141469952378">Elementos seleccionados: <ph name="ITEM_COUNT" /></translation>
-<translation id="7253272406652746122">Añade una cuenta de Google desde la sección Cuentas de la aplicación de ajustes de tu dispositivo.</translation>
 <translation id="7274013316676448362">Sitio web bloqueado</translation>
 <translation id="7290209999329137901">El cambio de nombre no está disponible</translation>
 <translation id="7291387454912369099">Pago con el Asistente activado</translation>
@@ -1011,6 +1016,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8380167699614421159">El sitio web muestra anuncios invasivos o engañosos</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>
 <translation id="8413126021676339697">Mostrar historial completo</translation>
+<translation id="8425955042390522843">Verificación del número de teléfono</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8438566539970814960">Mejorar las búsquedas y la navegación</translation>
 <translation id="8441146129660941386">Buscar hacia atrás</translation>
@@ -1118,6 +1124,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="945632385593298557">Acceder al micrófono</translation>
 <translation id="951339005376969845">Elimina los datos actuales. Para recuperarlos, cambia a <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="95817756606698420">Chrome puede utilizar <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para hacer búsquedas en China. Puedes cambiar esta opción en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
+<translation id="959682366969460160">Mantenlo todo organizado</translation>
 <translation id="965817943346481315">Bloquear si el sitio web muestra anuncios invasivos o engañosos (opción recomendada)</translation>
 <translation id="968900484120156207">Las páginas que visites aparecerán aquí.</translation>
 <translation id="970715775301869095">Quedan <ph name="MINUTES" /> minutos</translation>

@@ -208,6 +208,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
 <translation id="7773960292263897147">Aviso: o Chromium não pode impedir que as extensões gravem seu histórico de navegação. Para desativar essa extensão no modo de navegação sem rastros, desmarque esta opção.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" />: Chromium Canary</translation>
+<translation id="7827169012280634081">Limpar cookies e dados de sites ao sair do Chromium</translation>
 <translation id="7867198900892795913">Não foi possível atualizar o Chromium para a versão mais recente. Com isso, você está perdendo novos recursos e correções de segurança.</translation>
 <translation id="7901117350626490574">Uma nova atualização está disponível para o Chromium e será aplicada assim que você reiniciá-lo.</translation>
 <translation id="7937630085815544518">Você estava conectado ao Chromium como <ph name="USER_EMAIL_ADDRESS" />. Use a mesma conta para fazer login novamente.</translation>
@@ -234,6 +235,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="8667808506758191620">Seu dispositivo <ph name="DEVICE_TYPE" /> está atualizado.</translation>
 <translation id="8697124171261953979">Controla também qual página deve ser exibida quando você inicia o Chromium ou faz uma pesquisa na Omnibox.</translation>
 <translation id="8704119203788522458">Este é seu Chromium</translation>
+<translation id="8739167630197873875">Você limpa os cookies ao sair do Chromium. Para retomar a sincronização, altere as <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="8748383401829947534">Saia de todas as cópias do Chromium.</translation>
 <translation id="8796602469536043152">O Chromium precisa de permissão para este site acessar sua câmera e seu microfone</translation>
 <translation id="8803635938069941624">Termos do Chromium OS</translation>

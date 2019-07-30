@@ -110,6 +110,11 @@ bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
   return true;
 }
 
+bool IOSChromePasswordManagerClient::ShowOnboarding(
+    std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save) {
+  return false;
+}
+
 void IOSChromePasswordManagerClient::ShowManualFallbackForSaving(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool has_generated_password,

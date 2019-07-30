@@ -3526,6 +3526,9 @@ void Document::open(Document* entered_document,
   if (entered_document && this != entered_document) {
     auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
     csp->CopyStateFrom(entered_document->GetContentSecurityPolicy());
+    // We inherit the sandbox flags of the entered document, so mask on
+    // the ones contained in the CSP.
+    sandbox_flags_ |= csp->GetSandboxMask();
     InitContentSecurityPolicy(csp);
     // Clear the hash fragment from the inherited URL to prevent a
     // scroll-into-view for any document.open()'d frame.
@@ -3942,8 +3945,10 @@ void Document::Abort() {
 }
 
 void Document::CheckCompleted() {
-  if (CheckCompletedInternal())
-    frame_->Loader().DidFinishNavigation();
+  if (CheckCompletedInternal()) {
+    frame_->Loader().DidFinishNavigation(
+        FrameLoader::NavigationFinishState::kSuccess);
+  }
 }
 
 bool Document::CheckCompletedInternal() {

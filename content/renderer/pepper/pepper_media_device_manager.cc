@@ -12,13 +12,13 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/common/content_features.h"
-#include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "media/media_buildflags.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 
 namespace content {
 
@@ -186,7 +186,8 @@ void PepperMediaDeviceManager::CancelOpenDevice(int request_id) {
 }
 
 void PepperMediaDeviceManager::CloseDevice(const std::string& label) {
-  if (!GetMediaStreamDeviceObserver()->RemoveStream(label))
+  if (!GetMediaStreamDeviceObserver()->RemoveStream(
+          blink::WebString::FromUTF8(label)))
     return;
 
   GetMediaStreamDispatcherHost()->CloseDevice(label);
@@ -197,9 +198,11 @@ base::UnguessableToken PepperMediaDeviceManager::GetSessionID(
     const std::string& label) {
   switch (type) {
     case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
-      return GetMediaStreamDeviceObserver()->audio_session_id(label);
+      return GetMediaStreamDeviceObserver()->GetAudioSessionId(
+          blink::WebString::FromUTF8(label));
     case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
-      return GetMediaStreamDeviceObserver()->video_session_id(label);
+      return GetMediaStreamDeviceObserver()->GetVideoSessionId(
+          blink::WebString::FromUTF8(label));
     default:
       NOTREACHED();
       return base::UnguessableToken();
@@ -244,7 +247,8 @@ void PepperMediaDeviceManager::OnDeviceOpened(
   }
 
   if (success)
-    GetMediaStreamDeviceObserver()->AddStream(label, device);
+    GetMediaStreamDeviceObserver()->AddStream(blink::WebString::FromUTF8(label),
+                                              device);
 
   OpenDeviceCallback callback = std::move(iter->second);
   open_callbacks_.erase(iter);
@@ -275,10 +279,10 @@ PepperMediaDeviceManager::GetMediaStreamDispatcherHost() {
   return dispatcher_host_;
 }
 
-MediaStreamDeviceObserver*
+blink::WebMediaStreamDeviceObserver*
 PepperMediaDeviceManager::GetMediaStreamDeviceObserver() const {
   DCHECK(render_frame());
-  MediaStreamDeviceObserver* const observer =
+  blink::WebMediaStreamDeviceObserver* const observer =
       static_cast<RenderFrameImpl*>(render_frame())
           ->GetMediaStreamDeviceObserver();
   DCHECK(observer);

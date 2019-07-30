@@ -23,7 +23,7 @@
 
 namespace content {
 
-void WaitForHitTestDataOrChildSurfaceReady(RenderFrameHost* child_frame) {
+void WaitForHitTestData(RenderFrameHost* child_frame) {
   RenderWidgetHostViewBase* child_view =
       static_cast<RenderFrameHostImpl*>(child_frame)
           ->GetRenderWidgetHost()
@@ -33,7 +33,7 @@ void WaitForHitTestDataOrChildSurfaceReady(RenderFrameHost* child_frame) {
   observer.WaitForHitTestData();
 }
 
-void WaitForHitTestDataOrGuestSurfaceReady(WebContents* guest_web_contents) {
+void WaitForHitTestData(WebContents* guest_web_contents) {
   DCHECK(static_cast<RenderWidgetHostViewBase*>(
              guest_web_contents->GetRenderWidgetHostView())
              ->IsRenderWidgetHostViewChildFrame());

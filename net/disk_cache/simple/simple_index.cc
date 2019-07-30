@@ -237,13 +237,12 @@ void SimpleIndex::SetMaxSize(uint64_t max_bytes) {
   }
 }
 
-net::Error SimpleIndex::ExecuteWhenReady(net::CompletionOnceCallback task) {
+void SimpleIndex::ExecuteWhenReady(net::CompletionOnceCallback task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (initialized_)
     task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(task), net::OK));
   else
     to_run_when_initialized_.push_back(std::move(task));
-  return net::ERR_IO_PENDING;
 }
 
 std::unique_ptr<SimpleIndex::HashList> SimpleIndex::GetEntriesBetween(

@@ -2633,6 +2633,24 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerTrilinearFiltering) {
   EXPECT_TRUE(l1->cc_layer_for_testing()->trilinear_filtering());
 }
 
+// Tests that when a layer with masks_to_bounds flag has its CC layer switched,
+// that the masks_to_bounds flag is maintained.
+TEST_P(LayerWithRealCompositorTest, SwitchCCLayerMasksToBounds) {
+  std::unique_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
+  std::unique_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
+  GetCompositor()->SetRootLayer(root.get());
+  root->Add(l1.get());
+
+  l1->SetMasksToBounds(true);
+  EXPECT_TRUE(l1->cc_layer_for_testing()->masks_to_bounds());
+
+  // Change l1's cc::Layer.
+  l1->SwitchCCLayerForTest();
+
+  // Ensure that the trilinear_filtering flag is maintained.
+  EXPECT_TRUE(l1->cc_layer_for_testing()->masks_to_bounds());
+}
+
 // Tests that the animators in the layer tree is added to the
 // animator-collection when the root-layer is set to the compositor.
 TEST_F(LayerWithDelegateTest, RootLayerAnimatorsInCompositor) {

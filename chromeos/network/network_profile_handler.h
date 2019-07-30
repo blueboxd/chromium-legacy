@@ -59,6 +59,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkProfileHandler
 
   static std::string GetSharedProfilePath();
 
+  static std::unique_ptr<NetworkProfileHandler> InitializeForTesting();
+
  protected:
   friend class AutoConnectHandlerTest;
   friend class ClientCertResolverTest;

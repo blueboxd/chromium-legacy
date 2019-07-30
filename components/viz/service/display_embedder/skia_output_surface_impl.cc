@@ -151,7 +151,8 @@ void SkiaOutputSurfaceImpl::EnsureBackbuffer() {
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::EnsureBackbuffer,
                                  base::Unretained(impl_on_gpu_.get()));
-  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+  task_sequence_->ScheduleOrRetainTask(std::move(callback),
+                                       std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::DiscardBackbuffer() {
@@ -347,7 +348,8 @@ void SkiaOutputSurfaceImpl::ReleaseCachedResources(
   auto callback = base::BindOnce(
       &SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts,
       base::Unretained(impl_on_gpu_.get()), std::move(image_contexts));
-  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+  task_sequence_->ScheduleOrRetainTask(std::move(callback),
+                                       std::vector<gpu::SyncToken>());
 }
 
 void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {

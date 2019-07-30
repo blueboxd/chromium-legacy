@@ -7,6 +7,7 @@
 <translation id="1051826050538111504">Tu computadora tiene software dañino. Chrome puede quitarlo, inhabilitar las extensiones y restablecer la configuración para que el navegador vuelva a funcionar correctamente.</translation>
 <translation id="1065672644894730302">No se pueden leer tus preferencias. Es posible que algunas funciones no estén disponibles y que no se guarden los cambios realizados a las preferencias.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> usaba Chrome anteriormente</translation>
+<translation id="1097330777386562916">Borrar las cookies y los datos de los sitios cuando sales de Chrome</translation>
 <translation id="1104959162601287462">Acerca del &amp;sistema operativo de Chrome</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
 <translation id="1142745911746664600">No se puede actualizar Chrome</translation>
@@ -26,6 +27,7 @@
 <translation id="1590588151039584890">Para actualizarse, Chrome debe dejar de ejecutarse en esta computadora. Es posible que esta acción haga que los usuarios que accedieron en esta computadora pierdan cambios no guardados.</translation>
 <translation id="1619887657840448962">Para que Chrome sea más seguro, inhabilitamos algunas extensiones que no aparecen en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
 <translation id="1628000112320670027">Obtener ayuda con Chrome</translation>
+<translation id="1635734105302489219">Cuando sales de Chrome, se borran las cookies. Para continuar con la sincronización, cambia <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">El Sistema operativo Chrome es posible gracias al <ph name="BEGIN_LINK_CROS_OSS" />software adicional de código abierto<ph name="END_LINK_CROS_OSS" />, como <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Abrir vínculo en una ventana de navegación de incó&amp;gnito de Chrome</translation>
 <translation id="1682634494516646069">Google Chrome no puede leer ni agregar datos al directorio de datos: <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -123,7 +125,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="4251625577313994583">obtener Chrome para tu iPhone</translation>
 <translation id="4293420128516039005">Accede para sincronizar y personalizar Chrome en todos tus dispositivos</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
-<translation id="4331809312908958774">SO Chrome</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4343195214584226067">Se agregó <ph name="EXTENSION_NAME" /> a Chrome</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>
 <translation id="4458462641685292929">Hay otra operación en Google Chrome en curso. Vuelve a intentarlo más tarde.</translation>

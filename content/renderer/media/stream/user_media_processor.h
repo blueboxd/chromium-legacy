@@ -34,13 +34,13 @@ class MediaStreamAudioSource;
 class MediaStreamVideoSource;
 class VideoCaptureSettings;
 class WebMediaStream;
+class WebMediaStreamDeviceObserver;
 class WebMediaStreamSource;
 class WebString;
 }  // namespace blink
 
 namespace content {
 
-class MediaStreamDeviceObserver;
 class PeerConnectionDependencyFactory;
 class RenderFrameImpl;
 
@@ -68,12 +68,12 @@ class CONTENT_EXPORT UserMediaProcessor
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       const blink::mojom::MediaDevicesDispatcherHostPtr&()>;
   // |render_frame| and |dependency_factory| must outlive this instance.
-  UserMediaProcessor(
-      RenderFrameImpl* render_frame,
-      PeerConnectionDependencyFactory* dependency_factory,
-      std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
-      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  UserMediaProcessor(RenderFrameImpl* render_frame,
+                     PeerConnectionDependencyFactory* dependency_factory,
+                     std::unique_ptr<blink::WebMediaStreamDeviceObserver>
+                         media_stream_device_observer,
+                     MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
+                     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~UserMediaProcessor() override;
 
   // It can be assumed that the output of CurrentRequest() remains the same
@@ -102,7 +102,7 @@ class CONTENT_EXPORT UserMediaProcessor
   // those sources.
   void StopAllProcessing();
 
-  MediaStreamDeviceObserver* media_stream_device_observer() const {
+  blink::WebMediaStreamDeviceObserver* media_stream_device_observer() const {
     return media_stream_device_observer_.get();
   }
 
@@ -286,10 +286,10 @@ class CONTENT_EXPORT UserMediaProcessor
   // audio.
   PeerConnectionDependencyFactory* const dependency_factory_;
 
-  // UserMediaProcessor owns MediaStreamDeviceObserver instead of
+  // UserMediaProcessor owns blink::WebMediaStreamDeviceObserver instead of
   // RenderFrameImpl (or RenderFrameObserver) to ensure tear-down occurs in the
   // right order.
-  const std::unique_ptr<MediaStreamDeviceObserver>
+  const std::unique_ptr<blink::WebMediaStreamDeviceObserver>
       media_stream_device_observer_;
 
   LocalStreamSources local_sources_;

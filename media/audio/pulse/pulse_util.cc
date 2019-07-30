@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "build/branding_buildflags.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_timestamp_helper.h"
 
@@ -30,7 +31,7 @@ namespace pulse {
 
 namespace {
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 static const char kBrowserDisplayName[] = "google-chrome";
 #else
 static const char kBrowserDisplayName[] = "chromium-browser";

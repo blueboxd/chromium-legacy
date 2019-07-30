@@ -18,14 +18,11 @@ if __name__ == '__main__':
 import platform
 import tempfile
 import unittest
-import StringIO
 import struct
 
 from grit import constants
 from grit import util
 from grit.node import brotli_util
-from grit.node import empty
-from grit.node import misc
 from grit.node import structure
 from grit.format import rc
 

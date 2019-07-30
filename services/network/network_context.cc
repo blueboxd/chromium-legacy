@@ -1325,7 +1325,7 @@ void NetworkContext::CreateHostResolver(
     // different overrides.  But since this is only used for special cases for
     // now, much easier to create entirely separate net::HostResolver instances.
     net::HostResolver::ManagerOptions options;
-    options.dns_client_enabled = true;
+    options.insecure_dns_client_enabled = true;
     options.dns_config_overrides = config_overrides.value();
     private_internal_resolver =
         network_service_->host_resolver_factory()->CreateStandaloneResolver(

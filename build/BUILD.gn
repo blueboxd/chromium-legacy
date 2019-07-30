@@ -14,5 +14,15 @@ source_set("buildflag_header_h") {
 buildflag_header("branding_buildflags") {
   header = "branding_buildflags.h"
 
-  flags = [ "CHROMIUM_BRANDING=!is_chrome_branded" ]
+  if (is_chrome_branded) {
+    flags = [
+      "CHROMIUM_BRANDING=0",
+      "GOOGLE_CHROME_BRANDING=1",
+    ]
+  } else {
+    flags = [
+      "CHROMIUM_BRANDING=1",
+      "GOOGLE_CHROME_BRANDING=0",
+    ]
+  }
 }

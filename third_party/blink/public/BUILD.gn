@@ -387,6 +387,7 @@ source_set("blink_headers") {
     "web/modules/mediastream/processed_local_audio_source.h",
     "web/modules/mediastream/remote_media_stream_track_adapter.h",
     "web/modules/mediastream/video_track_adapter_settings.h",
+    "web/modules/mediastream/web_media_stream_device_observer.h",
     "web/modules/mediastream/web_media_stream_renderer_factory.h",
     "web/modules/mediastream/web_media_stream_utils.h",
     "web/modules/mediastream/webaudio_media_stream_audio_sink.h",

@@ -5,201 +5,165 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_TRANSACTION_H_
 #define CONTENT_BROWSER_INDEXED_DB_LEVELDB_TRANSACTIONAL_LEVELDB_TRANSACTION_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 
+#include "base/callback.h"
+#include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
-#include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
+#include "content/browser/indexed_db/scopes/leveldb_scope_deletion_mode.h"
+#include "content/common/content_export.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
+class TransactionalLevelDBDatabase;
+class TransactionalLevelDBIterator;
+class LevelDBScope;
 class LevelDBWriteBatch;
 
 namespace indexed_db {
 class DefaultLevelDBFactory;
 }  // namespace indexed_db
 
+// Represents a transaction on top of a TransactionalLevelDBDatabase, and is
+// backed by a LevelDBScope. This class is not thread-safe.
+// Isolation: Read committed
+//   All changes written using this transaction are readable through the Get()
+//   method and iterators returned by CreateIterator(). They are NOT invisible
+//   to other readers - if a key is written to using this transaction and read
+//   from in a different transaction or on the database, it might read what was
+//   written here.
+// Atomicity:
+//   All changes in this transaction will be either fully written or fully
+//   reverted. It uses the LevelDBScopes system to guarantee this. If this class
+//   is destructed before Commit() is called, then it will be rolled back.
 class CONTENT_EXPORT TransactionalLevelDBTransaction
     : public base::RefCounted<TransactionalLevelDBTransaction> {
  public:
-  void Put(const base::StringPiece& key, std::string* value);
+  leveldb::Status Put(const base::StringPiece& key,
+                      std::string* value) WARN_UNUSED_RESULT;
 
-  void Remove(const base::StringPiece& key);
+  leveldb::Status Remove(const base::StringPiece& key) WARN_UNUSED_RESULT;
 
   leveldb::Status RemoveRange(const base::StringPiece& begin,
                               const base::StringPiece& end,
-                              bool upper_open);
+                              LevelDBScopeDeletionMode deletion_mode)
+      WARN_UNUSED_RESULT;
 
   virtual leveldb::Status Get(const base::StringPiece& key,
                               std::string* value,
-                              bool* found);
-  virtual leveldb::Status Commit();
+                              bool* found) WARN_UNUSED_RESULT;
+  virtual leveldb::Status Commit() WARN_UNUSED_RESULT;
+
   void Rollback();
 
+  // The returned iterator must be destroyed before the destruction of this
+  // transaction.
   std::unique_ptr<TransactionalLevelDBIterator> CreateIterator();
 
-  uint64_t GetTransactionSize() const { return size_; }
+  uint64_t GetTransactionSize() const;
+
+  // Sets a callback that will be called after the undo log for this transaction
+  // is cleaned up and any deferred deletions (from RemoveRange) are complete.
+  // The callback will be called after this transaction is committed, or dropped
+  // (destructed) if it is rolled back. The transaction may not be alive when
+  // this callback is called.
+  void set_commit_cleanup_complete_callback(base::OnceClosure callback) {
+    DCHECK(commit_cleanup_complete_callback_.is_null());
+    commit_cleanup_complete_callback_ = std::move(callback);
+  }
+
+  // Forces the underlying scope to write all pending changes to disk & generate
+  // an undo log.
+  leveldb::Status ForceWriteChangesAndUndoLog();
 
  protected:
-  virtual ~TransactionalLevelDBTransaction();
-  explicit TransactionalLevelDBTransaction(TransactionalLevelDBDatabase* db);
   friend class indexed_db::DefaultLevelDBFactory;
+  friend class TransactionalLevelDBTransactionTest;
+
+  TransactionalLevelDBTransaction(TransactionalLevelDBDatabase* db,
+                                  std::unique_ptr<LevelDBScope> scope);
+  virtual ~TransactionalLevelDBTransaction();
 
  private:
   friend class base::RefCounted<TransactionalLevelDBTransaction>;
-  friend class TransactionalLevelDBTransactionRangeTest;
-  friend class TransactionalLevelDBTransactionTest;
-  FRIEND_TEST_ALL_PREFIXES(TransactionalLevelDBTransactionTest, GetPutDelete);
-  FRIEND_TEST_ALL_PREFIXES(TransactionalLevelDBTransactionTest, Commit);
-  FRIEND_TEST_ALL_PREFIXES(TransactionalLevelDBTransactionTest, Iterator);
+  friend class TransactionalLevelDBIterator;
 
-  struct Record {
-    Record();
-    ~Record();
-    std::string key;
-    std::string value;
-    bool deleted = false;
-  };
-  static constexpr uint64_t SizeOfRecordInMap(size_t key_size);
+  // These methods are called from TransactionalLevelDBIterator.
+  void OnIteratorLoaded(TransactionalLevelDBIterator* iterator);
+  void OnIteratorEvicted(TransactionalLevelDBIterator* iterator);
+  void OnIteratorDestroyed(TransactionalLevelDBIterator* iterator);
 
-  class Comparator {
-   public:
-    explicit Comparator(const LevelDBComparator* comparator)
-        : comparator_(comparator) {}
-    bool operator()(const base::StringPiece& a,
-                    const base::StringPiece& b) const {
-      return comparator_->Compare(a, b) < 0;
-    }
+  void EvictLoadedIterators();
 
-   private:
-    const LevelDBComparator* comparator_;
-  };
-
-  typedef std::map<base::StringPiece, std::unique_ptr<Record>, Comparator>
-      DataType;
-
-  // A DataIterator walks the uncommitted data in a transaction. It wraps a
-  // std::map::iterator and provides the TransactionalLevelDBIterator API. It is
-  // only used internally as part of the implementation of TransactionIterator.
-  class DataIterator : public TransactionalLevelDBIterator {
-   public:
-    static std::unique_ptr<DataIterator> Create(
-        TransactionalLevelDBTransaction* transaction);
-    ~DataIterator() override;
-    bool IsValid() const override;
-    leveldb::Status SeekToLast() override;
-    leveldb::Status Seek(const base::StringPiece& slice) override;
-    leveldb::Status Next() override;
-    leveldb::Status Prev() override;
-    base::StringPiece Key() const override;
-    base::StringPiece Value() const override;
-    bool IsDeleted() const;
-
-    // Mark the current record as deleted.
-    void Delete();
-
-   private:
-    explicit DataIterator(TransactionalLevelDBTransaction* transaction);
-    DataType* data_;
-    DataType::iterator iterator_;
-
-    DISALLOW_COPY_AND_ASSIGN(DataIterator);
-  };
-
-  // A TransactionIterator wraps a pair of a DataIterator (which walks the
-  // uncommitted data) and TransactionalLevelDBIterator wrapping a
-  // leveldb::Iterator (which walks the data previously committed to the backing
-  // store). This provides a unified view on committed and uncommitted data.
-  class TransactionIterator : public TransactionalLevelDBIterator {
-   public:
-    ~TransactionIterator() override;
-    static std::unique_ptr<TransactionIterator> Create(
-        scoped_refptr<TransactionalLevelDBTransaction> transaction);
-
-    bool IsValid() const override;
-    leveldb::Status SeekToLast() override;
-    leveldb::Status Seek(const base::StringPiece& target) override;
-    leveldb::Status Next() override;
-    leveldb::Status Prev() override;
-    base::StringPiece Key() const override;
-    base::StringPiece Value() const override;
-    // Exposed for testing.
-    bool IsDetached() const override;
-    void DataChanged();
-
-    // Mark the current record as deleted. If an existing record
-    // is present in the uncommitted data this will convert it to
-    // a deletion record, otherwise it will insert a new one.
-    void Delete();
-
-   private:
-    enum Direction { FORWARD, REVERSE };
-
-    explicit TransactionIterator(
-        scoped_refptr<TransactionalLevelDBTransaction> transaction);
-    void HandleConflictsAndDeletes();
-    void SetCurrentIteratorToSmallestKey();
-    void SetCurrentIteratorToLargestKey();
-    void RefreshDataIterator() const;
-    bool DataIteratorIsLower() const;
-    bool DataIteratorIsHigher() const;
-
-    scoped_refptr<TransactionalLevelDBTransaction> transaction_;
-    const LevelDBComparator* comparator_;
-    mutable std::unique_ptr<DataIterator> data_iterator_;
-    std::unique_ptr<TransactionalLevelDBIterator> db_iterator_;
-    TransactionalLevelDBIterator* current_ = nullptr;
-
-    Direction direction_ = FORWARD;
-    mutable bool data_changed_ = false;
-
-    DISALLOW_COPY_AND_ASSIGN(TransactionIterator);
-  };
-
-  void Set(const base::StringPiece& key, std::string* value, bool deleted);
-  void RegisterIterator(TransactionIterator* iterator);
-  void UnregisterIterator(TransactionIterator* iterator);
-  void NotifyIterators();
-
-  TransactionalLevelDBDatabase* db_;
-  const LevelDBSnapshot snapshot_;
-  const LevelDBComparator* comparator_;
-  Comparator data_comparator_;
-  DataType data_;
-  uint64_t size_ = 0ull;
+  TransactionalLevelDBDatabase* const db_;
+  // Non-null until the transaction is committed or rolled back.
+  std::unique_ptr<LevelDBScope> scope_;
   bool finished_ = false;
-  std::set<TransactionIterator*> iterators_;
+  base::OnceClosure commit_cleanup_complete_callback_;
+
+  // These sets contain all iterators created directly through this
+  // transaction's |CreateIterator|. We need to track iterators when they're
+  // loaded, mark them evicted when the data they cover changes, and remove them
+  // when they are destructed.
+  //
+  // Implementing this could be done with a single list of iterators. However
+  // that has the downside that, when data changes, we must iterating over all
+  // iterators, many of which will likely already have been evicted.
+  //
+  // Since we only need to iterate over the loaded iterators on data changes, we
+  // can speed up the data change iteration by storing loaded iterators
+  // separately. Here that's implemented by storing loaded and evicted iterators
+  // in separate sets.
+  //
+  // Raw pointers are safe here because the destructor of LevelDBIterator
+  // removes itself from its associated transaction. It is performant to have
+  // |loaded_iterators_| as a flat_set, as the iterator pooling feature of
+  // TransactionalLevelDBDatabase ensures a maximum number of
+  // TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase loaded
+  // iterators.
+  base::flat_set<TransactionalLevelDBIterator*> loaded_iterators_;
+  std::set<TransactionalLevelDBIterator*> evicted_iterators_;
+  bool is_evicting_all_loaded_iterators_ = false;
+
+  base::WeakPtrFactory<TransactionalLevelDBTransaction> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TransactionalLevelDBTransaction);
 };
 
 // Reads go straight to the database, ignoring any writes cached in
-// write_batch_, and writes are write-through, without consolidation.
-class LevelDBDirectTransaction {
+// write_batch_. Writes are accumulated in a leveldb::WriteBatch and written on
+// |Commit()|.
+// TODO(dmurph): Remove this and have users just use the database and a
+// WriteBatch.
+class CONTENT_EXPORT LevelDBDirectTransaction {
  public:
-  static std::unique_ptr<LevelDBDirectTransaction> Create(
-      TransactionalLevelDBDatabase* db);
+  virtual ~LevelDBDirectTransaction();
 
-  ~LevelDBDirectTransaction();
-  void Put(const base::StringPiece& key, const std::string* value);
-  leveldb::Status Get(const base::StringPiece& key,
-                      std::string* value,
-                      bool* found);
+  leveldb::Status Put(const base::StringPiece& key, const std::string* value);
+  virtual leveldb::Status Get(const base::StringPiece& key,
+                              std::string* value,
+                              bool* found);
   void Remove(const base::StringPiece& key);
   leveldb::Status Commit();
 
- private:
+  TransactionalLevelDBDatabase* db() { return db_; }
+
+ protected:
+  friend class indexed_db::DefaultLevelDBFactory;
+
   explicit LevelDBDirectTransaction(TransactionalLevelDBDatabase* db);
 
-  TransactionalLevelDBDatabase* db_;
+  bool IsFinished() const { return write_batch_ == nullptr; }
+
+  TransactionalLevelDBDatabase* const db_;
   std::unique_ptr<LevelDBWriteBatch> write_batch_;
-  bool finished_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBDirectTransaction);
 };

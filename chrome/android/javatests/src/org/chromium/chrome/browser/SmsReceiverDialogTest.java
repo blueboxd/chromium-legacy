@@ -82,8 +82,10 @@ public class SmsReceiverDialogTest {
         Button continueButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
         Assert.assertFalse(continueButton.isEnabled());
 
-        TestThreadUtils.runOnUiThreadBlocking(mSmsDialog::enableContinueButton);
-        Assert.assertTrue(continueButton.isEnabled());
+        TestThreadUtils.runOnUiThreadBlocking(mSmsDialog::smsReceived);
+        Assert.assertTrue(mSmsDialog.getDialogForTesting()
+                                  .getButton(DialogInterface.BUTTON_POSITIVE)
+                                  .isEnabled());
     }
 
     @Test

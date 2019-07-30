@@ -671,15 +671,9 @@ TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
 
   EXPECT_EQ(0, menu_show_count_);
 
-// On Mac, actions occur on mouse down. Otherwise mouse up.
-#if defined(OS_MACOSX)
-  const int kActOnMouseDown = 1;
-#else
-  const int kActOnMouseDown = 0;
-#endif
-
+  // Menu is shown on mouse down.
   PerformMousePress(right_point);
-  EXPECT_EQ(kActOnMouseDown, menu_show_count_);
+  EXPECT_EQ(1, menu_show_count_);
   PerformMouseRelease(right_point);
   EXPECT_EQ(1, menu_show_count_);
 

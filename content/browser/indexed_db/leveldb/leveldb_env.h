@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "content/browser/indexed_db/leveldb/leveldb_comparator.h"
 #include "content/browser/indexed_db/scopes/leveldb_state.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -26,13 +26,16 @@ class NoDestructor;
 
 namespace leveldb {
 class Iterator;
-class Snapshot;
 }  // namespace leveldb
 
 namespace content {
-class TransactionalLevelDBIteratorImpl;
 class TransactionalLevelDBDatabase;
+class TransactionalLevelDBIterator;
+class LevelDBScope;
+class LevelDBScopes;
+class LevelDBSnapshot;
 class TransactionalLevelDBTransaction;
+class LevelDBDirectTransaction;
 
 // The leveldb::Env used by the Indexed DB backend.
 class LevelDBEnv : public leveldb_env::ChromiumEnv {
@@ -80,16 +83,31 @@ class CONTENT_EXPORT LevelDBFactory {
   virtual std::
       tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
       OpenLevelDBState(const base::FilePath& file_name,
-                       const LevelDBComparator* idb_comparator,
                        const leveldb::Comparator* ldb_comparator) = 0;
 
-  virtual std::unique_ptr<TransactionalLevelDBIteratorImpl> CreateIteratorImpl(
-      std::unique_ptr<leveldb::Iterator> iterator,
-      TransactionalLevelDBDatabase* db,
-      const leveldb::Snapshot* snapshot) = 0;
+  // All calls to the LevelDBDatabase class should be done on |task_runner|.
+  virtual std::unique_ptr<TransactionalLevelDBDatabase> CreateLevelDBDatabase(
+      scoped_refptr<LevelDBState> state,
+      std::unique_ptr<LevelDBScopes> scopes,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      size_t max_open_iterators) = 0;
 
+  // A LevelDBDirectTransaction is a simple wrapper of a WriteBatch, which
+  // writes it on |Commit|.
+  virtual std::unique_ptr<LevelDBDirectTransaction>
+  CreateLevelDBDirectTransaction(TransactionalLevelDBDatabase* db) = 0;
+
+  // A LevelDBTransaction uses the LevelDBScope to write changes, and
+  // appropriately flushes the scope for reads.
   virtual scoped_refptr<TransactionalLevelDBTransaction>
-  CreateLevelDBTransaction(TransactionalLevelDBDatabase* db) = 0;
+  CreateLevelDBTransaction(TransactionalLevelDBDatabase* db,
+                           std::unique_ptr<LevelDBScope> scope) = 0;
+
+  virtual std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
+      std::unique_ptr<leveldb::Iterator> it,
+      base::WeakPtr<TransactionalLevelDBDatabase> db,
+      base::WeakPtr<TransactionalLevelDBTransaction> txn,
+      std::unique_ptr<LevelDBSnapshot> snapshot) = 0;
 
   // A somewhat safe way to destroy a leveldb database. This asserts that there
   // are no other references to the given LevelDBState, and deletes the database
@@ -112,14 +130,22 @@ class CONTENT_EXPORT DefaultLevelDBFactory : public LevelDBFactory {
 
   std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
   OpenLevelDBState(const base::FilePath& file_name,
-                   const LevelDBComparator* idb_comparator,
                    const leveldb::Comparator* ldb_comparator) override;
-  std::unique_ptr<TransactionalLevelDBIteratorImpl> CreateIteratorImpl(
-      std::unique_ptr<leveldb::Iterator> iterator,
-      TransactionalLevelDBDatabase* db,
-      const leveldb::Snapshot* snapshot) override;
-  scoped_refptr<TransactionalLevelDBTransaction> CreateLevelDBTransaction(
+  std::unique_ptr<TransactionalLevelDBDatabase> CreateLevelDBDatabase(
+      scoped_refptr<LevelDBState> state,
+      std::unique_ptr<LevelDBScopes> scopes,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      size_t max_open_iterators) override;
+  std::unique_ptr<LevelDBDirectTransaction> CreateLevelDBDirectTransaction(
       TransactionalLevelDBDatabase* db) override;
+  scoped_refptr<TransactionalLevelDBTransaction> CreateLevelDBTransaction(
+      TransactionalLevelDBDatabase* db,
+      std::unique_ptr<LevelDBScope> scope) override;
+  std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
+      std::unique_ptr<leveldb::Iterator> it,
+      base::WeakPtr<TransactionalLevelDBDatabase> db,
+      base::WeakPtr<TransactionalLevelDBTransaction> txn,
+      std::unique_ptr<LevelDBSnapshot> snapshot) override;
   leveldb::Status DestroyLevelDB(
       scoped_refptr<LevelDBState> output_state) override;
   leveldb::Status DestroyLevelDB(const base::FilePath& path) override;

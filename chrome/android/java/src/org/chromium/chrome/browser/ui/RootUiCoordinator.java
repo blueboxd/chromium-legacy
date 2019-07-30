@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinatorFactory;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -209,21 +210,11 @@ public class RootUiCoordinator
                 mOverviewModeBehavior = overviewModeBehavior;
 
                 if (mOverviewModeObserver == null) {
-                    mOverviewModeObserver = new OverviewModeBehavior.OverviewModeObserver() {
+                    mOverviewModeObserver = new EmptyOverviewModeObserver() {
                         @Override
                         public void onOverviewModeStartedShowing(boolean showToolbar) {
                             if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
                         }
-
-                        @Override
-                        public void onOverviewModeFinishedShowing() {}
-
-                        @Override
-                        public void onOverviewModeStartedHiding(
-                                boolean showToolbar, boolean delayAnimation) {}
-
-                        @Override
-                        public void onOverviewModeFinishedHiding() {}
                     };
                 }
                 mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);

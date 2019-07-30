@@ -1907,11 +1907,11 @@ int LegacyFontSizeFromCSSValue(Document* document,
   }
 
   if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    if (identifier_value->GetValueID() == CSSValueID::kWebkitXxxLarge)
+      return FontSizeFunctions::KeywordSize(CSSValueID::kXxxLarge) - 1;
     if (CSSValueID::kXSmall <= identifier_value->GetValueID() &&
-        identifier_value->GetValueID() <= CSSValueID::kWebkitXxxLarge) {
-      return static_cast<int>(identifier_value->GetValueID()) -
-             static_cast<int>(CSSValueID::kXSmall) + 1;
-    }
+        identifier_value->GetValueID() <= CSSValueID::kXxxLarge)
+      return FontSizeFunctions::KeywordSize(identifier_value->GetValueID()) - 1;
   }
 
   return 0;

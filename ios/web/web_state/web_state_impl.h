@@ -275,6 +275,7 @@ class WebStateImpl : public WebState,
 
   // NavigationManagerDelegate:
   void ClearTransientContent() override;
+  void ClearDialogs() override;
   void RecordPageStateInNavigationItem() override;
   void OnGoToIndexSameDocumentNavigation(NavigationInitiationType type,
                                          bool has_user_gesture) override;

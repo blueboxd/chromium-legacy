@@ -8,9 +8,11 @@
 
 #include "build/build_config.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/web_contents_tester.h"
 #include "device/fido/fido_device_authenticator.h"
+#include "device/fido/fido_discovery_factory.h"
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,10 +20,21 @@
 #include "device/fido/win/authenticator.h"
 #include "device/fido/win/fake_webauthn_api.h"
 #include "third_party/microsoft_webauthn/webauthn.h"
-#endif
+#endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator_config.h"
+#include "device/fido/mac/scoped_touch_id_test_environment.h"
+#endif  // defined(OS_MACOSX)
 
 class ChromeAuthenticatorRequestDelegateTest
-    : public ChromeRenderViewHostTestHarness {};
+    : public ChromeRenderViewHostTestHarness {
+ protected:
+#if defined(OS_MACOSX)
+  API_AVAILABLE(macos(10.12.2))
+  device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment_;
+#endif  // defined(OS_MACOSX)
+};
 
 static constexpr char kRelyingPartyID[] = "example.com";
 
@@ -74,49 +87,92 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 }
 
 #if defined(OS_MACOSX)
+API_AVAILABLE(macos(10.12.2))
 std::string TouchIdMetadataSecret(
     ChromeAuthenticatorRequestDelegate* delegate) {
-  base::Optional<
-      content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
-      config = delegate->GetTouchIdAuthenticatorConfig();
-  return config->metadata_secret;
+  return delegate->GetTouchIdAuthenticatorConfig()->metadata_secret;
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest, TouchIdMetadataSecret) {
-  ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
-  std::string secret = TouchIdMetadataSecret(&delegate);
-  EXPECT_EQ(secret.size(), 32u);
-  EXPECT_EQ(secret, TouchIdMetadataSecret(&delegate));
+  if (__builtin_available(macOS 10.12.2, *)) {
+    ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
+    std::string secret = TouchIdMetadataSecret(&delegate);
+    EXPECT_EQ(secret.size(), 32u);
+    EXPECT_EQ(secret, TouchIdMetadataSecret(&delegate));
+  }
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TouchIdMetadataSecret_EqualForSameProfile) {
-  // Different delegates on the same BrowserContext (Profile) should return the
-  // same secret.
-  ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);
-  ChromeAuthenticatorRequestDelegate delegate2(main_rfh(), kRelyingPartyID);
-  EXPECT_EQ(TouchIdMetadataSecret(&delegate1),
-            TouchIdMetadataSecret(&delegate2));
+  if (__builtin_available(macOS 10.12.2, *)) {
+    // Different delegates on the same BrowserContext (Profile) should return
+    // the same secret.
+    ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);
+    ChromeAuthenticatorRequestDelegate delegate2(main_rfh(), kRelyingPartyID);
+    EXPECT_EQ(TouchIdMetadataSecret(&delegate1),
+              TouchIdMetadataSecret(&delegate2));
+  }
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TouchIdMetadataSecret_NotEqualForDifferentProfiles) {
-  // Different profiles have different secrets. (No way to reset
-  // browser_context(), so we have to create our own.)
-  auto browser_context = base::WrapUnique(CreateBrowserContext());
-  auto web_contents = content::WebContentsTester::CreateTestWebContents(
-      browser_context.get(), nullptr);
-  ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);
-  ChromeAuthenticatorRequestDelegate delegate2(web_contents->GetMainFrame(),
-                                               kRelyingPartyID);
-  EXPECT_NE(TouchIdMetadataSecret(&delegate1),
-            TouchIdMetadataSecret(&delegate2));
-  // Ensure this second secret is actually valid.
-  EXPECT_EQ(32u, TouchIdMetadataSecret(&delegate2).size());
+  if (__builtin_available(macOS 10.12.2, *)) {
+    // Different profiles have different secrets. (No way to reset
+    // browser_context(), so we have to create our own.)
+    auto browser_context = base::WrapUnique(CreateBrowserContext());
+    auto web_contents = content::WebContentsTester::CreateTestWebContents(
+        browser_context.get(), nullptr);
+    ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);
+    ChromeAuthenticatorRequestDelegate delegate2(web_contents->GetMainFrame(),
+                                                 kRelyingPartyID);
+    EXPECT_NE(TouchIdMetadataSecret(&delegate1),
+              TouchIdMetadataSecret(&delegate2));
+    // Ensure this second secret is actually valid.
+    EXPECT_EQ(32u, TouchIdMetadataSecret(&delegate2).size());
+  }
 }
-#endif
+
+TEST_F(ChromeAuthenticatorRequestDelegateTest, IsUVPAA) {
+  if (__builtin_available(macOS 10.12.2, *)) {
+    for (const bool touch_id_available : {false, true}) {
+      SCOPED_TRACE(::testing::Message()
+                   << "touch_id_available=" << touch_id_available);
+      touch_id_test_environment_.SetTouchIdAvailable(touch_id_available);
+
+      std::unique_ptr<content::AuthenticatorRequestClientDelegate> delegate =
+          std::make_unique<ChromeAuthenticatorRequestDelegate>(main_rfh(),
+                                                               kRelyingPartyID);
+      EXPECT_EQ(touch_id_available,
+                delegate->IsUserVerifyingPlatformAuthenticatorAvailable());
+    }
+  }
+}
+
+#endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
+TEST_F(ChromeAuthenticatorRequestDelegateTest, WinIsUVPAA) {
+  device::ScopedFakeWinWebAuthnApi win_webauthn_api =
+      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
+
+  for (const bool enable_win_webauthn_api : {false, true}) {
+    SCOPED_TRACE(enable_win_webauthn_api ? "enable_win_webauthn_api"
+                                         : "!enable_win_webauthn_api");
+    for (const bool is_uvpaa : {false, true}) {
+      SCOPED_TRACE(is_uvpaa ? "is_uvpaa" : "!is_uvpaa");
+
+      win_webauthn_api.set_available(enable_win_webauthn_api);
+      win_webauthn_api.set_is_uvpaa(is_uvpaa);
+
+      std::unique_ptr<content::AuthenticatorRequestClientDelegate> delegate =
+          std::make_unique<ChromeAuthenticatorRequestDelegate>(main_rfh(),
+                                                               kRelyingPartyID);
+      EXPECT_EQ(enable_win_webauthn_api && is_uvpaa,
+                delegate->IsUserVerifyingPlatformAuthenticatorAvailable());
+    }
+  }
+}
+
 // Tests that ShouldReturnAttestation() returns with true if |authenticator|
 // is the Windows native WebAuthn API with WEBAUTHN_API_VERSION_2 or higher,
 // where Windows prompts for attestation in its own native UI.

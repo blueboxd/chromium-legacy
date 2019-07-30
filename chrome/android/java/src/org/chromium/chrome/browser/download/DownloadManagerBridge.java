@@ -79,6 +79,7 @@ public class DownloadManagerBridge {
         public boolean result;
         public int failureReason;
         public long startTime;
+        public String filePath;
     }
 
     /**
@@ -352,6 +353,7 @@ public class DownloadManagerBridge {
         private long mDownloadId;
         private int mFailureReason;
         private long mStartTime;
+        private String mFilePath;
 
         public EnqueueNewDownloadTask(
                 DownloadEnqueueRequest enqueueRequest, Callback<DownloadEnqueueResponse> callback) {
@@ -384,6 +386,7 @@ public class DownloadManagerBridge {
                     File dir = new File(getContext().getExternalFilesDir(null), DOWNLOAD_DIRECTORY);
                     if (dir.mkdir() || dir.isDirectory()) {
                         File file = new File(dir, mEnqueueRequest.fileName);
+                        mFilePath = file.getAbsolutePath();
                         request.setDestinationUri(Uri.fromFile(file));
                     } else {
                         Log.e(TAG, "Cannot create download directory");
@@ -442,6 +445,7 @@ public class DownloadManagerBridge {
             enqueueResult.failureReason = mFailureReason;
             enqueueResult.downloadId = mDownloadId;
             enqueueResult.startTime = mStartTime;
+            enqueueResult.filePath = mFilePath;
             mCallback.onResult(enqueueResult);
         }
     }

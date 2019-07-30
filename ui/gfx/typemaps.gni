@@ -4,7 +4,7 @@
 
 typemaps = [
   "//ui/gfx/geometry/mojom/geometry.typemap",
-  "//ui/gfx/image/mojo/image.typemap",
+  "//ui/gfx/image/mojom/image.typemap",
   "//ui/gfx/mojo/accelerated_widget.typemap",
   "//ui/gfx/mojo/buffer_types.typemap",
   "//ui/gfx/mojo/ca_layer_params.typemap",

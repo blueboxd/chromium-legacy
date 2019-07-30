@@ -38,6 +38,9 @@ class TaskForwardingSequence : public gpu::SingleTaskSequence {
 
   void ScheduleTask(base::OnceClosure task,
                     std::vector<gpu::SyncToken> sync_token_fences) override;
+  void ScheduleOrRetainTask(
+      base::OnceClosure task,
+      std::vector<gpu::SyncToken> sync_token_fences) override;
 
   // Should not be called because tasks aren't reposted to wait for sync tokens,
   // or for yielding execution since ShouldYield() returns false.

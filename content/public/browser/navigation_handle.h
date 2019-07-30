@@ -150,7 +150,7 @@ class CONTENT_EXPORT NavigationHandle {
   GetResourceRequestBody() = 0;
 
   // Returns a sanitized version of the referrer for this request.
-  virtual const Referrer& GetReferrer() = 0;
+  virtual const blink::mojom::Referrer& GetReferrer() = 0;
 
   // Whether the navigation was initiated by a user gesture. Note that this
   // will return false for browser-initiated navigations.

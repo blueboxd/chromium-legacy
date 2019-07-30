@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RatingBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -470,21 +469,6 @@ public final class InfoBarControlLayout extends ViewGroup {
         descriptionView.setText(message);
         descriptionView.setMovementMethod(LinkMovementMethod.getInstance());
         return descriptionView;
-    }
-
-    /**
-     * Creates and adds a control that shows a review rating score.
-     *
-     * @param rating Fractional rating out of 5 stars.
-     */
-    public View addRatingBar(float rating) {
-        View ratingLayout = LayoutInflater.from(getContext()).inflate(
-                R.layout.infobar_control_rating, this, false);
-        addView(ratingLayout, new ControlLayoutParams());
-
-        RatingBar ratingView = (RatingBar) ratingLayout.findViewById(R.id.control_rating);
-        ratingView.setRating(rating);
-        return ratingView;
     }
 
     /**

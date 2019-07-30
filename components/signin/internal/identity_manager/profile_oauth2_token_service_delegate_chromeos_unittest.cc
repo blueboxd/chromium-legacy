@@ -17,6 +17,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -25,7 +26,6 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,7 +60,8 @@ class AccessTokenConsumer : public OAuth2AccessTokenConsumer {
   DISALLOW_COPY_AND_ASSIGN(AccessTokenConsumer);
 };
 
-class TestOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
+class TestOAuth2TokenServiceObserver
+    : public ProfileOAuth2TokenServiceObserver {
  public:
   // |delegate| is a non-owning pointer to an
   // |ProfileOAuth2TokenServiceDelegate| that MUST outlive |this| instance.

@@ -252,7 +252,7 @@ void BaseArena::PrepareForSweep() {
 }
 
 #if defined(ADDRESS_SANITIZER)
-void BaseArena::PoisonArena() {
+void BaseArena::PoisonUnmarkedObjects() {
   for (BasePage* page : unswept_pages_) {
     page->PoisonUnmarkedObjects();
   }

@@ -8,6 +8,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
@@ -155,6 +156,11 @@ class TooltipAura::TooltipView : public views::View {
 
   gfx::RenderText* render_text_for_test() { return render_text_.get(); }
 
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->SetName(render_text_->GetDisplayText());
+    node_data->role = ax::mojom::Role::kTooltip;
+  }
+
  private:
   void ResetDisplayRect() {
     render_text_->SetDisplayRect(gfx::Rect(0, 0, max_width_, 100000));
@@ -174,6 +180,10 @@ TooltipAura::~TooltipAura() {
 
 gfx::RenderText* TooltipAura::GetRenderTextForTest() {
   return tooltip_view_->render_text_for_test();
+}
+
+void TooltipAura::GetAccessibleNodeDataForTest(ui::AXNodeData* node_data) {
+  tooltip_view_->GetAccessibleNodeData(node_data);
 }
 
 gfx::Rect TooltipAura::GetTooltipBounds(const gfx::Point& mouse_pos,
@@ -248,13 +258,18 @@ void TooltipAura::Show() {
   if (widget_) {
     widget_->Show();
     widget_->StackAtTop();
+    tooltip_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTooltipOpened,
+                                            true);
   }
 }
 
 void TooltipAura::Hide() {
   tooltip_window_ = nullptr;
-  if (widget_)
+  if (widget_) {
     widget_->Hide();
+    tooltip_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTooltipClosed,
+                                            true);
+  }
 }
 
 bool TooltipAura::IsVisible() {

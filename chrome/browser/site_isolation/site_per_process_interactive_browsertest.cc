@@ -449,8 +449,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   ASSERT_NE(nullptr, child2);
 
   // Needed to avoid flakiness with --enable-browser-side-navigation.
-  content::WaitForHitTestDataOrChildSurfaceReady(child1);
-  content::WaitForHitTestDataOrChildSurfaceReady(child2);
+  content::WaitForHitTestData(child1);
+  content::WaitForHitTestData(child2);
 
   // Assign a name to each frame.  This will be sent along in test messages
   // from focus events.

@@ -18,7 +18,6 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
@@ -39,14 +39,14 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 
-SigninCreateProfileHandler::SigninCreateProfileHandler()
-    : profile_creation_type_(NO_CREATION_IN_PROGRESS) {}
+SigninCreateProfileHandler::SigninCreateProfileHandler() = default;
 
-SigninCreateProfileHandler::~SigninCreateProfileHandler() {}
+SigninCreateProfileHandler::~SigninCreateProfileHandler() {
+  BrowserList::RemoveObserver(this);
+}
 
 void SigninCreateProfileHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
@@ -81,6 +81,43 @@ void SigninCreateProfileHandler::RegisterMessages() {
       base::BindRepeating(
           &SigninCreateProfileHandler::RequestDefaultProfileIcons,
           base::Unretained(this)));
+}
+
+void SigninCreateProfileHandler::OnBrowserAdded(Browser* browser) {
+  // Only respond to one OnBrowserAdded.
+  BrowserList::RemoveObserver(this);
+  UserManager::Hide();
+}
+
+void SigninCreateProfileHandler::OpenNewWindowForProfile(
+    Profile* profile,
+    Profile::CreateStatus status) {
+  profiles::OpenBrowserWindowForProfile(
+      base::Bind(&SigninCreateProfileHandler::OnBrowserReadyCallback,
+                 weak_ptr_factory_.GetWeakPtr()),
+      false,  // Don't create a window if one already exists.
+      true,   // Create a first run window.
+      false,  // There is no need to unblock all extensions because we only open
+              // browser window if the Profile is not locked. Hence there is no
+              // extension blocked.
+      profile, status);
+}
+
+void SigninCreateProfileHandler::OpenForceSigninDialogForProfile(
+    Profile* profile) {
+  UserManagerProfileDialog::ShowForceSigninDialog(
+      web_ui()->GetWebContents()->GetBrowserContext(), profile->GetPath());
+}
+
+void SigninCreateProfileHandler::DoCreateProfile(const base::string16& name,
+                                                 const std::string& icon_url,
+                                                 bool create_shortcut) {
+  ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_DIALOG);
+
+  profile_path_being_created_ = ProfileManager::CreateMultiProfileAsync(
+      name, icon_url,
+      base::Bind(&SigninCreateProfileHandler::OnProfileCreated,
+                 weak_ptr_factory_.GetWeakPtr(), create_shortcut));
 }
 
 void SigninCreateProfileHandler::RequestDefaultProfileIcons(
@@ -119,17 +156,6 @@ void SigninCreateProfileHandler::CreateProfile(const base::ListValue* args) {
     args->GetBoolean(2, &create_shortcut);
   }
   DoCreateProfile(name, icon_url, create_shortcut);
-}
-
-void SigninCreateProfileHandler::DoCreateProfile(const base::string16& name,
-                                                 const std::string& icon_url,
-                                                 bool create_shortcut) {
-  ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_DIALOG);
-
-  profile_path_being_created_ = ProfileManager::CreateMultiProfileAsync(
-      name, icon_url,
-      base::Bind(&SigninCreateProfileHandler::OnProfileCreated,
-                 weak_ptr_factory_.GetWeakPtr(), create_shortcut));
 }
 
 void SigninCreateProfileHandler::OnProfileCreated(
@@ -210,26 +236,6 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
 }
 
-void SigninCreateProfileHandler::OpenNewWindowForProfile(
-    Profile* profile,
-    Profile::CreateStatus status) {
-  profiles::OpenBrowserWindowForProfile(
-      base::Bind(&SigninCreateProfileHandler::OnBrowserReadyCallback,
-                 weak_ptr_factory_.GetWeakPtr()),
-      false,  // Don't create a window if one already exists.
-      true,   // Create a first run window.
-      false,  // There is no need to unblock all extensions because we only open
-              // browser window if the Profile is not locked. Hence there is no
-              // extension blocked.
-      profile, status);
-}
-
-void SigninCreateProfileHandler::OpenForceSigninDialogForProfile(
-    Profile* profile) {
-  UserManagerProfileDialog::ShowForceSigninDialog(
-      web_ui()->GetWebContents()->GetBrowserContext(), profile->GetPath());
-}
-
 void SigninCreateProfileHandler::ShowProfileCreationError(
     Profile* profile,
     const base::string16& error) {
@@ -260,30 +266,16 @@ base::string16 SigninCreateProfileHandler::GetProfileCreationErrorMessageLocal()
   return l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_LOCAL_ERROR);
 }
 
-void SigninCreateProfileHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_OPENED, type);
-
-  // Only respond to one Browser Opened event.
-  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                    content::NotificationService::AllSources());
-  UserManager::Hide();
-}
-
 void SigninCreateProfileHandler::OnBrowserReadyCallback(
     Profile* profile,
     Profile::CreateStatus profile_create_status) {
   Browser* browser = chrome::FindAnyBrowser(profile, false);
   // Closing the User Manager before the window is created can flakily cause
   // Chrome to close.
-  if (browser && browser->window()) {
+  if (browser && browser->window())
     UserManager::Hide();
-  } else {
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                   content::NotificationService::AllSources());
-  }
+  else
+    BrowserList::AddObserver(this);
 }
 
 base::Value SigninCreateProfileHandler::GetWebUIListenerName(

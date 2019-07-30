@@ -34,7 +34,7 @@ class InputImeEventRouter : public InputImeEventRouterBase {
   ~InputImeEventRouter() override;
 
   // Gets the input method engine if the extension is active.
-  input_method::InputMethodEngineBase* GetActiveEngine(
+  input_method::InputMethodEngineBase* GetEngineIfActive(
       const std::string& extension_id) override;
 
   // Actives the extension with new input method engine, and deletes the

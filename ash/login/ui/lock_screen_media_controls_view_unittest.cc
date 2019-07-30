@@ -10,6 +10,7 @@
 #include "ash/login/ui/media_controls_header_view.h"
 #include "ash/public/cpp/ash_features.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/media_message_center/media_controls_progress_view.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/events/base_event_utils.h"
@@ -171,6 +172,10 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return media_controls_view_->close_button_;
   }
 
+  media_message_center::MediaControlsProgressView* progress_view() const {
+    return media_controls_view_->progress_;
+  }
+
   const views::ImageView* icon_view() const {
     return header_row()->app_icon_for_testing();
   }
@@ -313,6 +318,27 @@ TEST_F(LockScreenMediaControlsViewTest, PlayPauseButtonTooltipCheck) {
   base::string16 new_tooltip = button->GetTooltipText(gfx::Point());
   EXPECT_FALSE(new_tooltip.empty());
   EXPECT_NE(tooltip, new_tooltip);
+}
+
+TEST_F(LockScreenMediaControlsViewTest, ProgressBarVisibility) {
+  // Verify that the progress is not initially visible.
+  EXPECT_FALSE(progress_view()->GetVisible());
+
+  media_session::MediaPosition media_position(
+      1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
+      base::TimeDelta::FromSeconds(300) /* position */);
+
+  // Simulate position changing.
+  media_controls_view_->MediaSessionPositionChanged(media_position);
+
+  // Verify that the progress is now visible.
+  EXPECT_TRUE(progress_view()->GetVisible());
+
+  // Simulate position turning null.
+  media_controls_view_->MediaSessionPositionChanged(base::nullopt);
+
+  // Verify that the progress is hidden again.
+  EXPECT_FALSE(progress_view()->GetVisible());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, CloseButtonVisibility) {

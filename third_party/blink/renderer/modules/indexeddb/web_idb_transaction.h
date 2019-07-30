@@ -50,7 +50,7 @@ class MODULES_EXPORT WebIDBTransaction {
                    std::unique_ptr<IDBValue> value,
                    std::unique_ptr<IDBKey> primary_key,
                    mojom::IDBPutMode,
-                   WebIDBCallbacks*,
+                   std::unique_ptr<WebIDBCallbacks>,
                    Vector<IDBIndexKeys>) = 0;
   virtual void Commit(int64_t num_errors_handled) = 0;
 

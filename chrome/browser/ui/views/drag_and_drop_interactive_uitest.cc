@@ -728,7 +728,7 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
     DCHECK(frame);
 
     // Wait until hit testing data is ready.
-    WaitForHitTestDataOrChildSurfaceReady(frame);
+    WaitForHitTestData(frame);
 
     return true;
   }

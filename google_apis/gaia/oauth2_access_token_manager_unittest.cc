@@ -35,13 +35,16 @@ class FakeOAuth2AccessTokenManagerDelegate
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override {
-    EXPECT_EQ(CoreAccountId(kTestAccountId), account_id);
+    EXPECT_NE(account_ids_to_refresh_tokens_.find(account_id),
+              account_ids_to_refresh_tokens_.end());
     return std::make_unique<OAuth2AccessTokenFetcherImpl>(
-        consumer, url_loader_factory, "fake_refresh_token");
+        consumer, url_loader_factory,
+        account_ids_to_refresh_tokens_[account_id]);
   }
 
   bool HasRefreshToken(const CoreAccountId& account_id) const override {
-    return CoreAccountId(kTestAccountId) == account_id;
+    return account_ids_to_refresh_tokens_.find(account_id) !=
+           account_ids_to_refresh_tokens_.end();
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
@@ -49,8 +52,13 @@ class FakeOAuth2AccessTokenManagerDelegate
     return shared_factory_;
   }
 
+  void AddAccount(CoreAccountId id, std::string refresh_token) {
+    account_ids_to_refresh_tokens_[id] = refresh_token;
+  }
+
  private:
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
+  std::map<CoreAccountId, std::string> account_ids_to_refresh_tokens_;
 };
 
 class FakeOAuth2AccessTokenManagerConsumer
@@ -86,12 +94,18 @@ class FakeOAuth2AccessTokenManagerConsumer
 
 }  // namespace
 
+// Any public API surfaces that are wrapped by ProfileOAuth2TokenService are
+// unittested as part of the unittests of that class.
+
 class OAuth2AccessTokenManagerTest : public testing::Test {
  public:
   OAuth2AccessTokenManagerTest()
       : delegate_(&test_url_loader_factory_), token_manager_(&delegate_) {}
 
-  void SetUp() override { account_id_ = CoreAccountId(kTestAccountId); }
+  void SetUp() override {
+    account_id_ = CoreAccountId(kTestAccountId);
+    delegate_.AddAccount(account_id_, "fake_refresh_token");
+  }
 
   void TearDown() override {
     // Makes sure that all the clean up tasks are run. It's required because of
@@ -115,7 +129,7 @@ class OAuth2AccessTokenManagerTest : public testing::Test {
   FakeOAuth2AccessTokenManagerConsumer consumer_;
 };
 
-// Test if StartRequest gets a response properly.
+// Test that StartRequest gets a response properly.
 TEST_F(OAuth2AccessTokenManagerTest, StartRequest) {
   base::RunLoop run_loop;
   consumer_.SetResponseCompletedClosure(run_loop.QuitClosure());
@@ -127,4 +141,57 @@ TEST_F(OAuth2AccessTokenManagerTest, StartRequest) {
 
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
+}
+
+// Test that CancelAllRequests triggers OnGetTokenFailure.
+TEST_F(OAuth2AccessTokenManagerTest, CancelAllRequests) {
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request(
+      token_manager_.StartRequest(
+          account_id_, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
+  const CoreAccountId account_id_2("account_id_2");
+  delegate_.AddAccount(account_id_2, "refreshToken2");
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request2(
+      token_manager_.StartRequest(
+          account_id_2, OAuth2AccessTokenManager::ScopeSet(), &consumer_));
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+
+  token_manager_.CancelAllRequests();
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(2, consumer_.number_of_errors_);
+}
+
+// Test that CancelRequestsForAccount cancels requests for the specific account.
+TEST_F(OAuth2AccessTokenManagerTest, CancelRequestsForAccount) {
+  OAuth2AccessTokenManager::ScopeSet scope_set_1;
+  scope_set_1.insert("scope1");
+  scope_set_1.insert("scope2");
+  OAuth2AccessTokenManager::ScopeSet scope_set_2(scope_set_1.begin(),
+                                                 scope_set_1.end());
+  scope_set_2.insert("scope3");
+
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request1(
+      token_manager_.StartRequest(account_id_, scope_set_1, &consumer_));
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request2(
+      token_manager_.StartRequest(account_id_, scope_set_2, &consumer_));
+
+  const CoreAccountId account_id_2("account_id_2");
+  delegate_.AddAccount(account_id_2, "refreshToken2");
+  std::unique_ptr<OAuth2AccessTokenManager::Request> request3(
+      token_manager_.StartRequest(account_id_2, scope_set_1, &consumer_));
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(0, consumer_.number_of_errors_);
+
+  token_manager_.CancelRequestsForAccount(account_id_);
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(2, consumer_.number_of_errors_);
+
+  token_manager_.CancelRequestsForAccount(account_id_2);
+
+  EXPECT_EQ(0, consumer_.number_of_successful_tokens_);
+  EXPECT_EQ(3, consumer_.number_of_errors_);
 }

@@ -27,6 +27,10 @@ namespace main_thread_scheduler_impl_unittest {
 class MainThreadSchedulerImplTest;
 }
 
+namespace frame_interference_recorder_test {
+class FrameInterferenceRecorderTest;
+}
+
 class FrameSchedulerImpl;
 class MainThreadSchedulerImpl;
 
@@ -319,6 +323,10 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
   QueueTraits GetQueueTraits() const { return queue_traits_; }
 
+  void OnTaskReady(const void* frame_scheduler,
+                   const base::sequence_manager::Task& task,
+                   base::sequence_manager::LazyNow* lazy_now);
+
   void OnTaskStarted(
       const base::sequence_manager::Task& task,
       const base::sequence_manager::TaskQueue::TaskTiming& task_timing);
@@ -359,6 +367,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   friend class base::sequence_manager::SequenceManager;
   friend class blink::scheduler::main_thread_scheduler_impl_unittest::
       MainThreadSchedulerImplTest;
+  friend class frame_interference_recorder_test::FrameInterferenceRecorderTest;
 
   // Clear references to main thread scheduler and frame scheduler and dispatch
   // appropriate notifications. This is the common part of ShutdownTaskQueue and
@@ -390,6 +399,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   // Needed to notify renderer scheduler about completed tasks.
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
 
+  // Set in the constructor. Cleared in ClearReferencesToSchedulers(). Can never
+  // be set to a different value afterwards (except in tests).
   FrameSchedulerImpl* frame_scheduler_;  // NOT OWNED
 
   base::WeakPtrFactory<MainThreadTaskQueue> weak_ptr_factory_{this};

@@ -10,83 +10,97 @@
 #include "content/public/common/content_features.h"
 #include "net/base/features.h"
 #include "services/network/loader_util.h"
+#include "third_party/blink/public/mojom/referrer.mojom.h"
 
 namespace content {
+
+Referrer::Referrer(const blink::mojom::Referrer& referrer)
+    : url(referrer.url), policy(referrer.policy) {}
 
 // static
 Referrer Referrer::SanitizeForRequest(const GURL& request,
                                       const Referrer& referrer) {
-  Referrer sanitized_referrer(referrer.url.GetAsReferrer(), referrer.policy);
-  if (sanitized_referrer.policy == network::mojom::ReferrerPolicy::kDefault) {
+  blink::mojom::ReferrerPtr sanitized_referrer = SanitizeForRequest(
+      request, blink::mojom::Referrer(referrer.url, referrer.policy));
+  return Referrer(sanitized_referrer->url, sanitized_referrer->policy);
+}
+
+// static
+blink::mojom::ReferrerPtr Referrer::SanitizeForRequest(
+    const GURL& request,
+    const blink::mojom::Referrer& referrer) {
+  blink::mojom::ReferrerPtr sanitized_referrer = blink::mojom::Referrer::New(
+      referrer.url.GetAsReferrer(), referrer.policy);
+  if (sanitized_referrer->policy == network::mojom::ReferrerPolicy::kDefault) {
     if (base::FeatureList::IsEnabled(features::kReducedReferrerGranularity)) {
-      sanitized_referrer.policy = network::mojom::ReferrerPolicy::
+      sanitized_referrer->policy = network::mojom::ReferrerPolicy::
           kNoReferrerWhenDowngradeOriginWhenCrossOrigin;
     } else {
-      sanitized_referrer.policy =
+      sanitized_referrer->policy =
           network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade;
     }
   }
 
-  if (sanitized_referrer.policy < network::mojom::ReferrerPolicy::kMinValue ||
-      sanitized_referrer.policy > network::mojom::ReferrerPolicy::kMaxValue) {
+  if (sanitized_referrer->policy < network::mojom::ReferrerPolicy::kMinValue ||
+      sanitized_referrer->policy > network::mojom::ReferrerPolicy::kMaxValue) {
     NOTREACHED();
-    sanitized_referrer.policy = network::mojom::ReferrerPolicy::kNever;
+    sanitized_referrer->policy = network::mojom::ReferrerPolicy::kNever;
   }
 
   if (!request.SchemeIsHTTPOrHTTPS() ||
-      !sanitized_referrer.url.SchemeIsValidForReferrer()) {
-    sanitized_referrer.url = GURL();
+      !sanitized_referrer->url.SchemeIsValidForReferrer()) {
+    sanitized_referrer->url = GURL();
     return sanitized_referrer;
   }
 
-  bool is_downgrade = sanitized_referrer.url.SchemeIsCryptographic() &&
+  bool is_downgrade = sanitized_referrer->url.SchemeIsCryptographic() &&
                       !request.SchemeIsCryptographic();
 
-  switch (sanitized_referrer.policy) {
+  switch (sanitized_referrer->policy) {
     case network::mojom::ReferrerPolicy::kDefault:
       NOTREACHED();
       break;
     case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
       if (is_downgrade)
-        sanitized_referrer.url = GURL();
+        sanitized_referrer->url = GURL();
       break;
     case network::mojom::ReferrerPolicy::kAlways:
       break;
     case network::mojom::ReferrerPolicy::kNever:
-      sanitized_referrer.url = GURL();
+      sanitized_referrer->url = GURL();
       break;
     case network::mojom::ReferrerPolicy::kOrigin:
-      sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
+      sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
       break;
     case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-      if (request.GetOrigin() != sanitized_referrer.url.GetOrigin())
-        sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
+      if (request.GetOrigin() != sanitized_referrer->url.GetOrigin())
+        sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
       break;
     case network::mojom::ReferrerPolicy::kStrictOrigin:
       if (is_downgrade) {
-        sanitized_referrer.url = GURL();
+        sanitized_referrer->url = GURL();
       } else {
-        sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
+        sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
       }
       break;
     case network::mojom::ReferrerPolicy::kSameOrigin:
-      if (request.GetOrigin() != sanitized_referrer.url.GetOrigin())
-        sanitized_referrer.url = GURL();
+      if (request.GetOrigin() != sanitized_referrer->url.GetOrigin())
+        sanitized_referrer->url = GURL();
       break;
     case network::mojom::ReferrerPolicy::
         kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
       if (is_downgrade) {
-        sanitized_referrer.url = GURL();
-      } else if (request.GetOrigin() != sanitized_referrer.url.GetOrigin()) {
-        sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
+        sanitized_referrer->url = GURL();
+      } else if (request.GetOrigin() != sanitized_referrer->url.GetOrigin()) {
+        sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
       }
       break;
   }
 
   if (base::FeatureList::IsEnabled(net::features::kCapRefererHeaderLength) &&
-      base::saturated_cast<int>(sanitized_referrer.url.spec().length()) >
+      base::saturated_cast<int>(sanitized_referrer->url.spec().length()) >
           net::features::kMaxRefererHeaderLength.Get()) {
-    sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
+    sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
   }
 
   return sanitized_referrer;

@@ -19,14 +19,14 @@
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
+#import "ios/web/js_messaging/crw_js_injector.h"
+#import "ios/web/js_messaging/web_view_js_utils.h"
 #include "ios/web/navigation/block_universal_links_buildflags.h"
 #import "ios/web/navigation/crw_session_controller.h"
+#import "ios/web/navigation/crw_wk_navigation_states.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_action_policy_util.h"
-
-#import "ios/web/js_messaging/crw_js_injector.h"
-#import "ios/web/js_messaging/web_view_js_utils.h"
 #import "ios/web/public/deprecated/crw_native_content.h"
 #import "ios/web/public/deprecated/crw_native_content_holder.h"
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
@@ -233,6 +233,8 @@ class CRWWebControllerTest : public WebTestWithWebController,
     OCMStub([result isLoading]);
     OCMStub([result stopLoading]);
     OCMStub([result removeFromSuperview]);
+    OCMStub([result hasOnlySecureContent]).andReturn(YES);
+    OCMStub([(WKWebView*)result title]).andReturn(@"Title");
 
     return result;
   }
@@ -389,6 +391,32 @@ TEST_P(CRWWebControllerTest, SetAllowsBackForwardNavigationGestures) {
     web_controller().allowsBackForwardNavigationGestures = YES;
     EXPECT_TRUE(web_controller().allowsBackForwardNavigationGestures);
   }
+}
+
+// Tests that the navigation state is reset to FINISHED when a back/forward
+// navigation occurs during a pending navigation.
+TEST_P(CRWWebControllerTest, BackForwardWithPendingNavigation) {
+  ASSERT_FALSE([web_controller() pendingItemForSessionController:nil]);
+  ASSERT_FALSE([web_controller() lastPendingItemForNewNavigation]);
+  ASSERT_FALSE(web_controller().webStateImpl->GetPendingItem());
+
+  // Commit a navigation so that there is a back NavigationItem.
+  SetWebViewURL(@"about:blank");
+  [navigation_delegate_ webView:mock_web_view_
+      didStartProvisionalNavigation:nil];
+  [navigation_delegate_ webView:mock_web_view_ didCommitNavigation:nil];
+  [navigation_delegate_ webView:mock_web_view_ didFinishNavigation:nil];
+
+  // Create pending item by simulating a renderer-initiated navigation.
+  [navigation_delegate_ webView:mock_web_view_
+      didStartProvisionalNavigation:nil];
+  ASSERT_EQ(web::WKNavigationState::REQUESTED,
+            web_controller().navigationState);
+
+  [web_controller() didFinishGoToIndexSameDocumentNavigationWithType:
+                        web::NavigationInitiationType::BROWSER_INITIATED
+                                                      hasUserGesture:YES];
+  EXPECT_EQ(web::WKNavigationState::FINISHED, web_controller().navigationState);
 }
 
 INSTANTIATE_TEST_SUITES(CRWWebControllerTest);

@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestContextMenu) {
 
   // Ensure the webview's surface is ready for hit testing.
   content::WebContents* guest_web_contents = GetGuestWebContents();
-  content::WaitForHitTestDataOrGuestSurfaceReady(guest_web_contents);
+  content::WaitForHitTestData(guest_web_contents);
 
   // Register a ContextMenuFilter to wait for the context menu event to be sent.
   content::RenderProcessHost* guest_process_host =

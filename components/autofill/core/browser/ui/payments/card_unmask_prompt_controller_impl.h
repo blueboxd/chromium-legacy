@@ -35,10 +35,10 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
 
   // CardUnmaskPromptController implementation.
   void OnUnmaskDialogClosed() override;
-  void OnUnmaskResponse(const base::string16& cvc,
-                        const base::string16& exp_month,
-                        const base::string16& exp_year,
-                        bool should_store_pan) override;
+  void OnUnmaskPromptAccepted(const base::string16& cvc,
+                              const base::string16& exp_month,
+                              const base::string16& exp_year,
+                              bool should_store_pan) override;
   void NewCardLinkClicked() override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetInstructionsMessage() const override;
@@ -79,7 +79,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   // Timestamp of the last time the user clicked the Verify button.
   base::Time verify_timestamp_;
 
-  CardUnmaskDelegate::UnmaskResponse pending_response_;
+  CardUnmaskDelegate::UserProvidedUnmaskDetails pending_details_;
 
   base::WeakPtrFactory<CardUnmaskPromptControllerImpl> weak_pointer_factory_{
       this};

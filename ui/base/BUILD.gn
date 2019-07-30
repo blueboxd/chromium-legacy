@@ -637,6 +637,22 @@ component("features") {
   ]
 }
 
+if (!is_ios) {
+  jumbo_static_library("pixel_diff_test_support") {
+    testonly = true
+    sources = [
+      "test/skia_gold_pixel_diff.cc",
+      "test/skia_gold_pixel_diff.h",
+    ]
+    deps = [
+      "//base",
+      "//testing/gtest",
+      "//ui/gfx",
+      "//ui/snapshot",
+    ]
+  }
+}
+
 jumbo_static_library("test_support") {
   testonly = true
   sources = [
@@ -864,6 +880,33 @@ test("ui_base_unittests") {
 
   data = []
   data_deps = []
+  deps = [
+    ":ui_base_test_resources_grit",
+    ":ui_base_unittests_bundle_data",
+    "//base",
+    "//base/test:test_support",
+    "//mojo/core/embedder",
+    "//net",
+    "//net:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/brotli:dec",
+    "//third_party/icu",
+    "//ui/base",
+    "//ui/base:test_support",
+    "//ui/base:ui_data_pack",
+    "//ui/base/clipboard:clipboard_test",
+    "//ui/base/clipboard:clipboard_types",
+    "//ui/display",
+    "//ui/events:events_base",
+    "//ui/events:test_support",
+    "//ui/gfx:test_support",
+    "//ui/resources",
+    "//ui/resources:ui_test_pak",
+    "//ui/strings",
+    "//url",
+  ]
 
   if (is_android) {
     sources -= [ "user_activity/user_activity_detector_unittest.cc" ]
@@ -899,38 +942,12 @@ test("ui_base_unittests") {
       "models/list_model_unittest.cc",
       "models/list_selection_model_unittest.cc",
       "models/tree_node_model_unittest.cc",
+      "test/skia_gold_pixel_diff_unittest.cc",
       "text/bytes_formatting_unittest.cc",
       "webui/web_ui_util_unittest.cc",
     ]
+    deps += [ ":pixel_diff_test_support" ]
   }
-
-  deps = [
-    ":ui_base_test_resources_grit",
-    ":ui_base_unittests_bundle_data",
-    "//base",
-    "//base/test:test_support",
-    "//mojo/core/embedder",
-    "//net",
-    "//net:test_support",
-    "//skia",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/brotli:dec",
-    "//third_party/icu",
-    "//ui/base",
-    "//ui/base:test_support",
-    "//ui/base:ui_data_pack",
-    "//ui/base/clipboard:clipboard_test",
-    "//ui/base/clipboard:clipboard_types",
-    "//ui/display",
-    "//ui/events:events_base",
-    "//ui/events:test_support",
-    "//ui/gfx:test_support",
-    "//ui/resources",
-    "//ui/resources:ui_test_pak",
-    "//ui/strings",
-    "//url",
-  ]
 
   if (build_ime) {
     sources += [

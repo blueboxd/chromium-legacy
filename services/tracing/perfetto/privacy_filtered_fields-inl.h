@@ -89,10 +89,10 @@ constexpr int kBufferStatsIndices[] = {1,  2,  3,  4,  5,  6,  7,  8,  9, 10,
 constexpr MessageInfo kBufferStats = {kBufferStatsIndices, nullptr};
 
 // Proto Message: TraceStats
-constexpr int kTraceStatsIndices[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, -1};
+constexpr int kTraceStatsIndices[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -1};
 constexpr MessageInfo const* kTraceStatsComplexMessages[] = {
     &kBufferStats, nullptr, nullptr, nullptr, nullptr,
-    nullptr,       nullptr, nullptr, nullptr};
+    nullptr,       nullptr, nullptr, nullptr, nullptr};
 constexpr MessageInfo kTraceStats = {kTraceStatsIndices,
                                      kTraceStatsComplexMessages};
 

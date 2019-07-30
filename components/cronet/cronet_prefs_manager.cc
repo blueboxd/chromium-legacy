@@ -122,12 +122,11 @@ class PrefServiceAdapter
       pref_service_->CommitPendingWrite(std::move(callback));
   }
 
-  void StartListeningForUpdates(
-      const base::RepeatingClosure& callback) override {
-    pref_change_registrar_.Add(path_, callback);
+  void WaitForPrefLoad(base::OnceClosure callback) override {
     // Notify the pref manager that settings are already loaded, as a result
-    // of initializing the pref store synchornously.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    // of initializing the pref store synchronously.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     std::move(callback));
   }
 
  private:

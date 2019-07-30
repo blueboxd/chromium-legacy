@@ -813,6 +813,7 @@ if (is_win) {
     ]
     deps = [
       ":headless_non_renderer",
+      "//build:branding_buildflags",
       "//components/services/pdf_compositor/public/cpp:manifest",
       "//components/services/pdf_compositor/public/mojom",
       "//content:sandbox_helper_win",
@@ -849,6 +850,7 @@ if (is_win) {
     ]
     deps = [
       ":headless_renderer",
+      "//build:branding_buildflags",
       "//content/public/child:child",
       "//net",
       "//ui/base",
@@ -895,6 +897,7 @@ jumbo_static_library("headless_shell_lib") {
 
   deps = [
     ":headless_renderer",
+    "//build:branding_buildflags",
     "//components/os_crypt",
     "//components/security_state/content",
     "//components/services/pdf_compositor/public/cpp:manifest",

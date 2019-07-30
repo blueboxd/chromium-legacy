@@ -23,6 +23,12 @@ class AXFragmentRootDelegateWin {
   // If a fragment root returns no parent, the OS will use HWND parent-child
   // relationships to establish the fragment root's location in the tree.
   virtual gfx::NativeViewAccessible GetParentOfAXFragmentRoot() = 0;
+
+  // Return true if the window should be treated as an accessible control or
+  // false if the window should be considered a structural detail that should
+  // not be exposed to assistive technology users. See AXFragmentRootWin for
+  // more details.
+  virtual bool IsAXFragmentRootAControlElement() = 0;
 };
 
 }  // namespace ui

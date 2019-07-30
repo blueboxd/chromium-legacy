@@ -2008,15 +2008,16 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   const GURL kViewSourceURL(kViewSourceScheme + std::string(":") + kUrl.spec());
   NavigateToURL(shell(), kUrl);
 
-  ShellAddedObserver new_shell_observer;
+  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(),
+      "Not allowed to load local resource: view-source:*");
+  shell()->web_contents()->SetDelegate(console_delegate.get());
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
                             "window.open('" + kViewSourceURL.spec() + "');"));
-  Shell* new_shell = new_shell_observer.GetShell();
-  WaitForLoadStop(new_shell->web_contents());
-  EXPECT_TRUE(new_shell->web_contents()->GetURL().spec().empty());
-  // No navigation should commit.
-  EXPECT_FALSE(
-      new_shell->web_contents()->GetController().GetLastCommittedEntry());
+  console_delegate->Wait();
+  // Original page shouldn't navigate away, no new tab should be opened.
+  EXPECT_EQ(kUrl, shell()->web_contents()->GetURL());
+  EXPECT_EQ(1u, Shell::windows().size());
 }
 
 // Test that a content initiated navigation to a view-source URL is blocked.

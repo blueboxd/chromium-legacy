@@ -22,7 +22,6 @@ from grit.tool import interface
 from grit import grd_reader
 from grit import lazy_re
 from grit import tclib
-from grit import util
 
 
 # The name of a string in strings.xml

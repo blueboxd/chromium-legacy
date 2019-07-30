@@ -123,7 +123,6 @@ const char kMIN[] = "MIN";
 const char kModelID[] = "ModelID";
 const char kNetworkTechnology[] = "NetworkTechnology";
 const char kPaymentPortal[] = "PaymentPortal";
-const char kPRLVersion[] = "PRLVersion";
 const char kRoamingHome[] = "Home";
 const char kRoamingRequired[] = "Required";
 const char kRoamingRoaming[] = "Roaming";

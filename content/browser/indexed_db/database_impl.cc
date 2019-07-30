@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
@@ -169,7 +170,7 @@ void DatabaseImpl::Get(int64_t transaction_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected()) {
     IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "Unknown error");
+                                 "Not connected.");
     std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
         blink::mojom::IDBError::New(error.code(), error.message())));
     return;
@@ -179,7 +180,7 @@ void DatabaseImpl::Get(int64_t transaction_id,
       connection_->GetTransaction(transaction_id);
   if (!transaction) {
     IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "Unknown error");
+                                 "Unknown transaction.");
     std::move(callback).Run(blink::mojom::IDBDatabaseGetResult::NewErrorResult(
         blink::mojom::IDBError::New(error.code(), error.message())));
     return;
@@ -201,7 +202,7 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected()) {
     IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "Unknown error");
+                                 "Not connected.");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
             blink::mojom::IDBError::New(error.code(), error.message())));
@@ -212,7 +213,7 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
       connection_->GetTransaction(transaction_id);
   if (!transaction) {
     IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
-                                 "Unknown error");
+                                 "Unknown transaction.");
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetAllResult::NewErrorResult(
             blink::mojom::IDBError::New(error.code(), error.message())));
@@ -280,18 +281,33 @@ void DatabaseImpl::OpenCursor(
     blink::mojom::IDBCursorDirection direction,
     bool key_only,
     blink::mojom::IDBTaskType task_type,
-    blink::mojom::IDBCallbacksAssociatedPtrInfo callbacks_info) {
+    blink::mojom::IDBDatabase::OpenCursorCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  scoped_refptr<IndexedDBCallbacks> callbacks(
-      new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
-                             std::move(callbacks_info), idb_runner_));
-  if (!connection_->IsConnected())
+  if (!connection_->IsConnected()) {
+    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+                                 "Not connected.");
+    std::move(callback).Run(
+        blink::mojom::IDBDatabaseOpenCursorResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
     return;
+  }
 
   IndexedDBTransaction* transaction =
       connection_->GetTransaction(transaction_id);
-  if (!transaction)
+  if (!transaction) {
+    IndexedDBDatabaseError error(blink::kWebIDBDatabaseExceptionUnknownError,
+                                 "Unknown transaction.");
+    std::move(callback).Run(
+        blink::mojom::IDBDatabaseOpenCursorResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
     return;
+  }
+
+  blink::mojom::IDBDatabase::OpenCursorCallback aborting_callback =
+      CreateCallbackAbortOnDestruct<
+          blink::mojom::IDBDatabase::OpenCursorCallback,
+          blink::mojom::IDBDatabaseOpenCursorResultPtr>(
+          std::move(callback), transaction->AsWeakPtr());
 
   if (transaction->mode() != blink::mojom::IDBTransactionMode::VersionChange &&
       task_type == blink::mojom::IDBTaskType::Preemptive) {
@@ -304,7 +320,8 @@ void DatabaseImpl::OpenCursor(
   connection_->database()->OpenCursor(
       transaction, object_store_id, index_id,
       std::make_unique<IndexedDBKeyRange>(key_range), direction, key_only,
-      task_type, std::move(callbacks));
+      task_type, std::move(aborting_callback), origin_,
+      dispatcher_host_->AsWeakPtr(), idb_runner_);
 }
 
 void DatabaseImpl::Count(

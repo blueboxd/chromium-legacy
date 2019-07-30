@@ -232,7 +232,7 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
     icon_entry->uuid = icon_uuid;
     icon_entry->data = std::move(encoded_data);
     icon_store_->Add(
-        icon_uuid, std::move(icon_entry),
+        std::move(icon_entry),
         base::BindOnce(&ScheduledNotificationManagerImpl::OnIconAdded,
                        weak_ptr_factory_.GetWeakPtr(), type, std::move(guid),
                        std::move(icon_uuid)));

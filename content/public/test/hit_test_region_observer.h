@@ -18,13 +18,10 @@ namespace content {
 class RenderFrameHost;
 class WebContents;
 
-// TODO(jonross): Remove these once Viz Hit Testing is on by default and the
-// legacy content::browser_test_utils fallbacks are no longer needed.
-//
-// Waits until hit test data for |child_frame| has been submitted, see
-// WaitForHitTestData.
-void WaitForHitTestDataOrChildSurfaceReady(RenderFrameHost* child_frame);
-void WaitForHitTestDataOrGuestSurfaceReady(WebContents* guest_web_contents);
+// Waits until hit test data for |child_frame| or |guest_web_contents| has been
+// submitted, see HitTestRegionObserver::WaitForHitTestData().
+void WaitForHitTestData(RenderFrameHost* child_frame);
+void WaitForHitTestData(WebContents* guest_web_contents);
 
 // TODO(jonross): Move this to components/viz/host/hit_test/ as a standalone
 // HitTestDataWaiter (is-a HitTestRegionObserver) once Viz HitTesting is on by

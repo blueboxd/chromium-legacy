@@ -246,8 +246,6 @@ component("vr_common") {
     "service/interface_set.h",
     "service/vr_service_impl.cc",
     "service/vr_service_impl.h",
-    "service/xr_device_impl.cc",
-    "service/xr_device_impl.h",
     "service/xr_runtime_manager.cc",
     "service/xr_runtime_manager.h",
     "service/xr_runtime_manager_observer.h",

@@ -2158,7 +2158,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4170314459383239649">Išvalyti išeinant</translation>
 <translation id="4172051516777682613">Visada rodyti</translation>
 <translation id="4175737294868205930">Nuolatinė saugykla</translation>
-<translation id="4176463684765177261">Neleista</translation>
+<translation id="4176463684765177261">Išjungta</translation>
 <translation id="4180788401304023883">Ištrinti „<ph name="CERTIFICATE_NAME" />“ sertifikavimo institucijos sertifikatą?</translation>
 <translation id="4181602000363099176">20 k.</translation>
 <translation id="4181841719683918333">Kalbos</translation>
@@ -3277,7 +3277,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
   Viešas rodiklis (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit.):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="5916664084637901428">Įjungta</translation>
-<translation id="59174027418879706">Įgalinta</translation>
+<translation id="59174027418879706">Įjungta</translation>
 <translation id="5920543303088087579">Prisijungimo prie šio tinklo funkciją išjungė administratorius</translation>
 <translation id="5920835625712313205">„Chrome“ OS sistemos turinio kopijos rašymo priemonė</translation>
 <translation id="5924047253200400718">Gaukite pagalbos<ph name="SCANNING_STATUS" /></translation>
@@ -4944,7 +4944,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="839736845446313156">Registruotis</translation>
 <translation id="8398877366907290961">Vis tiek tęsti</translation>
 <translation id="8400146488506985033">Tvarkyti žmones</translation>
-<translation id="8405046151008197676">Gaukite svarbiausios informacijos apie naujausią naujinį</translation>
+<translation id="8405046151008197676">Gaukite svarbiausios informacijos apie paskiausią naujinį</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Pirmiausia paklausti (rekomenduojama)</translation>
 <translation id="8418445294933751433">&amp;Rodyti kaip skirtuką</translation>

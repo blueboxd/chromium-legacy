@@ -4,12 +4,15 @@
 
 #include "content/browser/indexed_db/scopes/leveldb_scopes_tasks.h"
 
+#include <cinttypes>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/indexed_db/scopes/leveldb_scopes_coding.h"
 #include "content/browser/indexed_db/scopes/scopes_metadata.pb.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -112,10 +115,14 @@ leveldb::Status CleanupScopeTask::Run() {
       read_options,
       scopes_encoder.ScopeMetadataKey(metadata_prefix_, scope_number_),
       &metadata_value);
-  if (s.IsNotFound())
-    return leveldb::Status::Corruption("Scope metadata not found.");
+  if (s.IsNotFound()) {
+    return leveldb::Status::Corruption(base::StringPrintf(
+        "Unable to find scopes metadata for scope %" PRId64 ".",
+        scope_number_));
+  }
   if (UNLIKELY(!s.ok()))
     return s;
+
   LevelDBScopesScopeMetadata metadata;
   if (UNLIKELY(!metadata.ParseFromString(metadata_value)))
     return leveldb::Status::Corruption("Unable to parse scope metadata.");
@@ -148,8 +155,7 @@ leveldb::Status CleanupScopeTask::Run() {
 
   write_batch_.Delete(
       scopes_encoder.ScopeMetadataKey(metadata_prefix_, scope_number_));
-  s = SubmitWriteBatch(write_options);
-  return s;
+  return SubmitWriteBatch(write_options);
 }
 
 leveldb::Status CleanupScopeTask::ExecuteAndDeleteCleanupTasks(
@@ -186,9 +192,9 @@ leveldb::Status CleanupScopeTask::ExecuteAndDeleteCleanupTasks(
         leveldb::Slice begin(range.begin());
         leveldb::Slice end(range.end());
         s = DeleteRange(begin, end, read_options, write_options);
-        level_db_->db()->CompactRange(&begin, &end);
         if (UNLIKELY(!s.ok() || level_db_->destruction_requested()))
           return s;
+        level_db_->db()->CompactRange(&begin, &end);
         break;
       }
       // The protobuf code generator is to blame for this style mismatch.
@@ -299,11 +305,11 @@ leveldb::Status RevertScopeTask::Run() {
     return iterator->status();
 
   // Finally, overwrite the metadata to signal the revert is over.
-  LevelDBScopesScopeMetadata metadata_;
-  metadata_.set_ignore_cleanup_tasks(true);
+  LevelDBScopesScopeMetadata metadata;
+  metadata.set_ignore_cleanup_tasks(true);
   write_batch_.Put(
       scopes_encoder.ScopeMetadataKey(metadata_prefix_, scope_number_),
-      metadata_.SerializeAsString());
+      metadata.SerializeAsString());
   s = SubmitWriteBatch(write_options);
   return s;
 }

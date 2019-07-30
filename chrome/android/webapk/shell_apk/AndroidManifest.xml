@@ -51,9 +51,7 @@
         [[#use_new_splash]]
         <activity android:name="org.chromium.webapk.shell_apk.h2o.H2OOpaqueMainActivity"
                   android:theme="@style/SplashTheme"
-                  android:relinquishTaskIdentity="true"
-                  android:excludeFromRecents="true"
-                  android:noHistory="true">
+                  android:relinquishTaskIdentity="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

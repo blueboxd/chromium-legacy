@@ -21,7 +21,6 @@
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/web_package/bundled_exchanges_factory.h"
 #include "content/common/content_export.h"
-#include "content/common/frame_message_enums.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -130,7 +129,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // CreateRendererInitiated.
   static std::unique_ptr<NavigationRequest> CreateBrowserInitiated(
       FrameTreeNode* frame_tree_node,
-      const CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       const CommitNavigationParams& commit_params,
       bool browser_initiated,
       const std::string& extra_headers,
@@ -147,7 +146,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   static std::unique_ptr<NavigationRequest> CreateRendererInitiated(
       FrameTreeNode* frame_tree_node,
       NavigationEntryImpl* entry,
-      const CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       int current_history_list_offset,
       int current_history_list_length,
@@ -177,7 +176,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // The NavigationRequest can be deleted while BeginNavigation() is called.
   void BeginNavigation();
 
-  const CommonNavigationParams& common_params() const { return common_params_; }
+  const mojom::CommonNavigationParams& common_params() const {
+    return *common_params_;
+  }
 
   const mojom::BeginNavigationParams* begin_params() const {
     return begin_params_.get();
@@ -187,7 +188,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   // Updates the navigation start time.
   void set_navigation_start_time(const base::TimeTicks& time) {
-    common_params_.navigation_start = time;
+    common_params_->navigation_start = time;
   }
 
   NavigationURLLoader* loader_for_testing() const { return loader_.get(); }
@@ -323,11 +324,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   void SetOriginPolicy(const network::OriginPolicy& policy);
 
   void set_transition(ui::PageTransition transition) {
-    common_params_.transition = transition;
+    common_params_->transition = transition;
   }
 
   void set_has_user_gesture(bool has_user_gesture) {
-    common_params_.has_user_gesture = has_user_gesture;
+    common_params_->has_user_gesture = has_user_gesture;
   }
 
   // Ignores any interface disconnect that might happen to the
@@ -427,7 +428,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   std::vector<GURL>& redirect_chain() { return redirect_chain_; }
 
-  Referrer& sanitized_referrer() { return sanitized_referrer_; }
+  blink::mojom::Referrer& sanitized_referrer() { return *sanitized_referrer_; }
 
   void set_from_download_cross_origin_redirect(
       bool from_download_cross_origin_redirect) {
@@ -470,7 +471,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   friend class NavigationHandleImplTest;
 
   NavigationRequest(FrameTreeNode* frame_tree_node,
-                    const CommonNavigationParams& common_params,
+                    mojom::CommonNavigationParamsPtr common_params,
                     mojom::BeginNavigationParamsPtr begin_params,
                     const CommitNavigationParams& commit_params,
                     bool browser_initiated,
@@ -759,7 +760,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // modified during redirects.
   // Note: |commit_params_| is not const because was_discarded will
   // be set in CreatedNavigationRequest.
-  CommonNavigationParams common_params_;
+  mojom::CommonNavigationParamsPtr common_params_;
   mojom::BeginNavigationParamsPtr begin_params_;
   CommitNavigationParams commit_params_;
   const bool browser_initiated_;
@@ -913,7 +914,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   // TODO(zetamoo): Try to remove this by always sanitizing the referrer in
   // common_params_.
-  Referrer sanitized_referrer_;
+  blink::mojom::ReferrerPtr sanitized_referrer_;
 
   bool was_redirected_ = false;
 

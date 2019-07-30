@@ -16,7 +16,6 @@ import xml.sax.handler
 
 from grit import exception
 from grit import util
-from grit.node import base
 from grit.node import mapping
 from grit.node import misc
 

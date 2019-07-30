@@ -12,8 +12,13 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace chromeos {
 
+class ManagedNetworkConfigurationHandler;
 class NetworkDeviceHandler;
 class NetworkStateHandler;
 
@@ -22,8 +27,10 @@ namespace network_config {
 class CrosNetworkConfig : public mojom::CrosNetworkConfig,
                           public NetworkStateHandlerObserver {
  public:
-  CrosNetworkConfig(NetworkStateHandler* network_state_handler,
-                    NetworkDeviceHandler* network_device_handler);
+  CrosNetworkConfig(
+      NetworkStateHandler* network_state_handler,
+      NetworkDeviceHandler* network_device_handler,
+      ManagedNetworkConfigurationHandler* network_configuration_handler);
   ~CrosNetworkConfig() override;
 
   void BindRequest(mojom::CrosNetworkConfigRequest request);
@@ -35,6 +42,8 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void GetNetworkStateList(mojom::NetworkFilterPtr filter,
                            GetNetworkStateListCallback callback) override;
   void GetDeviceStateList(GetDeviceStateListCallback callback) override;
+  void GetManagedProperties(const std::string& guid,
+                            GetManagedPropertiesCallback callback) override;
   void SetNetworkTypeEnabledState(
       mojom::NetworkType type,
       bool enabled,
@@ -44,6 +53,14 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void RequestNetworkScan(mojom::NetworkType type) override;
 
  private:
+  void GetManagedPropertiesSuccess(int callback_id,
+                                   const std::string& service_path,
+                                   const base::DictionaryValue& properties);
+  void GetManagedPropertiesFailure(
+      std::string guid,
+      int callback_id,
+      const std::string& error_name,
+      std::unique_ptr<base::DictionaryValue> error_data);
   void SetCellularSimStateSuccess(int callback_id);
   void SetCellularSimStateFailure(
       int callback_id,
@@ -63,11 +80,15 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
 
   NetworkStateHandler* network_state_handler_;    // Unowned
   NetworkDeviceHandler* network_device_handler_;  // Unowned
+  ManagedNetworkConfigurationHandler*
+      network_configuration_handler_;  // Unowned
   mojo::InterfacePtrSet<mojom::CrosNetworkConfigObserver> observers_;
   mojo::BindingSet<mojom::CrosNetworkConfig> bindings_;
+  int callback_id_ = 1;
+  base::flat_map<int, GetManagedPropertiesCallback>
+      get_managed_properties_callbacks_;
   base::flat_map<int, SetCellularSimStateCallback>
       set_cellular_sim_state_callbacks_;
-  int set_cellular_sim_state_callback_id_ = 1;
   base::WeakPtrFactory<CrosNetworkConfig> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrosNetworkConfig);

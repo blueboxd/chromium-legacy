@@ -104,7 +104,7 @@ public class SplashActivity extends Activity {
         super.onResume();
         mResumed = true;
         if (mResult == ActivityResult.CANCELED) {
-            WebApkUtils.finishAndRemoveTask(this);
+            finish();
             return;
         }
 

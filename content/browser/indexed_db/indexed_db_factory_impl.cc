@@ -38,6 +38,8 @@
 #include "content/browser/indexed_db/indexed_db_tombstone_sweeper.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes.h"
+#include "content/browser/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -639,14 +641,32 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
       return {IndexedDBOriginStateHandle(), s, CreateDefaultError(),
               IndexedDBDataLossInfo(), /*was_cold_open=*/true};
   }
+
+  // TODO(dmurph) Have these factories be given in the constructor, or as
+  // arguments to this method.
+  DefaultLevelDBScopesFactory scopes_factory;
+  std::unique_ptr<DisjointRangeLockManager> lock_manager =
+      std::make_unique<DisjointRangeLockManager>(kIndexedDBLockLevelCount);
   IndexedDBDataLossInfo data_loss_info;
   std::unique_ptr<IndexedDBBackingStore> backing_store;
   bool disk_full = false;
   for (int i = 0; i < kNumOpenTries; ++i) {
+    LevelDBScopesOptions scopes_options;
+    scopes_options.lock_manager = lock_manager.get();
+    scopes_options.metadata_key_prefix = ScopesPrefix::Encode();
+    scopes_options.failure_callback = base::BindRepeating(
+        [](const Origin& origin, base::WeakPtr<IndexedDBFactoryImpl> factory,
+           leveldb::Status s) {
+          if (!factory)
+            return;
+          factory->OnDatabaseError(origin, s, nullptr);
+        },
+        origin, weak_factory_.GetWeakPtr());
     std::tie(backing_store, s, data_loss_info, disk_full) =
-        OpenAndVerifyIndexedDBBackingStore(origin, data_directory,
-                                           database_path, blob_path,
-                                           /*is_first_attempt=*/i == 0);
+        OpenAndVerifyIndexedDBBackingStore(
+            origin, data_directory, database_path, blob_path,
+            std::move(scopes_options), &scopes_factory,
+            /*is_first_attempt=*/i == 0);
     if (LIKELY(s.ok()))
       break;
     DCHECK(!backing_store);
@@ -667,6 +687,7 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
   if (UNLIKELY(!s.ok())) {
     ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY,
                      origin);
+
     if (disk_full) {
       return {IndexedDBOriginStateHandle(), s,
               IndexedDBDatabaseError(
@@ -680,19 +701,27 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
               data_loss_info, /*was_cold_open=*/true};
     }
   }
+  DCHECK(backing_store);
+  // Scopes must be single sequence to keep methods like ForceClose synchronous.
+  // See https://crbug.com/980685
+  backing_store->db()->scopes()->StartRecoveryAndCleanupTasks(
+      LevelDBScopes::TaskRunnerMode::kUseCurrentSequence);
+
   if (!is_incognito_and_in_memory)
     ReportOpenStatus(indexed_db::INDEXED_DB_BACKING_STORE_OPEN_SUCCESS, origin);
   it = factories_per_origin_
-           .emplace(origin,
-                    std::make_unique<IndexedDBOriginState>(
-                        /*persist_for_incognito=*/is_incognito_and_in_memory,
-                        clock_, leveldb_factory_, &earliest_sweep_,
-                        base::BindOnce(
-                            &IndexedDBFactoryImpl::RemoveOriginState,
-                            origin_state_destruction_weak_factory_.GetWeakPtr(),
-                            origin),
-                        std::move(backing_store)))
+           .emplace(
+               origin,
+               std::make_unique<IndexedDBOriginState>(
+                   /*persist_for_incognito=*/is_incognito_and_in_memory, clock_,
+                   leveldb_factory_, &earliest_sweep_, std::move(lock_manager),
+                   base::BindOnce(
+                       &IndexedDBFactoryImpl::RemoveOriginState,
+                       origin_state_destruction_weak_factory_.GetWeakPtr(),
+                       origin),
+                   std::move(backing_store)))
            .first;
+
   context_->FactoryOpened(origin);
   return {it->second->CreateHandle(), s, IndexedDBDatabaseError(),
           data_loss_info, /*was_cold_open=*/true};
@@ -719,6 +748,8 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
     base::FilePath data_directory,
     base::FilePath database_path,
     base::FilePath blob_path,
+    LevelDBScopesOptions scopes_options,
+    LevelDBScopesFactory* scopes_factory,
     bool is_first_attempt) {
   // Please see docs/open_and_verify_leveldb_database.code2flow, and the
   // generated pdf (from https://code2flow.com).
@@ -768,15 +799,20 @@ IndexedDBFactoryImpl::OpenAndVerifyIndexedDBBackingStore(
 
   // Open the leveldb database.
   std::tie(state, status, is_disk_full) = leveldb_factory_->OpenLevelDBState(
-      database_path, indexed_db::GetDefaultIndexedDBComparator(),
-      indexed_db::GetDefaultLevelDBComparator());
+      database_path, indexed_db::GetDefaultLevelDBComparator());
 
   if (UNLIKELY(!status.ok()))
     return {nullptr, status, IndexedDBDataLossInfo(), is_disk_full};
 
+  std::unique_ptr<LevelDBScopes> scopes;
+  std::tie(scopes, status) = scopes_factory->CreateAndInitializeLevelDBScopes(
+      std::move(scopes_options), state);
+  if (UNLIKELY(!status.ok()))
+    return {nullptr, status, std::move(data_loss_info), /*is_disk_full=*/false};
+
   std::unique_ptr<TransactionalLevelDBDatabase> database =
-      std::make_unique<TransactionalLevelDBDatabase>(
-          std::move(state), leveldb_factory_, context_->TaskRunner(),
+      leveldb_factory_->CreateLevelDBDatabase(
+          std::move(state), std::move(scopes), context_->TaskRunner(),
           TransactionalLevelDBDatabase::kDefaultMaxOpenIteratorsPerDatabase);
 
   bool are_schemas_known = false;

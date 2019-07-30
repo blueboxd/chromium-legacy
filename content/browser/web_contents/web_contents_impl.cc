@@ -6295,6 +6295,9 @@ void WebContentsImpl::OnFocusedElementChangedInFrame(
       NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
       Source<RenderViewHost>(GetRenderViewHost()),
       Details<FocusedNodeDetails>(&details));
+
+  for (auto& observer : observers_)
+    observer.OnFocusChangedInPage(&details);
 }
 
 bool WebContentsImpl::DidAddMessageToConsole(

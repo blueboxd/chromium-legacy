@@ -76,7 +76,6 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
-#include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
@@ -126,6 +125,7 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/public_buildflags.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -2209,7 +2209,7 @@ void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
   if (!main_render_frame_)
     return;
 
-  MediaStreamDeviceObserver* media_stream_device_observer =
+  blink::WebMediaStreamDeviceObserver* media_stream_device_observer =
       main_render_frame_->GetMediaStreamDeviceObserver();
   if (!media_stream_device_observer)
     return;

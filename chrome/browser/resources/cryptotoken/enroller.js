@@ -1127,8 +1127,8 @@ Enroller.prototype.encodeEnrollChallenges_ = function(
       // which we're constructing here. The browser data object contains, among
       // other things, the server challenge.
       var serverChallenge = enrollChallenge['challenge'];
-      var browserData = makeEnrollBrowserData(
-          serverChallenge, this.sender_.origin, this.sender_.tlsChannelId);
+      var browserData =
+          makeEnrollBrowserData(serverChallenge, this.sender_.origin);
       // Replace the challenge with the hash of the browser data.
       modifiedChallenge['challenge'] =
           B64_encode(sha256HashOfString(browserData));

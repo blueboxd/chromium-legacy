@@ -9,6 +9,7 @@
 
 કેટલીક સુવિધાઓ ઉપલબ્ધ હોઈ શકે છે અને પસંદગીઓ પરના ફેરફારોને સાચવવામાં આવશે નહીં.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" />, પહેલાં Chrome નો ઉપયોગ કરી રહ્યાં હતાં</translation>
+<translation id="1097330777386562916">જ્યારે તમે Chromeમાંથી બહાર નીકળો ત્યારે કુકી અને સાઇટનો ડેટા સાફ કરો</translation>
 <translation id="1104959162601287462">&amp;Chrome OS વિશે</translation>
 <translation id="110877069173485804">આ તમારું Chrome છે</translation>
 <translation id="1142745911746664600">Chrome અપડેટ કરી શકતાં નથી</translation>
@@ -28,6 +29,7 @@
 <translation id="1590588151039584890">અપડેટ થવા માટે, આ કમ્પ્યુટર પર Chrome ચાલતું બંધ થવું જરૂરી છે. આના કારણે, આ કમ્પ્યુટરમાં લૉગ ઇન થયેલા બીજા વપરાશકર્તાઓના સાચવ્યા વિનાના ફેરફારો ગુમ થઈ શકે છે.</translation>
 <translation id="1619887657840448962">Chrome ને સુરક્ષિત બનાવવા માટે, અમે નીચેના એક્સ્ટેન્શનને અક્ષમ કર્યું છે કે જે <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> માં સૂચિબદ્ધ નથી અને તમારી જાણ વિના ઉમેરવામાં આવ્યું હોઈ શકે છે.</translation>
 <translation id="1628000112320670027">Chrome સાથે સહાય મેળવો</translation>
+<translation id="1635734105302489219">જ્યારે તમે Chromeમાંથી બહાર નીકળો ત્યારે કુકી સાફ કરો. સિંક ચાલુ રાખવા માટે, આ <ph name="COOKIE_SETTINGS_LINK" />માં ફેરફાર કરો.</translation>
 <translation id="1662639173275167396"><ph name="BEGIN_LINK_LINUX_OSS" />Linux (બીટા)<ph name="END_LINK_LINUX_OSS" />ની જેમ, Chrome OS વધારાના <ph name="BEGIN_LINK_CROS_OSS" />ઓપન સૉર્સ સૉફ્ટવેર<ph name="END_LINK_CROS_OSS" /> દ્વારા શક્ય બની છે.</translation>
 <translation id="1674870198290878346">Chrome છુ&amp;પી વિંડોમાં લિંક ખોલો</translation>
 <translation id="1682634494516646069">Google Chrome એની ડેટા ડિરેક્ટરી વાંચી અથવા લખી શકતુંં નથી:

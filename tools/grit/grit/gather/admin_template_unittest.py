@@ -13,7 +13,6 @@ if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 import StringIO
-import tempfile
 import unittest
 
 from grit.gather import admin_template

@@ -132,6 +132,17 @@ void LoginScreenClient::AuthenticateUserWithEasyUnlock(
   }
 }
 
+void LoginScreenClient::AuthenticateUserWithChallengeResponse(
+    const AccountId& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  if (delegate_) {
+    delegate_->HandleAuthenticateUserWithChallengeResponse(account_id,
+                                                           std::move(callback));
+    auth_recorder_->RecordAuthMethod(
+        chromeos::LoginAuthRecorder::AuthMethod::kChallengeResponse);
+  }
+}
+
 bool LoginScreenClient::ValidateParentAccessCode(
     const AccountId& account_id,
     const std::string& access_code) {

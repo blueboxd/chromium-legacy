@@ -499,19 +499,19 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FindFocusTest) {
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   chrome::FocusLocationBar(browser());
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   ClickOnView(VIEW_ID_TAB_CONTAINER);
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 }
 

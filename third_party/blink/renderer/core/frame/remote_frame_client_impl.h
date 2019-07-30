@@ -43,8 +43,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void CheckCompleted() override;
   void ForwardPostMessage(MessageEvent*,
                           scoped_refptr<const SecurityOrigin> target,
-                          LocalFrame* source,
-                          bool has_user_gesture) const override;
+                          LocalFrame* source) const override;
   void FrameRectsChanged(const IntRect& local_frame_rect,
                          const IntRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(const IntRect&,

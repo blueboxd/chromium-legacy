@@ -16,6 +16,8 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/navigation_params.h"
+#include "content/common/navigation_params_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_utils.h"
@@ -318,6 +320,7 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
       navigation_url_(original_url),
       initial_method_("GET"),
       browser_initiated_(browser_initiated),
+      referrer_(blink::mojom::Referrer::New()),
       transition_(browser_initiated ? ui::PAGE_TRANSITION_TYPED
                                     : ui::PAGE_TRANSITION_LINK),
       contents_mime_type_("text/html"),
@@ -377,7 +380,7 @@ void NavigationSimulatorImpl::InitializeFromStartedRequest(
   // |initial_method_| cannot be set after the request has started.
   browser_initiated_ = request_->browser_initiated();
   // |same_document_| should always be false here.
-  referrer_ = request_->common_params().referrer;
+  referrer_ = request_->common_params().referrer.Clone();
   transition_ = handle->GetPageTransition();
   // |reload_type_| cannot be set after the request has started.
   // |session_history_offset_| cannot be set after the request has started.
@@ -476,9 +479,9 @@ void NavigationSimulatorImpl::Redirect(const GURL& new_url) {
   redirect_info.new_method = "GET";
   redirect_info.new_url = new_url;
   redirect_info.new_site_for_cookies = new_url;
-  redirect_info.new_referrer = referrer_.url.spec();
+  redirect_info.new_referrer = referrer_->url.spec();
   redirect_info.new_referrer_policy =
-      Referrer::ReferrerPolicyForUrlRequest(referrer_.policy);
+      Referrer::ReferrerPolicyForUrlRequest(referrer_->policy);
   scoped_refptr<network::ResourceResponse> response(
       new network::ResourceResponse);
   response->head.connection_info = http_connection_info_;
@@ -862,10 +865,10 @@ void NavigationSimulatorImpl::SetWasInitiatedByLinkClick(
   was_initiated_by_link_click_ = was_initiated_by_link_click;
 }
 
-void NavigationSimulatorImpl::SetReferrer(const Referrer& referrer) {
+void NavigationSimulatorImpl::SetReferrer(blink::mojom::ReferrerPtr referrer) {
   CHECK_LE(state_, STARTED) << "The referrer cannot be set after the "
                                "navigation has committed or has failed";
-  referrer_ = referrer;
+  referrer_ = std::move(referrer);
 }
 
 void NavigationSimulatorImpl::SetSocketAddress(
@@ -910,7 +913,8 @@ void NavigationSimulatorImpl::SetLoadURLParams(
 
   // Make sure the internal attributes of NavigationSimulatorImpl match the
   // LoadURLParams that is going to be sent.
-  referrer_ = load_url_params->referrer;
+  referrer_ = blink::mojom::Referrer::New(load_url_params->referrer.url,
+                                          load_url_params->referrer.policy);
   transition_ = load_url_params->transition_type;
 }
 
@@ -951,7 +955,7 @@ void NavigationSimulatorImpl::BrowserInitiatedStartAndWaitBeforeUnload() {
       load_url_params_ = nullptr;
     } else {
       NavigationController::LoadURLParams load_url_params(navigation_url_);
-      load_url_params.referrer = referrer_;
+      load_url_params.referrer = Referrer(*referrer_);
       load_url_params.transition_type = transition_;
       if (initial_method_ == "POST")
         load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;
@@ -1101,18 +1105,20 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
           base::nullopt /* detools_initiator_info */);
-  CommonNavigationParams common_params;
-  common_params.url = navigation_url_;
-  common_params.initiator_origin = url::Origin();
-  common_params.method = initial_method_;
-  common_params.referrer = referrer_;
-  common_params.transition = transition_;
-  common_params.navigation_type =
+  mojom::CommonNavigationParamsPtr common_params =
+      mojom::CommonNavigationParams::New();
+  common_params->navigation_start = base::TimeTicks::Now();
+  common_params->url = navigation_url_;
+  common_params->initiator_origin = url::Origin();
+  common_params->method = initial_method_;
+  common_params->referrer = referrer_.Clone();
+  common_params->transition = transition_;
+  common_params->navigation_type =
       PageTransitionCoreTypeIs(transition_, ui::PAGE_TRANSITION_RELOAD)
-          ? FrameMsg_Navigate_Type::RELOAD
-          : FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.has_user_gesture = has_user_gesture_;
-  common_params.initiator_csp_info =
+          ? mojom::NavigationType::RELOAD
+          : mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->has_user_gesture = has_user_gesture_;
+  common_params->initiator_csp_info =
       InitiatorCSPInfo(should_check_main_world_csp_,
                        std::vector<ContentSecurityPolicy>(), base::nullopt);
 
@@ -1122,13 +1128,14 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
         mojo::MakeRequestAssociatedWithDedicatedPipe(&navigation_client_ptr);
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
-        ->BeginNavigation(common_params, std::move(begin_params), nullptr,
-                          navigation_client_ptr.PassInterface(), nullptr);
+        ->BeginNavigation(std::move(common_params), std::move(begin_params),
+                          nullptr, navigation_client_ptr.PassInterface(),
+                          nullptr);
   } else {
     render_frame_host_->frame_host_binding_for_testing()
         .impl()
-        ->BeginNavigation(common_params, std::move(begin_params), nullptr,
-                          nullptr, nullptr);
+        ->BeginNavigation(std::move(common_params), std::move(begin_params),
+                          nullptr, nullptr, nullptr);
   }
 
   NavigationRequest* request =
@@ -1231,19 +1238,19 @@ bool NavigationSimulatorImpl::DidCreateNewEntry() {
                                    ui::PAGE_TRANSITION_AUTO_SUBFRAME))
     return false;
   if (reload_type_ != ReloadType::NONE ||
-      (request_ && FrameMsg_Navigate_Type::IsReload(
+      (request_ && NavigationTypeUtils::IsReload(
                        request_->common_params().navigation_type))) {
     return false;
   }
   if (session_history_offset_ ||
-      (request_ && FrameMsg_Navigate_Type::IsHistory(
+      (request_ && NavigationTypeUtils::IsHistory(
                        request_->common_params().navigation_type))) {
     return false;
   }
   if (request_ && (request_->common_params().navigation_type ==
-                       FrameMsg_Navigate_Type::RESTORE ||
+                       mojom::NavigationType::RESTORE ||
                    request_->common_params().navigation_type ==
-                       FrameMsg_Navigate_Type::RESTORE_WITH_POST)) {
+                       mojom::NavigationType::RESTORE_WITH_POST)) {
     return false;
   }
 
@@ -1276,7 +1283,7 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
       std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>();
   params->url = navigation_url_;
   params->original_request_url = original_url_;
-  params->referrer = referrer_;
+  params->referrer = Referrer(*referrer_);
   params->contents_mime_type = contents_mime_type_;
   params->transition = transition_;
   params->gesture =

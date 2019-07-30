@@ -42,7 +42,7 @@ class FrameHostInterceptor : public WebContentsObserver {
   // original messages and just forwards them to the original implementation).
   virtual bool WillDispatchBeginNavigation(
       RenderFrameHost* render_frame_host,
-      CommonNavigationParams* common_params,
+      mojom::CommonNavigationParamsPtr* common_params,
       mojom::BeginNavigationParamsPtr* begin_params,
       blink::mojom::BlobURLTokenPtr* blob_url_token,
       mojom::NavigationClientAssociatedPtrInfo* navigation_client,

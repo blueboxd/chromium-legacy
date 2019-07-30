@@ -97,7 +97,7 @@ using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 constexpr size_t kDefaultResourceTimingBufferSize = 250;
 constexpr size_t kDefaultEventTimingBufferSize = 150;
 constexpr size_t kDefaultElementTimingBufferSize = 150;
-constexpr size_t kDefaultLayoutJankBufferSize = 150;
+constexpr size_t kDefaultLayoutShiftBufferSize = 150;
 constexpr size_t kDefaultLargestContenfulPaintSize = 150;
 
 Performance::Performance(
@@ -249,8 +249,8 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
     case PerformanceEntry::kTaskAttribution:
       break;
     case PerformanceEntry::kLayoutShift:
-      for (const auto& layout_jank : layout_jank_buffer_)
-        entries.push_back(layout_jank);
+      for (const auto& layout_shift : layout_shift_buffer_)
+        entries.push_back(layout_shift);
       break;
     case PerformanceEntry::kLargestContentfulPaint:
       UseCounter::Count(GetExecutionContext(),
@@ -549,9 +549,9 @@ void Performance::AddEventTimingBuffer(PerformanceEventTiming& entry) {
   }
 }
 
-void Performance::AddLayoutJankBuffer(LayoutShift& entry) {
-  if (layout_jank_buffer_.size() < kDefaultLayoutJankBufferSize)
-    layout_jank_buffer_.push_back(&entry);
+void Performance::AddLayoutShiftBuffer(LayoutShift& entry) {
+  if (layout_shift_buffer_.size() < kDefaultLayoutShiftBufferSize)
+    layout_shift_buffer_.push_back(&entry);
 }
 
 void Performance::AddLargestContentfulPaint(LargestContentfulPaint* entry) {
@@ -914,7 +914,7 @@ void Performance::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_timing_secondary_buffer_);
   visitor->Trace(element_timing_buffer_);
   visitor->Trace(event_timing_buffer_);
-  visitor->Trace(layout_jank_buffer_);
+  visitor->Trace(layout_shift_buffer_);
   visitor->Trace(largest_contentful_paint_buffer_);
   visitor->Trace(navigation_timing_);
   visitor->Trace(user_timing_);

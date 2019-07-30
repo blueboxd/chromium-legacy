@@ -95,6 +95,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Prepare for a break token before the specified line.
   NGBoxFragmentBuilder& AddBreakBeforeLine(int line_number);
 
+  // Add a layout result. This involves appending the fragment and its relative
+  // offset to the builder, but also keeping track of out-of-flow positioned
+  // descendants, propagating fragmentainer breaks, and more.
   NGBoxFragmentBuilder& AddResult(const NGLayoutResult&,
                                   const LogicalOffset,
                                   const LayoutInline* = nullptr);
@@ -233,7 +236,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
  private:
   // Update whether we have fragmented in this flow.
-  NGBoxFragmentBuilder& PropagateBreak(const NGLayoutResult&);
+  void PropagateBreak(const NGLayoutResult&);
 
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);
 

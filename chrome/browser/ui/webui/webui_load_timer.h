@@ -9,8 +9,11 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/timer/elapsed_timer.h"
 #include "content/public/browser/web_contents_observer.h"
+
+namespace base {
+class ElapsedTimer;
+}
 
 // Measures and reports page load times for WebUI.
 class WebuiLoadTimer : public content::WebContentsObserver {

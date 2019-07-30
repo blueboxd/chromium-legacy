@@ -1868,10 +1868,6 @@ void AppListView::OnBoundsAnimationCompleted() {
     auto* contents_view = app_list_main_view()->contents_view();
     if (contents_view->IsShowingEmbeddedAssistantUI())
       contents_view->ShowEmbeddedAssistantUI(false);
-
-    // Reset the search box to be shown again. This is done after the animation
-    // is complete in order to minimize work during the animation.
-    search_box_view_->ClearSearchAndDeactivateSearchBox();
   }
 
   // Layout if the animation was completed.

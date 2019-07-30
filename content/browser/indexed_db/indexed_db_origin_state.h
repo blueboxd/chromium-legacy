@@ -77,6 +77,7 @@ class CONTENT_EXPORT IndexedDBOriginState {
                        base::Clock* clock,
                        indexed_db::LevelDBFactory* leveldb_factory,
                        base::Time* earliest_global_sweep_time,
+                       std::unique_ptr<DisjointRangeLockManager> lock_manager,
                        base::OnceClosure destruct_myself,
                        std::unique_ptr<IndexedDBBackingStore> backing_store);
   ~IndexedDBOriginState();
@@ -109,7 +110,7 @@ class CONTENT_EXPORT IndexedDBOriginState {
   }
   DisjointRangeLockManager* lock_manager() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return &lock_manager_;
+    return lock_manager_.get();
   }
   IndexedDBPreCloseTaskQueue* pre_close_task_queue() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -158,14 +159,14 @@ class CONTENT_EXPORT IndexedDBOriginState {
   // CanCloseFactory.
   bool has_blobs_outstanding_ = false;
   bool skip_closing_sequence_ = false;
-  base::Clock* clock_;
+  base::Clock* const clock_;
   indexed_db::LevelDBFactory* const leveldb_factory_;
   // This is safe because it is owned by IndexedDBFactoryImpl, which owns this
   // object.
   base::Time* earliest_global_sweep_time_;
   ClosingState closing_stage_ = ClosingState::kNotClosing;
   base::OneShotTimer close_timer_;
-  DisjointRangeLockManager lock_manager_;
+  const std::unique_ptr<DisjointRangeLockManager> lock_manager_;
   const std::unique_ptr<IndexedDBBackingStore> backing_store_;
 
   OriginDBMap databases_;

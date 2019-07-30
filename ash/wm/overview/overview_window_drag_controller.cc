@@ -91,6 +91,11 @@ float GetManhattanDistanceY(float point_y, const gfx::RectF& rect) {
   return std::max(rect.y() - point_y, point_y - rect.bottom());
 }
 
+bool GetVirtualDesksBarEnabled(OverviewItem* item) {
+  return desks_util::ShouldDesksBarBeCreated() &&
+         item->overview_grid()->IsDesksBarViewActive();
+}
+
 }  // namespace
 
 OverviewWindowDragController::OverviewWindowDragController(
@@ -104,7 +109,7 @@ OverviewWindowDragController::OverviewWindowDragController(
       display_count_(Shell::GetAllRootWindows().size()),
       should_allow_drag_to_close_(allow_drag_to_close),
       should_allow_split_view_(ShouldAllowSplitView()),
-      virtual_desks_bar_enabled_(desks_util::ShouldDesksBarBeCreated()) {}
+      virtual_desks_bar_enabled_(GetVirtualDesksBarEnabled(item)) {}
 
 OverviewWindowDragController::~OverviewWindowDragController() = default;
 

@@ -217,6 +217,7 @@ namespace networkingPrivate {
   dictionary CertificatePattern {
     DOMString[]? EnrollmentURI;
     IssuerSubjectPattern? Issuer;
+    DOMString[]? IssuerCAPEMs;
     DOMString[]? IssuerCARef;
     IssuerSubjectPattern? Subject;
   };
@@ -534,7 +535,6 @@ namespace networkingPrivate {
     DOMString? ModelID;
     DOMString? NetworkTechnology;
     PaymentPortal? PaymentPortal;
-    long? PRLVersion;
     DOMString? RoamingState;
     boolean? Scanning;
     CellularProviderProperties? ServingOperator;
@@ -567,7 +567,6 @@ namespace networkingPrivate {
     DOMString? ModelID;
     DOMString? NetworkTechnology;
     PaymentPortal? PaymentPortal;
-    long? PRLVersion;
     DOMString? RoamingState;
     boolean? Scanning;
     CellularProviderProperties? ServingOperator;

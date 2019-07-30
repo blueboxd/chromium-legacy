@@ -141,6 +141,14 @@ class PLATFORM_EXPORT BlinkGCObserver {
   ThreadState* thread_state_;
 };
 
+// Used for visiting slots for DOM wrapper handles.
+class DOMWrapperSlotsVisitor {
+ public:
+  // Vistation of a handle at |address| of |size|. It is *not* guaranteed that
+  // |address| is part of the managed heap.
+  virtual void VisitSlot(void* address, size_t size) = 0;
+};
+
 class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   USING_FAST_MALLOC(ThreadState);
 
@@ -172,10 +180,11 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   class GCForbiddenScope;
   class MainThreadGCForbiddenScope;
   class NoAllocationScope;
-  class ObjectResurrectionForbiddenScope;
   class SweepForbiddenScope;
 
   using V8TraceRootsCallback = void (*)(v8::Isolate*, Visitor*);
+  using V8VisitHandleSlotsCallback = void (*)(v8::Isolate*,
+                                              DOMWrapperSlotsVisitor*);
   using V8BuildEmbedderGraphCallback = void (*)(v8::Isolate*,
                                                 v8::EmbedderGraph*,
                                                 void*);
@@ -219,6 +228,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // there garbage collectors together.
   void AttachToIsolate(v8::Isolate*,
                        V8TraceRootsCallback,
+                       V8VisitHandleSlotsCallback,
                        V8BuildEmbedderGraphCallback);
 
   // Removes the association from a potentially attached |v8::Isolate|.
@@ -298,11 +308,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   // Returns whether it is currently forbidden to sweep objects.
   bool SweepForbidden() const { return sweep_forbidden_; }
-
-  // Returns whether is is currently forbidden to resurrect objects.
-  bool IsObjectResurrectionForbidden() const {
-    return object_resurrection_forbidden_;
-  }
 
   bool in_atomic_pause() const { return in_atomic_pause_; }
 
@@ -457,15 +462,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void EnterNoAllocationScope() { no_allocation_count_++; }
   void LeaveNoAllocationScope() { no_allocation_count_--; }
 
-  void EnterObjectResurrectionForbiddenScope() {
-    DCHECK(!object_resurrection_forbidden_);
-    object_resurrection_forbidden_ = true;
-  }
-  void LeaveObjectResurrectionForbiddenScope() {
-    DCHECK(object_resurrection_forbidden_);
-    object_resurrection_forbidden_ = false;
-  }
-
   void EnterAtomicPause() {
     DCHECK(!in_atomic_pause_);
     in_atomic_pause_ = true;
@@ -569,6 +565,15 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
            reason == BlinkGC::GCReason::kForcedGCForTesting;
   }
 
+#if defined(ADDRESS_SANITIZER)
+  // Poisons payload of unmarked objects.
+  //
+  // Also unpoisons memory areas for handles that may require resetting which
+  // can race with destructors. Note that cross-thread access still requires
+  // synchronization using a lock.
+  void PoisonUnmarkedObjects();
+#endif  // ADDRESS_SANITIZER
+
   std::unique_ptr<ThreadHeap> heap_;
   base::PlatformThreadId thread_;
   std::unique_ptr<PersistentRegion> persistent_region_;
@@ -576,7 +581,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   intptr_t* start_of_stack_;
   intptr_t* end_of_stack_;
 
-  bool object_resurrection_forbidden_ = false;
   bool in_atomic_pause_ = false;
   bool sweep_forbidden_ = false;
   bool incremental_marking_ = false;
@@ -601,6 +605,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   v8::Isolate* isolate_ = nullptr;
   V8TraceRootsCallback v8_trace_roots_ = nullptr;
+  V8VisitHandleSlotsCallback v8_visit_handle_slots_ = nullptr;
   V8BuildEmbedderGraphCallback v8_build_embedder_graph_ = nullptr;
   std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 

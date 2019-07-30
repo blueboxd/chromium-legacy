@@ -18,7 +18,6 @@ namespace blink {
 VRController::VRController(NavigatorVR* navigator_vr)
     : ContextLifecycleObserver(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
-      display_synced_(false),
       binding_(this),
       feature_handle_for_scheduler_(
           navigator_vr->GetDocument()->GetScheduler()->RegisterFeature(
@@ -36,17 +35,51 @@ VRController::VRController(NavigatorVR* navigator_vr)
   binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
   service_->SetClient(std::move(client));
 
-  service_->RequestDevice(
-      WTF::Bind(&VRController::OnRequestDeviceReturned, WrapPersistent(this)));
+  // Request display info. If we get it, we have a device.
+  service_->GetImmersiveVRDisplayInfo(WTF::Bind(
+      &VRController::OnImmersiveDisplayInfoReturned, WrapPersistent(this)));
+
+  // Request a non-immersive session immediately as WebVR 1.1 expects to be able
+  // to get non-immersive poses as soon as the display is returned.
+  device::mojom::blink::XRSessionOptionsPtr options =
+      device::mojom::blink::XRSessionOptions::New();
+  options->immersive = false;
+  options->is_legacy_webvr = true;
+  service_->RequestSession(
+      std::move(options),
+      WTF::Bind(&VRController::OnNonImmersiveSessionRequestReturned,
+                WrapPersistent(this)));
 }
 
 VRController::~VRController() = default;
+
+bool VRController::ShouldResolveGetDisplays() {
+  return have_latest_immersive_info_ && nonimmersive_session_returned_;
+}
+
+void VRController::EnsureDisplay() {
+  if (!display_) {
+    // We have a display for the first time.
+    display_ = VRDisplay::Create(navigator_vr_);
+    if (pending_listening_for_activate_) {
+      SetListeningForActivate(pending_listening_for_activate_);
+      pending_listening_for_activate_ = false;
+    }
+    display_->OnConnected();
+    display_->FocusChanged();
+  }
+
+  // If we have a non-immersive session, give it to the display so we can
+  // satisfy inline animation frame requests.
+  if (nonimmersive_session_)
+    display_->SetNonImmersiveSession(std::move(nonimmersive_session_));
+}
 
 void VRController::GetDisplays(ScriptPromiseResolver* resolver) {
   // If we've previously synced the VRDisplays or no longer have a valid service
   // connection just return the current list. In the case of the service being
   // disconnected this will be an empty array.
-  if (!service_ || display_synced_) {
+  if (!service_ || ShouldResolveGetDisplays()) {
     LogGetDisplayResult();
     HeapVector<Member<VRDisplay>> displays;
     if (display_)
@@ -81,52 +114,17 @@ void VRController::SetListeningForActivate(bool listening) {
   }
 }
 
-// Called when the XRDevice has been initialized.
-void VRController::OnRequestDeviceReturned(
-    device::mojom::blink::XRDevicePtr device) {
-  if (!device) {
-    // There are no devices connected to the system. We can't do any VR, at all.
-    OnGetDisplays();
-    return;
-  }
-
-  device->GetImmersiveVRDisplayInfo(WTF::Bind(
-      &VRController::OnImmersiveDisplayInfoReturned, WrapPersistent(this)));
-
-  display_ = VRDisplay::Create(navigator_vr_, std::move(device));
-
-  if (pending_listening_for_activate_) {
-    SetListeningForActivate(pending_listening_for_activate_);
-    pending_listening_for_activate_ = false;
-  }
-}
-
-void VRController::OnNewDeviceReturned(
-    device::mojom::blink::XRDevicePtr device) {
-  if (device) {
-    display_->OnConnected();
-  }
-  OnRequestDeviceReturned(std::move(device));
-}
-
 void VRController::OnDeviceChanged() {
-  if (!display_ && !display_synced_) {
+  if (!have_latest_immersive_info_) {
     // We're already underway checking if there is a device.
     return;
   }
 
-  display_synced_ = false;
+  have_latest_immersive_info_ = false;
 
-  if (!display_) {
-    service_->RequestDevice(
-        WTF::Bind(&VRController::OnNewDeviceReturned, WrapPersistent(this)));
-  } else if (!display_->canPresent()) {
-    // If we can't present, see if that's changed.
-    display_->device()->GetImmersiveVRDisplayInfo(WTF::Bind(
-        &VRController::OnImmersiveDisplayInfoReturned, WrapPersistent(this)));
-  } else {
-    display_synced_ = true;
-  }
+  // Get updated display info.
+  service_->GetImmersiveVRDisplayInfo(WTF::Bind(
+      &VRController::OnImmersiveDisplayInfoReturned, WrapPersistent(this)));
 }
 
 void VRController::FocusChanged() {
@@ -136,27 +134,31 @@ void VRController::FocusChanged() {
 
 void VRController::OnImmersiveDisplayInfoReturned(
     device::mojom::blink::VRDisplayInfoPtr info) {
-  if (!display_) {
-    // We must have been disposed and are shutting down.
+  if (disposed_) {
     return;
   }
 
-  has_presentation_capable_display_ = info ? true : false;
+  if (info) {
+    has_presentation_capable_display_ = info->capabilities->can_present;
+  } else {
+    has_presentation_capable_display_ = false;
+  }
 
   if (info) {
+    EnsureDisplay();
     display_->OnChanged(std::move(info), true /* is_immersive */);
-    display_->OnConnected();
-    has_display_ = true;
   }
-  display_->FocusChanged();
 
-  display_synced_ = true;
-  OnGetDisplays();
+  // We know whether there is a display at this point.
+  have_latest_immersive_info_ = true;
+
+  if (ShouldResolveGetDisplays())
+    OnGetDisplays();
 }
 
 void VRController::LogGetDisplayResult() {
   Document* doc = navigator_vr_->GetDocument();
-  if (has_display_ && doc && doc->IsInMainFrame()) {
+  if (display_ && doc && doc->IsInMainFrame()) {
     ukm::builders::XR_WebXR ukm_builder(doc->UkmSourceID());
     ukm_builder.SetReturnedDevice(1);
     if (has_presentation_capable_display_) {
@@ -177,6 +179,23 @@ void VRController::OnGetDisplays() {
     auto promise_resolver = pending_promise_resolvers_.TakeFirst();
     OnGetDevicesSuccess(promise_resolver, displays);
   }
+}
+
+void VRController::OnNonImmersiveSessionRequestReturned(
+    device::mojom::blink::RequestSessionResultPtr result) {
+  if (disposed_) {
+    return;
+  }
+
+  nonimmersive_session_returned_ = true;
+  nonimmersive_session_ = std::move(result);
+
+  // If we support non-immersive, we have a display.
+  if (nonimmersive_session_->is_session())
+    EnsureDisplay();
+
+  if (ShouldResolveGetDisplays())
+    OnGetDisplays();
 }
 
 void VRController::OnGetDevicesSuccess(ScriptPromiseResolver* resolver,
@@ -213,6 +232,8 @@ void VRController::Dispose() {
     display_->Dispose();
     display_ = nullptr;
   }
+
+  disposed_ = true;
 
   // Ensure that any outstanding getDisplays promises are resolved.
   OnGetDisplays();

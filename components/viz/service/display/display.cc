@@ -35,6 +35,7 @@
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/ipc/scheduler_sequence.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -148,6 +149,10 @@ Display::Display(
 }
 
 Display::~Display() {
+#if DCHECK_IS_ON()
+  allow_schedule_gpu_task_during_destruction_.reset(
+      new gpu::ScopedAllowScheduleGpuTask);
+#endif
 #if defined(OS_ANDROID)
   // In certain cases, drivers hang when tearing down the display. Finishing
   // before teardown appears to address this. As we're during display teardown,
@@ -187,6 +192,7 @@ void Display::Initialize(DisplayClient* client,
                          bool enable_shared_images) {
   DCHECK(client);
   DCHECK(surface_manager);
+  gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
   client_ = client;
   surface_manager_ = surface_manager;
   if (scheduler_)
@@ -403,6 +409,7 @@ void Display::OnContextLost() {
 
 bool Display::DrawAndSwap() {
   TRACE_EVENT0("viz", "Display::DrawAndSwap");
+  gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
 
   if (!current_surface_id_.is_valid()) {
     TRACE_EVENT_INSTANT0("viz", "No root surface.", TRACE_EVENT_SCOPE_THREAD);

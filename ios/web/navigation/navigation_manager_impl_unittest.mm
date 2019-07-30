@@ -81,6 +81,7 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
   void SetWKWebView(id web_view) { mock_web_view_ = web_view; }
 
   MOCK_METHOD0(ClearTransientContent, void());
+  MOCK_METHOD0(ClearDialogs, void());
   MOCK_METHOD0(RecordPageStateInNavigationItem, void());
   MOCK_METHOD2(OnGoToIndexSameDocumentNavigation,
                void(NavigationInitiationType type, bool has_user_gesture));
@@ -1848,6 +1849,7 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentType) {
   EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType());
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
+  EXPECT_CALL(navigation_manager_delegate(), ClearDialogs());
   EXPECT_CALL(navigation_manager_delegate(),
               LoadCurrentItem(NavigationInitiationType::BROWSER_INITIATED));
 
@@ -2329,6 +2331,7 @@ TEST_P(NavigationManagerTest, LoadURLWithParamsWithExtraHeadersAndPostData) {
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem())
       .Times(1);
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent()).Times(1);
+  EXPECT_CALL(navigation_manager_delegate(), ClearDialogs()).Times(1);
   EXPECT_CALL(navigation_manager_delegate(),
               LoadCurrentItem(NavigationInitiationType::BROWSER_INITIATED))
       .Times(1);
@@ -2362,6 +2365,7 @@ TEST_P(NavigationManagerTest, LoadURLWithParamsSavesStateOnCurrentItem) {
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem())
       .Times(1);
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent()).Times(1);
+  EXPECT_CALL(navigation_manager_delegate(), ClearDialogs()).Times(1);
   EXPECT_CALL(navigation_manager_delegate(),
               LoadCurrentItem(NavigationInitiationType::BROWSER_INITIATED))
       .Times(1);
@@ -2438,6 +2442,7 @@ TEST_P(NavigationManagerTest, GoToIndexDifferentDocument) {
 
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
+  EXPECT_CALL(navigation_manager_delegate(), ClearDialogs());
   EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType())
       .Times(0);
 
@@ -2514,6 +2519,7 @@ TEST_P(NavigationManagerTest,
 
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
+  EXPECT_CALL(navigation_manager_delegate(), ClearDialogs());
   EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType())
       .Times(0);
 
@@ -2561,6 +2567,7 @@ TEST_P(NavigationManagerTest, GoToIndexSameDocument) {
 
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
+  EXPECT_CALL(navigation_manager_delegate(), ClearDialogs());
   EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType())
       .Times(0);
 

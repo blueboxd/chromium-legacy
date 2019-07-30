@@ -4,11 +4,12 @@
 
 #include "ui/base/mpris/mpris_service.h"
 
+#include "build/branding_buildflags.h"
 #include "ui/base/mpris/mpris_service_impl.h"
 
 namespace mpris {
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const char kMprisAPIServiceNamePrefix[] =
     "org.mpris.MediaPlayer2.chrome.instance";
 #else

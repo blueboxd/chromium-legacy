@@ -7,14 +7,13 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/services/leveldb/public/cpp/manifest.h"
+#include "components/services/leveldb/leveldb_service_impl.h"
 #include "components/services/leveldb/public/cpp/remote_iterator.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
-#include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/service_manager/public/cpp/test/test_service.h"
-#include "services/service_manager/public/cpp/test/test_service_manager.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace leveldb {
@@ -43,26 +42,17 @@ base::Callback<void(const base::UnguessableToken&)> CaptureToken(
                     quit_closure);
 }
 
-const char kTestServiceName[] = "leveldb_service_unittests";
-
 class RemoteIteratorTest : public testing::Test {
  public:
   RemoteIteratorTest()
-      : test_service_manager_(
-            {GetManifest(), service_manager::ManifestBuilder()
-                                .WithServiceName(kTestServiceName)
-                                .RequireCapability("leveldb", "leveldb:leveldb")
-                                .Build()}),
-        test_service_(
-            test_service_manager_.RegisterTestInstance(kTestServiceName)) {}
+      : leveldb_service_(base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+        leveldb_receiver_(&leveldb_service_,
+                          leveldb_remote_.BindNewPipeAndPassReceiver()) {}
   ~RemoteIteratorTest() override = default;
 
  protected:
-  service_manager::Connector* connector() { return test_service_.connector(); }
-
   void SetUp() override {
-    connector()->BindInterface("leveldb", &leveldb_);
-
     mojom::DatabaseError error;
     base::RunLoop run_loop;
     leveldb()->OpenInMemory(base::nullopt, "RemoteIteratorTest",
@@ -86,15 +76,14 @@ class RemoteIteratorTest : public testing::Test {
     }
   }
 
-  mojom::LevelDBServicePtr& leveldb() { return leveldb_; }
+  mojo::Remote<mojom::LevelDBService>& leveldb() { return leveldb_remote_; }
   mojom::LevelDBDatabaseAssociatedPtr& database() { return database_; }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
-  service_manager::TestServiceManager test_service_manager_;
-  service_manager::TestService test_service_;
-
-  mojom::LevelDBServicePtr leveldb_;
+  LevelDBServiceImpl leveldb_service_;
+  mojo::Remote<mojom::LevelDBService> leveldb_remote_;
+  mojo::Receiver<mojom::LevelDBService> leveldb_receiver_;
   mojom::LevelDBDatabaseAssociatedPtr database_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteIteratorTest);

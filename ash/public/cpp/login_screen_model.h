@@ -42,6 +42,11 @@ class ASH_PUBLIC_EXPORT LoginScreenModel {
   virtual void ShowEasyUnlockIcon(const AccountId& account_id,
                                   const EasyUnlockIconOptions& icon) = 0;
 
+  // Update the status of the challenge-response authentication against a
+  // security token for the given user.
+  virtual void SetChallengeResponseAuthEnabledForUser(const AccountId& user,
+                                                      bool enabled) = 0;
+
   // Shows a warning banner message on the login screen. A warning banner is
   // used to notify users of important messages before they log in to their
   // session. (e.g. Tell the user that an update of the user data will start

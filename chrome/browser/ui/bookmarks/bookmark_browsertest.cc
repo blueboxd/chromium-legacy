@@ -164,10 +164,9 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DISABLED_MultiProfile) {
 
   BookmarkModel* bookmark_model1 = WaitForBookmarkModel(browser()->profile());
 
-  ui_test_utils::BrowserAddedObserver observer;
   g_browser_process->profile_manager()->CreateMultiProfileAsync(
       base::string16(), std::string(), ProfileManager::CreateCallback());
-  Browser* browser2 = observer.WaitForSingleNewBrowser();
+  Browser* browser2 = ui_test_utils::WaitForBrowserToOpen();
   BookmarkModel* bookmark_model2 = WaitForBookmarkModel(browser2->profile());
 
   bookmarks::AddIfNotBookmarked(bookmark_model1, GURL(kPersistBookmarkURL),

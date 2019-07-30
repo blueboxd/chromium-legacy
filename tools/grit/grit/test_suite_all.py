@@ -19,7 +19,8 @@ TYP_DIR = os.path.join(
 if TYP_DIR not in sys.path:
     sys.path.insert(0, TYP_DIR)
 
-import typ
+
+import typ  # pylint: disable=import-error,unused-import
 
 
 def main(args):

@@ -7,5 +7,5 @@ dictionary XRRenderStateInit {
   double depthNear;
   double depthFar;
   double inlineVerticalFieldOfView;
-  XRLayer? baseLayer;
+  XRWebGLLayer? baseLayer;
 };

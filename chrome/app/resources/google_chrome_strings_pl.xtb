@@ -27,7 +27,7 @@
 <translation id="1590588151039584890">Aby można było przeprowadzić aktualizację, musisz wyłączyć Chrome na tym komputerze. Może to spowodować, że inni zalogowani na nim użytkownicy utracą niezapisane dane.</translation>
 <translation id="1619887657840448962">Aby poprawić bezpieczeństwo Chrome, wyłączyliśmy to rozszerzenie. Nie jest ono dostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i mogło zostać dodane bez Twojej wiedzy.</translation>
 <translation id="1628000112320670027">Pomoc do Chrome</translation>
-<translation id="1635734105302489219">Pliki cookie są usuwane, gdy zamykasz Chrome. Aby dalej korzystać z synchronizacji, zmień te <ph name="COOKIE_SETTINGS_LINK" />.</translation>
+<translation id="1635734105302489219">Pliki cookie są usuwane, gdy zamykasz Chrome. Aby dalej korzystać z synchronizacji, zmień <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">Opracowanie systemu operacyjnego Chrome było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS" />oprogramowaniu open source<ph name="END_LINK_CROS_OSS" />. To samo dotyczy funkcji <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Otwórz link w oknie inco&amp;gnito Chrome</translation>
 <translation id="1682634494516646069">Google Chrome nie może odczytać ani zapisać danych w katalogu <ph name="USER_DATA_DIRECTORY" />.</translation>
@@ -125,8 +125,7 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="4251625577313994583">pobierz Chrome na iPhone'a</translation>
 <translation id="4293420128516039005">Zaloguj się, by synchronizować dane Chrome i korzystać z własnych ustawień przeglądarki na wielu urządzeniach</translation>
 <translation id="4328355335528187361">Wersja deweloperska Google Chrome (mDNS-In)</translation>
-<translation id="4331809312908958774">Chrome OS
-</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4343195214584226067">Rozszerzenie <ph name="EXTENSION_NAME" /> zostało dodane do Chrome</translation>
 <translation id="4407807842708586359">System operacyjny Google Chrome</translation>
 <translation id="4458462641685292929">Google Chrome wykonuje teraz inną operację. Spróbuj ponownie później.</translation>

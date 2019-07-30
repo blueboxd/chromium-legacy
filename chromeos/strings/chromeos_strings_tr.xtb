@@ -4,6 +4,7 @@
 <translation id="1510238584712386396">Başlatıcı</translation>
 <translation id="1734367976349034509">Bu cihaz kuruluş tarafından yönetiliyor</translation>
 <translation id="1930797645656624981">Chrome OS Giriş Yöntemi Hizmeti</translation>
+<translation id="1979103255016296513">Şifre değişikliği zamanı geçti</translation>
 <translation id="2049639323467105390">Bu cihaz <ph name="DOMAIN" /> tarafından yönetiliyor.</translation>
 <translation id="2083960536266308407">Ekranda hiçbir şey bulunamadı</translation>
 <translation id="2338501278241028356">Yakındaki cihazları keşfetmek için Bluetooth'u aç</translation>
@@ -11,6 +12,7 @@
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="3008341117444806826">YENİLE</translation>
 <translation id="3838338534323494292">Yeni şifre</translation>
+<translation id="4227825898293920515">Şifrenin süresi <ph name="TIME" /> içinde doluyor</translation>
 <translation id="4429881212383817840">Kerberos biletinin süresi yakında doluyor</translation>
 <translation id="445059817448385655">Eski şifre</translation>
 <translation id="467510802200863975">Şifreler eşleşmiyor</translation>

@@ -156,11 +156,11 @@ message SupportedScriptProto {
 
     // Message to show once the script has been started. This is shown while
     // loading the actions.
-    optional string start_message = 10;
+    optional string start_message = 14;
 
     // Show the UI if it's not shown yet. Setting this to false is useful for
     // scripts started by direct actions.
-    optional bool needs_ui = 11 [default = true];
+    optional bool needs_ui = 15 [default = true];
   }
   optional PresentationProto presentation = 2;
 }

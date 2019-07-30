@@ -535,7 +535,7 @@ bool ResolveLocalHostname(base::StringPiece host, AddressList* address_list) {
   return true;
 }
 
-const unsigned HostResolverManager::kMaximumDnsFailures = 16;
+const unsigned HostResolverManager::kMaximumInsecureDnsTaskFailures = 16;
 
 // Holds the callback and request parameters for an outstanding request.
 //
@@ -568,30 +568,7 @@ class HostResolverManager::RequestImpl
         priority_(parameters_.initial_priority),
         job_(nullptr),
         resolver_(resolver),
-        complete_(false) {
-    // If the query name matches one of the DoH server names, set the
-    // secure_dns_mode_override field in ResolveHostParameters to OFF to avoid
-    // infinite recursion.
-    // TODO(crbug.com/878582): Add a URLRequest-level parameter to skip DoH that
-    // can be set when a URLRequest to a DoH server is built. This will avoid
-    // unnecessarily skipping DoH when a connection to the DoH server has been
-    // established but the query happens to be for a DoH server hostname.
-    DCHECK(resolver_);
-    if (resolver_->HaveDnsConfig()) {
-      std::unique_ptr<base::Value> dns_config =
-          resolver_->GetDnsConfigAsValue();
-      for (const base::Value& doh_server :
-           dns_config->FindKey("doh_servers")->GetList()) {
-        if (request_host_.host().compare(
-                GURL(GetURLFromTemplateWithoutParameters(
-                         doh_server.FindKey("server_template")->GetString()))
-                    .host()) == 0) {
-          parameters_.secure_dns_mode_override = DnsConfig::SecureDnsMode::OFF;
-          break;
-        }
-      }
-    }
-  }
+        complete_(false) {}
 
   ~RequestImpl() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1047,6 +1024,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     return needs_two_transactions() && !transaction2_;
   }
 
+  bool secure() const { return secure_; }
+
   void StartFirstTransaction() {
     DCHECK(client_);
     DCHECK_EQ(0u, num_completed_transactions_);
@@ -1467,15 +1446,17 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
 struct HostResolverManager::JobKey {
   bool operator<(const JobKey& other) const {
-    return std::tie(query_type, flags, source, request_context, hostname) <
-           std::tie(other.query_type, other.flags, other.source,
-                    other.request_context, other.hostname);
+    return std::tie(query_type, flags, source, secure_dns_mode, request_context,
+                    hostname) < std::tie(other.query_type, other.flags,
+                                         other.source, other.secure_dns_mode,
+                                         other.request_context, other.hostname);
   }
 
   std::string hostname;
   DnsQueryType query_type;
   HostResolverFlags flags;
   HostResolverSource source;
+  DnsConfig::SecureDnsMode secure_dns_mode;
   URLRequestContext* request_context;
 };
 
@@ -1639,30 +1620,32 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     CompleteRequestsWithError(ERR_NETWORK_CHANGED);
   }
 
-  // Gets a closure that will abort a DnsTask (see AbortDnsTask()) iff |this| is
-  // still valid. Useful if aborting a list of Jobs as some may be cancelled
-  // while aborting others.
-  base::OnceClosure GetAbortDnsTaskClosure(int error, bool fallback_only) {
-    return base::BindOnce(&Job::AbortDnsTask, weak_ptr_factory_.GetWeakPtr(),
-                          error, fallback_only);
+  // Gets a closure that will abort an insecure DnsTask (see
+  // AbortInsecureDnsTask()) iff |this| is still valid. Useful if aborting a
+  // list of Jobs as some may be cancelled while aborting others.
+  base::OnceClosure GetAbortInsecureDnsTaskClosure(int error,
+                                                   bool fallback_only) {
+    return base::BindOnce(&Job::AbortInsecureDnsTask,
+                          weak_ptr_factory_.GetWeakPtr(), error, fallback_only);
   }
 
-  // Aborts or removes any current/future DnsTasks if a ProcTask is available
-  // for fallback. If no fallback is available and |fallback_only| is false, a
-  // job that is currently running a DnsTask will be completed with |error|.
-  void AbortDnsTask(int error, bool fallback_only) {
+  // Aborts or removes any current/future insecure DnsTasks if a ProcTask is
+  // available for fallback. If no fallback is available and |fallback_only| is
+  // false, a job that is currently running an insecure DnsTask will be
+  // completed with |error|.
+  void AbortInsecureDnsTask(int error, bool fallback_only) {
     bool has_proc_fallback =
         std::find(tasks_.begin(), tasks_.end(), TaskType::PROC) != tasks_.end();
     if (has_proc_fallback) {
       for (auto it = tasks_.begin(); it != tasks_.end();) {
-        if (*it == TaskType::DNS || *it == TaskType::SECURE_DNS)
+        if (*it == TaskType::DNS)
           it = tasks_.erase(it);
         else
           ++it;
       }
     }
 
-    if (dns_task_) {
+    if (dns_task_ && !dns_task_->secure()) {
       if (has_proc_fallback) {
         KillDnsTask();
         dns_task_error_ = OK;
@@ -1707,7 +1690,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     DCHECK_GT(num_active_requests(), 0u);
     base::Optional<HostCache::Entry> results = resolver_->ServeFromHosts(
         hostname_, query_type_,
-        host_resolver_flags_ & HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6);
+        host_resolver_flags_ & HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6,
+        tasks_);
     if (results) {
       // This will destroy the Job.
       CompleteRequests(results.value(), base::TimeDelta(),
@@ -1868,7 +1852,8 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
     DCHECK(proc_task_);
 
     if (dns_task_error_ != OK) {
-      // This ProcTask was a fallback resolution after a failed DnsTask.
+      // This ProcTask was a fallback resolution after a failed insecure
+      // DnsTask.
       if (net_error == OK) {
         resolver_->OnFallbackResolve(dns_task_error_);
       }
@@ -1914,28 +1899,17 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
   void StartDnsTask(bool secure) {
     DCHECK_EQ(1u, num_occupied_job_slots_);
+    DCHECK(resolver_->HaveDnsConfig());
+    DCHECK(!resolver_->HaveTestProcOverride());
     // Need to create the task even if we're going to post a failure instead of
     // running it, as a "started" job needs a task to be properly cleaned up.
     dns_task_.reset(new DnsTask(resolver_->dns_client_.get(), hostname_,
                                 query_type_, request_context_, secure, this,
                                 net_log_, tick_clock_));
-
-    if (resolver_->HaveDnsConfig()) {
-      dns_task_->StartFirstTransaction();
-      // Schedule a second transaction, if needed.
-      if (dns_task_->needs_two_transactions())
-        Schedule(true);
-    } else {
-      // Cannot start a DNS task when DnsClient or config is not available.
-      // Since we cannot complete synchronously from here, post a failure.
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &Job::OnDnsTaskFailure, weak_ptr_factory_.GetWeakPtr(),
-              dns_task_->AsWeakPtr(), base::TimeDelta(),
-              HostCache::Entry(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN),
-              secure));
-    }
+    dns_task_->StartFirstTransaction();
+    // Schedule a second transaction, if needed.
+    if (dns_task_->needs_two_transactions())
+      Schedule(true);
   }
 
   void StartSecondDnsTransaction() {
@@ -1997,7 +1971,10 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
     UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.DnsTask.SuccessTime", duration);
 
-    resolver_->OnDnsTaskResolve();
+    // Reset the insecure DNS failure counter if an insecure DnsTask completed
+    // successfully.
+    if (!secure)
+      resolver_->num_insecure_dns_task_failures_ = 0;
 
     base::TimeDelta bounded_ttl = std::max(
         results.ttl(), base::TimeDelta::FromSeconds(kMinimumTTLSeconds));
@@ -2349,22 +2326,20 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
 HostResolverManager::HostResolverManager(
     const HostResolver::ManagerOptions& options,
-    NetLog* net_log,
-    DnsClientFactory dns_client_factory_for_testing)
+    NetLog* net_log)
     : max_queued_jobs_(0),
       proc_params_(nullptr, options.max_system_retry_attempts),
       net_log_(net_log),
-      dns_client_factory_for_testing_(
-          std::move(dns_client_factory_for_testing)),
       received_dns_config_(false),
       dns_config_overrides_(options.dns_config_overrides),
-      num_dns_failures_(0),
+      num_insecure_dns_task_failures_(0),
       check_ipv6_on_wifi_(options.check_ipv6_on_wifi),
       use_local_ipv6_(false),
       last_ipv6_probe_result_(true),
       additional_resolver_flags_(0),
-      use_proctask_by_default_(false),
       allow_fallback_to_proctask_(true),
+      bypass_insecure_dns_client_(false),
+      insecure_dns_client_enabled_(false),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       invalidation_in_progress_(false) {
   PrioritizedDispatcher::Limits job_limits = GetDispatcherLimits(options);
@@ -2394,15 +2369,17 @@ HostResolverManager::HostResolverManager(
 
   OnConnectionTypeChanged(NetworkChangeNotifier::GetConnectionType());
 
-  SetDnsClientEnabled(options.dns_client_enabled);
+  DnsConfig dns_config = GetBaseDnsConfig(false);
 
-  {
-    DnsConfig dns_config = GetBaseDnsConfig(false);
-    // Conservatively assume local IPv6 is needed when DnsConfig is not valid.
-    use_local_ipv6_ = !dns_config.IsValid() || dns_config.use_local_ipv6;
-    UpdateModeForHistogram(dns_config);
-  }
+#if defined(ENABLE_BUILT_IN_DNS)
+  dns_client_ = DnsClient::CreateClient(net_log_);
+  DCHECK(dns_client_);
+  if (!dns_client_->GetConfig())
+    dns_client_->SetConfig(dns_config);
+#endif
 
+  use_local_ipv6_ = !dns_config.IsValid() || dns_config.use_local_ipv6;
+  SetInsecureDnsClientEnabled(options.insecure_dns_client_enabled);
   allow_fallback_to_proctask_ = !ConfigureAsyncDnsNoFallbackFieldTrial();
 }
 
@@ -2461,34 +2438,23 @@ HostResolverManager::CreateMdnsListener(const HostPortPair& host,
   return listener;
 }
 
-void HostResolverManager::SetDnsClientEnabled(bool enabled) {
+void HostResolverManager::SetInsecureDnsClientEnabled(bool enabled) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (enabled && !dns_client_) {
-    if (dns_client_factory_for_testing_) {
-      SetDnsClient(dns_client_factory_for_testing_.Run(net_log_));
-    } else {
-#if defined(ENABLE_BUILT_IN_DNS)
-      SetDnsClient(DnsClient::CreateClient(net_log_));
-#endif
-    }
-    return;
+  if (insecure_dns_client_enabled_ != enabled) {
+    insecure_dns_client_enabled_ = enabled;
+    AbortInsecureDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
   }
-
-  if (!enabled && dns_client_) {
-    SetDnsClient(nullptr);
-  }
+  // The histogram mode may need to be set even if the insecure dns client state
+  // has not changed.
+  DnsConfig dns_config = GetBaseDnsConfig(false);
+  UpdateModeForHistogram(dns_config);
 }
 
 std::unique_ptr<base::Value> HostResolverManager::GetDnsConfigAsValue() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // Check if async DNS is disabled.
   if (!dns_client_.get())
     return nullptr;
 
-  // Check if async DNS is enabled, but we currently have no configuration
-  // for it.
   const DnsConfig* dns_config = dns_client_->GetConfig();
   if (!dns_config)
     return std::make_unique<base::DictionaryValue>();
@@ -2516,6 +2482,17 @@ void HostResolverManager::AddHostCacheInvalidator(
 void HostResolverManager::RemoveHostCacheInvalidator(
     const HostCache::Invalidator* invalidator) {
   host_cache_invalidators_.RemoveObserver(invalidator);
+}
+
+bool HostResolverManager::GetInsecureDnsClientEnabledForTesting() {
+  return insecure_dns_client_enabled_;
+}
+
+DnsConfig::SecureDnsMode HostResolverManager::GetSecureDnsModeForTesting() {
+  if (!HaveDnsConfig())
+    return DnsConfig::SecureDnsMode::OFF;
+
+  return dns_client_->GetConfig()->secure_dns_mode;
 }
 
 const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
@@ -2565,10 +2542,8 @@ void HostResolverManager::SetBaseDnsConfigForTesting(
 
 void HostResolverManager::SetDnsClientForTesting(
     std::unique_ptr<DnsClient> dns_client) {
-  // Use SetDnsClientEnabled(false) to disable.
   DCHECK(dns_client);
-
-  SetDnsClient(std::move(dns_client));
+  dns_client_ = std::move(dns_client);
 }
 
 void HostResolverManager::SetTaskRunnerForTesting(
@@ -2596,6 +2571,7 @@ int HostResolverManager::Resolve(RequestImpl* request) {
 
   DnsQueryType effective_query_type;
   HostResolverFlags effective_host_resolver_flags;
+  DnsConfig::SecureDnsMode effective_secure_dns_mode;
   std::deque<TaskType> tasks;
   base::Optional<HostCache::EntryStaleness> stale_info;
   HostCache::Entry results = ResolveLocally(
@@ -2604,9 +2580,11 @@ int HostResolverManager::Resolve(RequestImpl* request) {
       request->parameters().secure_dns_mode_override,
       request->parameters().cache_usage, request->source_net_log(),
       request->host_cache(), &effective_query_type,
-      &effective_host_resolver_flags, &tasks, &stale_info);
+      &effective_host_resolver_flags, &effective_secure_dns_mode, &tasks,
+      &stale_info);
   if (results.error() != ERR_DNS_CACHE_MISS ||
-      request->parameters().source == HostResolverSource::LOCAL_ONLY) {
+      request->parameters().source == HostResolverSource::LOCAL_ONLY ||
+      tasks.empty()) {
     if (results.error() == OK && !request->parameters().is_speculative) {
       request->set_results(
           results.CopyWithDefaultPort(request->request_host().port()));
@@ -2621,7 +2599,7 @@ int HostResolverManager::Resolve(RequestImpl* request) {
 
   int rv =
       CreateAndStartJob(effective_query_type, effective_host_resolver_flags,
-                        std::move(tasks), request);
+                        effective_secure_dns_mode, std::move(tasks), request);
   // At this point, expect only async or errors.
   DCHECK_NE(OK, rv);
 
@@ -2639,6 +2617,7 @@ HostCache::Entry HostResolverManager::ResolveLocally(
     HostCache* cache,
     DnsQueryType* out_effective_query_type,
     HostResolverFlags* out_effective_host_resolver_flags,
+    DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
     std::deque<TaskType>* out_tasks,
     base::Optional<HostCache::EntryStaleness>* out_stale_info) {
   DCHECK(out_stale_info);
@@ -2665,7 +2644,8 @@ HostCache::Entry HostResolverManager::ResolveLocally(
   GetEffectiveParametersForRequest(
       hostname, dns_query_type, source, flags, secure_dns_mode_override,
       cache_usage, ip_address_ptr, source_net_log, out_effective_query_type,
-      out_effective_host_resolver_flags, out_tasks);
+      out_effective_host_resolver_flags, out_effective_secure_dns_mode,
+      out_tasks);
 
   bool resolve_canonname =
       *out_effective_host_resolver_flags & HOST_RESOLVER_CANONNAME;
@@ -2727,7 +2707,7 @@ HostCache::Entry HostResolverManager::ResolveLocally(
   // TODO(szym): Do not do this if nsswitch.conf instructs not to.
   // http://crbug.com/117655
   resolved = ServeFromHosts(hostname, *out_effective_query_type,
-                            default_family_due_to_no_ipv6);
+                            default_family_due_to_no_ipv6, *out_tasks);
   if (resolved) {
     NetLogHostCacheEntry(source_net_log,
                          NetLogEventType::HOST_RESOLVER_IMPL_HOSTS_HIT,
@@ -2741,12 +2721,13 @@ HostCache::Entry HostResolverManager::ResolveLocally(
 int HostResolverManager::CreateAndStartJob(
     DnsQueryType effective_query_type,
     HostResolverFlags effective_host_resolver_flags,
+    DnsConfig::SecureDnsMode effective_secure_dns_mode,
     std::deque<TaskType> tasks,
     RequestImpl* request) {
   DCHECK(!tasks.empty());
   JobKey key = {request->request_host().host(), effective_query_type,
-                effective_host_resolver_flags, request->parameters().source,
-                request->request_context()};
+                effective_host_resolver_flags,  request->parameters().source,
+                effective_secure_dns_mode,      request->request_context()};
 
   auto jobit = jobs_.find(key);
   Job* job;
@@ -2858,8 +2839,12 @@ base::Optional<HostCache::Entry> HostResolverManager::MaybeServeFromCache(
 base::Optional<HostCache::Entry> HostResolverManager::ServeFromHosts(
     base::StringPiece hostname,
     DnsQueryType query_type,
-    bool default_family_due_to_no_ipv6) {
-  if (!HaveDnsConfig() || !IsAddressType(query_type))
+    bool default_family_due_to_no_ipv6,
+    const std::deque<TaskType>& tasks) {
+  // Don't attempt a HOSTS lookup if there is no DnsConfig or the HOSTS lookup
+  // is going to be done next as part of a system lookup.
+  if (!HaveDnsConfig() || !IsAddressType(query_type) ||
+      (!tasks.empty() && tasks.front() == TaskType::PROC))
     return base::nullopt;
 
   // HOSTS lookups are case-insensitive.
@@ -2890,7 +2875,7 @@ base::Optional<HostCache::Entry> HostResolverManager::ServeFromHosts(
   // If got only loopback addresses and the family was restricted, resolve
   // again, without restrictions. See SystemHostResolverCall for rationale.
   if (default_family_due_to_no_ipv6 && IsAllIPv4Loopback(addresses)) {
-    return ServeFromHosts(hostname, DnsQueryType::UNSPECIFIED, false);
+    return ServeFromHosts(hostname, DnsQueryType::UNSPECIFIED, false, tasks);
   }
 
   if (!addresses.empty()) {
@@ -2989,12 +2974,13 @@ std::unique_ptr<HostResolverManager::Job> HostResolverManager::RemoveJob(
 }
 
 bool HostResolverManager::HasAvailableDohServer() {
-  // TODO(crbug.com/878582): Once DoH probes are sent, update this such that a
+  // TODO(crbug.com/985589): Once DoH probes are sent, update this such that a
   // DoH server is considered successful if it has a successful probe state.
   return dns_client_->GetConfig()->dns_over_https_servers.size() > 0;
 }
 
 DnsConfig::SecureDnsMode HostResolverManager::GetEffectiveSecureDnsMode(
+    const std::string& hostname,
     base::Optional<DnsConfig::SecureDnsMode> secure_dns_mode_override) {
   DnsConfig::SecureDnsMode secure_dns_mode = DnsConfig::SecureDnsMode::OFF;
   if (secure_dns_mode_override) {
@@ -3002,64 +2988,107 @@ DnsConfig::SecureDnsMode HostResolverManager::GetEffectiveSecureDnsMode(
   } else if (HaveDnsConfig()) {
     secure_dns_mode = dns_client_->GetConfig()->secure_dns_mode;
   }
+
+  // If the query name matches one of the DoH server names, downgrade to OFF to
+  // avoid infinite recursion.
+  // TODO(crbug.com/985589): Add a URLRequest-level parameter to skip DoH that
+  // can be set when a URLRequest to a DoH server is built, and use this
+  // parameters to set |secure_dns_mode_override| in ResolveHostParameters. This
+  // improvement will prevent us from unnecessarily skipping DoH when a
+  // connection to the DoH server has been established but the query happens to
+  // be for a DoH server hostname.
+  if (HaveDnsConfig()) {
+    for (auto& server : dns_client_->GetConfig()->dns_over_https_servers) {
+      if (hostname.compare(
+              GURL(GetURLFromTemplateWithoutParameters(server.server_template))
+                  .host()) == 0) {
+        secure_dns_mode = DnsConfig::SecureDnsMode::OFF;
+        break;
+      }
+    }
+  }
+
   return secure_dns_mode;
 }
 
+bool HostResolverManager::HaveTestProcOverride() {
+  return !proc_params_.resolver_proc && HostResolverProc::GetDefault();
+}
+
 void HostResolverManager::PushDnsTasks(
-    bool allow_proc_fallback,
+    bool proc_task_allowed,
     DnsConfig::SecureDnsMode secure_dns_mode,
+    bool insecure_tasks_allowed,
     ResolveHostParameters::CacheUsage cache_usage,
     std::deque<TaskType>* out_tasks) {
+  DCHECK(HaveDnsConfig());
   bool allow_cache =
       cache_usage != ResolveHostParameters::CacheUsage::DISALLOWED;
+  // If a catch-all DNS block has been set for unit tests, we shouldn't send
+  // DnsTasks. It is still necessary to call this method, however, so that the
+  // correct cache tasks for the secure dns mode are added.
+  bool dns_tasks_allowed = !HaveTestProcOverride();
   // Upgrade the insecure DnsTask depending on the secure dns mode.
   switch (secure_dns_mode) {
     case DnsConfig::SecureDnsMode::SECURE:
       DCHECK(dns_client_->GetConfig()->dns_over_https_servers.size() != 0);
-      // Replace the insecure DnsTask with a secure cache lookup followed
-      // by a secure DnsTask.
       if (allow_cache)
         out_tasks->push_back(TaskType::SECURE_CACHE_LOOKUP);
-      out_tasks->push_back(TaskType::SECURE_DNS);
+      if (dns_tasks_allowed)
+        out_tasks->push_back(TaskType::SECURE_DNS);
       break;
     case DnsConfig::SecureDnsMode::AUTOMATIC:
-      // TODO(crbug.com/878582): For a DnsTask in AUTOMATIC mode, the async
+      // TODO(crbug.com/985589): For a DnsTask in AUTOMATIC mode, the async
       // resolver should only send insecure requests if it is enabled on this
       // platform.
       if (!HasAvailableDohServer()) {
         // Don't run a secure DnsTask if there are no available DoH servers.
         if (allow_cache)
           out_tasks->push_back(TaskType::CACHE_LOOKUP);
-        out_tasks->push_back(TaskType::DNS);
+        if (dns_tasks_allowed && insecure_tasks_allowed)
+          out_tasks->push_back(TaskType::DNS);
       } else if (cache_usage == HostResolver::ResolveHostParameters::
                                     CacheUsage::STALE_ALLOWED) {
         // If stale results are allowed, the cache should be checked for both
         // secure and insecure results prior to running a secure DnsTask.
         out_tasks->push_back(TaskType::CACHE_LOOKUP);
-        out_tasks->push_back(TaskType::SECURE_DNS);
-        out_tasks->push_back(TaskType::DNS);
+        if (dns_tasks_allowed) {
+          out_tasks->push_back(TaskType::SECURE_DNS);
+          if (insecure_tasks_allowed)
+            out_tasks->push_back(TaskType::DNS);
+        }
       } else {
         if (allow_cache)
           out_tasks->push_back(TaskType::SECURE_CACHE_LOOKUP);
-        out_tasks->push_back(TaskType::SECURE_DNS);
+        if (dns_tasks_allowed)
+          out_tasks->push_back(TaskType::SECURE_DNS);
         if (allow_cache)
           out_tasks->push_back(TaskType::INSECURE_CACHE_LOOKUP);
-        out_tasks->push_back(TaskType::DNS);
+        if (dns_tasks_allowed && insecure_tasks_allowed)
+          out_tasks->push_back(TaskType::DNS);
       }
       break;
     case DnsConfig::SecureDnsMode::OFF:
       if (allow_cache)
         out_tasks->push_back(TaskType::CACHE_LOOKUP);
-      out_tasks->push_back(TaskType::DNS);
+      if (dns_tasks_allowed && insecure_tasks_allowed)
+        out_tasks->push_back(TaskType::DNS);
       break;
     default:
       NOTREACHED();
       break;
   }
 
-  // The system resolver can be used as a fallback if allowed by the request
-  // parameters.
-  if (allow_proc_fallback && allow_fallback_to_proctask_)
+  bool added_dns_task = false;
+  for (auto it = out_tasks->begin(); it != out_tasks->end(); ++it) {
+    if (*it == TaskType::DNS || *it == TaskType::SECURE_DNS) {
+      added_dns_task = true;
+      break;
+    }
+  }
+  // The system resolver can be used as a fallback for a non-existent or
+  // failing DnsTask if allowed by the request parameters.
+  if (proc_task_allowed && (!added_dns_task || allow_fallback_to_proctask_))
     out_tasks->push_back(TaskType::PROC);
 }
 
@@ -3070,10 +3099,11 @@ void HostResolverManager::CreateTaskSequence(
     HostResolverFlags flags,
     base::Optional<DnsConfig::SecureDnsMode> secure_dns_mode_override,
     ResolveHostParameters::CacheUsage cache_usage,
+    DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
     std::deque<TaskType>* out_tasks) {
   DCHECK(out_tasks->empty());
-  DnsConfig::SecureDnsMode secure_dns_mode =
-      GetEffectiveSecureDnsMode(secure_dns_mode_override);
+  *out_effective_secure_dns_mode =
+      GetEffectiveSecureDnsMode(hostname, secure_dns_mode_override);
 
   // A cache lookup should generally be performed first. For jobs involving a
   // DnsTask, this task will be removed before DnsTasks and other related tasks
@@ -3094,22 +3124,24 @@ void HostResolverManager::CreateTaskSequence(
       if ((flags & HOST_RESOLVER_CANONNAME) && IsAddressType(dns_query_type)) {
         out_tasks->push_back(TaskType::PROC);
       } else if (!ResemblesMulticastDNSName(hostname)) {
-        bool allow_proc_fallback =
+        bool proc_task_allowed =
             IsAddressType(dns_query_type) &&
-            secure_dns_mode != DnsConfig::SecureDnsMode::SECURE;
-        // DnsClient or config is not available, but we're allowed to switch to
-        // ProcTask instead.
-        if ((!HaveDnsConfig() || use_proctask_by_default_) &&
-            allow_proc_fallback) {
-          out_tasks->push_back(TaskType::PROC);
-        } else {
+            *out_effective_secure_dns_mode != DnsConfig::SecureDnsMode::SECURE;
+        if (HaveDnsConfig()) {
           // Remove the initial cache lookup task.
           if (!out_tasks->empty())
             out_tasks->pop_front();
-          PushDnsTasks(allow_proc_fallback, secure_dns_mode, cache_usage,
-                       out_tasks);
+          PushDnsTasks(
+              proc_task_allowed, *out_effective_secure_dns_mode,
+              insecure_dns_client_enabled_ && !bypass_insecure_dns_client_,
+              cache_usage, out_tasks);
+        } else if (proc_task_allowed) {
+          out_tasks->push_back(TaskType::PROC);
         }
       } else if (IsAddressType(dns_query_type)) {
+        // For *.local address queries, try the system resolver even if the
+        // secure dns mode is SECURE. Public recursive resolvers aren't expected
+        // to handle these queries.
         out_tasks->push_back(TaskType::PROC);
       } else {
         out_tasks->push_back(TaskType::MDNS);
@@ -3119,11 +3151,14 @@ void HostResolverManager::CreateTaskSequence(
       out_tasks->push_back(TaskType::PROC);
       break;
     case HostResolverSource::DNS:
-      // Remove the initial cache lookup task.
-      if (!out_tasks->empty())
-        out_tasks->pop_front();
-      PushDnsTasks(false /* allow_proc_fallback */, secure_dns_mode,
-                   cache_usage, out_tasks);
+      if (HaveDnsConfig()) {
+        // Remove the initial cache lookup task.
+        if (!out_tasks->empty())
+          out_tasks->pop_front();
+        PushDnsTasks(false /* proc_task_allowed */,
+                     *out_effective_secure_dns_mode,
+                     insecure_dns_client_enabled_, cache_usage, out_tasks);
+      }
       break;
     case HostResolverSource::MULTICAST_DNS:
       out_tasks->push_back(TaskType::MDNS);
@@ -3145,6 +3180,7 @@ void HostResolverManager::GetEffectiveParametersForRequest(
     const NetLogWithSource& net_log,
     DnsQueryType* out_effective_type,
     HostResolverFlags* out_effective_flags,
+    DnsConfig::SecureDnsMode* out_effective_secure_dns_mode,
     std::deque<TaskType>* out_tasks) {
   *out_effective_flags = flags | additional_resolver_flags_;
   *out_effective_type = dns_query_type;
@@ -3162,7 +3198,7 @@ void HostResolverManager::GetEffectiveParametersForRequest(
 
   CreateTaskSequence(hostname, *out_effective_type, source,
                      *out_effective_flags, secure_dns_mode_override,
-                     cache_usage, out_tasks);
+                     cache_usage, out_effective_secure_dns_mode, out_tasks);
 }
 
 bool HostResolverManager::IsIPv6Reachable(const NetLogWithSource& net_log) {
@@ -3261,35 +3297,13 @@ void HostResolverManager::AbortAllJobs(bool in_progress_only) {
     dispatcher_->SetLimits(limits);
 }
 
-void HostResolverManager::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // DnsClient and config must be updated before aborting DnsTasks, since doing
-  // so may start new jobs.
-  dns_client_ = std::move(dns_client);
-  if (dns_client_ && !dns_client_->GetConfig() &&
-      num_dns_failures_ < kMaximumDnsFailures) {
-    dns_client_->SetConfig(GetBaseDnsConfig(false));
-    num_dns_failures_ = 0;
-  }
-
-  AbortDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
-  DnsConfig dns_config;
-  if (!HaveDnsConfig()) {
-    // UpdateModeForHistogram() needs to know the DnsConfig when
-    // !HaveDnsConfig()
-    dns_config = GetBaseDnsConfig(false);
-  }
-  UpdateModeForHistogram(dns_config);
-}
-
-void HostResolverManager::AbortDnsTasks(int error, bool fallback_only) {
+void HostResolverManager::AbortInsecureDnsTasks(int error, bool fallback_only) {
   // Aborting jobs potentially modifies |jobs_| and may even delete some jobs.
   // Create safe closures of all current jobs.
   std::vector<base::OnceClosure> job_abort_closures;
   for (auto& job : jobs_) {
     job_abort_closures.push_back(
-        job.second->GetAbortDnsTaskClosure(error, fallback_only));
+        job.second->GetAbortInsecureDnsTaskClosure(error, fallback_only));
   }
 
   // Pause the dispatcher so it won't start any new dispatcher jobs while
@@ -3378,6 +3392,7 @@ DnsConfig HostResolverManager::GetBaseDnsConfig(bool log_to_net_log) {
     received_dns_config_ = dns_config.IsValid();
   }
 
+  // TODO(crbug.com/985589): Upgrade DoH servers for automatic mode here.
   return dns_config_overrides_.ApplyOverrides(dns_config);
 }
 
@@ -3386,8 +3401,6 @@ void HostResolverManager::UpdateDNSConfig(bool config_changed) {
 
   // Conservatively assume local IPv6 is needed when DnsConfig is not valid.
   use_local_ipv6_ = !dns_config.IsValid() || dns_config.use_local_ipv6;
-
-  num_dns_failures_ = 0;
 
   // We want a new DnsSession in place, before we Abort running Jobs, so that
   // the newly started jobs use the new config.
@@ -3398,10 +3411,13 @@ void HostResolverManager::UpdateDNSConfig(bool config_changed) {
            dns_client_->GetConfig()->Equals(dns_config));
     dns_client_->SetConfig(dns_config);
   }
-  use_proctask_by_default_ = false;
 
   if (config_changed) {
     InvalidateCaches();
+
+    // Reset the insecure DNS task failure counter.
+    num_insecure_dns_task_failures_ = 0;
+    bypass_insecure_dns_client_ = false;
 
     // Life check to bail once |this| is deleted.
     base::WeakPtr<HostResolverManager> self = weak_ptr_factory_.GetWeakPtr();
@@ -3419,35 +3435,25 @@ void HostResolverManager::UpdateDNSConfig(bool config_changed) {
 }
 
 bool HostResolverManager::HaveDnsConfig() const {
-  // Use DnsClient only if it's fully configured and there is no override by
-  // ScopedDefaultHostResolverProc.
-  // The alternative is to use NetworkChangeNotifier to override DnsConfig,
-  // but that would introduce construction order requirements for NCN and SDHRP.
-  return dns_client_ && dns_client_->GetConfig() &&
-         (proc_params_.resolver_proc || !HostResolverProc::GetDefault());
-}
-
-void HostResolverManager::OnDnsTaskResolve() {
-  DCHECK(dns_client_);
-  num_dns_failures_ = 0;
+  return dns_client_ && dns_client_->GetConfig();
 }
 
 void HostResolverManager::OnFallbackResolve(int dns_task_error) {
   DCHECK(dns_client_);
   DCHECK_NE(OK, dns_task_error);
 
-  ++num_dns_failures_;
-  if (num_dns_failures_ < kMaximumDnsFailures)
+  ++num_insecure_dns_task_failures_;
+  if (num_insecure_dns_task_failures_ < kMaximumInsecureDnsTaskFailures)
     return;
 
-  // Force fallback until the next DNS change.  Must be done before aborting
-  // DnsTasks, since doing so may start new jobs.  Do not fully clear out or
-  // disable the DnsClient as some requests (e.g. those specifying DNS source)
-  // are not allowed to fallback and will continue using DnsTask.
-  use_proctask_by_default_ = true;
+  // Skip insecure DNS lookups until the next DNS config change.  Must be done
+  // before aborting DnsTasks, since doing so may start new jobs.  Do not fully
+  // clear out or disable the DnsClient as some requests (e.g. those specifying
+  // DNS source) are not allowed to fallback and will continue using DnsTask.
+  bypass_insecure_dns_client_ = true;
 
-  // Fallback all fallback-allowed DnsTasks to ProcTasks.
-  AbortDnsTasks(ERR_FAILED, true /* fallback_only */);
+  // Fallback all fallback-allowed insecure DnsTasks to ProcTasks.
+  AbortInsecureDnsTasks(ERR_FAILED, true /* fallback_only */);
 }
 
 int HostResolverManager::GetOrCreateMdnsClient(MDnsClient** out_client) {
@@ -3474,9 +3480,10 @@ int HostResolverManager::GetOrCreateMdnsClient(MDnsClient** out_client) {
 #endif
 }
 
+// TODO(crbug.com/985589): Update these metrics for DoH.
 void HostResolverManager::UpdateModeForHistogram(const DnsConfig& dns_config) {
   // Resolving with Async DNS resolver?
-  if (HaveDnsConfig()) {
+  if (HaveDnsConfig() && insecure_dns_client_enabled_) {
     mode_for_histogram_ = MODE_FOR_HISTOGRAM_ASYNC_DNS;
     for (const auto& dns_server : dns_client_->GetConfig()->nameservers) {
       if (DnsServerSupportsDoh(dns_server.address())) {

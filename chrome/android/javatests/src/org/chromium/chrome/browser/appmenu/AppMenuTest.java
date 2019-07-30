@@ -29,6 +29,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -238,22 +239,13 @@ public class AppMenuTest {
     public void testHideMenuOnToggleOverview() throws TimeoutException, InterruptedException {
         CallbackHelper overviewModeFinishedShowingCallback = new CallbackHelper();
         OverviewModeBehavior.OverviewModeObserver overviewModeObserver =
-                new OverviewModeBehavior.OverviewModeObserver() {
-                    @Override
-                    public void onOverviewModeStartedShowing(boolean showToolbar) {}
-
+                new EmptyOverviewModeObserver() {
                     @Override
                     public void onOverviewModeFinishedShowing() {
                         overviewModeFinishedShowingCallback.notifyCalled();
                     }
-
-                    @Override
-                    public void onOverviewModeStartedHiding(
-                            boolean showToolbar, boolean delayAnimation) {}
-
-                    @Override
-                    public void onOverviewModeFinishedHiding() {}
                 };
+
         // App menu is shown during setup.
         Assert.assertTrue("App menu should be showing.", mAppMenu.isShowing());
         Assert.assertFalse("Overview shouldn't be showing.",

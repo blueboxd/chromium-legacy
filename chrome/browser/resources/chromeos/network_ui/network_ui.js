@@ -333,16 +333,25 @@ const NetworkUI = (function() {
               showDetail(detailCell, responseParams.result);
             } else {
               showDetailError(
-                  detailCell, 'GetNetworkState(' + guid + ') failed');
+                  detailCell, 'getNetworkState(' + guid + ') failed');
             }
           })
           .catch((error) => {
             showDetailError(detailCell, 'Mojo service failure: ' + error);
           });
     } else if (selectedId == 'managed') {
-      chrome.networkingPrivate.getManagedProperties(guid, function(properties) {
-        showDetail(detailCell, properties, chrome.runtime.lastError);
-      });
+      networkConfigProxy.getManagedProperties(guid)
+          .then((responseParams) => {
+            if (responseParams && responseParams.result) {
+              showDetail(detailCell, responseParams.result);
+            } else {
+              showDetailError(
+                  detailCell, 'getManagedProperties(' + guid + ') failed');
+            }
+          })
+          .catch((error) => {
+            showDetailError(detailCell, 'Mojo service failure: ' + error);
+          });
     } else {
       chrome.networkingPrivate.getProperties(guid, function(properties) {
         showDetail(detailCell, properties, chrome.runtime.lastError);
@@ -367,7 +376,7 @@ const NetworkUI = (function() {
   /**
    * @param {!HTMLTableCellElement} detailCell
    * @param {!networkUI.NetworkStateProperties|!networkUI.DeviceStateProperties|
-   *     !chrome.networkingPrivate.ManagedProperties|
+   *     !chromeos.networkConfig.mojom.ManagedProperties|
    *     !chrome.networkingPrivate.NetworkProperties} state
    * @param {!Object=} error
    */

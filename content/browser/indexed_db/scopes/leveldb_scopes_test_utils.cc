@@ -26,6 +26,8 @@ LevelDBScopesTestBase::~LevelDBScopesTestBase() = default;
 
 void LevelDBScopesTestBase::SetUp() {
   large_string_.assign(kWriteBatchSizeForTesting + 1, 'e');
+  if (!leveldb_factory_)
+    leveldb_factory_ = indexed_db::LevelDBFactory::Get();
 }
 
 void LevelDBScopesTestBase::TearDown() {
@@ -38,8 +40,7 @@ void LevelDBScopesTestBase::TearDown() {
     }
     leveldb_.reset();
     if (temp_directory_.IsValid()) {
-      indexed_db::LevelDBFactory::Get()->DestroyLevelDB(
-          temp_directory_.GetPath());
+      leveldb_factory_->DestroyLevelDB(temp_directory_.GetPath());
       ASSERT_TRUE(temp_directory_.Delete());
     }
   }
@@ -50,11 +51,9 @@ void LevelDBScopesTestBase::SetUpRealDatabase() {
     TearDown();
   ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
   leveldb::Status status;
-  std::tie(leveldb_, status, std::ignore) =
-      indexed_db::LevelDBFactory::Get()->OpenLevelDBState(
-          temp_directory_.GetPath(), LevelDBComparator::BytewiseComparator(),
-          leveldb::BytewiseComparator());
-  ASSERT_TRUE(status.ok());
+  std::tie(leveldb_, status, std::ignore) = leveldb_factory_->OpenLevelDBState(
+      temp_directory_.GetPath(), leveldb::BytewiseComparator());
+  ASSERT_TRUE(status.ok()) << status.ToString();
   ASSERT_TRUE(leveldb_);
 }
 
@@ -83,8 +82,7 @@ void LevelDBScopesTestBase::SetUpBreakableDB(
       std::move(temp_real_db));
   ASSERT_TRUE(db);
   leveldb_ = LevelDBState::CreateForDiskDB(
-      leveldb::BytewiseComparator(), LevelDBComparator::BytewiseComparator(),
-      std::move(db), temp_directory_.GetPath());
+      leveldb::BytewiseComparator(), std::move(db), temp_directory_.GetPath());
 }
 
 void LevelDBScopesTestBase::SetUpFlakyDB(
@@ -114,8 +112,7 @@ void LevelDBScopesTestBase::SetUpFlakyDB(
   fake_factory.EnqueueNextOpenDBResult(std::move(flaky_db),
                                        leveldb::Status::OK());
   std::tie(leveldb_, status, std::ignore) = fake_factory.OpenLevelDBState(
-      temp_directory_.GetPath(), LevelDBComparator::BytewiseComparator(),
-      leveldb::BytewiseComparator());
+      temp_directory_.GetPath(), leveldb::BytewiseComparator());
   ASSERT_TRUE(status.ok());
   ASSERT_TRUE(leveldb_);
 }

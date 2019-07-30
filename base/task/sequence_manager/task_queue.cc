@@ -12,6 +12,7 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_checker_impl.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -35,11 +36,15 @@ class NullTaskRunner final : public SingleThreadTaskRunner {
     return false;
   }
 
-  bool RunsTasksInCurrentSequence() const override { return false; }
+  bool RunsTasksInCurrentSequence() const override {
+    return thread_checker_.CalledOnValidThread();
+  }
 
  private:
   // Ref-counted
   ~NullTaskRunner() override = default;
+
+  ThreadCheckerImpl thread_checker_;
 };
 
 // TODO(kraynov): Move NullTaskRunner from //base/test to //base.

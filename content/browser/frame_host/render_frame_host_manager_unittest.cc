@@ -404,10 +404,10 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
                                                    ->frame_tree_node()
                                                    ->navigator()
                                                    ->GetController());
-    FrameMsg_Navigate_Type::Value navigate_type =
+    mojom::NavigationType navigate_type =
         entry->restore_type() == RestoreType::NONE
-            ? FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT
-            : FrameMsg_Navigate_Type::RESTORE;
+            ? mojom::NavigationType::DIFFERENT_DOCUMENT
+            : mojom::NavigationType::RESTORE;
     scoped_refptr<network::ResourceRequestBody> request_body;
     std::string post_content_type;
     if (frame_entry->method() == "POST") {
@@ -418,15 +418,17 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
               .as_string();
     }
 
-    CommonNavigationParams common_params =
+    auto& referrer = frame_entry->referrer();
+    mojom::CommonNavigationParamsPtr common_params =
         entry->ConstructCommonNavigationParams(
             *frame_entry, request_body, frame_entry->url(),
-            frame_entry->referrer(), navigate_type, PREVIEWS_UNSPECIFIED,
-            base::TimeTicks::Now(), base::TimeTicks::Now());
+            blink::mojom::Referrer::New(referrer.url, referrer.policy),
+            navigate_type, PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(),
+            base::TimeTicks::Now());
     CommitNavigationParams commit_params =
         entry->ConstructCommitNavigationParams(
-            *frame_entry, common_params.url, frame_entry->committed_origin(),
-            common_params.method,
+            *frame_entry, common_params->url, frame_entry->committed_origin(),
+            common_params->method,
             entry->GetSubframeUniqueNames(frame_tree_node),
             controller->GetPendingEntryIndex() ==
                 -1 /* intended_as_new_entry */,
@@ -437,7 +439,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
 
     std::unique_ptr<NavigationRequest> navigation_request =
         NavigationRequest::CreateBrowserInitiated(
-            frame_tree_node, common_params, commit_params,
+            frame_tree_node, std::move(common_params), commit_params,
             !entry->is_renderer_initiated(), entry->extra_headers(),
             *frame_entry, entry, request_body,
             nullptr /* navigation_ui_data */);
@@ -2922,13 +2924,16 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
   FrameTreeNode* frame_tree_node =
       manager->current_frame_host()->frame_tree_node();
-  CommonNavigationParams common_params = entry.ConstructCommonNavigationParams(
-      *frame_entry, nullptr, frame_entry->url(), frame_entry->referrer(),
-      FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
-      base::TimeTicks::Now(), base::TimeTicks::Now());
+  auto& referrer = frame_entry->referrer();
+  mojom::CommonNavigationParamsPtr common_params =
+      entry.ConstructCommonNavigationParams(
+          *frame_entry, nullptr, frame_entry->url(),
+          blink::mojom::Referrer::New(referrer.url, referrer.policy),
+          mojom::NavigationType::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
+          base::TimeTicks::Now(), base::TimeTicks::Now());
   CommitNavigationParams commit_params = entry.ConstructCommitNavigationParams(
-      *frame_entry, common_params.url, frame_entry->committed_origin(),
-      common_params.method, entry.GetSubframeUniqueNames(frame_tree_node),
+      *frame_entry, common_params->url, frame_entry->committed_origin(),
+      common_params->method, entry.GetSubframeUniqueNames(frame_tree_node),
       controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
       static_cast<NavigationControllerImpl&>(controller())
           .GetIndexOfEntry(&entry),
@@ -2936,7 +2941,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
 
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
-          frame_tree_node, common_params, commit_params,
+          frame_tree_node, std::move(common_params), commit_params,
           !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
           &entry, nullptr /* request_body */, nullptr /* navigation_ui_data */);
   manager->DidCreateNavigationRequest(navigation_request.get());

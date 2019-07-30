@@ -1412,9 +1412,13 @@ void LocalDOMWindow::RemoveAllEventListeners() {
   UntrackAllBeforeUnloadEventListeners(this);
 }
 
-void LocalDOMWindow::FinishedLoading() {
-  if (should_print_when_finished_loading_) {
-    should_print_when_finished_loading_ = false;
+void LocalDOMWindow::FinishedLoading(FrameLoader::NavigationFinishState state) {
+  bool was_should_print_when_finished_loading =
+      should_print_when_finished_loading_;
+  should_print_when_finished_loading_ = false;
+
+  if (was_should_print_when_finished_loading &&
+      state == FrameLoader::NavigationFinishState::kSuccess) {
     print(nullptr);
   }
 }

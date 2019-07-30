@@ -259,6 +259,7 @@ extern const char kAppsNotEnabled[];
 extern const char kBackgroundPermissionNeeded[];
 extern const char kBackgroundPersistentInvalidForPlatformApps[];
 extern const char kBackgroundRequiredForPlatformApps[];
+extern const char kBackgroundSpecificationInvalidForManifestV3[];
 extern const char kCannotAccessAboutUrl[];
 extern const char kCannotAccessChromeUrl[];
 extern const char kCannotAccessExtensionUrl[];

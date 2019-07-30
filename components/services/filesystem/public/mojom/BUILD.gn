@@ -8,7 +8,6 @@ mojom("mojom") {
   sources = [
     "directory.mojom",
     "file.mojom",
-    "file_system.mojom",
     "types.mojom",
   ]
   public_deps = [

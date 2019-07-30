@@ -681,13 +681,16 @@ class MainThreadSchedulerImplTest
             MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
 
     base::TimeTicks start = Now();
-    scheduler_->OnTaskStarted(fake_queue.get(), FakeTask(),
+    FakeTask fake_task;
+    fake_task.set_enqueue_order(
+        base::sequence_manager::EnqueueOrder::FromIntForTesting(42));
+    scheduler_->OnTaskStarted(fake_queue.get(), fake_task,
                               FakeTaskTiming(start, base::TimeTicks()));
     std::move(task).Run();
     base::TimeTicks end = Now();
     FakeTaskTiming task_timing(start, end);
     scheduler_->OnTaskCompleted(fake_queue->weak_ptr_factory_.GetWeakPtr(),
-                                FakeTask(), &task_timing, nullptr);
+                                fake_task, &task_timing, nullptr);
   }
 
   void RunSlowCompositorTask() {
@@ -3691,6 +3694,62 @@ TEST_P(VeryHighPriorityForCompositingAlternatingExperimentTest,
   EXPECT_THAT(run_order,
               testing::ElementsAre("C1", "C2", "C3", "D1", "D2", "D3"));
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
+}
+
+class VeryHighPriorityForCompositingAfterDelayExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingAfterDelayExperimentTest()
+      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingAfterDelay},
+                                    {}) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         VeryHighPriorityForCompositingAfterDelayExperimentTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
+
+TEST_P(VeryHighPriorityForCompositingAfterDelayExperimentTest,
+       TestCompositorPolicy_CompositorStaysAtNormalPriority) {
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_P(VeryHighPriorityForCompositingAfterDelayExperimentTest,
+       TestCompositorPolicy_FirstCompositorTaskSetToVeryHighPriority) {
+  // 1.5ms task to complete the countdown and prioritze compositing.
+  AdvanceTimeWithTask(0.15);
+
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("P1", "C1", "D1", "D2", "C2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_P(VeryHighPriorityForCompositingAfterDelayExperimentTest,
+       TestCompositorPolicy_FirstCompositorTaskStaysAtNormalPriority) {
+  // 0.5ms task should not prioritize compositing.
+  AdvanceTimeWithTask(0.05);
+
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
 }  // namespace main_thread_scheduler_impl_unittest

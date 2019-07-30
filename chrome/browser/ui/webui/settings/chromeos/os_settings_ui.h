@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "content/public/browser/web_ui_controller.h"
+#include "chrome/browser/ui/webui/webui_load_timer.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace content {
@@ -31,7 +31,7 @@ class OSSettingsUI : public ui::MojoWebUIController {
   void BindCrosNetworkConfig(
       network_config::mojom::CrosNetworkConfigRequest request);
 
-  // TODO(crbug/950007): Create load histograms and embed WebuiLoadTimer.
+  WebuiLoadTimer webui_load_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(OSSettingsUI);
 };

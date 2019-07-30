@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <cmath>
 
-#include "third_party/blink/renderer/modules/xr/xr_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_render_state_init.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 
 namespace blink {
 

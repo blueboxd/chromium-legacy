@@ -71,11 +71,15 @@ source_set("tests") {
   sources = [
     "media_image_manager_unittest.cc",
     "media_position_unittest.cc",
+    "struct_traits_unittest.cc",
   ]
 
   deps = [
     ":cpp",
     "//base",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//services/media_session/public/mojom",
+    "//skia",
     "//testing/gtest",
   ]
 }

@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/crostini/crostini_app_launch_observer.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_display.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -33,8 +32,7 @@ class ChromeLauncherController;
 // Chrome OS shelf.
 class CrostiniAppWindowShelfController : public AppWindowLauncherController,
                                          public aura::EnvObserver,
-                                         public aura::WindowObserver,
-                                         public CrostiniAppLaunchObserver {
+                                         public aura::WindowObserver {
  public:
   explicit CrostiniAppWindowShelfController(ChromeLauncherController* owner);
   ~CrostiniAppWindowShelfController() override;
@@ -51,8 +49,7 @@ class CrostiniAppWindowShelfController : public AppWindowLauncherController,
 
   // A Crostini app with |app_id| is requested to launch on display with
   // |display_id|.
-  void OnAppLaunchRequested(const std::string& app_id,
-                            int64_t display_id) override;
+  void OnAppLaunchRequested(const std::string& app_id, int64_t display_id);
 
   // Close app with |shelf_id| and then restart it on |display_id|.
   void Restart(const ash::ShelfID& shelf_id, int64_t display_id);

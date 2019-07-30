@@ -75,13 +75,6 @@ class QuotaLimitHeuristic;
 #define EXTENSION_FUNCTION_PRERUN_VALIDATE(test) CHECK(test)
 #endif  // NDEBUG
 
-#define EXTENSION_FUNCTION_ERROR(error) \
-  do {                                  \
-    error_ = error;                     \
-    this->SetBadMessage();              \
-    return ValidationFailure(this);     \
-  } while (0)
-
 // Declares a callable extension function with the given |name|. You must also
 // supply a unique |histogramvalue| used for histograms of extension function
 // invocation (add new ones at the end of the enum in

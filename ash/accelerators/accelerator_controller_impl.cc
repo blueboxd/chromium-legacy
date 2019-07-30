@@ -253,12 +253,10 @@ void HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
 void HandleActivateDesk(const ui::Accelerator& accelerator) {
   DCHECK(features::IsVirtualDesksEnabled());
   auto* desks_controller = DesksController::Get();
-
-  // An on-going desk switch animation might be in progress. For now skip this
-  // accelerator. Later we might want to consider queueing these animations, or
-  // cancelling the on-going ones and start over.
-  // TODO(afakhry): Discuss with UX.
-  if (desks_controller->AreDesksBeingModified())
+  const bool success = desks_controller->ActivateAdjacentDesk(
+      /*going_left=*/accelerator.key_code() == ui::VKEY_OEM_4,
+      DesksSwitchSource::kDeskSwitchShortcut);
+  if (!success)
     return;
 
   switch (accelerator.key_code()) {
@@ -272,10 +270,6 @@ void HandleActivateDesk(const ui::Accelerator& accelerator) {
     default:
       NOTREACHED();
   }
-
-  desks_controller->ActivateAdjacentDesk(
-      /*going_left=*/accelerator.key_code() == ui::VKEY_OEM_4,
-      DesksSwitchSource::kDeskSwitchShortcut);
 }
 
 void HandleMoveActiveItem(const ui::Accelerator& accelerator) {

@@ -645,7 +645,7 @@
       getter: "GetSize",
       converter: "ConvertFontSize",
       priority: "High",
-      keywords: ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "larger", "smaller"],
+      keywords: ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "xxx-large", "larger", "smaller", "-webkit-xxx-large"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {

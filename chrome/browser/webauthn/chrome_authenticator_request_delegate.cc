@@ -28,9 +28,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 
 #if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator.h"
 #include "device/fido/mac/credential_metadata.h"
 #endif
 
@@ -45,9 +47,6 @@ namespace {
 bool IsWebauthnRPIDListedInEnterprisePolicy(
     content::BrowserContext* browser_context,
     const std::string& relying_party_id) {
-#if defined(OS_ANDROID)
-  return false;
-#else
   const Profile* profile = Profile::FromBrowserContext(browser_context);
   const PrefService* prefs = profile->GetPrefs();
   const base::ListValue* permit_attestation =
@@ -56,7 +55,6 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
                      [&relying_party_id](const base::Value& v) {
                        return v.GetString() == relying_party_id;
                      });
-#endif
 }
 
 }  // namespace
@@ -214,11 +212,6 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     const std::string& relying_party_id,
     const device::FidoAuthenticator* authenticator,
     base::OnceCallback<void(bool)> callback) {
-#if defined(OS_ANDROID)
-  // Android is expected to use platform APIs for webauthn which will take care
-  // of prompting.
-  std::move(callback).Run(true);
-#else
   if (IsWebauthnRPIDListedInEnterprisePolicy(browser_context(),
                                              relying_party_id)) {
     std::move(callback).Run(true);
@@ -245,7 +238,6 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
 #endif  // defined(OS_WIN)
 
   weak_dialog_model_->RequestAttestationPermission(std::move(callback));
-#endif
 }
 
 bool ChromeAuthenticatorRequestDelegate::SupportsResidentKeys() {
@@ -272,15 +264,10 @@ void ChromeAuthenticatorRequestDelegate::SelectAccount(
 }
 
 bool ChromeAuthenticatorRequestDelegate::IsFocused() {
-#if defined(OS_ANDROID)
-  // Android is expected to use platform APIs for webauthn.
-  return true;
-#else
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
   DCHECK(web_contents);
   return web_contents->GetVisibility() == content::Visibility::VISIBLE;
-#endif
 }
 
 #if defined(OS_MACOSX)
@@ -304,19 +291,11 @@ std::string TouchIdMetadataSecret(Profile* profile) {
 }  // namespace
 
 // static
-content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig
+ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfig
 ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfigForProfile(
     Profile* profile) {
-  return content::AuthenticatorRequestClientDelegate::
-      TouchIdAuthenticatorConfig{kTouchIdKeychainAccessGroup,
-                                 TouchIdMetadataSecret(profile)};
-}
-
-base::Optional<
-    content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
-ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() {
-  return TouchIdAuthenticatorConfigForProfile(
-      Profile::FromBrowserContext(browser_context()));
+  return TouchIdAuthenticatorConfig{kTouchIdKeychainAccessGroup,
+                                    TouchIdMetadataSecret(profile)};
 }
 #endif
 
@@ -357,18 +336,41 @@ bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUIEnabled() {
   return !disable_ui_;
 }
 
-bool ChromeAuthenticatorRequestDelegate::ShouldDisablePlatformAuthenticators() {
+bool ChromeAuthenticatorRequestDelegate::
+    IsUserVerifyingPlatformAuthenticatorAvailable() {
 #if defined(OS_MACOSX)
   // Touch ID is available in Incognito, but not in Guest mode.
-  return Profile::FromBrowserContext(browser_context())->IsGuestSession();
-#else  // Windows, Android
-  return browser_context()->IsOffTheRecord();
-#endif
+  if (Profile::FromBrowserContext(browser_context())->IsGuestSession())
+    return false;
+
+  return device::fido::mac::TouchIdAuthenticator::IsAvailable(
+      TouchIdAuthenticatorConfigForProfile(
+          Profile::FromBrowserContext(browser_context())));
+#elif defined(OS_WIN)
+  if (browser_context()->IsOffTheRecord())
+    return false;
+
+  return base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
+         device::WinWebAuthnApiAuthenticator::
+             IsUserVerifyingPlatformAuthenticatorAvailable();
+#else
+  return false;
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 }
+
+#if defined(OS_MACOSX)
+base::Optional<ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfig>
+ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() {
+  if (!IsUserVerifyingPlatformAuthenticatorAvailable())
+    return base::nullopt;
+
+  return TouchIdAuthenticatorConfigForProfile(
+      Profile::FromBrowserContext(browser_context()));
+}
+#endif  // defined(OS_MACOSX)
 
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
-#if !defined(OS_ANDROID)
   if (disable_ui_ || !transient_dialog_model_holder_) {
     return;
   }
@@ -383,7 +385,6 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
   ShowAuthenticatorRequestDialog(
       content::WebContents::FromRenderFrameHost(render_frame_host()),
       std::move(transient_dialog_model_holder_));
-#endif  // !defined(OS_ANDROID)
 }
 
 bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(

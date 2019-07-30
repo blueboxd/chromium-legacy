@@ -364,8 +364,8 @@ void LayoutShiftTracker::ReportShift(double score_delta,
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
     if (performance) {
-      performance->AddLayoutJankFraction(score_delta, had_recent_input,
-                                         most_recent_input_timestamp_);
+      performance->AddLayoutShiftValue(score_delta, had_recent_input,
+                                       most_recent_input_timestamp_);
     }
   }
 

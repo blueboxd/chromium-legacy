@@ -463,6 +463,9 @@ void NativeWidgetNSWindowBridge::InitWindow(
   }
 
   [window_ setHasShadow:params->has_window_server_shadow];
+  // Don't allow dragging sheets.
+  if (params->modal_type == ui::MODAL_TYPE_WINDOW)
+    [window_ setMovable:NO];
 }
 
 void NativeWidgetNSWindowBridge::SetInitialBounds(

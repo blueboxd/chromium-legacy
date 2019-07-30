@@ -134,8 +134,9 @@ bool VerifyOpenURLParams(SiteInstance* site_instance,
   return true;
 }
 
-bool VerifyBeginNavigationCommonParams(SiteInstance* site_instance,
-                                       CommonNavigationParams* common_params) {
+bool VerifyBeginNavigationCommonParams(
+    SiteInstance* site_instance,
+    mojom::CommonNavigationParams* common_params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(site_instance);
   DCHECK(common_params);

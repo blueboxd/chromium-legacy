@@ -358,7 +358,8 @@ void IntentPickerBubbleView::Initialize() {
     app_info_.erase(app_info_.begin() + to_erase);
 
   auto scroll_view = std::make_unique<views::ScrollView>();
-  scroll_view->SetBackgroundColor(SK_ColorWHITE);
+  scroll_view->SetBackgroundThemeColorId(
+      ui::NativeTheme::kColorId_BubbleBackground);
   scroll_view->SetContents(std::move(scrollable_view));
   // This part gives the scroll a fixed width and height. The height depends on
   // how many app candidates we got and how many we actually want to show.

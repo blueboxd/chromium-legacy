@@ -30,6 +30,7 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/scheduler_sequence.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/base/ui_base_switches.h"
@@ -117,10 +118,13 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
     NOTIMPLEMENTED();
     return nullptr;
 #else
-    output_surface = SkiaOutputSurfaceImpl::Create(
-        std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service_impl_,
-                                                          surface_handle),
-        renderer_settings);
+    {
+      gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
+      output_surface = SkiaOutputSurfaceImpl::Create(
+          std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service_impl_,
+                                                            surface_handle),
+          renderer_settings);
+    }
     if (!output_surface) {
 #if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
       // GPU compositing is expected to always work on Chrome OS so we should

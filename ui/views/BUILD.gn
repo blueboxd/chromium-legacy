@@ -793,6 +793,7 @@ jumbo_component("views") {
       "Foundation.framework",
       "IOSurface.framework",
       "QuartzCore.framework",
+      "ApplicationServices.framework",
     ]
   }
 

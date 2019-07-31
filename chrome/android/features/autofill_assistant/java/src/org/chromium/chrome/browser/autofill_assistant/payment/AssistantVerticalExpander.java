@@ -146,18 +146,6 @@ public class AssistantVerticalExpander extends LinearLayout {
         mExpandedContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    /**
-     * Sets the top/bottom padding of the title bar. This method should be used instead of manually
-     * setting a padding on the title view, because that would result in misalignment between title
-     * view and the expand chevron.
-     */
-    public void setTitlePadding(int topPadding, int bottomPadding) {
-        mTitleContainer.setPadding(mTitleContainer.getPaddingLeft(), topPadding,
-                mTitleContainer.getPaddingRight(), bottomPadding);
-        mChevronButton.setPadding(mChevronButton.getPaddingLeft(), topPadding,
-                mChevronButton.getPaddingRight(), bottomPadding);
-    }
-
     public View getChevronButton() {
         return mChevronButton;
     }

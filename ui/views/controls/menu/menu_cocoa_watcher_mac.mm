@@ -27,6 +27,14 @@ MenuCocoaWatcherMac::MenuCocoaWatcherMac(base::OnceClosure callback)
               usingBlock:^(NSNotification* notification) {
                 ExecuteCallback();
               }];
+  observer_token_app_change_ =
+      [[[NSWorkspace sharedWorkspace] notificationCenter]
+          addObserverForName:NSWorkspaceDidActivateApplicationNotification
+                      object:nil
+                       queue:nil
+                  usingBlock:^(NSNotification* notification) {
+                    ExecuteCallback();
+                  }];
 }
 
 MenuCocoaWatcherMac::~MenuCocoaWatcherMac() {
@@ -34,6 +42,8 @@ MenuCocoaWatcherMac::~MenuCocoaWatcherMac() {
       removeObserver:observer_token_other_menu_];
   [[NSNotificationCenter defaultCenter]
       removeObserver:observer_token_new_window_focus_];
+  [[[NSWorkspace sharedWorkspace] notificationCenter]
+      removeObserver:observer_token_app_change_];
 }
 
 void MenuCocoaWatcherMac::ExecuteCallback() {

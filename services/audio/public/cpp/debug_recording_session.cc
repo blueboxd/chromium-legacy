@@ -50,9 +50,9 @@ void DebugRecordingSession::DebugRecordingFileProvider::CreateWavFile(
     media::AudioDebugRecordingStreamType stream_type,
     uint32_t id,
     CreateWavFileCallback reply_callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
           [](const base::FilePath& file_name) {

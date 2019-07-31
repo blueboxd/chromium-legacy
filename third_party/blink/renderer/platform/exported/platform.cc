@@ -43,7 +43,6 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
@@ -338,10 +337,6 @@ Platform::CreateWebRtcAsyncResolverFactory() {
 
 std::unique_ptr<WebRTCCertificateGenerator>
 Platform::CreateRTCCertificateGenerator() {
-  return nullptr;
-}
-
-std::unique_ptr<WebMediaStreamCenter> Platform::CreateMediaStreamCenter() {
   return nullptr;
 }
 

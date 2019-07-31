@@ -22,8 +22,8 @@ SensorReaderFactory::CreateSensorReader(mojom::SensorType type) {
 }
 
 PlatformSensorProviderWinrt::PlatformSensorProviderWinrt()
-    : com_sta_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
-          base::TaskPriority::USER_VISIBLE)),
+    : com_sta_task_runner_(base::CreateCOMSTATaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE})),
       sensor_reader_factory_(std::make_unique<SensorReaderFactory>()) {}
 
 PlatformSensorProviderWinrt::~PlatformSensorProviderWinrt() = default;

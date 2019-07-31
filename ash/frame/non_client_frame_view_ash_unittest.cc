@@ -581,10 +581,14 @@ TEST_F(NonClientFrameViewAshTest, CustomButtonModel) {
   FrameCaptionButtonContainerView::TestApi test_api(
       header_view->caption_button_container());
 
-  // CLOSE buttion is always visible and enabled.
+  // CLOSE button is always enabled.
   EXPECT_TRUE(test_api.close_button());
-  EXPECT_TRUE(test_api.close_button()->GetVisible());
+  EXPECT_FALSE(test_api.close_button()->GetVisible());
   EXPECT_TRUE(test_api.close_button()->GetEnabled());
+
+  model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_CLOSE, true);
+  non_client_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(test_api.close_button()->GetVisible());
 
   EXPECT_FALSE(test_api.minimize_button()->GetVisible());
   EXPECT_FALSE(test_api.size_button()->GetVisible());

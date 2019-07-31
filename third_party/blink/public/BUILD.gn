@@ -276,7 +276,6 @@ source_set("blink_headers") {
     "platform/web_media_player_source.h",
     "platform/web_media_source.h",
     "platform/web_media_stream.h",
-    "platform/web_media_stream_center.h",
     "platform/web_media_stream_source.h",
     "platform/web_media_stream_track.h",
     "platform/web_memory_pressure_level.h",

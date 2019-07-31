@@ -8,6 +8,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/work_queue.h"
@@ -392,7 +394,7 @@ TEST_F(TimeDomainTest, HighResolutionWakeUps) {
 }
 
 TEST_F(TimeDomainTest, SetNextWakeUpForQueueInThePast) {
-  constexpr auto kType = MessagePump::Type::DEFAULT;
+  constexpr auto kType = MessagePumpType::DEFAULT;
   constexpr auto kDelay = TimeDelta::FromMilliseconds(20);
   SimpleTestTickClock clock;
   auto sequence_manager = sequence_manager::CreateUnboundSequenceManager(

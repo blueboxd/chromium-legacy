@@ -10,7 +10,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h"
-#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -41,7 +41,7 @@ TEST_F(LoginScreenExtensionUiDialogDelegateUnittest, Test) {
 
   base::RunLoop close_callback_wait;
 
-  LoginScreenExtensionUiWindow::CreateOptions create_options(
+  LoginScreenExtensionUiCreateOptions create_options(
       extension->short_name(), extension->GetResourceURL(kResourcePath),
       false /*can_be_closed_by_user*/, close_callback_wait.QuitClosure());
 

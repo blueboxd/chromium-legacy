@@ -367,7 +367,7 @@ class BaseSymbol(object):
     return not (self.IsStringLiteral() or  # "string literal"
                 self.IsOverhead() or  # "Overhead: APK File"
                 self.full_name.startswith('*') or  # "** outlined symbol"
-                '.' in self.full_name)  # ".L__unnamed_1195"
+                (self.IsNative() and '.' in self.full_name))  # ".L__unnamed_11"
 
   def IterLeafSymbols(self):
     yield self

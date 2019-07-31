@@ -284,9 +284,9 @@ Coordinator::Coordinator(AgentRegistry* agent_registry,
       // TODO(fdoray): Once we have support for dynamic priorities
       // (https://crbug.com/889029), use BEST_EFFORT initially and increase the
       // priority only when blocking the tracing UI.
-      backend_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
-           base::WithBaseSyncPrimitives()})),
+      backend_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+           base::MayBlock(), base::WithBaseSyncPrimitives()})),
       weak_ptr_factory_(this) {
   DCHECK(agent_registry_);
 }

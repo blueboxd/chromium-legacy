@@ -162,7 +162,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
 @implementation ContextMenuTestCase
 
-// TODO(crbug.com/976259) Disable broken context menu tests on Xcode 11 beta 5.
+// TODO(crbug.com/989550) Disable broken context menu tests on Xcode 11 beta 5.
 + (NSArray*)testInvocations {
   if (@available(iOS 13, *))
     return @[];

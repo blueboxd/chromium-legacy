@@ -54,7 +54,7 @@ class SessionCleanupCookieStoreTest : public testing::Test {
   CanonicalCookieVector CreateAndLoad() {
     auto sqlite_store = base::MakeRefCounted<net::SQLitePersistentCookieStore>(
         temp_dir_.GetPath().Append(kTestCookiesFilename),
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
         background_task_runner_, true, nullptr);
     store_ =
         base::MakeRefCounted<SessionCleanupCookieStore>(sqlite_store.get());
@@ -85,7 +85,7 @@ class SessionCleanupCookieStoreTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SessionCleanupCookieStore> store_;
   net::BoundTestNetLog net_log_;

@@ -930,23 +930,36 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
           <html>
           <body>
             <div contenteditable="true">Text inside field</div>
+            anonymous block
           </body>
           </html>)HTML"));
 
   AtkObject* document = GetRendererAccessible();
-  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
+  EXPECT_EQ(2, atk_object_get_n_accessible_children(document));
 
   AtkText* div_element = ATK_TEXT(atk_object_ref_accessible_child(document, 0));
   EXPECT_EQ(1, atk_object_get_n_accessible_children(ATK_OBJECT(div_element)));
   AtkText* text =
       ATK_TEXT(atk_object_ref_accessible_child(ATK_OBJECT(div_element), 0));
+  AtkText* anonymous_block =
+      ATK_TEXT(atk_object_ref_accessible_child(document, 1));
 
   auto callback = G_CALLBACK(+[](AtkText*, gint, bool* flag) { *flag = true; });
+
   bool saw_caret_move_in_text = false;
-  bool saw_caret_move_in_div = false;
   g_signal_connect(text, "text-caret-moved", callback, &saw_caret_move_in_text);
+
+  bool saw_caret_move_in_div = false;
   g_signal_connect(div_element, "text-caret-moved", callback,
                    &saw_caret_move_in_div);
+
+  bool saw_caret_move_in_anonymous_block = false;
+  g_signal_connect(anonymous_block, "text-caret-moved", callback,
+                   &saw_caret_move_in_anonymous_block);
+
+  bool saw_caret_move_in_document = false;
+  g_signal_connect(document, "text-caret-moved", callback,
+                   &saw_caret_move_in_document);
 
   AccessibilityNotificationWaiter selection_waiter(
       shell()->web_contents(), ui::kAXModeComplete,
@@ -965,8 +978,19 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   // We should see the event happen in div and not the static text element.
   EXPECT_TRUE(saw_caret_move_in_div);
   EXPECT_FALSE(saw_caret_move_in_text);
+  EXPECT_FALSE(saw_caret_move_in_anonymous_block);
+  EXPECT_FALSE(saw_caret_move_in_document);
+
+  saw_caret_move_in_div = false;
+
+  atk_text_set_caret_offset(anonymous_block, 3);
+  EXPECT_FALSE(saw_caret_move_in_div);
+  EXPECT_FALSE(saw_caret_move_in_text);
+  EXPECT_FALSE(saw_caret_move_in_anonymous_block);
+  EXPECT_TRUE(saw_caret_move_in_document);
 
   g_object_unref(div_element);
+  g_object_unref(anonymous_block);
   g_object_unref(text);
 }
 

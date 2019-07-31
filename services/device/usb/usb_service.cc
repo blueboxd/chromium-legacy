@@ -64,7 +64,7 @@ std::unique_ptr<UsbService> UsbService::Create() {
 // static
 scoped_refptr<base::SequencedTaskRunner>
 UsbService::CreateBlockingTaskRunner() {
-  return base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits);
+  return base::CreateSequencedTaskRunner(kBlockingTaskTraits);
 }
 
 UsbService::~UsbService() {

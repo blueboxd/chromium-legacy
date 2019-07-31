@@ -226,7 +226,7 @@ UsbServiceImpl::UsbServiceImpl()
 #endif
       weak_factory_(this) {
   weak_self_ = weak_factory_.GetWeakPtr();
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, kBlockingTaskTraits,
       base::BindOnce(&InitializeUsbContextBlocking),
       base::BindOnce(&UsbServiceImpl::OnUsbContext,
@@ -326,7 +326,7 @@ void UsbServiceImpl::RefreshDevices() {
     pending_path_enumerations_.pop();
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, kBlockingTaskTraits,
       base::BindOnce(&GetDeviceListBlocking, device_path, context_),
       base::BindOnce(&UsbServiceImpl::OnDeviceList,

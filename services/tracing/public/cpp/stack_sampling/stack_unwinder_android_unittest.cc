@@ -60,8 +60,8 @@ TEST_F(StackUnwinderTest, UnwindCurrentThread) {
 
 TEST_F(StackUnwinderTest, UnwindOtherThread) {
   base::WaitableEvent unwind_finished_event;
-  auto task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  auto task_runner = base::CreateSingleThreadTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   auto callback = [](StackUnwinderAndroid* unwinder, base::PlatformThreadId tid,
                      base::WaitableEvent* unwind_finished_event,
@@ -105,8 +105,8 @@ TEST_F(StackUnwinderTest, UnwindOtherThread) {
 }
 
 TEST_F(StackUnwinderTest, UnwindOtherThreadOnJNICall) {
-  auto task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  auto task_runner = base::CreateSingleThreadTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
   auto callback = [](StackUnwinderAndroid* unwinder, base::PlatformThreadId tid,
                      uintptr_t test_pc) {

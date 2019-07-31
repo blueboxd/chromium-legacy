@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_WEB_PLATFORM_MEDIA_STREAM_SOURCE_H_
 
 #include "base/callback.h"
+#include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -16,15 +17,6 @@ namespace blink {
 
 class MediaStreamSource;
 class WebMediaStreamSource;
-
-// Names for media stream source capture types.
-// These are values set via the "chromeMediaSource" constraint.
-BLINK_PLATFORM_EXPORT extern const char kMediaStreamSourceTab[];
-BLINK_PLATFORM_EXPORT extern const char
-    kMediaStreamSourceScreen[]; /* video only */
-BLINK_PLATFORM_EXPORT extern const char kMediaStreamSourceDesktop[];
-BLINK_PLATFORM_EXPORT extern const char
-    kMediaStreamSourceSystem[]; /* audio only */
 
 class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource {
  public:

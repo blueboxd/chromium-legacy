@@ -408,8 +408,10 @@ initiationType:(web::NavigationInitiationType)initiationType;
     NSInteger newItemIndex = self.pendingItemIndex;
     if (newItemIndex == -1) {
       [self clearForwardItems];
-      // Add the new item at the end.
-      _items.push_back(std::move(_pendingItem));
+      if (_pendingItem) {
+        // Add the new item at the end.
+        _items.push_back(std::move(_pendingItem));
+      }
       newItemIndex = self.items.size() - 1;
     }
     _previousItemIndex = _lastCommittedItemIndex;

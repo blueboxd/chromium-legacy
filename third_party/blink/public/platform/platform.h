@@ -122,7 +122,6 @@ class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
-class WebMediaStreamCenter;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
 class WebRtcAudioDeviceImpl;
@@ -583,10 +582,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // resources.
   virtual std::unique_ptr<WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator();
-
-  // May return null if WebRTC functionality is not available or out of
-  // resources.
-  virtual std::unique_ptr<WebMediaStreamCenter> CreateMediaStreamCenter();
 
   // Returns the SingleThreadTaskRunner suitable for running WebRTC networking.
   // An rtc::Thread will have already been created.

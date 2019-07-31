@@ -666,8 +666,8 @@ another thread:
 
 ``` cpp
 std::unique_ptr<service_manager::Connector> new_connector = connector->Clone();
-base::PostTaskWithTraits(...[elsewhere]...,
-                         base::BindOnce(..., std::move(new_connector)));
+base::PostTask(...[elsewhere]...,
+               base::BindOnce(..., std::move(new_connector)));
 ```
 
 Or you can fabricate a brand new `Connector` right from where you're standing,
@@ -682,7 +682,7 @@ std::unique_ptr<service_manager::Connector> new_connector =
 // yet being associated with the establshed Connector. The calls will queue as
 // long as necessary.
 
-base::PostTaskWithTraits(
+base::PostTask(
     ...[over to the correct thread]...,
     base::BindOnce([](service_manager::ConnectorRequest request) {
       service_manager::Connector* connector = GetMyConnectorForThisThread();

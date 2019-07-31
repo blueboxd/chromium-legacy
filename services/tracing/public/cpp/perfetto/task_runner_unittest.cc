@@ -96,8 +96,9 @@ class PerfettoTaskRunnerTest : public testing::Test {
   }
 
   scoped_refptr<base::SequencedTaskRunner> CreateNewTaskrunner() {
-    return base::CreateSingleThreadTaskRunnerWithTraits(
-        {base::MayBlock()}, base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+    return base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::MayBlock()},
+        base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   }
   void SetTaskExpectations(base::OnceClosure on_complete,
                            size_t expected_tasks,

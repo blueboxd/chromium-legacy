@@ -81,10 +81,12 @@ class FileService::LevelDBServiceObjects
 FileService::FileService(
     mojo::PendingReceiver<service_manager::mojom::Service> receiver)
     : service_binding_(this, std::move(receiver)),
-      file_service_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
-      leveldb_service_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
+      file_service_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      leveldb_service_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
   binders_.Add<leveldb::mojom::LevelDBService>(base::BindRepeating(
       &FileService::BindLevelDBServiceReceiver, base::Unretained(this)));
   binders_.Add<mojom::FileSystem>(base::BindRepeating(

@@ -122,30 +122,6 @@ bool IsEnabledOptimizationType(
   }
 }
 
-net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
-    optimization_guide::proto::EffectiveConnectionType proto_ect) {
-  switch (proto_ect) {
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_OFFLINE:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_OFFLINE;
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_2G:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_3G:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G;
-    case optimization_guide::proto::EffectiveConnectionType::
-        EFFECTIVE_CONNECTION_TYPE_4G:
-      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G;
-  }
-}
-
 }  // namespace
 
 PreviewsHints::PreviewsHints(
@@ -353,13 +329,15 @@ bool PreviewsHints::IsWhitelisted(
     if (optimization.has_previews_metadata()) {
       *out_inflation_percent =
           optimization.previews_metadata().inflation_percent();
-      *out_ect_threshold = ConvertProtoEffectiveConnectionType(
-          optimization.previews_metadata().max_ect_trigger());
+      *out_ect_threshold =
+          optimization_guide::ConvertProtoEffectiveConnectionType(
+              optimization.previews_metadata().max_ect_trigger());
     } else {
       *out_inflation_percent = optimization.inflation_percent();
       if (matched_page_hint->has_max_ect_trigger()) {
-        *out_ect_threshold = ConvertProtoEffectiveConnectionType(
-            matched_page_hint->max_ect_trigger());
+        *out_ect_threshold =
+            optimization_guide::ConvertProtoEffectiveConnectionType(
+                matched_page_hint->max_ect_trigger());
       }
     }
 

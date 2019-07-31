@@ -91,7 +91,6 @@
 #include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/media/render_media_client.h"
-#include "content/renderer/media/stream/media_stream_center.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
@@ -1992,13 +1991,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 blink::AssociatedInterfaceRegistry*
 RenderThreadImpl::GetAssociatedInterfaceRegistry() {
   return &associated_interfaces_;
-}
-
-std::unique_ptr<blink::WebMediaStreamCenter>
-RenderThreadImpl::CreateMediaStreamCenter() {
-  DCHECK(main_thread_runner()->BelongsToCurrentThread());
-  // TODO(hajimehoshi): Pass a per-frame task runner if possible.
-  return std::make_unique<MediaStreamCenter>(main_thread_runner());
 }
 
 PeerConnectionDependencyFactory*

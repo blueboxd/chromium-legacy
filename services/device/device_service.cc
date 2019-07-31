@@ -194,8 +194,8 @@ void DeviceService::OnStart() {
   // blocking IO.
   serial_port_manager_ = std::make_unique<SerialPortManagerImpl>(
       io_task_runner_, base::ThreadTaskRunnerHandle::Get());
-  serial_port_manager_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  serial_port_manager_task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   registry_.AddInterface<mojom::SerialPortManager>(
       base::BindRepeating(&SerialPortManagerImpl::Bind,
                           base::Unretained(serial_port_manager_.get())),

@@ -19,6 +19,7 @@
 #include "base/logging_win.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
@@ -317,7 +318,7 @@ bool BrowserMonitor::StartWatching(
     return false;
 
   if (!background_thread_.StartWithOptions(
-          base::Thread::Options(base::MessagePump::Type::IO, 0))) {
+          base::Thread::Options(base::MessagePumpType::IO, 0))) {
     return false;
   }
 
@@ -418,7 +419,7 @@ extern "C" int WatcherMain(const base::char16* registry_path,
   // Run a UI task executor on the main thread.
   base::PlatformThread::SetName("WatcherMainThread");
   base::SingleThreadTaskExecutor main_thread_task_executor(
-      base::MessagePump::Type::UI);
+      base::MessagePumpType::UI);
 
   base::RunLoop run_loop;
   BrowserMonitor monitor(registry_path, &run_loop);

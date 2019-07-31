@@ -105,6 +105,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 - (void)testCopyPaste {
+  // TODO(crbug.com/989550) Disable broken system callout tests on Xc11b5.
+  if (@available(iOS 13, *)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
+  }
+
   [self openPage1];
 
   // Long pressing should allow copying.

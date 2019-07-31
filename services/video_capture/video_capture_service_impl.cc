@@ -36,8 +36,9 @@ namespace video_capture {
 class VideoCaptureServiceImpl::GpuDependenciesContext {
  public:
   GpuDependenciesContext() : weak_factory_for_gpu_io_thread_(this) {
-    gpu_io_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::TaskPriority::BEST_EFFORT, base::MayBlock()});
+    gpu_io_task_runner_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+         base::MayBlock()});
   }
 
   ~GpuDependenciesContext() {

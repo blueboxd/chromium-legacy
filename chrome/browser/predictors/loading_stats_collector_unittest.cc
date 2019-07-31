@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/network_isolation_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -77,7 +78,7 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
   const std::string& script_url = "https://cdn.google.com/script.js";
   PreconnectPrediction prediction = CreatePreconnectPrediction(
       GURL(prediction_url).host(), initial_url != prediction_url,
-      {{GURL(script_url).GetOrigin(), 1}});
+      {{GURL(script_url).GetOrigin(), 1, net::NetworkIsolationKey()}});
   EXPECT_CALL(*mock_predictor_, PredictPreconnectOrigins(GURL(initial_url), _))
       .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
 
@@ -105,12 +106,12 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
   };
 
   // Predicts 4 origins: 2 useful, 2 useless.
-  PreconnectPrediction prediction =
-      CreatePreconnectPrediction(GURL(main_frame_url).host(), false,
-                                 {{GURL(main_frame_url).GetOrigin(), 1},
-                                  {GURL(gen(1)).GetOrigin(), 1},
-                                  {GURL(gen(2)).GetOrigin(), 1},
-                                  {GURL(gen(3)).GetOrigin(), 0}});
+  PreconnectPrediction prediction = CreatePreconnectPrediction(
+      GURL(main_frame_url).host(), false,
+      {{GURL(main_frame_url).GetOrigin(), 1, net::NetworkIsolationKey()},
+       {GURL(gen(1)).GetOrigin(), 1, net::NetworkIsolationKey()},
+       {GURL(gen(2)).GetOrigin(), 1, net::NetworkIsolationKey()},
+       {GURL(gen(3)).GetOrigin(), 0, net::NetworkIsolationKey()}});
   EXPECT_CALL(*mock_predictor_,
               PredictPreconnectOrigins(GURL(main_frame_url), _))
       .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));

@@ -13,6 +13,8 @@
 #include "chrome/browser/predictors/navigation_id.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/network_isolation_key.h"
+#include "url/origin.h"
 
 namespace predictors {
 
@@ -39,8 +41,10 @@ bool AddInitialUrlToPreconnectPrediction(const GURL& initial_url,
         std::max(prediction->requests.front().num_sockets, kMinSockets);
   } else if (initial_origin.is_valid() &&
              initial_origin.SchemeIsHTTPOrHTTPS()) {
+    url::Origin origin = url::Origin::Create(initial_origin);
     prediction->requests.emplace(prediction->requests.begin(), initial_origin,
-                                 kMinSockets);
+                                 kMinSockets,
+                                 net::NetworkIsolationKey(origin, origin));
   }
 
   return !prediction->requests.empty();

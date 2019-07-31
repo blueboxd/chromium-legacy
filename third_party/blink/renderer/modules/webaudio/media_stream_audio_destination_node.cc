@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
 
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
@@ -33,10 +34,21 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
+
+namespace {
+
+void DidCreateMediaStreamAndTracks(MediaStreamDescriptor* stream) {
+  for (uint32_t i = 0; i < stream->NumberOfAudioComponents(); ++i)
+    MediaStreamUtils::DidCreateMediaStreamTrack(stream->AudioComponent(i));
+
+  for (uint32_t i = 0; i < stream->NumberOfVideoComponents(); ++i)
+    MediaStreamUtils::DidCreateMediaStreamTrack(stream->VideoComponent(i));
+}
+
+}  // namespace
 
 // WebAudioCapturerSource ignores the channel count beyond 8, so we set the
 // block here to avoid anything can cause the crash.
@@ -186,8 +198,7 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(
                                   MakeGarbageCollected<MediaStreamDescriptor>(
                                       MediaStreamSourceVector({source_.Get()}),
                                       MediaStreamSourceVector()))) {
-  MediaStreamCenter::Instance().DidCreateMediaStreamAndTracks(
-      stream_->Descriptor());
+  DidCreateMediaStreamAndTracks(stream_->Descriptor());
   SetHandler(
       MediaStreamAudioDestinationHandler::Create(*this, number_of_channels));
 }

@@ -2136,7 +2136,7 @@ class SessionCleanupCookieManagerTest : public CookieManagerTest {
 
  private:
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::ScopedTempDir temp_dir_;
 };
 

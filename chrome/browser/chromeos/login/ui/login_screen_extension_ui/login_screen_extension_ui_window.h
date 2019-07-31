@@ -5,44 +5,37 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_LOGIN_SCREEN_EXTENSION_UI_WINDOW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_LOGIN_SCREEN_EXTENSION_UI_WINDOW_H_
 
-#include <string>
+#include <memory>
 
-#include "base/callback_forward.h"
-#include "ui/web_dialogs/web_dialog_delegate.h"
+#include "base/macros.h"
 
 namespace views {
-class WebDialogView;
 class Widget;
 }  // namespace views
 
 namespace chromeos {
 
+struct LoginScreenExtensionUiCreateOptions;
 class LoginScreenExtensionUiDialogDelegate;
+class LoginScreenExtensionUiWebDialogView;
 
 // This class represents the window that can be created by the
 // chrome.loginScreenUi API. It manages the window's widget, view and delegate,
 // which are all automatically deleted when the widget closes.
+// The window is not draggable, and has a close button which is not visible
+// if |create_options.can_be_closed_by_user| is false.
 class LoginScreenExtensionUiWindow {
  public:
-  struct CreateOptions {
-    CreateOptions(const std::string& extension_name,
-                  const GURL& content_url,
-                  bool can_be_closed_by_user,
-                  base::OnceClosure close_callback);
-    ~CreateOptions();
-
-    const std::string extension_name;
-    const GURL content_url;
-    bool can_be_closed_by_user;
-    base::OnceClosure close_callback;
-  };
-
-  explicit LoginScreenExtensionUiWindow(CreateOptions* create_options);
+  explicit LoginScreenExtensionUiWindow(
+      LoginScreenExtensionUiCreateOptions* create_options);
   ~LoginScreenExtensionUiWindow();
+
+  LoginScreenExtensionUiDialogDelegate* GetDialogDelegateForTesting();
+  views::Widget* GetDialogWidgetForTesting();
 
  private:
   LoginScreenExtensionUiDialogDelegate* dialog_delegate_ = nullptr;
-  views::WebDialogView* dialog_view_ = nullptr;
+  LoginScreenExtensionUiWebDialogView* dialog_view_ = nullptr;
   views::Widget* dialog_widget_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LoginScreenExtensionUiWindow);
@@ -54,7 +47,7 @@ class LoginScreenExtensionUiWindowFactory {
   virtual ~LoginScreenExtensionUiWindowFactory();
 
   virtual std::unique_ptr<LoginScreenExtensionUiWindow> Create(
-      LoginScreenExtensionUiWindow::CreateOptions* create_options);
+      LoginScreenExtensionUiCreateOptions* create_options);
 
   DISALLOW_COPY_AND_ASSIGN(LoginScreenExtensionUiWindowFactory);
 };

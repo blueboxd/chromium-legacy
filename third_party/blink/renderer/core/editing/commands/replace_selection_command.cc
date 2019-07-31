@@ -828,7 +828,7 @@ VisiblePosition ReplaceSelectionCommand::PositionAtStartOfInsertedContent()
 static void RemoveHeadContents(ReplacementFragment& fragment) {
   Node* next = nullptr;
   for (Node* node = fragment.FirstChild(); node; node = next) {
-    if (IsHTMLBaseElement(*node) || IsHTMLLinkElement(*node) ||
+    if (IsA<HTMLBaseElement>(*node) || IsHTMLLinkElement(*node) ||
         IsHTMLMetaElement(*node) || IsHTMLTitleElement(*node)) {
       next = NodeTraversal::NextSkippingChildren(*node);
       fragment.RemoveNode(node);

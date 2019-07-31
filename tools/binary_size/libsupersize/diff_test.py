@@ -34,8 +34,8 @@ def _CreateSizeInfo(aliases=None):
   section_sizes = {'.text': 100, '.bss': 40}
   TEXT = models.SECTION_TEXT
   symbols = [
-      _MakeSym(TEXT, 10, 'a'),
-      _MakeSym(TEXT, 20, 'a'),
+      _MakeSym(models.SECTION_DEX_METHOD, 10, 'a', 'com.Foo#bar()'),
+      _MakeSym(TEXT, 20, 'a', '.Lfoo'),
       _MakeSym(TEXT, 30, 'b'),
       _MakeSym(TEXT, 40, 'b'),
       _MakeSym(TEXT, 50, 'b'),
@@ -155,6 +155,7 @@ class DiffTest(unittest.TestCase):
     self.assertEquals(0, d.raw_symbols.size)
 
   def testChangedParams(self):
+    # Ensure that params changes match up so long as path doesn't change.
     size_info1 = _CreateSizeInfo()
     size_info1.raw_symbols[0].full_name = 'Foo()'
     size_info1.raw_symbols[0].name = 'Foo'
@@ -165,27 +166,17 @@ class DiffTest(unittest.TestCase):
     self.assertEquals((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
     self.assertEquals(0, d.raw_symbols.size)
 
-  def testChangedPaths(self):
+  def testChangedPaths_Native(self):
+    # Ensure that non-globally-unique symbols are not matched when path changes.
     size_info1 = _CreateSizeInfo()
     size_info2 = _CreateSizeInfo()
-    size_info2.raw_symbols[0].object_path = 'asdf'
-    d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
-    self.assertEquals(0, d.raw_symbols.size)
-
-  def testChangedPaths_ChangedParams(self):
-    size_info1 = _CreateSizeInfo()
-    size_info1.raw_symbols[0].full_name = 'Foo()'
-    size_info1.raw_symbols[0].name = 'Foo'
-    size_info2 = _CreateSizeInfo()
-    size_info2.raw_symbols[0].full_name = 'Foo(bool)'
-    size_info2.raw_symbols[0].name = 'Foo'
-    size_info2.raw_symbols[0].object_path = 'asdf'
+    size_info2.raw_symbols[1].object_path = 'asdf'
     d = diff.Diff(size_info1, size_info2)
     self.assertEquals((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
     self.assertEquals(0, d.raw_symbols.size)
 
   def testChangedPaths_StringLiterals(self):
+    # Ensure that string literals are not matched up.
     size_info1 = _CreateSizeInfo()
     size_info1.raw_symbols[0].full_name = models.STRING_LITERAL_NAME
     size_info2 = _CreateSizeInfo()
@@ -194,6 +185,29 @@ class DiffTest(unittest.TestCase):
     d = diff.Diff(size_info1, size_info2)
     self.assertEquals((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
     self.assertEquals(0, d.raw_symbols.size)
+
+  def testChangedPaths_Java(self):
+    # Ensure that Java symbols are matched up.
+    size_info1 = _CreateSizeInfo()
+    size_info2 = _CreateSizeInfo()
+    size_info2.raw_symbols[0].object_path = 'asdf'
+    d = diff.Diff(size_info1, size_info2)
+    self.assertEquals((0, 0, 0), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEquals(0, d.raw_symbols.size)
+
+  def testChangedPaths_ChangedParams(self):
+    # Ensure that path changes are not matched when params also change.
+    size_info1 = _CreateSizeInfo()
+    size_info1.raw_symbols[0].full_name = 'Foo()'
+    size_info1.raw_symbols[0].name = 'Foo'
+    size_info2 = _CreateSizeInfo()
+    size_info2.raw_symbols[0].full_name = 'Foo(bool)'
+    size_info2.raw_symbols[0].name = 'Foo'
+    size_info2.raw_symbols[0].object_path = 'asdf'
+    d = diff.Diff(size_info1, size_info2)
+    self.assertEquals((0, 1, 1), d.raw_symbols.CountsByDiffStatus()[1:])
+    self.assertEquals(0, d.raw_symbols.size)
+
 
 
 if __name__ == '__main__':

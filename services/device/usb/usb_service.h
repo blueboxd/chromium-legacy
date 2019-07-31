@@ -53,7 +53,7 @@ class UsbService {
   // These task traits are to be used for posting blocking tasks to the task
   // scheduler.
   static constexpr base::TaskTraits kBlockingTaskTraits = {
-      base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 
   // Returns nullptr when initialization fails.

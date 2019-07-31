@@ -25,7 +25,7 @@ SequenceManager::Settings::Builder::~Builder() = default;
 
 SequenceManager::Settings::Builder&
 SequenceManager::Settings::Builder::SetMessagePumpType(
-    MessagePump::Type message_loop_type_val) {
+    MessagePumpType message_loop_type_val) {
   settings_.message_loop_type = message_loop_type_val;
   return *this;
 }

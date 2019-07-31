@@ -198,8 +198,6 @@ target(link_target_type, "renderer") {
     "media/renderer_webmediaplayer_delegate.h",
     "media/stream/apply_constraints_processor.cc",
     "media/stream/apply_constraints_processor.h",
-    "media/stream/media_stream_center.cc",
-    "media/stream/media_stream_center.h",
     "media/stream/user_media_client_impl.cc",
     "media/stream/user_media_client_impl.h",
     "media/stream/user_media_processor.cc",

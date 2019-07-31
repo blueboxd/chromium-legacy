@@ -101,6 +101,19 @@ double CapAnimationValue(double value) {
   return std::min(1.0, std::max(0.0, value));
 }
 
+// Returns a |views::BoxLayout| layout manager with the settings needed by
+// FrameCaptionButtonContainerView.
+std::unique_ptr<views::BoxLayout> MakeBoxLayoutManager(
+    int minimum_cross_axis_size) {
+  std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::kCenter);
+  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
+  layout->set_minimum_cross_axis_size(minimum_cross_axis_size);
+  return layout;
+}
+
 // A default CaptionButtonModel that uses the widget delegate's state
 // to determine if each button should be visible and enabled.
 class DefaultCaptionButtonModel : public CaptionButtonModel {
@@ -120,7 +133,7 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
       case views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED:
         return frame_->widget_delegate()->CanResize();
       case views::CAPTION_BUTTON_ICON_CLOSE:
-        return true;
+        return frame_->widget_delegate()->ShouldShowCloseButton();
 
       // No back or menu button by default.
       case views::CAPTION_BUTTON_ICON_BACK:
@@ -154,12 +167,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
     : views::AnimationDelegateViews(frame->GetRootView()),
       frame_(frame),
       model_(std::make_unique<DefaultCaptionButtonModel>(frame)) {
-  auto layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
-  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
-  SetLayoutManager(std::move(layout));
+  SetLayoutManager(MakeBoxLayoutManager(/*minimum_cross_axis_size=*/0));
   tablet_mode_animation_.reset(new gfx::SlideAnimation(this));
   tablet_mode_animation_->SetTweenType(gfx::Tween::LINEAR);
 
@@ -262,6 +270,8 @@ void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {
       model_->IsEnabled(views::CAPTION_BUTTON_ICON_MINIMIZE));
   menu_button_->SetVisible(model_->IsVisible(views::CAPTION_BUTTON_ICON_MENU));
   menu_button_->SetEnabled(model_->IsEnabled(views::CAPTION_BUTTON_ICON_MENU));
+  close_button_->SetVisible(
+      model_->IsVisible(views::CAPTION_BUTTON_ICON_CLOSE));
 }
 
 void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
@@ -269,6 +279,8 @@ void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
   minimize_button_->SetPreferredSize(size);
   size_button_->SetPreferredSize(size);
   close_button_->SetPreferredSize(size);
+
+  SetLayoutManager(MakeBoxLayoutManager(size.height()));
 }
 
 void FrameCaptionButtonContainerView::SetModel(
@@ -284,10 +296,14 @@ void FrameCaptionButtonContainerView::Layout() {
   if (tablet_mode_animation_->is_animating())
     AnimationProgressed(tablet_mode_animation_.get());
 
-  // The top right corner must be occupied by the close button for easy mouse
-  // access. This check is agnostic to RTL layout.
-  DCHECK_EQ(close_button_->y(), 0);
-  DCHECK_EQ(close_button_->bounds().right(), width());
+#if DCHECK_IS_ON()
+  if (close_button_->GetVisible()) {
+    // The top right corner must be occupied by the close button for easy mouse
+    // access. This check is agnostic to RTL layout.
+    DCHECK_EQ(close_button_->y(), 0);
+    DCHECK_EQ(close_button_->bounds().right(), width());
+  }
+#endif  // DCHECK_IS_ON()
 }
 
 const char* FrameCaptionButtonContainerView::GetClassName() const {

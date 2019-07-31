@@ -4,12 +4,13 @@
 
 #include "base/fuchsia/service_directory.h"
 #include "base/fuchsia/service_directory_client.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 
 int main(int argc, char** argv) {
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
   base::RunLoop run_loop;
 
   CastRunner runner(base::fuchsia::ServiceDirectory::GetDefault(),

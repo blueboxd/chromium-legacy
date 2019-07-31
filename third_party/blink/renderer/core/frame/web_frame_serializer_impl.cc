@@ -160,7 +160,7 @@ String WebFrameSerializerImpl::PreActionBeforeSerializeOpenTag(
       // See http://msdn2.microsoft.com/en-us/library/ms537628(VS.85).aspx.
       result.Append(
           WebFrameSerializer::GenerateMarkOfTheWebDeclaration(param->url));
-    } else if (IsHTMLBaseElement(*element)) {
+    } else if (IsA<HTMLBaseElement>(*element)) {
       // Comment the BASE tag when serializing dom.
       result.Append("<!--");
     }
@@ -249,7 +249,7 @@ String WebFrameSerializerImpl::PostActionAfterSerializeEndTag(
   if (!param->is_html_document)
     return result.ToString();
   // Comment the BASE tag when serializing DOM.
-  if (IsHTMLBaseElement(*element)) {
+  if (IsA<HTMLBaseElement>(*element)) {
     result.Append("-->");
     // Append a new base tag declaration.
     result.Append(GenerateBaseTagDeclaration(param->document->BaseTarget()));

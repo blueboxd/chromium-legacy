@@ -4,6 +4,7 @@
 
 #include "content/browser/scheduler/browser_io_task_environment.h"
 
+#include "base/message_loop/message_pump_type.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue.h"
 #include "content/public/browser/browser_thread.h"
@@ -17,7 +18,7 @@ using ::base::sequence_manager::TaskQueue;
 BrowserIOTaskEnvironment::BrowserIOTaskEnvironment()
     : sequence_manager_(CreateUnboundSequenceManager(
           SequenceManager::Settings::Builder()
-              .SetMessagePumpType(base::MessagePump::Type::IO)
+              .SetMessagePumpType(base::MessagePumpType::IO)
               .Build())) {
   Init(sequence_manager_.get());
 }
@@ -47,7 +48,7 @@ void BrowserIOTaskEnvironment::BindToCurrentThread(
     base::TimerSlack timer_slack) {
   DCHECK(sequence_manager_);
   sequence_manager_->BindToMessagePump(
-      base::MessagePump::Create(base::MessagePump::Type::IO));
+      base::MessagePump::Create(base::MessagePumpType::IO));
   sequence_manager_->SetTimerSlack(timer_slack);
   sequence_manager_->SetDefaultTaskRunner(GetDefaultTaskRunner());
 }

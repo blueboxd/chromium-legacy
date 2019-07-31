@@ -18,9 +18,11 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/network_isolation_key.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 using testing::_;
 using testing::Return;
@@ -69,6 +71,12 @@ LoadingPredictorConfig CreateConfig() {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   return config;
+}
+
+// Creates a NetworkIsolationKey for a main frame navigation to URL.
+net::NetworkIsolationKey CreateNetworkIsolationKey(const GURL& main_frame_url) {
+  url::Origin origin = url::Origin::Create(main_frame_url);
+  return net::NetworkIsolationKey(origin, origin);
 }
 
 }  // namespace
@@ -332,10 +340,11 @@ TEST_F(LoadingPredictorPreconnectTest, TestAddInitialUrlToEmptyPrediction) {
   GURL main_frame_url("http://search.com/kittens");
   EXPECT_CALL(*mock_predictor_, PredictPreconnectOrigins(main_frame_url, _))
       .WillOnce(Return(false));
-  EXPECT_CALL(
-      *mock_preconnect_manager_,
-      StartProxy(main_frame_url, std::vector<PreconnectRequest>(
-                                     {{GURL("http://search.com"), 2}})));
+  EXPECT_CALL(*mock_preconnect_manager_,
+              StartProxy(main_frame_url,
+                         std::vector<PreconnectRequest>(
+                             {{GURL("http://search.com"), 2,
+                               CreateNetworkIsolationKey(main_frame_url)}})));
   predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::NAVIGATION);
 }
 
@@ -343,19 +352,23 @@ TEST_F(LoadingPredictorPreconnectTest, TestAddInitialUrlToEmptyPrediction) {
 // if the list already containts the origin.
 TEST_F(LoadingPredictorPreconnectTest, TestAddInitialUrlMatchesPrediction) {
   GURL main_frame_url("http://search.com/kittens");
-  PreconnectPrediction prediction =
-      CreatePreconnectPrediction("search.com", true,
-                                 {{GURL("http://search.com"), 1},
-                                  {GURL("http://cdn.search.com"), 1},
-                                  {GURL("http://ads.search.com"), 0}});
+  net::NetworkIsolationKey network_isolation_key =
+      CreateNetworkIsolationKey(main_frame_url);
+  PreconnectPrediction prediction = CreatePreconnectPrediction(
+      "search.com", true,
+      {{GURL("http://search.com"), 1, network_isolation_key},
+       {GURL("http://cdn.search.com"), 1, network_isolation_key},
+       {GURL("http://ads.search.com"), 0, network_isolation_key}});
   EXPECT_CALL(*mock_predictor_, PredictPreconnectOrigins(main_frame_url, _))
       .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
   EXPECT_CALL(
       *mock_preconnect_manager_,
-      StartProxy(main_frame_url, std::vector<PreconnectRequest>(
-                                     {{GURL("http://search.com"), 2},
-                                      {GURL("http://cdn.search.com"), 1},
-                                      {GURL("http://ads.search.com"), 0}})));
+      StartProxy(
+          main_frame_url,
+          std::vector<PreconnectRequest>(
+              {{GURL("http://search.com"), 2, network_isolation_key},
+               {GURL("http://cdn.search.com"), 1, network_isolation_key},
+               {GURL("http://ads.search.com"), 0, network_isolation_key}})));
   predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::EXTERNAL);
 }
 
@@ -364,20 +377,24 @@ TEST_F(LoadingPredictorPreconnectTest, TestAddInitialUrlMatchesPrediction) {
 // url redirects to another host.
 TEST_F(LoadingPredictorPreconnectTest, TestAddInitialUrlDoesntMatchPrediction) {
   GURL main_frame_url("http://search.com/kittens");
-  PreconnectPrediction prediction =
-      CreatePreconnectPrediction("search.com", true,
-                                 {{GURL("http://en.search.com"), 1},
-                                  {GURL("http://cdn.search.com"), 1},
-                                  {GURL("http://ads.search.com"), 0}});
+  net::NetworkIsolationKey network_isolation_key =
+      CreateNetworkIsolationKey(main_frame_url);
+  PreconnectPrediction prediction = CreatePreconnectPrediction(
+      "search.com", true,
+      {{GURL("http://en.search.com"), 1, network_isolation_key},
+       {GURL("http://cdn.search.com"), 1, network_isolation_key},
+       {GURL("http://ads.search.com"), 0, network_isolation_key}});
   EXPECT_CALL(*mock_predictor_, PredictPreconnectOrigins(main_frame_url, _))
       .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
   EXPECT_CALL(
       *mock_preconnect_manager_,
-      StartProxy(main_frame_url, std::vector<PreconnectRequest>(
-                                     {{GURL("http://search.com"), 2},
-                                      {GURL("http://en.search.com"), 1},
-                                      {GURL("http://cdn.search.com"), 1},
-                                      {GURL("http://ads.search.com"), 0}})));
+      StartProxy(
+          main_frame_url,
+          std::vector<PreconnectRequest>(
+              {{GURL("http://search.com"), 2, network_isolation_key},
+               {GURL("http://en.search.com"), 1, network_isolation_key},
+               {GURL("http://cdn.search.com"), 1, network_isolation_key},
+               {GURL("http://ads.search.com"), 0, network_isolation_key}})));
   predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::EXTERNAL);
 }
 

@@ -5,8 +5,12 @@
 #ifndef BASE_TASK_SINGLE_THREAD_TASK_EXECUTOR_H_
 #define BASE_TASK_SINGLE_THREAD_TASK_EXECUTOR_H_
 
+#include <memory>
+
 #include "base/base_export.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/message_loop/message_pump_type.h"
+#include "base/single_thread_task_runner.h"
 
 namespace base {
 
@@ -21,7 +25,7 @@ class TaskQueue;
 class BASE_EXPORT SingleThreadTaskExecutor {
  public:
   explicit SingleThreadTaskExecutor(
-      MessagePump::Type type = MessagePump::Type::DEFAULT);
+      MessagePumpType type = MessagePumpType::DEFAULT);
 
   // Shuts down the SingleThreadTaskExecutor, after this no tasks can be
   // executed and the base::TaskExecutor APIs are non-functional but won't crash
@@ -30,12 +34,12 @@ class BASE_EXPORT SingleThreadTaskExecutor {
 
   scoped_refptr<SingleThreadTaskRunner> task_runner() const;
 
-  MessagePump::Type type() const { return type_; }
+  MessagePumpType type() const { return type_; }
 
  private:
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;
   scoped_refptr<sequence_manager::TaskQueue> default_task_queue_;
-  MessagePump::Type type_;
+  MessagePumpType type_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleThreadTaskExecutor);
 };

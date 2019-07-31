@@ -547,12 +547,14 @@ class URLLoader::FileOpenerForUpload {
     file_opener->FilesForUploadOpenedDone(net::OK);
   }
 
-  // |opened_files| need to be closed on a blocking task runner, so move
-  // the |opened_files| vector onto a sequence that can block so it gets
-  // destroyed there.
+  // |opened_files| need to be closed on a blocking task runner, so move the
+  // |opened_files| vector onto a sequence that can block so it gets destroyed
+  // there.
   static void PostCloseFiles(std::vector<base::File> opened_files) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_BLOCKING},
         base::BindOnce(base::DoNothing::Once<std::vector<base::File>>(),
                        std::move(opened_files)));
   }
@@ -632,8 +634,8 @@ void URLLoader::SetUpUpload(const ResourceRequest& request,
     return;
   }
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::USER_VISIBLE});
   url_request_->set_upload(CreateUploadDataStream(
       request.request_body.get(), opened_files, task_runner.get()));
 

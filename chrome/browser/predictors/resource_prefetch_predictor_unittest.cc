@@ -25,8 +25,11 @@
 #include "components/sessions/core/session_id.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "net/base/network_isolation_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using testing::StrictMock;
 using testing::UnorderedElementsAre;
@@ -676,6 +679,8 @@ TEST_F(ResourcePrefetchPredictorTest, GetRedirectEndpoint) {
 
 TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
   const GURL main_frame_url("http://google.com/?query=cats");
+  const url::Origin origin = url::Origin::Create(main_frame_url);
+  const net::NetworkIsolationKey network_isolation_key(origin, origin);
   auto prediction = std::make_unique<PreconnectPrediction>();
   // No prefetch data.
   EXPECT_FALSE(predictor_->IsUrlPreconnectable(main_frame_url));
@@ -704,7 +709,8 @@ TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
   EXPECT_EQ(*prediction,
             CreatePreconnectPrediction(
                 "google.com", false,
-                {{GURL(gen_origin(1)), 1}, {GURL(gen_origin(2)), 0}}));
+                {{GURL(gen_origin(1)), 1, network_isolation_key},
+                 {GURL(gen_origin(2)), 0, network_isolation_key}}));
 
   // Add a redirect.
   RedirectData redirect = CreateRedirectData("google.com", 3);
@@ -729,9 +735,9 @@ TEST_F(ResourcePrefetchPredictorTest, TestPredictPreconnectOrigins) {
   EXPECT_TRUE(predictor_->IsUrlPreconnectable(main_frame_url));
   EXPECT_TRUE(
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
-  EXPECT_EQ(*prediction,
-            CreatePreconnectPrediction("www.google.com", true,
-                                       {{GURL(gen_origin(4)), 1}}));
+  EXPECT_EQ(*prediction, CreatePreconnectPrediction("www.google.com", true,
+                                                    {{GURL(gen_origin(4)), 1,
+                                                      network_isolation_key}}));
 }
 
 }  // namespace predictors

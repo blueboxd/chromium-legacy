@@ -211,7 +211,8 @@ std::ostream& operator<<(std::ostream& os, const NavigationID& navigation_id) {
 
 std::ostream& operator<<(std::ostream& os, const PreconnectRequest& request) {
   return os << "[" << request.origin << "," << request.num_sockets << ","
-            << request.allow_credentials << "]";
+            << request.allow_credentials << ","
+            << request.network_isolation_key.ToDebugString() << "]";
 }
 
 std::ostream& operator<<(std::ostream& os,
@@ -284,7 +285,8 @@ bool operator==(const OriginStat& lhs, const OriginStat& rhs) {
 
 bool operator==(const PreconnectRequest& lhs, const PreconnectRequest& rhs) {
   return lhs.origin == rhs.origin && lhs.num_sockets == rhs.num_sockets &&
-         lhs.allow_credentials == rhs.allow_credentials;
+         lhs.allow_credentials == rhs.allow_credentials &&
+         lhs.network_isolation_key == rhs.network_isolation_key;
 }
 
 bool operator==(const PreconnectPrediction& lhs,

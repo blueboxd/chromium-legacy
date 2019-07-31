@@ -142,6 +142,7 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
             for (int i = 0; i < options.size(); i++) {
                 if (options.get(i).isComplete()) {
                     selectedItemIndex = i;
+                    break;
                 }
             }
             // Fallback: if there are no complete items, select the first (incomplete) one.
@@ -227,16 +228,20 @@ public abstract class AssistantPaymentRequestSection<T extends EditableOption> {
     }
 
     private void updatePaddings() {
+        View titleView = mSectionExpander.getTitleView();
         if (isEmpty()) {
             // Section is empty, i.e., the title is the bottom-most widget.
-            mSectionExpander.setTitlePadding(mTopPadding, mBottomPadding);
+            titleView.setPadding(titleView.getPaddingLeft(), mTopPadding,
+                    titleView.getPaddingRight(), mBottomPadding);
         } else if (mSectionExpander.isExpanded()) {
             // Section is expanded, i.e., the expanded widget is the bottom-most widget.
-            mSectionExpander.setTitlePadding(mTopPadding, mTitleToContentPadding);
+            titleView.setPadding(titleView.getPaddingLeft(), mTopPadding,
+                    titleView.getPaddingRight(), mTitleToContentPadding);
             // No need to set additional bottom padding, expanded sections have enough already.
         } else {
             // Section is non-empty and collapsed -> collapsed widget is the bottom-most widget.
-            mSectionExpander.setTitlePadding(mTopPadding, mTitleToContentPadding);
+            titleView.setPadding(titleView.getPaddingLeft(), mTopPadding,
+                    titleView.getPaddingRight(), mTitleToContentPadding);
             setBottomPadding(mSectionExpander.getCollapsedView(), mBottomPadding);
         }
     }

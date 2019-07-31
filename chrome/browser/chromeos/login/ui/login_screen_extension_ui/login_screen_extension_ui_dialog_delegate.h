@@ -6,19 +6,34 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_SCREEN_EXTENSION_UI_LOGIN_SCREEN_EXTENSION_UI_DIALOG_DELEGATE_H_
 
 #include <string>
+#include <vector>
 
-#include "base/callback_forward.h"
-#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
+#include "base/callback.h"
+#include "base/strings/string16.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
+#include "url/gurl.h"
+
+namespace content {
+class WebContents;
+class WebUIMessageHandler;
+}  // namespace content
+
+namespace gfx {
+class Size;
+}  // namespace gfx
 
 namespace chromeos {
+
+struct LoginScreenExtensionUiCreateOptions;
 
 // This class is used to provide data from a chrome.loginScreenUi API call to
 // the WebDialog.
 class LoginScreenExtensionUiDialogDelegate : public ui::WebDialogDelegate {
  public:
   explicit LoginScreenExtensionUiDialogDelegate(
-      LoginScreenExtensionUiWindow::CreateOptions* create_options);
+      LoginScreenExtensionUiCreateOptions* create_options);
   ~LoginScreenExtensionUiDialogDelegate() override;
 
   void set_can_close(bool can_close) { can_close_ = can_close; }

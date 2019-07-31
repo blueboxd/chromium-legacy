@@ -11,11 +11,6 @@
 
 namespace blink {
 
-const char kMediaStreamSourceTab[] = "tab";
-const char kMediaStreamSourceScreen[] = "screen";
-const char kMediaStreamSourceDesktop[] = "desktop";
-const char kMediaStreamSourceSystem[] = "system";
-
 const char WebPlatformMediaStreamSource::kSourceId[] = "sourceId";
 
 WebPlatformMediaStreamSource::WebPlatformMediaStreamSource() {}

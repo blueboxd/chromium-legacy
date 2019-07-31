@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/modules/mediacapturefromelement/auto_canvas_draw_listener.h"
 #include "third_party/blink/renderer/modules/mediacapturefromelement/on_request_canvas_draw_listener.h"
 #include "third_party/blink/renderer/modules/mediacapturefromelement/timed_canvas_draw_listener.h"
-#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 
 namespace blink {
 
@@ -27,7 +27,7 @@ CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::clone(
   CanvasCaptureMediaStreamTrack* cloned_track =
       MakeGarbageCollected<CanvasCaptureMediaStreamTrack>(*this,
                                                           cloned_component);
-  MediaStreamCenter::Instance().DidCreateMediaStreamTrack(cloned_component);
+  MediaStreamUtils::DidCreateMediaStreamTrack(cloned_component);
   return cloned_track;
 }
 

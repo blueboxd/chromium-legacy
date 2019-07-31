@@ -69,7 +69,6 @@ class SkBitmap;
 
 namespace blink {
 class WebVideoCaptureImplManager;
-class WebMediaStreamCenter;
 }
 
 namespace base {
@@ -297,10 +296,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<StreamTextureFactory> GetStreamTexureFactory();
   bool EnableStreamTextureCopy();
 #endif
-
-  // Creates the embedder implementation of WebMediaStreamCenter.
-  // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
-  std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter();
 
   BrowserPluginManager* browser_plugin_manager() const {
     return browser_plugin_manager_.get();

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from apps_shortcut.apps_shortcut import *
+from default_search_provider.default_search_provider import *
 from force_google_safe_search.force_google_safe_search import *
 from homepage.homepage import *
 from restore_on_startup.restore_on_startup import *

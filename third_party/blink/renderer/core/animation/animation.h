@@ -76,7 +76,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   enum AnimationPlayState {
     kUnset,
     kIdle,
-    kPending,
+    kPending,  // TODO(crbug.com/958433) remove non-spec compliant state.
     kRunning,
     kPaused,
     kFinished
@@ -245,7 +245,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
                           RegisteredEventListener&) override;
 
  private:
-  // TODO(crbug/960944): Deprecate. This version of the play state is not to
+  // TODO(crbug.com/960944): Deprecate. This version of the play state is not to
   // spec due to the inclusion of a 'pending' state. Whether or not an animation
   // is pending is separate from the actual play state.
   AnimationPlayState PlayStateInternal() const;
@@ -369,7 +369,9 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   Member<Event> pending_cancelled_event_;
 
-  enum CompositorAction { kNone, kPause, kStart, kPauseThenStart };
+  // TODO(crbug.com/960944): Consider reintroducing kPause and cleanup use of
+  // mutually exclusive pending_play_ and pending_pause_ flags.
+  enum CompositorAction { kNone, kStart };
 
   class CompositorState {
     USING_FAST_MALLOC(CompositorState);

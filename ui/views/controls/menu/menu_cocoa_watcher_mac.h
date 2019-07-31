@@ -32,6 +32,7 @@ class VIEWS_EXPORT MenuCocoaWatcherMac {
   // Tokens representing the notification observers.
   id observer_token_other_menu_;
   id observer_token_new_window_focus_;
+  id observer_token_app_change_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuCocoaWatcherMac);
 };

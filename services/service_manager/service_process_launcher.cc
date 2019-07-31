@@ -81,9 +81,9 @@ ServiceProcessLauncher::ServiceProcessLauncher(
       service_path_(service_path.empty()
                         ? base::CommandLine::ForCurrentProcess()->GetProgram()
                         : service_path),
-      background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::USER_VISIBLE, base::WithBaseSyncPrimitives(),
-           base::MayBlock()})) {}
+      background_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+           base::WithBaseSyncPrimitives(), base::MayBlock()})) {}
 
 ServiceProcessLauncher::~ServiceProcessLauncher() {
   // We don't really need to wait for the process to be joined, as long as it

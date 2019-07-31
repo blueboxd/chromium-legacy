@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
@@ -16,7 +17,7 @@ int main(int argc, char** argv) {
   // Instantiate various global structures.
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("HTTP Service");
   base::CommandLine::Init(argc, argv);
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
   base::AtExitManager exit_manager;
 
   // Bind the parent-supplied ServiceDirectory-request to a directory and

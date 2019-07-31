@@ -22,8 +22,8 @@
 namespace device {
 
 PlatformSensorProviderWin::PlatformSensorProviderWin()
-    : com_sta_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
-          base::TaskPriority::USER_VISIBLE)) {}
+    : com_sta_task_runner_(base::CreateCOMSTATaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE})) {}
 
 PlatformSensorProviderWin::~PlatformSensorProviderWin() = default;
 

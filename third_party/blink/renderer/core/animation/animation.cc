@@ -464,25 +464,10 @@ void Animation::PostCommit(double timeline_time) {
   if (!compositor_state_ || compositor_state_->pending_action == kNone)
     return;
 
-  switch (compositor_state_->pending_action) {
-    case kStart:
-      if (compositor_state_->start_time) {
-        DCHECK_EQ(start_time_.value(), compositor_state_->start_time.value());
-        compositor_state_->pending_action = kNone;
-      }
-      break;
-    case kPause:
-    case kPauseThenStart:
-      DCHECK(!start_time_);
-      compositor_state_->pending_action = kNone;
-      SetCurrentTimeInternal(
-          (timeline_time - compositor_state_->start_time.value()) *
-              playback_rate_,
-          kTimingUpdateForAnimationFrame);
-      current_time_pending_ = false;
-      break;
-    default:
-      NOTREACHED();
+  DCHECK_EQ(kStart, compositor_state_->pending_action);
+  if (compositor_state_->start_time) {
+    DCHECK_EQ(start_time_.value(), compositor_state_->start_time.value());
+    compositor_state_->pending_action = kNone;
   }
 }
 

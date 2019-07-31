@@ -4992,12 +4992,26 @@ TEST_F(DiskCacheBackendTest, MAYBE_NonEmptyCorruptSimpleCacheDoesNotRecover) {
 }
 
 TEST_F(DiskCacheBackendTest, SimpleOwnershipTransferBackendDestroyRace) {
+  struct CleanupContext {
+    explicit CleanupContext(bool* ran_ptr) : ran_ptr(ran_ptr) {}
+    ~CleanupContext() {
+      *ran_ptr = true;
+      // A realistic CleanupContext would call Close on non-null,
+      // which would be a double-Close when what this is testing was broken.
+      // Here, just check for expected case.
+      EXPECT_EQ(owned_entry, nullptr);
+    }
+
+    bool* ran_ptr;
+    disk_cache::Entry* owned_entry = nullptr;
+  };
+
   const char kKey[] = "skeleton";
 
   // See https://crbug.com/946349
   // This tests that if the SimpleBackendImpl is destroyed after SimpleEntryImpl
   // decides to return an entry to the caller, but before the callback is run
-  // that no entry is leaked.
+  // that no entry is leaked, and that the out pointer is not written to.
   SetSimpleCacheMode();
   InitCache();
 
@@ -5006,11 +5020,30 @@ TEST_F(DiskCacheBackendTest, SimpleOwnershipTransferBackendDestroyRace) {
   // Make sure create actually succeeds, not just optimistically.
   RunUntilIdle();
 
-  disk_cache::Entry* alias = nullptr;
-  // This is relying on the alias code resulting in synchronous posting of async
-  // result, so that backend destruction can be neatly slotted in between.
+  bool cleanup_context_ran = false;
+  auto cleanup_context = std::make_unique<CleanupContext>(&cleanup_context_ran);
+  disk_cache::Entry** dest = &cleanup_context->owned_entry;
+
+  // The OpenEntry code below will find a pre-existing entry in a READY state,
+  // so it will immediately post a task to return a result. Destroying the
+  // backend before running the event loop again will run that callback in the
+  // dead-backend state, while OpenEntry completion was still with it alive.
+
   EXPECT_EQ(net::ERR_IO_PENDING,
-            cache_->OpenEntry(kKey, net::HIGHEST, &alias, base::DoNothing()));
+            cache_->OpenEntry(
+                kKey, net::HIGHEST, dest,
+                base::BindOnce(
+                    [](std::unique_ptr<CleanupContext>, int net_status) {
+                      // The callback is here for ownership of CleanupContext,
+                      // and it shouldn't get invoked in this test.
+                      ADD_FAILURE() << "This should not actually run";
+                    },
+                    std::move(cleanup_context))));
   cache_.reset();
+
+  // Give CleanupContext a chance to do its thing.
+  RunUntilIdle();
+  EXPECT_TRUE(cleanup_context_ran);
+
   entry->Close();
 }

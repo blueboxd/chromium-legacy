@@ -11518,6 +11518,7 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="TPM owner delegate not allowed to reset"/>
   <int value="4" label="TPM owner delegate does not exist"/>
   <int value="5" label="Failed to query dictionary attack counter"/>
+  <int value="6" label="PCR0 in wrong state"/>
 </enum>
 
 <enum name="CrosUsbNotificationClosed">

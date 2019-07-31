@@ -7,6 +7,7 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -90,7 +91,7 @@ bool LoginScreenExtensionUiHandler::Show(const extensions::Extension* extension,
         ash::OobeDialogState::EXTENSION_LOGIN);
   }
 
-  LoginScreenExtensionUiWindow::CreateOptions create_options(
+  LoginScreenExtensionUiCreateOptions create_options(
       extension->short_name(), extension->GetResourceURL(resource_path),
       can_be_closed_by_user,
       base::BindOnce(
@@ -164,6 +165,16 @@ void LoginScreenExtensionUiHandler::OnExtensionUninstalled(
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
   RemoveWindowForExtension(extension->id());
+}
+
+LoginScreenExtensionUiWindow*
+LoginScreenExtensionUiHandler::GetWindowForTesting(
+    const std::string& extension_id) {
+  WindowMap::iterator it = windows_.find(extension_id);
+  if (it == windows_.end())
+    return nullptr;
+
+  return it->second.get();
 }
 
 }  // namespace chromeos

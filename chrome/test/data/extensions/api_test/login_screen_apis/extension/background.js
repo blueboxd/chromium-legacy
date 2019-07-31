@@ -42,6 +42,20 @@ const tests = {
       chrome.test.succeed();
     });
   },
+  'LoginScreenUiUserCanCloseWindow': () => {
+    chrome.loginScreenUi.show({url: 'some/path.html',
+        userCanClose: true}, () => {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
+  'LoginScreenUiUserCannotCloseWindow': () => {
+    chrome.loginScreenUi.show({url: 'some/path.html',
+        userCanClose: false}, () => {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
 
   /* Storage ******************************************************************/
   'StorageCannotAccessLocalStorage': () => {

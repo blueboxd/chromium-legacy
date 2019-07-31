@@ -84,9 +84,8 @@ std::string HashHostForDictionary(const std::string& host) {
   return base::StringPrintf("%x", base::PersistentHash(host));
 }
 
-bool ProcessHints(
-    google::protobuf::RepeatedPtrField<optimization_guide::proto::Hint>* hints,
-    optimization_guide::HintUpdateData* hint_update_data) {
+bool ProcessHints(google::protobuf::RepeatedPtrField<proto::Hint>* hints,
+                  optimization_guide::HintUpdateData* hint_update_data) {
   // If there's no update data, then there's nothing to do.
   if (!hint_update_data)
     return false;
@@ -101,7 +100,7 @@ bool ProcessHints(
   for (auto& hint : *hints) {
     // We only support host suffixes at the moment. Skip anything else.
     // One |hint| applies to one host URL suffix.
-    if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX) {
+    if (hint.key_representation() != proto::HOST_SUFFIX) {
       continue;
     }
 
@@ -132,6 +131,24 @@ bool ProcessHints(
   }
 
   return did_process_hints;
+}
+
+net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
+    proto::EffectiveConnectionType proto_ect) {
+  switch (proto_ect) {
+    case proto::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    case proto::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_OFFLINE;
+    case proto::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+    case proto::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_2G;
+    case proto::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G;
+    case proto::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G:
+      return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G;
+  }
 }
 
 }  // namespace optimization_guide

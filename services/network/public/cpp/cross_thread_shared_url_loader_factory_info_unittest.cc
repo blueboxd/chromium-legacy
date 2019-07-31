@@ -53,8 +53,8 @@ class CrossThreadSharedURLLoaderFactoryInfoTest : public ::testing::Test {
  protected:
   void SetUp() override {
     main_thread_ = base::SequencedTaskRunnerHandle::Get();
-    loader_thread_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::WithBaseSyncPrimitives()});
+    loader_thread_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives()});
 
     test_url_loader_factory_ =
         std::make_unique<CloneCheckingURLLoaderFactory>(loader_thread_);
@@ -180,8 +180,8 @@ TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, FurtherClone) {
 TEST_F(CrossThreadSharedURLLoaderFactoryInfoTest, CloneThirdThread) {
   // Clone to a third thread.
   scoped_refptr<base::SequencedTaskRunner> third_thread =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::WithBaseSyncPrimitives()});
 
   scoped_refptr<SharedURLLoaderFactory> main_thread_factory =
       SharedURLLoaderFactory::Create(std::move(factory_info_));

@@ -95,21 +95,6 @@ void InvokeCallbackIfBackendIsAlive(
   std::move(completion_callback).Run(result);
 }
 
-void InvokeCallbackIfBackendIsAliveOrCloseEntry(
-    const base::WeakPtr<SimpleBackendImpl>& backend,
-    SimpleEntryImpl* entry,
-    net::CompletionOnceCallback completion_callback) {
-  DCHECK(!completion_callback.is_null());
-  if (!backend.get()) {
-    // Backend got destroyed while |entry| was in process of being transferred
-    // to client ownership. Give up on that.
-    entry->Close();
-    return;
-  }
-
-  std::move(completion_callback).Run(net::OK);
-}
-
 // If |sync_possible| is false, and callback is available, posts rv to it and
 // return net::ERR_IO_PENDING; otherwise just passes through rv.
 int PostToCallbackIfNeeded(bool sync_possible,
@@ -701,39 +686,52 @@ void SimpleEntryImpl::ResetEntry() {
 }
 
 void SimpleEntryImpl::ReturnEntryToCaller(Entry** out_entry) {
+  DCHECK(backend_);
   DCHECK(out_entry);
   ++open_count_;
   AddRef();  // Balanced in Close()
-  if (!backend_.get()) {
-    // This method can be called when an asynchronous operation completed.
-    // If the backend no longer exists, the callback won't be invoked, and so we
-    // must close ourselves to avoid leaking. As well, there's no guarantee the
-    // client-provided pointer (|out_entry|) hasn't been freed, and no point
-    // dereferencing it, either.
-    Close();
-    return;
-  }
   *out_entry = this;
 }
 
-void SimpleEntryImpl::ReturnEntryToCallerAndPostCallback(
+void SimpleEntryImpl::ReturnEntryToCallerAsync(
     Entry** out_entry,
+    bool* out_opened,
+    bool opened,
     CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
-  ReturnEntryToCaller(out_entry);
-  if (!backend_.get())
-    return;  // ReturnEntryToCaller takes care of case of already-dead backend_.
+  DCHECK(out_entry);
+
+  // |open_count_| must be incremented immediately, so that a Close on an alias
+  // doesn't try to wrap things up.
+  ++open_count_;
 
   // Note that the callback is posted rather than directly invoked to avoid
-  // reentrancy issues. Unretained(this) is safe since ReturnEntryToCaller
-  // increments the reference count; this effect is also why this chooses to
-  // potentially call ReturnEntryToCaller and then roll it back rather than
-  // delay ReturnEntryToCaller: it protects |this| till any potential ownership
-  // share transfer is sorted out.
+  // reentrancy issues.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&InvokeCallbackIfBackendIsAliveOrCloseEntry, backend_,
-                     base::Unretained(this), std::move(callback)));
+      base::BindOnce(&SimpleEntryImpl::FinishReturnEntryToCallerAsync, this,
+                     out_entry, out_opened, opened, std::move(callback)));
+}
+
+void SimpleEntryImpl::FinishReturnEntryToCallerAsync(
+    Entry** out_entry,
+    bool* out_opened,
+    bool opened,
+    CompletionOnceCallback callback) {
+  AddRef();  // Balanced in Close()
+  if (!backend_.get()) {
+    // With backend dead, Open/Create operations are responsible for cleaning up
+    // the entry --- the ownership is never transferred to the caller, and their
+    // callback isn't invoked.
+    Close();
+    return;
+  }
+
+  *out_entry = this;
+  if (out_opened)
+    *out_opened = opened;
+
+  std::move(callback).Run(net::OK);
 }
 
 void SimpleEntryImpl::MarkAsDoomed(DoomState new_state) {
@@ -806,7 +804,8 @@ void SimpleEntryImpl::OpenEntryInternal(net::CompletionOnceCallback callback,
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_BEGIN);
 
   if (state_ == STATE_READY) {
-    ReturnEntryToCallerAndPostCallback(out_entry, std::move(callback));
+    ReturnEntryToCallerAsync(out_entry, /* out_opened = */ nullptr,
+                             /* opened = */ true, std::move(callback));
     NetLogSimpleEntryCreation(net_log_,
                               net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_END,
                               net::NetLogEventPhase::NONE, this, net::OK);
@@ -907,9 +906,8 @@ void SimpleEntryImpl::OpenOrCreateEntryInternal(
   DCHECK(entry_struct != nullptr || state_ == STATE_UNINITIALIZED);
 
   if (state_ == STATE_READY) {
-    entry_struct->opened = true;
-    ReturnEntryToCallerAndPostCallback(&entry_struct->entry,
-                                       std::move(callback));
+    ReturnEntryToCallerAsync(&entry_struct->entry, &entry_struct->opened,
+                             /* opened = */ true, std::move(callback));
     NetLogSimpleEntryCreation(
         net_log_, net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_OR_CREATE_END,
         net::NetLogEventPhase::NONE, this, net::OK);
@@ -1472,12 +1470,6 @@ void SimpleEntryImpl::CreationOperationComplete(
   if (backend_ && doom_state_ == DOOM_NONE)
     backend_->index()->Insert(entry_hash_);
 
-  // Access to out_opened must be guarded by backend_ check since there is no
-  // requirement to keep this alive past backend destruction, as the callback
-  // will not be invoked.
-  if (backend_ && out_opened)
-    *out_opened = !in_results->created;
-
   state_ = STATE_READY;
   synchronous_entry_ = in_results->sync_entry;
 
@@ -1528,9 +1520,10 @@ void SimpleEntryImpl::CreationOperationComplete(
   // out_entry is nullptr and there is no callback, or should be returned
   // to out_entry with callback invoked.
   DCHECK_EQ(out_entry == nullptr, completion_callback.is_null());
-  if (out_entry)
-    ReturnEntryToCallerAndPostCallback(out_entry,
-                                       std::move(completion_callback));
+  if (out_entry) {
+    ReturnEntryToCallerAsync(out_entry, out_opened, !in_results->created,
+                             std::move(completion_callback));
+  }
 }
 
 void SimpleEntryImpl::EntryOperationComplete(

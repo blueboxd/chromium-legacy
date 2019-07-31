@@ -41,6 +41,8 @@ blink_modules_sources("mediastream") {
     "media_stream_track_content_hint.h",
     "media_stream_track_event.cc",
     "media_stream_track_event.h",
+    "media_stream_utils.cc",
+    "media_stream_utils.h",
     "media_stream_video_capturer_source.cc",
     "media_stream_video_renderer_sink.cc",
     "media_stream_video_renderer_sink.h",

@@ -22,7 +22,7 @@
 #include "third_party/blink/renderer/modules/mediacapturefromelement/html_audio_element_capturer_source.h"
 #include "third_party/blink/renderer/modules/mediacapturefromelement/html_video_element_capturer_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
-#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
@@ -220,6 +220,15 @@ void MediaElementEventListener::Invoke(ExecutionContext* context,
   UpdateSources(context);
 }
 
+void DidStopMediaStreamSource(const WebMediaStreamSource& source) {
+  if (source.IsNull())
+    return;
+  blink::WebPlatformMediaStreamSource* const platform_source =
+      source.GetPlatformSource();
+  DCHECK(platform_source);
+  platform_source->StopSource();
+}
+
 void MediaElementEventListener::UpdateSources(ExecutionContext* context) {
   for (auto track : media_stream_->getTracks())
     sources_.insert(track->Component()->Source());
@@ -227,7 +236,7 @@ void MediaElementEventListener::UpdateSources(ExecutionContext* context) {
   if (!media_element_->currentSrc().IsEmpty() &&
       !media_element_->IsMediaDataCorsSameOrigin()) {
     for (auto source : sources_)
-      MediaStreamCenter::Instance().DidStopMediaStreamSource(source);
+      DidStopMediaStreamSource(source.Get());
   }
 }
 

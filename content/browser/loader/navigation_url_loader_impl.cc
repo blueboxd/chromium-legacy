@@ -1039,8 +1039,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // TODO(davidben): This copy could be avoided if ResourceResponse weren't
     // reference counted and the loader stack passed unique ownership of the
     // response. https://crbug.com/416050
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
+    RunOrPostTaskIfNecessary(
+        FROM_HERE, BrowserThread::UI,
         base::BindOnce(&NavigationURLLoaderImpl::OnReceiveResponse, owner_,
                        response->DeepCopy(),
                        std::move(url_loader_client_endpoints),

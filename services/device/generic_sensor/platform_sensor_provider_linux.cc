@@ -25,7 +25,7 @@ namespace device {
 namespace {
 
 constexpr base::TaskTraits kBlockingTaskRunnerTraits = {
-    base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 
 bool IsFusionSensorType(mojom::SensorType type) {
@@ -46,7 +46,7 @@ PlatformSensorProviderLinux::PlatformSensorProviderLinux()
     : sensor_nodes_enumerated_(false),
       sensor_nodes_enumeration_started_(false),
       blocking_task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskRunnerTraits)),
+          base::CreateSequencedTaskRunner(kBlockingTaskRunnerTraits)),
       sensor_device_manager_(nullptr,
                              base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   sensor_device_manager_.reset(

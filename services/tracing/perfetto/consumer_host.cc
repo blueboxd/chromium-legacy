@@ -53,8 +53,9 @@ class ConsumerHost::StreamWriter {
   using Slices = std::vector<std::string>;
 
   static scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
-    return base::CreateSequencedTaskRunnerWithTraits(
-        {base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT});
+    return base::CreateSequencedTaskRunner({base::ThreadPool(),
+                                            base::WithBaseSyncPrimitives(),
+                                            base::TaskPriority::BEST_EFFORT});
   }
 
   StreamWriter(mojo::ScopedDataPipeProducerHandle stream,

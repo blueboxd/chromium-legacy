@@ -24,6 +24,7 @@
 #include "components/history/core/browser/url_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -61,10 +62,10 @@ void InitializeOnDBSequence(
 PreconnectRequest::PreconnectRequest(
     const GURL& origin,
     int num_sockets,
-    net::NetworkIsolationKey network_isolation_key)
+    const net::NetworkIsolationKey& network_isolation_key)
     : origin(origin),
       num_sockets(num_sockets),
-      network_isolation_key(std::move(network_isolation_key)) {
+      network_isolation_key(network_isolation_key) {
   DCHECK_GE(num_sockets, 0);
 }
 
@@ -224,6 +225,16 @@ bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
   }
 
   bool has_any_prediction = false;
+
+  // TODO(https://crbug.com/987735): Use the NetworkIsolationKey of the final
+  // destination in the case of redirects. This will require recording the port,
+  // which is not currently logged. That will not result in using the correct
+  // NetworkIsolationKey in the case of intermediary redirects, but given the
+  // relatively low accurace of redirect predictions, seems likely not worth
+  // fixing.
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
+
   for (const OriginStat& origin : data.origins()) {
     float confidence = static_cast<float>(origin.number_of_hits()) /
                        (origin.number_of_hits() + origin.number_of_misses());
@@ -232,10 +243,13 @@ bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
 
     has_any_prediction = true;
     if (prediction) {
-      if (confidence > kMinOriginConfidenceToTriggerPreconnect)
-        prediction->requests.emplace_back(GURL(origin.origin()), 1);
-      else
-        prediction->requests.emplace_back(GURL(origin.origin()), 0);
+      if (confidence > kMinOriginConfidenceToTriggerPreconnect) {
+        prediction->requests.emplace_back(GURL(origin.origin()), 1,
+                                          network_isolation_key);
+      } else {
+        prediction->requests.emplace_back(GURL(origin.origin()), 0,
+                                          network_isolation_key);
+      }
     }
   }
 

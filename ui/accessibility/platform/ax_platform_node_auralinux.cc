@@ -192,23 +192,6 @@ bool EmitsAtkTextEvents(AtkObject* atk_object) {
   if (atk_object_get_n_accessible_children(atk_object))
     return true;
 
-  // If this node is an anonymous block that is a static text leaf node, it
-  // should also emit events. The heuristic that Orca uses for this is to check
-  // whether or not it has any non-static-text siblings. We duplicate that here
-  // to maintain compatibility.
-  AtkObject* parent = atk_object_get_parent(atk_object);
-  if (!parent)
-    return false;
-
-  int num_siblings = atk_object_get_n_accessible_children(parent);
-  for (int i = 0; i < num_siblings; i++) {
-    AtkObject* sibling = atk_object_ref_accessible_child(parent, i);
-    AtkRole role = atk_object_get_role(sibling);
-    g_object_unref(sibling);
-    if (role != ATK_ROLE_TEXT)
-      return true;
-  }
-
   return false;
 }
 

@@ -1176,8 +1176,8 @@ TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
   // deleting startup registry and setting the producer.
   auto wait_for_start_tracing = std::make_unique<base::WaitableEvent>();
   base::WaitableEvent* wait_ptr = wait_for_start_tracing.get();
-  base::PostTaskWithTraits(
-      FROM_HERE, base::TaskPriority::BEST_EFFORT,
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           [](std::unique_ptr<base::WaitableEvent> wait_for_start_tracing) {
             // This event can be hit anytime before startup registry is

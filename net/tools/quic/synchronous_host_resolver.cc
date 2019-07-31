@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -57,7 +58,7 @@ ResolverThread::ResolverThread()
 ResolverThread::~ResolverThread() = default;
 
 void ResolverThread::Run() {
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
 
   net::NetLog net_log;
   net::HostResolver::ManagerOptions options;

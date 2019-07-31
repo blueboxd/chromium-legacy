@@ -42,8 +42,9 @@ constexpr base::ProcessId kProducerPid = 1234;
 class ThreadedPerfettoService : public mojom::TracingSessionClient {
  public:
   ThreadedPerfettoService()
-      : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+      : task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
              base::WithBaseSyncPrimitives(),
              base::TaskPriority::BEST_EFFORT})) {
     perfetto_service_ = std::make_unique<PerfettoService>(task_runner_);

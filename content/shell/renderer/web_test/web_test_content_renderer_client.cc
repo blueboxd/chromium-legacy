@@ -34,7 +34,6 @@
 #include "media/base/mime_util.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
-#include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/blink.h"
@@ -47,7 +46,6 @@
 using blink::WebAudioDevice;
 using blink::WebFrame;
 using blink::WebLocalFrame;
-using blink::WebMediaStreamCenter;
 using blink::WebPlugin;
 using blink::WebPluginParams;
 using blink::WebRTCPeerConnectionHandler;

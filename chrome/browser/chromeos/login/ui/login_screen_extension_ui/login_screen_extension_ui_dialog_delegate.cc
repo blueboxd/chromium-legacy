@@ -5,10 +5,14 @@
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_dialog_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chromeos {
 
@@ -18,7 +22,7 @@ const double kRelativeScreenHeight = 0.8;
 }  // namespace
 
 LoginScreenExtensionUiDialogDelegate::LoginScreenExtensionUiDialogDelegate(
-    LoginScreenExtensionUiWindow::CreateOptions* create_options)
+    LoginScreenExtensionUiCreateOptions* create_options)
     : extension_name_(create_options->extension_name),
       content_url_(create_options->content_url),
       can_close_(create_options->can_be_closed_by_user),

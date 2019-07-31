@@ -7,16 +7,22 @@
 
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_apitest_base.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_dialog_delegate.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
 #include "chrome/browser/chromeos/policy/signin_profile_extensions_policy_test_base.h"
 #include "components/version_info/version_info.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace {
 
-const char kCanOpenWindow[] = "LoginScreenUiCanOpenWindow";
-const char kCannotOpenMultipleWindows[] =
+constexpr char kCanOpenWindow[] = "LoginScreenUiCanOpenWindow";
+constexpr char kCannotOpenMultipleWindows[] =
     "LoginScreenUiCannotOpenMultipleWindows";
-const char kCanOpenAndCloseWindow[] = "LoginScreenUiCanOpenAndCloseWindow";
-const char kCannotCloseNoWindow[] = "LoginScreenUiCannotCloseNoWindow";
+constexpr char kCanOpenAndCloseWindow[] = "LoginScreenUiCanOpenAndCloseWindow";
+constexpr char kCannotCloseNoWindow[] = "LoginScreenUiCannotCloseNoWindow";
+constexpr char kUserCanCloseWindow[] = "LoginScreenUiUserCanCloseWindow";
+constexpr char kUserCannotCloseWindow[] = "LoginScreenUiUserCannotCloseWindow";
 
 }  // namespace
 
@@ -28,11 +34,31 @@ class LoginScreenUiApitest : public LoginScreenApitestBase {
 
   ~LoginScreenUiApitest() override = default;
 
-  bool HasOpenWindow() {
-    LoginScreenExtensionUiHandler* ui_handler =
-        LoginScreenExtensionUiHandler::Get(false);
-    CHECK(ui_handler);
-    return ui_handler->HasOpenWindow(extension_id_);
+  bool HasOpenWindow() const {
+    return LoginScreenExtensionUiHandler::Get(false)->HasOpenWindow(
+        extension_id_);
+  }
+
+  bool CanCloseDialog() const {
+    return LoginScreenExtensionUiHandler::Get(false)
+        ->GetWindowForTesting(extension_id_)
+        ->GetDialogDelegateForTesting()
+        ->CanCloseDialog();
+  }
+
+  bool ShouldShowCloseButton() const {
+    return LoginScreenExtensionUiHandler::Get(false)
+        ->GetWindowForTesting(extension_id_)
+        ->GetDialogWidgetForTesting()
+        ->widget_delegate()
+        ->ShouldShowCloseButton();
+  }
+
+  bool IsMovementDisabled() const {
+    return LoginScreenExtensionUiHandler::Get(false)
+        ->GetWindowForTesting(extension_id_)
+        ->GetDialogWidgetForTesting()
+        ->movement_disabled();
   }
 
  private:
@@ -41,7 +67,11 @@ class LoginScreenUiApitest : public LoginScreenApitestBase {
 
 IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, ExtensionCanOpenWindow) {
   SetUpExtensionAndRunTest(kCanOpenWindow);
-  EXPECT_TRUE(HasOpenWindow());
+  ASSERT_TRUE(HasOpenWindow());
+  // userCanClose defaults to false
+  EXPECT_TRUE(IsMovementDisabled());
+  EXPECT_FALSE(CanCloseDialog());
+  EXPECT_FALSE(ShouldShowCloseButton());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest,
@@ -58,6 +88,22 @@ IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, ExtensionCanOpenAndCloseWindow) {
 IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, ExtensionCannotCloseNoWindow) {
   SetUpExtensionAndRunTest(kCannotCloseNoWindow);
   EXPECT_FALSE(HasOpenWindow());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, UserCanCloseWindow) {
+  SetUpExtensionAndRunTest(kUserCanCloseWindow);
+  ASSERT_TRUE(HasOpenWindow());
+  EXPECT_TRUE(IsMovementDisabled());
+  EXPECT_TRUE(CanCloseDialog());
+  EXPECT_TRUE(ShouldShowCloseButton());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, UserCannotCloseWindow) {
+  SetUpExtensionAndRunTest(kUserCannotCloseWindow);
+  ASSERT_TRUE(HasOpenWindow());
+  EXPECT_TRUE(IsMovementDisabled());
+  EXPECT_FALSE(CanCloseDialog());
+  EXPECT_FALSE(ShouldShowCloseButton());
 }
 
 }  // namespace chromeos

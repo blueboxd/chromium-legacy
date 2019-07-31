@@ -350,9 +350,8 @@ NotificationDatabase::Status NotificationDatabase::DeleteNotificationData(
   NotificationDatabaseData data;
   Status status = ReadNotificationData(notification_id, origin, &data);
   if (status == STATUS_OK && record_notification_to_ukm_callback_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(record_notification_to_ukm_callback_, data));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(record_notification_to_ukm_callback_, data));
   }
 
   leveldb::WriteBatch batch;
@@ -507,10 +506,9 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
     }
 
     if (record_notification_to_ukm_callback_) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(record_notification_to_ukm_callback_,
-                         notification_database_data));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(record_notification_to_ukm_callback_,
+                                    notification_database_data));
     }
 
     std::string notification_id = notification_database_data.notification_id;

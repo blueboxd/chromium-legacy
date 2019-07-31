@@ -145,11 +145,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '6808e2d1faaccd6fc739f436c2470f199aa4d1a8',
+  'skia_revision': 'fe125a11032d347899e265a00a791c736c890f9e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '38a850d9c915db6aed80c65ed7ccac346c897dcb',
+  'v8_revision': 'da479f0f9842195e0a19168ac3bbe926563a2593',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -1207,7 +1207,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' +  'ccb430fd4ebb8cb9b38d919625ab8afdad338ed4',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' +  'e2248cbc238c392747af86dc007f6b7fe97b22c9',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1375,7 +1375,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'abaae129d9a0c6e1e092067e0b105475df43352e',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '6acb069c2c13a7137fbff7ffbf99fdd10b64f200',
+    Var('webrtc_git') + '/src.git' + '@' + '97e015fa8e5a57a6fc6fcb9d727b6262048e30ea',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1416,7 +1416,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bf1198869aba9c2252b7f3829d37788d9a877f0a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@80dc3d15d3e3a3368fc20dff40dbb8e23d57d399',
     'condition': 'checkout_src_internal',
   },
 

@@ -214,10 +214,21 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // count.
   void ReturnEntryToCaller(Entry** out_entry);
 
-  // Like above, but also invokes the result callback (with net::OK), making
-  // sure to handle the backend being deleted in the interim.
-  void ReturnEntryToCallerAndPostCallback(Entry** out_entry,
-                                          CompletionOnceCallback callback);
+  // Like above, but for asynchronous return after the event loop runs again,
+  // also invoking the callback per the usual net convention.
+  // The return is cancelled if the backend is deleted in the interim.
+  //
+  // |out_opened| may be null.
+  void ReturnEntryToCallerAsync(Entry** out_entry,
+                                bool* out_opened,
+                                bool opened,
+                                CompletionOnceCallback callback);
+
+  // Portion of the above that runs off the event loop.
+  void FinishReturnEntryToCallerAsync(Entry** out_entry,
+                                      bool* out_opened,
+                                      bool opened,
+                                      CompletionOnceCallback callback);
 
   // Remove |this| from the Backend and the index, either because
   // SimpleSynchronousEntry has detected an error or because we are about to

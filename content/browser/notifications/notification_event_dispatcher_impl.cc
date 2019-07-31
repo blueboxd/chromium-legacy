@@ -87,7 +87,7 @@ void ServiceWorkerNotificationEventFinished(
     NotificationDispatchCompleteCallback dispatch_complete_callback,
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(dispatch_complete_callback),
                      ConvertServiceWorkerStatus(service_worker_status)));
@@ -149,9 +149,8 @@ void DispatchNotificationEventOnRegistration(
       break;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(std::move(dispatch_complete_callback), status));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(dispatch_complete_callback), status));
 }
 
 // Finds the ServiceWorkerRegistration associated with the |origin| and
@@ -176,7 +175,7 @@ void FindServiceWorkerRegistration(
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ServiceWorkerContextWrapper::FindReadyRegistrationForId,
                      service_worker_context,
@@ -248,7 +247,7 @@ void DoDispatchNotificationClickEvent(
     NotificationDispatchCompleteCallback dispatch_complete_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&notifications::LogNotificationClickedEventToDevTools,
                      browser_context, notification_database_data, action_index,
@@ -290,7 +289,7 @@ void DeleteNotificationDataFromDatabase(
     NotificationDispatchCompleteCallback dispatch_complete_callback,
     blink::ServiceWorkerStatusCode status_code) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &PlatformNotificationContext::DeleteNotificationData,

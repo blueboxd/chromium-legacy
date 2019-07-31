@@ -60,13 +60,9 @@ struct PreconnectRequest {
   // preconnected URL are expected to use. If a request is issued with a
   // different key, it may not use the preconnected socket. It has no effect
   // when |num_sockets| == 0.
-  //
-  // TODO(https://crbug.com/966896): Update consumers and make
-  // |network_isolation_key| a mandatory argument.
   PreconnectRequest(const GURL& origin,
                     int num_sockets,
-                    net::NetworkIsolationKey network_isolation_key =
-                        net::NetworkIsolationKey());
+                    const net::NetworkIsolationKey& network_isolation_key);
 
   GURL origin;
   // A zero-value means that we need to preresolve a host only.

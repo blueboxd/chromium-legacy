@@ -18,6 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -186,8 +187,7 @@ int UpdaterMain(int argc, const char* const* argv) {
   installer->FindInstallOfApp();
   const auto component = installer->MakeCrxComponent();
 
-  base::SingleThreadTaskExecutor main_task_executor(
-      base::MessagePump::Type::UI);
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   base::RunLoop runloop;
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 

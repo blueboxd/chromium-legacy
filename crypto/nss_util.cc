@@ -319,9 +319,10 @@ class NSSInitSingleton {
     std::unique_ptr<TPMModuleAndSlot> tpm_args(
         new TPMModuleAndSlot(chaps_module_));
     TPMModuleAndSlot* tpm_args_ptr = tpm_args.get();
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&NSSInitSingleton::InitializeTPMTokenInThreadPool,
                        system_slot_id, tpm_args_ptr),
         base::BindOnce(&NSSInitSingleton::OnInitializedTPMTokenAndSystemSlot,
@@ -482,9 +483,10 @@ class NSSInitSingleton {
     std::unique_ptr<TPMModuleAndSlot> tpm_args(
         new TPMModuleAndSlot(chaps_module_));
     TPMModuleAndSlot* tpm_args_ptr = tpm_args.get();
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&NSSInitSingleton::InitializeTPMTokenInThreadPool,
                        slot_id, tpm_args_ptr),
         base::BindOnce(&NSSInitSingleton::OnInitializedTPMForChromeOSUser,

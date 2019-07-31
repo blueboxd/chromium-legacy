@@ -67,6 +67,9 @@ class LoginScreenExtensionUiHandler
   // session_manager::SessionManagerObserver
   void OnSessionStateChanged() override;
 
+  LoginScreenExtensionUiWindow* GetWindowForTesting(
+      const std::string& extension_id);
+
  private:
   using WindowMap =
       std::map<std::string, std::unique_ptr<LoginScreenExtensionUiWindow>>;

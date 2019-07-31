@@ -56,7 +56,7 @@ struct HidServiceLinux::ConnectParams {
         callback(callback),
         task_runner(base::SequencedTaskRunnerHandle::Get()),
         blocking_task_runner(
-            base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits)) {}
+            base::CreateSequencedTaskRunner(kBlockingTaskTraits)) {}
   ~ConnectParams() {}
 
   scoped_refptr<HidDeviceInfo> device_info;
@@ -194,7 +194,7 @@ class HidServiceLinux::BlockingTaskRunnerHelper : public UdevWatcher::Observer {
 
 HidServiceLinux::HidServiceLinux()
     : blocking_task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskTraits)),
+          base::CreateSequencedTaskRunner(kBlockingTaskTraits)),
       helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   // We need to properly initialize |blocking_task_helper_| here because we need
   // |weak_factory_| to be created first.

@@ -582,8 +582,8 @@ void NetworkService::GetNetworkList(
   auto networks = std::make_unique<net::NetworkInterfaceList>();
   auto* raw_networks = networks.get();
   // net::GetNetworkList may block depending on platform.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&net::GetNetworkList, raw_networks, policy),
       base::BindOnce(&OnGetNetworkList, std::move(networks),
                      std::move(callback)));

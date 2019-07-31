@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/test/gtest_util.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
 #include "chrome/browser/ui/ash/test_login_screen.h"
 #include "chrome/common/chrome_constants.h"
@@ -50,7 +51,7 @@ class FakeLoginScreenExtensionUiWindowFactory
   ~FakeLoginScreenExtensionUiWindowFactory() override = default;
 
   std::unique_ptr<LoginScreenExtensionUiWindow> Create(
-      LoginScreenExtensionUiWindow::CreateOptions* create_options) override {
+      LoginScreenExtensionUiCreateOptions* create_options) override {
     create_was_called_ = true;
     last_extension_name_ = create_options->extension_name;
     last_content_url_ = create_options->content_url;

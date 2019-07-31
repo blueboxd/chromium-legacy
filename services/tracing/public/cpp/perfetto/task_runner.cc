@@ -116,8 +116,9 @@ scoped_refptr<base::SequencedTaskRunner>
 PerfettoTaskRunner::GetOrCreateTaskRunner() {
   if (!task_runner_) {
     DCHECK(base::ThreadPoolInstance::Get());
-    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::USER_BLOCKING});
+    task_runner_ =
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                         base::TaskPriority::USER_BLOCKING});
   }
 
   return task_runner_;

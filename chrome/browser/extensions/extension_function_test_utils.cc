@@ -83,14 +83,14 @@ bool HasPrivacySensitiveFields(base::DictionaryValue* val) {
   return false;
 }
 
-std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
+std::string RunFunctionAndReturnError(ExtensionFunction* function,
                                       const std::string& args,
                                       Browser* browser) {
   return RunFunctionAndReturnError(function, args, browser,
                                    extensions::api_test_utils::NONE);
 }
 std::string RunFunctionAndReturnError(
-    UIThreadExtensionFunction* function,
+    ExtensionFunction* function,
     const std::string& args,
     Browser* browser,
     extensions::api_test_utils::RunFunctionFlags flags) {
@@ -106,15 +106,14 @@ std::string RunFunctionAndReturnError(
   return function->GetError();
 }
 
-base::Value* RunFunctionAndReturnSingleResult(
-    UIThreadExtensionFunction* function,
-    const std::string& args,
-    Browser* browser) {
+base::Value* RunFunctionAndReturnSingleResult(ExtensionFunction* function,
+                                              const std::string& args,
+                                              Browser* browser) {
   return RunFunctionAndReturnSingleResult(function, args, browser,
                                           extensions::api_test_utils::NONE);
 }
 base::Value* RunFunctionAndReturnSingleResult(
-    UIThreadExtensionFunction* function,
+    ExtensionFunction* function,
     const std::string& args,
     Browser* browser,
     extensions::api_test_utils::RunFunctionFlags flags) {
@@ -130,7 +129,7 @@ base::Value* RunFunctionAndReturnSingleResult(
   return NULL;
 }
 
-bool RunFunction(UIThreadExtensionFunction* function,
+bool RunFunction(ExtensionFunction* function,
                  const std::string& args,
                  Browser* browser,
                  extensions::api_test_utils::RunFunctionFlags flags) {
@@ -140,7 +139,7 @@ bool RunFunction(UIThreadExtensionFunction* function,
   return RunFunction(function, std::move(parsed_args), browser, flags);
 }
 
-bool RunFunction(UIThreadExtensionFunction* function,
+bool RunFunction(ExtensionFunction* function,
                  std::unique_ptr<base::ListValue> args,
                  Browser* browser,
                  extensions::api_test_utils::RunFunctionFlags flags) {

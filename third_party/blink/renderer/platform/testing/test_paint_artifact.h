@@ -94,7 +94,8 @@ class TestPaintArtifact {
   // automatically created client.
   TestPaintArtifact& RectDrawing(const FloatRect& bounds, Color color);
   TestPaintArtifact& ScrollHitTest(
-      const TransformPaintPropertyNode& scroll_offset);
+      const TransformPaintPropertyNode* scroll_offset,
+      const IntRect& scroll_container_bounds);
 
   TestPaintArtifact& ForeignLayer(scoped_refptr<cc::Layer> layer,
                                   const FloatPoint& offset);
@@ -105,7 +106,8 @@ class TestPaintArtifact {
                                  Color);
   TestPaintArtifact& ScrollHitTest(
       FakeDisplayItemClient&,
-      const TransformPaintPropertyNode& scroll_offset);
+      const TransformPaintPropertyNode* scroll_offset,
+      const IntRect& scroll_container_bounds);
 
   // Sets fake bounds for the last paint chunk. Note that the bounds will be
   // overwritten when the PaintArtifact is constructed if the chunk has any

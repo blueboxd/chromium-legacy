@@ -11,6 +11,7 @@
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -66,6 +67,12 @@ TEST_F(FontSizeJsTest, TestAdjustFontSizeForScale) {
     return;
   }
 #endif
+  // TODO(crbug.com/983776): This test also appears to be generally broken on
+  // iPads with beta 5.  It appears to be a simulator bug.  Re-enable on beta 6.
+  if (base::ios::IsRunningOnIOS13OrLater() &&
+      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    return;
+  }
 
   float original_size = 0;
   float current_size = 0;
@@ -189,6 +196,12 @@ TEST_F(FontSizeJsTest, TestAdjustFontSizeForUnit) {
     return;
   }
 #endif
+  // TODO(crbug.com/983776): This test also appears to be generally broken on
+  // iPads with beta 5.  It appears to be a simulator bug.  Re-enable on beta 6.
+  if (base::ios::IsRunningOnIOS13OrLater() &&
+      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    return;
+  }
 
   float original_size = 0;
   float current_size = 0;
@@ -264,6 +277,12 @@ TEST_F(FontSizeJsTest, TestAdjustFontSizeForNestedElements) {
     return;
   }
 #endif
+  // TODO(crbug.com/983776): This test also appears to be generally broken on
+  // iPads with beta 5.  It appears to be a simulator bug.  Re-enable on beta 6.
+  if (base::ios::IsRunningOnIOS13OrLater() &&
+      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+    return;
+  }
 
   float original_size_1 = 0;
   float original_size_2 = 0;

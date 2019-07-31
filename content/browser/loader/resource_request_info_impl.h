@@ -71,7 +71,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   ~ResourceRequestInfoImpl() override;
 
   // ResourceRequestInfo implementation:
-  WebContentsGetter GetWebContentsGetterForRequest() override;
+  WebContents::Getter GetWebContentsGetterForRequest() override;
   FrameTreeNodeIdGetter GetFrameTreeNodeIdGetterForRequest() override;
   ResourceContext* GetContext() override;
   int GetChildID() override;

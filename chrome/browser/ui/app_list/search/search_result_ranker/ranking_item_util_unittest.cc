@@ -102,4 +102,18 @@ TEST_F(RankingItemUtilTest, SimplifyGoogleDocsUrlId) {
             "docs.google.com/edit/hash/view");
 }
 
+TEST_F(RankingItemUtilTest, NormalizeAppID) {
+  const std::string raw_id = "mgndgikekgjfcpckkfioiadnlibdjbkf";
+  const std::string id_with_scheme =
+      "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf";
+  const std::string id_with_slash = "mgndgikekgjfcpckkfioiadnlibdjbkf/";
+  const std::string id_with_scheme_and_slash =
+      "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf/";
+
+  EXPECT_EQ(NormalizeAppId(raw_id), raw_id);
+  EXPECT_EQ(NormalizeAppId(id_with_scheme), raw_id);
+  EXPECT_EQ(NormalizeAppId(id_with_slash), raw_id);
+  EXPECT_EQ(NormalizeAppId(id_with_scheme_and_slash), raw_id);
+}
+
 }  // namespace app_list

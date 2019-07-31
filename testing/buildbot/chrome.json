@@ -986,9 +986,6 @@
         "test": "components_browsertests"
       },
       {
-        "args": [
-          "--gtest_filter=-CrashAnalyzerTest.StackTraceCollection"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/url_data_source.h"
+#include "content/public/browser/web_contents.h"
 
 class TerminalSource : public content::URLDataSource {
  public:
@@ -21,7 +21,7 @@ class TerminalSource : public content::URLDataSource {
 
   void StartDataRequest(
       const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
 
   std::string GetMimeType(const std::string& path) override;

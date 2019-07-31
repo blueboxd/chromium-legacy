@@ -72,6 +72,7 @@ class QUIRKS_EXPORT QuirksManager {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   static void Shutdown();
   static QuirksManager* Get();
+  static bool HasInstance();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

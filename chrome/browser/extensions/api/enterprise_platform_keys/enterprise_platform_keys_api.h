@@ -21,7 +21,7 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 namespace extensions {
 
 class EnterprisePlatformKeysInternalGenerateKeyFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  private:
   ~EnterprisePlatformKeysInternalGenerateKeyFunction() override;
   ResponseAction Run() override;
@@ -35,8 +35,7 @@ class EnterprisePlatformKeysInternalGenerateKeyFunction
                              ENTERPRISE_PLATFORMKEYSINTERNAL_GENERATEKEY)
 };
 
-class EnterprisePlatformKeysGetCertificatesFunction
-    : public UIThreadExtensionFunction {
+class EnterprisePlatformKeysGetCertificatesFunction : public ExtensionFunction {
  private:
   ~EnterprisePlatformKeysGetCertificatesFunction() override;
   ResponseAction Run() override;
@@ -51,7 +50,7 @@ class EnterprisePlatformKeysGetCertificatesFunction
 };
 
 class EnterprisePlatformKeysImportCertificateFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  private:
   ~EnterprisePlatformKeysImportCertificateFunction() override;
   ResponseAction Run() override;
@@ -65,7 +64,7 @@ class EnterprisePlatformKeysImportCertificateFunction
 };
 
 class EnterprisePlatformKeysRemoveCertificateFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  private:
   ~EnterprisePlatformKeysRemoveCertificateFunction() override;
   ResponseAction Run() override;
@@ -79,7 +78,7 @@ class EnterprisePlatformKeysRemoveCertificateFunction
 };
 
 class EnterprisePlatformKeysInternalGetTokensFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  private:
   ~EnterprisePlatformKeysInternalGetTokensFunction() override;
   ResponseAction Run() override;
@@ -94,7 +93,7 @@ class EnterprisePlatformKeysInternalGetTokensFunction
 };
 
 class EnterprisePlatformKeysChallengeMachineKeyFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   EnterprisePlatformKeysChallengeMachineKeyFunction();
   explicit EnterprisePlatformKeysChallengeMachineKeyFunction(
@@ -117,7 +116,7 @@ class EnterprisePlatformKeysChallengeMachineKeyFunction
 };
 
 class EnterprisePlatformKeysChallengeUserKeyFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   EnterprisePlatformKeysChallengeUserKeyFunction();
   explicit EnterprisePlatformKeysChallengeUserKeyFunction(

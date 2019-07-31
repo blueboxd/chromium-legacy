@@ -106,7 +106,7 @@ ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
   if (it != errors_.end() && it->second.last_auth_error.IsPersistentError()) {
     VLOG(1) << "Request for token has been rejected due to persistent error #"
             << it->second.last_auth_error.state();
-    // |OAuth2TokenService| will manage the lifetime of this pointer.
+    // |ProfileOAuth2TokenService| will manage the lifetime of this pointer.
     return std::make_unique<OAuth2AccessTokenFetcherImmediateError>(
         consumer, it->second.last_auth_error);
   }
@@ -114,7 +114,7 @@ ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
   if (backoff_entry_.ShouldRejectRequest()) {
     VLOG(1) << "Request for token has been rejected due to backoff rules from"
             << " previous error #" << backoff_error_.state();
-    // |OAuth2TokenService| will manage the lifetime of this pointer.
+    // |ProfileOAuth2TokenService| will manage the lifetime of this pointer.
     return std::make_unique<OAuth2AccessTokenFetcherImmediateError>(
         consumer, backoff_error_);
   }

@@ -296,7 +296,7 @@ void OmniboxPageHandler::OnOmniboxResultChanged(
       image_urls.push_back(result_by_provider.results[j]->image);
   }
 
-  page_->handleNewAutocompleteResponse(std::move(response),
+  page_->HandleNewAutocompleteResponse(std::move(response),
                                        controller == controller_.get());
 
   // Fill in image data

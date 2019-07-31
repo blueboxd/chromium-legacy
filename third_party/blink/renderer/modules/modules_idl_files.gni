@@ -668,6 +668,7 @@ modules_dictionary_idl_files =
           "mediastream/media_track_supported_constraints.idl",
           "native_file_system/choose_file_system_entries_options.idl",
           "native_file_system/choose_file_system_entries_options_accepts.idl",
+          "native_file_system/file_system_create_writer_options.idl",
           "native_file_system/file_system_get_directory_options.idl",
           "native_file_system/file_system_get_file_options.idl",
           "native_file_system/file_system_handle_permission_descriptor.idl",

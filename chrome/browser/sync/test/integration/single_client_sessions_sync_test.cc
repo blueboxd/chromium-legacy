@@ -34,6 +34,7 @@
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_sessions/session_sync_test_helper.h"
 #include "components/sync_sessions/synced_session_tracker.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -485,19 +486,29 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   ASSERT_TRUE(CheckInitialState(0));
 
   GURL first_url = GURL(kURL1);
+  content::TestNavigationObserver first_url_observer(first_url);
+  first_url_observer.StartWatchingNewWebContents();
   ASSERT_TRUE(OpenTab(0, first_url));
+  first_url_observer.WaitForNavigationFinished();
   WaitForURLOnServer(first_url);
 
   GURL second_url = GURL(kURL2);
+  content::TestNavigationObserver second_url_observer(second_url);
+  second_url_observer.WatchExistingWebContents();
   NavigateTab(0, second_url);
+  second_url_observer.WaitForNavigationFinished();
   WaitForURLOnServer(second_url);
 
+  first_url_observer.WatchExistingWebContents();
   NavigateTabBack(0);
+  first_url_observer.WaitForNavigationFinished();
   WaitForURLOnServer(first_url);
 
   ExpectNavigationChain({first_url, second_url});
 
+  second_url_observer.WatchExistingWebContents();
   NavigateTabForward(0);
+  second_url_observer.WaitForNavigationFinished();
   WaitForURLOnServer(second_url);
 
   ExpectNavigationChain({first_url, second_url});
@@ -509,25 +520,38 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   ASSERT_TRUE(CheckInitialState(0));
 
   GURL base_url = GURL(kURL1);
+  content::TestNavigationObserver base_url_observer(base_url);
+  base_url_observer.StartWatchingNewWebContents();
   ASSERT_TRUE(OpenTab(0, base_url));
+  base_url_observer.WaitForNavigationFinished();
   WaitForURLOnServer(base_url);
 
   GURL first_url = GURL(kURL2);
+  content::TestNavigationObserver first_url_observer(first_url);
+  first_url_observer.WatchExistingWebContents();
   NavigateTab(0, first_url);
+  first_url_observer.WaitForNavigationFinished();
   WaitForURLOnServer(first_url);
 
   // Check that the navigation chain matches the above sequence of {base_url,
   // first_url}.
   ExpectNavigationChain({base_url, first_url});
 
+  base_url_observer.WatchExistingWebContents();
   NavigateTabBack(0);
+  base_url_observer.WaitForNavigationFinished();
   WaitForURLOnServer(base_url);
 
   GURL second_url = GURL(kURL3);
+  content::TestNavigationObserver second_url_observer(second_url);
+  second_url_observer.WatchExistingWebContents();
   NavigateTab(0, second_url);
+  first_url_observer.WaitForNavigationFinished();
   WaitForURLOnServer(second_url);
 
+  base_url_observer.WatchExistingWebContents();
   NavigateTabBack(0);
+  base_url_observer.WaitForNavigationFinished();
   WaitForURLOnServer(base_url);
 
   // Check that the navigation chain contains second_url where first_url was

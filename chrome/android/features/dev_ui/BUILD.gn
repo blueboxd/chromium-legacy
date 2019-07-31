@@ -13,3 +13,13 @@ android_library("java") {
     "//base:base_java",
   ]
 }
+
+android_assets("pak_assets") {
+  renaming_sources =
+      [ "$root_gen_dir/chrome/bluetooth_internals_resources.pak" ]
+  renaming_destinations = [ "dev_ui_resources.pak" ]
+  deps = [
+    "//chrome/browser/resources/bluetooth_internals:resources",
+  ]
+  disable_compression = true
+}

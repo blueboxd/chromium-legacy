@@ -73,9 +73,6 @@ class CONTENT_EXPORT NavigationURLLoader {
                               const net::HttpRequestHeaders& modified_headers,
                               PreviewsState new_previews_state) = 0;
 
-  // Called in response to OnResponseStarted to process the response.
-  virtual void ProceedWithResponse() = 0;
-
  protected:
   NavigationURLLoader() {}
 

@@ -71,10 +71,6 @@ source_set("shell") {
     "//ios/web/public/init",
     "//net",
     "//net:extras",
-    "//services/service_manager/public/cpp",
-    "//services/test/user_id:lib",
-    "//services/test/user_id/public/cpp:manifest",
-    "//services/test/user_id/public/mojom",
     "//ui/base",
   ]
 

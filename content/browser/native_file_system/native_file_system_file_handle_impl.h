@@ -43,16 +43,39 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
   void RequestPermission(bool writable,
                          RequestPermissionCallback callback) override;
   void AsBlob(AsBlobCallback callback) override;
-  void CreateFileWriter(CreateFileWriterCallback callback) override;
+  void CreateFileWriter(bool keep_existing_data,
+                        CreateFileWriterCallback callback) override;
   void Transfer(
       blink::mojom::NativeFileSystemTransferTokenRequest token) override;
+
+  void set_max_swap_files_for_testing(int max) { max_swap_files_ = max; }
 
  private:
   void DidGetMetaDataForBlob(AsBlobCallback callback,
                              base::File::Error result,
                              const base::File::Info& info);
 
-  void CreateFileWriterImpl(CreateFileWriterCallback callback);
+  void CreateFileWriterImpl(bool keep_existing_data,
+                            CreateFileWriterCallback callback);
+  void CreateSwapFile(int count,
+                      const base::FilePath& base_swap_path,
+                      bool keep_existing_data,
+                      CreateFileWriterCallback callback);
+  void DidCreateSwapFile(int count,
+                         const base::FilePath& base_swap_path,
+                         const storage::FileSystemURL& swap_url,
+                         bool keep_existing_data,
+                         CreateFileWriterCallback callback,
+                         base::File::Error result);
+  void DidCopySwapFile(const storage::FileSystemURL& swap_url,
+                       CreateFileWriterCallback callback,
+                       base::File::Error result);
+
+  // A FileWriter will write to a "swap" file until the `Close()` operation is
+  // called to swap the file into the target path. For each writer, a new swap
+  // file is created. This sets the limit on the number of swap files per
+  // handle.
+  int max_swap_files_ = 100;
 
   base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;
 

@@ -413,12 +413,6 @@ void PreviewsLitePageServingURLLoader::FollowRedirect(
   NOTREACHED();
 }
 
-void PreviewsLitePageServingURLLoader::ProceedWithResponse() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Pass through.
-  network_url_loader_->ProceedWithResponse();
-}
-
 void PreviewsLitePageServingURLLoader::SetPriority(
     net::RequestPriority priority,
     int32_t intra_priority_value) {

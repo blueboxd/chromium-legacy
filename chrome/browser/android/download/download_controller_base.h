@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_start_observer.h"
-#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_request_headers.h"
@@ -77,7 +77,7 @@ class DownloadControllerBase : public download::DownloadItem::Observer,
   // Called to prompt the user for file access permission. When finished,
   // |callback| will be executed.
   virtual void AcquireFileAccessPermission(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       AcquireFileAccessPermissionCallback callback) = 0;
 
   // Called by unit test to approve or disapprove file access request.
@@ -86,7 +86,7 @@ class DownloadControllerBase : public download::DownloadItem::Observer,
   // Starts a new download request with Android DownloadManager. Can be called
   // on any thread.
   virtual void CreateAndroidDownload(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       const DownloadInfo& info) = 0;
 
   // Called before resuming a download.

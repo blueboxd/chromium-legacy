@@ -24,7 +24,7 @@ const base::Feature kImprovedGeoLanguageData{"ImprovedGeoLanguageData",
 const base::Feature kUseFluentLanguageModel{"UseFluentLanguageModel",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kNotifySyncOnLanguageDetermined{
-    "NotifySyncOnLanguageDetermined", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NotifySyncOnLanguageDetermined", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Base feature for Translate desktop UI experiment
 const base::Feature kUseButtonTranslateBubbleUi{

@@ -132,7 +132,7 @@ TEST_F(PaintWorkletTest, PaintWithNullPaintArguments) {
   StylePropertyMapReadOnly* style_map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           layout_object.GetDocument(), layout_object.StyleRef(),
-          layout_object.GetNode(), definition->NativeInvalidationProperties(),
+          definition->NativeInvalidationProperties(),
           definition->CustomInvalidationProperties());
   scoped_refptr<Image> image = PaintGeneratedImage::Create(
       definition->Paint(container_size, zoom, style_map, nullptr,

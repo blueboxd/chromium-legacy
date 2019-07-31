@@ -35,6 +35,8 @@ blink_core_sources("animation") {
     "css/compositor_keyframe_value.h",
     "css/compositor_keyframe_value_factory.cc",
     "css/compositor_keyframe_value_factory.h",
+    "css/css_animation.cc",
+    "css/css_animation.h",
     "css/css_animation_data.cc",
     "css/css_animation_data.h",
     "css/css_animation_update.cc",

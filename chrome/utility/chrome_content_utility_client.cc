@@ -21,8 +21,6 @@
 #include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/services/patch/patch_service.h"
-#include "components/services/patch/public/mojom/constants.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
@@ -93,11 +91,6 @@
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
 #include "chrome/utility/printing_handler.h"
-#endif
-
-#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
-#include "chrome/services/cups_ipp_parser/cups_ipp_parser_service.h"  // nogncheck
-#include "chrome/services/cups_ipp_parser/public/mojom/constants.mojom.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
@@ -205,9 +198,6 @@ std::unique_ptr<service_manager::Service>
 ChromeContentUtilityClient::MaybeCreateMainThreadService(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-  if (service_name == patch::mojom::kServiceName)
-    return std::make_unique<patch::PatchService>(std::move(request));
-
 #if BUILDFLAG(ENABLE_PRINTING)
   if (service_name == printing::mojom::kServiceName)
     return printing::CreatePdfCompositorService(std::move(request));
@@ -270,12 +260,6 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
 #if defined(OS_CHROMEOS)
   if (service_name == chromeos::ime::mojom::kServiceName)
     return std::make_unique<chromeos::ime::ImeService>(std::move(request));
-
-#if BUILDFLAG(ENABLE_PRINTING)
-  if (service_name == cups_ipp_parser::mojom::kCupsIppParserServiceName)
-    return std::make_unique<cups_ipp_parser::CupsIppParserService>(
-        std::move(request));
-#endif
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   if (service_name == chromeos::assistant::mojom::kAudioDecoderServiceName) {

@@ -111,7 +111,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // SurfaceClient implementation.
   void OnSurfaceActivated(Surface* surface) override;
   void OnSurfaceDestroyed(Surface* surface) override;
-  void OnSurfaceDrawn(Surface* surface) override;
+  void OnSurfaceWillDraw(Surface* surface) override;
+  void OnSurfaceWasDrawn(uint32_t frame_token,
+                         base::TimeTicks draw_start_timestamp) override;
   void RefResources(
       const std::vector<TransferableResource>& resources) override;
   void UnrefResources(const std::vector<ReturnedResource>& resources) override;
@@ -323,6 +325,13 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_begin_frame_ = true;
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
+
+  // Map between frame_token and the timestamp when Viz received the
+  // submitted CompositorFrame
+  base::flat_map<uint32_t, base::TimeTicks> received_compositor_frame_times_;
+
+  // Map between frame_token and the timestamp when Viz began DrawAndSwap
+  base::flat_map<uint32_t, base::TimeTicks> draw_start_times_;
 
   FrameTimingDetailsMap frame_timing_details_;
   LocalSurfaceId last_evicted_local_surface_id_;

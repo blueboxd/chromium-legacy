@@ -29,7 +29,7 @@ namespace android_webview {
 namespace {
 
 void OnReceivedHttpErrorOnUiThread(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     const AwWebResourceRequest& request,
     std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> http_error_info) {
   AwContentsClientBridge* client =

@@ -35,6 +35,8 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
+using chrome_test_util::WebViewMatcher;
+
 using testing::ElementToDismissAlert;
 
 namespace {
@@ -618,7 +620,7 @@ id<GREYMatcher> ResendPostButtonMatcher() {
              @"Web view did not become interactable.");
 
   web::WebState* currentWebState = chrome_test_util::GetCurrentWebState();
-  [[EarlGrey selectElementWithMatcher:web::WebViewInWebState(currentWebState)]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         currentWebState,
                         [ElementSelector selectorWithElementID:ID])];

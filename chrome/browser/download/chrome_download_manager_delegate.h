@@ -120,8 +120,7 @@ class ChromeDownloadManagerDelegate
       content::CheckForFileExistenceCallback callback) override;
   std::string ApplicationClientIdForFileScanning() override;
   void CheckDownloadAllowed(
-      const content::ResourceRequestInfo::WebContentsGetter&
-          web_contents_getter,
+      const content::WebContents::Getter& web_contents_getter,
       const GURL& url,
       const std::string& request_method,
       base::Optional<url::Origin> request_initiator,

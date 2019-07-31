@@ -9,6 +9,7 @@
 
 #include "components/sync/base/storage_option.h"
 #include "components/sync/engine/configure_reason.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace syncer {
 
@@ -19,7 +20,7 @@ namespace syncer {
 // controllers, which for USS datatypes propagate analogous information to the
 // processor/bridge via DataTypeActivationRequest.
 struct ConfigureContext {
-  std::string authenticated_account_id;
+  CoreAccountId authenticated_account_id;
   std::string cache_guid;
   StorageOption storage_option = STORAGE_ON_DISK;
   ConfigureReason reason = CONFIGURE_REASON_UNKNOWN;

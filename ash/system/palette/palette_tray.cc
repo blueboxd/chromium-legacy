@@ -67,9 +67,6 @@ constexpr int kPalettePaddingOnBottom = 2;
 constexpr int kPaddingBetweenTitleAndLeftEdge = 12;
 constexpr int kPaddingBetweenTitleAndSeparator = 3;
 
-// Color of the separator.
-const SkColor kPaletteSeparatorColor = SkColorSetARGB(0x1E, 0x00, 0x00, 0x00);
-
 // Returns true if the |palette_tray| is on an internal display or on every
 // display if requested from the command line.
 bool ShouldShowOnDisplay(PaletteTray* palette_tray) {
@@ -500,7 +497,7 @@ void PaletteTray::ShowBubble(bool show_by_click) {
 
   // Add horizontal separator between the title and tools.
   auto* separator = new views::Separator();
-  separator->SetColor(kPaletteSeparatorColor);
+  separator->SetColor(kSeparatorOnLightBackgroundColor);
   separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));
   bubble_view->AddChildView(separator);

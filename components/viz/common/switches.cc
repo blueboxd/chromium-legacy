@@ -37,6 +37,12 @@ const char kEnableVizHitTestDebug[] = "enable-viz-hit-test-debug";
 const char kRunAllCompositorStagesBeforeDraw[] =
     "run-all-compositor-stages-before-draw";
 
+// Adds a DebugBorderDrawQuad to the top of the root RenderPass showing the
+// damage rect after surface aggregation. Note that when enabled this feature
+// sets the entire output rect as damaged after adding the quad to highlight the
+// real damage rect, which could hide damage rect problems.
+const char kShowAggregatedDamage[] = "show-aggregated-damage";
+
 // Enables the viz hit-test logic (HitTestAggregator and HitTestQuery), with
 // hit-test data coming from surface layer.
 const char kUseVizHitTestSurfaceLayer[] = "use-viz-hit-test-surface-layer";

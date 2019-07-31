@@ -152,18 +152,6 @@ CastBrowserContext::GetBrowsingDataRemoverDelegate() {
   return nullptr;
 }
 
-net::URLRequestContextGetter* CastBrowserContext::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  NOTREACHED();
-  return nullptr;
-}
-
-net::URLRequestContextGetter* CastBrowserContext::CreateMediaRequestContext() {
-  NOTREACHED();
-  return nullptr;
-}
-
 void CastBrowserContext::SetCorsOriginAccessListForOrigin(
     const url::Origin& source_origin,
     std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,

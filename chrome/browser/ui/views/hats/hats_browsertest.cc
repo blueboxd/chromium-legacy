@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -17,7 +18,7 @@ class HatsBubbleTest : public DialogBrowserTest {
   void ShowUi(const std::string& name) override {
     ASSERT_TRUE(browser()->is_type_tabbed());
     BrowserView::GetBrowserViewForBrowser(InProcessBrowserTest::browser())
-        ->ShowHatsBubbleFromAppMenuButton();
+        ->ShowHatsBubbleFromAppMenuButton(std::string());
   }
 
  private:

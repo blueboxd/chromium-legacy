@@ -12,7 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/unguessable_token.h"
-#include "content/browser/devtools/devtools_url_request_interceptor.h"
+#include "content/browser/devtools/devtools_network_interceptor.h"
+#include "content/browser/devtools/devtools_target_registry.h"
 
 namespace content {
 
@@ -55,8 +56,6 @@ class DevToolsInterceptorController : public base::SupportsUserData::Data {
   ~DevToolsInterceptorController() override;
 
  private:
-  friend class DevToolsURLRequestInterceptor;
-
   DevToolsInterceptorController(
       base::WeakPtr<DevToolsNetworkInterceptor> interceptor,
       std::unique_ptr<DevToolsTargetRegistry> target_registry,

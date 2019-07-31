@@ -29,7 +29,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
       url::Origin origin,
       int render_frame_tree_node_id,
-      ResourceRequestInfo::WebContentsGetter wc_getter);
+      WebContents::Getter wc_getter);
   ~BackgroundFetchServiceImpl() override;
 
   static void CreateForWorker(
@@ -62,7 +62,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
       scoped_refptr<BackgroundFetchContext> background_fetch_context,
       url::Origin origin,
       int render_frame_tree_node_id,
-      ResourceRequestInfo::WebContentsGetter wc_getter,
+      WebContents::Getter wc_getter,
       blink::mojom::BackgroundFetchServiceRequest request);
 
   // Validates and returns whether the |developer_id|, |unique_id|, |requests|
@@ -79,7 +79,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   const url::Origin origin_;
 
   int render_frame_tree_node_id_;
-  ResourceRequestInfo::WebContentsGetter wc_getter_;
+  WebContents::Getter wc_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchServiceImpl);
 };

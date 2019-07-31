@@ -34,9 +34,8 @@ ReportUploader::ReportUploader(policy::CloudPolicyClient* client,
       maximum_number_of_retries_(maximum_number_of_retries) {}
 ReportUploader::~ReportUploader() = default;
 
-void ReportUploader::SetRequestAndUpload(
-    std::queue<std::unique_ptr<em::ChromeDesktopReportRequest>> requests,
-    ReportCallback callback) {
+void ReportUploader::SetRequestAndUpload(Requests requests,
+                                         ReportCallback callback) {
   requests_ = std::move(requests);
   callback_ = std::move(callback);
   Upload();

@@ -84,6 +84,7 @@ class ReportingCacheImpl : public ReportingCache {
       const std::string& group_name) override;
   base::Value GetClientsAsValue() const override;
   size_t GetEndpointCount() const override;
+  void Flush() override;
   ReportingEndpoint GetEndpointForTesting(const url::Origin& origin,
                                           const std::string& group_name,
                                           const GURL& url) const override;

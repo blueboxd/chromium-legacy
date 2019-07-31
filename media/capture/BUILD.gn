@@ -290,7 +290,7 @@ jumbo_component("capture_lib") {
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
       "//components/chromeos_camera/common",
       "//gpu/ipc/common:common",
-      "//media/capture/video/chromeos/mojo:cros_camera",
+      "//media/capture/video/chromeos/mojom:cros_camera",
       "//third_party/libsync",
     ]
   }
@@ -433,7 +433,7 @@ test("capture_unittests") {
       ":chromeos_test_utils",
       "//build/config/linux/libdrm",
       "//chromeos/dbus/power",
-      "//media/capture/video/chromeos/mojo:cros_camera",
+      "//media/capture/video/chromeos/mojom:cros_camera",
       "//media/capture/video/chromeos/public",
       "//mojo/core/embedder",
       "//third_party/libsync",

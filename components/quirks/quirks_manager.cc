@@ -93,6 +93,11 @@ QuirksManager* QuirksManager::Get() {
 }
 
 // static
+bool QuirksManager::HasInstance() {
+  return !!manager_;
+}
+
+// static
 void QuirksManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kQuirksClientLastServerCheck);
 }

@@ -10,6 +10,7 @@ import android.widget.ImageView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.list.view.UiUtils;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceInflater;
 
@@ -48,11 +49,15 @@ public class ContextualSearchCardIconControl extends ViewResourceInflater {
         // This middle-dot character is returned by the server and marks the beginning of the
         // pronunciation.
         int dotSeparatorLocation = searchTerm.indexOf(DEFINITION_MID_DOT);
-        if (dotSeparatorLocation <= 0) return false;
+        if (dotSeparatorLocation <= 0 || dotSeparatorLocation >= searchTerm.length() - 1) {
+            return false;
+        }
 
         // Style with the pronunciation in gray in the second half.
         String word = searchTerm.substring(0, dotSeparatorLocation);
-        String pronunciation = searchTerm.substring(dotSeparatorLocation, searchTerm.length());
+        String pronunciation = searchTerm.substring(dotSeparatorLocation + 1, searchTerm.length());
+        pronunciation = LocalizationUtils.isLayoutRtl() ? pronunciation + DEFINITION_MID_DOT
+                                                        : DEFINITION_MID_DOT + pronunciation;
         contextControl.setContextDetails(word, pronunciation);
         setVectorDrawableResourceId(R.drawable.ic_book_round);
         imageControl.setCardIconResourceId(getIconResId());

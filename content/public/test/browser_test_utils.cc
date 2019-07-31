@@ -137,6 +137,7 @@
 #endif
 
 #if defined(USE_AURA)
+#include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "ui/aura/test/window_event_dispatcher_test_api.h"
@@ -3090,6 +3091,78 @@ MockOverscrollController* MockOverscrollController::Create(
   rwhva->SetOverscrollControllerForTesting(std::move(mock));
 
   return raw_mock;
+}
+
+namespace {
+
+// This class interacts with the internals of the DelegatedFrameHost without
+// exposing them in the header.
+class EvictionStateWaiter : public DelegatedFrameHost::Observer {
+ public:
+  EvictionStateWaiter(DelegatedFrameHost* delegated_frame_host)
+      : delegated_frame_host_(delegated_frame_host) {
+    delegated_frame_host_->AddObserverForTesting(this);
+  }
+
+  ~EvictionStateWaiter() override {
+    delegated_frame_host_->RemoveObserverForTesting(this);
+  }
+
+  void WaitForEvictionState(DelegatedFrameHost::FrameEvictionState state) {
+    if (delegated_frame_host_->frame_eviction_state() == state)
+      return;
+
+    waited_eviction_state_ = state;
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  // DelegatedFrameHost::Observer:
+  void OnFrameEvictionStateChanged(
+      DelegatedFrameHost::FrameEvictionState new_state) override {
+    if (!quit_closure_.is_null() && (new_state == waited_eviction_state_))
+      std::move(quit_closure_).Run();
+  }
+
+ private:
+  DelegatedFrameHost* delegated_frame_host_;
+  DelegatedFrameHost::FrameEvictionState waited_eviction_state_;
+  base::OnceClosure quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(EvictionStateWaiter);
+};
+
+}  // namespace
+
+void VerifyStaleContentOnFrameEviction(
+    RenderWidgetHostView* render_widget_host_view) {
+  auto* render_widget_host_view_aura =
+      static_cast<RenderWidgetHostViewAura*>(render_widget_host_view);
+  DelegatedFrameHost* delegated_frame_host =
+      render_widget_host_view_aura->GetDelegatedFrameHost();
+
+  // Initially there should be no stale content set.
+  EXPECT_FALSE(
+      delegated_frame_host->stale_content_layer()->has_external_content());
+  EXPECT_EQ(delegated_frame_host->frame_eviction_state(),
+            DelegatedFrameHost::FrameEvictionState::kNotStarted);
+
+  // Hide the view and evict the frame, and expect that stale content will be
+  // set.
+  EvictionStateWaiter waiter{delegated_frame_host};
+  render_widget_host_view_aura->WasOccluded();
+  static_cast<viz::FrameEvictorClient*>(delegated_frame_host)
+      ->EvictDelegatedFrame();
+  EXPECT_EQ(delegated_frame_host->frame_eviction_state(),
+            DelegatedFrameHost::FrameEvictionState::kPendingEvictionRequests);
+  // Wait until the stale frame content is copied and set onto the layer, i.e.
+  // the eviction state changes from kPendingEvictionRequests back to
+  // kNotStarted.
+  waiter.WaitForEvictionState(
+      DelegatedFrameHost::FrameEvictionState::kNotStarted);
+  EXPECT_TRUE(
+      delegated_frame_host->stale_content_layer()->has_external_content());
 }
 
 #endif  // defined(USE_AURA)

@@ -20,7 +20,6 @@
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_web_ui_controller_factory.h"
 #include "android_webview/browser/cookie_manager.h"
-#include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "base/base_paths_posix.h"
@@ -239,12 +238,6 @@ std::vector<std::string> AwBrowserContext::GetAuthSchemes() {
 void AwBrowserContext::PreMainMessageLoopRun() {
   CreateUserPrefService();
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // TODO(amalova): Create a new instance for non-default profiles.
-    url_request_context_getter_ =
-        AwBrowserProcess::GetInstance()->GetAwURLRequestContext();
-  }
-
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
@@ -363,26 +356,6 @@ AwBrowserContext::GetBackgroundSyncController() {
 content::BrowsingDataRemoverDelegate*
 AwBrowserContext::GetBrowsingDataRemoverDelegate() {
   return nullptr;
-}
-
-net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  // This function cannot actually create the request context because
-  // there is a reentrant dependency on GetResourceContext() via
-  // content::StoragePartitionImplMap::Create(). This is not fixable
-  // until http://crbug.com/159193. Until then, assert that the context
-  // has already been allocated and just handle setting the protocol_handlers.
-  DCHECK(url_request_context_getter_);
-  url_request_context_getter_->SetHandlersAndInterceptors(
-      protocol_handlers, std::move(request_interceptors));
-  return url_request_context_getter_.get();
-}
-
-net::URLRequestContextGetter* AwBrowserContext::CreateMediaRequestContext() {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  return AwBrowserProcess::GetInstance()->GetAwURLRequestContext();
 }
 
 download::InProgressDownloadManager*

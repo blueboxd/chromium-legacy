@@ -383,10 +383,6 @@ void TestWebState::RemovePolicyDecider(WebStatePolicyDecider* decider) {
   policy_deciders_.RemoveObserver(decider);
 }
 
-WebStateInterfaceProvider* TestWebState::GetWebStateInterfaceProvider() {
-  return nullptr;
-}
-
 bool TestWebState::HasOpener() const {
   return has_opener_;
 }

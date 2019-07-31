@@ -9,7 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "components/prefs/pref_service.h"
-#include "components/services/patch/public/mojom/constants.mojom.h"
+#include "components/services/patch/in_process_file_patcher.h"
 #include "components/services/unzip/in_process_unzipper.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/net/network_chromium.h"
@@ -19,7 +19,6 @@
 #include "components/update_client/unzip/unzip_impl.h"
 #include "components/update_client/unzipper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 namespace update_client {
@@ -44,17 +43,13 @@ TestConfigurator::TestConfigurator()
       unzip_factory_(base::MakeRefCounted<update_client::UnzipChromiumFactory>(
           base::BindRepeating(&unzip::LaunchInProcessUnzipper))),
       patch_factory_(base::MakeRefCounted<update_client::PatchChromiumFactory>(
-          connector_factory_.CreateConnector())),
-      patch_service_(
-          connector_factory_.RegisterInstance(patch::mojom::kServiceName)),
+          base::BindRepeating(&patch::LaunchInProcessFilePatcher))),
       test_shared_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)),
       network_fetcher_factory_(
           base::MakeRefCounted<NetworkFetcherChromiumFactory>(
-              test_shared_loader_factory_)) {
-  connector_factory_.set_ignore_quit_requests(true);
-}
+              test_shared_loader_factory_)) {}
 
 TestConfigurator::~TestConfigurator() {
 }

@@ -50,8 +50,9 @@ class AutoclickScrollCloseButton : public TopShortcutButton,
     EnableCanvasFlippingForRTLUI(false);
     SetPreferredSize(
         gfx::Size(kScrollButtonCloseSizeDips, kScrollButtonCloseSizeDips));
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(kAutoclickCloseIcon, kUnifiedMenuIconColor));
+    SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kAutoclickCloseIcon, kIconOnDarkBackgroundColor));
   }
 
   ~AutoclickScrollCloseButton() override = default;
@@ -130,7 +131,7 @@ class AutoclickScrollButton : public CustomShapeButton,
         base::BindRepeating(&AutoclickScrollButton::DoScrollAction,
                             base::Unretained(this)));
     SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor));
+             gfx::CreateVectorIcon(icon, kIconOnDarkBackgroundColor));
     if (action_ == AutoclickController::ScrollPadAction::kScrollLeft ||
         action_ == AutoclickController::ScrollPadAction::kScrollRight) {
       size_ = gfx::Size(kScrollPadButtonHypotenuseDips / 2,

@@ -755,9 +755,13 @@ NavigationRequest::NavigationRequest(
         browser_context->GetClientHintsControllerDelegate();
     if (client_hints_delegate) {
       net::HttpRequestHeaders client_hints_headers;
+      RenderViewHost* render_view_host =
+          frame_tree_node->current_frame_host()->GetRenderViewHost();
+      const bool javascript_enabled =
+          render_view_host->GetWebkitPreferences().javascript_enabled;
       AddNavigationRequestClientHintsHeaders(
           common_params_->url, &client_hints_headers, browser_context,
-          client_hints_delegate);
+          javascript_enabled, client_hints_delegate);
       headers.MergeFrom(client_hints_headers);
     }
 
@@ -1828,9 +1832,13 @@ void NavigationRequest::OnRedirectChecksComplete(
       browser_context->GetClientHintsControllerDelegate();
   if (client_hints_delegate) {
     net::HttpRequestHeaders client_hints_extra_headers;
+    RenderViewHost* render_view_host =
+        frame_tree_node_->current_frame_host()->GetRenderViewHost();
+    const bool javascript_enabled =
+        render_view_host->GetWebkitPreferences().javascript_enabled;
     AddNavigationRequestClientHintsHeaders(
         common_params_->url, &client_hints_extra_headers, browser_context,
-        client_hints_delegate);
+        javascript_enabled, client_hints_delegate);
     modified_headers.MergeFrom(client_hints_extra_headers);
   }
 
@@ -1914,22 +1922,6 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
       // destroyed the NavigationRequest.
       return;
-    }
-
-    // Call ProceedWithResponse()
-    // Note: There is no need to call ProceedWithResponse() when the Network
-    // Service is enabled. See https://crbug.com/791049.
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // |url_loader_client_endpoints_| is always valid, except in some tests
-      // where the TestNavigationLoader is used.
-      if (url_loader_client_endpoints_) {
-        network::mojom::URLLoaderPtr url_loader(
-            std::move(url_loader_client_endpoints_->url_loader));
-        url_loader->ProceedWithResponse();
-        url_loader_client_endpoints_->url_loader = url_loader.PassInterface();
-      } else {
-        loader_->ProceedWithResponse();
-      }
     }
   }
 

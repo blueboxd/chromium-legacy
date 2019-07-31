@@ -37,18 +37,20 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   static SkColor ApplySystemControlTint(SkColor color);
 
   // Overridden from NativeTheme:
-  SkColor GetSystemColor(ColorId color_id) const override;
+  SkColor GetSystemColor(ColorId color_id,
+                         ColorScheme color_scheme) const override;
 
   // Overridden from NativeThemeBase:
   void PaintMenuPopupBackground(
       cc::PaintCanvas* canvas,
       const gfx::Size& size,
-      const MenuBackgroundExtraParams& menu_background) const override;
-  void PaintMenuItemBackground(
-      cc::PaintCanvas* canvas,
-      State state,
-      const gfx::Rect& rect,
-      const MenuItemExtraParams& menu_item) const override;
+      const MenuBackgroundExtraParams& menu_background,
+      ColorScheme color_scheme) const override;
+  void PaintMenuItemBackground(cc::PaintCanvas* canvas,
+                               State state,
+                               const gfx::Rect& rect,
+                               const MenuItemExtraParams& menu_item,
+                               ColorScheme color_scheme) const override;
   bool SystemDarkModeSupported() const override;
 
   // Paints the styled button shape used for default controls on Mac. The basic
@@ -74,7 +76,8 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   // Paint the selected menu item background, and a border for emphasis when in
   // high contrast.
   void PaintSelectedMenuItem(cc::PaintCanvas* canvas,
-                             const gfx::Rect& rect) const;
+                             const gfx::Rect& rect,
+                             ColorScheme color_scheme) const;
 
   void InitializeDarkModeStateAndObserver();
 

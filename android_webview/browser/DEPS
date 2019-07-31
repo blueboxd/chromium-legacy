@@ -58,6 +58,7 @@ include_rules = [
   "+printing",
 
   "+services/network/public",
+  "+services/resource_coordinator/public/cpp",
   "+services/service_manager/public/cpp",
 
   # network service related unit tests

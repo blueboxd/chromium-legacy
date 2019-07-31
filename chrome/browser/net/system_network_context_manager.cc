@@ -84,10 +84,14 @@ SystemNetworkContextManager* g_system_network_context_manager = nullptr;
 
 void GetStubResolverConfig(
     PrefService* local_state,
-    bool* stub_resolver_enabled,
+    bool* insecure_stub_resolver_enabled,
+    net::DnsConfig::SecureDnsMode* secure_dns_mode,
     base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
         dns_over_https_servers) {
   DCHECK(!dns_over_https_servers->has_value());
+
+  *insecure_stub_resolver_enabled =
+      local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
 
   const auto& doh_server_list =
       local_state->GetList(prefs::kDnsOverHttpsServers)->GetList();
@@ -128,20 +132,24 @@ void GetStubResolverConfig(
     }
   }
 
-  *stub_resolver_enabled =
-      dns_over_https_servers->has_value() ||
-      local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
+  // TODO(crbug.com/985589): Read secure dns mode from prefs.
+  if (dns_over_https_servers->has_value())
+    *secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
+  else
+    *secure_dns_mode = net::DnsConfig::SecureDnsMode::OFF;
 }
 
 void OnStubResolverConfigChanged(PrefService* local_state,
                                  const std::string& pref_name) {
-  bool stub_resolver_enabled;
+  bool insecure_stub_resolver_enabled;
+  net::DnsConfig::SecureDnsMode secure_dns_mode;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  GetStubResolverConfig(local_state, &stub_resolver_enabled,
-                        &dns_over_https_servers);
+  GetStubResolverConfig(local_state, &insecure_stub_resolver_enabled,
+                        &secure_dns_mode, &dns_over_https_servers);
   content::GetNetworkService()->ConfigureStubHostResolver(
-      stub_resolver_enabled, std::move(dns_over_https_servers));
+      insecure_stub_resolver_enabled, secure_dns_mode,
+      std::move(dns_over_https_servers));
 }
 
 // Constructs HttpAuthStaticParams based on |local_state|.
@@ -554,13 +562,15 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
 
   // Configure the stub resolver. This must be done after the system
   // NetworkContext is created, but before anything has the chance to use it.
-  bool stub_resolver_enabled;
+  bool insecure_stub_resolver_enabled;
+  net::DnsConfig::SecureDnsMode secure_dns_mode;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  GetStubResolverConfig(local_state_, &stub_resolver_enabled,
-                        &dns_over_https_servers);
+  GetStubResolverConfig(local_state_, &insecure_stub_resolver_enabled,
+                        &secure_dns_mode, &dns_over_https_servers);
   content::GetNetworkService()->ConfigureStubHostResolver(
-      stub_resolver_enabled, std::move(dns_over_https_servers));
+      insecure_stub_resolver_enabled, secure_dns_mode,
+      std::move(dns_over_https_servers));
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   const base::CommandLine& command_line =
@@ -706,10 +716,12 @@ void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
 }
 
 void SystemNetworkContextManager::GetStubResolverConfigForTesting(
-    bool* stub_resolver_enabled,
+    bool* insecure_stub_resolver_enabled,
+    net::DnsConfig::SecureDnsMode* secure_dns_mode,
     base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
         dns_over_https_servers) {
-  GetStubResolverConfig(g_browser_process->local_state(), stub_resolver_enabled,
+  GetStubResolverConfig(g_browser_process->local_state(),
+                        insecure_stub_resolver_enabled, secure_dns_mode,
                         dns_over_https_servers);
 }
 

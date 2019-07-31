@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <xf86drm.h>
 
+#include <vector>
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
@@ -69,6 +71,19 @@ uint32_t GetDrmFormat(gfx::BufferFormat gfx_format) {
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return DRM_FORMAT_NV12;
     // Add more formats when needed.
+    default:
+      return 0;
+  }
+}
+
+uint32_t GetGbmUsage(gfx::BufferUsage usage) {
+  switch (usage) {
+    case gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE:
+    case gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE:
+      return GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_READ |
+             GBM_BO_USE_CAMERA_WRITE;
+    case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
+      return GBM_BO_USE_LINEAR;
     default:
       return 0;
   }
@@ -223,35 +238,33 @@ LocalGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     gpu::SurfaceHandle surface_handle) {
-  if (usage != gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE &&
-      usage != gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE) {
-    LOG(ERROR) << "Unsupported usage " << gfx::BufferUsageToString(usage);
-    return std::unique_ptr<gfx::GpuMemoryBuffer>();
-  }
   if (!gbm_device_) {
     LOG(ERROR) << "Invalid GBM device";
-    return std::unique_ptr<gfx::GpuMemoryBuffer>();
+    return nullptr;
   }
 
-  uint32_t drm_format = GetDrmFormat(format);
-  uint32_t camera_gbm_usage =
-      GBM_BO_USE_LINEAR | GBM_BO_USE_CAMERA_READ | GBM_BO_USE_CAMERA_WRITE;
+  const uint32_t drm_format = GetDrmFormat(format);
   if (!drm_format) {
     LOG(ERROR) << "Unable to convert gfx::BufferFormat "
                << static_cast<int>(format) << " to DRM format";
-    return std::unique_ptr<gfx::GpuMemoryBuffer>();
+    return nullptr;
   }
 
-  if (!gbm_device_is_format_supported(gbm_device_, drm_format,
-                                      camera_gbm_usage)) {
-    return std::unique_ptr<gfx::GpuMemoryBuffer>();
+  const uint32_t gbm_usage = GetGbmUsage(usage);
+  if (gbm_usage == 0) {
+    LOG(ERROR) << "Unsupported usage " << gfx::BufferUsageToString(usage);
+    return nullptr;
   }
 
-  gbm_bo* buffer_object = gbm_bo_create(
-      gbm_device_, size.width(), size.height(), drm_format, camera_gbm_usage);
+  if (!gbm_device_is_format_supported(gbm_device_, drm_format, gbm_usage)) {
+    return nullptr;
+  }
+
+  gbm_bo* buffer_object = gbm_bo_create(gbm_device_, size.width(),
+                                        size.height(), drm_format, gbm_usage);
   if (!buffer_object) {
     LOG(ERROR) << "Failed to create GBM buffer object";
-    return std::unique_ptr<gfx::GpuMemoryBuffer>();
+    return nullptr;
   }
 
   return std::make_unique<GpuMemoryBufferImplGbm>(format, buffer_object);
@@ -303,6 +316,18 @@ std::unique_ptr<gfx::GpuMemoryBuffer> LocalGpuMemoryBufferManager::ImportDmaBuf(
     return nullptr;
   }
   return std::make_unique<GpuMemoryBufferImplGbm>(format, buffer_object);
+}
+
+bool LocalGpuMemoryBufferManager::IsFormatAndUsageSupported(
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
+  const uint32_t drm_format = GetDrmFormat(format);
+  if (!drm_format)
+    return false;
+  const uint32_t gbm_usage = GetGbmUsage(usage);
+  if (gbm_usage == 0)
+    return false;
+  return gbm_device_is_format_supported(gbm_device_, drm_format, gbm_usage);
 }
 
 }  // namespace media

@@ -511,11 +511,6 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
     ancestor_data->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
 }
 
-void AdsPageLoadMetricsObserver::RecordAdFrameUkm(ukm::SourceId source_id) {
-  for (const FrameData& ad_frame_data : ad_frames_data_storage_)
-    ad_frame_data.RecordAdFrameLoadUkmEvent(source_id);
-}
-
 void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
     ukm::SourceId source_id) {
   // Only records histograms on pages that have some ad bytes.

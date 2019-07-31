@@ -297,6 +297,10 @@ extern const char kChromeUITabModalConfirmDialogHost[];
 extern const char kChromeUIPrintHost[];
 #endif
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+extern const char kChromeUITabStripHost[];
+#endif
+
 extern const char kChromeUIWebRtcLogsHost[];
 
 // Settings sub-pages.

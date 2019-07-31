@@ -21,7 +21,6 @@
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/auth.h"
 

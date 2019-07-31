@@ -176,8 +176,6 @@ void TestChromeBrowserState::Init() {
   if (!base::PathExists(state_path_))
     base::CreateDirectory(state_path_);
 
-  BrowserState::Initialize(this, GetStatePath());
-
   // Normally this would happen during browser startup, but for tests we need to
   // trigger creation of BrowserState-related services.
   EnsureBrowserStateKeyedServiceFactoriesBuilt();

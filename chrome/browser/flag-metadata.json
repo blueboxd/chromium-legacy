@@ -2520,6 +2520,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "omnibox-disable-instant-extended-limit",
+    "owners": [ "pnoland", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "omnibox-display-title-for-current-url",
     "owners": [ "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
@@ -3080,6 +3085,16 @@
     "name": "translate-ui-bubble-options",
     "owners": [ "hhw", "anthonyvd", "chrome-language@google.com" ],
     "expiry_milestone": 78
+  },
+  {
+    "name": "trim-on-all-frames-frozen",
+    "owners": [ "bgeffon", "sonnyrao" ],
+    "expiry_milestone": 81
+  },
+  {
+    "name": "trim-on-memory-pressure",
+    "owners": [ "bgeffon", "sonnyrao" ],
+    "expiry_milestone": 81
   },
   {
     "name": "try-supported-channel-layouts",

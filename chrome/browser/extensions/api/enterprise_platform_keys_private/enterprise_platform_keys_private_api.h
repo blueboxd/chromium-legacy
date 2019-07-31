@@ -176,13 +176,13 @@ class EPKPChallengeMachineKey : public EPKPChallengeKeyBase {
 
   // Asynchronously run the flow to challenge a machine key in the |caller|
   // context.
-  void Run(scoped_refptr<UIThreadExtensionFunction> caller,
+  void Run(scoped_refptr<ExtensionFunction> caller,
            const ChallengeKeyCallback& callback,
            const std::string& encoded_challenge,
            bool register_key);
 
   // Like |Run| but expects a Base64 |encoded_challenge|.
-  void DecodeAndRun(scoped_refptr<UIThreadExtensionFunction> caller,
+  void DecodeAndRun(scoped_refptr<ExtensionFunction> caller,
                     const ChallengeKeyCallback& callback,
                     const std::string& encoded_challenge,
                     bool register_key);
@@ -223,13 +223,13 @@ class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
 
   // Asynchronously run the flow to challenge a user key in the |caller|
   // context.
-  void Run(scoped_refptr<UIThreadExtensionFunction> caller,
+  void Run(scoped_refptr<ExtensionFunction> caller,
            const ChallengeKeyCallback& callback,
            const std::string& challenge,
            bool register_key);
 
   // Like |Run| but expects a Base64 |encoded_challenge|.
-  void DecodeAndRun(scoped_refptr<UIThreadExtensionFunction> caller,
+  void DecodeAndRun(scoped_refptr<ExtensionFunction> caller,
                     const ChallengeKeyCallback& callback,
                     const std::string& encoded_challenge,
                     bool register_key);
@@ -255,7 +255,7 @@ class EPKPChallengeUserKey : public EPKPChallengeKeyBase {
 };
 
 class EnterprisePlatformKeysPrivateChallengeMachineKeyFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   EnterprisePlatformKeysPrivateChallengeMachineKeyFunction();
   explicit EnterprisePlatformKeysPrivateChallengeMachineKeyFunction(
@@ -279,7 +279,7 @@ class EnterprisePlatformKeysPrivateChallengeMachineKeyFunction
 };
 
 class EnterprisePlatformKeysPrivateChallengeUserKeyFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   EnterprisePlatformKeysPrivateChallengeUserKeyFunction();
   explicit EnterprisePlatformKeysPrivateChallengeUserKeyFunction(

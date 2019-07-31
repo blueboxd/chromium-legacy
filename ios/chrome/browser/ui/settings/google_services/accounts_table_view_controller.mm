@@ -529,7 +529,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     signin::IdentityManager* identityManager =
         IdentityManagerFactory::GetForBrowserState(_browserState);
     base::Optional<AccountInfo> accountInfo =
-        identityManager->FindExtendedAccountInfoForAccount(
+        identityManager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identityManager->GetPrimaryAccountInfo());
     std::string hosted_domain = accountInfo.has_value()
                                     ? accountInfo.value().hosted_domain

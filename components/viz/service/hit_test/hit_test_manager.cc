@@ -163,6 +163,15 @@ bool HitTestManager::ValidateHitTestRegionList(
       region.frame_sink_id = FrameSinkId(surface_id.frame_sink_id().client_id(),
                                          region.frame_sink_id.sink_id());
     }
+
+    // Whenever a hit test region is marked as kHitTestAsk there must be a
+    // reason for async hit test and vice versa.
+    if (region.flags & kHitTestAsk) {
+      if (region.async_hit_test_reasons == kNotAsyncHitTest)
+        return false;
+    } else if (region.async_hit_test_reasons != kNotAsyncHitTest) {
+      return false;
+    }
   }
   return true;
 }

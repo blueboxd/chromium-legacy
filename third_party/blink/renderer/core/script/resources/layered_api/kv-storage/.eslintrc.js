@@ -87,7 +87,9 @@ module.exports = {
     'no-implicit-coercion': 'error',
     'no-implicit-globals': 'error',
     'no-implied-eval': 'error',
-    'no-invalid-this': 'error',
+    // no-invalid-this doesn't work well for private fields.
+    // https://github.com/babel/eslint-plugin-babel/issues/182
+    // 'no-invalid-this': 'error',
     'no-iterator': 'error',
     'no-labels': ['error', {allowLoop: true}],
     'no-lone-blocks': 'error',

@@ -39,7 +39,7 @@ std::string TerminalSource::GetSource() {
 
 void TerminalSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   base::FilePath file_path(kTerminalRoot);
   if (path.empty()) {

@@ -43,7 +43,6 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -80,7 +79,6 @@
 #include "url/url_util.h"
 
 using content::BrowserContext;
-using content::ResourceRequestInfo;
 using extensions::Extension;
 using extensions::SharedModuleInfo;
 

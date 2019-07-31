@@ -217,11 +217,11 @@ void PepperVideoCaptureHost::AllocBuffers(const gfx::Size& resolution,
     {
       EnterResourceNoLock<PPB_Buffer_API> enter2(res, true);
       DCHECK(enter2.succeeded());
-      base::SharedMemory* shm;
+      base::UnsafeSharedMemoryRegion* shm;
       int32_t result = enter2.object()->GetSharedMemory(&shm);
       DCHECK(result == PP_OK);
       params.AppendHandle(ppapi::proxy::SerializedHandle(
-          dispatcher->ShareSharedMemoryHandleWithRemote(shm->handle()), size));
+          dispatcher->ShareUnsafeSharedMemoryRegionWithRemote(*shm)));
     }
   }
 

@@ -16,6 +16,7 @@ enum {
   kCompositeAfterPaint = 1 << 1,
   kUnderInvalidationChecking = 1 << 2,
   kFastBorderRadius = 1 << 3,
+  kPaintNonFastScrollableRegions = 1 << 4,
 };
 
 class PaintTestConfigurations
@@ -23,14 +24,21 @@ class PaintTestConfigurations
       private ScopedBlinkGenPropertyTreesForTest,
       private ScopedCompositeAfterPaintForTest,
       private ScopedPaintUnderInvalidationCheckingForTest,
-      private ScopedFastBorderRadiusForTest {
+      private ScopedFastBorderRadiusForTest,
+      private ScopedPaintNonFastScrollableRegionsForTest {
  public:
   PaintTestConfigurations()
       : ScopedBlinkGenPropertyTreesForTest(GetParam() & kBlinkGenPropertyTrees),
         ScopedCompositeAfterPaintForTest(GetParam() & kCompositeAfterPaint),
         ScopedPaintUnderInvalidationCheckingForTest(GetParam() &
                                                     kUnderInvalidationChecking),
-        ScopedFastBorderRadiusForTest(GetParam() & kFastBorderRadius) {}
+        ScopedFastBorderRadiusForTest(GetParam() & kFastBorderRadius),
+        // Because PaintNonFastScrollableRegions is implied by
+        // CompositeAfterPaint (see: runtime_eanbled_features.json5), we must
+        // enable the scoped flag for (PNFSR || CAP).
+        ScopedPaintNonFastScrollableRegionsForTest(
+            GetParam() & kPaintNonFastScrollableRegions ||
+            GetParam() & kCompositeAfterPaint) {}
   ~PaintTestConfigurations() {
     // Must destruct all objects before toggling back feature flags.
     WebHeap::CollectAllGarbageForTesting();
@@ -54,6 +62,11 @@ class PaintTestConfigurations
       ::testing::Values(kBlinkGenPropertyTrees,                        \
                         kBlinkGenPropertyTrees | kCompositeAfterPaint, \
                         kBlinkGenPropertyTrees | kFastBorderRadius))
+
+#define INSTANTIATE_SCROLL_HIT_TEST_SUITE_P(test_class) \
+  INSTANTIATE_TEST_SUITE_P(                             \
+      All, test_class,                                  \
+      ::testing::Values(kPaintNonFastScrollableRegions, kCompositeAfterPaint))
 
 }  // namespace blink
 

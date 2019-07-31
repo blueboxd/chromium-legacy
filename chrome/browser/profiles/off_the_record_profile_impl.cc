@@ -374,18 +374,6 @@ DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
       ->GetDownloadManagerDelegate();
 }
 
-net::URLRequestContextGetter* OffTheRecordProfileImpl::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-    OffTheRecordProfileImpl::CreateMediaRequestContext() {
-  // In OTR mode, media request context is the same as the original one.
-  return GetRequestContext();
-}
-
 std::unique_ptr<service_manager::Service>
 OffTheRecordProfileImpl::HandleServiceRequest(
     const std::string& service_name,
@@ -419,10 +407,6 @@ OffTheRecordProfileImpl::GetUserCloudPolicyManager() {
   return GetOriginalProfile()->GetUserCloudPolicyManager();
 }
 #endif  // defined(OS_CHROMEOS)
-
-net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
-  return GetDefaultStoragePartition(this)->GetURLRequestContext();
-}
 
 scoped_refptr<network::SharedURLLoaderFactory>
 OffTheRecordProfileImpl::GetURLLoaderFactory() {

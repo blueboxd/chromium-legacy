@@ -6,6 +6,10 @@ function checkImage() {
 	sendValueToTest((document.images[0].complete && (document.images[0].naturalWidth > 0)));
 }
 
+function imageSrc() {
+	sendValueToTest(document.images[0].src);
+}
+
 function sendValueToTest(value) {
   window.domAutomationController.send(value);
 }

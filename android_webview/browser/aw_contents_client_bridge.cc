@@ -91,8 +91,7 @@ AwContentsClientBridge* AwContentsClientBridge::FromWebContents(
 
 // static
 AwContentsClientBridge* AwContentsClientBridge::FromWebContentsGetter(
-    const content::ResourceRequestInfo::WebContentsGetter&
-        web_contents_getter) {
+    const content::WebContents::Getter& web_contents_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebContents* web_contents = web_contents_getter.Run();
   return UserData::GetContents(web_contents);

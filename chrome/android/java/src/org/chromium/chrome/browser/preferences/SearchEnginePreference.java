@@ -13,8 +13,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 /**
-* A preference fragment for selecting a default search engine.
-*/
+ * A preference fragment for selecting a default search engine.
+ *
+ * TODO(crbug.com/988877): Add on scroll shadow to action bar.
+ */
 public class SearchEnginePreference extends ListFragment {
     private SearchEngineAdapter mSearchEngineAdapter;
 

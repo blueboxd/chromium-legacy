@@ -31,8 +31,6 @@ class HeadlessBrowserContextOptions;
 // Builder::SetOverrideWebPreferencesCallback().
 using content::WebPreferences;
 
-using content::ProtocolHandlerMap;
-
 // Represents an isolated session with a unique cache, cookies, and other
 // profile/session related data.
 // When browser context is deleted, all associated web contents are closed.
@@ -76,10 +74,6 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
  public:
   Builder(Builder&&);
   ~Builder();
-
-  // Set custom network protocol handlers. These can be used to override URL
-  // fetching for different network schemes.
-  Builder& SetProtocolHandlers(ProtocolHandlerMap protocol_handlers);
 
   // By default if you add mojo bindings, http and https are disabled because
   // its almost certinly unsafe for arbitary sites on the internet to have

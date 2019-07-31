@@ -144,26 +144,11 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetLastChild() const {
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetNextSibling() const {
-  BrowserAccessibility* next_sibling = InternalGetNextSibling();
-  if (next_sibling)
-    return next_sibling;
-
-  ui::AXNode* parent = node_->GetUnignoredParent();
-  if (!parent) {
-    BrowserAccessibility* parent_tree_parent =
-        manager_->GetParentNodeFromParentTree();
-    if (parent_tree_parent)
-      return parent_tree_parent->PlatformGetChild(1);
-  }
-  return nullptr;
+  return InternalGetNextSibling();
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetPreviousSibling() const {
-  BrowserAccessibility* previous_sibling = InternalGetPreviousSibling();
-  if (!previous_sibling)
-    previous_sibling = PlatformGetRootOfChildTree();
-
-  return previous_sibling;
+  return InternalGetPreviousSibling();
 }
 
 BrowserAccessibility::PlatformChildIterator
@@ -221,9 +206,12 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     uint32_t child_index) const {
   BrowserAccessibility* result = nullptr;
 
-  if (child_index == 0 &&
-      HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
-    result = PlatformGetRootOfChildTree();
+  if (HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
+    // A node should not have both children and a child tree.
+    DCHECK_EQ(node_->children().size(), 0u);
+    // child_trees do not have siblings.
+    if (child_index == 0)
+      result = PlatformGetRootOfChildTree();
   } else {
     result = InternalGetChild(child_index);
   }
@@ -1911,7 +1899,6 @@ bool BrowserAccessibility::SetHypertextSelection(int start_offset,
 BrowserAccessibility* BrowserAccessibility::PlatformGetRootOfChildTree() const {
   if (!HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
     return nullptr;
-
   AXTreeID child_tree_id = AXTreeID::FromString(
       GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
   BrowserAccessibilityManager* child_manager =

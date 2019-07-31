@@ -114,6 +114,9 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   void RestartWithFlags(int additional_load_flags);
 
+  // Restart the request using |original_url_|.
+  void RestartWithURLResetAndFlags(int additional_load_flags);
+
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head) override;
@@ -247,6 +250,11 @@ class CONTENT_EXPORT ThrottlingURLLoader
   // Set if a throttle changed the URL in WillRedirectRequest.
   // Only supported with the network service.
   GURL throttle_will_redirect_redirect_url_;
+
+  // Set if the request should be made using the |original_url_|.
+  bool throttle_will_start_original_url_ = false;
+  // The first URL seen by the throttle.
+  GURL original_url_;
 
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
 

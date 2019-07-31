@@ -21,9 +21,6 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/cert_test_util.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
-#include "net/url_request/url_request_filter.h"
-#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -64,18 +61,12 @@ SignedExchangeBrowserTestHelper::LoadCertificate() {
 void SignedExchangeBrowserTestHelper::InstallUrlInterceptor(
     const GURL& url,
     const std::string& data_path) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    if (!interceptor_) {
-      interceptor_ = std::make_unique<URLLoaderInterceptor>(base::BindRepeating(
-          &SignedExchangeBrowserTestHelper::OnInterceptCallback,
-          base::Unretained(this)));
-    }
-    interceptor_data_path_map_[url] = data_path;
-  } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&InstallMockInterceptors, url, data_path));
+  if (!interceptor_) {
+    interceptor_ = std::make_unique<URLLoaderInterceptor>(base::BindRepeating(
+        &SignedExchangeBrowserTestHelper::OnInterceptCallback,
+        base::Unretained(this)));
   }
+  interceptor_data_path_map_[url] = data_path;
 }
 
 void SignedExchangeBrowserTestHelper::InstallMockCert(
@@ -96,16 +87,6 @@ void SignedExchangeBrowserTestHelper::InstallMockCertChainInterceptor() {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/sxg/test.example.org.public.pem.cbor");
-}
-
-void SignedExchangeBrowserTestHelper::InstallMockInterceptors(
-    const GURL& url,
-    const std::string& data_path) {
-  base::FilePath root_path;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
-  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
-               root_path.AppendASCII(data_path)));
 }
 
 bool SignedExchangeBrowserTestHelper::OnInterceptCallback(

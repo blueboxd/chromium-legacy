@@ -34,7 +34,8 @@ class X509Certificate;
 // It subscribes itself for requests from the JavaScript side of the extension,
 // and implements the cryptographic operations using the "client_1" test
 // certificate and private key (see src/net/data/ssl/certificates). The
-// signature algorithm is currently hardcoded to SHA-256.
+// supported signature algorithms are currently hardcoded to PKCS #1 v1.5 with
+// SHA-1 and SHA-256.
 class TestCertificateProviderExtension final
     : public content::NotificationObserver {
  public:
@@ -44,6 +45,20 @@ class TestCertificateProviderExtension final
 
   const scoped_refptr<net::X509Certificate>& certificate() const {
     return certificate_;
+  }
+
+  // Sets whether the extension should respond with a failure to the
+  // onCertificatesRequested requests.
+  void set_should_fail_certificate_requests(
+      bool should_fail_certificate_requests) {
+    should_fail_certificate_requests_ = should_fail_certificate_requests;
+  }
+
+  // Sets whether the extension should respond with a failure to the
+  // onSignDigestRequested requests.
+  void set_should_fail_sign_digest_requests(
+      bool should_fail_sign_digest_requests) {
+    should_fail_sign_digest_requests_ = should_fail_sign_digest_requests;
   }
 
  private:
@@ -57,8 +72,10 @@ class TestCertificateProviderExtension final
 
   content::BrowserContext* const browser_context_;
   const std::string extension_id_;
-  scoped_refptr<net::X509Certificate> certificate_;
-  bssl::UniquePtr<EVP_PKEY> private_key_;
+  const scoped_refptr<net::X509Certificate> certificate_;
+  const bssl::UniquePtr<EVP_PKEY> private_key_;
+  bool should_fail_certificate_requests_ = false;
+  bool should_fail_sign_digest_requests_ = false;
   content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCertificateProviderExtension);

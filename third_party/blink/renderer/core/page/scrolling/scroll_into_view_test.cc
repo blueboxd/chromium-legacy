@@ -50,18 +50,20 @@ TEST_F(ScrollIntoViewTest, InstantScroll) {
   ASSERT_EQ(Window().scrollY(), content->OffsetTop());
 }
 
-TEST_F(ScrollIntoViewTest, ScrollPaddingOnBodyViewportDefining) {
+TEST_F(ScrollIntoViewTest, ScrollPaddingOnDocumentElWhenBodyDefinesViewport) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
   WebView().MainFrameWidget()->Resize(WebSize(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
       <style>
+      html {
+        scroll-padding: 10px;
+      }
       body {
         margin: 0px;
         height: 300px;
         overflow: scroll;
-        scroll-padding: 10px;
       }
       </style>
       <div id='space' style='height: 1000px'></div>
@@ -79,7 +81,8 @@ TEST_F(ScrollIntoViewTest, ScrollPaddingOnBodyViewportDefining) {
   ASSERT_EQ(Window().scrollY(), target->OffsetTop() - 10);
 }
 
-TEST_F(ScrollIntoViewTest, ScrollPaddingOnHtmlViewportDefining) {
+TEST_F(ScrollIntoViewTest,
+       ScrollPaddingOnDocumentElWhenDocumentElDefinesViewport) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
   WebView().MainFrameWidget()->Resize(WebSize(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");
@@ -108,7 +111,7 @@ TEST_F(ScrollIntoViewTest, ScrollPaddingOnHtmlViewportDefining) {
   ASSERT_EQ(Window().scrollY(), target->OffsetTop() - 10);
 }
 
-TEST_F(ScrollIntoViewTest, ScrollPaddingBodyOverflowHtmlViewportDefining) {
+TEST_F(ScrollIntoViewTest, ScrollPaddingOnBodyWhenDocumentElDefinesViewport) {
   v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
   WebView().MainFrameWidget()->Resize(WebSize(300, 300));
   SimRequest request("https://example.com/test.html", "text/html");

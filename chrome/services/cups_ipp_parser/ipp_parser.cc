@@ -13,7 +13,6 @@
 #include "base/optional.h"
 #include "chrome/services/cups_ipp_parser/public/cpp/ipp_converter.h"
 #include "chrome/services/cups_proxy/public/cpp/type_conversions.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
 
 namespace cups_ipp_parser {
@@ -140,9 +139,8 @@ bool ExtractIppMetadata(base::span<const uint8_t> ipp_metadata,
 
 }  // namespace
 
-IppParser::IppParser(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+IppParser::IppParser(mojo::PendingReceiver<mojom::IppParser> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 IppParser::~IppParser() = default;
 

@@ -14,6 +14,7 @@ namespace base {
 // Android.
 //
 // TODO(charliea): Implement this class.
+// See: https://crbug.com/988574
 class BASE_EXPORT ThreadDelegateAndroid : public ThreadDelegate {
  public:
   class ScopedSuspendThread : public ThreadDelegate::ScopedSuspendThread {

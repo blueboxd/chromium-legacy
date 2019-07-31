@@ -126,7 +126,7 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
 // tabIds while browserAction's are optional, they have different internal
 // browser notification requirements, and not all functions are defined for all
 // APIs).
-class ExtensionActionFunction : public UIThreadExtensionFunction {
+class ExtensionActionFunction : public ExtensionFunction {
  public:
   static bool ParseCSSColorString(const std::string& color_string,
                                   SkColor* result);
@@ -442,7 +442,7 @@ class BrowserActionDisableFunction : public ExtensionActionHideFunction {
   ~BrowserActionDisableFunction() override {}
 };
 
-class BrowserActionOpenPopupFunction : public UIThreadExtensionFunction,
+class BrowserActionOpenPopupFunction : public ExtensionFunction,
                                        public content::NotificationObserver {
  public:
   DECLARE_EXTENSION_FUNCTION("browserAction.openPopup",

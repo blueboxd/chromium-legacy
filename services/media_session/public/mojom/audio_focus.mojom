@@ -95,8 +95,8 @@ interface AudioFocusManager {
   // provide an AudioFocusRequestClient that can be used to control this
   // request. The callback will resolve with the id of the request when
   // audio focus has been granted.
-  RequestAudioFocus@0(AudioFocusRequestClient& client,
-                      MediaSession media_session,
+  RequestAudioFocus@0(pending_receiver<AudioFocusRequestClient> client,
+                      pending_remote<MediaSession> media_session,
                       MediaSessionInfo session_info,
                       AudioFocusType type) =>
                           (mojo_base.mojom.UnguessableToken request_id);
@@ -105,8 +105,8 @@ interface AudioFocusManager {
   // grouping sessions together. This is when a group of media sessions
   // will share audio focus.
   [MinVersion=4] RequestGroupedAudioFocus@4(
-      AudioFocusRequestClient& client,
-      MediaSession media_session,
+      pending_receiver<AudioFocusRequestClient> client,
+      pending_remote<MediaSession> media_session,
       MediaSessionInfo session_info,
       AudioFocusType type,
       mojo_base.mojom.UnguessableToken group_id) =>

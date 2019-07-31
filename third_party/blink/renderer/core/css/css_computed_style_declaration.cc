@@ -411,7 +411,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
     return nullptr;
 
   const CSSValue* value = property_class.CSSValueFromComputedStyle(
-      *style, layout_object, styled_node, allow_visited_style_);
+      *style, layout_object, allow_visited_style_);
   if (value)
     return value;
 

@@ -63,12 +63,12 @@ class ExceptionState;
 class PaintArtifactCompositor;
 class TreeScope;
 
-class CORE_EXPORT Animation final : public EventTargetWithInlineData,
-                                    public ActiveScriptWrappable<Animation>,
-                                    public ContextLifecycleObserver,
-                                    public CompositorAnimationDelegate,
-                                    public CompositorAnimationClient,
-                                    public AnimationEffectOwner {
+class CORE_EXPORT Animation : public EventTargetWithInlineData,
+                              public ActiveScriptWrappable<Animation>,
+                              public ContextLifecycleObserver,
+                              public CompositorAnimationDelegate,
+                              public CompositorAnimationClient,
+                              public AnimationEffectOwner {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Animation);
 

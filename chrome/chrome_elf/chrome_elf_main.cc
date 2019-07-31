@@ -7,9 +7,9 @@
 #include <assert.h>
 #include <windows.h>
 
-#include "chrome/chrome_elf/blacklist/blacklist.h"
 #include "chrome/chrome_elf/chrome_elf_security.h"
 #include "chrome/chrome_elf/crash/crash_helper.h"
+#include "chrome/chrome_elf/third_party_dlls/beacon.h"
 #include "chrome/chrome_elf/third_party_dlls/main.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_util.h"
@@ -28,7 +28,7 @@ void SignalInitializeCrashReporting() {
 }
 
 void SignalChromeElf() {
-  blacklist::ResetBeacon();
+  third_party_dlls::ResetBeacon();
 }
 
 bool GetUserDataDirectoryThunk(wchar_t* user_data_dir,
@@ -75,10 +75,9 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
     elf_security::EarlyBrowserSecurity();
 
     __try {
-      // Initialize blacklist before initializing third_party_dlls.
-      // Note: "blacklist" is deprecated in favor of "third_party_dlls", but
-      //       beacon management temporarily remains in the blacklist project.
-      if (blacklist::Initialize(false))
+      // Initialize the blocking of third-party DLLs if the initialization of
+      // the safety beacon succeeds.
+      if (third_party_dlls::LeaveSetupBeacon())
         third_party_dlls::Init();
     } __except (elf_crash::GenerateCrashDump(GetExceptionInformation())) {
     }

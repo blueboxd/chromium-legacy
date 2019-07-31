@@ -16,8 +16,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/i18n/encoding_detection.h"
-#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -40,7 +38,6 @@
 #include "pdf/url_loader_wrapper_impl.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/pdf.h"
-#include "ppapi/cpp/trusted/browser_font_trusted.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
@@ -50,10 +47,13 @@
 #include "third_party/pdfium/public/fpdf_ext.h"
 #include "third_party/pdfium/public/fpdf_ppo.h"
 #include "third_party/pdfium/public/fpdf_searchex.h"
-#include "third_party/pdfium/public/fpdf_sysfontinfo.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "v8/include/v8.h"
+
+#if defined(OS_LINUX)
+#include "pdf/pdfium/pdfium_font_linux.h"
+#endif
 
 using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
@@ -137,180 +137,6 @@ constexpr base::TimeDelta kMaxProgressivePaintTime =
 // process.
 constexpr base::TimeDelta kMaxInitialProgressivePaintTime =
     base::TimeDelta::FromMilliseconds(250);
-
-#if defined(OS_LINUX)
-
-PP_Instance g_last_instance_id;
-
-// TODO(npm): Move font stuff to another file to reduce the size of this one
-PP_BrowserFont_Trusted_Weight WeightToBrowserFontTrustedWeight(int weight) {
-  static_assert(PP_BROWSERFONT_TRUSTED_WEIGHT_100 == 0,
-                "PP_BrowserFont_Trusted_Weight min");
-  static_assert(PP_BROWSERFONT_TRUSTED_WEIGHT_900 == 8,
-                "PP_BrowserFont_Trusted_Weight max");
-  constexpr int kMinimumWeight = 100;
-  constexpr int kMaximumWeight = 900;
-  int normalized_weight =
-      std::min(std::max(weight, kMinimumWeight), kMaximumWeight);
-  normalized_weight = (normalized_weight / 100) - 1;
-  return static_cast<PP_BrowserFont_Trusted_Weight>(normalized_weight);
-}
-
-// This list is for CPWL_FontMap::GetDefaultFontByCharset().
-// We pretend to have these font natively and let the browser (or underlying
-// fontconfig) to pick the proper font on the system.
-void EnumFonts(FPDF_SYSFONTINFO* sysfontinfo, void* mapper) {
-  FPDF_AddInstalledFont(mapper, "Arial", FXFONT_DEFAULT_CHARSET);
-
-  const FPDF_CharsetFontMap* font_map = FPDF_GetDefaultTTFMap();
-  for (; font_map->charset != -1; ++font_map) {
-    FPDF_AddInstalledFont(mapper, font_map->fontname, font_map->charset);
-  }
-}
-
-void* MapFont(FPDF_SYSFONTINFO*,
-              int weight,
-              int italic,
-              int charset,
-              int pitch_family,
-              const char* face,
-              int* exact) {
-  // Do not attempt to map fonts if pepper is not initialized (for privet local
-  // printing).
-  // TODO(noamsml): Real font substitution (http://crbug.com/391978)
-  if (!pp::Module::Get())
-    return nullptr;
-
-  pp::BrowserFontDescription description;
-
-  // Pretend the system does not have the Symbol font to force a fallback to
-  // the built in Symbol font in CFX_FontMapper::FindSubstFont().
-  if (strcmp(face, "Symbol") == 0)
-    return nullptr;
-
-  if (pitch_family & FXFONT_FF_FIXEDPITCH) {
-    description.set_family(PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE);
-  } else if (pitch_family & FXFONT_FF_ROMAN) {
-    description.set_family(PP_BROWSERFONT_TRUSTED_FAMILY_SERIF);
-  }
-
-  static const struct {
-    const char* pdf_name;
-    const char* face;
-    bool bold;
-    bool italic;
-  } kPdfFontSubstitutions[] = {
-      {"Courier", "Courier New", false, false},
-      {"Courier-Bold", "Courier New", true, false},
-      {"Courier-BoldOblique", "Courier New", true, true},
-      {"Courier-Oblique", "Courier New", false, true},
-      {"Helvetica", "Arial", false, false},
-      {"Helvetica-Bold", "Arial", true, false},
-      {"Helvetica-BoldOblique", "Arial", true, true},
-      {"Helvetica-Oblique", "Arial", false, true},
-      {"Times-Roman", "Times New Roman", false, false},
-      {"Times-Bold", "Times New Roman", true, false},
-      {"Times-BoldItalic", "Times New Roman", true, true},
-      {"Times-Italic", "Times New Roman", false, true},
-
-      // MS P?(Mincho|Gothic) are the most notable fonts in Japanese PDF files
-      // without embedding the glyphs. Sometimes the font names are encoded
-      // in Japanese Windows's locale (CP932/Shift_JIS) without space.
-      // Most Linux systems don't have the exact font, but for outsourcing
-      // fontconfig to find substitutable font in the system, we pass ASCII
-      // font names to it.
-      {"MS-PGothic", "MS PGothic", false, false},
-      {"MS-Gothic", "MS Gothic", false, false},
-      {"MS-PMincho", "MS PMincho", false, false},
-      {"MS-Mincho", "MS Mincho", false, false},
-      // MS PGothic in Shift_JIS encoding.
-      {"\x82\x6C\x82\x72\x82\x6F\x83\x53\x83\x56\x83\x62\x83\x4E", "MS PGothic",
-       false, false},
-      // MS Gothic in Shift_JIS encoding.
-      {"\x82\x6C\x82\x72\x83\x53\x83\x56\x83\x62\x83\x4E", "MS Gothic", false,
-       false},
-      // MS PMincho in Shift_JIS encoding.
-      {"\x82\x6C\x82\x72\x82\x6F\x96\xBE\x92\xA9", "MS PMincho", false, false},
-      // MS Mincho in Shift_JIS encoding.
-      {"\x82\x6C\x82\x72\x96\xBE\x92\xA9", "MS Mincho", false, false},
-  };
-
-  // Similar logic exists in PDFium's CFX_FolderFontInfo::FindFont().
-  if (charset == FXFONT_ANSI_CHARSET && (pitch_family & FXFONT_FF_FIXEDPITCH))
-    face = "Courier New";
-
-  // Map from the standard PDF fonts to TrueType font names.
-  size_t i;
-  for (i = 0; i < base::size(kPdfFontSubstitutions); ++i) {
-    if (strcmp(face, kPdfFontSubstitutions[i].pdf_name) == 0) {
-      description.set_face(kPdfFontSubstitutions[i].face);
-      if (kPdfFontSubstitutions[i].bold)
-        description.set_weight(PP_BROWSERFONT_TRUSTED_WEIGHT_BOLD);
-      if (kPdfFontSubstitutions[i].italic)
-        description.set_italic(true);
-      break;
-    }
-  }
-
-  if (i == base::size(kPdfFontSubstitutions)) {
-    // Convert to UTF-8 before calling set_face().
-    std::string face_utf8;
-    if (base::IsStringUTF8(face)) {
-      face_utf8 = face;
-    } else {
-      std::string encoding;
-      if (base::DetectEncoding(face, &encoding)) {
-        // ConvertToUtf8AndNormalize() clears |face_utf8| on failure.
-        base::ConvertToUtf8AndNormalize(face, encoding, &face_utf8);
-      }
-    }
-
-    if (face_utf8.empty())
-      return nullptr;
-
-    description.set_face(face_utf8);
-    description.set_weight(WeightToBrowserFontTrustedWeight(weight));
-    description.set_italic(italic > 0);
-  }
-
-  if (!pp::PDF::IsAvailable()) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  PP_Resource font_resource = pp::PDF::GetFontFileWithFallback(
-      pp::InstanceHandle(g_last_instance_id),
-      &description.pp_font_description(),
-      static_cast<PP_PrivateFontCharset>(charset));
-  long res_id = font_resource;
-  return reinterpret_cast<void*>(res_id);
-}
-
-unsigned long GetFontData(FPDF_SYSFONTINFO*,
-                          void* font_id,
-                          unsigned int table,
-                          unsigned char* buffer,
-                          unsigned long buf_size) {
-  if (!pp::PDF::IsAvailable()) {
-    NOTREACHED();
-    return 0;
-  }
-
-  uint32_t size = buf_size;
-  long res_id = reinterpret_cast<long>(font_id);
-  if (!pp::PDF::GetFontTableForPrivateFontFile(res_id, table, buffer, &size))
-    return 0;
-  return size;
-}
-
-void DeleteFont(FPDF_SYSFONTINFO*, void* font_id) {
-  long res_id = reinterpret_cast<long>(font_id);
-  pp::Module::Get()->core()->ReleaseResource(res_id);
-}
-
-FPDF_SYSFONTINFO g_font_info = {1,           0, EnumFonts, MapFont,   0,
-                                GetFontData, 0, 0,         DeleteFont};
-#endif  // defined(OS_LINUX)
 
 PDFiumEngine::CreateDocumentLoaderFunction
     g_create_document_loader_for_testing = nullptr;
@@ -561,8 +387,7 @@ bool InitializeSDK() {
   FPDF_InitLibraryWithConfig(&config);
 
 #if defined(OS_LINUX)
-  // Font loading doesn't work in the renderer sandbox in Linux.
-  FPDF_SetSystemFontInfo(&g_font_info);
+  InitializeLinuxFontMapper();
 #endif
 
   InitializeUnsupportedFeaturesHandler();
@@ -595,9 +420,7 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client, bool enable_javascript)
 
 #if defined(OS_LINUX)
   // PreviewModeClient does not know its pp::Instance.
-  pp::Instance* instance = client_->GetPluginInstance();
-  if (instance)
-    g_last_instance_id = instance->pp_instance();
+  SetLastInstance(client_->GetPluginInstance());
 #endif
 }
 
@@ -1046,7 +869,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsRasterPdf(
   KillFormFocus();
 
 #if defined(OS_LINUX)
-  g_last_instance_id = client_->GetPluginInstance()->pp_instance();
+  SetLastInstance(client_->GetPluginInstance());
 #endif
 
   return ConvertPdfToBufferDev(
@@ -2900,7 +2723,7 @@ bool PDFiumEngine::ContinuePaint(int progressive_index,
 
   last_progressive_start_time_ = base::Time::Now();
 #if defined(OS_LINUX)
-  g_last_instance_id = client_->GetPluginInstance()->pp_instance();
+  SetLastInstance(client_->GetPluginInstance());
 #endif
 
   int page_index = progressive_paints_[progressive_index].page_index();
@@ -3007,13 +2830,29 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
                         right.height(), client_->GetBackgroundColor());
   }
 
-  pp::Rect bottom =
-      draw_utils::GetBottomFillRect(page_rect, inset_sizes, kBottomSeparator);
-  bottom = GetScreenRect(bottom).Intersect(dirty_in_screen);
+  pp::Rect bottom_in_screen;
+  if (two_up_view_) {
+    pp::Rect page_in_screen = GetScreenRect(page_rect);
+    bottom_in_screen = draw_utils::GetBottomGapBetweenRects(
+        page_in_screen.bottom(), dirty_in_screen);
 
-  FPDFBitmap_FillRect(bitmap, bottom.x() - dirty_in_screen.x(),
-                      bottom.y() - dirty_in_screen.y(), bottom.width(),
-                      bottom.height(), client_->GetBackgroundColor());
+    if (page_index % 2 == 1) {
+      // Only draw over the right two-up view column with empty space.
+      bottom_in_screen.set_width(bottom_in_screen.width() / 2);
+      bottom_in_screen.set_x(page_in_screen.x());
+    }
+
+    bottom_in_screen = bottom_in_screen.Intersect(dirty_in_screen);
+  } else {
+    bottom_in_screen = GetScreenRect(draw_utils::GetBottomFillRect(
+        page_rect, inset_sizes, kBottomSeparator));
+    bottom_in_screen = bottom_in_screen.Intersect(dirty_in_screen);
+  }
+
+  FPDFBitmap_FillRect(bitmap, bottom_in_screen.x() - dirty_in_screen.x(),
+                      bottom_in_screen.y() - dirty_in_screen.y(),
+                      bottom_in_screen.width(), bottom_in_screen.height(),
+                      client_->GetBackgroundColor());
 }
 
 void PDFiumEngine::PaintPageShadow(int progressive_index,
@@ -3373,7 +3212,7 @@ void PDFiumEngine::SetCurrentPage(int index) {
   }
   most_visible_page_ = index;
 #if defined(OS_LINUX)
-  g_last_instance_id = client_->GetPluginInstance()->pp_instance();
+  SetLastInstance(client_->GetPluginInstance());
 #endif
   if (most_visible_page_ != -1 && called_do_document_action_) {
     FPDF_PAGE new_page = pages_[most_visible_page_]->GetPage();

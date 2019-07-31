@@ -397,16 +397,16 @@ void CommandLine::RemoveSwitch(base::StringPiece switch_key_without_prefix) {
   auto argv_switches_end = argv_.begin() + begin_args_;
   DCHECK(argv_switches_begin <= argv_switches_end);
   DCHECK(argv_switches_end <= argv_.end());
-  auto arg_iter = std::find_if(argv_switches_begin, argv_switches_end,
+  auto expell = std::remove_if(argv_switches_begin, argv_switches_end,
                                [&switch_key_native](const StringType& arg) {
                                  return IsSwitchWithKey(arg, switch_key_native);
                                });
-  if (arg_iter == argv_switches_end) {
+  if (expell == argv_switches_end) {
     NOTREACHED();
     return;
   }
-  argv_.erase(arg_iter);
-  --begin_args_;
+  begin_args_ -= argv_switches_end - expell;
+  argv_.erase(expell, argv_switches_end);
 }
 
 void CommandLine::CopySwitchesFrom(const CommandLine& source,

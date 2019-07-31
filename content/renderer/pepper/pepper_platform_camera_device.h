@@ -37,7 +37,7 @@ class PepperPlatformCameraDevice {
  private:
   void OnDeviceOpened(int request_id, bool succeeded, const std::string& label);
 
-  // Called by VideoCaptureImplManager.
+  // Called by blink::WebVideoCaptureImplManager.
   void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& formats);
 

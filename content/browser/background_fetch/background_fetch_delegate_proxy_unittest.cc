@@ -40,7 +40,7 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
   }
   void GetPermissionForOrigin(
       const url::Origin& origin,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const WebContents::Getter& wc_getter,
       GetPermissionForOriginCallback callback) override {
     std::move(callback).Run(BackgroundFetchPermission::ALLOWED);
   }

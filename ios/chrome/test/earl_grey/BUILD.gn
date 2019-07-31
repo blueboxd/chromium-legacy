@@ -26,7 +26,6 @@ group("all_tests") {
 chrome_ios_eg_test("ios_chrome_integration_egtests") {
   deps = [
     "//ios/chrome/browser/autofill:eg_tests",
-    "//ios/chrome/browser/browser_state:eg_tests",
     "//ios/chrome/browser/context_menu:eg_tests",
     "//ios/chrome/browser/device_sharing:eg_tests",
     "//ios/chrome/browser/feature_engagement:eg_tests",

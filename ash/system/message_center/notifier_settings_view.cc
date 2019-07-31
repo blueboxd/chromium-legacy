@@ -322,8 +322,9 @@ NotifierSettingsView::NotifierButton::~NotifierButton() = default;
 void NotifierSettingsView::NotifierButton::UpdateIconImage(
     const gfx::ImageSkia& icon) {
   if (icon.isNull()) {
-    icon_view_->SetImage(gfx::CreateVectorIcon(
-        message_center::kProductIcon, kEntryIconSize, kUnifiedMenuIconColor));
+    icon_view_->SetImage(gfx::CreateVectorIcon(message_center::kProductIcon,
+                                               kEntryIconSize,
+                                               kIconOnDarkBackgroundColor));
   } else {
     icon_view_->SetImage(icon);
     icon_view_->SetImageSize(gfx::Size(kEntryIconSize, kEntryIconSize));
@@ -391,7 +392,7 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   if (!GetEnabled()) {
     auto policy_enforced_icon = std::make_unique<views::ImageView>();
     policy_enforced_icon->SetImage(gfx::CreateVectorIcon(
-        kSystemMenuBusinessIcon, kEntryIconSize, kUnifiedMenuIconColor));
+        kSystemMenuBusinessIcon, kEntryIconSize, kIconOnDarkBackgroundColor));
     cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
                   kEntryIconSize, 0);
     layout->AddView(std::move(policy_enforced_icon));
@@ -498,11 +499,11 @@ void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
   if (is_quiet_mode) {
     quiet_mode_icon_->SetImage(
         gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOnIcon,
-                              kMenuIconSize, kUnifiedMenuIconColor));
+                              kMenuIconSize, kIconOnDarkBackgroundColor));
   } else {
-    quiet_mode_icon_->SetImage(
-        gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOffIcon,
-                              kMenuIconSize, kUnifiedMenuIconColorDisabled));
+    quiet_mode_icon_->SetImage(gfx::CreateVectorIcon(
+        kNotificationCenterDoNotDisturbOffIcon, kMenuIconSize,
+        kIconOnDarkBackgroundColorDisabled));
   }
 }
 

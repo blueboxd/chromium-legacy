@@ -179,6 +179,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_COUNT,
             base::size(rtt_ms_observations_));
 
+  AddEffectiveConnectionTypeObserver(&network_congestion_analyzer_);
   network_quality_store_.reset(new nqe::internal::NetworkQualityStore());
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
   throughput_analyzer_.reset(new nqe::internal::ThroughputAnalyzer(
@@ -253,8 +254,8 @@ void NetworkQualityEstimator::AddDefaultEstimates() {
 NetworkQualityEstimator::~NetworkQualityEstimator() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  RemoveEffectiveConnectionTypeObserver(&network_congestion_analyzer_);
 }
-
 
 void NetworkQualityEstimator::NotifyStartTransaction(
     const URLRequest& request) {

@@ -44,8 +44,6 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
                                  base::nullopt /* new_url */);
   }
 
-  void ProceedWithResponse() override { loader_sink_->ProceedWithResponse(); }
-
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {
     loader_sink_->SetPriority(priority, intra_priority_value);

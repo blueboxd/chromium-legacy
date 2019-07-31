@@ -47,9 +47,6 @@ class SharingDeviceRegistration {
   // Un-registers device with sharing sync preferences.
   virtual void UnregisterDevice(RegistrationCallback callback);
 
-  // For testing
-  void SetDeviceCapabilityForTesting(int device_capabilities);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,
                            RegisterDeviceTest_Success);
@@ -94,7 +91,6 @@ class SharingDeviceRegistration {
   instance_id::InstanceIDDriver* instance_id_driver_;
   VapidKeyManager* vapid_key_manager_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
-  base::Optional<int> device_capabilities_testing_value_;
 
   base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_{this};
 

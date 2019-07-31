@@ -19,9 +19,9 @@ This doc outlines some tricks / gotchas / features of how we ship native code in
    dump is requested (e.g. after a crash), a Crashpad handler process is started
    to produce a dump.
  * Chrome and ChromeModern (Android J through M):
-   * libcrashpad_handler.so is a standalone executable containing all of the
-     crash dumping code. It is stored compressed and extracted automatically by
-     the system, allowing it to be directly executed to produce a crash dump.
+   * libchrome_crashpad_handler.so is a standalone executable containing all of
+     the crash dumping code. It is stored compressed and extracted automatically
+     by the system, allowing it to be directly executed to produce a crash dump.
  * Monochrome (N through P) and SystemWebView (L through P):
     * All of the Crashpad code is linked into the package's main native library
       (e.g. libmonochrome.so). When a dump is requested, /system/bin/app_process

@@ -148,7 +148,7 @@ bool GetBrowserFromWindowID(const ChromeExtensionFunctionDetails& details,
   return true;
 }
 
-bool GetBrowserFromWindowID(UIThreadExtensionFunction* function,
+bool GetBrowserFromWindowID(ExtensionFunction* function,
                             int window_id,
                             Browser** browser,
                             std::string* error) {
@@ -182,10 +182,9 @@ bool GetTabById(int tab_id,
 // Gets the WebContents for |tab_id| if it is specified. Otherwise get the
 // WebContents for the active tab in the |function|'s current window.
 // Returns nullptr and fills |error| if failed.
-content::WebContents* GetTabsAPIDefaultWebContents(
-    UIThreadExtensionFunction* function,
-    int tab_id,
-    std::string* error) {
+content::WebContents* GetTabsAPIDefaultWebContents(ExtensionFunction* function,
+                                                   int tab_id,
+                                                   std::string* error) {
   content::WebContents* web_contents = nullptr;
   if (tab_id != -1) {
     // We assume this call leaves web_contents unchanged if it is unsuccessful.

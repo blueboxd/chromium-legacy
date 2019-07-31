@@ -6,7 +6,6 @@
 
 #include "components/services/patch/public/cpp/patch.h"
 #include "components/update_client/component_patcher_operation.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace update_client {
 
@@ -14,14 +13,14 @@ namespace {
 
 class PatcherImpl : public Patcher {
  public:
-  explicit PatcherImpl(std::unique_ptr<service_manager::Connector> connector)
-      : connector_(std::move(connector)) {}
+  explicit PatcherImpl(PatchChromiumFactory::Callback callback)
+      : callback_(std::move(callback)) {}
 
   void PatchBsdiff(const base::FilePath& old_file,
                    const base::FilePath& patch_file,
                    const base::FilePath& destination,
                    PatchCompleteCallback callback) const override {
-    patch::Patch(connector_.get(), update_client::kBsdiff, old_file, patch_file,
+    patch::Patch(callback_.Run(), update_client::kBsdiff, old_file, patch_file,
                  destination, std::move(callback));
   }
 
@@ -29,7 +28,7 @@ class PatcherImpl : public Patcher {
                       const base::FilePath& patch_file,
                       const base::FilePath& destination,
                       PatchCompleteCallback callback) const override {
-    patch::Patch(connector_.get(), update_client::kCourgette, old_file,
+    patch::Patch(callback_.Run(), update_client::kCourgette, old_file,
                  patch_file, destination, std::move(callback));
   }
 
@@ -37,17 +36,16 @@ class PatcherImpl : public Patcher {
   ~PatcherImpl() override = default;
 
  private:
-  std::unique_ptr<service_manager::Connector> connector_;
+  const PatchChromiumFactory::Callback callback_;
 };
 
 }  // namespace
 
-PatchChromiumFactory::PatchChromiumFactory(
-    std::unique_ptr<service_manager::Connector> connector)
-    : connector_(std::move(connector)) {}
+PatchChromiumFactory::PatchChromiumFactory(Callback callback)
+    : callback_(std::move(callback)) {}
 
 scoped_refptr<Patcher> PatchChromiumFactory::Create() const {
-  return base::MakeRefCounted<PatcherImpl>(connector_->Clone());
+  return base::MakeRefCounted<PatcherImpl>(callback_);
 }
 
 PatchChromiumFactory::~PatchChromiumFactory() = default;

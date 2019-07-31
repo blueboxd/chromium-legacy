@@ -1565,6 +1565,101 @@ TEST(HeapDeathTest, PreFinalizerAllocationForbidden) {
   TestSupportingGC::PreciselyCollectGarbage();
 }
 
+#if DCHECK_IS_ON()
+class ResurrectingPreFinalizer
+    : public GarbageCollected<ResurrectingPreFinalizer> {
+  USING_PRE_FINALIZER(ResurrectingPreFinalizer, Dispose);
+
+ public:
+  enum TestType {
+    kHeapVectorMember,
+    kHeapHashSetMember,
+    kHeapHashSetWeakMember
+  };
+
+  class GlobalStorage : public GarbageCollected<GlobalStorage> {
+   public:
+    GlobalStorage() {
+      // Reserve storage upfront to avoid allocations during pre-finalizer
+      // insertion.
+      vector_member.ReserveCapacity(32);
+      hash_set_member.ReserveCapacityForSize(32);
+      hash_set_weak_member.ReserveCapacityForSize(32);
+    }
+
+    void Trace(Visitor* visitor) {
+      visitor->Trace(vector_member);
+      visitor->Trace(hash_set_member);
+      visitor->Trace(hash_set_weak_member);
+    }
+
+    HeapVector<Member<LinkedObject>> vector_member;
+    HeapHashSet<Member<LinkedObject>> hash_set_member;
+    HeapHashSet<WeakMember<LinkedObject>> hash_set_weak_member;
+  };
+
+  ResurrectingPreFinalizer(TestType test_type,
+                           GlobalStorage* storage,
+                           LinkedObject* object_that_dies)
+      : test_type_(test_type),
+        storage_(storage),
+        object_that_dies_(object_that_dies) {}
+
+  void Trace(Visitor* visitor) {
+    visitor->Trace(storage_);
+    visitor->Trace(object_that_dies_);
+  }
+
+ private:
+  void Dispose() { EXPECT_DEATH(Test(), ""); }
+
+  void Test() {
+    switch (test_type_) {
+      case TestType::kHeapVectorMember:
+        storage_->vector_member.push_back(object_that_dies_);
+        break;
+      case TestType::kHeapHashSetMember:
+        storage_->hash_set_member.insert(object_that_dies_);
+        break;
+      case TestType::kHeapHashSetWeakMember:
+        storage_->hash_set_weak_member.insert(object_that_dies_);
+        break;
+    }
+  }
+
+  TestType test_type_;
+  Member<GlobalStorage> storage_;
+  Member<LinkedObject> object_that_dies_;
+};
+
+TEST(HeapDeathTest, DiesOnResurrectedHeapVectorMember) {
+  Persistent<ResurrectingPreFinalizer::GlobalStorage> storage(
+      MakeGarbageCollected<ResurrectingPreFinalizer::GlobalStorage>());
+  MakeGarbageCollected<ResurrectingPreFinalizer>(
+      ResurrectingPreFinalizer::kHeapVectorMember, storage.Get(),
+      MakeGarbageCollected<LinkedObject>());
+  TestSupportingGC::PreciselyCollectGarbage();
+}
+
+TEST(HeapDeathTest, DiesOnResurrectedHeapHashSetMember) {
+  Persistent<ResurrectingPreFinalizer::GlobalStorage> storage(
+      MakeGarbageCollected<ResurrectingPreFinalizer::GlobalStorage>());
+  MakeGarbageCollected<ResurrectingPreFinalizer>(
+      ResurrectingPreFinalizer::kHeapHashSetMember, storage.Get(),
+      MakeGarbageCollected<LinkedObject>());
+  TestSupportingGC::PreciselyCollectGarbage();
+}
+
+TEST(HeapDeathTest, DiesOnResurrectedHeapHashSetWeakMember) {
+  Persistent<ResurrectingPreFinalizer::GlobalStorage> storage(
+      MakeGarbageCollected<ResurrectingPreFinalizer::GlobalStorage>());
+  MakeGarbageCollected<ResurrectingPreFinalizer>(
+      ResurrectingPreFinalizer::kHeapHashSetWeakMember, storage.Get(),
+      MakeGarbageCollected<LinkedObject>());
+  TestSupportingGC::PreciselyCollectGarbage();
+}
+#endif  // DCHECK_IS_ON()
+
 class LargeMixin : public GarbageCollected<LargeMixin>, public Mixin {
   USING_GARBAGE_COLLECTED_MIXIN(LargeMixin);
 

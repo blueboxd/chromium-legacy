@@ -16,6 +16,7 @@ namespace blink {
 
 class DOMPointInit;
 class DOMPointReadOnly;
+class ExceptionState;
 class TransformationMatrix;
 
 // MODULES_EXPORT is required for unit tests using XRRigidTransform (currently
@@ -26,7 +27,9 @@ class MODULES_EXPORT XRRigidTransform : public ScriptWrappable {
  public:
   explicit XRRigidTransform(const TransformationMatrix&);
   XRRigidTransform(DOMPointInit*, DOMPointInit*);
-  static XRRigidTransform* Create(DOMPointInit*, DOMPointInit*);
+  static XRRigidTransform* Create(DOMPointInit*,
+                                  DOMPointInit*,
+                                  ExceptionState&);
 
   ~XRRigidTransform() override = default;
 

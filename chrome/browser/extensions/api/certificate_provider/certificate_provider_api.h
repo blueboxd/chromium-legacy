@@ -28,9 +28,9 @@ struct CertificateInfo;
 }
 
 class CertificateProviderInternalReportCertificatesFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  private:
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ~CertificateProviderInternalReportCertificatesFunction() override;
   ResponseAction Run() override;
 
@@ -43,9 +43,9 @@ class CertificateProviderInternalReportCertificatesFunction
 };
 
 class CertificateProviderInternalReportSignatureFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  private:
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ~CertificateProviderInternalReportSignatureFunction() override;
   ResponseAction Run() override;
 
@@ -53,9 +53,9 @@ class CertificateProviderInternalReportSignatureFunction
                              CERTIFICATEPROVIDERINTERNAL_REPORTSIGNATURE)
 };
 
-class CertificateProviderRequestPinFunction : public UIThreadExtensionFunction {
+class CertificateProviderRequestPinFunction : public ExtensionFunction {
  private:
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ~CertificateProviderRequestPinFunction() override;
   ResponseAction Run() override;
   bool ShouldSkipQuotaLimiting() const override;
@@ -68,10 +68,9 @@ class CertificateProviderRequestPinFunction : public UIThreadExtensionFunction {
                              CERTIFICATEPROVIDER_REQUESTPIN)
 };
 
-class CertificateProviderStopPinRequestFunction
-    : public UIThreadExtensionFunction {
+class CertificateProviderStopPinRequestFunction : public ExtensionFunction {
  private:
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ~CertificateProviderStopPinRequestFunction() override;
   ResponseAction Run() override;
 

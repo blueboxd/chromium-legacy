@@ -255,7 +255,6 @@
 #include "components/services/heap_profiling/heap_profiling_service.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
-#include "components/services/patch/public/mojom/constants.mojom.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "components/services/quarantine/quarantine_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -611,11 +610,6 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
-#endif
-
-#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)
-// TODO(crbug.com/948800): Doesn't match BUILD.gn of use_cups && is_chromeos.
-#include "chrome/services/cups_ipp_parser/public/mojom/constants.mojom.h"
 #endif
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -1015,11 +1009,10 @@ chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(
   return prerender::PrerenderContents::FromWebContents(web_contents);
 }
 
-void LaunchURL(
-    const GURL& url,
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    ui::PageTransition page_transition,
-    bool has_user_gesture) {
+void LaunchURL(const GURL& url,
+               const content::WebContents::Getter& web_contents_getter,
+               ui::PageTransition page_transition,
+               bool has_user_gesture) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
   content::WebContents* web_contents = web_contents_getter.Run();
@@ -5229,7 +5222,7 @@ ChromeContentBrowserClient::CreateLoginDelegate(
 
 bool ChromeContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents::Getter web_contents_getter,
     int child_id,
     content::NavigationUIData* navigation_data,
     bool is_main_frame,

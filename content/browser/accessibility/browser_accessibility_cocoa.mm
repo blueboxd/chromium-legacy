@@ -268,11 +268,11 @@ AXPlatformRange CreateAXPlatformRange(const BrowserAccessibility& start_object,
                                       int end_offset,
                                       ax::mojom::TextAffinity end_affinity) {
   BrowserAccessibilityPositionInstance anchor =
-      start_object.IsTextOnlyObject()
+      start_object.PlatformIsLeaf()
           ? CreateTextPosition(start_object, start_offset, start_affinity)
           : CreateTreePosition(start_object, start_offset);
   BrowserAccessibilityPositionInstance focus =
-      end_object.IsTextOnlyObject()
+      end_object.PlatformIsLeaf()
           ? CreateTextPosition(end_object, end_offset, end_affinity)
           : CreateTreePosition(end_object, end_offset);
   // |AXPlatformRange| takes ownership of its anchor and focus.

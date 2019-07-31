@@ -266,7 +266,7 @@ std::unique_ptr<extensions::UserScriptList> ParseContentScripts(
 namespace extensions {
 
 bool WebViewInternalExtensionFunction::PreRunValidation(std::string* error) {
-  if (!UIThreadExtensionFunction::PreRunValidation(error))
+  if (!ExtensionFunction::PreRunValidation(error))
     return false;
 
   int instance_id = 0;

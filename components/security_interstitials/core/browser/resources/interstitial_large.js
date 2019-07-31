@@ -134,7 +134,13 @@ function setupEvents() {
 
   if (lookalike) {
     var proceed_button = 'proceed-button';
-    var dont_proceed_link = 'dont-proceed-link';
+    // Lookalike warnings use multiple "don't proceed" links. $() syntax only
+    // allows unique IDs (not classes), so we enumerate them all here.
+    var dont_proceed_links = [
+        'dont-proceed-link1',
+        'dont-proceed-link2',
+        'dont-proceed-link3',
+    ];
     $(proceed_button).classList.remove(HIDDEN_CLASS);
 
     $(proceed_button).textContent =
@@ -144,8 +150,10 @@ function setupEvents() {
       sendCommand(SecurityInterstitialCommandId.CMD_PROCEED);
     });
 
-    $(dont_proceed_link).addEventListener('click', function(event) {
-      sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
+    dont_proceed_links.forEach(function(link_id) {
+      $(link_id).addEventListener('click', function(event) {
+        sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
+      });
     });
   }
 
@@ -163,7 +171,7 @@ function setupEvents() {
       $(overrideElement).textContent =
           loadTimeData.getString('proceedButtonText');
     }
-  } else if (!ssl) {
+  } else if (!ssl && !lookalike) {
     $('final-paragraph').classList.add(HIDDEN_CLASS);
   }
 
@@ -186,11 +194,24 @@ function setupEvents() {
     });
   }
 
-  if (captivePortal || billing || lookalike) {
-    // Captive portal, billing and lookalike pages don't have details button.
+  var details_id = null;
+  if (captivePortal || billing) {
+    // Captive portal and billing pages don't have details buttons.
     $('details-button').classList.add('hidden');
+  } else if (lookalike) {
+    // Lookalike pages has a details link instead.
+    if (loadTimeData.getBoolean('show_advanced')) {
+      $('subnav-wrapper').classList.remove('hidden');
+    }
+
+    $('details-button').classList.add('hidden');
+    details_id = 'details-link';
   } else {
-    $('details-button').addEventListener('click', function(event) {
+    details_id = 'details-button';
+  }
+
+  if (details_id) {
+    $(details_id).addEventListener('click', function(event) {
       var hiddenDetails = $('details').classList.toggle(HIDDEN_CLASS);
 
       if (mobileNav) {
@@ -200,7 +221,7 @@ function setupEvents() {
         $('main-content').classList.remove(HIDDEN_CLASS);
       }
 
-      $('details-button').innerText = hiddenDetails ?
+      $(details_id).innerText = hiddenDetails ?
           loadTimeData.getString('openDetails') :
           loadTimeData.getString('closeDetails');
       if (!expandedDetails) {

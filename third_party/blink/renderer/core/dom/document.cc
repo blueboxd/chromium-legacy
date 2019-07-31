@@ -2335,6 +2335,41 @@ void Document::SetupFontBuilder(ComputedStyle& document_style) {
   font_builder.CreateFontForDocument(selector, document_style);
 }
 
+#define PROPAGATE_FROM(source, getter, setter, initial) \
+  PROPAGATE_VALUE(source ? source->getter() : initial, getter, setter);
+
+#define PROPAGATE_VALUE(value, getter, setter)     \
+  if ((new_viewport_style->getter()) != (value)) { \
+    new_viewport_style->setter(value);             \
+    changed = true;                                \
+  }
+
+bool PropagateScrollSnapStyleToViewport(
+    Document& document,
+    const ComputedStyle* document_element_style,
+    scoped_refptr<ComputedStyle> new_viewport_style) {
+  bool changed = false;
+  // We only propagate the properties related to snap container since viewport
+  // defining element cannot be a snap area.
+  PROPAGATE_FROM(document_element_style, GetScrollSnapType, SetScrollSnapType,
+                 cc::ScrollSnapType());
+  PROPAGATE_FROM(document_element_style, ScrollPaddingTop, SetScrollPaddingTop,
+                 Length());
+  PROPAGATE_FROM(document_element_style, ScrollPaddingRight,
+                 SetScrollPaddingRight, Length());
+  PROPAGATE_FROM(document_element_style, ScrollPaddingBottom,
+                 SetScrollPaddingBottom, Length());
+  PROPAGATE_FROM(document_element_style, ScrollPaddingLeft,
+                 SetScrollPaddingLeft, Length());
+
+  if (changed) {
+    document.GetSnapCoordinator()->SnapContainerDidChange(
+        *document.GetLayoutView(), false /* is_removed */);
+  }
+
+  return changed;
+}
+
 void Document::PropagateStyleToViewport() {
   DCHECK(InStyleRecalc());
   HTMLElement* body = this->body();
@@ -2351,15 +2386,6 @@ void Document::PropagateStyleToViewport() {
   scoped_refptr<ComputedStyle> new_viewport_style =
       ComputedStyle::Clone(viewport_style);
   bool changed = false;
-
-#define PROPAGATE_FROM(source, getter, setter, initial) \
-  PROPAGATE_VALUE(source ? source->getter() : initial, getter, setter);
-
-#define PROPAGATE_VALUE(value, getter, setter)     \
-  if ((new_viewport_style->getter()) != (value)) { \
-    new_viewport_style->setter(value);             \
-    changed = true;                                \
-  }
 
   // Writing mode and direction
   {
@@ -2440,23 +2466,9 @@ void Document::PropagateStyleToViewport() {
       }
     }
 
-    // TODO(954423, 952711): scroll-snap-* and overscroll-behavior (and most
-    // likely overflow-anchor) should be propagated from the document element
-    // and not the viewport defining element.
-
-    // We only propagate the properties related to snap container since viewport
-    // defining element cannot be a snap area.
-    PROPAGATE_FROM(overflow_style, GetScrollSnapType, SetScrollSnapType,
-                   cc::ScrollSnapType());
-    PROPAGATE_FROM(overflow_style, ScrollPaddingTop, SetScrollPaddingTop,
-                   Length());
-    PROPAGATE_FROM(overflow_style, ScrollPaddingRight, SetScrollPaddingRight,
-                   Length());
-    PROPAGATE_FROM(overflow_style, ScrollPaddingBottom, SetScrollPaddingBottom,
-                   Length());
-    PROPAGATE_FROM(overflow_style, ScrollPaddingLeft, SetScrollPaddingLeft,
-                   Length());
-
+    // TODO(954423, 952711): overscroll-behavior (and most likely
+    // overflow-anchor) should be propagated from documet element and not the
+    // viewport defining element.
     PROPAGATE_FROM(overflow_style, OverscrollBehaviorX, SetOverscrollBehaviorX,
                    EOverscrollBehavior::kAuto);
     PROPAGATE_FROM(overflow_style, OverscrollBehaviorY, SetOverscrollBehaviorY,
@@ -2533,6 +2545,9 @@ void Document::PropagateStyleToViewport() {
                    false);
   }
 
+  changed |= PropagateScrollSnapStyleToViewport(*this, document_element_style,
+                                                new_viewport_style);
+
   if (changed) {
     new_viewport_style->UpdateFontOrientation();
     GetLayoutView()->SetStyle(new_viewport_style);
@@ -2548,10 +2563,9 @@ void Document::PropagateStyleToViewport() {
         scrollable_area->VerticalScrollbar()->StyleChanged();
     }
   }
-
+}
 #undef PROPAGATE_VALUE
 #undef PROPAGATE_FROM
-}
 
 #if DCHECK_IS_ON()
 static void AssertLayoutTreeUpdated(Node& root) {

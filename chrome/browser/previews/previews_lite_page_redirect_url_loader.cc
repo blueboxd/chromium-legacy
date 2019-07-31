@@ -197,12 +197,6 @@ void PreviewsLitePageRedirectURLLoader::FollowRedirect(
   NOTREACHED();
 }
 
-void PreviewsLitePageRedirectURLLoader::ProceedWithResponse() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // This class never provides a response past the headers.
-  NOTREACHED();
-}
-
 void PreviewsLitePageRedirectURLLoader::SetPriority(
     net::RequestPriority priority,
     int32_t intra_priority_value) {

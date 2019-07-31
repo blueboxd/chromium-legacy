@@ -382,12 +382,6 @@
           'shards': 5,
         },
       },
-      'linux-chromeos-google-rel': {
-        # TODO(crbug.com/980748): Remove this filter.
-        'args': [
-          '--gtest_filter=-CrashAnalyzerTest.StackTraceCollection',
-        ],
-      },
     },
   },
   'content_browsertests': {
@@ -1596,7 +1590,7 @@
       'ANGLE GPU Win10 Release (Intel HD 630)',
       'Optional Win10 Release (Intel HD 630)',
       'Win10 FYI Release (Intel HD 630)',
-      'Win10 FYI Exp Release (Intel HD 630)',
+      'Win10 FYI x64 Exp Release (Intel HD 630)',
     ],
   },
   'viz_unittests': {

@@ -25,8 +25,7 @@ class URLLoaderThrottle::ThrottleRequestAdapter : public ChromeRequestAdapter {
   ~ThrottleRequestAdapter() override = default;
 
   // ChromeRequestAdapter
-  content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
-      const override {
+  content::WebContents::Getter GetWebContentsGetter() const override {
     return throttle_->web_contents_getter_;
   }
 
@@ -85,8 +84,7 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
   ~ThrottleResponseAdapter() override = default;
 
   // ResponseAdapter
-  content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
-      const override {
+  content::WebContents::Getter GetWebContentsGetter() const override {
     return throttle_->web_contents_getter_;
   }
 
@@ -128,7 +126,7 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
 std::unique_ptr<URLLoaderThrottle> URLLoaderThrottle::MaybeCreate(
     std::unique_ptr<HeaderModificationDelegate> delegate,
     content::NavigationUIData* navigation_ui_data,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter) {
+    content::WebContents::Getter web_contents_getter) {
   if (!delegate->ShouldInterceptNavigation(navigation_ui_data))
     return nullptr;
 
@@ -200,7 +198,7 @@ void URLLoaderThrottle::WillProcessResponse(
 
 URLLoaderThrottle::URLLoaderThrottle(
     std::unique_ptr<HeaderModificationDelegate> delegate,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter)
+    content::WebContents::Getter web_contents_getter)
     : delegate_(std::move(delegate)),
       web_contents_getter_(std::move(web_contents_getter)) {}
 

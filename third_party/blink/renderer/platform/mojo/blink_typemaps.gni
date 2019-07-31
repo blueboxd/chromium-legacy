@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//media/capture/mojom/video_capture_types_for_blink.typemap",
+  "//mojo/public/cpp/base/values.typemap",
+  "//ui/gfx/mojom/color_space_for_blink.typemap",
   "//ui/gfx/mojom/transform.typemap",
   "//services/network/public/cpp/http_request_headers.typemap",
   "//third_party/blink/renderer/core/messaging/blink_cloneable_message.typemap",

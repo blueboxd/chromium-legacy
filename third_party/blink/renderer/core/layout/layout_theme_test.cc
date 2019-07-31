@@ -78,9 +78,9 @@ TEST_F(LayoutThemeTest, ChangeFocusRingColor) {
 
 TEST_F(LayoutThemeTest, RootElementColor) {
   EXPECT_EQ(Color::kBlack,
-            LayoutTheme::GetTheme().RootElementColor(ColorScheme::kLight));
+            LayoutTheme::GetTheme().RootElementColor(WebColorScheme::kLight));
   EXPECT_EQ(Color::kWhite,
-            LayoutTheme::GetTheme().RootElementColor(ColorScheme::kDark));
+            LayoutTheme::GetTheme().RootElementColor(WebColorScheme::kDark));
 }
 
 TEST_F(LayoutThemeTest, RootElementColorChange) {

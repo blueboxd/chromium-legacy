@@ -381,6 +381,12 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
+std::string FieldTypeToString(int type) {
+  return base::StrCat(
+      {base::NumberToString(type), std::string("/"),
+       AutofillType(static_cast<ServerFieldType>(type)).ToString()});
+}
+
 LogBuffer& operator<<(LogBuffer& out,
                       const autofill::AutofillUploadContents& upload) {
   if (!out.active())
@@ -411,9 +417,11 @@ LogBuffer& operator<<(LogBuffer& out,
     out << Tr{} << Attrib{"style", "font-weight: bold"}
         << "field_signature:" << field.signature();
 
-    LogBuffer autofill_type;
-    autofill_type << Tag{"span"} << field.autofill_type();
-    out << Tr{} << "autofill_type:" << std::move(autofill_type);
+    std::vector<std::string> types_as_strings;
+    types_as_strings.reserve(field.autofill_type_size());
+    for (int type : field.autofill_type())
+      types_as_strings.emplace_back(FieldTypeToString(type));
+    out << Tr{} << "autofill_type:" << types_as_strings;
 
     LogBuffer validities;
     validities << Tag{"span"} << "[";

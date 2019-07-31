@@ -127,7 +127,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public InputDispositionHandler,
       public RenderProcessHostImpl::PriorityClient,
       public RenderProcessHostObserver,
-      public TouchEmulatorClient,
       public SyntheticGestureController::Delegate,
       public viz::mojom::CompositorFrameSink,
       public IPC::Listener,
@@ -439,14 +438,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Returns an emulator for this widget. See TouchEmulator for more details.
   TouchEmulator* GetTouchEmulator();
 
-  // TouchEmulatorClient implementation.
-  void ForwardEmulatedGestureEvent(
-      const blink::WebGestureEvent& gesture_event) override;
-  void ForwardEmulatedTouchEvent(const blink::WebTouchEvent& touch_event,
-                                 RenderWidgetHostViewBase* target) override;
-  void SetCursor(const WebCursor& cursor) override;
+  void SetCursor(const WebCursor& cursor);
   void ShowContextMenuAtPoint(const gfx::Point& point,
-                              const ui::MenuSourceType source_type) override;
+                              const ui::MenuSourceType source_type);
 
   // Queues a synthetic gesture for testing purposes.  Invokes the on_complete
   // callback when the gesture is finished running.

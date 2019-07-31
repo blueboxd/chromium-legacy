@@ -151,12 +151,6 @@ void MimeSniffingURLLoader::FollowRedirect(
   NOTREACHED();
 }
 
-void MimeSniffingURLLoader::ProceedWithResponse() {
-  if (state_ == State::kAborted)
-    return;
-  source_url_loader_->ProceedWithResponse();
-}
-
 void MimeSniffingURLLoader::SetPriority(net::RequestPriority priority,
                                         int32_t intra_priority_value) {
   if (state_ == State::kAborted)

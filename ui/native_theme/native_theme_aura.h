@@ -25,61 +25,74 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
   static NativeThemeAura* web_instance();
 
   // NativeThemeBase:
-  SkColor GetSystemColor(ColorId color_id) const override;
+  SkColor GetSystemColor(ColorId color_id,
+                         ColorScheme color_scheme) const override;
   void PaintMenuPopupBackground(
       cc::PaintCanvas* canvas,
       const gfx::Size& size,
-      const MenuBackgroundExtraParams& menu_background) const override;
-  void PaintMenuItemBackground(
-      cc::PaintCanvas* canvas,
-      State state,
-      const gfx::Rect& rect,
-      const MenuItemExtraParams& menu_item) const override;
+      const MenuBackgroundExtraParams& menu_background,
+      ColorScheme color_scheme) const override;
+  void PaintMenuItemBackground(cc::PaintCanvas* canvas,
+                               State state,
+                               const gfx::Rect& rect,
+                               const MenuItemExtraParams& menu_item,
+                               ColorScheme color_scheme) const override;
   void PaintArrowButton(cc::PaintCanvas* gc,
                         const gfx::Rect& rect,
                         Part direction,
-                        State state) const override;
+                        State state,
+                        ColorScheme color_scheme) const override;
   void PaintScrollbarTrack(cc::PaintCanvas* canvas,
                            Part part,
                            State state,
                            const ScrollbarTrackExtraParams& extra_params,
-                           const gfx::Rect& rect) const override;
+                           const gfx::Rect& rect,
+                           ColorScheme color_scheme) const override;
   void PaintScrollbarThumb(cc::PaintCanvas* canvas,
                            Part part,
                            State state,
                            const gfx::Rect& rect,
-                           ScrollbarOverlayColorTheme theme) const override;
+                           ScrollbarOverlayColorTheme theme,
+                           ColorScheme color_scheme) const override;
   void PaintScrollbarCorner(cc::PaintCanvas* canvas,
                             State state,
-                            const gfx::Rect& rect) const override;
+                            const gfx::Rect& rect,
+                            ColorScheme color_scheme) const override;
   void PaintCheckbox(cc::PaintCanvas* canvas,
                      State state,
                      const gfx::Rect& rect,
-                     const ButtonExtraParams& button) const override;
+                     const ButtonExtraParams& button,
+                     ColorScheme color_scheme) const override;
   void PaintRadio(cc::PaintCanvas* canvas,
                   State state,
                   const gfx::Rect& rect,
-                  const ButtonExtraParams& button) const override;
+                  const ButtonExtraParams& button,
+                  ColorScheme color_scheme) const override;
   void PaintTextField(cc::PaintCanvas* canvas,
                       State state,
                       const gfx::Rect& rect,
-                      const TextFieldExtraParams& text) const override;
+                      const TextFieldExtraParams& text,
+                      ColorScheme color_scheme) const override;
   void PaintButton(cc::PaintCanvas* canvas,
                    State state,
                    const gfx::Rect& rect,
-                   const ButtonExtraParams& button) const override;
+                   const ButtonExtraParams& button,
+                   ColorScheme color_scheme) const override;
   void PaintSliderTrack(cc::PaintCanvas* canvas,
                         State state,
                         const gfx::Rect& rect,
-                        const SliderExtraParams& slider) const override;
+                        const SliderExtraParams& slider,
+                        ColorScheme color_scheme) const override;
   void PaintSliderThumb(cc::PaintCanvas* canvas,
                         State state,
                         const gfx::Rect& rect,
-                        const SliderExtraParams& slider) const override;
+                        const SliderExtraParams& slider,
+                        ColorScheme color_scheme) const override;
   void PaintMenuList(cc::PaintCanvas* canvas,
                      State state,
                      const gfx::Rect& rect,
-                     const MenuListExtraParams& menu_list) const override;
+                     const MenuListExtraParams& menu_list,
+                     ColorScheme color_scheme) const override;
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;
@@ -93,7 +106,8 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
   SkRect PaintCheckboxRadioCommon(cc::PaintCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
-                                  const SkScalar borderRadius) const;
+                                  const SkScalar borderRadius,
+                                  ColorScheme color_scheme) const;
 
   bool use_overlay_scrollbars_;
 

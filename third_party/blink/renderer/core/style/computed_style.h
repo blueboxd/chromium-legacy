@@ -2392,8 +2392,8 @@ class ComputedStyle : public ComputedStyleBase,
   // Load the images of CSS properties that were deferred by LazyLoad.
   void LoadDeferredImages(Document&) const;
 
-  enum ColorScheme UsedColorScheme() const {
-    return DarkColorScheme() ? ColorScheme::kDark : ColorScheme::kLight;
+  enum WebColorScheme UsedColorScheme() const {
+    return DarkColorScheme() ? WebColorScheme::kDark : WebColorScheme::kLight;
   }
 
  private:

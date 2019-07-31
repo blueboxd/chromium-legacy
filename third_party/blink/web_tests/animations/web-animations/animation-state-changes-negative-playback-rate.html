@@ -264,7 +264,7 @@ test(function() {
   var animation = runningAnimation();
   animation.currentTime = 1000;
   assert_times_equal(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
-  assert_equals(animation.currentTime, 1000);
+  assert_times_equal(animation.currentTime, 1000);
   assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Setting currentTime on a running animation");
@@ -327,7 +327,7 @@ test(function() {
   var animation = pausedAnimation();
   animation.currentTime = 1000;
   assert_unresolved(animation.startTime);
-  assert_equals(animation.currentTime, 1000);
+  assert_times_equal(animation.currentTime, 1000);
   assert_true(animation.pending);
   assert_equals(animation.playState, 'paused');
 }, "Setting currentTime on a paused animation");
@@ -390,7 +390,7 @@ test(function() {
   var animation = finishedAnimation();
   animation.currentTime = 1000;
   assert_times_equal(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
-  assert_equals(animation.currentTime, 1000);
+  assert_times_equal(animation.currentTime, 1000);
   assert_false(animation.pending);
   assert_equals(animation.playState, 'running');
 }, "Setting currentTime on a finished animation");

@@ -68,7 +68,8 @@ public class ChromeFileProvider extends FileProvider {
      * @param context Activity context that is used to access package manager.
      * @param file File for which the Uri is generated.
      */
-    public static Uri generateUri(final Context context, File file) {
+    public static Uri generateUri(final Context context, File file)
+            throws IllegalArgumentException {
         return getUriForFile(context, getAuthority(context), file);
     }
 

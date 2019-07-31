@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "media/capture/video/chromeos/mojo/camera3.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera3.mojom.h"
 #include "media/capture/video_capture_types.h"
 #include "ui/gfx/buffer_types.h"
 

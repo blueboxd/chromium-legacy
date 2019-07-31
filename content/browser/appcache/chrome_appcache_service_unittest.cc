@@ -79,7 +79,6 @@ ChromeAppCacheServiceTest::CreateAppCacheServiceImpl(
                      appcache_service, appcache_path,
                      nullptr /* browser_context */,
                      browser_context_.GetResourceContext(),
-                     base::RetainedRef(browser_context_.GetRequestContext()),
                      std::move(mock_policy)));
   // Steps needed to initialize the storage of AppCache data.
   thread_bundle_.RunUntilIdle();

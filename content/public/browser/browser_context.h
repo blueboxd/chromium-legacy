@@ -57,10 +57,6 @@ namespace media {
 class VideoDecodePerfHistory;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace storage {
 class BlobStorageContext;
 class SpecialStoragePolicy;
@@ -303,15 +299,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // Returns the BrowsingDataRemoverDelegate for this context. This will be
   // called once per context. It's valid to return nullptr.
   virtual BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() = 0;
-
-  // Creates the main net::URLRequestContextGetter. It's called only once.
-  virtual net::URLRequestContextGetter* CreateRequestContext(
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) = 0;
-
-  // Creates the main net::URLRequestContextGetter for media resources. It's
-  // called only once.
-  virtual net::URLRequestContextGetter* CreateMediaRequestContext() = 0;
 
   // Sets CORS origin access lists.
   virtual void SetCorsOriginAccessListForOrigin(

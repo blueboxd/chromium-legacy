@@ -13,7 +13,7 @@
 
 namespace extensions {
 
-class AutofillPrivateSaveAddressFunction : public UIThreadExtensionFunction {
+class AutofillPrivateSaveAddressFunction : public ExtensionFunction {
  public:
   AutofillPrivateSaveAddressFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.saveAddress",
@@ -31,7 +31,7 @@ class AutofillPrivateSaveAddressFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateSaveAddressFunction);
 };
 
-class AutofillPrivateGetCountryListFunction : public UIThreadExtensionFunction {
+class AutofillPrivateGetCountryListFunction : public ExtensionFunction {
  public:
   AutofillPrivateGetCountryListFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.getCountryList",
@@ -49,8 +49,7 @@ class AutofillPrivateGetCountryListFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetCountryListFunction);
 };
 
-class AutofillPrivateGetAddressComponentsFunction :
-    public UIThreadExtensionFunction {
+class AutofillPrivateGetAddressComponentsFunction : public ExtensionFunction {
  public:
   AutofillPrivateGetAddressComponentsFunction() {}
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.getAddressComponents",
@@ -66,7 +65,7 @@ class AutofillPrivateGetAddressComponentsFunction :
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetAddressComponentsFunction);
 };
 
-class AutofillPrivateGetAddressListFunction : public UIThreadExtensionFunction {
+class AutofillPrivateGetAddressListFunction : public ExtensionFunction {
  public:
   AutofillPrivateGetAddressListFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.getAddressList",
@@ -84,7 +83,7 @@ class AutofillPrivateGetAddressListFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetAddressListFunction);
 };
 
-class AutofillPrivateSaveCreditCardFunction : public UIThreadExtensionFunction {
+class AutofillPrivateSaveCreditCardFunction : public ExtensionFunction {
  public:
   AutofillPrivateSaveCreditCardFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.saveCreditCard",
@@ -102,7 +101,7 @@ class AutofillPrivateSaveCreditCardFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateSaveCreditCardFunction);
 };
 
-class AutofillPrivateRemoveEntryFunction : public UIThreadExtensionFunction {
+class AutofillPrivateRemoveEntryFunction : public ExtensionFunction {
  public:
   AutofillPrivateRemoveEntryFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.removeEntry",
@@ -120,8 +119,7 @@ class AutofillPrivateRemoveEntryFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateRemoveEntryFunction);
 };
 
-class AutofillPrivateValidatePhoneNumbersFunction :
-    public UIThreadExtensionFunction {
+class AutofillPrivateValidatePhoneNumbersFunction : public ExtensionFunction {
  public:
   AutofillPrivateValidatePhoneNumbersFunction() {}
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.validatePhoneNumbers",
@@ -137,7 +135,7 @@ class AutofillPrivateValidatePhoneNumbersFunction :
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateValidatePhoneNumbersFunction);
 };
 
-class AutofillPrivateMaskCreditCardFunction : public UIThreadExtensionFunction {
+class AutofillPrivateMaskCreditCardFunction : public ExtensionFunction {
  public:
   AutofillPrivateMaskCreditCardFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.maskCreditCard",
@@ -155,8 +153,7 @@ class AutofillPrivateMaskCreditCardFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateMaskCreditCardFunction);
 };
 
-class AutofillPrivateGetCreditCardListFunction
-    : public UIThreadExtensionFunction {
+class AutofillPrivateGetCreditCardListFunction : public ExtensionFunction {
  public:
   AutofillPrivateGetCreditCardListFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.getCreditCardList",
@@ -174,8 +171,7 @@ class AutofillPrivateGetCreditCardListFunction
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetCreditCardListFunction);
 };
 
-class AutofillPrivateMigrateCreditCardsFunction
-    : public UIThreadExtensionFunction {
+class AutofillPrivateMigrateCreditCardsFunction : public ExtensionFunction {
  public:
   AutofillPrivateMigrateCreditCardsFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.migrateCreditCards",
@@ -194,7 +190,7 @@ class AutofillPrivateMigrateCreditCardsFunction
 };
 
 class AutofillPrivateLogServerCardLinkClickedFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   AutofillPrivateLogServerCardLinkClickedFunction();
   DECLARE_EXTENSION_FUNCTION("autofillPrivate.logServerCardLinkClicked",

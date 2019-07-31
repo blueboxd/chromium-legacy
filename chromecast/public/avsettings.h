@@ -233,7 +233,7 @@ class AvSettings {
   // supported by Hdmi sink, in which case implementation shall return false
   // without actually setting the content type.
   // This function should only be implemented on HDMI platforms.
-  static bool SetHdmiContentType(HdmiContentType content_type)
+  static CHROMECAST_EXPORT bool SetHdmiContentType(HdmiContentType content_type)
       __attribute__((weak));
 
   // Gets the HDMI latency in microseconds.

@@ -21,12 +21,12 @@
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #import "ios/web/net/cookie_notification_bridge.h"
 #include "ios/web/public/init/ios_global_state.h"
 #include "ios/web/public/init/web_main_parts.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/web_client.h"
-#include "ios/web/service/service_manager_context.h"
 #include "ios/web/web_sub_thread.h"
 #include "ios/web/web_thread_impl.h"
 #include "ios/web/webui/url_data_manager_ios.h"
@@ -176,8 +176,6 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
     parts_->PostMainMessageLoopRun();
   }
 
-  service_manager_context_.reset();
-
   io_thread_.reset();
 
   // Only stop IO thread above as this is the only WebThread besides UI (which
@@ -211,7 +209,6 @@ void WebMainLoop::InitializeMainThread() {
 
 int WebMainLoop::WebThreadsStarted() {
   cookie_notification_bridge_.reset(new CookieNotificationBridge);
-  service_manager_context_ = std::make_unique<ServiceManagerContext>();
   return result_code_;
 }
 

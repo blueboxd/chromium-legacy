@@ -233,11 +233,6 @@ void WorkerScriptLoader::FollowRedirect(
   Start();
 }
 
-void WorkerScriptLoader::ProceedWithResponse() {
-  // Only for navigations.
-  NOTREACHED();
-}
-
 // Below we make a small effort to support the other URLLoader functions by
 // forwarding to the current |url_loader_| if any, but don't bother queuing
 // state or propagating state to a new URLLoader upon redirect.

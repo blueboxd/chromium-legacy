@@ -9,14 +9,24 @@
 #include <string.h>
 #include <sys/mman.h>
 
+#include <array>
 #include <memory>
+#include <utility>
 
 #include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "media/base/video_frame.h"
+#include "media/base/video_types.h"
+#include "media/gpu/format_utils.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/video_frame_mapper.h"
+#include "media/gpu/video_frame_mapper_factory.h"
 #include "media/parsers/jpeg_parser.h"
 #include "third_party/libyuv/include/libyuv.h"
 
@@ -262,11 +272,6 @@ void V4L2MjpegDecodeAccelerator::Decode(BitstreamBuffer bitstream_buffer,
     return;
   }
 
-  if (video_frame->format() != PIXEL_FORMAT_I420) {
-    PostNotifyError(bitstream_buffer.id(), UNSUPPORTED_JPEG);
-    return;
-  }
-
   std::unique_ptr<JobRecord> job_record(
       new JobRecord(std::move(bitstream_buffer), std::move(video_frame)));
 
@@ -436,9 +441,8 @@ bool V4L2MjpegDecodeAccelerator::CreateOutputBuffers() {
   output_buffer_coded_size_.SetSize(format.fmt.pix_mp.width,
                                     format.fmt.pix_mp.height);
   output_buffer_num_planes_ = format.fmt.pix_mp.num_planes;
-  for (size_t i = 0; i < output_buffer_num_planes_; ++i) {
-    output_bytesperlines_[i] = format.fmt.pix_mp.plane_fmt[i].bytesperline;
-  }
+  for (size_t i = 0; i < output_buffer_num_planes_; ++i)
+    output_strides_[i] = format.fmt.pix_mp.plane_fmt[i].bytesperline;
 
   VideoPixelFormat output_format =
       V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
@@ -675,75 +679,153 @@ void V4L2MjpegDecodeAccelerator::EnqueueOutput() {
 
 bool V4L2MjpegDecodeAccelerator::ConvertOutputImage(
     const BufferRecord& output_buffer,
-    VideoFrame* dst_frame) {
-  uint8_t* dst_y = dst_frame->data(VideoFrame::kYPlane);
-  uint8_t* dst_u = dst_frame->data(VideoFrame::kUPlane);
-  uint8_t* dst_v = dst_frame->data(VideoFrame::kVPlane);
-  size_t dst_y_stride = dst_frame->stride(VideoFrame::kYPlane);
-  size_t dst_u_stride = dst_frame->stride(VideoFrame::kUPlane);
-  size_t dst_v_stride = dst_frame->stride(VideoFrame::kVPlane);
-
-  // It is assumed that |dst_frame| is backed by enough memory that it is safe
-  // to store an I420 frame of |dst_width|x|dst_height| in it using the data
-  // pointers and strides from above.
-  int dst_width = dst_frame->coded_size().width();
-  int dst_height = dst_frame->coded_size().height();
-
-  // The video frame's coded dimensions should be even for the I420 format.
-  DCHECK_EQ(0, dst_width % 2);
-  DCHECK_EQ(0, dst_height % 2);
-
+    scoped_refptr<VideoFrame> dst_frame) {
   // The coded size of the hardware buffer should be at least as large as the
-  // video frame's coded size.
+  // video frame's visible size.
+  const int dst_width = dst_frame->visible_rect().width();
+  const int dst_height = dst_frame->visible_rect().height();
   DCHECK_GE(output_buffer_coded_size_.width(), dst_width);
   DCHECK_GE(output_buffer_coded_size_.height(), dst_height);
 
-  if (output_buffer_num_planes_ == 1) {
-    // Use ConvertToI420 to convert all splane buffers.
-    // If the source format is I420, ConvertToI420 will simply copy the frame.
-    VideoPixelFormat format =
+  // Dmabuf-backed frame needs to be mapped for SW access.
+  if (dst_frame->HasDmaBufs()) {
+    std::unique_ptr<VideoFrameMapper> frame_mapper =
+        VideoFrameMapperFactory::CreateMapper(dst_frame->format());
+    if (!frame_mapper) {
+      VLOGF(1) << "Failed to create video frame mapper";
+      return false;
+    }
+    dst_frame = frame_mapper->Map(std::move(dst_frame));
+    if (!dst_frame) {
+      VLOGF(1) << "Failed to map DMA-buf video frame";
+      return false;
+    }
+  }
+
+  // Extract destination pointers and strides.
+  std::array<uint8_t*, VideoFrame::kMaxPlanes> dst_ptrs{};
+  std::array<int, VideoFrame::kMaxPlanes> dst_strides{};
+  for (size_t i = 0; i < dst_frame->layout().num_planes(); i++) {
+    dst_ptrs[i] = dst_frame->visible_data(i);
+    dst_strides[i] = base::checked_cast<int>(dst_frame->stride(i));
+  }
+
+  // Use ConvertToI420 to convert all splane formats to I420.
+  if (output_buffer_num_planes_ == 1 &&
+      dst_frame->format() == PIXEL_FORMAT_I420) {
+    DCHECK_EQ(dst_frame->layout().num_planes(), 3u);
+    const VideoPixelFormat format =
         V4L2Device::V4L2PixFmtToVideoPixelFormat(output_buffer_pixelformat_);
-    size_t src_size =
+    if (format == PIXEL_FORMAT_UNKNOWN) {
+      VLOGF(1) << "Unknown V4L2 format: "
+               << FourccToString(output_buffer_pixelformat_);
+      return false;
+    }
+    const size_t src_size =
         VideoFrame::AllocationSize(format, output_buffer_coded_size_);
     if (libyuv::ConvertToI420(
-            static_cast<uint8_t*>(output_buffer.address[0]), src_size, dst_y,
-            dst_y_stride, dst_u, dst_u_stride, dst_v, dst_v_stride, 0, 0,
+            static_cast<uint8_t*>(output_buffer.address[0]), src_size,
+            dst_ptrs[0], dst_strides[0], dst_ptrs[1], dst_strides[1],
+            dst_ptrs[2], dst_strides[2], 0 /*x*/, 0 /*y*/,
             output_buffer_coded_size_.width(),
             output_buffer_coded_size_.height(), dst_width, dst_height,
             libyuv::kRotate0, output_buffer_pixelformat_)) {
       VLOGF(1) << "ConvertToI420 failed. Source format: "
-               << output_buffer_pixelformat_;
+               << FourccToString(output_buffer_pixelformat_);
       return false;
     }
-  } else if (output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV420M ||
-             output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV422M) {
-    DCHECK(output_buffer_num_planes_ == 3);
-    uint8_t* src_y = static_cast<uint8_t*>(output_buffer.address[0]);
-    uint8_t* src_u = static_cast<uint8_t*>(output_buffer.address[1]);
-    uint8_t* src_v = static_cast<uint8_t*>(output_buffer.address[2]);
-    size_t src_y_stride = output_bytesperlines_[0];
-    size_t src_u_stride = output_bytesperlines_[1];
-    size_t src_v_stride = output_bytesperlines_[2];
-    if (output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV420M) {
-      if (libyuv::I420Copy(src_y, src_y_stride, src_u, src_u_stride, src_v,
-                           src_v_stride, dst_y, dst_y_stride, dst_u,
-                           dst_u_stride, dst_v, dst_v_stride, dst_width,
-                           dst_height)) {
-        VLOGF(1) << "I420Copy failed";
+    return true;
+  }
+
+  // Extract source pointers and strides.
+  std::array<const uint8_t*, VideoFrame::kMaxPlanes> src_ptrs{};
+  std::array<int, VideoFrame::kMaxPlanes> src_strides{};
+  for (size_t i = 0; i < output_buffer_num_planes_; i++) {
+    src_ptrs[i] = static_cast<uint8_t*>(output_buffer.address[i]);
+    src_strides[i] = output_strides_[i];
+  }
+
+  if (output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV420M) {
+    DCHECK_EQ(output_buffer_num_planes_, 3u);
+    switch (dst_frame->format()) {
+      case PIXEL_FORMAT_I420:
+        DCHECK_EQ(dst_frame->layout().num_planes(), 3u);
+        if (libyuv::I420Copy(src_ptrs[0], src_strides[0], src_ptrs[1],
+                             src_strides[1], src_ptrs[2], src_strides[2],
+                             dst_ptrs[0], dst_strides[0], dst_ptrs[1],
+                             dst_strides[1], dst_ptrs[2], dst_strides[2],
+                             dst_width, dst_height)) {
+          VLOGF(1) << "I420Copy failed";
+          return false;
+        }
+        break;
+      case PIXEL_FORMAT_YV12:
+        DCHECK_EQ(dst_frame->layout().num_planes(), 3u);
+        if (libyuv::I420Copy(src_ptrs[0], src_strides[0], src_ptrs[1],
+                             src_strides[1], src_ptrs[2], src_strides[2],
+                             dst_ptrs[0], dst_strides[0], dst_ptrs[2],
+                             dst_strides[2], dst_ptrs[1], dst_strides[1],
+                             dst_width, dst_height)) {
+          VLOGF(1) << "I420Copy failed";
+          return false;
+        }
+        break;
+      case PIXEL_FORMAT_NV12:
+        DCHECK_EQ(dst_frame->layout().num_planes(), 2u);
+        if (libyuv::I420ToNV12(src_ptrs[0], src_strides[0], src_ptrs[1],
+                               src_strides[1], src_ptrs[2], src_strides[2],
+                               dst_ptrs[0], dst_strides[0], dst_ptrs[1],
+                               dst_strides[1], dst_width, dst_height)) {
+          VLOGF(1) << "I420ToNV12 failed";
+          return false;
+        }
+        break;
+      default:
+        VLOGF(1) << "Can't convert image from I420 to " << dst_frame->format();
         return false;
-      }
-    } else {  // output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV422M
-      if (libyuv::I422ToI420(src_y, src_y_stride, src_u, src_u_stride, src_v,
-                             src_v_stride, dst_y, dst_y_stride, dst_u,
-                             dst_u_stride, dst_v, dst_v_stride, dst_width,
-                             dst_height)) {
-        VLOGF(1) << "I422ToI420 failed";
+    }
+  } else if (output_buffer_pixelformat_ == V4L2_PIX_FMT_YUV422M) {
+    DCHECK_EQ(output_buffer_num_planes_, 3u);
+    switch (dst_frame->format()) {
+      case PIXEL_FORMAT_I420:
+        DCHECK_EQ(dst_frame->layout().num_planes(), 3u);
+        if (libyuv::I422ToI420(src_ptrs[0], src_strides[0], src_ptrs[1],
+                               src_strides[1], src_ptrs[2], src_strides[2],
+                               dst_ptrs[0], dst_strides[0], dst_ptrs[1],
+                               dst_strides[1], dst_ptrs[2], dst_strides[2],
+                               dst_width, dst_height)) {
+          VLOGF(1) << "I422ToI420 failed";
+          return false;
+        }
+        break;
+      case PIXEL_FORMAT_YV12:
+        DCHECK_EQ(dst_frame->layout().num_planes(), 3u);
+        if (libyuv::I422ToI420(src_ptrs[0], src_strides[0], src_ptrs[1],
+                               src_strides[1], src_ptrs[2], src_strides[2],
+                               dst_ptrs[0], dst_strides[0], dst_ptrs[2],
+                               dst_strides[2], dst_ptrs[1], dst_strides[1],
+                               dst_width, dst_height)) {
+          VLOGF(1) << "I422ToI420 failed";
+          return false;
+        }
+        break;
+      case PIXEL_FORMAT_NV12:
+        DCHECK_EQ(dst_frame->layout().num_planes(), 2u);
+        if (libyuv::I422ToNV21(src_ptrs[0], src_strides[0], src_ptrs[2],
+                               src_strides[2], src_ptrs[1], src_strides[1],
+                               dst_ptrs[0], dst_strides[0], dst_ptrs[1],
+                               dst_strides[1], dst_width, dst_height)) {
+          VLOGF(1) << "I422ToNV21 failed";
+          return false;
+        }
+        break;
+      default:
+        VLOGF(1) << "Can't convert image from I422 to " << dst_frame->format();
         return false;
-      }
     }
   } else {
     VLOGF(1) << "Unsupported source buffer format: "
-             << output_buffer_pixelformat_;
+             << FourccToString(output_buffer_pixelformat_);
     return false;
   }
   return true;
@@ -826,7 +908,8 @@ void V4L2MjpegDecodeAccelerator::Dequeue() {
       // Copy the decoded data from output buffer to the buffer provided by the
       // client. Do format conversion when output format is not
       // V4L2_PIX_FMT_YUV420.
-      if (!ConvertOutputImage(output_record, job_record->out_frame.get())) {
+      if (!ConvertOutputImage(output_record,
+                              std::move(job_record->out_frame))) {
         PostNotifyError(job_record->bitstream_buffer_id, PLATFORM_FAILURE);
         return;
       }
@@ -952,11 +1035,11 @@ bool V4L2MjpegDecodeAccelerator::EnqueueInputRecord() {
   qbuf.m.planes = planes;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   input_record.at_device = true;
-  running_jobs_.push(std::move(job_record));
-  free_input_buffers_.pop_back();
 
   DVLOGF(3) << "enqueued frame id=" << job_record->bitstream_buffer_id
             << " to device.";
+  running_jobs_.push(std::move(job_record));
+  free_input_buffers_.pop_back();
   return true;
 }
 

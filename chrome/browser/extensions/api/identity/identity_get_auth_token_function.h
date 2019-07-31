@@ -129,8 +129,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // instance, or empty if this was not in the parameters.
   void GetAuthTokenForPrimaryAccount(const std::string& extension_gaia_id);
 
-  // Wrapper to FindAccountInfoForAccountWithRefreshTokenByGaiaId() to avoid a
-  // synchronous call to IdentityManager in RunAsync().
+  // Wrapper to FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId() to
+  // avoid a synchronous call to IdentityManager in RunAsync().
   void FetchExtensionAccountInfo(const std::string& gaia_id);
 
   // Called when the AccountInfo that this instance should use is available.

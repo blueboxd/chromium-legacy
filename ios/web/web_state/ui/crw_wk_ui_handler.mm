@@ -7,7 +7,6 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/wk_navigation_action_util.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/service/web_state_interface_provider.h"
 #import "ios/web/public/ui/java_script_dialog_type.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
@@ -50,12 +49,8 @@
 }
 
 - (web::MojoFacade*)mojoFacade {
-  if (!_mojoFacade) {
-    service_manager::mojom::InterfaceProvider* interfaceProvider =
-        self.webStateImpl->GetWebStateInterfaceProvider();
-    _mojoFacade =
-        std::make_unique<web::MojoFacade>(interfaceProvider, self.webStateImpl);
-  }
+  if (!_mojoFacade)
+    _mojoFacade = std::make_unique<web::MojoFacade>(self.webStateImpl);
   return _mojoFacade.get();
 }
 

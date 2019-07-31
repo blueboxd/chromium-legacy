@@ -66,7 +66,7 @@ int ChromeAutomationInternalApiDelegate::GetTabId(
 }
 
 content::WebContents* ChromeAutomationInternalApiDelegate::GetActiveWebContents(
-    UIThreadExtensionFunction* function) {
+    ExtensionFunction* function) {
   return ChromeExtensionFunctionDetails(function)
       .GetCurrentBrowser()
       ->tab_strip_model()

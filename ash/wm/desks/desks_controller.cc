@@ -105,6 +105,10 @@ DesksController* DesksController::Get() {
   return Shell::Get()->desks_controller();
 }
 
+void DesksController::Shutdown() {
+  desk_switch_animators_.clear();
+}
+
 void DesksController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -359,11 +363,16 @@ bool DesksController::ActivateAdjacentDesk(bool going_left,
   return true;
 }
 
-void DesksController::MoveWindowFromActiveDeskTo(
+bool DesksController::MoveWindowFromActiveDeskTo(
     aura::Window* window,
     Desk* target_desk,
     DesksMoveWindowFromActiveDeskSource source) {
   DCHECK_NE(active_desk_, target_desk);
+
+  // An active window might be an always-on-top or pip which doesn't belong to
+  // the active desk, and hence cannot be removed.
+  if (!base::Contains(active_desk_->windows(), window))
+    return false;
 
   base::AutoReset<bool> in_progress(&are_desks_being_modified_, true);
 
@@ -380,6 +389,9 @@ void DesksController::MoveWindowFromActiveDeskTo(
           base::NumberToString16(GetDeskIndex(active_desk_) + 1),
           base::NumberToString16(GetDeskIndex(target_desk) + 1)));
 
+  UMA_HISTOGRAM_ENUMERATION(kMoveWindowFromActiveDeskHistogramName, source);
+  ReportNumberOfWindowsPerDeskHistogram();
+
   if (in_overview) {
     DCHECK(overview_controller->InOverviewSession());
     auto* overview_session = overview_controller->overview_session();
@@ -393,14 +405,12 @@ void DesksController::MoveWindowFromActiveDeskTo(
     // When in overview, we should return immediately and not change the window
     // activation as we do below, since the dummy "OverviewModeFocusedWidget"
     // should remain active while overview mode is active..
-    return;
+    return true;
   }
-
-  UMA_HISTOGRAM_ENUMERATION(kMoveWindowFromActiveDeskHistogramName, source);
-  ReportNumberOfWindowsPerDeskHistogram();
 
   // A window moving out of the active desk cannot be active.
   wm::DeactivateWindow(window);
+  return true;
 }
 
 void DesksController::OnRootWindowAdded(aura::Window* root_window) {

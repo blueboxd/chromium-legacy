@@ -98,8 +98,7 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
           generator_->CustomInvalidationProperties();
       float zoom = layout_object.StyleRef().EffectiveZoom();
       auto style_data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
-          document, style, layout_object.GetNode(), native_properties,
-          custom_properties);
+          document, style, native_properties, custom_properties);
       paint_off_thread_ = style_data.has_value();
       if (paint_off_thread_) {
         Vector<std::unique_ptr<CrossThreadStyleValue>>

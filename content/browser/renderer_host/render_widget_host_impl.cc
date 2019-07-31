@@ -1272,11 +1272,6 @@ void RenderWidgetHostImpl::WaitForInputProcessed(base::OnceClosure callback) {
   input_router_->WaitForInputProcessed(std::move(callback));
 }
 
-void RenderWidgetHostImpl::ForwardEmulatedGestureEvent(
-    const blink::WebGestureEvent& gesture_event) {
-  ForwardGestureEvent(gesture_event);
-}
-
 void RenderWidgetHostImpl::ForwardGestureEvent(
     const blink::WebGestureEvent& gesture_event) {
   ForwardGestureEventWithLatencyInfo(
@@ -1388,14 +1383,6 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
         ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
             gesture_event));
   }
-}
-
-void RenderWidgetHostImpl::ForwardEmulatedTouchEvent(
-    const blink::WebTouchEvent& touch_event,
-    RenderWidgetHostViewBase* target) {
-  TRACE_EVENT0("input", "RenderWidgetHostImpl::ForwardEmulatedTouchEvent");
-  ForwardTouchEventWithLatencyInfo(touch_event,
-                                   ui::LatencyInfo(ui::SourceEventType::TOUCH));
 }
 
 void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(

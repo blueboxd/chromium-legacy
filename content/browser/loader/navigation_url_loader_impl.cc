@@ -1558,8 +1558,6 @@ void NavigationURLLoaderImpl::FollowRedirect(
                      base::Time::Now()));
 }
 
-void NavigationURLLoaderImpl::ProceedWithResponse() {}
-
 void NavigationURLLoaderImpl::OnReceiveResponse(
     scoped_refptr<network::ResourceResponse> response_head,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,

@@ -602,7 +602,7 @@ base::string16 ChromeAutofillClient::GetAccountHolderName() {
   if (!identity_manager)
     return base::string16();
   base::Optional<AccountInfo> primary_account_info =
-      identity_manager->FindExtendedAccountInfoForAccount(
+      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager->GetPrimaryAccountInfo());
   return primary_account_info
              ? base::UTF8ToUTF16(primary_account_info->full_name)

@@ -287,7 +287,7 @@ bool WebrtcLoggingPrivateSetUploadOnRenderCloseFunction::RunAsync() {
 
   // Post a task since this is an asynchronous extension function.
   // TODO(devlin): This is unneccessary; this should just be a
-  // UIThreadExtensionFunction. Fix this.
+  // ExtensionFunction. Fix this.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(

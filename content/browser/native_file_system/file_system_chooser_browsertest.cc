@@ -140,6 +140,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile) {
                    JsReplace("(async () => {"
                              "  const w = await self.entry.createWriter();"
                              "  await w.write(0, new Blob([$1]));"
+                             "  await w.close();"
                              "  return (await self.entry.getFile()).size; })()",
                              file_contents)));
   {

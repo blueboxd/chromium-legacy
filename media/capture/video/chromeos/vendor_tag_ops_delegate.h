@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
 
 namespace media {
 

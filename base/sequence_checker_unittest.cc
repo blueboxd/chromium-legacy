@@ -155,6 +155,76 @@ TEST(SequenceCheckerTest, DetachFromSequenceNoSequenceToken) {
   EXPECT_FALSE(sequence_checker.CalledOnValidSequence());
 }
 
+TEST(SequenceCheckerTest, Move) {
+  SequenceCheckerImpl initial;
+  EXPECT_TRUE(initial.CalledOnValidSequence());
+
+  SequenceCheckerImpl move_constructed(std::move(initial));
+  EXPECT_TRUE(move_constructed.CalledOnValidSequence());
+
+  SequenceCheckerImpl move_assigned;
+  move_assigned = std::move(move_constructed);
+
+  // The two SequenceCheckerImpls moved from should be able to rebind to another
+  // sequence.
+  RunCallbackThread thread1(
+      BindOnce(&ExpectCalledOnValidSequence, Unretained(&initial)));
+  RunCallbackThread thread2(
+      BindOnce(&ExpectCalledOnValidSequence, Unretained(&move_constructed)));
+
+  // But the latest one shouldn't be able to run on another sequence.
+  RunCallbackThread thread(
+      BindOnce(&ExpectNotCalledOnValidSequence, Unretained(&move_assigned)));
+
+  EXPECT_TRUE(move_assigned.CalledOnValidSequence());
+}
+
+TEST(SequenceCheckerTest, MoveAssignIntoDetached) {
+  SequenceCheckerImpl initial;
+
+  SequenceCheckerImpl move_assigned;
+  move_assigned.DetachFromSequence();
+  move_assigned = std::move(initial);
+
+  // |initial| is detached after move.
+  RunCallbackThread thread1(
+      BindOnce(&ExpectCalledOnValidSequence, Unretained(&initial)));
+
+  // |move_assigned| should be associated with the main thread.
+  RunCallbackThread thread2(
+      BindOnce(&ExpectNotCalledOnValidSequence, Unretained(&move_assigned)));
+
+  EXPECT_TRUE(move_assigned.CalledOnValidSequence());
+}
+
+TEST(SequenceCheckerTest, MoveFromDetachedRebinds) {
+  SequenceCheckerImpl initial;
+  initial.DetachFromSequence();
+
+  SequenceCheckerImpl moved_into(std::move(initial));
+
+  // |initial| is still detached after move.
+  RunCallbackThread thread1(
+      BindOnce(&ExpectCalledOnValidSequence, Unretained(&initial)));
+
+  // |moved_into| is bound to the current sequence as part of the move.
+  RunCallbackThread thread2(
+      BindOnce(&ExpectNotCalledOnValidSequence, Unretained(&moved_into)));
+  EXPECT_TRUE(moved_into.CalledOnValidSequence());
+}
+
+TEST(SequenceCheckerTest, MoveOffSequenceBanned) {
+  testing::GTEST_FLAG(death_test_style) = "threadsafe";
+
+  SequenceCheckerImpl other_sequence;
+  other_sequence.DetachFromSequence();
+  RunCallbackThread thread(
+      BindOnce(&ExpectCalledOnValidSequence, Unretained(&other_sequence)));
+
+  EXPECT_DCHECK_DEATH(
+      SequenceCheckerImpl main_sequence(std::move(other_sequence)));
+}
+
 TEST(SequenceCheckerMacroTest, Macros) {
   auto scope = std::make_unique<ScopedSetSequenceTokenForCurrentThread>(
       SequenceToken::Create());

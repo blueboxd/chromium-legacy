@@ -861,7 +861,7 @@ std::string MakeThumbnailDataUrlOnSequence(
 }
 
 void OnSearchDriveFs(
-    scoped_refptr<UIThreadExtensionFunction> function,
+    scoped_refptr<ExtensionFunction> function,
     bool filter_dirs,
     base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback,
     drive::FileError error,
@@ -911,7 +911,7 @@ void OnSearchDriveFs(
 }
 
 drivefs::mojom::QueryParameters::QuerySource SearchDriveFs(
-    scoped_refptr<UIThreadExtensionFunction> function,
+    scoped_refptr<ExtensionFunction> function,
     drivefs::mojom::QueryParametersPtr query,
     bool filter_dirs,
     base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback) {

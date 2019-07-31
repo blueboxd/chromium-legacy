@@ -110,8 +110,9 @@ std::string ProfileDownloader::GetProfilePictureURL() const {
 void ProfileDownloader::StartFetchingImage() {
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
   auto maybe_account_info =
-      identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-          account_id_);
+      identity_manager_
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id_);
   if (maybe_account_info.has_value())
     account_info_ = maybe_account_info.value();
 

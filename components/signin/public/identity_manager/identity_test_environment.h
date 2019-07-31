@@ -287,7 +287,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       kPending,
       kAvailable,
     } state;
-    base::Optional<std::string> account_id;
+    base::Optional<CoreAccountId> account_id;
     base::OnceClosure on_available;
   };
 

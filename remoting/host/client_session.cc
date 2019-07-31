@@ -586,17 +586,6 @@ void ClientSession::OnVideoSizeChanged(protocol::VideoStream* video_stream,
 void ClientSession::OnDesktopDisplayChanged(
     std::unique_ptr<protocol::VideoLayout> displays) {
   LOG(INFO) << "ClientSession::OnDesktopDisplayChanged";
-
-#if defined(OS_MACOSX)
-  // Don't send pixel based TrackLayout info to the client.  There are several
-  // bugs related to cursor position and desktop selection (for multi-mon) which
-  // prevent the user from interacting with their machine.  For now, we return
-  // early which will provide the same experience as the Chrome app used to and
-  // the iOS and Android apps currently do.
-  // TODO(crbug.com/987513): Investigate to figure out why the cursor offset and
-  // display selection issues are occurring and then re-enable this for MacOS.
-  return;
-#else
   // Scan display list to calculate the full desktop size.
   int min_x = 0;
   int max_x = 0;
@@ -687,7 +676,6 @@ void ClientSession::OnDesktopDisplayChanged(
   }
 
   connection_->client_stub()->SetVideoLayout(layout);
-#endif  // defined(OS_MACOSX)
 }
 
 void ClientSession::CreateFileTransferMessageHandler(

@@ -36,6 +36,8 @@ using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
+using chrome_test_util::WebStateScrollViewMatcher;
+
 namespace {
 
 // The page height of test pages. This must be big enough to triger fullscreen.
@@ -109,9 +111,7 @@ void AssertURLIs(const GURL& expectedURL) {
         chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
   }
   DCHECK_LT(yOffset, 0);
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       assertWithMatcher:grey_scrollViewContentOffset(CGPointMake(0, yOffset))];
 }
 

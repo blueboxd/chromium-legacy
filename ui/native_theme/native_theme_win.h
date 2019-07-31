@@ -75,8 +75,10 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
              Part part,
              State state,
              const gfx::Rect& rect,
-             const ExtraParams& extra) const override;
-  SkColor GetSystemColor(ColorId color_id) const override;
+             const ExtraParams& extra,
+             ColorScheme color_scheme) const override;
+  SkColor GetSystemColor(ColorId color_id,
+                         ColorScheme color_scheme) const override;
   bool SupportsNinePatch(Part part) const override;
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
   gfx::Rect GetNinePatchAperture(Part part) const override;
@@ -107,10 +109,14 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   // Painting functions that paint to PaintCanvas.
   void PaintMenuSeparator(cc::PaintCanvas* canvas,
-                          const MenuSeparatorExtraParams& params) const;
-  void PaintMenuGutter(cc::PaintCanvas* canvas, const gfx::Rect& rect) const;
+                          const MenuSeparatorExtraParams& params,
+                          ColorScheme color_scheme) const;
+  void PaintMenuGutter(cc::PaintCanvas* canvas,
+                       const gfx::Rect& rect,
+                       ColorScheme color_scheme) const;
   void PaintMenuBackground(cc::PaintCanvas* canvas,
-                           const gfx::Rect& rect) const;
+                           const gfx::Rect& rect,
+                           ColorScheme color_scheme) const;
 
   // Paint directly to canvas' HDC.
   void PaintDirect(SkCanvas* destination_canvas,

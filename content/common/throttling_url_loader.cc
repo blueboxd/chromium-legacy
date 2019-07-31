@@ -117,6 +117,14 @@ class ThrottlingURLLoader::ForwardingThrottleDelegate
     loader_->RestartWithFlags(additional_load_flags);
   }
 
+  void RestartWithURLResetAndFlags(int additional_load_flags) override {
+    if (!loader_)
+      return;
+
+    ScopedDelegateCall scoped_delegate_call(this);
+    loader_->RestartWithURLResetAndFlags(additional_load_flags);
+  }
+
   void Detach() { loader_ = nullptr; }
 
  private:
@@ -322,16 +330,16 @@ void ThrottlingURLLoader::Start(
   bool deferred = false;
   DCHECK(deferring_throttles_.empty());
   if (!throttles_.empty()) {
+    original_url_ = url_request->url;
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
-      GURL original_url = url_request->url;
       throttle->WillStartRequest(url_request, &throttle_deferred);
-      if (original_url != url_request->url) {
+      if (original_url_ != url_request->url) {
         DCHECK(throttle_will_start_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
                "changing the URL.";
-        if (original_url.SchemeIsHTTPOrHTTPS() &&
+        if (original_url_.SchemeIsHTTPOrHTTPS() &&
             !url_request->url.SchemeIsHTTPOrHTTPS() &&
             !throttle->makes_unsafe_redirect()) {
           NOTREACHED() << "A URLLoaderThrottle can't redirect from http(s) to "
@@ -341,7 +349,7 @@ void ThrottlingURLLoader::Start(
         }
         // Restore the original URL so that all throttles see the same original
         // URL.
-        url_request->url = original_url;
+        url_request->url = original_url_;
       }
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
@@ -359,6 +367,10 @@ void ThrottlingURLLoader::Start(
 
 void ThrottlingURLLoader::StartNow() {
   DCHECK(start_info_);
+  if (throttle_will_start_original_url_) {
+    throttle_will_start_redirect_url_ = original_url_;
+    throttle_will_start_original_url_ = false;
+  }
   if (!throttle_will_start_redirect_url_.is_empty()) {
     auto first_party_url_policy =
         start_info_->url_request.update_first_party_url_on_redirect
@@ -485,6 +497,13 @@ void ThrottlingURLLoader::StopDeferringForThrottle(
 
 void ThrottlingURLLoader::RestartWithFlags(int additional_load_flags) {
   pending_restart_flags_ |= additional_load_flags;
+  has_pending_restart_ = true;
+}
+
+void ThrottlingURLLoader::RestartWithURLResetAndFlags(
+    int additional_load_flags) {
+  pending_restart_flags_ |= additional_load_flags;
+  throttle_will_start_original_url_ = true;
   has_pending_restart_ = true;
 }
 

@@ -20,6 +20,8 @@
 
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OpenLinkInNewTabButton;
+using chrome_test_util::WebViewMatcher;
+
 using web::WebViewInWebState;
 
 namespace {
@@ -95,7 +97,7 @@ const char kLinksTestURL2Text[] = "arrived";
                   @"Unexpected number of tabs");
 
   // New child WebState should be inserted BEFORE |childWebState1|.
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];
@@ -107,7 +109,7 @@ const char kLinksTestURL2Text[] = "arrived";
                      @"Unexpected next web state");
 
   // New child WebState should be inserted AFTER |childWebState3|.
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkSelectorID],
                         true /* menu should appear */)];

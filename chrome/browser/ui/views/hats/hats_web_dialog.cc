@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/hats/hats_service.h"
-#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -71,15 +69,14 @@ std::string LoadLocalHtmlAsString(const std::string& site_id,
 }  // namespace
 
 // static
-void HatsWebDialog::Show(const Browser* browser) {
+void HatsWebDialog::Show(const Browser* browser, const std::string& site_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(browser);
 
   Profile* profile = browser->profile();
 
   // Self deleting upon close.
-  auto* hats_dialog = new HatsWebDialog(
-      HatsServiceFactory::GetForProfile(profile, true)->en_site_id());
+  auto* hats_dialog = new HatsWebDialog(site_id);
 
   // Create a web dialog aligned to the bottom center of the location bar.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);

@@ -203,8 +203,7 @@ void DeclarativeEvent::HandleFunction(const std::string& signature_name,
 
   request_handler_->StartRequest(
       context, request_name, std::move(parse_result.arguments),
-      parse_result.callback, v8::Local<v8::Function>(),
-      binding::RequestThread::UI);
+      parse_result.callback, v8::Local<v8::Function>());
 }
 
 }  // namespace extensions

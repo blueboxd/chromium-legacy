@@ -4,6 +4,7 @@
 
 #include "base/threading/thread_checker_impl.h"
 
+#include "base/logging.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 
@@ -11,10 +12,47 @@ namespace base {
 
 ThreadCheckerImpl::ThreadCheckerImpl() {
   AutoLock auto_lock(lock_);
-  EnsureAssigned();
+  EnsureAssignedLockRequired();
 }
 
 ThreadCheckerImpl::~ThreadCheckerImpl() = default;
+
+ThreadCheckerImpl::ThreadCheckerImpl(ThreadCheckerImpl&& other) {
+  // Verify that |other| is called on its associated thread and bind it now if
+  // it is currently detached (even if this isn't a DCHECK build).
+  const bool other_called_on_valid_thread = other.CalledOnValidThread();
+  DCHECK(other_called_on_valid_thread);
+
+  // Intentionally not using |other.lock_| to let TSAN catch racy construct from
+  // |other|.
+  thread_id_ = other.thread_id_;
+  task_token_ = other.task_token_;
+  sequence_token_ = other.sequence_token_;
+
+  other.thread_id_ = PlatformThreadRef();
+  other.task_token_ = TaskToken();
+  other.sequence_token_ = SequenceToken();
+}
+
+ThreadCheckerImpl& ThreadCheckerImpl::operator=(ThreadCheckerImpl&& other) {
+  DCHECK(CalledOnValidThread());
+
+  // Verify that |other| is called on its associated thread and bind it now if
+  // it is currently detached (even if this isn't a DCHECK build).
+  const bool other_called_on_valid_thread = other.CalledOnValidThread();
+  DCHECK(other_called_on_valid_thread);
+
+  // Intentionally not using either |lock_| to let TSAN catch racy assign.
+  TS_UNCHECKED_READ(thread_id_) = TS_UNCHECKED_READ(other.thread_id_);
+  TS_UNCHECKED_READ(task_token_) = TS_UNCHECKED_READ(other.task_token_);
+  TS_UNCHECKED_READ(sequence_token_) = TS_UNCHECKED_READ(other.sequence_token_);
+
+  TS_UNCHECKED_READ(other.thread_id_) = PlatformThreadRef();
+  TS_UNCHECKED_READ(other.task_token_) = TaskToken();
+  TS_UNCHECKED_READ(other.sequence_token_) = SequenceToken();
+
+  return *this;
+}
 
 bool ThreadCheckerImpl::CalledOnValidThread() const {
   const bool has_thread_been_destroyed = ThreadLocalStorage::HasBeenDestroyed();
@@ -24,7 +62,7 @@ bool ThreadCheckerImpl::CalledOnValidThread() const {
   // the state of thread-local storage is not guaranteed to be in a consistent
   // state. Further, task-runner only installs the tokens when running a task.
   if (!has_thread_been_destroyed) {
-    EnsureAssigned();
+    EnsureAssignedLockRequired();
 
     // Always return true when called from the task from which this
     // ThreadCheckerImpl was assigned to a thread.
@@ -57,8 +95,7 @@ void ThreadCheckerImpl::DetachFromThread() {
   sequence_token_ = SequenceToken();
 }
 
-void ThreadCheckerImpl::EnsureAssigned() const {
-  lock_.AssertAcquired();
+void ThreadCheckerImpl::EnsureAssignedLockRequired() const {
   if (!thread_id_.is_null())
     return;
 

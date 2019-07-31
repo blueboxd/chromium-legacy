@@ -13,7 +13,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 
@@ -28,7 +27,6 @@ void ChromeAppCacheService::InitializeOnLoaderThread(
     const base::FilePath& cache_path,
     BrowserContext* browser_context,
     ResourceContext* resource_context,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy) {
   DCHECK_CURRENTLY_ON(
       NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
@@ -37,14 +35,6 @@ void ChromeAppCacheService::InitializeOnLoaderThread(
   DCHECK(!(browser_context && resource_context));
   browser_context_ = browser_context;
   resource_context_ = resource_context;
-
-  // The |request_context_getter| can be NULL in some unit tests.
-  //
-  // TODO(ajwong): TestProfile is difficult to work with. The
-  // SafeBrowsing tests require that GetRequestContext return NULL
-  // so we can't depend on having a non-NULL value here. See crbug/149783.
-  if (request_context_getter)
-    set_request_context(request_context_getter->GetURLRequestContext());
 
   // Init our base class.
   Initialize(cache_path_);

@@ -174,7 +174,8 @@ std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
       IdentityManagerFactory::GetForProfile(profile);
   std::string email =
       identity_manager
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           ->email;
   if (email.empty()) {
     DCHECK_EQ(

@@ -15,10 +15,8 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/services/patch/patch_service.h"
 #include "components/update_client/configurator.h"
 #include "services/network/test/test_url_loader_factory.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -133,11 +131,8 @@ class TestConfigurator : public Configurator {
   GURL ping_url_;
   std::string app_guid_;
 
-  service_manager::TestConnectorFactory connector_factory_;
   scoped_refptr<update_client::UnzipChromiumFactory> unzip_factory_;
   scoped_refptr<update_client::PatchChromiumFactory> patch_factory_;
-
-  patch::PatchService patch_service_;
 
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;

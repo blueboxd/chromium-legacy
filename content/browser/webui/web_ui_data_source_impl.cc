@@ -69,7 +69,7 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   }
   void StartDataRequest(
       const std::string& path,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const WebContents::Getter& wc_getter,
       const URLDataSource::GotDataCallback& callback) override {
     return parent_->StartDataRequest(path, wc_getter, callback);
   }
@@ -267,7 +267,7 @@ std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
 
 void WebUIDataSourceImpl::StartDataRequest(
     const std::string& path,
-    const ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const WebContents::Getter& wc_getter,
     const URLDataSource::GotDataCallback& callback) {
   if (!should_handle_request_callback_.is_null() &&
       should_handle_request_callback_.Run(path)) {

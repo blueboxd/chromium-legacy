@@ -205,7 +205,9 @@ void ScrollbarTheme::PaintScrollCorner(
 #else
   Platform::Current()->ThemeEngine()->Paint(
       context.Canvas(), WebThemeEngine::kPartScrollbarCorner,
-      WebThemeEngine::kStateNormal, WebRect(corner_rect), nullptr);
+      WebThemeEngine::kStateNormal, WebRect(corner_rect), nullptr,
+      WebColorScheme::
+          kLight /* TODO(futhark): pass color scheme to scrollbars */);
 #endif
 }
 

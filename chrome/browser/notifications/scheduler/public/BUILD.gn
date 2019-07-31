@@ -23,6 +23,7 @@ source_set("public") {
     "notification_scheduler_client.h",
     "notification_scheduler_client_registrar.cc",
     "notification_scheduler_client_registrar.h",
+    "notification_scheduler_types.cc",
     "notification_scheduler_types.h",
     "schedule_params.cc",
     "schedule_params.h",

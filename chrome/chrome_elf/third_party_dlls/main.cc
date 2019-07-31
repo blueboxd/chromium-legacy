@@ -90,10 +90,6 @@ void AddStatusCode(ThirdPartyStatus code) {
 // Public defines & functions
 //------------------------------------------------------------------------------
 
-bool IsThirdPartyInitialized() {
-  return g_third_party_initialized;
-}
-
 bool Init() {
   // Debug check: Init should not be called more than once.
   assert(!g_third_party_initialized);
@@ -155,3 +151,9 @@ void AddStatusCodeForTesting(ThirdPartyStatus code) {
 }
 
 }  // namespace third_party_dlls
+
+using namespace third_party_dlls;
+
+bool IsThirdPartyInitialized() {
+  return g_third_party_initialized;
+}

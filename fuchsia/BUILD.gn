@@ -13,6 +13,7 @@ fidl_library("cast_fidl") {
   sources = [
     "fidl/cast/api_bindings.fidl",
     "fidl/cast/application_config.fidl",
+    "fidl/cast/application_controller.fidl",
     "fidl/cast/queryable_data.fidl",
   ]
 

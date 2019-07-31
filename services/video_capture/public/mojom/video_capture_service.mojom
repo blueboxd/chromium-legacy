@@ -11,7 +11,7 @@ import "services/video_capture/public/mojom/testing_controls.mojom";
 import "services/video_capture/public/mojom/video_source_provider.mojom";
 
 [EnableIf=is_chromeos]
-import "media/capture/video/chromeos/mojo/cros_image_capture.mojom";
+import "media/capture/video/chromeos/mojom/cros_image_capture.mojom";
 
 [EnableIf=is_chromeos]
 interface AcceleratorFactory {

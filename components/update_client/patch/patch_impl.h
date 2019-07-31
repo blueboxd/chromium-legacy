@@ -7,20 +7,20 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/update_client/patcher.h"
-
-namespace service_manager {
-class Connector;
-}
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace update_client {
 
 class PatchChromiumFactory : public PatcherFactory {
  public:
-  explicit PatchChromiumFactory(
-      std::unique_ptr<service_manager::Connector> connector);
+  using Callback =
+      base::RepeatingCallback<mojo::PendingRemote<patch::mojom::FilePatcher>()>;
+  explicit PatchChromiumFactory(Callback callback);
 
   scoped_refptr<Patcher> Create() const override;
 
@@ -28,7 +28,7 @@ class PatchChromiumFactory : public PatcherFactory {
   ~PatchChromiumFactory() override;
 
  private:
-  std::unique_ptr<service_manager::Connector> connector_;
+  const Callback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PatchChromiumFactory);
 };

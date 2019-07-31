@@ -603,8 +603,9 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile());
   base::Optional<AccountInfo> maybe_account_info =
-      identity_manager->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
-          kSecondaryAccountEmail);
+      identity_manager
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              kSecondaryAccountEmail);
   ASSERT_TRUE(maybe_account_info.has_value());
 
   // Necessary to ensure that the OnExtendedAccountInfoRemoved() observer will

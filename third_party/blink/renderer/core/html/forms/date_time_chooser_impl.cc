@@ -121,9 +121,15 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
 
   AddString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
   data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
-  data->Append(Platform::Current()->GetDataResource("pickerButton.css"));
+  if (!RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    data->Append(Platform::Current()->GetDataResource("pickerButton.css"));
+  }
   data->Append(Platform::Current()->GetDataResource("suggestionPicker.css"));
   data->Append(Platform::Current()->GetDataResource("calendarPicker.css"));
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    data->Append(
+        Platform::Current()->GetDataResource("calendar_picker_refresh.css"));
+  }
   AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
       "window.dialogArguments = {\n",
@@ -169,6 +175,8 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   AddProperty("dayLabels", locale_->WeekDayShortLabels(), data);
   AddProperty("isLocaleRTL", locale_->IsRTL(), data);
   AddProperty("isRTL", parameters_->is_anchor_element_rtl, data);
+  AddProperty("isFormControlsRefreshEnabled",
+              RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
   AddProperty("mode", parameters_->type.GetString(), data);
   if (parameters_->suggestions.size()) {
     Vector<String> suggestion_values;

@@ -11,9 +11,6 @@ include_rules = [
   "+services/network/public/mojom",
   "+ui",
 
-  # Needed to embed the ServiceManager in //ios/web.
-  "+services/service_manager",
-
   # For tests.
   "+ios/testing",
   "+ios/third_party/earl_grey/src",

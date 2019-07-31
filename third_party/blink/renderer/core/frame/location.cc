@@ -201,7 +201,10 @@ void Location::setHash(v8::Isolate* isolate,
   if (hash[0] == '#')
     new_fragment_identifier = hash.Substring(1);
   url.SetFragmentIdentifier(new_fragment_identifier);
-  if (old_fragment_identifier == url.FragmentIdentifier())
+  // Note that by parsing the URL and *then* comparing fragments, we are
+  // comparing fragments post-canonicalization, and so this handles the
+  // cases where fragment identifiers are ignored or invalid.
+  if (EqualIgnoringNullity(old_fragment_identifier, url.FragmentIdentifier()))
     return;
   SetLocation(url.GetString(), IncumbentDOMWindow(isolate),
               EnteredDOMWindow(isolate), &exception_state);

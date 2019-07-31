@@ -110,8 +110,6 @@
     static idl_other_namespace.SomeType[] function30();
 
     [nodefine] static void function31(long switch);
-
-    [forIOThread] static void function32();
   };
 
   interface Events {

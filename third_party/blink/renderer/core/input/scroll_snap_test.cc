@@ -211,9 +211,11 @@ TEST_F(ScrollSnapTest, SnapWhenBodyViewportDefining) {
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
+    html {
+      scroll-snap-type: both mandatory;
+    }
     body {
       overflow: scroll;
-      scroll-snap-type: both mandatory;
       height: 300px;
       width: 300px;
       margin: 0px;

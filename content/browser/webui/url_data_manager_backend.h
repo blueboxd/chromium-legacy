@@ -28,11 +28,9 @@ class RefCountedMemory;
 
 namespace content {
 
-class ChromeBlobStorageContext;
 class ResourceContext;
 class URLDataManagerBackend;
 class URLDataSourceImpl;
-class URLRequestChromeJob;
 
 // URLDataManagerBackend is used internally by ChromeURLDataManager on the IO
 // thread. In most cases you can use the API in ChromeURLDataManager and ignore
@@ -43,13 +41,6 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
 
   URLDataManagerBackend();
   ~URLDataManagerBackend() override;
-
-  // Invoked to create the protocol handler for chrome://. Called on the UI
-  // thread.
-  CONTENT_EXPORT static std::unique_ptr<
-      net::URLRequestJobFactory::ProtocolHandler>
-  CreateProtocolHandler(ResourceContext* resource_context,
-                        ChromeBlobStorageContext* blob_storage_context);
 
   // Adds a DataSource to the collection of data sources.
   void AddDataSource(URLDataSourceImpl* source);
@@ -86,40 +77,11 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   static std::vector<std::string> GetWebUISchemes();
 
  private:
-  friend class URLRequestChromeJob;
-
   typedef std::map<std::string,
       scoped_refptr<URLDataSourceImpl> > DataSourceMap;
-  typedef std::map<RequestID, URLRequestChromeJob*> PendingRequestMap;
-
-  // Called by the job when it's starting up.
-  // Returns false if |url| is not a URL managed by this object.
-  bool StartRequest(const net::URLRequest* request, URLRequestChromeJob* job);
-
-  // Helper function to call StartDataRequest on |source|'s delegate. This is
-  // needed because while we want to call URLDataSourceDelegate's method, we
-  // need to add a refcount on the source.
-  static void CallStartRequest(
-      scoped_refptr<URLDataSourceImpl> source,
-      const std::string& path,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
-      int request_id);
-
-  // Remove a request from the list of pending requests.
-  void RemoveRequest(URLRequestChromeJob* job);
-
-  // Returns true if the job exists in |pending_requests_|. False otherwise.
-  // Called by ~URLRequestChromeJob to verify that |pending_requests_| is kept
-  // up to date.
-  bool HasPendingJob(URLRequestChromeJob* job) const;
 
   // Custom sources of data, keyed by source path (e.g. "favicon").
   DataSourceMap data_sources_;
-
-  // All pending URLRequestChromeJobs, keyed by ID of the request.
-  // URLRequestChromeJob calls into this object when it's constructed and
-  // destructed to ensure that the pointers in this map remain valid.
-  PendingRequestMap pending_requests_;
 
   // The ID we'll use for the next request we receive.
   RequestID next_request_id_;

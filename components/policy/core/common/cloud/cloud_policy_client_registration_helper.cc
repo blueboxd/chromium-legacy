@@ -34,7 +34,7 @@ class CloudPolicyClientRegistrationHelper::IdentityManagerHelper {
   IdentityManagerHelper() = default;
 
   void FetchAccessToken(signin::IdentityManager* identity_manager,
-                        const std::string& username,
+                        const CoreAccountId& account_id,
                         const StringCallback& callback);
 
  private:
@@ -47,7 +47,7 @@ class CloudPolicyClientRegistrationHelper::IdentityManagerHelper {
 
 void CloudPolicyClientRegistrationHelper::IdentityManagerHelper::
     FetchAccessToken(signin::IdentityManager* identity_manager,
-                     const std::string& account_id,
+                     const CoreAccountId& account_id,
                      const StringCallback& callback) {
   DCHECK(!access_token_fetcher_);
   // The caller must supply a username.
@@ -96,7 +96,7 @@ CloudPolicyClientRegistrationHelper::~CloudPolicyClientRegistrationHelper() {
 
 void CloudPolicyClientRegistrationHelper::StartRegistration(
     signin::IdentityManager* identity_manager,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const base::Closure& callback) {
   DVLOG(1) << "Starting registration process with account_id";
   DCHECK(!client_->is_registered());

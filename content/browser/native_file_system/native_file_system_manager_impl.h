@@ -121,11 +121,12 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const storage::FileSystemURL& url,
       const SharedHandleState& handle_state);
 
-  // Creates a new NativeFileSystemFileWriterImpl for a given url. Assumes the
-  // passed in URL is valid and represents a file.
+  // Creates a new NativeFileSystemFileWriterImpl for a given target and
+  // swap file URLs. Assumes the passed in URLs are valid and represent files.
   blink::mojom::NativeFileSystemFileWriterPtr CreateFileWriter(
       const BindingContext& binding_context,
       const storage::FileSystemURL& url,
+      const storage::FileSystemURL& swap_url,
       const SharedHandleState& handle_state);
 
   // Create a transfer token for a specific file or directory.

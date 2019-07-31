@@ -34,7 +34,7 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportTest
  public:
   EnterpriseReportingPrivateUploadChromeDesktopReportTest() {}
 
-  UIThreadExtensionFunction* CreateChromeDesktopReportingFunction(
+  ExtensionFunction* CreateChromeDesktopReportingFunction(
       const std::string& dm_token) {
     EnterpriseReportingPrivateUploadChromeDesktopReportFunction* function =
         EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
@@ -85,7 +85,7 @@ TEST_F(EnterpriseReportingPrivateUploadChromeDesktopReportTest,
 }
 
 TEST_F(EnterpriseReportingPrivateUploadChromeDesktopReportTest, UploadFailed) {
-  UIThreadExtensionFunction* function =
+  ExtensionFunction* function =
       CreateChromeDesktopReportingFunction(kFakeDMToken);
   EXPECT_CALL(*client_, SetupRegistration(kFakeDMToken, kFakeClientId, _))
       .Times(1);
@@ -99,7 +99,7 @@ TEST_F(EnterpriseReportingPrivateUploadChromeDesktopReportTest, UploadFailed) {
 
 TEST_F(EnterpriseReportingPrivateUploadChromeDesktopReportTest,
        UploadSucceeded) {
-  UIThreadExtensionFunction* function =
+  ExtensionFunction* function =
       CreateChromeDesktopReportingFunction(kFakeDMToken);
   EXPECT_CALL(*client_, SetupRegistration(kFakeDMToken, kFakeClientId, _))
       .Times(1);

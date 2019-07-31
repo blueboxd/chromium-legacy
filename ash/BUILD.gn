@@ -1541,8 +1541,11 @@ static_library("ash_shell_lib_with_content") {
     "//chromeos/constants",
     "//chromeos/dbus/biod",
     "//chromeos/dbus/power",
+    "//chromeos/dbus/shill",
+    "//chromeos/network",
+    "//chromeos/services/network_config",
     "//chromeos/services/network_config/public/cpp:manifest",
-    "//chromeos/services/network_config/public/cpp:test_support",
+    "//chromeos/services/network_config/public/mojom",
     "//chromeos/system",
     "//components/discardable_memory/public/mojom",
     "//components/services/font:lib",
@@ -1569,6 +1572,11 @@ static_library("ash_shell_lib_with_content") {
   ]
   public_deps = [
     ":ash_shell_lib",
+  ]
+  data_deps = [
+    "//ash/strings:ash_test_strings",
+    "//ash/resources:ash_test_resources_with_content_100_percent",
+    "//ash/resources:ash_test_resources_200_percent",
   ]
 }
 
@@ -2108,10 +2116,6 @@ executable("ash_shell_with_content") {
     "//content",
     "//content/public/app:both",
     "//device/bluetooth",
-  ]
-
-  data_deps = [
-    "//ash/resources:ash_test_resources_with_content_100_percent",
   ]
 }
 

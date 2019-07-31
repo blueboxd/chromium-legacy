@@ -149,18 +149,21 @@
   "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
     "includes": [13850],
   },
+  "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
+    "structures": [13880],
+  },
   "chrome/browser/resources/translate_internals/translate_internals_resources.grd": {
-    "includes": [13880],
+    "includes": [13900],
   },
   "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
-    "includes": [13890],
+    "includes": [13910],
   },
   "chrome/browser/resources/welcome/onboarding_welcome_resources.grd": {
-    "includes": [13900],
-    "structures": [13950],
+    "includes": [13920],
+    "structures": [13970],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [13990],
+    "includes": [14010],
   },
   # END chrome/browser section.
 

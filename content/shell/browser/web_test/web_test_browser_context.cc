@@ -16,13 +16,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/resource_context.h"
-#include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/shell/browser/web_test/web_test_background_fetch_delegate.h"
 #include "content/shell/browser/web_test/web_test_content_index_provider.h"
 #include "content/shell/browser/web_test/web_test_download_manager_delegate.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_push_messaging_service.h"
-#include "content/shell/browser/web_test/web_test_url_request_context_getter.h"
 #include "content/test/mock_background_sync_controller.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 
@@ -46,16 +44,6 @@ WebTestBrowserContext::WebTestBrowserContext(bool off_the_record)
 
 WebTestBrowserContext::~WebTestBrowserContext() {
   BrowserContext::NotifyWillBeDestroyed(this);
-}
-
-ShellURLRequestContextGetter*
-WebTestBrowserContext::CreateURLRequestContextGetter(
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  return new WebTestURLRequestContextGetter(
-      ignore_certificate_errors(), IsOffTheRecord(), GetPath(),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-      protocol_handlers, std::move(request_interceptors));
 }
 
 DownloadManagerDelegate* WebTestBrowserContext::GetDownloadManagerDelegate() {

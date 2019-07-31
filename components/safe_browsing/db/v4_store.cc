@@ -655,8 +655,6 @@ StoreReadResult V4Store::ReadFromDisk() {
     return UNEXPECTED_MAGIC_NUMBER_FAILURE;
   }
 
-  base::UmaHistogramSparse("SafeBrowsing.V4StoreVersionRead",
-                           file_format.version_number());
   if (file_format.version_number() != kFileVersion) {
     return FILE_VERSION_INCOMPATIBLE_FAILURE;
   }

@@ -7,42 +7,63 @@
 #include <stddef.h>
 #include <va/va.h>
 
+#include <array>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/containers/span.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
+#include "media/gpu/format_utils.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "third_party/libyuv/include/libyuv.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
+#include "ui/gfx/native_pixmap.h"
 
 namespace media {
 
 namespace {
 
+constexpr uint32_t kInvalidVaFourcc = 0u;
+
 // UMA errors that the VaapiMjpegDecodeAccelerator class reports.
-enum VAJDADecoderFailure {
+enum VAJDAFailure {
   VAAPI_ERROR = 0,
-  VAJDA_DECODER_FAILURES_MAX,
+  VAJDA_FAILURES_MAX,
 };
 
-static void ReportToVAJDADecoderFailureUMA(VAJDADecoderFailure failure) {
+static void ReportToVAJDADecoderFailureUMA(VAJDAFailure failure) {
   UMA_HISTOGRAM_ENUMERATION("Media.VAJDA.DecoderFailure", failure,
-                            VAJDA_DECODER_FAILURES_MAX + 1);
+                            VAJDA_FAILURES_MAX + 1);
+}
+
+static void ReportToVAJDAVppFailureUMA(VAJDAFailure failure) {
+  UMA_HISTOGRAM_ENUMERATION("Media.VAJDA.VppFailure", failure,
+                            VAJDA_FAILURES_MAX + 1);
 }
 
 static void ReportToVAJDAResponseToClientUMA(
@@ -72,6 +93,8 @@ static bool VerifyDataSize(const VAImage* image) {
   size_t min_size = 0;
   if (image->format.fourcc == VA_FOURCC_I420) {
     min_size = VideoFrame::AllocationSize(PIXEL_FORMAT_I420, dimensions);
+  } else if (image->format.fourcc == VA_FOURCC_NV12) {
+    min_size = VideoFrame::AllocationSize(PIXEL_FORMAT_NV12, dimensions);
   } else if (image->format.fourcc == VA_FOURCC_YUY2 ||
              image->format.fourcc == VA_FOURCC('Y', 'U', 'Y', 'V')) {
     min_size = VideoFrame::AllocationSize(PIXEL_FORMAT_YUY2, dimensions);
@@ -79,6 +102,33 @@ static bool VerifyDataSize(const VAImage* image) {
     return false;
   }
   return base::strict_cast<size_t>(image->data_size) >= min_size;
+}
+
+static uint32_t VideoPixelFormatToVAFourCC(VideoPixelFormat format) {
+  switch (format) {
+    case PIXEL_FORMAT_I420:
+      return VA_FOURCC_I420;
+    case PIXEL_FORMAT_YV12:
+      return VA_FOURCC_YV12;
+    case PIXEL_FORMAT_NV12:
+      return VA_FOURCC_NV12;
+    case PIXEL_FORMAT_NV21:
+      return VA_FOURCC_NV21;
+    case PIXEL_FORMAT_UYVY:
+      return VA_FOURCC_UYVY;
+    case PIXEL_FORMAT_YUY2:
+      return VA_FOURCC_YUY2;
+    case PIXEL_FORMAT_ARGB:
+      return VA_FOURCC_ARGB;
+    case PIXEL_FORMAT_XRGB:
+      return VA_FOURCC_XRGB;
+    case PIXEL_FORMAT_ABGR:
+      return VA_FOURCC_ABGR;
+    case PIXEL_FORMAT_XBGR:
+      return VA_FOURCC_XBGR;
+    default:
+      return kInvalidVaFourcc;
+  }
 }
 
 }  // namespace
@@ -136,6 +186,16 @@ bool VaapiMjpegDecodeAccelerator::Initialize(
     return false;
   }
 
+  vpp_vaapi_wrapper_ = VaapiWrapper::Create(
+      VaapiWrapper::kVideoProcess, VAProfileNone,
+      base::BindRepeating(&ReportToVAJDAVppFailureUMA, VAAPI_ERROR));
+  if (!vpp_vaapi_wrapper_) {
+    VLOGF(1) << "Failed initializing VAAPI for VPP";
+    return false;
+  }
+
+  gpu_memory_buffer_support_ = std::make_unique<gpu::GpuMemoryBufferSupport>();
+
   if (!decoder_thread_.Start()) {
     VLOGF(1) << "Failed to start decoding thread.";
     return false;
@@ -145,14 +205,13 @@ bool VaapiMjpegDecodeAccelerator::Initialize(
   return true;
 }
 
-bool VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner(
+bool VaapiMjpegDecodeAccelerator::OutputPictureLibYuvOnTaskRunner(
     std::unique_ptr<ScopedVAImage> scoped_image,
     int32_t input_buffer_id,
     scoped_refptr<VideoFrame> video_frame) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
-  TRACE_EVENT1("jpeg", "VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner",
-               "input_buffer_id", input_buffer_id);
+  TRACE_EVENT1("jpeg", __func__, "input_buffer_id", input_buffer_id);
 
   DCHECK(scoped_image);
   const VAImage* image = scoped_image->image();
@@ -170,56 +229,199 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner(
     return false;
   }
 
-  // Copy image content from VAImage to VideoFrame. If the image is not in the
-  // I420 format we'll have to convert it.
-  auto* mem = static_cast<uint8_t*>(scoped_image->va_buffer()->data());
-  DCHECK_GE(base::strict_cast<int>(image->width),
-            video_frame->coded_size().width());
-  DCHECK_GE(base::strict_cast<int>(image->height),
-            video_frame->coded_size().height());
+  // The decoded image size is aligned up to JPEG MCU size, so it may be larger
+  // than |video_frame|'s visible size.
+  if (base::strict_cast<int>(image->width) < visible_size.width() ||
+      base::strict_cast<int>(image->height) < visible_size.height()) {
+    VLOGF(1) << "Decoded image size is smaller than output frame size";
+    return false;
+  }
   DCHECK(VerifyDataSize(image));
-  uint8_t* dst_y = video_frame->data(VideoFrame::kYPlane);
-  uint8_t* dst_u = video_frame->data(VideoFrame::kUPlane);
-  uint8_t* dst_v = video_frame->data(VideoFrame::kVPlane);
-  size_t dst_y_stride = video_frame->stride(VideoFrame::kYPlane);
-  size_t dst_u_stride = video_frame->stride(VideoFrame::kUPlane);
-  size_t dst_v_stride = video_frame->stride(VideoFrame::kVPlane);
+
+  // Extract source pointers and strides.
+  auto* const mem =
+      static_cast<const uint8_t*>(scoped_image->va_buffer()->data());
+  std::array<const uint8_t*, VideoFrame::kMaxPlanes> src_ptrs{};
+  std::array<int, VideoFrame::kMaxPlanes> src_strides{};
+  for (uint32_t i = 0; i < image->num_planes; i++) {
+    src_ptrs[i] = mem + image->offsets[i];
+    if (!base::CheckedNumeric<uint32_t>(image->pitches[i])
+             .AssignIfValid(&src_strides[i])) {
+      VLOGF(1) << "Can't extract the strides";
+      return false;
+    }
+  }
+
+  // Extract destination pointers and strides.
+  std::array<uint8_t*, VideoFrame::kMaxPlanes> dst_ptrs{};
+  std::array<int, VideoFrame::kMaxPlanes> dst_strides{};
+  base::ScopedClosureRunner buffer_unmapper;
+  if (video_frame->HasDmaBufs()) {
+    // Dmabuf-backed frame needs to be mapped for SW access.
+    DCHECK(gpu_memory_buffer_support_);
+    base::Optional<gfx::BufferFormat> gfx_format =
+        VideoPixelFormatToGfxBufferFormat(video_frame->format());
+    if (!gfx_format) {
+      VLOGF(1) << "Unsupported format: " << video_frame->format();
+      return false;
+    }
+    std::unique_ptr<gpu::GpuMemoryBufferImpl> gmb =
+        gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
+            CreateGpuMemoryBufferHandle(video_frame.get()),
+            video_frame->coded_size(), *gfx_format,
+            gfx::BufferUsage::SCANOUT_CPU_READ_WRITE, base::DoNothing());
+    if (!gmb) {
+      VLOGF(1) << "Failed to create GPU memory buffer";
+      return false;
+    }
+    if (!gmb->Map()) {
+      VLOGF(1) << "Failed to map GPU memory buffer";
+      return false;
+    }
+    for (size_t i = 0; i < video_frame->layout().num_planes(); i++) {
+      dst_ptrs[i] = static_cast<uint8_t*>(gmb->memory(i));
+      dst_strides[i] = gmb->stride(i);
+    }
+    buffer_unmapper.ReplaceClosure(
+        base::BindOnce(&gpu::GpuMemoryBufferImpl::Unmap, std::move(gmb)));
+  } else {
+    for (size_t i = 0; i < video_frame->layout().num_planes(); i++) {
+      dst_ptrs[i] = video_frame->visible_data(i);
+      dst_strides[i] = video_frame->stride(i);
+    }
+  }
 
   switch (image->format.fourcc) {
-    case VA_FOURCC_I420: {
+    case VA_FOURCC_I420:
       DCHECK_EQ(image->num_planes, 3u);
-      const uint8_t* src_y = mem + image->offsets[0];
-      const uint8_t* src_u = mem + image->offsets[1];
-      const uint8_t* src_v = mem + image->offsets[2];
-      const size_t src_y_stride = image->pitches[0];
-      const size_t src_u_stride = image->pitches[1];
-      const size_t src_v_stride = image->pitches[2];
-      if (libyuv::I420Copy(src_y, src_y_stride, src_u, src_u_stride, src_v,
-                           src_v_stride, dst_y, dst_y_stride, dst_u,
-                           dst_u_stride, dst_v, dst_v_stride,
-                           visible_size.width(), visible_size.height())) {
-        VLOGF(1) << "I420Copy failed";
-        return false;
+      switch (video_frame->format()) {
+        case PIXEL_FORMAT_I420:
+          DCHECK_EQ(video_frame->layout().num_planes(), 3u);
+          if (libyuv::I420Copy(src_ptrs[0], src_strides[0], src_ptrs[1],
+                               src_strides[1], src_ptrs[2], src_strides[2],
+                               dst_ptrs[0], dst_strides[0], dst_ptrs[1],
+                               dst_strides[1], dst_ptrs[2], dst_strides[2],
+                               visible_size.width(), visible_size.height())) {
+            VLOGF(1) << "I420Copy failed";
+            return false;
+          }
+          break;
+        case PIXEL_FORMAT_NV12:
+          DCHECK_EQ(video_frame->layout().num_planes(), 2u);
+          if (libyuv::I420ToNV12(src_ptrs[0], src_strides[0], src_ptrs[1],
+                                 src_strides[1], src_ptrs[2], src_strides[2],
+                                 dst_ptrs[0], dst_strides[0], dst_ptrs[1],
+                                 dst_strides[1], visible_size.width(),
+                                 visible_size.height())) {
+            VLOGF(1) << "I420ToNV12 failed";
+            return false;
+          }
+          break;
+        default:
+          VLOGF(1) << "Can't convert image from I420 to "
+                   << video_frame->format();
+          return false;
       }
       break;
-    }
     case VA_FOURCC_YUY2:
-    case VA_FOURCC('Y', 'U', 'Y', 'V'): {
+    case VA_FOURCC('Y', 'U', 'Y', 'V'):
       DCHECK_EQ(image->num_planes, 1u);
-      const uint8_t* src_yuy2 = mem + image->offsets[0];
-      const size_t src_yuy2_stride = image->pitches[0];
-      if (libyuv::YUY2ToI420(src_yuy2, src_yuy2_stride, dst_y, dst_y_stride,
-                             dst_u, dst_u_stride, dst_v, dst_v_stride,
-                             visible_size.width(), visible_size.height())) {
-        VLOGF(1) << "YUY2ToI420 failed";
-        return false;
+      switch (video_frame->format()) {
+        case PIXEL_FORMAT_I420:
+          DCHECK_EQ(video_frame->layout().num_planes(), 3u);
+          if (libyuv::YUY2ToI420(src_ptrs[0], src_strides[0], dst_ptrs[0],
+                                 dst_strides[0], dst_ptrs[1], dst_strides[1],
+                                 dst_ptrs[2], dst_strides[2],
+                                 visible_size.width(), visible_size.height())) {
+            VLOGF(1) << "YUY2ToI420 failed";
+            return false;
+          }
+          break;
+        case PIXEL_FORMAT_NV12:
+          DCHECK_EQ(video_frame->layout().num_planes(), 2u);
+          if (libyuv::YUY2ToNV12(src_ptrs[0], src_strides[0], dst_ptrs[0],
+                                 dst_strides[0], dst_ptrs[1], dst_strides[1],
+                                 visible_size.width(), visible_size.height())) {
+            VLOGF(1) << "YUY2ToNV12 failed";
+            return false;
+          }
+          break;
+        default:
+          VLOGF(1) << "Can't convert image from YUYV to "
+                   << video_frame->format();
+          return false;
       }
       break;
-    }
     default:
-      VLOGF(1) << "Can't convert image to I420: unsupported format "
-               << FourccToString(image->format.fourcc);
+      VLOGF(1) << "Can't convert image from "
+               << FourccToString(image->format.fourcc) << " to "
+               << video_frame->format();
       return false;
+  }
+
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VaapiMjpegDecodeAccelerator::VideoFrameReady,
+                     weak_this_factory_.GetWeakPtr(), input_buffer_id));
+
+  return true;
+}
+
+bool VaapiMjpegDecodeAccelerator::OutputPictureVppOnTaskRunner(
+    const ScopedVASurface* surface,
+    int32_t input_buffer_id,
+    scoped_refptr<VideoFrame> video_frame) {
+  DCHECK(decoder_task_runner_->BelongsToCurrentThread());
+  DCHECK(surface);
+
+  TRACE_EVENT1("jpeg", __func__, "input_buffer_id", input_buffer_id);
+
+  // Bind a VA surface to |video_frame|.
+  scoped_refptr<gfx::NativePixmap> pixmap =
+      CreateNativePixmapDmaBuf(video_frame.get());
+  if (!pixmap) {
+    VLOGF(1) << "Cannot create native pixmap for output buffer";
+    return false;
+  }
+  scoped_refptr<VASurface> output_surface =
+      vpp_vaapi_wrapper_->CreateVASurfaceForPixmap(pixmap);
+  if (!output_surface) {
+    VLOGF(1) << "Cannot create VA surface for output buffer";
+    return false;
+  }
+
+  // Use VPP to blit the visible size region within |surface| into
+  // |output_surface|. BlitSurface() does scaling not cropping when source and
+  // destination sizes don't match, so we manipulate the sizes of surfaces to
+  // effectively do the cropping.
+  const gfx::Size& blit_size = video_frame->visible_rect().size();
+  if (surface->size().width() < blit_size.width() ||
+      surface->size().height() < blit_size.height()) {
+    VLOGF(1) << "Decoded surface size is smaller than target size";
+    return false;
+  }
+  scoped_refptr<VASurface> src_surface = base::MakeRefCounted<VASurface>(
+      surface->id(), blit_size, surface->format(),
+      base::DoNothing() /* release_cb */);
+  scoped_refptr<VASurface> dst_surface = base::MakeRefCounted<VASurface>(
+      output_surface->id(), blit_size, output_surface->format(),
+      base::DoNothing() /* release_cb */);
+
+  // We should call vaSyncSurface() when passing surface between contexts. See:
+  // https://lists.01.org/pipermail/intel-vaapi-media/2019-June/000131.html
+  if (!vpp_vaapi_wrapper_->SyncSurface(src_surface->id())) {
+    VLOGF(1) << "Cannot sync VPP input surface";
+    return false;
+  }
+  if (!vpp_vaapi_wrapper_->BlitSurface(src_surface, dst_surface)) {
+    VLOGF(1) << "Cannot convert decoded image into output buffer";
+    return false;
+  }
+
+  // Sync target surface since the buffer is returning to client.
+  if (!vpp_vaapi_wrapper_->SyncSurface(dst_surface->id())) {
+    VLOGF(1) << "Cannot sync VPP output surface";
+    return false;
   }
 
   task_runner_->PostTask(
@@ -238,22 +440,56 @@ void VaapiMjpegDecodeAccelerator::DecodeTask(
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("jpeg", "DecodeTask");
 
+  // TODO(andrescj): validate that the video frame's visible size is the same as
+  // the parsed JPEG's visible size when it is returned from Decode(), and
+  // remove the size checks in OutputPicture*().
   VaapiImageDecodeStatus status = decoder_.Decode(
       base::make_span(static_cast<const uint8_t*>(shm->memory()), shm->size()));
   if (status != VaapiImageDecodeStatus::kSuccess) {
     NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
     return;
   }
+  const ScopedVASurface* surface = decoder_.GetScopedVASurface();
+  DCHECK(surface);
+  DCHECK(surface->IsValid());
+
+  // For DMA-buf backed |video_frame|, we will import it as a VA surface and use
+  // VPP to convert the decoded |surface| into it, if the formats and sizes are
+  // supported.
+  const uint32_t video_frame_va_fourcc =
+      VideoPixelFormatToVAFourCC(video_frame->format());
+  if (video_frame_va_fourcc == kInvalidVaFourcc) {
+    VLOGF(1) << "Unsupported video frame format: " << video_frame->format();
+    NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
+    return;
+  }
+  // TODO(kamesan): move HasDmaBufs() to DCHECK when we deprecate
+  // shared-memory-backed video frame.
+  if (video_frame->HasDmaBufs() &&
+      VaapiWrapper::IsVppResolutionAllowed(surface->size()) &&
+      VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
+          surface->format(), video_frame_va_fourcc)) {
+    if (!OutputPictureVppOnTaskRunner(surface, bitstream_buffer_id,
+                                      std::move(video_frame))) {
+      VLOGF(1) << "Output picture using VPP failed";
+      NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
+    }
+    return;
+  }
+
+  // Fallback to do conversion by libyuv. This happens when:
+  // 1. |video_frame| is backed by shared memory.
+  // 2. VPP doesn't support the format conversion. This is intended for AMD
+  //    VAAPI driver whose VPP only supports converting decoded 4:2:0 JPEGs.
   std::unique_ptr<ScopedVAImage> image =
-      decoder_.GetImage(VA_FOURCC_I420 /* preferred_image_fourcc */, &status);
+      decoder_.GetImage(video_frame_va_fourcc, &status);
   if (status != VaapiImageDecodeStatus::kSuccess) {
     NotifyError(bitstream_buffer_id, VaapiJpegDecodeStatusToError(status));
     return;
   }
-
-  if (!OutputPictureOnTaskRunner(std::move(image), bitstream_buffer_id,
-                                 std::move(video_frame))) {
-    VLOGF(1) << "Output picture failed";
+  if (!OutputPictureLibYuvOnTaskRunner(std::move(image), bitstream_buffer_id,
+                                       std::move(video_frame))) {
+    VLOGF(1) << "Output picture using libyuv failed";
     NotifyError(bitstream_buffer_id, PLATFORM_FAILURE);
   }
 }
@@ -267,16 +503,23 @@ void VaapiMjpegDecodeAccelerator::Decode(
   DVLOGF(4) << "Mapping new input buffer id: " << bitstream_buffer.id()
             << " size: " << bitstream_buffer.size();
 
-  // UnalignedSharedMemory will take over the |bitstream_buffer.handle()|.
-  auto shm = std::make_unique<UnalignedSharedMemory>(
-      bitstream_buffer.TakeRegion(), bitstream_buffer.size(),
-      false /* read_only */);
-
   if (bitstream_buffer.id() < 0) {
     VLOGF(1) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
     NotifyError(bitstream_buffer.id(), INVALID_ARGUMENT);
     return;
   }
+
+  if ((video_frame->visible_rect().width() & 1) ||
+      (video_frame->visible_rect().height() & 1)) {
+    VLOGF(1) << "Video frame visible size has odd dimension";
+    NotifyError(bitstream_buffer.id(), PLATFORM_FAILURE);
+    return;
+  }
+
+  // UnalignedSharedMemory will take over the |bitstream_buffer.handle()|.
+  auto shm = std::make_unique<UnalignedSharedMemory>(
+      bitstream_buffer.TakeRegion(), bitstream_buffer.size(),
+      false /* read_only */);
 
   if (!shm->MapAt(bitstream_buffer.offset(), bitstream_buffer.size())) {
     VLOGF(1) << "Failed to map input buffer";

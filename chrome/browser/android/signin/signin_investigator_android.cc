@@ -31,7 +31,8 @@ jint JNI_SigninInvestigator_Investigate(
   // that it falls back to email comparison.
   base::Optional<AccountInfo> maybe_account_info =
       IdentityManagerFactory::GetForProfile(profile)
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(email);
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              email);
   std::string account_id;
   if (maybe_account_info.has_value())
     account_id = maybe_account_info.value().account_id;

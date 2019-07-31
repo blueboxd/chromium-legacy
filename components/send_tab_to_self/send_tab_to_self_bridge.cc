@@ -49,7 +49,7 @@ enum class UMAAddEntryStatus {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class UMANotifyLocalDevice {
-  // The addedentry was sent to the local machine.
+  // The added entry was sent to the local machine.
   LOCAL = 0,
   // The added entry was targeted at a different machine.
   REMOTE = 1,
@@ -712,11 +712,17 @@ bool SendTabToSelfBridge::ShouldUpdateTargetDeviceInfoList() const {
 }
 
 void SendTabToSelfBridge::SetTargetDeviceInfoList() {
+  // Verify that the current trackedCacheGuid is the local guid without
+  // enforcing that tracked cache guid is set.
+  DCHECK(device_info_tracker_->IsRecentLocalCacheGuid(
+             change_processor()->TrackedCacheGuid()) ||
+         change_processor()->TrackedCacheGuid().empty());
+
   std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
       device_info_tracker_->GetAllDeviceInfo();
   number_of_devices_ = all_devices.size();
 
-  // Sort the DeviceInfo vector so the most recenly modified devices are first.
+  // Sort the DeviceInfo vector so the most recently modified devices are first.
   std::stable_sort(all_devices.begin(), all_devices.end(),
                    [](const std::unique_ptr<syncer::DeviceInfo>& device1,
                       const std::unique_ptr<syncer::DeviceInfo>& device2) {
@@ -734,12 +740,8 @@ void SendTabToSelfBridge::SetTargetDeviceInfoList() {
       break;
     }
 
-    // TODO(crbug.com/966413): Implement a better way to dedupe local devices in
-    // case the user has other devices with the same name.
-    // Don't include this device. Also compare the name as the device can have
-    // different cache guids (e.g. after stopping and re-starting sync).
-    if (device->guid() == change_processor()->TrackedCacheGuid() ||
-        device->client_name() == local_device_name_) {
+    // Don't include this device if it is the local device.
+    if (device_info_tracker_->IsRecentLocalCacheGuid(device->guid())) {
       continue;
     }
 

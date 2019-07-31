@@ -88,8 +88,6 @@ public class BookmarkManager
 
         void moveUpOne(BookmarkId bookmarkId);
         void moveDownOne(BookmarkId bookmarkId);
-        void moveToTop(BookmarkId bookmarkId);
-        void moveToBottom(BookmarkId bookmarkId);
     }
 
     private final BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
@@ -447,16 +445,6 @@ public class BookmarkManager
         for (BookmarkUIObserver observer : mUIObservers) {
             notifyStateChange(observer);
         }
-    }
-
-    @Override
-    public void moveToBottom(BookmarkId bookmarkId) {
-        mAdapter.moveToBottom(bookmarkId);
-    }
-
-    @Override
-    public void moveToTop(BookmarkId bookmarkId) {
-        mAdapter.moveToTop(bookmarkId);
     }
 
     @Override

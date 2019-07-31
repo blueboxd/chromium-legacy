@@ -62,6 +62,20 @@ constexpr base::TimeDelta
         base::TimeDelta::FromMilliseconds(40),
         base::TimeDelta::FromMilliseconds(15)};
 
+// The min and max values for the count of in-flight requests in
+// |count_inflight_requests_to_queueing_delay_| cache. This range covers more
+// than 95% of cases under all types of connection types.
+static constexpr size_t kMinCountOfRequests = 1u;
+static constexpr size_t kMaxCountOfRequests = 30u;
+
+// The max number of samples that can be hold in a bucket in the
+// |count_inflight_requests_to_queueing_delay_| cache.
+static constexpr size_t kMaxCountOfSamplesPerBucket = 10u;
+
+// The min value for a count-delay mapping sample to be reasonable enough to be
+// inserted into the cache.
+static constexpr size_t kMinScoreForValidSamples = 50;
+
 }  // namespace
 
 namespace nqe {
@@ -75,7 +89,8 @@ NetworkCongestionAnalyzer::NetworkCongestionAnalyzer(
       tick_clock_(tick_clock),
       recent_active_hosts_count_(0u),
       count_inflight_requests_for_peak_queueing_delay_(0u),
-      peak_count_inflight_requests_measurement_period_(0u) {
+      peak_count_inflight_requests_measurement_period_(0u),
+      count_peak_queueing_delay_mapping_sample_(0u) {
   DCHECK(tick_clock_);
   DCHECK(network_quality_estimator_);
   DCHECK_EQ(kQueueingDelayLevelMaxVal,
@@ -141,6 +156,19 @@ NetworkCongestionAnalyzer::TrackPeakQueueingDelayEnd(
   base::Optional<base::TimeDelta> peak_delay = request_delay->second;
   request_peak_delay_.erase(request_delay);
   return peak_delay;
+}
+
+// net::EffectiveConnectionTypeObserver:
+void NetworkCongestionAnalyzer::OnEffectiveConnectionTypeChanged(
+    net::EffectiveConnectionType effective_connection_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (effective_connection_type_ == effective_connection_type)
+    return;
+
+  effective_connection_type_ = effective_connection_type;
+  count_inflight_requests_to_queueing_delay_.clear();
+  count_peak_queueing_delay_mapping_sample_ = 0;
 }
 
 void NetworkCongestionAnalyzer::ComputeRecentQueueingDelay(
@@ -334,6 +362,122 @@ void NetworkCongestionAnalyzer::FinalizeCurrentMeasurementPeriod() {
         "Level" +
             base::NumberToString(peak_queueing_delay_level),
         count_inflight_requests_for_peak_queueing_delay_);
+  }
+
+  UpdateRequestsCountAndPeakQueueingDelayMapping();
+}
+
+void NetworkCongestionAnalyzer::
+    UpdateRequestsCountAndPeakQueueingDelayMapping() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  size_t truncated_count =
+      std::min(std::max(count_inflight_requests_for_peak_queueing_delay_,
+                        kMinCountOfRequests),
+               kMaxCountOfRequests);
+
+  DCHECK_LE(kMinCountOfRequests, truncated_count);
+  DCHECK_GE(kMaxCountOfRequests, truncated_count);
+
+  base::Optional<size_t> mapping_score =
+      ComputePeakDelayMappingSampleScore(truncated_count, peak_queueing_delay_);
+  // Records the score that evaluates the mapping between the count of requests
+  // to the peak observed queueing delay.
+  if (mapping_score.has_value()) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "NQE.CongestionAnalyzer.PeakQueueingDelayMappingScore",
+        mapping_score.value());
+  }
+
+  // Discards the mapping sample if there are at least 10 samples in the cache
+  // and its score is less than the threshold. The purpose is to make the
+  // majority of cached samples reasonable so that they can be used to evaluate
+  // whether a new sample is valid or not.
+  if (count_peak_queueing_delay_mapping_sample_ >= 10 &&
+      mapping_score.value_or(0) < kMinScoreForValidSamples) {
+    return;
+  }
+
+  AddRequestsCountAndPeakQueueingDelaySample(truncated_count,
+                                             peak_queueing_delay_);
+}
+
+base::Optional<size_t>
+NetworkCongestionAnalyzer::ComputePeakDelayMappingSampleScore(
+    const size_t count_inflight_requests,
+    const base::TimeDelta& peak_queueing_delay) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (count_inflight_requests < kMinCountOfRequests ||
+      count_inflight_requests > kMaxCountOfRequests) {
+    return base::nullopt;
+  }
+
+  if (count_peak_queueing_delay_mapping_sample_ < 5)
+    return base::nullopt;
+
+  size_t count_positive_samples = 0;
+  size_t delay_level = ComputePeakQueueingDelayLevel(peak_queueing_delay);
+  DCHECK_LE(1u, delay_level);
+
+  for (const auto& cached_entry : count_inflight_requests_to_queueing_delay_) {
+    if (cached_entry.first < count_inflight_requests) {
+      for (const auto& it : cached_entry.second) {
+        if (it < peak_queueing_delay)
+          ++count_positive_samples;
+      }
+    } else if (cached_entry.first == count_inflight_requests) {
+      for (const auto& it : cached_entry.second) {
+        size_t it_delay_level = ComputePeakQueueingDelayLevel(it);
+        // Two samples are considered near if the difference in queueing delay
+        // levels is small. The absolute time difference is small for samples
+        // whose queueing delay level is from 1 to 5 (max val=500 msec). The two
+        // samples are also considered near if the absolute time difference is
+        // less than the 500 msec threshold.
+        if (it_delay_level <= delay_level + 1 ||
+            it_delay_level >= delay_level - 1 ||
+            std::abs(it.InMilliseconds() -
+                     peak_queueing_delay.InMilliseconds()) <= 500) {
+          ++count_positive_samples;
+        }
+      }
+    } else {
+      for (const auto& it : cached_entry.second) {
+        if (it > peak_queueing_delay)
+          ++count_positive_samples;
+      }
+    }
+  }
+
+  return count_positive_samples * 100 /
+         count_peak_queueing_delay_mapping_sample_;
+}
+
+void NetworkCongestionAnalyzer::AddRequestsCountAndPeakQueueingDelaySample(
+    const size_t count_inflight_requests,
+    const base::TimeDelta& peak_queueing_delay) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (count_inflight_requests < kMinCountOfRequests ||
+      count_inflight_requests > kMaxCountOfRequests) {
+    return;
+  }
+
+  auto count_map_it =
+      count_inflight_requests_to_queueing_delay_.find(count_inflight_requests);
+  // Creates a new entry if no matching record is found.
+  if (count_map_it == count_inflight_requests_to_queueing_delay_.end()) {
+    count_inflight_requests_to_queueing_delay_[count_inflight_requests]
+        .push_front(peak_queueing_delay);
+    ++count_peak_queueing_delay_mapping_sample_;
+  } else {
+    count_map_it->second.push_front(peak_queueing_delay);
+    ++count_peak_queueing_delay_mapping_sample_;
+
+    if (count_map_it->second.size() > kMaxCountOfSamplesPerBucket) {
+      count_map_it->second.pop_back();
+      --count_peak_queueing_delay_mapping_sample_;
+    }
   }
 }
 

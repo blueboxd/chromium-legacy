@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -27,6 +28,7 @@ namespace enterprise_reporting {
 namespace {
 const int kDefaultUploadIntervalHours =
     24;  // Default upload interval is 24 hours.
+const int kMaximumRetry = 10;  // Retry 10 times takes about 15 to 19 hours.
 
 // Reads DM token and client id. Returns true if boths are non empty.
 bool GetDMTokenAndDeviceId(std::string* dm_token, std::string* client_id) {
@@ -52,13 +54,20 @@ bool IsReportingEnabled() {
 
 ReportScheduler::ReportScheduler(
     std::unique_ptr<policy::CloudPolicyClient> client,
-    std::unique_ptr<RequestTimer> request_timer)
+    std::unique_ptr<RequestTimer> request_timer,
+    std::unique_ptr<ReportGenerator> report_generator)
     : cloud_policy_client_(std::move(client)),
-      request_timer_(std::move(request_timer)) {
+      request_timer_(std::move(request_timer)),
+      report_generator_(std::move(report_generator)) {
   RegisterPerfObserver();
 }
 
 ReportScheduler::~ReportScheduler() = default;
+
+void ReportScheduler::SetReportUploaderForTesting(
+    std::unique_ptr<ReportUploader> uploader) {
+  report_uploader_ = std::move(uploader);
+}
 
 void ReportScheduler::RegisterPerfObserver() {
   pref_change_registrar_.Init(g_browser_process->local_state());
@@ -103,27 +112,48 @@ void ReportScheduler::Start() {
 }
 
 void ReportScheduler::GenerateAndUploadReport() {
-  VLOG(1) << "Uploading enterprise report.";
-  // TODO(zmin): Generates a real request.
-  std::unique_ptr<em::ChromeDesktopReportRequest> request =
-      std::make_unique<em::ChromeDesktopReportRequest>();
-  cloud_policy_client_->UploadChromeDesktopReport(
-      std::move(request),
-      base::BindRepeating(&ReportScheduler::OnReportUploaded,
-                          base::Unretained(this)));
+  VLOG(1) << "Generating enterprise report.";
+  report_generator_->Generate(base::BindOnce(
+      &ReportScheduler::OnReportGenerated, base::Unretained(this)));
 }
 
-void ReportScheduler::OnReportUploaded(bool status) {
-  if (status) {
-    VLOG(1) << "The enterprise report has been uploaded.";
-    g_browser_process->local_state()->SetTime(kLastUploadTimestamp,
-                                              base::Time::Now());
-    if (IsReportingEnabled())
-      request_timer_->Reset();
+void ReportScheduler::OnReportGenerated(ReportGenerator::Requests requests) {
+  if (requests.empty()) {
+    SYSLOG(ERROR)
+        << "No cloud report can be generated. Likely the report is too large.";
+    // We can't generate any report, stop the reporting.
     return;
   }
-  VLOG(1) << "The enterprise report has not been uploaded.";
-  // TODO(zmin): Implement retry logic
+  VLOG(1) << "Uploading enterprise report.";
+  if (!report_uploader_) {
+    report_uploader_ = std::make_unique<ReportUploader>(
+        cloud_policy_client_.get(), kMaximumRetry);
+  }
+  report_uploader_->SetRequestAndUpload(
+      std::move(requests), base::BindOnce(&ReportScheduler::OnReportUploaded,
+                                          base::Unretained(this)));
+}
+
+void ReportScheduler::OnReportUploaded(ReportUploader::ReportStatus status) {
+  VLOG(1) << "The enterprise report upload result " << status;
+  switch (status) {
+    case ReportUploader::kSuccess:
+      // Schedule the next report for success. Reset uploader to reset failure
+      // count.
+      report_uploader_.reset();
+      FALLTHROUGH;
+    case ReportUploader::kTransientError:
+      // Stop retrying and schedule the next report to avoid stale report.
+      // Failure count is not reset so retry delay remains.
+      g_browser_process->local_state()->SetTime(kLastUploadTimestamp,
+                                                base::Time::Now());
+      if (IsReportingEnabled())
+        request_timer_->Reset();
+      break;
+    case ReportUploader::kPersistentError:
+      // No future upload until Chrome relaunch or perf change event.
+      break;
+  }
 }
 
 }  // namespace enterprise_reporting

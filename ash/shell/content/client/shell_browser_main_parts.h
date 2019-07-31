@@ -10,10 +10,11 @@
 #include "base/macros.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace chromeos {
 namespace network_config {
-class CrosNetworkConfigTestHelper;
+class CrosNetworkConfig;
 }  // namespace network_config
 }  // namespace chromeos
 
@@ -43,16 +44,21 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   ~ShellBrowserMainParts() override;
 
   // Overridden from content::BrowserMainParts:
+  void PostEarlyInitialization() override;
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
   void ToolkitInitialized() override;
   void PreMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
+  void PostDestroyThreads() override;
 
   content::BrowserContext* browser_context() { return browser_context_.get(); }
 
  private:
+  void InitializeCrosNetworkConfig();
+  void AddNetworkConfigBinding(mojo::ScopedMessagePipeHandle handle);
+
   std::unique_ptr<content::BrowserContext> browser_context_;
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
   std::unique_ptr<WindowWatcher> window_watcher_;
@@ -60,8 +66,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
       example_session_controller_client_;
   std::unique_ptr<ExampleAppListClient> example_app_list_client_;
   std::unique_ptr<ash::AshTestHelper> ash_test_helper_;
-  std::unique_ptr<chromeos::network_config::CrosNetworkConfigTestHelper>
-      network_config_helper_;
+  std::unique_ptr<chromeos::network_config::CrosNetworkConfig>
+      cros_network_config_;
   std::unique_ptr<ShellNewWindowDelegate> new_window_delegate_;
   content::MainFunctionParams parameters_;
 

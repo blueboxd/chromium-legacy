@@ -328,7 +328,7 @@ bool DisplayColorManager::LoadCalibrationForDisplay(
   // TODO(mcasas): correct UMA s/Id/Code/, https://crbug.com/821393.
   UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.ValidProductId",
                         valid_product_code);
-  if (!valid_product_code)
+  if (!valid_product_code || !quirks::QuirksManager::HasInstance())
     return false;
 
   quirks::QuirksManager::Get()->RequestIccProfilePath(

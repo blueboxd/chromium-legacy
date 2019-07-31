@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "url/gurl.h"
@@ -38,7 +39,7 @@ constexpr TimeDelta kMinSecondsBetweenFetches = TimeDelta::FromSeconds(1);
 constexpr char kLogFileOpenType[] = "RecurrenceRanker.LogFileOpenType";
 
 // Represents each model used within the SearchResultRanker.
-enum class Model { NONE, MIXED_TYPES };
+enum class Model { NONE, APPS, MIXED_TYPES };
 
 // Returns the model relevant for predicting launches for results with the given
 // |type|.
@@ -51,6 +52,10 @@ Model ModelForType(RankingItemType type) {
     case RankingItemType::kOmniboxHistory:
     case RankingItemType::kOmniboxSearch:
       return Model::MIXED_TYPES;
+    // Currently we don't rank arc app shortcuts. If this changes, add a case
+    // here.
+    case RankingItemType::kApp:
+      return Model::APPS;
     default:
       return Model::NONE;
   }
@@ -99,9 +104,23 @@ std::string NormalizeId(const std::string& id, RankingItemType type) {
         return SimplifyGoogleDocsUrlId(id);
       else
         return SimplifyUrlId(id);
+    case RankingItemType::kApp:
+      return NormalizeAppId(id);
     default:
       return id;
   }
+}
+
+// Linearly maps |score| to the range [min, max].
+// |score| is assumed to be within [0.0, 1.0]; if it's greater than 1.0
+// then max is returned; if it's less than 0.0, then min is returned.
+float ReRange(const float score, const float min, const float max) {
+  if (score >= 1.0f)
+    return max;
+  if (score <= 0.0f)
+    return min;
+
+  return min + score * (max - min);
 }
 
 }  // namespace
@@ -199,6 +218,10 @@ void SearchResultRanker::InitializeRankers() {
         profile_->GetPath().AppendASCII("zero_state_mixed_types_ranker.proto"),
         config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
   }
+
+  app_ranker_ = std::make_unique<AppSearchResultRanker>(
+      profile_->GetPath(),
+      chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
 }
 
 void SearchResultRanker::FetchRankings(const base::string16& query) {
@@ -218,6 +241,9 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
     query_mixed_ranks_ =
         query_based_mixed_types_ranker_->Rank(base::UTF16ToUTF8(query));
   }
+
+  if (app_ranker_)
+    app_ranks_ = app_ranker_->Rank();
 }
 
 void SearchResultRanker::Rank(Mixer::SortedResults* results) {
@@ -252,6 +278,11 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
               3.0);
         }
       }
+    } else if (model == Model::APPS && app_ranker_) {
+      const auto& it = app_ranks_.find(result.result->id());
+      if (it != app_ranks_.end()) {
+        result.score = ReRange(it->second, 0.67, 1.0);
+      }
     }
   }
 }
@@ -270,7 +301,8 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
         static_cast<int>(app_launch_data.launched_from));
   }
 
-  if (ModelForType(app_launch_data.ranking_item_type) == Model::MIXED_TYPES) {
+  auto model = ModelForType(app_launch_data.ranking_item_type);
+  if (model == Model::MIXED_TYPES) {
     if (results_list_group_ranker_) {
       results_list_group_ranker_->Record(base::NumberToString(
           static_cast<int>(app_launch_data.ranking_item_type)));
@@ -279,6 +311,8 @@ void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
           NormalizeId(app_launch_data.id, app_launch_data.ranking_item_type),
           app_launch_data.query);
     }
+  } else if (model == Model::APPS) {
+    app_ranker_->Train(NormalizeAppId(app_launch_data.id));
   }
 }
 

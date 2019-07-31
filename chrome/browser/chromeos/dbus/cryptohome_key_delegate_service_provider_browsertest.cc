@@ -143,6 +143,14 @@ class CryptohomeKeyDelegateServiceProviderTest
         &service_provider_);
 
     PrepareExtension();
+
+    // Populate the browser's state with the mapping between the test
+    // certificate provider extension and the certs that it provides, so that
+    // the tested implementation knows where it should send challenges to. In
+    // the real-world usage, this step is done by the Login/Lock Screens while
+    // preparing the parameters that are later used by the cryptohomed daemon
+    // for calling our D-Bus service.
+    RefreshCertsFromCertProviders();
   }
 
   void TearDownOnMainThread() override {
@@ -169,8 +177,11 @@ class CryptohomeKeyDelegateServiceProviderTest
 
   // Calls the tested ChallengeKey D-Bus method, requesting a signature
   // challenge.
-  // Fills |signature| with the data returned by the call.
-  void CallSignatureChallengeKey(std::vector<uint8_t>* signature) {
+  // Returns whether the D-Bus method succeeded, and on success fills
+  // |signature| with the data returned by the call.
+  bool CallSignatureChallengeKey(
+      cryptohome::ChallengeSignatureAlgorithm signature_algorithm,
+      std::vector<uint8_t>* signature) {
     const cryptohome::AccountIdentifier account_identifier =
         cryptohome::CreateAccountIdentifierFromAccountId(EmptyAccountId());
     cryptohome::KeyChallengeRequest request;
@@ -180,7 +191,7 @@ class CryptohomeKeyDelegateServiceProviderTest
     request.mutable_signature_request_data()->set_public_key_spki_der(
         GetCertSpki(*cert_provider_extension_->certificate()));
     request.mutable_signature_request_data()->set_signature_algorithm(
-        cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256);
+        signature_algorithm);
 
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeKeyDelegateInterface,
@@ -192,6 +203,8 @@ class CryptohomeKeyDelegateServiceProviderTest
     std::unique_ptr<dbus::Response> dbus_response =
         dbus_service_test_helper_->CallMethod(&method_call);
 
+    if (dbus_response->GetMessageType() == dbus::Message::MESSAGE_ERROR)
+      return false;
     dbus::MessageReader reader(dbus_response.get());
     cryptohome::KeyChallengeResponse response;
     EXPECT_TRUE(reader.PopArrayOfBytesAsProto(&response));
@@ -199,21 +212,26 @@ class CryptohomeKeyDelegateServiceProviderTest
     EXPECT_TRUE(response.signature_response_data().has_signature());
     signature->assign(response.signature_response_data().signature().begin(),
                       response.signature_response_data().signature().end());
+    return true;
   }
 
   // Returns whether the given |signature| is a valid signature of the original
   // data.
-  bool IsSignatureValid(const std::vector<uint8_t>& signature) const {
+  bool IsSignatureValid(crypto::SignatureVerifier::SignatureAlgorithm algorithm,
+                        const std::vector<uint8_t>& signature) const {
     const std::string spki =
         GetCertSpki(*cert_provider_extension_->certificate());
     crypto::SignatureVerifier verifier;
-    if (!verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA256,
-                             signature,
+    if (!verifier.VerifyInit(algorithm, signature,
                              base::as_bytes(base::make_span(spki)))) {
       return false;
     }
     verifier.VerifyUpdate(base::as_bytes(base::make_span(kDataToSign)));
     return verifier.VerifyFinal();
+  }
+
+  TestCertificateProviderExtension* cert_provider_extension() {
+    return cert_provider_extension_.get();
   }
 
  private:
@@ -244,19 +262,56 @@ class CryptohomeKeyDelegateServiceProviderTest
   std::unique_ptr<TestCertificateProviderExtension> cert_provider_extension_;
 };
 
-// Verifies that the ChallengeKey method handles the signature challenge request
-// by passing the request to the certificate provider extension.
+// Verifies that the ChallengeKey request with the PKCS #1 v1.5 SHA-256
+// algorithm is handled successfully using the test provider.
 IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
-                       SignatureBasic) {
-  // Populate the browser's state with the mapping between the test certificate
-  // provider extension and the certs that it provides, so that the tested
-  // implementation knows where it should send challenges to. In the real-world
-  // usage, this step is done by the Login/Lock Screens while preparing the
-  // parameters that are later used by the cryptohomed daemon for calling our
-  // D-Bus service.
+                       SignatureSuccessSha256) {
+  std::vector<uint8_t> signature;
+  EXPECT_TRUE(CallSignatureChallengeKey(
+      cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256, &signature));
+  EXPECT_TRUE(
+      IsSignatureValid(crypto::SignatureVerifier::RSA_PKCS1_SHA256, signature));
+}
+
+// Verifies that the ChallengeKey request with the PKCS #1 v1.5 SHA-1 algorithm
+// is handled successfully using the test provider.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureSuccessSha1) {
+  std::vector<uint8_t> signature;
+  EXPECT_TRUE(CallSignatureChallengeKey(
+      cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA1, &signature));
+  EXPECT_TRUE(
+      IsSignatureValid(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature));
+}
+
+// Verifies that the ChallengeKey request fails when the requested algorithm
+// isn't supported by the test provider.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorUnsupportedAlgorithm) {
+  std::vector<uint8_t> signature;
+  EXPECT_FALSE(CallSignatureChallengeKey(
+      cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA384, &signature));
+}
+
+// Verifies that the ChallengeKey request fails when the used key isn't reported
+// by the test provider anymore.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorKeyRemoved) {
+  cert_provider_extension()->set_should_fail_certificate_requests(true);
   RefreshCertsFromCertProviders();
 
   std::vector<uint8_t> signature;
-  CallSignatureChallengeKey(&signature);
-  EXPECT_TRUE(IsSignatureValid(signature));
+  EXPECT_FALSE(CallSignatureChallengeKey(
+      cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256, &signature));
+}
+
+// Verifies that the ChallengeKey request fails when the test provider returns
+// an error to the signature request.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorWhileSigning) {
+  cert_provider_extension()->set_should_fail_sign_digest_requests(true);
+
+  std::vector<uint8_t> signature;
+  EXPECT_FALSE(CallSignatureChallengeKey(
+      cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256, &signature));
 }

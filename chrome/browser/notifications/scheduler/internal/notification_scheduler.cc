@@ -267,52 +267,22 @@ class NotificationSchedulerImpl : public NotificationScheduler,
         std::move(notifications), std::move(client_states), task_start_time_);
   }
 
-  void OnClick(SchedulerClientType type, const std::string& guid) override {
-    context_->impression_tracker()->OnClick(type, guid);
+  void OnUserAction(const UserActionData& action_data) override {
+    context_->impression_tracker()->OnUserAction(action_data);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
-                       weak_ptr_factory_.GetWeakPtr(), UserActionType::kClick,
-                       type, base::nullopt));
+                       weak_ptr_factory_.GetWeakPtr(), action_data));
   }
 
-  void OnActionClick(SchedulerClientType type,
-                     const std::string& guid,
-                     ActionButtonType button_type) override {
-    context_->impression_tracker()->OnActionClick(type, guid, button_type);
-
-    ButtonClickInfo button_info;
-    // TODO(xingliu): Plumb the button id from platform.
-    button_info.button_id = std::string();
-    button_info.type = button_type;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       UserActionType::kButtonClick, type,
-                       std::move(button_info)));
-  }
-
-  void OnDismiss(SchedulerClientType type, const std::string& guid) override {
-    context_->impression_tracker()->OnDismiss(type, guid);
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
-                       weak_ptr_factory_.GetWeakPtr(), UserActionType::kDismiss,
-                       type, base::nullopt));
-  }
-
-  void NotifyClientAfterUserAction(
-      UserActionType action_type,
-      SchedulerClientType client_type,
-      base::Optional<ButtonClickInfo> button_info) {
-    auto* client = context_->client_registrar()->GetClient(client_type);
+  void NotifyClientAfterUserAction(const UserActionData& action_data) {
+    auto* client =
+        context_->client_registrar()->GetClient(action_data.client_type);
     if (!client)
       return;
 
-    client->OnUserAction(action_type, std::move(button_info));
+    client->OnUserAction(action_data);
   }
 
   std::unique_ptr<NotificationSchedulerContext> context_;

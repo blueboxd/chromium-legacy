@@ -96,6 +96,26 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
     // restarted using a combined value of all of the |additional_load_flags|.
     virtual void RestartWithFlags(int additional_load_flags);
 
+    // Restarts the URL loader using |additional_load_flags| and the unmodified
+    // URL if it was changed in WillStartRequest().
+    //
+    // If called on an URL loader that did not modify the URL in
+    // WillStartRequest(), this method has the same outcome as
+    // RestartWithFlags().
+    //
+    // Restarting is only valid while executing within
+    // BeforeWillProcessResponse(), or during its deferred handling (before
+    // having called Resume()).
+    //
+    // When a URL loader is restarted, throttles will NOT have their
+    // WillStartRequest() method called again - that is only called for the
+    // initial request start.
+    //
+    // If multiple throttles call RestartWithFlags() and
+    // RestartWithURLResetAndFlags() then the URL loader will be restarted
+    // using a combined value of all of the |additional_load_flags|.
+    virtual void RestartWithURLResetAndFlags(int additional_load_flags);
+
    protected:
     virtual ~Delegate();
   };

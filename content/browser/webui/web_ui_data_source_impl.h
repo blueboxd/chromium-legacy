@@ -84,10 +84,9 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
   // Methods that match URLDataSource which are called by
   // InternalDataSource.
   std::string GetMimeType(const std::string& path) const;
-  void StartDataRequest(
-      const std::string& path,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const URLDataSource::GotDataCallback& callback);
+  void StartDataRequest(const std::string& path,
+                        const WebContents::Getter& wc_getter,
+                        const URLDataSource::GotDataCallback& callback);
 
   int PathToIdrOrDefault(const std::string& path) const;
 

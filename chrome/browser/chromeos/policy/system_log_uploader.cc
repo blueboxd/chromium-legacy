@@ -173,9 +173,12 @@ std::string SystemLogDelegate::GetPolicyAsJSON() {
           user_manager::UserManager::Get()->GetPrimaryUser()->IsAffiliated();
     }
   }
-  return policy::GetAllPolicyValuesAsJSON(
-      ProfileManager::GetActiveUserProfile(), include_user_policies,
-      true /* with_device_data */, true /* is_pretty_print */);
+  return policy::DictionaryPolicyConversions()
+      .WithBrowserContext(ProfileManager::GetActiveUserProfile())
+      .EnableUserPolicies(include_user_policies)
+      .EnableDevicePolicies(true)
+      .EnableDeviceInfo(true)
+      .ToJSON();
 }
 
 void SystemLogDelegate::LoadSystemLogs(LogUploadCallback upload_callback) {

@@ -28,8 +28,10 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -291,6 +293,16 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   void SetExpectedEffectiveConnectionType(
       net::EffectiveConnectionType effective_connection_type) {
     expected_ect = effective_connection_type;
+  }
+
+  void SetJsEnabledForActiveView(bool enabled) {
+    content::RenderViewHost* view = browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetRenderViewHost();
+    content::WebPreferences prefs = view->GetWebkitPreferences();
+    prefs.javascript_enabled = enabled;
+    view->UpdateWebkitPreferences(prefs);
   }
 
   const GURL& accept_ch_with_lifetime_http_local_url() const {
@@ -1440,7 +1452,21 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
                               &host_settings);
   EXPECT_EQ(1u, host_settings.size());
 
-  // Block the Javascript: Client hints should not be attached.
+  // Block JavaScript via WebPreferences: Client hints should not be attached.
+  SetJsEnabledForActiveView(false);
+
+  SetClientHintExpectationsOnMainFrame(false);
+  SetClientHintExpectationsOnSubresources(false);
+  ui_test_utils::NavigateToURL(browser(),
+                               without_accept_ch_without_lifetime_url());
+
+  EXPECT_EQ(0u, count_client_hints_headers_seen());
+  VerifyContentSettingsNotNotified();
+  EXPECT_EQ(1u, count_user_agent_hint_headers_seen());
+
+  SetJsEnabledForActiveView(true);
+
+  // Block JavaScript via ContentSetting: Client hints should not be attached.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(without_accept_ch_without_lifetime_url(),
                                       GURL(), CONTENT_SETTINGS_TYPE_JAVASCRIPT,
@@ -1451,7 +1477,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   VerifyContentSettingsNotNotified();
   EXPECT_EQ(1u, count_user_agent_hint_headers_seen());
 
-  // Allow the Javascript: Client hints should now be attached.
+  // Allow JavaScript: Client hints should now be attached.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetContentSettingDefaultScope(without_accept_ch_without_lifetime_url(),
                                       GURL(), CONTENT_SETTINGS_TYPE_JAVASCRIPT,

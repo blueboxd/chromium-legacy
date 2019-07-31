@@ -257,10 +257,6 @@ void ServiceWorkerNewScriptLoader::FollowRedirect(
   NOTREACHED();
 }
 
-void ServiceWorkerNewScriptLoader::ProceedWithResponse() {
-  NOTREACHED();
-}
-
 void ServiceWorkerNewScriptLoader::SetPriority(net::RequestPriority priority,
                                                int32_t intra_priority_value) {
   if (network_loader_)

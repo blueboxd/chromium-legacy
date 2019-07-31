@@ -14,8 +14,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
-#include "content/shell/browser/shell_url_request_context_getter.h"
-#include "net/url_request/url_request_job_factory.h"
 
 class SimpleFactoryKey;
 
@@ -60,10 +58,6 @@ class ShellBrowserContext : public BrowserContext {
   BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   BackgroundSyncController* GetBackgroundSyncController() override;
   BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate() override;
-  net::URLRequestContextGetter* CreateRequestContext(
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) override;
-  net::URLRequestContextGetter* CreateMediaRequestContext() override;
 
  protected:
   // Contains URLRequestContextGetter required for resource loading.
@@ -75,19 +69,6 @@ class ShellBrowserContext : public BrowserContext {
   private:
     DISALLOW_COPY_AND_ASSIGN(ShellResourceContext);
   };
-
-  ShellURLRequestContextGetter* url_request_context_getter() {
-    return url_request_getter_.get();
-  }
-
-  // Used by ShellBrowserContext to initiate and set different types of
-  // URLRequestContextGetter.
-  virtual ShellURLRequestContextGetter* CreateURLRequestContextGetter(
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors);
-  void set_url_request_context_getter(ShellURLRequestContextGetter* getter) {
-    url_request_getter_ = getter;
-  }
 
   bool ignore_certificate_errors() const { return ignore_certificate_errors_; }
 
@@ -106,9 +87,6 @@ class ShellBrowserContext : public BrowserContext {
   bool off_the_record_;
   base::FilePath path_;
   BrowserPluginGuestManager* guest_manager_;
-  scoped_refptr<ShellURLRequestContextGetter> url_request_getter_;
-  std::map<base::FilePath, scoped_refptr<ShellURLRequestContextGetter>>
-      isolated_url_request_getters_;
   std::unique_ptr<SimpleFactoryKey> key_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);

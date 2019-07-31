@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util.h"
 
 namespace app_list {
@@ -114,6 +115,10 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
 
   // TODO(931149): Move the AppSearchResultRanker instance and associated logic
   // to here.
+
+  // Ranks apps and arc app shortcuts on-device.
+  std::unique_ptr<AppSearchResultRanker> app_ranker_;
+  base::flat_map<std::string, float> app_ranks_;
 
   Profile* profile_;
 };

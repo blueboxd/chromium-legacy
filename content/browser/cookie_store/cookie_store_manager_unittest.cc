@@ -265,11 +265,6 @@ class CookieStoreManagerTest
     storage_partition_impl_ = base::WrapUnique(
         new StoragePartitionImpl(worker_test_helper_->browser_context(),
                                  user_data_directory_.GetPath(), nullptr));
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      storage_partition_impl_->SetURLRequestContext(
-          worker_test_helper_->browser_context()->CreateRequestContext(
-              nullptr, URLRequestInterceptorScopedVector()));
-    }
     ::network::mojom::NetworkContext* network_context =
         storage_partition_impl_->GetNetworkContext();
     cookie_store_context_->ListenToCookieChanges(

@@ -64,7 +64,7 @@ TEST_F(CSSPropertyTest, VisitedPropertiesCanParseValues) {
 
     // Get any value compatible with 'property'. The initial value will do.
     const CSSValue* initial_value = property.CSSValueFromComputedStyle(
-        *initial_style, nullptr /* layout_object */, nullptr /* node */,
+        *initial_style, nullptr /* layout_object */,
         false /* allow_visited_style */);
     ASSERT_TRUE(initial_value);
     String css_text = initial_value->CssText();

@@ -45,5 +45,6 @@ specific_include_rules = {
   ],
   ".*_(unit|pixel|perf)test.*\.cc": [
     "+components/viz/test",
+    "+third_party/blink/renderer/platform/testing",
   ],
 }

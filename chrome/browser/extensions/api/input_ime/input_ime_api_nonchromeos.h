@@ -55,7 +55,7 @@ class InputImeEventRouter : public InputImeEventRouterBase {
   DISALLOW_COPY_AND_ASSIGN(InputImeEventRouter);
 };
 
-class InputImeCreateWindowFunction : public UIThreadExtensionFunction {
+class InputImeCreateWindowFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.createWindow", INPUT_IME_CREATEWINDOW)
 
@@ -66,7 +66,7 @@ class InputImeCreateWindowFunction : public UIThreadExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class InputImeShowWindowFunction : public UIThreadExtensionFunction {
+class InputImeShowWindowFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.showWindow", INPUT_IME_SHOWWINDOW)
 
@@ -77,7 +77,7 @@ class InputImeShowWindowFunction : public UIThreadExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class InputImeHideWindowFunction : public UIThreadExtensionFunction {
+class InputImeHideWindowFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.hideWindow", INPUT_IME_HIDEWINDOW)
 
@@ -88,7 +88,7 @@ class InputImeHideWindowFunction : public UIThreadExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class InputImeActivateFunction : public UIThreadExtensionFunction {
+class InputImeActivateFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.activate", INPUT_IME_ACTIVATE)
 
@@ -99,7 +99,7 @@ class InputImeActivateFunction : public UIThreadExtensionFunction {
  protected:
   ~InputImeActivateFunction() override {}
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -109,14 +109,14 @@ class InputImeActivateFunction : public UIThreadExtensionFunction {
   void OnPermissionBubbleFinished(ImeWarningBubblePermissionStatus status);
 };
 
-class InputImeDeactivateFunction : public UIThreadExtensionFunction {
+class InputImeDeactivateFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.deactivate", INPUT_IME_DEACTIVATE)
 
  protected:
   ~InputImeDeactivateFunction() override {}
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 };
 

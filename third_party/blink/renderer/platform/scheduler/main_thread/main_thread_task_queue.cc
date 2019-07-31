@@ -70,6 +70,40 @@ const char* MainThreadTaskQueue::NameForQueueType(
   return nullptr;
 }
 
+// static
+bool MainThreadTaskQueue::IsPerFrameTaskQueue(
+    MainThreadTaskQueue::QueueType queue_type) {
+  switch (queue_type) {
+    // TODO(altimin): Remove kDefault once there is no per-frame kDefault queue.
+    case MainThreadTaskQueue::QueueType::kDefault:
+    case MainThreadTaskQueue::QueueType::kFrameLoading:
+    case MainThreadTaskQueue::QueueType::kFrameLoadingControl:
+    case MainThreadTaskQueue::QueueType::kFrameThrottleable:
+    case MainThreadTaskQueue::QueueType::kFrameDeferrable:
+    case MainThreadTaskQueue::QueueType::kFramePausable:
+    case MainThreadTaskQueue::QueueType::kFrameUnpausable:
+    case MainThreadTaskQueue::QueueType::kIdle:
+    case MainThreadTaskQueue::QueueType::kWebScheduling:
+      return true;
+    case MainThreadTaskQueue::QueueType::kControl:
+    case MainThreadTaskQueue::QueueType::kUnthrottled:
+    case MainThreadTaskQueue::QueueType::kCompositor:
+    case MainThreadTaskQueue::QueueType::kTest:
+    case MainThreadTaskQueue::QueueType::kV8:
+    case MainThreadTaskQueue::QueueType::kIPC:
+    case MainThreadTaskQueue::QueueType::kInput:
+    case MainThreadTaskQueue::QueueType::kDetached:
+    case MainThreadTaskQueue::QueueType::kCleanup:
+    case MainThreadTaskQueue::QueueType::kOther:
+      return false;
+    case MainThreadTaskQueue::QueueType::kCount:
+      NOTREACHED();
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
 MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     QueueType type) {
   switch (type) {

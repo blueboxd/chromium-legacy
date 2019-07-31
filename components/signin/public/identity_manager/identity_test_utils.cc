@@ -51,7 +51,7 @@ void UpdateRefreshTokenForAccount(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
     IdentityManager* identity_manager,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& new_token) {
   DCHECK_EQ(account_tracker_service->GetAccountInfo(account_id).account_id,
             account_id)
@@ -106,14 +106,14 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
 void SetRefreshTokenForPrimaryAccount(IdentityManager* identity_manager,
                                       const std::string& token_value) {
   DCHECK(identity_manager->HasPrimaryAccount());
-  std::string account_id = identity_manager->GetPrimaryAccountId();
+  CoreAccountId account_id = identity_manager->GetPrimaryAccountId();
   SetRefreshTokenForAccount(identity_manager, account_id, token_value);
 }
 
 void SetInvalidRefreshTokenForPrimaryAccount(
     IdentityManager* identity_manager) {
   DCHECK(identity_manager->HasPrimaryAccount());
-  std::string account_id = identity_manager->GetPrimaryAccountId();
+  CoreAccountId account_id = identity_manager->GetPrimaryAccountId();
 
   SetInvalidRefreshTokenForAccount(identity_manager, account_id);
 }
@@ -122,7 +122,7 @@ void RemoveRefreshTokenForPrimaryAccount(IdentityManager* identity_manager) {
   if (!identity_manager->HasPrimaryAccount())
     return;
 
-  std::string account_id = identity_manager->GetPrimaryAccountId();
+  CoreAccountId account_id = identity_manager->GetPrimaryAccountId();
 
   RemoveRefreshTokenForAccount(identity_manager, account_id);
 }
@@ -132,8 +132,9 @@ AccountInfo MakePrimaryAccountAvailable(IdentityManager* identity_manager,
   CoreAccountInfo account_info = SetPrimaryAccount(identity_manager, email);
   SetRefreshTokenForPrimaryAccount(identity_manager);
   base::Optional<AccountInfo> primary_account_info =
-      identity_manager->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-          account_info.account_id);
+      identity_manager
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_info.account_id);
   // Ensure that extended information for the account is available after setting
   // the refresh token.
   DCHECK(primary_account_info.has_value());
@@ -235,17 +236,17 @@ AccountInfo MakeAccountAvailableWithCookies(
 }
 
 void SetRefreshTokenForAccount(IdentityManager* identity_manager,
-                               const std::string& account_id,
+                               const CoreAccountId& account_id,
                                const std::string& token_value) {
   UpdateRefreshTokenForAccount(
       identity_manager->GetTokenService(),
       identity_manager->GetAccountTrackerService(), identity_manager,
       account_id,
-      token_value.empty() ? "refresh_token_for_" + account_id : token_value);
+      token_value.empty() ? "refresh_token_for_" + account_id.id : token_value);
 }
 
 void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,
-                                      const std::string& account_id) {
+                                      const CoreAccountId& account_id) {
   UpdateRefreshTokenForAccount(identity_manager->GetTokenService(),
 
                                identity_manager->GetAccountTrackerService(),
@@ -254,7 +255,7 @@ void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,
 }
 
 void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
-                                  const std::string& account_id) {
+                                  const CoreAccountId& account_id) {
   if (!identity_manager->HasAccountWithRefreshToken(account_id))
     return;
 
@@ -327,7 +328,7 @@ std::string GetTestGaiaIdForEmail(const std::string& email) {
 
 void UpdatePersistentErrorOfRefreshTokenForAccount(
     IdentityManager* identity_manager,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& auth_error) {
   DCHECK(identity_manager->HasAccountWithRefreshToken(account_id));
   identity_manager->GetTokenService()->GetDelegate()->UpdateAuthError(
@@ -351,7 +352,7 @@ void CancelAllOngoingGaiaCookieOperations(IdentityManager* identity_manager) {
 }
 
 void SimulateSuccessfulFetchOfAccountInfo(IdentityManager* identity_manager,
-                                          const std::string& account_id,
+                                          const CoreAccountId& account_id,
                                           const std::string& email,
                                           const std::string& gaia,
                                           const std::string& hosted_domain,

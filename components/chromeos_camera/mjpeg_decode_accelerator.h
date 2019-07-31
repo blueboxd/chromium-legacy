@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/memory/unsafe_shared_memory_region.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_frame.h"
 
@@ -100,19 +99,22 @@ class MjpegDecodeAccelerator {
 
   // Decodes the given bitstream buffer that contains one JPEG frame. It
   // supports at least baseline encoding defined in JPEG ISO/IEC 10918-1. The
-  // decoder will convert the color format to I420 or return UNSUPPORTED_JPEG
-  // if it cannot convert. Client still owns this buffer, but should deallocate
-  // or access the buffer only after receiving a decode callback VideoFrameReady
-  // with the corresponding bitstream_buffer_id, or NotifyError.
+  // decoder will convert the output to |video_frame->format()| or return
+  // PLATFORM_FAILURE if it cannot convert. Client still owns this buffer, but
+  // should deallocate or access the buffer only after receiving a decode
+  // callback VideoFrameReady with the corresponding |bitstream_buffer_id|, or
+  // NotifyError.
   // Parameters:
   //  |bitstream_buffer| contains encoded JPEG frame.
   //  |video_frame| contains an allocated video frame for the output, backed
   //  with an UnsafeSharedMemoryRegion.
   //
-  //  Client is responsible for filling the coded_size of video_frame and
-  //  allocating its backing buffer. For now, only unsafe shared memory backed
-  //  VideoFrames are supported. After decode completes, the decoded JPEG frame
-  //  will be filled into the |video_frame|.  Ownership of the
+  //  Client is responsible for filling the |video_frame->coded_size()|,
+  //  |video_frame->visible_rect()|, and allocating its backing buffer. For
+  //  unsafe shared memory backed VideoFrames, only I420 format is supported.
+  //  For DMA-buf backed VideoFrames, the supported formats depend on the
+  //  underlying hardware implementation. After decode completes, the decoded
+  //  JPEG frame will be filled into the |video_frame|. Ownership of the
   //  |bitstream_buffer| and |video_frame| remains with the client. The client
   //  is not allowed to deallocate them before VideoFrameReady or NotifyError()
   //  is invoked for given id of |bitstream_buffer|, or destructor returns.

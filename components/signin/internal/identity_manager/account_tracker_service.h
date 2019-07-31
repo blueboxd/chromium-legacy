@@ -40,7 +40,7 @@ class Image;
 namespace signin {
 class IdentityManager;
 void SimulateSuccessfulFetchOfAccountInfo(IdentityManager*,
-                                          const std::string&,
+                                          const CoreAccountId&,
                                           const std::string&,
                                           const std::string&,
                                           const std::string&,
@@ -150,7 +150,7 @@ class AccountTrackerService {
   friend class AccountFetcherService;
   friend void signin::SimulateSuccessfulFetchOfAccountInfo(
       signin::IdentityManager*,
-      const std::string&,
+      const CoreAccountId&,
       const std::string&,
       const std::string&,
       const std::string&,

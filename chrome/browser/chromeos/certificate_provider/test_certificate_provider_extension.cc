@@ -35,6 +35,12 @@
 
 namespace {
 
+// List of algorithms that the extension claims to support for the returned
+// certificates.
+constexpr extensions::api::certificate_provider::Hash kSupportedHashes[] = {
+    extensions::api::certificate_provider::Hash::HASH_SHA256,
+    extensions::api::certificate_provider::Hash::HASH_SHA1};
+
 base::Value ConvertBytesToValue(base::span<const uint8_t> bytes) {
   base::Value value(base::Value::Type::LIST);
   for (auto byte : bytes)
@@ -49,17 +55,17 @@ std::vector<uint8_t> ExtractBytesFromValue(const base::Value& value) {
   return bytes;
 }
 
-base::Value MakeCertInfoValue(
-    const net::X509Certificate& certificate,
-    const std::vector<extensions::api::certificate_provider::Hash>&
-        supported_hashes) {
+base::span<const uint8_t> GetCertDer(const net::X509Certificate& certificate) {
+  return base::as_bytes(base::make_span(
+      net::x509_util::CryptoBufferAsStringPiece(certificate.cert_buffer())));
+}
+
+base::Value MakeCertInfoValue(const net::X509Certificate& certificate) {
   base::Value cert_info_value(base::Value::Type::DICTIONARY);
   cert_info_value.SetKey("certificate",
-                         ConvertBytesToValue(base::as_bytes(base::make_span(
-                             net::x509_util::CryptoBufferAsStringPiece(
-                                 certificate.cert_buffer())))));
+                         ConvertBytesToValue(GetCertDer(certificate)));
   base::Value supported_hashes_value(base::Value::Type::LIST);
-  for (auto supported_hash : supported_hashes) {
+  for (auto supported_hash : kSupportedHashes) {
     supported_hashes_value.GetList().emplace_back(base::Value(
         extensions::api::certificate_provider::ToString(supported_hash)));
   }
@@ -157,23 +163,34 @@ void TestCertificateProviderExtension::Observe(
 
 base::Value TestCertificateProviderExtension::HandleCertificatesRequest() {
   base::Value cert_info_values(base::Value::Type::LIST);
-  cert_info_values.GetList().emplace_back(MakeCertInfoValue(
-      *certificate_,
-      {extensions::api::certificate_provider::Hash::HASH_SHA256}));
+  if (!should_fail_certificate_requests_)
+    cert_info_values.GetList().emplace_back(MakeCertInfoValue(*certificate_));
   return cert_info_values;
 }
 
 base::Value TestCertificateProviderExtension::HandleSignDigestRequest(
     const base::Value& sign_request) {
-  // TODO(crbug.com/826417): Verify the "certificate" field value.
+  CHECK_EQ(*sign_request.FindKey("certificate"),
+           ConvertBytesToValue(GetCertDer(*certificate_)));
 
   const std::vector<uint8_t> digest =
       ExtractBytesFromValue(*sign_request.FindKey("digest"));
-  CHECK_EQ(extensions::api::certificate_provider::Hash::HASH_SHA256,
-           extensions::api::certificate_provider::ParseHash(
-               sign_request.FindKey("hash")->GetString()));
 
+  const extensions::api::certificate_provider::Hash hash =
+      extensions::api::certificate_provider::ParseHash(
+          sign_request.FindKey("hash")->GetString());
+  int openssl_digest_type = 0;
+  if (hash == extensions::api::certificate_provider::Hash::HASH_SHA256)
+    openssl_digest_type = NID_sha256;
+  else if (hash == extensions::api::certificate_provider::Hash::HASH_SHA1)
+    openssl_digest_type = NID_sha1;
+  else
+    LOG(FATAL) << "Unexpected signature request hash: " << hash;
+
+  if (should_fail_sign_digest_requests_)
+    return base::Value();
   std::vector<uint8_t> signature;
-  RsaSignPrehashed(*private_key_, NID_sha256, digest, &signature);
+  CHECK(
+      RsaSignPrehashed(*private_key_, openssl_digest_type, digest, &signature));
   return ConvertBytesToValue(signature);
 }

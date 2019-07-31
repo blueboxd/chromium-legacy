@@ -170,12 +170,12 @@ android_apk("content_shell_apk") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//components/crash/android:java",
+    "//components/crash/content/app:chrome_crashpad_handler_named_as_so",
     "//content/public/android:content_java",
     "//content/public/test/android:android_test_message_pump_support_java",
     "//media/capture/video/android:capture_java",
     "//net/android:net_java",
     "//services/shape_detection:shape_detection_java",
-    "//third_party/crashpad/crashpad/handler:crashpad_handler_named_as_so",
     "//third_party/mesa_headers",
     "//ui/android:ui_java",
   ]
@@ -183,7 +183,7 @@ android_apk("content_shell_apk") {
   android_manifest = content_shell_manifest
   android_manifest_dep = ":content_shell_manifest"
   shared_libraries = [ ":libcontent_shell_content_view" ]
-  loadable_modules = [ "$root_out_dir/libcrashpad_handler.so" ]
+  loadable_modules = [ "$root_out_dir/libchrome_crashpad_handler.so" ]
   command_line_flags_file = "content-shell-command-line"
 }
 

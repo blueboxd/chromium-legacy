@@ -106,6 +106,7 @@
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
 #include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
@@ -1419,13 +1420,13 @@ send_tab_to_self::SendTabToSelfBubbleView* BrowserView::ShowSendTabToSelfBubble(
     return nullptr;
   }
 
-  LocationBarView* location_bar = GetLocationBarView();
-  views::View* anchor_view = location_bar;
-
   send_tab_to_self::SendTabToSelfBubbleViewImpl* bubble =
       new send_tab_to_self::SendTabToSelfBubbleViewImpl(
-          anchor_view, gfx::Point(), web_contents, controller);
-
+          GetLocationBarView(), gfx::Point(), web_contents, controller);
+  PageActionIconView* icon_view =
+      GetLocationBarView()->send_tab_to_self_icon_view();
+  if (icon_view)
+    bubble->SetHighlightedButton(icon_view);
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show(send_tab_to_self::SendTabToSelfBubbleViewImpl::USER_GESTURE);
 
@@ -3010,7 +3011,7 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
-void BrowserView::ShowHatsBubbleFromAppMenuButton() {
+void BrowserView::ShowHatsBubbleFromAppMenuButton(const std::string& site_id) {
   // Never show any HaTS bubble in Incognito.
   if (!IsRegularOrGuestSession())
     return;
@@ -3022,7 +3023,7 @@ void BrowserView::ShowHatsBubbleFromAppMenuButton() {
   if (!app_menu_button)
     return;
 
-  HatsBubbleView::Show(app_menu_button, browser());
+  HatsBubbleView::Show(browser(), app_menu_button, site_id);
 }
 
 void BrowserView::ExecuteExtensionCommand(

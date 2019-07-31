@@ -58,7 +58,7 @@ void ReportGenerator::Generate(ReportCallback callback) {
     return;
   }
 
-  requests_.push_back(
+  requests_.push(
       std::make_unique<em::ChromeDesktopReportRequest>(basic_request_));
   GetNextProfileReport(0);
 }
@@ -167,7 +167,7 @@ void ReportGenerator::OnProfileReportReady(
              maximum_report_size_) {
     // The new full Profile report is too big to be appended into the current
     // request, move it to the next request if possible.
-    requests_.push_back(
+    requests_.push(
         std::make_unique<em::ChromeDesktopReportRequest>(basic_request_));
     requests_.back()
         ->mutable_browser_report()

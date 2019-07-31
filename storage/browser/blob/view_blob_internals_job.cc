@@ -23,7 +23,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/url_request.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_entry.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -141,55 +140,6 @@ void AddHorizontalRule(std::string* out) {
 }  // namespace
 
 namespace storage {
-
-ViewBlobInternalsJob::ViewBlobInternalsJob(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    BlobStorageContext* blob_storage_context)
-    : net::URLRequestSimpleJob(request, network_delegate),
-      blob_storage_context_(blob_storage_context),
-      weak_factory_(this) {
-}
-
-ViewBlobInternalsJob::~ViewBlobInternalsJob() = default;
-
-void ViewBlobInternalsJob::Start() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ViewBlobInternalsJob::StartAsync,
-                                weak_factory_.GetWeakPtr()));
-}
-
-bool ViewBlobInternalsJob::IsRedirectResponse(
-    GURL* location,
-    int* http_status_code,
-    bool* insecure_scheme_was_upgraded) {
-  if (request_->url().has_query()) {
-    // Strip the query parameters.
-    GURL::Replacements replacements;
-    replacements.ClearQuery();
-    *insecure_scheme_was_upgraded = false;
-    *location = request_->url().ReplaceComponents(replacements);
-    *http_status_code = 307;
-    return true;
-  }
-  return false;
-}
-
-void ViewBlobInternalsJob::Kill() {
-  net::URLRequestSimpleJob::Kill();
-  weak_factory_.InvalidateWeakPtrs();
-}
-
-int ViewBlobInternalsJob::GetData(std::string* mime_type,
-                                  std::string* charset,
-                                  std::string* data,
-                                  net::CompletionOnceCallback callback) const {
-  mime_type->assign("text/html");
-  charset->assign("UTF-8");
-
-  *data = GenerateHTML(blob_storage_context_);
-  return net::OK;
-}
 
 std::string ViewBlobInternalsJob::GenerateHTML(
     BlobStorageContext* blob_storage_context) {

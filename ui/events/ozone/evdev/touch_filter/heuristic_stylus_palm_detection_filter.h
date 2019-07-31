@@ -26,6 +26,11 @@ namespace ui {
 // this are held for the stroke count (as above). If they're cancelled
 // externally, we never report them. If they terminate before the count, we
 // output all items.
+//
+// NOTE: This filter is only intended for certain boards of hardware that have
+// poor interaction between a mutually exclusive stylus and finger input:
+// Turning it on for devices where is not intended will probably degrade
+// performance and create a poor UX.
 class EVENTS_OZONE_EVDEV_EXPORT HeuristicStylusPalmDetectionFilter
     : public PalmDetectionFilter {
  public:
@@ -39,6 +44,12 @@ class EVENTS_OZONE_EVDEV_EXPORT HeuristicStylusPalmDetectionFilter
               base::TimeTicks time,
               std::bitset<kNumTouchEvdevSlots>* slots_to_hold,
               std::bitset<kNumTouchEvdevSlots>* slots_to_suppress) override;
+
+  const static char kFilterName[];
+  std::string FilterNameForTesting() const override;
+
+  base::TimeDelta HoldTime() const;
+  base::TimeDelta CancelTime() const;
 
  private:
   const int hold_stroke_count_;

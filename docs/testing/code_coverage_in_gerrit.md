@@ -54,7 +54,7 @@ in Gerrit.
 [choose_tryjobs]: images/code_coverage_choose_tryjobs.png
 [linux_coverage_rel]: images/code_coverage_linux_coverage_rel.png
 [code_coverage_annotations]: images/code_coverage_annotations.png
-[file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
+[file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Infra%3ETest%3ECodeCoverage
 [code-coverage group]: https://groups.google.com/a/chromium.org/forum/#!forum/code-coverage
 [code_coverage.md]: code_coverage.md
 [clang_code_coverage_wrapper]: clang_code_coverage_wrapper.md

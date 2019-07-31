@@ -40,11 +40,27 @@ class MockPersistentReportingStore
 
     // Constructor for LOAD_REPORTING_CLIENTS commands.
     Command(Type type, ReportingClientsLoadedCallback loaded_callback);
-    // Constructor for endpoint commands.
+    // Constructors for endpoint commands. |type| must be one of
+    // ADD_REPORTING_ENDPOINT, UPDATE_REPORTING_ENDPOINT_DETAILS, or
+    // DELETE_REPORTING_ENDPOINT
     Command(Type type, const ReportingEndpoint& endpoint);
-    // Constructor for endpoint group commands.
+    Command(Type type,
+            const GURL& origin,
+            const std::string& group,
+            const GURL& endpoint);
+    Command(Type type,
+            const url::Origin& origin,
+            const std::string& group,
+            const GURL& endpoint);
+    // Constructors for endpoint group commands. |type| must be one of
+    // ADD_REPORTING_ENDPOINT_GROUP,
+    // UPDATE_REPORTING_ENDPOINT_GROUP_ACCESS_TIME,
+    // UPDATE_REPORTING_ENDPOINT_GROUP_DETAILS, or
+    // DELETE_REPORTING_ENDPOINT_GROUP
     Command(Type type, const CachedReportingEndpointGroup& group);
-    // Constructor for FLUSH commands.
+    Command(Type type, const GURL& origin, const std::string& group);
+    Command(Type type, const url::Origin& origin, const std::string& group);
+    // |type| must be LOAD_REPORTING_CLIENTS or FLUSH.
     Command(Type type);
 
     Command(const Command& other);
@@ -147,6 +163,8 @@ bool operator==(const MockPersistentReportingStore::Command& lhs,
                 const MockPersistentReportingStore::Command& rhs);
 bool operator!=(const MockPersistentReportingStore::Command& lhs,
                 const MockPersistentReportingStore::Command& rhs);
+std::ostream& operator<<(std::ostream& out,
+                         const MockPersistentReportingStore::Command& cmd);
 
 }  // namespace net
 

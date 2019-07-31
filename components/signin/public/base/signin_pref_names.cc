@@ -101,7 +101,7 @@ const char kSigninAllowed[] = "signin.allowed";
 // True if the token service has been prepared for Dice migration.
 const char kTokenServiceDiceCompatible[] = "token_service.dice_compatible";
 
-// Boolean which stores if the OAuth2TokenService should ignore secondary
+// Boolean which stores if the ProfileOAuth2TokenService should ignore secondary
 // accounts.
 const char kTokenServiceExcludeAllSecondaryAccounts[] =
     "token_service.exclude_all_secondary_accounts";

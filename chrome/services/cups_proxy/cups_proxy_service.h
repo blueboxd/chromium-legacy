@@ -12,10 +12,6 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "chrome/services/cups_proxy/public/mojom/proxy.mojom.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace cups_proxy {
 

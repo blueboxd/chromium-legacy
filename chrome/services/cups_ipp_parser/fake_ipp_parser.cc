@@ -9,9 +9,8 @@
 
 namespace cups_ipp_parser {
 
-IppParser::IppParser(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+IppParser::IppParser(mojo::PendingReceiver<mojom::IppParser> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 IppParser::~IppParser() = default;
 

@@ -122,7 +122,7 @@ class SyncFileSystemRequestFileSystemFunction
 };
 
 class SyncFileSystemSetConflictResolutionPolicyFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.setConflictResolutionPolicy",
                              SYNCFILESYSTEM_SETCONFLICTRESOLUTIONPOLICY)
@@ -133,7 +133,7 @@ class SyncFileSystemSetConflictResolutionPolicyFunction
 };
 
 class SyncFileSystemGetConflictResolutionPolicyFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.getConflictResolutionPolicy",
                              SYNCFILESYSTEM_GETCONFLICTRESOLUTIONPOLICY)
@@ -143,8 +143,7 @@ class SyncFileSystemGetConflictResolutionPolicyFunction
   ResponseAction Run() override;
 };
 
-class SyncFileSystemGetServiceStatusFunction
-    : public UIThreadExtensionFunction {
+class SyncFileSystemGetServiceStatusFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("syncFileSystem.getServiceStatus",
                              SYNCFILESYSTEM_GETSERVICESTATUS)

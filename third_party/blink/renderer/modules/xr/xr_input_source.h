@@ -55,6 +55,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   XRSpace* targetRaySpace() const;
   XRSpace* gripSpace() const;
   Gamepad* gamepad() const { return gamepad_; }
+  Vector<String> profiles() const { return profiles_; }
 
   uint32_t source_id() const { return state_.source_id; }
 
@@ -129,6 +130,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   Member<XRTargetRaySpace> target_ray_space_;
   Member<XRGripSpace> grip_space_;
   Member<Gamepad> gamepad_;
+  Vector<String> profiles_;
 
   std::unique_ptr<TransformationMatrix> base_pose_matrix_;
 

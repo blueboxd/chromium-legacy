@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/views/close_bubble_on_tab_activation_helper.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -20,25 +22,39 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
  public:
   // Returns a pointer to the Hats Bubble being shown. For testing only.
   static views::BubbleDialogDelegateView* GetHatsBubble();
-  // Creates and shows the bubble anchored to the |anchor_button|.
-  static void Show(AppMenuButton* anchor_button, Browser* browser);
+  // Creates and shows the bubble anchored to the |anchor_button| and leads to
+  // a survey identified by |site_id|.
+  static void Show(Browser* browser,
+                   AppMenuButton* anchor_button,
+                   const std::string& site_id);
 
  protected:
-  // views::BubbleDialogDelegateView:
+  // views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
+  gfx::ImageSkia GetWindowIcon() override;
+  bool ShouldShowWindowIcon() const override;
+
+  // views::DialogDelegate:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool Accept() override;
-  bool ShouldShowCloseButton() const override;
+
+  // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
+  // views::View:
+  void Layout() override;
+
  private:
-  HatsBubbleView(AppMenuButton* anchor_button,
-                 Browser* browser,
+  HatsBubbleView(Browser* browser,
+                 AppMenuButton* anchor_button,
+                 const std::string& site_id,
                  gfx::NativeView parent_view);
   ~HatsBubbleView() override;
 
   static HatsBubbleView* instance_;
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
+  const std::string site_id_;
   const Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsBubbleView);

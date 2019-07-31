@@ -54,7 +54,10 @@ chrome.certificateProvider.onSignDigestRequested.addListener(
           JSON.stringify(
               ['onSignDigestRequested', jsonifiableFromSignRequest(request)]),
           response => {
-            const signature = arrayBufferFromByteList(JSON.parse(response));
+            const parsedResponse = JSON.parse(response);
+            const signature = (parsedResponse === null) ?
+                undefined :
+                arrayBufferFromByteList(parsedResponse);
             reportCallback(signature);
           });
     });

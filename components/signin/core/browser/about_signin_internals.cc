@@ -418,7 +418,7 @@ void AboutSigninInternals::OnRefreshTokenRemovedForAccountFromSource(
 
 void AboutSigninInternals::OnRefreshTokensLoaded() {
   RefreshTokenEvent event;
-  // event.account_id = CoreAccountId("All accounts");
+  // This event concerns all accounts, so it does not have any account id.
   event.type = AboutSigninInternals::RefreshTokenEventType::kAllTokensLoaded;
   signin_status_.AddRefreshTokenEvent(event);
   NotifyObservers();
@@ -638,7 +638,7 @@ AboutSigninInternals::SigninStatus::ToValue(
           signin_error_controller->error_account_id();
       const base::Optional<AccountInfo> error_account_info =
           identity_manager
-              ->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+              ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
                   error_account_id);
       AddSectionEntry(basic_info, "Auth Error",
           signin_error_controller->auth_error().ToString());

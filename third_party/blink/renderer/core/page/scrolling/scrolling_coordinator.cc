@@ -94,6 +94,7 @@ void ScrollingCoordinator::Trace(blink::Visitor* visitor) {
 void ScrollingCoordinator::SetShouldHandleScrollGestureOnMainThreadRegion(
     const Region& region,
     GraphicsLayer* layer) {
+  DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
   if (cc::Layer* cc_layer = GraphicsLayerToCcLayer(layer))
     cc_layer->SetNonFastScrollableRegion(RegionToCCRegion(region));
 }
@@ -102,14 +103,6 @@ void ScrollingCoordinator::NotifyGeometryChanged(LocalFrameView* frame_view) {
   frame_view->GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
   frame_view->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(true);
   frame_view->GetScrollingContext()->SetShouldScrollOnMainThreadIsDirty(true);
-}
-
-void ScrollingCoordinator::NotifyTransformChanged(LocalFrame* frame) {
-  DCHECK(frame);
-  if (!frame->View())
-    return;
-
-  frame->View()->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(true);
 }
 
 ScrollableArea*
@@ -167,33 +160,8 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
                            LocalFrameUkmAggregator::kScrollingCoordinator);
   TRACE_EVENT0("input", "ScrollingCoordinator::UpdateAfterPaint");
 
-  // TODO(pdr): Move the scroll gesture region logic to use touch action rects.
-  // These features are similar and do not need independent implementations.
   if (scroll_gesture_region_dirty) {
-    // Compute the regions of the page where we can't handle scroll gestures on
-    // the impl thread. This currently includes:
-    // 1. All scrollable areas, such as subframes, overflow divs and list boxes,
-    //    whose composited scrolling are not enabled. We need to do this even if
-    //    the frame view whose layout was updated is not the main frame.
-    // 2. Resize control areas, e.g. the small rect at the right bottom of
-    //    div/textarea/iframe when CSS property "resize" is enabled.
-    // 3. Plugin areas.
-    Region main_thread_scrolling_region;
-    Region main_thread_fixed_region;
-    ComputeShouldHandleScrollGestureOnMainThreadRegion(
-        frame, &main_thread_scrolling_region, &main_thread_fixed_region);
-
-    SetShouldHandleScrollGestureOnMainThreadRegion(
-        main_thread_scrolling_region,
-        frame_view->GetScrollableArea()->LayerForScrolling());
-
-    // Fixed regions will be stored on the visual viewport's scroll layer. This
-    // is because a region for an area that's fixed to the layout viewport
-    // won't move when the layout viewport scrolls.
-    SetShouldHandleScrollGestureOnMainThreadRegion(
-        main_thread_fixed_region,
-        page_->GetVisualViewport().LayerForScrolling());
-
+    UpdateNonFastScrollableRegions(frame);
     frame_view->GetScrollingContext()->SetScrollGestureRegionIsDirty(false);
   }
 
@@ -250,6 +218,60 @@ static void ForAllPaintingGraphicsLayers(GraphicsLayer& layer,
 
   for (auto* child : layer.Children())
     ForAllPaintingGraphicsLayers(*child, function);
+}
+
+// Set the non-fast scrollable regions on |layer|'s cc layer.
+static void UpdateLayerNonFastScrollableRegions(GraphicsLayer& layer) {
+  DCHECK(RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
+  // CompositeAfterPaint does this update in PaintArtifactCompositor.
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
+  DCHECK(layer.PaintsContentOrHitTest());
+
+  if (layer.Client().ShouldThrottleRendering()) {
+    layer.CcLayer()->SetNonFastScrollableRegion(cc::Region());
+    return;
+  }
+
+  auto offset = layer.GetOffsetFromTransformNode();
+  gfx::Vector2dF layer_offset = gfx::Vector2dF(offset.X(), offset.Y());
+  PaintChunkSubset paint_chunks =
+      PaintChunkSubset(layer.GetPaintController().PaintChunks());
+  PaintArtifactCompositor::UpdateNonFastScrollableRegions(
+      layer.CcLayer(), layer_offset, layer.GetPropertyTreeState(),
+      paint_chunks);
+}
+
+// Compute the regions of the page where we can't handle scroll gestures on
+// the impl thread. This currently includes:
+// 1. All scrollable areas, such as subframes, overflow divs and list boxes,
+//    whose composited scrolling are not enabled. We need to do this even if
+//    the frame view whose layout was updated is not the main frame.
+// 2. Resize control areas, e.g. the small rect at the right bottom of
+//    div/textarea/iframe when CSS property "resize" is enabled.
+// 3. Plugin areas.
+void ScrollingCoordinator::UpdateNonFastScrollableRegions(LocalFrame* frame) {
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    auto* view_layer = frame->View()->GetLayoutView()->Layer();
+    if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
+      ForAllPaintingGraphicsLayers(*root, UpdateLayerNonFastScrollableRegions);
+  } else {
+    Region main_thread_scrolling_region;
+    Region main_thread_fixed_region;
+    ComputeShouldHandleScrollGestureOnMainThreadRegion(
+        frame, &main_thread_scrolling_region, &main_thread_fixed_region);
+
+    SetShouldHandleScrollGestureOnMainThreadRegion(
+        main_thread_scrolling_region,
+        frame->View()->GetScrollableArea()->LayerForScrolling());
+
+    // Fixed regions will be stored on the visual viewport's scroll layer.
+    // This is because a region for an area that's fixed to the layout
+    // viewport won't move when the layout viewport scrolls.
+    SetShouldHandleScrollGestureOnMainThreadRegion(
+        main_thread_fixed_region,
+        page_->GetVisualViewport().LayerForScrolling());
+  }
 }
 
 // Set the touch action rects on the cc layer from the touch action data stored
@@ -627,9 +649,7 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
   TRACE_EVENT0("input",
                "ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded");
 
-  // TODO(chrishtr): implement touch event target rects for CAP.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   auto* view_layer = frame->View()->GetLayoutView()->Layer();
   if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
@@ -829,6 +849,8 @@ bool ScrollingCoordinator::CoordinatesScrollingForFrameView(
 namespace {
 
 bool ScrollsWithRootFrame(LayoutObject* object) {
+  DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
+
   DCHECK(object);
   DCHECK(object->GetFrame());
 
@@ -868,6 +890,8 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
     const LocalFrame* frame,
     Region* scrolling_region,
     Region* fixed_region) const {
+  DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
+
   LocalFrameView* frame_view = frame->View();
   DCHECK(scrolling_region);
   DCHECK(fixed_region);

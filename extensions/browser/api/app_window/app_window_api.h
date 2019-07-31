@@ -16,7 +16,7 @@ struct CreateWindowOptions;
 }
 }
 
-class AppWindowCreateFunction : public UIThreadExtensionFunction {
+class AppWindowCreateFunction : public ExtensionFunction {
  public:
   AppWindowCreateFunction();
   DECLARE_EXTENSION_FUNCTION("app.window.create", APP_WINDOW_CREATE)

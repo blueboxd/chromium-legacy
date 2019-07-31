@@ -30,7 +30,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   // Creates an instance of the class.
   static ITextRangeProvider* CreateTextRangeProvider(
-      ui::AXPlatformNodeWin* owner,
+      AXPlatformNodeWin* owner,
       AXNodePosition::AXPositionInstance start,
       AXNodePosition::AXPositionInstance end);
 
@@ -89,7 +89,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   friend class AXPlatformNodeTextRangeProviderTest;
   friend class AXPlatformNodeTextProviderTest;
   base::string16 GetString();
-  ui::AXPlatformNodeWin* owner() const;
+  AXPlatformNodeWin* owner() const;
   AXPlatformNodeDelegate* GetDelegate(
       const AXPositionInstanceType* position) const;
 
@@ -128,7 +128,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
       const int count,
       int* units_moved);
 
-  CComPtr<ui::AXPlatformNodeWin> owner_;
+  CComPtr<AXPlatformNodeWin> owner_;
   AXPositionInstance start_;
   AXPositionInstance end_;
 };

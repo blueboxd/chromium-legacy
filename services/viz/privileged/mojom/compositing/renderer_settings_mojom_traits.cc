@@ -25,6 +25,7 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
       data.release_overlay_resources_after_gpu_query();
   out->tint_gl_composited_content = data.tint_gl_composited_content();
   out->show_overdraw_feedback = data.show_overdraw_feedback();
+  out->show_aggregated_damage = data.show_aggregated_damage();
   out->highp_threshold_min = data.highp_threshold_min();
   out->slow_down_compositing_scale_factor =
       data.slow_down_compositing_scale_factor();

@@ -15,7 +15,7 @@
 
 namespace extensions {
 
-class DnsResolveFunction : public UIThreadExtensionFunction,
+class DnsResolveFunction : public ExtensionFunction,
                            public network::ResolveHostClientBase {
  public:
   DECLARE_EXTENSION_FUNCTION("dns.resolve", DNS_RESOLVE)
@@ -25,7 +25,7 @@ class DnsResolveFunction : public UIThreadExtensionFunction,
  protected:
   ~DnsResolveFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:

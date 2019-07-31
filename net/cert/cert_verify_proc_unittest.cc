@@ -875,14 +875,7 @@ class CertVerifyProcInternalTest
   }
 
   bool WeakKeysAreInvalid() const {
-#if defined(OS_IOS)
-    // Starting with iOS 13, certs with weak keys are treated as (recoverable)
-    // invalid certificate errors.
-    if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
-        base::ios::IsRunningOnIOS13OrLater()) {
-      return true;
-    }
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX) and !defined(OS_IOS)
     // Starting with Mac OS 10.12, certs with weak keys are treated as
     // (recoverable) invalid certificate errors.
     if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&

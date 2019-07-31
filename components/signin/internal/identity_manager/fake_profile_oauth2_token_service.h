@@ -47,17 +47,17 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   GetPendingRequests();
 
   // Helper routines to issue tokens for pending requests.
-  void IssueAllTokensForAccount(const std::string& account_id,
+  void IssueAllTokensForAccount(const CoreAccountId& account_id,
                                 const std::string& access_token,
                                 const base::Time& expiration);
 
   // Helper routines to issue token for pending requests based on TokenResponse.
   void IssueAllTokensForAccount(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response);
 
   void IssueErrorForAllPendingRequestsForAccount(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const GoogleServiceAuthError& error);
 
   void IssueTokenForScope(const OAuth2AccessTokenManager::ScopeSet& scopes,

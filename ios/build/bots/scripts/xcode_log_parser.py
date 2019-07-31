@@ -67,12 +67,9 @@ def copy_screenshots_for_failed_test(failure_message, test_case_folder):
     # "Screenshot At Failure" : <UIImage: 0x6000032ab410>, {768, 1024}
     if 'UIImage:' in screenshots_files:
       return
-    LOGGER.info('Screenshots for failure "%s" in "%s"' % (
-        os.path.basename(test_case_folder), test_case_folder))
     d = json.loads(screenshots_files)
     for f in d.values():
       if not os.path.exists(f):
-        LOGGER.warning('File %s does not exist!' % f)
         continue
       screenshot = os.path.join(test_case_folder, os.path.basename(f))
       shutil.copyfile(f, screenshot)

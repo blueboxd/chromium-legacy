@@ -329,6 +329,7 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/widget/TextViewWithLeading.java",
     "java/src/org/chromium/ui/widget/Toast.java",
     "java/src/org/chromium/ui/widget/UiWidgetFactory.java",
+    "java/src/org/chromium/ui/widget/ViewLookupCachingFrameLayout.java",
     "java/src/org/chromium/ui/widget/ViewRectProvider.java",
   ]
   deps = [
@@ -391,6 +392,7 @@ junit_binary("ui_junit_tests") {
     "junit/src/org/chromium/ui/shadows/ShadowAnimatedStateListDrawable.java",
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
     "junit/src/org/chromium/ui/widget/AnchoredPopupWindowTest.java",
+    "junit/src/org/chromium/ui/widget/ViewLookupCachingFrameLayoutTest.java",
   ]
   deps = [
     ":ui_java",

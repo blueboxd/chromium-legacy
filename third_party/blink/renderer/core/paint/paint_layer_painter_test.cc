@@ -372,7 +372,10 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_FALSE(target_layer->NeedsRepaint());
   EXPECT_TRUE(PaintWithoutCommit());
-  EXPECT_EQ(2, NumCachedNewItems());
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
+    EXPECT_EQ(3, NumCachedNewItems());
+  else
+    EXPECT_EQ(2, NumCachedNewItems());
   CommitAndFinishCycle();
 
   // |target| is still partially painted.
@@ -408,7 +411,10 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   // a partially painted layer will trigger repaint.
   EXPECT_FALSE(target_layer->NeedsRepaint());
   EXPECT_TRUE(PaintWithoutCommit());
-  EXPECT_EQ(2, NumCachedNewItems());
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
+    EXPECT_EQ(3, NumCachedNewItems());
+  else
+    EXPECT_EQ(2, NumCachedNewItems());
   CommitAndFinishCycle();
 
   // |target| is still partially painted.

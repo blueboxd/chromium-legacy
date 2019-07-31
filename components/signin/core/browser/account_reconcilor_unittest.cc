@@ -542,7 +542,7 @@ class AccountReconcilorTestTable
       }
     }
     if (!authenticated_account_found)
-      EXPECT_EQ("", identity_manager->GetPrimaryAccountId());
+      EXPECT_EQ(CoreAccountId(), identity_manager->GetPrimaryAccountId());
   }
 
   void SetupTokens() {
@@ -685,24 +685,23 @@ std::vector<Cookie> FakeSetAccountsInCookie(
   if (parameters.mode ==
       gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER) {
     for (const CoreAccountId& account : parameters.accounts_to_send) {
-      cookies_after_reconcile.push_back({account, true});
+      cookies_after_reconcile.push_back({account.id, true});
     }
   } else {
-    std::set<CoreAccountId> accounts_set;
-    for (const CoreAccountId& account : parameters.accounts_to_send) {
-      accounts_set.insert(account);
-    }
+    std::set<CoreAccountId> accounts_set(parameters.accounts_to_send.begin(),
+                                         parameters.accounts_to_send.end());
     cookies_after_reconcile = cookies_before_reconcile;
     for (Cookie& param : cookies_after_reconcile) {
-      if (accounts_set.find(param.gaia_id) != accounts_set.end()) {
+      if (accounts_set.find(CoreAccountId(param.gaia_id)) !=
+          accounts_set.end()) {
         param.is_valid = true;
-        accounts_set.erase(param.gaia_id);
+        accounts_set.erase(CoreAccountId(param.gaia_id));
       } else {
         param.is_valid = false;
       }
     }
     for (const CoreAccountId& account : accounts_set) {
-      cookies_after_reconcile.push_back({account, true});
+      cookies_after_reconcile.push_back({account.id, true});
     }
   }
   return cookies_after_reconcile;
@@ -930,9 +929,9 @@ TEST_P(AccountReconcilorTestTable, TableRowTest) {
         .Times(1);
     // MergeSession fixes an existing cookie or appends it at the end.
     auto it = std::find(cookies.begin(), cookies.end(),
-                        Cookie{account_id_for_cookie, false /* is_valid */});
+                        Cookie{account_id_for_cookie.id, false /* is_valid */});
     if (it == cookies.end())
-      cookies.push_back({account_id_for_cookie, true});
+      cookies.push_back({account_id_for_cookie.id, true});
     else
       it->is_valid = true;
   }
@@ -1074,8 +1073,8 @@ TEST_P(AccountReconcilorTestDiceMultilogin, TableRowTest) {
     // response.
     std::vector<CoreAccountId> accounts_to_send;
     for (int i = 1; GetParam().gaia_api_calls_multilogin[i] != '\0'; ++i) {
-      accounts_to_send.push_back(
-          accounts_[GetParam().gaia_api_calls_multilogin[i]].gaia_id);
+      accounts_to_send.push_back(CoreAccountId(
+          accounts_[GetParam().gaia_api_calls_multilogin[i]].gaia_id));
     }
     const signin::MultiloginParameters params(mode, accounts_to_send);
     cookies_after_reconcile = FakeSetAccountsInCookie(params, cookies);

@@ -8,7 +8,8 @@
     SecureContext,
     Exposed=Window,
     RuntimeEnabled=WebXR,
-    Constructor(optional DOMPointInit position, optional DOMPointInit orientation)
+    Constructor(optional DOMPointInit position, optional DOMPointInit orientation),
+    RaisesException=Constructor
 ] interface XRRigidTransform {
   [SameObject] readonly attribute DOMPointReadOnly position;
   [SameObject] readonly attribute DOMPointReadOnly orientation;

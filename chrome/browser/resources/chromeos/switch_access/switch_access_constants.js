@@ -130,6 +130,10 @@ SAConstants.DEFAULT_PREFERENCES = {
  * @const
  */
 SAConstants.MenuAction = {
+  // Copy text.
+  COPY: 'copy',
+  // Cut text.
+  CUT: 'cut',
   // Decrement the value of an input field.
   DECREMENT: chrome.automation.ActionType.DECREMENT,
   // Activate dictation for voice input to an editable text region.
@@ -156,6 +160,8 @@ SAConstants.MenuAction = {
   MOVE_UP_ONE_LINE_OF_TEXT: 'moveUpOneLineOfText',
   // Open and jump to the Switch Access settings in a new Chrome tab.
   OPTIONS: 'options',
+  // Paste text.
+  PASTE: 'paste',
   // Scroll the current element (or its ancestor) logically backwards.
   // Primarily used by ARC++ apps.
   SCROLL_BACKWARD: chrome.automation.ActionType.SCROLL_BACKWARD,

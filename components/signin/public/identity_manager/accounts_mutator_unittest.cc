@@ -148,7 +148,8 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_AddNewAccount) {
 
   AccountInfo account_info =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value();
   EXPECT_EQ(account_info.account_id, account_id);
   EXPECT_EQ(account_info.email, kTestEmail);
@@ -180,7 +181,8 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
           account_id));
   AccountInfo account_info =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value();
   EXPECT_EQ(account_info.account_id, account_id);
   EXPECT_EQ(account_info.email, kTestEmail);
@@ -218,7 +220,8 @@ TEST_F(AccountsMutatorTest, AddOrUpdateAccount_UpdateExistingAccount) {
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 1U);
   AccountInfo updated_account_info =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value();
   EXPECT_EQ(account_info.account_id, updated_account_info.account_id);
   EXPECT_EQ(account_info.gaia, updated_account_info.gaia);
@@ -252,7 +255,8 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
 
   AccountInfo original_account_info =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value();
   EXPECT_EQ(original_account_info.account_id, account_id);
   EXPECT_EQ(original_account_info.email, kTestEmail);
@@ -265,7 +269,8 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
       /*is_under_advanced_protection=*/base::nullopt);
   AccountInfo updated_account_info_1 =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value();
 
   // Only |is_child_account| changed so far, everything else remains the same.
@@ -283,7 +288,8 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
                                         /*is_under_advanced_protection=*/true);
   AccountInfo updated_account_info_2 =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value();
 
   // |is_under_advanced_protection| has changed now, but |is_child_account|
@@ -303,7 +309,8 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
                                         /*is_under_advanced_protection=*/false);
   AccountInfo reset_account_info =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value();
 
   // Everything is back to its original state now.
@@ -377,7 +384,8 @@ TEST_F(
 
   AccountInfo secondary_account_info =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value();
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2U);
 
@@ -617,9 +625,10 @@ TEST_F(AccountsMutatorTest, LegacySetRefreshTokenForSupervisedUser) {
 
   // In the context of supervised users, the ProfileOAuth2TokenService is used
   // without the AccountTrackerService being used, so we can't use any of the
-  // IdentityManager::FindAccountInfoForAccountWithRefreshTokenBy*() methods
-  // since they won't find any account. Use GetAccountsWithRefreshTokens() and
-  // HasAccountWithRefreshToken*() instead, that only relies in the PO2TS.
+  // IdentityManager::FindExtendedAccountInfoForAccountWithRefreshTokenBy*()
+  // methods since they won't find any account. Use
+  // GetAccountsWithRefreshTokens() and HasAccountWithRefreshToken*() instead,
+  // that only relies in the PO2TS.
   std::vector<CoreAccountInfo> accounts =
       identity_manager()->GetAccountsWithRefreshTokens();
   EXPECT_EQ(accounts.size(), 1U);

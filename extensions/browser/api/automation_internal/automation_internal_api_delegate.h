@@ -10,7 +10,7 @@
 #include "extensions/common/extension_id.h"
 #include "extensions/common/extension_messages.h"
 
-class UIThreadExtensionFunction;
+class ExtensionFunction;
 
 namespace extensions {
 class AutomationInternalApiDelegate;
@@ -52,7 +52,7 @@ class AutomationInternalApiDelegate {
   virtual int GetTabId(content::WebContents* contents) = 0;
   // Retrieves the active web contents.
   virtual content::WebContents* GetActiveWebContents(
-      UIThreadExtensionFunction* function) = 0;
+      ExtensionFunction* function) = 0;
   // Starts managing automation nodes on the desktop.
   virtual void EnableDesktop() = 0;
   // Gets the ax tree id for the nodes being managed for the desktop.

@@ -74,8 +74,9 @@ class DiceTurnSyncOnHelperShutdownNotifierFactory
 AccountInfo GetAccountInfo(signin::IdentityManager* identity_manager,
                            const std::string& account_id) {
   auto maybe_account_info =
-      identity_manager->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-          account_id);
+      identity_manager
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id);
   return maybe_account_info.has_value() ? maybe_account_info.value()
                                         : AccountInfo();
 }

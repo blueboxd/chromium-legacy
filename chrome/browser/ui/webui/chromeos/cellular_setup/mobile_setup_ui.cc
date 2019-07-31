@@ -178,7 +178,7 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
   std::string GetSource() override;
   void StartDataRequest(
       const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string&) override { return "text/html"; }
   bool ShouldAddContentSecurityPolicy() override { return false; }
@@ -270,7 +270,7 @@ std::string MobileSetupUIHTMLSource::GetSource() {
 
 void MobileSetupUIHTMLSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   // Sanity checks that activation was requested for an appropriate network.
   const NetworkState* network =

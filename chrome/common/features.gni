@@ -86,6 +86,7 @@ chrome_grit_defines = [
   "enable_printing=$enable_basic_printing",
   "enable_service_discovery=$enable_service_discovery",
   "enable_vr=$enable_vr",
+  "enable_webui_tab_strip=$enable_webui_tab_strip",
   "safe_browsing_mode=$safe_browsing_mode",
   "optimize_webui=$optimize_webui",
 ]

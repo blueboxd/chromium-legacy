@@ -14,7 +14,7 @@
 
 namespace extensions {
 
-class DiagnosticsSendPacketFunction : public UIThreadExtensionFunction {
+class DiagnosticsSendPacketFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("diagnostics.sendPacket", DIAGNOSTICS_SENDPACKET)
 
@@ -23,7 +23,7 @@ class DiagnosticsSendPacketFunction : public UIThreadExtensionFunction {
  protected:
   ~DiagnosticsSendPacketFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:

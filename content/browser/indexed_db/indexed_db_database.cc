@@ -1813,9 +1813,7 @@ void IndexedDBDatabase::OpenCursor(
     bool key_only,
     blink::mojom::IDBTaskType task_type,
     blink::mojom::IDBDatabase::OpenCursorCallback callback,
-    const url::Origin& origin,
-    base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
-    scoped_refptr<base::SequencedTaskRunner> idb_runner) {
+    base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host) {
   DCHECK(transaction);
   IDB_TRACE1("IndexedDBDatabase::OpenCursor", "txn.id", transaction->id());
 
@@ -1832,19 +1830,28 @@ void IndexedDBDatabase::OpenCursor(
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE;
   params->task_type = task_type;
   params->callback = std::move(callback);
-  transaction->ScheduleTask(BindWeakOperation(
-      &IndexedDBDatabase::OpenCursorOperation, AsWeakPtr(), std::move(params),
-      origin, std::move(dispatcher_host), std::move(idb_runner)));
+  transaction->ScheduleTask(
+      BindWeakOperation(&IndexedDBDatabase::OpenCursorOperation, AsWeakPtr(),
+                        std::move(params), std::move(dispatcher_host)));
 }
 
 Status IndexedDBDatabase::OpenCursorOperation(
     std::unique_ptr<OpenCursorOperationParams> params,
-    const url::Origin& origin,
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
-    scoped_refptr<base::SequencedTaskRunner> idb_runner,
     IndexedDBTransaction* transaction) {
   IDB_TRACE1("IndexedDBDatabase::OpenCursorOperation", "txn.id",
              transaction->id());
+
+  Status s = Status::OK();
+  if (!dispatcher_host) {
+    IndexedDBDatabaseError error =
+        CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
+                    "Dispatcher not connected.", transaction);
+    std::move(params->callback)
+        .Run(blink::mojom::IDBDatabaseOpenCursorResult::NewErrorResult(
+            blink::mojom::IDBError::New(error.code(), error.message())));
+    return s;
+  }
 
   // The frontend has begun indexing, so this pauses the transaction
   // until the indexing is complete. This can't happen any earlier
@@ -1853,7 +1860,6 @@ Status IndexedDBDatabase::OpenCursorOperation(
   if (params->task_type == blink::mojom::IDBTaskType::Preemptive)
     transaction->AddPreemptiveEvent();
 
-  Status s = Status::OK();
   std::unique_ptr<IndexedDBBackingStore::Cursor> backing_store_cursor;
   if (params->index_id == IndexedDBIndexMetadata::kInvalidId) {
     if (params->cursor_type == indexed_db::CURSOR_KEY_ONLY) {
@@ -1897,16 +1903,6 @@ Status IndexedDBDatabase::OpenCursorOperation(
   IndexedDBCursor* cursor_ptr = cursor.get();
   transaction->RegisterOpenCursor(cursor_ptr);
 
-  if (!dispatcher_host) {
-    IndexedDBDatabaseError error =
-        CreateError(blink::kWebIDBDatabaseExceptionUnknownError,
-                    "Dispatcher not connected.", transaction);
-    std::move(params->callback)
-        .Run(blink::mojom::IDBDatabaseOpenCursorResult::NewErrorResult(
-            blink::mojom::IDBError::New(error.code(), error.message())));
-    return s;
-  }
-
   blink::mojom::IDBValuePtr mojo_value;
   std::vector<IndexedDBBlobInfo> blob_info;
   if (cursor_ptr->Value()) {
@@ -1914,8 +1910,6 @@ Status IndexedDBDatabase::OpenCursorOperation(
     blob_info.swap(cursor_ptr->Value()->blob_info);
   }
 
-  auto cursor_impl = std::make_unique<CursorImpl>(
-      std::move(cursor), origin, dispatcher_host.get(), idb_runner);
   if (mojo_value &&
       !IndexedDBCallbacks::CreateAllBlobs(
           dispatcher_host->blob_storage_context(),
@@ -1924,13 +1918,11 @@ Status IndexedDBDatabase::OpenCursorOperation(
     return s;
   }
 
-  blink::mojom::IDBCursorAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
-  dispatcher_host->AddCursorBinding(std::move(cursor_impl), std::move(request));
   std::move(params->callback)
       .Run(blink::mojom::IDBDatabaseOpenCursorResult::NewValue(
           blink::mojom::IDBDatabaseOpenCursorValue::New(
-              std::move(ptr_info), cursor_ptr->key(), cursor_ptr->primary_key(),
+              dispatcher_host->CreateCursorBinding(std::move(cursor)),
+              cursor_ptr->key(), cursor_ptr->primary_key(),
               std::move(mojo_value))));
   return s;
 }

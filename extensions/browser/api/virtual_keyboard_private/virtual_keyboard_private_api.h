@@ -21,7 +21,7 @@ namespace extensions {
 
 class VirtualKeyboardDelegate;
 
-class VirtualKeyboardPrivateFunction : public UIThreadExtensionFunction {
+class VirtualKeyboardPrivateFunction : public ExtensionFunction {
  public:
   bool PreRunValidation(std::string* error) override;
 

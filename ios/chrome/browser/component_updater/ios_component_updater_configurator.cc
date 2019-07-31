@@ -14,6 +14,7 @@
 #include "base/version.h"
 #include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/component_updater/configurator_impl.h"
+#include "components/services/patch/in_process_file_patcher.h"
 #include "components/services/unzip/in_process_unzipper.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/net/network_chromium.h"
@@ -26,9 +27,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/web/public/service/service_manager_connection.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace component_updater {
 
@@ -171,7 +170,7 @@ scoped_refptr<update_client::PatcherFactory>
 IOSConfigurator::GetPatcherFactory() {
   if (!patch_factory_) {
     patch_factory_ = base::MakeRefCounted<update_client::PatchChromiumFactory>(
-        web::ServiceManagerConnection::Get()->GetConnector()->Clone());
+        base::BindRepeating(&patch::LaunchInProcessFilePatcher));
   }
   return patch_factory_;
 }

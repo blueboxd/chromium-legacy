@@ -45,10 +45,11 @@ class BrowserWidgetDelegateView : public views::WidgetDelegateView {
 }  // namespace
 
 EmbeddedBrowser::EmbeddedBrowser(content::BrowserContext* context,
-                                 const GURL& url)
+                                 const GURL& url,
+                                 const gfx::Rect& bounds)
     : widget_(new views::Widget) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.bounds = gfx::Rect(20, 20, 800, 600);
+  params.bounds = bounds;
   params.delegate = new BrowserWidgetDelegateView(context, url);
   widget_->Init(params);
   WindowState::Get(widget_->GetNativeWindow())->SetWindowPositionManaged(true);
@@ -63,10 +64,14 @@ aura::Window* EmbeddedBrowser::GetWindow() {
 
 // static
 aura::Window* EmbeddedBrowser::Create(content::BrowserContext* context,
-                                      const GURL& url) {
+                                      const GURL& url,
+                                      base::Optional<gfx::Rect> bounds) {
+  static const gfx::Rect default_bounds(20, 20, 800, 600);
+
   // EmbeddedBrowser deletes itself when the widget is closed.
   aura::Window* browser_window =
-      (new EmbeddedBrowser(context, url))->GetWindow();
+      (new EmbeddedBrowser(context, url, bounds ? *bounds : default_bounds))
+          ->GetWindow();
   browser_window->SetProperty(aura::client::kAppType,
                               static_cast<int>(ash::AppType::BROWSER));
   return browser_window;

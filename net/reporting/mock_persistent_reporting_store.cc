@@ -5,28 +5,79 @@
 #include "net/reporting/mock_persistent_reporting_store.h"
 
 #include <algorithm>
+#include <memory>
 
 namespace net {
 
 MockPersistentReportingStore::Command::Command(
     Type type,
     ReportingClientsLoadedCallback loaded_callback)
-    : type(type), loaded_callback(std::move(loaded_callback)) {}
+    : type(type), loaded_callback(std::move(loaded_callback)) {
+  DCHECK(type == Type::LOAD_REPORTING_CLIENTS);
+}
 
 MockPersistentReportingStore::Command::Command(
     Type type,
     const ReportingEndpoint& endpoint)
-    : type(type), group_key(endpoint.group_key), url(endpoint.info.url) {}
+    : type(type), group_key(endpoint.group_key), url(endpoint.info.url) {
+  DCHECK(type == Type::ADD_REPORTING_ENDPOINT ||
+         type == Type::UPDATE_REPORTING_ENDPOINT_DETAILS ||
+         type == Type::DELETE_REPORTING_ENDPOINT);
+}
+
+MockPersistentReportingStore::Command::Command(Type type,
+                                               const GURL& origin,
+                                               const std::string& group,
+                                               const GURL& endpoint)
+    : MockPersistentReportingStore::Command(type,
+                                            url::Origin::Create(origin),
+                                            group,
+                                            endpoint) {}
+
+MockPersistentReportingStore::Command::Command(Type type,
+                                               const url::Origin& origin,
+                                               const std::string& group,
+                                               const GURL& endpoint)
+    : MockPersistentReportingStore::Command(
+          type,
+          ReportingEndpoint(origin,
+                            group,
+                            ReportingEndpoint::EndpointInfo{endpoint})) {}
 
 MockPersistentReportingStore::Command::Command(
     Type type,
     const CachedReportingEndpointGroup& group)
-    : type(type), group_key(group.group_key) {}
+    : type(type), group_key(group.group_key) {
+  DCHECK(type == Type::ADD_REPORTING_ENDPOINT_GROUP ||
+         type == Type::UPDATE_REPORTING_ENDPOINT_GROUP_DETAILS ||
+         type == Type::UPDATE_REPORTING_ENDPOINT_GROUP_ACCESS_TIME ||
+         type == Type::DELETE_REPORTING_ENDPOINT_GROUP);
+}
 
-MockPersistentReportingStore::Command::Command(Type type) : type(type) {}
+MockPersistentReportingStore::Command::Command(Type type) : type(type) {
+  DCHECK(type == Type::FLUSH || type == Type::LOAD_REPORTING_CLIENTS);
+}
 
 MockPersistentReportingStore::Command::Command(const Command& other)
     : type(other.type), group_key(other.group_key), url(other.url) {}
+
+MockPersistentReportingStore::Command::Command(Type type,
+                                               const GURL& origin,
+                                               const std::string& group)
+    : MockPersistentReportingStore::Command(type,
+                                            url::Origin::Create(origin),
+                                            group) {}
+
+MockPersistentReportingStore::Command::Command(Type type,
+                                               const url::Origin& origin,
+                                               const std::string& group)
+    : MockPersistentReportingStore::Command(
+          type,
+          CachedReportingEndpointGroup(origin,
+                                       group,
+                                       OriginSubdomains::DEFAULT /* unused */,
+                                       base::Time() /* unused */,
+                                       base::Time() /* unused */)) {}
 
 MockPersistentReportingStore::Command::Command(Command&& other) = default;
 
@@ -66,6 +117,52 @@ bool operator==(const MockPersistentReportingStore::Command& lhs,
 bool operator!=(const MockPersistentReportingStore::Command& lhs,
                 const MockPersistentReportingStore::Command& rhs) {
   return !(lhs == rhs);
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const MockPersistentReportingStore::Command& cmd) {
+  switch (cmd.type) {
+    case MockPersistentReportingStore::Command::Type::LOAD_REPORTING_CLIENTS:
+      return out << "LOAD_REPORTING_CLIENTS()";
+    case MockPersistentReportingStore::Command::Type::FLUSH:
+      return out << "FLUSH()";
+    case MockPersistentReportingStore::Command::Type::ADD_REPORTING_ENDPOINT:
+      return out << "ADD_REPORTING_ENDPOINT("
+                 << "origin=" << cmd.group_key.origin << ", "
+                 << "group=" << cmd.group_key.group_name << ", "
+                 << "endpoint=" << cmd.url << ")";
+    case MockPersistentReportingStore::Command::Type::
+        UPDATE_REPORTING_ENDPOINT_DETAILS:
+      return out << "UPDATE_REPORTING_ENDPOINT_DETAILS("
+                 << "origin=" << cmd.group_key.origin << ", "
+                 << "group=" << cmd.group_key.group_name << ", "
+                 << "endpoint=" << cmd.url << ")";
+    case MockPersistentReportingStore::Command::Type::DELETE_REPORTING_ENDPOINT:
+      return out << "DELETE_REPORTING_ENDPOINT("
+                 << "origin=" << cmd.group_key.origin << ", "
+                 << "group=" << cmd.group_key.group_name << ", "
+                 << "endpoint=" << cmd.url << ")";
+    case MockPersistentReportingStore::Command::Type::
+        ADD_REPORTING_ENDPOINT_GROUP:
+      return out << "ADD_REPORTING_ENDPOINT_GROUP("
+                 << "origin=" << cmd.group_key.origin << ", "
+                 << "group=" << cmd.group_key.group_name << ")";
+    case MockPersistentReportingStore::Command::Type::
+        UPDATE_REPORTING_ENDPOINT_GROUP_ACCESS_TIME:
+      return out << "UPDATE_REPORTING_ENDPOINT_GROUP_ACCESS_TIME("
+                 << "origin=" << cmd.group_key.origin << ", "
+                 << "group=" << cmd.group_key.group_name << ")";
+    case MockPersistentReportingStore::Command::Type::
+        UPDATE_REPORTING_ENDPOINT_GROUP_DETAILS:
+      return out << "UPDATE_REPORTING_ENDPOINT_GROUP_DETAILS("
+                 << "origin=" << cmd.group_key.origin << ", "
+                 << "group=" << cmd.group_key.group_name << ")";
+    case MockPersistentReportingStore::Command::Type::
+        DELETE_REPORTING_ENDPOINT_GROUP:
+      return out << "DELETE_REPORTING_ENDPOINT_GROUP("
+                 << "origin=" << cmd.group_key.origin << ", "
+                 << "group=" << cmd.group_key.group_name << ")";
+  }
 }
 
 MockPersistentReportingStore::MockPersistentReportingStore()

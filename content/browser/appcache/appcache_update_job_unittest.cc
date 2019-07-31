@@ -372,19 +372,6 @@ class MockFrontend : public blink::mojom::AppCacheFrontend {
   std::vector<AppCacheHost*> update_hosts_;
 };
 
-// Helper factories to simulate redirected URL responses for tests.
-class RedirectFactory : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return new net::URLRequestTestJob(
-        request, network_delegate,
-        net::URLRequestTestJob::test_redirect_headers(),
-        net::URLRequestTestJob::test_data_1(), true);
-  }
-};
-
 // Helper class to simulate a URL that returns retry or success.
 class RetryRequestTestJob : public net::URLRequestTestJob {
  public:
@@ -489,16 +476,6 @@ class RetryRequestTestJob : public net::URLRequestTestJob {
   static int num_retries_;
   static RetryHeader retry_after_;
   static int expected_requests_;
-};
-
-class RetryRequestTestJobFactory
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return RetryRequestTestJob::RetryFactory(request, network_delegate);
-  }
 };
 
 // static
@@ -681,14 +658,7 @@ class IOThread {
   std::unique_ptr<net::URLRequestContext> request_context_;
 };
 
-// Controls whether we instantiate the URLRequest based AppCache handler or
-// the URLLoader based one.
-enum RequestHandlerType {
-  URLREQUEST,
-  URLLOADER,
-};
-
-class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
+class AppCacheUpdateJobTest : public testing::Test,
                               public AppCacheGroup::UpdateObserver {
  public:
   AppCacheUpdateJobTest()
@@ -720,7 +690,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
                        base::Unretained(this)));
   }
 
-  ~AppCacheUpdateJobTest() {
+  ~AppCacheUpdateJobTest() override {
     loader_factory_getter_ = nullptr;
     // The TestBrowserThreadBundle dtor guarantees that all posted tasks are
     // executed before the IO thread shuts down. It is safe to use the
@@ -3492,7 +3462,6 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
   void MakeService() {
     service_ = std::make_unique<MockAppCacheService>();
-    service_->set_request_context(io_thread_->request_context());
     service_->set_url_loader_factory_getter(loader_factory_getter_.get());
   }
 

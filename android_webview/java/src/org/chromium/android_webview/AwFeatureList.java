@@ -25,7 +25,6 @@ final public class AwFeatureList {
     private static Boolean sPageStartedOnCommitForBrowserNavigations;
 
     private static boolean computePageStartedOnCommitForBrowserNavigations() {
-        if (!nativeIsEnabled(WEBVIEW_PAGE_STARTED_ON_COMMIT)) return false;
         if (GMS_PACKAGE.equals(ContextUtils.getApplicationContext().getPackageName())) {
             try {
                 PackageInfo gmsPackage =
@@ -66,7 +65,6 @@ final public class AwFeatureList {
     // Alphabetical:
     public static final String WEBVIEW_CONNECTIONLESS_SAFE_BROWSING =
             "WebViewConnectionlessSafeBrowsing";
-    public static final String WEBVIEW_PAGE_STARTED_ON_COMMIT = "WebViewPageStartedOnCommit";
 
     private static native boolean nativeIsEnabled(String featureName);
 }

@@ -34,14 +34,10 @@ bool g_force_in_process_network_service = false;
 }  // namespace
 
 bool IsOutOfProcessNetworkService() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         !IsInProcessNetworkService();
+  return !IsInProcessNetworkService();
 }
 
 bool IsInProcessNetworkService() {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return false;
-
   if (g_force_in_process_network_service ||
       base::FeatureList::IsEnabled(features::kNetworkServiceInProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(

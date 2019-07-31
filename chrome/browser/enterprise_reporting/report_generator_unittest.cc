@@ -126,10 +126,11 @@ class ReportGeneratorTest : public ::testing::Test {
     base::RunLoop run_loop;
     std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>> rets;
     generator_.Generate(base::BindLambdaForTesting(
-        [&run_loop,
-         &rets](std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>
-                    requests) {
-          rets = std::move(requests);
+        [&run_loop, &rets](ReportGenerator::Requests requests) {
+          while (!requests.empty()) {
+            rets.push_back(std::move(requests.front()));
+            requests.pop();
+          }
           run_loop.Quit();
         }));
     run_loop.Run();

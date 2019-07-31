@@ -71,13 +71,13 @@ std::unique_ptr<views::InkDropRipple> CustomShapeButton::CreateInkDropRipple()
     const {
   return TrayPopupUtils::CreateInkDropRipple(
       TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent(), kUnifiedMenuIconColor);
+      GetInkDropCenterBasedOnLastEvent(), kIconOnDarkBackgroundColor);
 }
 
 std::unique_ptr<views::InkDropHighlight>
 CustomShapeButton::CreateInkDropHighlight() const {
   return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedMenuIconColor);
+      TrayPopupInkDropStyle::FILL_BOUNDS, this, kIconOnDarkBackgroundColor);
 }
 
 std::unique_ptr<views::InkDropMask> CustomShapeButton::CreateInkDropMask()

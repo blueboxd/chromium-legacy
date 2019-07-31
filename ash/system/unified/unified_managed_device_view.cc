@@ -73,7 +73,7 @@ void UnifiedManagedDeviceView::Update() {
       !enterprise_domain_name.empty()) {
     // Show enterpised managed UI.
     icon_->SetImage(gfx::CreateVectorIcon(kSystemTrayManagedIcon,
-                                          kUnifiedManagedDeviceIconColor));
+                                          kIconOnDarkBackgroundSecondaryColor));
 
     if (!enterprise_domain_name.empty()) {
       label_->SetText(l10n_util::GetStringFUTF16(
@@ -88,7 +88,7 @@ void UnifiedManagedDeviceView::Update() {
   } else if (session->IsUserSupervised()) {
     // Show supervised user UI (locally supervised or Family Link).
     icon_->SetImage(gfx::CreateVectorIcon(GetSupervisedUserIcon(),
-                                          kUnifiedManagedDeviceIconColor));
+                                          kIconOnDarkBackgroundSecondaryColor));
     label_->SetText(GetSupervisedUserMessage());
     SetVisible(true);
   } else {

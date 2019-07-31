@@ -13,7 +13,6 @@
 
 namespace web {
 class CookieNotificationBridge;
-class ServiceManagerContext;
 class WebMainParts;
 class WebThreadImpl;
 class WebSubThread;
@@ -79,7 +78,6 @@ class WebMainLoop {
 
   // Members initialized in |WebThreadsStarted()| --------------------------
   std::unique_ptr<CookieNotificationBridge> cookie_notification_bridge_;
-  std::unique_ptr<ServiceManagerContext> service_manager_context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMainLoop);
 };

@@ -294,7 +294,7 @@ void BrowserContextKeyedAPIFactory<
 
 namespace api {
 
-class DeveloperPrivateAPIFunction : public UIThreadExtensionFunction {
+class DeveloperPrivateAPIFunction : public ExtensionFunction {
  protected:
   ~DeveloperPrivateAPIFunction() override;
 
@@ -488,7 +488,7 @@ class DeveloperPrivateShowPermissionsDialogFunction
   DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateShowPermissionsDialogFunction);
 };
 
-class DeveloperPrivateChooseEntryFunction : public UIThreadExtensionFunction,
+class DeveloperPrivateChooseEntryFunction : public ExtensionFunction,
                                             public EntryPickerClient {
  protected:
   ~DeveloperPrivateChooseEntryFunction() override;
@@ -497,7 +497,6 @@ class DeveloperPrivateChooseEntryFunction : public UIThreadExtensionFunction,
                   const ui::SelectFileDialog::FileTypeInfo& info,
                   int file_type_index);
 };
-
 
 class DeveloperPrivateLoadUnpackedFunction
     : public DeveloperPrivateChooseEntryFunction {
@@ -611,8 +610,7 @@ class DeveloperPrivatePackDirectoryFunction
   std::string key_path_str_;
 };
 
-class DeveloperPrivateIsProfileManagedFunction
-    : public UIThreadExtensionFunction {
+class DeveloperPrivateIsProfileManagedFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.isProfileManaged",
                              DEVELOPERPRIVATE_ISPROFILEMANAGED)

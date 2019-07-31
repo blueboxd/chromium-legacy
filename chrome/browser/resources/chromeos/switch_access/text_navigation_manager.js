@@ -136,24 +136,17 @@ class TextNavigationManager {
    */
 
   /**
-   * Get the currently selected node.
-   * @private
-   * @return {!chrome.automation.AutomationNode}
-   */
-  node_() {
-    return this.navigationManager_.currentNode();
-  }
-
-  /**
    * Sets the selection using the selectionStart and selectionEnd
    * as the offset input for setDocumentSelection and the parameter
    * textNode as the object input for setDocumentSelection.
    * @private
    */
-  setSelection_() {
+  saveSelection_() {
     if (this.selectionStartIndex_ == NO_SELECT_INDEX ||
         this.selectionEndIndex_ == NO_SELECT_INDEX) {
-      console.log('Selection bounds are not set properly.');
+      console.log(
+          'Selection bounds are not set properly:', this.selectionStartIndex_,
+          this.selectionEndIndex_);
     } else {
       chrome.automation.setDocumentSelection({
         anchorObject: this.selectionStartObject_,
@@ -165,17 +158,47 @@ class TextNavigationManager {
   }
 
   /**
+   * Returns the selection end index.
+   * @return {number}
+   * @public
+   */
+  getSelEndIndex() {
+    return this.selectionEndIndex_;
+  }
+
+  /**
    * Returns the selection start index.
+   * @return {number}
+   * @public
+   */
+  getSelStartIndex() {
+    return this.selectionStartIndex_;
+  }
+
+  /**
+   * Sets the selection start index.
+   * @param {number} startIndex
+   * @param {!chrome.automation.AutomationNode} textNode
+   * @public
+   */
+  setSelStartIndexAndNode(startIndex, textNode) {
+    this.selectionStartIndex_ = startIndex;
+    this.selectionStartObject_ = textNode;
+  }
+
+  /**
+   * Returns if the selection start index is set.
    * @return {boolean}
    * @public
    */
   isSelStartIndexSet() {
     return this.selectionStartIndex_ !== NO_SELECT_INDEX;
   }
+
   /**
    * Returns either the selection start index or the selection end index of the
    * node based on the getStart param.
-   * @param {!chrome.accessibilityPrivate.SyntheticKeyboardModifiers} node
+   * @param {!chrome.automation.AutomationNode} node
    * @param {boolean} getStart
    * @return {number} selection start if getStart is true otherwise selection
    * end
@@ -199,20 +222,25 @@ class TextNavigationManager {
    * node.
    * @public
    */
-  setSelectStart() {
-    this.selectionStartObject_ = this.node_();
-    this.selectionStartIndex_ =
-        this.getSelectionIndexFromNode_(this.selectionStartObject_, true);
+  saveSelectStart() {
+    chrome.automation.getFocus((focusedNode) => {
+      this.selectionStartObject_ = focusedNode;
+      this.selectionStartIndex_ = this.getSelectionIndexFromNode_(
+          this.selectionStartObject_, true /*We are getting the start index.*/);
+    });
   }
 
   /**
    * Sets the selectionEnd variable based on the selection of the current node.
    * @public
    */
-  setSelectEnd() {
-    this.selectionEndObject_ = this.node_();
-    this.selectionEndIndex_ =
-        this.getSelectionIndexFromNode_(this.selectionEndObject_, false);
-    this.setSelection_();
+  saveSelectEnd() {
+    chrome.automation.getFocus((focusedNode) => {
+      this.selectionEndObject_ = focusedNode;
+      this.selectionEndIndex_ = this.getSelectionIndexFromNode_(
+          this.selectionEndObject_,
+          false /*We are not getting the start index.*/);
+      this.saveSelection_();
+    });
   }
 }

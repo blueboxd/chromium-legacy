@@ -24,7 +24,10 @@ namespace {
 constexpr char kSuggestionHashRegex[] = "[a-z0-9]{4}";
 
 bool ValidateHash(const uint8_t hash[4], std::string& result) {
-  const std::string hash_string(reinterpret_cast<const char*>(hash), 4);
+  if (!hash)
+    return false;
+
+  const std::string hash_string(reinterpret_cast<const char*>(hash), 0, 4);
   result = hash_string;
 
   return re2::RE2::FullMatch(hash_string, kSuggestionHashRegex);

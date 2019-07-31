@@ -27,6 +27,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::WebViewMatcher;
+
 namespace {
 
 const char kFormElementId1[] = "username";
@@ -99,9 +101,7 @@ void AssertElementIsFocused(const std::string& element_id) {
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
   // Brings up the keyboard by tapping on one of the form's field.
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewInWebState(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         chrome_test_util::GetCurrentWebState(),
                         [ElementSelector

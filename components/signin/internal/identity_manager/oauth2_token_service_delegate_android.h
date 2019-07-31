@@ -68,8 +68,8 @@ class OAuth2TokenServiceDelegateAndroid
                          const std::vector<CoreAccountId>& prev_ids,
                          const std::vector<CoreAccountId>& curr_ids);
 
-  // Overridden from OAuth2TokenService to complete signout of all
-  // OA2TService aware accounts.
+  // Overridden from ProfileOAuth2TokenService to complete signout of all
+  // POA2TService aware accounts.
   void RevokeAllCredentials() override;
 
   void LoadCredentials(const CoreAccountId& primary_account_id) override;

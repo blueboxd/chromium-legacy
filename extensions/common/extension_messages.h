@@ -738,20 +738,6 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_SetSpatialNavigationEnabled,
 IPC_MESSAGE_ROUTED1(ExtensionHostMsg_Request,
                     ExtensionHostMsg_Request_Params)
 
-// A renderer sends this message when an extension process starts an API
-// request. The browser will always respond with a ExtensionMsg_Response.
-IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RequestForIOThread,
-                     int /* routing_id */,
-                     ExtensionHostMsg_Request_Params)
-
-// A service worker thread sends this message when an extension service worker
-// starts an API request. The browser will always respond with a
-// ExtensionMsg_ResponseWorker. This message is for API requests that run on
-// the IO thread. It is defined here so it's handled by the same message
-// filter as ExtensionHostMsg_RequestForIOThread.
-IPC_MESSAGE_CONTROL1(ExtensionHostMsg_RequestWorkerForIOThread,
-                     ExtensionHostMsg_Request_Params)
-
 // Notify the browser that the given extension added a listener to an event.
 IPC_MESSAGE_CONTROL5(ExtensionHostMsg_AddListener,
                      std::string /* extension_id */,

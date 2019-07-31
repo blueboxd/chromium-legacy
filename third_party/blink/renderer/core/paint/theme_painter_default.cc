@@ -169,13 +169,13 @@ bool ThemePainterDefault::PaintCheckbox(const Node* node,
 
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartCheckbox, GetWebThemeState(node),
-      WebRect(unzoomed_rect), &extra_params);
+      WebRect(unzoomed_rect), &extra_params, style.UsedColorScheme());
   return false;
 }
 
 bool ThemePainterDefault::PaintRadio(const Node* node,
                                      const Document&,
-                                     const ComputedStyle&,
+                                     const ComputedStyle& style,
                                      const PaintInfo& paint_info,
                                      const IntRect& rect) {
   WebThemeEngine::ExtraParams extra_params;
@@ -183,9 +183,9 @@ bool ThemePainterDefault::PaintRadio(const Node* node,
   extra_params.button = WebThemeEngine::ButtonExtraParams();
   extra_params.button.checked = LayoutTheme::IsChecked(node);
 
-  Platform::Current()->ThemeEngine()->Paint(canvas, WebThemeEngine::kPartRadio,
-                                            GetWebThemeState(node),
-                                            WebRect(rect), &extra_params);
+  Platform::Current()->ThemeEngine()->Paint(
+      canvas, WebThemeEngine::kPartRadio, GetWebThemeState(node), WebRect(rect),
+      &extra_params, style.UsedColorScheme());
   return false;
 }
 
@@ -204,9 +204,9 @@ bool ThemePainterDefault::PaintButton(const Node* node,
     extra_params.button.background_color =
         style.VisitedDependentColor(GetCSSPropertyBackgroundColor()).Rgb();
   }
-  Platform::Current()->ThemeEngine()->Paint(canvas, WebThemeEngine::kPartButton,
-                                            GetWebThemeState(node),
-                                            WebRect(rect), &extra_params);
+  Platform::Current()->ThemeEngine()->Paint(
+      canvas, WebThemeEngine::kPartButton, GetWebThemeState(node),
+      WebRect(rect), &extra_params, style.UsedColorScheme());
   return false;
 }
 
@@ -242,7 +242,7 @@ bool ThemePainterDefault::PaintTextField(const Node* node,
 
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartTextField, GetWebThemeState(node),
-      WebRect(rect), &extra_params);
+      WebRect(rect), &extra_params, style.UsedColorScheme());
   return false;
 }
 
@@ -276,7 +276,7 @@ bool ThemePainterDefault::PaintMenuList(const Node* node,
   cc::PaintCanvas* canvas = i.context.Canvas();
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartMenuList, GetWebThemeState(node),
-      WebRect(rect), &extra_params);
+      WebRect(rect), &extra_params, style.UsedColorScheme());
   return false;
 }
 
@@ -295,7 +295,7 @@ bool ThemePainterDefault::PaintMenuListButton(const Node* node,
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartMenuList, GetWebThemeState(node),
-      WebRect(rect), &extra_params);
+      WebRect(rect), &extra_params, style.UsedColorScheme());
   return false;
 }
 
@@ -389,7 +389,7 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
 
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartSliderTrack, GetWebThemeState(o.GetNode()),
-      WebRect(unzoomed_rect), &extra_params);
+      WebRect(unzoomed_rect), &extra_params, o.StyleRef().UsedColorScheme());
   return false;
 }
 
@@ -418,7 +418,7 @@ bool ThemePainterDefault::PaintSliderThumb(const Node* node,
 
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartSliderThumb, GetWebThemeState(node),
-      WebRect(unzoomed_rect), &extra_params);
+      WebRect(unzoomed_rect), &extra_params, style.UsedColorScheme());
   return false;
 }
 
@@ -434,7 +434,7 @@ bool ThemePainterDefault::PaintInnerSpinButton(const Node* node,
 
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartInnerSpinButton, GetWebThemeState(node),
-      WebRect(rect), &extra_params);
+      WebRect(rect), &extra_params, style.UsedColorScheme());
   return false;
 }
 
@@ -458,7 +458,7 @@ bool ThemePainterDefault::PaintProgressBar(const LayoutObject& o,
   cc::PaintCanvas* canvas = i.context.Canvas();
   Platform::Current()->ThemeEngine()->Paint(
       canvas, WebThemeEngine::kPartProgressBar, GetWebThemeState(o.GetNode()),
-      WebRect(rect), &extra_params);
+      WebRect(rect), &extra_params, o.StyleRef().UsedColorScheme());
   return false;
 }
 

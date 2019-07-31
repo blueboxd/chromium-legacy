@@ -68,8 +68,8 @@ class MoreButton : public views::Button {
 
     auto* headset = new views::ImageView();
     headset->set_can_process_events_within_subtree(false);
-    headset->SetImage(
-        CreateVectorIcon(vector_icons::kHeadsetIcon, kUnifiedMenuIconColor));
+    headset->SetImage(CreateVectorIcon(vector_icons::kHeadsetIcon,
+                                       kIconOnDarkBackgroundColor));
     AddChildView(headset);
 
     auto* more = new views::ImageView();
@@ -78,7 +78,7 @@ class MoreButton : public views::Button {
                              ? SkBitmapOperations::ROTATION_270_CW
                              : SkBitmapOperations::ROTATION_90_CW;
     more->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(
-        CreateVectorIcon(kUnifiedMenuExpandIcon, kUnifiedMenuIconColor),
+        CreateVectorIcon(kUnifiedMenuExpandIcon, kIconOnDarkBackgroundColor),
         icon_rotation));
     AddChildView(more);
 
@@ -110,13 +110,13 @@ class MoreButton : public views::Button {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return TrayPopupUtils::CreateInkDropRipple(
         TrayPopupInkDropStyle::FILL_BOUNDS, this,
-        GetInkDropCenterBasedOnLastEvent(), kUnifiedMenuIconColor);
+        GetInkDropCenterBasedOnLastEvent(), kIconOnDarkBackgroundColor);
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
     return TrayPopupUtils::CreateInkDropHighlight(
-        TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedMenuIconColor);
+        TrayPopupInkDropStyle::FILL_BOUNDS, this, kIconOnDarkBackgroundColor);
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {

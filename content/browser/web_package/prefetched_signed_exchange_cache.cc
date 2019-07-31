@@ -105,7 +105,6 @@ class RedirectResponseURLLoader : public network::mojom::URLLoader {
                       const base::Optional<GURL>& new_url) override {
     NOTREACHED();
   }
-  void ProceedWithResponse() override { NOTREACHED(); }
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override {
     // There is nothing to do, because this class just calls OnReceiveRedirect.
@@ -146,17 +145,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     response_.encoded_data_length = 0;
     if (is_navigation_request) {
       client_->OnReceiveResponse(response_);
-      // There are two situations we need to call SendResponseBody() in advance:
-      //
-      // 1. When Network Service is enabled, ProceedWithResponse() will not be
-      //    called. See https://crbug.com/791049.
-      //
-      // 2. When NavigationImmediateResponseBody is enabled, see
-      //    https://crbug.com/831155.
-      if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-          IsNavigationImmediateResponseBodyEnabled()) {
-        SendResponseBody();
-      }
+      SendResponseBody();
       return;
     }
 
@@ -243,14 +232,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
                       const base::Optional<GURL>& new_url) override {
     NOTREACHED();
   }
-  void ProceedWithResponse() override {
-    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
 
-    // If NavigationImmediateResponseBody is enabled, SendResponseBody() has
-    // already been called in the constructor.
-    if (!IsNavigationImmediateResponseBodyEnabled())
-      SendResponseBody();
-  }
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override {
     // There is nothing to do, because there is no prioritization mechanism for

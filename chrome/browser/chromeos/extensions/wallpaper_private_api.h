@@ -26,7 +26,7 @@ class SurpriseMeImageFetcher;
 }  // namespace backdrop_wallpaper_handlers
 
 // Wallpaper manager strings.
-class WallpaperPrivateGetStringsFunction : public UIThreadExtensionFunction {
+class WallpaperPrivateGetStringsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getStrings",
                              WALLPAPERPRIVATE_GETSTRINGS)
@@ -39,8 +39,7 @@ class WallpaperPrivateGetStringsFunction : public UIThreadExtensionFunction {
 };
 
 // Check if sync themes setting is enabled.
-class WallpaperPrivateGetSyncSettingFunction
-    : public UIThreadExtensionFunction {
+class WallpaperPrivateGetSyncSettingFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getSyncSetting",
                              WALLPAPERPRIVATE_GETSYNCSETTING)
@@ -60,8 +59,7 @@ class WallpaperPrivateGetSyncSettingFunction
   int retry_number_ = 0;
 };
 
-class WallpaperPrivateSetWallpaperIfExistsFunction
-    : public UIThreadExtensionFunction {
+class WallpaperPrivateSetWallpaperIfExistsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setWallpaperIfExists",
                              WALLPAPERPRIVATE_SETWALLPAPERIFEXISTS)
@@ -71,7 +69,7 @@ class WallpaperPrivateSetWallpaperIfExistsFunction
  protected:
   ~WallpaperPrivateSetWallpaperIfExistsFunction() override;
 
-  // UIThreadExtensionFunction overrides.
+  // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
@@ -81,7 +79,7 @@ class WallpaperPrivateSetWallpaperIfExistsFunction
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateSetWallpaperIfExistsFunction);
 };
 
-class WallpaperPrivateSetWallpaperFunction : public UIThreadExtensionFunction {
+class WallpaperPrivateSetWallpaperFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setWallpaper",
                              WALLPAPERPRIVATE_SETWALLPAPER)
@@ -91,7 +89,7 @@ class WallpaperPrivateSetWallpaperFunction : public UIThreadExtensionFunction {
  protected:
   ~WallpaperPrivateSetWallpaperFunction() override;
 
-  // UIThreadExtensionFunction overrides.
+  // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
@@ -101,8 +99,7 @@ class WallpaperPrivateSetWallpaperFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateSetWallpaperFunction);
 };
 
-class WallpaperPrivateResetWallpaperFunction
-    : public UIThreadExtensionFunction {
+class WallpaperPrivateResetWallpaperFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.resetWallpaper",
                              WALLPAPERPRIVATE_RESETWALLPAPER)
@@ -112,7 +109,7 @@ class WallpaperPrivateResetWallpaperFunction
  protected:
   ~WallpaperPrivateResetWallpaperFunction() override;
 
-  // UIThreadExtensionFunction overrides.
+  // ExtensionFunction overrides.
   ResponseAction Run() override;
 };
 
@@ -127,7 +124,7 @@ class WallpaperPrivateSetCustomWallpaperFunction
  protected:
   ~WallpaperPrivateSetCustomWallpaperFunction() override;
 
-  // UIThreadExtensionFunction overrides.
+  // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
@@ -145,7 +142,7 @@ class WallpaperPrivateSetCustomWallpaperFunction
 };
 
 class WallpaperPrivateSetCustomWallpaperLayoutFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setCustomWallpaperLayout",
                              WALLPAPERPRIVATE_SETCUSTOMWALLPAPERLAYOUT)
@@ -155,12 +152,12 @@ class WallpaperPrivateSetCustomWallpaperLayoutFunction
  protected:
   ~WallpaperPrivateSetCustomWallpaperLayoutFunction() override;
 
-  // UIThreadExtensionFunction overrides.
+  // ExtensionFunction overrides.
   ResponseAction Run() override;
 };
 
 class WallpaperPrivateMinimizeInactiveWindowsFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.minimizeInactiveWindows",
                              WALLPAPERPRIVATE_MINIMIZEINACTIVEWINDOWS)
@@ -173,7 +170,7 @@ class WallpaperPrivateMinimizeInactiveWindowsFunction
 };
 
 class WallpaperPrivateRestoreMinimizedWindowsFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.restoreMinimizedWindows",
                              WALLPAPERPRIVATE_RESTOREMINIMIZEDWINDOWS)
@@ -185,7 +182,7 @@ class WallpaperPrivateRestoreMinimizedWindowsFunction
   ResponseAction Run() override;
 };
 
-class WallpaperPrivateGetThumbnailFunction : public UIThreadExtensionFunction {
+class WallpaperPrivateGetThumbnailFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getThumbnail",
                              WALLPAPERPRIVATE_GETTHUMBNAIL)
@@ -195,7 +192,7 @@ class WallpaperPrivateGetThumbnailFunction : public UIThreadExtensionFunction {
  protected:
   ~WallpaperPrivateGetThumbnailFunction() override;
 
-  // UIThreadExtensionFunction overrides.
+  // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
@@ -214,7 +211,7 @@ class WallpaperPrivateGetThumbnailFunction : public UIThreadExtensionFunction {
   void Get(const base::FilePath& path);
 };
 
-class WallpaperPrivateSaveThumbnailFunction : public UIThreadExtensionFunction {
+class WallpaperPrivateSaveThumbnailFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.saveThumbnail",
                              WALLPAPERPRIVATE_SAVETHUMBNAIL)
@@ -224,7 +221,7 @@ class WallpaperPrivateSaveThumbnailFunction : public UIThreadExtensionFunction {
  protected:
   ~WallpaperPrivateSaveThumbnailFunction() override;
 
-  // UIThreadExtensionFunction overrides.
+  // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
@@ -239,7 +236,7 @@ class WallpaperPrivateSaveThumbnailFunction : public UIThreadExtensionFunction {
 };
 
 class WallpaperPrivateGetOfflineWallpaperListFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getOfflineWallpaperList",
                              WALLPAPERPRIVATE_GETOFFLINEWALLPAPERLIST)
@@ -248,7 +245,7 @@ class WallpaperPrivateGetOfflineWallpaperListFunction
  protected:
   ~WallpaperPrivateGetOfflineWallpaperListFunction() override;
 
-  // UIThreadExtensionFunction overrides.
+  // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
@@ -260,8 +257,7 @@ class WallpaperPrivateGetOfflineWallpaperListFunction
 
 // The wallpaper UMA is recorded when a new wallpaper is set, either by the
 // built-in Wallpaper Picker App, or by a third party App.
-class WallpaperPrivateRecordWallpaperUMAFunction
-    : public UIThreadExtensionFunction {
+class WallpaperPrivateRecordWallpaperUMAFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.recordWallpaperUMA",
                              WALLPAPERPRIVATE_RECORDWALLPAPERUMA)
@@ -273,8 +269,7 @@ class WallpaperPrivateRecordWallpaperUMAFunction
   ResponseAction Run() override;
 };
 
-class WallpaperPrivateGetCollectionsInfoFunction
-    : public UIThreadExtensionFunction {
+class WallpaperPrivateGetCollectionsInfoFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getCollectionsInfo",
                              WALLPAPERPRIVATE_GETCOLLECTIONSINFO)
@@ -283,7 +278,7 @@ class WallpaperPrivateGetCollectionsInfoFunction
  protected:
   ~WallpaperPrivateGetCollectionsInfoFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -299,7 +294,7 @@ class WallpaperPrivateGetCollectionsInfoFunction
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetCollectionsInfoFunction);
 };
 
-class WallpaperPrivateGetImagesInfoFunction : public UIThreadExtensionFunction {
+class WallpaperPrivateGetImagesInfoFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getImagesInfo",
                              WALLPAPERPRIVATE_GETIMAGESINFO)
@@ -308,7 +303,7 @@ class WallpaperPrivateGetImagesInfoFunction : public UIThreadExtensionFunction {
  protected:
   ~WallpaperPrivateGetImagesInfoFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -324,8 +319,7 @@ class WallpaperPrivateGetImagesInfoFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetImagesInfoFunction);
 };
 
-class WallpaperPrivateGetLocalImagePathsFunction
-    : public UIThreadExtensionFunction {
+class WallpaperPrivateGetLocalImagePathsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getLocalImagePaths",
                              WALLPAPERPRIVATE_GETLOCALIMAGEPATHS)
@@ -334,7 +328,7 @@ class WallpaperPrivateGetLocalImagePathsFunction
  protected:
   ~WallpaperPrivateGetLocalImagePathsFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -344,8 +338,7 @@ class WallpaperPrivateGetLocalImagePathsFunction
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetLocalImagePathsFunction);
 };
 
-class WallpaperPrivateGetLocalImageDataFunction
-    : public UIThreadExtensionFunction {
+class WallpaperPrivateGetLocalImageDataFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getLocalImageData",
                              WALLPAPERPRIVATE_GETLOCALIMAGEDATA)
@@ -354,7 +347,7 @@ class WallpaperPrivateGetLocalImageDataFunction
  protected:
   ~WallpaperPrivateGetLocalImageDataFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -366,7 +359,7 @@ class WallpaperPrivateGetLocalImageDataFunction
 };
 
 class WallpaperPrivateConfirmPreviewWallpaperFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.confirmPreviewWallpaper",
                              WALLPAPERPRIVATE_CONFIRMPREVIEWWALLPAPER)
@@ -375,7 +368,7 @@ class WallpaperPrivateConfirmPreviewWallpaperFunction
  protected:
   ~WallpaperPrivateConfirmPreviewWallpaperFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -383,7 +376,7 @@ class WallpaperPrivateConfirmPreviewWallpaperFunction
 };
 
 class WallpaperPrivateCancelPreviewWallpaperFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.cancelPreviewWallpaper",
                              WALLPAPERPRIVATE_CANCELPREVIEWWALLPAPER)
@@ -392,7 +385,7 @@ class WallpaperPrivateCancelPreviewWallpaperFunction
  protected:
   ~WallpaperPrivateCancelPreviewWallpaperFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -409,7 +402,7 @@ class WallpaperPrivateGetCurrentWallpaperThumbnailFunction
  protected:
   ~WallpaperPrivateGetCurrentWallpaperThumbnailFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -420,8 +413,7 @@ class WallpaperPrivateGetCurrentWallpaperThumbnailFunction
       WallpaperPrivateGetCurrentWallpaperThumbnailFunction);
 };
 
-class WallpaperPrivateGetSurpriseMeImageFunction
-    : public UIThreadExtensionFunction {
+class WallpaperPrivateGetSurpriseMeImageFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getSurpriseMeImage",
                              WALLPAPERPRIVATE_GETSURPRISEMEIMAGE)
@@ -430,7 +422,7 @@ class WallpaperPrivateGetSurpriseMeImageFunction
  protected:
   ~WallpaperPrivateGetSurpriseMeImageFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:

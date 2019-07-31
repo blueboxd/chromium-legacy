@@ -17,7 +17,6 @@
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -27,7 +26,7 @@
 #include "ui/resources/grit/ui_resources.h"
 
 using GotDataCallback = content::URLDataSource::GotDataCallback;
-using WebContentsGetter = content::ResourceRequestInfo::WebContentsGetter;
+using WebContentsGetter = content::WebContents::Getter;
 using testing::_;
 using testing::Return;
 using testing::ReturnArg;

@@ -9,7 +9,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_media_url_interceptor.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
-#include "android_webview/browser/gfx/deferred_gpu_command_service.h"
+#include "android_webview/browser/gfx/gpu_service_web_view.h"
 #include "android_webview/browser/scoped_add_feature_flags.h"
 #include "android_webview/browser/tracing/aw_trace_event_args_whitelist.h"
 #include "android_webview/common/aw_descriptors.h"
@@ -316,16 +316,16 @@ content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {
 
 namespace {
 gpu::SyncPointManager* GetSyncPointManager() {
-  DCHECK(DeferredGpuCommandService::GetInstance());
-  return DeferredGpuCommandService::GetInstance()->sync_point_manager();
+  DCHECK(GpuServiceWebView::GetInstance());
+  return GpuServiceWebView::GetInstance()->sync_point_manager();
 }
 gpu::SharedImageManager* GetSharedImageManager() {
-  DCHECK(DeferredGpuCommandService::GetInstance());
+  DCHECK(GpuServiceWebView::GetInstance());
   const bool enable_shared_image =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWebViewEnableSharedImage);
   return enable_shared_image
-             ? DeferredGpuCommandService::GetInstance()->shared_image_manager()
+             ? GpuServiceWebView::GetInstance()->shared_image_manager()
              : nullptr;
 }
 }  // namespace

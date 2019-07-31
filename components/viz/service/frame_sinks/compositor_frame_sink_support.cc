@@ -150,10 +150,16 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   MaybeEvictSurfaces();
 }
 
-void CompositorFrameSinkSupport::OnSurfaceDrawn(Surface* surface) {
+void CompositorFrameSinkSupport::OnSurfaceWillDraw(Surface* surface) {
   if (last_drawn_frame_index_ >= surface->GetActiveFrameIndex())
     return;
   last_drawn_frame_index_ = surface->GetActiveFrameIndex();
+}
+
+void CompositorFrameSinkSupport::OnSurfaceWasDrawn(
+    uint32_t frame_token,
+    base::TimeTicks draw_start_timestamp) {
+  draw_start_times_.emplace(frame_token, draw_start_timestamp);
 }
 
 void CompositorFrameSinkSupport::OnFrameTokenChanged(uint32_t frame_token) {
@@ -382,6 +388,10 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
     UpdateNeedsBeginFramesInternal();
   }
 
+  base::TimeTicks now_time = base::TimeTicks::Now();
+  received_compositor_frame_times_.emplace(frame.metadata.frame_token,
+                                           now_time);
+
   // Ensure no CopyOutputRequests have been submitted if they are banned.
   if (!allow_copy_output_requests_ && frame.HasCopyOutputRequests()) {
     TRACE_EVENT_INSTANT0("viz", "CopyOutputRequests not allowed",
@@ -407,7 +417,8 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
   }
   for (ui::LatencyInfo& latency : frame.metadata.latency_info) {
     if (latency.latency_components().size() > 0) {
-      latency.AddLatencyNumber(ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT);
+      latency.AddLatencyNumberWithTimestamp(
+          ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, now_time);
     }
   }
 
@@ -558,9 +569,30 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
     uint32_t presentation_token,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(presentation_token);
+
   FrameTimingDetails details;
   details.presentation_feedback = feedback;
+
+  DCHECK_LT(received_compositor_frame_times_.size(), 25u);
+  auto received_compositor_frame_time =
+      received_compositor_frame_times_.find(presentation_token);
+  DCHECK(received_compositor_frame_time !=
+         received_compositor_frame_times_.end());
+  details.received_compositor_frame_timestamp =
+      received_compositor_frame_time->second;
+  received_compositor_frame_times_.erase(received_compositor_frame_time);
+
+  DCHECK_LT(draw_start_times_.size(), 25u);
+  auto draw_start_time = draw_start_times_.find(presentation_token);
+  if (draw_start_time != draw_start_times_.end()) {
+    details.draw_start_timestamp = draw_start_time->second;
+    draw_start_times_.erase(draw_start_time);
+  } else {
+    DCHECK(feedback.flags & gfx::PresentationFeedback::kFailure);
+  }
+
   frame_timing_details_.emplace(presentation_token, details);
+
   UpdateNeedsBeginFramesInternal();
 }
 

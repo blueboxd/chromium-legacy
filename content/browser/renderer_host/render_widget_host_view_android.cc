@@ -1508,9 +1508,9 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
   if (overscroll_controller_)
     overscroll_controller_->Enable();
 
-  if (delegated_frame_host_ &&
-      (delegated_frame_host_->IsPrimarySurfaceEvicted() ||
-       !local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation())) {
+  if ((delegated_frame_host_ &&
+       delegated_frame_host_->IsPrimarySurfaceEvicted()) ||
+      !local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation()) {
     ui::WindowAndroidCompositor* compositor =
         view_.GetWindowAndroid() ? view_.GetWindowAndroid()->GetCompositor()
                                  : nullptr;
@@ -1521,7 +1521,9 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
             : cc::DeadlinePolicy::UseDefaultDeadline(),
         base::nullopt);
     // If we navigated while hidden, we need to update the fallback surface only
-    // after we've completed navigation, and embedded the new surface.
+    // after we've completed navigation, and embedded the new surface. The
+    // |delegated_frame_host_| is always valid when |navigation_while_hidden_|
+    // is set to true.
     if (navigation_while_hidden_) {
       navigation_while_hidden_ = false;
       delegated_frame_host_->DidNavigate();

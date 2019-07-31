@@ -44,8 +44,11 @@ namespace {
 
 // Switches to propagate to the sandbox target process.
 const char* kSwitchesToPropagate[] = {
-    kEnableCrashReportingSwitch, kExecutionModeSwitch,
-    kExtendedSafeBrowsingEnabledSwitch, switches::kTestChildProcess,
+    kEnableCrashReportingSwitch,
+    kExecutionModeSwitch,
+    kExtendedSafeBrowsingEnabledSwitch,
+    switches::kTestChildProcess,
+    kTestingSwitch,
 };
 
 std::map<SandboxType, base::Process>* g_target_processes = nullptr;  // Leaked.

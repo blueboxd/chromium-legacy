@@ -213,6 +213,38 @@ TEST_F(SnapCoordinatorTest, UpdateStyleForSnapElement) {
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
 }
 
+TEST_F(SnapCoordinatorTest, ViewpoertScrollSnapStyleComesFromDocumentElement) {
+  SetHTML(R"HTML(
+    <style>
+    :root {
+      scroll-snap-type: both mandatory;
+    }
+    body {
+     scroll-snap-type: none;
+    }
+    </style>
+    <body>
+    </body>
+    )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* body = GetDocument().body();
+  EXPECT_EQ(body, GetDocument().ViewportDefiningElement());
+
+  SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
+  base::Optional<cc::SnapContainerData> viewport_data =
+      snap_coordinator->GetSnapContainerData(*GetDocument().GetLayoutView());
+  EXPECT_TRUE(viewport_data.has_value());
+  EXPECT_EQ(viewport_data.value().scroll_snap_type(),
+            cc::ScrollSnapType(false, cc::SnapAxis::kBoth,
+                               cc::SnapStrictness::kMandatory));
+
+  base::Optional<cc::SnapContainerData> body_data =
+      snap_coordinator->GetSnapContainerData(*body->GetLayoutBox());
+
+  EXPECT_FALSE(body_data.has_value());
+}
+
 TEST_F(SnapCoordinatorTest, LayoutViewCapturesWhenBodyElementViewportDefining) {
   SetHTML(R"HTML(
     <style>
@@ -327,6 +359,8 @@ TEST_F(SnapCoordinatorTest,
   // should capture snap points defined on it as opposed to layout view.
   Element& body = *GetDocument().body();
   EXPECT_EQ(2U, SizeOfSnapAreas(body));
+  EXPECT_EQ(0U, SizeOfSnapAreas(*GetDocument().documentElement()));
+  EXPECT_EQ(0U, SizeOfSnapAreas(GetDocument()));
 }
 
 #define EXPECT_EQ_CONTAINER(expected, actual)                          \
@@ -416,9 +450,11 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculation) {
 TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculationOnViewport) {
   SetHTML(R"HTML(
     <style>
+    :root {
+      scroll-snap-type: both mandatory;
+    }
     body {
       margin: 0px;
-      scroll-snap-type: both mandatory;
       overflow: scroll;
     }
     #container {

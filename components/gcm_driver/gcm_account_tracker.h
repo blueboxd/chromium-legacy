@@ -97,7 +97,7 @@ class GCMAccountTracker : public AccountTracker::Observer,
   friend class GCMAccountTrackerTest;
 
   // Maps account keys to account states. Keyed by account_ids as used by
-  // OAuth2TokenService.
+  // IdentityManager.
   typedef std::map<std::string, AccountInfo> AccountInfos;
 
   // AccountTracker::Observer overrides.

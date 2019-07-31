@@ -239,6 +239,7 @@ class LoopbackHandlerImpl : public LoopbackHandler,
     lock_.AssertAcquired();
 
     if (tasks_.size() == kMaxTasks) {
+      task_signal_.Signal();
       return;
     }
     tasks_.emplace_back(0, kSampleFormatF32, 0, 0, 0, nullptr, 0);
@@ -306,7 +307,7 @@ class LoopbackHandlerImpl : public LoopbackHandler,
   base::Lock lock_;
   uint32_t buffer_tag_ GUARDED_BY(lock_) = 0;
   std::vector<std::unique_ptr<uint8_t[]>> buffers_ GUARDED_BY(lock_);
-  bool stop_thread_ GUARDED_BY(lock_);
+  bool stop_thread_ GUARDED_BY(lock_) = false;
   base::ConditionVariable task_signal_;
 
   std::vector<Task> tasks_;

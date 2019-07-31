@@ -86,6 +86,11 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   // lifetime.
   static const char* NameForQueueType(QueueType queue_type);
 
+  // Returns true if task queues of the given queue type can be created on a
+  // per-frame basis, and false if they are only created on a shared basis for
+  // the entire main thread.
+  static bool IsPerFrameTaskQueue(QueueType);
+
   // High-level category used by MainThreadScheduler to make scheduling
   // decisions.
   enum class QueueClass {

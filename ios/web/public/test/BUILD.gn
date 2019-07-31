@@ -31,8 +31,6 @@ source_set("test") {
     "scoped_testing_web_client.mm",
     "test_redirect_observer.h",
     "test_redirect_observer.mm",
-    "test_service_manager_context.h",
-    "test_service_manager_context.mm",
     "test_web_thread.h",
     "test_web_thread_bundle.h",
     "web_js_test.h",

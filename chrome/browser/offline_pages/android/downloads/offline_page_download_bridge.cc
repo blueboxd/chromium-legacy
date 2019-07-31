@@ -255,7 +255,7 @@ content::WebContents* GetWebContentsByFrameID(int render_process_id,
   return content::WebContents::FromRenderFrameHost(render_frame_host);
 }
 
-content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter(
+content::WebContents::Getter GetWebContentsGetter(
     content::WebContents* web_contents) {
   // PlzNavigate: The FrameTreeNode ID should be used to access the WebContents.
   int frame_tree_node_id = web_contents->GetMainFrame()->GetFrameTreeNodeId();
@@ -295,7 +295,7 @@ void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
 }
 
 void OnOfflinePageAcquireFileAccessPermissionDone(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     const ScopedJavaGlobalRef<jobject>& j_tab_ref,
     const std::string& origin,
     bool granted) {
@@ -387,7 +387,7 @@ void JNI_OfflinePageDownloadBridge_StartDownload(
 
   // Ensure that the storage permission is granted since the target file
   // is going to be placed in the public directory.
-  content::ResourceRequestInfo::WebContentsGetter web_contents_getter =
+  content::WebContents::Getter web_contents_getter =
       GetWebContentsGetter(web_contents);
   DownloadControllerBase::Get()->AcquireFileAccessPermission(
       web_contents_getter,

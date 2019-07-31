@@ -20,11 +20,12 @@
 #include "components/chromeos_camera/mjpeg_decode_accelerator.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/unaligned_shared_memory.h"
-#include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 
 namespace media {
+
+class VideoFrame;
 
 class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
     : public chromeos_camera::MjpegDecodeAccelerator {
@@ -84,13 +85,12 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
   void DestroyInputBuffers();
   void DestroyOutputBuffers();
 
-  // Convert |output_buffer| to I420 and copy the result to |dst_frame|.
-  // The function can convert to I420 from the following formats:
-  //   - All splane formats that libyuv::ConvertToI420 can handle.
-  //   - V4L2_PIX_FMT_YUV_420M
-  //   - V4L2_PIX_FMT_YUV_422M
+  // Convert |output_buffer| to |dst_frame|. The function supports the following
+  // formats:
+  //   - All formats that libyuv::ConvertToI420 can handle.
+  //   - V4L2_PIX_FMT_YUV_420M, V4L2_PIX_FMT_YUV_422M to I420, YV12, and NV12.
   bool ConvertOutputImage(const BufferRecord& output_buffer,
-                          VideoFrame* dst_frame);
+                          scoped_refptr<VideoFrame> dst_frame);
 
   // Return the number of input/output buffers enqueued to the device.
   size_t InputBufferQueuedCount();
@@ -139,7 +139,9 @@ class MEDIA_GPU_EXPORT V4L2MjpegDecodeAccelerator
 
   // Number of physical planes the output buffers have.
   size_t output_buffer_num_planes_;
-  size_t output_bytesperlines_[VIDEO_MAX_PLANES];
+
+  // Strides of the output buffers.
+  size_t output_strides_[VIDEO_MAX_PLANES];
 
   // ChildThread's task runner.
   scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;

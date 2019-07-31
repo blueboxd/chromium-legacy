@@ -22,7 +22,7 @@ TopShortcutButton::TopShortcutButton(const gfx::VectorIcon& icon,
     : TopShortcutButton(nullptr /* listener */, accessible_name_id) {
   SetImage(views::Button::STATE_DISABLED,
            gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
-                                 kUnifiedMenuIconColor));
+                                 kIconOnDarkBackgroundColor));
   SetEnabled(false);
 }
 
@@ -32,10 +32,10 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
     : TopShortcutButton(listener, accessible_name_id) {
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
-                                 kUnifiedMenuIconColor));
+                                 kIconOnDarkBackgroundColor));
   SetImage(views::Button::STATE_DISABLED,
            gfx::CreateVectorIcon(icon, kTrayTopShortcutButtonIconSize,
-                                 kUnifiedMenuIconColorDisabled));
+                                 kIconOnDarkBackgroundColorDisabled));
 }
 
 TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
@@ -47,7 +47,7 @@ TopShortcutButton::TopShortcutButton(views::ButtonListener* listener,
     SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
   TrayPopupUtils::ConfigureTrayPopupButton(this);
-  set_ink_drop_base_color(kUnifiedMenuIconColor);
+  set_ink_drop_base_color(kIconOnDarkBackgroundColor);
 
   auto path = std::make_unique<SkPath>();
   path->addOval(gfx::RectToSkRect(gfx::Rect(CalculatePreferredSize())));

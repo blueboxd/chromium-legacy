@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_NOTIFICATION_SCHEDULER_TYPES_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_NOTIFICATION_SCHEDULER_TYPES_H_
 
+#include <map>
 #include <string>
+
+#include "base/optional.h"
 
 namespace notifications {
 
@@ -73,6 +76,9 @@ enum class ImpressionResult {
 };
 
 // Defines user actions type.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: (
+//   org.chromium.chrome.browser.notifications.scheduler)
 enum class UserActionType {
   // The user clicks on the notification body.
   kClick = 0,
@@ -105,6 +111,30 @@ struct ButtonClickInfo {
 
   // Associate impression type for the button.
   ActionButtonType type = ActionButtonType::kUnknownAction;
+};
+
+// Contains data associated with user actions.
+struct UserActionData {
+  UserActionData(SchedulerClientType client_type,
+                 UserActionType action_type,
+                 const std::string& guid);
+  UserActionData(const UserActionData& other);
+  ~UserActionData();
+
+  // The type of the client that sent the notification.
+  const SchedulerClientType client_type;
+
+  // The user action type.
+  const UserActionType action_type;
+
+  // The guid of the notification.
+  const std::string guid;
+
+  // The client defined custom data.
+  std::map<std::string, std::string> custom_data;
+
+  // The button click info, only available when the user clicked a button.
+  base::Optional<ButtonClickInfo> button_click_info;
 };
 
 }  // namespace notifications

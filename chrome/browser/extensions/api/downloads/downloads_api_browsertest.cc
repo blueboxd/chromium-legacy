@@ -599,9 +599,8 @@ class DownloadExtensionTest : public ExtensionApiTest {
         GetCurrentManager(), download_count);
   }
 
-  bool RunFunction(UIThreadExtensionFunction* function,
-                   const std::string& args) {
-    scoped_refptr<UIThreadExtensionFunction> delete_function(function);
+  bool RunFunction(ExtensionFunction* function, const std::string& args) {
+    scoped_refptr<ExtensionFunction> delete_function(function);
     SetUpExtensionFunction(function);
     bool result = extension_function_test_utils::RunFunction(
         function, args, current_browser(), GetFlags());
@@ -622,7 +621,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   // on-record profile to match real-life behavior.
 
   base::Value* RunFunctionAndReturnResult(
-      scoped_refptr<UIThreadExtensionFunction> function,
+      scoped_refptr<ExtensionFunction> function,
       const std::string& args) {
     SetUpExtensionFunction(function.get());
     return extension_function_test_utils::RunFunctionAndReturnSingleResult(
@@ -630,17 +629,16 @@ class DownloadExtensionTest : public ExtensionApiTest {
   }
 
   std::string RunFunctionAndReturnError(
-      scoped_refptr<UIThreadExtensionFunction> function,
+      scoped_refptr<ExtensionFunction> function,
       const std::string& args) {
     SetUpExtensionFunction(function.get());
     return extension_function_test_utils::RunFunctionAndReturnError(
         function.get(), args, current_browser(), GetFlags());
   }
 
-  bool RunFunctionAndReturnString(
-      scoped_refptr<UIThreadExtensionFunction> function,
-      const std::string& args,
-      std::string* result_string) {
+  bool RunFunctionAndReturnString(scoped_refptr<ExtensionFunction> function,
+                                  const std::string& args,
+                                  std::string* result_string) {
     SetUpExtensionFunction(function.get());
     std::unique_ptr<base::Value> result(
         RunFunctionAndReturnResult(function, args));
@@ -661,7 +659,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
   const Extension* extension() { return extension_; }
 
  private:
-  void SetUpExtensionFunction(UIThreadExtensionFunction* function) {
+  void SetUpExtensionFunction(ExtensionFunction* function) {
     if (extension_) {
       const GURL url = current_browser_ == incognito_browser_ &&
                                !IncognitoInfo::IsSplitMode(extension_)
@@ -1044,7 +1042,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   EXPECT_EQ(id, element);
 }
 
-scoped_refptr<UIThreadExtensionFunction> MockedGetFileIconFunction(
+scoped_refptr<ExtensionFunction> MockedGetFileIconFunction(
     const base::FilePath& expected_path,
     IconLoader::IconSize icon_size,
     const std::string& response) {

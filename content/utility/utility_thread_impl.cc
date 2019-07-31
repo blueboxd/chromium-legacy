@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -60,6 +61,11 @@ class ServiceBinderImpl {
                                    main_thread_task_runner_.get());
   }
 
+  static base::Optional<ServiceBinderImpl>& GetInstanceStorage() {
+    static base::NoDestructor<base::Optional<ServiceBinderImpl>> storage;
+    return *storage;
+  }
+
  private:
   void OnServicePipeClosed(mojo::SimpleWatcher* which,
                            MojoResult result,
@@ -74,9 +80,16 @@ class ServiceBinderImpl {
     // No more services running in this process.
     if (service_pipe_watchers_.empty()) {
       main_thread_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce([] { UtilityThread::Get()->ReleaseProcess(); }));
+          FROM_HERE, base::BindOnce(&ServiceBinderImpl::ShutDownProcess));
     }
+  }
+
+  static void ShutDownProcess() {
+    // Ensure that shutdown also tears down |this|. This is necessary to support
+    // multiple tests in the same test suite using out-of-process services via
+    // the InProcessUtilityThreadHelper.
+    GetInstanceStorage().reset();
+    UtilityThread::Get()->ReleaseProcess();
   }
 
   const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
@@ -92,10 +105,13 @@ class ServiceBinderImpl {
 };
 
 ChildThreadImpl::Options::ServiceBinder GetServiceBinder() {
-  static base::NoDestructor<ServiceBinderImpl> binder(
-      base::ThreadTaskRunnerHandle::Get());
+  auto& storage = ServiceBinderImpl::GetInstanceStorage();
+  // NOTE: This may already be initialized from a previous call if we're in
+  // single-process mode.
+  if (!storage)
+    storage.emplace(base::ThreadTaskRunnerHandle::Get());
   return base::BindRepeating(&ServiceBinderImpl::BindServiceInterface,
-                             base::Unretained(binder.get()));
+                             base::Unretained(&storage.value()));
 }
 
 }  // namespace

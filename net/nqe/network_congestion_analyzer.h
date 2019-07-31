@@ -6,6 +6,7 @@
 #define NET_NQE_NETWORK_CONGESTION_ANALYZER_H_
 
 #include <cmath>
+#include <deque>
 #include <map>
 #include <unordered_map>
 
@@ -16,6 +17,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/network_quality.h"
 #include "net/nqe/network_quality_estimator_util.h"
 #include "net/nqe/observation_buffer.h"
@@ -32,11 +34,12 @@ namespace internal {
 // NetworkCongestionAnalyzer holds the network congestion information, such
 // as the recent packet queue length in the mobile edge, recent queueing delay,
 // recent downlink throughput.
-class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
+class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer
+    : public net::EffectiveConnectionTypeObserver {
  public:
   NetworkCongestionAnalyzer(NetworkQualityEstimator* network_quality_estimator,
                             const base::TickClock* tick_clock);
-  ~NetworkCongestionAnalyzer();
+  ~NetworkCongestionAnalyzer() override;
 
   // Returns the number of hosts that are involved in the last attempt of
   // computing the recent queueing delay. These hosts are recent active hosts.
@@ -88,6 +91,12 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
                            TestDetectLowQueueingDelay);
   FRIEND_TEST_ALL_PREFIXES(NetworkCongestionAnalyzerTest,
                            TestComputeQueueingDelayLevel);
+  FRIEND_TEST_ALL_PREFIXES(NetworkCongestionAnalyzerTest,
+                           TestComputePeakDelayMappingSampleScore);
+
+  // net::EffectiveConnectionTypeObserver:
+  void OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType effective_connection_type) override;
 
   // Returns the bucketized value of the peak queueing delay (a.k.a. peak
   // queueing delay level). |peak_queueing_delay| is peak queueing delay
@@ -116,6 +125,29 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
   // concurrent requests within the current measurement period.
   void FinalizeCurrentMeasurementPeriod();
 
+  // Updates the cache that stores the mapping between the count of in-flight
+  // requests to the peak observed queueing delay.
+  void UpdateRequestsCountAndPeakQueueingDelayMapping();
+
+  // Computes the score that evaluates the mapping between the count of inflight
+  // requests to peak queueing delay. The score equals to the percent value of
+  // existing samples that conform to the rule: the more in-flight requests, the
+  // higher peak queueing delay. Samples with more in-flight requests should
+  // result in higher queueing delay. Samples with fewer in-flight requests
+  // should result in lower queueing delay. Samples with the same count of
+  // requests should result in similar queueing delay. Returns nullopt if the
+  // count of in-flight requests is out of range or there are less than 5
+  // samples in the cache.
+  base::Optional<size_t> ComputePeakDelayMappingSampleScore(
+      const size_t count_inflight_requests,
+      const base::TimeDelta& peak_queueing_delay) const;
+
+  // Inserts the mapping sample into the cache. The mapping is between the count
+  // of in-flight requests to the observed peak queueing delay.
+  void AddRequestsCountAndPeakQueueingDelaySample(
+      const size_t count_inflight_requests,
+      const base::TimeDelta& peak_queueing_delay);
+
   // Starts tracking the peak queueing delay for |request|.
   void TrackPeakQueueingDelayBegin(const URLRequest* request);
 
@@ -143,6 +175,10 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
 
   // Guaranteed to be non-null during the lifetime of |this|.
   const base::TickClock* tick_clock_;
+
+  // Current value of the effective connection type.
+  net::EffectiveConnectionType effective_connection_type_ =
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   // Recent downstream throughput estimate. It is the median of most recent
   // downstream throughput observations (in kilobits per second).
@@ -193,6 +229,19 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
   // The count of in-flight requests that would cause a high network queueing
   // delay.
   base::Optional<size_t> count_inflight_requests_causing_high_delay_;
+
+  // The cache that holds the mapping between the number of in-flight requests
+  // to the peak observed queueing delay. Samples are stored in buckets keyed by
+  // the count of in-flight requests. This helps searching for the in-flight
+  // requests threshold to keep the peak queueing delay bounded. The count of
+  // in-flight requests ranges from 1 to 30. A sample with a lower or a higher
+  // value would be casted to the closest boundary. Each bucket can hold at most
+  // |kMaxCountOfSamplesPerBucket| most-recent samples.
+  std::map<size_t, std::deque<base::TimeDelta>>
+      count_inflight_requests_to_queueing_delay_;
+
+  // The number of samples in |count_inflight_requests_to_queueing_delay_|.
+  size_t count_peak_queueing_delay_mapping_sample_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

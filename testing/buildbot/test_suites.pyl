@@ -3551,16 +3551,18 @@
       },
     },
 
-    'gpu_noop_sleep_telemetry_test': {
+    # Temporarily disabled, since all experimental bots are active now.
+    # TODO(ynovikov): Re-enable once Win10 Intel is switched to x64 crbug.com/988833
+    #'gpu_noop_sleep_telemetry_test': {
       # The former GPU-specific generator script contained logic to
       # detect whether the so-called "experimental" GPU bots, which test
       # newer driver versions, were identical to the "stable" versions
       # of the bots, and if so to mirror their configurations. We prefer
       # to keep this new script simpler and to just configure this by
       # hand in waterfalls.pyl.
-      'noop_sleep': {
-      }
-    },
+      #'noop_sleep': {
+      #}
+    #},
 
     'gpu_skia_renderer_telemetry_tests': {
       'skia_renderer_pixel_skia_gold_test': {

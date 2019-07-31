@@ -410,6 +410,7 @@ message ActionProto {
     ConfigureBottomSheetProto configure_bottom_sheet = 42;
     ShowFormProto show_form = 43;
     PopupMessageProto popup_message = 44;
+    WaitForDocumentProto wait_for_document = 45;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -453,6 +454,8 @@ message ProcessedActionProto {
     WaitForDomProto.Result wait_for_dom_result = 22;
     // Should be set as a result of FormAction.
     FormProto.Result form_result = 21;
+
+    WaitForDocumentProto.Result wait_for_document_result = 25;
   }
 
   // Reports information about navigation that happened while
@@ -981,6 +984,55 @@ message WaitForNavigationProto {
   // This is usually used to track cases where expected navigation doesn't
   // happen, because, for example, a click wasn't registered.
   optional int32 timeout_ms = 1;
+}
+
+// Chrome document.readyState values.
+//
+// Number is significant, as the document goes through these state in order,
+// from initialized to complete.
+enum DocumentReadyState {
+  option allow_alias = true;
+
+  DOCUMENT_UNKNOWN_READY_STATE = 0;
+  DOCUMENT_UNINITIALIZED = 1;
+  DOCUMENT_LOADING = 2;
+  DOCUMENT_LOADED = 3;
+  DOCUMENT_INTERACTIVE = 4;
+  DOCUMENT_COMPLETE = 5;
+
+  // Maximum value above.
+  DOCUMENT_MAX_READY_STATE = 5;
+}
+
+// Wait for the document to be ready before proceeding.
+//
+// Client errors:
+//   TIMED_OUT if timed out waiting for an acceptable state.
+//   ELEMENT_RESOLUTION_FAILED if the specified frame selector could not be
+//   found.
+message WaitForDocumentProto {
+  // Maximum amount of time to wait for the state to change. Set it to 0 to
+  // check once and report the result immediately, without waiting.
+  optional int32 timeout_ms = 1 [default = 5000];
+
+  // If specified, check the document in the given frame, instead
+  // of the main document.
+  optional ElementReferenceProto frame = 2;
+
+  // The minimum ready state needed to satisfy the requirement.
+  optional DocumentReadyState min_ready_state = 3
+      [default = DOCUMENT_INTERACTIVE];
+
+  message Result {
+    // The ready state found when the action started.
+    optional DocumentReadyState start_ready_state = 1;
+
+    // The ready state found when the action ended.
+    //
+    // This is filled even when the action fails, so it is not guaranteed to
+    // match min_ready_state.
+    optional DocumentReadyState end_ready_state = 2;
+  }
 }
 
 // Allow choosing one or more possibility. If FocusElement was called just

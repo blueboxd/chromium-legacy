@@ -188,4 +188,38 @@ TEST(LogBuffer, LogTableRowBuffer) {
   EXPECT_EQ(expected.RetrieveResult(), actual.RetrieveResult());
 }
 
+TEST(LogBuffer, CreateFragment) {
+  LogBuffer buffer;
+  buffer << "foo" << Br{} << "bar";
+  std::string json;
+  EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
+  EXPECT_EQ(R"({"children":[{"type":"text","value":"foo"},)"
+            R"({"type":"element","value":"br"},{"type":"text","value":"bar"}],)"
+            R"("type":"fragment"})",
+            json);
+}
+
+TEST(LogBuffer, AppendFragmentByInlining) {
+  LogBuffer tmp_buffer;
+  tmp_buffer << "foo" << Br{} << "bar";
+  LogBuffer buffer;
+  buffer << std::move(tmp_buffer);
+  std::string json;
+  EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
+  EXPECT_EQ(R"({"children":[{"type":"text","value":"foo"},)"
+            R"({"type":"element","value":"br"},{"type":"text","value":"bar"}],)"
+            R"("type":"fragment"})",
+            json);
+}
+
+TEST(LogBuffer, AppendSingleElementBuffer) {
+  LogBuffer tmp_buffer;
+  tmp_buffer << "foo";
+  LogBuffer buffer;
+  buffer << std::move(tmp_buffer);
+  std::string json;
+  EXPECT_TRUE(base::JSONWriter::Write(buffer.RetrieveResult(), &json));
+  EXPECT_EQ(R"({"type":"text","value":"foo"})", json);
+}
+
 }  // namespace autofill

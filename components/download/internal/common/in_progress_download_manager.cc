@@ -403,7 +403,6 @@ void InProgressDownloadManager::StartDownload(
   std::string mime_type = info->mime_type;
 
   if (info->is_new_download) {
-    RecordDownloadConnectionSecurity(info->url(), info->url_chain);
     RecordDownloadContentTypeSecurity(info->url(), info->url_chain,
                                       info->mime_type, is_origin_secure_cb_);
   }

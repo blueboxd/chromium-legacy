@@ -495,6 +495,28 @@ TEST(CommandLineTest, RemoveSwitchWithValue) {
                                               FILE_PATH_LITERAL("--switch1")));
 }
 
+TEST(CommandLineTest, RemoveSwitchDropsMultipleSameSwitches) {
+  const std::string switch1 = "switch1";
+  const std::string value2 = "value2";
+
+  CommandLine cl(FilePath(FILE_PATH_LITERAL("Program")));
+
+  cl.AppendSwitch(switch1);
+  cl.AppendSwitchASCII(switch1, value2);
+
+  EXPECT_TRUE(cl.HasSwitch(switch1));
+  EXPECT_EQ(value2, cl.GetSwitchValueASCII(switch1));
+  EXPECT_THAT(cl.argv(),
+              testing::ElementsAre(FILE_PATH_LITERAL("Program"),
+                                   FILE_PATH_LITERAL("--switch1"),
+                                   FILE_PATH_LITERAL("--switch1=value2")));
+
+  cl.RemoveSwitch(switch1);
+
+  EXPECT_FALSE(cl.HasSwitch(switch1));
+  EXPECT_THAT(cl.argv(), testing::ElementsAre(FILE_PATH_LITERAL("Program")));
+}
+
 TEST(CommandLineTest, AppendAndRemoveSwitchWithDefaultPrefix) {
   CommandLine cl(FilePath(FILE_PATH_LITERAL("Program")));
 

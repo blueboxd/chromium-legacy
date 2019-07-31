@@ -227,19 +227,6 @@ HeadlessBrowserContextImpl::GetBrowsingDataRemoverDelegate() {
   return nullptr;
 }
 
-net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  NOTREACHED();
-  return nullptr;
-}
-
-net::URLRequestContextGetter*
-HeadlessBrowserContextImpl::CreateMediaRequestContext() {
-  NOTREACHED();
-  return nullptr;
-}
-
 HeadlessWebContents* HeadlessBrowserContextImpl::CreateWebContents(
     HeadlessWebContents::Builder* builder) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -309,13 +296,6 @@ HeadlessBrowserContext::Builder::Builder(HeadlessBrowserImpl* browser)
 HeadlessBrowserContext::Builder::~Builder() = default;
 
 HeadlessBrowserContext::Builder::Builder(Builder&&) = default;
-
-HeadlessBrowserContext::Builder&
-HeadlessBrowserContext::Builder::SetProtocolHandlers(
-    ProtocolHandlerMap protocol_handlers) {
-  options_->protocol_handlers_ = std::move(protocol_handlers);
-  return *this;
-}
 
 HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetProductNameAndVersion(

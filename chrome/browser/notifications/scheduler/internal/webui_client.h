@@ -26,8 +26,7 @@ class WebUIClient : public NotificationSchedulerClient {
       NotificationDataCallback callback) override;
   void OnSchedulerInitialized(bool success,
                               std::set<std::string> guids) override;
-  void OnUserAction(UserActionType action_type,
-                    base::Optional<ButtonClickInfo> button_info) override;
+  void OnUserAction(const UserActionData& action_data) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIClient);
 };

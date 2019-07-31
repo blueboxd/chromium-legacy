@@ -89,7 +89,7 @@ static const char kExtensionId[] = "ext_id";
 // after the call happens.
 class AsyncFunctionRunner {
  public:
-  void RunFunctionAsync(UIThreadExtensionFunction* function,
+  void RunFunctionAsync(ExtensionFunction* function,
                         const std::string& args,
                         content::BrowserContext* browser_context) {
     response_delegate_.reset(new api_test_utils::SendResponseHelper(function));
@@ -109,14 +109,14 @@ class AsyncFunctionRunner {
     function->RunWithValidation()->Execute();
   }
 
-  std::string WaitForError(UIThreadExtensionFunction* function) {
+  std::string WaitForError(ExtensionFunction* function) {
     RunMessageLoopUntilResponse();
     CHECK(function->response_type());
     EXPECT_EQ(ExtensionFunction::FAILED, *function->response_type());
     return function->GetError();
   }
 
-  base::Value* WaitForSingleResult(UIThreadExtensionFunction* function) {
+  base::Value* WaitForSingleResult(ExtensionFunction* function) {
     RunMessageLoopUntilResponse();
     EXPECT_TRUE(function->GetError().empty())
         << "Unexpected error: " << function->GetError();
@@ -140,18 +140,17 @@ class AsyncFunctionRunner {
 class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
  protected:
   // Provide wrappers of AsynchronousFunctionRunner for convenience.
-  void RunFunctionAsync(UIThreadExtensionFunction* function,
-                        const std::string& args) {
+  void RunFunctionAsync(ExtensionFunction* function, const std::string& args) {
     async_function_runner_ = std::make_unique<AsyncFunctionRunner>();
     async_function_runner_->RunFunctionAsync(function, args,
                                              browser()->profile());
   }
 
-  std::string WaitForError(UIThreadExtensionFunction* function) {
+  std::string WaitForError(ExtensionFunction* function) {
     return async_function_runner_->WaitForError(function);
   }
 
-  base::Value* WaitForSingleResult(UIThreadExtensionFunction* function) {
+  base::Value* WaitForSingleResult(ExtensionFunction* function) {
     return async_function_runner_->WaitForSingleResult(function);
   }
 

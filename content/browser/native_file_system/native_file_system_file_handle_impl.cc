@@ -5,6 +5,8 @@
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
 
 #include "base/guid.h"
+#include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
@@ -68,12 +70,13 @@ void NativeFileSystemFileHandleImpl::AsBlob(AsBlobCallback callback) {
 }
 
 void NativeFileSystemFileHandleImpl::CreateFileWriter(
+    bool keep_existing_data,
     CreateFileWriterCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileHandleImpl::CreateFileWriterImpl,
-                     weak_factory_.GetWeakPtr()),
+                     weak_factory_.GetWeakPtr(), keep_existing_data),
       base::BindOnce([](CreateFileWriterCallback callback) {
         std::move(callback).Run(
             NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
@@ -138,14 +141,122 @@ void NativeFileSystemFileHandleImpl::DidGetMetaDataForBlob(
 }
 
 void NativeFileSystemFileHandleImpl::CreateFileWriterImpl(
+    bool keep_existing_data,
     CreateFileWriterCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(GetWritePermissionStatus(),
             blink::mojom::PermissionStatus::GRANTED);
 
+  // We first attempt to create the swap file, even if we might do a subsequent
+  // operation to copy a file to the same path if keep_existing_data is set.
+  // This file creation has to be `exclusive`, meaning, it will fail if a file
+  // already exists. Using the filesystem for synchronization, a successful
+  // creation of the file ensures that this File Writer creation request owns
+  // the file and eliminates possible race conditions.
+  auto base_swap_path =
+      base::FilePath(url().path()).AddExtensionASCII(".crswap");
+  CreateSwapFile(
+      /*count=*/0, base_swap_path, keep_existing_data, std::move(callback));
+}
+
+void NativeFileSystemFileHandleImpl::CreateSwapFile(
+    int count,
+    const base::FilePath& base_swap_path,
+    bool keep_existing_data,
+    CreateFileWriterCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(count >= 0);
+  DCHECK(max_swap_files_ >= 0);
+
+  if (GetWritePermissionStatus() != blink::mojom::PermissionStatus::GRANTED) {
+    std::move(callback).Run(
+        NativeFileSystemError::New(base::File::FILE_ERROR_ACCESS_DENIED),
+        nullptr);
+    return;
+  }
+
+  if (count >= max_swap_files_) {
+    DLOG(ERROR) << "Error Creating Swap File, count: " << count
+                << " exceeds max unique files of: " << max_swap_files_
+                << " base path: " << base_swap_path;
+    std::move(callback).Run(
+        NativeFileSystemError::New(base::File::FILE_ERROR_MAX), nullptr);
+    return;
+  }
+
+  auto swap_path = base_swap_path;
+  if (count > 0) {
+    swap_path = base_swap_path.InsertBeforeExtensionASCII(
+        base::StringPrintf(".%d", count));
+  }
+
+  storage::FileSystemURL swap_url =
+      manager()->context()->CreateCrackedFileSystemURL(url().origin().GetURL(),
+                                                       url().type(), swap_path);
+
+  operation_runner()->CreateFile(
+      swap_url,
+      /*exclusive=*/true,
+      base::BindOnce(&NativeFileSystemFileHandleImpl::DidCreateSwapFile,
+                     weak_factory_.GetWeakPtr(), count, base_swap_path,
+                     swap_url, keep_existing_data, std::move(callback)));
+}
+
+void NativeFileSystemFileHandleImpl::DidCreateSwapFile(
+    int count,
+    const base::FilePath& base_swap_path,
+    const storage::FileSystemURL& swap_url,
+    bool keep_existing_data,
+    CreateFileWriterCallback callback,
+    base::File::Error result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (result == base::File::FILE_ERROR_EXISTS) {
+    // Creation attempt failed. We need to find an unused filename.
+    CreateSwapFile(count + 1, base_swap_path, keep_existing_data,
+                   std::move(callback));
+    return;
+  }
+
+  if (result != base::File::FILE_OK) {
+    DLOG(ERROR) << "Error Creating Swap File, status: "
+                << base::File::ErrorToString(result)
+                << " path: " << swap_url.path();
+    std::move(callback).Run(NativeFileSystemError::New(result), nullptr);
+    return;
+  }
+
+  if (!keep_existing_data) {
+    std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
+                            manager()->CreateFileWriter(
+                                context(), url(), swap_url, handle_state()));
+    return;
+  }
+
+  operation_runner()->Copy(
+      url(), swap_url,
+      storage::FileSystemOperation::OPTION_PRESERVE_LAST_MODIFIED,
+      storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
+      storage::FileSystemOperation::CopyProgressCallback(),
+      base::BindOnce(&NativeFileSystemFileHandleImpl::DidCopySwapFile,
+                     weak_factory_.GetWeakPtr(), swap_url,
+                     std::move(callback)));
+}
+
+void NativeFileSystemFileHandleImpl::DidCopySwapFile(
+    const storage::FileSystemURL& swap_url,
+    CreateFileWriterCallback callback,
+    base::File::Error result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (result != base::File::FILE_OK) {
+    DLOG(ERROR) << "Error Creating Swap File, status: "
+                << base::File::ErrorToString(result)
+                << " path: " << swap_url.path();
+    std::move(callback).Run(NativeFileSystemError::New(result), nullptr);
+    return;
+  }
   std::move(callback).Run(
       NativeFileSystemError::New(base::File::FILE_OK),
-      manager()->CreateFileWriter(context(), url(), handle_state()));
+      manager()->CreateFileWriter(context(), url(), swap_url, handle_state()));
 }
 
 base::WeakPtr<NativeFileSystemHandleBase>

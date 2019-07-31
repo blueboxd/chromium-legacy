@@ -924,25 +924,23 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     delegate_->PostTaskSchedulerStart();
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      bool force_in_process = false;
-      if (should_start_service_manager_only) {
-        force_in_process = true;
-      } else {
+    bool force_in_process = false;
+    if (should_start_service_manager_only) {
+      force_in_process = true;
+    } else {
 #if defined(OS_ANDROID)
-        auto finch_value = kDevicesForceInProcessParam.Get();
-        auto devices = base::SplitString(
-            finch_value, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-        auto current_device =
-            std::string(base::android::BuildInfo::GetInstance()->model());
-        for (auto device : devices) {
-          if (device == current_device) {
-            force_in_process = true;
-            break;
-          }
+      auto finch_value = kDevicesForceInProcessParam.Get();
+      auto devices = base::SplitString(finch_value, ";", base::TRIM_WHITESPACE,
+                                       base::SPLIT_WANT_NONEMPTY);
+      auto current_device =
+          std::string(base::android::BuildInfo::GetInstance()->model());
+      for (auto device : devices) {
+        if (device == current_device) {
+          force_in_process = true;
+          break;
         }
-#endif
       }
+#endif
 
       if (force_in_process) {
         // This must be called before creating the ServiceManagerContext.

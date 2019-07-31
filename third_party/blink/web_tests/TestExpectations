@@ -137,7 +137,24 @@ Bug(none) virtual/composite-after-paint/compositing/z-order/ [ Pass ]
 Bug(none) virtual/composite-after-paint/paint/background/ [ Pass ]
 Bug(none) virtual/composite-after-paint/paint/filters/ [ Pass ]
 Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
+Bug(none) virtual/composite-after-paint/scrollingcoordinator [ Pass ]
 # --- End CompositeAfterPaint Tests --
+
+# CompositeAfterPaint incorrectly composites all scrollers, and these do not
+# produce non-fast scrollable regions, so there are differences in the non-fast
+# regions compared to pre-CompositeAfterPaint.
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Failure ]
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-nested.html [ Failure ]
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Failure ]
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ Failure ]
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Failure ]
+crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-visibility-change.html [ Failure ]
+
+# Need to support painting non-fast scrollable regions for plugins.
+crbug.com/864567 virtual/composite-after-paint/scrollingcoordinator/plugin-with-wheel-handler.html [ Failure ]
+crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/plugin-with-wheel-handler.html [ Failure ]
+crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Failure ]
+crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/non-fast-scrollable-region-nested.html [ Failure ]
 
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
@@ -2129,6 +2146,7 @@ crbug.com/753671 external/wpt/css/css-content/quotes-021.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-022.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-025.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-033.html [ Failure ]
+crbug.com/989123 external/wpt/css/css-typed-om/the-stylepropertymap/computed/get-auto-min-size.html [ Failure ]
 
 # ====== Style team owned tests to here ======
 
@@ -2206,6 +2224,7 @@ crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transit
 crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-transition-property-variable-before-value.html [ Skip ]
 crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-value-before-transition-property-variable.html [ Skip ]
 crbug.com/552085 virtual/cascade/external/wpt/css/css-cascade/important-prop.html [ Failure ]
+crbug.com/989123 virtual/cascade/external/wpt/css/css-typed-om/the-stylepropertymap/computed/get-auto-min-size.html [ Failure ]
 
 # This is for some reason WontFix'd in the main expectations (see NeverFixTests).
 # That seems wrong, as we should support 'revert' eventually.
@@ -2922,6 +2941,7 @@ crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failur
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
 
 ### Tests added for non-fast scrolling regions that break as a result of compositor scrolling.
+# TODO(pdr): Mark these as passing when PaintNonFastScrollableRegions launches.
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
@@ -3302,8 +3322,6 @@ crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-s
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/extension/pointerevent_touch-action-pan-right-css_touch.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/detection-security-test.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/shapedetection-cross-origin.sub.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
-crbug.com/626703 [ Retina ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_gt_50_size_gt_maximum_size.html [ Failure ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-offer.html [ Timeout ]
 crbug.com/626703 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-offer.html [ Timeout ]
@@ -6370,14 +6388,6 @@ crbug.com/986018 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass
 # ecosystem-infra sheriff 2019-07-22
 crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]
 crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookies/path/match.html [ Pass Timeout ]
-
-# Sheriff 2019-07-23
-crbug.com/986019 animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
-crbug.com/986019 virtual/threaded/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
-crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
-crbug.com/986666 animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
-crbug.com/986666 virtual/threaded/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
-crbug.com/986666 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
 
 # Sheriff 2019-07-24
 crbug.com/986019 animations/play-state.html [ Pass Timeout ]

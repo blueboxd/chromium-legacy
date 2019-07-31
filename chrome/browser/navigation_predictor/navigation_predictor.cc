@@ -219,11 +219,7 @@ NavigationPredictor::NavigationPredictor(
       normalize_navigation_scores_(base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor,
           "normalize_scores",
-          true)),
-      send_ukm_metrics_(base::GetFieldTrialParamByFeatureAsBool(
-          blink::features::kNavigationPredictor,
-          "send_ukm_metrics",
-          false)) {
+          true)) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
@@ -440,7 +436,7 @@ void NavigationPredictor::MaybePreconnectNow(Action log_action) {
 }
 
 void NavigationPredictor::MaybeSendMetricsToUkm() const {
-  if (!send_ukm_metrics_ || !ukm_recorder_) {
+  if (!ukm_recorder_) {
     return;
   }
 
@@ -513,7 +509,7 @@ int NavigationPredictor::GetLinearBucketForRatioArea(int value) const {
 
 void NavigationPredictor::MaybeSendClickMetricsToUkm(
     const std::string& clicked_url) const {
-  if (!send_ukm_metrics_ || !ukm_recorder_) {
+  if (!ukm_recorder_) {
     return;
   }
 

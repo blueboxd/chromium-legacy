@@ -49,7 +49,6 @@ namespace android_webview {
 
 class AwFormDatabaseService;
 class AwQuotaManagerBridge;
-class AwURLRequestContextGetter;
 
 class AwBrowserContext : public content::BrowserContext,
                          public visitedlink::VisitedLinkDelegate {
@@ -102,10 +101,6 @@ class AwBrowserContext : public content::BrowserContext,
   content::BackgroundSyncController* GetBackgroundSyncController() override;
   content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
       override;
-  net::URLRequestContextGetter* CreateRequestContext(
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) override;
-  net::URLRequestContextGetter* CreateMediaRequestContext() override;
   download::InProgressDownloadManager* RetriveInProgressDownloadManager()
       override;
 
@@ -127,7 +122,6 @@ class AwBrowserContext : public content::BrowserContext,
   // The file path where data for this context is persisted.
   base::FilePath context_storage_path_;
 
-  scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<AwQuotaManagerBridge> quota_manager_bridge_;
   std::unique_ptr<AwFormDatabaseService> form_database_service_;
   std::unique_ptr<autofill::AutocompleteHistoryManager>

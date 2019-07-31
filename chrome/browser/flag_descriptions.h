@@ -797,6 +797,9 @@ extern const char kOfferStoreUnmaskedWalletCardsDescription[];
 extern const char kOmniboxAlternateMatchDescriptionSeparatorName[];
 extern const char kOmniboxAlternateMatchDescriptionSeparatorDescription[];
 
+extern const char kOmniboxDisableInstantExtendedLimitName[];
+extern const char kOmniboxDisableInstantExtendedLimitDescription[];
+
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
@@ -1923,6 +1926,12 @@ extern const char kEnableVideoPlayerNativeControlsDescription[];
 
 extern const char kEnableVirtualDesksName[];
 extern const char kEnableVirtualDesksDescription[];
+
+extern const char kTrimOnFreezeName[];
+extern const char kTrimOnFreezeDescription[];
+
+extern const char kTrimOnMemoryPressureName[];
+extern const char kTrimOnMemoryPressureDescription[];
 
 extern const char kEnableZeroStateSuggestionsName[];
 extern const char kEnableZeroStateSuggestionsDescription[];

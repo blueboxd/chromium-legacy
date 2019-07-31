@@ -19,8 +19,7 @@ namespace extensions {
 
 // Implements chrome.fileManagerPrivate.addMount method.
 // Mounts removable devices and archive files.
-class FileManagerPrivateAddMountFunction
-    : public LoggedUIThreadExtensionFunction {
+class FileManagerPrivateAddMountFunction : public LoggedExtensionFunction {
  public:
   FileManagerPrivateAddMountFunction();
 
@@ -58,8 +57,7 @@ class FileManagerPrivateAddMountFunction
 
 // Implements chrome.fileManagerPrivate.removeMount method.
 // Unmounts selected volume. Expects volume id as an argument.
-class FileManagerPrivateRemoveMountFunction
-    : public LoggedUIThreadExtensionFunction {
+class FileManagerPrivateRemoveMountFunction : public LoggedExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.removeMount",
                              FILEMANAGERPRIVATE_REMOVEMOUNT)
@@ -74,7 +72,7 @@ class FileManagerPrivateRemoveMountFunction
 // Implements chrome.fileManagerPrivate.markCacheAsMounted method.
 // Marks a cached file as mounted or unmounted.
 class FileManagerPrivateMarkCacheAsMountedFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   FileManagerPrivateMarkCacheAsMountedFunction();
 
@@ -107,7 +105,7 @@ class FileManagerPrivateMarkCacheAsMountedFunction
 
 // Implements chrome.fileManagerPrivate.getVolumeMetadataList method.
 class FileManagerPrivateGetVolumeMetadataListFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getVolumeMetadataList",
                              FILEMANAGERPRIVATE_GETVOLUMEMETADATALIST)

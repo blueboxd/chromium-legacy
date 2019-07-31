@@ -111,4 +111,8 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     theme_to_update_->NotifyObservers();
 }
 
+NativeTheme::ColorScheme NativeTheme::GetSystemColorScheme() const {
+  return SystemDarkModeEnabled() ? ColorScheme::kDark : ColorScheme::kLight;
+}
+
 }  // namespace ui

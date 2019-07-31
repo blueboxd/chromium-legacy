@@ -7,6 +7,7 @@
 
 #include "base/containers/id_map.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/devtools_permission_overrides.h"
 #include "content/public/browser/permission_controller.h"
 #include "url/gurl.h"
 
@@ -25,12 +26,14 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
   static PermissionControllerImpl* FromBrowserContext(
       BrowserContext* browser_context);
 
-  using PermissionOverrides = std::set<PermissionType>;
-  // For the given |origin|, grant permissions that belong to |overrides|
-  // and reject all others.
-  void SetPermissionOverridesForDevTools(const GURL& origin,
-                                         const PermissionOverrides& overrides);
-  void ResetPermissionOverridesForDevTools();
+  using PermissionOverrides = DevToolsPermissionOverrides::PermissionOverrides;
+
+  // For the given |origin|, grant permissions in |overrides| and reject all
+  // others.
+  void GrantOverridesForDevTools(
+      const GURL& origin,
+      const std::vector<PermissionType>& permissions);
+  void ResetOverridesForDevTools();
 
   // PermissionController implementation.
   blink::mojom::PermissionStatus GetPermissionStatus(
@@ -73,13 +76,19 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
  private:
   struct Subscription;
   using SubscriptionsMap = base::IDMap<std::unique_ptr<Subscription>>;
+  using SubscriptionsStatusMap =
+      base::flat_map<SubscriptionsMap::KeyType, blink::mojom::PermissionStatus>;
 
   blink::mojom::PermissionStatus GetSubscriptionCurrentValue(
       const Subscription& subscription);
+  SubscriptionsStatusMap GetSubscriptionsStatuses(
+      const base::Optional<GURL>& origin = base::nullopt);
+  void NotifyChangedSubscriptions(const SubscriptionsStatusMap& old_statuses);
   void OnDelegatePermissionStatusChange(Subscription* subscription,
                                         blink::mojom::PermissionStatus status);
+  void UpdateDelegateOverridesForDevTools(const GURL& origin);
 
-  std::map<GURL, PermissionOverrides> devtools_permission_overrides_;
+  DevToolsPermissionOverrides devtools_permission_overrides_;
   SubscriptionsMap subscriptions_;
   BrowserContext* browser_context_;
 

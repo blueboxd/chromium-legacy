@@ -87,8 +87,6 @@ bool ReportingContext::IsClientDataPersisted() const {
 
 void ReportingContext::OnShutdown() {
   uploader_->OnShutdown();
-  if (store_)
-    store_->Flush();
 }
 
 ReportingContext::ReportingContext(

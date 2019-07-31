@@ -17,7 +17,11 @@
 namespace ui {
 
 SkColor GetAuraColor(NativeTheme::ColorId color_id,
-                     const NativeTheme* base_theme) {
+                     const NativeTheme* base_theme,
+                     NativeTheme::ColorScheme color_scheme) {
+  if (color_scheme == NativeTheme::ColorScheme::kDefault)
+    color_scheme = base_theme->GetSystemColorScheme();
+
   // High contrast overrides the normal colors for certain ColorIds to be much
   // darker or lighter.
   if (base_theme->UsesHighContrastColors()) {
@@ -29,18 +33,19 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_SeparatorColor:
       case NativeTheme::kColorId_UnfocusedBorderColor:
       case NativeTheme::kColorId_TabBottomBorder:
-        return base_theme->SystemDarkModeEnabled() ? SK_ColorWHITE
-                                                   : SK_ColorBLACK;
+        return color_scheme == NativeTheme::ColorScheme::kDark ? SK_ColorWHITE
+                                                               : SK_ColorBLACK;
       case NativeTheme::kColorId_FocusedBorderColor:
       case NativeTheme::kColorId_ProminentButtonColor:
-        return base_theme->SystemDarkModeEnabled() ? gfx::kGoogleBlue100
-                                                   : gfx::kGoogleBlue900;
+        return color_scheme == NativeTheme::ColorScheme::kDark
+                   ? gfx::kGoogleBlue100
+                   : gfx::kGoogleBlue900;
       default:
         break;
     }
   }
 
-  if (base_theme->SystemDarkModeEnabled()) {
+  if (color_scheme == NativeTheme::ColorScheme::kDark) {
     switch (color_id) {
       // Dialogs
       case NativeTheme::kColorId_WindowBackground:
@@ -98,7 +103,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
             SK_ColorWHITE,
             GetAuraColor(
                 NativeTheme::kColorId_LabelTextSelectionBackgroundFocused,
-                base_theme),
+                base_theme, color_scheme),
             SkAlpha{0xDD});
       case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
         return SkColorSetA(gfx::kGoogleBlue700, 0xCC);
@@ -122,7 +127,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
             SK_ColorWHITE,
             GetAuraColor(
                 NativeTheme::kColorId_LabelTextSelectionBackgroundFocused,
-                base_theme),
+                base_theme, color_scheme),
             SkAlpha{0xDD});
       case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
         return SkColorSetA(gfx::kGoogleBlue700, 0xCC);
@@ -138,7 +143,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
             SK_ColorWHITE,
             GetAuraColor(
                 NativeTheme::kColorId_LabelTextSelectionBackgroundFocused,
-                base_theme),
+                base_theme, color_scheme),
             SkAlpha{0xDD});
 
       // Material spinner/throbber
@@ -169,7 +174,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kPrimaryTextColor;
     case NativeTheme::kColorId_LabelDisabledColor:
       return SkColorSetA(
-          base_theme->GetSystemColor(NativeTheme::kColorId_LabelEnabledColor),
+          base_theme->GetSystemColor(NativeTheme::kColorId_LabelEnabledColor,
+                                     color_scheme),
           gfx::kDisabledControlAlpha);
 
     // FocusableBorder
@@ -180,11 +186,13 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_TextfieldDefaultColor:
       return kPrimaryTextColor;
     case NativeTheme::kColorId_TextfieldDefaultBackground:
-      return base_theme->GetSystemColor(NativeTheme::kColorId_DialogBackground);
+      return base_theme->GetSystemColor(NativeTheme::kColorId_DialogBackground,
+                                        color_scheme);
     case NativeTheme::kColorId_TextfieldReadOnlyColor:
-      return SkColorSetA(base_theme->GetSystemColor(
-                             NativeTheme::kColorId_TextfieldDefaultColor),
-                         gfx::kDisabledControlAlpha);
+      return SkColorSetA(
+          base_theme->GetSystemColor(
+              NativeTheme::kColorId_TextfieldDefaultColor, color_scheme),
+          gfx::kDisabledControlAlpha);
 
     default:
       break;
@@ -265,7 +273,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kButtonEnabledColor;
     case NativeTheme::kColorId_LabelDisabledColor:
       return base_theme->GetSystemColor(
-          NativeTheme::kColorId_ButtonDisabledColor);
+          NativeTheme::kColorId_ButtonDisabledColor, color_scheme);
     case NativeTheme::kColorId_LabelTextSelectionColor:
       return kTextSelectionColor;
     case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
@@ -338,12 +346,13 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     // Table Header
     case NativeTheme::kColorId_TableHeaderText:
       return base_theme->GetSystemColor(
-          NativeTheme::kColorId_EnabledMenuItemForegroundColor);
+          NativeTheme::kColorId_EnabledMenuItemForegroundColor, color_scheme);
     case NativeTheme::kColorId_TableHeaderBackground:
       return base_theme->GetSystemColor(
-          NativeTheme::kColorId_MenuBackgroundColor);
+          NativeTheme::kColorId_MenuBackgroundColor, color_scheme);
     case NativeTheme::kColorId_TableHeaderSeparator:
-      return base_theme->GetSystemColor(NativeTheme::kColorId_MenuBorderColor);
+      return base_theme->GetSystemColor(NativeTheme::kColorId_MenuBorderColor,
+                                        color_scheme);
 
     // FocusableBorder
     case NativeTheme::kColorId_FocusedBorderColor:
@@ -383,17 +392,18 @@ void CommonThemePaintMenuItemBackground(
     cc::PaintCanvas* canvas,
     NativeTheme::State state,
     const gfx::Rect& rect,
-    const NativeTheme::MenuItemExtraParams& menu_item) {
+    const NativeTheme::MenuItemExtraParams& menu_item,
+    NativeTheme::ColorScheme color_scheme) {
   cc::PaintFlags flags;
   switch (state) {
     case NativeTheme::kNormal:
     case NativeTheme::kDisabled:
-      flags.setColor(
-          theme->GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor));
+      flags.setColor(theme->GetSystemColor(
+          NativeTheme::kColorId_MenuBackgroundColor, color_scheme));
       break;
     case NativeTheme::kHovered:
       flags.setColor(theme->GetSystemColor(
-          NativeTheme::kColorId_FocusedMenuItemBackgroundColor));
+          NativeTheme::kColorId_FocusedMenuItemBackgroundColor, color_scheme));
       break;
     default:
       NOTREACHED() << "Invalid state " << state;

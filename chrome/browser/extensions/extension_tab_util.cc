@@ -129,11 +129,10 @@ ExtensionTabUtil::OpenTabParams::~OpenTabParams() {
 
 // Opens a new tab for a given extension. Returns nullptr and sets |error| if an
 // error occurs.
-base::DictionaryValue* ExtensionTabUtil::OpenTab(
-    UIThreadExtensionFunction* function,
-    const OpenTabParams& params,
-    bool user_gesture,
-    std::string* error) {
+base::DictionaryValue* ExtensionTabUtil::OpenTab(ExtensionFunction* function,
+                                                 const OpenTabParams& params,
+                                                 bool user_gesture,
+                                                 std::string* error) {
   ChromeExtensionFunctionDetails chrome_details(function);
   Profile* profile = chrome_details.GetProfile();
   // windowId defaults to "current" window.

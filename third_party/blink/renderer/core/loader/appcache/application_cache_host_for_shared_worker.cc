@@ -7,14 +7,11 @@
 namespace blink {
 
 ApplicationCacheHostForSharedWorker::ApplicationCacheHostForSharedWorker(
-    const base::UnguessableToken& appcache_host_id,
+    DocumentLoader* document_loader,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : ApplicationCacheHost(nullptr, /* interface_broker */
-                           std::move(task_runner)) {
-  SetHostID(appcache_host_id ? appcache_host_id
-                             : base::UnguessableToken::Create());
-  BindBackend();
-}
+    : ApplicationCacheHost(document_loader,
+                           nullptr, /* interface_broker */
+                           std::move(task_runner)) {}
 
 ApplicationCacheHostForSharedWorker::~ApplicationCacheHostForSharedWorker() =
     default;

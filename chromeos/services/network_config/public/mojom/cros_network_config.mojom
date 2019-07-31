@@ -510,7 +510,7 @@ struct ManagedCellularProperties {
   ManagedBoolean? auto_connect;
   ManagedApnProperties? apn;
   ManagedApnList? apn_list;
-  string? activation_state;
+  ActivationStateType activation_state;
   bool allow_roaming = false;
   string? esn;
   string? family;
@@ -547,7 +547,7 @@ struct ManagedVPNProperties {
   ManagedL2TPProperties? l2tp;
   ManagedOpenVPNProperties? open_vpn;
   ManagedThirdPartyVPNProperties? third_party_vpn;
-  ManagedString type;
+  VPNType type;
 };
 
 struct ManagedWiFiProperties {
@@ -562,7 +562,7 @@ struct ManagedWiFiProperties {
   ManagedBoolean? hidden_ssid;
   ManagedInt32? roam_threshold;
   ManagedString ssid;
-  ManagedString security;
+  SecurityType security;
   int32 signal_strength = 0;
   string? tethering_state;
 };

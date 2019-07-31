@@ -146,15 +146,18 @@ NativeThemeAura* NativeThemeAura::web_instance() {
 }
 
 // This implementation returns hardcoded colors.
-SkColor NativeThemeAura::GetSystemColor(ColorId color_id) const {
-  return GetAuraColor(color_id, this);
+SkColor NativeThemeAura::GetSystemColor(ColorId color_id,
+                                        ColorScheme color_scheme) const {
+  return GetAuraColor(color_id, this, color_scheme);
 }
 
 void NativeThemeAura::PaintMenuPopupBackground(
     cc::PaintCanvas* canvas,
     const gfx::Size& size,
-    const MenuBackgroundExtraParams& menu_background) const {
-  SkColor color = GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor);
+    const MenuBackgroundExtraParams& menu_background,
+    ColorScheme color_scheme) const {
+  SkColor color =
+      GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor, color_scheme);
   if (menu_background.corner_radius > 0) {
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
@@ -179,20 +182,23 @@ void NativeThemeAura::PaintMenuItemBackground(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const MenuItemExtraParams& menu_item) const {
-  CommonThemePaintMenuItemBackground(this, canvas, state, rect, menu_item);
+    const MenuItemExtraParams& menu_item,
+    ColorScheme color_scheme) const {
+  CommonThemePaintMenuItemBackground(this, canvas, state, rect, menu_item,
+                                     color_scheme);
 }
 
 void NativeThemeAura::PaintArrowButton(cc::PaintCanvas* canvas,
                                        const gfx::Rect& rect,
                                        Part direction,
-                                       State state) const {
+                                       State state,
+                                       ColorScheme color_scheme) const {
   SkColor bg_color = kTrackColor;
   // Aura-win uses slightly different arrow colors.
   SkColor arrow_color = gfx::kPlaceholderColor;
   switch (state) {
     case kDisabled:
-      arrow_color = GetArrowColor(state);
+      arrow_color = GetArrowColor(state, color_scheme);
       break;
     case kHovered:
       bg_color = SkColorSetRGB(0xD2, 0xD2, 0xD2);
@@ -221,7 +227,8 @@ void NativeThemeAura::PaintScrollbarTrack(
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
-    const gfx::Rect& rect) const {
+    const gfx::Rect& rect,
+    ColorScheme color_scheme) const {
   // Overlay Scrollbar should never paint a scrollbar track.
   DCHECK(!use_overlay_scrollbars_);
   cc::PaintFlags flags;
@@ -229,12 +236,12 @@ void NativeThemeAura::PaintScrollbarTrack(
   canvas->drawIRect(gfx::RectToSkIRect(rect), flags);
 }
 
-void NativeThemeAura::PaintScrollbarThumb(
-    cc::PaintCanvas* canvas,
-    Part part,
-    State state,
-    const gfx::Rect& rect,
-    ScrollbarOverlayColorTheme theme) const {
+void NativeThemeAura::PaintScrollbarThumb(cc::PaintCanvas* canvas,
+                                          Part part,
+                                          State state,
+                                          const gfx::Rect& rect,
+                                          ScrollbarOverlayColorTheme theme,
+                                          ColorScheme color_scheme) const {
   // Do not paint if state is disabled.
   if (state == kDisabled)
     return;
@@ -339,7 +346,8 @@ void NativeThemeAura::PaintScrollbarThumb(
 
 void NativeThemeAura::PaintScrollbarCorner(cc::PaintCanvas* canvas,
                                            State state,
-                                           const gfx::Rect& rect) const {
+                                           const gfx::Rect& rect,
+                                           ColorScheme color_scheme) const {
   // Overlay Scrollbar should never paint a scrollbar corner.
   DCHECK(!use_overlay_scrollbars_);
   cc::PaintFlags flags;
@@ -350,13 +358,15 @@ void NativeThemeAura::PaintScrollbarCorner(cc::PaintCanvas* canvas,
 void NativeThemeAura::PaintCheckbox(cc::PaintCanvas* canvas,
                                     State state,
                                     const gfx::Rect& rect,
-                                    const ButtonExtraParams& button) const {
+                                    const ButtonExtraParams& button,
+                                    ColorScheme color_scheme) const {
   if (!features::IsFormControlsRefreshEnabled()) {
-    return NativeThemeBase::PaintCheckbox(canvas, state, rect, button);
+    return NativeThemeBase::PaintCheckbox(canvas, state, rect, button,
+                                          color_scheme);
   }
 
   SkRect skrect = PaintCheckboxRadioCommon(
-      canvas, state, rect, SkIntToScalar(kCheckboxBorderRadius));
+      canvas, state, rect, SkIntToScalar(kCheckboxBorderRadius), color_scheme);
 
   if (!skrect.isEmpty()) {
     // Draw the checkmark / dash.
@@ -391,9 +401,11 @@ void NativeThemeAura::PaintCheckbox(cc::PaintCanvas* canvas,
 void NativeThemeAura::PaintRadio(cc::PaintCanvas* canvas,
                                  State state,
                                  const gfx::Rect& rect,
-                                 const ButtonExtraParams& button) const {
+                                 const ButtonExtraParams& button,
+                                 ColorScheme color_scheme) const {
   if (!features::IsFormControlsRefreshEnabled()) {
-    return NativeThemeBase::PaintRadio(canvas, state, rect, button);
+    return NativeThemeBase::PaintRadio(canvas, state, rect, button,
+                                       color_scheme);
   }
 
   // Most of a radio button is the same as a checkbox, except the the rounded
@@ -401,7 +413,8 @@ void NativeThemeAura::PaintRadio(cc::PaintCanvas* canvas,
   const SkScalar radius = SkFloatToScalar(
       static_cast<float>(std::max(rect.width(), rect.height())) * 0.5);
 
-  SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, radius);
+  SkRect skrect =
+      PaintCheckboxRadioCommon(canvas, state, rect, radius, color_scheme);
   if (!skrect.isEmpty() && button.checked) {
     // Draw the dot.
     cc::PaintFlags flags;
@@ -426,7 +439,8 @@ SkRect NativeThemeAura::PaintCheckboxRadioCommon(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const SkScalar borderRadius) const {
+    const SkScalar borderRadius,
+    ColorScheme color_scheme) const {
   SkRect skrect = gfx::RectToSkRect(rect);
 
   // Use the largest square that fits inside the provided rectangle.
@@ -479,9 +493,11 @@ SkRect NativeThemeAura::PaintCheckboxRadioCommon(
 void NativeThemeAura::PaintTextField(cc::PaintCanvas* canvas,
                                      State state,
                                      const gfx::Rect& rect,
-                                     const TextFieldExtraParams& text) const {
+                                     const TextFieldExtraParams& text,
+                                     ColorScheme color_scheme) const {
   if (!features::IsFormControlsRefreshEnabled()) {
-    return NativeThemeBase::PaintTextField(canvas, state, rect, text);
+    return NativeThemeBase::PaintTextField(canvas, state, rect, text,
+                                           color_scheme);
   }
 
   SkRect bounds = gfx::RectToSkRect(rect);
@@ -513,9 +529,11 @@ void NativeThemeAura::PaintTextField(cc::PaintCanvas* canvas,
 void NativeThemeAura::PaintButton(cc::PaintCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
-                                  const ButtonExtraParams& button) const {
+                                  const ButtonExtraParams& button,
+                                  ColorScheme color_scheme) const {
   if (!features::IsFormControlsRefreshEnabled()) {
-    return NativeThemeBase::PaintButton(canvas, state, rect, button);
+    return NativeThemeBase::PaintButton(canvas, state, rect, button,
+                                        color_scheme);
   }
 
   cc::PaintFlags flags;
@@ -592,9 +610,11 @@ SkRect AlignSliderTrack(const gfx::Rect& slider_rect,
 void NativeThemeAura::PaintSliderTrack(cc::PaintCanvas* canvas,
                                        State state,
                                        const gfx::Rect& rect,
-                                       const SliderExtraParams& slider) const {
+                                       const SliderExtraParams& slider,
+                                       ColorScheme color_scheme) const {
   if (!features::IsFormControlsRefreshEnabled()) {
-    return NativeThemeBase::PaintSliderTrack(canvas, state, rect, slider);
+    return NativeThemeBase::PaintSliderTrack(canvas, state, rect, slider,
+                                             color_scheme);
   }
 
   // Paint the entire slider track.
@@ -630,9 +650,11 @@ void NativeThemeAura::PaintSliderTrack(cc::PaintCanvas* canvas,
 void NativeThemeAura::PaintSliderThumb(cc::PaintCanvas* canvas,
                                        State state,
                                        const gfx::Rect& rect,
-                                       const SliderExtraParams& slider) const {
+                                       const SliderExtraParams& slider,
+                                       ColorScheme color_scheme) const {
   if (!features::IsFormControlsRefreshEnabled()) {
-    return NativeThemeBase::PaintSliderThumb(canvas, state, rect, slider);
+    return NativeThemeBase::PaintSliderThumb(canvas, state, rect, slider,
+                                             color_scheme);
   }
 
   const SkScalar radius = SkFloatToScalar(
@@ -660,13 +682,14 @@ void NativeThemeAura::PaintSliderThumb(cc::PaintCanvas* canvas,
   canvas->drawRoundRect(thumb_rect, radius, radius, flags);
 }
 
-void NativeThemeAura::PaintMenuList(
-    cc::PaintCanvas* canvas,
-    State state,
-    const gfx::Rect& rect,
-    const MenuListExtraParams& menu_list) const {
+void NativeThemeAura::PaintMenuList(cc::PaintCanvas* canvas,
+                                    State state,
+                                    const gfx::Rect& rect,
+                                    const MenuListExtraParams& menu_list,
+                                    ColorScheme color_scheme) const {
   if (!features::IsFormControlsRefreshEnabled()) {
-    return NativeThemeBase::PaintMenuList(canvas, state, rect, menu_list);
+    return NativeThemeBase::PaintMenuList(canvas, state, rect, menu_list,
+                                          color_scheme);
   }
 
   // If a border radius is specified paint the background and the border of
@@ -676,7 +699,7 @@ void NativeThemeAura::PaintMenuList(
   if (!menu_list.has_border_radius) {
     TextFieldExtraParams text_field = {0};
     text_field.background_color = menu_list.background_color;
-    PaintTextField(canvas, state, rect, text_field);
+    PaintTextField(canvas, state, rect, text_field, color_scheme);
   }
 
   // Paint the arrow.

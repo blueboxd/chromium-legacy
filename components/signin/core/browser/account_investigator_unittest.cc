@@ -145,9 +145,9 @@ class AccountInvestigatorTest : public testing::Test {
 
 namespace {
 
-ListedAccount Account(const std::string& id) {
+ListedAccount Account(const CoreAccountId& account_id) {
   ListedAccount account;
-  account.id = id;
+  account.id = account_id;
   return account;
 }
 
@@ -166,9 +166,9 @@ const std::string kGaiaId1 = signin::GetTestGaiaIdForEmail("1@mail.com");
 const std::string kGaiaId2 = signin::GetTestGaiaIdForEmail("2@mail.com");
 const std::string kGaiaId3 = signin::GetTestGaiaIdForEmail("3@mail.com");
 
-const ListedAccount one(Account(kGaiaId1));
-const ListedAccount two(Account(kGaiaId2));
-const ListedAccount three(Account(kGaiaId3));
+const ListedAccount one(Account(CoreAccountId(kGaiaId1)));
+const ListedAccount two(Account(CoreAccountId(kGaiaId2)));
+const ListedAccount three(Account(CoreAccountId(kGaiaId3)));
 
 const std::vector<ListedAccount> no_accounts{};
 const std::vector<ListedAccount> just_one{one};

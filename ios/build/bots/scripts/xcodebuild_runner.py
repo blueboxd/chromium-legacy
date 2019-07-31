@@ -20,6 +20,7 @@ import test_runner
 import xcode_log_parser
 
 LOGGER = logging.getLogger(__name__)
+MAXIMUM_TESTS_PER_SHARD_FOR_RERUN = 20
 
 
 class LaunchCommandCreationError(test_runner.TestRunnerError):
@@ -34,6 +35,33 @@ class LaunchCommandPoolCreationError(test_runner.TestRunnerError):
 
   def __init__(self, message):
     super(LaunchCommandPoolCreationError, self).__init__(message)
+
+
+def get_all_tests(app_path, test_cases=None):
+  """Gets all tests from test bundle."""
+  test_app_bundle = os.path.join(app_path, os.path.splitext(
+      os.path.basename(app_path))[0])
+  # Method names that starts with test* and also are in *TestCase classes
+  # but they are not test-methods.
+  # TODO(crbug.com/982435): Rename not test methods with test-suffix.
+  not_tests = ['ChromeTestCase/testServer', 'FindInPageTestCase/testURL']
+  all_tests = []
+  for test_class, test_method in test_runner.get_test_names(test_app_bundle):
+    test_name = '%s/%s' % (test_class, test_method)
+    if (test_name not in not_tests and
+        # Filter by self.test_cases if specified
+        (test_class in test_cases if test_cases else True)):
+      all_tests.append(test_name)
+  return all_tests
+
+
+def erase_all_simulators():
+  """Erases all simulator devices.
+
+  Fix for DVTCoreSimulatorAdditionsErrorDomain error.
+  """
+  LOGGER.info('Erasing all simulators.')
+  subprocess.call(['xcrun', 'simctl', 'erase', 'all'])
 
 
 def terminate_process(proc):
@@ -278,9 +306,16 @@ class LaunchCommand(object):
     self.test_results['attempts'] = []
     cancelled_statuses = {'TESTS_DID_NOT_START', 'BUILD_INTERRUPTED'}
     shards = self.shards
+    running_tests = set(get_all_tests(self.egtests_app.egtests_path,
+                                      self.egtests_app.included_tests))
 
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
+      # Erase all simulators per each attempt
+      if 'iOS Simulator' in self.destination:
+        # kill all running simulators to prevent possible memory leaks
+        test_runner.SimulatorTestRunner.kill_simulators()
+        erase_all_simulators()
       outdir_attempt = os.path.join(self.out_dir, 'attempt_%d' % attempt)
       cmd_list = self.command(self.egtests_app,
                               outdir_attempt,
@@ -295,16 +330,29 @@ class LaunchCommand(object):
       if self.retries == attempt or not self.test_results[
           'attempts'][-1]['failed']:
         break
-      self._log_parser.copy_screenshots(outdir_attempt)
       # Exclude passed tests in next test attempt.
       self.egtests_app.excluded_tests += self.test_results['attempts'][-1][
           'passed']
+      # crbug.com/987664 - for the case when
+      # all tests passed but build was interrupted,
+      # excluded(passed) tests are equal to tests to run.
+      if set(self.egtests_app.excluded_tests) == running_tests:
+        for status in cancelled_statuses:
+          failure = self.test_results['attempts'][-1]['failed'].pop(
+              status, None)
+          if failure:
+            LOGGER.info('Failure for passed tests %s: %s' % (status, failure))
+        break
+      self._log_parser.copy_screenshots(outdir_attempt)
       # If tests are not completed(interrupted or did not start)
       # re-run them with the same number of shards,
       # otherwise re-run with shards=1 and exclude passed tests.
       cancelled_attempt = cancelled_statuses.intersection(
           self.test_results['attempts'][-1]['failed'].keys())
-      if not cancelled_attempt:
+      if (not cancelled_attempt
+          # If need to re-run less than 20 tests, 1 shard should be enough.
+          or (len(running_tests) - len(self.egtests_app.excluded_tests)
+              <= MAXIMUM_TESTS_PER_SHARD_FOR_RERUN)):
         shards = 1
     self.test_results['end_run'] = int(time.time())
     self.summary_log()
@@ -362,7 +410,7 @@ class LaunchCommand(object):
            '-xctestrun', self.fill_xctest_run(egtests_app),
            '-destination', destination,
            '-resultBundlePath', out_dir]
-    if self.shards > 1:
+    if shards > 1:
       cmd += ['-parallel-testing-enabled', 'YES',
               '-parallel-testing-worker-count', str(shards)]
     return cmd
@@ -432,7 +480,6 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         xctest=False
     )
     self.set_up()
-    self.erase_all_simulators()
     self.host_app_path = None
     if host_app_path != 'NO_PATH':
       self.host_app_path = os.path.abspath(host_app_path)
@@ -530,35 +577,11 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         all_failures - set(self.logs['failed tests']))
 
     # Gets not-started/interrupted tests
-    aborted_tests = list(set(self.get_all_tests()) - set(
-        self.logs['failed tests']) - set(self.logs['passed tests']))
+    all_tests_to_run = set(get_all_tests(self.app_path, self.test_cases))
+    aborted_tests = list(all_tests_to_run - set(self.logs['failed tests']) -
+                         set(self.logs['passed tests']))
     aborted_tests.sort()
     self.logs['aborted tests'] = aborted_tests
 
     # Test is failed if there are failures for the last run.
     return not self.logs['failed tests']
-
-  def erase_all_simulators(self):
-    """Erases all simulator devices.
-
-    Fix for DVTCoreSimulatorAdditionsErrorDomain error.
-    """
-    LOGGER.info('Erasing all simulators.')
-    subprocess.call(['xcrun', 'simctl', 'erase', 'all'])
-
-  def get_all_tests(self):
-    """Gets all tests from test bundle."""
-    test_app_bundle = os.path.join(self.app_path, os.path.splitext(
-        os.path.basename(self.app_path))[0])
-    # Method names that starts with test* and also are in *TestCase classes
-    # but they are not test-methods.
-    # TODO(crbug.com/982435): Rename not test methods with test-suffix.
-    not_tests = ['ChromeTestCase/testServer', 'FindInPageTestCase/testURL']
-    all_tests = []
-    for test_class, test_method in test_runner.get_test_names(test_app_bundle):
-      test_name = '%s/%s' % (test_class, test_method)
-      if (test_name not in not_tests and
-          # Filter by self.test_cases if specified
-          (test_class in self.test_cases if self.test_cases else True)):
-        all_tests.append(test_name)
-    return all_tests

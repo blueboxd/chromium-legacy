@@ -68,7 +68,6 @@ const service_manager::Manifest& GetContentRendererManifest() {
                   "blink.mojom.EngagementClient", "blink.mojom.ImageDownloader",
                   "blink.mojom.InstallationService",
                   "blink.mojom.ManifestManager",
-                  "blink.mojom.MediaDevicesListener",
                   "blink.mojom.MediaStreamDeviceObserver",
                   "blink.mojom.TextSuggestionBackend",
                   "blink.mojom.WebLaunchService",

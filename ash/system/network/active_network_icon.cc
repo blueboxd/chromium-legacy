@@ -39,14 +39,6 @@ bool IsTrayIcon(network_icon::IconType icon_type) {
          icon_type == network_icon::ICON_TYPE_TRAY_OOBE;
 }
 
-SkColor GetDefaultColorForIconType(network_icon::IconType icon_type) {
-  if (icon_type == network_icon::ICON_TYPE_TRAY_REGULAR)
-    return kTrayIconColor;
-  if (icon_type == network_icon::ICON_TYPE_TRAY_OOBE)
-    return kOobeTrayIconColor;
-  return kUnifiedMenuIconColor;
-}
-
 }  // namespace
 
 ActiveNetworkIcon::ActiveNetworkIcon(service_manager::Connector* connector,
@@ -212,8 +204,9 @@ gfx::ImageSkia ActiveNetworkIcon::GetDualImagePrimary(
       // TODO(902409): Show proper technology badges.
       if (animating)
         *animating = false;
-      return gfx::CreateVectorIcon(kNetworkBadgeTechnologyLteIcon,
-                                   GetDefaultColorForIconType(icon_type));
+      return gfx::CreateVectorIcon(
+          kNetworkBadgeTechnologyLteIcon,
+          network_icon::GetDefaultColorForIconType(icon_type));
     }
     // If Cellular is connecting, use the active non cellular network.
     return GetDefaultImageImpl(model_->active_non_cellular(), icon_type,

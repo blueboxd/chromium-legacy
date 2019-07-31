@@ -193,7 +193,8 @@ TEST_F(AuthenticationServiceTest, TestSignInAndGetAuthenticatedIdentity) {
   std::string user_email = base::SysNSStringToUTF8([identity(0) userEmail]);
   AccountInfo account_info =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(user_email)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              user_email)
           .value();
   EXPECT_EQ(user_email, account_info.email);
   EXPECT_EQ(base::SysNSStringToUTF8([identity(0) gaiaID]), account_info.gaia);

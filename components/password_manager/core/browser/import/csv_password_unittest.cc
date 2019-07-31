@@ -147,6 +147,16 @@ INSTANTIATE_TEST_SUITE_P(
                           .Username("the-user")
                           .Password("pwd")
                           .Build(),
+                      TestCaseBuilder("Escaped")
+                          .Map({{0, CSVPassword::Label::kOrigin},
+                                {2, CSVPassword::Label::kUsername},
+                                {3, CSVPassword::Label::kPassword}})
+                          .CSV(R"(http://example.org,"a""b","u,+,c","p""")")
+                          .Origin("http://example.org")
+                          .SignonRealm("http://example.org/")
+                          .Username("u,+,c")
+                          .Password("p\"")
+                          .Build(),
                       TestCaseBuilder("path discarded")
                           .Map({{2, CSVPassword::Label::kOrigin},
                                 {1, CSVPassword::Label::kUsername},

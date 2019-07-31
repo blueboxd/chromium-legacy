@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.gesturenav;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 import android.view.View;
 import android.view.WindowInsets;
@@ -56,6 +57,7 @@ public class HistoryNavigationDelegateFactory {
                 return new TabbedActionDelegate(tab);
             }
 
+            @TargetApi(Build.VERSION_CODES.O)
             @Override
             public boolean isNavigationEnabled(View view) {
                 if (!BuildInfo.isAtLeastQ() || Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
@@ -68,9 +70,10 @@ public class HistoryNavigationDelegateFactory {
             /**
              * @return {@link android.graphics.Insets} object.
              */
+            @TargetApi(Build.VERSION_CODES.O)
             private Object getSystemGestureInsets(Object windowInsets) {
                 if (!BuildInfo.isAtLeastQ() || Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-                    return true;
+                    return null;
                 }
                 try {
                     Method method = WindowInsets.class.getMethod("getSystemGestureInsets");
@@ -95,6 +98,7 @@ public class HistoryNavigationDelegateFactory {
                 return 0;
             }
 
+            @TargetApi(Build.VERSION_CODES.O)
             @Override
             public void setWindowInsetsChangeObserver(View view, Runnable runnable) {
                 if (!BuildInfo.isAtLeastQ() || Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {

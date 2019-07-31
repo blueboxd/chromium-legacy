@@ -369,7 +369,7 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
 
   if (diff.TransformChanged()) {
     if (auto* coordinator = GetFrame()->GetPage()->GetScrollingCoordinator())
-      coordinator->NotifyTransformChanged(GetFrame());
+      coordinator->NotifyGeometryChanged(GetFrameView());
   }
 
   // Update the script style map, from the new computed style.

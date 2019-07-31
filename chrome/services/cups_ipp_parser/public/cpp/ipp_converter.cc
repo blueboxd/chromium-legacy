@@ -362,7 +362,7 @@ cups_ipp_parser::mojom::IppMessagePtr ConvertIppToMojo(ipp_t* ipp) {
         break;
       }
       case ValueType::DATE: {
-        // Note: We never expect date-attributes to be single-valued.
+        // Note: We expect date-attributes to be single-valued.
         const uint8_t* v =
             reinterpret_cast<const uint8_t*>(ippGetDate(attr, 0));
         if (!v) {

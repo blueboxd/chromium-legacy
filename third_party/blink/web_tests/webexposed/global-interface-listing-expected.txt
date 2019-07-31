@@ -639,6 +639,10 @@ interface CSS
     static method vw
     attribute @@toStringTag
     method constructor
+interface CSSAnimation : Animation
+    attribute @@toStringTag
+    getter animationName
+    method constructor
 interface CSSConditionRule : CSSGroupingRule
     attribute @@toStringTag
     getter conditionText
@@ -10685,6 +10689,7 @@ interface XRInputSource
     getter gamepad
     getter gripSpace
     getter handedness
+    getter profiles
     getter targetRayMode
     getter targetRaySpace
     method constructor

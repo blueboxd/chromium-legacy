@@ -13,11 +13,6 @@ namespace autofill {
 
 namespace {
 
-// The LogBuffer creates a tree that will be rendered as HTML code. This tree
-// supports two node types, "element" (representing a DOM Element) and "text"
-// (representing a text node in the DOM). This function is used to check that
-// attributes and children are only added to "element" nodes but not to "text"
-// nodes.
 bool IsElement(const base::Value& value) {
   const std::string* type = value.FindStringKey("type");
   return type && *type == "element";
@@ -28,6 +23,11 @@ bool IsTextNode(const base::Value& value) {
   return type && *type == "text";
 }
 
+bool IsFragment(const base::Value& value) {
+  const std::string* type = value.FindStringKey("type");
+  return type && *type == "fragment";
+}
+
 void AppendChildToLastNode(std::vector<base::Value>* buffer,
                            base::Value&& new_child) {
   if (buffer->empty()) {
@@ -36,7 +36,8 @@ void AppendChildToLastNode(std::vector<base::Value>* buffer,
   }
 
   base::Value& parent = buffer->back();
-  DCHECK(IsElement(parent));
+  // Elements and Fragments can have children, but TextNodes cannot.
+  DCHECK(!IsTextNode(parent));
 
   if (auto* children = parent.FindListKey("children")) {
     children->GetList().push_back(std::move(new_child));
@@ -76,21 +77,41 @@ bool TryCoalesceString(std::vector<base::Value>* buffer,
   return true;
 }
 
+base::Value CreateEmptyFragment() {
+  base::Value::DictStorage storage;
+  storage.try_emplace("type", std::make_unique<base::Value>("fragment"));
+  return base::Value(storage);
+}
+
 }  // namespace
 
-LogBuffer::LogBuffer() = default;
+LogBuffer::LogBuffer() {
+  buffer_.push_back(CreateEmptyFragment());
+}
+
 LogBuffer::LogBuffer(LogBuffer&& other) noexcept = default;
 LogBuffer::~LogBuffer() = default;
 
 base::Value LogBuffer::RetrieveResult() {
-  if (buffer_.empty())
-    return base::Value();
+  // The buffer should always start with a fragment.
+  DCHECK(buffer_.size() >= 1);
 
   // Close not-yet-closed tags.
   while (buffer_.size() > 1)
     *this << CTag{};
 
-  return std::exchange(buffer_.back(), base::Value());
+  auto* children = buffer_[0].FindListKey("children");
+  if (!children || children->GetList().empty())
+    return base::Value();
+
+  // If the fragment has a single child, return that directly.
+  if (children->GetList().size() == 1) {
+    base::Value result = std::move(children->GetList().back());
+    children->GetList().pop_back();
+    return result;
+  }
+
+  return std::exchange(buffer_.back(), CreateEmptyFragment());
 }
 
 LogBuffer& operator<<(LogBuffer& buf, Tag&& tag) {
@@ -108,8 +129,7 @@ LogBuffer& operator<<(LogBuffer& buf, Tag&& tag) {
 LogBuffer& operator<<(LogBuffer& buf, CTag&& tag) {
   if (!buf.active())
     return buf;
-  // Don't close the very first opened tag. It stays and gets returned in the
-  // end.
+  // Don't close the fragment. It stays and gets returned in the end.
   if (buf.buffer_.size() <= 1)
     return buf;
 
@@ -174,6 +194,15 @@ LogBuffer& operator<<(LogBuffer& buf, LogBuffer&& buffer) {
   base::Value node_to_add(buffer.RetrieveResult());
   if (node_to_add.is_none())
     return buf;
+
+  if (IsFragment(node_to_add)) {
+    auto* children = node_to_add.FindListKey("children");
+    if (!children)
+      return buf;
+    for (auto& child : children->GetList())
+      AppendChildToLastNode(&buf.buffer_, std::exchange(child, base::Value()));
+    return buf;
+  }
   AppendChildToLastNode(&buf.buffer_, std::move(node_to_add));
   return buf;
 }

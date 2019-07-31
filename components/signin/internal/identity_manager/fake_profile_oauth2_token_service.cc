@@ -26,7 +26,7 @@ FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
 FakeProfileOAuth2TokenService::~FakeProfileOAuth2TokenService() {}
 
 void FakeProfileOAuth2TokenService::IssueAllTokensForAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const std::string& access_token,
     const base::Time& expiration) {
   GetFakeAccessTokenManager()->IssueAllTokensForAccount(
@@ -34,14 +34,14 @@ void FakeProfileOAuth2TokenService::IssueAllTokensForAccount(
 }
 
 void FakeProfileOAuth2TokenService::IssueAllTokensForAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   GetFakeAccessTokenManager()->IssueAllTokensForAccount(account_id,
                                                         token_response);
 }
 
 void FakeProfileOAuth2TokenService::IssueErrorForAllPendingRequestsForAccount(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   GetFakeAccessTokenManager()->IssueErrorForAllPendingRequestsForAccount(
       account_id, error);

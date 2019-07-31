@@ -256,7 +256,9 @@ void NGBoxFragmentPainter::PaintObject(
     // Record the scroll hit test after the background so background squashing
     // is not affected. Hit test order would be equivalent if this were
     // immediately before the background.
-    // if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    // TODO(pdr): Uncomment this and support non-fast scrollable regions for
+    // NGBoxFragments (see: https://crbug.com/864567).
+    // if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
     //  PaintScrollHitTestDisplayItem(paint_info);
 
     // We're done. We don't bother painting any children.

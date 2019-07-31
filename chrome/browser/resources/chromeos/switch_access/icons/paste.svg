@@ -1,0 +1,4 @@
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<svg height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg"><path d="m16 3h-3.18c-.42-1.16-1.52-2-2.82-2s-2.4.84-2.82 2h-3.18c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-11c0-1.1-.9-2-2-2zm-6 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm6 13h-12v-11h3v2h6v-2h3z" fill="#E8EAED" fill-rule="evenodd"/></svg>

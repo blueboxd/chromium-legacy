@@ -37,7 +37,6 @@
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "content/shell/browser/shell_quota_permission_context.h"
-#include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/power_monitor_test.mojom.h"
 #include "content/shell/common/shell_switches.h"
@@ -51,7 +50,6 @@
 #include "net/ssl/client_cert_identity.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -358,7 +356,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
 }
 
 std::string ShellContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
-  return ShellURLRequestContextGetter::GetAcceptLanguages();
+  return "en-us,en";
 }
 
 std::string ShellContentBrowserClient::GetDefaultDownloadName() {
@@ -495,10 +493,6 @@ ShellContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  DCHECK(context);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return nullptr;
-
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();

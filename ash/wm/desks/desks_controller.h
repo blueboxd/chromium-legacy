@@ -64,6 +64,9 @@ class ASH_EXPORT DesksController
 
   const Desk* active_desk() const { return active_desk_; }
 
+  // Destroys any pending animations in preparation for shutdown.
+  void Shutdown();
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -108,7 +111,9 @@ class ASH_EXPORT DesksController
   // Moves |window| (which must belong to the currently active desk) to
   // |target_desk| (which must be a different desk). If |window| is minimized,
   // it will be unminimized after it's moved to |target_desk|.
-  void MoveWindowFromActiveDeskTo(aura::Window* window,
+  // Returns true on success, false otherwise (e.g. if |window| doesn't belong
+  // to the active desk).
+  bool MoveWindowFromActiveDeskTo(aura::Window* window,
                                   Desk* target_desk,
                                   DesksMoveWindowFromActiveDeskSource source);
 

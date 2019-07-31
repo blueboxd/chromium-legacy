@@ -61,7 +61,6 @@ class MockFunction : public ExtensionFunction {
  public:
   explicit MockFunction(const char* name) { set_name(name); }
 
-  void Destruct() const override { delete this; }
   ResponseAction Run() override { return RespondLater(); }
 
  protected:

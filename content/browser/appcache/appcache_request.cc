@@ -19,15 +19,7 @@ bool AppCacheRequest::IsSchemeAndMethodSupportedForAppCache(
          IsMethodSupportedForAppCache(request->GetMethod());
 }
 
-net::URLRequest* AppCacheRequest::GetURLRequest() {
-  return nullptr;
-}
-
 network::ResourceRequest* AppCacheRequest::GetResourceRequest() {
-  return nullptr;
-}
-
-AppCacheURLRequest* AppCacheRequest::AsURLRequest() {
   return nullptr;
 }
 

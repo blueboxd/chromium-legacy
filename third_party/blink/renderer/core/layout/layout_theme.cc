@@ -815,8 +815,8 @@ void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
   style.ResetBorder();
 }
 
-Color LayoutTheme::RootElementColor(ColorScheme color_scheme) const {
-  if (color_scheme == ColorScheme::kDark)
+Color LayoutTheme::RootElementColor(WebColorScheme color_scheme) const {
+  if (color_scheme == WebColorScheme::kDark)
     return Color::kWhite;
   return ComputedStyleInitialValues::InitialColor();
 }

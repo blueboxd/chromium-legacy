@@ -206,23 +206,24 @@ void NativeThemeWin::Paint(cc::PaintCanvas* canvas,
                            Part part,
                            State state,
                            const gfx::Rect& rect,
-                           const ExtraParams& extra) const {
+                           const ExtraParams& extra,
+                           ColorScheme color_scheme) const {
   if (rect.IsEmpty())
     return;
 
   switch (part) {
     case kMenuPopupGutter:
-      PaintMenuGutter(canvas, rect);
+      PaintMenuGutter(canvas, rect, color_scheme);
       return;
     case kMenuPopupSeparator:
-      PaintMenuSeparator(canvas, extra.menu_separator);
+      PaintMenuSeparator(canvas, extra.menu_separator, color_scheme);
       return;
     case kMenuPopupBackground:
-      PaintMenuBackground(canvas, rect);
+      PaintMenuBackground(canvas, rect, color_scheme);
       return;
     case kMenuItemBackground:
       CommonThemePaintMenuItemBackground(this, canvas, state, rect,
-                                         extra.menu_item);
+                                         extra.menu_item, color_scheme);
       return;
     default:
       PaintIndirect(canvas, part, state, rect, extra);
@@ -332,9 +333,9 @@ void NativeThemeWin::UpdateSystemColors() {
     system_colors_[kSystemColor] = color_utils::GetSysSkColor(kSystemColor);
 }
 
-void NativeThemeWin::PaintMenuSeparator(
-    cc::PaintCanvas* canvas,
-    const MenuSeparatorExtraParams& params) const {
+void NativeThemeWin::PaintMenuSeparator(cc::PaintCanvas* canvas,
+                                        const MenuSeparatorExtraParams& params,
+                                        ColorScheme color_scheme) const {
   const gfx::RectF rect(*params.paint_rect);
   gfx::PointF start = rect.CenterPoint();
   gfx::PointF end = start;
@@ -347,22 +348,27 @@ void NativeThemeWin::PaintMenuSeparator(
   }
 
   cc::PaintFlags flags;
-  flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor));
+  flags.setColor(
+      GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor, color_scheme));
   canvas->drawLine(start.x(), start.y(), end.x(), end.y(), flags);
 }
 
 void NativeThemeWin::PaintMenuGutter(cc::PaintCanvas* canvas,
-                                     const gfx::Rect& rect) const {
+                                     const gfx::Rect& rect,
+                                     ColorScheme color_scheme) const {
   cc::PaintFlags flags;
-  flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor));
+  flags.setColor(
+      GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor, color_scheme));
   int position_x = rect.x() + rect.width() / 2;
   canvas->drawLine(position_x, rect.y(), position_x, rect.bottom(), flags);
 }
 
 void NativeThemeWin::PaintMenuBackground(cc::PaintCanvas* canvas,
-                                         const gfx::Rect& rect) const {
+                                         const gfx::Rect& rect,
+                                         ColorScheme color_scheme) const {
   cc::PaintFlags flags;
-  flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor));
+  flags.setColor(
+      GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor, color_scheme));
   canvas->drawRect(gfx::RectToSkRect(rect), flags);
 }
 
@@ -444,14 +450,18 @@ void NativeThemeWin::PaintDirect(SkCanvas* destination_canvas,
   }
 }
 
-SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
+SkColor NativeThemeWin::GetSystemColor(ColorId color_id,
+                                       ColorScheme color_scheme) const {
+  if (color_scheme == ColorScheme::kDefault)
+    color_scheme = GetSystemColorScheme();
+
   // Win32 system colors currently don't support Dark Mode. As a result,
   // fallback on the Aura colors. Inverted color schemes can be ignored here
   // as it's only true when Chrome is running on a high-contrast AND when the
   // relative luminance of COLOR_WINDOWTEXT is greater than COLOR_WINDOW (e.g.
   // white on black), which is basically like dark mode.
-  if (SystemDarkModeEnabled())
-    return GetAuraColor(color_id, this);
+  if (color_scheme == ColorScheme::kDark)
+    return GetAuraColor(color_id, this, color_scheme);
 
   // TODO: Obtain the correct colors for these using GetSysColor.
   // Button:
@@ -559,11 +569,12 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       case NativeTheme::kColorId_ProminentButtonColor:
         return kProminentButtonColorInvert;
       default:
-        return color_utils::InvertColor(GetAuraColor(color_id, this));
+        return color_utils::InvertColor(
+            GetAuraColor(color_id, this, color_scheme));
     }
   }
 
-  return GetAuraColor(color_id, this);
+  return GetAuraColor(color_id, this, color_scheme);
 }
 
 bool NativeThemeWin::SupportsNinePatch(Part part) const {

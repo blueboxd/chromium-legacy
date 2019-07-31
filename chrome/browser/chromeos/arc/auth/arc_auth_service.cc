@@ -173,7 +173,7 @@ bool IsPrimaryOrDeviceLocalAccount(
 
   const std::string gaia_id =
       identity_manager
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               account_name)
           ->gaia;
   DCHECK(!gaia_id.empty());
@@ -630,7 +630,7 @@ void ArcAuthService::FetchSecondaryAccountInfo(
 
   base::Optional<AccountInfo> account_info =
       identity_manager_
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               account_name);
   DCHECK(account_info.has_value());
 
@@ -711,8 +711,9 @@ ArcAuthService::CreateArcBackgroundAuthCodeFetcher(
     const std::string& account_id,
     bool initial_signin) {
   base::Optional<AccountInfo> account_info =
-      identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-          account_id);
+      identity_manager_
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id);
   DCHECK(account_info.has_value());
   auto fetcher = std::make_unique<ArcBackgroundAuthCodeFetcher>(
       url_loader_factory_, profile_, account_id, initial_signin,

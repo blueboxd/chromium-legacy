@@ -892,10 +892,6 @@ DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
   return nullptr;
 }
 
-net::URLRequestContextGetter* TestingProfile::GetRequestContext() {
-  return GetDefaultStoragePartition(this)->GetURLRequestContext();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 TestingProfile::GetURLLoaderFactory() {
   return nullptr;
@@ -1043,17 +1039,6 @@ TestingProfile::GetBrowsingDataRemoverDelegate() {
   // data backends, which are already mocked if considered too heavy-weight
   // for TestingProfile.
   return ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(this);
-}
-
-net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return new net::TestURLRequestContextGetter(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-}
-
-net::URLRequestContextGetter* TestingProfile::CreateMediaRequestContext() {
-  return nullptr;
 }
 
 void TestingProfile::SetCorsOriginAccessListForOrigin(

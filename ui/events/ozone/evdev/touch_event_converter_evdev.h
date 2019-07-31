@@ -29,6 +29,7 @@
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/touch_evdev_debug_buffer.h"
+#include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 
 namespace ui {
 
@@ -43,6 +44,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
                            base::FilePath path,
                            int id,
                            const EventDeviceInfo& devinfo,
+                           SharedPalmDetectionFilterState* shared_palm_state,
                            DeviceEventDispatcherEvdev* dispatcher);
   ~TouchEventConverterEvdev() override;
 
@@ -65,6 +67,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // Unsafe part of initialization.
   virtual void Initialize(const EventDeviceInfo& info);
+
+  static const char kHoldCountAtReleaseEventName[];
+  static const char kHoldCountAtCancelEventName[];
 
  private:
   friend class MockTouchEventConverterEvdev;
@@ -169,6 +174,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // Finds touches that need to be filtered.
   std::unique_ptr<FalseTouchFinder> false_touch_finder_;
+
+  // Finds touches that are palms with user software not just firmware.
+  const std::unique_ptr<PalmDetectionFilter> palm_detection_filter_;
 
   // Records the recent touch events. It is used to fill the feedback reports
   TouchEventLogEvdev touch_evdev_debug_buffer_;

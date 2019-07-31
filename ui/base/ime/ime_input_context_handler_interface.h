@@ -53,6 +53,9 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEInputContextHandlerInterface {
 
   // Commits any composition text.
   virtual void ConfirmCompositionText() = 0;
+
+  // Returns true if there is any composition text.
+  virtual bool HasCompositionText() = 0;
 };
 
 }  // namespace ui

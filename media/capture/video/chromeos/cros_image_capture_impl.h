@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
-#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
+#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
 #include "media/capture/video/chromeos/reprocess_manager.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 

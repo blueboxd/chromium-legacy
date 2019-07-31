@@ -23,9 +23,7 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "content/public/browser/system_connector.h"
@@ -72,9 +70,6 @@ SearchController::SearchController(AppListModelUpdater* model_updater,
                                    AppListControllerDelegate* list_controller,
                                    Profile* profile)
     : mixer_(std::make_unique<Mixer>(model_updater)),
-      app_ranker_(std::make_unique<AppSearchResultRanker>(
-          profile->GetPath(),
-          chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
       list_controller_(list_controller) {
   std::unique_ptr<SearchResultRanker> ranker =
       std::make_unique<SearchResultRanker>(profile,
@@ -183,10 +178,6 @@ ChromeSearchResult* SearchController::GetResultByTitleForTest(
     }
   }
   return nullptr;
-}
-
-AppSearchResultRanker* SearchController::GetAppSearchResultRanker() {
-  return app_ranker_.get();
 }
 
 SearchResultRanker* SearchController::GetNonAppSearchResultRanker() {

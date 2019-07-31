@@ -25,7 +25,7 @@ CHROME_SPECIFIC = BuildFileMatchRegex(
     r'lib/.*/libchrome\.\d{4}\.\d{2,3}\.so', # libchrome placeholders
     r'lib/.*/libchromium_android_linker\.so',
     r'lib/.*/libchromeview\.so', # placeholder library
-    r'lib/.*/libcrashpad_handler\.so',
+    r'lib/.*/libchrome_crashpad_handler\.so',
     r'lib/.*/crazy\.libchrome\.so',
     r'lib/.*/crazy\.libchrome\.align',
     r'lib/.*/gdbserver',

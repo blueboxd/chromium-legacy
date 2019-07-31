@@ -336,6 +336,10 @@ const char kChromeUITabModalConfirmDialogHost[] = "tab-modal-confirm-dialog";
 const char kChromeUIPrintHost[] = "print";
 #endif
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+const char kChromeUITabStripHost[] = "tab-strip";
+#endif
+
 const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
 
 // Settings sub pages.

@@ -30,6 +30,7 @@
 #include "components/autofill_assistant/browser/actions/tell_action.h"
 #include "components/autofill_assistant/browser/actions/unsupported_action.h"
 #include "components/autofill_assistant/browser/actions/upload_dom_action.h"
+#include "components/autofill_assistant/browser/actions/wait_for_document_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_dom_action.h"
 #include "components/autofill_assistant/browser/actions/wait_for_navigation_action.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -293,6 +294,11 @@ bool ProtocolUtils::ParseActions(ActionDelegate* delegate,
       }
       case ActionProto::ActionInfoCase::kPopupMessage: {
         client_action = std::make_unique<PopupMessageAction>(delegate, action);
+        break;
+      }
+      case ActionProto::ActionInfoCase::kWaitForDocument: {
+        client_action =
+            std::make_unique<WaitForDocumentAction>(delegate, action);
         break;
       }
       case ActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

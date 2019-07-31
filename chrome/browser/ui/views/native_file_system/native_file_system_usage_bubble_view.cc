@@ -155,7 +155,7 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
         model, std::move(table_columns), views::ICON_AND_TEXT,
         /*single_selection=*/true);
     table_view->SetEnabled(false);
-    int row_height = table_view->row_height();
+    int row_height = table_view->GetRowHeight();
     int table_height = table_view->GetPreferredSize().height();
     table_view_parent_ = AddChildView(
         views::TableView::CreateScrollViewWithTable(std::move(table_view)));

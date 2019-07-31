@@ -84,7 +84,7 @@ class CONTENT_EXPORT BackgroundFetchContext
                   const SkBitmap& icon,
                   blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
                   int render_frame_tree_node_id,
-                  const ResourceRequestInfo::WebContentsGetter& wc_getter,
+                  const WebContents::Getter& wc_getter,
                   blink::mojom::BackgroundFetchService::FetchCallback callback);
 
   // Gets display size for the icon for Background Fetch UI.

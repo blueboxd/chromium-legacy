@@ -93,7 +93,7 @@ int main() {
   if (!argv)
     return kBadCommandLine;
 
-  if (third_party_dlls::IsThirdPartyInitialized())
+  if (IsThirdPartyInitialized())
     return kThirdPartyAlreadyInitialized;
 
   install_static::InitializeProductDetailsForPrimaryModule();

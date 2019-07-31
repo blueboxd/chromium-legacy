@@ -17,10 +17,14 @@ extern const char kVersionJS[];
 // Message handlers.
 // Must match the constants used in the resource files.
 extern const char kRequestVersionInfo[];
-extern const char kReturnFilePaths[];
-extern const char kReturnFlashVersion[];
-extern const char kReturnVariationInfo[];
-extern const char kReturnVariationCmd[];
+extern const char kRequestVariationInfo[];
+extern const char kRequestPluginInfo[];
+extern const char kRequestPathInfo[];
+
+extern const char kKeyVariationsList[];
+extern const char kKeyVariationsCmd[];
+extern const char kKeyExecPath[];
+extern const char kKeyProfilePath[];
 
 // Strings.
 // Must match the constants used in the resource files.
@@ -81,7 +85,6 @@ extern const char kUserAgent[];
 extern const char kUserAgentName[];
 extern const char kVariationsCmdName[];
 extern const char kVariationsName[];
-extern const char kVariationsShowCmdQuery[];
 extern const char kVersion[];
 extern const char kVersionBitSize[];
 extern const char kVersionModifier[];

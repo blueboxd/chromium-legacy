@@ -1319,6 +1319,11 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
 
+const char kOmniboxDisableInstantExtendedLimitName[] =
+    "Disable the 'instant extended' limit on search suggestions";
+const char kOmniboxDisableInstantExtendedLimitDescription[] =
+    "Effectively doubles the max number of Google-provided search suggestions "
+    "on Android by disabling the 'Instant Extended' check.";
 const char kOmniboxGroupSuggestionsBySearchVsUrlName[] =
     "Omnibox Group Suggestions By Search vs URL";
 const char kOmniboxGroupSuggestionsBySearchVsUrlDescription[] =
@@ -3219,6 +3224,13 @@ const char kEnableVideoPlayerNativeControlsDescription[] =
 const char kEnableVirtualDesksName[] = "Enable Virtual Desks";
 const char kEnableVirtualDesksDescription[] =
     "A preview of the upcoming Virtual Desks features on Chrome OS devices.";
+
+const char kTrimOnFreezeName[] = "Trim Working Set on freeze";
+const char kTrimOnFreezeDescription[] = "Trim Working Set on all frames frozen";
+
+const char kTrimOnMemoryPressureName[] = "Trim Working Set on memory pressure";
+const char kTrimOnMemoryPressureDescription[] =
+    "Trim Working Set periodically on memory pressure";
 
 const char kEnableZeroStateSuggestionsName[] = "Enable Zero State Suggetions";
 const char kEnableZeroStateSuggestionsDescription[] =

@@ -29,7 +29,7 @@ class MimeTypeCollector;
 
 // Implements the chrome.fileManagerPrivateInternal.executeTask method.
 class FileManagerPrivateInternalExecuteTaskFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   FileManagerPrivateInternalExecuteTaskFunction();
 
@@ -39,7 +39,7 @@ class FileManagerPrivateInternalExecuteTaskFunction
  protected:
   ~FileManagerPrivateInternalExecuteTaskFunction() override = default;
 
-  // UIThreadExtensionFunction overrides.
+  // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
@@ -51,7 +51,7 @@ class FileManagerPrivateInternalExecuteTaskFunction
 
 // Implements the chrome.fileManagerPrivateInternal.getFileTasks method.
 class FileManagerPrivateInternalGetFileTasksFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   FileManagerPrivateInternalGetFileTasksFunction();
 
@@ -61,7 +61,7 @@ class FileManagerPrivateInternalGetFileTasksFunction
  protected:
   ~FileManagerPrivateInternalGetFileTasksFunction() override;
 
-  // UIThreadExtensionFunction overrides.
+  // ExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
@@ -87,7 +87,7 @@ class FileManagerPrivateInternalGetFileTasksFunction
 
 // Implements the chrome.fileManagerPrivateInternal.setDefaultTask method.
 class FileManagerPrivateInternalSetDefaultTaskFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.setDefaultTask",
                              FILEMANAGERPRIVATEINTERNAL_SETDEFAULTTASK)

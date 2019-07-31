@@ -729,10 +729,6 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
   new_redirect_url_.reset();
 }
 
-void URLLoader::ProceedWithResponse() {
-  NOTREACHED();
-}
-
 void URLLoader::SetPriority(net::RequestPriority priority,
                             int32_t intra_priority_value) {
   if (url_request_ && resource_scheduler_client_) {

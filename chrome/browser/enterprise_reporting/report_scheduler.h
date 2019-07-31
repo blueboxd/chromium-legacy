@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_ENTERPRISE_REPORTING_REPORT_SCHEDULER_H_
 
 #include <memory>
+#include <queue>
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/enterprise_reporting/report_generator.h"
+#include "chrome/browser/enterprise_reporting/report_uploader.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace policy {
@@ -24,9 +27,12 @@ class RequestTimer;
 class ReportScheduler {
  public:
   ReportScheduler(std::unique_ptr<policy::CloudPolicyClient> client,
-                  std::unique_ptr<RequestTimer> request_timer);
+                  std::unique_ptr<RequestTimer> request_timer,
+                  std::unique_ptr<ReportGenerator> report_generator);
 
   ~ReportScheduler();
+
+  void SetReportUploaderForTesting(std::unique_ptr<ReportUploader> uploader);
 
  private:
   // Observes CloudReportingEnabled policy.
@@ -42,8 +48,11 @@ class ReportScheduler {
   // Generates a report and uploads it.
   void GenerateAndUploadReport();
 
+  // Callback once report is generated.
+  void OnReportGenerated(ReportGenerator::Requests requests);
+
   // Callback once report upload request is finished.
-  void OnReportUploaded(bool status);
+  void OnReportUploaded(ReportUploader::ReportStatus status);
 
   // Policy value watcher
   PrefChangeRegistrar pref_change_registrar_;
@@ -51,6 +60,10 @@ class ReportScheduler {
   std::unique_ptr<policy::CloudPolicyClient> cloud_policy_client_;
 
   std::unique_ptr<RequestTimer> request_timer_;
+
+  std::unique_ptr<ReportUploader> report_uploader_;
+
+  std::unique_ptr<ReportGenerator> report_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportScheduler);
 };

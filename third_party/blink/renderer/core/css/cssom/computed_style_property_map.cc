@@ -245,7 +245,6 @@ const CSSValue* ComputedStylePropertyMap::GetProperty(
     default:
       return CSSProperty::Get(property_id)
           .CSSValueFromComputedStyle(*style, nullptr /* layout_object */,
-                                     StyledNode(),
                                      false /* allow_visited_style */);
   }
 }
@@ -257,8 +256,7 @@ const CSSValue* ComputedStylePropertyMap::GetCustomProperty(
     return nullptr;
   CSSPropertyRef ref(property_name, node_->GetDocument());
   return ref.GetProperty().CSSValueFromComputedStyle(
-      *style, nullptr /* layout_object */, StyledNode(),
-      false /* allow_visited_style */);
+      *style, nullptr /* layout_object */, false /* allow_visited_style */);
 }
 
 void ComputedStylePropertyMap::ForEachProperty(
@@ -275,7 +273,7 @@ void ComputedStylePropertyMap::ForEachProperty(
     DCHECK(property);
     DCHECK(!property->IDEquals(CSSPropertyID::kVariable));
     const CSSValue* value = property->CSSValueFromComputedStyle(
-        *style, nullptr /* layout_object */, StyledNode(), false);
+        *style, nullptr /* layout_object */, false);
     if (value)
       values.emplace_back(CSSPropertyName(property->PropertyID()), value);
   }
@@ -306,7 +304,7 @@ String ComputedStylePropertyMap::SerializationForShorthand(
   }
 
   if (const CSSValue* value = property.CSSValueFromComputedStyle(
-          *style, nullptr /* layout_object */, StyledNode(), false)) {
+          *style, nullptr /* layout_object */, false)) {
     return value->CssText();
   }
 

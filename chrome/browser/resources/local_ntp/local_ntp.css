@@ -200,6 +200,7 @@ html[dir=rtl] #fakebox-search-icon {
   text-align: initial;
   text-overflow: ellipsis;
   top: 0;
+  user-select: none;
   vertical-align: middle;
   visibility: inherit;
   white-space: nowrap;

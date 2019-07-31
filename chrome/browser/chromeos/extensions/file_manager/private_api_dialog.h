@@ -21,8 +21,7 @@ struct SelectedFileInfo;
 namespace extensions {
 
 // Cancel file selection Dialog.  Closes the dialog window.
-class FileManagerPrivateCancelDialogFunction
-    : public LoggedUIThreadExtensionFunction {
+class FileManagerPrivateCancelDialogFunction : public LoggedExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.cancelDialog",
                              FILEMANAGERPRIVATE_CANCELDIALOG)
@@ -34,8 +33,7 @@ class FileManagerPrivateCancelDialogFunction
   ResponseAction Run() override;
 };
 
-class FileManagerPrivateSelectFileFunction
-    : public LoggedUIThreadExtensionFunction {
+class FileManagerPrivateSelectFileFunction : public LoggedExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.selectFile",
                              FILEMANAGERPRIVATE_SELECTFILE)
@@ -55,8 +53,7 @@ class FileManagerPrivateSelectFileFunction
 };
 
 // Select multiple files.  Closes the dialog window.
-class FileManagerPrivateSelectFilesFunction
-    : public LoggedUIThreadExtensionFunction {
+class FileManagerPrivateSelectFilesFunction : public LoggedExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.selectFiles",
                              FILEMANAGERPRIVATE_SELECTFILES)
@@ -76,7 +73,7 @@ class FileManagerPrivateSelectFilesFunction
 
 // Get a list of Android picker apps.
 class FileManagerPrivateGetAndroidPickerAppsFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getAndroidPickerApps",
                              FILEMANAGERPRIVATE_GETANDROIDPICKERAPPS)
@@ -97,7 +94,7 @@ class FileManagerPrivateGetAndroidPickerAppsFunction
 
 // Select an Android picker app.  Closes the dialog window.
 class FileManagerPrivateSelectAndroidPickerAppFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.selectAndroidPickerApp",
                              FILEMANAGERPRIVATE_SELECTANDROIDPICKERAPP)

@@ -196,8 +196,6 @@ class OAuth2LoginManager : public KeyedService,
   static void RecordCookiesCheckOutcome(bool is_pre_merge,
                                         MergeVerificationOutcome outcome);
 
-  // Keeps the track if we have already reported OAuth2 token being loaded
-  // by OAuth2TokenService.
   Profile* user_profile_;
   SessionRestoreStrategy restore_strategy_;
   SessionRestoreState state_;

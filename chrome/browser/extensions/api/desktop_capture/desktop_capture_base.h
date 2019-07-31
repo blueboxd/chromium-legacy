@@ -67,7 +67,7 @@ class DesktopCaptureChooseDesktopMediaFunctionBase
 };
 
 class DesktopCaptureCancelChooseDesktopMediaFunctionBase
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DesktopCaptureCancelChooseDesktopMediaFunctionBase();
 

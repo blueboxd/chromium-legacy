@@ -128,7 +128,6 @@ bool AppBannerManagerDesktop::IsWebAppConsideredInstalled(
 void AppBannerManagerDesktop::ShowBannerUi(WebappInstallSource install_source) {
   RecordDidShowBanner("AppBanner.WebApp.Shown");
   TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
-  TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
   ReportStatus(SHOWING_APP_INSTALLATION_DIALOG);
   CreateWebApp(install_source);
 }
@@ -187,25 +186,19 @@ void AppBannerManagerDesktop::DidFinishCreatingWebApp(
   if (!contents)
     return;
 
-  // BookmarkAppInstallManager returns kFailedUnknownReason for any error.
-  // We can't distinguish kUserInstallDeclined case so far.
-  // If kFailedUnknownReason, we assume that the confirmation dialog was
-  // cancelled. Alternatively, the web app installation may have failed, but
-  // we can't tell the difference here.
-  // TODO(crbug.com/789381): plumb through enough information to be able to
-  // distinguish between extension install failures and user-cancellations of
-  // the app install dialog.
-  if (code != web_app::InstallResultCode::kSuccess) {
+  // Catch only kSuccess and kUserInstallDeclined. Report nothing on all other
+  // errors.
+  if (code == web_app::InstallResultCode::kSuccess) {
+    SendBannerAccepted();
+    TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
+    AppBannerSettingsHelper::RecordBannerInstallEvent(
+        contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
+  } else if (code == web_app::InstallResultCode::kUserInstallDeclined) {
     SendBannerDismissed();
     TrackUserResponse(USER_RESPONSE_WEB_APP_DISMISSED);
     AppBannerSettingsHelper::RecordBannerDismissEvent(
         contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
-    return;
   }
-
-  SendBannerAccepted();
-  AppBannerSettingsHelper::RecordBannerInstallEvent(
-      contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AppBannerManagerDesktop)

@@ -378,8 +378,9 @@ double RoundKbpsToMbpsForTesting(const std::string& host,
 void AddNavigationRequestClientHintsHeaders(
     const GURL& url,
     net::HttpRequestHeaders* headers,
-    content::BrowserContext* context,
-    content::ClientHintsControllerDelegate* delegate) {
+    BrowserContext* context,
+    bool javascript_enabled,
+    ClientHintsControllerDelegate* delegate) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
             net::EFFECTIVE_CONNECTION_TYPE_4G + 1u);
@@ -390,9 +391,14 @@ void AddNavigationRequestClientHintsHeaders(
   if (!IsValidURLForClientHints(url))
     return;
 
-  if (!delegate->IsJavaScriptAllowed(url)) {
+  // Client hints should only be enabled when JavaScript is enabled. Platforms
+  // which enable/disable JavaScript on a per-origin basis should implement
+  // IsJavaScriptAllowed to check a given origin. Other platforms (Android
+  // WebView) enable/disable JavaScript on a per-View basis, using the
+  // WebPreferences setting.
+  if (!delegate->IsJavaScriptAllowed(url) || !javascript_enabled)
     return;
-  }
+
   blink::WebEnabledClientHints web_client_hints;
   delegate->GetAllowedClientHintsFromSource(url, &web_client_hints);
 

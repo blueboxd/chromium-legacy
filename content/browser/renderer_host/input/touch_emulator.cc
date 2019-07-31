@@ -187,7 +187,7 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event,
     client_->ShowContextMenuAtPoint(
         gfx::Point(mouse_event.PositionInWidget().x,
                    mouse_event.PositionInWidget().y),
-        ui::MENU_SOURCE_MOUSE);
+        ui::MENU_SOURCE_MOUSE, target_view);
   }
 
   if (mouse_event.button != WebMouseEvent::Button::kLeft)

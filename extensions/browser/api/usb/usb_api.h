@@ -27,7 +27,7 @@ class DevicePermissionsPrompt;
 class DevicePermissionsManager;
 class UsbDeviceResource;
 
-class UsbExtensionFunction : public UIThreadExtensionFunction {
+class UsbExtensionFunction : public ExtensionFunction {
  protected:
   UsbExtensionFunction();
   ~UsbExtensionFunction() override;
@@ -171,7 +171,7 @@ class UsbGetConfigurationsFunction : public UsbPermissionCheckingFunction {
   DISALLOW_COPY_AND_ASSIGN(UsbGetConfigurationsFunction);
 };
 
-class UsbRequestAccessFunction : public UIThreadExtensionFunction {
+class UsbRequestAccessFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.requestAccess", USB_REQUESTACCESS)
 

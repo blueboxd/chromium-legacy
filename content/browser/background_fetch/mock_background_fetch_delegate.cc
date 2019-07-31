@@ -67,7 +67,7 @@ MockBackgroundFetchDelegate::~MockBackgroundFetchDelegate() {}
 
 void MockBackgroundFetchDelegate::GetPermissionForOrigin(
     const url::Origin& origin,
-    const ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const WebContents::Getter& wc_getter,
     GetPermissionForOriginCallback callback) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

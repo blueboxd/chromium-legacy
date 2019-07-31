@@ -59,7 +59,7 @@ int ChromecastAutomationInternalApiDelegate::GetTabId(
 
 content::WebContents*
 ChromecastAutomationInternalApiDelegate::GetActiveWebContents(
-    UIThreadExtensionFunction* function) {
+    ExtensionFunction* function) {
   NOTIMPLEMENTED();
   return nullptr;
 }

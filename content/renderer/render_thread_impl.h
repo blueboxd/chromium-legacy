@@ -68,6 +68,7 @@
 class SkBitmap;
 
 namespace blink {
+class WebVideoCaptureImplManager;
 class WebMediaStreamCenter;
 }
 
@@ -122,7 +123,6 @@ class PeerConnectionTracker;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class ResourceDispatcher;
-class VideoCaptureImplManager;
 
 #if defined(OS_ANDROID)
 class StreamTextureFactory;
@@ -318,7 +318,7 @@ class CONTENT_EXPORT RenderThreadImpl
     return p2p_socket_dispatcher_.get();
   }
 
-  VideoCaptureImplManager* video_capture_impl_manager() const {
+  blink::WebVideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
   }
 
@@ -601,7 +601,7 @@ class CONTENT_EXPORT RenderThreadImpl
   base::Optional<AudioOutputIPCFactory> audio_output_ipc_factory_;
 
   // Used on the render thread.
-  std::unique_ptr<VideoCaptureImplManager> vc_manager_;
+  std::unique_ptr<blink::WebVideoCaptureImplManager> vc_manager_;
 
   // Used to keep track of the renderer's backgrounded and visibility state.
   // Updated via an IPC from the browser process. If nullopt, the browser

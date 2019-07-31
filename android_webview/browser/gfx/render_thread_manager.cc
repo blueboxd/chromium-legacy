@@ -8,7 +8,7 @@
 
 #include "android_webview/browser/gfx/compositor_frame_producer.h"
 #include "android_webview/browser/gfx/compositor_id.h"
-#include "android_webview/browser/gfx/deferred_gpu_command_service.h"
+#include "android_webview/browser/gfx/gpu_service_web_view.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
 #include "android_webview/browser/gfx/task_queue_web_view.h"
 #include "android_webview/public/browser/draw_gl.h"
@@ -186,8 +186,7 @@ void RenderThreadManager::UpdateViewTreeForceDarkStateOnRT(
 void RenderThreadManager::DrawOnRT(bool save_restore,
                                    HardwareRendererDrawParams* params) {
   // Force GL binding init if it's not yet initialized.
-  // TODO(crbug.com/987265): Clean up usage of DeferredGpuCommandService.
-  DeferredGpuCommandService::GetInstance();
+  GpuServiceWebView::GetInstance();
   ScopedAppGLStateRestore state_restore(ScopedAppGLStateRestore::MODE_DRAW,
                                         save_restore);
   ScopedAllowGL allow_gl;
@@ -202,7 +201,7 @@ void RenderThreadManager::DrawOnRT(bool save_restore,
 }
 
 void RenderThreadManager::DestroyHardwareRendererOnRT(bool save_restore) {
-  DeferredGpuCommandService::GetInstance();
+  GpuServiceWebView::GetInstance();
   ScopedAppGLStateRestore state_restore(
       ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT, save_restore);
   ScopedAllowGL allow_gl;

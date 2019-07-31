@@ -78,13 +78,15 @@ class VIZ_SERVICE_EXPORT Surface final {
  public:
   class PresentationHelper {
    public:
-    PresentationHelper(base::WeakPtr<Surface> surface, uint32_t frame_token);
+    PresentationHelper(base::WeakPtr<SurfaceClient> surface_client,
+                       uint32_t frame_token);
     ~PresentationHelper();
 
     void DidPresent(const gfx::PresentationFeedback& feedback);
+    uint32_t frame_token() const { return frame_token_; }
 
    private:
-    base::WeakPtr<Surface> surface_;
+    base::WeakPtr<SurfaceClient> surface_client_;
     const uint32_t frame_token_;
 
     DISALLOW_COPY_AND_ASSIGN(PresentationHelper);
@@ -186,8 +188,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   // PresentationHelper, at the appropriate point in the future.
   std::unique_ptr<Surface::PresentationHelper>
   TakePresentationHelperForPresentNotification();
-  void DidPresentSurface(uint32_t presentation_token,
-                         const gfx::PresentationFeedback& feedback);
   void SendAckToClient();
   void MarkAsDrawn();
   void NotifyAggregatedDamage(const gfx::Rect& damage_rect,
@@ -220,6 +220,10 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   // Called when this surface will be included in the next display frame.
   void OnWillBeDrawn();
+
+  // Called after the display compositor finishes drawing the frame
+  // associated with frame_token.
+  void OnWasDrawn(uint32_t frame_token, base::TimeTicks draw_start_timestamp);
 
   // Called when |surface_id| is activated for the first time and its part of a
   // referenced SurfaceRange.

@@ -1502,9 +1502,11 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
     return ancestor_layer;
   }
 
-  bool found_ancestor_first;
+  bool found_ancestor_first = false;
   PaintLayer* containing_layer =
-      layer->ContainingLayer(ancestor_layer, &found_ancestor_first);
+      ancestor_layer
+          ? layer->ContainingLayer(ancestor_layer, &found_ancestor_first)
+          : layer->ContainingLayer(ancestor_layer, nullptr);
 
   if (found_ancestor_first) {
     // Found ancestorLayer before the containing layer, so compute offset of

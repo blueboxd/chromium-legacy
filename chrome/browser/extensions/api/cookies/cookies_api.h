@@ -91,7 +91,7 @@ class CookiesEventRouter : public BrowserListObserver {
 };
 
 // Implements the cookies.get() extension function.
-class CookiesGetFunction : public UIThreadExtensionFunction {
+class CookiesGetFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.get", COOKIES_GET)
 
@@ -113,7 +113,7 @@ class CookiesGetFunction : public UIThreadExtensionFunction {
 };
 
 // Implements the cookies.getAll() extension function.
-class CookiesGetAllFunction : public UIThreadExtensionFunction {
+class CookiesGetAllFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.getAll", COOKIES_GETALL)
 
@@ -135,7 +135,7 @@ class CookiesGetAllFunction : public UIThreadExtensionFunction {
 };
 
 // Implements the cookies.set() extension function.
-class CookiesSetFunction : public UIThreadExtensionFunction {
+class CookiesSetFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.set", COOKIES_SET)
 
@@ -159,7 +159,7 @@ class CookiesSetFunction : public UIThreadExtensionFunction {
 };
 
 // Implements the cookies.remove() extension function.
-class CookiesRemoveFunction : public UIThreadExtensionFunction {
+class CookiesRemoveFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.remove", COOKIES_REMOVE)
 
@@ -180,7 +180,7 @@ class CookiesRemoveFunction : public UIThreadExtensionFunction {
 };
 
 // Implements the cookies.getAllCookieStores() extension function.
-class CookiesGetAllCookieStoresFunction : public UIThreadExtensionFunction {
+class CookiesGetAllCookieStoresFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("cookies.getAllCookieStores",
                              COOKIES_GETALLCOOKIESTORES)

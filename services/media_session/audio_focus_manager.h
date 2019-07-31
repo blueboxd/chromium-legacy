@@ -49,17 +49,19 @@ class AudioFocusManager : public mojom::AudioFocusManager,
   using RequestId = base::UnguessableToken;
 
   // mojom::AudioFocusManager.
-  void RequestAudioFocus(mojom::AudioFocusRequestClientRequest request,
-                         mojom::MediaSessionPtr media_session,
-                         mojom::MediaSessionInfoPtr session_info,
-                         mojom::AudioFocusType type,
-                         RequestAudioFocusCallback callback) override;
-  void RequestGroupedAudioFocus(mojom::AudioFocusRequestClientRequest request,
-                                mojom::MediaSessionPtr media_session,
-                                mojom::MediaSessionInfoPtr session_info,
-                                mojom::AudioFocusType type,
-                                const base::UnguessableToken& group_id,
-                                RequestAudioFocusCallback callback) override;
+  void RequestAudioFocus(
+      mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
+      mojo::PendingRemote<mojom::MediaSession> media_session,
+      mojom::MediaSessionInfoPtr session_info,
+      mojom::AudioFocusType type,
+      RequestAudioFocusCallback callback) override;
+  void RequestGroupedAudioFocus(
+      mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
+      mojo::PendingRemote<mojom::MediaSession> media_session,
+      mojom::MediaSessionInfoPtr session_info,
+      mojom::AudioFocusType type,
+      const base::UnguessableToken& group_id,
+      RequestAudioFocusCallback callback) override;
   void GetFocusRequests(GetFocusRequestsCallback callback) override;
   void AddObserver(
       mojo::PendingRemote<mojom::AudioFocusObserver> observer) override;

@@ -25,6 +25,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::WebViewMatcher;
+
 namespace {
 
 const std::string kFormElementID1 = "username";
@@ -60,9 +62,7 @@ void AssertElementIsFocused(const std::string& element_id) {
 
 // Helper to tap a web element.
 void TapOnWebElementWithID(const std::string& elementID) {
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewInWebState(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         chrome_test_util::GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:elementID])];

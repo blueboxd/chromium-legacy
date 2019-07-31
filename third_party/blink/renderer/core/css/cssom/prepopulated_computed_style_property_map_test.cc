@@ -28,7 +28,7 @@ class PrepopulatedComputedStylePropertyMapTest : public PageTestBase {
     Element* node = GetDocument().getElementById("target");
     return CSSProperty::Get(property_id)
         .CSSValueFromComputedStyle(node->ComputedStyleRef(),
-                                   nullptr /* layout_object */, node,
+                                   nullptr /* layout_object */,
                                    false /* allow_visited_style */);
   }
 
@@ -58,7 +58,7 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, NativePropertyAccessors) {
 
   PrepopulatedComputedStylePropertyMap* map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
-          GetDocument(), node->ComputedStyleRef(), node, native_properties,
+          GetDocument(), node->ComputedStyleRef(), native_properties,
           empty_custom_properties);
 
   DummyExceptionStateForTesting exception_state;
@@ -94,8 +94,8 @@ TEST_F(PrepopulatedComputedStylePropertyMapTest, CustomPropertyAccessors) {
 
   PrepopulatedComputedStylePropertyMap* map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
-          GetDocument(), node->ComputedStyleRef(), node,
-          empty_native_properties, custom_properties);
+          GetDocument(), node->ComputedStyleRef(), empty_native_properties,
+          custom_properties);
 
   DummyExceptionStateForTesting exception_state;
 

@@ -473,6 +473,11 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() const {
     result->Set("WheelRegion", std::move(region));
   }
 
+  if (!non_fast_scrollable_region_.IsEmpty()) {
+    std::unique_ptr<base::Value> region = non_fast_scrollable_region_.AsValue();
+    result->Set("NonFastScrollableRegion", std::move(region));
+  }
+
   return result;
 }
 

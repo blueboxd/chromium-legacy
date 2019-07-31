@@ -57,19 +57,19 @@
           use_base_dir="false"
           type="BINDATA"/>
       <include name="IDR_CAMERA_CAMERA_COMMON_MOJOM_LITE_JS"
-          file="${root_gen_dir}/media/capture/video/chromeos/mojo/camera_common.mojom-lite.js"
+          file="${root_gen_dir}/media/capture/video/chromeos/mojom/camera_common.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
       <include name="IDR_CAMERA_CAMERA_METADATA_MOJOM_LITE_JS"
-          file="${root_gen_dir}/media/capture/video/chromeos/mojo/camera_metadata.mojom-lite.js"
+          file="${root_gen_dir}/media/capture/video/chromeos/mojom/camera_metadata.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
       <include name="IDR_CAMERA_CAMERA_METADATA_TAGS_MOJOM_LITE_JS"
-          file="${root_gen_dir}/media/capture/video/chromeos/mojo/camera_metadata_tags.mojom-lite.js"
+          file="${root_gen_dir}/media/capture/video/chromeos/mojom/camera_metadata_tags.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
       <include name="IDR_CAMERA_CROS_IMAGE_CAPTURE_MOJOM_LITE_JS"
-          file="${root_gen_dir}/media/capture/video/chromeos/mojo/cros_image_capture.mojom-lite.js"
+          file="${root_gen_dir}/media/capture/video/chromeos/mojom/cros_image_capture.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
 

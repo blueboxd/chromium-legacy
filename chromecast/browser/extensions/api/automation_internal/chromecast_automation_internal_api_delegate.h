@@ -27,7 +27,7 @@ class ChromecastAutomationInternalApiDelegate
                   std::string* error_msg) override;
   int GetTabId(content::WebContents* contents) override;
   content::WebContents* GetActiveWebContents(
-      UIThreadExtensionFunction* function) override;
+      ExtensionFunction* function) override;
   void EnableDesktop() override;
   ui::AXTreeID GetAXTreeID() override;
   void SetEventBundleSink(ui::AXEventBundleSink* sink) override;

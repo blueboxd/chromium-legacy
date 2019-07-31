@@ -11,17 +11,12 @@
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequest;
-}
-
 namespace network {
 struct ResourceRequest;
 }
 
 namespace content {
 class AppCacheURLLoaderRequest;
-class AppCacheURLRequest;
 
 // Interface for an AppCache request. Subclasses implement this interface to
 // wrap custom request objects like URLRequest, etc to ensure that these
@@ -63,10 +58,6 @@ class CONTENT_EXPORT AppCacheRequest {
   static bool IsSchemeAndMethodSupportedForAppCache(
       const AppCacheRequest* request);
 
-  // Returns the underlying AppCacheURLRequest if any. This only applies to
-  // AppCache requests loaded via the URLRequest mechanism
-  virtual AppCacheURLRequest* AsURLRequest();
-
   // Returns the underlying AppCacheURLLoaderRequest if any. This only applies
   // to AppCache requests loaded via the URLLoader mechanism.
   virtual AppCacheURLLoaderRequest* AsURLLoaderRequest();
@@ -77,9 +68,6 @@ class CONTENT_EXPORT AppCacheRequest {
   friend class AppCacheJob;
 
   AppCacheRequest() {}
-
-  // Getters for the request types we currently support.
-  virtual net::URLRequest* GetURLRequest();
 
   // Returns the underlying ResourceRequest. Please note that only one of
   // GetURLRequest() and GetResourceRequest() should return valid results.

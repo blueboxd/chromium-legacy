@@ -96,10 +96,9 @@ class DevToolsDataSource : public content::URLDataSource {
   // content::URLDataSource implementation.
   std::string GetSource() override;
 
-  void StartDataRequest(
-      const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const GotDataCallback& callback) override;
+  void StartDataRequest(const std::string& path,
+                        const content::WebContents::Getter& wc_getter,
+                        const GotDataCallback& callback) override;
 
  private:
   struct PendingRequest;
@@ -164,7 +163,7 @@ std::string DevToolsDataSource::GetSource() {
 
 void DevToolsDataSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   // Serve request from local bundle.
   std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);

@@ -7,12 +7,15 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/dbus/menu/menu_property_list.h"
 #include "components/dbus/menu/types.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -28,19 +31,30 @@ class DbusPropertiesInterface;
 class COMPONENT_EXPORT(DBUS) DbusMenu {
  public:
   using InitializedCallback = base::OnceCallback<void(bool success)>;
+  using MenuItemReference = std::pair<ui::MenuModel*, int>;
 
   // The exported DBus object will not be unregistered upon deletion.  It is the
   // responsibility of the caller to remove it after |this| is deleted.
   DbusMenu(dbus::ExportedObject* exported_object, InitializedCallback callback);
   ~DbusMenu();
 
+  // Should be called when there's a new root menu.
   void SetModel(ui::MenuModel* model, bool send_signal);
+
+  // Should be called when items are added/removed/reordered in a menu.  Prefer
+  // this over SetModel().
+  void MenuLayoutUpdated(ui::MenuModel* model);
+
+  // Should be called when properties on (a group of) menu items change.  Prefer
+  // this over SetModel().
+  void MenuItemsPropertiesUpdated(
+      const std::vector<MenuItemReference>& menu_items);
 
  private:
   struct MenuItem {
    public:
     MenuItem(int32_t id,
-             std::map<std::string, DbusVariant>&& properties,
+             MenuItemProperties&& properties,
              std::vector<int32_t>&& children,
              ui::MenuModel* menu,
              ui::MenuModel* containing_menu,
@@ -48,8 +62,8 @@ class COMPONENT_EXPORT(DBUS) DbusMenu {
     ~MenuItem();
 
     const int32_t id;
-    const std::map<std::string, DbusVariant> properties;
-    const std::vector<int32_t> children;
+    MenuItemProperties properties;
+    std::vector<int32_t> children;
 
     // The MenuModel corresponding to this MenuItem, or null if this MenuItem is
     // not a submenu.  This can happen for leaf items or an empty root item.
@@ -119,7 +133,20 @@ class COMPONENT_EXPORT(DBUS) DbusMenu {
   void WriteMenuItem(const MenuItem* item,
                      dbus::MessageWriter* writer,
                      int32_t depth,
-                     const std::vector<std::string>& property_filter);
+                     const MenuPropertyList& property_filter) const;
+
+  void WriteUpdatedProperties(dbus::MessageWriter* writer,
+                              const MenuPropertyChanges& updated_props) const;
+
+  // Recursively searches |item| and its descendants for the MenuItem
+  // corresponding to |model|.
+  MenuItem* FindMenuItemForModel(const ui::MenuModel* model,
+                                 MenuItem* item) const;
+
+  void DeleteItem(MenuItem* item);
+  void DeleteItemChildren(MenuItem* item);
+
+  void SendLayoutChangedSignal(int32_t id);
 
   dbus::ExportedObject* menu_ = nullptr;
 

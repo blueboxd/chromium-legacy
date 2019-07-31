@@ -21,7 +21,6 @@ source_set("init") {
     "//ios/web/net",
     "//ios/web/public",
     "//ios/web/public/init",
-    "//ios/web/service",
     "//ios/web/webui",
     "//mojo/core/embedder",
     "//net",

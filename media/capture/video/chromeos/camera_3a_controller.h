@@ -9,7 +9,7 @@
 
 #include "base/cancelable_callback.h"
 #include "media/base/media_export.h"
-#include "media/capture/video/chromeos/mojo/camera3.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera3.mojom.h"
 #include "media/capture/video/chromeos/request_manager.h"
 
 namespace media {

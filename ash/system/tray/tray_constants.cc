@@ -33,17 +33,11 @@ const int kTrayRoundedBorderRadius = 2;
 
 const int kTrayToggleButtonWidth = 68;
 
-const SkColor kMobileNotConnectedXIconColor = SkColorSetRGB(0xb2, 0xb2, 0xb2);
-
-const SkColor kTrayIconColor = gfx::kGoogleGrey200;
-const SkColor kOobeTrayIconColor = gfx::kGoogleGrey600;
 // Note that the alpha value should match kSignalStrengthImageBgAlpha in
 // ash/public/cpp/network_icon_image_source.cc
 const int kTrayIconBackgroundAlpha = 0x4D /* 30% */;
 
 const int kMenuIconSize = 20;
-const SkColor kMenuIconColor = gfx::kChromeIconGrey;
-const SkColor kMenuIconColorDisabled = SkColorSetA(gfx::kChromeIconGrey, 0x61);
 const int kMenuButtonSize = 48;
 const int kMenuSeparatorVerticalPadding = 4;
 const int kMenuExtraMarginFromLeftEdge = 4;
@@ -52,8 +46,6 @@ const int kMenuEdgeEffectivePadding =
 
 const int kHitRegionPadding = 4;
 const int kHitRegionPaddingDense = 2;
-
-const SkColor kMenuSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 
 const SkColor kTrayPopupInkDropBaseColor = SK_ColorBLACK;
 const float kTrayPopupInkDropRippleOpacity = 0.06f;

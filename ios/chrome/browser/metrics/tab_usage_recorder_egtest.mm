@@ -43,6 +43,8 @@ using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
+using chrome_test_util::WebViewMatcher;
+
 using tab_usage_recorder_test_util::OpenNewIncognitoTabUsingUIAndEvictMainTabs;
 using tab_usage_recorder_test_util::SwitchToNormalMode;
 
@@ -691,9 +693,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   NewMainTabWithURL(initialURL, "link");
 
   int numberOfTabs = [ChromeEarlGrey mainTabCount];
-  id<GREYMatcher> webViewMatcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-  [[EarlGrey selectElementWithMatcher:webViewMatcher]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:"link"],
                         true /* menu should appear */)];

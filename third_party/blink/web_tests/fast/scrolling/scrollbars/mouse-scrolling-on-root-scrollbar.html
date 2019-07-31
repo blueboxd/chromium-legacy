@@ -85,6 +85,12 @@ window.onload = () => {
     await mouseDownAt(x, y);
     assert_equals(window.scrollY, 0, "Mousedown on vertical scrollbar thumb is not expected to scroll.");
 
+    await mouseMoveTo(x, y-10);
+    assert_equals(window.scrollY, 0, "Vertical thumb drag beyond the track should not cause a scroll.");
+
+    await mouseMoveTo(x, y);
+    assert_equals(window.scrollY, 0, "Vertical thumb drag beyond the track and back should not cause a scroll.");
+
     y += SCROLL_DELTA;
     await mouseMoveTo(x, y);
     // TODO(arakeri): There is currently a 1 px difference when dragging the thumb on the compositor thread
@@ -106,6 +112,12 @@ window.onload = () => {
     await mouseMoveTo(x, y);
     await mouseDownAt(x, y);
     assert_equals(window.scrollX, 0, "Mousedown on horizontal scrollbar thumb is not expected to scroll.");
+
+    await mouseMoveTo(x-10, y);
+    assert_equals(window.scrollX, 0, "Horizontal thumb drag beyond the track should not cause a scroll.");
+
+    await mouseMoveTo(x, y);
+    assert_equals(window.scrollX, 0, "Horizontal thumb drag beyond the track and back should not cause a scroll.");
 
     x += SCROLL_DELTA;
     await mouseMoveTo(x, y);

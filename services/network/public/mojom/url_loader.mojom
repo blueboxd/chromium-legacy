@@ -423,14 +423,6 @@ interface URLLoader {
                  network.mojom.HttpRequestHeaders modified_headers,
                  url.mojom.Url? new_url);
 
-  // Resumes loading the response body if the URLLoader paused the request upon
-  // receiving the final response headers.
-  // The URLLoader pauses the request when kURLLoadOptionPauseOnResponseStarted
-  // is used.
-  // TODO(arthursonzogni): This is a temporary feature. Remove this as soon as
-  // the InterceptingResourceHandler is removed. See https://crbug.com/791049.
-  ProceedWithResponse();
-
   // Sets the request priority.
   // |intra_priority_value| is a lesser priority which is used to prioritize
   // requests within a given priority level. If -1 is passed, the existing

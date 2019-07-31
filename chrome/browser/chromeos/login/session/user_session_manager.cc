@@ -1332,7 +1332,7 @@ void UserSessionManager::InitProfilePreferences(
     if (gaia_id.empty()) {
       base::Optional<AccountInfo> maybe_account_info =
           identity_manager
-              ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                   user_context.GetAccountId().GetUserEmail());
 
       DCHECK(maybe_account_info.has_value() || IsRunningTest());
@@ -1351,7 +1351,8 @@ void UserSessionManager::InitProfilePreferences(
       // Always use the legacy flow if Account Manager has not been enabled yet.
       should_use_legacy_flow = true;
     } else if (!identity_manager
-                    ->FindAccountInfoForAccountWithRefreshTokenByGaiaId(gaia_id)
+                    ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
+                        gaia_id)
                     .has_value() &&
                user_context.GetRefreshToken().empty()) {
       // Edge case: |AccountManager| is enabled but neither |IdentityManager|
@@ -1416,8 +1417,9 @@ void UserSessionManager::InitProfilePreferences(
 
       // 2. Make sure that IdentityManager has been notified about it.
       base::Optional<AccountInfo> maybe_account_info =
-          identity_manager->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
-              gaia_id);
+          identity_manager
+              ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
+                  gaia_id);
       DCHECK(maybe_account_info.has_value());
       // Make sure that the google service username is properly set (we do this
       // on every sign in, not just the first login, to deal with existing

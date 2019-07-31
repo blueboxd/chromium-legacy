@@ -218,6 +218,22 @@ class ActionDelegate {
   virtual bool WaitForNavigation(
       base::OnceCallback<void(bool)> on_navigation_done) = 0;
 
+  // Waits for the value of Document.readyState to reach at least
+  // |min_ready_state| in |optional_frame| or, if it is empty, in the main
+  // document.
+  virtual void WaitForDocumentReadyState(
+      const Selector& optional_frame,
+      DocumentReadyState min_ready_state,
+      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+          callback) = 0;
+
+  // Gets the value of Document.readyState in |optional_frame| or, if it is
+  // empty, in the main document.
+  virtual void GetDocumentReadyState(
+      const Selector& optional_frame,
+      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+          callback) = 0;
+
   // Load |url| in the current tab. Returns immediately, before the new page has
   // been loaded.
   virtual void LoadURL(const GURL& url) = 0;

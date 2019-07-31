@@ -16,6 +16,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/browser/permission_type.h"
+#include "url/origin.h"
 
 class PermissionContextBase;
 struct PermissionResult;
@@ -116,13 +117,12 @@ class PermissionManager : public KeyedService,
   // denied due to the kill switch.
   bool IsPermissionKillSwitchOn(ContentSettingsType);
 
-  using PermissionOverrides = std::set<content::PermissionType>;
-
-  // For the given |origin|, grant permissions that belong to |overrides|
-  // and reject all others.
-  void SetPermissionOverridesForDevTools(const GURL& origin,
-                                         const PermissionOverrides& overrides);
-  void ResetPermissionOverridesForDevTools();
+  // For the given |origin|, overrides permissions that belong to |overrides|.
+  // These permissions are in-sync with the PermissionController.
+  void SetPermissionOverridesForDevTools(
+      const GURL& origin,
+      const PermissionOverrides& overrides) override;
+  void ResetPermissionOverridesForDevTools() override;
 
  private:
   friend class PermissionManagerTest;
@@ -175,8 +175,10 @@ class PermissionManager : public KeyedService,
                      std::unique_ptr<PermissionContextBase>,
                      ContentSettingsTypeHash>
       permission_contexts_;
-  using ContentSettingsTypeOverrides = std::set<ContentSettingsType>;
-  std::map<GURL, ContentSettingsTypeOverrides> devtools_permission_overrides_;
+  using ContentSettingsTypeOverrides =
+      base::flat_map<ContentSettingsType, ContentSetting>;
+  std::map<url::Origin, ContentSettingsTypeOverrides>
+      devtools_permission_overrides_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionManager);
 };

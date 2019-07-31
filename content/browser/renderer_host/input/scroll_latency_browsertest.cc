@@ -223,6 +223,15 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
     mouse_down.SetTimeStamp(base::TimeTicks::Now());
     GetWidgetHost()->ForwardMouseEvent(mouse_down);
 
+    // This is to avoid a race condition where a mousemove is processed before
+    // the renderer has had a chance to set up the scroll state (like the
+    // scroll_node etc). This happens due to the fact that when the renderer
+    // gets a mousedown, it is first "queued" as a GSB. At this point, the
+    // scroll node is not yet set up. Now, if a mousemove is sent from the
+    // browser proc before a frame is generated, it gets dispatched immediately
+    // and this can lead to nullptr derefernces.
+    RunUntilInputProcessed(GetWidgetHost());
+
     blink::WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
         blink::WebInputEvent::kMouseMove, scrollbar_thumb.x,
         scrollbar_thumb.y + 10, 0);

@@ -75,9 +75,6 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   WebLocalFrameClient::AppCacheType GetAppCacheType() override {
     return client_->GetAppCacheType();
   }
-  base::UnguessableToken GetAppCacheHostIDForSharedWorker() override {
-    return appcache_host_id_;
-  }
 
   Document* GetDocument() { return main_frame_->GetFrame()->GetDocument(); }
   WebSettings* GetSettings() { return web_view_->GetSettings(); }

@@ -181,7 +181,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
 
   // Like extension_function_test_utils::RunFunctionAndReturnError but with an
   // explicit ListValue.
-  std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
+  std::string RunFunctionAndReturnError(ExtensionFunction* function,
                                         std::unique_ptr<base::ListValue> args,
                                         Browser* browser) {
     utils::RunFunction(function, std::move(args), browser,
@@ -193,7 +193,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
   // Like extension_function_test_utils::RunFunctionAndReturnSingleResult but
   // with an explicit ListValue.
   base::Value* RunFunctionAndReturnSingleResult(
-      UIThreadExtensionFunction* function,
+      ExtensionFunction* function,
       std::unique_ptr<base::ListValue> args,
       Browser* browser) {
     scoped_refptr<ExtensionFunction> function_owner(function);

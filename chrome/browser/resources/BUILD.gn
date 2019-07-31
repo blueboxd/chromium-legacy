@@ -305,3 +305,17 @@ if (enable_print_preview) {
     output_dir = "$root_gen_dir/chrome"
   }
 }
+
+if (enable_webui_tab_strip) {
+  grit("tab_strip_resources") {
+    source = "tab_strip/tab_strip_resources.grd"
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/tab_strip_resources.h",
+      "grit/tab_strip_resources_map.cc",
+      "grit/tab_strip_resources_map.h",
+      "tab_strip_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+}

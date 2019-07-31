@@ -141,10 +141,11 @@ class ExtensionApiFrameIdMap {
   ~ExtensionApiFrameIdMap();
 
   // Determines the value to be stored in |frame_data_map_| for a given key.
+  // If |require_live_frame| is true, FrameData will only
   // Returns empty FrameData when the corresponding RenderFrameHost is not
-  // alive. This method is only called when |key| is not in |frame_data_map_|.
-  // Virtual for testing.
-  FrameData KeyToValue(const RenderFrameIdKey& key) const;
+  // alive and |require_live_frame| is true.
+  FrameData KeyToValue(const RenderFrameIdKey& key,
+                       bool require_live_frame) const;
 
   // Holds mappings of render frame key to FrameData from frames that have been
   // recently deleted. These are kept for a short time so beacon requests that

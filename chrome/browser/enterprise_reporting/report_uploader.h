@@ -48,18 +48,17 @@ class ReportUploader {
                        // invalid dm token.
   };
 
+  using Requests = std::queue<std::unique_ptr<em::ChromeDesktopReportRequest>>;
   // A callback to notify the upload result.
   using ReportCallback = base::OnceCallback<void(ReportStatus status)>;
 
   ReportUploader(policy::CloudPolicyClient* client,
                  int maximum_number_of_retries);
-  ~ReportUploader();
+  virtual ~ReportUploader();
 
   // Sets a list of requests and upload it. Request will be uploaded one after
   // another.
-  void SetRequestAndUpload(
-      std::queue<std::unique_ptr<em::ChromeDesktopReportRequest>> requests,
-      ReportCallback callback);
+  virtual void SetRequestAndUpload(Requests requests, ReportCallback callback);
 
  private:
   // Uploads the first request in the queue.
@@ -81,7 +80,7 @@ class ReportUploader {
 
   policy::CloudPolicyClient* client_;
   ReportCallback callback_;
-  std::queue<std::unique_ptr<em::ChromeDesktopReportRequest>> requests_;
+  Requests requests_;
 
   net::BackoffEntry backoff_entry_;
   base::OneShotTimer backoff_request_timer_;

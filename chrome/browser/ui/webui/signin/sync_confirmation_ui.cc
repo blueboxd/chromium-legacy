@@ -67,7 +67,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
     base::Optional<AccountInfo> primary_account_info =
-        identity_manager->FindExtendedAccountInfoForAccount(
+        identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identity_manager->GetPrimaryAccountInfo());
     GURL account_picture_url(primary_account_info
                                  ? primary_account_info->picture_url

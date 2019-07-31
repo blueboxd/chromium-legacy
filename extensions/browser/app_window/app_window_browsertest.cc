@@ -66,6 +66,18 @@ IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, FrameInsetsForNoFrame) {
   CloseAppWindow(app_window);
 }
 
+#if defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, ShouldShowStaleContentOnEviction) {
+  AppWindow* app_window = CreateTestAppWindow("{}");
+  // Helper function as this test requires inspecting a number of content::
+  // internal objects.
+  content::VerifyStaleContentOnFrameEviction(
+      app_window->web_contents()->GetRenderWidgetHostView());
+}
+
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 }  // namespace extensions

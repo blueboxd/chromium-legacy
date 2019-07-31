@@ -54,14 +54,10 @@ customize.LOG_TYPE = {
   NTP_BACKGROUND_OPEN_COLLECTION: 68,
   // A image tile was selected in the richer picker.
   NTP_BACKGROUND_SELECT_IMAGE: 69,
-  // A image tile was deselected in the richer picker.
-  NTP_BACKGROUND_DESELECT_IMAGE: 70,
   // The back arrow was clicked in the richer picker.
   NTP_BACKGROUND_BACK_CLICK: 72,
   // The 'No background' tile was selected in the richer picker.
   NTP_BACKGROUND_DEFAULT_SELECTED: 73,
-  // The 'No background' tile was deselected in the richer picker.
-  NTP_BACKGROUND_DEFAULT_DESELECTED: 74,
   // The custom links option in the shortcuts submenu was clicked.
   NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED: 78,
   // The Most Visited option in the shortcuts submenu was clicked.
@@ -285,7 +281,8 @@ customize.preselectedOptions = {
   // visited.
   shortcutType: null,
   shortcutsAreHidden: false,
-  colorsMenuTile: null,  // Selected tile for Colors menu.
+  colorsMenuTile: null,       // Selected tile for Colors menu.
+  backgroundsMenuTile: null,  // Selected tile for Backgrounds menu.
 };
 
 /**
@@ -790,10 +787,7 @@ customize.showCollectionSelectionDialog = function() {
             .classList.toggle(customize.CLASSES.MENU_SHOWN, true);
 
         // In the RP the upload or default tile may be selected.
-        if (configData.richerPicker) {
-          customize.richerPicker_deselectBackgroundTile(
-              customize.selectedOptions.background);
-        } else {
+        if (!configData.richerPicker) {
           customize.resetSelectionDialog();
         }
         customize.showImageSelectionDialog(
@@ -848,7 +842,7 @@ customize.richerPicker_isShortcutOptionSelected = function() {
  * Return true if any option is selected. Used to enable the 'done' button.
  */
 customize.richerPicker_isOptionSelected = function() {
-  return !!customize.selectedOptions.background ||
+  return customize.isBackgroundOptionSelected() ||
       customize.isColorOptionSelected() ||
       customize.richerPicker_isShortcutOptionSelected();
 };
@@ -914,16 +908,19 @@ customize.richerPicker_previewImage = function(tile) {
   // Set preview images at 720p by replacing the params in the url.
   const background = $(customize.IDS.CUSTOM_BG);
   const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
-  if (tile.id !== customize.IDS.BACKGROUNDS_DEFAULT_ICON) {
+  if (tile.id === customize.IDS.BACKGROUNDS_DEFAULT_ICON) {
+    preview.dataset.hasImage = false;
+    preview.style.backgroundImage = '';
+    preview.style.backgroundColor = document.body.style.backgroundColor;
+  } else if (tile.id === customize.IDS.BACKGROUNDS_UPLOAD_ICON) {
+    // No previews for uploaded images.
+    return;
+  } else {
     preview.dataset.hasImage = true;
 
     const re = /w\d+\-h\d+/;
     preview.style.backgroundImage =
         tile.style.backgroundImage.replace(re, 'w1280-h720');
-  } else {
-    preview.dataset.hasImage = false;
-    preview.style.backgroundImage = '';
-    preview.style.backgroundColor = document.body.style.backgroundColor;
   }
   background.style.opacity = 0;
   preview.style.opacity = 1;
@@ -960,15 +957,14 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     return;
   }
 
-  // Deselect any currently selected tile. If it was the clicked tile don't
-  // reselect it.
-  if (customize.selectedOptions.background) {
-    const id = customize.selectedOptions.background.id;
-    customize.richerPicker_deselectBackgroundTile(
+  if (customize.selectedOptions.background &&
+      customize.selectedOptions.background.id == tile.id) {
+    // If the clicked tile is already selected do nothing.
+    return;
+  } else if (customize.selectedOptions.background) {
+    // Deselect any currently selected tile.
+    customize.richerPicker_removeSelectedState(
         customize.selectedOptions.background);
-    if (id === tile.id) {
-      return;
-    }
   }
 
   customize.selectedOptions.background = tile;
@@ -982,22 +978,6 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
   customize.richerPicker_applySelectedState(tile);
   customize.richerPicker_maybeToggleDone();
   customize.richerPicker_previewImage(tile);
-};
-
-/**
- * Handles background deselection. Remove selected styling from the background
- * tile, unpreview the background, and disable the done button.
- * @param {?Element} tile The background tile to deselect.
- */
-customize.richerPicker_deselectBackgroundTile = function(tile) {
-  if (!tile) {
-    return;
-  }
-  customize.selectedOptions.background = null;
-  customize.selectedOptions.backgroundData = null;
-  customize.richerPicker_removeSelectedState(tile);
-  customize.richerPicker_maybeToggleDone();
-  customize.richerPicker_unpreviewImage();
 };
 
 /**
@@ -1110,10 +1090,8 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
     }
 
     if (configData.richerPicker) {
-      if (customize.selectedOptions.backgroundData &&
-          customize.selectedOptions.backgroundData.id === tile.id) {
-        ntpApiHandle.logEvent(customize.LOG_TYPE.NTP_BACKGROUND_DESELECT_IMAGE);
-      } else {
+      if (!customize.selectedOptions.backgroundData ||
+          customize.selectedOptions.backgroundData.id !== tile.id) {
         ntpApiHandle.logEvent(customize.LOG_TYPE.NTP_BACKGROUND_SELECT_IMAGE);
       }
       customize.richerPicker_selectBackgroundTile(tile);
@@ -1203,6 +1181,8 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
     if (selected) {
       customize.richerPicker_selectBackgroundTile(selected);
     }
+  } else {
+    customize.richerPicker_preselectBackgroundOption();
   }
 
   if (configData.richerPicker) {
@@ -1327,6 +1307,7 @@ customize.richerPicker_openCustomizationMenu = function() {
       $(customize.IDS.BACKGROUNDS_BUTTON), $(customize.IDS.BACKGROUNDS_MENU));
 
   customize.richerPicker_preselectShortcutOptions();
+  customize.richerPicker_preselectBackgroundOption();
   customize.loadChromeBackgrounds();
   customize.loadColorsMenu();
   if (!$(customize.IDS.CUSTOMIZATION_MENU).open) {
@@ -1339,7 +1320,7 @@ customize.richerPicker_openCustomizationMenu = function() {
  */
 customize.richerPicker_resetSelectedOptions = function() {
   // Reset background selection.
-  customize.richerPicker_deselectBackgroundTile(
+  customize.richerPicker_removeSelectedState(
       customize.selectedOptions.background);
   customize.selectedOptions.background = null;
   customize.selectedOptions.backgroundData = null;
@@ -1366,6 +1347,34 @@ customize.richerPicker_preselectShortcutOptions = function() {
   customize.preselectedOptions.shortcutsAreHidden = shortcutsAreHidden;
   customize.richerPicker_selectShortcutType(shortcutType);
   customize.richerPicker_toggleShortcutHide(shortcutsAreHidden);
+};
+
+/**
+ * Preselect the background tile that corresponds to the current page
+ * background.
+ */
+customize.richerPicker_preselectBackgroundOption = function() {
+  customize.preselectedOptions.backgroundsMenuTile = null;
+
+  const themeInfo = ntpApiHandle.themeBackgroundInfo;
+  if (!themeInfo.customBackgroundConfigured) {
+    // Default.
+    customize.preselectedOptions.backgroundsMenuTile =
+        $(customize.IDS.BACKGROUNDS_DEFAULT_ICON);
+  } else if (themeInfo.imageUrl.includes(
+                 'chrome-search://local-ntp/background.jpg')) {
+    // Local image.
+    customize.preselectedOptions.backgroundsMenuTile =
+        $(customize.IDS.BACKGROUNDS_UPLOAD_ICON);
+  } else if (!customize.selectedOptions.backgroundData) {
+    // Image tile. Only if another background hasn't already been selected.
+    customize.preselectedOptions.backgroundsMenuTile =
+        document.querySelector('[data-url="' + themeInfo.imageUrl + '"]');
+  }
+
+  customize.richerPicker_selectBackgroundTile(
+      customize.preselectedOptions.backgroundsMenuTile);
+  customize.selectedOptions.backgroundData = null;
 };
 
 /**
@@ -1456,8 +1465,6 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   if (configData.richerPicker) {
     ntpApiHandle.onlocalbackgroundselected = () => {
       customize.selectedOptions.backgroundData = null;
-      customize.richerPicker_deselectBackgroundTile(
-          customize.selectedOptions.background);
       customize.richerPicker_applyCustomization();
     };
   }
@@ -1875,12 +1882,8 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     tile.dataset.attributionLine1 = '';
     tile.dataset.attributionLine2 = '';
     tile.dataset.attributionActionUrl = '';
-    if ($(customize.IDS.BACKGROUNDS_DEFAULT)
-            .classList.contains(customize.CLASSES.SELECTED)) {
-      ntpApiHandle.logEvent(
-          customize.LOG_TYPE.NTP_BACKGROUND_DEFAULT_DESELECTED);
-      customize.richerPicker_deselectBackgroundTile(tile);
-    } else {
+    if (!$(customize.IDS.BACKGROUNDS_DEFAULT)
+             .classList.contains(customize.CLASSES.SELECTED)) {
       ntpApiHandle.logEvent(customize.LOG_TYPE.NTP_BACKGROUND_DEFAULT_SELECTED);
       customize.richerPicker_selectBackgroundTile(tile);
     }
@@ -1893,7 +1896,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
 
   const richerPicker = $(customize.IDS.CUSTOMIZATION_MENU);
-  richerPicker.onclick = function(event) {
+  richerPicker.onmousedown = function(event) {
     richerPicker.classList.add(customize.CLASSES.MOUSE_NAV);
   };
   richerPicker.onkeydown = function(event) {
@@ -2173,6 +2176,17 @@ customize.isColorOptionSelected = function() {
       (customize.preselectedOptions.colorsMenuTile &&
        customize.selectedOptions.color.id !==
            customize.preselectedOptions.colorsMenuTile.id);
+};
+
+/**
+ * Indicates whether a background tile other then the preselected one was
+ * selected on the backgrounds menu.
+ */
+customize.isBackgroundOptionSelected = function() {
+  return customize.selectedOptions.backgroundData &&
+      (!customize.preselectedOptions.backgroundsMenuTile ||
+       customize.selectedOptions.backgroundData.id !=
+           customize.preselectedOptions.backgroundsMenuTile.id);
 };
 
 /**

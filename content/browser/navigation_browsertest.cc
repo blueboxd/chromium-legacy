@@ -51,7 +51,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
-#include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
@@ -584,8 +583,6 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, SanitizeReferrer) {
   const Referrer kSecureReferrer(
       GURL("https://secure-url.com"),
       network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade);
-  ShellNetworkDelegate::SetCancelURLRequestWithPolicyViolatingReferrerHeader(
-      true);
 
   // Navigate to an insecure url with a secure referrer with a policy of no
   // referrer on downgrades. The referrer url should be rewritten right away.

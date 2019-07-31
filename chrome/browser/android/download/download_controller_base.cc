@@ -5,7 +5,6 @@
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
 
@@ -27,8 +26,6 @@ content::WebContents* GetWebContents(int render_process_id,
 
 // static
 DownloadControllerBase* DownloadControllerBase::download_controller_ = nullptr;
-
-using content::ResourceRequestInfo;
 
 DownloadInfo::DownloadInfo(const GURL& url,
                            const GURL& original_url,

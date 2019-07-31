@@ -108,7 +108,6 @@ class APIBinding {
   // |thread| and matches the arguments against |signature|.
   void HandleCall(const std::string& name,
                   const APISignature* signature,
-                  const binding::RequestThread thread,
                   gin::Arguments* args);
 
   // The root name of the API, e.g. "tabs" for chrome.tabs.

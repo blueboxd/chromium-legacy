@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ENTERPRISE_REPORTING_REPORT_GENERATOR_H_
 
 #include <memory>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -19,13 +20,13 @@ namespace enterprise_reporting {
 
 class ReportGenerator {
  public:
-  using ReportCallback = base::OnceCallback<void(
-      std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>)>;
+  using Requests = std::queue<std::unique_ptr<em::ChromeDesktopReportRequest>>;
+  using ReportCallback = base::OnceCallback<void(Requests)>;
 
   ReportGenerator();
-  ~ReportGenerator();
+  virtual ~ReportGenerator();
 
-  void Generate(ReportCallback callback);
+  virtual void Generate(ReportCallback callback);
 
   void SetMaximumReportSizeForTesting(size_t size);
 
@@ -65,7 +66,7 @@ class ReportGenerator {
 
   ReportCallback callback_;
 
-  std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>> requests_;
+  Requests requests_;
 
   // Basic information that is shared among requests.
   em::ChromeDesktopReportRequest basic_request_;

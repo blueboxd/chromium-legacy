@@ -155,6 +155,21 @@
             ]
         }
     ],
+    "AndroidIdentityDisc": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IdentityDisc"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidInProductHelpContextualSearchPromotePanelOpen": [
         {
             "platforms": [
@@ -5268,6 +5283,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IPH_TabGroupsTapToSeeAnotherTab"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TabGroupsUiImprovementsAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabGroupsUiImprovementsAndroid"
                     ]
                 }
             ]

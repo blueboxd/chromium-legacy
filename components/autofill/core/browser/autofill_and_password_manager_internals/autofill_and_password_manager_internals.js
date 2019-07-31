@@ -47,7 +47,15 @@ function addRawLog(node) {
     return;
   }
   logDiv.appendChild(document.createElement('hr'));
-  logDiv.appendChild(nodeToDomNode(node));
+  if (node.type === 'fragment') {
+    if ('children' in node) {
+      node.children.forEach((child) => {
+        logDiv.appendChild(nodeToDomNode(child));
+      });
+    }
+  } else {
+    logDiv.appendChild(nodeToDomNode(node));
+  }
 }
 
 function setUpAutofillInternals() {

@@ -4,6 +4,8 @@
 
 #import "ios/web/public/web_state/web_state.h"
 
+#import "ios/web/public/web_client.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -49,5 +51,30 @@ WebState::OpenURLParams::OpenURLParams(const OpenURLParams& params)
       is_renderer_initiated(params.is_renderer_initiated) {}
 
 WebState::OpenURLParams::~OpenURLParams() {}
+
+WebState::InterfaceBinder::InterfaceBinder(WebState* web_state)
+    : web_state_(web_state) {}
+
+WebState::InterfaceBinder::~InterfaceBinder() = default;
+
+void WebState::InterfaceBinder::AddInterface(base::StringPiece interface_name,
+                                             Callback callback) {
+  callbacks_.emplace(interface_name.as_string(), std::move(callback));
+}
+
+void WebState::InterfaceBinder::BindInterface(
+    mojo::GenericPendingReceiver receiver) {
+  DCHECK(receiver.is_valid());
+  auto it = callbacks_.find(*receiver.interface_name());
+  if (it != callbacks_.end())
+    it->second.Run(&receiver);
+
+  GetWebClient()->BindInterfaceReceiverFromMainFrame(web_state_,
+                                                     std::move(receiver));
+}
+
+WebState::InterfaceBinder* WebState::GetInterfaceBinderForMainFrame() {
+  return nullptr;
+}
 
 }  // namespace web

@@ -89,8 +89,6 @@ WebViewBrowserState::WebViewBrowserState(
       GetStatePath(), ApplicationContext::GetInstance()->GetNetLog(),
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
 
-  BrowserState::Initialize(this, path_);
-
   // Initialize prefs.
   scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry =
       new user_prefs::PrefRegistrySyncable;

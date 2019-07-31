@@ -554,6 +554,11 @@ size_t ReportingCacheImpl::GetEndpointCount() const {
   return endpoints_.size();
 }
 
+void ReportingCacheImpl::Flush() {
+  if (context_->IsClientDataPersisted())
+    store()->Flush();
+}
+
 ReportingEndpoint ReportingCacheImpl::GetEndpointForTesting(
     const url::Origin& origin,
     const std::string& group_name,

@@ -1638,7 +1638,6 @@ group("extra_resources") {
     "//chrome/browser/resources:net_internals_resources",
     "//chrome/browser/resources:quota_internals_resources",
     "//chrome/browser/resources:webapks_ui_resources",
-    "//chrome/browser/resources/bluetooth_internals:resources",
     "//components/autofill/core/browser:autofill_address_rewriter_resources",
   ]
 
@@ -1648,6 +1647,7 @@ group("extra_resources") {
       "//chrome/browser/resources:downloads_resources",
       "//chrome/browser/resources:local_ntp_resources",
       "//chrome/browser/resources:settings_resources",
+      "//chrome/browser/resources/bluetooth_internals:resources",
     ]
   }
 
@@ -1940,6 +1940,8 @@ if (is_linux) {
         ":chrome_symbols",
         ":swiftshader_egl_symbols",
         ":swiftshader_gles_symbols",
+        ":angle_egl_symbols",
+        ":angle_gles_symbols",
       ]
     }
     extract_symbols("chrome_symbols") {

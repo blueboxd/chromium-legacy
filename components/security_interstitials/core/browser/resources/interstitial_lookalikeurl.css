@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.lookalike-url a {
+.lookalike-url #main-content a {
   color: var(--google-blue-700);
   text-decoration: none;
 }
@@ -17,4 +17,15 @@
   .lookalike-url .icon {
     filter: invert(1);
   }
+}
+
+.lookalike-url #subnav-wrapper {
+  padding: 25px 0 0;
+  margin: 0;
+}
+
+.lookalike-url #details-link {
+  text-transform: uppercase;
+  text-decoration: none;
+  font-size: .875em;
 }

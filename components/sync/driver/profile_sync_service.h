@@ -230,7 +230,7 @@ class ProfileSyncService : public SyncService,
   // Used by MigrationWatcher.  May return null.
   BackendMigrator* GetBackendMigratorForTest();
 
-  // Used by tests to inspect interaction with OAuth2TokenService.
+  // Used by tests to inspect interaction with the access token fetcher.
   bool IsRetryingAccessTokenFetchForTest() const;
 
   // Used by tests to inspect the OAuth2 access tokens used by PSS.

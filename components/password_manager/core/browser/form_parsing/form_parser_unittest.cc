@@ -2096,6 +2096,21 @@ TEST(FormParserTest, ContradictingPasswordPredictionAndAutocomplete) {
                     .autocomplete_attribute = "new-password"}}}});
 }
 
+TEST(FormParserTest, SingleUsernamePrediction) {
+  CheckTestData({
+      {"1 field",
+       {{.role = ElementRole::USERNAME,
+         .form_control_type = "text",
+         .prediction = {.type = autofill::SINGLE_USERNAME}}}},
+      {"Password field is ignored",
+       {{.role = ElementRole::USERNAME,
+         .form_control_type = "text",
+         .prediction = {.type = autofill::SINGLE_USERNAME}},
+        {.form_control_type = "password",
+         .prediction = {.type = autofill::PASSWORD}}}},
+  });
+}
+
 }  // namespace
 
 }  // namespace password_manager

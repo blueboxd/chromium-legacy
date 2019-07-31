@@ -36,7 +36,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/origin_util.h"
@@ -60,7 +59,6 @@
 using autofill::PasswordForm;
 using content::BrowserThread;
 using content::NavigationController;
-using content::ResourceRequestInfo;
 using content::WebContents;
 
 namespace {

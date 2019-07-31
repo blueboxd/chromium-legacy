@@ -20,7 +20,7 @@
 #include "base/scoped_observer.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class HostContentSettingsMap;
@@ -240,8 +240,7 @@ class DownloadRequestLimiter
   GURL GetDownloadOrigin(content::WebContents* web_contents);
 
   // Check if download can proceed and notifies the callback on UI thread.
-  void CanDownload(const content::ResourceRequestInfo::WebContentsGetter&
-                       web_contents_getter,
+  void CanDownload(const content::WebContents::Getter& web_contents_getter,
                    const GURL& url,
                    const std::string& request_method,
                    base::Optional<url::Origin> request_initiator,
@@ -284,8 +283,7 @@ class DownloadRequestLimiter
 
   // Invoked when decision to download has been made.
   void OnCanDownloadDecided(
-      const content::ResourceRequestInfo::WebContentsGetter&
-          web_contents_getter,
+      const content::WebContents::Getter& web_contents_getter,
       const std::string& request_method,
       base::Optional<url::Origin> request_initiator,
       Callback orig_callback,

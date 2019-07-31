@@ -40,7 +40,6 @@ class RedirectLoader : public network::mojom::URLLoader {
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
 
-  void ProceedWithResponse() override { DCHECK(false); }
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}

@@ -281,7 +281,8 @@ GoogleServiceAuthError IdentityManager::GetErrorStateOfRefreshTokenForAccount(
   return token_service_->GetAuthError(account_id);
 }
 
-base::Optional<AccountInfo> IdentityManager::FindExtendedAccountInfoForAccount(
+base::Optional<AccountInfo>
+IdentityManager::FindExtendedAccountInfoForAccountWithRefreshToken(
     const CoreAccountInfo& account_info) const {
   AccountInfo extended_account_info =
       account_tracker_service_->GetAccountInfo(account_info.account_id);
@@ -296,7 +297,7 @@ base::Optional<AccountInfo> IdentityManager::FindExtendedAccountInfoForAccount(
 }
 
 base::Optional<AccountInfo>
-IdentityManager::FindAccountInfoForAccountWithRefreshTokenByAccountId(
+IdentityManager::FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
     const CoreAccountId& account_id) const {
   AccountInfo account_info =
       account_tracker_service_->GetAccountInfo(account_id);
@@ -310,9 +311,9 @@ IdentityManager::FindAccountInfoForAccountWithRefreshTokenByAccountId(
   return GetAccountInfoForAccountWithRefreshToken(account_info.account_id);
 }
 
-base::Optional<AccountInfo>
-IdentityManager::FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
-    const std::string& email_address) const {
+base::Optional<AccountInfo> IdentityManager::
+    FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+        const std::string& email_address) const {
   AccountInfo account_info =
       account_tracker_service_->FindAccountInfoByEmail(email_address);
 
@@ -326,7 +327,7 @@ IdentityManager::FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
 }
 
 base::Optional<AccountInfo>
-IdentityManager::FindAccountInfoForAccountWithRefreshTokenByGaiaId(
+IdentityManager::FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
     const std::string& gaia_id) const {
   AccountInfo account_info =
       account_tracker_service_->FindAccountInfoByGaiaId(gaia_id);

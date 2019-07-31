@@ -20,8 +20,8 @@ void SetupLabelForTray(views::Label* label) {
 
 SkColor TrayIconColor(session_manager::SessionState session_state) {
   if (session_state == session_manager::SessionState::OOBE)
-    return kOobeTrayIconColor;
-  return kTrayIconColor;
+    return kIconOnLightBackgroundColor;
+  return kIconOnDarkBackgroundColor;
 }
 
 }  // namespace ash

@@ -83,7 +83,7 @@ class TestWebUIDataSource : public URLDataSource {
 
   void StartDataRequest(
       const std::string& path,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const WebContents::Getter& wc_getter,
       const URLDataSource::GotDataCallback& callback) override {
     std::string dummy_html = "<html><body>Foo</body></html>";
     scoped_refptr<base::RefCountedString> response =

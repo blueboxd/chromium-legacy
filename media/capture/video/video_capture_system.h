@@ -9,7 +9,7 @@
 #include "media/capture/video/video_capture_device_info.h"
 
 #if defined(OS_CHROMEOS)
-#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace media {

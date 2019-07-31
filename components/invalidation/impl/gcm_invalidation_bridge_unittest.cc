@@ -115,8 +115,8 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
 TEST_F(GCMInvalidationBridgeTest, RequestToken) {
   base::RunLoop run_loop;
 
-  // Make sure that call to RequestToken reaches OAuth2TokenService and gets
-  // back to callback.
+  // Make sure that call to RequestToken reaches the access token fetcher and
+  // gets back to callback.
   delegate_->RequestToken(
       base::Bind(&GCMInvalidationBridgeTest::RequestTokenFinished,
                  base::Unretained(this), run_loop.QuitClosure()));

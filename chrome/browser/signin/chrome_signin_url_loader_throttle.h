@@ -7,7 +7,8 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_type.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
@@ -28,7 +29,7 @@ class URLLoaderThrottle : public blink::URLLoaderThrottle,
   static std::unique_ptr<URLLoaderThrottle> MaybeCreate(
       std::unique_ptr<HeaderModificationDelegate> delegate,
       content::NavigationUIData* navigation_ui_data,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter);
+      content::WebContents::Getter web_contents_getter);
 
   ~URLLoaderThrottle() override;
 
@@ -48,12 +49,11 @@ class URLLoaderThrottle : public blink::URLLoaderThrottle,
   class ThrottleRequestAdapter;
   class ThrottleResponseAdapter;
 
-  URLLoaderThrottle(
-      std::unique_ptr<HeaderModificationDelegate> delegate,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter);
+  URLLoaderThrottle(std::unique_ptr<HeaderModificationDelegate> delegate,
+                    content::WebContents::Getter web_contents_getter);
 
   const std::unique_ptr<HeaderModificationDelegate> delegate_;
-  const content::ResourceRequestInfo::WebContentsGetter web_contents_getter_;
+  const content::WebContents::Getter web_contents_getter_;
 
   // Information about the current request.
   GURL request_url_;

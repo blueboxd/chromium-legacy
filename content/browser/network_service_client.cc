@@ -30,7 +30,6 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/resource_type.h"
@@ -78,12 +77,11 @@ class SSLErrorDelegate : public SSLErrorHandler::Delegate {
 // a mojo connection error occurs).
 class SSLClientAuthDelegate : public SSLClientAuthHandler::Delegate {
  public:
-  SSLClientAuthDelegate(
-      network::mojom::ClientCertificateResponderPtrInfo
-          client_cert_responder_info,
-      content::ResourceContext* resource_context,
-      ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      const scoped_refptr<net::SSLCertRequestInfo>& cert_info)
+  SSLClientAuthDelegate(network::mojom::ClientCertificateResponderPtrInfo
+                            client_cert_responder_info,
+                        content::ResourceContext* resource_context,
+                        WebContents::Getter web_contents_getter,
+                        const scoped_refptr<net::SSLCertRequestInfo>& cert_info)
       : client_cert_responder_(std::move(client_cert_responder_info)),
         ssl_client_auth_handler_(std::make_unique<SSLClientAuthHandler>(
             GetContentClient()->browser()->CreateClientCertStore(
@@ -143,7 +141,7 @@ class LoginHandlerDelegate {
  public:
   LoginHandlerDelegate(
       network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
-      ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      WebContents::Getter web_contents_getter,
       const net::AuthChallengeInfo& auth_info,
       bool is_request_for_main_frame,
       uint32_t process_id,
@@ -245,7 +243,7 @@ class LoginHandlerDelegate {
   GURL url_;
   const scoped_refptr<net::HttpResponseHeaders> response_headers_;
   bool first_auth_attempt_;
-  ResourceRequestInfo::WebContentsGetter web_contents_getter_;
+  WebContents::Getter web_contents_getter_;
   std::unique_ptr<LoginDelegate> login_delegate_;
   base::WeakPtrFactory<LoginHandlerDelegate> weak_factory_{this};
 };
@@ -378,7 +376,7 @@ void CreateSSLClientAuthDelegateOnIO(
     network::mojom::ClientCertificateResponderPtrInfo
         client_cert_responder_info,
     content::ResourceContext* resource_context,
-    ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    WebContents::Getter web_contents_getter,
     scoped_refptr<net::SSLCertRequestInfo> cert_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   new SSLClientAuthDelegate(std::move(client_cert_responder_info),

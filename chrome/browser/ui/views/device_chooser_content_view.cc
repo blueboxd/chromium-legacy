@@ -133,7 +133,7 @@ DeviceChooserContentView::DeviceChooserContentView(
                                                       : views::TEXT_ONLY,
       !chooser_controller_->AllowMultipleSelection() /* single_selection */);
   table_view_ = table_view.get();
-  table_view->set_select_on_remove(false);
+  table_view->SetSelectOnRemove(false);
   table_view->set_observer(table_view_observer);
 
   table_parent_ = AddChildView(

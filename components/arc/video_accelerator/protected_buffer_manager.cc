@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/system/sys_info.h"
+#include "base/threading/thread_checker.h"
 #include "components/arc/video_accelerator/protected_buffer_allocator.h"
 #include "media/gpu/macros.h"
 #include "mojo/public/cpp/system/buffer.h"

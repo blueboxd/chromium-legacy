@@ -318,10 +318,13 @@ TEST_F(InputMethodEngineTest, TestHistograms) {
                       &error);
   engine_->SetComposition(context, "test", 0, 0, 0, segments, nullptr);
   engine_->CommitText(context, "input\xE5\x85\xA5\xE5\x8A\x9B", &error);
-  histograms.ExpectTotalCount("InputMethod.CommitLength", 3);
+  // This one shouldn't be counted because there was no composition.
+  engine_->CommitText(context, "abc", &error);
+  histograms.ExpectTotalCount("InputMethod.CommitLength", 4);
   histograms.ExpectBucketCount("InputMethod.CommitLength", 5, 1);
   histograms.ExpectBucketCount("InputMethod.CommitLength", 2, 1);
   histograms.ExpectBucketCount("InputMethod.CommitLength", 7, 1);
+  histograms.ExpectBucketCount("InputMethod.CommitLength", 3, 1);
 }
 
 TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {

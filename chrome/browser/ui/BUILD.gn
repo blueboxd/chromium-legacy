@@ -3873,6 +3873,15 @@ jumbo_split_static_library("ui") {
       "//components/offline_pages/core/prefetch",
     ]
   }
+
+  if (enable_webui_tab_strip) {
+    deps += [ "//chrome/browser/resources:tab_strip_resources" ]
+
+    sources += [
+      "webui/tab_strip/tab_strip_ui.cc",
+      "webui/tab_strip/tab_strip_ui.h",
+    ]
+  }
 }
 
 # In GYP this is part of test_support_common.

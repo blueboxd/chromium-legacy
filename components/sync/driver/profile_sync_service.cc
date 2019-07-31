@@ -1492,7 +1492,7 @@ void ProfileSyncService::OnAccountsInCookieUpdatedWithCallback(
 
 bool ProfileSyncService::HasCookieJarMismatch(
     const std::vector<gaia::ListedAccount>& cookie_jar_accounts) {
-  std::string account_id = GetAuthenticatedAccountInfo().account_id;
+  CoreAccountId account_id = GetAuthenticatedAccountInfo().account_id;
   // Iterate through list of accounts, looking for current sync account.
   for (const auto& account : cookie_jar_accounts) {
     if (account.id == account_id)

@@ -175,7 +175,7 @@ class TestBrowserWindow : public BrowserWindow {
 
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN) || \
     defined(OS_LINUX)
-  void ShowHatsBubbleFromAppMenuButton() override {}
+  void ShowHatsBubbleFromAppMenuButton(const std::string& site_id) override {}
 #endif
 
   void ExecuteExtensionCommand(const extensions::Extension* extension,

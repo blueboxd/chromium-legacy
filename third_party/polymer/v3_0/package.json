@@ -37,7 +37,10 @@
     "@polymer/paper-styles": "3.0.1",
     "@polymer/paper-tooltip": "3.0.1",
     "@polymer/polymer": "3.2.0",
-    "@webcomponents/shadycss": "1.9.1",
+    "@webcomponents/shadycss": "1.9.1"
+  },
+  "devDependencies": {
+    "acorn": "6.1.1",
     "rollup": "1.12.4"
   }
 }

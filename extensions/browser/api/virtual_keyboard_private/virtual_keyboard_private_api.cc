@@ -38,7 +38,7 @@ gfx::Rect KeyboardBoundsToRect(const keyboard::Bounds& bounds) {
 }  // namespace
 
 bool VirtualKeyboardPrivateFunction::PreRunValidation(std::string* error) {
-  if (!UIThreadExtensionFunction::PreRunValidation(error))
+  if (!ExtensionFunction::PreRunValidation(error))
     return false;
 
   VirtualKeyboardAPI* api =

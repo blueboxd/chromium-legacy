@@ -1,0 +1,19 @@
+include_rules = [
+    # Don't depend on platform.
+    "-third_party/blink/renderer/platform",
+
+    # Module.
+    "+third_party/blink/renderer/platform/video_capture",
+
+    # Dependencies.
+    "+media/base",
+    "+media/capture",
+    "+third_party/blink/renderer/platform/wtf",
+    "+third_party/blink/renderer/platform/platform_export.h",
+]
+
+specific_include_rules = {
+    "video_capture_impl_test.cc": [
+        "+third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h",
+    ],
+}

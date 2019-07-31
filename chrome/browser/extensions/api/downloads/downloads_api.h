@@ -107,7 +107,7 @@ class DownloadsDownloadFunction : public ChromeAsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsDownloadFunction);
 };
 
-class DownloadsSearchFunction : public UIThreadExtensionFunction {
+class DownloadsSearchFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.search", DOWNLOADS_SEARCH)
   DownloadsSearchFunction();
@@ -120,7 +120,7 @@ class DownloadsSearchFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsSearchFunction);
 };
 
-class DownloadsPauseFunction : public UIThreadExtensionFunction {
+class DownloadsPauseFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.pause", DOWNLOADS_PAUSE)
   DownloadsPauseFunction();
@@ -133,7 +133,7 @@ class DownloadsPauseFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsPauseFunction);
 };
 
-class DownloadsResumeFunction : public UIThreadExtensionFunction {
+class DownloadsResumeFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.resume", DOWNLOADS_RESUME)
   DownloadsResumeFunction();
@@ -146,7 +146,7 @@ class DownloadsResumeFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsResumeFunction);
 };
 
-class DownloadsCancelFunction : public UIThreadExtensionFunction {
+class DownloadsCancelFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.cancel", DOWNLOADS_CANCEL)
   DownloadsCancelFunction();
@@ -159,7 +159,7 @@ class DownloadsCancelFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsCancelFunction);
 };
 
-class DownloadsEraseFunction : public UIThreadExtensionFunction {
+class DownloadsEraseFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.erase", DOWNLOADS_ERASE)
   DownloadsEraseFunction();
@@ -211,7 +211,7 @@ class DownloadsAcceptDangerFunction : public ChromeAsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsAcceptDangerFunction);
 };
 
-class DownloadsShowFunction : public UIThreadExtensionFunction {
+class DownloadsShowFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.show", DOWNLOADS_SHOW)
   DownloadsShowFunction();
@@ -224,7 +224,7 @@ class DownloadsShowFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowFunction);
 };
 
-class DownloadsShowDefaultFolderFunction : public UIThreadExtensionFunction {
+class DownloadsShowDefaultFolderFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "downloads.showDefaultFolder", DOWNLOADS_SHOWDEFAULTFOLDER)
@@ -238,7 +238,7 @@ class DownloadsShowDefaultFolderFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsShowDefaultFolderFunction);
 };
 
-class DownloadsOpenFunction : public UIThreadExtensionFunction {
+class DownloadsOpenFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.open", DOWNLOADS_OPEN)
   DownloadsOpenFunction();
@@ -261,7 +261,7 @@ class DownloadsOpenFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsOpenFunction);
 };
 
-class DownloadsSetShelfEnabledFunction : public UIThreadExtensionFunction {
+class DownloadsSetShelfEnabledFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.setShelfEnabled",
                              DOWNLOADS_SETSHELFENABLED)
@@ -275,7 +275,7 @@ class DownloadsSetShelfEnabledFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(DownloadsSetShelfEnabledFunction);
 };
 
-class DownloadsDragFunction : public UIThreadExtensionFunction {
+class DownloadsDragFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("downloads.drag", DOWNLOADS_DRAG)
   DownloadsDragFunction();

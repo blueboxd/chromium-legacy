@@ -159,13 +159,17 @@ class FakeWebURLLoader : public blink::WebURLLoader {
   base::WeakPtrFactory<FakeWebURLLoader> weak_factory_{this};
 };
 
-class FakeWebURLLoaderFactory : public blink::WebURLLoaderFactory {
+class FakeWebURLLoaderFactory : public blink::WebURLLoaderFactoryForTest {
  public:
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           task_runner_handle) override {
     return std::make_unique<FakeWebURLLoader>(std::move(task_runner_handle));
+  }
+
+  std::unique_ptr<WebURLLoaderFactoryForTest> Clone() override {
+    return std::make_unique<FakeWebURLLoaderFactory>();
   }
 };
 

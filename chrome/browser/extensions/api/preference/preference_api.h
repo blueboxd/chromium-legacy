@@ -175,7 +175,7 @@ class PrefTransformerInterface {
 
 // A base class to provide functionality common to the other *PreferenceFunction
 // classes.
-class PreferenceFunction : public UIThreadExtensionFunction {
+class PreferenceFunction : public ExtensionFunction {
  protected:
   enum PermissionType { PERMISSION_TYPE_READ, PERMISSION_TYPE_WRITE };
 

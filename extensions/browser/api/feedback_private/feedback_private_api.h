@@ -68,7 +68,7 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
 };
 
 // Feedback strings.
-class FeedbackPrivateGetStringsFunction : public UIThreadExtensionFunction {
+class FeedbackPrivateGetStringsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.getStrings",
                              FEEDBACKPRIVATE_GETSTRINGS)
@@ -88,7 +88,7 @@ class FeedbackPrivateGetStringsFunction : public UIThreadExtensionFunction {
   static base::Closure* test_callback_;
 };
 
-class FeedbackPrivateGetUserEmailFunction : public UIThreadExtensionFunction {
+class FeedbackPrivateGetUserEmailFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.getUserEmail",
                              FEEDBACKPRIVATE_GETUSEREMAIL)
@@ -98,8 +98,7 @@ class FeedbackPrivateGetUserEmailFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class FeedbackPrivateGetSystemInformationFunction
-    : public UIThreadExtensionFunction {
+class FeedbackPrivateGetSystemInformationFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.getSystemInformation",
                              FEEDBACKPRIVATE_GETSYSTEMINFORMATION)
@@ -114,7 +113,7 @@ class FeedbackPrivateGetSystemInformationFunction
 
 // This function only reads from actual log sources on Chrome OS. On other
 // platforms, it just returns EmptyResponse().
-class FeedbackPrivateReadLogSourceFunction : public UIThreadExtensionFunction {
+class FeedbackPrivateReadLogSourceFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.readLogSource",
                              FEEDBACKPRIVATE_READLOGSOURCE)
@@ -130,7 +129,7 @@ class FeedbackPrivateReadLogSourceFunction : public UIThreadExtensionFunction {
 #endif  // defined(OS_CHROMEOS)
 };
 
-class FeedbackPrivateSendFeedbackFunction : public UIThreadExtensionFunction {
+class FeedbackPrivateSendFeedbackFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.sendFeedback",
                              FEEDBACKPRIVATE_SENDFEEDBACK)
@@ -146,8 +145,7 @@ class FeedbackPrivateSendFeedbackFunction : public UIThreadExtensionFunction {
   void OnCompleted(api::feedback_private::LandingPageType type, bool success);
 };
 
-class FeedbackPrivateLoginFeedbackCompleteFunction
-    : public UIThreadExtensionFunction {
+class FeedbackPrivateLoginFeedbackCompleteFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("feedbackPrivate.loginFeedbackComplete",
                              FEEDBACKPRIVATE_LOGINFEEDBACKCOMPLETE)

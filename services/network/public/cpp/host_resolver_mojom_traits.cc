@@ -373,4 +373,38 @@ bool EnumTraits<MdnsListenClient::UpdateType,
   }
 }
 
+// static
+network::mojom::SecureDnsMode
+EnumTraits<network::mojom::SecureDnsMode, net::DnsConfig::SecureDnsMode>::
+    ToMojom(net::DnsConfig::SecureDnsMode secure_dns_mode) {
+  switch (secure_dns_mode) {
+    case net::DnsConfig::SecureDnsMode::OFF:
+      return network::mojom::SecureDnsMode::OFF;
+    case net::DnsConfig::SecureDnsMode::AUTOMATIC:
+      return network::mojom::SecureDnsMode::AUTOMATIC;
+    case net::DnsConfig::SecureDnsMode::SECURE:
+      return network::mojom::SecureDnsMode::SECURE;
+  }
+  NOTREACHED();
+  return network::mojom::SecureDnsMode::OFF;
+}
+
+// static
+bool EnumTraits<network::mojom::SecureDnsMode, net::DnsConfig::SecureDnsMode>::
+    FromMojom(network::mojom::SecureDnsMode in,
+              net::DnsConfig::SecureDnsMode* out) {
+  switch (in) {
+    case network::mojom::SecureDnsMode::OFF:
+      *out = net::DnsConfig::SecureDnsMode::OFF;
+      return true;
+    case network::mojom::SecureDnsMode::AUTOMATIC:
+      *out = net::DnsConfig::SecureDnsMode::AUTOMATIC;
+      return true;
+    case network::mojom::SecureDnsMode::SECURE:
+      *out = net::DnsConfig::SecureDnsMode::SECURE;
+      return true;
+  }
+  return false;
+}
+
 }  // namespace mojo

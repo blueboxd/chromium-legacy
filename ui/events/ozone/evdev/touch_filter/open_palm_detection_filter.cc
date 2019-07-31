@@ -18,5 +18,10 @@ void OpenPalmDetectionFilter::Filter(
   slots_to_suppress->reset();
 }
 
+const char OpenPalmDetectionFilter::kFilterName[] = "OpenPalmDetectionFilter";
+std::string OpenPalmDetectionFilter::FilterNameForTesting() const {
+  return kFilterName;
+}
+
 OpenPalmDetectionFilter::~OpenPalmDetectionFilter() {}
 }  // namespace ui

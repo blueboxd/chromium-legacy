@@ -29,6 +29,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/browser_metrics.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "url/gurl.h"
 
@@ -39,7 +40,11 @@
 #endif
 
 using base::trace_event::MemoryAllocatorDump;
+using memory_instrumentation::GetPrivateFootprintHistogramName;
 using memory_instrumentation::GlobalMemoryDump;
+using memory_instrumentation::HistogramProcessType;
+using memory_instrumentation::HistogramProcessTypeToString;
+using memory_instrumentation::kMemoryHistogramPrefix;
 using ukm::builders::Memory_Experimental;
 
 const base::Feature kMemoryMetricsOldTiming{"MemoryMetricsOldTiming",
@@ -282,14 +287,9 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
      &Memory_Experimental::SetWebCache_OtherResources},
 };
 
-#define UMA_PREFIX "Memory."
 #define EXPERIMENTAL_UMA_PREFIX "Memory.Experimental."
 #define VERSION_SUFFIX_NORMAL "2."
 #define VERSION_SUFFIX_SMALL "2.Small."
-
-// Use the values from UMA_HISTOGRAM_MEMORY_LARGE_MB.
-#define MEMORY_METRICS_HISTOGRAM_MB(name, value) \
-  base::UmaHistogramCustomCounts(name, value, 1, 64000, 100)
 
 // Used to measure KB-granularity memory stats. Range is from 1KB to 500,000KB
 // (500MB).
@@ -303,7 +303,7 @@ void EmitProcessUkm(const Metric& item,
   (builder->*(item.ukm_setter))(value);
 }
 
-void EmitProcessUma(const char* process_name,
+void EmitProcessUma(HistogramProcessType process_type,
                     const Metric& item,
                     uint64_t value) {
   std::string uma_name;
@@ -317,8 +317,9 @@ void EmitProcessUma(const char* process_name,
   } else {
     const char* version_suffix =
         item.is_large_metric ? VERSION_SUFFIX_NORMAL : VERSION_SUFFIX_SMALL;
-    uma_name = std::string(EXPERIMENTAL_UMA_PREFIX) + process_name +
-               version_suffix + item.uma_name;
+    uma_name = std::string(EXPERIMENTAL_UMA_PREFIX) +
+               HistogramProcessTypeToString(process_type) + version_suffix +
+               item.uma_name;
   }
 
   if (item.is_large_metric) {
@@ -329,7 +330,7 @@ void EmitProcessUma(const char* process_name,
 }
 
 void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
-                          const char* process_name,
+                          HistogramProcessType process_type,
                           const base::Optional<base::TimeDelta>& uptime,
                           bool record_uma,
                           Memory_Experimental* builder) {
@@ -344,13 +345,13 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
         break;
       case EmitTo::kSizeInUmaOnly:
         if (record_uma)
-          EmitProcessUma(process_name, item, value.value());
+          EmitProcessUma(process_type, item, value.value());
         break;
       case EmitTo::kSizeInUkmAndUma:
         // For each 'size' metric, emit size as MB.
         EmitProcessUkm(item, value.value() / 1024 / 1024, builder);
         if (record_uma)
-          EmitProcessUma(process_name, item, value.value());
+          EmitProcessUma(process_type, item, value.value());
         break;
       default:
         NOTREACHED();
@@ -373,24 +374,24 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
   if (!record_uma)
     return;
 
+  const char* process_name = HistogramProcessTypeToString(process_type);
 #if defined(OS_MACOSX)
   // Resident set is not populated on Mac.
   DCHECK_EQ(pmd.os_dump().resident_set_kb, 0U);
 #else
   MEMORY_METRICS_HISTOGRAM_MB(
-      std::string(UMA_PREFIX) + process_name + ".ResidentSet",
+      std::string(kMemoryHistogramPrefix) + process_name + ".ResidentSet",
       pmd.os_dump().resident_set_kb / 1024);
 #endif
-  MEMORY_METRICS_HISTOGRAM_MB(
-      std::string(UMA_PREFIX) + process_name + ".PrivateMemoryFootprint",
-      pmd.os_dump().private_footprint_kb / 1024);
-  MEMORY_METRICS_HISTOGRAM_MB(
-      std::string(UMA_PREFIX) + process_name + ".SharedMemoryFootprint",
-      pmd.os_dump().shared_footprint_kb / 1024);
+  MEMORY_METRICS_HISTOGRAM_MB(GetPrivateFootprintHistogramName(process_type),
+                              pmd.os_dump().private_footprint_kb / 1024);
+  MEMORY_METRICS_HISTOGRAM_MB(std::string(kMemoryHistogramPrefix) +
+                                  process_name + ".SharedMemoryFootprint",
+                              pmd.os_dump().shared_footprint_kb / 1024);
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  MEMORY_METRICS_HISTOGRAM_MB(
-      std::string(UMA_PREFIX) + process_name + ".PrivateSwapFootprint",
-      pmd.os_dump().private_footprint_swap_kb / 1024);
+  MEMORY_METRICS_HISTOGRAM_MB(std::string(kMemoryHistogramPrefix) +
+                                  process_name + ".PrivateSwapFootprint",
+                              pmd.os_dump().private_footprint_swap_kb / 1024);
 #endif
 }
 
@@ -416,11 +417,11 @@ void EmitSummedGpuMemory(const GlobalMemoryDump::ProcessDump& pmd,
         pmd.GetMetric(gpu_categories[i], synthetic_metric.metric).value_or(0);
   }
 
-  // Always use "Gpu" as the process name for this even for the in process
+  // Always use kGpu as the process name for this even for the in process
   // command buffer case.
   EmitProcessUkm(synthetic_metric, total, builder);
   if (record_uma)
-    EmitProcessUma("Gpu", synthetic_metric, total);
+    EmitProcessUma(HistogramProcessType::kGpu, synthetic_metric, total);
 }
 
 void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
@@ -431,7 +432,8 @@ void EmitBrowserMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::BROWSER));
-  EmitProcessUmaAndUkm(pmd, "Browser", uptime, record_uma, &builder);
+  EmitProcessUmaAndUkm(pmd, HistogramProcessType::kBrowser, uptime, record_uma,
+                       &builder);
   EmitSummedGpuMemory(pmd, &builder, record_uma);
 
   builder.Record(ukm_recorder);
@@ -451,8 +453,10 @@ void EmitRendererMemoryMetrics(
       memory_instrumentation::mojom::ProcessType::RENDERER));
   builder.SetNumberOfExtensions(number_of_extensions);
 
-  const char* process = number_of_extensions == 0 ? "Renderer" : "Extension";
-  EmitProcessUmaAndUkm(pmd, process, uptime, record_uma, &builder);
+  const HistogramProcessType process_type =
+      (number_of_extensions == 0) ? HistogramProcessType::kRenderer
+                                  : HistogramProcessType::kExtension;
+  EmitProcessUmaAndUkm(pmd, process_type, uptime, record_uma, &builder);
 
   if (page_info) {
     builder.SetIsVisible(page_info->is_visible);
@@ -473,7 +477,8 @@ void EmitGpuMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(
       static_cast<int64_t>(memory_instrumentation::mojom::ProcessType::GPU));
-  EmitProcessUmaAndUkm(pmd, "Gpu", uptime, record_uma, &builder);
+  EmitProcessUmaAndUkm(pmd, HistogramProcessType::kGpu, uptime, record_uma,
+                       &builder);
   EmitSummedGpuMemory(pmd, &builder, record_uma);
   builder.Record(ukm_recorder);
 }
@@ -486,7 +491,8 @@ void EmitUtilityMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::UTILITY));
-  EmitProcessUmaAndUkm(pmd, "Utility", uptime, record_uma, &builder);
+  EmitProcessUmaAndUkm(pmd, HistogramProcessType::kUtility, uptime, record_uma,
+                       &builder);
 
   builder.Record(ukm_recorder);
 }
@@ -500,7 +506,8 @@ void EmitAudioServiceMemoryMetrics(
   Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::UTILITY));
-  EmitProcessUmaAndUkm(pmd, "AudioService", uptime, record_uma, &builder);
+  EmitProcessUmaAndUkm(pmd, HistogramProcessType::kAudioService, uptime,
+                       record_uma, &builder);
 
   builder.Record(ukm_recorder);
 }
@@ -514,7 +521,8 @@ void EmitNetworkServiceMemoryMetrics(
   Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::UTILITY));
-  EmitProcessUmaAndUkm(pmd, "NetworkService", uptime, record_uma, &builder);
+  EmitProcessUmaAndUkm(pmd, HistogramProcessType::kNetworkService, uptime,
+                       record_uma, &builder);
 
   builder.Record(ukm_recorder);
 }

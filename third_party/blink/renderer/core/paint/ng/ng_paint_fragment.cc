@@ -167,6 +167,21 @@ bool IsLastBRInPage(const NGPhysicalTextFragment& text_fragment) {
          !text_fragment.GetLayoutObject()->NextInPreOrder();
 }
 
+const LayoutObject* ListMarkerFromMarkerOrMarkerContent(
+    const LayoutObject* object) {
+  if (object->IsLayoutNGListMarkerIncludingInside())
+    return object;
+
+  // Check if this is a marker content.
+  if (object->IsAnonymous()) {
+    const LayoutObject* parent = object->Parent();
+    if (parent && parent->IsLayoutNGListMarkerIncludingInside())
+      return parent;
+  }
+
+  return nullptr;
+}
+
 }  // namespace
 
 NGPaintFragment::NGPaintFragment(
@@ -1152,11 +1167,14 @@ Node* NGPaintFragment::NodeForHitTest() const {
     return Parent()->NodeForHitTest();
 
   // When the fragment is a list marker, return the list item.
-  const LayoutObject* object = GetLayoutObject();
-  if (object && object->IsLayoutNGListMarker()) {
-    if (LayoutNGListItem* list_item = LayoutNGListItem::FromMarker(*object))
-      return list_item->GetNode();
-    return nullptr;
+  if (const LayoutObject* object = GetLayoutObject()) {
+    if (const LayoutObject* marker =
+            ListMarkerFromMarkerOrMarkerContent(object)) {
+      if (const LayoutNGListItem* list_item =
+              LayoutNGListItem::FromMarker(*marker))
+        return list_item->GetNode();
+      return nullptr;
+    }
   }
 
   for (const NGPaintFragment* runner = Parent(); runner;

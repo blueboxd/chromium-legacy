@@ -613,6 +613,8 @@ jumbo_component("base") {
     "profiler/metadata_recorder.cc",
     "profiler/metadata_recorder.h",
     "profiler/native_unwinder.h",
+    "profiler/native_unwinder_android.cc",
+    "profiler/native_unwinder_android.h",
     "profiler/native_unwinder_mac.cc",
     "profiler/native_unwinder_mac.h",
     "profiler/native_unwinder_win.cc",
@@ -624,6 +626,7 @@ jumbo_component("base") {
     "profiler/sample_metadata.h",
     "profiler/stack_sampler.cc",
     "profiler/stack_sampler.h",
+    "profiler/stack_sampler_android.cc",
     "profiler/stack_sampler_impl.cc",
     "profiler/stack_sampler_impl.h",
     "profiler/stack_sampler_mac.cc",
@@ -1329,7 +1332,10 @@ jumbo_component("base") {
 
   # Android.
   if (is_android) {
-    sources -= [ "debug/stack_trace_posix.cc" ]
+    sources -= [
+      "debug/stack_trace_posix.cc",
+      "profiler/stack_sampler_posix.cc",
+    ]
     sources += [
       "android/android_hardware_buffer_compat.cc",
       "android/android_hardware_buffer_compat.h",

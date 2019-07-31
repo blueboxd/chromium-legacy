@@ -35,10 +35,8 @@ void ContentMockCertVerifier::CertVerifier::set_default_result(
       switches::kMockCertVerifierDefaultResultForTesting,
       base::NumberToString(default_result));
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsInProcessNetworkService()) {
+  if (IsInProcessNetworkService())
     return;
-  }
 
   EnsureNetworkServiceTestInitialized();
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
@@ -59,10 +57,8 @@ void ContentMockCertVerifier::CertVerifier::AddResultForCertAndHost(
     int rv) {
   verifier_->AddResultForCertAndHost(cert, host_pattern, verify_result, rv);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsInProcessNetworkService()) {
+  if (IsInProcessNetworkService())
     return;
-  }
 
   EnsureNetworkServiceTestInitialized();
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;

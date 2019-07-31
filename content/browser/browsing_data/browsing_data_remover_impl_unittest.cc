@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/browsing_data/browsing_data_remover_impl.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -27,7 +29,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "content/browser/browsing_data/browsing_data_remover_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -63,26 +64,28 @@
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/mock_persistent_nel_store.h"
 #include "net/network_error_logging/network_error_logging_service.h"
+#include "net/reporting/mock_persistent_reporting_store.h"
 #include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_service.h"
 #include "net/reporting/reporting_test_util.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+using testing::_;
 using testing::ByRef;
 using testing::Eq;
 using testing::Invoke;
 using testing::IsEmpty;
 using testing::MakeMatcher;
-using testing::MatchResultListener;
 using testing::Matcher;
 using testing::MatcherInterface;
+using testing::MatchResultListener;
 using testing::Not;
 using testing::Return;
 using testing::SizeIs;
 using testing::UnorderedElementsAre;
 using testing::WithArgs;
-using testing::_;
 using CookieDeletionFilterPtr = network::mojom::CookieDeletionFilterPtr;
 
 namespace content {
@@ -1285,7 +1288,64 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveCodeCache) {
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)
-TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache) {
+TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_WithStore) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  net::MockPersistentReportingStore store;
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy(), &store);
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  reporting_service->ProcessHeader(GURL("https://origin/path"),
+                                   R"json(
+      {"endpoints":[{"url":"https://endpoint/"}],
+       "group":"group", "max_age":86400}
+      )json");
+  store.FinishLoading(true /* load_success */);
+  store.Flush();
+
+  BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+      ->GetURLRequestContext()
+      ->GetURLRequestContext()
+      ->set_reporting_service(reporting_service.get());
+
+  ASSERT_EQ(1u, reporting_cache->GetEndpointCount());
+  EXPECT_THAT(
+      store.GetAllCommands(),
+      testing::IsSupersetOf(
+          {net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   ADD_REPORTING_ENDPOINT,
+               GURL("https://origin/"), "group", GURL("https://endpoint/")),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   ADD_REPORTING_ENDPOINT_GROUP,
+               GURL("https://origin/"), "group")}));
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::DATA_TYPE_COOKIES, false);
+
+  EXPECT_EQ(0u, reporting_cache->GetEndpointCount());
+  EXPECT_THAT(
+      store.GetAllCommands(),
+      testing::IsSupersetOf(
+          {net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   DELETE_REPORTING_ENDPOINT,
+               GURL("https://origin/"), "group", GURL("https://endpoint/")),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   DELETE_REPORTING_ENDPOINT_GROUP,
+               GURL("https://origin/"), "group")}));
+}
+
+TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_NoPersistentStore) {
   // TODO: rewrite this test to work with Network Service objects.
   // https://crbug.com/967698
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
@@ -1370,6 +1430,118 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_SpecificOrigins) {
   std::vector<url::Origin> origins = reporting_cache->GetAllOrigins();
   EXPECT_THAT(origins, UnorderedElementsAre(url::Origin::Create(domain2),
                                             url::Origin::Create(domain4)));
+}
+
+TEST_F(BrowsingDataRemoverImplTest,
+       RemoveReportingCache_SpecificOriginsFromStore) {
+  // TODO: rewrite this test to work with Network Service objects.
+  // https://crbug.com/967698
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
+  net::MockPersistentReportingStore store;
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy(), &store);
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  reporting_service->ProcessHeader(GURL("https://google.com"),
+                                   R"json(
+      {"endpoints":[{"url":"https://google.com"}],
+       "group":"group", "max_age":86400}
+      )json");
+  reporting_service->ProcessHeader(GURL("https://host2.com"),
+                                   R"json(
+      {"endpoints":[{"url":"https://host2.com"}],
+       "group":"group", "max_age":86400}
+      )json");
+  reporting_service->ProcessHeader(GURL("https://host3.com"),
+                                   R"json(
+      {"endpoints":[{"url":"https://host3.com"}],
+       "group":"group", "max_age":86400}
+      )json");
+  reporting_service->ProcessHeader(GURL("https://host4.com"),
+                                   R"json(
+      {"endpoints":[{"url":"https://host4.com"}],
+       "group":"group", "max_age":86400}
+      )json");
+  store.FinishLoading(true /* load_success */);
+  store.Flush();
+
+  BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+      ->GetURLRequestContext()
+      ->GetURLRequestContext()
+      ->set_reporting_service(reporting_service.get());
+
+  ASSERT_EQ(4u, reporting_cache->GetEndpointCount());
+  EXPECT_THAT(
+      store.GetAllCommands(),
+      testing::IsSupersetOf(
+          {net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   ADD_REPORTING_ENDPOINT,
+               GURL("https://google.com/"), "group",
+               GURL("https://google.com/")),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   ADD_REPORTING_ENDPOINT_GROUP,
+               GURL("https://google.com/"), "group"),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   ADD_REPORTING_ENDPOINT,
+               GURL("https://host2.com/"), "group", GURL("https://host2.com/")),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   ADD_REPORTING_ENDPOINT_GROUP,
+               GURL("https://host2.com/"), "group"),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   ADD_REPORTING_ENDPOINT,
+               GURL("https://host3.com/"), "group", GURL("https://host3.com/")),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   ADD_REPORTING_ENDPOINT_GROUP,
+               GURL("https://host3.com/"), "group"),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   ADD_REPORTING_ENDPOINT,
+               GURL("https://host4.com/"), "group", GURL("https://host4.com/")),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   ADD_REPORTING_ENDPOINT_GROUP,
+               GURL("https://host4.com/"), "group")}));
+
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  filter_builder->AddRegisterableDomain("google.com");
+  filter_builder->AddRegisterableDomain("host3.com");
+  BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
+                              BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              std::move(filter_builder));
+
+  EXPECT_EQ(2u, reporting_cache->GetEndpointCount());
+  EXPECT_THAT(
+      store.GetAllCommands(),
+      testing::IsSupersetOf(
+          {net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   DELETE_REPORTING_ENDPOINT,
+               GURL("https://google.com/"), "group",
+               GURL("https://google.com/")),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   DELETE_REPORTING_ENDPOINT_GROUP,
+               GURL("https://google.com/"), "group"),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   DELETE_REPORTING_ENDPOINT,
+               GURL("https://host3.com/"), "group", GURL("https://host3.com/")),
+           net::MockPersistentReportingStore::Command(
+               net::MockPersistentReportingStore::Command::Type::
+                   DELETE_REPORTING_ENDPOINT_GROUP,
+               GURL("https://host3.com/"), "group")}));
 }
 
 TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_NoService) {

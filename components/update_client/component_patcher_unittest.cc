@@ -12,8 +12,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "components/services/patch/patch_service.h"
-#include "components/services/patch/public/mojom/constants.mojom.h"
+#include "components/services/patch/in_process_file_patcher.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/component_patcher_unittest.h"
 #include "components/update_client/patch/patch_impl.h"
@@ -21,7 +20,6 @@
 #include "components/update_client/update_client_errors.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -151,13 +149,10 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
   command_args->SetString("input", "binary_input.bin");
   command_args->SetString("patch", "binary_courgette_patch.bin");
 
-  // The operation needs a Patcher to access the PatchService.
-  service_manager::TestConnectorFactory connector_factory;
-  patch::PatchService patch_service(
-      connector_factory.RegisterInstance(patch::mojom::kServiceName));
-  scoped_refptr<Patcher> patcher = base::MakeRefCounted<PatchChromiumFactory>(
-                                       connector_factory.CreateConnector())
-                                       ->Create();
+  scoped_refptr<Patcher> patcher =
+      base::MakeRefCounted<PatchChromiumFactory>(
+          base::BindRepeating(&patch::LaunchInProcessFilePatcher))
+          ->Create();
 
   TestCallback callback;
   scoped_refptr<DeltaUpdateOp> op = CreateDeltaUpdateOp("courgette", patcher);
@@ -192,12 +187,10 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
   command_args->SetString("patch", "binary_bsdiff_patch.bin");
 
   // The operation needs a Patcher to access the PatchService.
-  service_manager::TestConnectorFactory connector_factory;
-  patch::PatchService patch_service(
-      connector_factory.RegisterInstance(patch::mojom::kServiceName));
-  scoped_refptr<Patcher> patcher = base::MakeRefCounted<PatchChromiumFactory>(
-                                       connector_factory.CreateConnector())
-                                       ->Create();
+  scoped_refptr<Patcher> patcher =
+      base::MakeRefCounted<PatchChromiumFactory>(
+          base::BindRepeating(&patch::LaunchInProcessFilePatcher))
+          ->Create();
 
   TestCallback callback;
   scoped_refptr<DeltaUpdateOp> op = CreateDeltaUpdateOp("bsdiff", patcher);

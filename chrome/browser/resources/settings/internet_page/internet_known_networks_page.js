@@ -12,7 +12,7 @@ Polymer({
 
   behaviors: [
     CrNetworkListenerBehavior,
-    CrPolicyNetworkBehavior,
+    CrPolicyNetworkBehaviorMojo,
   ],
 
   properties: {
@@ -162,14 +162,15 @@ Polymer({
     // We need to make a round trip to Chrome in order to retrieve the managed
     // properties for the network. The delay is not noticeable (~5ms) and is
     // preferable to initiating a query for every known network at load time.
-    this.networkingPrivate.getManagedProperties(
-        this.selectedGuid_, properties => {
-          if (chrome.runtime.lastError || !properties) {
-            console.error(
-                'Unexpected error: ' + chrome.runtime.lastError.message);
+    this.networkConfigProxy_.getManagedProperties(this.selectedGuid_)
+        .then(response => {
+          const properties = response.result;
+          if (!properties) {
+            console.error('Properties not found for: ' + this.selectedGuid_);
             return;
           }
-          if (this.isNetworkPolicyEnforced(properties.Priority)) {
+          if (properties.priority &&
+              this.isNetworkPolicyEnforced(properties.priority)) {
             this.showAddPreferred_ = false;
             this.showRemovePreferred_ = false;
           } else {
@@ -177,7 +178,7 @@ Polymer({
             this.showAddPreferred_ = !preferred;
             this.showRemovePreferred_ = preferred;
           }
-          this.enableForget_ = !this.isPolicySource(properties.Source);
+          this.enableForget_ = !this.isPolicySource(networkState.source);
           /** @type {!CrActionMenuElement} */ (this.$.dotsMenu)
               .showAt(/** @type {!Element} */ (button));
         });

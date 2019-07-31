@@ -114,7 +114,7 @@ class VIEWS_EXPORT Label : public View,
   void SetSelectionBackgroundColor(SkColor color);
 
   // Get/Set drop shadows underneath the text.
-  const gfx::ShadowValues& shadows() const;
+  const gfx::ShadowValues& GetShadows() const;
   void SetShadows(const gfx::ShadowValues& shadows);
 
   // Gets/Sets whether subpixel rendering is used; the default is true, but this

@@ -21,7 +21,8 @@ class MockWebThemeEngine : public blink::WebThemeEngine {
              blink::WebThemeEngine::Part,
              blink::WebThemeEngine::State,
              const blink::WebRect&,
-             const blink::WebThemeEngine::ExtraParams*) override;
+             const blink::WebThemeEngine::ExtraParams*,
+             blink::WebColorScheme) override;
 #endif  // !defined(OS_MACOSX)
 };
 

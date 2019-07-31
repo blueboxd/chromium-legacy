@@ -94,10 +94,6 @@ class CastExtensionURLLoader : public network::mojom::URLLoader,
         << "The original client shouldn't have been notified of any redirects";
   }
 
-  void ProceedWithResponse() override {
-    network_loader_->ProceedWithResponse();
-  }
-
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {
     network_loader_->SetPriority(priority, intra_priority_value);

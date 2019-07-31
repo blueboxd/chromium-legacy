@@ -38,6 +38,7 @@ void ReportingBrowsingDataRemover::RemoveBrowsingData(
         cache->RemoveClient(origin);
     }
   }
+  cache->Flush();
 }
 
 // static
@@ -50,6 +51,7 @@ void ReportingBrowsingDataRemover::RemoveAllBrowsingData(ReportingCache* cache,
   if ((data_type_mask & DATA_TYPE_CLIENTS) != 0) {
     cache->RemoveAllClients();
   }
+  cache->Flush();
 }
 
 }  // namespace net

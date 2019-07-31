@@ -85,8 +85,6 @@ constexpr char kRankingNormalAppPackageName[] = "test.ranking.app.normal";
 
 constexpr char kSettingsInternalName[] = "Settings";
 
-constexpr bool kEphemeralUser = true;
-
 // Waits for base::Time::Now() is updated.
 void WaitTimeUpdated() {
   base::RunLoop run_loop;
@@ -123,11 +121,8 @@ class AppSearchProviderTest : public AppListTestBase {
 
   void CreateSearch() {
     clock_.SetNow(kTestCurrentTime);
-    // Create ranker here so that tests can modify feature flags.
-    ranker_ = std::make_unique<AppSearchResultRanker>(temp_dir_.GetPath(),
-                                                      kEphemeralUser);
     app_search_ = std::make_unique<AppSearchProvider>(
-        profile_.get(), nullptr, &clock_, model_updater_.get(), ranker_.get());
+        profile_.get(), nullptr, &clock_, model_updater_.get());
   }
 
   void CreateSearchWithContinueReading() {
@@ -250,11 +245,6 @@ class AppSearchProviderTest : public AppListTestBase {
   const SearchProvider::Results& results() { return app_search_->results(); }
   ArcAppTest& arc_test() { return arc_test_; }
 
-  // Train the |app_search| provider with id.
-  void Train(const std::string& id) {
-    app_search_->Train(id, RankingItemType::kApp);
-  }
-
   void CallViewClosing() { app_search_->ViewClosing(); }
 
   sync_sessions::SyncedSessionTracker* session_tracker() {
@@ -268,7 +258,6 @@ class AppSearchProviderTest : public AppListTestBase {
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AppSearchProvider> app_search_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
-  std::unique_ptr<AppSearchResultRanker> ranker_;
   ArcAppTest arc_test_;
 
   // For continue reading.
@@ -312,21 +301,6 @@ TEST_F(AppSearchProviderTest, Basic) {
   result = RunQuery("app1");
   EXPECT_TRUE(result == "Packaged App 1,Fake App 1" ||
               result == "Fake App 1,Packaged App 1");
-}
-
-TEST_F(AppSearchProviderTest, NormalizeAppID) {
-  const std::string raw_id = "mgndgikekgjfcpckkfioiadnlibdjbkf";
-  const std::string id_with_scheme =
-      "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf";
-  const std::string id_with_slash = "mgndgikekgjfcpckkfioiadnlibdjbkf/";
-  const std::string id_with_scheme_and_slash =
-      "chrome-extension://mgndgikekgjfcpckkfioiadnlibdjbkf/";
-
-  EXPECT_EQ(AppSearchProvider::NormalizeIDForTest(raw_id), raw_id);
-  EXPECT_EQ(AppSearchProvider::NormalizeIDForTest(id_with_scheme), raw_id);
-  EXPECT_EQ(AppSearchProvider::NormalizeIDForTest(id_with_slash), raw_id);
-  EXPECT_EQ(AppSearchProvider::NormalizeIDForTest(id_with_scheme_and_slash),
-            raw_id);
 }
 
 TEST_F(AppSearchProviderTest, DisableAndEnable) {
@@ -667,50 +641,6 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::Now());
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(0));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(0));
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-            RunQuery(""));
-}
-
-TEST_F(AppSearchProviderTest, FetchRecommendationsFromRanker) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitWithFeatures(
-      {app_list_features::kEnableZeroStateAppsRanker}, {});
-  CreateSearch();
-
-  extensions::ExtensionPrefs* prefs =
-      extensions::ExtensionPrefs::Get(profile_.get());
-
-  prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(20));
-  prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
-  prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-            RunQuery(""));
-
-  Train(kPackagedApp2Id);
-  Train(kPackagedApp2Id);
-  Train(kPackagedApp1Id);
-  EXPECT_EQ("Packaged App 2,Packaged App 1,Hosted App,Settings,Camera",
-            RunQuery(""));
-}
-
-TEST_F(AppSearchProviderTest, RankerIsDisabledWithFlag) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitWithFeatures(
-      {}, {app_list_features::kEnableZeroStateAppsRanker});
-  CreateSearch();
-
-  extensions::ExtensionPrefs* prefs =
-      extensions::ExtensionPrefs::Get(profile_.get());
-
-  prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(20));
-  prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
-  prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
-            RunQuery(""));
-
-  Train(kPackagedApp2Id);
-  Train(kPackagedApp2Id);
-  Train(kPackagedApp1Id);
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
             RunQuery(""));
 }

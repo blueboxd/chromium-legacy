@@ -30,7 +30,6 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -791,9 +790,6 @@ network::mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
   DCHECK(context);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return nullptr;
-
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
@@ -887,7 +883,7 @@ std::unique_ptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
 
 bool ContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
-    ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    WebContents::Getter web_contents_getter,
     int child_id,
     NavigationUIData* navigation_data,
     bool is_main_frame,

@@ -225,6 +225,9 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   friend class test::HitTestNativeWidgetMac;
   friend class views::test::WidgetTest;
 
+  class ZoomFocusMonitor;
+  std::unique_ptr<ZoomFocusMonitor> zoom_focus_monitor_;
+
   internal::NativeWidgetDelegate* delegate_;
   std::unique_ptr<NativeWidgetMacNSWindowHost> ns_window_host_;
 

@@ -65,7 +65,6 @@ struct Env {
                        appcache_service, base::FilePath(),
                        /*browser_context=*/nullptr,
                        /*resource_context=*/nullptr,
-                       /*request_context_getter=*/nullptr,
                        /*special_storage_policy=*/nullptr));
     thread_bundle.RunUntilIdle();
   }

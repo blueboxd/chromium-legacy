@@ -265,7 +265,7 @@ class IdentityManager : public KeyedService,
   // Returns extended information for account identified by |account_info|.
   // The information will be returned if the information is available and
   // refresh token is available for account.
-  base::Optional<AccountInfo> FindExtendedAccountInfoForAccount(
+  base::Optional<AccountInfo> FindExtendedAccountInfoForAccountWithRefreshToken(
       const CoreAccountInfo& account_info) const;
 
   // Looks up and returns information for account with given |account_id|. If
@@ -273,7 +273,7 @@ class IdentityManager : public KeyedService,
   // to searching on the vector returned by GetAccountsWithRefreshTokens() but
   // without allocating memory for the vector.
   base::Optional<AccountInfo>
-  FindAccountInfoForAccountWithRefreshTokenByAccountId(
+  FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
       const CoreAccountId& account_id) const;
 
   // Looks up and returns information for account with given |email_address|. If
@@ -281,14 +281,15 @@ class IdentityManager : public KeyedService,
   // to searching on the vector returned by GetAccountsWithRefreshTokens() but
   // without allocating memory for the vector.
   base::Optional<AccountInfo>
-  FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+  FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
       const std::string& email_address) const;
 
   // Looks up and returns information for account with given |gaia_id|. If the
   // account cannot be found, return an empty optional. This is equivalent to
   // searching on the vector returned by GetAccountsWithRefreshTokens() but
   // without allocating memory for the vector.
-  base::Optional<AccountInfo> FindAccountInfoForAccountWithRefreshTokenByGaiaId(
+  base::Optional<AccountInfo>
+  FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
       const std::string& gaia_id) const;
 
   // Creates an UbertokenFetcher given the passed-in information, allowing
@@ -498,13 +499,13 @@ class IdentityManager : public KeyedService,
       const std::string& email,
       const std::string& gaia_id);
   friend void SetRefreshTokenForAccount(IdentityManager* identity_manager,
-                                        const std::string& account_id,
+                                        const CoreAccountId& account_id,
                                         const std::string& token_value);
   friend void SetInvalidRefreshTokenForAccount(
       IdentityManager* identity_manager,
-      const std::string& account_id);
+      const CoreAccountId& account_id);
   friend void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
-                                           const std::string& account_id);
+                                           const CoreAccountId& account_id);
   friend void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                           AccountInfo account_info);
   friend void SetFreshnessOfAccountsInGaiaCookie(
@@ -512,7 +513,7 @@ class IdentityManager : public KeyedService,
       bool accounts_are_fresh);
   friend void UpdatePersistentErrorOfRefreshTokenForAccount(
       IdentityManager* identity_manager,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const GoogleServiceAuthError& auth_error);
 
   friend void DisableAccessTokenFetchRetries(IdentityManager* identity_manager);
@@ -527,7 +528,7 @@ class IdentityManager : public KeyedService,
 
   friend void SimulateSuccessfulFetchOfAccountInfo(
       IdentityManager* identity_manager,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const std::string& email,
       const std::string& gaia,
       const std::string& hosted_domain,

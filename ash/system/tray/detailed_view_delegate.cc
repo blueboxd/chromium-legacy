@@ -62,8 +62,8 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
 class BackButton : public CustomShapeButton {
  public:
   BackButton(views::ButtonListener* listener) : CustomShapeButton(listener) {
-    gfx::ImageSkia image =
-        gfx::CreateVectorIcon(kUnifiedMenuArrowBackIcon, kUnifiedMenuIconColor);
+    gfx::ImageSkia image = gfx::CreateVectorIcon(kUnifiedMenuArrowBackIcon,
+                                                 kIconOnDarkBackgroundColor);
     SetImage(views::Button::STATE_NORMAL, image);
     SetImageHorizontalAlignment(ALIGN_RIGHT);
     SetImageVerticalAlignment(ALIGN_MIDDLE);
@@ -145,7 +145,7 @@ TriView* DetailedViewDelegate::CreateTitleRow(int string_id) {
 
 views::View* DetailedViewDelegate::CreateTitleSeparator() {
   views::Separator* separator = new views::Separator();
-  separator->SetColor(kUnifiedMenuSeparatorColor);
+  separator->SetColor(kSeparatorOnDarkBackgroundColor);
   separator->SetBorder(views::CreateEmptyBorder(
       kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
   return separator;
@@ -156,7 +156,7 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
   if (show_separator) {
     view->SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(0, 0, kTraySeparatorWidth, 0,
-                                      kUnifiedMenuSeparatorColor),
+                                      kSeparatorOnDarkBackgroundColor),
         gfx::Insets(kMenuSeparatorVerticalPadding, 0,
                     kMenuSeparatorVerticalPadding - kTraySeparatorWidth, 0)));
   } else {
@@ -168,7 +168,7 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
 
 views::Separator* DetailedViewDelegate::CreateListSubHeaderSeparator() {
   views::Separator* separator = new views::Separator();
-  separator->SetColor(kUnifiedMenuSeparatorColor);
+  separator->SetColor(kSeparatorOnDarkBackgroundColor);
   separator->SetBorder(views::CreateEmptyBorder(
       kMenuSeparatorVerticalPadding - views::Separator::kThickness, 0, 0, 0));
   return separator;
@@ -183,8 +183,8 @@ HoverHighlightView* DetailedViewDelegate::CreateScrollListItem(
   if (icon.is_empty())
     item->AddLabelRow(text);
   else
-    item->AddIconAndLabel(gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor),
-                          text);
+    item->AddIconAndLabel(
+        gfx::CreateVectorIcon(icon, kIconOnDarkBackgroundColor), text);
   return item;
 }
 

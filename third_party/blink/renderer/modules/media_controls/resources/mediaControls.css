@@ -1028,13 +1028,16 @@ video::-internal-media-controls-text-track-list-header {
   background-image: -webkit-image-set(url(ic_arrow_back.svg) 1x);
 }
 
+label[pseudo="-internal-media-controls-text-track-list-item"] * {
+  pointer-events: none;
+}
+
 label[pseudo="-internal-media-controls-text-track-list-item"] input {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
   margin: 15px;
   float: right;
-  pointer-events: none;
 }
 
 label[pseudo="-internal-media-controls-text-track-list-item"] input:checked {

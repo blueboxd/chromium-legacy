@@ -11,7 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
-#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
 #include "media/capture/video/video_capture_device_factory.h"
 
 namespace media {

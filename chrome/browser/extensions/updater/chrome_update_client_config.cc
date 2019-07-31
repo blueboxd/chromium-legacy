@@ -16,6 +16,7 @@
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/patch/content/patch_service.h"
 #include "components/services/unzip/content/unzip_service.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/net/network_chromium.h"
@@ -28,9 +29,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_prefs.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 
@@ -197,7 +196,7 @@ ChromeUpdateClientConfig::GetPatcherFactory() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!patch_factory_) {
     patch_factory_ = base::MakeRefCounted<update_client::PatchChromiumFactory>(
-        content::GetSystemConnector()->Clone());
+        base::BindRepeating(&patch::LaunchFilePatcher));
   }
   return patch_factory_;
 }

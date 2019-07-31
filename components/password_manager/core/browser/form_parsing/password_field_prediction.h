@@ -20,6 +20,7 @@ namespace password_manager {
 enum class CredentialFieldType {
   kNone,
   kUsername,
+  kSingleUsername,
   kCurrentPassword,
   kNewPassword,
   kConfirmationPassword

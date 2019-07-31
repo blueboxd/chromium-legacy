@@ -22,6 +22,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/service/display/damage_frame_annotator.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
@@ -378,9 +379,12 @@ void Display::InitializeRenderer(bool enable_shared_images) {
       renderer_->use_partial_swap() && !renderer_->has_overlay_validator();
   bool needs_surface_occluding_damage_rect =
       renderer_->OverlayNeedsSurfaceOccludingDamageRect();
-  aggregator_.reset(new SurfaceAggregator(
+  aggregator_ = std::make_unique<SurfaceAggregator>(
       surface_manager_, resource_provider_.get(), output_partial_list,
-      needs_surface_occluding_damage_rect));
+      needs_surface_occluding_damage_rect);
+  if (settings_.show_aggregated_damage)
+    aggregator_->SetFrameAnnotator(std::make_unique<DamageFrameAnnotator>());
+
   aggregator_->set_output_is_secure(output_is_secure_);
   aggregator_->SetOutputColorSpace(device_color_space_);
   // Consider adding a softare limit as well.
@@ -537,6 +541,22 @@ bool Display::DrawAndSwap() {
       UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
                               draw_timer->Elapsed().InMicroseconds());
     }
+
+    std::vector<std::unique_ptr<Surface::PresentationHelper>>
+        presentation_helper_list;
+    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
+      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+      if (surface) {
+        std::unique_ptr<Surface::PresentationHelper> helper =
+            surface->TakePresentationHelperForPresentNotification();
+        if (helper) {
+          surface->OnWasDrawn(helper->frame_token(), draw_timer->Begin());
+          presentation_helper_list.push_back(std::move(helper));
+        }
+      }
+    }
+    pending_surfaces_with_presentation_helpers_.emplace_back(
+        std::make_pair(now_time, std::move(presentation_helper_list)));
   } else {
     TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }
@@ -555,18 +575,6 @@ bool Display::DrawAndSwap() {
           ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT,
           scheduler_->current_frame_time());
     }
-
-    std::vector<std::unique_ptr<Surface::PresentationHelper>>
-        presentation_helper_list;
-    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
-      if (surface) {
-        presentation_helper_list.push_back(
-            surface->TakePresentationHelperForPresentNotification());
-      }
-    }
-    pending_surfaces_with_presentation_helpers_.emplace_back(
-        std::make_pair(now_time, std::move(presentation_helper_list)));
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
@@ -688,8 +696,7 @@ void Display::DidReceivePresentationFeedback(
       "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
   for (auto& presentation_helper : presentation_helper_list) {
-    if (presentation_helper)
-      presentation_helper->DidPresent(feedback);
+    presentation_helper->DidPresent(feedback);
   }
   pending_surfaces_with_presentation_helpers_.pop_front();
 }

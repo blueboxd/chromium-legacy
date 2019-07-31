@@ -132,12 +132,13 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
 }
 
 const TransformPaintPropertyNode&
-PaintArtifactCompositor::ScrollTranslationForPendingLayer(
+PaintArtifactCompositor::ScrollOffsetTranslationForLayer(
     const PaintArtifact& paint_artifact,
     const PendingLayer& pending_layer) {
-  if (const auto* scroll_translation = ScrollTranslationForScrollHitTestLayer(
-          paint_artifact, pending_layer)) {
-    return *scroll_translation;
+  if (const auto* scroll_hit_test =
+          ScrollHitTestForLayer(paint_artifact, pending_layer)) {
+    if (scroll_hit_test->scroll_offset)
+      return *scroll_hit_test->scroll_offset;
   }
   const auto& transform = pending_layer.property_tree_state.Transform();
   // TODO(pdr): This could be a performance issue because it crawls up the
@@ -146,8 +147,8 @@ PaintArtifactCompositor::ScrollTranslationForPendingLayer(
   return transform.NearestScrollTranslationNode();
 }
 
-const TransformPaintPropertyNode*
-PaintArtifactCompositor::ScrollTranslationForScrollHitTestLayer(
+const HitTestData::ScrollHitTest*
+PaintArtifactCompositor::ScrollHitTestForLayer(
     const PaintArtifact& paint_artifact,
     const PendingLayer& pending_layer) {
   auto paint_chunks =
@@ -157,29 +158,29 @@ PaintArtifactCompositor::ScrollTranslationForScrollHitTestLayer(
   if (first_paint_chunk.size() != 1)
     return nullptr;
 
-  const auto& display_item =
-      paint_artifact.GetDisplayItemList()[first_paint_chunk.begin_index];
-  if (!display_item.IsScrollHitTest())
+  const HitTestData* hit_test_data = first_paint_chunk.hit_test_data.get();
+  if (!hit_test_data)
     return nullptr;
 
-  const auto& scroll_hit_test_display_item =
-      static_cast<const ScrollHitTestDisplayItem&>(display_item);
-  return &scroll_hit_test_display_item.scroll_offset_node();
+  return base::OptionalOrNullptr(hit_test_data->scroll_hit_test);
 }
 
 scoped_refptr<cc::Layer>
 PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
     const PaintArtifact& paint_artifact,
     const PendingLayer& pending_layer) {
-  const auto* scroll_offset_node =
-      ScrollTranslationForScrollHitTestLayer(paint_artifact, pending_layer);
-  if (!scroll_offset_node)
+  const auto* scroll_hit_test =
+      ScrollHitTestForLayer(paint_artifact, pending_layer);
+  if (!scroll_hit_test)
+    return nullptr;
+  const auto* scroll_offset = scroll_hit_test->scroll_offset;
+  if (!scroll_offset)
     return nullptr;
 
-  // We don't decomposite scroll transform nodes.
+  // We shouldn't decomposite scroll transform nodes.
   DCHECK_EQ(FloatPoint(), pending_layer.offset_of_decomposited_transforms);
 
-  const auto& scroll_node = *scroll_offset_node->ScrollNode();
+  const auto& scroll_node = *scroll_offset->ScrollNode();
   auto scroll_element_id = scroll_node.GetCompositorElementId();
 
   scoped_refptr<cc::Layer> scroll_layer;
@@ -197,7 +198,8 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   // TODO(pdr): The scroll layer's bounds are currently set to the clipped
   // container bounds but this does not include the border. We may want to
   // change this behavior to make non-composited and composited hit testing
-  // match (see: crbug.com/753124).
+  // match (see: crbug.com/753124). To do this, use
+  // |scroll_hit_test->scroll_container_bounds|.
   auto bounds = scroll_node.ContainerRect().Size();
   // Mark the layer as scrollable.
   // TODO(pdr): When CAP launches this parameter for bounds will not be needed.
@@ -302,13 +304,59 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
                                                      rect)) {
         continue;
       }
-      FloatRect visible_rect = rect.Rect();
-      visible_rect.Move(-layer_offset.x(), -layer_offset.y());
-      touch_action_in_layer_space.Union(touch_action_rect.allowed_touch_action,
-                                        EnclosingIntRect(visible_rect));
+      rect.MoveBy(FloatPoint(-layer_offset.x(), -layer_offset.y()));
+      touch_action_in_layer_space.Union(
+          touch_action_rect.allowed_touch_action,
+          (gfx::Rect)EnclosingIntRect(rect.Rect()));
     }
   }
   layer->SetTouchActionRegion(std::move(touch_action_in_layer_space));
+}
+
+void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
+    cc::Layer* layer,
+    // TODO(wangxianzhu): Remove this parameter and use
+    // layer->offset_to_transform_parent() after we fully launch
+    // BlinkGenPropertyTrees.
+    const gfx::Vector2dF& layer_offset,
+    const PropertyTreeState& layer_state,
+    const PaintChunkSubset& paint_chunks) {
+  cc::Region non_fast_scrollable_regions_in_layer_space;
+  for (const auto& chunk : paint_chunks) {
+    // Add any non-fast scrollable hit test data from the paint chunk.
+    const auto* hit_test_data = chunk.hit_test_data.get();
+    if (!hit_test_data || !hit_test_data->scroll_hit_test)
+      continue;
+
+    // Skip the scroll hit test rect if it is for scrolling this cc::Layer. This
+    // is only needed for CompositeAfterPaint because pre-CompositeAfterPaint
+    // does not paint scroll hit test data for composited scrollers.
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      if (layer->scrollable()) {
+        const auto* scroll_offset =
+            hit_test_data->scroll_hit_test->scroll_offset;
+        if (scroll_offset) {
+          const auto& scroll_node = *scroll_offset->ScrollNode();
+          auto scroll_element_id = scroll_node.GetCompositorElementId();
+          if (layer->element_id() == scroll_element_id)
+            continue;
+        }
+      }
+    }
+
+    const auto& bounds =
+        hit_test_data->scroll_hit_test->scroll_container_bounds;
+    auto rect = FloatClipRect(FloatRect(bounds));
+    const auto& chunk_state = chunk.properties.GetPropertyTreeState();
+    if (!GeometryMapper::LocalToAncestorVisualRect(chunk_state, layer_state,
+                                                   rect)) {
+      continue;
+    }
+    rect.MoveBy(FloatPoint(-layer_offset.x(), -layer_offset.y()));
+    non_fast_scrollable_regions_in_layer_space.Union(
+        (gfx::Rect)EnclosingIntRect(rect.Rect()));
+  }
+  layer->SetNonFastScrollableRegion(non_fast_scrollable_regions_in_layer_space);
 }
 
 bool PaintArtifactCompositor::HasComposited(
@@ -581,10 +629,11 @@ void PaintArtifactCompositor::LayerizeGroup(
       // Case A: The next chunk belongs to the current group but no subgroup.
       const auto& last_display_item =
           paint_artifact.GetDisplayItemList()[chunk_it->begin_index];
+      bool item_for_scrolling = last_display_item.IsScrollHitTest();
       bool requires_own_layer = last_display_item.IsForeignLayer() ||
                                 // TODO(pdr): This should require a direct
                                 // compositing reason.
-                                last_display_item.IsScrollHitTest();
+                                item_for_scrolling;
       pending_layers_.emplace_back(
           *chunk_it, chunk_it - paint_artifact.PaintChunks().begin(),
           requires_own_layer);
@@ -849,10 +898,11 @@ void PaintArtifactCompositor::DecompositeTransforms(
       // The scroll translation node of a scroll hit test layer may not be
       // referenced by any pending layer's property tree state. Disallow
       // decomposition of it (and its ancestors).
-      if (const auto* scroll_translation =
-              ScrollTranslationForScrollHitTestLayer(paint_artifact,
-                                                     pending_layer))
-        mark_not_decompositable(scroll_translation);
+      if (const auto* scroll_hit_test =
+              ScrollHitTestForLayer(paint_artifact, pending_layer)) {
+        if (const auto* scroll_offset = scroll_hit_test->scroll_offset)
+          mark_not_decompositable(scroll_offset);
+      }
     }
   }
 
@@ -945,13 +995,16 @@ void PaintArtifactCompositor::Update(
         paint_artifact, pending_layer, new_content_layer_clients,
         new_scroll_hit_test_layers);
 
-    // Pre-CompositeAfterPaint, touch action rects are updated through
-    // ScrollingCoordinator::UpdateLayerTouchActionRects.
+    // In Pre-CompositeAfterPaint, touch action rects and non-fast scrollable
+    // regions are updated through ScrollingCoordinator.
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       auto paint_chunks = paint_artifact->GetPaintChunkSubset(
           pending_layer.paint_chunk_indices);
       UpdateTouchActionRects(layer.get(), layer->offset_to_transform_parent(),
                              property_state, paint_chunks);
+      UpdateNonFastScrollableRegions(layer.get(),
+                                     layer->offset_to_transform_parent(),
+                                     property_state, paint_chunks);
     }
 
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());
@@ -966,7 +1019,7 @@ void PaintArtifactCompositor::Update(
     // The compositor scroll node is not directly stored in the property tree
     // state but can be created via the scroll offset translation node.
     const auto& scroll_translation =
-        ScrollTranslationForPendingLayer(*paint_artifact, pending_layer);
+        ScrollOffsetTranslationForLayer(*paint_artifact, pending_layer);
     int scroll_id =
         property_tree_manager.EnsureCompositorScrollNode(scroll_translation);
 

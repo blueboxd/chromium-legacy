@@ -66,12 +66,11 @@ namespace {
 // Guards download_controller_
 base::LazyInstance<base::Lock>::DestructorAtExit g_download_controller_lock_;
 
-void CreateContextMenuDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    const content::ContextMenuParams& params,
-    bool is_link,
-    const std::string& extra_headers,
-    bool granted) {
+void CreateContextMenuDownload(const content::WebContents::Getter& wc_getter,
+                               const content::ContextMenuParams& params,
+                               bool is_link,
+                               const std::string& extra_headers,
+                               bool granted) {
   content::WebContents* web_contents = wc_getter.Run();
   if (!granted)
     return;
@@ -151,7 +150,7 @@ void RemoveDownloadItem(std::unique_ptr<DownloadManagerGetter> getter,
 }
 
 void OnRequestFileAccessResult(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     DownloadControllerBase::AcquireFileAccessPermissionCallback cb,
     bool granted,
     const std::string& permission_to_update) {
@@ -251,7 +250,7 @@ DownloadController::DownloadController() = default;
 DownloadController::~DownloadController() = default;
 
 void DownloadController::AcquireFileAccessPermission(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     DownloadControllerBase::AcquireFileAccessPermissionCallback cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -285,7 +284,7 @@ void DownloadController::AcquireFileAccessPermission(
 }
 
 void DownloadController::CreateAndroidDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const DownloadInfo& info) {
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
@@ -315,7 +314,7 @@ void DownloadController::AboutToResumeDownload(DownloadItem* download_item) {
 }
 
 void DownloadController::StartAndroidDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const DownloadInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -325,8 +324,9 @@ void DownloadController::StartAndroidDownload(
 }
 
 void DownloadController::StartAndroidDownloadInternal(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    const DownloadInfo& info, bool allowed) {
+    const content::WebContents::Getter& wc_getter,
+    const DownloadInfo& info,
+    bool allowed) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!allowed)
     return;
@@ -476,7 +476,7 @@ void DownloadController::StartContextMenuDownload(
   int process_id = web_contents->GetRenderViewHost()->GetProcess()->GetID();
   int routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
 
-  const content::ResourceRequestInfo::WebContentsGetter& wc_getter(
+  const content::WebContents::Getter& wc_getter(
       base::Bind(&GetWebContents, process_id, routing_id));
 
   AcquireFileAccessPermission(

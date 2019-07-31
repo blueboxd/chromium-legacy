@@ -12,14 +12,6 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
-namespace download {
-class DownloadItem;
-}
-
 namespace chrome {
 namespace android {
 
@@ -36,12 +28,11 @@ class MockDownloadController : public DownloadControllerBase {
       content::WebContents* web_contents,
       bool is_link, const std::string& extra_headers) override;
   void AcquireFileAccessPermission(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       AcquireFileAccessPermissionCallback callback) override;
   void SetApproveFileAccessRequestForTesting(bool approve) override;
-  void CreateAndroidDownload(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const DownloadInfo& info) override;
+  void CreateAndroidDownload(const content::WebContents::Getter& wc_getter,
+                             const DownloadInfo& info) override;
   void AboutToResumeDownload(download::DownloadItem* download_item) override;
 
  private:

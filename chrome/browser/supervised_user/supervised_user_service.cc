@@ -590,8 +590,7 @@ void SupervisedUserService::OnSafeSitesSettingChanged() {
     if (use_online_check) {
       url_filter_.InitAsyncURLChecker(
           content::BrowserContext::GetDefaultStoragePartition(profile_)
-              ->GetURLLoaderFactoryForBrowserProcess(),
-          IdentityManagerFactory::GetForProfile(profile_));
+              ->GetURLLoaderFactoryForBrowserProcess());
     } else {
       url_filter_.ClearAsyncURLChecker();
     }

@@ -9,7 +9,6 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/services/file_util/public/cpp/manifest.h"
-#include "components/services/patch/public/cpp/manifest.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
@@ -21,7 +20,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/manifest.h"
-#include "chrome/services/cups_ipp_parser/public/cpp/manifest.h"  // nogncheck
 #include "chromeos/services/cellular_setup/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/cpp/manifest.h"
 #include "chromeos/services/network_config/public/cpp/manifest.h"
@@ -104,7 +102,6 @@ GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       GetChromeManifest(),
       GetFileUtilManifest(),
-      patch::GetManifest(),
       prefs::GetLocalStateManifest(),
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -139,7 +136,6 @@ GetChromeBuiltinServiceManifests() {
       chromeos::ime::GetManifest(),
       chromeos::network_config::GetManifest(),
       chromeos::secure_channel::GetManifest(),
-      GetCupsIppParserManifest(),
 #endif
   }};
   return *manifests;

@@ -13,8 +13,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using autofill::AutofillField;
 using autofill::ACCOUNT_CREATION_PASSWORD;
+using autofill::AutofillField;
 using autofill::CONFIRMATION_PASSWORD;
 using autofill::EMAIL_ADDRESS;
 using autofill::FormData;
@@ -24,6 +24,7 @@ using autofill::NEW_PASSWORD;
 using autofill::NO_SERVER_DATA;
 using autofill::PASSWORD;
 using autofill::ServerFieldType;
+using autofill::SINGLE_USERNAME;
 using autofill::UNKNOWN_TYPE;
 using autofill::USERNAME;
 using autofill::USERNAME_AND_EMAIL_ADDRESS;
@@ -186,6 +187,8 @@ TEST(FormPredictionsTest, DeriveFromServerFieldType) {
       {"Username", USERNAME, CredentialFieldType::kUsername},
       {"Username/Email", USERNAME_AND_EMAIL_ADDRESS,
        CredentialFieldType::kUsername},
+      {"Single Username", SINGLE_USERNAME,
+       CredentialFieldType::kSingleUsername},
       {"Password", PASSWORD, CredentialFieldType::kCurrentPassword},
       {"New password", NEW_PASSWORD, CredentialFieldType::kNewPassword},
       {"Account creation password", ACCOUNT_CREATION_PASSWORD,

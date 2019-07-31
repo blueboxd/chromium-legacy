@@ -122,7 +122,7 @@ void TaskManagerView::SetColumnVisibility(int column_id, bool new_visibility) {
 }
 
 bool TaskManagerView::IsTableSorted() const {
-  return tab_table_->is_sorted();
+  return tab_table_->GetIsSorted();
 }
 
 TableSortDescriptor TaskManagerView::GetSortDescriptor() const {
@@ -328,7 +328,7 @@ void TaskManagerView::Init() {
   table_model_.reset(new TaskManagerTableModel(this));
   tab_table->SetModel(table_model_.get());
   tab_table->SetGrouper(this);
-  tab_table->set_sort_on_paint(true);
+  tab_table->SetSortOnPaint(true);
   tab_table->set_observer(this);
   tab_table->set_context_menu_controller(this);
   set_context_menu_controller(this);

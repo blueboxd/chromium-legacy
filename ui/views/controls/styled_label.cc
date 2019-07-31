@@ -233,7 +233,7 @@ void StyledLabel::SetAutoColorReadabilityEnabled(bool auto_color_readability) {
     return;
 
   auto_color_readability_enabled_ = auto_color_readability;
-  OnPropertyChanged(&auto_color_readability, kPropertyEffectsNone);
+  OnPropertyChanged(&auto_color_readability_enabled_, kPropertyEffectsNone);
 }
 
 void StyledLabel::SizeToFit(int max_width) {

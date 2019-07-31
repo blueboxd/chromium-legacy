@@ -73,8 +73,9 @@ struct SocketRequest {
   ~SocketRequest();
 
   // Used for writing/reading the IPP request/response.
-  std::vector<uint8_t> response;
   scoped_refptr<net::DrainableIOBuffer> io_buffer;
+
+  std::vector<uint8_t> response;
   SocketManagerCallback cb;
 };
 
@@ -117,7 +118,7 @@ class SocketManagerImpl : public SocketManager {
   std::unique_ptr<net::UnixDomainClientSocket> socket_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<SocketManagerImpl> weak_factory_;
+  base::WeakPtrFactory<SocketManagerImpl> weak_factory_{this};
 };
 
 // Defaults for SocketRequest.
@@ -130,8 +131,7 @@ SocketManagerImpl::SocketManagerImpl(
     base::WeakPtr<CupsProxyServiceDelegate> delegate)
     : main_runner_(base::SequencedTaskRunnerHandle::Get()),
       socket_runner_(delegate->GetIOTaskRunner()),
-      socket_(std::move(socket)),
-      weak_factory_(this) {}
+      socket_(std::move(socket)) {}
 SocketManagerImpl::~SocketManagerImpl() {}
 
 void SocketManagerImpl::ProxyToCups(std::vector<uint8_t> request,

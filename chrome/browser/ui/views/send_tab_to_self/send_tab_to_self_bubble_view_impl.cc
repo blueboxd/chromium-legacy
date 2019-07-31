@@ -97,16 +97,6 @@ void SendTabToSelfBubbleViewImpl::OnPaint(gfx::Canvas* canvas) {
 
 void SendTabToSelfBubbleViewImpl::Show(DisplayReason reason) {
   ShowForReason(reason);
-  // Keeps the send tab to self icon in omnibox and be highlighted while
-  // showing the bubble.
-  views::Button* highlight_button =
-      BrowserView::GetBrowserViewForBrowser(
-          chrome::FindBrowserWithWebContents(web_contents_))
-          ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
-          ->GetPageActionIconView(PageActionIconType::kSendTabToSelf);
-  highlight_button->SetVisible(true);
-  SetHighlightedButton(highlight_button);
 }
 
 const std::vector<std::unique_ptr<SendTabToSelfBubbleDeviceButton>>&

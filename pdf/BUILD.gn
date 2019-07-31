@@ -114,6 +114,13 @@ if (enable_pdf) {
         "pdfium/pdfium_unsupported_features.cc",
         "pdfium/pdfium_unsupported_features.h",
       ]
+
+      if (is_linux) {
+        sources += [
+          "pdfium/pdfium_font_linux.cc",
+          "pdfium/pdfium_font_linux.h",
+        ]
+      }
     }
   }
 

@@ -157,6 +157,9 @@ TEST_P(SpellingServiceClientTest, RequestTextCheck) {
   if (is_rest) {
     scoped_feature_list_.InitAndEnableFeature(
         spellcheck::kSpellingServiceRestApi);
+  } else {
+    scoped_feature_list_.InitAndDisableFeature(
+        spellcheck::kSpellingServiceRestApi);
   }
 
   PrefService* pref = profile_.GetPrefs();

@@ -1,7 +1,6 @@
 # Expectations for CompositeAfterPaint
 # See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
 Bug(none) http/tests/devtools/tracing/ [ Skip ]
-Bug(none) scrollingcoordinator/ [ Skip ]
 
 Bug(none) virtual/disable-blink-gen-property-trees/ [ Skip ]
 
@@ -18,6 +17,10 @@ Bug(none) virtual/mouseevent_fractional/fast/events/touch/ [ Skip ]
 Bug(none) virtual/scroll_customization/fast/events/touch/ [ Skip ]
 Bug(none) virtual/threaded/printing/ [ Skip ]
 Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
+
+# Because PaintNonFastScrollableRegions implies CompositeAfterPaint, these tests
+# have already been run as part of the non-virtual test suite.
+Bug(none) virtual/paint-non-fast-scrollable-regions/ [ Skip ]
 
 # Fail before CompositeAfterPaint but pass with it.
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
@@ -501,6 +504,19 @@ crbug.com/979369 svg/custom/masking-clipping-hidpi.svg [ Failure ]
 crbug.com/979369 svg/filters/filter-clip.svg [ Failure ]
 crbug.com/979369 svg/masking/mask-type-luminance.svg [ Failure ]
 crbug.com/979369 svg/masking/mask-type-not-set.svg [ Failure ]
+
+# CompositeAfterPaint incorrectly composites all scrollers, and these do not
+# produce non-fast scrollable regions, so there are differences in the non-fast
+# regions compared to pre-CompositeAfterPaint.
+crbug.com/980290 scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Failure ]
+crbug.com/980290 scrollingcoordinator/non-fast-scrollable-region-nested.html [ Failure ]
+crbug.com/980290 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Failure ]
+crbug.com/980290 scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ Failure ]
+crbug.com/980290 scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Failure ]
+crbug.com/980290 scrollingcoordinator/non-fast-scrollable-visibility-change.html [ Failure ]
+
+# Need to support painting non-fast scrollable regions for plugins.
+crbug.com/864567 scrollingcoordinator/plugin-with-wheel-handler.html [ Failure ]
 
 # These failures need to be triaged and are being added to unblock the CQ (see: https://crbug.com/966981).
 crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-frame-no-scroll-manual.tentative.html [ Failure ]

@@ -30,8 +30,9 @@
 
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OmniboxText;
+using chrome_test_util::WebViewMatcher;
+
 using web::test::HttpServer;
-using web::WebViewInWebState;
 
 namespace {
 // URL of the file-based page supporting these tests.
@@ -85,7 +86,7 @@ id<GREYMatcher> PopupBlocker() {
 - (void)testLinkWithBlankTargetSessionStorage {
   [ChromeEarlGrey executeJavaScript:@"sessionStorage.setItem('key', 'value');"];
   const char ID[] = "webScenarioWindowOpenSameURLWithBlankTarget";
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];
@@ -101,7 +102,7 @@ id<GREYMatcher> PopupBlocker() {
 // Tests tapping a link with target="_blank".
 - (void)testLinkWithBlankTarget {
   const char ID[] = "webScenarioWindowOpenRegularLink";
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];
@@ -111,7 +112,7 @@ id<GREYMatcher> PopupBlocker() {
 // Tests opening a window with URL that ends with /..;
 - (void)testWindowOpenWithSpecialURL {
   const char ID[] = "webScenarioWindowOpenWithSpecialURL";
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];
@@ -149,7 +150,7 @@ id<GREYMatcher> PopupBlocker() {
 - (void)testLinkWithBlankTargetMultipleTimes {
   const char ID[] = "webScenarioWindowOpenRegularLinkMultipleTimes";
   web::WebState* test_page_web_state = GetCurrentWebState();
-  id<GREYMatcher> test_page_matcher = WebViewInWebState(test_page_web_state);
+  id<GREYMatcher> test_page_matcher = WebViewMatcher();
   id<GREYAction> link_tap = web::WebViewTapElement(
       test_page_web_state, [ElementSelector selectorWithElementID:ID]);
   [[EarlGrey selectElementWithMatcher:test_page_matcher]
@@ -214,7 +215,7 @@ id<GREYMatcher> PopupBlocker() {
 // second delay.
 - (void)testLinkWithBlankTargetWithDelayedClose {
   const char ID[] = "webScenarioWindowOpenWithDelayedClose";
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];

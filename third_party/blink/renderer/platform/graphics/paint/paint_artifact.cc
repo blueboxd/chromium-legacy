@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
@@ -67,7 +68,31 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
       const auto& hit_test = static_cast<const HitTestDisplayItem&>(item);
       if (!chunk.hit_test_data)
         chunk.hit_test_data = std::make_unique<HitTestData>();
-      chunk.hit_test_data->Append(hit_test.GetHitTestRect());
+      chunk.hit_test_data->AppendTouchActionRect(hit_test.GetHitTestRect());
+    }
+
+#if DCHECK_IS_ON()
+    if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+      // Because ScrollHitTestDisplayItems force new paint chunks (see:
+      // PaintChunker::IncrementDisplayItemIndex), they should only be the first
+      // item in a paint chunk.
+      DCHECK(!item.IsScrollHitTest() || item.Equals(*items.begin()));
+    }
+#endif
+  }
+
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    // Because ScrollHitTestDisplayItems force new paint chunks (see:
+    // PaintChunker::IncrementDisplayItemIndex), they should only be the first
+    // item in a paint chunk.
+    if (items.begin()->IsScrollHitTest()) {
+      const auto& scroll_hit_test_item =
+          static_cast<const ScrollHitTestDisplayItem&>(*items.begin());
+      if (!chunk.hit_test_data)
+        chunk.hit_test_data = std::make_unique<HitTestData>();
+      chunk.hit_test_data->SetScrollHitTest(
+          scroll_hit_test_item.scroll_offset_node(),
+          scroll_hit_test_item.scroll_container_bounds());
     }
   }
 

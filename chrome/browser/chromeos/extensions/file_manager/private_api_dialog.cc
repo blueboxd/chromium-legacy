@@ -31,7 +31,7 @@ namespace {
 
 // Computes the routing ID for SelectFileDialogExtension from the |function|.
 SelectFileDialogExtension::RoutingID GetFileDialogRoutingID(
-    UIThreadExtensionFunction* function) {
+    ExtensionFunction* function) {
   return SelectFileDialogExtensionUserData::GetRoutingIdForWebContents(
       function->GetSenderWebContents());
 }

@@ -1303,9 +1303,11 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <style>
+    html {
+      scroll-snap-type: both proximity;
+    }
     body {
       overflow: scroll;
-      scroll-snap-type: both proximity;
       height: 300px;
       width: 300px;
       margin: 0px;
@@ -1325,7 +1327,6 @@ TEST_P(PaintPropertyTreeUpdateTest, EnsureSnapContainerData) {
       height: 200px;
       scroll-snap-align: start;
     }
-
     </style>
 
     <div id="container">

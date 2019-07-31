@@ -381,10 +381,8 @@ void XWindow::Map(bool inactive) {
   XMapWindow(xdisplay_, xwindow_);
   window_mapped_in_client_ = true;
 
-#if defined(OS_CHROMEOS)
   // TODO(thomasanderson): Find out why this flush is necessary.
   XFlush(xdisplay_);
-#endif
 }
 
 void XWindow::Close() {

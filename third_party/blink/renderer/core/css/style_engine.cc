@@ -1912,7 +1912,7 @@ void StyleEngine::UpdateColorSchemeBackground() {
     if (auto* root_element = GetDocument().documentElement())
       style = root_element->GetComputedStyle();
     if (style) {
-      if (style->UsedColorScheme() == ColorScheme::kDark)
+      if (style->UsedColorScheme() == WebColorScheme::kDark)
         use_dark_background = true;
     } else if (SupportsDarkColorScheme()) {
       use_dark_background = true;

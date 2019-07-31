@@ -47,6 +47,21 @@ Link::FocusStyle Link::GetFocusStyle() const {
   return GetDefaultFocusStyle();
 }
 
+SkColor Link::GetColor() const {
+  // TODO(tapted): Use style::GetColor().
+  const ui::NativeTheme* theme = GetNativeTheme();
+  DCHECK(theme);
+  if (!GetEnabled())
+    return theme->GetSystemColor(ui::NativeTheme::kColorId_LinkDisabled);
+
+  if (requested_enabled_color_set_)
+    return requested_enabled_color_;
+
+  return GetNativeTheme()->GetSystemColor(
+      pressed_ ? ui::NativeTheme::kColorId_LinkPressed
+               : ui::NativeTheme::kColorId_LinkEnabled);
+}
+
 void Link::PaintFocusRing(gfx::Canvas* canvas) const {
   if (GetFocusStyle() == FocusStyle::RING) {
     gfx::Rect focus_ring_bounds = GetTextBounds();
@@ -200,11 +215,16 @@ bool Link::IsSelectionSupported() const {
   return false;
 }
 
+bool Link::GetUnderline() const {
+  return underline_;
+}
+
 void Link::SetUnderline(bool underline) {
   if (underline_ == underline)
     return;
   underline_ = underline;
   RecalculateFont();
+  OnPropertyChanged(&underline_, kPropertyEffectsPreferredSizeChanged);
 }
 
 void Link::Init() {
@@ -259,23 +279,15 @@ void Link::ConfigureFocus() {
   }
 }
 
-SkColor Link::GetColor() {
-  // TODO(tapted): Use style::GetColor().
-  const ui::NativeTheme* theme = GetNativeTheme();
-  DCHECK(theme);
-  if (!GetEnabled())
-    return theme->GetSystemColor(ui::NativeTheme::kColorId_LinkDisabled);
-
-  if (requested_enabled_color_set_)
-    return requested_enabled_color_;
-
-  return GetNativeTheme()->GetSystemColor(
-      pressed_ ? ui::NativeTheme::kColorId_LinkPressed
-               : ui::NativeTheme::kColorId_LinkEnabled);
-}
-
+DEFINE_ENUM_CONVERTERS(Link::FocusStyle,
+                       {Link::FocusStyle::UNDERLINE,
+                        base::ASCIIToUTF16("UNDERLINE")},
+                       {Link::FocusStyle::RING, base::ASCIIToUTF16("RING")})
 BEGIN_METADATA(Link)
 METADATA_PARENT_CLASS(Label)
+ADD_READONLY_PROPERTY_METADATA(Link, SkColor, Color)
+ADD_READONLY_PROPERTY_METADATA(Link, Link::FocusStyle, FocusStyle)
+ADD_PROPERTY_METADATA(Link, bool, Underline)
 END_METADATA()
 
 }  // namespace views

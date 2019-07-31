@@ -9,7 +9,6 @@ source_set("public") {
     ":web_state_observer",
     "//ios/web/public/favicon",
     "//ios/web/public/navigation",
-    "//ios/web/public/service",
     "//ios/web/public/thread",
     "//net",
     "//services/network/public/cpp",
@@ -20,7 +19,6 @@ source_set("public") {
     "//ios/web/common",
     "//ios/web/common:user_agent",
     "//ios/web/public/deprecated",
-    "//services/service_manager/public/cpp",
     "//ui/base",
   ]
 

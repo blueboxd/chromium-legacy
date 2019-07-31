@@ -19,7 +19,7 @@ class Browser;
 class HatsWebDialog : public ui::WebDialogDelegate {
  public:
   // Create and show an instance of HatsWebDialog.
-  static void Show(const Browser* browser);
+  static void Show(const Browser* browser, const std::string& site_id);
 
  private:
   // Use Show() above. |site_id| is used to select the survey.

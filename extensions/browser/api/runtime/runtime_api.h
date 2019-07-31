@@ -217,7 +217,7 @@ class RuntimeEventRouter {
                                      UninstallReason reason);
 };
 
-class RuntimeGetBackgroundPageFunction : public UIThreadExtensionFunction {
+class RuntimeGetBackgroundPageFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.getBackgroundPage",
                              RUNTIME_GETBACKGROUNDPAGE)
@@ -231,7 +231,7 @@ class RuntimeGetBackgroundPageFunction : public UIThreadExtensionFunction {
       std::unique_ptr<LazyContextTaskQueue::ContextInfo> context_info);
 };
 
-class RuntimeOpenOptionsPageFunction : public UIThreadExtensionFunction {
+class RuntimeOpenOptionsPageFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.openOptionsPage", RUNTIME_OPENOPTIONSPAGE)
 
@@ -240,7 +240,7 @@ class RuntimeOpenOptionsPageFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class RuntimeSetUninstallURLFunction : public UIThreadExtensionFunction {
+class RuntimeSetUninstallURLFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.setUninstallURL", RUNTIME_SETUNINSTALLURL)
 
@@ -249,7 +249,7 @@ class RuntimeSetUninstallURLFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class RuntimeReloadFunction : public UIThreadExtensionFunction {
+class RuntimeReloadFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.reload", RUNTIME_RELOAD)
 
@@ -258,7 +258,7 @@ class RuntimeReloadFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class RuntimeRequestUpdateCheckFunction : public UIThreadExtensionFunction {
+class RuntimeRequestUpdateCheckFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.requestUpdateCheck",
                              RUNTIME_REQUESTUPDATECHECK)
@@ -271,7 +271,7 @@ class RuntimeRequestUpdateCheckFunction : public UIThreadExtensionFunction {
   void CheckComplete(const RuntimeAPIDelegate::UpdateCheckResult& result);
 };
 
-class RuntimeRestartFunction : public UIThreadExtensionFunction {
+class RuntimeRestartFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.restart", RUNTIME_RESTART)
 
@@ -280,7 +280,7 @@ class RuntimeRestartFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class RuntimeRestartAfterDelayFunction : public UIThreadExtensionFunction {
+class RuntimeRestartAfterDelayFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.restartAfterDelay",
                              RUNTIME_RESTARTAFTERDELAY)
@@ -290,7 +290,7 @@ class RuntimeRestartAfterDelayFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class RuntimeGetPlatformInfoFunction : public UIThreadExtensionFunction {
+class RuntimeGetPlatformInfoFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.getPlatformInfo", RUNTIME_GETPLATFORMINFO)
 
@@ -299,8 +299,7 @@ class RuntimeGetPlatformInfoFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class RuntimeGetPackageDirectoryEntryFunction
-    : public UIThreadExtensionFunction {
+class RuntimeGetPackageDirectoryEntryFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("runtime.getPackageDirectoryEntry",
                              RUNTIME_GETPACKAGEDIRECTORYENTRY)

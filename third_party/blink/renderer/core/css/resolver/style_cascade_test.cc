@@ -140,7 +140,7 @@ class TestCascade {
     const LayoutObject* layout_object = nullptr;
     bool allow_visited_style = false;
     const CSSValue* value = ref.GetProperty().CSSValueFromComputedStyle(
-        *state_.Style(), layout_object, Body(), allow_visited_style);
+        *state_.Style(), layout_object, allow_visited_style);
     return value ? value->CssText() : g_null_atom;
   }
 

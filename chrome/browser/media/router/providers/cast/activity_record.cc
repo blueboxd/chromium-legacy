@@ -42,14 +42,14 @@ void ActivityRecord::SetOrUpdateSession(const CastSession& session,
            << session_id_.value_or("<missing>")
            << ", new session_id = " << session.session_id();
   route_.set_description(session.GetRouteDescription());
+  sink_ = sink;
   if (session_id_) {
     DCHECK_EQ(*session_id_, session.session_id());
   } else {
     session_id_ = session.session_id();
-    OnSessionSet();
+    if (on_session_set_)
+      std::move(on_session_set_).Run();
   }
 }
-
-void ActivityRecord::OnSessionSet() {}
 
 }  // namespace media_router

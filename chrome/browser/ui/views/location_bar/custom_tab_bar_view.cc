@@ -6,7 +6,10 @@
 
 #include <memory>
 
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -16,6 +19,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
@@ -178,10 +182,11 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
                                    LocationBarView::Delegate* delegate)
     : TabStripModelObserver(),
       delegate_(delegate),
-      tab_strip_model_observer_(this) {
-  Browser* browser = browser_view->browser();
+      tab_strip_model_observer_(this),
+      browser_(browser_view->browser()) {
+  set_context_menu_controller(this);
   base::Optional<SkColor> optional_theme_color =
-      browser->app_controller()->GetThemeColor();
+      browser_->app_controller()->GetThemeColor();
 
   // If we have a theme color, use that, otherwise fall back to the default
   // frame color.
@@ -220,7 +225,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
       .SetInteriorMargin(GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN));
 
-  tab_strip_model_observer_.Add(browser->tab_strip_model());
+  tab_strip_model_observer_.Add(browser_->tab_strip_model());
 }
 
 CustomTabBarView::~CustomTabBarView() {}
@@ -326,6 +331,29 @@ void CustomTabBarView::OnPaintBackground(gfx::Canvas* canvas) {
 void CustomTabBarView::ChildPreferredSizeChanged(views::View* child) {
   Layout();
   SchedulePaint();
+}
+
+void CustomTabBarView::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  if (!context_menu_model_) {
+    context_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
+    context_menu_model_->AddItemWithStringId(IDC_COPY_URL, IDS_COPY_URL);
+  }
+  context_menu_runner_ = std::make_unique<views::MenuRunner>(
+      context_menu_model_.get(),
+      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
+  context_menu_runner_->RunMenuAt(
+      views::View::GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
+      views::MenuAnchorPosition::kTopLeft, source_type);
+}
+
+void CustomTabBarView::ExecuteCommand(int command_id, int event_flags) {
+  if (command_id == IDC_COPY_URL) {
+    base::RecordAction(base::UserMetricsAction("CopyCustomTabBarUrl"));
+    chrome::ExecuteCommand(browser_, command_id);
+  }
 }
 
 content::WebContents* CustomTabBarView::GetWebContents() {

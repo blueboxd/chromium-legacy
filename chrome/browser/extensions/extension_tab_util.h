@@ -16,7 +16,7 @@ class Browser;
 class ChromeExtensionFunctionDetails;
 class GURL;
 class TabStripModel;
-class UIThreadExtensionFunction;
+class ExtensionFunction;
 
 namespace base {
 class DictionaryValue;
@@ -75,7 +75,7 @@ class ExtensionTabUtil {
   // Opens a new tab given an extension function |function| and creation
   // parameters |params|. Returns a Tab object if successful, or NULL and
   // optionally sets |error| if an error occurs.
-  static base::DictionaryValue* OpenTab(UIThreadExtensionFunction* function,
+  static base::DictionaryValue* OpenTab(ExtensionFunction* function,
                                         const OpenTabParams& params,
                                         bool user_gesture,
                                         std::string* error);

@@ -9,8 +9,6 @@ enable_service = use_cups && is_chromeos
 
 source_set("cups_ipp_parser") {
   sources = [
-    "cups_ipp_parser_service.cc",
-    "cups_ipp_parser_service.h",
     "ipp_parser.h",
   ]
 
@@ -25,7 +23,6 @@ source_set("cups_ipp_parser") {
     "//chrome/services/cups_ipp_parser/public/mojom",
     "//mojo/public/mojom/base",
     "//printing",
-    "//services/service_manager/public/cpp",
   ]
 
   # We stub the implementation if libCUPS is not present.

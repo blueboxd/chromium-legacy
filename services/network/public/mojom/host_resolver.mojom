@@ -40,6 +40,13 @@ enum OptionalSecureDnsMode {
   SECURE,
 };
 
+// This enum corresponds to DnsConfig::SecureDnsMode.
+enum SecureDnsMode {
+  OFF,
+  AUTOMATIC,
+  SECURE,
+};
+
 // Overridable DNS configuration values for host resolution. All fields default
 // to a non-overriding state where the relevant value will be used from system
 // DNS configuration.

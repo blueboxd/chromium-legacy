@@ -213,7 +213,7 @@ if (is_win) {
   }
 }
 
-if (is_mac) {
+if (is_mac || is_android) {
   # We build a chromium-specific crashpad_handler executable so that we can
   # define custom UserStreamDataSources.
   executable("chrome_crashpad_handler") {
@@ -222,15 +222,11 @@ if (is_mac) {
     ]
 
     deps = [
-      "//components/gwp_asan/buildflags",
-      "//third_party/crashpad/crashpad/handler:handler",
+      ":crashpad_handler_main",
+      "//third_party/crashpad/crashpad/handler",
     ]
 
-    if (enable_gwp_asan) {
-      deps += [ "//components/gwp_asan/crash_handler" ]
-    }
-
-    if (is_component_build) {
+    if (is_mac && is_component_build) {
       ldflags = [
         # The handler is in
         # Chromium.app/Contents/Versions/X/Chromium Framework.framework/Versions/A/Helpers/
@@ -254,6 +250,26 @@ if (is_mac) {
         "@loader_path/..",
       ]
     }
+  }
+}
+
+if (is_android) {
+  # There is not any normal way to package native executables in an Android APK.
+  # It is normal to package native code as a loadable module but Android's APK
+  # installer will ignore files not named like a shared object, so give the
+  # handler executable an acceptable name.
+  copy("chrome_crashpad_handler_named_as_so") {
+    deps = [
+      ":chrome_crashpad_handler",
+    ]
+
+    sources = [
+      "$root_out_dir/chrome_crashpad_handler",
+    ]
+
+    outputs = [
+      "$root_out_dir/libchrome_crashpad_handler.so",
+    ]
   }
 }
 

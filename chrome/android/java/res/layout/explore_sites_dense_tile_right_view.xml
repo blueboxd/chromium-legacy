@@ -16,9 +16,9 @@
         android:id="@+id/tile_view_icon_background"
         android:layout_width="@dimen/explore_sites_dense_icon_size"
         android:layout_height="@dimen/explore_sites_dense_icon_size"
-        android:layout_marginTop="@dimen/explore_sites_dense_title_bottom_icon_margin_top"
-        android:layout_gravity="center_horizontal"
-        android:visibility="gone" />
+        android:layout_marginStart="@dimen/explore_sites_dense_title_bottom_icon_margin_top"
+        android:layout_gravity="center_vertical"
+        android:background="@drawable/explore_sites_dense_tile_background"/>
     <!-- The main icon. -->
     <ImageView
         android:id="@+id/tile_view_icon"

@@ -85,7 +85,7 @@ void HatsService::LaunchSatisfactionSurvey() {
   if (ShouldShowSurvey(kHatsSurveyTriggerSatisfaction)) {
     Browser* browser = chrome::FindLastActive();
     if (browser && browser->is_type_tabbed()) {
-      browser->window()->ShowHatsBubbleFromAppMenuButton();
+      browser->window()->ShowHatsBubbleFromAppMenuButton(en_site_id_);
 
       DictionaryPrefUpdate update(profile_->GetPrefs(),
                                   prefs::kHatsSurveyMetadata);

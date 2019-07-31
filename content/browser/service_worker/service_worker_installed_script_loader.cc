@@ -128,11 +128,6 @@ void ServiceWorkerInstalledScriptLoader::FollowRedirect(
   NOTREACHED();
 }
 
-void ServiceWorkerInstalledScriptLoader::ProceedWithResponse() {
-  // This function should only be called for navigations.
-  NOTREACHED();
-}
-
 void ServiceWorkerInstalledScriptLoader::SetPriority(
     net::RequestPriority priority,
     int32_t intra_priority_value) {

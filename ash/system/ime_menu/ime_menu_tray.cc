@@ -128,7 +128,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
   explicit ImeTitleView(bool show_settings_button) : settings_button_(nullptr) {
     SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(0, 0, kMenuSeparatorWidth, 0,
-                                      kMenuSeparatorColor),
+                                      kSeparatorOnLightBackgroundColor),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth, 0)));
     auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal);
@@ -231,7 +231,7 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
     SetLayoutManager(std::move(box_layout));
     SetBorder(views::CreatePaddedBorder(
         views::CreateSolidSidedBorder(kMenuSeparatorWidth, 0, 0, 0,
-                                      kMenuSeparatorColor),
+                                      kSeparatorOnLightBackgroundColor),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth,
                     kMenuExtraMarginFromLeftEdge)));
 
@@ -533,7 +533,7 @@ void ImeMenuTray::UpdateTrayLabel() {
   if (chromeos::extension_ime_util::IsArcIME(current_ime.id)) {
     CreateImageView();
     image_view_->SetImage(
-        gfx::CreateVectorIcon(kShelfGlobeIcon, kTrayIconColor));
+        gfx::CreateVectorIcon(kShelfGlobeIcon, kIconOnDarkBackgroundColor));
     return;
   }
 

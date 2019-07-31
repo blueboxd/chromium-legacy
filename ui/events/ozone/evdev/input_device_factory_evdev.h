@@ -21,6 +21,7 @@
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/input_device_settings_evdev.h"
+#include "ui/events/ozone/evdev/touch_filter/shared_palm_detection_filter_state.h"
 #include "ui/ozone/public/input_controller.h"
 
 #if defined(USE_EVDEV_GESTURES)
@@ -109,6 +110,9 @@ class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
 
   // Cursor movement.
   CursorDelegateEvdev* cursor_;
+
+  // Shared Palm state.
+  const std::unique_ptr<SharedPalmDetectionFilterState> shared_palm_state_;
 
 #if defined(USE_EVDEV_GESTURES)
   // Gesture library property provider (used by touchpads/mice).

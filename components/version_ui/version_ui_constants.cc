@@ -12,10 +12,15 @@ const char kVersionJS[] = "version.js";
 
 // Message handlers.
 const char kRequestVersionInfo[] = "requestVersionInfo";
-const char kReturnFilePaths[] = "returnFilePaths";
-const char kReturnFlashVersion[] = "returnFlashVersion";
-const char kReturnVariationInfo[] = "returnVariationInfo";
-const char kReturnVariationCmd[] = "returnVariationCmd";
+const char kRequestVariationInfo[] = "requestVariationInfo";
+const char kRequestPluginInfo[] = "requestPluginInfo";
+const char kRequestPathInfo[] = "requestPathInfo";
+
+// Named keys used in message handler responses.
+const char kKeyVariationsList[] = "variationsList";
+const char kKeyVariationsCmd[] = "variationsCmd";
+const char kKeyExecPath[] = "execPath";
+const char kKeyProfilePath[] = "profilePath";
 
 // Strings.
 const char kApplicationLabel[] = "application_label";
@@ -75,7 +80,6 @@ const char kUserAgent[] = "useragent";
 const char kUserAgentName[] = "user_agent_name";
 const char kVariationsCmdName[] = "variations_cmd_name";
 const char kVariationsName[] = "variations_name";
-const char kVariationsShowCmdQuery[] = "show-variations-cmd";
 const char kVersion[] = "version";
 const char kVersionBitSize[] = "version_bitsize";
 const char kVersionModifier[] = "version_modifier";

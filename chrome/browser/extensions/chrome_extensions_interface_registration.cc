@@ -35,7 +35,7 @@
 #include "content/public/browser/media_device_id.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
-#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
 #include "media/capture/video/chromeos/renderer_facing_cros_image_capture.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

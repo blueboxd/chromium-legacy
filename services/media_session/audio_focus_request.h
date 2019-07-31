@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/audio_focus_manager_metrics_helper.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -23,14 +23,15 @@ class MediaController;
 
 class AudioFocusRequest : public mojom::AudioFocusRequestClient {
  public:
-  AudioFocusRequest(base::WeakPtr<AudioFocusManager> owner,
-                    mojom::AudioFocusRequestClientRequest request,
-                    mojom::MediaSessionPtr session,
-                    mojom::MediaSessionInfoPtr session_info,
-                    mojom::AudioFocusType audio_focus_type,
-                    const base::UnguessableToken& id,
-                    const std::string& source_name,
-                    const base::UnguessableToken& group_id);
+  AudioFocusRequest(
+      base::WeakPtr<AudioFocusManager> owner,
+      mojo::PendingReceiver<mojom::AudioFocusRequestClient> receiver,
+      mojo::PendingRemote<mojom::MediaSession> session,
+      mojom::MediaSessionInfoPtr session_info,
+      mojom::AudioFocusType audio_focus_type,
+      const base::UnguessableToken& id,
+      const std::string& source_name,
+      const base::UnguessableToken& group_id);
 
   ~AudioFocusRequest() override;
 
@@ -97,7 +98,7 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
   mojom::MediaSessionInfoPtr session_info_;
   mojom::AudioFocusType audio_focus_type_;
 
-  mojo::Binding<mojom::AudioFocusRequestClient> binding_;
+  mojo::Receiver<mojom::AudioFocusRequestClient> receiver_;
 
   // The action to apply when the transient hold is released.
   base::Optional<mojom::MediaSessionAction> delayed_action_;

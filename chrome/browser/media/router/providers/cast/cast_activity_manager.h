@@ -240,6 +240,10 @@ class CastActivityManager : public CastActivityManagerBase,
       int tab_id,
       const CastSinkExtraData& cast_data);
 
+  // Returns a sink used to convert a mirroring activity to a cast activity.  If
+  // no conversion should occur, returns base::nullopt.
+  base::Optional<MediaSinkInternal> ConvertMirrorToCast(int tab_id);
+
   static CastActivityRecordFactoryForTest* activity_record_factory_;
 
   base::flat_set<MediaSource::Id> route_queries_;

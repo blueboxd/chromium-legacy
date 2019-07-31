@@ -188,10 +188,6 @@ base::Optional<std::string> SharingDeviceRegistration::GetAuthorizationEntity()
 }
 
 int SharingDeviceRegistration::GetDeviceCapabilities() const {
-  // Used in tests
-  if (device_capabilities_testing_value_)
-    return device_capabilities_testing_value_.value();
-
   int device_capabilities = static_cast<int>(SharingDeviceCapability::kNone);
   if (IsTelephonySupported()) {
     device_capabilities |=
@@ -209,9 +205,4 @@ bool SharingDeviceRegistration::IsTelephonySupported() const {
 #endif
 
   return false;
-}
-
-void SharingDeviceRegistration::SetDeviceCapabilityForTesting(
-    int device_capabilities) {
-  device_capabilities_testing_value_ = device_capabilities;
 }

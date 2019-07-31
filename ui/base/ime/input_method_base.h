@@ -99,6 +99,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
   void SendKeyEvent(KeyEvent* event) override;
   InputMethod* GetInputMethod() override;
   void ConfirmCompositionText() override;
+  bool HasCompositionText() override;
 
   // Sends a fake key event for IME composing without physical key events.
   // Returns true if the faked key event is stopped propagation.

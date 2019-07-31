@@ -32,9 +32,7 @@
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/prefs/ios_chrome_pref_service_factory.h"
 #include "ios/chrome/browser/send_tab_to_self/send_tab_to_self_client_service_factory.h"
-#include "ios/chrome/browser/signin/identity_service_creator.h"
 #include "ios/web/public/thread/web_thread.h"
-#include "services/identity/public/mojom/constants.mojom.h"
 
 namespace {
 
@@ -78,8 +76,6 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
       state_path_(path),
       pref_registry_(new user_prefs::PrefRegistrySyncable),
       io_data_(new ChromeBrowserStateImplIOData::Handle(this)) {
-  BrowserState::Initialize(this, state_path_);
-
   otr_state_path_ = state_path_.Append(FILE_PATH_LITERAL("OTR"));
 
   // It would be nice to use PathService for fetching this directory, but
@@ -169,19 +165,6 @@ bool ChromeBrowserStateImpl::IsOffTheRecord() const {
 
 base::FilePath ChromeBrowserStateImpl::GetStatePath() const {
   return state_path_;
-}
-
-std::unique_ptr<service_manager::Service>
-ChromeBrowserStateImpl::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-  // TODO(crbug.com/787794): It would be nice to avoid ChromeBrowserState/
-  // Profile needing to know explicitly about every service that it is
-  // embedding.
-  if (service_name == identity::mojom::kServiceName)
-    return CreateIdentityService(this, std::move(request));
-
-  return nullptr;
 }
 
 void ChromeBrowserStateImpl::SetOffTheRecordChromeBrowserState(

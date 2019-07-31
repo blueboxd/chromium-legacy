@@ -837,10 +837,10 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
   }
 
   // Make a temporary copy of the account ids.
-  std::vector<std::string> accounts;
+  std::vector<CoreAccountId> accounts;
   for (const auto& token : refresh_tokens_)
     accounts.push_back(token.first);
-  for (const std::string& account : accounts)
+  for (const auto& account : accounts)
     RevokeCredentials(account);
 
   DCHECK_EQ(0u, refresh_tokens_.size());

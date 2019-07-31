@@ -268,7 +268,8 @@ void SigninManagerAndroid::FetchAndApplyCloudPolicy(
   gaia::ExtractDomainName(username);
   CoreAccountInfo account =
       identity_manager_
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(username)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              username)
           .value();
 
   auto callback =
@@ -320,7 +321,8 @@ void SigninManagerAndroid::IsAccountManaged(
 
   base::Optional<CoreAccountInfo> account =
       identity_manager_
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(username);
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              username);
 
   RegisterPolicyWithAccount(
       account.value_or(CoreAccountInfo{}),

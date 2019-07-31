@@ -21,7 +21,6 @@ ios_eg_test("ios_web_shell_egtests") {
   sources = [
     "context_menu_egtest.mm",
     "page_state_egtest.mm",
-    "service_manager_egtest.mm",
   ]
 
   deps = [
@@ -61,9 +60,6 @@ source_set("earl_grey_test_support") {
     "//ios/web/public/test:element_selector",
     "//ios/web/shell",
     "//ios/web/shell:shell_interfaces",
-    "//services/service_manager/public/cpp",
-    "//services/test/echo/public/mojom",
-    "//services/test/user_id/public/mojom",
     "//testing/gtest:gtest",
     "//url",
   ]
@@ -79,8 +75,6 @@ source_set("earl_grey_test_support") {
     "app/web_shell_test_util.mm",
     "app/web_view_interaction_test_util.h",
     "app/web_view_interaction_test_util.mm",
-    "earl_grey/service_manager_app_interface.h",
-    "earl_grey/service_manager_app_interface.mm",
     "earl_grey/shell_actions.h",
     "earl_grey/shell_actions.mm",
     "earl_grey/shell_actions_app_interface.h",
@@ -118,8 +112,6 @@ source_set("eg_app_support+eg2") {
     "app/web_shell_test_util.mm",
     "app/web_view_interaction_test_util.h",
     "app/web_view_interaction_test_util.mm",
-    "earl_grey/service_manager_app_interface.h",
-    "earl_grey/service_manager_app_interface.mm",
     "earl_grey/shell_actions_app_interface.h",
     "earl_grey/shell_actions_app_interface.mm",
     "earl_grey/shell_earl_grey_app_interface.h",
@@ -140,9 +132,6 @@ source_set("eg_app_support+eg2") {
     "//ios/web/public/test/http_server",
     "//ios/web/shell",
     "//ios/web/shell:shell_interfaces",
-    "//services/service_manager/public/cpp",
-    "//services/test/echo/public/mojom",
-    "//services/test/user_id/public/mojom",
     "//url",
   ]
 }
@@ -156,7 +145,6 @@ source_set("eg_test_support+eg2") {
   testonly = true
 
   sources = [
-    "earl_grey/service_manager_app_interface.h",
     "earl_grey/shell_actions.h",
     "earl_grey/shell_actions.mm",
     "earl_grey/shell_actions_app_interface.h",
@@ -179,9 +167,6 @@ source_set("eg_test_support+eg2") {
     "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/public/test:element_selector",
     "//ios/web/shell:shell_interfaces",
-    "//services/service_manager/public/cpp",
-    "//services/test/echo/public/mojom",
-    "//services/test/user_id/public/mojom",
     "//url",
   ]
 }
@@ -197,7 +182,6 @@ source_set("eg_tests+eg2") {
   sources = [
     "context_menu_egtest.mm",
     "page_state_egtest.mm",
-    "service_manager_egtest.mm",
   ]
 
   deps = [

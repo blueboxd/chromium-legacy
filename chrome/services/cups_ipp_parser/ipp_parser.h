@@ -6,7 +6,8 @@
 #define CHROME_SERVICES_CUPS_IPP_PARSER_IPP_PARSER_H_
 
 #include "chrome/services/cups_ipp_parser/public/mojom/ipp_parser.mojom.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace cups_ipp_parser {
 
@@ -18,8 +19,7 @@ namespace cups_ipp_parser {
 // Service.
 class IppParser : public mojom::IppParser {
  public:
-  explicit IppParser(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+  explicit IppParser(mojo::PendingReceiver<mojom::IppParser> receiver);
   ~IppParser() override;
 
  private:
@@ -30,7 +30,7 @@ class IppParser : public mojom::IppParser {
   void ParseIpp(const std::vector<uint8_t>& to_parse,
                 ParseIppCallback callback) override;
 
-  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
+  mojo::Receiver<mojom::IppParser> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(IppParser);
 };

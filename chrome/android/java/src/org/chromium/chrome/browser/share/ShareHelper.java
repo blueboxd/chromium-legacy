@@ -17,7 +17,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
@@ -564,8 +563,7 @@ public class ShareHelper {
                 // https://crbug.com/729737
                 try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                     directShareIcon = pm.getActivityIcon(component);
-                    ApplicationInfo ai = pm.getApplicationInfo(component.getPackageName(), 0);
-                    directShareTitle = pm.getApplicationLabel(ai);
+                    directShareTitle = pm.getActivityInfo(component, 0).loadLabel(pm);
                 }
                 retrieved = true;
             } catch (NameNotFoundException exception) {

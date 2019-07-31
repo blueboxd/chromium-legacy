@@ -41,8 +41,7 @@ class NotificationSchedulerClient {
                                       std::set<std::string> guids) = 0;
 
   // Called when the user interacts with the notification.
-  virtual void OnUserAction(UserActionType action_type,
-                            base::Optional<ButtonClickInfo> button_info) = 0;
+  virtual void OnUserAction(const UserActionData& action_data) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationSchedulerClient);

@@ -131,8 +131,6 @@ component("web_engine_core") {
     "browser/web_engine_remote_debugging.h",
     "browser/web_engine_screen.cc",
     "browser/web_engine_screen.h",
-    "browser/web_engine_url_request_context_getter.cc",
-    "browser/web_engine_url_request_context_getter.h",
     "common.cc",
     "common.h",
     "context_provider_impl.cc",

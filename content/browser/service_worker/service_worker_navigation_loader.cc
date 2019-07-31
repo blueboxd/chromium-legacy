@@ -417,12 +417,6 @@ void ServiceWorkerNavigationLoader::FollowRedirect(
   NOTIMPLEMENTED();
 }
 
-void ServiceWorkerNavigationLoader::ProceedWithResponse() {
-  // ServiceWorkerNavigationLoader doesn't need to wait for
-  // ProceedWithResponse() since it doesn't use MojoAsyncResourceHandler to load
-  // the resource request.
-}
-
 void ServiceWorkerNavigationLoader::SetPriority(net::RequestPriority priority,
                                                 int32_t intra_priority_value) {
   NOTIMPLEMENTED();

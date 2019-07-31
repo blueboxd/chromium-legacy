@@ -292,7 +292,7 @@ std::string SharedResourcesDataSource::GetSource() {
 
 void SharedResourcesDataSource::StartDataRequest(
     const std::string& path,
-    const ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const WebContents::Getter& wc_getter,
     const URLDataSource::GotDataCallback& callback) {
   std::string updated_path = path;
 #if defined(OS_CHROMEOS)
@@ -427,7 +427,7 @@ void SharedResourcesDataSource::DisablePolymer2ForHost(
 
 // Returns true if the WebContents making the request has disabled Polymer 2.
 bool SharedResourcesDataSource::IsPolymer2DisabledForPage(
-    const ResourceRequestInfo::WebContentsGetter& wc_getter) {
+    const WebContents::Getter& wc_getter) {
   // Return false in these cases, which sometimes occur in tests.
   if (!wc_getter)
     return false;

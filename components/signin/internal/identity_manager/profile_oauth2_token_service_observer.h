@@ -25,7 +25,7 @@ class ProfileOAuth2TokenServiceObserver {
   // Called whenever the login-scoped refresh token becomes unavailable for
   // account |account_id|.
   virtual void OnRefreshTokenRevoked(const CoreAccountId& account_id) {}
-  // Called after all refresh tokens are loaded during OAuth2TokenService
+  // Called after all refresh tokens are loaded during ProfileOAuth2TokenService
   // startup.
   virtual void OnRefreshTokensLoaded() {}
   // Sent after a batch of refresh token changes is done.

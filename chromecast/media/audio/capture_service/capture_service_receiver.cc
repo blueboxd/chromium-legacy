@@ -9,12 +9,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromecast/media/audio/capture_service/capture_service_buildflags.h"
 #include "chromecast/media/audio/capture_service/constants.h"
@@ -46,13 +44,6 @@
 
 namespace chromecast {
 namespace media {
-
-namespace {
-
-constexpr base::TimeDelta kConnectTimeout = base::TimeDelta::FromSeconds(1);
-constexpr base::TimeDelta kInactivityTimeout = base::TimeDelta::FromSeconds(5);
-
-}  // namespace
 
 class CaptureServiceReceiver::Socket : public SmallMessageSocket {
  public:
@@ -95,7 +86,8 @@ CaptureServiceReceiver::Socket::~Socket() = default;
 void CaptureServiceReceiver::Socket::Start(
     ::media::AudioInputStream::AudioInputCallback* input_callback) {
   input_callback_ = input_callback;
-  inactivity_timer_.Start(FROM_HERE, kInactivityTimeout, this,
+  inactivity_timer_.Start(FROM_HERE, CaptureServiceReceiver::kInactivityTimeout,
+                          this,
                           &CaptureServiceReceiver::Socket::OnInactivityTimeout);
   ReceiveMessages();
 }
@@ -157,6 +149,10 @@ bool CaptureServiceReceiver::Socket::HandleAudio(
       /* volume =*/1.0);
   return true;
 }
+
+// static
+constexpr base::TimeDelta CaptureServiceReceiver::kConnectTimeout;
+constexpr base::TimeDelta CaptureServiceReceiver::kInactivityTimeout;
 
 CaptureServiceReceiver::CaptureServiceReceiver(
     const ::media::AudioParameters& audio_params)
@@ -241,10 +237,6 @@ void CaptureServiceReceiver::OnConnected(
     input_callback->OnError();
     connecting_socket_.reset();
   }
-
-  if (!connected_cb_.is_null()) {
-    std::move(connected_cb_).Run();
-  }
 }
 
 void CaptureServiceReceiver::OnConnectTimeout(
@@ -262,11 +254,6 @@ void CaptureServiceReceiver::Stop() {
   ENSURE_ON_IO_THREAD(Stop);
   connecting_socket_.reset();
   socket_.reset();
-}
-
-void CaptureServiceReceiver::SetConnectClosureForTest(
-    base::OnceClosure connected_cb) {
-  connected_cb_ = std::move(connected_cb);
 }
 
 void CaptureServiceReceiver::SetTaskRunnerForTest(

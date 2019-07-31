@@ -29,7 +29,7 @@ class SharedURLLoaderFactory;
 namespace gcm {
 
 struct AccountIds {
-  std::string account_key;  // The account ID used by OAuth2TokenService.
+  std::string account_key;  // The account ID used by IdentityManager.
   std::string gaia;
   std::string email;
 };

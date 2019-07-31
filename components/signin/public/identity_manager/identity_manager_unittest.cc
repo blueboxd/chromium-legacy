@@ -2047,11 +2047,11 @@ TEST_F(IdentityManagerTest,
             identity_manager_observer()->BatchChangeRecords().at(0).at(0));
 }
 
-// Checks that FindAccountInfoForAccountWithRefreshTokenByAccountId() returns
-// information about the account if the account is found or nullopt if there
-// are no accounts with requested |account_id|.
+// Checks that FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId()
+// returns information about the account if the account is found or nullopt if
+// there are no accounts with requested |account_id|.
 TEST_F(IdentityManagerTest,
-       FindAccountInfoForAccountWithRefreshTokenByAccountId) {
+       FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId) {
   // Add an account (note: cannot use kTestEmail as it is already inserted
   // by the fixture common code, so use a different address).
   const AccountInfo foo_account_info =
@@ -2059,24 +2059,26 @@ TEST_F(IdentityManagerTest,
 
   base::Optional<AccountInfo> maybe_account_info;
   maybe_account_info =
-      identity_manager()->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-          "dummy_value");
+      identity_manager()
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              "dummy_value");
   EXPECT_FALSE(maybe_account_info.has_value());
 
   maybe_account_info =
-      identity_manager()->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-          foo_account_info.account_id);
+      identity_manager()
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              foo_account_info.account_id);
   EXPECT_TRUE(maybe_account_info.has_value());
   EXPECT_EQ(foo_account_info.account_id, maybe_account_info.value().account_id);
   EXPECT_EQ(foo_account_info.email, maybe_account_info.value().email);
   EXPECT_EQ(foo_account_info.gaia, maybe_account_info.value().gaia);
 }
 
-// Checks that FindAccountInfoForAccountWithRefreshTokenByEmailAddress() returns
-// information about the account if the account is found or nullopt if there
-// are no accounts with requested |email_address|.
+// Checks that FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress()
+// returns information about the account if the account is found or nullopt if
+// there are no accounts with requested |email_address|.
 TEST_F(IdentityManagerTest,
-       FindAccountInfoForAccountWithRefreshTokenByEmailAddress) {
+       FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress) {
   // Add an account (note: cannot use kTestEmail as it is already inserted
   // by the fixture common code, so use a different address).
   const AccountInfo foo_account_info =
@@ -2085,13 +2087,13 @@ TEST_F(IdentityManagerTest,
   base::Optional<AccountInfo> maybe_account_info;
   maybe_account_info =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               "dummy_value");
   EXPECT_FALSE(maybe_account_info.has_value());
 
   maybe_account_info =
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               foo_account_info.email);
   EXPECT_TRUE(maybe_account_info.has_value());
   EXPECT_EQ(foo_account_info.account_id, maybe_account_info.value().account_id);
@@ -2099,10 +2101,11 @@ TEST_F(IdentityManagerTest,
   EXPECT_EQ(foo_account_info.gaia, maybe_account_info.value().gaia);
 }
 
-// Checks that FindAccountInfoForAccountWithRefreshTokenByGaiaId() returns
-// information about the account if the account is found or nullopt if there
-// are no accounts with requested |gaia_id|.
-TEST_F(IdentityManagerTest, FindAccountInfoForAccountWithRefreshTokenByGaiaId) {
+// Checks that FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId()
+// returns information about the account if the account is found or nullopt if
+// there are no accounts with requested |gaia_id|.
+TEST_F(IdentityManagerTest,
+       FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId) {
   // Add an account (note: cannot use kTestEmail as it is already inserted
   // by the fixture common code, so use a different address).
   const AccountInfo foo_account_info =
@@ -2110,13 +2113,15 @@ TEST_F(IdentityManagerTest, FindAccountInfoForAccountWithRefreshTokenByGaiaId) {
 
   base::Optional<AccountInfo> maybe_account_info;
   maybe_account_info =
-      identity_manager()->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
-          "dummy_value");
+      identity_manager()
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
+              "dummy_value");
   EXPECT_FALSE(maybe_account_info.has_value());
 
   maybe_account_info =
-      identity_manager()->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
-          foo_account_info.gaia);
+      identity_manager()
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
+              foo_account_info.gaia);
   EXPECT_TRUE(maybe_account_info.has_value());
   EXPECT_EQ(foo_account_info.account_id, maybe_account_info.value().account_id);
   EXPECT_EQ(foo_account_info.email, maybe_account_info.value().email);
@@ -2207,47 +2212,51 @@ TEST_F(IdentityManagerTest, TestPickAccountIdForAccount) {
   }
 }
 
-// Check that FindExtendedAccountInfoForAccount returns a valid account info
-// iff the account is known, has refresh token and all the extended information
-// is available.
-TEST_F(IdentityManagerTest, FindExtendedAccountInfoForAccount) {
+// Check that FindExtendedAccountInfoForAccountWithRefreshToken returns a valid
+// account info iff the account is known, has refresh token and all the extended
+// information is available.
+TEST_F(IdentityManagerTest, FindExtendedAccountInfoForAccountWithRefreshToken) {
   CoreAccountInfo account_info;
   account_info.email = kTestEmail;
   account_info.gaia = kTestGaiaId;
   account_info.account_id =
       identity_manager()->PickAccountIdForAccount(kTestGaiaId, kTestEmail);
 
-  // FindExtendedAccountInfoForAccount() returns empty optional if the
-  // account_info is invalid.
-  EXPECT_FALSE(identity_manager()
-                   ->FindExtendedAccountInfoForAccount(CoreAccountInfo{})
-                   .has_value());
+  // FindExtendedAccountInfoForAccountWithRefreshToken() returns empty optional
+  // if the account_info is invalid.
+  EXPECT_FALSE(
+      identity_manager()
+          ->FindExtendedAccountInfoForAccountWithRefreshToken(CoreAccountInfo{})
+          .has_value());
 
-  // FindExtendedAccountInfoForAccount() returns empty optional if the
-  // account_info is unknown.
-  EXPECT_FALSE(identity_manager()
-                   ->FindExtendedAccountInfoForAccount(account_info)
-                   .has_value());
+  // FindExtendedAccountInfoForAccountWithRefreshToken() returns empty optional
+  // if the account_info is unknown.
+  EXPECT_FALSE(
+      identity_manager()
+          ->FindExtendedAccountInfoForAccountWithRefreshToken(account_info)
+          .has_value());
 
   // Insert the core account information in the AccountTrackerService.
   const CoreAccountId account_id =
       account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
   ASSERT_EQ(account_info.account_id, account_id);
 
-  // FindExtendedAccountInfoForAccount() returns empty optional if the account
-  // has no refresh token.
-  EXPECT_FALSE(identity_manager()
-                   ->FindExtendedAccountInfoForAccount(account_info)
-                   .has_value());
+  // FindExtendedAccountInfoForAccountWithRefreshToken() returns empty optional
+  // if the account has no refresh token.
+  EXPECT_FALSE(
+      identity_manager()
+          ->FindExtendedAccountInfoForAccountWithRefreshToken(account_info)
+          .has_value());
 
   // Insert refresh token for account.
   SetRefreshTokenForAccount(identity_manager(), account_info.account_id,
                             "refresh-token");
 
-  // FindExtendedAccountInfoForAccount() returns extended account information if
-  // the account is known and has valid refresh token.
+  // FindExtendedAccountInfoForAccountWithRefreshToken() returns extended
+  // account information if the account is known and has valid refresh token.
   const base::Optional<AccountInfo> extended_account_info =
-      identity_manager()->FindExtendedAccountInfoForAccount(account_info);
+      identity_manager()->FindExtendedAccountInfoForAccountWithRefreshToken(
+          account_info);
 
   ASSERT_TRUE(extended_account_info.has_value());
   EXPECT_EQ(account_info.gaia, extended_account_info.value().gaia);

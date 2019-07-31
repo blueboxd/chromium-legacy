@@ -252,6 +252,14 @@ class WebContents : public PageNavigator,
   CONTENT_EXPORT static WebContents* FromFrameTreeNodeId(
       int frame_tree_node_id);
 
+  // A callback that returns a pointer to a WebContents. The callback can
+  // always be used, but it may return nullptr: if the info used to
+  // instantiate the callback can no longer be used to return a WebContents,
+  // nullptr will be returned instead.
+  // The callback should only run on the UI thread and it should always be
+  // non-null.
+  using Getter = base::Callback<WebContents*(void)>;
+
   // Sets delegate for platform specific screen orientation functionality.
   CONTENT_EXPORT static void SetScreenOrientationDelegate(
       ScreenOrientationDelegate* delegate);

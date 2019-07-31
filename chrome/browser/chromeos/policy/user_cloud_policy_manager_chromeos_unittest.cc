@@ -1040,8 +1040,8 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, ReregistrationFails) {
 class UserCloudPolicyManagerChromeOSChildTest
     : public UserCloudPolicyManagerChromeOSTest {
  public:
-  // Issues OAuthToken for device management scopes using OAuth2TokenService.
-  void IssueOAuthTokenWithTokenService(base::TimeDelta token_lifetime) {
+  // Issues OAuthToken for device management scopes.
+  void IssueOAuth2AccessToken(base::TimeDelta token_lifetime) {
     identity::ScopeSet scopes;
     scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
     scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
@@ -1100,7 +1100,7 @@ TEST_P(UserCloudPolicyManagerChromeOSChildTest, RefreshSchedulerStart) {
   LoadStoreWithCachedData();
   EXPECT_FALSE(manager_->core()->refresh_scheduler());
 
-  IssueOAuthTokenWithTokenService(base::TimeDelta::FromSeconds(3600));
+  IssueOAuth2AccessToken(base::TimeDelta::FromSeconds(3600));
 
   EXPECT_TRUE(manager_->core()->refresh_scheduler());
 }
@@ -1113,7 +1113,7 @@ TEST_P(UserCloudPolicyManagerChromeOSChildTest, RefreshScheduler) {
 
   // This starts refresh scheduler.
   const base::TimeDelta token_lifetime = base::TimeDelta::FromMinutes(50);
-  IssueOAuthTokenWithTokenService(token_lifetime);
+  IssueOAuth2AccessToken(token_lifetime);
 
   // First refresh is scheduled with delay of 0s - let it execute.
   FetchPolicy(
@@ -1133,7 +1133,7 @@ TEST_P(UserCloudPolicyManagerChromeOSChildTest, RefreshScheduler) {
   for (int i = 0; i < iterations; ++i) {
     task_runner_->FastForwardBy(token_lifetime);
     refresh_delay -= token_lifetime;
-    IssueOAuthTokenWithTokenService(token_lifetime);
+    IssueOAuth2AccessToken(token_lifetime);
   }
 
   // Advance the clock by the remaining time to get scheduled policy refresh.

@@ -121,7 +121,7 @@ bool CSSLayoutDefinition::Instance::Layout(
   StylePropertyMapReadOnly* style_map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           layout_custom.GetDocument(), layout_custom.StyleRef(),
-          layout_custom.GetNode(), definition_->native_invalidation_properties_,
+          definition_->native_invalidation_properties_,
           definition_->custom_invalidation_properties_);
 
   ScriptValue return_value;

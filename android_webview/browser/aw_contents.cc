@@ -24,7 +24,7 @@
 #include "android_webview/browser/gfx/aw_picture.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/child_frame.h"
-#include "android_webview/browser/gfx/deferred_gpu_command_service.h"
+#include "android_webview/browser/gfx/gpu_service_web_view.h"
 #include "android_webview/browser/gfx/java_browser_view_renderer_helper.h"
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
@@ -415,8 +415,9 @@ static jboolean JNI_AwContents_HasRequiredHardwareExtensions(JNIEnv* env) {
   // Make sure GPUInfo is collected. This will initialize GL bindings,
   // collect GPUInfo, and compute GpuFeatureInfo if they have not been
   // already done.
-  return DeferredGpuCommandService::GetInstance()
-      ->CanSupportThreadedTextureMailbox();
+  return GpuServiceWebView::GetInstance()
+      ->gpu_info()
+      .can_support_threaded_texture_mailbox;
 }
 
 static void JNI_AwContents_SetAwDrawSWFunctionTable(JNIEnv* env,

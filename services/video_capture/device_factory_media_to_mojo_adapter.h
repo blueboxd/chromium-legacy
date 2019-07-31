@@ -14,7 +14,7 @@
 #include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 

@@ -574,7 +574,25 @@ bool OmniboxViewViews::IsDropCursorForInsertion() const {
 
 void OmniboxViewViews::SetTextAndSelectedRange(const base::string16& text,
                                                const gfx::Range& range) {
+  // Will try to fit as much of unselected text as possible. If possible,
+  // guarantees at least |pad_left| chars of the unselected text are visible. If
+  // possible given the prior guarantee, also guarantees |pad_right| chars of
+  // the selected text are visible.
+  static const uint32_t kPadRight = 30;
+  static const uint32_t kPadLeft = 10;
+
   SetText(text);
+  // Select all the text to prioritize showing unselected text.
+  SelectRange(gfx::Range(range.start(), 0));
+  // Scroll selection right, to ensure |kPadRight| chars of selected text are
+  // shown.
+  SelectRange(gfx::Range(range.start(),
+                         std::min(range.end() + kPadRight, range.start())));
+  // Scroll selection left, to ensure |kPadLeft| chars of unselected text are
+  // shown.
+  SelectRange(
+      gfx::Range(range.start(), range.end() - std::min(kPadLeft, range.end())));
+  // Select the specified selection.
   SelectRange(range);
 }
 

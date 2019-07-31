@@ -294,7 +294,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(
     gpu::Capabilities* capabilities,
     SerializedHandle* shared_state,
     gpu::CommandBufferId* command_buffer_id) {
-  shared_state->set_null_shmem();
+  shared_state->set_null_shmem_region();
 
   thunk::EnterResourceCreation enter(instance);
 

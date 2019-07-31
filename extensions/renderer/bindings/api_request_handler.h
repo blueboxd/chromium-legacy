@@ -40,7 +40,6 @@ class APIRequestHandler {
     std::string method_name;
     bool has_callback = false;
     bool has_user_gesture = false;
-    binding::RequestThread thread = binding::RequestThread::UI;
     std::unique_ptr<base::ListValue> arguments;
 
    private:
@@ -64,16 +63,14 @@ class APIRequestHandler {
                    const std::string& method,
                    std::unique_ptr<base::ListValue> arguments,
                    v8::Local<v8::Function> callback,
-                   v8::Local<v8::Function> custom_callback,
-                   binding::RequestThread thread);
+                   v8::Local<v8::Function> custom_callback);
 
   // Starts a request and returns a promise, which will be resolved or rejected
   // when the request is completed.
   std::pair<int, v8::Local<v8::Promise>> StartPromiseBasedRequest(
       v8::Local<v8::Context> context,
       const std::string& method,
-      std::unique_ptr<base::ListValue> arguments,
-      binding::RequestThread thread);
+      std::unique_ptr<base::ListValue> arguments);
 
   // Adds a pending request for the request handler to manage (and complete via
   // CompleteRequest). This is used by renderer-side implementations that
@@ -142,7 +139,6 @@ class APIRequestHandler {
                         int request_id,
                         const std::string& method,
                         std::unique_ptr<base::ListValue> arguments,
-                        binding::RequestThread thread,
                         std::unique_ptr<AsyncResultHandler> async_handler);
 
   // Common implementation for completing a request.

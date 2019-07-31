@@ -26,6 +26,7 @@
 #include "remoting/protocol/webrtc_video_stream.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
+#include "third_party/webrtc/api/sctp_transport_interface.h"
 
 namespace remoting {
 namespace protocol {
@@ -179,6 +180,14 @@ void WebrtcConnectionToClient::OnWebrtcTransportConnecting() {
 
 void WebrtcConnectionToClient::OnWebrtcTransportConnected() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  auto sctp_transport = transport_->peer_connection()->GetSctpTransport();
+  if (sctp_transport) {
+    absl::optional<double> max_message_size =
+        sctp_transport->Information().MaxMessageSize();
+    if (max_message_size && *max_message_size > 0) {
+      control_dispatcher_->set_max_message_size(*max_message_size);
+    }
+  }
 }
 
 void WebrtcConnectionToClient::OnWebrtcTransportError(ErrorCode error) {

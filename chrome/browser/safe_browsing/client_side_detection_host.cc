@@ -577,9 +577,6 @@ void ClientSideDetectionHost::PhishingDetectionDone(
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
       verdict->IsInitialized()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "SBClientPhishing.ClientDeterminesPhishing",
-        verdict->is_phishing());
     // We only send phishing verdict to the server if the verdict is phishing or
     // if a SafeBrowsing interstitial was already shown for this site.  E.g., a
     // malware or phishing interstitial was shown but the user clicked
@@ -601,11 +598,6 @@ void ClientSideDetectionHost::PhishingDetectionDone(
 void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
                                                        bool is_phishing) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DVLOG(2) << "Received server phishing verdict for URL:" << phishing_url
-           << " is_phishing:" << is_phishing;
-  UMA_HISTOGRAM_BOOLEAN(
-      "SBClientPhishing.ServerDeterminesPhishing",
-      is_phishing);
   if (is_phishing) {
     DCHECK(web_contents());
     if (ui_manager_.get()) {

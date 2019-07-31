@@ -128,8 +128,7 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
 
   void SetupFieldTrial(base::Optional<int> preconnect_origin_score_threshold,
                        base::Optional<int> prefetch_url_score_threshold,
-                       base::Optional<bool> prefetch_after_preconnect,
-                       base::Optional<bool> send_ukm_metrics) {
+                       base::Optional<bool> prefetch_after_preconnect) {
     if (field_trial_initiated_)
       return;
 
@@ -149,9 +148,6 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
     if (prefetch_after_preconnect.has_value()) {
       params["prefetch_after_preconnect"] =
           prefetch_after_preconnect.value() ? "true" : "false";
-    }
-    if (send_ukm_metrics.has_value()) {
-      params["send_ukm_metrics"] = send_ukm_metrics.value() ? "true" : "false";
     }
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         blink::features::kNavigationPredictor, params);
@@ -504,7 +500,7 @@ class NavigationPredictorSendUkmMetricsEnabledTest
     : public NavigationPredictorTest {
  public:
   NavigationPredictorSendUkmMetricsEnabledTest() {
-    SetupFieldTrial(base::nullopt, base::nullopt, base::nullopt, true);
+    SetupFieldTrial(base::nullopt, base::nullopt, base::nullopt);
   }
 
   void SetUp() override {
@@ -721,7 +717,7 @@ class NavigationPredictorPrefetchAfterPreconnectEnabledTest
     : public NavigationPredictorTest {
  public:
   NavigationPredictorPrefetchAfterPreconnectEnabledTest() {
-    SetupFieldTrial(base::nullopt, base::nullopt, true, base::nullopt);
+    SetupFieldTrial(base::nullopt, base::nullopt, true);
   }
 
   void SetUp() override {
@@ -768,8 +764,7 @@ class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
  public:
   NavigationPredictorPrefetchDisabledTest() {
     SetupFieldTrial(0 /* preconnect_origin_score_threshold */,
-                    101 /* prefetch_url_score_threshold */, base::nullopt,
-                    base::nullopt);
+                    101 /* prefetch_url_score_threshold */, base::nullopt);
   }
 
   void SetUp() override {
@@ -867,8 +862,7 @@ class NavigationPredictorPreconnectPrefetchDisabledTest
  public:
   NavigationPredictorPreconnectPrefetchDisabledTest() {
     SetupFieldTrial(101 /* preconnect_origin_score_threshold */,
-                    101 /* prefetch_url_score_threshold */, base::nullopt,
-                    base::nullopt);
+                    101 /* prefetch_url_score_threshold */, base::nullopt);
   }
 
   void SetUp() override {

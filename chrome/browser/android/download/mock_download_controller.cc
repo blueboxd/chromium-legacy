@@ -29,7 +29,7 @@ void MockDownloadController::StartContextMenuDownload(
 }
 
 void MockDownloadController::AcquireFileAccessPermission(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     DownloadControllerBase::AcquireFileAccessPermissionCallback cb) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(cb), approve_file_access_request_));
@@ -41,7 +41,7 @@ void MockDownloadController::SetApproveFileAccessRequestForTesting(
 }
 
 void MockDownloadController::CreateAndroidDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const DownloadInfo& info) {}
 
 void MockDownloadController::AboutToResumeDownload(

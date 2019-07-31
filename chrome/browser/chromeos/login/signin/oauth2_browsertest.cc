@@ -701,7 +701,8 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, VerifyInAdvancedProtectionAfterOnlineAuth) {
       IdentityManagerFactory::GetInstance()->GetForProfile(GetProfile());
   EXPECT_TRUE(
       identity_manager
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(kTestEmail)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              kTestEmail)
           ->is_under_advanced_protection);
 }
 
@@ -715,7 +716,8 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test,
       IdentityManagerFactory::GetInstance()->GetForProfile(GetProfile());
   EXPECT_FALSE(
       identity_manager
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(kTestEmail)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              kTestEmail)
           ->is_under_advanced_protection);
 }
 

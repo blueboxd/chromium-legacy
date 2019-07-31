@@ -16,35 +16,8 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/test/mock_background_sync_controller.h"
 #include "content/test/mock_ssl_host_state_delegate.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
- public:
-  TestContextURLRequestContextGetter()
-      : null_task_runner_(new base::NullTaskRunner) {
-  }
-
-  net::URLRequestContext* GetURLRequestContext() override { return &context_; }
-
-  scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
-      const override {
-    return null_task_runner_;
-  }
-
- private:
-  ~TestContextURLRequestContextGetter() override {}
-
-  net::TestURLRequestContext context_;
-  scoped_refptr<base::SingleThreadTaskRunner> null_task_runner_;
-};
-
-}  // namespace
 
 namespace content {
 
@@ -92,13 +65,6 @@ void TestBrowserContext::SetSpecialStoragePolicy(
 void TestBrowserContext::SetPermissionControllerDelegate(
     std::unique_ptr<PermissionControllerDelegate> delegate) {
   permission_controller_delegate_ = std::move(delegate);
-}
-
-net::URLRequestContextGetter* TestBrowserContext::GetRequestContext() {
-  if (!request_context_.get()) {
-    request_context_ = new TestContextURLRequestContextGetter();
-  }
-  return request_context_.get();
 }
 
 base::FilePath TestBrowserContext::GetPath() {
@@ -169,17 +135,6 @@ BrowsingDataRemoverDelegate*
 TestBrowserContext::GetBrowsingDataRemoverDelegate() {
   // Most BrowsingDataRemover tests do not require a delegate
   // (not even a mock one).
-  return nullptr;
-}
-
-net::URLRequestContextGetter* TestBrowserContext::CreateRequestContext(
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) {
-  request_interceptors_ = std::move(request_interceptors);
-  return GetRequestContext();
-}
-
-net::URLRequestContextGetter* TestBrowserContext::CreateMediaRequestContext() {
   return nullptr;
 }
 

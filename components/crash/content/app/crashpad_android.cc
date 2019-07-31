@@ -397,7 +397,7 @@ bool GetHandlerPath(base::FilePath* exe_dir, base::FilePath* handler_path) {
   if (!base::PathService::Get(base::DIR_MODULE, exe_dir)) {
     return false;
   }
-  *handler_path = exe_dir->Append("libcrashpad_handler.so");
+  *handler_path = exe_dir->Append("libchrome_crashpad_handler.so");
   return true;
 }
 

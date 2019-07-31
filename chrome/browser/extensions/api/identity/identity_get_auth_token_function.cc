@@ -199,7 +199,8 @@ void IdentityGetAuthTokenFunction::FetchExtensionAccountInfo(
     const std::string& gaia_id) {
   OnReceivedExtensionAccountInfo(base::OptionalOrNullptr(
       IdentityManagerFactory::GetForProfile(GetProfile())
-          ->FindAccountInfoForAccountWithRefreshTokenByGaiaId(gaia_id)));
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
+              gaia_id)));
 }
 
 void IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo(
@@ -261,7 +262,7 @@ void IdentityGetAuthTokenFunction::OnAccountsInCookieUpdated(
     email_for_default_web_account_ = account.email;
     OnReceivedExtensionAccountInfo(base::OptionalOrNullptr(
         IdentityManagerFactory::GetForProfile(GetProfile())
-            ->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
+            ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
                 account.gaia_id)));
   } else {
     OnReceivedExtensionAccountInfo(nullptr);
@@ -800,7 +801,7 @@ void IdentityGetAuthTokenFunction::StartGaiaRequest(
 void IdentityGetAuthTokenFunction::ShowExtensionLoginPrompt() {
   base::Optional<AccountInfo> account =
       IdentityManagerFactory::GetForProfile(GetProfile())
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
               token_key_.account_id);
   std::string email_hint =
       account ? account->email : email_for_default_web_account_;

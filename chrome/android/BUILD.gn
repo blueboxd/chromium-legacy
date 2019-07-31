@@ -1349,10 +1349,16 @@ if (current_toolchain == default_toolchain) {
       output_dir = "$target_gen_dir/${_variant}_paks"
       deps = []
 
+      additional_extra_paks = []
       if (_is_monochrome) {
-        additional_extra_paks =
+        additional_extra_paks +=
             [ "$root_gen_dir/android_webview/aw_resources.pak" ]
         deps += [ "//android_webview:generate_aw_resources" ]
+      }
+      if (!dfmify_dev_ui) {
+        additional_extra_paks +=
+            [ "$root_gen_dir/chrome/bluetooth_internals_resources.pak" ]
+        deps += [ "//chrome/browser/resources/bluetooth_internals:resources" ]
       }
 
       if (enable_resource_whitelist_generation) {

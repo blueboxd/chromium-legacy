@@ -556,7 +556,7 @@ int SplitViewController::GetDefaultDividerPosition(aura::Window* window) const {
     return (work_area_bounds_in_screen.height() - divider_size.height()) * 0.5f;
 }
 
-bool SplitViewController::IsDividerAnimating() {
+bool SplitViewController::IsDividerAnimating() const {
   return divider_snap_animation_ && divider_snap_animation_->is_animating();
 }
 

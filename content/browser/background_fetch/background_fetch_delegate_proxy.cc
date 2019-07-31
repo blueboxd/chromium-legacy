@@ -51,7 +51,7 @@ class BackgroundFetchDelegateProxy::Core
 
   void GetPermissionForOrigin(
       const url::Origin& origin,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const WebContents::Getter& wc_getter,
       BackgroundFetchDelegate::GetPermissionForOriginCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -343,7 +343,7 @@ void BackgroundFetchDelegateProxy::GetIconDisplaySize(
 
 void BackgroundFetchDelegateProxy::GetPermissionForOrigin(
     const url::Origin& origin,
-    const ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const WebContents::Getter& wc_getter,
     BackgroundFetchDelegate::GetPermissionForOriginCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTaskWithTraits(

@@ -30,12 +30,6 @@
 // Returns YES if the current WebState contains the given |text|.
 + (BOOL)currentWebStateContainsText:(NSString*)text WARN_UNUSED_RESULT;
 
-// Returns YES if the current WebState's WebUsage is enabled.
-+ (BOOL)webUsageEnabledForCurrentWebState WARN_UNUSED_RESULT;
-
-// Returns Mojo instance group name for current WebState.
-+ (NSString*)instanceGroupForCurrentBrowserState WARN_UNUSED_RESULT;
-
 @end
 
 #endif  // IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_EARL_GREY_APP_INTERFACE_H_

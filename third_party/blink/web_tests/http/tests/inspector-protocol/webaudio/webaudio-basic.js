@@ -5,7 +5,6 @@
 
   let result, event, contextId;
 
-
   result = await dp.WebAudio.enable();
   testRunner.log(`Enabled successfully: ${!result.error}`);
 
@@ -27,8 +26,8 @@
   testRunner.log(`got context realtime data: ${!response.result.realtimeData}`);
   testRunner.log(Object.keys(response.result.realtimeData));
 
-  // TODO(crbug.com/942615): Test |contextDestroyed| when AudioContext GC issue
-  // is fixed.
+  // TODO(crbug.com/942615): Test |contextWillBeDestroyed| when the GC issue is
+  // fixed.
 
   result = await dp.WebAudio.disable();
   testRunner.log(`Disabled successfully: ${!result.error}`);

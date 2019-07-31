@@ -8,80 +8,125 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/json/json_writer.h"
-#include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "net/http/http_status_code.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_url_loader_factory.h"
+#include "chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client.h"
+#include "chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client_factory.h"
+#include "chrome/browser/supervised_user/kids_chrome_management/kidschromemanagement_messages.pb.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "components/account_id/account_id.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#endif
+
 namespace {
 
-const char kClassifyUrlApiPath[] =
-    "https://kidsmanagement-pa.googleapis.com/kidsmanagement/v1/people/"
-    "me:classifyUrl";
+using kids_chrome_management::ClassifyUrlResponse;
 
-const char kEmail[] = "account@gmail.com";
-
-std::string ClassificationToString(
+ClassifyUrlResponse::DisplayClassification ConvertClassification(
     safe_search_api::ClientClassification classification) {
   switch (classification) {
     case safe_search_api::ClientClassification::kAllowed:
-      return "allowed";
+      return ClassifyUrlResponse::ALLOWED;
     case safe_search_api::ClientClassification::kRestricted:
-      return "restricted";
+      return ClassifyUrlResponse::RESTRICTED;
     case safe_search_api::ClientClassification::kUnknown:
-      return std::string();
+      return ClassifyUrlResponse::UNKNOWN_DISPLAY_CLASSIFICATION;
   }
 }
 
-// Build fake JSON string with a response according to |classification|.
-std::string BuildResponse(
+// Build fake response proto with a response according to |classification|.
+std::unique_ptr<ClassifyUrlResponse> BuildResponseProto(
     safe_search_api::ClientClassification classification) {
-  base::DictionaryValue dict;
-  dict.SetKey("displayClassification",
-              base::Value(ClassificationToString(classification)));
-  std::string result;
-  base::JSONWriter::Write(dict, &result);
-  return result;
+  auto response_proto = std::make_unique<ClassifyUrlResponse>();
+
+  response_proto->set_display_classification(
+      ConvertClassification(classification));
+  return response_proto;
+}
+
+class KidsChromeManagementClientForTesting : public KidsChromeManagementClient {
+ public:
+  explicit KidsChromeManagementClientForTesting(
+      content::BrowserContext* context)
+      : KidsChromeManagementClient(static_cast<Profile*>(context)) {}
+
+  ~KidsChromeManagementClientForTesting() override = default;
+
+  void ClassifyURL(
+      std::unique_ptr<kids_chrome_management::ClassifyUrlRequest> request_proto,
+      KidsChromeManagementClient::KidsChromeManagementCallback callback)
+      override {
+    std::move(callback).Run(std::move(response_proto_), error_code_);
+  }
+
+  void SetupResponse(std::unique_ptr<ClassifyUrlResponse> response_proto,
+                     KidsChromeManagementClient::ErrorCode error_code) {
+    response_proto_ = std::move(response_proto);
+    error_code_ = error_code;
+  }
+
+ private:
+  std::unique_ptr<ClassifyUrlResponse> response_proto_;
+  KidsChromeManagementClient::ErrorCode error_code_;
+
+  DISALLOW_COPY_AND_ASSIGN(KidsChromeManagementClientForTesting);
+};
+
+std::unique_ptr<KeyedService> CreateKidsChromeManagementClient(
+    content::BrowserContext* context) {
+  return std::make_unique<KidsChromeManagementClientForTesting>(context);
 }
 
 }  // namespace
 
 class KidsManagementURLCheckerClientTest : public testing::Test {
  public:
-  KidsManagementURLCheckerClientTest()
-      : test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {
-    AccountInfo account_info =
-        identity_test_env_.MakePrimaryAccountAvailable(kEmail);
-    account_id_ = account_info.account_id;
-    url_classifier_ = std::make_unique<KidsManagementURLCheckerClient>(
-        test_shared_loader_factory_, std::string(),
-        identity_test_env_.identity_manager());
+  KidsManagementURLCheckerClientTest() = default;
+  void SetUp() override {
+    test_profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(test_profile_manager_->SetUp());
+    test_profile_manager_->SetLoggedIn(true);
+
+// ChromeOS requires a chromeos::FakeChromeUserManager for the tests to work.
+#if defined(OS_CHROMEOS)
+    const char kEmail[] = "account@gmail.com";
+    const AccountId test_account_id(AccountId::FromUserEmail(kEmail));
+    user_manager_ = new chromeos::FakeChromeUserManager;
+    user_manager_->AddUser(test_account_id);
+    user_manager_->LoginUser(test_account_id);
+    user_manager_->SwitchActiveUser(test_account_id);
+    test_profile_ = test_profile_manager_->CreateTestingProfile(
+        test_account_id.GetUserEmail());
+#else
+    test_profile_ =
+        test_profile_manager_->CreateTestingProfile(chrome::kInitialProfile);
+#endif
+
+    DCHECK(test_profile_);
+
+    KidsChromeManagementClientFactory::GetInstance()->SetTestingFactory(
+        test_profile_, base::BindRepeating(&CreateKidsChromeManagementClient));
+
+    url_classifier_ = std::make_unique<KidsManagementURLCheckerClient>("us");
   }
 
  protected:
-  void IssueAccessTokens() {
-    identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
-        account_id_, "access_token",
-        /*expiration_time*/ base::Time::Now() + base::TimeDelta::FromHours(1));
-  }
-
-  void IssueAccessTokenErrors() {
-    identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
-        account_id_, GoogleServiceAuthError::FromServiceError("Error!"));
-  }
-
-  void SetupResponse(net::HttpStatusCode status, const std::string& response) {
-    test_url_loader_factory_.AddResponse(kClassifyUrlApiPath, response, status);
+  void SetupClientResponse(std::unique_ptr<ClassifyUrlResponse> response_proto,
+                           KidsChromeManagementClient::ErrorCode error_code) {
+    static_cast<KidsChromeManagementClientForTesting*>(
+        KidsChromeManagementClientFactory::GetInstance()->GetForBrowserContext(
+            test_profile_))
+        ->SetupResponse(std::move(response_proto), error_code);
   }
 
   void CheckURL(const GURL& url) {
@@ -90,30 +135,20 @@ class KidsManagementURLCheckerClientTest : public testing::Test {
                             base::Unretained(this)));
   }
 
-  void CheckURLWithResponse(
-      const GURL& url,
-      const safe_search_api::ClientClassification classification) {
-    CheckURL(url);
-    SetupResponse(net::HTTP_OK, BuildResponse(classification));
-
-    IssueAccessTokens();
-    WaitForResponse();
-  }
-
-  // Only use this if setting response manually. CheckURLWithResponse already
-  // uses this.
-  void WaitForResponse() { base::RunLoop().RunUntilIdle(); }
-
   MOCK_METHOD2(OnCheckDone,
                void(const GURL& url,
                     safe_search_api::ClientClassification classification));
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::string account_id_;
-  signin::IdentityTestEnvironment identity_test_env_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile* test_profile_;
+  std::unique_ptr<TestingProfileManager> test_profile_manager_;
   std::unique_ptr<KidsManagementURLCheckerClient> url_classifier_;
+#if defined(OS_CHROMEOS)
+  chromeos::FakeChromeUserManager* user_manager_;
+#endif
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KidsManagementURLCheckerClientTest);
 };
 
 TEST_F(KidsManagementURLCheckerClientTest, Simple) {
@@ -125,7 +160,10 @@ TEST_F(KidsManagementURLCheckerClientTest, Simple) {
 
     EXPECT_CALL(*this, OnCheckDone(url, classification));
 
-    CheckURLWithResponse(url, classification);
+    SetupClientResponse(BuildResponseProto(classification),
+                        KidsChromeManagementClient::ErrorCode::kSuccess);
+
+    CheckURL(url);
   }
   {
     GURL url("http://randomurl2.com");
@@ -135,30 +173,64 @@ TEST_F(KidsManagementURLCheckerClientTest, Simple) {
 
     EXPECT_CALL(*this, OnCheckDone(url, classification));
 
-    CheckURLWithResponse(url, classification);
+    SetupClientResponse(BuildResponseProto(classification),
+                        KidsChromeManagementClient::ErrorCode::kSuccess);
+    CheckURL(url);
   }
 }
 
 TEST_F(KidsManagementURLCheckerClientTest, AccessTokenError) {
-  GURL url("http://randomurl.com");
+  GURL url("http://randomurl3.com");
 
-  // Our callback should get called immediately on an error.
-  EXPECT_CALL(
-      *this, OnCheckDone(url, safe_search_api::ClientClassification::kUnknown));
+  safe_search_api::ClientClassification classification =
+      safe_search_api::ClientClassification::kUnknown;
+
+  SetupClientResponse(BuildResponseProto(classification),
+                      KidsChromeManagementClient::ErrorCode::kTokenError);
+
+  EXPECT_CALL(*this, OnCheckDone(url, classification));
   CheckURL(url);
-  IssueAccessTokenErrors();
 }
 
-TEST_F(KidsManagementURLCheckerClientTest, NetworkError) {
-  GURL url("http://randomurl.com");
+TEST_F(KidsManagementURLCheckerClientTest, NetworkErrors) {
+  {
+    GURL url("http://randomurl4.com");
+
+    safe_search_api::ClientClassification classification =
+        safe_search_api::ClientClassification::kUnknown;
+
+    SetupClientResponse(BuildResponseProto(classification),
+                        KidsChromeManagementClient::ErrorCode::kNetworkError);
+
+    EXPECT_CALL(*this, OnCheckDone(url, classification));
+
+    CheckURL(url);
+  }
+
+  {
+    GURL url("http://randomurl5.com");
+
+    safe_search_api::ClientClassification classification =
+        safe_search_api::ClientClassification::kUnknown;
+
+    SetupClientResponse(BuildResponseProto(classification),
+                        KidsChromeManagementClient::ErrorCode::kHttpError);
+
+    EXPECT_CALL(*this, OnCheckDone(url, classification));
+
+    CheckURL(url);
+  }
+}
+
+TEST_F(KidsManagementURLCheckerClientTest, ServiceError) {
+  GURL url("http://randomurl6.com");
+
+  safe_search_api::ClientClassification classification =
+      safe_search_api::ClientClassification::kUnknown;
+
+  SetupClientResponse(BuildResponseProto(classification),
+                      KidsChromeManagementClient::ErrorCode::kServiceError);
+
+  EXPECT_CALL(*this, OnCheckDone(url, classification));
   CheckURL(url);
-
-  IssueAccessTokens();
-
-  // Our callback should get called on an error.
-  EXPECT_CALL(
-      *this, OnCheckDone(url, safe_search_api::ClientClassification::kUnknown));
-
-  SetupResponse(net::HTTP_FORBIDDEN, std::string());
-  WaitForResponse();
 }

@@ -126,12 +126,27 @@ ValueWrapperSyntheticModuleScript::ValueWrapperSyntheticModuleScript(
                    fetch_options),
       export_value_(v8::Isolate::GetCurrent(), value) {}
 
-// TODO(sasebree) Implement this method
+// This is the definition of [[EvaluationSteps]] As per the synthetic module
+// spec  https://heycam.github.io/webidl/#synthetic-module-records
+// It is responsible for setting the default export of the provided module to
+// the value wrapped by the ValueWrapperSyntheticModuleScript
 v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
     v8::Local<v8::Context> context,
     v8::Local<v8::Module> module) {
-  NOTREACHED();
-  return v8::MaybeLocal<v8::Value>();
+  v8::Isolate* isolate = context->GetIsolate();
+  ScriptState* script_state = ScriptState::From(context);
+  Modulator* modulator = Modulator::From(script_state);
+  ModuleRecord record = ModuleRecord(isolate, module, KURL());
+  ModuleRecordResolver* module_record_resolver =
+      modulator->GetModuleRecordResolver();
+  const ValueWrapperSyntheticModuleScript*
+      value_wrapper_synthetic_module_script =
+          static_cast<const ValueWrapperSyntheticModuleScript*>(
+              module_record_resolver->GetModuleScriptFromModuleRecord(record));
+  module->SetSyntheticModuleExport(
+      V8String(isolate, "default"),
+      value_wrapper_synthetic_module_script->export_value_.NewLocal(isolate));
+  return v8::Undefined(reinterpret_cast<v8::Isolate*>(isolate));
 }
 
 String ValueWrapperSyntheticModuleScript::InlineSourceTextForCSP() const {

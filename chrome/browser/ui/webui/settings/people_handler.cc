@@ -554,7 +554,7 @@ base::Value PeopleHandler::GetStoredAccountsList() {
     // account.
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
     base::Optional<AccountInfo> primary_account_info =
-        identity_manager->FindExtendedAccountInfoForAccount(
+        identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identity_manager->GetPrimaryAccountInfo());
     if (primary_account_info.has_value())
       accounts_list.push_back(GetAccountValue(primary_account_info.value()));
@@ -575,7 +575,7 @@ void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
 
   base::Optional<AccountInfo> maybe_account =
       IdentityManagerFactory::GetForProfile(profile_)
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               email->GetString());
 
   signin_ui_util::EnableSyncFromPromo(

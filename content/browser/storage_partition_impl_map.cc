@@ -23,13 +23,11 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
-#include "content/browser/devtools/devtools_url_request_interceptor.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
@@ -48,12 +46,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "crypto/sha2.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
-#include "storage/browser/fileapi/file_system_url_request_job_factory.h"
 
 using storage::FileSystemContext;
 using storage::BlobStorageContext;
@@ -388,44 +383,6 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   StoragePartitionImpl* partition = partition_ptr.get();
   partitions_[partition_config] = std::move(partition_ptr);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    ChromeBlobStorageContext* blob_storage_context =
-        ChromeBlobStorageContext::GetFor(browser_context_);
-    ProtocolHandlerMap protocol_handlers;
-    protocol_handlers[url::kBlobScheme] =
-        std::make_unique<BlobProtocolHandler>(blob_storage_context);
-    protocol_handlers[url::kFileSystemScheme] = CreateFileSystemProtocolHandler(
-        partition_domain, partition->GetFileSystemContext());
-    for (const auto& scheme : URLDataManagerBackend::GetWebUISchemes()) {
-      protocol_handlers[scheme] = URLDataManagerBackend::CreateProtocolHandler(
-          browser_context_->GetResourceContext(), blob_storage_context);
-    }
-
-    URLRequestInterceptorScopedVector request_interceptors;
-
-    auto devtools_interceptor =
-        DevToolsURLRequestInterceptor::MaybeCreate(browser_context_);
-    if (devtools_interceptor)
-      request_interceptors.push_back(std::move(devtools_interceptor));
-    request_interceptors.push_back(std::make_unique<AppCacheInterceptor>());
-
-    // These calls must happen after StoragePartitionImpl::Create().
-    partition->SetURLRequestContext(browser_context_->CreateRequestContext(
-        &protocol_handlers, std::move(request_interceptors)));
-
-    // A separate media cache isn't used with the network service.
-    partition->SetMediaURLRequestContext(
-        browser_context_->CreateMediaRequestContext());
-
-    // This needs to happen after SetURLRequestContext() since we need this
-    // code path only for non-NetworkService cases where NetworkContext needs to
-    // be initialized using |url_request_context_|, which is initialized by
-    // SetURLRequestContext().
-    DCHECK(partition->url_loader_factory_getter());
-    DCHECK(partition->url_request_context_);
-    partition->url_loader_factory_getter()->HandleFactoryRequests();
-  }
-
   // Arm the serviceworker cookie change observation API.
   partition->GetCookieStoreContext()->ListenToCookieChanges(
       partition->GetNetworkContext(), /*success_callback=*/base::DoNothing());
@@ -532,16 +489,12 @@ void StoragePartitionImplMap::PostCreateInitialization(
     InitializeResourceContext(browser_context_);
   }
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter;
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    request_context_getter = partition->GetURLRequestContext();
-
   if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
     partition->GetAppCacheService()->InitializeOnLoaderThread(
         in_memory ? base::FilePath()
                   : partition->GetPath().Append(kAppCacheDirname),
         browser_context_, nullptr /* resource_context */,
-        request_context_getter, browser_context_->GetSpecialStoragePolicy());
+        browser_context_->GetSpecialStoragePolicy());
   }
 
   // Check first to avoid memory leak in unittests.
@@ -555,7 +508,7 @@ void StoragePartitionImplMap::PostCreateInitialization(
               in_memory ? base::FilePath()
                         : partition->GetPath().Append(kAppCacheDirname),
               nullptr /* browser_context */,
-              browser_context_->GetResourceContext(), request_context_getter,
+              browser_context_->GetResourceContext(),
               base::RetainedRef(browser_context_->GetSpecialStoragePolicy())));
     }
 
@@ -571,12 +524,11 @@ void StoragePartitionImplMap::PostCreateInitialization(
     if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(
-              &PrefetchURLLoaderService::InitializeResourceContext,
-              partition->GetPrefetchURLLoaderService(),
-              browser_context_->GetResourceContext(), request_context_getter,
-              base::RetainedRef(
-                  ChromeBlobStorageContext::GetFor(browser_context_))));
+          base::BindOnce(&PrefetchURLLoaderService::InitializeResourceContext,
+                         partition->GetPrefetchURLLoaderService(),
+                         browser_context_->GetResourceContext(), nullptr,
+                         base::RetainedRef(ChromeBlobStorageContext::GetFor(
+                             browser_context_))));
     }
 
     base::PostTaskWithTraits(

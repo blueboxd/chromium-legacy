@@ -76,9 +76,6 @@ class MirroringActivityRecord : public ActivityRecord,
   void OnAppMessage(const cast_channel::CastMessage& message) override;
   void OnInternalMessage(const cast_channel::InternalMessage& message) override;
 
- protected:
-  void OnSessionSet() override;
-
  private:
   enum class MirroringType {
     kTab,           // Mirror a single tab.
@@ -103,7 +100,6 @@ class MirroringActivityRecord : public ActivityRecord,
   const int channel_id_;
   const MirroringType mirroring_type_;
   OnStopCallback on_stop_;
-  base::OnceCallback<void()> on_session_set_;
   base::WeakPtrFactory<MirroringActivityRecord> weak_ptr_factory_{this};
 };
 

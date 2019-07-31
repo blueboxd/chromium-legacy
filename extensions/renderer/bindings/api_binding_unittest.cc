@@ -367,50 +367,6 @@ TEST_F(APIBindingUnittest, TestBasicAPICalls) {
               "Badness");
 }
 
-// Test that "forIOThread" property in a function schema is respected.
-TEST_F(APIBindingUnittest, IOThreadCalls) {
-  const char kFunctions[] =
-      "[{"
-      "  'name' : 'uiFunc1',"
-      "  'parameters' : []"
-      "}, {"
-      "  'name' : 'uiFunc2',"
-      "  'parameters' : [],"
-      "  'forIOThread' : false"
-      "}, {"
-      "  'name' : 'ioFunc',"
-      "  'parameters' : [],"
-      "  'forIOThread' : true"
-      "}]";
-  SetFunctions(kFunctions);
-  InitializeBinding();
-
-  v8::HandleScope handle_scope(isolate());
-  v8::Local<v8::Context> context = MainContext();
-  v8::Local<v8::Object> binding_object = binding()->CreateInstance(context);
-
-  struct {
-    const char* func_name;
-    binding::RequestThread thread;
-  } test_cases[] = {
-      {"uiFunc1", binding::RequestThread::UI},
-      {"uiFunc2", binding::RequestThread::UI},
-      {"ioFunc", binding::RequestThread::IO},
-  };
-  const char kFunctionCall[] = "(function(obj) { obj.%s(); })";
-  v8::Local<v8::Value> argv[] = {binding_object};
-
-  for (const auto& test_case : test_cases) {
-    SCOPED_TRACE(base::StringPrintf("Testing case-%s", test_case.func_name));
-    v8::Local<v8::Function> func = FunctionFromString(
-        context, base::StringPrintf(kFunctionCall, test_case.func_name));
-    RunFunction(func, context, base::size(argv), argv);
-    ASSERT_TRUE(last_request());
-    EXPECT_EQ(test_case.thread, last_request()->thread);
-    reset_last_request();
-  }
-}
-
 // Test that enum values are properly exposed on the binding object.
 TEST_F(APIBindingUnittest, EnumValues) {
   const char kTypes[] =
@@ -1507,10 +1463,10 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
          v8::Local<v8::Context> context,
          std::vector<v8::Local<v8::Value>>* arguments,
          const APITypeReferenceMap& map) {
-        handler->StartRequest(
-            context, "test.handleAndSendRequest",
-            std::make_unique<base::ListValue>(), v8::Local<v8::Function>(),
-            v8::Local<v8::Function>(), binding::RequestThread::UI);
+        handler->StartRequest(context, "test.handleAndSendRequest",
+                              std::make_unique<base::ListValue>(),
+                              v8::Local<v8::Function>(),
+                              v8::Local<v8::Function>());
         return RequestResult(RequestResult::HANDLED);
       };
   hooks->AddHandler(

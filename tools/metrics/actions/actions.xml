@@ -1424,8 +1424,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.BookmarkPage.RemoveItem">
-  <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
+  <owner>chrome-android-app@chromium.org</owner>
   <description>
     User removed an item on the native Android bookmark page by clicking
     &quot;delete&quot; from the &quot;more&quot; menu.
@@ -1433,8 +1433,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.BookmarkPage.SelectFromMenu">
-  <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
+  <owner>chrome-android-app@chromium.org</owner>
   <description>
     User selected an item on the native Android bookmark page by clicking
     &quot;select&quot; from the &quot;more&quot; menu.
@@ -1664,7 +1664,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.DarkTheme.Preference">
-  <owner>huayinz@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
   <owner>chrome-android-app@chromium.org</owner>
   <description>
     User changed preference to use system default, light, or dark theme.
@@ -1808,7 +1808,6 @@ should be able to be added at any place in this file.
     Deprecated in favor of Android.DownloadManager.List.View.Action.
   </obsolete>
   <owner>dtrainor@chromium.org</owner>
-  <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
     User removed an item on the native Android download page by clicking
@@ -4736,7 +4735,6 @@ should be able to be added at any place in this file.
 
 <action name="ContextualSuggestions">
   <obsolete>This feature was deprecated in M74</obsolete>
-  <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.com</owner>
   <owner>wylieb@chromium.com</owner>
   <description>Android: User interacts with the feature directly.</description>
@@ -4744,7 +4742,6 @@ should be able to be added at any place in this file.
 
 <action name="ContextualSuggestions.ContextMenu">
   <obsolete>This feature was deprecated in M74</obsolete>
-  <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.com</owner>
   <description>
     Android: User used the context menu on a suggested item on the contextual
@@ -4754,7 +4751,6 @@ should be able to be added at any place in this file.
 
 <action name="ContextualSuggestions.Preference.Disabled">
   <obsolete>This feature was deprecated in M74</obsolete>
-  <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
     Android: Contextual suggestions are disabled by a user click on the switch
@@ -4764,7 +4760,6 @@ should be able to be added at any place in this file.
 
 <action name="ContextualSuggestions.Preference.Enabled">
   <obsolete>This feature was deprecated in M74</obsolete>
-  <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
     Android: Contextual suggestions are enabled by a user click on the switch
@@ -4785,6 +4780,13 @@ should be able to be added at any place in this file.
 <action name="Copy">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="CopyCustomTabBarUrl">
+  <owner>desktop-pwas-team@google.com</owner>
+  <description>
+    &quot;Copy URL&quot; option in right-click context menu on CustomTabBar.
+  </description>
 </action>
 
 <action name="CopyToFindPboard">
@@ -11428,6 +11430,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileBookmarkManagerDragReorder">
+  <owner>jhimawan@google.com</owner>
+  <owner>twellington@google.com</owner>
+  <description>
+    Recorded when a user drops a bookmark after a drag in the Android bookmark
+    manager.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerEntryDeleted">
   <owner>sczs@chromium.org</owner>
   <description>
@@ -11445,6 +11456,24 @@ should be able to be added at any place in this file.
 
     This user action is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerMoveDown">
+  <owner>jhimawan@google.com</owner>
+  <owner>twellington@google.com</owner>
+  <description>
+    Recorded when a user uses the &quot;Move Down&quot; button to reorder
+    bookmarks in the Android bookmark manager.
+  </description>
+</action>
+
+<action name="MobileBookmarkManagerMoveUp">
+  <owner>jhimawan@google.com</owner>
+  <owner>twellington@google.com</owner>
+  <description>
+    Recorded when a user uses the &quot;Move Up&quot; button to reorder
+    bookmarks in the Android bookmark manager.
   </description>
 </action>
 
@@ -20914,8 +20943,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.ExpandableHeader.Collapsed">
-  <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
   <description>
     Android: The suggestions section is collapsed by user click on the section
     header.
@@ -20923,8 +20952,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.ExpandableHeader.Expanded">
-  <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.com</owner>
+  <owner>chrome-android-app@chromium.org</owner>
   <description>
     Android: The suggestions section is expanded by user click on the section
     header.

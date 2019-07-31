@@ -107,7 +107,7 @@ void InspectorWebAudioAgent::DidCreateBaseAudioContext(
 
 void InspectorWebAudioAgent::WillDestroyBaseAudioContext(
     BaseAudioContext* context) {
-  GetFrontend()->contextDestroyed(context->Uuid());
+  GetFrontend()->contextWillBeDestroyed(context->Uuid());
 }
 
 void InspectorWebAudioAgent::DidChangeBaseAudioContext(

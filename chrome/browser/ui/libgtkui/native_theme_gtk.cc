@@ -408,7 +408,8 @@ void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
                     theme_name.find("contrast") != std::string::npos);
 }
 
-SkColor NativeThemeGtk::GetSystemColor(ColorId color_id) const {
+SkColor NativeThemeGtk::GetSystemColor(ColorId color_id,
+                                       ColorScheme color_scheme) const {
   if (color_cache_[color_id])
     return color_cache_[color_id].value();
 
@@ -420,7 +421,8 @@ SkColor NativeThemeGtk::GetSystemColor(ColorId color_id) const {
 void NativeThemeGtk::PaintArrowButton(cc::PaintCanvas* canvas,
                                       const gfx::Rect& rect,
                                       Part direction,
-                                      State state) const {
+                                      State state,
+                                      ColorScheme color_scheme) const {
   auto context = GetStyleContextFromCss(
       GtkVersionCheck(3, 20)
           ? "GtkScrollbar#scrollbar #contents GtkButton#button"
@@ -454,7 +456,8 @@ void NativeThemeGtk::PaintScrollbarTrack(
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
-    const gfx::Rect& rect) const {
+    const gfx::Rect& rect,
+    ColorScheme color_scheme) const {
   PaintWidget(
       canvas, rect,
       GetStyleContextFromCss(GtkVersionCheck(3, 20)
@@ -468,7 +471,8 @@ void NativeThemeGtk::PaintScrollbarThumb(
     Part part,
     State state,
     const gfx::Rect& rect,
-    NativeTheme::ScrollbarOverlayColorTheme theme) const {
+    NativeTheme::ScrollbarOverlayColorTheme theme,
+    ColorScheme color_scheme) const {
   auto context = GetStyleContextFromCss(
       GtkVersionCheck(3, 20)
           ? "GtkScrollbar#scrollbar #contents #trough #slider"
@@ -479,7 +483,8 @@ void NativeThemeGtk::PaintScrollbarThumb(
 
 void NativeThemeGtk::PaintScrollbarCorner(cc::PaintCanvas* canvas,
                                           State state,
-                                          const gfx::Rect& rect) const {
+                                          const gfx::Rect& rect,
+                                          ColorScheme color_scheme) const {
   auto context = GetStyleContextFromCss(
       GtkVersionCheck(3, 19, 2)
           ? "GtkScrolledWindow#scrolledwindow #junction"
@@ -490,7 +495,8 @@ void NativeThemeGtk::PaintScrollbarCorner(cc::PaintCanvas* canvas,
 void NativeThemeGtk::PaintMenuPopupBackground(
     cc::PaintCanvas* canvas,
     const gfx::Size& size,
-    const MenuBackgroundExtraParams& menu_background) const {
+    const MenuBackgroundExtraParams& menu_background,
+    ColorScheme color_scheme) const {
   PaintWidget(canvas, gfx::Rect(size), GetStyleContextFromCss("GtkMenu#menu"),
               BG_RENDER_RECURSIVE, false);
 }
@@ -499,7 +505,8 @@ void NativeThemeGtk::PaintMenuItemBackground(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const MenuItemExtraParams& menu_item) const {
+    const MenuItemExtraParams& menu_item,
+    ColorScheme color_scheme) const {
   auto context = GetStyleContextFromCss("GtkMenu#menu GtkMenuItem#menuitem");
   gtk_style_context_set_state(context, StateToStateFlags(state));
   PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
@@ -509,14 +516,15 @@ void NativeThemeGtk::PaintMenuSeparator(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const MenuSeparatorExtraParams& menu_separator) const {
+    const MenuSeparatorExtraParams& menu_separator,
+    ColorScheme color_scheme) const {
   // TODO(estade): use GTK to draw vertical separators too. See
   // crbug.com/710183
   if (menu_separator.type == ui::VERTICAL_SEPARATOR) {
     cc::PaintFlags paint;
     paint.setStyle(cc::PaintFlags::kFill_Style);
-    paint.setColor(
-        GetSystemColor(ui::NativeTheme::kColorId_MenuSeparatorColor));
+    paint.setColor(GetSystemColor(ui::NativeTheme::kColorId_MenuSeparatorColor,
+                                  color_scheme));
     canvas->drawRect(gfx::RectToSkRect(rect), paint);
     return;
   }
@@ -589,7 +597,8 @@ void NativeThemeGtk::PaintFrameTopArea(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const FrameTopAreaExtraParams& frame_top_area) const {
+    const FrameTopAreaExtraParams& frame_top_area,
+    ColorScheme color_scheme) const {
   auto context = GetStyleContextFromCss(frame_top_area.use_custom_frame
                                             ? "#headerbar.header-bar.titlebar"
                                             : "GtkMenuBar#menubar");

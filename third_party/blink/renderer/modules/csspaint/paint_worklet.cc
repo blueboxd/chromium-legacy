@@ -125,7 +125,6 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   StylePropertyMapReadOnly* style_map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           layout_object.GetDocument(), layout_object.StyleRef(),
-          layout_object.GetNode(),
           paint_definition->NativeInvalidationProperties(),
           paint_definition->CustomInvalidationProperties());
   sk_sp<PaintRecord> paint_record = paint_definition->Paint(

@@ -124,6 +124,10 @@ class PPAPI_PROXY_EXPORT SerializedHandle {
     shm_handle_ = base::SharedMemoryHandle();
     size_ = 0;
   }
+  void set_unsafe_shmem_region(base::UnsafeSharedMemoryRegion region) {
+    set_shmem_region(base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
+        std::move(region)));
+  }
   void set_socket(const IPC::PlatformFileForTransit& socket) {
     type_ = SOCKET;
     descriptor_ = socket;

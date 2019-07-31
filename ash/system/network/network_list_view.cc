@@ -339,9 +339,9 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
     // Mobile icons which are not connecting or connected should display a small
     // "X" icon superimposed so that it is clear that they are disconnected.
     network_image = gfx::ImageSkiaOperations::CreateSuperimposedImage(
-        info.image, gfx::CreateVectorIcon(kNetworkMobileNotConnectedXIcon,
-                                          info.image.height(),
-                                          kMobileNotConnectedXIconColor));
+        info.image,
+        gfx::CreateVectorIcon(kNetworkMobileNotConnectedXIcon,
+                              info.image.height(), kIconOnDarkBackgroundColor));
   } else {
     network_image = info.image;
   }
@@ -379,12 +379,14 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
   if (info.type != NetworkType::kTether)
     return nullptr;
 
-  views::ImageView* icon = TrayPopupUtils::CreateMoreImageView();
+  views::ImageView* icon = new views::ImageView;
+  icon->SetPreferredSize(gfx::Size(kMenuIconSize, kMenuIconSize));
+  icon->EnableCanvasFlippingForRTLUI(true);
   PowerStatus::BatteryImageInfo icon_info;
   icon_info.charge_percent = info.battery_percentage;
-  icon->SetImage(
-      PowerStatus::GetBatteryImage(icon_info, kMobileNetworkBatteryIconSize,
-                                   kMenuIconColorDisabled, kMenuIconColor));
+  icon->SetImage(PowerStatus::GetBatteryImage(
+      icon_info, kMobileNetworkBatteryIconSize,
+      kIconOnDarkBackgroundColorDisabled, kIconOnDarkBackgroundColor));
 
   // Show the numeric battery percentage on hover.
   icon->set_tooltip_text(base::FormatPercent(info.battery_percentage));
@@ -399,8 +401,8 @@ views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
     return nullptr;
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
-  controlled_icon->SetImage(
-      gfx::CreateVectorIcon(kSystemMenuBusinessIcon, kMenuIconColor));
+  controlled_icon->SetImage(gfx::CreateVectorIcon(kSystemMenuBusinessIcon,
+                                                  kIconOnDarkBackgroundColor));
   return controlled_icon;
 }
 
@@ -411,7 +413,7 @@ views::View* NetworkListView::CreateControlledByExtensionView(
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
   controlled_icon->SetImage(
-      gfx::CreateVectorIcon(kCaptivePortalIcon, kMenuIconColor));
+      gfx::CreateVectorIcon(kCaptivePortalIcon, kIconOnDarkBackgroundColor));
   controlled_icon->set_tooltip_text(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
       base::UTF8ToUTF16(info.captive_portal_provider_name)));
@@ -533,7 +535,7 @@ TriView* NetworkListView::CreateConnectionWarning() {
   // Set 'info' icon on left side.
   views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
   image_view->SetImage(
-      gfx::CreateVectorIcon(kSystemMenuInfoIcon, kMenuIconColor));
+      gfx::CreateVectorIcon(kSystemMenuInfoIcon, kIconOnDarkBackgroundColor));
   image_view->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
   connection_warning->AddView(TriView::Container::START, image_view);
 

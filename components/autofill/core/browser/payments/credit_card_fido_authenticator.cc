@@ -268,9 +268,10 @@ CreditCardFIDOAuthenticator::ParseCreationOptions(
       autofill_client_->GetIdentityManager()->GetPrimaryAccountInfo().email;
 
   base::Optional<AccountInfo> account_info =
-      autofill_client_->GetIdentityManager()->FindExtendedAccountInfoForAccount(
-          autofill_client_->GetPersonalDataManager()
-              ->GetAccountInfoForPaymentsServer());
+      autofill_client_->GetIdentityManager()
+          ->FindExtendedAccountInfoForAccountWithRefreshToken(
+              autofill_client_->GetPersonalDataManager()
+                  ->GetAccountInfoForPaymentsServer());
   if (account_info.has_value()) {
     options->user.display_name = account_info.value().given_name;
     options->user.icon_url = GURL(account_info.value().picture_url);

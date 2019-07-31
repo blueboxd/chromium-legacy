@@ -23,7 +23,6 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;

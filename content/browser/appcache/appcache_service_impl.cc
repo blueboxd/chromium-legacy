@@ -381,7 +381,6 @@ AppCacheServiceImpl::AppCacheServiceImpl(
       appcache_policy_(nullptr),
       quota_client_(nullptr),
       quota_manager_proxy_(quota_manager_proxy),
-      request_context_(nullptr),
       force_keep_session_state_(false),
       partition_(std::move(partition)) {
   if (quota_manager_proxy_.get()) {

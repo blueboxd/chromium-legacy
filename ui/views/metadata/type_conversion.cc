@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -57,6 +58,18 @@ base::string16 TypeConverter<base::string16>::ToString(
 
 base::string16 TypeConverter<const char*>::ToString(const char* source_value) {
   return base::UTF8ToUTF16(source_value);
+}
+
+base::string16 TypeConverter<gfx::ShadowValues>::ToString(
+    const gfx::ShadowValues& source_value) {
+  base::string16 ret = base::ASCIIToUTF16("[");
+  for (auto shadow_value : source_value) {
+    ret += base::ASCIIToUTF16(" " + shadow_value.ToString() + ";");
+  }
+
+  ret[ret.length() - 1] = ' ';
+  ret += base::ASCIIToUTF16("]");
+  return ret;
 }
 
 base::Optional<int8_t> TypeConverter<int8_t>::FromString(
@@ -169,6 +182,34 @@ base::Optional<base::string16> TypeConverter<base::string16>::FromString(
   return source_value;
 }
 
+base::Optional<gfx::ShadowValues> TypeConverter<gfx::ShadowValues>::FromString(
+    const base::string16& source_value) {
+  gfx::ShadowValues ret;
+  const auto shadow_value_strings =
+      base::SplitStringPiece(source_value, base::ASCIIToUTF16("[;]"),
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  for (auto v : shadow_value_strings) {
+    base::string16 member_string;
+    base::RemoveChars(v.as_string(), base::ASCIIToUTF16("()rgba"),
+                      &member_string);
+    const auto members = base::SplitStringPiece(
+        member_string, base::ASCIIToUTF16(","), base::TRIM_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
+    int x, y, r, g, b, a;
+    double blur;
+
+    if ((members.size() == 7) && base::StringToInt(members[0], &x) &&
+        base::StringToInt(members[1], &y) &&
+        base::StringToDouble(UTF16ToASCII(members[2]), &blur) &&
+        base::StringToInt(members[3], &r) &&
+        base::StringToInt(members[4], &g) &&
+        base::StringToInt(members[5], &b) && base::StringToInt(members[6], &a))
+      ret.emplace_back(gfx::Vector2d(x, y), blur, SkColorSetARGB(a, r, g, b));
+  }
+  return ret;
+}
+
 }  // namespace metadata
 }  // namespace views
 
@@ -181,6 +222,16 @@ DEFINE_ENUM_CONVERTERS(gfx::HorizontalAlignment,
                         base::ASCIIToUTF16("ALIGN_RIGHT")},
                        {gfx::HorizontalAlignment::ALIGN_TO_HEAD,
                         base::ASCIIToUTF16("ALIGN_TO_HEAD")})
+
+DEFINE_ENUM_CONVERTERS(
+    gfx::ElideBehavior,
+    {gfx::ElideBehavior::NO_ELIDE, base::ASCIIToUTF16("NO_ELIDE")},
+    {gfx::ElideBehavior::TRUNCATE, base::ASCIIToUTF16("TRUNCATE")},
+    {gfx::ElideBehavior::ELIDE_HEAD, base::ASCIIToUTF16("ELIDE_HEAD")},
+    {gfx::ElideBehavior::ELIDE_MIDDLE, base::ASCIIToUTF16("ELIDE_MIDDLE")},
+    {gfx::ElideBehavior::ELIDE_TAIL, base::ASCIIToUTF16("ELIDE_TAIL")},
+    {gfx::ElideBehavior::ELIDE_EMAIL, base::ASCIIToUTF16("ELIDE_EMAIL")},
+    {gfx::ElideBehavior::FADE_TAIL, base::ASCIIToUTF16("FADE_TAIL")})
 
 DEFINE_ENUM_CONVERTERS(ui::TextInputType,
                        {ui::TextInputType::TEXT_INPUT_TYPE_NONE,

@@ -372,7 +372,7 @@ bool IsLockAvailable(Profile* profile) {
         IdentityManagerFactory::GetForProfile(profile);
 
     base::Optional<AccountInfo> primary_account_info =
-        identity_manager->FindExtendedAccountInfoForAccount(
+        identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identity_manager->GetPrimaryAccountInfo());
 
     if (primary_account_info.has_value())

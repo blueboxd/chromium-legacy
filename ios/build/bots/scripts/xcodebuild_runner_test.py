@@ -32,6 +32,9 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
     self.mock(os.path, 'exists', lambda _: True)
     self.mock(xcode_log_parser.XcodeLogParser, 'copy_screenshots',
               lambda _1, _2: None)
+    self.mock(os, 'listdir', lambda _: ['any_egtests.xctest'])
+    self.mock(xcodebuild_runner, 'get_all_tests',
+              lambda _1, _2: ['Class1/passedTest1', 'Class1/passedTest2'])
     self.tmpdir = tempfile.mkdtemp()
 
   def tearDown(self):
@@ -112,9 +115,7 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
     with self.assertRaises(test_runner.PlugInsNotFoundError):
       egtests._xctest_path()
 
-  @mock.patch('os.listdir', autospec=True)
-  def testEgtests_found_xctest(self, mock_listdir):
-    mock_listdir.return_value = ['any_egtests.xctest']
+  def testEgtests_found_xctest(self):
     self.assertEqual('/PlugIns/any_egtests.xctest',
                      xcodebuild_runner.EgtestsApp(
                          _EGTESTS_APP_PATH)._xctest_path())
@@ -126,18 +127,13 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
     with self.assertRaises(test_runner.XCTestPlugInNotFoundError):
       egtest._xctest_path()
 
-  @mock.patch('os.listdir', autospec=True)
-  def testEgtests_xctestRunNode_without_filter(self, mock_listdir):
-    mock_listdir.return_value = ['any_egtests.xctest']
+  def testEgtests_xctestRunNode_without_filter(self):
     egtest_node = xcodebuild_runner.EgtestsApp(
         _EGTESTS_APP_PATH).xctestrun_node()['any_egtests_module']
     self.assertNotIn('OnlyTestIdentifiers', egtest_node)
     self.assertNotIn('SkipTestIdentifiers', egtest_node)
 
-  @mock.patch('os.listdir', autospec=True)
-  def testEgtests_xctestRunNode_with_filter_only_identifiers(self,
-                                                             mock_listdir):
-    mock_listdir.return_value = ['any_egtests.xctest']
+  def testEgtests_xctestRunNode_with_filter_only_identifiers(self):
     filtered_tests = ['TestCase1/testMethod1', 'TestCase1/testMethod2',
                       'TestCase2/testMethod1', 'TestCase1/testMethod2']
     egtest_node = xcodebuild_runner.EgtestsApp(
@@ -146,10 +142,7 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
     self.assertEqual(filtered_tests, egtest_node['OnlyTestIdentifiers'])
     self.assertNotIn('SkipTestIdentifiers', egtest_node)
 
-  @mock.patch('os.listdir', autospec=True)
-  def testEgtests_xctestRunNode_with_filter_skip_identifiers(self,
-                                                             mock_listdir):
-    mock_listdir.return_value = ['any_egtests.xctest']
+  def testEgtests_xctestRunNode_with_filter_skip_identifiers(self):
     skipped_tests = ['TestCase1/testMethod1', 'TestCase1/testMethod2',
                      'TestCase2/testMethod1', 'TestCase1/testMethod2']
     egtest_node = xcodebuild_runner.EgtestsApp(
@@ -195,17 +188,15 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
       xcodebuild_runner.LaunchCommand([], 'destination', shards=1, retries=1,
                                       out_dir=_OUT_DIR).fill_xctest_run([])
 
-  @mock.patch('os.listdir', autospec=True)
   @mock.patch('test_runner.get_current_xcode_info', autospec=True)
   @mock.patch('xcode_log_parser.XcodeLogParser.collect_test_results')
   def testLaunchCommand_restartFailed1stAttempt(self, mock_collect_results,
-                                                xcode_version, mock_listdir):
-    mock_listdir.return_value = ['any_egtests.xctest']
+                                                xcode_version):
     egtests = xcodebuild_runner.EgtestsApp(_EGTESTS_APP_PATH)
     xcode_version.return_value = {'version': '10.2.1'}
     mock_collect_results.side_effect = [
         {'failed': {'TESTS_DID_NOT_START': ['not started']}, 'passed': []},
-        {'failed': {}, 'passed': ['passedTest1']}
+        {'failed': {}, 'passed': ['Class1/passedTest1', 'Class1/passedTest2']}
     ]
     launch_command = xcodebuild_runner.LaunchCommand(egtests,
                                                      _DESTINATION,
@@ -213,5 +204,24 @@ class XCodebuildRunnerTest(test_runner_test.TestCase):
                                                      retries=3,
                                                      out_dir=self.tmpdir)
     self.fake_launch_attempt(launch_command, ['not_started', 'pass'])
+    launch_command.launch()
+    self.assertEqual(2, len(launch_command.test_results))
+
+  @mock.patch('test_runner.get_current_xcode_info', autospec=True)
+  @mock.patch('xcode_log_parser.XcodeLogParser.collect_test_results')
+  def testLaunchCommand_notRestartPassedTest(self, mock_collect_results,
+                                             xcode_version):
+    egtests = xcodebuild_runner.EgtestsApp(_EGTESTS_APP_PATH)
+    xcode_version.return_value = {'version': '10.2.1'}
+    mock_collect_results.side_effect = [
+        {'failed': {'BUILD_INTERRUPTED': 'BUILD_INTERRUPTED: attempt # 0'},
+         'passed': ['Class1/passedTest1', 'Class1/passedTest2']}
+    ]
+    launch_command = xcodebuild_runner.LaunchCommand(egtests,
+                                                     _DESTINATION,
+                                                     shards=1,
+                                                     retries=3,
+                                                     out_dir=self.tmpdir)
+    self.fake_launch_attempt(launch_command, ['pass'])
     launch_command.launch()
     self.assertEqual(2, len(launch_command.test_results))

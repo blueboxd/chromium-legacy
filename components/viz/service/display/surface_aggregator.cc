@@ -19,6 +19,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/debug_border_draw_quad.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
@@ -1557,6 +1558,10 @@ CompositorFrame SurfaceAggregator::Aggregate(
       break;
     }
   }
+
+  if (frame_annotator_)
+    frame_annotator_->AnnotateAggregatedFrame(&frame);
+
   return frame;
 }
 
@@ -1610,6 +1615,12 @@ bool SurfaceAggregator::NotifySurfaceDamageAndCheckForDisplayDamage(
   }
 
   return false;
+}
+
+void SurfaceAggregator::SetFrameAnnotator(
+    std::unique_ptr<FrameAnnotator> frame_annotator) {
+  DCHECK(!frame_annotator_);
+  frame_annotator_ = std::move(frame_annotator);
 }
 
 bool SurfaceAggregator::IsRootSurface(const Surface* surface) const {

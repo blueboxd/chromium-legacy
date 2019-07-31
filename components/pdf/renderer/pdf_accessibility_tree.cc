@@ -34,6 +34,10 @@ const double kMinimumLineSpacing = 5;
 // for that text run to be considered to be a heading instead of normal text.
 const double kHeadingFontSizeRatio = 1.2;
 
+// Ratio between the delta-y between two text runs and the median on the page
+// for it to be considered a line break.
+const double kLineSpacingRatio = 0.8;
+
 // Ratio between the line spacing between two lines and the median on the
 // page for that line spacing to be considered a paragraph break.
 const double kParagraphLineSpacingRatio = 1.2;
@@ -122,13 +126,15 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   doc_node_->child_ids.push_back(page_node->id);
 
   double heading_font_size_threshold = 0;
+  double paragraph_spacing_threshold = 0;
   double line_spacing_threshold = 0;
-  ComputeParagraphAndHeadingThresholds(text_runs,
-                                       &heading_font_size_threshold,
+  ComputeParagraphAndHeadingThresholds(text_runs, &heading_font_size_threshold,
+                                       &paragraph_spacing_threshold,
                                        &line_spacing_threshold);
 
   ui::AXNodeData* para_node = nullptr;
   ui::AXNodeData* static_text_node = nullptr;
+  ui::AXNodeData* previous_on_line_node = nullptr;
   std::string static_text;
   uint32_t char_index = 0;
   for (size_t i = 0; i < text_runs.size(); ++i) {
@@ -181,6 +187,15 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     static_text_node->relative_bounds.bounds.Union(
         inline_text_box_node->relative_bounds.bounds);
 
+    if (previous_on_line_node) {
+      previous_on_line_node->AddIntAttribute(
+          ax::mojom::IntAttribute::kNextOnLineId, inline_text_box_node->id);
+      inline_text_box_node->AddIntAttribute(
+          ax::mojom::IntAttribute::kPreviousOnLineId,
+          previous_on_line_node->id);
+    }
+    previous_on_line_node = inline_text_box_node;
+
     if (i == text_runs.size() - 1) {
       static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                            static_text);
@@ -190,13 +205,17 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     double line_spacing =
         text_runs[i + 1].bounds.point.y - text_run.bounds.point.y;
     if (text_run.font_size != text_runs[i + 1].font_size ||
-        (line_spacing_threshold > 0 &&
-         line_spacing > line_spacing_threshold)) {
+        (paragraph_spacing_threshold > 0 &&
+         line_spacing > paragraph_spacing_threshold)) {
       static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
                                            static_text);
       para_node = nullptr;
       static_text_node = nullptr;
       static_text.clear();
+      previous_on_line_node = nullptr;
+    } else if (line_spacing_threshold > 0 &&
+               line_spacing > line_spacing_threshold) {
+      previous_on_line_node = nullptr;
     }
   }
 
@@ -276,6 +295,7 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
 void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
     const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
     double* out_heading_font_size_threshold,
+    double* out_paragraph_spacing_threshold,
     double* out_line_spacing_threshold) {
   // Scan over the font sizes and line spacing within this page and
   // set heuristic thresholds so that text larger than the median font
@@ -300,11 +320,14 @@ void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
           median_font_size * kHeadingFontSizeRatio;
     }
   }
-  if (line_spacings.size() > 4) {
+  if (line_spacings.size() > 0) {
     std::sort(line_spacings.begin(), line_spacings.end());
     double median_line_spacing = line_spacings[line_spacings.size() / 2];
     if (median_line_spacing > kMinimumLineSpacing) {
-      *out_line_spacing_threshold =
+      *out_line_spacing_threshold = median_line_spacing * kLineSpacingRatio;
+    }
+    if (line_spacings.size() > 4) {
+      *out_paragraph_spacing_threshold =
           median_line_spacing * kParagraphLineSpacingRatio;
     }
   }

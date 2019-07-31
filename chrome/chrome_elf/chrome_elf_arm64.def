@@ -29,11 +29,6 @@ EXPORTS
   ; From chrome/install_static
   GetInstallDetailsPayload
 
-  ; From chrome/chrome_elf/blacklist/blacklist.cc
-  AddDllToBlacklist
-  IsBlacklistInitialized
-  SuccessfullyBlocked
-
   ; From chrome/chrome_elf/third_party_dlls/logs.cc
   DrainLog
   RegisterLogNotification
@@ -43,3 +38,6 @@ EXPORTS
   ; From chrome/chrome_elf/third_party_dlls/hook.cc
   DisableHook
   GetApplyHookResult
+
+  ; From chrome/chrome_elf/third_party_dlls/main.cc
+  IsThirdPartyInitialized

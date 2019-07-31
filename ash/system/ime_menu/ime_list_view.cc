@@ -158,8 +158,9 @@ class KeyboardStatusRow : public views::View {
 
     // The on-screen keyboard image button.
     views::ImageView* keyboard_image = TrayPopupUtils::CreateMainImageView();
-    keyboard_image->SetImage(gfx::CreateVectorIcon(
-        kImeMenuOnScreenKeyboardIcon, kMenuIconSize, kMenuIconColor));
+    keyboard_image->SetImage(
+        gfx::CreateVectorIcon(kImeMenuOnScreenKeyboardIcon, kMenuIconSize,
+                              kIconOnLightBackgroundColor));
     tri_view->AddView(TriView::Container::START, keyboard_image);
 
     // The on-screen keyboard label ('On-screen keyboard').
@@ -280,7 +281,8 @@ void ImeListView::AppendImeListAndProperties(
       for (size_t i = 0; i < property_list.size(); i++) {
         ImeListItemView* property_view = new ImeListItemView(
             this, base::string16(), property_list[i].label,
-            property_list[i].checked, kMenuIconColor, use_unified_theme_);
+            property_list[i].checked, kIconOnLightBackgroundColor,
+            use_unified_theme_);
         scroll_content()->AddChildView(property_view);
         property_map_[property_view] = property_list[i].key;
       }

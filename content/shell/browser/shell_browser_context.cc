@@ -81,12 +81,6 @@ ShellBrowserContext::~ShellBrowserContext() {
       BrowserThread::IO, FROM_HERE, resource_context_.release());
   }
   ShutdownStoragePartitions();
-  if (url_request_getter_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ShellURLRequestContextGetter::NotifyContextShuttingDown,
-                       url_request_getter_));
-  }
 }
 
 void ShellBrowserContext::InitWhileIOAllowed() {
@@ -167,31 +161,6 @@ DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {
   }
 
   return download_manager_delegate_.get();
-}
-
-ShellURLRequestContextGetter*
-ShellBrowserContext::CreateURLRequestContextGetter(
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  return new ShellURLRequestContextGetter(
-      ignore_certificate_errors_, off_the_record_, GetPath(),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-      protocol_handlers, std::move(request_interceptors));
-}
-
-net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  DCHECK(!url_request_getter_.get());
-  url_request_getter_ = CreateURLRequestContextGetter(
-      protocol_handlers, std::move(request_interceptors));
-  return url_request_getter_.get();
-}
-
-net::URLRequestContextGetter*
-    ShellBrowserContext::CreateMediaRequestContext()  {
-  DCHECK(url_request_getter_.get());
-  return url_request_getter_.get();
 }
 
 ResourceContext* ShellBrowserContext::GetResourceContext()  {

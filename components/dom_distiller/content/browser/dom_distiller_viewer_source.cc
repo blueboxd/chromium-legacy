@@ -236,7 +236,7 @@ std::string DomDistillerViewerSource::GetSource() {
 
 void DomDistillerViewerSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   content::WebContents* web_contents = wc_getter.Run();
   if (!web_contents)

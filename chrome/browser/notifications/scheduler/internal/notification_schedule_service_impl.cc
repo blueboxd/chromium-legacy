@@ -58,21 +58,9 @@ void NotificationScheduleServiceImpl::OnStopTask(SchedulerTaskTime task_time) {
   scheduler_->OnStopTask(task_time);
 }
 
-void NotificationScheduleServiceImpl::OnClick(SchedulerClientType type,
-                                              const std::string& guid) {
-  scheduler_->OnClick(type, guid);
-}
-
-void NotificationScheduleServiceImpl::OnActionClick(
-    SchedulerClientType type,
-    const std::string& guid,
-    ActionButtonType button_type) {
-  scheduler_->OnActionClick(type, guid, button_type);
-}
-
-void NotificationScheduleServiceImpl::OnDismiss(SchedulerClientType type,
-                                                const std::string& guid) {
-  scheduler_->OnDismiss(type, guid);
+void NotificationScheduleServiceImpl::OnUserAction(
+    const UserActionData& action_data) {
+  scheduler_->OnUserAction(action_data);
 }
 
 void NotificationScheduleServiceImpl::OnInitialized(bool success) {

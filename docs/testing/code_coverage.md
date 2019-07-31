@@ -256,8 +256,7 @@ see [crbug.com/831939].
 Usually this is not a critical issue, but in general we tend not to have any
 warnings. Please check the list of [known issues], and if there is a similar
 bug, leave a comment with the command you run, the output you get, and Chromium
-revision you use. Otherwise, please [file a new issue] providing the same
-information.
+revision you use. Otherwise, please [file a bug] providing the same information.
 
 ### How do crashes affect code coverage?
 
@@ -348,11 +347,10 @@ information, see [crbug.com/842424].
 [clang roll]: https://crbug.com/841908
 [dead code example]: https://chromium.googlesource.com/chromium/src/+/ac6e09311fcc7e734be2ef21a9ccbbe04c4c4706
 [documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
-[file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
-[file a new issue]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
+[file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Infra%3ETest%3ECodeCoverage
 [gerrit coverage view]: images/code_coverage_annotations.png
 [guide]: http://llvm.org/docs/CommandGuide/llvm-cov.html
 [How do crashes affect code coverage?]: #how-do-crashes-affect-code-coverage
-[known issues]: https://bugs.chromium.org/p/chromium/issues/list?q=component:Tools%3ECodeCoverage
+[known issues]: https://bugs.chromium.org/p/chromium/issues/list?q=component:Infra%3ETest%3ECodeCoverage
 [tools link]: https://storage.googleapis.com/chromium-browser-clang-staging/
 [test suite]: https://cs.chromium.org/chromium/src/tools/code_coverage/test_suite.txt

@@ -592,14 +592,16 @@ function %(proxy_name)s() {
   if (this.channel === $ZX_HANDLE_INVALID) {
     throw "channel closed";
   }
-  var $encoder = new $fidl_Encoder(_k%(name)s_%(method_name)s_Ordinal);
+  var $encoder = new $fidl_Encoder(
+      _k%(name)s_%(method_name)s_Ordinal, %(has_response)d);
   $encoder.alloc(%(size)s - $fidl_kMessageHeaderSize);
 ''' % {
                 'name': name,
                 'proxy_name': proxy_name,
                 'method_name': method_name,
                 'param_names': ', '.join(param_names),
-                'size': method.maybe_request_size
+                'size': method.maybe_request_size,
+                'has_response': method.has_response
             })
 
         for param, ttname in zip(method.maybe_request, type_tables):

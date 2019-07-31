@@ -142,8 +142,9 @@ void LogoutButtonTray::UpdateButtonTextAndImage() {
   } else {
     button_->SetText(base::string16());
     button_->SetAccessibleName(title);
-    button_->SetImage(views::Button::STATE_NORMAL,
-                      gfx::CreateVectorIcon(kShelfLogoutIcon, kTrayIconColor));
+    button_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kShelfLogoutIcon, kIconOnDarkBackgroundColor));
     button_->SetMinSize(gfx::Size(kTrayItemSize, kTrayItemSize));
   }
   UpdateVisibility();

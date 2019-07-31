@@ -251,7 +251,7 @@ void BackgroundFetchDelegateImpl::GetIconDisplaySize(
 
 void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
     const url::Origin& origin,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     GetPermissionForOriginCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

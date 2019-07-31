@@ -89,7 +89,8 @@ class TouchEmulatorTest : public testing::Test,
   }
 
   void ShowContextMenuAtPoint(const gfx::Point& point,
-                              const ui::MenuSourceType source_type) override {}
+                              const ui::MenuSourceType source_type,
+                              RenderWidgetHostViewBase* target) override {}
 
  protected:
   TouchEmulator* emulator() const {

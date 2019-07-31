@@ -83,7 +83,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // Checks if the provided origin has permission to start a Background Fetch.
   void GetPermissionForOrigin(
       const url::Origin& origin,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const WebContents::Getter& wc_getter,
       BackgroundFetchDelegate::GetPermissionForOriginCallback callback);
 
   // Creates a new download grouping described by |fetch_description|. Further

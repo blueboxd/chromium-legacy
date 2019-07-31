@@ -240,6 +240,11 @@ void NativeFileSystemWriter::WriteComplete(
   DCHECK(pending_operation_);
   if (result->error_code == base::File::FILE_OK) {
     pending_operation_->Resolve();
+  } else if (result->error_code == base::File::FILE_ERROR_INVALID_OPERATION) {
+    // TODO(https://crbug.com/971268): Better error messages that make sense in
+    // JS.
+    pending_operation_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
   } else {
     pending_operation_->Reject(
         file_error::CreateDOMException(result->error_code));
@@ -252,6 +257,11 @@ void NativeFileSystemWriter::TruncateComplete(
   DCHECK(pending_operation_);
   if (result->error_code == base::File::FILE_OK) {
     pending_operation_->Resolve();
+  } else if (result->error_code == base::File::FILE_ERROR_INVALID_OPERATION) {
+    // TODO(https://crbug.com/971268): Better error messages that make sense in
+    // JS.
+    pending_operation_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
   } else {
     pending_operation_->Reject(
         file_error::CreateDOMException(result->error_code));
@@ -264,12 +274,20 @@ void NativeFileSystemWriter::CloseComplete(
   DCHECK(pending_operation_);
   if (result->error_code == base::File::FILE_OK) {
     pending_operation_->Resolve();
+  } else if (result->error_code == base::File::FILE_ERROR_INVALID_OPERATION) {
+    // TODO(https://crbug.com/971268): Better error messages that make sense in
+    // JS.
+    pending_operation_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError));
   } else {
     pending_operation_->Reject(
         file_error::CreateDOMException(result->error_code));
   }
   file_ = nullptr;
   pending_operation_ = nullptr;
+  // We close the mojo pipe because we intend this writer to be discarded after
+  // close. Subsequent operations will fail.
+  mojo_ptr_ = nullptr;
 }
 
 }  // namespace blink

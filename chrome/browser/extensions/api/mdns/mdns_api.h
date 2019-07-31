@@ -118,7 +118,7 @@ class MDnsAPI : public BrowserContextKeyedAPI,
   DISALLOW_COPY_AND_ASSIGN(MDnsAPI);
 };
 
-class MdnsForceDiscoveryFunction : public UIThreadExtensionFunction {
+class MdnsForceDiscoveryFunction : public ExtensionFunction {
  public:
   MdnsForceDiscoveryFunction();
 
@@ -126,7 +126,7 @@ class MdnsForceDiscoveryFunction : public UIThreadExtensionFunction {
   ~MdnsForceDiscoveryFunction() override;
 
  private:
-  // UIThreadExtensionFunction override.
+  // ExtensionFunction override.
   ResponseAction Run() override;
 
   DECLARE_EXTENSION_FUNCTION("mdns.forceDiscovery", MDNS_FORCEDISCOVERY)

@@ -219,7 +219,7 @@ class SyncManager {
     // Must outlive SyncManager.
     ChangeDelegate* change_delegate;
 
-    std::string authenticated_account_id;
+    CoreAccountId authenticated_account_id;
 
     // Unqiuely identifies this client to the invalidation notification server.
     std::string invalidator_client_id;

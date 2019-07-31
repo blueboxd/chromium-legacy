@@ -24,9 +24,8 @@
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
@@ -164,8 +163,7 @@ class MediaSessionImpl : public MediaSession,
       media_session::mojom::AudioFocusType audio_focus_type);
 
   // Creates a binding between |this| and |request|.
-  void BindToMojoRequest(
-      mojo::InterfaceRequest<media_session::mojom::MediaSession> request);
+  mojo::PendingRemote<media_session::mojom::MediaSession> AddRemote();
 
   // Returns information about the MediaSession.
   CONTENT_EXPORT media_session::mojom::MediaSessionInfoPtr
@@ -425,7 +423,7 @@ class MediaSessionImpl : public MediaSession,
   MediaSessionServiceImpl* routed_service_;
 
   // Bindings for Mojo pointers to |this| held by media route providers.
-  mojo::BindingSet<media_session::mojom::MediaSession> bindings_;
+  mojo::ReceiverSet<media_session::mojom::MediaSession> receivers_;
 
   mojo::RemoteSet<media_session::mojom::MediaSessionObserver> observers_;
 

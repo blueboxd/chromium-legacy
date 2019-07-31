@@ -89,7 +89,7 @@ class InterstitialHTMLSource : public content::URLDataSource {
   std::string GetContentSecurityPolicyImgSrc() override;
   void StartDataRequest(
       const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
 
  private:
@@ -462,7 +462,7 @@ std::string InterstitialHTMLSource::GetContentSecurityPolicyImgSrc() {
 
 void InterstitialHTMLSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   content::WebContents* web_contents = wc_getter.Run();
   if (!web_contents) {

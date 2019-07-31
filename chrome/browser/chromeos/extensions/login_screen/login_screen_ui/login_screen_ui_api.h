@@ -9,7 +9,7 @@
 
 namespace extensions {
 
-class LoginScreenUiShowFunction : public UIThreadExtensionFunction {
+class LoginScreenUiShowFunction : public ExtensionFunction {
  public:
   LoginScreenUiShowFunction();
 
@@ -25,7 +25,7 @@ class LoginScreenUiShowFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(LoginScreenUiShowFunction);
 };
 
-class LoginScreenUiCloseFunction : public UIThreadExtensionFunction {
+class LoginScreenUiCloseFunction : public ExtensionFunction {
  public:
   LoginScreenUiCloseFunction();
 

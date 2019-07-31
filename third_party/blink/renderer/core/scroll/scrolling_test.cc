@@ -23,6 +23,10 @@
 
 namespace blink {
 
+namespace {
+constexpr double kBeginFrameDelaySeconds = 0.5;
+}
+
 class FractionalScrollSimTest : public SimTest {
  public:
   FractionalScrollSimTest() : fractional_scroll_offsets_for_test_(true) {}
@@ -109,7 +113,7 @@ TEST_F(ScrollAnimatorSimTest, TestRootFrameLayoutViewportUserScrollCallBack) {
   // The callback is executed when the animation finishes at
   // ScrollAnimator::TickAnimation.
   Compositor().BeginFrame();
-  Compositor().BeginFrame(0.3);
+  Compositor().BeginFrame(kBeginFrameDelaySeconds);
   ASSERT_TRUE(finished);
 }
 
@@ -151,7 +155,7 @@ TEST_F(ScrollAnimatorSimTest, TestRootFrameVisualViewporUserScrollCallBack) {
   // The callback is executed when the animation finishes at
   // ScrollAnimator::TickAnimation.
   Compositor().BeginFrame();
-  Compositor().BeginFrame(0.3);
+  Compositor().BeginFrame(kBeginFrameDelaySeconds);
   ASSERT_TRUE(finished);
 }
 
@@ -193,7 +197,7 @@ TEST_F(ScrollAnimatorSimTest, TestRootFrameBothViewporsUserScrollCallBack) {
   // The callback is executed when the animation finishes at
   // ScrollAnimator::TickAnimation.
   Compositor().BeginFrame();
-  Compositor().BeginFrame(0.3);
+  Compositor().BeginFrame(kBeginFrameDelaySeconds);
   ASSERT_TRUE(finished);
 }
 
@@ -241,7 +245,7 @@ TEST_F(ScrollAnimatorSimTest, TestDivUserScrollCallBack) {
 
   // The callback is executed when the animation finishes at
   // ScrollAnimator::TickAnimation.
-  Compositor().BeginFrame(0.3);
+  Compositor().BeginFrame(kBeginFrameDelaySeconds);
   ASSERT_TRUE(finished);
 }
 

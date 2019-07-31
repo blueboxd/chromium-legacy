@@ -39,11 +39,6 @@ class WebTestBrowserContext final : public ShellBrowserContext {
 
   WebTestPermissionManager* GetWebTestPermissionManager();
 
- protected:
-  ShellURLRequestContextGetter* CreateURLRequestContextGetter(
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) override;
-
  private:
   std::unique_ptr<WebTestPushMessagingService> push_messaging_service_;
   std::unique_ptr<PermissionControllerDelegate> permission_manager_;

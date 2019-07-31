@@ -20,9 +20,22 @@ struct StructTraits<viz::mojom::FrameTimingDetailsDataView,
     return frame_timing_details.presentation_feedback;
   }
 
+  static base::TimeTicks received_compositor_frame_timestamp(
+      const viz::FrameTimingDetails& frame_timing_details) {
+    return frame_timing_details.received_compositor_frame_timestamp;
+  }
+
+  static base::TimeTicks draw_start_timestamp(
+      const viz::FrameTimingDetails& frame_timing_details) {
+    return frame_timing_details.draw_start_timestamp;
+  }
+
   static bool Read(viz::mojom::FrameTimingDetailsDataView data,
                    viz::FrameTimingDetails* out) {
-    return data.ReadPresentationFeedback(&out->presentation_feedback);
+    return data.ReadPresentationFeedback(&out->presentation_feedback) &&
+           data.ReadReceivedCompositorFrameTimestamp(
+               &out->received_compositor_frame_timestamp) &&
+           data.ReadDrawStartTimestamp(&out->draw_start_timestamp);
   }
 };
 

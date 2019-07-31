@@ -815,7 +815,7 @@ void DownloadManagerImpl::InterceptNavigation(
   base::Optional<url::Origin> request_initiator =
       resource_request->request_initiator;
 
-  ResourceRequestInfo::WebContentsGetter web_contents_getter =
+  WebContents::Getter web_contents_getter =
       base::BindRepeating(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
 
   base::OnceCallback<void(bool /* download allowed */)>
@@ -1174,7 +1174,7 @@ void DownloadManagerImpl::DropDownload() {
 }
 
 void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
-    ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    WebContents::Getter web_contents_getter,
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
@@ -1339,9 +1339,8 @@ void DownloadManagerImpl::BeginDownloadInternal(
   bool content_initiated = params->content_initiated();
   // If it's from the web, we don't trust it, so we push the throttle on.
   if (rfh && content_initiated) {
-    ResourceRequestInfo::WebContentsGetter web_contents_getter =
-        base::BindRepeating(WebContents::FromFrameTreeNodeId,
-                            rfh->GetFrameTreeNodeId());
+    WebContents::Getter web_contents_getter = base::BindRepeating(
+        WebContents::FromFrameTreeNodeId, rfh->GetFrameTreeNodeId());
     const GURL& url = params->url();
     const std::string& method = params->method();
 

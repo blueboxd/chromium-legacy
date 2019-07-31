@@ -179,12 +179,38 @@ class MockActionDelegate : public ActionDelegate {
            base::RepeatingCallback<void(const FormProto::Result*)> callback));
 
   void WaitForWindowHeightChange(
-      base::OnceCallback<void(const ClientStatus&)> callback) {
+      base::OnceCallback<void(const ClientStatus&)> callback) override {
     OnWaitForWindowHeightChange(callback);
   }
 
   MOCK_METHOD1(OnWaitForWindowHeightChange,
                void(base::OnceCallback<void(const ClientStatus&)>& callback));
+
+  MOCK_METHOD2(
+      OnGetDocumentReadyState,
+      void(const Selector&,
+           base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>&));
+
+  void GetDocumentReadyState(
+      const Selector& frame,
+      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+          callback) override {
+    OnGetDocumentReadyState(frame, callback);
+  }
+
+  MOCK_METHOD3(
+      OnWaitForDocumentReadyState,
+      void(const Selector&,
+           DocumentReadyState min_ready_state,
+           base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>&));
+
+  void WaitForDocumentReadyState(
+      const Selector& frame,
+      DocumentReadyState min_ready_state,
+      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+          callback) override {
+    OnWaitForDocumentReadyState(frame, min_ready_state, callback);
+  }
 
   MOCK_METHOD0(RequireUI, void());
 

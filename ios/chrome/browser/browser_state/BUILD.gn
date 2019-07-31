@@ -128,7 +128,6 @@ source_set("browser_state_impl") {
     "//ios/web/net/cookies",
     "//net",
     "//net:extras",
-    "//services/identity/public/mojom",
   ]
   allow_circular_includes_from = [
     "//ios/chrome/browser",
@@ -204,25 +203,4 @@ source_set("test_support") {
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "browser_state_services_egtest.mm",
-  ]
-  deps = [
-    ":browser_state",
-    "//base",
-    "//base/test:test_support",
-    "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web:earl_grey_test_support",
-    "//ios/web/public",
-    "//services/identity/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
 }

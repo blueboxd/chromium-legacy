@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/sync/base/storage_option.h"
 #include "components/sync/model/model_error.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace syncer {
 
@@ -26,7 +27,7 @@ struct DataTypeActivationRequest {
   DataTypeActivationRequest& operator=(DataTypeActivationRequest&& request);
 
   ModelErrorHandler error_handler;
-  std::string authenticated_account_id;
+  CoreAccountId authenticated_account_id;
   std::string cache_guid;
   StorageOption storage_option = STORAGE_ON_DISK;
 

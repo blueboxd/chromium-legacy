@@ -1773,8 +1773,8 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     if (value_id == CSSValueID::kCurrentcolor)
       return value;
     if (StyleColor::IsColorKeyword(value_id)) {
-      ColorScheme scheme =
-          state ? state->Style()->UsedColorScheme() : ColorScheme::kLight;
+      WebColorScheme scheme =
+          state ? state->Style()->UsedColorScheme() : WebColorScheme::kLight;
       Color color = document.GetTextLinkColors().ColorFromCSSValue(
           value, Color(), scheme, false);
       return *CSSColorValue::Create(color.Rgb());

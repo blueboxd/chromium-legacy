@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "ui/native_theme/native_theme.h"
 
+using blink::WebColorScheme;
 using blink::WebRect;
 using blink::WebThemeEngine;
 
@@ -81,6 +82,16 @@ static ui::NativeTheme::State NativeThemeState(WebThemeEngine::State state) {
       return ui::NativeTheme::kPressed;
     default:
       return ui::NativeTheme::kDisabled;
+  }
+}
+
+static ui::NativeTheme::ColorScheme NativeColorScheme(
+    WebColorScheme color_scheme) {
+  switch (color_scheme) {
+    case WebColorScheme::kLight:
+      return ui::NativeTheme::ColorScheme::kLight;
+    case WebColorScheme::kDark:
+      return ui::NativeTheme::ColorScheme::kDark;
   }
 }
 
@@ -207,12 +218,13 @@ void WebThemeEngineAndroid::Paint(
     WebThemeEngine::Part part,
     WebThemeEngine::State state,
     const blink::WebRect& rect,
-    const WebThemeEngine::ExtraParams* extra_params) {
+    const WebThemeEngine::ExtraParams* extra_params,
+    blink::WebColorScheme color_scheme) {
   ui::NativeTheme::ExtraParams native_theme_extra_params;
   GetNativeThemeExtraParams(
       part, state, extra_params, &native_theme_extra_params);
   ui::NativeTheme::GetInstanceForWeb()->Paint(
       canvas, NativeThemePart(part), NativeThemeState(state), gfx::Rect(rect),
-      native_theme_extra_params);
+      native_theme_extra_params, NativeColorScheme(color_scheme));
 }
 }  // namespace content

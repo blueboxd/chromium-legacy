@@ -8,7 +8,7 @@
 #include <string>
 
 #include "media/capture/capture_export.h"
-#include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
+#include "media/capture/video/chromeos/mojom/cros_image_capture.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace media {

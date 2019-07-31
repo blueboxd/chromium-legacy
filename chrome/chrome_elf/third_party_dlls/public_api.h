@@ -65,6 +65,9 @@ uint32_t GetLogEntrySize(uint32_t path_len);
 
 // Exported API for calling from outside chrome_elf.dll.
 
+// Third-party DLL control is enabled and initialized in this process.
+extern "C" bool IsThirdPartyInitialized();
+
 // Drains the load attempt LogEntries into the provided buffer.
 // - Returns the number of bytes written.  See comments above for LogEntry
 //   details.

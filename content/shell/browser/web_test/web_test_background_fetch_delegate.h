@@ -29,10 +29,9 @@ class WebTestBackgroundFetchDelegate : public BackgroundFetchDelegate {
 
   // BackgroundFetchDelegate implementation:
   void GetIconDisplaySize(GetIconDisplaySizeCallback callback) override;
-  void GetPermissionForOrigin(
-      const url::Origin& origin,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
-      GetPermissionForOriginCallback callback) override;
+  void GetPermissionForOrigin(const url::Origin& origin,
+                              const WebContents::Getter& wc_getter,
+                              GetPermissionForOriginCallback callback) override;
   void CreateDownloadJob(
       base::WeakPtr<Client> client,
       std::unique_ptr<BackgroundFetchDescription> fetch_description) override;

@@ -135,7 +135,6 @@ class AdsPageLoadMetricsObserver
       int process_id,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
-  void RecordAdFrameUkm(ukm::SourceId source_id);
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
   void RecordHistograms(ukm::SourceId source_id);
   void RecordAggregateHistogramsForAdTagging(

@@ -18,12 +18,6 @@
 
     <!-- Preferences -->
     <style name="Theme.Chromium.Preferences" parent="Base.Theme.Chromium.Preferences">
-        <item name="android:divider">@null</item>
-        <!-- Overriding alertDialogTheme pre-v21 with our custom AlertDialog theme causes bad visual
-             states on ListPreference because we don't use the support library ListPreference. -->
-        <item name="android:alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
-        <!-- TODO(crbug.com/967022): Clean up the unnecessary preference alert dialog styles once
-             all dialog preferences are migrated to the support library. -->
         <item name="alertDialogTheme">@style/Theme.Chromium.Preferences.AlertDialog</item>
         <item name="preferenceTheme">@style/Theme.Chromium.PreferenceTheme</item>
     </style>
@@ -52,14 +46,6 @@
         <item name="android:paddingStart">16dp</item>
     </style>
 
-    <style name="PreferenceCategoryWithButtonStyle">
-        <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
-        <item name="android:paddingEnd">4dp</item>
-    </style>
-    <style name="TextAppearance.PreferenceCategoryText" parent="TextAppearance.RobotoMediumStyle">
-        <item name="android:textColor">@color/pref_accent_color</item>
-        <item name="android:textSize">12sp</item>
-    </style>
     <style name="PreferenceTitle">
         <item name="android:ellipsize">end</item>
         <item name="android:singleLine">true</item>

@@ -76,9 +76,9 @@ const char* UnifiedSliderButton::GetClassName() const {
 
 void UnifiedSliderButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor));
+           gfx::CreateVectorIcon(icon, kIconOnDarkBackgroundColor));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor));
+           gfx::CreateVectorIcon(icon, kIconOnDarkBackgroundColor));
 }
 
 void UnifiedSliderButton::SetToggled(bool toggled) {

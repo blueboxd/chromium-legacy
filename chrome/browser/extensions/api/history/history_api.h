@@ -93,7 +93,7 @@ template <>
 void BrowserContextKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies();
 
 // Base class for history function APIs.
-class HistoryFunction : public UIThreadExtensionFunction {
+class HistoryFunction : public ExtensionFunction {
  protected:
   ~HistoryFunction() override {}
 

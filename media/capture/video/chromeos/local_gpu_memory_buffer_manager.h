@@ -51,6 +51,11 @@ class CAPTURE_EXPORT LocalGpuMemoryBufferManager
       const gfx::Size& size,
       gfx::BufferFormat format);
 
+  // Returns true if the combination of |format| and |usage| is supported by
+  // CreateGpuMemoryBuffer().
+  bool IsFormatAndUsageSupported(gfx::BufferFormat format,
+                                 gfx::BufferUsage usage);
+
  private:
   gbm_device* gbm_device_;
 

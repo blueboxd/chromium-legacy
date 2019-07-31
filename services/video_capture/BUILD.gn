@@ -51,7 +51,7 @@ source_set("lib") {
   ]
 
   if (is_chromeos) {
-    public_deps += [ "//media/capture/video/chromeos/mojo:cros_camera" ]
+    public_deps += [ "//media/capture/video/chromeos/mojom:cros_camera" ]
   }
 }
 

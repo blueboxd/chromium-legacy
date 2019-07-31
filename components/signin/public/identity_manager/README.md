@@ -26,13 +26,13 @@ and the relevant IdentityManager(::Observer) API surfaces).
 - The AccountInfo struct contains extra "extended" information about the account
   that may become available only asynchronously after the account is first added
   to Chrome. To interact with the extended account info, use the IdentityManager
-  methods with "AccountInfo" in their names. To observe changes in the state of
-  the extended account info for one or more accounts, observe IdentityManager
-  and override one or more of the IdentityManager::Observer methods with
-  "ExtendedAccountInfo" in their names.
+  methods with "ExtendedAccountInfo" in their names. To observe changes in the
+  state of the extended account info for one or more accounts, observe
+  IdentityManager and override one or more of the IdentityManager::Observer
+  methods with "ExtendedAccountInfo" in their names.
 
 # The Primary Account
-- "Primary account" in IdentityManager refers to the account that has been 
+- "Primary account" in IdentityManager refers to the account that has been
   blessed for sync by the user (what in Chromium historically was often referred
   to as the "authenticated account").
 - "Unconsented primary account" is intuitively the browsing identity of the user

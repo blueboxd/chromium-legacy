@@ -11,9 +11,10 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 
+using blink::WebColorScheme;
 using blink::WebRect;
-using blink::WebThemeEngine;
 using blink::WebScrollbarOverlayColorTheme;
+using blink::WebThemeEngine;
 
 namespace content {
 namespace {
@@ -34,6 +35,10 @@ int32_t g_horizontal_arrow_bitmap_width;
 
 }  // namespace
 
+// TODO(https://crbug.com/988434): The mapping functions below are duplicated
+// inside Blink and in the Android implementation of WebThemeEngine. They should
+// be implemented in one place where dependencies between Blink and
+// ui::NativeTheme make sense.
 static ui::NativeTheme::Part NativeThemePart(
     WebThemeEngine::Part part) {
   switch (part) {
@@ -103,6 +108,16 @@ static ui::NativeTheme::State NativeThemeState(
       return ui::NativeTheme::kPressed;
     default:
       return ui::NativeTheme::kDisabled;
+  }
+}
+
+static ui::NativeTheme::ColorScheme NativeColorScheme(
+    WebColorScheme color_scheme) {
+  switch (color_scheme) {
+    case WebColorScheme::kLight:
+      return ui::NativeTheme::ColorScheme::kLight;
+    case WebColorScheme::kDark:
+      return ui::NativeTheme::ColorScheme::kDark;
   }
 }
 
@@ -238,13 +253,14 @@ void WebThemeEngineDefault::Paint(
     WebThemeEngine::Part part,
     WebThemeEngine::State state,
     const blink::WebRect& rect,
-    const WebThemeEngine::ExtraParams* extra_params) {
+    const WebThemeEngine::ExtraParams* extra_params,
+    blink::WebColorScheme color_scheme) {
   ui::NativeTheme::ExtraParams native_theme_extra_params;
   GetNativeThemeExtraParams(
       part, state, extra_params, &native_theme_extra_params);
   ui::NativeTheme::GetInstanceForWeb()->Paint(
       canvas, NativeThemePart(part), NativeThemeState(state), gfx::Rect(rect),
-      native_theme_extra_params);
+      native_theme_extra_params, NativeColorScheme(color_scheme));
 }
 
 void WebThemeEngineDefault::GetOverlayScrollbarStyle(ScrollbarStyle* style) {

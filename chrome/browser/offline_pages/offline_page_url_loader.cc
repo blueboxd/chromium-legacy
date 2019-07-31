@@ -120,10 +120,6 @@ void OfflinePageURLLoader::FollowRedirect(
   NOTREACHED();
 }
 
-void OfflinePageURLLoader::ProceedWithResponse() {
-  NOTREACHED();
-}
-
 void OfflinePageURLLoader::SetPriority(net::RequestPriority priority,
                                        int32_t intra_priority_value) {
   // Ignore: this class doesn't have a concept of priority.

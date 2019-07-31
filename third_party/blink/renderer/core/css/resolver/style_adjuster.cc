@@ -356,8 +356,11 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
   // Blockify the children of flex, grid or LayoutCustom containers.
   if (layout_parent_style.BlockifiesChildren()) {
     style.SetIsInBlockifyingDisplay();
-    if (style.Display() != EDisplay::kContents)
+    if (style.Display() != EDisplay::kContents) {
       style.SetDisplay(EquivalentBlockDisplay(style.Display()));
+      if (!style.HasOutOfFlowPosition())
+        style.SetIsFlexOrGridOrCustomItem();
+    }
   }
 
   if (style.Display() == EDisplay::kBlock && !style.IsFloating())

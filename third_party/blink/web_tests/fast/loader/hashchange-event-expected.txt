@@ -22,12 +22,6 @@ A total of 7 events have been received.
 ALERT: Test number 1.
 hashchange event received by body-onhashchange-attribute.
 A total of 8 events have been received.
-ALERT: Test number 1.
-hashchange event received by window-event-listener.
-A total of 9 events have been received.
-ALERT: Test number 1.
-hashchange event received by body-onhashchange-attribute.
-A total of 10 events have been received.
 ALERT: Test number 2.
 hashchange event received by window-event-listener.
 A total of 1 events have been received.

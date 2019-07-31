@@ -140,7 +140,7 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   int GetDefaultDividerPosition(aura::Window* window) const;
 
   // Returns true during the divider snap animation.
-  bool IsDividerAnimating();
+  bool IsDividerAnimating() const;
 
   void StartResize(const gfx::Point& location_in_screen);
   void Resize(const gfx::Point& location_in_screen);

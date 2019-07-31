@@ -320,10 +320,10 @@ void Abort(ScriptState* script_state) {
   authenticator->Cancel();
 }
 
-void OnStoreComplete(std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
-                     RequiredOriginType required_origin_type) {
+void OnStoreComplete(std::unique_ptr<ScopedPromiseResolver> scoped_resolver) {
   auto* resolver = scoped_resolver->Release();
-  AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
+  AssertSecurityRequirementsBeforeResponse(
+      resolver, RequiredOriginType::kSecureAndSameWithAncestors);
   resolver->Resolve();
 }
 
@@ -616,13 +616,6 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  auto required_origin_type =
-      credential->IsFederatedCredential() || credential->IsPasswordCredential()
-          ? RequiredOriginType::kSecureAndSameWithAncestors
-          : RequiredOriginType::kSecure;
-  if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type))
-    return promise;
-
   if (!(credential->IsFederatedCredential() ||
         credential->IsPasswordCredential())) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -631,8 +624,11 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
     return promise;
   }
 
-  DCHECK(credential->IsFederatedCredential() ||
-         credential->IsPasswordCredential());
+  if (!CheckSecurityRequirementsBeforeRequest(
+          resolver, RequiredOriginType::kSecureAndSameWithAncestors)) {
+    return promise;
+  }
+
   const KURL& url =
       credential->IsFederatedCredential()
           ? static_cast<const FederatedCredential*>(credential)->iconURL()
@@ -647,9 +643,9 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
       CredentialManagerProxy::From(script_state)->CredentialManager();
   credential_manager->Store(
       CredentialInfo::From(credential),
-      WTF::Bind(&OnStoreComplete,
-                WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver)),
-                required_origin_type));
+      WTF::Bind(
+          &OnStoreComplete,
+          WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver))));
 
   return promise;
 }

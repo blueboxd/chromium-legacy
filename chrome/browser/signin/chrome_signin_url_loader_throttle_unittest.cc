@@ -39,7 +39,7 @@ class MockDelegate : public HeaderModificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
-content::ResourceRequestInfo::WebContentsGetter NullWebContentsGetter() {
+content::WebContents::Getter NullWebContentsGetter() {
   return base::BindRepeating([]() -> content::WebContents* { return nullptr; });
 }
 

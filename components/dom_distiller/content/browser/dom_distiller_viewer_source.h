@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "content/public/browser/url_data_source.h"
+#include "content/public/browser/web_contents.h"
 
 namespace dom_distiller {
 
@@ -32,7 +33,7 @@ class DomDistillerViewerSource : public content::URLDataSource {
   std::string GetSource() override;
   void StartDataRequest(
       const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) override;
   bool ShouldServiceRequest(const GURL& url,

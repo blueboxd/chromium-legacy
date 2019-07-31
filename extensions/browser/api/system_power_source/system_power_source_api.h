@@ -41,8 +41,7 @@ class SystemPowerSourceAPI : public BrowserContextKeyedAPI,
   DISALLOW_COPY_AND_ASSIGN(SystemPowerSourceAPI);
 };
 
-class SystemPowerSourceGetPowerSourceInfoFunction
-    : public UIThreadExtensionFunction {
+class SystemPowerSourceGetPowerSourceInfoFunction : public ExtensionFunction {
  public:
   SystemPowerSourceGetPowerSourceInfoFunction();
 
@@ -58,8 +57,7 @@ class SystemPowerSourceGetPowerSourceInfoFunction
   DISALLOW_COPY_AND_ASSIGN(SystemPowerSourceGetPowerSourceInfoFunction);
 };
 
-class SystemPowerSourceRequestStatusUpdateFunction
-    : public UIThreadExtensionFunction {
+class SystemPowerSourceRequestStatusUpdateFunction : public ExtensionFunction {
  public:
   SystemPowerSourceRequestStatusUpdateFunction();
 

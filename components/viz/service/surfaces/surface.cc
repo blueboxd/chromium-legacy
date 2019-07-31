@@ -26,9 +26,10 @@
 
 namespace viz {
 
-Surface::PresentationHelper::PresentationHelper(base::WeakPtr<Surface> surface,
-                                                uint32_t frame_token)
-    : surface_(std::move(surface)), frame_token_(frame_token) {}
+Surface::PresentationHelper::PresentationHelper(
+    base::WeakPtr<SurfaceClient> surface_client,
+    uint32_t frame_token)
+    : surface_client_(std::move(surface_client)), frame_token_(frame_token) {}
 
 Surface::PresentationHelper::~PresentationHelper() {
   // The class that called TakePresentationHelperForPresentNotification
@@ -39,10 +40,10 @@ Surface::PresentationHelper::~PresentationHelper() {
 
 void Surface::PresentationHelper::DidPresent(
     const gfx::PresentationFeedback& feedback) {
-  if (surface_ && frame_token_)
-    surface_->DidPresentSurface(frame_token_, feedback);
+  if (surface_client_ && frame_token_)
+    surface_client_->OnSurfacePresented(frame_token_, feedback);
 
-  surface_ = nullptr;
+  surface_client_ = nullptr;
 }
 
 Surface::Surface(const SurfaceInfo& surface_info,
@@ -589,15 +590,9 @@ Surface::TakePresentationHelperForPresentNotification() {
       !active_frame_data_->will_be_notified_of_presentation) {
     active_frame_data_->will_be_notified_of_presentation = true;
     return std::make_unique<PresentationHelper>(
-        GetWeakPtr(), active_frame_data_->frame.metadata.frame_token);
+        client(), active_frame_data_->frame.metadata.frame_token);
   }
   return nullptr;
-}
-
-void Surface::DidPresentSurface(uint32_t presentation_token,
-                                const gfx::PresentationFeedback& feedback) {
-  if (surface_client_)
-    surface_client_->OnSurfacePresented(presentation_token, feedback);
 }
 
 void Surface::SendAckToClient() {
@@ -613,7 +608,7 @@ void Surface::MarkAsDrawn() {
     return;
   active_frame_data_->frame_drawn = true;
   if (surface_client_)
-    surface_client_->OnSurfaceDrawn(this);
+    surface_client_->OnSurfaceWillDraw(this);
 }
 
 void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect,
@@ -642,9 +637,9 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
 
   // If we won't be getting a presented notification, we'll notify the client
   // when the frame is unref'd.
-  if (!frame_data->will_be_notified_of_presentation)
-    DidPresentSurface(frame_data->frame.metadata.frame_token,
-                      gfx::PresentationFeedback::Failure());
+  if (!frame_data->will_be_notified_of_presentation && surface_client_)
+    surface_client_->OnSurfacePresented(frame_data->frame.metadata.frame_token,
+                                        gfx::PresentationFeedback::Failure());
 }
 
 void Surface::ClearCopyRequests() {
@@ -713,6 +708,14 @@ void Surface::OnWillBeDrawn() {
   }
   surface_manager_->SurfaceWillBeDrawn(this);
   MarkAsDrawn();
+}
+
+void Surface::OnWasDrawn(uint32_t frame_token,
+                         base::TimeTicks draw_start_timestamp) {
+  if (!surface_client_)
+    return;
+
+  surface_client_->OnSurfaceWasDrawn(frame_token, draw_start_timestamp);
 }
 
 void Surface::ActivatePendingFrameForInheritedDeadline() {

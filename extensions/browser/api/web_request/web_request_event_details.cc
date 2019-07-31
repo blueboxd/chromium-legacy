@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/child_process_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
@@ -58,6 +57,9 @@ WebRequestEventDetails::WebRequestEventDetails(const WebRequestInfo& request,
   dict_.SetString(keys::kTypeKey,
                   WebRequestResourceTypeToString(request.web_request_type));
   dict_.SetString(keys::kUrlKey, request.url.spec());
+  dict_.SetInteger(keys::kTabIdKey, request.frame_data.tab_id);
+  dict_.SetInteger(keys::kFrameIdKey, request.frame_data.frame_id);
+  dict_.SetInteger(keys::kParentFrameIdKey, request.frame_data.parent_frame_id);
   initiator_ = request.initiator;
   render_process_id_ = request.render_process_id;
   render_frame_id_ = request.frame_id;
@@ -130,21 +132,6 @@ void WebRequestEventDetails::SetResponseSource(const WebRequestInfo& request) {
   dict_.SetBoolean(keys::kFromCache, request.response_from_cache);
   if (!request.response_ip.empty())
     dict_.SetString(keys::kIpKey, request.response_ip);
-}
-
-void WebRequestEventDetails::SetFrameData(
-    const ExtensionApiFrameIdMap::FrameData& frame_data) {
-  dict_.SetInteger(keys::kTabIdKey, frame_data.tab_id);
-  dict_.SetInteger(keys::kFrameIdKey, frame_data.frame_id);
-  dict_.SetInteger(keys::kParentFrameIdKey, frame_data.parent_frame_id);
-}
-
-void WebRequestEventDetails::DetermineFrameDataOnUI() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ExtensionApiFrameIdMap::FrameData frame_data =
-      ExtensionApiFrameIdMap::Get()->GetFrameData(render_process_id_,
-                                                  render_frame_id_);
-  SetFrameData(frame_data);
 }
 
 std::unique_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(

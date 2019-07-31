@@ -4,6 +4,9 @@
 
 #include "chrome/browser/notifications/scheduler/display_agent_android.h"
 
+#include <string>
+#include <utility>
+
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "chrome/android/chrome_jni_headers/DisplayAgent_jni.h"
@@ -15,6 +18,7 @@
 
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
+using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
@@ -30,38 +34,30 @@ notifications::UserActionHandler* GetUserActionHandler(
 }  // namespace
 
 // static
-void JNI_DisplayAgent_OnContentClick(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_profile,
-    jint j_client_type,
-    const base::android::JavaParamRef<jstring>& j_guid) {
-  GetUserActionHandler(j_profile)->OnClick(
+void JNI_DisplayAgent_OnUserAction(JNIEnv* env,
+                                   const JavaParamRef<jobject>& j_profile,
+                                   jint j_client_type,
+                                   jint j_action_type,
+                                   const JavaParamRef<jstring>& j_guid,
+                                   jint j_button_type,
+                                   const JavaParamRef<jstring>& j_button_id) {
+  auto user_action_type =
+      static_cast<notifications::UserActionType>(j_action_type);
+  notifications::UserActionData action_data(
       static_cast<notifications::SchedulerClientType>(j_client_type),
-      ConvertJavaStringToUTF8(env, j_guid));
-}
+      user_action_type, ConvertJavaStringToUTF8(env, j_guid));
 
-// static
-void JNI_DisplayAgent_OnDismiss(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_profile,
-    jint j_client_type,
-    const base::android::JavaParamRef<jstring>& j_guid) {
-  GetUserActionHandler(j_profile)->OnDismiss(
-      static_cast<notifications::SchedulerClientType>(j_client_type),
-      ConvertJavaStringToUTF8(env, j_guid));
-}
+  // Attach button click data.
+  if (user_action_type == notifications::UserActionType::kButtonClick) {
+    notifications::ButtonClickInfo button_click_info;
+    button_click_info.button_id = ConvertJavaStringToUTF8(env, j_button_id);
+    button_click_info.type =
+        static_cast<notifications::ActionButtonType>(j_button_type);
+    action_data.button_click_info =
+        base::make_optional(std::move(button_click_info));
+  }
 
-// static
-void JNI_DisplayAgent_OnActionButton(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_profile,
-    jint j_client_type,
-    const base::android::JavaParamRef<jstring>& j_guid,
-    jint type) {
-  GetUserActionHandler(j_profile)->OnActionClick(
-      static_cast<notifications::SchedulerClientType>(j_client_type),
-      ConvertJavaStringToUTF8(env, j_guid),
-      static_cast<notifications::ActionButtonType>(type));
+  GetUserActionHandler(j_profile)->OnUserAction(action_data);
 }
 
 DisplayAgentAndroid::DisplayAgentAndroid() = default;

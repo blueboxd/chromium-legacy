@@ -31,15 +31,14 @@ static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
   // https://drafts.csswg.org/css-scroll-snap/#snap-model
   // "Snap positions must only affect the nearest ancestor (on the element’s
   // containing block chain) scroll container".
-  Element* viewport_defining_element =
-      snap_area.GetDocument().ViewportDefiningElement();
+  Element* document_element = snap_area.GetDocument().documentElement();
   LayoutBox* box = snap_area.ContainingBlock();
   while (box && !box->HasOverflowClip() && !box->IsLayoutView() &&
-         box->GetNode() != viewport_defining_element)
+         box->GetNode() != document_element)
     box = box->ContainingBlock();
 
-  // If we reach to viewportDefiningElement then we dispatch to viewport
-  if (box && box->GetNode() == viewport_defining_element)
+  // If we reach to document element then we dispatch to viewport
+  if (box && box->GetNode() == document_element)
     return snap_area.GetDocument().GetLayoutView();
 
   return box;
@@ -52,11 +51,11 @@ void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container,
     return;
   }
 
-  // Scroll snap properties have no effect on the viewport defining element
-  // instead they are propagated to (See Document::PropagateStyleToViewport) and
-  // handled by the LayoutView.
+  // Scroll snap properties have no effect on the document element instead they
+  // are propagated to (See Document::PropagateStyleToViewport) and handled by
+  // the LayoutView.
   if (snap_container.GetNode() ==
-      snap_container.GetDocument().ViewportDefiningElement())
+      snap_container.GetDocument().documentElement())
     return;
 
   bool is_scroll_container =

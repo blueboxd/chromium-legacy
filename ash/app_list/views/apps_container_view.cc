@@ -132,6 +132,7 @@ void AppsContainerView::ShowApps(AppListFolderItem* folder_item) {
 }
 
 void AppsContainerView::ResetForShowApps() {
+  UpdateSuggestionChips();
   SetShowState(SHOW_APPS, false);
   DisableFocusForShowingActiveFolder(false);
 }

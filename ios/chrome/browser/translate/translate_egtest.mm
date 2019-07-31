@@ -62,6 +62,7 @@ using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::CloseButton;
 using chrome_test_util::ToolsMenuView;
+using chrome_test_util::WebStateScrollViewMatcher;
 
 namespace {
 
@@ -757,9 +758,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
   [self assertTranslateInfobarIsVisible];
 
   // Scroll down to enter the fullscreen mode.
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
 
   // Expect the translate infobar to be hidden.
@@ -767,9 +766,7 @@ class FakeNetworkChangeNotifier : public net::NetworkChangeNotifier {
       assertWithMatcher:grey_notVisible()];
 
   // Scroll up to exit the fullscreen mode.
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
 
   [self assertTranslateInfobarIsVisible];

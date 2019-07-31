@@ -35,7 +35,7 @@ class GoogleServiceAuthError;
 namespace policy {
 
 // Interacts with the device management service and determines whether Android
-// management is enabled for the user or not. Uses the OAuth2TokenService to
+// management is enabled for the user or not. Uses the IdentityManager to
 // acquire access tokens for the device management.
 class AndroidManagementClient {
  public:

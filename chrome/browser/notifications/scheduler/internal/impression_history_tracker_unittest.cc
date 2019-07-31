@@ -24,6 +24,7 @@ namespace notifications {
 namespace {
 
 const char kGuid1[] = "guid1";
+const char kButtonId[] = "button_id_1";
 const char kTimeStr[] = "04/25/20 01:00:00 AM";
 
 struct TestCase {
@@ -252,7 +253,9 @@ TEST_F(ImpressionHistoryTrackerTest, ClickNoImpression) {
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _)).Times(0);
   EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
-  tracker()->OnClick(SchedulerClientType::kTest1, kGuid1);
+  UserActionData action_data(SchedulerClientType::kTest1,
+                             UserActionType::kClick, kGuid1);
+  tracker()->OnUserAction(action_data);
   VerifyClientStates(test_case);
 }
 
@@ -331,12 +334,22 @@ TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
 
   // Trigger user action.
   if (GetParam().user_feedback == UserFeedback::kClick) {
-    tracker()->OnClick(SchedulerClientType::kTest1, kGuid1);
+    UserActionData action_data(SchedulerClientType::kTest1,
+                               UserActionType::kClick, kGuid1);
+    tracker()->OnUserAction(action_data);
   } else if (GetParam().button_type.has_value()) {
-    tracker()->OnActionClick(SchedulerClientType::kTest1, kGuid1,
-                             GetParam().button_type.value());
+    ButtonClickInfo button_click_info;
+    button_click_info.button_id = kButtonId;
+    button_click_info.type = GetParam().button_type.value();
+    UserActionData action_data(SchedulerClientType::kTest1,
+                               UserActionType::kButtonClick, kGuid1);
+    action_data.button_click_info =
+        base::make_optional(std::move(button_click_info));
+    tracker()->OnUserAction(action_data);
   } else if (GetParam().user_feedback == UserFeedback::kDismiss) {
-    tracker()->OnDismiss(SchedulerClientType::kTest1, kGuid1);
+    UserActionData action_data(SchedulerClientType::kTest1,
+                               UserActionType::kDismiss, kGuid1);
+    tracker()->OnUserAction(action_data);
   }
 
   VerifyClientStates(test_case);

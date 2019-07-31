@@ -53,6 +53,8 @@ class VIEWS_EXPORT Link : public Label {
   const LinkListener* listener() { return listener_; }
   void set_listener(LinkListener* listener) { listener_ = listener; }
 
+  SkColor GetColor() const;
+
   // Label:
   void PaintFocusRing(gfx::Canvas* canvas) const override;
   gfx::Insets GetInsets() const override;
@@ -74,6 +76,7 @@ class VIEWS_EXPORT Link : public Label {
   void SetEnabledColor(SkColor color) override;
   bool IsSelectionSupported() const override;
 
+  bool GetUnderline() const;
   // TODO(estade): almost all the places that call this pass false. With
   // Harmony, false is already the default so those callsites can be removed.
   // TODO(tapted): Then remove all callsites when client code sets a correct
@@ -88,8 +91,6 @@ class VIEWS_EXPORT Link : public Label {
   void RecalculateFont();
 
   void ConfigureFocus();
-
-  SkColor GetColor();
 
   LinkListener* listener_;
 

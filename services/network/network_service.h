@@ -23,6 +23,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/dns/dns_config.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/log/net_log.h"
 #include "net/log/trace_net_log_observer.h"
@@ -142,7 +143,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void CreateNetworkContext(mojom::NetworkContextRequest request,
                             mojom::NetworkContextParamsPtr params) override;
   void ConfigureStubHostResolver(
-      bool stub_resolver_enabled,
+      bool insecure_dns_client_enabled,
+      net::DnsConfig::SecureDnsMode secure_dns_mode,
       base::Optional<std::vector<mojom::DnsOverHttpsServerPtr>>
           dns_over_https_servers) override;
   void DisableQuic() override;

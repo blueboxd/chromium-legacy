@@ -226,6 +226,16 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
 // static
 std::string OmniboxFieldTrial::GetZeroSuggestVariant(
     OmniboxEventProto::PageClassification page_classification) {
+  // Note: This code is required since at this point we have no way to set the
+  // ZeroSuggestVariant parameter state with Finch Forcing groups.
+  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
+    auto result = internal::GetValueForRuleInContextByFeature(
+        omnibox::kZeroSuggestionsOnNTP, kZeroSuggestVariantRule,
+        page_classification);
+    if (!result.empty())
+      return result;
+  }
+
   return internal::GetValueForRuleInContextByFeature(
       omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
       page_classification);

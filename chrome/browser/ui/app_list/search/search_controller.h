@@ -88,7 +88,6 @@ class SearchController {
   std::unique_ptr<Mixer> mixer_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
-  std::unique_ptr<AppSearchResultRanker> app_ranker_;
   AppListControllerDelegate* list_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchController);

@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "content/public/browser/resource_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"

@@ -23,7 +23,7 @@ class FakeOAuth2AccessTokenManager : public OAuth2AccessTokenManager {
     PendingRequest(const PendingRequest& other);
     ~PendingRequest();
 
-    std::string account_id;
+    CoreAccountId account_id;
     std::string client_id;
     std::string client_secret;
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
@@ -40,17 +40,17 @@ class FakeOAuth2AccessTokenManager : public OAuth2AccessTokenManager {
   std::vector<PendingRequest> GetPendingRequests();
 
   // Helper routines to issue tokens for pending requests.
-  void IssueAllTokensForAccount(const std::string& account_id,
+  void IssueAllTokensForAccount(const CoreAccountId& account_id,
                                 const std::string& access_token,
                                 const base::Time& expiration);
 
   // Helper routines to issue token for pending requests based on TokenResponse.
   void IssueAllTokensForAccount(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response);
 
   void IssueErrorForAllPendingRequestsForAccount(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const GoogleServiceAuthError& error);
 
   void IssueTokenForScope(const OAuth2AccessTokenManager::ScopeSet& scopes,
@@ -102,7 +102,7 @@ class FakeOAuth2AccessTokenManager : public OAuth2AccessTokenManager {
   // requests for all accounts are completed, otherwise only requests for the
   // given account.
   void CompleteRequests(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       bool all_scopes,
       const OAuth2AccessTokenManager::ScopeSet& scopes,
       const GoogleServiceAuthError& error,

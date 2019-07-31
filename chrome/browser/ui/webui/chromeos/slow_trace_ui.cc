@@ -34,7 +34,7 @@ std::string SlowTraceSource::GetSource() {
 
 void SlowTraceSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   int trace_id = 0;
   size_t pos = path.find('#');

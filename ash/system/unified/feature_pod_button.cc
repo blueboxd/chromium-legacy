@@ -83,13 +83,13 @@ std::unique_ptr<views::InkDropRipple>
 FeaturePodIconButton::CreateInkDropRipple() const {
   return TrayPopupUtils::CreateInkDropRipple(
       TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent(), kUnifiedMenuIconColor);
+      GetInkDropCenterBasedOnLastEvent(), kIconOnDarkBackgroundColor);
 }
 
 std::unique_ptr<views::InkDropHighlight>
 FeaturePodIconButton::CreateInkDropHighlight() const {
   return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedMenuIconColor);
+      TrayPopupInkDropStyle::FILL_BOUNDS, this, kIconOnDarkBackgroundColor);
 }
 
 std::unique_ptr<views::InkDropMask> FeaturePodIconButton::CreateInkDropMask()
@@ -230,8 +230,8 @@ void FeaturePodLabelButton::OnEnabledChanged() {
   sub_label_->SetEnabledColor(GetEnabled() ? kUnifiedMenuSecondaryTextColor
                                            : kUnifiedMenuTextColorDisabled);
   detailed_view_arrow_->SetImage(gfx::CreateVectorIcon(
-      kUnifiedMenuMoreIcon,
-      GetEnabled() ? kUnifiedMenuIconColor : kUnifiedMenuIconColorDisabled));
+      kUnifiedMenuMoreIcon, GetEnabled() ? kIconOnDarkBackgroundColor
+                                         : kIconOnDarkBackgroundColorDisabled));
 }
 
 void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
@@ -269,11 +269,12 @@ double FeaturePodButton::GetOpacityForExpandedAmount(double expanded_amount) {
 }
 
 void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
-  icon_button_->SetImage(views::Button::STATE_NORMAL,
-                         gfx::CreateVectorIcon(icon, kUnifiedMenuIconColor));
+  icon_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(icon, kIconOnDarkBackgroundColor));
   icon_button_->SetImage(
       views::Button::STATE_DISABLED,
-      gfx::CreateVectorIcon(icon, kUnifiedMenuIconColorDisabled));
+      gfx::CreateVectorIcon(icon, kIconOnDarkBackgroundColorDisabled));
 }
 
 void FeaturePodButton::SetLabel(const base::string16& label) {

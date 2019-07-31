@@ -114,7 +114,7 @@ std::string FileIconSource::GetSource() {
 
 void FileIconSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   base::FilePath file_path;
   IconLoader::IconSize icon_size = IconLoader::NORMAL;

@@ -128,7 +128,7 @@ class InputImeEventRouterFactory {
   DISALLOW_COPY_AND_ASSIGN(InputImeEventRouterFactory);
 };
 
-class InputImeKeyEventHandledFunction : public UIThreadExtensionFunction {
+class InputImeKeyEventHandledFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.keyEventHandled",
                              INPUT_IME_KEYEVENTHANDLED)
@@ -136,11 +136,11 @@ class InputImeKeyEventHandledFunction : public UIThreadExtensionFunction {
  protected:
   ~InputImeKeyEventHandledFunction() override {}
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 };
 
-class InputImeSetCompositionFunction : public UIThreadExtensionFunction {
+class InputImeSetCompositionFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setComposition",
                              INPUT_IME_SETCOMPOSITION)
@@ -148,29 +148,29 @@ class InputImeSetCompositionFunction : public UIThreadExtensionFunction {
  protected:
   ~InputImeSetCompositionFunction() override {}
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 };
 
-class InputImeCommitTextFunction : public UIThreadExtensionFunction {
+class InputImeCommitTextFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.commitText", INPUT_IME_COMMITTEXT)
 
  protected:
   ~InputImeCommitTextFunction() override {}
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 };
 
-class InputImeSendKeyEventsFunction : public UIThreadExtensionFunction {
+class InputImeSendKeyEventsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.sendKeyEvents", INPUT_IME_SENDKEYEVENTS)
 
  protected:
   ~InputImeSendKeyEventsFunction() override {}
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 };
 

@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/ssl/ssl_cert_request_info.h"
 
@@ -54,11 +54,10 @@ class SSLClientAuthHandler {
 
   // Creates a new SSLClientAuthHandler. The caller ensures that the handler
   // does not outlive |delegate|.
-  SSLClientAuthHandler(
-      std::unique_ptr<net::ClientCertStore> client_cert_store,
-      ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      net::SSLCertRequestInfo* cert_request_info,
-      Delegate* delegate);
+  SSLClientAuthHandler(std::unique_ptr<net::ClientCertStore> client_cert_store,
+                       WebContents::Getter web_contents_getter,
+                       net::SSLCertRequestInfo* cert_request_info,
+                       Delegate* delegate);
   ~SSLClientAuthHandler();
 
   // Selects a certificate and resumes the URL request with that certificate.
@@ -96,7 +95,7 @@ class SSLClientAuthHandler {
   // will cancel the dialog corresponding to this certificate request.
   base::OnceClosure cancellation_callback_;
 
-  ResourceRequestInfo::WebContentsGetter web_contents_getter_;
+  WebContents::Getter web_contents_getter_;
 
   // The certs to choose from.
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;

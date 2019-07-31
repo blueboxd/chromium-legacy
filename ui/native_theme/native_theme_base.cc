@@ -164,7 +164,8 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
                             Part part,
                             State state,
                             const gfx::Rect& rect,
-                            const ExtraParams& extra) const {
+                            const ExtraParams& extra,
+                            ColorScheme color_scheme) const {
   if (rect.IsEmpty())
     return;
 
@@ -174,52 +175,57 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
   switch (part) {
     // Please keep these in the order of NativeTheme::Part.
     case kCheckbox:
-      PaintCheckbox(canvas, state, rect, extra.button);
+      PaintCheckbox(canvas, state, rect, extra.button, color_scheme);
       break;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     case kFrameTopArea:
-      PaintFrameTopArea(canvas, state, rect, extra.frame_top_area);
+      PaintFrameTopArea(canvas, state, rect, extra.frame_top_area,
+                        color_scheme);
       break;
 #endif
     case kInnerSpinButton:
-      PaintInnerSpinButton(canvas, state, rect, extra.inner_spin);
+      PaintInnerSpinButton(canvas, state, rect, extra.inner_spin, color_scheme);
       break;
     case kMenuList:
-      PaintMenuList(canvas, state, rect, extra.menu_list);
+      PaintMenuList(canvas, state, rect, extra.menu_list, color_scheme);
       break;
     case kMenuPopupBackground:
-      PaintMenuPopupBackground(canvas, rect.size(), extra.menu_background);
+      PaintMenuPopupBackground(canvas, rect.size(), extra.menu_background,
+                               color_scheme);
       break;
     case kMenuPopupSeparator:
-      PaintMenuSeparator(canvas, state, rect, extra.menu_separator);
+      PaintMenuSeparator(canvas, state, rect, extra.menu_separator,
+                         color_scheme);
       break;
     case kMenuItemBackground:
-      PaintMenuItemBackground(canvas, state, rect, extra.menu_item);
+      PaintMenuItemBackground(canvas, state, rect, extra.menu_item,
+                              color_scheme);
       break;
     case kProgressBar:
-      PaintProgressBar(canvas, state, rect, extra.progress_bar);
+      PaintProgressBar(canvas, state, rect, extra.progress_bar, color_scheme);
       break;
     case kPushButton:
-      PaintButton(canvas, state, rect, extra.button);
+      PaintButton(canvas, state, rect, extra.button, color_scheme);
       break;
     case kRadio:
-      PaintRadio(canvas, state, rect, extra.button);
+      PaintRadio(canvas, state, rect, extra.button, color_scheme);
       break;
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:
     case kScrollbarLeftArrow:
     case kScrollbarRightArrow:
       if (scrollbar_button_length_ > 0)
-        PaintArrowButton(canvas, rect, part, state);
+        PaintArrowButton(canvas, rect, part, state, color_scheme);
       break;
     case kScrollbarHorizontalThumb:
     case kScrollbarVerticalThumb:
       PaintScrollbarThumb(canvas, part, state, rect,
-                          extra.scrollbar_thumb.scrollbar_theme);
+                          extra.scrollbar_thumb.scrollbar_theme, color_scheme);
       break;
     case kScrollbarHorizontalTrack:
     case kScrollbarVerticalTrack:
-      PaintScrollbarTrack(canvas, part, state, extra.scrollbar_track, rect);
+      PaintScrollbarTrack(canvas, part, state, extra.scrollbar_track, rect,
+                          color_scheme);
       break;
     case kScrollbarHorizontalGripper:
     case kScrollbarVerticalGripper:
@@ -227,19 +233,19 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
       // implementations, so no NOTIMPLEMENTED.
       break;
     case kScrollbarCorner:
-      PaintScrollbarCorner(canvas, state, rect);
+      PaintScrollbarCorner(canvas, state, rect, color_scheme);
       break;
     case kSliderTrack:
-      PaintSliderTrack(canvas, state, rect, extra.slider);
+      PaintSliderTrack(canvas, state, rect, extra.slider, color_scheme);
       break;
     case kSliderThumb:
-      PaintSliderThumb(canvas, state, rect, extra.slider);
+      PaintSliderThumb(canvas, state, rect, extra.slider, color_scheme);
       break;
     case kTabPanelBackground:
       NOTIMPLEMENTED();
       break;
     case kTextField:
-      PaintTextField(canvas, state, rect, extra.text_field);
+      PaintTextField(canvas, state, rect, extra.text_field, color_scheme);
       break;
     case kTrackbarThumb:
     case kTrackbarTrack:
@@ -279,7 +285,8 @@ NativeThemeBase::~NativeThemeBase() {
 void NativeThemeBase::PaintArrowButton(cc::PaintCanvas* canvas,
                                        const gfx::Rect& rect,
                                        Part direction,
-                                       State state) const {
+                                       State state,
+                                       ColorScheme color_scheme) const {
   cc::PaintFlags flags;
 
   // Calculate button color.
@@ -355,7 +362,7 @@ void NativeThemeBase::PaintArrowButton(cc::PaintCanvas* canvas,
   flags.setColor(OutlineColor(trackHSV, thumbHSV));
   canvas->drawPath(outline, flags);
 
-  PaintArrow(canvas, rect, direction, GetArrowColor(state));
+  PaintArrow(canvas, rect, direction, GetArrowColor(state, color_scheme));
 }
 
 void NativeThemeBase::PaintArrow(cc::PaintCanvas* gc,
@@ -420,7 +427,8 @@ void NativeThemeBase::PaintScrollbarTrack(
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
-    const gfx::Rect& rect) const {
+    const gfx::Rect& rect,
+    ColorScheme color_scheme) const {
   cc::PaintFlags flags;
   SkIRect skrect;
 
@@ -441,7 +449,8 @@ void NativeThemeBase::PaintScrollbarThumb(cc::PaintCanvas* canvas,
                                           Part part,
                                           State state,
                                           const gfx::Rect& rect,
-                                          ScrollbarOverlayColorTheme) const {
+                                          ScrollbarOverlayColorTheme,
+                                          ColorScheme color_scheme) const {
   const bool hovered = state == kHovered;
   const int midx = rect.x() + rect.width() / 2;
   const int midy = rect.y() + rect.height() / 2;
@@ -501,14 +510,16 @@ void NativeThemeBase::PaintScrollbarThumb(cc::PaintCanvas* canvas,
 
 void NativeThemeBase::PaintScrollbarCorner(cc::PaintCanvas* canvas,
                                            State state,
-                                           const gfx::Rect& rect) const {}
+                                           const gfx::Rect& rect,
+                                           ColorScheme color_scheme) const {}
 
 void NativeThemeBase::PaintCheckbox(cc::PaintCanvas* canvas,
                                     State state,
                                     const gfx::Rect& rect,
-                                    const ButtonExtraParams& button) const {
+                                    const ButtonExtraParams& button,
+                                    ColorScheme color_scheme) const {
   SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect,
-                                           SkIntToScalar(2));
+                                           SkIntToScalar(2), color_scheme);
   if (!skrect.isEmpty()) {
     // Draw the checkmark / dash.
     cc::PaintFlags flags;
@@ -545,7 +556,8 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const SkScalar borderRadius) const {
+    const SkScalar borderRadius,
+    ColorScheme color_scheme) const {
   SkRect skrect = gfx::RectToSkRect(rect);
 
   // Use the largest square that fits inside the provided rectangle.
@@ -630,12 +642,14 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
 void NativeThemeBase::PaintRadio(cc::PaintCanvas* canvas,
                                  State state,
                                  const gfx::Rect& rect,
-                                 const ButtonExtraParams& button) const {
+                                 const ButtonExtraParams& button,
+                                 ColorScheme color_scheme) const {
   // Most of a radio button is the same as a checkbox, except the the rounded
   // square is a circle (i.e. border radius >= 100%).
   const SkScalar radius = SkFloatToScalar(
       static_cast<float>(std::max(rect.width(), rect.height())) / 2);
-  SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, radius);
+  SkRect skrect =
+      PaintCheckboxRadioCommon(canvas, state, rect, radius, color_scheme);
   if (!skrect.isEmpty() && button.checked) {
     // Draw the dot.
     cc::PaintFlags flags;
@@ -655,7 +669,8 @@ void NativeThemeBase::PaintRadio(cc::PaintCanvas* canvas,
 void NativeThemeBase::PaintButton(cc::PaintCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
-                                  const ButtonExtraParams& button) const {
+                                  const ButtonExtraParams& button,
+                                  ColorScheme color_scheme) const {
   cc::PaintFlags flags;
   SkRect skrect = gfx::RectToSkRect(rect);
   SkColor base_color = button.background_color;
@@ -695,7 +710,7 @@ void NativeThemeBase::PaintButton(cc::PaintCanvas* canvas,
     int border_alpha = state == kHovered ? 0x80 : 0x55;
     if (button.is_focused) {
       border_alpha = 0xff;
-      flags.setColor(GetSystemColor(kColorId_FocusedBorderColor));
+      flags.setColor(GetSystemColor(kColorId_FocusedBorderColor, color_scheme));
     }
     flags.setStyle(cc::PaintFlags::kStroke_Style);
     flags.setStrokeWidth(SkIntToScalar(1));
@@ -708,7 +723,8 @@ void NativeThemeBase::PaintButton(cc::PaintCanvas* canvas,
 void NativeThemeBase::PaintTextField(cc::PaintCanvas* canvas,
                                      State state,
                                      const gfx::Rect& rect,
-                                     const TextFieldExtraParams& text) const {
+                                     const TextFieldExtraParams& text,
+                                     ColorScheme color_scheme) const {
   SkRect bounds;
   bounds.set(rect.x(), rect.y(), rect.right() - 1, rect.bottom() - 1);
 
@@ -725,18 +741,18 @@ void NativeThemeBase::PaintTextField(cc::PaintCanvas* canvas,
   canvas->drawRect(bounds, stroke_flags);
 }
 
-void NativeThemeBase::PaintMenuList(
-    cc::PaintCanvas* canvas,
-    State state,
-    const gfx::Rect& rect,
-    const MenuListExtraParams& menu_list) const {
+void NativeThemeBase::PaintMenuList(cc::PaintCanvas* canvas,
+                                    State state,
+                                    const gfx::Rect& rect,
+                                    const MenuListExtraParams& menu_list,
+                                    ColorScheme color_scheme) const {
   // If a border radius is specified, we let the WebCore paint the background
   // and the border of the control.
   if (!menu_list.has_border_radius) {
     ButtonExtraParams button = { 0 };
     button.background_color = menu_list.background_color;
     button.has_border = menu_list.has_border;
-    PaintButton(canvas, state, rect, button);
+    PaintButton(canvas, state, rect, button, color_scheme);
   }
 
   cc::PaintFlags flags;
@@ -765,7 +781,8 @@ void NativeThemeBase::PaintMenuList(
 void NativeThemeBase::PaintMenuPopupBackground(
     cc::PaintCanvas* canvas,
     const gfx::Size& size,
-    const MenuBackgroundExtraParams& menu_background) const {
+    const MenuBackgroundExtraParams& menu_background,
+    ColorScheme color_scheme) const {
   canvas->drawColor(kMenuPopupBackgroundColor, SkBlendMode::kSrc);
 }
 
@@ -773,7 +790,8 @@ void NativeThemeBase::PaintMenuItemBackground(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const MenuItemExtraParams& menu_item) const {
+    const MenuItemExtraParams& menu_item,
+    ColorScheme color_scheme) const {
   // By default don't draw anything over the normal background.
 }
 
@@ -781,16 +799,19 @@ void NativeThemeBase::PaintMenuSeparator(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const MenuSeparatorExtraParams& menu_separator) const {
+    const MenuSeparatorExtraParams& menu_separator,
+    ColorScheme color_scheme) const {
   cc::PaintFlags flags;
-  flags.setColor(GetSystemColor(ui::NativeTheme::kColorId_MenuSeparatorColor));
+  flags.setColor(GetSystemColor(ui::NativeTheme::kColorId_MenuSeparatorColor,
+                                color_scheme));
   canvas->drawRect(gfx::RectToSkRect(*menu_separator.paint_rect), flags);
 }
 
 void NativeThemeBase::PaintSliderTrack(cc::PaintCanvas* canvas,
                                        State state,
                                        const gfx::Rect& rect,
-                                       const SliderExtraParams& slider) const {
+                                       const SliderExtraParams& slider,
+                                       ColorScheme color_scheme) const {
   const int kMidX = rect.x() + rect.width() / 2;
   const int kMidY = rect.y() + rect.height() / 2;
 
@@ -815,7 +836,8 @@ void NativeThemeBase::PaintSliderTrack(cc::PaintCanvas* canvas,
 void NativeThemeBase::PaintSliderThumb(cc::PaintCanvas* canvas,
                                        State state,
                                        const gfx::Rect& rect,
-                                       const SliderExtraParams& slider) const {
+                                       const SliderExtraParams& slider,
+                                       ColorScheme color_scheme) const {
   const bool hovered = (state == kHovered) || slider.in_drag;
   const int kMidX = rect.x() + rect.width() / 2;
   const int kMidY = rect.y() + rect.height() / 2;
@@ -854,7 +876,8 @@ void NativeThemeBase::PaintInnerSpinButton(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const InnerSpinButtonExtraParams& spin_button) const {
+    const InnerSpinButtonExtraParams& spin_button,
+    ColorScheme color_scheme) const {
   if (spin_button.read_only)
     state = kDisabled;
 
@@ -867,17 +890,19 @@ void NativeThemeBase::PaintInnerSpinButton(
 
   gfx::Rect half = rect;
   half.set_height(rect.height() / 2);
-  PaintArrowButton(canvas, half, kScrollbarUpArrow, north_state);
+  PaintArrowButton(canvas, half, kScrollbarUpArrow, north_state, color_scheme);
 
   half.set_y(rect.y() + rect.height() / 2);
-  PaintArrowButton(canvas, half, kScrollbarDownArrow, south_state);
+  PaintArrowButton(canvas, half, kScrollbarDownArrow, south_state,
+                   color_scheme);
 }
 
 void NativeThemeBase::PaintProgressBar(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const ProgressBarExtraParams& progress_bar) const {
+    const ProgressBarExtraParams& progress_bar,
+    ColorScheme color_scheme) const {
   DCHECK(!rect.IsEmpty());
 
   canvas->drawColor(SK_ColorWHITE);
@@ -919,7 +944,8 @@ void NativeThemeBase::PaintFrameTopArea(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const FrameTopAreaExtraParams& frame_top_area) const {
+    const FrameTopAreaExtraParams& frame_top_area,
+    ColorScheme color_scheme) const {
   cc::PaintFlags flags;
   flags.setColor(frame_top_area.default_background_color);
   canvas->drawRect(gfx::RectToSkRect(rect), flags);
@@ -940,7 +966,8 @@ SkColor NativeThemeBase::SaturateAndBrighten(SkScalar* hsv,
   return SkHSVToColor(color);
 }
 
-SkColor NativeThemeBase::GetArrowColor(State state) const {
+SkColor NativeThemeBase::GetArrowColor(State state,
+                                       ColorScheme color_scheme) const {
   if (state != kDisabled)
     return SK_ColorBLACK;
 

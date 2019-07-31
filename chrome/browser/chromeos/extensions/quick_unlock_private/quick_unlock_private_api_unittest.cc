@@ -471,7 +471,7 @@ class QuickUnlockPrivateUnitTest
  private:
   // Runs the given |func| with the given |params|.
   std::unique_ptr<base::Value> RunFunction(
-      scoped_refptr<UIThreadExtensionFunction> func,
+      scoped_refptr<ExtensionFunction> func,
       std::unique_ptr<base::ListValue> params) {
     base::RunLoop().RunUntilIdle();
     std::unique_ptr<base::Value> result =
@@ -485,7 +485,7 @@ class QuickUnlockPrivateUnitTest
 
   // Runs |func| with |params|. Expects and returns an error result.
   std::string RunFunctionAndReturnError(
-      scoped_refptr<UIThreadExtensionFunction> func,
+      scoped_refptr<ExtensionFunction> func,
       std::unique_ptr<base::ListValue> params) {
     base::RunLoop().RunUntilIdle();
     std::unique_ptr<ExtensionFunctionDispatcher> dispatcher(

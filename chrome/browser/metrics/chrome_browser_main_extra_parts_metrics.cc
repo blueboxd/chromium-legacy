@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/browser_metrics.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
@@ -72,21 +73,12 @@ namespace {
 
 void RecordMemoryMetrics();
 
-// Records memory metrics after a delay, with a fixed mean interval but randomly
-// distributed samples using a poisson process.
+// Records memory metrics after a delay.
 void RecordMemoryMetricsAfterDelay() {
-#if defined(OS_ANDROID)
-  base::TimeDelta mean_time = base::TimeDelta::FromMinutes(5);
-#else
-  base::TimeDelta mean_time = base::TimeDelta::FromMinutes(30);
-#endif
-
-  // Compute the actual delay before sampling using a Poisson process.
-  double uniform = base::RandDouble();
-  base::TimeDelta delay = -std::log(uniform) * mean_time;
-
-  base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                  base::BindOnce(&RecordMemoryMetrics), delay);
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&RecordMemoryMetrics),
+      memory_instrumentation::GetDelayForNextMemoryLog());
 }
 
 // Records memory metrics, and then triggers memory colleciton after a delay.

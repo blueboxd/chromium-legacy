@@ -89,6 +89,7 @@ export class StorageArea {
 
   keys() {
     // Brand check: throw if there is no such private field.
+    // eslint-disable-next-line no-unused-expressions
     this.#databaseName;
 
     return createStorageAreaAsyncIterator(
@@ -100,6 +101,7 @@ export class StorageArea {
 
   values() {
     // Brand check: throw if there is no such private field.
+    // eslint-disable-next-line no-unused-expressions
     this.#databaseName;
 
     return createStorageAreaAsyncIterator(
@@ -111,6 +113,7 @@ export class StorageArea {
 
   entries() {
     // Brand check: throw if there is no such private field.
+    // eslint-disable-next-line no-unused-expressions
     this.#databaseName;
 
     return createStorageAreaAsyncIterator(
@@ -125,7 +128,7 @@ export class StorageArea {
       this.#backingStoreObject = Object.freeze({
         database: this.#databaseName,
         store: DEFAULT_IDB_STORE_NAME,
-        version: 1
+        version: 1,
       });
     }
 
@@ -149,7 +152,7 @@ Object.defineProperties(StorageArea.prototype, {
   entries: {enumerable: true},
   backingStore: {enumerable: true},
   [Symbol.asyncIterator]: {enumerable: false},
-  [Symbol.toStringTag]: {writable: false, enumerable: false}
+  [Symbol.toStringTag]: {writable: false, enumerable: false},
 });
 
 export default new StorageArea(DEFAULT_STORAGE_AREA_NAME);

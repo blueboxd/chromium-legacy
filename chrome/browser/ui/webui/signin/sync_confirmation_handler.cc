@@ -104,7 +104,7 @@ void SyncConfirmationHandler::HandleAccountImageRequest(
     const base::ListValue* args) {
   DCHECK(profile_->IsSyncAllowed());
   base::Optional<AccountInfo> primary_account_info =
-      identity_manager_->FindExtendedAccountInfoForAccount(
+      identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager_->GetPrimaryAccountInfo());
 
   // Fire the "account-image-changed" listener from |SetUserImageURL()|.
@@ -215,7 +215,7 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
     return;
 
   base::Optional<AccountInfo> primary_account_info =
-      identity_manager_->FindExtendedAccountInfoForAccount(
+      identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager_->GetPrimaryAccountInfo());
   if (!primary_account_info) {
     // No account is signed in, so there is nothing to be displayed in the sync

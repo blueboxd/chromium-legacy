@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
+#include "third_party/blink/renderer/core/animation/css/css_animation.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -537,8 +538,10 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     auto* effect = MakeGarbageCollected<KeyframeEffect>(
         element, inert_animation->Model(), inert_animation->SpecifiedTiming(),
         KeyframeEffect::kDefaultPriority, event_delegate);
-    Animation* animation = element->GetDocument().Timeline().Play(effect);
-    animation->setId(entry.name);
+
+    CSSAnimation* animation = CSSAnimation::Create(
+        effect, &(element->GetDocument().Timeline()), entry.name);
+    animation->play();
     if (inert_animation->Paused())
       animation->pause();
     animation->Update(kTimingUpdateOnDemand);

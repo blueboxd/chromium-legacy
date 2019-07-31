@@ -108,16 +108,16 @@ mojom::ConnectionStateType GetConnectionState(const NetworkState* network,
                             : mojom::ConnectionStateType::kNotConnected;
 }
 
-mojom::VPNType ShillVpnTypeToMojo(const std::string& shill_vpn_type) {
-  if (shill_vpn_type == shill::kProviderL2tpIpsec)
+mojom::VPNType OncVpnTypeToMojo(const std::string& onc_vpn_type) {
+  if (onc_vpn_type == ::onc::vpn::kTypeL2TP_IPsec)
     return mojom::VPNType::kL2TPIPsec;
-  if (shill_vpn_type == shill::kProviderOpenVpn)
+  if (onc_vpn_type == ::onc::vpn::kOpenVPN)
     return mojom::VPNType::kOpenVPN;
-  if (shill_vpn_type == shill::kProviderThirdPartyVpn)
+  if (onc_vpn_type == ::onc::vpn::kThirdPartyVpn)
     return mojom::VPNType::kThirdPartyVPN;
-  if (shill_vpn_type == shill::kProviderArcVpn)
+  if (onc_vpn_type == ::onc::vpn::kArcVpn)
     return mojom::VPNType::kArcVPN;
-  NOTREACHED() << "Unsupported shill VPN type: " << shill_vpn_type;
+  NOTREACHED() << "Unsupported ONC VPN type: " << onc_vpn_type;
   return mojom::VPNType::kOpenVPN;
 }
 
@@ -185,7 +185,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
 
   // NetworkHandler and UIProxyConfigService may not exist in tests.
   UIProxyConfigService* ui_proxy_config_service =
-      NetworkHandler::IsInitialized()
+      NetworkHandler::IsInitialized() &&
+              NetworkHandler::Get()->has_ui_proxy_config_service()
           ? NetworkHandler::Get()->ui_proxy_config_service()
           : nullptr;
   result->proxy_mode =
@@ -236,7 +237,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(const NetworkState* network,
       const NetworkState::VpnProviderInfo* vpn_provider =
           network->vpn_provider();
       if (vpn_provider) {
-        vpn->type = ShillVpnTypeToMojo(vpn_provider->type);
+        vpn->type = OncVpnTypeToMojo(
+            ShillToOnc(vpn_provider->type, onc::kVPNTypeTable));
         vpn->provider_id = vpn_provider->id;
         // TODO(stevenjb): Set the provider name in network state.
         // vpn->provider_name = vpn_provider->name;
@@ -1081,6 +1083,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
   switch (type) {
     case mojom::NetworkType::kCellular: {
       auto cellular = mojom::ManagedCellularProperties::New();
+      cellular->activation_state = network_state->GetMojoActivationState();
+
       const base::Value* cellular_dict =
           GetDictionary(properties, ::onc::network_config::kCellular);
       if (!cellular_dict) {
@@ -1093,8 +1097,6 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
           GetManagedApnProperties(cellular_dict, ::onc::cellular::kAPN);
       cellular->apn_list =
           GetManagedApnList(cellular_dict->FindKey(::onc::cellular::kAPNList));
-      cellular->activation_state =
-          GetString(cellular_dict, ::onc::cellular::kActivationState);
       cellular->allow_roaming =
           GetBoolean(properties, ::onc::cellular::kAllowRoaming);
       cellular->esn = GetString(cellular_dict, ::onc::cellular::kESN);
@@ -1178,13 +1180,17 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
           GetManagedOpenVPNProperties(vpn_dict, ::onc::vpn::kOpenVPN);
       vpn->third_party_vpn = GetManagedThirdPartyVPNProperties(
           vpn_dict, ::onc::vpn::kThirdPartyVpn);
-      vpn->type = GetManagedString(vpn_dict, ::onc::vpn::kType);
-      CHECK(vpn->type);
+      mojom::ManagedStringPtr managed_type =
+          GetManagedString(vpn_dict, ::onc::vpn::kType);
+      CHECK(managed_type);
+      vpn->type = OncVpnTypeToMojo(managed_type->active_value);
       result->vpn = std::move(vpn);
       break;
     }
     case mojom::NetworkType::kWiFi: {
       auto wifi = mojom::ManagedWiFiProperties::New();
+      wifi->security = network_state->GetMojoSecurity();
+
       const base::Value* wifi_dict =
           GetDictionary(properties, ::onc::network_config::kWiFi);
       if (!wifi_dict) {
@@ -1208,8 +1214,6 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
           GetManagedInt32(wifi_dict, ::onc::wifi::kRoamThreshold);
       wifi->ssid = GetManagedString(wifi_dict, ::onc::wifi::kSSID);
       CHECK(wifi->ssid);
-      wifi->security = GetManagedString(wifi_dict, ::onc::wifi::kSecurity);
-      CHECK(wifi->security);
       wifi->signal_strength = GetInt32(wifi_dict, ::onc::wifi::kSignalStrength);
       wifi->tethering_state =
           GetString(wifi_dict, ::onc::wifi::kTetheringState);

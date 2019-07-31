@@ -229,6 +229,11 @@ public class TabGridDialogMediator {
         return view -> {
             hideDialog(false);
             Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
+            if (currentTab == null) {
+                mTabCreatorManager.getTabCreator(mTabModelSelector.isIncognitoSelected())
+                        .launchNTP();
+                return;
+            }
             List<Tab> relatedTabs = getRelatedTabs(currentTab.getId());
 
             assert relatedTabs.size() > 0;

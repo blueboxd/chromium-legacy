@@ -16,7 +16,8 @@ class TestNativeTheme : public NativeTheme {
   ~TestNativeTheme() override;
 
   // NativeTheme:
-  SkColor GetSystemColor(ColorId color_id) const override;
+  SkColor GetSystemColor(ColorId color_id,
+                         ColorScheme color_scheme) const override;
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;
@@ -24,7 +25,8 @@ class TestNativeTheme : public NativeTheme {
              Part part,
              State state,
              const gfx::Rect& rect,
-             const ExtraParams& extra) const override;
+             const ExtraParams& extra,
+             ColorScheme color_scheme) const override;
   bool SupportsNinePatch(Part part) const override;
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
   gfx::Rect GetNinePatchAperture(Part part) const override;

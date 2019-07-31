@@ -74,7 +74,6 @@ source_set("webui") {
     "//ios/web/public/js_messaging",
     "//ios/web/public/webui",
     "//net",
-    "//services/service_manager/public/cpp",
     "//ui/base",
     "//url",
   ]

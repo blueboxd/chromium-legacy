@@ -78,7 +78,7 @@ class TestingOmniboxView : public OmniboxViewViews {
   // OmniboxViewViews:
   void EmphasizeURLComponents() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {}
-  using OmniboxView::IsSelectAll;
+  using OmniboxView::OnInlineAutocompleteTextMaybeChanged;
 
  private:
   // OmniboxViewViews:
@@ -1284,4 +1284,28 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
   EXPECT_TRUE(omnibox_view()->base_text_emphasis());
   EXPECT_FALSE(omnibox_view()->emphasis_range().IsValid());
   EXPECT_FALSE(omnibox_view()->scheme_range().IsValid());
+}
+
+TEST_F(OmniboxViewViewsTest, OverflowingAutocompleteText) {
+  // Make the Omnibox narrow so it can't fit the entire string (~650px), but
+  // wide enough to fit the user text (~65px).
+  int kOmniboxWidth = 100;
+  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
+  render_text->SetDisplayRect(gfx::Rect(0, 0, kOmniboxWidth, 10));
+
+  omnibox_textfield()->OnFocus();
+  omnibox_view()->OnInlineAutocompleteTextMaybeChanged(
+      base::ASCIIToUTF16("user text. Followed by very long autocompleted text "
+                         "that is unlikely to fit in |kOmniboxWidth|"),
+      10);
+
+  // NOTE: Technically (depending on the font), this expectation could fail if
+  // 'user text' doesn't fit in 100px or the entire string fits in 100px.
+  EXPECT_EQ(render_text->GetUpdatedDisplayOffset().x(), 0);
+  EXPECT_FALSE(omnibox_view()->IsSelectAll());
+
+  // On blur, the display should remain to the start of the text.
+  omnibox_textfield()->OnBlur();
+  EXPECT_EQ(render_text->GetUpdatedDisplayOffset().x(), 0);
+  EXPECT_FALSE(omnibox_view()->IsSelectAll());
 }

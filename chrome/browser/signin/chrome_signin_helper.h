@@ -12,7 +12,8 @@
 #include "base/supports_user_data.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/resource_type.h"
 
 namespace content_settings {
 class CookieSettings;
@@ -40,8 +41,7 @@ class ChromeRequestAdapter : public RequestAdapter {
   explicit ChromeRequestAdapter(net::URLRequest* request);
   ~ChromeRequestAdapter() override;
 
-  virtual content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
-      const;
+  virtual content::WebContents::Getter GetWebContentsGetter() const;
   virtual content::ResourceType GetResourceType() const;
   virtual GURL GetReferrerOrigin() const;
 
@@ -59,8 +59,7 @@ class ResponseAdapter {
   explicit ResponseAdapter(net::URLRequest* request);
   virtual ~ResponseAdapter();
 
-  virtual content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
-      const;
+  virtual content::WebContents::Getter GetWebContentsGetter() const;
   virtual bool IsMainFrame() const;
   virtual GURL GetOrigin() const;
   virtual const net::HttpResponseHeaders* GetHeaders() const;

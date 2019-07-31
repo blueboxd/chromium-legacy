@@ -54,6 +54,10 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.show_overdraw_feedback;
   }
 
+  static bool show_aggregated_damage(const viz::RendererSettings& input) {
+    return input.show_aggregated_damage;
+  }
+
   static int highp_threshold_min(const viz::RendererSettings& input) {
     return input.highp_threshold_min;
   }

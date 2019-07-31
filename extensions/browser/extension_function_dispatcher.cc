@@ -67,16 +67,6 @@ bool IsRequestFromServiceWorker(
          blink::mojom::kInvalidServiceWorkerVersionId;
 }
 
-// Separate copy of ExtensionAPI used for IO thread extension functions. We need
-// this because ExtensionAPI has mutable data. It should be possible to remove
-// this once all the extension APIs are updated to the feature system.
-struct Static {
-  Static() : api(ExtensionAPI::CreateWithDefaultConfiguration()) {}
-  std::unique_ptr<ExtensionAPI> api;
-};
-base::LazyInstance<Static>::DestructorAtExit g_global_io_data =
-    LAZY_INSTANCE_INITIALIZER;
-
 void CommonResponseCallback(IPC::Sender* ipc_sender,
                             int routing_id,
                             int worker_thread_id,
@@ -104,23 +94,10 @@ void CommonResponseCallback(IPC::Sender* ipc_sender,
   }
 }
 
-void IOThreadResponseCallback(
-    const base::WeakPtr<IOThreadExtensionMessageFilter>& ipc_sender,
-    int routing_id,
-    int worker_thread_id,
-    int request_id,
-    ExtensionFunction::ResponseType type,
-    const base::ListValue& results,
-    const std::string& error) {
-  if (!ipc_sender.get())
-    return;
-
-  CommonResponseCallback(ipc_sender.get(), routing_id, worker_thread_id,
-                         request_id, type, results, error);
-}
-
 }  // namespace
 
+// TODO(http://crbug.com/980774): Simplify this or change the name now that
+// IOThreadExtensionFunction is gone.
 class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
     : public content::WebContentsObserver {
  public:
@@ -273,109 +250,6 @@ ExtensionFunctionDispatcher::Delegate::GetVisibleWebContents() const {
   return GetAssociatedWebContents();
 }
 
-// static
-void ExtensionFunctionDispatcher::DoDispatchOnIOThread(
-    InfoMap* extension_info_map,
-    void* profile_id,
-    int render_process_id,
-    base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender,
-    const ExtensionHostMsg_Request_Params& params,
-    const ExtensionFunction::ResponseCallback& callback) {
-  const Extension* extension =
-      extension_info_map->extensions().GetByID(params.extension_id);
-
-  scoped_refptr<ExtensionFunction> function(
-      CreateExtensionFunction(params,
-                              extension,
-                              render_process_id,
-                              extension_info_map->process_map(),
-                              g_global_io_data.Get().api.get(),
-                              profile_id,
-                              callback));
-  if (!function.get())
-    return;
-
-  IOThreadExtensionFunction* function_io =
-      function->AsIOThreadExtensionFunction();
-  if (!function_io) {
-    NOTREACHED();
-    return;
-  }
-  function_io->set_ipc_sender(ipc_sender);
-  function_io->set_worker_thread_id(params.worker_thread_id);
-  function_io->set_service_worker_version_id(params.service_worker_version_id);
-  function_io->set_extension_info_map(extension_info_map);
-  if (extension) {
-    function->set_include_incognito_information(
-        extension_info_map->CanCrossIncognito(extension));
-  }
-
-  if (!CheckPermissions(function.get(), params, callback))
-    return;
-
-  if (!extension) {
-    // Skip all of the UMA, quota, event page, activity logging stuff if there
-    // isn't an extension, e.g. if the function call was from WebUI.
-    function->RunWithValidation()->Execute();
-    return;
-  }
-
-  QuotaService* quota = extension_info_map->GetQuotaService();
-  std::string violation_error = quota->Assess(extension->id(),
-                                              function.get(),
-                                              &params.arguments,
-                                              base::TimeTicks::Now());
-  if (violation_error.empty()) {
-    NotifyApiFunctionCalled(extension->id(), params.name, params.arguments,
-                            static_cast<content::BrowserContext*>(profile_id));
-    base::UmaHistogramSparse("Extensions.FunctionCalls",
-                             function->histogram_value());
-    base::ElapsedTimer timer;
-    function->RunWithValidation()->Execute();
-    // TODO(devlin): Once we have a baseline metric for how long functions take,
-    // we can create a handful of buckets and record the function name so that
-    // we can find what the fastest/slowest are.
-    // Note: Many functions execute finish asynchronously, so this time is not
-    // always a representation of total time taken. See also
-    // Extensions.Functions.TotalExecutionTime.
-    UMA_HISTOGRAM_TIMES("Extensions.Functions.SynchronousExecutionTime",
-                        timer.Elapsed());
-  } else {
-    function->OnQuotaExceeded(violation_error);
-  }
-}
-
-// static
-void ExtensionFunctionDispatcher::DispatchOnIOThread(
-    InfoMap* extension_info_map,
-    void* profile_id,
-    int render_process_id,
-    base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender,
-    int routing_id,
-    const ExtensionHostMsg_Request_Params& params) {
-  ExtensionFunction::ResponseCallback callback(
-      base::BindRepeating(&IOThreadResponseCallback, ipc_sender, routing_id,
-                          kMainThreadId, params.request_id));
-
-  DoDispatchOnIOThread(extension_info_map, profile_id, render_process_id,
-                       ipc_sender, params, callback);
-}
-
-// static
-void ExtensionFunctionDispatcher::DispatchOnIOThreadForServiceWorker(
-    InfoMap* extension_info_map,
-    void* profile_id,
-    int render_process_id,
-    base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender,
-    const ExtensionHostMsg_Request_Params& params) {
-  ExtensionFunction::ResponseCallback callback(base::BindRepeating(
-      &IOThreadResponseCallback, ipc_sender, MSG_ROUTING_NONE,
-      params.worker_thread_id, params.request_id));
-
-  DoDispatchOnIOThread(extension_info_map, profile_id, render_process_id,
-                       ipc_sender, params, callback);
-}
-
 ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context), delegate_(nullptr) {}
@@ -446,8 +320,6 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     content::RenderFrameHost* render_frame_host,
     int render_process_id,
     const ExtensionFunction::ResponseCallback& callback) {
-  // TODO(yzshen): There is some shared logic between this method and
-  // DispatchOnIOThread(). It is nice to deduplicate.
   ProcessMap* process_map = ProcessMap::Get(browser_context_);
   if (!process_map)
     return;
@@ -469,21 +341,14 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   if (!function.get())
     return;
 
-  UIThreadExtensionFunction* function_ui =
-      function->AsUIThreadExtensionFunction();
-  if (!function_ui) {
-    NOTREACHED();
-    return;
-  }
-  function_ui->set_worker_thread_id(params.worker_thread_id);
+  function->set_worker_thread_id(params.worker_thread_id);
   if (IsRequestFromServiceWorker(params)) {
-    function_ui->set_service_worker_version_id(
-        params.service_worker_version_id);
+    function->set_service_worker_version_id(params.service_worker_version_id);
   } else {
-    function_ui->SetRenderFrameHost(render_frame_host);
+    function->SetRenderFrameHost(render_frame_host);
   }
-  function_ui->set_dispatcher(AsWeakPtr());
-  function_ui->set_browser_context(browser_context_);
+  function->set_dispatcher(AsWeakPtr());
+  function->set_browser_context(browser_context_);
   if (extension &&
       ExtensionsBrowserClient::Get()->CanExtensionCrossIncognito(
           extension, browser_context_)) {
@@ -556,11 +421,6 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   if (!IsRequestFromServiceWorker(params)) {
     // Increment ref count for non-service worker extension API. Ref count for
     // service worker extension API is handled separately on IO thread via IPC.
-
-    // We only adjust the keepalive count for UIThreadExtensionFunction for
-    // now, largely for simplicity's sake. This is OK because currently, only
-    // the webRequest API uses IOThreadExtensionFunction, and that API is not
-    // compatible with lazy background pages.
     process_manager->IncrementLazyKeepaliveCount(
         function->extension(), Activity::API_FUNCTION, function->name());
   }

@@ -34,9 +34,8 @@ base::Optional<IppResponse> BuildGetDestsResponse(
   // Fill in IPP attributes.
   ret.ipp = printing::WrapIpp(ippNewResponse(request.ipp.get()));
   for (const auto& printer : printers) {
-    std::string printer_uri = printing::PrinterUriFromName(printer.id());
-
     // Setting the printer-uri.
+    std::string printer_uri = printing::PrinterUriFromName(printer.id());
     ippAddString(ret.ipp.get(), IPP_TAG_PRINTER, IPP_TAG_TEXT,
                  "printer-uri-supported", nullptr, printer_uri.c_str());
 
@@ -50,6 +49,8 @@ base::Optional<IppResponse> BuildGetDestsResponse(
                    "printer-make-and-model", nullptr,
                    printer.make_and_model().c_str());
     }
+
+    ippAddSeparator(ret.ipp.get());
   }
 
   // Add the final content length into headers
@@ -91,7 +92,7 @@ base::Optional<std::string> GetPrinterId(ipp_t* ipp) {
   // The printer id should be the last component of the resource.
   base::StringPiece uuid(resource);
   auto uuid_start = uuid.find_last_of('/');
-  if (uuid_start == base::StringPiece::npos) {
+  if (uuid_start == base::StringPiece::npos || uuid_start + 1 >= uuid.size()) {
     return base::nullopt;
   }
 
@@ -106,8 +107,7 @@ base::Optional<std::string> ParseEndpointForPrinterId(
     return base::nullopt;
   }
 
-  endpoint.remove_prefix(last_path + 1);
-  return endpoint.as_string();
+  return endpoint.substr(last_path + 1).as_string();
 }
 
 }  // namespace cups_proxy

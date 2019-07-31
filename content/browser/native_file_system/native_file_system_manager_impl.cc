@@ -5,6 +5,7 @@
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/task/post_task.h"
 #include "content/browser/native_file_system/file_system_chooser.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
@@ -291,13 +292,16 @@ blink::mojom::NativeFileSystemFileWriterPtr
 NativeFileSystemManagerImpl::CreateFileWriter(
     const BindingContext& binding_context,
     const storage::FileSystemURL& url,
+    const storage::FileSystemURL& swap_url,
     const SharedHandleState& handle_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   blink::mojom::NativeFileSystemFileWriterPtr result;
-  writer_bindings_.AddBinding(std::make_unique<NativeFileSystemFileWriterImpl>(
-                                  this, binding_context, url, handle_state),
-                              mojo::MakeRequest(&result));
+  writer_bindings_.AddBinding(
+      std::make_unique<NativeFileSystemFileWriterImpl>(
+          this, binding_context, url, swap_url, handle_state),
+      mojo::MakeRequest(&result));
+
   return result;
 }
 

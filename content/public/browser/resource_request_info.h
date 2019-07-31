@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_ui_data.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_intercept_policy.h"
 #include "content/public/common/resource_type.h"
@@ -23,7 +24,6 @@ class URLRequest;
 
 namespace content {
 class ResourceContext;
-class WebContents;
 
 // Each URLRequest allocated by the ResourceDispatcherHost has a
 // ResourceRequestInfo instance associated with it.
@@ -68,14 +68,6 @@ class ResourceRequestInfo {
   CONTENT_EXPORT static bool OriginatedFromServiceWorker(
       const net::URLRequest* request);
 
-  // A callback that returns a pointer to a WebContents. The callback can
-  // always be used, but it may return nullptr: if the info used to
-  // instantiate the callback can no longer be used to return a WebContents,
-  // nullptr will be returned instead.
-  // The callback should only run on the UI thread and it should always be
-  // non-null.
-  using WebContentsGetter = base::Callback<WebContents*(void)>;
-
   // A callback that returns a frame tree node id . The callback can always
   // be used, but it may return -1 if no id is found. The callback should only
   // run on the UI thread.
@@ -87,7 +79,7 @@ class ResourceRequestInfo {
   // thread.
   // Note: Not all resource requests will be owned by a WebContents. For
   // example, requests made by a ServiceWorker.
-  virtual WebContentsGetter GetWebContentsGetterForRequest() = 0;
+  virtual WebContents::Getter GetWebContentsGetterForRequest() = 0;
 
   // Returns a callback that returns an int with the frame tree node id
   //   associated with this request, or -1 if it no longer exists. This

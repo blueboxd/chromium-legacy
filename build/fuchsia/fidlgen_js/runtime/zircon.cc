@@ -39,7 +39,7 @@ class WaitPromiseImpl : public async_wait_t {
                   zx_handle_t handle,
                   zx_signals_t signals)
       : async_wait_t({ASYNC_STATE_INIT, &WaitPromiseImpl::StaticOnSignaled,
-                      handle, signals}),
+                      handle, signals, 0}),
         isolate_(isolate),
         wait_state_(WaitState::kCreated),
         failed_start_status_(ZX_OK) {

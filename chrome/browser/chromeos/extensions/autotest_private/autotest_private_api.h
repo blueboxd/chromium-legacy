@@ -28,7 +28,7 @@ enum class CrostiniResult;
 
 namespace extensions {
 
-class AutotestPrivateLogoutFunction : public UIThreadExtensionFunction {
+class AutotestPrivateLogoutFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.logout", AUTOTESTPRIVATE_LOGOUT)
 
@@ -37,7 +37,7 @@ class AutotestPrivateLogoutFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateRestartFunction : public UIThreadExtensionFunction {
+class AutotestPrivateRestartFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.restart", AUTOTESTPRIVATE_RESTART)
 
@@ -46,7 +46,7 @@ class AutotestPrivateRestartFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateShutdownFunction : public UIThreadExtensionFunction {
+class AutotestPrivateShutdownFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.shutdown",
                              AUTOTESTPRIVATE_SHUTDOWN)
@@ -56,7 +56,7 @@ class AutotestPrivateShutdownFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateLoginStatusFunction : public UIThreadExtensionFunction {
+class AutotestPrivateLoginStatusFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.loginStatus",
                              AUTOTESTPRIVATE_LOGINSTATUS)
@@ -66,7 +66,7 @@ class AutotestPrivateLoginStatusFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateLockScreenFunction : public UIThreadExtensionFunction {
+class AutotestPrivateLockScreenFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.lockScreen",
                              AUTOTESTPRIVATE_LOCKSCREEN)
@@ -76,8 +76,7 @@ class AutotestPrivateLockScreenFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateGetExtensionsInfoFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateGetExtensionsInfoFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getExtensionsInfo",
                              AUTOTESTPRIVATE_GETEXTENSIONSINFO)
@@ -87,8 +86,7 @@ class AutotestPrivateGetExtensionsInfoFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSimulateAsanMemoryBugFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSimulateAsanMemoryBugFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.simulateAsanMemoryBug",
                              AUTOTESTPRIVATE_SIMULATEASANMEMORYBUG)
@@ -98,8 +96,7 @@ class AutotestPrivateSimulateAsanMemoryBugFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetTouchpadSensitivityFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetTouchpadSensitivityFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTouchpadSensitivity",
                              AUTOTESTPRIVATE_SETTOUCHPADSENSITIVITY)
@@ -109,7 +106,7 @@ class AutotestPrivateSetTouchpadSensitivityFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetTapToClickFunction : public UIThreadExtensionFunction {
+class AutotestPrivateSetTapToClickFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTapToClick",
                              AUTOTESTPRIVATE_SETTAPTOCLICK)
@@ -119,8 +116,7 @@ class AutotestPrivateSetTapToClickFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetThreeFingerClickFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetThreeFingerClickFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setThreeFingerClick",
                              AUTOTESTPRIVATE_SETTHREEFINGERCLICK)
@@ -130,7 +126,7 @@ class AutotestPrivateSetThreeFingerClickFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetTapDraggingFunction : public UIThreadExtensionFunction {
+class AutotestPrivateSetTapDraggingFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTapDragging",
                              AUTOTESTPRIVATE_SETTAPDRAGGING)
@@ -140,8 +136,7 @@ class AutotestPrivateSetTapDraggingFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetNaturalScrollFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetNaturalScrollFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setNaturalScroll",
                              AUTOTESTPRIVATE_SETNATURALSCROLL)
@@ -151,8 +146,7 @@ class AutotestPrivateSetNaturalScrollFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetMouseSensitivityFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetMouseSensitivityFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setMouseSensitivity",
                              AUTOTESTPRIVATE_SETMOUSESENSITIVITY)
@@ -162,8 +156,7 @@ class AutotestPrivateSetMouseSensitivityFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetPrimaryButtonRightFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetPrimaryButtonRightFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setPrimaryButtonRight",
                              AUTOTESTPRIVATE_SETPRIMARYBUTTONRIGHT)
@@ -173,8 +166,7 @@ class AutotestPrivateSetPrimaryButtonRightFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetMouseReverseScrollFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetMouseReverseScrollFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setMouseReverseScroll",
                              AUTOTESTPRIVATE_SETMOUSEREVERSESCROLL)
@@ -185,7 +177,7 @@ class AutotestPrivateSetMouseReverseScrollFunction
 };
 
 class AutotestPrivateGetVisibleNotificationsFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   AutotestPrivateGetVisibleNotificationsFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getVisibleNotifications",
@@ -196,8 +188,7 @@ class AutotestPrivateGetVisibleNotificationsFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateGetPlayStoreStateFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateGetPlayStoreStateFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getPlayStoreState",
                              AUTOTESTPRIVATE_GETPLAYSTORESTATE)
@@ -207,7 +198,7 @@ class AutotestPrivateGetPlayStoreStateFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateGetArcStateFunction : public UIThreadExtensionFunction {
+class AutotestPrivateGetArcStateFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcState",
                              AUTOTESTPRIVATE_GETARCSTATE)
@@ -217,8 +208,7 @@ class AutotestPrivateGetArcStateFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetPlayStoreEnabledFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetPlayStoreEnabledFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setPlayStoreEnabled",
                              AUTOTESTPRIVATE_SETPLAYSTOREENABLED)
@@ -228,7 +218,7 @@ class AutotestPrivateSetPlayStoreEnabledFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateGetHistogramFunction : public UIThreadExtensionFunction {
+class AutotestPrivateGetHistogramFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getHistogram",
                              AUTOTESTPRIVATE_GETHISTOGRAM)
@@ -246,7 +236,7 @@ class AutotestPrivateGetHistogramFunction : public UIThreadExtensionFunction {
   ResponseValue GetHistogram(const std::string& name);
 };
 
-class AutotestPrivateIsAppShownFunction : public UIThreadExtensionFunction {
+class AutotestPrivateIsAppShownFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.isAppShown",
                              AUTOTESTPRIVATE_ISAPPSHOWN)
@@ -257,8 +247,7 @@ class AutotestPrivateIsAppShownFunction : public UIThreadExtensionFunction {
 };
 
 // Deprecated, use GetArcState instead.
-class AutotestPrivateIsArcProvisionedFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateIsArcProvisionedFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.isArcProvisioned",
                              AUTOTESTPRIVATE_ISARCPROVISIONED)
@@ -268,7 +257,7 @@ class AutotestPrivateIsArcProvisionedFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateGetArcAppFunction : public UIThreadExtensionFunction {
+class AutotestPrivateGetArcAppFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcApp",
                              AUTOTESTPRIVATE_GETARCAPP)
@@ -278,7 +267,7 @@ class AutotestPrivateGetArcAppFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateGetArcPackageFunction : public UIThreadExtensionFunction {
+class AutotestPrivateGetArcPackageFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcPackage",
                              AUTOTESTPRIVATE_GETARCPACKAGE)
@@ -288,7 +277,7 @@ class AutotestPrivateGetArcPackageFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateLaunchArcAppFunction : public UIThreadExtensionFunction {
+class AutotestPrivateLaunchArcAppFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.launchArcApp",
                              AUTOTESTPRIVATE_LAUNCHARCAPP)
@@ -298,7 +287,7 @@ class AutotestPrivateLaunchArcAppFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateLaunchAppFunction : public UIThreadExtensionFunction {
+class AutotestPrivateLaunchAppFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.launchApp",
                              AUTOTESTPRIVATE_LAUNCHAPP)
@@ -308,7 +297,7 @@ class AutotestPrivateLaunchAppFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateCloseAppFunction : public UIThreadExtensionFunction {
+class AutotestPrivateCloseAppFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.closeApp",
                              AUTOTESTPRIVATE_CLOSEAPP)
@@ -318,8 +307,7 @@ class AutotestPrivateCloseAppFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetCrostiniEnabledFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetCrostiniEnabledFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setCrostiniEnabled",
                              AUTOTESTPRIVATE_SETCROSTINIENABLED)
@@ -329,8 +317,7 @@ class AutotestPrivateSetCrostiniEnabledFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateRunCrostiniInstallerFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateRunCrostiniInstallerFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.runCrostiniInstaller",
                              AUTOTESTPRIVATE_RUNCROSTINIINSTALLER)
@@ -342,8 +329,7 @@ class AutotestPrivateRunCrostiniInstallerFunction
   void CrostiniRestarted(crostini::CrostiniResult);
 };
 
-class AutotestPrivateRunCrostiniUninstallerFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateRunCrostiniUninstallerFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.runCrostiniUninstaller",
                              AUTOTESTPRIVATE_RUNCROSTINIUNINSTALLER)
@@ -355,7 +341,7 @@ class AutotestPrivateRunCrostiniUninstallerFunction
   void CrostiniRemoved(crostini::CrostiniResult);
 };
 
-class AutotestPrivateExportCrostiniFunction : public UIThreadExtensionFunction {
+class AutotestPrivateExportCrostiniFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.exportCrostini",
                              AUTOTESTPRIVATE_EXPORTCROSTINI)
@@ -367,7 +353,7 @@ class AutotestPrivateExportCrostiniFunction : public UIThreadExtensionFunction {
   void CrostiniExported(crostini::CrostiniResult);
 };
 
-class AutotestPrivateImportCrostiniFunction : public UIThreadExtensionFunction {
+class AutotestPrivateImportCrostiniFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.importCrostini",
                              AUTOTESTPRIVATE_IMPORTCROSTINI)
@@ -379,7 +365,7 @@ class AutotestPrivateImportCrostiniFunction : public UIThreadExtensionFunction {
   void CrostiniImported(crostini::CrostiniResult);
 };
 
-class AutotestPrivateTakeScreenshotFunction : public UIThreadExtensionFunction {
+class AutotestPrivateTakeScreenshotFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.takeScreenshot",
                              AUTOTESTPRIVATE_TAKESCREENSHOT)
@@ -394,7 +380,7 @@ class AutotestPrivateTakeScreenshotFunction : public UIThreadExtensionFunction {
 };
 
 class AutotestPrivateGetPrinterListFunction
-    : public UIThreadExtensionFunction,
+    : public ExtensionFunction,
       public chromeos::CupsPrintersManager::Observer {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getPrinterList",
@@ -413,7 +399,7 @@ class AutotestPrivateGetPrinterListFunction
   base::OneShotTimer timeout_timer_;
 };
 
-class AutotestPrivateUpdatePrinterFunction : public UIThreadExtensionFunction {
+class AutotestPrivateUpdatePrinterFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.updatePrinter",
                              AUTOTESTPRIVATE_UPDATEPRINTER)
@@ -423,7 +409,7 @@ class AutotestPrivateUpdatePrinterFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class AutotestPrivateRemovePrinterFunction : public UIThreadExtensionFunction {
+class AutotestPrivateRemovePrinterFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.removePrinter",
                              AUTOTESTPRIVATE_REMOVEPRINTER)
@@ -434,7 +420,7 @@ class AutotestPrivateRemovePrinterFunction : public UIThreadExtensionFunction {
 };
 
 class AutotestPrivateGetAllEnterprisePoliciesFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getAllEnterprisePolicies",
                              AUTOTESTPRIVATE_GETALLENTERPRISEPOLICIES)
@@ -445,7 +431,7 @@ class AutotestPrivateGetAllEnterprisePoliciesFunction
 };
 
 class AutotestPrivateBootstrapMachineLearningServiceFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   AutotestPrivateBootstrapMachineLearningServiceFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.bootstrapMachineLearningService",
@@ -465,7 +451,7 @@ class AutotestPrivateBootstrapMachineLearningServiceFunction
 // Enable/disable the Google Assistant feature. This toggles the Assistant user
 // pref which will indirectly bring up or shut down the Assistant service.
 class AutotestPrivateSetAssistantEnabledFunction
-    : public UIThreadExtensionFunction,
+    : public ExtensionFunction,
       public ash::DefaultVoiceInteractionObserver {
  public:
   AutotestPrivateSetAssistantEnabledFunction();
@@ -491,7 +477,7 @@ class AutotestPrivateSetAssistantEnabledFunction
 
 // Send text query to Assistant and return response.
 class AutotestPrivateSendAssistantTextQueryFunction
-    : public UIThreadExtensionFunction,
+    : public ExtensionFunction,
       public chromeos::assistant::mojom::AssistantInteractionSubscriber {
  public:
   AutotestPrivateSendAssistantTextQueryFunction();
@@ -540,8 +526,7 @@ class AutotestPrivateSendAssistantTextQueryFunction
 };
 
 // Set user pref value in the pref tree.
-class AutotestPrivateSetWhitelistedPrefFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetWhitelistedPrefFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setWhitelistedPref",
                              AUTOTESTPRIVATE_SETWHITELISTEDPREF)
@@ -553,8 +538,7 @@ class AutotestPrivateSetWhitelistedPrefFunction
 
 // Enable/disable a Crostini app's "scaled" property.
 // When an app is "scaled", it will use low display density.
-class AutotestPrivateSetCrostiniAppScaledFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetCrostiniAppScaledFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setCrostiniAppScaled",
                              AUTOTESTPRIVATE_SETCROSTINIAPPSCALED)
@@ -589,7 +573,7 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI {
 
 // Get the primary display's scale factor.
 class AutotestPrivateGetPrimaryDisplayScaleFactorFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getPrimaryDisplayScaleFactor",
                              AUTOTESTPRIVATE_GETPRIMARYDISPLAYSCALEFACTOR)
@@ -599,8 +583,7 @@ class AutotestPrivateGetPrimaryDisplayScaleFactorFunction
 };
 
 // Returns if tablet mode is enabled.
-class AutotestPrivateIsTabletModeEnabledFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateIsTabletModeEnabledFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.isTabletModeEnabled",
                              AUTOTESTPRIVATE_ISTABLETMODEENABLED)
@@ -610,8 +593,7 @@ class AutotestPrivateIsTabletModeEnabledFunction
 };
 
 // Enables/Disables tablet mode.
-class AutotestPrivateSetTabletModeEnabledFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetTabletModeEnabledFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setTabletModeEnabled",
                              AUTOTESTPRIVATE_SETTABLETMODEENABLED)
@@ -623,7 +605,7 @@ class AutotestPrivateSetTabletModeEnabledFunction
 
 // Returns the shelf auto hide behavior.
 class AutotestPrivateGetShelfAutoHideBehaviorFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   AutotestPrivateGetShelfAutoHideBehaviorFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getShelfAutoHideBehavior",
@@ -636,7 +618,7 @@ class AutotestPrivateGetShelfAutoHideBehaviorFunction
 
 // Sets shelf autohide behavior.
 class AutotestPrivateSetShelfAutoHideBehaviorFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   AutotestPrivateSetShelfAutoHideBehaviorFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setShelfAutoHideBehavior",
@@ -648,8 +630,7 @@ class AutotestPrivateSetShelfAutoHideBehaviorFunction
 };
 
 // Returns the shelf alignment.
-class AutotestPrivateGetShelfAlignmentFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateGetShelfAlignmentFunction : public ExtensionFunction {
  public:
   AutotestPrivateGetShelfAlignmentFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getShelfAlignment",
@@ -661,8 +642,7 @@ class AutotestPrivateGetShelfAlignmentFunction
 };
 
 // Sets shelf alignment.
-class AutotestPrivateSetShelfAlignmentFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetShelfAlignmentFunction : public ExtensionFunction {
  public:
   AutotestPrivateSetShelfAlignmentFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setShelfAlignment",
@@ -674,7 +654,7 @@ class AutotestPrivateSetShelfAlignmentFunction
 };
 
 class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   AutotestPrivateShowVirtualKeyboardIfEnabledFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.showVirtualKeyboardIfEnabled",
@@ -685,8 +665,7 @@ class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetArcAppWindowStateFunction
-    : public UIThreadExtensionFunction {
+class AutotestPrivateSetArcAppWindowStateFunction : public ExtensionFunction {
  public:
   AutotestPrivateSetArcAppWindowStateFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setArcAppWindowState",

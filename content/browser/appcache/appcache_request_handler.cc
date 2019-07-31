@@ -18,7 +18,6 @@
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
-#include "content/browser/appcache/appcache_url_request_job.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -254,11 +253,8 @@ void AppCacheRequestHandler::OnDestructionImminent(AppCacheHost* host) {
 
   // Since the host is being deleted, we don't have to complete any job
   // that is current running. It's destined for the bit bucket anyway.
-  if (job_.get()) {
-    if (job_->AsURLRequestJob())
-      job_->AsURLRequestJob()->Kill();
+  if (job_.get())
     job_.reset();
-  }
 }
 
 void AppCacheRequestHandler::OnServiceDestructionImminent(
@@ -305,35 +301,11 @@ void AppCacheRequestHandler::DeliverNetworkResponse() {
   job_->DeliverNetworkResponse();
 }
 
-void AppCacheRequestHandler::OnPrepareToRestartURLRequest() {
-  DCHECK(job_->AsURLRequestJob());
-  DCHECK(job_->IsDeliveringNetworkResponse() || job_->IsCacheEntryNotFound());
-
-  // Any information about the source of the response is no longer relevant.
-  cache_id_ = blink::mojom::kAppCacheNoCacheId;
-  manifest_url_ = GURL();
-
-  cache_entry_not_found_ = job_->IsCacheEntryNotFound();
-  is_delivering_network_response_ = job_->IsDeliveringNetworkResponse();
-
-  storage()->CancelDelegateCallbacks(this);
-
-  job_.reset();
-}
-
 std::unique_ptr<AppCacheJob> AppCacheRequestHandler::CreateJob(
     net::NetworkDelegate* network_delegate) {
   std::unique_ptr<AppCacheJob> job;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    job = std::make_unique<AppCacheURLLoaderJob>(
-        request_->AsURLLoaderRequest(), storage(), std::move(loader_callback_));
-  } else {
-    job = std::make_unique<AppCacheURLRequestJob>(
-        request_->GetURLRequest(), network_delegate, storage(), host_,
-        is_main_resource(),
-        base::BindOnce(&AppCacheRequestHandler::OnPrepareToRestartURLRequest,
-                       base::Unretained(this)));
-  }
+  job = std::make_unique<AppCacheURLLoaderJob>(
+      request_->AsURLLoaderRequest(), storage(), std::move(loader_callback_));
   job_ = job->GetWeakPtr();
   return job;
 }

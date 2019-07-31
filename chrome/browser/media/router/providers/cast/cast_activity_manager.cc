@@ -89,6 +89,8 @@ void CastActivityManager::LaunchSession(
   MediaRoute route(route_id, source, sink_id, /* description */ std::string(),
                    /* is_local */ true, /* for_display */ true);
   route.set_incognito(incognito);
+  DVLOG(1) << "LaunchSession: source_id=" << cast_source.source_id()
+           << ", route_id: " << route_id << ", sink_id=" << sink_id;
   DoLaunchSessionParams params(route, cast_source, sink, origin, tab_id,
                                std::move(callback));
   // If there is currently a session on the sink, it must be terminated before
@@ -261,9 +263,12 @@ void CastActivityManager::JoinSession(
     activity = FindActivityForAutoJoin(cast_source, origin, tab_id);
     if (!activity && cast_source.default_action_policy() !=
                          DefaultActionPolicy::kCastThisTab) {
-      // TODO(crbug.com/951057): Try to convert a mirroring route matching the
-      // tab to a Cast route.
-      DLOG(ERROR) << "Conversion to a Cast route is not implemented.";
+      auto sink = ConvertMirrorToCast(tab_id);
+      if (sink) {
+        LaunchSession(cast_source, *sink, presentation_id, origin, tab_id,
+                      incognito, std::move(callback));
+        return;
+      }
     }
   } else {
     activity = FindActivityForSessionJoin(cast_source, presentation_id);
@@ -668,12 +673,23 @@ void CastActivityManager::HandleStopSessionResponse(
 void CastActivityManager::SendFailedToCastIssue(
     const MediaSink::Id& sink_id,
     const MediaRoute::Id& route_id) {
-  // TODO(imcheng): i18n-ize the title string.
+  // TODO(crbug.com/989237): i18n-ize the title string.
   IssueInfo info("Failed to cast. Please try again.",
                  IssueInfo::Action::DISMISS, IssueInfo::Severity::WARNING);
   info.sink_id = sink_id;
   info.route_id = route_id;
   media_router_->OnIssue(info);
+}
+
+base::Optional<MediaSinkInternal> CastActivityManager::ConvertMirrorToCast(
+    int tab_id) {
+  for (const auto& pair : activities_) {
+    if (pair.second->mirroring_tab_id() == tab_id) {
+      return pair.second->sink();
+    }
+  }
+
+  return base::nullopt;
 }
 
 CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(

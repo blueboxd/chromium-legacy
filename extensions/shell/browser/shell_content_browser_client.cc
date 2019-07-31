@@ -112,8 +112,7 @@ void ShellContentBrowserClient::RenderProcessWillLaunch(
   BrowserContext* browser_context = browser_main_parts_->browser_context();
   host->AddFilter(
       new ExtensionMessageFilter(render_process_id, browser_context));
-  host->AddFilter(
-      new IOThreadExtensionMessageFilter(render_process_id, browser_context));
+  host->AddFilter(new IOThreadExtensionMessageFilter());
   host->AddFilter(
       new ExtensionsGuestViewMessageFilter(
           render_process_id, browser_context));
@@ -327,7 +326,7 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
 
 bool ShellContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents::Getter web_contents_getter,
     int child_id,
     content::NavigationUIData* navigation_data,
     bool is_main_frame,

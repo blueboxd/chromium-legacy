@@ -20,11 +20,11 @@
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
-#include "chrome/browser/performance_manager/observers/working_set_trimmer_observer_win.h"
 #include "content/public/browser/system_connector.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
@@ -322,10 +322,10 @@ void PerformanceManager::OnStartImpl(
   graph_.PassToGraph(std::make_unique<IsolationContextMetrics>());
   graph_.PassToGraph(std::make_unique<MetricsCollector>());
 
-#if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))
-    graph_.PassToGraph(std::make_unique<WorkingSetTrimmer>());
-#endif
+  if (policies::WorkingSetTrimmerPolicy::PlatformSupportsWorkingSetTrim()) {
+    graph_.PassToGraph(
+        policies::WorkingSetTrimmerPolicy::CreatePolicyForPlatform());
+  }
 
   interface_registry_.AddInterface(base::BindRepeating(
       &PerformanceManager::BindWebUIGraphDump, base::Unretained(this)));

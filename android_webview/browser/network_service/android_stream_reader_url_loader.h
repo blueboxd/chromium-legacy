@@ -70,7 +70,6 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
-  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -89,14 +88,26 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
 
   void OnDataPipeWritable(MojoResult result);
   void CleanUp();
+
+  // Called after trying to read some bytes from the stream. |result| can be a
+  // positive number (the number of bytes read), zero (no bytes were read
+  // because the stream is finished), or negative (error condition).
   void DidRead(int result);
+  // Reads some bytes from the stream. Calls |DidRead| after each read (also, in
+  // the case where it fails to read due to an error).
   void ReadMore();
+  // Send response headers and the data pipe consumer handle (for the body) to
+  // the URLLoaderClient. Requires |consumer_handle_| to be valid, and will make
+  // |consumer_handle_| invalid after running.
+  void SendResponseToClient();
 
   // Expected content size
   int64_t expected_content_size_ = -1;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle_;
 
   net::HttpByteRange byte_range_;
   network::ResourceRequest resource_request_;
+  std::unique_ptr<network::ResourceResponseHead> resource_response_head_;
   network::mojom::URLLoaderClientPtr client_;
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
   std::unique_ptr<ResponseDelegate> response_delegate_;

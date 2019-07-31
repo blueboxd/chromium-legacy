@@ -40,7 +40,7 @@ interface IdentityAccessor {
   // |error| will give information detailing the reason for the failure, and
   // |expiration_time| is undefined. |consumer_id| is an arbitrary string used
   // to identity the consumer (e.g., in about:://signin-internals).
-  // NOTE: |account_id| corresponds to that used by OAuth2TokenService.
+  // NOTE: |account_id| corresponds to that used by IdentityManager.
   GetAccessToken(CoreAccountId account_id, ScopeSet scopes, string consumer_id)
       => (string? token,
          mojo_base.mojom.Time expiration_time,

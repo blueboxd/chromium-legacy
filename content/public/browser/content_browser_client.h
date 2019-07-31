@@ -31,7 +31,7 @@
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/page_visibility_state.h"
 #include "content/public/browser/quota_permission_context.h"
-#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/previews_state.h"
@@ -1480,7 +1480,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // nullptr.
   virtual bool HandleExternalProtocol(
       const GURL& url,
-      ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      WebContents::Getter web_contents_getter,
       int child_id,
       NavigationUIData* navigation_data,
       bool is_main_frame,

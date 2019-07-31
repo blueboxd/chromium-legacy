@@ -39,7 +39,7 @@ struct EntryProperties;
 
 // Implements the chrome.fileManagerPrivate.ensureFileDownloaded method.
 class FileManagerPrivateInternalEnsureFileDownloadedFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   FileManagerPrivateInternalEnsureFileDownloadedFunction();
 
@@ -63,7 +63,7 @@ class FileManagerPrivateInternalEnsureFileDownloadedFunction
 // On error, returns a dictionary with the key "error" set to the error number
 // (base::File::Error).
 class FileManagerPrivateInternalGetEntryPropertiesFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getEntryProperties",
                              FILEMANAGERPRIVATEINTERNAL_GETENTRYPROPERTIES)
@@ -89,7 +89,7 @@ class FileManagerPrivateInternalGetEntryPropertiesFunction
 
 // Implements the chrome.fileManagerPrivate.pinDriveFile method.
 class FileManagerPrivateInternalPinDriveFileFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   FileManagerPrivateInternalPinDriveFileFunction();
 
@@ -114,7 +114,7 @@ class FileManagerPrivateInternalPinDriveFileFunction
 
 // Implements the chrome.fileManagerPrivate.cancelFileTransfers method.
 class FileManagerPrivateInternalCancelFileTransfersFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.cancelFileTransfers",
                              FILEMANAGERPRIVATEINTERNAL_CANCELFILETRANSFERS)
@@ -126,8 +126,7 @@ class FileManagerPrivateInternalCancelFileTransfersFunction
   ResponseAction Run() override;
 };
 
-class FileManagerPrivateSearchDriveFunction
-    : public LoggedUIThreadExtensionFunction {
+class FileManagerPrivateSearchDriveFunction : public LoggedExtensionFunction {
  public:
   typedef std::vector<drive::SearchResultInfo> SearchResultInfoList;
 
@@ -165,7 +164,7 @@ class FileManagerPrivateSearchDriveFunction
 // Similar to FileManagerPrivateSearchDriveFunction but this one is used for
 // searching drive metadata which is stored locally.
 class FileManagerPrivateSearchDriveMetadataFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   enum class SearchType {
     kText,
@@ -207,7 +206,7 @@ class FileManagerPrivateSearchDriveMetadataFunction
 
 // Implements the chrome.fileManagerPrivate.getDriveConnectionState method.
 class FileManagerPrivateGetDriveConnectionStateFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getDriveConnectionState",
                              FILEMANAGERPRIVATE_GETDRIVECONNECTIONSTATE)
@@ -220,7 +219,7 @@ class FileManagerPrivateGetDriveConnectionStateFunction
 
 // Implements the chrome.fileManagerPrivate.requestAccessToken method.
 class FileManagerPrivateRequestAccessTokenFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   FileManagerPrivateRequestAccessTokenFunction();
 
@@ -240,7 +239,7 @@ class FileManagerPrivateRequestAccessTokenFunction
 
 // Implements the chrome.fileManagerPrivate.requestDriveShare method.
 class FileManagerPrivateInternalRequestDriveShareFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   FileManagerPrivateInternalRequestDriveShareFunction();
 
@@ -258,7 +257,7 @@ class FileManagerPrivateInternalRequestDriveShareFunction
 
 // Implements the chrome.fileManagerPrivate.getDownloadUrl method.
 class FileManagerPrivateInternalGetDownloadUrlFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   FileManagerPrivateInternalGetDownloadUrlFunction();
 
@@ -295,7 +294,7 @@ class FileManagerPrivateInternalGetDownloadUrlFunction
 };
 
 class FileManagerPrivateInternalGetThumbnailFunction
-    : public LoggedUIThreadExtensionFunction {
+    : public LoggedExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getThumbnail",
                              FILEMANAGERPRIVATEINTERNAL_GETTHUMBNAIL)

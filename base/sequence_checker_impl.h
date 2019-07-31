@@ -26,6 +26,15 @@ class BASE_EXPORT SequenceCheckerImpl {
   SequenceCheckerImpl();
   ~SequenceCheckerImpl();
 
+  // Allow move construct/assign. This must be called on |other|'s associated
+  // sequence and assignment can only be made into a SequenceCheckerImpl which
+  // is detached or already associated with the current sequence. This isn't
+  // thread-safe (|this| and |other| shouldn't be in use while this move is
+  // performed). If the assignment was legal, the resulting SequenceCheckerImpl
+  // will be bound to the current sequence and |other| will be detached.
+  SequenceCheckerImpl(SequenceCheckerImpl&& other);
+  SequenceCheckerImpl& operator=(SequenceCheckerImpl&& other);
+
   // Returns true if called in sequence with previous calls to this method and
   // the constructor.
   bool CalledOnValidSequence() const WARN_UNUSED_RESULT;

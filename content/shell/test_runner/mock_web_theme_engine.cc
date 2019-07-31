@@ -305,7 +305,8 @@ void MockWebThemeEngine::Paint(cc::PaintCanvas* canvas,
                                WebThemeEngine::Part part,
                                WebThemeEngine::State state,
                                const blink::WebRect& rect,
-                               const WebThemeEngine::ExtraParams* extraParams) {
+                               const WebThemeEngine::ExtraParams* extraParams,
+                               blink::WebColorScheme color_scheme) {
   SkIRect irect = webRectToSkIRect(rect);
   cc::PaintFlags flags;
 

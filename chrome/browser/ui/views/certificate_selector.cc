@@ -246,7 +246,7 @@ ui::TableModel* CertificateSelector::table_model_for_testing() const {
 }
 
 net::ClientCertIdentity* CertificateSelector::GetSelectedCert() const {
-  const int selected = table_->FirstSelectedRow();
+  const int selected = table_->GetFirstSelectedRow();
   if (selected < 0)  // Nothing is selected in |table_|.
     return nullptr;
   DCHECK_LT(static_cast<size_t>(selected), identities_.size());
@@ -254,7 +254,7 @@ net::ClientCertIdentity* CertificateSelector::GetSelectedCert() const {
 }
 
 bool CertificateSelector::Accept() {
-  const int selected = table_->FirstSelectedRow();
+  const int selected = table_->GetFirstSelectedRow();
   if (selected < 0)  // Nothing is selected in |table_|.
     return false;
 

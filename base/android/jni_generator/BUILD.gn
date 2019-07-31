@@ -91,7 +91,13 @@ java_cpp_template("processor_args_java") {
 }
 
 java_annotation_processor("jni_processor") {
-  java_files = [ "java/src/org/chromium/jni_generator/JniProcessor.java" ]
+  java_files = [
+    "java/src/org/chromium/jni_generator/JniProcessor.java",
+
+    # Avoids a circular dependency with base:base_java. This is okay because
+    # no target should ever expect to package an annotation processor.
+    "//base/android/java/src/org/chromium/base/annotations/MainDex.java",
+  ]
 
   main_class = "org.chromium.jni_generator.JniProcessor"
 

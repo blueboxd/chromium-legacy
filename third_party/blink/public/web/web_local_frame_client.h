@@ -880,12 +880,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
     return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
   }
-  // TODO(https://crbug.com/982996): This is a stopgap implementation for
-  // removing DocumentLoader dependencies from shared workers. Remove this once
-  // it's done.
-  virtual base::UnguessableToken GetAppCacheHostIDForSharedWorker() {
-    return base::UnguessableToken();
-  }
 };
 
 }  // namespace blink

@@ -1,3 +1,4 @@
 # For service-related code
 per-file chrome_content_utility_client.*=rockot@google.com
-# COMPONENT: Internals>Services>ServiceManager
+per-file services.cc=rockot@google.com
+# COMPONENT: Internals>Services

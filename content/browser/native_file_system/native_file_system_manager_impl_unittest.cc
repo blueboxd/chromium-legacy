@@ -5,6 +5,7 @@
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
@@ -13,6 +14,7 @@
 #include "content/browser/native_file_system/mock_native_file_system_permission_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -183,6 +185,78 @@ TEST_F(NativeFileSystemManagerImplTest,
             GetPermissionStatusSync(/*writable=*/false, handle.get()));
   EXPECT_EQ(PermissionStatus::ASK,
             GetPermissionStatusSync(/*writable=*/true, handle.get()));
+}
+
+TEST_F(NativeFileSystemManagerImplTest,
+       FileWriterSwapDeletedOnConnectionClose) {
+  auto test_url = file_system_context_->CreateCrackedFileSystemURL(
+      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      base::FilePath::FromUTF8Unsafe("test"));
+
+  auto test_swap_url = file_system_context_->CreateCrackedFileSystemURL(
+      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      base::FilePath::FromUTF8Unsafe("test.crswap"));
+
+  ASSERT_EQ(base::File::FILE_OK, AsyncFileTestHelper::CreateFile(
+                                     file_system_context_.get(), test_url));
+
+  ASSERT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::CreateFile(file_system_context_.get(),
+                                            test_swap_url));
+
+  auto writer_ptr =
+      manager_->CreateFileWriter(kBindingContext, test_url, test_swap_url,
+                                 NativeFileSystemManagerImpl::SharedHandleState(
+                                     allow_grant_, allow_grant_, {}));
+
+  ASSERT_TRUE(writer_ptr.is_bound());
+  ASSERT_TRUE(
+      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_swap_url,
+                                      AsyncFileTestHelper::kDontCheckSize));
+
+  // Severs the mojo pipe, causing the writer to be destroyed.
+  writer_ptr.reset();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(
+      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_swap_url,
+                                      AsyncFileTestHelper::kDontCheckSize));
+}
+
+TEST_F(NativeFileSystemManagerImplTest,
+       FileWriterCloseAllowedToCompleteOnDestruct) {
+  auto test_url = file_system_context_->CreateCrackedFileSystemURL(
+      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      base::FilePath::FromUTF8Unsafe("test"));
+
+  auto test_swap_url = file_system_context_->CreateCrackedFileSystemURL(
+      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      base::FilePath::FromUTF8Unsafe("test.crswap"));
+
+  ASSERT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::CreateFileWithData(file_system_context_.get(),
+                                                    test_swap_url, "foo", 3));
+
+  auto writer_ptr =
+      manager_->CreateFileWriter(kBindingContext, test_url, test_swap_url,
+                                 NativeFileSystemManagerImpl::SharedHandleState(
+                                     allow_grant_, allow_grant_, {}));
+
+  ASSERT_TRUE(writer_ptr.is_bound());
+  ASSERT_FALSE(
+      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_url,
+                                      AsyncFileTestHelper::kDontCheckSize));
+  writer_ptr->Close(base::DoNothing());
+
+  // Severs the mojo pipe, causing the writer to be destroyed.
+  writer_ptr.reset();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(
+      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_swap_url,
+                                      AsyncFileTestHelper::kDontCheckSize));
+  ASSERT_TRUE(
+      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_url, 3));
 }
 
 }  // namespace content

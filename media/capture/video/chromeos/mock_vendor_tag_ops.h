@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/threading/thread.h"
-#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

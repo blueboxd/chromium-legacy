@@ -5,6 +5,7 @@ include_rules = [
   "-chrome",
   "+chrome/install_static",
   "+chrome/chrome_elf/blacklist/blacklist.h",
+  "+chrome/chrome_elf/chrome_elf_constants.h",
   "+chrome/chrome_elf/crash/crash_helper.h",
   "+chrome/chrome_elf/hook_util/hook_util.h",
   "+chrome/chrome_elf/nt_registry/nt_registry.h",

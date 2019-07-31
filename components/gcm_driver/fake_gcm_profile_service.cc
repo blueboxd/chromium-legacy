@@ -38,16 +38,6 @@ class FakeGCMProfileService::CustomFakeGCMDriver
   void OnDispatchMessage(const std::string& app_id,
                          const IncomingMessage& message);
 
-  // instance_id::FakeGCMDriverForInstanceID overrides:
-  void SendWebPushMessage(const std::string& app_id,
-                          const std::string& authorized_entity,
-                          const std::string& p256dh,
-                          const std::string& auth_secret,
-                          const std::string& fcm_token,
-                          crypto::ECPrivateKey* vapid_key,
-                          gcm::WebPushMessage message,
-                          SendWebPushMessageCallback callback) override;
-
  protected:
   // FakeGCMDriver overrides:
   void RegisterImpl(const std::string& app_id,
@@ -160,21 +150,6 @@ void FakeGCMProfileService::CustomFakeGCMDriver::SendImpl(
       FROM_HERE,
       base::BindOnce(&CustomFakeGCMDriver::DoSend, weak_factory_.GetWeakPtr(),
                      app_id, receiver_id, message));
-}
-
-void FakeGCMProfileService::CustomFakeGCMDriver::SendWebPushMessage(
-    const std::string& app_id,
-    const std::string& authorized_entity,
-    const std::string& p256dh,
-    const std::string& auth_secret,
-    const std::string& fcm_token,
-    crypto::ECPrivateKey* vapid_key,
-    gcm::WebPushMessage message,
-    SendWebPushMessageCallback callback) {
-  if (service_->collect_) {
-    service_->last_receiver_id_ = fcm_token;
-    service_->last_web_push_message_ = std::move(message);
-  }
 }
 
 void FakeGCMProfileService::CustomFakeGCMDriver::DoSend(

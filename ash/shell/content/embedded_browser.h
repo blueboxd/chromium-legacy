@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "ui/gfx/geometry/rect.h"
 
 class GURL;
 
@@ -29,16 +31,19 @@ namespace shell {
 // Exercises ServerRemoteViewHost to embed a content::WebContents.
 class EmbeddedBrowser {
  public:
-  EmbeddedBrowser(content::BrowserContext* context, const GURL& url);
-  ~EmbeddedBrowser();
-
   aura::Window* GetWindow();
 
   // Factory.
   static aura::Window* Create(content::BrowserContext* context,
-                              const GURL& url);
+                              const GURL& url,
+                              base::Optional<gfx::Rect> bounds = base::nullopt);
 
  private:
+  EmbeddedBrowser(content::BrowserContext* context,
+                  const GURL& url,
+                  const gfx::Rect& bounds);
+  ~EmbeddedBrowser();
+
   // Callback invoked when the embedding is broken.
   void OnUnembed();
 

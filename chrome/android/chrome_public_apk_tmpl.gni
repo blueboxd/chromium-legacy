@@ -199,13 +199,13 @@ template("chrome_public_common_apk_or_module_tmpl") {
     if (!_is_monochrome && !_is_trichrome) {
       deps += [
         "//chrome/android:chrome_public_v8_assets",
-        "//third_party/crashpad/crashpad/handler:crashpad_handler_named_as_so",
+        "//components/crash/content/app:chrome_crashpad_handler_named_as_so",
         "//third_party/icu:icu_assets",
       ]
       if (!defined(loadable_modules)) {
         loadable_modules = []
       }
-      loadable_modules += [ "$root_out_dir/libcrashpad_handler.so" ]
+      loadable_modules += [ "$root_out_dir/libchrome_crashpad_handler.so" ]
     }
 
     if (_enable_multidex) {

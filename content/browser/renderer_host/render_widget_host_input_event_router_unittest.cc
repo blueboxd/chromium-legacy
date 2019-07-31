@@ -900,4 +900,12 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
   EXPECT_NE(view_root_.get(), bubbling_gesture_scroll_target());
 }
 
+// Calling ShowContextMenuAtPoint without other events will happen when desktop
+// devtools connect to a browser instance running on a mobile.  It should not
+// crash.
+TEST_F(RenderWidgetHostInputEventRouterTest, CanCallShowContextMenuAtPoint) {
+  rwhier()->ShowContextMenuAtPoint(gfx::Point(0, 0), ui::MENU_SOURCE_MOUSE,
+                                   view_root_.get());
+}
+
 }  // namespace content

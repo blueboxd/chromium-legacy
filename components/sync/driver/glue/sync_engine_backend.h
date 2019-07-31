@@ -222,7 +222,7 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   std::unique_ptr<SyncManager> sync_manager_;
 
   // Required for |nigori_controller_| LoadModels().
-  std::string authenticated_account_id_;
+  CoreAccountId authenticated_account_id_;
 
   // Initialized in OnInitializationComplete() iff USS implementation of Nigori
   // is enabled.

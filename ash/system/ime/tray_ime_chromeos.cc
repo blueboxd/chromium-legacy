@@ -65,8 +65,8 @@ void IMEDetailedView::HandleButtonPressed(views::Button* sender,
 void IMEDetailedView::CreateExtraTitleRowButtons() {
   if (ime_controller_->managed_by_policy()) {
     controlled_setting_icon_ = TrayPopupUtils::CreateMainImageView();
-    controlled_setting_icon_->SetImage(
-        gfx::CreateVectorIcon(kSystemMenuBusinessIcon, kMenuIconColor));
+    controlled_setting_icon_->SetImage(gfx::CreateVectorIcon(
+        kSystemMenuBusinessIcon, kIconOnLightBackgroundColor));
     controlled_setting_icon_->set_tooltip_text(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME_MANAGED));
     tri_view()->AddView(TriView::Container::END, controlled_setting_icon_);

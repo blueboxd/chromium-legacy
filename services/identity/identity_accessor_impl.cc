@@ -102,8 +102,9 @@ void IdentityAccessorImpl::OnPrimaryAccountSet(
 
 void IdentityAccessorImpl::OnAccountStateChange(const std::string& account_id) {
   base::Optional<AccountInfo> account_info =
-      identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-          account_id);
+      identity_manager_
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id);
   if (account_info.has_value()) {
     AccountState account_state = GetStateOfAccount(account_info.value());
 

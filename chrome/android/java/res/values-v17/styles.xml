@@ -152,7 +152,6 @@
         <!-- Theme attributes pre-v21 -->
         <item name="android:textAppearanceMedium">@style/TextAppearance.PreferenceMediumText</item>
         <item name="android:textAppearanceSmall">@style/TextAppearance.BlackBody</item>
-        <item name="android:preferenceCategoryStyle">@style/PreferenceCategory</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="preferenceTheme">@style/Theme.Chromium.PreferenceTheme</item>
     </style>
@@ -297,10 +296,10 @@
         <item name="buttonBarButtonStyle">@style/TextAppearance.DialogButtonCompat</item>
     </style>
 
-    <!-- TODO(chouinard): Using all caps for support library preference dialog buttons to match
-         existing non-compat style, however we should later reexamine whether this is still the
-         right choice since it looks like most of our other AlertDialogs use the default title case.
-         -->
+    <!-- TODO(crbug.com/971791): Using all caps for support library preference dialog buttons to
+         match existing non-compat style, however we should later reexamine whether this is still
+         the right choice since it looks like most of our other AlertDialogs use the default title
+         case. -->
     <style name="TextAppearance.DialogButtonCompat" parent="AlertDialogButtonStyle">
         <item name="android:textAllCaps">true</item>
     </style>
@@ -316,21 +315,6 @@
     <style name="TextAppearance.PreferenceMediumText">
         <item name="android:textSize">18sp</item>
         <item name="android:textColor">?android:attr/textColorPrimary</item>
-    </style>
-    <style name="PreferenceCategory">
-        <item name="android:layout">@layout/preference_category</item>
-        <item name="android:shouldDisableView">false</item>
-        <item name="android:selectable">false</item>
-    </style>
-    <style name="PreferenceCategoryWithButtonStyle">
-        <item name="android:paddingStart">8dp</item>
-        <item name="android:paddingEnd">4dp</item>
-        <item name="android:paddingTop">16dp</item>
-        <item name="android:layout_marginBottom">16dp</item>
-    </style>
-    <style name="TextAppearance.PreferenceCategoryText" parent="TextAppearance.RobotoMediumStyle">
-        <item name="android:textColor">@color/pref_accent_color</item>
-        <item name="android:textSize">12sp</item>
     </style>
     <style name="PreferenceTitle">
         <item name="android:ellipsize">end</item>

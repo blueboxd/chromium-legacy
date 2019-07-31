@@ -1039,17 +1039,19 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
         kIdentityIMEID, false /* show_message */);
+    EXPECT_EQ(1, mock_input_context->commit_text_call_count());
     EXPECT_EQ("us", mock_input_context->last_commit_text());
 
+    // Should not call CommitText anymore.
     InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
         extension_ime_util::GetInputMethodIDByEngineID("zh-t-i0-pinyin"),
         false /* show_message */);
-    EXPECT_EQ("", mock_input_context->last_commit_text());
+    EXPECT_EQ(1, mock_input_context->commit_text_call_count());
 
     InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
         extension_ime_util::GetInputMethodIDByEngineID("xkb:us::eng"),
         false /* show_message */);
-    EXPECT_EQ("", mock_input_context->last_commit_text());
+    EXPECT_EQ(1, mock_input_context->commit_text_call_count());
   }
 
   ui::IMEBridge::Get()->SetInputContextHandler(nullptr);

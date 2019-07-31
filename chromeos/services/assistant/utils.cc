@@ -34,6 +34,10 @@ void CreateUserAgent(std::string* user_agent) {
                       base::SysInfo::OperatingSystemVersion().c_str(),
                       base::SysInfo::GetLsbReleaseBoard().c_str(),
                       WEBKIT_VERSION_MAJOR, WEBKIT_VERSION_MINOR);
+
+  std::string arc_version = chromeos::version_loader::GetARCVersion();
+  if (!arc_version.empty())
+    base::StringAppendF(user_agent, " ARC/%s", arc_version.c_str());
 }
 
 }  // namespace

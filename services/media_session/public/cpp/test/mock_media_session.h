@@ -13,9 +13,8 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -192,7 +191,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
 
   void RequestAudioFocusFromClient(mojom::AudioFocusType audio_focus_type);
 
-  mojom::AudioFocusRequestClientPtr afr_client_;
+  mojo::Remote<mojom::AudioFocusRequestClient> afr_client_;
 
   base::UnguessableToken request_id_;
 
@@ -216,7 +215,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   base::flat_map<mojom::MediaSessionImageType, std::vector<MediaImage>> images_;
   GURL last_image_src_;
 
-  mojo::BindingSet<mojom::MediaSession> bindings_;
+  mojo::ReceiverSet<mojom::MediaSession> receivers_;
 
   mojo::RemoteSet<mojom::MediaSessionObserver> observers_;
 

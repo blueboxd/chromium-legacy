@@ -25,9 +25,15 @@ class SubresourceRedirectURLLoaderThrottle : public blink::URLLoaderThrottle {
       bool* defer,
       std::vector<std::string>* to_be_removed_request_headers,
       net::HttpRequestHeaders* modified_request_headers) override;
+  void BeforeWillProcessResponse(
+      const GURL& response_url,
+      const network::ResourceResponseHead& response_head,
+      bool* defer) override;
   void WillProcessResponse(const GURL& response_url,
                            network::ResourceResponseHead* response_head,
                            bool* defer) override;
+  void WillOnCompleteWithError(const network::URLLoaderCompletionStatus& status,
+                               bool* defer) override;
   // Overridden to do nothing as the default implementation is NOT_REACHED()
   void DetachFromCurrentSequence() override;
 };

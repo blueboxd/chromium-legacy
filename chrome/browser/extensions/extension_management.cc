@@ -602,12 +602,14 @@ internal::IndividualSettings* ExtensionManagement::AccessByUpdateUrl(
   return settings.get();
 }
 
+// static
 ExtensionManagement* ExtensionManagementFactory::GetForBrowserContext(
     content::BrowserContext* context) {
   return static_cast<ExtensionManagement*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
+// static
 ExtensionManagementFactory* ExtensionManagementFactory::GetInstance() {
   return base::Singleton<ExtensionManagementFactory>::get();
 }

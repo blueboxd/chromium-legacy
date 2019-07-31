@@ -595,6 +595,9 @@ Shell::~Shell() {
   for (auto& observer : shell_observers_)
     observer.OnShellDestroying();
 
+  if (features::IsVirtualDesksEnabled())
+    desks_controller_->Shutdown();
+
   // Wayland depends upon some ash specific objects. Destroy it early on.
   wayland_server_controller_.reset();
 

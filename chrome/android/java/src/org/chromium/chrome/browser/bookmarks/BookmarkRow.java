@@ -42,8 +42,6 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     @Location
     private int mLocation;
 
-    private static final String TAG = "BookmarkRow";
-
     @IntDef({Location.TOP, Location.MIDDLE, Location.BOTTOM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Location {
@@ -161,12 +159,6 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
             if (mLocation != Location.BOTTOM) {
                 menuItems.add(new Item(getContext(), R.string.menu_item_move_down, true));
             }
-            if (mLocation != Location.TOP) {
-                menuItems.add(new Item(getContext(), R.string.menu_item_move_to_top, true));
-            }
-            if (mLocation != Location.BOTTOM) {
-                menuItems.add(new Item(getContext(), R.string.menu_item_move_to_bottom, true));
-            }
         }
         return menuItems.toArray(new Item[menuItems.size()]);
     }
@@ -197,12 +189,10 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
         } else if (item.getTextId() == R.string.menu_item_move_up) {
             mDelegate.moveUpOne(mBookmarkId);
+            RecordUserAction.record("MobileBookmarkManagerMoveUp");
         } else if (item.getTextId() == R.string.menu_item_move_down) {
             mDelegate.moveDownOne(mBookmarkId);
-        } else if (item.getTextId() == R.string.menu_item_move_to_top) {
-            mDelegate.moveToTop(mBookmarkId);
-        } else if (item.getTextId() == R.string.menu_item_move_to_bottom) {
-            mDelegate.moveToBottom(mBookmarkId);
+            RecordUserAction.record("MobileBookmarkManagerMoveDown");
         }
     }
 

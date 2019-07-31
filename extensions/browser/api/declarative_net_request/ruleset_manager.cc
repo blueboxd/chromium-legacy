@@ -14,7 +14,6 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "components/web_cache/browser/web_cache_manager.h"
-#include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"

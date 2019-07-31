@@ -25,7 +25,6 @@ ScrollbarController::ScrollbarController(
     LayerTreeHostImpl* layer_tree_host_impl)
     : layer_tree_host_impl_(layer_tree_host_impl),
       scrollbar_scroll_is_active_(false),
-      thumb_drag_in_progress_(false),
       autoscroll_state_(AutoScrollState::NO_AUTOSCROLL),
       currently_captured_scrollbar_(nullptr),
       previous_pointer_position_(gfx::PointF(0, 0)),
@@ -39,6 +38,21 @@ void ScrollbarController::WillBeginImplFrame() {
   if (autoscroll_state_ != AutoScrollState::NO_AUTOSCROLL &&
       ShouldCancelTrackAutoscroll())
     layer_tree_host_impl_->mutator_host()->ScrollAnimationAbort();
+}
+
+gfx::Vector2dF ScrollbarController::GetThumbRelativePoint(
+    const gfx::PointF position_in_widget) {
+  bool clipped;
+  const gfx::PointF position_in_layer =
+      GetScrollbarRelativePosition(position_in_widget, &clipped);
+
+  if (clipped)
+    return gfx::Vector2d(0, 0);
+
+  const gfx::RectF thumb_rect(
+      currently_captured_scrollbar_->ComputeThumbQuadRect());
+  DCHECK(thumb_rect.Contains(position_in_layer));
+  return position_in_layer - gfx::PointF(thumb_rect.origin());
 }
 
 // Performs hit test and prepares scroll deltas that will be used by GSB and
@@ -56,16 +70,16 @@ InputHandlerPointerResult ScrollbarController::HandleMouseDown(
   currently_captured_scrollbar_ = layer_impl->ToScrollbarLayer();
   scroll_result.type = PointerResultType::kScrollbarScroll;
   layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
-  ScrollbarPart scrollbar_part =
+  const ScrollbarPart scrollbar_part =
       GetScrollbarPartFromPointerDown(position_in_widget);
   scroll_result.scroll_offset = GetScrollOffsetForScrollbarPart(
       scrollbar_part, currently_captured_scrollbar_->orientation());
   previous_pointer_position_ = position_in_widget;
   scrollbar_scroll_is_active_ = true;
   if (scrollbar_part == ScrollbarPart::THUMB) {
-    thumb_drag_in_progress_ = true;
     scroll_result.scroll_units =
         ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+    drag_anchor_relative_to_thumb_ = GetThumbRelativePoint(position_in_widget);
   } else {
     // TODO(arakeri): This needs to be updated to kLine once cc implements
     // handling it. crbug.com/959441
@@ -73,10 +87,12 @@ InputHandlerPointerResult ScrollbarController::HandleMouseDown(
         ui::input_types::ScrollGranularity::kScrollByPixel;
   }
 
-  // Thumb drag is the only scrollbar manipulation that cannot produce an
-  // autoscroll. All other interactions like clicking on arrows/trackparts have
-  // the potential of initiating an autoscroll (if held down long enough).
-  if (!scroll_result.scroll_offset.IsZero() && !thumb_drag_in_progress_) {
+  if (!scroll_result.scroll_offset.IsZero()) {
+    // Thumb drag is the only scrollbar manipulation that cannot produce an
+    // autoscroll. All other interactions like clicking on arrows/trackparts
+    // have the potential of initiating an autoscroll (if held down for long
+    // enough).
+    DCHECK(scrollbar_part != ScrollbarPart::THUMB);
     cancelable_autoscroll_task_ = std::make_unique<base::CancelableClosure>(
         base::Bind(&ScrollbarController::StartAutoScrollAnimation,
                    base::Unretained(this), scroll_result.scroll_offset,
@@ -89,29 +105,79 @@ InputHandlerPointerResult ScrollbarController::HandleMouseDown(
   return scroll_result;
 }
 
+gfx::ScrollOffset ScrollbarController::GetScrollOffsetForDragPosition(
+    const gfx::PointF pointer_position_in_widget) {
+  layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
+
+  const gfx::Rect thumb_rect(
+      currently_captured_scrollbar_->ComputeThumbQuadRect());
+  const gfx::PointF drag_position_relative_to_layer =
+      gfx::PointF(thumb_rect.origin()) + drag_anchor_relative_to_thumb_.value();
+
+  bool clipped = false;
+  const gfx::PointF pointer_position_in_layer =
+      GetScrollbarRelativePosition(pointer_position_in_widget, &clipped);
+
+  if (clipped)
+    return gfx::ScrollOffset(0, 0);
+
+  // Calculate the delta based on the previously known thumb drag point.
+  const gfx::Vector2dF pointer_delta =
+      pointer_position_in_layer - drag_position_relative_to_layer;
+
+  gfx::ScrollOffset scaled_thumb_drag_delta;
+  const ScrollbarOrientation orientation =
+      currently_captured_scrollbar_->orientation();
+  orientation == ScrollbarOrientation::VERTICAL
+      ? scaled_thumb_drag_delta.set_y(pointer_delta.y())
+      : scaled_thumb_drag_delta.set_x(pointer_delta.x());
+
+  float scaled_scroller_to_scrollbar_ratio = GetScrollerToScrollbarRatio();
+  scaled_thumb_drag_delta.Scale(scaled_scroller_to_scrollbar_ratio);
+  return scaled_thumb_drag_delta;
+}
+
 // Performs hit test and prepares scroll deltas that will be used by GSU.
 InputHandlerPointerResult ScrollbarController::HandleMouseMove(
     const gfx::PointF position_in_widget) {
-  const gfx::PointF previous_pointer_position = previous_pointer_position_;
   previous_pointer_position_ = position_in_widget;
   InputHandlerPointerResult scroll_result;
-  if (!thumb_drag_in_progress_)
+
+  // If a thumb drag is not in progress, there's no point in continuing on.
+  if (!drag_anchor_relative_to_thumb_.has_value())
     return scroll_result;
 
+  const ScrollNode* currently_scrolling_node =
+      layer_tree_host_impl_->CurrentlyScrollingNode();
+
+  // Thumb drag needs a scroll_node. Clear the thumb drag state and exit if it
+  // is unset.
+  if (currently_scrolling_node == nullptr) {
+    drag_anchor_relative_to_thumb_ = base::nullopt;
+    return scroll_result;
+  }
+
+  // If scroll_offset can't be consumed, there's no point in continuing on.
+  const gfx::ScrollOffset scroll_offset(
+      GetScrollOffsetForDragPosition(position_in_widget));
+  const gfx::Vector2dF clamped_scroll_offset(
+      layer_tree_host_impl_->ComputeScrollDelta(
+          *currently_scrolling_node, ScrollOffsetToVector2dF(scroll_offset)));
+
+  if (clamped_scroll_offset.IsZero())
+    return scroll_result;
+
+  // Thumb drags have more granularity and are purely dependent on the pointer
+  // movement. Hence we use kPrecisePixel when dragging the thumb.
+  scroll_result.scroll_units =
+      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   scroll_result.type = PointerResultType::kScrollbarScroll;
-  const ScrollbarOrientation orientation =
-      currently_captured_scrollbar_->orientation();
-  if (orientation == ScrollbarOrientation::VERTICAL)
-    scroll_result.scroll_offset.set_y(position_in_widget.y() -
-                                      previous_pointer_position.y());
-  else
-    scroll_result.scroll_offset.set_x(position_in_widget.x() -
-                                      previous_pointer_position.x());
+  scroll_result.scroll_offset = gfx::ScrollOffset(clamped_scroll_offset);
 
-  LayerImpl* owner_scroll_layer =
-      layer_tree_host_impl_->active_tree()->ScrollableLayerByElementId(
-          currently_captured_scrollbar_->scroll_element_id());
+  return scroll_result;
+}
 
+float ScrollbarController::GetScrollerToScrollbarRatio() {
   // Calculating the delta by which the scroller layer should move when
   // dragging the thumb depends on the following factors:
   // - scrollbar_track_length
@@ -155,10 +221,15 @@ InputHandlerPointerResult ScrollbarController::HandleMouseMove(
       currently_captured_scrollbar_->scroll_layer_length();
   float scrollbar_track_length = currently_captured_scrollbar_->TrackLength();
   gfx::Rect thumb_rect(currently_captured_scrollbar_->ComputeThumbQuadRect());
+  const ScrollbarOrientation orientation =
+      currently_captured_scrollbar_->orientation();
   float scrollbar_thumb_length = orientation == ScrollbarOrientation::VERTICAL
                                      ? thumb_rect.height()
                                      : thumb_rect.width();
 
+  const LayerImpl* owner_scroll_layer =
+      layer_tree_host_impl_->active_tree()->ScrollableLayerByElementId(
+          currently_captured_scrollbar_->scroll_element_id());
   float viewport_length =
       orientation == ScrollbarOrientation::VERTICAL
           ? owner_scroll_layer->scroll_container_bounds().height()
@@ -167,13 +238,17 @@ InputHandlerPointerResult ScrollbarController::HandleMouseMove(
       ((scroll_layer_length - viewport_length) /
        (scrollbar_track_length - scrollbar_thumb_length)) *
       layer_tree_host_impl_->active_tree()->device_scale_factor();
-  scroll_result.scroll_offset.Scale(scaled_scroller_to_scrollbar_ratio);
-  // Thumb drags have more granularity and are purely dependent on the pointer
-  // movement. Hence we use kPrecisePixel when dragging the thumb.
-  scroll_result.scroll_units =
-      ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
 
-  return scroll_result;
+  // Avoid precision loss later on by rounding up 3 decimal places here.
+  // TODO(arakeri): Revisit this while fixing crbug.com/986174. There is a
+  // precision loss that is happening somewhere which affects root scrollbars
+  // only. Even though it is not visible to the end user, without rounding up,
+  // the scrolling tests will fail due to this precision loss.
+  DCHECK_GT(scaled_scroller_to_scrollbar_ratio, 0);
+  scaled_scroller_to_scrollbar_ratio =
+      ceil(scaled_scroller_to_scrollbar_ratio * 1000.0) / 1000.0;
+
+  return scaled_scroller_to_scrollbar_ratio;
 }
 
 bool ScrollbarController::ShouldCancelTrackAutoscroll() {
@@ -285,7 +360,7 @@ InputHandlerPointerResult ScrollbarController::HandleMouseUp(
     cancelable_autoscroll_task_.reset();
   }
 
-  thumb_drag_in_progress_ = false;
+  drag_anchor_relative_to_thumb_ = base::nullopt;
   autoscroll_state_ = AutoScrollState::NO_AUTOSCROLL;
   return scroll_result;
 }

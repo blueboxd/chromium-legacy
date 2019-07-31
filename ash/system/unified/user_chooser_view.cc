@@ -82,8 +82,8 @@ AddUserButton::AddUserButton(UserChooserDetailedViewController* controller)
       gfx::Insets(kUnifiedTopShortcutSpacing), kUnifiedTopShortcutSpacing));
 
   auto* icon = new views::ImageView;
-  icon->SetImage(
-      gfx::CreateVectorIcon(kSystemMenuNewUserIcon, kUnifiedMenuIconColor));
+  icon->SetImage(gfx::CreateVectorIcon(kSystemMenuNewUserIcon,
+                                       kIconOnDarkBackgroundColor));
   AddChildView(icon);
 
   auto* label = new views::Label(
@@ -119,7 +119,7 @@ class Separator : public views::View {
     AddChildView(child);
     child->SetBorder(views::CreateSolidSidedBorder(
         0, 0, kUnifiedNotificationSeparatorThickness, 0,
-        kUnifiedMenuSeparatorColor));
+        kSeparatorOnDarkBackgroundColor));
   }
 
   DISALLOW_COPY_AND_ASSIGN(Separator);

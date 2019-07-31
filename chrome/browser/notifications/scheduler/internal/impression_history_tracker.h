@@ -95,11 +95,7 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   void GetImpressionDetail(
       SchedulerClientType type,
       ImpressionDetail::ImpressionDetailCallback callback) override;
-  void OnClick(SchedulerClientType type, const std::string& guid) override;
-  void OnActionClick(SchedulerClientType type,
-                     const std::string& guid,
-                     ActionButtonType button_type) override;
-  void OnDismiss(SchedulerClientType type, const std::string& guid) override;
+  void OnUserAction(const UserActionData& action_data) override;
 
   // Called after |store_| is initialized.
   void OnStoreInitialized(InitCallback callback,

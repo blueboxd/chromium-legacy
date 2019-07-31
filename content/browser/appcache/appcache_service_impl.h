@@ -32,10 +32,6 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace net {
-class URLRequestContext;
-}  // namespace net
-
 namespace storage {
 class SpecialStoragePolicy;
 }  // namespace storage
@@ -135,15 +131,6 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
                              int64_t cache_id,
                              int64_t response_id);
 
-  // Context for use during cache updates, should only be accessed
-  // on the IO thread. We do NOT add a reference to the request context,
-  // it is the callers responsibility to ensure that the pointer
-  // remains valid while set.
-  net::URLRequestContext* request_context() const { return request_context_; }
-  void set_request_context(net::URLRequestContext* context) {
-    request_context_ = context;
-  }
-
   // The appcache policy, may be null, in which case access is always allowed.
   // The service does NOT assume ownership of the policy, it is the callers
   // responsibility to ensure that the pointer remains valid while set.
@@ -233,8 +220,6 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   std::map<AsyncHelper*, std::unique_ptr<AsyncHelper>> pending_helpers_;
   // One 'backend' per child process.
   std::map<int, AppCacheBackendImpl*> backends_;
-  // Context for use during cache updates.
-  net::URLRequestContext* request_context_;
   // If true, nothing (not even session-only data) should be deleted on exit.
   bool force_keep_session_state_;
   base::Time last_reinit_time_;

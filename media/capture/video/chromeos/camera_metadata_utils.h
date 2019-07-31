@@ -6,7 +6,7 @@
 #define MEDIA_CAPTURE_VIDEO_CHROMEOS_CAMERA_METADATA_UTILS_H_
 
 #include "media/capture/capture_export.h"
-#include "media/capture/video/chromeos/mojo/camera_metadata.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera_metadata.mojom.h"
 
 namespace media {
 

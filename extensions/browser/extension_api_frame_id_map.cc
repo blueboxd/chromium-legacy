@@ -151,13 +151,13 @@ content::RenderFrameHost* ExtensionApiFrameIdMap::GetRenderFrameHostById(
   return web_contents->UnsafeFindFrameByFrameTreeNodeId(frame_id);
 }
 
-// static
 ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
-    const RenderFrameIdKey& key) const {
+    const RenderFrameIdKey& key,
+    bool require_live_frame) const {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       key.render_process_id, key.frame_routing_id);
 
-  if (!rfh || !rfh->IsRenderFrameLive())
+  if (!rfh || (require_live_frame && !rfh->IsRenderFrameLive()))
     return FrameData();
 
   content::WebContents* web_contents =
@@ -197,7 +197,7 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::GetFrameData(
   if (frame_id_iter != deleted_frame_data_map_.end())
     return frame_id_iter->second;
 
-  return KeyToValue(key);
+  return KeyToValue(key, true /* require_live_frame */);
 }
 
 void ExtensionApiFrameIdMap::OnRenderFrameDeleted(
@@ -210,7 +210,8 @@ void ExtensionApiFrameIdMap::OnRenderFrameDeleted(
   // requests made in window.onunload may start after this has been called.
   // Delay the RemoveFrameData() call, so we will still have the frame data
   // cached when the beacon request comes in.
-  deleted_frame_data_map_.insert({key, KeyToValue(key)});
+  deleted_frame_data_map_.insert(
+      {key, KeyToValue(key, false /* require_live_frame */)});
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(

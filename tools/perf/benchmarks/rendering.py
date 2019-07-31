@@ -35,10 +35,14 @@ class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
         'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4',
         'Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4',
         'Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4',
+        'Graphics.Smoothness.Throughput.MainThread.PinchZoom',
         'Graphics.Smoothness.Throughput.MainThread.RAF',
         'Graphics.Smoothness.Throughput.MainThread.TouchScroll',
+        'Graphics.Smoothness.Throughput.MainThread.WheelScroll',
         'Graphics.Smoothness.Throughput.CompositorThread.CompositorAnimation',
-        'Graphics.Smoothness.Throughput.CompositorThread.TouchScroll')
+        'Graphics.Smoothness.Throughput.CompositorThread.PinchZoom',
+        'Graphics.Smoothness.Throughput.CompositorThread.TouchScroll',
+        'Graphics.Smoothness.Throughput.CompositorThread.WheelScroll')
     options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
     return options
 

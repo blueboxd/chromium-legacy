@@ -785,7 +785,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   std::unique_ptr<DockedMagnifierControllerImpl> docked_magnifier_controller_;
 
-  // The split view controller for Chrome OS in tablet mode.
+  // The split view controller for Chrome OS.
   std::unique_ptr<SplitViewController> split_view_controller_;
 
   std::unique_ptr<SnapController> snap_controller_;

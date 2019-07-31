@@ -1,0 +1,118 @@
+/* Copyright (C) 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+body {
+  font: 12px "Segoe UI", system-ui, Roboto, Ubuntu, sans-serif;
+}
+
+.calendar-picker {
+  background-color: #ffffff;
+  border-radius: 2px;
+}
+
+.calendar-table-view {
+  border: 0;
+}
+
+.calendar-table-header-view {
+  background-color: #ffffff;
+  border: 0;
+  height: 29px;
+}
+
+.week-day-label {
+  line-height: 28px;
+}
+
+.calendar-navigation-button {
+  -webkit-align-self: center;
+  background-color: #ffffff;
+  border: 0;
+  color: #101010;
+  padding: 0;
+  text-align: center;
+  width: 28px;
+}
+
+.calendar-navigation-button svg {
+  padding-top: 4px;
+}
+
+.calendar-navigation-button:hover {
+  background-color: #F3F3F3;
+}
+
+.calendar-navigation-button:disabled {
+  color: #C5C5C5;
+}
+
+.calendar-title {
+  -webkit-align-self: flex-start;
+  flex: 1;
+  text-align: left;
+}
+
+.month-popup-button {
+  border-width: 0px !important;
+  font-weight: bold;
+  padding: 0;
+}
+
+.month-popup-button .disclosure-triangle {
+  margin: 0;
+  margin-inline-start: 4px;
+}
+
+.day-cell {
+  background-color: #ffffff;
+  border: 0;
+  border-radius: 2px;
+  color: #767676;
+  padding: 1px;
+  text-align: center;
+}
+
+.day-cell.current-month {
+  color: #101010;
+}
+
+.week-number-cell.highlighted,
+.day-cell.highlighted {
+  background-color: #F3F3F3;
+}
+
+.week-number-cell.selected,
+.day-cell.selected {
+  background-color: #D9EBF9;
+  font-weight: bold;
+}
+
+.week-number-cell.disabled,
+.day-cell.disabled {
+  background-color: #ffffff;
+  color: #C5C5C5;
+}
+
+.day-cell.highlighted.today,
+.day-cell.today {
+  background-color: #0078D4;
+  border: 0;
+  color: #FFFFFF;
+  font-weight: bold;
+}
+
+.today-button-refresh {
+  border: 0;
+  bottom: 12px;
+  color: #0078D4;
+  font-size: 12px;
+  height: 20px;
+  padding: 4px;
+  position: absolute;
+  right: 20px;
+  width: auto;
+}
+
+

@@ -135,6 +135,13 @@ void ContactsManager::OnContactsSelected(
     ScriptPromiseResolver* resolver,
     base::Optional<Vector<mojom::blink::ContactInfoPtr>> contacts) {
   ScriptState* script_state = resolver->GetScriptState();
+
+  if (!script_state->ContextIsValid()) {
+    // This can happen if the page is programmatically redirected while
+    // contacts are still being chosen.
+    return;
+  }
+
   ScriptState::Scope scope(script_state);
 
   contact_picker_in_use_ = false;

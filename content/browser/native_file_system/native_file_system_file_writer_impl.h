@@ -31,11 +31,19 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
     : public NativeFileSystemHandleBase,
       public blink::mojom::NativeFileSystemFileWriter {
  public:
+  // Creates a FileWriter that writes in a swap file URL and
+  // materializes the changes in the target file URL only after `Close`
+  // is invoked and successfully completes. Assumes that swap_url represents a
+  // file, and is valid.
   NativeFileSystemFileWriterImpl(NativeFileSystemManagerImpl* manager,
                                  const BindingContext& context,
                                  const storage::FileSystemURL& url,
+                                 const storage::FileSystemURL& swap_url,
                                  const SharedHandleState& handle_state);
   ~NativeFileSystemFileWriterImpl() override;
+
+  const storage::FileSystemURL& swap_url() const { return swap_url_; }
+
   void Write(uint64_t offset,
              blink::mojom::BlobPtr data,
              WriteCallback callback) override;
@@ -66,6 +74,33 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
                 bool complete);
   void TruncateImpl(uint64_t length, TruncateCallback callback);
   void CloseImpl(CloseCallback callback);
+  void DidSwapFileBeforeClose(CloseCallback callback, base::File::Error result);
+
+  enum class State {
+    // The writer accepts write operations.
+    kOpen,
+    // The writer does not accept write operations and is in the process of
+    // closing.
+    kClosePending,
+    // The writer does not accept write operations and has entered an error
+    // state.
+    kCloseError,
+    // The writer does not accept write operations and has closed successfully.
+    kClosed,
+  };
+  bool is_closed() const { return state_ != State::kOpen; }
+  // Returns whether the File Writer is in a state where any files can be
+  // deleted. We do not want to delete the files if there are clean-up
+  // operations in-flight.
+  bool can_purge() const {
+    return state_ == State::kOpen || state_ == State::kCloseError;
+  }
+
+  // We write using this file URL. When `Close()` is invoked, we
+  // execute a move operation from the swap URL to the target URL at `url_`. In
+  // most filesystems, this move operation is atomic.
+  storage::FileSystemURL swap_url_;
+  State state_ = State::kOpen;
 
   base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;
 

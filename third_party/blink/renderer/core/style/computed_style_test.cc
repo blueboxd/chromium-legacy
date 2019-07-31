@@ -529,10 +529,10 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
   light_value->Append(*CSSIdentifierValue::Create(CSSValueID::kLight));
 
   To<Longhand>(ref.GetProperty()).ApplyValue(state, *dark_value);
-  EXPECT_EQ(ColorScheme::kDark, style->UsedColorScheme());
+  EXPECT_EQ(WebColorScheme::kDark, style->UsedColorScheme());
 
   To<Longhand>(ref.GetProperty()).ApplyValue(state, *light_value);
-  EXPECT_EQ(ColorScheme::kLight, style->UsedColorScheme());
+  EXPECT_EQ(WebColorScheme::kLight, style->UsedColorScheme());
 }
 
 }  // namespace blink

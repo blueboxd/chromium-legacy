@@ -217,6 +217,9 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - {U+0A6B (੫)} => 4,
   //   - {U+09EA (৪), U+0A6A (੪), U+0b6b (୫)} => 8,
   //   - {U+0AED (૭), U+0b68 (୨), U+0C68 (౨)} => 9,
+  //   Map a few dashes that ICU doesn't map. These are already blocked by ICU,
+  //   but mapping them allows us to detect same skeletons.
+  //   - {U+2014 (—), U+4E00 (一), U+2015 (―), U+23EA (⸺), U+2E3B (⸻)} => -,
   extra_confusable_mapper_.reset(icu::Transliterator::createFromRules(
       UNICODE_STRING_SIMPLE("ExtraConf"),
       icu::UnicodeString::fromUTF8(
@@ -234,7 +237,8 @@ IDNSpoofChecker::IDNSpoofChecker() {
           "[зҙӡउওਤ੩૩౩ဒვპ] > 3;"
           "[੫] > 4;"
           "[৪੪୫] > 8;"
-          "[૭୨౨] > 9;"),
+          "[૭୨౨] > 9;"
+          "[—一―⸺⸻] > \\-;"),
       UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
       << "Spoofchecker initalization failed due to an error: "

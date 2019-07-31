@@ -39,7 +39,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/http/http_response_headers.h"
@@ -91,8 +90,7 @@ class AccountReconcilorLockWrapper
 
   // Creates the account reconcilor lock on the UI thread. The lock will be
   // deleted on the UI thread when this wrapper is deleted.
-  void CreateLockOnUI(const content::ResourceRequestInfo::WebContentsGetter&
-                          web_contents_getter) {
+  void CreateLockOnUI(const content::WebContents::Getter& web_contents_getter) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::WebContents* web_contents = web_contents_getter.Run();
     if (!web_contents)
@@ -172,8 +170,7 @@ class ManageAccountsHeaderReceivedUserData
 // opens an incognito window/tab.
 void ProcessMirrorHeaderUIThread(
     ManageAccountsParams manage_accounts_params,
-    const content::ResourceRequestInfo::WebContentsGetter&
-        web_contents_getter) {
+    const content::WebContents::Getter& web_contents_getter) {
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -292,8 +289,7 @@ void ShowDiceSigninError(Profile* profile,
 
 void ProcessDiceHeaderUIThread(
     const DiceResponseParams& dice_params,
-    const content::ResourceRequestInfo::WebContentsGetter&
-        web_contents_getter) {
+    const content::WebContents::Getter& web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents = web_contents_getter.Run();
@@ -442,8 +438,8 @@ ChromeRequestAdapter::ChromeRequestAdapter(net::URLRequest* request)
 
 ChromeRequestAdapter::~ChromeRequestAdapter() = default;
 
-content::ResourceRequestInfo::WebContentsGetter
-ChromeRequestAdapter::GetWebContentsGetter() const {
+content::WebContents::Getter ChromeRequestAdapter::GetWebContentsGetter()
+    const {
   auto* info = content::ResourceRequestInfo::ForRequest(request_);
   return info->GetWebContentsGetterForRequest();
 }
@@ -471,8 +467,7 @@ ResponseAdapter::ResponseAdapter(net::URLRequest* request)
 
 ResponseAdapter::~ResponseAdapter() = default;
 
-content::ResourceRequestInfo::WebContentsGetter
-ResponseAdapter::GetWebContentsGetter() const {
+content::WebContents::Getter ResponseAdapter::GetWebContentsGetter() const {
   auto* info = content::ResourceRequestInfo::ForRequest(request_);
   return info->GetWebContentsGetterForRequest();
 }

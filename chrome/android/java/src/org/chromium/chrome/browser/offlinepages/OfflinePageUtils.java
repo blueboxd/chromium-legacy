@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Environment;
@@ -14,6 +15,7 @@ import android.text.TextUtils;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.ContentUriUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
@@ -538,6 +540,11 @@ public class OfflinePageUtils {
         AsyncTask<Uri> task = new AsyncTask<Uri>() {
             @Override
             protected Uri doInBackground() {
+                // Android Q+: If we already have a content URI for the published page, return that.
+                if (ContentUriUtils.isContentUri(offlinePath)) {
+                    return Uri.parse(offlinePath);
+                }
+
                 // If we have a content or file URI, we will not have a filename, just return the
                 // URI.
                 if (offlinePath.isEmpty()) {
@@ -545,15 +552,32 @@ public class OfflinePageUtils {
                     assert(isSchemeContentOrFile(uri));
                     return uri;
                 }
-                return ChromeFileProvider.generateUri(activity, offlinePageFile);
+
+                // TODO(985699): Investigate why we sometimes aren't able to generate URIs for files
+                // in external storage.
+                Uri generatedUri;
+                try {
+                    generatedUri = ChromeFileProvider.generateUri(activity, offlinePageFile);
+                } catch (IllegalArgumentException e) {
+                    Log.e(TAG, "Couldn't generate URI for sharing page: " + e);
+                    generatedUri = Uri.parse(pageUrl);
+                }
+                return generatedUri;
             }
             @Override
             protected void onPostExecute(Uri uri) {
-                ShareParams shareParams = new ShareParams.Builder(activity, pageTitle, pageUrl)
-                                                  .setShareDirectly(false)
-                                                  .setOfflineUri(uri)
-                                                  .build();
-                shareCallback.onResult(shareParams);
+                ShareParams.Builder builder = new ShareParams.Builder(activity, pageTitle, pageUrl)
+                                                      .setShareDirectly(false);
+                // Only try to share the offline page if we have a content URI making the actual
+                // file available.
+                // TODO(985699): Sharing the page's online URL is a temporary fix for crashes when
+                // sharing the archive's content URI. Once the root cause is addressed, the offline
+                // URI should always be set.
+                if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
+                    builder = builder.setOfflineUri(uri);
+                }
+
+                shareCallback.onResult(builder.build());
             }
         };
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

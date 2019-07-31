@@ -942,6 +942,7 @@ test("content_browsertests") {
     "../browser/message_port_provider_browsertest.cc",
     "../browser/mojo_sandbox_browsertest.cc",
     "../browser/native_file_system/file_system_chooser_browsertest.cc",
+    "../browser/native_file_system/native_file_system_file_writer_impl_browsertest.cc",
     "../browser/navigation_browsertest.cc",
     "../browser/navigation_mhtml_browsertest.cc",
     "../browser/net/accept_header_browsertest.cc",
@@ -1489,7 +1490,6 @@ test("content_unittests") {
     "../browser/appcache/appcache_storage_unittest.cc",
     "../browser/appcache/appcache_unittest.cc",
     "../browser/appcache/appcache_update_job_unittest.cc",
-    "../browser/appcache/appcache_url_request_job_unittest.cc",
     "../browser/appcache/chrome_appcache_service_unittest.cc",
     "../browser/appcache/mock_appcache_policy.cc",
     "../browser/appcache/mock_appcache_policy.h",
@@ -1647,7 +1647,6 @@ test("content_unittests") {
     "../browser/loader/navigation_url_loader_impl_unittest.cc",
     "../browser/loader/navigation_url_loader_unittest.cc",
     "../browser/loader/source_stream_to_data_pipe_unittest.cc",
-    "../browser/loader/upload_data_stream_builder_unittest.cc",
     "../browser/manifest/manifest_icon_downloader_unittest.cc",
     "../browser/media/audible_metrics_unittest.cc",
     "../browser/media/audio_input_stream_broker_unittest.cc",
@@ -1672,6 +1671,7 @@ test("content_unittests") {
     "../browser/media/webaudio/audio_context_manager_impl_unittest.cc",
     "../browser/memory/swap_metrics_driver_impl_unittest.cc",
     "../browser/native_file_system/file_system_chooser_unittest.cc",
+    "../browser/native_file_system/native_file_system_file_handle_impl_unittest.cc",
     "../browser/native_file_system/native_file_system_file_writer_impl_unittest.cc",
     "../browser/native_file_system/native_file_system_handle_base_unittest.cc",
     "../browser/native_file_system/native_file_system_manager_impl_unittest.cc",
@@ -1830,7 +1830,6 @@ test("content_unittests") {
     "../browser/webrtc/webrtc_internals_message_handler_unittest.cc",
     "../browser/webrtc/webrtc_internals_unittest.cc",
     "../browser/websockets/websocket_manager_unittest.cc",
-    "../browser/webui/url_data_manager_backend_unittest.cc",
     "../browser/webui/web_ui_data_source_unittest.cc",
     "../browser/webui/web_ui_message_handler_unittest.cc",
     "../browser/worker_host/mock_shared_worker.cc",
@@ -1907,8 +1906,6 @@ test("content_unittests") {
     "../renderer/media/renderer_webaudiodevice_impl_unittest.cc",
     "../renderer/media/stream/processed_local_audio_source_unittest.cc",
     "../renderer/media/stream/user_media_client_impl_unittest.cc",
-    "../renderer/media/video_capture/video_capture_impl_manager_unittest.cc",
-    "../renderer/media/video_capture/video_capture_impl_unittest.cc",
     "../renderer/media/webrtc/fake_rtc_rtp_transceiver.cc",
     "../renderer/media/webrtc/fake_rtc_rtp_transceiver.h",
     "../renderer/media/webrtc/media_stream_remote_video_source_unittest.cc",
@@ -2237,10 +2234,7 @@ test("content_unittests") {
       "../renderer/java/gin_java_bridge_value_converter_unittest.cc",
       "../renderer/media/android/stream_texture_wrapper_impl_unittest.cc",
     ]
-    sources -= [
-      "../browser/tracing/tracing_ui_unittest.cc",
-      "../browser/webui/url_data_manager_backend_unittest.cc",
-    ]
+    sources -= [ "../browser/tracing/tracing_ui_unittest.cc" ]
 
     deps += [
       "//base:base_java_unittest_support",

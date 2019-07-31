@@ -25,8 +25,7 @@ void WebUIClient::OnSchedulerInitialized(bool success,
   NOTIMPLEMENTED();
 }
 
-void WebUIClient::OnUserAction(UserActionType action_type,
-                               base::Optional<ButtonClickInfo> button_info) {
+void WebUIClient::OnUserAction(const UserActionData& action_data) {
   NOTIMPLEMENTED();
 }
 

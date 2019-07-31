@@ -74,6 +74,13 @@ namespace base {
 class SequenceCheckerDoNothing {
  public:
   SequenceCheckerDoNothing() = default;
+
+  // Moving between matching sequences is allowed to help classes with
+  // SequenceCheckers that want a default move-construct/assign.
+  SequenceCheckerDoNothing(SequenceCheckerDoNothing&& other) = default;
+  SequenceCheckerDoNothing& operator=(SequenceCheckerDoNothing&& other) =
+      default;
+
   bool CalledOnValidSequence() const WARN_UNUSED_RESULT { return true; }
   void DetachFromSequence() {}
 

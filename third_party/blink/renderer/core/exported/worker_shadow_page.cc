@@ -70,6 +70,7 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
   std::unique_ptr<WebNavigationParams> params =
       WebNavigationParams::CreateWithHTMLBuffer(
           SharedBuffer::Create(content.c_str(), content.length()), script_url);
+  params->appcache_host_id = appcache_host_id_;
   main_frame_->GetFrame()->Loader().CommitNavigation(std::move(params),
                                                      nullptr /* extra_data */);
 }

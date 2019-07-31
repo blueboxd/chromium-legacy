@@ -28,8 +28,7 @@ using InstallPrinterCallback = base::OnceCallback<void(InstallPrinterResult)>;
 
 // This CupsProxyService internal manager ensures that any printers referenced
 // by an incoming IPP request are installed into the CUPS daemon prior to
-// proxying. This class can be created anywhere, but must be accessed from a
-// sequenced context.
+// proxying. This class must be created and accessed from a sequenced context.
 class PrinterInstaller {
  public:
   explicit PrinterInstaller(base::WeakPtr<CupsProxyServiceDelegate> delegate);

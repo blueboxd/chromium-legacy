@@ -12,8 +12,7 @@
 namespace chrome_apps {
 namespace api {
 
-class FirstRunPrivateGetLocalizedStringsFunction
-    : public UIThreadExtensionFunction {
+class FirstRunPrivateGetLocalizedStringsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("firstRunPrivate.getLocalizedStrings",
                              FIRSTRUNPRIVATE_GETLOCALIZEDSTRINGS)
@@ -25,7 +24,7 @@ class FirstRunPrivateGetLocalizedStringsFunction
   ResponseAction Run() override;
 };
 
-class FirstRunPrivateLaunchTutorialFunction : public UIThreadExtensionFunction {
+class FirstRunPrivateLaunchTutorialFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("firstRunPrivate.launchTutorial",
                              FIRSTRUNPRIVATE_LAUNCHTUTORIAL)

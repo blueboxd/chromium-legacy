@@ -22,7 +22,6 @@
 #include "media/audio/fake_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "media/base/media_switches.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,25 +53,16 @@ class TestBrowserContextWithRealURLRequestContextGetter
     : public TestBrowserContext {
  public:
   TestBrowserContextWithRealURLRequestContextGetter() {
-    request_context_ = base::MakeRefCounted<net::TestURLRequestContextGetter>(
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
     salt_ = TestBrowserContext::GetMediaDeviceIDSalt();
   }
 
   ~TestBrowserContextWithRealURLRequestContextGetter() override {}
-
-  net::URLRequestContextGetter* CreateRequestContext(
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors) override {
-    return request_context_.get();
-  }
 
   std::string GetMediaDeviceIDSalt() override { return salt_; }
 
   void set_media_device_id_salt(std::string salt) { salt_ = std::move(salt); }
 
  private:
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   std::string salt_;
 };
 

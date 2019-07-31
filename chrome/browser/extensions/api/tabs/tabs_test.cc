@@ -795,7 +795,7 @@ class ExtensionWindowLastFocusedTest : public ExtensionTabsTest {
 
   int GetTabId(const base::DictionaryValue* value) const;
 
-  base::Value* RunFunction(UIThreadExtensionFunction* function,
+  base::Value* RunFunction(ExtensionFunction* function,
                            const std::string& params);
 
   const Extension* extension() { return extension_.get(); }
@@ -880,7 +880,7 @@ int ExtensionWindowLastFocusedTest::GetTabId(
 }
 
 base::Value* ExtensionWindowLastFocusedTest::RunFunction(
-    UIThreadExtensionFunction* function,
+    ExtensionFunction* function,
     const std::string& params) {
   function->set_extension(extension_.get());
   return utils::RunFunctionAndReturnSingleResult(function, params, browser());

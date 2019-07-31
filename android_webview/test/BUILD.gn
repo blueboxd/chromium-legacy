@@ -138,6 +138,7 @@ shared_library("libstandalonelibwebviewchromium") {
   ]
   ldflags = [ "-Wl,-shared,-Bsymbolic" ]
   deps = [
+    ":webview_instrumentation_test_native_jni_impl",
     "//android_webview:common",
     "//base",
     "//components/heap_profiling:test_support",
@@ -250,6 +251,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/LoadDataWithBaseUrlTest.java",
     "../javatests/src/org/chromium/android_webview/test/LoadUrlTest.java",
     "../javatests/src/org/chromium/android_webview/test/MediaAccessPermissionRequestTest.java",
+    "../javatests/src/org/chromium/android_webview/test/MemoryMetricsLoggerTest.java",
     "../javatests/src/org/chromium/android_webview/test/NavigationHistoryTest.java",
     "../javatests/src/org/chromium/android_webview/test/OnDiskFileTest.java",
     "../javatests/src/org/chromium/android_webview/test/PlatformMediaCodecTest.java",
@@ -317,6 +319,25 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
   additional_apks = [
     "//android_webview/test/embedded_test_server:aw_net_test_support_apk",
     "//net/android:net_test_support_apk",
+  ]
+}
+
+generate_jni("webview_instrumentation_test_native_jni") {
+  sources = [
+    "../javatests/src/org/chromium/android_webview/test/MemoryMetricsLoggerTest.java",
+  ]
+}
+
+source_set("webview_instrumentation_test_native_jni_impl") {
+  sources = [
+    "../javatests/src/org/chromium/android_webview/test/memory_metrics_logger_test.cc",
+  ]
+
+  deps = [
+    ":webview_instrumentation_test_native_jni",
+    "//android_webview:common",
+    "//base",
+    "//base/test:test_support",
   ]
 }
 

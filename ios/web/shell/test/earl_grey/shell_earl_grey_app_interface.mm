@@ -48,14 +48,4 @@ using web::shell_test_util::GetCurrentWebState;
                                             base::SysNSStringToUTF8(text));
 }
 
-+ (BOOL)webUsageEnabledForCurrentWebState {
-  return GetCurrentWebState()->IsWebUsageEnabled();
-}
-
-+ (NSString*)instanceGroupForCurrentBrowserState {
-  web::BrowserState* browserState = GetCurrentWebState()->GetBrowserState();
-  return base::SysUTF8ToNSString(
-      web::BrowserState::GetServiceInstanceGroupFor(browserState).ToString());
-}
-
 @end

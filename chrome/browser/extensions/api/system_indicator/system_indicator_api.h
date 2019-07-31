@@ -9,7 +9,7 @@
 
 namespace extensions {
 
-class SystemIndicatorSetIconFunction : public UIThreadExtensionFunction {
+class SystemIndicatorSetIconFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("systemIndicator.setIcon", SYSTEMINDICATOR_SETICON)
 
@@ -19,7 +19,7 @@ class SystemIndicatorSetIconFunction : public UIThreadExtensionFunction {
   ~SystemIndicatorSetIconFunction() override {}
 };
 
-class SystemIndicatorEnableFunction : public UIThreadExtensionFunction {
+class SystemIndicatorEnableFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("systemIndicator.enable", SYSTEMINDICATOR_ENABLE)
 
@@ -29,7 +29,7 @@ class SystemIndicatorEnableFunction : public UIThreadExtensionFunction {
   ~SystemIndicatorEnableFunction() override {}
 };
 
-class SystemIndicatorDisableFunction : public UIThreadExtensionFunction {
+class SystemIndicatorDisableFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("systemIndicator.disable", SYSTEMINDICATOR_DISABLE)
 

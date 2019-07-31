@@ -57,7 +57,7 @@ class SigninErrorController : public KeyedService,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  const std::string& error_account_id() const { return error_account_id_; }
+  const CoreAccountId& error_account_id() const { return error_account_id_; }
   const GoogleServiceAuthError& auth_error() const { return auth_error_; }
 
  private:
@@ -71,8 +71,8 @@ class SigninErrorController : public KeyedService,
   // Note: This function must not be called if |account_mode_| is
   // |AccountMode::PRIMARY_ACCOUNT|.
   bool UpdateSecondaryAccountErrors(
-      const std::string& primary_account_id,
-      const std::string& prev_account_id,
+      const CoreAccountId& primary_account_id,
+      const CoreAccountId& prev_account_id,
       const GoogleServiceAuthError::State& prev_error_state);
 
   // signin::IdentityManager::Observer:
@@ -92,7 +92,7 @@ class SigninErrorController : public KeyedService,
       scoped_identity_manager_observer_;
 
   // The account that generated the last auth error.
-  std::string error_account_id_;
+  CoreAccountId error_account_id_;
 
   // The auth error detected the last time AuthStatusChanged() was invoked (or
   // NONE if AuthStatusChanged() has never been invoked).

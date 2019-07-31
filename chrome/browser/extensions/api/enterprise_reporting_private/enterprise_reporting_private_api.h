@@ -27,7 +27,7 @@ extern const char kDeviceIdNotFound[];
 }  // namespace enterprise_reporting
 
 class EnterpriseReportingPrivateUploadChromeDesktopReportFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION(
       "enterprise.reportingPrivate.uploadChromeDesktopReport",
@@ -65,8 +65,7 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportFunction
       EnterpriseReportingPrivateUploadChromeDesktopReportFunction);
 };
 
-class EnterpriseReportingPrivateGetDeviceIdFunction
-    : public UIThreadExtensionFunction {
+class EnterpriseReportingPrivateGetDeviceIdFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("enterprise.reportingPrivate.getDeviceId",
                              ENTERPRISEREPORTINGPRIVATE_GETDEVICEID)

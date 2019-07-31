@@ -179,8 +179,9 @@ void AccountManagerUIHandler::OnGetAccounts(
     account.SetBoolean("isDeviceAccount", false);
 
     base::Optional<AccountInfo> maybe_account_info =
-        identity_manager_->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
-            account_key.id);
+        identity_manager_
+            ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
+                account_key.id);
     DCHECK(maybe_account_info.has_value());
 
     account.SetBoolean(

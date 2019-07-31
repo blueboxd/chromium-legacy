@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 #include "ash/shell/content/embedded_browser.h"
@@ -121,7 +122,6 @@ AshContentTest::AshContentTest()
 AshContentTest::~AshContentTest() = default;
 
 void AshContentTest::SetUp() {
-  content::ContentBrowserTest::SetUp();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Add command line arguments that are used by all AshContentTests.
   if (!command_line->HasSwitch(switches::kHostWindowBounds) &&
@@ -132,6 +132,7 @@ void AshContentTest::SetUp() {
     command_line->AppendSwitchASCII(switches::kHostWindowBounds,
                                     "0+0-1280x800");
   }
+  content::ContentBrowserTest::SetUp();
 }
 
 void AshContentTest::SetUpOnMainThread() {
@@ -145,6 +146,10 @@ void AshContentTest::SetUpOnMainThread() {
             "benchmark,cc,viz,input,latency,gpu,rail,toplevel,ui,views,viz"),
         GetUMAHistogramNames());
   }
+  gfx::Size display_size = ash::Shell::GetPrimaryRootWindow()->bounds().size();
+  test_window_size_.set_height((display_size.height() - ash::kShelfSize) *
+                               0.95f);
+  test_window_size_.set_width(display_size.width() * 0.7f);
 }
 
 void AshContentTest::TearDownOnMainThread() {
@@ -164,14 +169,15 @@ void AshContentTest::TearDownOnMainThread() {
 
 aura::Window* AshContentTest::CreateBrowserWindow(const GURL& url) {
   return ash::shell::EmbeddedBrowser::Create(
-      ash::shell::ShellBrowserMainParts::GetBrowserContext(), url);
+      ash::shell::ShellBrowserMainParts::GetBrowserContext(), url,
+      gfx::Rect(test_window_size_));
 }
 
 aura::Window* AshContentTest::CreateTestWindow() {
   views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
       new ash::shell::WindowTypeLauncher(base::NullCallback(),
                                          base::NullCallback()),
-      ash::Shell::GetPrimaryRootWindow(), gfx::Rect(600, 800));
+      ash::Shell::GetPrimaryRootWindow(), gfx::Rect(test_window_size_));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
   widget->Show();
 

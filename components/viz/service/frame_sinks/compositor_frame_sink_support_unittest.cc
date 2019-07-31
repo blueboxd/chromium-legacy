@@ -225,6 +225,7 @@ class CompositorFrameSinkSupportTest : public testing::Test {
 
   void SendPresentationFeedback(CompositorFrameSinkSupport* support,
                                 uint32_t frame_token) {
+    support->OnSurfaceWasDrawn(frame_token, base::TimeTicks::Now());
     support->DidPresentCompositorFrame(
         frame_token,
         gfx::PresentationFeedback(base::TimeTicks::Now(),
@@ -1239,6 +1240,89 @@ TEST_F(CompositorFrameSinkSupportTest, EvictThenReparent) {
   // embed token.
   EXPECT_TRUE(
       GetSurfaceForId(SurfaceId(support_->frame_sink_id(), local_surface_id2)));
+}
+
+// Verifies that invalid hit test region does not get submitted.
+TEST_F(CompositorFrameSinkSupportTest, HitTestRegionValidation) {
+  constexpr FrameSinkId frame_sink_id(1234, 5678);
+  manager_.RegisterFrameSinkId(frame_sink_id, true /* report_activation */);
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
+      &fake_support_client_, &manager_, frame_sink_id, kIsRoot,
+      kNeedsSyncPoints);
+  LocalSurfaceId local_surface_id(6, 1, base::UnguessableToken::Create());
+
+  HitTestRegionList hit_test_region_list;
+
+  // kHitTestAsk not set, async_hit_test_reasons not set.
+  HitTestRegion hit_test_region_1;
+  hit_test_region_1.frame_sink_id = frame_sink_id;
+  hit_test_region_1.flags = HitTestRegionFlags::kHitTestMine;
+  hit_test_region_1.rect.SetRect(100, 100, 200, 400);
+
+  hit_test_region_list.regions.push_back(std::move(hit_test_region_1));
+
+  EXPECT_EQ(manager_.hit_test_manager()->submit_hit_test_region_list_index(),
+            0u);
+  support->MaybeSubmitCompositorFrame(
+      local_surface_id, MakeDefaultCompositorFrame(), hit_test_region_list, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  // hit_test_region_1 is valid. Submitted region count increases.
+  EXPECT_EQ(manager_.hit_test_manager()->submit_hit_test_region_list_index(),
+            1u);
+  hit_test_region_list.regions.clear();
+
+  // kHitTestAsk set, async_hit_test_reasons not set.
+  HitTestRegion hit_test_region_2;
+  hit_test_region_2.frame_sink_id = frame_sink_id;
+  hit_test_region_2.flags = HitTestRegionFlags::kHitTestAsk;
+  hit_test_region_2.rect.SetRect(400, 100, 300, 400);
+
+  hit_test_region_list.regions.push_back(std::move(hit_test_region_2));
+  EXPECT_EQ(manager_.hit_test_manager()->submit_hit_test_region_list_index(),
+            1u);
+  support->MaybeSubmitCompositorFrame(
+      local_surface_id, MakeDefaultCompositorFrame(), hit_test_region_list, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  // hit_test_region_2 is invalid. Submitted region count does not change.
+  EXPECT_EQ(manager_.hit_test_manager()->submit_hit_test_region_list_index(),
+            1u);
+
+  // kHitTestAsk not set, async_hit_test_reasons set.
+  HitTestRegion hit_test_region_3;
+  hit_test_region_3.frame_sink_id = frame_sink_id;
+  hit_test_region_3.async_hit_test_reasons =
+      AsyncHitTestReasons::kOverlappedRegion;
+  hit_test_region_3.rect.SetRect(400, 100, 300, 400);
+
+  hit_test_region_list.regions.clear();
+  hit_test_region_list.regions.push_back(std::move(hit_test_region_3));
+  EXPECT_EQ(manager_.hit_test_manager()->submit_hit_test_region_list_index(),
+            1u);
+  support->MaybeSubmitCompositorFrame(
+      local_surface_id, MakeDefaultCompositorFrame(), hit_test_region_list, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  // hit_test_region_3 is invalid. Submitted region count does not change.
+  EXPECT_EQ(manager_.hit_test_manager()->submit_hit_test_region_list_index(),
+            1u);
+
+  // kHitTestAsk set, async_hit_test_reasons set.
+  HitTestRegion hit_test_region_4;
+  hit_test_region_4.frame_sink_id = frame_sink_id;
+  hit_test_region_4.flags = HitTestRegionFlags::kHitTestAsk;
+  hit_test_region_4.async_hit_test_reasons =
+      AsyncHitTestReasons::kOverlappedRegion;
+  hit_test_region_4.rect.SetRect(400, 100, 300, 400);
+
+  hit_test_region_list.regions.clear();
+  hit_test_region_list.regions.push_back(std::move(hit_test_region_4));
+  EXPECT_EQ(manager_.hit_test_manager()->submit_hit_test_region_list_index(),
+            1u);
+  support->MaybeSubmitCompositorFrame(
+      local_surface_id, MakeDefaultCompositorFrame(), hit_test_region_list, 0,
+      mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback());
+  // hit_test_region_4 is valid. Submitted region count increases.
+  EXPECT_EQ(manager_.hit_test_manager()->submit_hit_test_region_list_index(),
+            2u);
 }
 
 }  // namespace viz

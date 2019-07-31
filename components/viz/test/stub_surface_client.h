@@ -18,7 +18,9 @@ class StubSurfaceClient : public SurfaceClient {
 
   void OnSurfaceActivated(Surface* surface) override {}
   void OnSurfaceDestroyed(Surface* surface) override {}
-  void OnSurfaceDrawn(Surface* surface) override {}
+  void OnSurfaceWillDraw(Surface* surface) override {}
+  void OnSurfaceWasDrawn(uint32_t frame_token,
+                         base::TimeTicks draw_start_timestamp) override {}
   void RefResources(
       const std::vector<TransferableResource>& resources) override {}
   void UnrefResources(const std::vector<ReturnedResource>& resources) override {

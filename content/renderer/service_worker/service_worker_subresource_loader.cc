@@ -683,10 +683,6 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
   StartRequest(resource_request_);
 }
 
-void ServiceWorkerSubresourceLoader::ProceedWithResponse() {
-  NOTREACHED();
-}
-
 void ServiceWorkerSubresourceLoader::SetPriority(net::RequestPriority priority,
                                                  int intra_priority_value) {
   // Not supported (do nothing).

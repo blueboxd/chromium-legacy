@@ -196,14 +196,13 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // MaybePreconnectNow preconnects to an origin server if it's allowed.
   void MaybePreconnectNow(Action log_action);
 
-  // Sends metrics to the UKM id at |ukm_source_id_| if |send_ukm_metrics_|
-  // is true.
+  // Sends metrics to the UKM id at |ukm_source_id_|.
   void MaybeSendMetricsToUkm() const;
 
   // After an in-page click, sends the index of the url that was clicked to the
-  // UKM id at |ukm_source_id_| if |send_ukm_metrics_| is true. The index sent
-  // corresponds to the index of that url in |top_urls_|, and is 1-indexed.
-  // If the url does not appear in top_urls_, a 0 is returned.
+  // UKM id at |ukm_source_id_|. The index sent corresponds to the index of that
+  // url in |top_urls_|, and is 1-indexed. If the url does not appear in
+  // |top_urls_|, a 0 is returned.
   void MaybeSendClickMetricsToUkm(const std::string& clicked_url) const;
 
   // Returns the minimum of the bucket that |value| belongs in, for page-wide
@@ -298,10 +297,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // by the sum of metrics weights nor normalized from 0 to 100 across
   // all navigation scores for a page.
   const bool normalize_navigation_scores_;
-
-  // True if |this| should send metrics about aggregate link information
-  // to the UKM at id |ukm_source_id_|.
-  const bool send_ukm_metrics_;
 
   // Timing of document loaded and last click.
   base::TimeTicks document_loaded_timing_;

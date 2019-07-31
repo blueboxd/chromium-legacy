@@ -60,8 +60,6 @@ extern const int kTrayToggleButtonWidth;
 // Constants for the title row.
 constexpr int kTitleRowProgressBarHeight = 2;
 
-extern const SkColor kMobileNotConnectedXIconColor;
-
 // Extra padding used to adjust hitting region around tray items.
 extern const int kHitRegionPadding;
 extern const int kHitRegionPaddingDense;
@@ -73,14 +71,27 @@ constexpr int kMenuSeparatorWidth = 1;
 // in tray detailed views.
 constexpr int kTraySeparatorWidth = 0;
 
-// The color of the separators used in the system menu.
-extern const SkColor kMenuSeparatorColor;
+// Colors of separator on light/dark background.
+constexpr SkColor kSeparatorOnLightBackgroundColor =
+    SkColorSetA(SK_ColorBLACK, 0x23);  // 14%
+constexpr SkColor kSeparatorOnDarkBackgroundColor =
+    SkColorSetA(SK_ColorWHITE, 0x23);  // 14%
+
+// Primary colors of icon on light/dark background. Color of disabled icon is
+// 38% of corresponding non-disabled icon.
+constexpr SkColor kIconOnDarkBackgroundColor = gfx::kGoogleGrey200;
+constexpr SkColor kIconOnDarkBackgroundColorDisabled =
+    SkColorSetA(kIconOnDarkBackgroundColor, 0x61);  // 38%
+constexpr SkColor kIconOnLightBackgroundColor = gfx::kGoogleGrey700;
+constexpr SkColor kIconOnLightBackgroundColorDisabled =
+    SkColorSetA(kIconOnLightBackgroundColor, 0x61);  // 38%
+
+// Second color of icon on dark background.
+constexpr SkColor kIconOnDarkBackgroundSecondaryColor = gfx::kGoogleGrey500;
 
 // The size and foreground color of the icons appearing in the material design
 // system tray.
 constexpr int kTrayIconSize = 16;
-extern const SkColor kTrayIconColor;
-extern const SkColor kOobeTrayIconColor;
 extern const int kTrayIconBackgroundAlpha;
 
 // The padding around network tray icon in dip.
@@ -90,8 +101,6 @@ constexpr int kUnifiedTrayNetworkIconPadding = 4;
 // The size and foreground color of the icons appearing in the material design
 // system menu.
 extern const int kMenuIconSize;
-extern const SkColor kMenuIconColor;
-extern const SkColor kMenuIconColorDisabled;
 // The size of buttons in the system menu.
 ASH_EXPORT extern const int kMenuButtonSize;
 // The vertical padding for the system menu separator.
@@ -118,35 +127,25 @@ extern const int kTrayPopupInkDropInset;
 // The radius used to draw the corners of the rounded rect style ink drops.
 extern const int kTrayPopupInkDropCornerRadius;
 
-// The colors used when --enable-features=SystemTrayUnified flag is enabled.
 constexpr SkColor kUnifiedMenuBackgroundColor =
     SkColorSetARGB(0xf2, 0x20, 0x21, 0x24);
 constexpr SkColor kUnifiedMenuBackgroundColorWithBlur =
     SkColorSetA(kUnifiedMenuBackgroundColor, 0x99);
 constexpr float kUnifiedMenuBackgroundBlur = 30.f;
 constexpr SkColor kUnifiedMenuTextColor = SkColorSetRGB(0xf1, 0xf3, 0xf4);
-constexpr SkColor kUnifiedMenuIconColor = SkColorSetRGB(0xe8, 0xea, 0xed);
 constexpr SkColor kUnifiedMenuSecondaryTextColor =
-    SkColorSetA(kUnifiedMenuIconColor, 0xa3);
-constexpr SkColor kUnifiedMenuIconColorDisabled =
-    SkColorSetRGB(0x5f, 0x63, 0x68);
+    SkColorSetA(kIconOnDarkBackgroundColor, 0xa3);
 constexpr SkColor kUnifiedMenuTextColorDisabled =
     SkColorSetRGB(0x5f, 0x63, 0x68);
 constexpr SkColor kUnifiedMenuButtonColor =
-    SkColorSetA(kUnifiedMenuIconColor, 0x14);
-constexpr SkColor kUnifiedMenuSeparatorColor =
-    SkColorSetA(kUnifiedMenuIconColor, 0x23);
+    SkColorSetA(kIconOnDarkBackgroundColor, 0x14);
 constexpr SkColor kUnifiedMenuButtonColorActive =
     SkColorSetRGB(0x25, 0x81, 0xdf);
 constexpr SkColor kUnifiedMenuButtonColorDisabled =
     SkColorSetA(kUnifiedMenuButtonColor, 0xa);
-constexpr SkColor kUnifiedNotificationSeparatorColor =
-    SkColorSetRGB(0xdf, 0xe0, 0xe0);
 constexpr SkColor kUnifiedFeaturePodHoverColor =
     SkColorSetRGB(0xff, 0xff, 0xff);
 constexpr SkColor kUnifiedRecordingIconColor = gfx::kGoogleRedDark600;
-constexpr SkColor kUnifiedManagedDeviceIconColor =
-    SkColorSetRGB(0x9a, 0xa0, 0xa6);
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSystemInfoViewPadding(4, 16, 16, 16);
@@ -172,8 +171,6 @@ constexpr gfx::Insets kUnifiedNotificationHiddenPadding(6, 16);
 constexpr gfx::Insets kUnifiedCircularButtonFocusPadding(4);
 constexpr int kStackingNotificationCounterHeight = 32;
 constexpr gfx::Insets kStackingNotificationClearAllButtonPadding(8, 16);
-constexpr SkColor kStackingNotificationCounterBorderColor =
-    SkColorSetRGB(0xe0, 0xe0, 0xe0);
 constexpr SkColor kStackingNotificationCounterLabelColor =
     SkColorSetRGB(0x5f, 0x64, 0x68);
 
@@ -184,8 +181,6 @@ constexpr int kTrayTopShortcutButtonIconSize = 20;
 constexpr int kUnifiedManagedDeviceSpacing = 4;
 constexpr int kUnifiedSystemInfoHeight = 16;
 constexpr int kUnifiedSystemInfoSpacing = 8;
-constexpr int kUnifiedSystemInfoSeparatorColor =
-    SkColorSetA(SK_ColorWHITE, 0x24);
 constexpr gfx::Insets kUnifiedSystemInfoDateViewPadding(3);
 
 // Constants used in FeaturePodsView of UnifiedSystemTray.

@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 
 #include "base/time/time.h"
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -194,7 +195,8 @@ class WebThemeEngine {
                      Part,
                      State,
                      const WebRect&,
-                     const ExtraParams*) {}
+                     const ExtraParams*,
+                     blink::WebColorScheme) {}
 };
 
 }  // namespace blink

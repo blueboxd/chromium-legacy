@@ -7461,8 +7461,24 @@ RenderFrameImpl::CreateURLLoaderFactory() {
   if (!RenderThreadImpl::current()) {
     // Some tests (e.g. RenderViewTests) do not have RenderThreadImpl,
     // and must create a factory override instead.
-    DCHECK(web_url_loader_factory_override_for_test_);
-    return std::move(web_url_loader_factory_override_for_test_);
+    if (web_url_loader_factory_override_for_test_)
+      return web_url_loader_factory_override_for_test_->Clone();
+
+    // If the override does not exist, try looking in the ancestor chain since
+    // we might have created child frames and asked them to create a URL loader
+    // factory.
+    for (auto* ancestor = GetWebFrame()->Parent(); ancestor;
+         ancestor = ancestor->Parent()) {
+      RenderFrameImpl* ancestor_frame = RenderFrameImpl::FromWebFrame(ancestor);
+      if (ancestor_frame &&
+          ancestor_frame->web_url_loader_factory_override_for_test_) {
+        return ancestor_frame->web_url_loader_factory_override_for_test_
+            ->Clone();
+      }
+    }
+    // At this point we can't create anything.
+    NOTREACHED();
+    return nullptr;
   }
   return std::make_unique<FrameURLLoaderFactory>(weak_factory_.GetWeakPtr());
 }
@@ -7763,7 +7779,7 @@ void RenderFrameImpl::AddMessageToConsoleImpl(
 }
 
 void RenderFrameImpl::SetWebURLLoaderFactoryOverrideForTest(
-    std::unique_ptr<blink::WebURLLoaderFactory> factory) {
+    std::unique_ptr<blink::WebURLLoaderFactoryForTest> factory) {
   web_url_loader_factory_override_for_test_ = std::move(factory);
 }
 

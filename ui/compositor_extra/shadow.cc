@@ -19,9 +19,9 @@ constexpr int kShadowAnimationDurationMs = 100;
 
 }  // namespace
 
-Shadow::Shadow() {}
+Shadow::Shadow() : shadow_layer_owner_(this) {}
 
-Shadow::~Shadow() {}
+Shadow::~Shadow() = default;
 
 void Shadow::Init(int elevation) {
   DCHECK_GE(elevation, 0);
@@ -91,17 +91,33 @@ void Shadow::OnImplicitAnimationsCompleted() {
   UpdateLayerBounds();
 }
 
+// -----------------------------------------------------------------------------
+// Shadow::ShadowLayerOwner:
+
+Shadow::ShadowLayerOwner::ShadowLayerOwner(Shadow* owner,
+                                           std::unique_ptr<Layer> layer)
+    : LayerOwner(std::move(layer)), owner_shadow_(owner) {}
+
+Shadow::ShadowLayerOwner::~ShadowLayerOwner() = default;
+
+std::unique_ptr<Layer> Shadow::ShadowLayerOwner::RecreateLayer() {
+  auto result = ui::LayerOwner::RecreateLayer();
+  // Now update the newly recreated shadow layer with the correct nine patch
+  // image details.
+  owner_shadow_->details_ = nullptr;
+  owner_shadow_->UpdateLayerBounds();
+  return result;
+}
+
+// -----------------------------------------------------------------------------
+// Shadow:
+
 void Shadow::RecreateShadowLayer() {
-  if (shadow_layer_owner_.OwnsLayer()) {
-    shadow_layer_owner_.RecreateLayer();
-  } else {
-    shadow_layer_owner_.Reset(
-        std::make_unique<ui::Layer>(ui::LAYER_NINE_PATCH));
-    shadow_layer()->set_name("Shadow");
-    shadow_layer()->SetVisible(true);
-    shadow_layer()->SetFillsBoundsOpaquely(false);
-    layer()->Add(shadow_layer());
-  }
+  shadow_layer_owner_.Reset(std::make_unique<ui::Layer>(ui::LAYER_NINE_PATCH));
+  shadow_layer()->set_name("Shadow");
+  shadow_layer()->SetVisible(true);
+  shadow_layer()->SetFillsBoundsOpaquely(false);
+  layer()->Add(shadow_layer());
 
   UpdateLayerBounds();
 }

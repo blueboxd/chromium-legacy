@@ -24,7 +24,7 @@ constexpr int kDisabledAlpha = 0x61;
 SkColor TrayPopupItemStyle::GetIconColor(ColorStyle color_style,
                                          bool use_unified_theme) {
   const SkColor kBaseIconColor =
-      use_unified_theme ? kUnifiedMenuIconColor : gfx::kChromeIconGrey;
+      use_unified_theme ? kIconOnDarkBackgroundColor : gfx::kChromeIconGrey;
   switch (color_style) {
     case ColorStyle::ACTIVE:
       return kBaseIconColor;

@@ -100,7 +100,7 @@ std::string AppLauncherPageUI::HTMLSource::GetSource() {
 
 void AppLauncherPageUI::HTMLSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

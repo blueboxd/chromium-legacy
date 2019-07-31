@@ -89,6 +89,10 @@ class TestResponseDelegate
   TestResponseDelegate(std::unique_ptr<InputStream> input_stream)
       : input_stream_(std::move(input_stream)) {}
   TestResponseDelegate(std::unique_ptr<InputStream> input_stream,
+                       const std::string custom_mime_type)
+      : input_stream_(std::move(input_stream)),
+        custom_mime_type_(custom_mime_type) {}
+  TestResponseDelegate(std::unique_ptr<InputStream> input_stream,
                        const std::string& custom_status,
                        const std::string& custom_header_name,
                        const std::string& custom_header_value)
@@ -112,6 +116,10 @@ class TestResponseDelegate
                    const GURL& url,
                    android_webview::InputStream* stream,
                    std::string* mime_type) override {
+    if (!custom_mime_type_.empty()) {
+      *mime_type = custom_mime_type_;
+      return true;
+    }
     return false;
   }
 
@@ -138,6 +146,7 @@ class TestResponseDelegate
 
  private:
   std::unique_ptr<InputStream> input_stream_;
+  const std::string custom_mime_type_;
   const std::string custom_status_;
   const std::string custom_header_name_;
   const std::string custom_header_value_;
@@ -173,6 +182,19 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
         request, client->CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::make_unique<TestResponseDelegate>(std::move(input_stream)));
+  }
+
+  // helper method for creating loaders given a stream and MIME type
+  AndroidStreamReaderURLLoader* CreateLoaderWithMimeType(
+      const network::ResourceRequest& request,
+      network::TestURLLoaderClient* client,
+      std::unique_ptr<InputStream> input_stream,
+      const std::string custom_mime_type) {
+    return new AndroidStreamReaderURLLoader(
+        request, client->CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+        std::make_unique<TestResponseDelegate>(std::move(input_stream),
+                                               custom_mime_type));
   }
 
   // helper method for creating loaders given a stream and response header
@@ -335,8 +357,12 @@ TEST_F(AndroidStreamReaderURLLoaderTest,
   std::string expected_body("test");
   std::unique_ptr<network::TestURLLoaderClient> client =
       std::make_unique<network::TestURLLoaderClient>();
-  AndroidStreamReaderURLLoader* loader = CreateLoader(
-      request, client.get(), std::make_unique<FakeInputStream>(expected_body));
+  // Need a valid MIME type, otherwise we won't get headers until we've already
+  // read the input stream (and we need to interrupt the read in this test).
+  std::string valid_mime_type("text/html");
+  AndroidStreamReaderURLLoader* loader = CreateLoaderWithMimeType(
+      request, client.get(), std::make_unique<FakeInputStream>(expected_body),
+      valid_mime_type);
   loader->Start();
   client->RunUntilResponseBodyArrived();
   EXPECT_TRUE(client->has_received_response());

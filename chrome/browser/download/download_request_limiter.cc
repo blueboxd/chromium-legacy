@@ -509,7 +509,7 @@ DownloadRequestLimiter::GetDownloadState(
 }
 
 void DownloadRequestLimiter::CanDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
@@ -541,7 +541,7 @@ void DownloadRequestLimiter::CanDownload(
 }
 
 void DownloadRequestLimiter::OnCanDownloadDecided(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
     Callback orig_callback,

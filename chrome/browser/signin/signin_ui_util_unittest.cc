@@ -278,7 +278,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
 
     EnableSync(
         GetIdentityManager()
-            ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+            ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+                account_id)
             .value(),
         is_default_promo_account);
     signin_metrics::PromoAction expected_promo_action =
@@ -337,7 +338,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
 
     EnableSync(
         GetIdentityManager()
-            ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+            ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+                account_id)
             .value(),
         is_default_promo_account);
     ASSERT_FALSE(create_dice_turn_sync_on_helper_called_);

@@ -102,24 +102,6 @@ SignedExchangeLoader::SignedExchangeLoader(
   if (outer_response_body)
     OnStartLoadingResponseBody(std::move(outer_response_body));
 
-  // TODO(https://crbug.com/791049): Remove this when NetworkService is
-  // enabled by default.
-  if (url_loader_options_ &
-      network::mojom::kURLLoadOptionPauseOnResponseStarted) {
-    // We don't propagate the response to the navigation request and its
-    // throttles, therefore we need to call this here internally in order to
-    // move it forward.
-    //
-    // ProceedWithResponse() is used when the network service is disabled to
-    // prevent the InterceptingResourceHandler (used for download) from
-    // intercepting the load before the NavigationRequest allowed it.
-    // See https://crbug.com/791049.
-    //
-    // Special care has been taken not to resume the InterceptingResourceHandler
-    // by mistake in https://crbug.com/896659.
-    url_loader_->ProceedWithResponse();
-  }
-
   // Bind the endpoint with |this| to get the body DataPipe.
   url_loader_client_binding_.Bind(std::move(endpoints->url_loader_client));
 
@@ -205,13 +187,6 @@ void SignedExchangeLoader::FollowRedirect(
     const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
   NOTREACHED();
-}
-
-void SignedExchangeLoader::ProceedWithResponse() {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(url_loader_options_ &
-         network::mojom::kURLLoadOptionPauseOnResponseStarted);
-  // ProceedWithResponse() has already been called in the constructor.
 }
 
 void SignedExchangeLoader::SetPriority(net::RequestPriority priority,

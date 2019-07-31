@@ -91,7 +91,6 @@ template("chrome_extra_paks") {
                            ])
     output = "${invoker.output_dir}/resources.pak"
     sources = [
-      "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
       "$root_gen_dir/chrome/browser_resources.pak",
       "$root_gen_dir/chrome/chrome_unscaled_resources.pak",
       "$root_gen_dir/chrome/common_resources.pak",
@@ -113,7 +112,6 @@ template("chrome_extra_paks") {
       "//chrome/browser/resources:invalidations_resources",
       "//chrome/browser/resources:net_internals_resources",
       "//chrome/browser/resources:quota_internals_resources",
-      "//chrome/browser/resources/bluetooth_internals:resources",
       "//chrome/common:resources",
       "//components/autofill/core/browser:autofill_address_rewriter_resources",
       "//components/resources",
@@ -137,6 +135,7 @@ template("chrome_extra_paks") {
     } else {
       # New paks should be added here by default.
       sources += [
+        "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
         "$root_gen_dir/chrome/component_extension_resources.pak",
         "$root_gen_dir/chrome/downloads_resources.pak",
         "$root_gen_dir/chrome/local_ntp_resources.pak",
@@ -149,6 +148,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources:downloads_resources",
         "//chrome/browser/resources:local_ntp_resources",
         "//chrome/browser/resources:settings_resources",
+        "//chrome/browser/resources/bluetooth_internals:resources",
         "//content/browser/devtools:devtools_resources",
         "//headless:resources",
       ]
@@ -195,6 +195,10 @@ template("chrome_extra_paks") {
     if (enable_print_preview) {
       sources += [ "$root_gen_dir/chrome/print_preview_resources.pak" ]
       deps += [ "//chrome/browser/resources:print_preview_resources" ]
+    }
+    if (enable_webui_tab_strip) {
+      sources += [ "$root_gen_dir/chrome/tab_strip_resources.pak" ]
+      deps += [ "//chrome/browser/resources:tab_strip_resources" ]
     }
   }
 }

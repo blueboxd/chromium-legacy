@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/inspector_application_cache_agent.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
@@ -69,9 +70,6 @@ mojom::blink::DocumentInterfaceBroker* GetDocumentInterfaceBroker(
 
 }  // namespace
 
-// TODO(https://crbug.com/982996): Remove this creation function, and instead
-// directly create an appcache host for frame in DocumentLoader, and for shared
-// workers in WebSharedWorkerImpl.
 ApplicationCacheHost* ApplicationCacheHost::Create(
     DocumentLoader* document_loader) {
   DCHECK(document_loader);
@@ -88,26 +86,53 @@ ApplicationCacheHost* ApplicationCacheHost::Create(
           local_frame->GetTaskRunner(TaskType::kNetworking));
     case WebLocalFrameClient::AppCacheType::kAppCacheForSharedWorker:
       return MakeGarbageCollected<ApplicationCacheHostForSharedWorker>(
-          local_frame->Client()->GetAppCacheHostIDForSharedWorker(),
-          Thread::Current()->GetTaskRunner());
+          document_loader, Thread::Current()->GetTaskRunner());
     default:
-      return MakeGarbageCollected<ApplicationCacheHost>(
-          /*interface_broker=*/nullptr, /*task_runner=*/nullptr);
+      return MakeGarbageCollected<ApplicationCacheHost>(document_loader,
+                                                        nullptr, nullptr);
   }
   return nullptr;
 }
 
+// We provide a custom implementation of this class that calls out to the
+// embedding application instead of using WebCore's built in appcache system.
+// This file replaces webcore/appcache/ApplicationCacheHost.cpp in our build.
+
 ApplicationCacheHost::ApplicationCacheHost(
+    DocumentLoader* document_loader,
     mojom::blink::DocumentInterfaceBroker* interface_broker,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)),
+    : document_loader_(document_loader),
+      task_runner_(std::move(task_runner)),
       interface_broker_(interface_broker) {}
 
 ApplicationCacheHost::~ApplicationCacheHost() = default;
 
-void ApplicationCacheHost::Detach() {
+void ApplicationCacheHost::WillStartLoading(ResourceRequest& request) {
+  if (!IsApplicationCacheEnabled() || !backend_host_.is_bound())
+    return;
+  const base::UnguessableToken& host_id = GetHostID();
+  if (!host_id.is_empty())
+    request.SetAppCacheHostID(host_id);
+}
+
+void ApplicationCacheHost::WillStartLoadingMainResource(DocumentLoader* loader,
+                                                        const KURL& url,
+                                                        const String& method) {
+  if (!IsApplicationCacheEnabled())
+    return;
+
+  // We defer binding to backend to avoid unnecessary binding around creating
+  // empty documents. At this point, we're initiating a main resource load for
+  // the document, so its for real.
+  BindBackend();
+}
+
+void ApplicationCacheHost::DetachFromDocumentLoader() {
+  // Detach from the owning DocumentLoader and close mojo pipes.
   receiver_.reset();
   backend_host_.reset();
+  document_loader_ = nullptr;
 }
 
 ApplicationCacheHost::CacheInfo ApplicationCacheHost::ApplicationCacheInfo() {
@@ -123,11 +148,6 @@ const base::UnguessableToken& ApplicationCacheHost::GetHostID() const {
   if (!backend_host_.is_bound())
     return base::UnguessableToken::Null();
   return host_id_;
-}
-
-void ApplicationCacheHost::SetHostID(const base::UnguessableToken& host_id) {
-  DCHECK(!host_id.is_empty());
-  host_id_ = host_id;
 }
 
 void ApplicationCacheHost::SelectCacheForSharedWorker(
@@ -163,6 +183,14 @@ mojom::AppCacheStatus ApplicationCacheHost::GetStatus() const {
 
 void ApplicationCacheHost::Abort() {
   // This is not implemented intentionally. See https://crbug.com/175063
+}
+
+bool ApplicationCacheHost::IsApplicationCacheEnabled() {
+  DCHECK(document_loader_->GetFrame());
+  return document_loader_->GetFrame()->GetSettings() &&
+         document_loader_->GetFrame()
+             ->GetSettings()
+             ->GetOfflineWebApplicationCacheEnabled();
 }
 
 void ApplicationCacheHost::CacheSelected(mojom::blink::AppCacheInfoPtr info) {
@@ -287,7 +315,11 @@ bool ApplicationCacheHost::BindBackend() {
   if (!task_runner_)
     return false;
 
-  DCHECK(!host_id_.is_empty());
+  // PlzNavigate: The browser passes the ID to be used.
+  if (!document_loader_->AppcacheHostId().is_empty())
+    host_id_ = document_loader_->AppcacheHostId();
+  else
+    host_id_ = base::UnguessableToken::Create();
 
   mojo::PendingRemote<mojom::blink::AppCacheFrontend> frontend_remote;
   receiver_.Bind(frontend_remote.InitWithNewPipeAndPassReceiver(),
@@ -315,6 +347,10 @@ bool ApplicationCacheHost::BindBackend() {
       backend_host_.BindNewPipeAndPassReceiver(std::move(task_runner_)),
       std::move(frontend_remote), host_id_);
   return true;
+}
+
+void ApplicationCacheHost::Trace(blink::Visitor* visitor) {
+  visitor->Trace(document_loader_);
 }
 
 }  // namespace blink

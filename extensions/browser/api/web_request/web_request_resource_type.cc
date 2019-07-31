@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
-#include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 
 namespace extensions {

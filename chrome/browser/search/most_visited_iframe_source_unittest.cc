@@ -11,7 +11,6 @@
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/grit/local_ntp_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -48,14 +47,13 @@ class TestMostVisitedIframeSource : public MostVisitedIframeSource {
 
   void StartDataRequest(
       const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override {}
 
   // RenderFrameHost is hard to mock in concert with everything else, so stub
   // this method out for testing.
-  bool GetOrigin(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      std::string* origin) const override {
+  bool GetOrigin(const content::WebContents::Getter& wc_getter,
+                 std::string* origin) const override {
     if (origin_.empty())
       return false;
     *origin = origin_;
@@ -91,9 +89,8 @@ class MostVisitedIframeSourceTest : public testing::Test {
   }
 
   void SendJSWithOrigin(int resource_id) {
-    source()->SendJSWithOrigin(
-        resource_id, content::ResourceRequestInfo::WebContentsGetter(),
-        callback_);
+    source()->SendJSWithOrigin(resource_id, content::WebContents::Getter(),
+                               callback_);
   }
 
   bool ShouldService(const std::string& path, int process_id) {

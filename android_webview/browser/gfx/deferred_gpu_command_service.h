@@ -5,23 +5,13 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_GFX_DEFERRED_GPU_COMMAND_SERVICE_H_
 #define ANDROID_WEBVIEW_BROWSER_GFX_DEFERRED_GPU_COMMAND_SERVICE_H_
 
-#include <stddef.h>
-
-#include <memory>
-#include <utility>
-
-#include "android_webview/browser/gfx/gpu_service_web_view.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
-#include "base/threading/thread_local.h"
-#include "base/time/time.h"
-#include "gpu/config/gpu_info.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 
 namespace android_webview {
+
+class GpuServiceWebView;
 class TaskQueueWebView;
-class ScopedAllowGL;
 
 // Implementation for gpu service objects accessor for command buffer WebView.
 class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
@@ -36,15 +26,10 @@ class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
   void ScheduleDelayedWork(base::OnceClosure task) override;
   void PostNonNestableToClient(base::OnceClosure callback) override;
 
-  const gpu::GPUInfo& gpu_info() const { return gpu_service_->gpu_info(); }
-
-  bool CanSupportThreadedTextureMailbox() const;
-
  protected:
   ~DeferredGpuCommandService() override;
 
  private:
-  friend class ScopedAllowGL;
   friend class TaskForwardingSequence;
 
   DeferredGpuCommandService(TaskQueueWebView* task_queue,

@@ -1270,12 +1270,6 @@ WebLocalFrameClient::AppCacheType LocalFrameClientImpl::GetAppCacheType() {
   return web_frame_->Client()->GetAppCacheType();
 }
 
-base::UnguessableToken
-LocalFrameClientImpl::GetAppCacheHostIDForSharedWorker() {
-  DCHECK(web_frame_->Client());
-  return web_frame_->Client()->GetAppCacheHostIDForSharedWorker();
-}
-
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kFollow,
                    WebLocalFrameClient::CrossOriginRedirects::kFollow);
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kNavigate,

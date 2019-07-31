@@ -164,9 +164,9 @@ int32_t PPB_VideoDecoder_Impl::Decode(
   DCHECK_GE(bitstream_buffer->id, 0);
   // TODO(crbug.com/844456): The shared memory buffer probably can be read-only,
   // but only after PPB_Buffer_Impl is updated to deal with that.
-  media::BitstreamBuffer decode_buffer(
-      bitstream_buffer->id, buffer->shared_memory()->handle(),
-      false /* read_only */, bitstream_buffer->size);
+  media::BitstreamBuffer decode_buffer(bitstream_buffer->id,
+                                       buffer->shared_memory().Duplicate(),
+                                       buffer->shared_memory().GetSize());
   if (!SetBitstreamBufferCallback(bitstream_buffer->id, callback))
     return PP_ERROR_BADARGUMENT;
 

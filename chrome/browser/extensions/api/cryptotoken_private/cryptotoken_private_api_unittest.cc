@@ -31,7 +31,7 @@ namespace {
 
 using namespace api::cryptotoken_private;
 
-bool GetSingleBooleanResult(UIThreadExtensionFunction* function, bool* result) {
+bool GetSingleBooleanResult(ExtensionFunction* function, bool* result) {
   const base::ListValue* result_list = function->GetResultList();
   if (!result_list) {
     ADD_FAILURE() << "Function has no result list.";

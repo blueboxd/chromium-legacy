@@ -44,21 +44,13 @@ const char kChromeLoadTimesPaintTiming[] =
 
 enum Milestone {
   kUnknown,
-  kM60,
   kM61,
   kM62,
-  kM63,
   kM64,
   kM65,
-  kM66,
-  kM67,
-  kM68,
-  kM69,
   kM70,
   kM71,
   kM72,
-  kM73,
-  kM74,
   kM75,
   kM76,
   kM77,
@@ -75,36 +67,20 @@ const char* MilestoneString(Milestone milestone) {
   switch (milestone) {
     case kUnknown:
       return "";
-    case kM60:
-      return "M60, around August 2017";
     case kM61:
       return "M61, around September 2017";
     case kM62:
       return "M62, around October 2017";
-    case kM63:
-      return "M63, around December 2017";
     case kM64:
       return "M64, around January 2018";
     case kM65:
       return "M65, around March 2018";
-    case kM66:
-      return "M66, around April 2018";
-    case kM67:
-      return "M67, around May 2018";
-    case kM68:
-      return "M68, around July 2018";
-    case kM69:
-      return "M69, around September 2018";
     case kM70:
       return "M70, around October 2018";
     case kM71:
       return "M71, around December 2018";
     case kM72:
       return "M72, around January 2019";
-    case kM73:
-      return "M73, around March 2019";
-    case kM74:
-      return "M74, around April 2019";
     case kM75:
       return "M75, around June 2019";
     case kM76:
@@ -132,36 +108,20 @@ double MilestoneDate(Milestone milestone) {
   switch (milestone) {
     case kUnknown:
       return 0;
-    case kM60:
-      return 1500955200000;  // July 25, 2017.
     case kM61:
       return 1504584000000;  // September 5, 2017.
     case kM62:
       return 1508212800000;  // October 17, 2017.
-    case kM63:
-      return 1512450000000;  // December 5, 2017.
     case kM64:
       return 1516683600000;  // January 23, 2018.
     case kM65:
       return 1520312400000;  // March 6, 2018.
-    case kM66:
-      return 1523937600000;  // April 17, 2018.
-    case kM67:
-      return 1527566400000;  // May 29, 2018.
-    case kM68:
-      return 1532404800000;  // July 24, 2018.
-    case kM69:
-      return 1536033600000;  // September 4, 2018.
     case kM70:
       return 1539662400000;  // October 16, 2018.
     case kM71:
       return 1543899600000;  // December 4, 2018.
     case kM72:
       return 1548734400000;  // January 29, 2019.
-    case kM73:
-      return 1552363200000;  // March 12, 2019.
-    case kM74:
-      return 1555992000000;  // April 23, 2019.
     case kM75:
       return 1559620800000;  // June 4, 2019.
     case kM76:

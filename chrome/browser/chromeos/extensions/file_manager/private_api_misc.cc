@@ -93,7 +93,7 @@ constexpr base::TimeDelta kMountCrostiniVerySlowOperationThreshold =
     base::TimeDelta::FromSeconds(30);
 
 // Obtains the current app window.
-AppWindow* GetCurrentAppWindow(UIThreadExtensionFunction* function) {
+AppWindow* GetCurrentAppWindow(ExtensionFunction* function) {
   content::WebContents* const contents = function->GetSenderWebContents();
   return contents
              ? AppWindowRegistry::Get(function->browser_context())

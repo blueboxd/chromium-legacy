@@ -65,6 +65,8 @@ MirroringActivityRecord::MirroringActivityRecord(
       on_stop_(std::move(callback)) {
   // TODO(jrw): Detect and report errors.
 
+  mirroring_tab_id_ = target_tab_id;
+
   // Get a reference to the mirroring service host.
   media_router->GetMirroringServiceHostForTab(target_tab_id,
                                               mojo::MakeRequest(&host_));
@@ -248,10 +250,6 @@ void MirroringActivityRecord::OnInternalMessage(
   CHECK(base::JSONWriter::Write(message.message, &ptr->json_format_data));
 
   channel_to_service_->Send(std::move(ptr));
-}
-
-void MirroringActivityRecord::OnSessionSet() {
-  std::move(on_session_set_).Run();
 }
 
 void MirroringActivityRecord::StopMirroring() {

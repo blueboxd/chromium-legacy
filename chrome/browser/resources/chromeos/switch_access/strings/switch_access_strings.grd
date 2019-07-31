@@ -192,6 +192,15 @@
       <message desc="The Switch Access action to set the end of a text selection area." name="IDS_SWITCH_ACCESS_SELECTION_END">
         Selection end
       </message>
+      <message desc="The Switch Access action to cut text." name="IDS_SWITCH_ACCESS_CUT">
+        Cut
+      </message>
+      <message desc="The Switch Access action to copy text." name="IDS_SWITCH_ACCESS_COPY">
+        Copy
+      </message>
+      <message desc="The Switch Access action to paste text." name="IDS_SWITCH_ACCESS_PASTE">
+        Paste
+      </message>
     </messages>
   </release>
 </grit>

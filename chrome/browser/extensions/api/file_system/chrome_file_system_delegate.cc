@@ -106,7 +106,7 @@ bool GetVolumeListForExtension(
 // Callback called when consent is granted or denied.
 void OnConsentReceived(
     content::BrowserContext* browser_context,
-    scoped_refptr<UIThreadExtensionFunction> requester,
+    scoped_refptr<ExtensionFunction> requester,
     const FileSystemDelegate::FileSystemCallback& success_callback,
     const FileSystemDelegate::ErrorCallback& error_callback,
     const std::string& extension_id,
@@ -252,7 +252,7 @@ base::FilePath ChromeFileSystemDelegate::GetDefaultDirectory() {
 }
 
 bool ChromeFileSystemDelegate::ShowSelectFileDialog(
-    scoped_refptr<UIThreadExtensionFunction> extension_function,
+    scoped_refptr<ExtensionFunction> extension_function,
     ui::SelectFileDialog::Type type,
     const base::FilePath& default_path,
     const ui::SelectFileDialog::FileTypeInfo* file_types,
@@ -282,7 +282,7 @@ bool ChromeFileSystemDelegate::ShowSelectFileDialog(
     return false;
   }
 
-  // The file picker will hold a reference to the UIThreadExtensionFunction
+  // The file picker will hold a reference to the ExtensionFunction
   // instance, preventing its destruction (and subsequent sending of the
   // function response) until the user has selected a file or cancelled the
   // picker. At that point, the picker will delete itself, which will also free
@@ -330,7 +330,7 @@ ChromeFileSystemDelegate::GetGrantVolumesMode(
 
 void ChromeFileSystemDelegate::RequestFileSystem(
     content::BrowserContext* browser_context,
-    scoped_refptr<UIThreadExtensionFunction> requester,
+    scoped_refptr<ExtensionFunction> requester,
     const Extension& extension,
     std::string volume_id,
     bool writable,

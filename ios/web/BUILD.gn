@@ -17,8 +17,6 @@ group("all_tests") {
 
 source_set("web") {
   public_deps = [
-    "//ios/web/public/service:service_names",
-
     # TODO(crbug.com/616244): Remove private files from public dependencies.
     ":threads",
     "//ios/web/navigation:core",
@@ -26,7 +24,6 @@ source_set("web") {
     "//ios/web/public",
     "//ios/web/public/download",
     "//ios/web/public/init",
-    "//ios/web/service",
     "//ios/web/web_state:web_state_impl_header",
     "//ios/web/web_state/ui",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
@@ -51,14 +48,12 @@ source_set("web") {
     "//ios/web/public/security",
     "//ios/web/public/session",
     "//ios/web/security",
-    "//ios/web/service",
     "//ios/web/session",
     "//ios/web/thread",
     "//ios/web/ui",
     "//ios/web/web_state",
     "//ios/web/web_state:web_view_internal_creation_util",
     "//services/network:network_service",
-    "//services/service_manager/public/cpp",
   ]
 
   sources = [
@@ -333,7 +328,6 @@ source_set("ios_web_net_unittests") {
     "//ios/web/test:test_support",
     "//ios/web/test/fakes",
     "//net:test_support",
-    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -398,7 +392,6 @@ source_set("ios_web_web_state_unittests") {
     "//ios/web/web_state:page_viewport_state",
     "//ios/web/web_state:web_view_internal_creation_util",
     "//net:test_support",
-    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -444,7 +437,6 @@ source_set("ios_web_web_state_js_unittests") {
     "//ios/web/web_state:context_menu",
     "//ios/web/web_state/js",
     "//net:test_support",
-    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -490,7 +482,6 @@ source_set("ios_web_web_state_ui_unittests") {
     "//ios/web/web_state/js",
     "//ios/web/web_state/ui:crw_context_menu_controller",
     "//net:test_support",
-    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -527,7 +518,6 @@ source_set("ios_web_webui_unittests") {
     "//ios/web/test:test_support",
     "//net:test_support",
     "//services/network:test_support",
-    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -576,7 +566,6 @@ test("ios_web_inttests") {
     "//mojo/core/embedder",
     "//net:test_support",
     "//services/network/public/cpp",
-    "//services/service_manager/public/cpp",
     "//testing/gtest",
     "//ui/base:test_support",
     "//ui/resources",

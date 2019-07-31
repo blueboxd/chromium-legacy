@@ -13,7 +13,7 @@ js_type_check("closure_compile") {
 js_library("imagecapture") {
   deps = [
     "//media/capture/mojom:image_capture_js_library_for_compile",
-    "//media/capture/video/chromeos/mojo:cros_camera_js_library_for_compile",
+    "//media/capture/video/chromeos/mojom:cros_camera_js_library_for_compile",
   ]
   externs_list = [ "$externs_path/pending.js" ]
 }

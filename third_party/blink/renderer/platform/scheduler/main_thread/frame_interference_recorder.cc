@@ -226,15 +226,7 @@ void FrameInterferenceRecorder::RecordHistogram(
   // with frames.
   DCHECK(GetFrameSchedulerForQueue(queue));
   const MainThreadTaskQueue::QueueType queue_type = queue->queue_type();
-  // TODO(altimin): Remove kDefault once there is no per-frame kDefault queue.
-  DCHECK(queue_type == MainThreadTaskQueue::QueueType::kDefault ||
-         queue_type == MainThreadTaskQueue::QueueType::kFrameLoading ||
-         queue_type == MainThreadTaskQueue::QueueType::kFrameLoadingControl ||
-         queue_type == MainThreadTaskQueue::QueueType::kFrameThrottleable ||
-         queue_type == MainThreadTaskQueue::QueueType::kFrameDeferrable ||
-         queue_type == MainThreadTaskQueue::QueueType::kFramePausable ||
-         queue_type == MainThreadTaskQueue::QueueType::kFrameUnpausable ||
-         queue_type == MainThreadTaskQueue::QueueType::kIdle);
+  DCHECK(MainThreadTaskQueue::IsPerFrameTaskQueue(queue_type));
 
   const std::string histogram_name =
       std::string("RendererScheduler.TimeRunningOtherFramesWhileTaskReady.") +

@@ -31,7 +31,6 @@ namespace {
 const int kPanelPositionButtonSize = 36;
 const int kPanelPositionButtonPadding = 14;
 const int kSeparatorHeight = 16;
-const SkColor kSeparatorColor = SkColorSetARGB(0x1A, 255, 255, 255);
 const SkColor kAutoclickMenuButtonColorActive = SkColorSetRGB(138, 180, 248);
 const SkColor kAutoclickMenuButtonIconColorActive = SkColorSetRGB(32, 33, 36);
 
@@ -119,11 +118,11 @@ class AutoclickMenuButton : public TopShortcutButton {
     SetImage(views::Button::STATE_NORMAL,
              gfx::CreateVectorIcon(
                  *icon_, toggled_ ? kAutoclickMenuButtonIconColorActive
-                                  : kUnifiedMenuIconColor));
+                                  : kIconOnDarkBackgroundColor));
     SetImage(views::Button::STATE_DISABLED,
              gfx::CreateVectorIcon(
                  *icon_, toggled_ ? kAutoclickMenuButtonIconColorActive
-                                  : kUnifiedMenuIconColor));
+                                  : kIconOnDarkBackgroundColor));
   }
 
   const gfx::VectorIcon* icon_;
@@ -214,7 +213,7 @@ AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
   AddChildView(action_button_container);
 
   views::Separator* separator = new views::Separator();
-  separator->SetColor(kSeparatorColor);
+  separator->SetColor(kSeparatorOnDarkBackgroundColor);
   separator->SetPreferredHeight(kSeparatorHeight);
   int total_height = kUnifiedTopShortcutSpacing * 2 + kTrayItemSize;
   int separator_spacing = (total_height - kSeparatorHeight) / 2;

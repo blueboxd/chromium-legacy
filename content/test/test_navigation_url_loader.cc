@@ -25,19 +25,13 @@ TestNavigationURLLoader::TestNavigationURLLoader(
     NavigationURLLoaderDelegate* delegate)
     : request_info_(std::move(request_info)),
       delegate_(delegate),
-      redirect_count_(0),
-      response_proceeded_(false) {
-}
+      redirect_count_(0) {}
 
 void TestNavigationURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     PreviewsState new_previews_state) {
   redirect_count_++;
-}
-
-void TestNavigationURLLoader::ProceedWithResponse() {
-  response_proceeded_ = true;
 }
 
 void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {

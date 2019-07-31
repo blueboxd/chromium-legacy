@@ -124,7 +124,7 @@ BluetoothSocketAsyncApiFunction::BluetoothSocketAsyncApiFunction() {}
 BluetoothSocketAsyncApiFunction::~BluetoothSocketAsyncApiFunction() {}
 
 bool BluetoothSocketAsyncApiFunction::PreRunValidation(std::string* error) {
-  if (!UIThreadExtensionFunction::PreRunValidation(error))
+  if (!ExtensionFunction::PreRunValidation(error))
     return false;
 
   if (!BluetoothManifestData::CheckSocketPermitted(extension())) {

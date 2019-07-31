@@ -63,6 +63,16 @@ ui::NativeTheme::State GetFallbackThemeState(const Node* node) {
   return ui::NativeTheme::kNormal;
 }
 
+static ui::NativeTheme::ColorScheme ToNativeColorScheme(
+    WebColorScheme color_scheme) {
+  switch (color_scheme) {
+    case WebColorScheme::kLight:
+      return ui::NativeTheme::ColorScheme::kLight;
+    case WebColorScheme::kDark:
+      return ui::NativeTheme::ColorScheme::kDark;
+  }
+}
+
 bool IsTemporalInput(const AtomicString& type) {
   return type == input_type_names::kDate ||
          type == input_type_names::kDatetimeLocal ||
@@ -548,7 +558,8 @@ bool ThemePainter::PaintCheckboxUsingFallbackTheme(const Node* node,
 
   GetFallbackTheme().Paint(
       paint_info.context.Canvas(), ui::NativeTheme::kCheckbox,
-      GetFallbackThemeState(node), unzoomed_rect, extra_params);
+      GetFallbackThemeState(node), unzoomed_rect, extra_params,
+      ToNativeColorScheme(style.UsedColorScheme()));
   return false;
 }
 
@@ -572,7 +583,8 @@ bool ThemePainter::PaintRadioUsingFallbackTheme(const Node* node,
 
   GetFallbackTheme().Paint(paint_info.context.Canvas(), ui::NativeTheme::kRadio,
                            GetFallbackThemeState(node), unzoomed_rect,
-                           extra_params);
+                           extra_params,
+                           ToNativeColorScheme(style.UsedColorScheme()));
   return false;
 }
 

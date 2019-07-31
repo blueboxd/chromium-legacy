@@ -185,6 +185,14 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
                                      const PropertyTreeState& layer_state,
                                      const PaintChunkSubset& paint_chunks);
 
+  // Update the cc::Layer's non-fast scrollable region from the non-fast regions
+  // in the paint chunks.
+  static void UpdateNonFastScrollableRegions(
+      cc::Layer*,
+      const gfx::Vector2dF& layer_offset,
+      const PropertyTreeState& layer_state,
+      const PaintChunkSubset& paint_chunks);
+
   void SetNeedsUpdate() { needs_update_ = true; }
   bool NeedsUpdate() const { return needs_update_; }
   void ClearNeedsUpdateForTesting() { needs_update_ = false; }
@@ -265,15 +273,14 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   bool PropertyTreeStateChanged(const PropertyTreeState&) const;
 
-  const TransformPaintPropertyNode& ScrollTranslationForPendingLayer(
+  const TransformPaintPropertyNode& ScrollOffsetTranslationForLayer(
       const PaintArtifact&,
       const PendingLayer&);
 
   // If the pending layer is a special scroll hit test layer, return the
-  // associated scroll offset translation node.
-  const TransformPaintPropertyNode* ScrollTranslationForScrollHitTestLayer(
-      const PaintArtifact&,
-      const PendingLayer&);
+  // associated hit test information.
+  const HitTestData::ScrollHitTest* ScrollHitTestForLayer(const PaintArtifact&,
+                                                          const PendingLayer&);
 
   // Finds an existing or creates a new scroll hit test layer for the pending
   // layer, returning nullptr if the layer is not a scroll hit test layer.

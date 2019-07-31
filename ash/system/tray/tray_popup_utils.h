@@ -100,13 +100,6 @@ class TrayPopupUtils {
   // TODO(bruthig): Update all system menu rows to use this.
   static views::ImageView* CreateMainImageView();
 
-  // Returns an image view to be used in the 'more' region of default rows. This
-  // is used for all 'more' images as well as other images that appear in this
-  // region, e.g. audio output icon.
-  //
-  // TODO(bruthig): Update all default rows to use this.
-  static views::ImageView* CreateMoreImageView();
-
   // Returns a slider configured for proper layout within a TriView container
   // with a FillLayout.
   static views::Slider* CreateSlider(views::SliderListener* listener);

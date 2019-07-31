@@ -164,6 +164,17 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                                                uint32_t preferred_fourcc,
                                                uint32_t* suitable_fourcc);
 
+  // Checks the surface size is allowed for VPP. Returns true if the size is
+  // supported, false otherwise.
+  static bool IsVppResolutionAllowed(const gfx::Size& size);
+
+  // Returns true if VPP supports the format conversion from a JPEG decoded
+  // internal surface to a FOURCC. |rt_format| corresponds to the JPEG's
+  // subsampling format. |fourcc| is the output surface's FOURCC.
+  static bool IsVppSupportedForJpegDecodedSurfaceToFourCC(
+      unsigned int rt_format,
+      uint32_t fourcc);
+
   // Return true when JPEG encode is supported.
   static bool IsJpegEncodeSupported();
 
@@ -242,6 +253,10 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Returns nullptr on failure.
   std::unique_ptr<NativePixmapAndSizeInfo> ExportVASurfaceAsNativePixmapDmaBuf(
       const ScopedVASurface& va_surface);
+
+  // Synchronize the VASurface explicitly. This is useful when sharing a surface
+  // between contexts.
+  bool SyncSurface(VASurfaceID va_surface_id);
 
   // Submit parameters or slice data of |va_buffer_type|, copying them from
   // |buffer| of size |size|, into HW codec. The data in |buffer| is no

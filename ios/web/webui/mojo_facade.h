@@ -9,14 +9,10 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/values.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-
-namespace service_manager {
-namespace mojom {
-class InterfaceProvider;
-}  // mojom
-}  // service_manager
 
 namespace web {
 
@@ -27,10 +23,9 @@ class WebState;
 // destroyed on UI thread.
 class MojoFacade {
  public:
-  // Constructs MojoFacade. The calling code must retain the ownership of
-  // |interface_provider| and |web_state|, both can not be null.
-  MojoFacade(service_manager::mojom::InterfaceProvider* interface_provider,
-             WebState* web_state);
+  // Constructs MojoFacade. The calling code must retain ownership of
+  // |web_state|, which cannot be null.
+  explicit MojoFacade(WebState* web_state);
   ~MojoFacade();
 
   // Handles Mojo message received from WebUI page. Returns a valid JSON string
@@ -112,8 +107,6 @@ class MojoFacade {
   // returned from "MojoHandle.watch").
   void HandleMojoWatcherCancel(base::Value args);
 
-  // Provides interfaces.
-  service_manager::mojom::InterfaceProvider* interface_provider_;
   // Runs JavaScript on WebUI page.
   WebState* web_state_ = nil;
   //  __weak id<CRWJSInjectionEvaluator> script_evaluator_ = nil;

@@ -43,6 +43,8 @@
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::OKButton;
 using chrome_test_util::SettingsDoneButton;
+using chrome_test_util::WebViewMatcher;
+
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
@@ -582,10 +584,7 @@ void TapSuppressDialogsButton() {
 
   // TODO(crbug.com/712358): Use method LongPressElementAndTapOnButton once
   // it is moved out of context_menu_egtests.mm and into a shared location.
-  id<GREYMatcher> webViewMatcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-
-  [[EarlGrey selectElementWithMatcher:webViewMatcher]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkID],
                         true /* menu should appear */)];

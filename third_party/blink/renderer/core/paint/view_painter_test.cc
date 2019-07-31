@@ -120,7 +120,11 @@ TEST_P(ViewPainterTest, DocumentFixedBackgroundHighDPI) {
   RunFixedBackgroundTest(true);
 }
 
-TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
+using ViewPainterScrollHitTestTest = PaintControllerPaintTest;
+
+INSTANTIATE_SCROLL_HIT_TEST_SUITE_P(ViewPainterScrollHitTestTest);
+
+TEST_P(ViewPainterScrollHitTestTest, DocumentBackgroundWithScroll) {
   SetBodyInnerHTML(R"HTML(
     <style>::-webkit-scrollbar { display: none }</style>
     <div style='height: 5000px'></div>
@@ -135,6 +139,11 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
         ElementsAre(IsSameId(&GetLayoutView(), DisplayItem::kScrollHitTest),
                     IsSameId(&ViewScrollingBackgroundClient(),
                              kDocumentBackgroundType)));
+    HitTestData scroll_hit_test_data;
+    const auto& scrolling_contents_properties =
+        GetLayoutView().FirstFragment().ContentsProperties();
+    scroll_hit_test_data.SetScrollHitTest(
+        &scrolling_contents_properties.Transform(), IntRect(0, 0, 800, 600));
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(
@@ -142,13 +151,15 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
                 0, 1,
                 PaintChunk::Id(*GetLayoutView().Layer(),
                                DisplayItem::kLayerChunkBackground),
-                GetLayoutView().FirstFragment().LocalBorderBoxProperties()),
-            IsPaintChunk(
-                1, 2,
-                PaintChunk::Id(ViewScrollingBackgroundClient(),
-                               kDocumentBackgroundType),
-                GetLayoutView().FirstFragment().ContentsProperties())));
+                GetLayoutView().FirstFragment().LocalBorderBoxProperties(),
+                scroll_hit_test_data),
+            IsPaintChunk(1, 2,
+                         PaintChunk::Id(ViewScrollingBackgroundClient(),
+                                        kDocumentBackgroundType),
+                         scrolling_contents_properties)));
   } else {
+    // Because the frame composited scrolls, no scroll hit test display item is
+    // needed.
     EXPECT_THAT(RootPaintController().GetDisplayItemList(),
                 ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
                                      kDocumentBackgroundType)));
@@ -161,7 +172,7 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
   }
 }
 
-TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
+TEST_P(ViewPainterScrollHitTestTest, FrameScrollHitTestProperties) {
   // This test depends on the CompositeAfterPaint behavior of painting solid
   // color backgrounds into both the non-scrolled and scrolled spaces.
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
@@ -191,6 +202,9 @@ TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
   const auto& paint_chunks = RootPaintController().PaintChunks();
   const auto& view_contents_properties =
       GetLayoutView().FirstFragment().ContentsProperties();
+  HitTestData scroll_hit_test_data;
+  scroll_hit_test_data.SetScrollHitTest(&view_contents_properties.Transform(),
+                                        IntRect(0, 0, 800, 600));
   EXPECT_THAT(
       paint_chunks,
       ElementsAre(
@@ -198,7 +212,8 @@ TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
               0, 1,
               PaintChunk::Id(*GetLayoutView().Layer(),
                              DisplayItem::kLayerChunkBackground),
-              GetLayoutView().FirstFragment().LocalBorderBoxProperties()),
+              GetLayoutView().FirstFragment().LocalBorderBoxProperties(),
+              scroll_hit_test_data),
           IsPaintChunk(1, 2,
                        PaintChunk::Id(ViewScrollingBackgroundClient(),
                                       kDocumentBackgroundType),
@@ -233,7 +248,7 @@ TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
           RootPaintController()
               .GetDisplayItemList()[scroll_hit_test_chunk.begin_index]);
   EXPECT_EQ(&contents_transform,
-            &scroll_hit_test_display_item.scroll_offset_node());
+            scroll_hit_test_display_item.scroll_offset_node());
 }
 
 class ViewPainterTouchActionRectTest : public ViewPainterTest {
@@ -284,6 +299,9 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
     HitTestData non_scrolling_hit_test_data;
     non_scrolling_hit_test_data.touch_action_rects.emplace_back(
         LayoutRect(0, 0, 800, 600));
+    HitTestData scroll_hit_test_data;
+    scroll_hit_test_data.SetScrollHitTest(&scrolling_properties.Transform(),
+                                          IntRect(0, 0, 800, 600));
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(
@@ -296,7 +314,8 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectScrollingContents) {
             IsPaintChunk(
                 1, 2,
                 PaintChunk::Id(GetLayoutView(), DisplayItem::kScrollHitTest),
-                GetLayoutView().FirstFragment().LocalBorderBoxProperties()),
+                GetLayoutView().FirstFragment().LocalBorderBoxProperties(),
+                scroll_hit_test_data),
             IsPaintChunk(
                 2, 4, PaintChunk::Id(scrolling_client, kDocumentBackgroundType),
                 scrolling_properties, view_hit_test_data),
@@ -352,6 +371,9 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectNonScrollingContents) {
   scrolling_hit_test_data.touch_action_rects.emplace_back(
       LayoutRect(0, 0, 800, 3000));
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    HitTestData scroll_hit_test_data;
+    scroll_hit_test_data.SetScrollHitTest(&scrolling_properties.Transform(),
+                                          IntRect(0, 0, 800, 600));
     EXPECT_THAT(
         RootPaintController().PaintChunks(),
         ElementsAre(
@@ -361,7 +383,7 @@ TEST_P(ViewPainterTouchActionRectTest, TouchActionRectNonScrollingContents) {
                          non_scrolling_properties, view_hit_test_data),
             IsPaintChunk(2, 3,
                          PaintChunk::Id(*view, DisplayItem::kScrollHitTest),
-                         non_scrolling_properties),
+                         non_scrolling_properties, scroll_hit_test_data),
             IsPaintChunk(3, 5,
                          PaintChunk::Id(*html->Layer(),
                                         kNonScrollingBackgroundChunkType),

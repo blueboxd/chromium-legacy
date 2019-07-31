@@ -13,20 +13,29 @@
 
 namespace cups_proxy {
 
+enum ValidateAttributeResult {
+  kSuccess = 0,
+
+  // Unknown attribute name.
+  kUnknownAttribute,
+  kFatalError,
+  kMaxValue,
+};
+
 // Validates an attribute |name| of type |type| in operation |ipp_oper_id|.
 // |values_count| represents number of values in the attribute. The following
 // constraints are enforced:
 // - only operations from predefined set are accepted
 // - only attributes from predefined set are accepted
-// - an attribute must be part of given operation (request or response)
-// - a type of the attribute must match the specification
+// - serialization type of the attribute must match the specification
 // - a single-value attribute cannot have more than one value
 // - a set-of-values attribute cannot be empty
-// Returns false <=> at least one of the constraints has been violated.
-bool ValidateAttribute(ipp_op_t ipp_oper_id,
-                       const std::string& name,
-                       cups_ipp_parser::mojom::ValueType type,
-                       size_t values_count);
+// Returns kFatalError <=> at least one of the constraints has been violated.
+ValidateAttributeResult ValidateAttribute(
+    ipp_op_t ipp_oper_id,
+    const std::string& name,
+    cups_ipp_parser::mojom::ValueType type,
+    size_t values_count);
 
 }  // namespace cups_proxy
 

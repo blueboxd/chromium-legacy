@@ -219,9 +219,6 @@ class Profile : public content::BrowserContext {
   // (i.e. HasOffTheRecordProfile is false).
   virtual PrefService* GetReadOnlyOffTheRecordPrefs();
 
-  // Returns the main request context.
-  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
-
   // Returns the main URLLoaderFactory.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;

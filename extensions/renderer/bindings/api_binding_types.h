@@ -44,12 +44,6 @@ enum class EventListenersChanged {
   kLastListenerWithFilterForContextOwnerRemoved,
 };
 
-// The browser thread that the request should be sent to.
-enum class RequestThread {
-  UI,
-  IO,
-};
-
 // Whether promises are supported in a given API function.
 enum class PromiseSupport {
   kAllowed,

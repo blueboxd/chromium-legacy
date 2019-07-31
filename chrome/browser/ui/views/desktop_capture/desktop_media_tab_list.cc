@@ -162,7 +162,7 @@ gfx::Size DesktopMediaTabList::CalculatePreferredSize() const {
   // hundreds of tabs, but don't show too few if there's only one tab because
   // the UI then looks squished.
   rows = base::ClampToRange(rows, 4, 10);
-  return gfx::Size(0, rows * child_->row_height());
+  return gfx::Size(0, rows * child_->GetRowHeight());
 }
 
 int DesktopMediaTabList::GetHeightForWidth(int width) const {
@@ -175,7 +175,7 @@ int DesktopMediaTabList::GetHeightForWidth(int width) const {
 }
 
 base::Optional<content::DesktopMediaID> DesktopMediaTabList::GetSelection() {
-  int row = child_->FirstSelectedRow();
+  int row = child_->GetFirstSelectedRow();
   if (row == -1)
     return base::nullopt;
   return controller_->GetSource(row).id;

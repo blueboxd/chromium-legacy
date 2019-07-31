@@ -365,16 +365,6 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         throw new RuntimeException("Cannot reorder bookmarks when bookmark reordering flag is off");
     }
 
-    @Override
-    public void moveToTop(BookmarkId bookmarkId) {
-        throw new RuntimeException("Cannot reorder bookmarks when bookmark reordering flag is off");
-    }
-
-    @Override
-    public void moveToBottom(BookmarkId bookmarkId) {
-        throw new RuntimeException("Cannot reorder bookmarks when bookmark reordering flag is off");
-    }
-
     private static class ItemViewHolder extends RecyclerView.ViewHolder {
         private ItemViewHolder(View view) {
             super(view);

@@ -25,7 +25,7 @@ class BrowserContext;
 namespace extensions {
 
 // Implementation of the chrome.power.requestKeepAwake API.
-class PowerRequestKeepAwakeFunction : public UIThreadExtensionFunction {
+class PowerRequestKeepAwakeFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("power.requestKeepAwake", POWER_REQUESTKEEPAWAKE)
 
@@ -37,7 +37,7 @@ class PowerRequestKeepAwakeFunction : public UIThreadExtensionFunction {
 };
 
 // Implementation of the chrome.power.releaseKeepAwake API.
-class PowerReleaseKeepAwakeFunction : public UIThreadExtensionFunction {
+class PowerReleaseKeepAwakeFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("power.releaseKeepAwake", POWER_RELEASEKEEPAWAKE)
 

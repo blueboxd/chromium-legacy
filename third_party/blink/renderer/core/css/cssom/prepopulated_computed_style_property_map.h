@@ -31,7 +31,6 @@ class CORE_EXPORT PrepopulatedComputedStylePropertyMap
   PrepopulatedComputedStylePropertyMap(
       const Document&,
       const ComputedStyle&,
-      const Node* styled_node,
       const Vector<CSSPropertyID>& native_properties,
       const Vector<AtomicString>& custom_properties);
 
@@ -54,7 +53,6 @@ class CORE_EXPORT PrepopulatedComputedStylePropertyMap
                             const ComputedStyle&,
                             const AtomicString& property_name);
 
-  Member<const Node> styled_node_;
   HeapHashMap<CSSPropertyID, Member<const CSSValue>> native_values_;
   HeapHashMap<AtomicString, Member<const CSSValue>> custom_values_;
 

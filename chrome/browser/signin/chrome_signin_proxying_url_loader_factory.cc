@@ -19,7 +19,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -41,7 +40,7 @@ class ResourceContextData : public base::SupportsUserData::Data {
 
   static void StartProxying(
       content::ResourceContext* resource_context,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      content::WebContents::Getter web_contents_getter,
       network::mojom::URLLoaderFactoryRequest request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -107,8 +106,6 @@ class ProxyingURLLoaderFactory::InProgressRequest
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
-
-  void ProceedWithResponse() override { target_loader_->ProceedWithResponse(); }
 
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {
@@ -205,8 +202,7 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
 
   ~ProxyRequestAdapter() override = default;
 
-  content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
-      const override {
+  content::WebContents::Getter GetWebContentsGetter() const override {
     return in_progress_request_->factory_->web_contents_getter_;
   }
 
@@ -271,8 +267,7 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyResponseAdapter
   ~ProxyResponseAdapter() override = default;
 
   // signin::ResponseAdapter
-  content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter()
-      const override {
+  content::WebContents::Getter GetWebContentsGetter() const override {
     return in_progress_request_->factory_->web_contents_getter_;
   }
 
@@ -411,7 +406,7 @@ void ProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
 
 ProxyingURLLoaderFactory::ProxyingURLLoaderFactory(
     std::unique_ptr<HeaderModificationDelegate> delegate,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents::Getter web_contents_getter,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory,
     DisconnectCallback on_disconnect) {

@@ -168,7 +168,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile());
     base::Optional<AccountInfo> primary_account =
-        identity_manager->FindExtendedAccountInfoForAccount(
+        identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identity_manager->GetPrimaryAccountInfo());
 
     std::string original_picture_url =

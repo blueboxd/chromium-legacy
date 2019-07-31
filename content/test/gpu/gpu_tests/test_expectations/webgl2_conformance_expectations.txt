@@ -254,6 +254,9 @@ crbug.com/687374 [ win amd-0x6613 ] deqp/functional/gles3/multisample.html [ Ret
 # Failing on AMD RX 550
 crbug.com/angleproject/3354 [ win amd-0x699f ] deqp/functional/gles3/fborender/shared_colorbuffer_02.html [ Skip ]
 
+# Flaky on AMD Win7
+crbug.com/989050 [ d3d11 win7 amd ] conformance2/textures/misc/tex-unpack-params-imagedata.html [ RetryOnFailure ]
+
 # Passthrough command decoder
 crbug.com/844349 [ passthrough ] conformance/misc/webgl-specific-stencil-settings.html [ Failure ]
 crbug.com/951628 [ passthrough ] conformance/rendering/blending.html [ Failure ]

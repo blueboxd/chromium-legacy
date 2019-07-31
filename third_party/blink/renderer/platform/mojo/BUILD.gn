@@ -8,7 +8,6 @@ source_set("geometry_struct_traits") {
     "geometry_struct_traits.h",
   ]
   public_deps = [
-    "//media/capture/mojom:video_capture",
     "//third_party/blink/public:blink_headers",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojom:mojom_blink_headers",

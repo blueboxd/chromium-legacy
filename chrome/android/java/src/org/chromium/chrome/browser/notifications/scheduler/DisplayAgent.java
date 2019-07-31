@@ -48,6 +48,8 @@ public class DisplayAgent {
             "org.chromium.chrome.browser.notifications.scheduler.EXTRA_GUID";
     private static final String EXTRA_ACTION_BUTTON_TYPE =
             "org.chromium.chrome.browser.notifications.scheduler.EXTRA_ACTION_BUTTON_TYPE";
+    private static final String EXTRA_ACTION_BUTTON_ID =
+            "org.chromium.chrome.browser.notifications.scheduler.EXTRA_ACTION_BUTTON_ID";
     private static final String EXTRA_SCHEDULER_CLIENT_TYPE =
             "org.chromium.chrome.browser.notifications.scheduler.EXTRA_SCHEDULER_CLIENT_TYPE ";
 
@@ -150,16 +152,19 @@ public class DisplayAgent {
             case NotificationIntentInterceptor.IntentType.UNKNOWN:
                 break;
             case NotificationIntentInterceptor.IntentType.CONTENT_INTENT:
-                nativeOnContentClick(Profile.getLastUsedProfile(), clientType, guid);
+                nativeOnUserAction(Profile.getLastUsedProfile(), clientType, UserActionType.CLICK,
+                        guid, ActionButtonType.UNKNOWN_ACTION, null);
                 break;
             case NotificationIntentInterceptor.IntentType.DELETE_INTENT:
-                nativeOnDismiss(Profile.getLastUsedProfile(), clientType, guid);
+                nativeOnUserAction(Profile.getLastUsedProfile(), clientType, UserActionType.DISMISS,
+                        guid, ActionButtonType.UNKNOWN_ACTION, null);
                 break;
             case NotificationIntentInterceptor.IntentType.ACTION_INTENT:
                 int actionButtonType = IntentUtils.safeGetIntExtra(
                         intent, EXTRA_ACTION_BUTTON_TYPE, ActionButtonType.UNKNOWN_ACTION);
-                nativeOnActionButton(
-                        Profile.getLastUsedProfile(), clientType, guid, actionButtonType);
+                String buttonId = IntentUtils.safeGetStringExtra(intent, EXTRA_ACTION_BUTTON_ID);
+                nativeOnUserAction(Profile.getLastUsedProfile(), clientType,
+                        UserActionType.BUTTON_CLICK, guid, actionButtonType, buttonId);
                 break;
         }
     }
@@ -228,6 +233,7 @@ public class DisplayAgent {
             Intent actionIntent = buildIntent(
                     context, NotificationIntentInterceptor.IntentType.ACTION_INTENT, systemData);
             actionIntent.putExtra(EXTRA_ACTION_BUTTON_TYPE, button.type);
+            actionIntent.putExtra(EXTRA_ACTION_BUTTON_ID, button.id);
 
             // TODO(xingliu): Support button icon. See https://crbug.com/983354
             builder.addAction(0 /*icon_id*/, button.text,
@@ -257,10 +263,7 @@ public class DisplayAgent {
 
     private DisplayAgent() {}
 
-    private static native void nativeOnContentClick(
-            Profile profile, @SchedulerClientType int type, String guid);
-    private static native void nativeOnDismiss(
-            Profile profile, @SchedulerClientType int type, String guid);
-    private static native void nativeOnActionButton(Profile profile,
-            @SchedulerClientType int clientType, String guid, @ActionButtonType int type);
+    private static native void nativeOnUserAction(Profile profile,
+            @SchedulerClientType int clientType, @UserActionType int actionType, String guid,
+            @ActionButtonType int type, String buttonId);
 }

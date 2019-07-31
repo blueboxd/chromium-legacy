@@ -29,7 +29,6 @@
 #include "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
-#include "ios/web/public/service/web_state_interface_provider.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
@@ -527,27 +526,13 @@ void WebStateImpl::CommitPreviewingViewController(
 
 #pragma mark - RequestTracker management
 
-WebStateInterfaceProvider* WebStateImpl::GetWebStateInterfaceProvider() {
-  if (!web_state_interface_provider_) {
-    web_state_interface_provider_ =
-        std::make_unique<WebStateInterfaceProvider>();
-  }
-  return web_state_interface_provider_.get();
-}
-
 void WebStateImpl::DidChangeVisibleSecurityState() {
   for (auto& observer : observers_)
     observer.DidChangeVisibleSecurityState(this);
 }
 
-void WebStateImpl::BindInterfaceRequestFromMainFrame(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (!GetWebStateInterfaceProvider()->registry()->TryBindInterface(
-          interface_name, &interface_pipe)) {
-    GetWebClient()->BindInterfaceRequestFromMainFrame(
-        this, interface_name, std::move(interface_pipe));
-  }
+WebState::InterfaceBinder* WebStateImpl::GetInterfaceBinderForMainFrame() {
+  return &interface_binder_;
 }
 
 #pragma mark - WebFrame management

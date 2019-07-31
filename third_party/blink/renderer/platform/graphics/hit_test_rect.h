@@ -11,10 +11,8 @@
 
 namespace blink {
 
+// TODO(pdr): Rename this TouchActionRect.
 struct PLATFORM_EXPORT HitTestRect {
-  // HitTestRect is a class shared by touch action region, wheel event handler
-  // region and non fast scrollable region. Wheel event handler region and
-  // non-fast scrollable rects use a |allowed_touch_action| of none.
   LayoutRect rect;
   TouchAction allowed_touch_action;
 

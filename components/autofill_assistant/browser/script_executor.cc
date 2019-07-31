@@ -443,6 +443,23 @@ bool ScriptExecutor::WaitForNavigation(
   return true;
 }
 
+void ScriptExecutor::GetDocumentReadyState(
+    const Selector& optional_frame,
+    base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+        callback) {
+  delegate_->GetWebController()->GetDocumentReadyState(optional_frame,
+                                                       std::move(callback));
+}
+
+void ScriptExecutor::WaitForDocumentReadyState(
+    const Selector& optional_frame,
+    DocumentReadyState min_ready_state,
+    base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+        callback) {
+  delegate_->GetWebController()->WaitForDocumentReadyState(
+      optional_frame, min_ready_state, std::move(callback));
+}
+
 void ScriptExecutor::LoadURL(const GURL& url) {
   delegate_->GetWebController()->LoadURL(url);
 }

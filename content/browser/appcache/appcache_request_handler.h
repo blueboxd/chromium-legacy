@@ -36,7 +36,6 @@ class AppCacheJob;
 class AppCacheSubresourceURLFactory;
 class AppCacheRequest;
 class AppCacheRequestHandlerTest;
-class AppCacheURLRequestJob;
 class AppCacheHost;
 
 // An instance is created for each net::URLRequest. The instance survives all
@@ -146,10 +145,6 @@ class CONTENT_EXPORT AppCacheRequestHandler
                                 const GURL& namespace_entry_url);
   void DeliverNetworkResponse();
   void DeliverErrorResponse();
-
-  // Called just before the request is restarted. Grabs the reason for
-  // restarting, so can correctly continue to handle the request.
-  void OnPrepareToRestartURLRequest();
 
   // Helper method to create an AppCacheJob and populate job_.
   // Caller takes ownership of returned value.

@@ -5,6 +5,7 @@
 #include "ui/views/controls/menu/menu_cocoa_watcher_mac.h"
 
 #import <Cocoa/Cocoa.h>
+#include <dispatch/dispatch.h>
 
 #import <utility>
 
@@ -12,17 +13,36 @@ namespace views {
 
 MenuCocoaWatcherMac::MenuCocoaWatcherMac(base::OnceClosure callback)
     : callback_(std::move(callback)) {
-  observer_token_ = [[NSNotificationCenter defaultCenter]
+  observer_token_other_menu_ = [[NSNotificationCenter defaultCenter]
       addObserverForName:NSMenuDidBeginTrackingNotification
                   object:[NSApp mainMenu]
                    queue:nil
               usingBlock:^(NSNotification* notification) {
-                std::move(this->callback_).Run();
+                ExecuteCallback();
+              }];
+  observer_token_new_window_focus_ = [[NSNotificationCenter defaultCenter]
+      addObserverForName:NSWindowDidBecomeKeyNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification* notification) {
+                ExecuteCallback();
               }];
 }
 
 MenuCocoaWatcherMac::~MenuCocoaWatcherMac() {
-  [[NSNotificationCenter defaultCenter] removeObserver:observer_token_];
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:observer_token_other_menu_];
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:observer_token_new_window_focus_];
+}
+
+void MenuCocoaWatcherMac::ExecuteCallback() {
+  __block base::OnceClosure callback = std::move(callback_);
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (callback) {
+      std::move(callback).Run();
+    }
+  });
 }
 
 }  // namespace views

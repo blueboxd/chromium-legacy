@@ -143,7 +143,7 @@ FILE_BUG_MESSAGE = (
     'If it persists, please file a bug with the command you used, git revision '
     'and args.gn config here: '
     'https://bugs.chromium.org/p/chromium/issues/entry?'
-    'components=Tools%3ECodeCoverage')
+    'components=Infra%3ETest%3ECodeCoverage')
 
 # String to replace with actual llvm profile path.
 LLVM_PROFILE_FILE_PATH_SUBSTITUTION = '<llvm_profile_file_path>'

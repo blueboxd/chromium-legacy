@@ -35,6 +35,15 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   using SurfaceIndexMap = base::flat_map<SurfaceId, uint64_t>;
   using FrameSinkIdMap = base::flat_map<FrameSinkId, LocalSurfaceId>;
 
+  // Interface that can modify the aggregated CompositorFrame to annotate it.
+  // For example it could add extra quads.
+  class FrameAnnotator {
+   public:
+    virtual ~FrameAnnotator() = default;
+
+    virtual void AnnotateAggregatedFrame(CompositorFrame* frame) = 0;
+  };
+
   SurfaceAggregator(SurfaceManager* manager,
                     DisplayResourceProvider* provider,
                     bool aggregate_only_damaged,
@@ -62,6 +71,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void SetMaximumTextureSize(int max_texture_size);
 
   bool NotifySurfaceDamageAndCheckForDisplayDamage(const SurfaceId& surface_id);
+
+  void SetFrameAnnotator(std::unique_ptr<FrameAnnotator> frame_annotator);
 
  private:
   struct ClipData {
@@ -325,6 +336,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // For each FrameSinkId, contains a vector of SurfaceRanges that will damage
   // the display if they're damaged.
   base::flat_map<FrameSinkId, std::vector<SurfaceRange>> damage_ranges_;
+
+  // Used to annotate the aggregated frame for debugging.
+  std::unique_ptr<FrameAnnotator> frame_annotator_;
 
   int64_t display_trace_id_ = -1;
   base::flat_set<SurfaceId> undrawn_surfaces_;

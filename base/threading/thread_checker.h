@@ -79,6 +79,12 @@ namespace base {
 class ThreadCheckerDoNothing {
  public:
   ThreadCheckerDoNothing() = default;
+
+  // Moving between matching threads is allowed to help classes with
+  // ThreadCheckers that want a default move-construct/assign.
+  ThreadCheckerDoNothing(ThreadCheckerDoNothing&& other) = default;
+  ThreadCheckerDoNothing& operator=(ThreadCheckerDoNothing&& other) = default;
+
   bool CalledOnValidThread() const WARN_UNUSED_RESULT { return true; }
   void DetachFromThread() {}
 

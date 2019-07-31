@@ -324,19 +324,21 @@ interface NetworkService {
   // resolver.
   //
   // |dns_over_https_servers| is an optional list of DNS over HTTPS servers.
-  // When populated, all DNS lookups will try to use DNS over HTTPS in the order
-  // the servers are provided in and will only fall back to using system
-  // settings if DNS over HTTPS fails. It is illegal to have a populated
-  // |dns_over_https_servers| when |stub_resolver_enabled| is false.
+  // DnsTransactions will by default follow the behavior of |secure_dns_mode|.
+  // In SECURE mode, only DoH lookups will be performed. In AUTOMATIC mode,
+  // DoH lookups to available servers will be performed first, and insecure
+  // lookups will be used as a fallback. In OFF mode, only insecure lookups will
+  // be performed. When insecure lookups are performed, they will be sent by
+  // the async resolver first if |insecure_dns_client_enabled| is true and
+  // then by the system resolver as a fallback.
   //
   // DNS over HTTPS will use the primary NetworkContext, so can only be enabled
   // after the primary network context has been created. Other than that
   // limitation, this method can be called at any time to change DNS
   // configuration, though calling it will fail any DNS lookups that have
   // already been started.
-  //
-  // Both the stub resolver and DNS over HTTPS are disabled by default.
-  ConfigureStubHostResolver(bool stub_resolver_enabled,
+  ConfigureStubHostResolver(bool insecure_dns_client_enabled,
+                            SecureDnsMode secure_dns_mode,
                             array<DnsOverHttpsServer>? dns_over_https_servers);
 
   // Disables QUIC for the NetworkService. Affects all existing NetworkContexts,

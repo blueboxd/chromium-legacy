@@ -67,7 +67,6 @@ CSSValue* ComputedStyleUtils::ValueForPosition(const LengthPoint& position,
 
 CSSValue* ComputedStyleUtils::ValueForOffset(const ComputedStyle& style,
                                              const LayoutObject* layout_object,
-                                             const Node* styled_node,
                                              bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
@@ -84,7 +83,7 @@ CSSValue* ComputedStyleUtils::ValueForOffset(const ComputedStyle& style,
                                             &GetCSSPropertyOffsetRotate()};
   for (const CSSProperty* longhand : longhands) {
     const CSSValue* value = longhand->CSSValueFromComputedStyle(
-        style, layout_object, styled_node, allow_visited_style);
+        style, layout_object, allow_visited_style);
     DCHECK(value);
     list->Append(*value);
   }
@@ -219,7 +218,6 @@ const CSSValue* ComputedStyleUtils::ValueForFillRepeat(EFillRepeat x_repeat,
 const CSSValueList* ComputedStyleUtils::ValuesForBackgroundShorthand(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* result = CSSValueList::CreateCommaSeparated();
   const FillLayer* curr_layer = &style.BackgroundLayers();
@@ -229,7 +227,7 @@ const CSSValueList* ComputedStyleUtils::ValuesForBackgroundShorthand(
     if (!curr_layer->Next()) {  // color only for final layer
       const CSSValue* value =
           GetCSSPropertyBackgroundColor().CSSValueFromComputedStyle(
-              style, layout_object, styled_node, allow_visited_style);
+              style, layout_object, allow_visited_style);
       DCHECK(value);
       before_slash->Append(*value);
     }
@@ -508,15 +506,9 @@ CSSValue* ComputedStyleUtils::ValueForReflection(
 }
 
 CSSValue* ComputedStyleUtils::MinWidthOrMinHeightAuto(
-    const Node* styled_node,
     const ComputedStyle& style) {
-  LayoutObject* layout_object =
-      styled_node ? styled_node->GetLayoutObject() : nullptr;
-  if (layout_object && layout_object->IsBox() &&
-      (ToLayoutBox(layout_object)->IsFlexItemIncludingNG() ||
-       ToLayoutBox(layout_object)->IsGridItem())) {
+  if (style.IsFlexOrGridOrCustomItem() && !style.IsEnsuredInDisplayNone())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  }
   return ZoomAdjustedPixelValue(0, style);
 }
 
@@ -2204,13 +2196,12 @@ CSSValueList* ComputedStyleUtils::ValuesForShorthandProperty(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (unsigned i = 0; i < shorthand.length(); ++i) {
     const CSSValue* value =
         shorthand.properties()[i]->CSSValueFromComputedStyle(
-            style, layout_object, styled_node, allow_visited_style);
+            style, layout_object, allow_visited_style);
     DCHECK(value);
     list->Append(*value);
   }
@@ -2221,13 +2212,12 @@ CSSValueList* ComputedStyleUtils::ValuesForGridShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSlashSeparated();
   for (unsigned i = 0; i < shorthand.length(); ++i) {
     const CSSValue* value =
         shorthand.properties()[i]->CSSValueFromComputedStyle(
-            style, layout_object, styled_node, allow_visited_style);
+            style, layout_object, allow_visited_style);
     DCHECK(value);
     list->Append(*value);
   }
@@ -2238,22 +2228,21 @@ CSSValueList* ComputedStyleUtils::ValuesForSidesShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   // Assume the properties are in the usual order top, right, bottom, left.
   const CSSValue* top_value =
-      shorthand.properties()[0]->CSSValueFromComputedStyle(
-          style, layout_object, styled_node, allow_visited_style);
+      shorthand.properties()[0]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
   const CSSValue* right_value =
-      shorthand.properties()[1]->CSSValueFromComputedStyle(
-          style, layout_object, styled_node, allow_visited_style);
+      shorthand.properties()[1]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
   const CSSValue* bottom_value =
-      shorthand.properties()[2]->CSSValueFromComputedStyle(
-          style, layout_object, styled_node, allow_visited_style);
+      shorthand.properties()[2]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
   const CSSValue* left_value =
-      shorthand.properties()[3]->CSSValueFromComputedStyle(
-          style, layout_object, styled_node, allow_visited_style);
+      shorthand.properties()[3]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
 
   // All 4 properties must be specified.
   if (!top_value || !right_value || !bottom_value || !left_value)
@@ -2278,14 +2267,13 @@ CSSValuePair* ComputedStyleUtils::ValuesForInlineBlockShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    const Node* styled_node,
     bool allow_visited_style) {
   const CSSValue* start_value =
-      shorthand.properties()[0]->CSSValueFromComputedStyle(
-          style, layout_object, styled_node, allow_visited_style);
+      shorthand.properties()[0]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
   const CSSValue* end_value =
-      shorthand.properties()[1]->CSSValueFromComputedStyle(
-          style, layout_object, styled_node, allow_visited_style);
+      shorthand.properties()[1]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
   // Both properties must be specified.
   if (!start_value || !end_value)
     return nullptr;
@@ -2299,14 +2287,13 @@ CSSValuePair* ComputedStyleUtils::ValuesForPlaceShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    const Node* styled_node,
     bool allow_visited_style) {
   const CSSValue* align_value =
-      shorthand.properties()[0]->CSSValueFromComputedStyle(
-          style, layout_object, styled_node, allow_visited_style);
+      shorthand.properties()[0]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
   const CSSValue* justify_value =
-      shorthand.properties()[1]->CSSValueFromComputedStyle(
-          style, layout_object, styled_node, allow_visited_style);
+      shorthand.properties()[1]->CSSValueFromComputedStyle(style, layout_object,
+                                                           allow_visited_style);
 
   return MakeGarbageCollected<CSSValuePair>(align_value, justify_value,
                                             CSSValuePair::kDropIdenticalValues);
@@ -2325,7 +2312,6 @@ static CSSValue* ExpandNoneLigaturesValue() {
 CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    const Node* styled_node,
     bool allow_visited_style) {
   enum VariantShorthandCases {
     kAllNormal,
@@ -2337,7 +2323,7 @@ CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
   for (unsigned i = 0; i < shorthand.length(); ++i) {
     const CSSValue* value =
         shorthand.properties()[i]->CSSValueFromComputedStyle(
-            style, layout_object, styled_node, allow_visited_style);
+            style, layout_object, allow_visited_style);
 
     auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
     if (shorthand_case == kAllNormal && identifier_value &&
@@ -2362,7 +2348,7 @@ CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
       for (unsigned i = 0; i < shorthand.length(); ++i) {
         const CSSValue* value =
             shorthand.properties()[i]->CSSValueFromComputedStyle(
-                style, layout_object, styled_node, allow_visited_style);
+                style, layout_object, allow_visited_style);
         DCHECK(value);
         auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
         if (identifier_value &&

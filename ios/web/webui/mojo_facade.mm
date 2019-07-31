@@ -21,8 +21,8 @@
 #include "base/values.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "ios/web/public/web_state/web_state.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/system/core.h"
-#include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -30,12 +30,8 @@
 
 namespace web {
 
-MojoFacade::MojoFacade(
-    service_manager::mojom::InterfaceProvider* interface_provider,
-    WebState* web_state)
-    : interface_provider_(interface_provider), web_state_(web_state) {
+MojoFacade::MojoFacade(WebState* web_state) : web_state_(web_state) {
   DCHECK_CURRENTLY_ON(WebThread::UI);
-  DCHECK(interface_provider_);
   DCHECK(web_state_);
 }
 
@@ -106,10 +102,8 @@ void MojoFacade::HandleMojoBindInterface(base::Value args) {
 
   mojo::ScopedMessagePipeHandle handle(
       static_cast<mojo::MessagePipeHandle>(*raw_handle));
-
-  // By design interface_provider.getInterface either succeeds or crashes, so
-  // check if interface name is a valid string is intentionally omitted.
-  interface_provider_->GetInterface(*interface_name, std::move(handle));
+  web_state_->GetInterfaceBinderForMainFrame()->BindInterface(
+      mojo::GenericPendingReceiver(*interface_name, std::move(handle)));
 }
 
 void MojoFacade::HandleMojoHandleClose(base::Value args) {

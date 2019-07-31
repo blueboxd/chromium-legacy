@@ -188,6 +188,39 @@ TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
                                               HasId("B"), HasId("A"))));
 }
 
+TEST_F(SearchResultRankerTest, AppModelImprovesScores) {
+  auto ranker = MakeRanker(false);
+  ranker->InitializeRankers();
+  Wait();
+
+  AppLaunchData app_A;
+  app_A.id = "A";
+  app_A.ranking_item_type = RankingItemType::kApp;
+
+  AppLaunchData app_B;
+  app_B.id = "B";
+  app_B.ranking_item_type = RankingItemType::kApp;
+
+  for (int i = 0; i < 20; ++i) {
+    ranker->Train(app_A);
+    ranker->Train(app_B);
+    ranker->Train(app_A);
+  }
+  ranker->FetchRankings(base::string16());
+
+  auto results =
+      MakeSearchResults({"A", "B", "C", "D"},
+                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
+                         ResultType::kInstalledApp, ResultType::kInstalledApp},
+                        {0.1f, 0.2f, 0.3f, 0.4f});
+
+  ranker->Rank(&results);
+  // The relevance scores put D > C > B > A, but we've trained on A the most,
+  // B half as much, and C and D not at all. So we expect A > B > D > C.
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("A"), HasId("B"),
+                                              HasId("D"), HasId("C"))));
+}
+
 TEST_F(SearchResultRankerTest, DefaultQueryMixedModelImprovesScores) {
   // Without the |use_category_model| parameter, the ranker defaults to the item
   // model.  With the |config| parameter, the ranker uses the default predictor

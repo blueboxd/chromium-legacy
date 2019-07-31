@@ -15,12 +15,15 @@
 #include "components/offline_pages/core/archive_validator.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 
 namespace base {
 class FilePath;
 class TaskRunner;
+}
+
+namespace content {
+class WebContents;
 }
 
 namespace net {

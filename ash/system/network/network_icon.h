@@ -30,6 +30,9 @@ enum IconType {
 // Strength of a wireless signal.
 enum class SignalStrength { NONE, WEAK, MEDIUM, STRONG };
 
+// Returns the color of an icon on the given |icon_type|.
+SkColor GetDefaultColorForIconType(IconType icon_type);
+
 // Returns an image to represent either a fully connected network or a
 // disconnected network.
 const gfx::ImageSkia GetBasicImage(

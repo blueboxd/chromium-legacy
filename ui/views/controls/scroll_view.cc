@@ -308,7 +308,7 @@ void ScrollView::SetDrawOverflowIndicator(bool draw_overflow_indicator) {
   if (draw_overflow_indicator_ == draw_overflow_indicator)
     return;
   draw_overflow_indicator_ = draw_overflow_indicator;
-  OnPropertyChanged(&draw_overflow_indicator, kPropertyEffectsPaint);
+  OnPropertyChanged(&draw_overflow_indicator_, kPropertyEffectsPaint);
 }
 
 void ScrollView::ClipHeightTo(int min_height, int max_height) {
@@ -349,7 +349,7 @@ void ScrollView::SetHasFocusIndicator(bool has_focus_indicator) {
 
     focus_ring_->SchedulePaint();
   SchedulePaint();
-  OnPropertyChanged(&has_focus_indicator, kPropertyEffectsPaint);
+  OnPropertyChanged(&draw_focus_indicator_, kPropertyEffectsPaint);
 }
 
 gfx::Size ScrollView::CalculatePreferredSize() const {

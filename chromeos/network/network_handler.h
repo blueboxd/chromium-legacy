@@ -85,6 +85,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
 
   // Global network configuration services.
   UIProxyConfigService* ui_proxy_config_service();
+  bool has_ui_proxy_config_service() { return ui_proxy_config_service_.get(); }
 
  private:
   NetworkHandler();

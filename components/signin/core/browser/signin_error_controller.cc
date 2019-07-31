@@ -27,10 +27,10 @@ void SigninErrorController::Shutdown() {
 
 void SigninErrorController::Update() {
   const GoogleServiceAuthError::State prev_error_state = auth_error_.state();
-  const std::string prev_account_id = error_account_id_;
+  const CoreAccountId prev_account_id = error_account_id_;
   bool error_changed = false;
 
-  const std::string& primary_account_id =
+  const CoreAccountId& primary_account_id =
       identity_manager_->GetPrimaryAccountId();
 
   if (identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
@@ -51,7 +51,7 @@ void SigninErrorController::Update() {
   if (!error_changed && prev_error_state != GoogleServiceAuthError::NONE) {
     // No provider reported an error, so clear the error we have now.
     auth_error_ = GoogleServiceAuthError::AuthErrorNone();
-    error_account_id_.clear();
+    error_account_id_ = CoreAccountId();
     error_changed = true;
   }
 
@@ -70,8 +70,8 @@ void SigninErrorController::Update() {
 }
 
 bool SigninErrorController::UpdateSecondaryAccountErrors(
-    const std::string& primary_account_id,
-    const std::string& prev_account_id,
+    const CoreAccountId& primary_account_id,
+    const CoreAccountId& prev_account_id,
     const GoogleServiceAuthError::State& prev_error_state) {
   // This method should not have been called if we are in
   // |AccountMode::PRIMARY_ACCOUNT|.
@@ -84,7 +84,7 @@ bool SigninErrorController::UpdateSecondaryAccountErrors(
   bool error_changed = false;
   for (const CoreAccountInfo& account_info :
        identity_manager_->GetAccountsWithRefreshTokens()) {
-    std::string account_id = account_info.account_id;
+    CoreAccountId account_id = account_info.account_id;
 
     // Ignore the Primary Account. We are only interested in Secondary Accounts.
     if (account_id == primary_account_id) {

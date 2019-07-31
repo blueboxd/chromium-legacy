@@ -57,7 +57,7 @@ class KidsChromeManagementClient : public KeyedService {
 
   // Interface to KidsManagementURLCheckerClient. Classifies a URL as safe
   // or restricted for a supervised user.
-  void ClassifyURL(
+  virtual void ClassifyURL(
       std::unique_ptr<kids_chrome_management::ClassifyUrlRequest> request_proto,
       KidsChromeManagementCallback callback);
 

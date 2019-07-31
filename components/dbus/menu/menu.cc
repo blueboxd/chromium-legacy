@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <memory>
+#include <set>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -17,7 +18,6 @@
 #include "components/dbus/menu/properties_interface.h"
 #include "components/dbus/menu/success_barrier_callback.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/simple_menu_model.h"
 
@@ -46,6 +46,7 @@ const char kPropertyValueStatusNormal[] = "normal";
 uint32_t kPropertyValueVersion = 3;
 
 // Signals.
+const char kSignalItemsPropertiesUpdated[] = "ItemsPropertiesUpdated";
 const char kSignalLayoutUpdated[] = "LayoutUpdated";
 
 // Creates a variant with the default value for |property_name|, or an empty
@@ -76,6 +77,20 @@ DbusVariant CreateDefaultPropertyValue(const std::string& property_name) {
 
 DbusString DbusTextDirection() {
   return DbusString(base::i18n::IsRTL() ? "rtl " : "ltr");
+}
+
+void WriteRemovedProperties(dbus::MessageWriter* writer,
+                            const MenuPropertyChanges& removed_props) {
+  dbus::MessageWriter removed_props_writer(nullptr);
+  writer->OpenArray("(ias)", &removed_props_writer);
+  for (const auto& pair : removed_props) {
+    dbus::MessageWriter struct_writer(nullptr);
+    removed_props_writer.OpenStruct(&struct_writer);
+    struct_writer.AppendInt32(pair.first);
+    struct_writer.AppendArrayOfStrings(pair.second);
+    removed_props_writer.CloseContainer(&struct_writer);
+  }
+  writer->CloseContainer(&removed_props_writer);
 }
 
 }  // namespace
@@ -165,24 +180,66 @@ DbusMenu::~DbusMenu() = default;
 void DbusMenu::SetModel(ui::MenuModel* model, bool send_signal) {
   items_.clear();
 
+  std::map<std::string, DbusVariant> properties;
+  std::vector<int32_t> children;
   if (model) {
-    std::map<std::string, DbusVariant> properties;
     properties["children-display"] = MakeDbusVariant(DbusString("submenu"));
-    items_[0] = std::make_unique<MenuItem>(
-        0, std::move(properties), ConvertMenu(model), nullptr, nullptr, -1);
-  } else {
-    items_[0] = std::make_unique<MenuItem>(
-        0, std::map<std::string, DbusVariant>(), std::vector<int32_t>(),
-        nullptr, nullptr, -1);
+    children = ConvertMenu(model);
+  }
+  items_[0] = std::make_unique<MenuItem>(
+      0, std::move(properties), std::move(children), nullptr, nullptr, -1);
+
+  if (send_signal)
+    SendLayoutChangedSignal(0);
+}
+
+void DbusMenu::MenuLayoutUpdated(ui::MenuModel* model) {
+  MenuItem* item = FindMenuItemForModel(model, items_[0].get());
+  DCHECK(item);
+  DeleteItemChildren(item);
+  item->children = ConvertMenu(model);
+  SendLayoutChangedSignal(item->id);
+}
+
+void DbusMenu::MenuItemsPropertiesUpdated(
+    const std::vector<MenuItemReference>& menu_items) {
+  if (menu_items.empty())
+    return;
+
+  MenuPropertyChanges updated_props;
+  MenuPropertyChanges removed_props;
+  for (const auto& menu_item : menu_items) {
+    ui::MenuModel* menu = menu_item.first;
+    int index = menu_item.second;
+    MenuItem* parent = FindMenuItemForModel(menu, items_[0].get());
+    MenuItem* item = nullptr;
+    for (int32_t id : parent->children) {
+      MenuItem* child = items_[id].get();
+      DCHECK_EQ(child->containing_menu, menu);
+      if (child->containing_menu_index == index) {
+        item = child;
+        break;
+      }
+    }
+    DCHECK(item);
+
+    auto old_properties = std::move(item->properties);
+    item->properties = ComputeMenuPropertiesForMenuItem(menu, index);
+    MenuPropertyList item_updated_props;
+    MenuPropertyList item_removed_props;
+    ComputeMenuPropertyChanges(old_properties, item->properties,
+                               &item_updated_props, &item_removed_props);
+    if (!item_updated_props.empty())
+      updated_props[item->id] = std::move(item_updated_props);
+    if (!item_removed_props.empty())
+      removed_props[item->id] = std::move(item_removed_props);
   }
 
-  if (send_signal) {
-    dbus::Signal signal(kInterfaceDbusMenu, kSignalLayoutUpdated);
-    dbus::MessageWriter writer(&signal);
-    writer.AppendUint32(++revision_);  // Revision of the new layout.
-    writer.AppendInt32(0);             // Parent item whose layout changed.
-    menu_->SendSignal(&signal);
-  }
+  dbus::Signal signal(kInterfaceDbusMenu, kSignalItemsPropertiesUpdated);
+  dbus::MessageWriter writer(&signal);
+  WriteUpdatedProperties(&writer, updated_props);
+  WriteRemovedProperties(&writer, removed_props);
+  menu_->SendSignal(&signal);
 }
 
 // static
@@ -270,12 +327,12 @@ void DbusMenu::OnGetGroupProperties(ScopedMethodResponse* response) {
   dbus::MessageReader id_reader(nullptr);
   if (!response->reader().PopArray(&id_reader))
     return;
-  std::set<int32_t> ids;
+  std::vector<int32_t> ids;
   while (id_reader.HasMoreData()) {
     int32_t id;
     if (!id_reader.PopInt32(&id))
       return;
-    ids.insert(id);
+    ids.push_back(id);
   }
 
   std::set<std::string> property_filter;
@@ -292,15 +349,14 @@ void DbusMenu::OnGetGroupProperties(ScopedMethodResponse* response) {
   dbus::MessageWriter& writer = response->Writer();
   dbus::MessageWriter item_writer(nullptr);
   writer.OpenArray("(ia{sv})", &item_writer);
-  for (const auto& item_pair : items_) {
-    if (!ids.empty() && !base::Contains(ids, item_pair.first))
-      continue;
+
+  auto write_item = [&](int32_t id, const MenuItem& item) {
     dbus::MessageWriter struct_writer(nullptr);
     item_writer.OpenStruct(&struct_writer);
-    struct_writer.AppendInt32(item_pair.first);
+    struct_writer.AppendInt32(id);
     dbus::MessageWriter property_writer(nullptr);
     struct_writer.OpenArray("{sv}", &property_writer);
-    for (const auto& property_pair : item_pair.second->properties) {
+    for (const auto& property_pair : item.properties) {
       if (!property_filter.empty() &&
           !base::Contains(property_filter, property_pair.first)) {
         continue;
@@ -313,7 +369,19 @@ void DbusMenu::OnGetGroupProperties(ScopedMethodResponse* response) {
     }
     struct_writer.CloseContainer(&property_writer);
     item_writer.CloseContainer(&struct_writer);
+  };
+
+  if (ids.empty()) {
+    for (const auto& item_pair : items_)
+      write_item(item_pair.first, *item_pair.second);
+  } else {
+    for (int32_t id : ids) {
+      auto it = items_.find(id);
+      if (it != items_.end())
+        write_item(id, *it->second);
+    }
   }
+
   writer.CloseContainer(&item_writer);
 }
 
@@ -321,7 +389,7 @@ void DbusMenu::OnGetLayout(ScopedMethodResponse* response) {
   dbus::MessageReader& reader = response->reader();
   int32_t id;
   int32_t depth;
-  std::vector<std::string> property_filter;
+  MenuPropertyList property_filter;
   if (!reader.PopInt32(&id) || !reader.PopInt32(&depth) || depth < -1 ||
       !reader.PopArrayOfStrings(&property_filter)) {
     return;
@@ -393,7 +461,8 @@ bool DbusMenu::EventImpl(dbus::MessageReader* reader, int32_t* id_error) {
       return false;
     item->containing_menu->ActivatedAt(item->containing_menu_index);
   } else {
-    DCHECK_EQ("hovered", type);
+    DCHECK(type == "hovered" || type == "opened" || type == "closed")
+        << "Unexpected type: " << type;
     // Nothing to do.
   }
 
@@ -407,84 +476,13 @@ std::vector<int32_t> DbusMenu::ConvertMenu(ui::MenuModel* menu) {
   items.reserve(menu->GetItemCount());
 
   for (int i = 0; i < menu->GetItemCount(); ++i) {
-    // Properties should only be set if they differ from the default values.
-    std::map<std::string, DbusVariant> properties;
-
-    // The dbusmenu interface has no concept of a "sublabel", "minor text", or
-    // "minor icon" like MenuModel has.  Ignore these rather than trying to
-    // merge them with the regular label and icon.
-    base::string16 label = menu->GetLabelAt(i);
-    if (!label.empty()) {
-      properties["label"] = MakeDbusVariant(DbusString(
-          ui::ConvertAcceleratorsFromWindowsStyle(base::UTF16ToUTF8(label))));
-    }
-
-    if (!menu->IsEnabledAt(i))
-      properties["enabled"] = MakeDbusVariant(DbusBoolean(false));
-    if (!menu->IsVisibleAt(i))
-      properties["visible"] = MakeDbusVariant(DbusBoolean(false));
-
-    gfx::Image icon;
-    if (menu->GetIconAt(i, &icon)) {
-      properties["icon-data"] =
-          MakeDbusVariant(DbusByteArray(icon.As1xPNGBytes()));
-    }
-
-    ui::Accelerator accelerator;
-    if (menu->GetAcceleratorAt(i, &accelerator)) {
-      std::vector<DbusString> parts;
-      if (accelerator.IsCtrlDown())
-        parts.push_back(DbusString("Control"));
-      if (accelerator.IsAltDown())
-        parts.push_back(DbusString("Alt"));
-      if (accelerator.IsShiftDown())
-        parts.push_back(DbusString("Shift"));
-      if (accelerator.IsCmdDown())
-        parts.push_back(DbusString("Super"));
-      parts.push_back(
-          DbusString(base::UTF16ToUTF8(accelerator.KeyCodeToName())));
-      properties["shortcut"] = MakeDbusVariant(
-          MakeDbusArray(DbusArray<DbusString>(std::move(parts))));
-    }
-
-    switch (menu->GetTypeAt(i)) {
-      case ui::MenuModel::TYPE_COMMAND:
-      case ui::MenuModel::TYPE_HIGHLIGHTED:
-        // Nothing special to do.
-        break;
-      case ui::MenuModel::TYPE_CHECK:
-      case ui::MenuModel::TYPE_RADIO:
-        properties["toggle-type"] = MakeDbusVariant(DbusString(
-            menu->GetTypeAt(i) == ui::MenuModel::TYPE_CHECK ? "checkmark"
-                                                            : "radio"));
-        properties["toggle-state"] =
-            MakeDbusVariant(DbusInt32(menu->IsItemCheckedAt(i) ? 1 : 0));
-        break;
-      case ui::MenuModel::TYPE_SEPARATOR:
-        // The dbusmenu interface doesn't have multiple types of separators like
-        // MenuModel.  Just use a regular separator in all cases.
-        properties["type"] = MakeDbusVariant(DbusString("separator"));
-        break;
-      case ui::MenuModel::TYPE_BUTTON_ITEM:
-        // This type of menu represents a row of buttons, but the dbusmenu
-        // interface has no equivalent of this.  Ignore these items for now
-        // since there's currently no uses of it that plumb into this codepath.
-        // If there are button menu items in the future, we'd have to fake them
-        // with multiple menu items.
-        NOTIMPLEMENTED();
-        continue;
-      case ui::MenuModel::TYPE_SUBMENU:
-      case ui::MenuModel::TYPE_ACTIONABLE_SUBMENU:
-        properties["children-display"] = MakeDbusVariant(DbusString("submenu"));
-        break;
-    }
-
     ui::MenuModel* submenu = menu->GetSubmenuModelAt(i);
     std::vector<int32_t> children = ConvertMenu(submenu);
 
     int32_t id = NextItemId();
     items_[id] = std::make_unique<MenuItem>(
-        id, std::move(properties), std::move(children), submenu, menu, i);
+        id, ComputeMenuPropertiesForMenuItem(menu, i), std::move(children),
+        submenu, menu, i);
     items.push_back(id);
   }
 
@@ -500,7 +498,7 @@ int32_t DbusMenu::NextItemId() {
 void DbusMenu::WriteMenuItem(const MenuItem* item,
                              dbus::MessageWriter* writer,
                              int32_t depth,
-                             const std::vector<std::string>& property_filter) {
+                             const MenuPropertyList& property_filter) const {
   dbus::MessageWriter struct_writer(nullptr);
   writer->OpenStruct(&struct_writer);
   struct_writer.AppendInt32(item->id);
@@ -525,7 +523,7 @@ void DbusMenu::WriteMenuItem(const MenuItem* item,
     for (int32_t child : item->children) {
       dbus::MessageWriter variant_writer(nullptr);
       children_writer.OpenVariant("(ia{sv}av)", &variant_writer);
-      WriteMenuItem(items_[child].get(), &variant_writer,
+      WriteMenuItem(items_.find(child)->second.get(), &variant_writer,
                     depth == -1 ? -1 : depth - 1, property_filter);
       children_writer.CloseContainer(&variant_writer);
     }
@@ -533,4 +531,61 @@ void DbusMenu::WriteMenuItem(const MenuItem* item,
   struct_writer.CloseContainer(&children_writer);
 
   writer->CloseContainer(&struct_writer);
+}
+
+void DbusMenu::WriteUpdatedProperties(
+    dbus::MessageWriter* writer,
+    const MenuPropertyChanges& updated_props) const {
+  dbus::MessageWriter updated_props_writer(nullptr);
+  writer->OpenArray("(ia{sv})", &updated_props_writer);
+  for (const auto& pair : updated_props) {
+    int32_t id = pair.first;
+    MenuItem* item = items_.find(id)->second.get();
+    dbus::MessageWriter struct_writer(nullptr);
+    updated_props_writer.OpenStruct(&struct_writer);
+    struct_writer.AppendInt32(id);
+    dbus::MessageWriter array_writer(nullptr);
+    struct_writer.OpenArray("{sv}", &array_writer);
+    for (const std::string& key : pair.second) {
+      dbus::MessageWriter dict_entry_writer(nullptr);
+      array_writer.OpenDictEntry(&dict_entry_writer);
+      dict_entry_writer.AppendString(key);
+      item->properties[key].Write(&dict_entry_writer);
+      array_writer.CloseContainer(&dict_entry_writer);
+    }
+    struct_writer.CloseContainer(&array_writer);
+    updated_props_writer.CloseContainer(&struct_writer);
+  }
+  writer->CloseContainer(&updated_props_writer);
+}
+
+DbusMenu::MenuItem* DbusMenu::FindMenuItemForModel(const ui::MenuModel* model,
+                                                   MenuItem* item) const {
+  if (item->menu == model)
+    return item;
+  for (int32_t id : item->children) {
+    MenuItem* child = items_.find(id)->second.get();
+    MenuItem* found = FindMenuItemForModel(model, child);
+    if (found)
+      return found;
+  }
+  return nullptr;
+}
+
+void DbusMenu::DeleteItem(MenuItem* item) {
+  DeleteItemChildren(item);
+  items_.erase(item->id);
+}
+
+void DbusMenu::DeleteItemChildren(MenuItem* item) {
+  for (int32_t id : item->children)
+    DeleteItem(items_.find(id)->second.get());
+}
+
+void DbusMenu::SendLayoutChangedSignal(int32_t id) {
+  dbus::Signal signal(kInterfaceDbusMenu, kSignalLayoutUpdated);
+  dbus::MessageWriter writer(&signal);
+  writer.AppendUint32(++revision_);  // Revision of the new layout.
+  writer.AppendInt32(id);            // Parent item whose layout changed.
+  menu_->SendSignal(&signal);
 }

@@ -34,7 +34,6 @@ class CORE_EXPORT PaintWorkletStylePropertyMap
   static base::Optional<CrossThreadData> BuildCrossThreadData(
       const Document&,
       const ComputedStyle&,
-      Node* styled_node,
       const Vector<CSSPropertyID>& native_properties,
       const Vector<AtomicString>& custom_properties);
 

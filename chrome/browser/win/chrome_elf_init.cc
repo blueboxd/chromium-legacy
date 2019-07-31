@@ -9,13 +9,12 @@
 #include "base/bind.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/win/registry.h"
-#include "chrome/chrome_elf/blacklist/blacklist.h"
 #include "chrome/chrome_elf/chrome_elf_constants.h"
 #include "chrome/chrome_elf/dll_hash/dll_hash.h"
+#include "chrome/chrome_elf/third_party_dlls/public_api.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/install_static/install_util.h"
 #include "components/variations/variations_associated_data.h"
@@ -59,9 +58,9 @@ enum BlacklistSetupEventType {
 };
 
 void RecordBlacklistSetupEvent(BlacklistSetupEventType blacklist_setup_event) {
-  UMA_HISTOGRAM_ENUMERATION("Blacklist.Setup",
-                            blacklist_setup_event,
-                            BLACKLIST_SETUP_EVENT_MAX);
+  base::UmaHistogramEnumeration("ChromeElf.Beacon.SetupStatus",
+                                blacklist_setup_event,
+                                BLACKLIST_SETUP_EVENT_MAX);
 }
 
 base::string16 GetBeaconRegistryPath() {
@@ -117,7 +116,7 @@ void BrowserBlacklistBeaconSetup() {
 
   if (blacklist_state == blacklist::BLACKLIST_ENABLED) {
     // The blacklist setup didn't crash, so we report if it was enabled or not.
-    if (blacklist::IsBlacklistInitialized()) {
+    if (IsThirdPartyInitialized()) {
       RecordBlacklistSetupEvent(BLACKLIST_SETUP_RAN_SUCCESSFULLY);
     } else {
       // The only way for the blacklist to be enabled, but not fully
@@ -131,7 +130,8 @@ void BrowserBlacklistBeaconSetup() {
     DWORD attempt_count = 0;
     blacklist_registry_key.ReadValueDW(blacklist::kBeaconAttemptCount,
                                        &attempt_count);
-    UMA_HISTOGRAM_COUNTS_100("Blacklist.RetryAttempts.Success", attempt_count);
+    base::UmaHistogramCounts100("ChromeElf.Beacon.RetryAttemptsBeforeSuccess",
+                                attempt_count);
   } else if (blacklist_state == blacklist::BLACKLIST_SETUP_FAILED) {
     // We can set the state to disabled without checking that the maximum number
     // of attempts was exceeded because blacklist.cc has already done this.

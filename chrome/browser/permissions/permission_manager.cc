@@ -68,7 +68,7 @@ using content::PermissionType;
 
 namespace {
 
-// Helper method to convert ContentSetting to PermissionStatus.
+// Helper methods to convert ContentSetting to PermissionStatus and vice versa.
 PermissionStatus ContentSettingToPermissionStatus(ContentSetting setting) {
   switch (setting) {
     case CONTENT_SETTING_ALLOW:
@@ -86,6 +86,21 @@ PermissionStatus ContentSettingToPermissionStatus(ContentSetting setting) {
 
   NOTREACHED();
   return PermissionStatus::DENIED;
+}
+
+ContentSetting PermissionStatusToContentSetting(PermissionStatus status) {
+  switch (status) {
+    case PermissionStatus::GRANTED:
+      return CONTENT_SETTING_ALLOW;
+    case PermissionStatus::ASK:
+      return CONTENT_SETTING_ASK;
+    case PermissionStatus::DENIED:
+    default:
+      return CONTENT_SETTING_BLOCK;
+  }
+
+  NOTREACHED();
+  return CONTENT_SETTING_DEFAULT;
 }
 
 // Helper method to convert PermissionType to ContentSettingType.
@@ -732,9 +747,12 @@ void PermissionManager::SetPermissionOverridesForDevTools(
     const GURL& origin,
     const PermissionOverrides& overrides) {
   ContentSettingsTypeOverrides result;
-  for (const auto& item : overrides)
-    result.insert(PermissionTypeToContentSetting(item));
-  devtools_permission_overrides_[origin] = std::move(result);
+  for (const auto& item : overrides) {
+    result[PermissionTypeToContentSetting(item.first)] =
+        PermissionStatusToContentSetting(item.second);
+  }
+  devtools_permission_overrides_[url::Origin::Create(origin)] =
+      std::move(result);
 }
 
 void PermissionManager::ResetPermissionOverridesForDevTools() {
@@ -744,9 +762,13 @@ void PermissionManager::ResetPermissionOverridesForDevTools() {
 ContentSetting PermissionManager::GetPermissionOverrideForDevTools(
     const GURL& origin,
     ContentSettingsType permission) {
-  auto it = devtools_permission_overrides_.find(origin);
+  auto it = devtools_permission_overrides_.find(url::Origin::Create(origin));
   if (it == devtools_permission_overrides_.end())
     return CONTENT_SETTING_DEFAULT;
-  return it->second.count(permission) ? CONTENT_SETTING_ALLOW
-                                      : CONTENT_SETTING_BLOCK;
+
+  auto setting_it = it->second.find(permission);
+  if (setting_it == it->second.end())
+    return CONTENT_SETTING_DEFAULT;
+
+  return setting_it->second;
 }

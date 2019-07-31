@@ -39,7 +39,7 @@ class SerialAsyncApiFunction : public AsyncApiFunction {
   ApiResourceManager<SerialConnection>* manager_;
 };
 
-class SerialGetDevicesFunction : public UIThreadExtensionFunction {
+class SerialGetDevicesFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("serial.getDevices", SERIAL_GETDEVICES)
 

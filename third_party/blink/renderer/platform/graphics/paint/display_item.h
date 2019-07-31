@@ -127,6 +127,8 @@ class PLATFORM_EXPORT DisplayItem {
     // be painted.
     kHitTest,
 
+    // Used both for specifying the paint-order scroll location, and for non-
+    // composited scroll hit testing (see: scroll_hit_test_display_item.h).
     kScrollHitTest,
 
     kLayerChunkBackground,

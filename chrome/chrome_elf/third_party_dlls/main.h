@@ -17,9 +17,6 @@
 
 namespace third_party_dlls {
 
-// Third-party DLL control is enabled and initialized in this process.
-bool IsThirdPartyInitialized();
-
 // Init Third-Party
 // ----------------
 // Central initialization for all third-party DLL management. Users only need to

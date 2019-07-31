@@ -475,7 +475,7 @@ void MenuController::Run(Widget* parent,
 
 #if defined(OS_MACOSX)
   menu_cocoa_watcher_ = std::make_unique<MenuCocoaWatcherMac>(base::BindOnce(
-      &MenuController::Cancel, base::Unretained(this), ExitType::kAll));
+      &MenuController::Cancel, this->AsWeakPtr(), ExitType::kAll));
 #endif
 
   // Reset current state.

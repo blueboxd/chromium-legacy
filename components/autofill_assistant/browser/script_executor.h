@@ -171,6 +171,16 @@ class ScriptExecutor : public ActionDelegate,
   void ExpectNavigation() override;
   bool ExpectedNavigationHasStarted() override;
   bool WaitForNavigation(base::OnceCallback<void(bool)> callback) override;
+  void GetDocumentReadyState(
+      const Selector& optional_frame,
+      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+          callback) override;
+  void WaitForDocumentReadyState(
+      const Selector& optional_frame,
+      DocumentReadyState min_ready_state,
+      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+          callback) override;
+
   void LoadURL(const GURL& url) override;
   void Shutdown() override;
   void Close() override;

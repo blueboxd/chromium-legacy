@@ -27,6 +27,9 @@ class EVENTS_OZONE_EVDEV_EXPORT OpenPalmDetectionFilter
               std::bitset<kNumTouchEvdevSlots>* slots_to_hold,
               std::bitset<kNumTouchEvdevSlots>* slots_to_suppress) override;
 
+  const static char kFilterName[];
+  std::string FilterNameForTesting() const override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(OpenPalmDetectionFilter);
 };

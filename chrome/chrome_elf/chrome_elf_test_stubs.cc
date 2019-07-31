@@ -46,6 +46,10 @@ void SetMetricsClientId(const char* client_id) {}
 // - Stubs should shadow third_party_dlls\public_api.h and logs_unittest.cc.
 //------------------------------------------------------------------------------
 
+bool IsThirdPartyInitialized() {
+  return false;
+}
+
 struct TestLogEntry {
   third_party_dlls::LogType log_type;
   uint32_t module_size;

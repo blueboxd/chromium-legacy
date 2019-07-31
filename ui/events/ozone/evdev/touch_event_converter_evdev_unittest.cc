@@ -20,7 +20,9 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event_switches.h"
@@ -28,6 +30,7 @@
 #include "ui/events/ozone/evdev/event_device_test_util.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
 #include "ui/events/ozone/evdev/touch_filter/false_touch_finder.h"
+#include "ui/events/ozone/evdev/touch_filter/shared_palm_detection_filter_state.h"
 #include "ui/events/ozone/evdev/touch_filter/touch_filter.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -88,10 +91,13 @@ struct GenericEventParams {
 
 class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
  public:
-  MockTouchEventConverterEvdev(base::ScopedFD fd,
-                               base::FilePath path,
-                               const EventDeviceInfo& devinfo,
-                               DeviceEventDispatcherEvdev* dispatcher);
+  MockTouchEventConverterEvdev(
+
+      base::ScopedFD fd,
+      base::FilePath path,
+      const EventDeviceInfo& devinfo,
+      SharedPalmDetectionFilterState* shared_palm_state,
+      DeviceEventDispatcherEvdev* dispatcher);
   ~MockTouchEventConverterEvdev() override;
 
   void ConfigureReadMock(struct input_event* queue,
@@ -178,8 +184,14 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(
     base::ScopedFD fd,
     base::FilePath path,
     const EventDeviceInfo& devinfo,
+    SharedPalmDetectionFilterState* shared_palm_state,
     DeviceEventDispatcherEvdev* dispatcher)
-    : TouchEventConverterEvdev(std::move(fd), path, 1, devinfo, dispatcher) {
+    : TouchEventConverterEvdev(std::move(fd),
+                               path,
+                               1,
+                               devinfo,
+                               shared_palm_state,
+                               dispatcher) {
   int fds[2];
 
   if (pipe(fds))
@@ -230,13 +242,14 @@ class TouchEventConverterEvdevTest : public testing::Test {
     // Device creation happens on a worker thread since it may involve blocking
     // operations. Simulate that by creating it before creating a UI message
     // loop.
+    shared_palm_state_.reset(new ui::SharedPalmDetectionFilterState);
     EventDeviceInfo devinfo;
     dispatcher_.reset(new ui::MockDeviceEventDispatcherEvdev(
         base::BindRepeating(&TouchEventConverterEvdevTest::DispatchCallback,
                             base::Unretained(this))));
     device_.reset(new ui::MockTouchEventConverterEvdev(
         std::move(events_in), base::FilePath(kTestDevicePath), devinfo,
-        dispatcher_.get()));
+        shared_palm_state_.get(), dispatcher_.get()));
     device_->Initialize(devinfo);
     loop_ = new base::MessageLoopForUI;
 
@@ -256,7 +269,9 @@ class TouchEventConverterEvdevTest : public testing::Test {
   }
 
   ui::MockTouchEventConverterEvdev* device() { return device_.get(); }
-
+  ui::SharedPalmDetectionFilterState* shared_palm_state() {
+    return shared_palm_state_.get();
+  }
   unsigned size() { return dispatched_events_.size(); }
   const ui::TouchEventParams& dispatched_touch_event(unsigned index) {
     DCHECK_GT(dispatched_events_.size(), index);
@@ -287,19 +302,21 @@ class TouchEventConverterEvdevTest : public testing::Test {
     test_clock_->SetNowTicks(ticks);
   }
 
+ protected:
+  base::HistogramTester histogram_tester_;
+
  private:
   base::MessageLoop* loop_;
   std::unique_ptr<ui::MockTouchEventConverterEvdev> device_;
   std::unique_ptr<ui::MockDeviceEventDispatcherEvdev> dispatcher_;
   std::unique_ptr<ui::test::ScopedEventTestTickClock> test_clock_;
-
+  std::unique_ptr<ui::SharedPalmDetectionFilterState> shared_palm_state_;
   base::ScopedFD events_out_;
 
   void DispatchCallback(const GenericEventParams& params) {
     dispatched_events_.push_back(params);
   }
   std::vector<GenericEventParams> dispatched_events_;
-
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdevTest);
 };
 
@@ -1606,6 +1623,12 @@ TEST_F(TouchEventConverterEvdevTest, HeldEventNotSent) {
     EXPECT_EQ(base::TimeDelta::FromMicroseconds(8000 * i),
               (event.timestamp - base_ticks));
   }
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtReleaseEventName),
+              testing::ElementsAre(base::Bucket(3, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtCancelEventName),
+              testing::ElementsAre());
 }
 
 TEST_F(TouchEventConverterEvdevTest, HeldThenEnd) {
@@ -1661,6 +1684,12 @@ TEST_F(TouchEventConverterEvdevTest, HeldThenEnd) {
   device()->ReadNow();
   EXPECT_EQ(4u, size());
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, dispatched_touch_event(3).type);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtReleaseEventName),
+              testing::ElementsAre(base::Bucket(3, 1)));
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtCancelEventName),
+              testing::ElementsAre());
 }
 
 TEST_F(TouchEventConverterEvdevTest, SentHeldThenPalm) {
@@ -1733,6 +1762,12 @@ TEST_F(TouchEventConverterEvdevTest, SentHeldThenPalm) {
                 (event.timestamp - base_ticks));
     }
   }
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtReleaseEventName),
+              testing::ElementsAre());
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtCancelEventName),
+              testing::ElementsAre(base::Bucket(5, 1)));
 }
 
 TEST_F(TouchEventConverterEvdevTest, HeldThenPalm) {
@@ -1783,6 +1818,12 @@ TEST_F(TouchEventConverterEvdevTest, HeldThenPalm) {
 
   EXPECT_EQ(0u, size());
   EXPECT_FALSE(device()->event(0).held);
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtReleaseEventName),
+              testing::ElementsAre());
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kHoldCountAtCancelEventName),
+              testing::ElementsAre(base::Bucket(4, 1)));
 }
 
 TEST_F(TouchEventConverterEvdevTest, ScalePressure) {

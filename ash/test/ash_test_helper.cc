@@ -36,6 +36,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
+#include "base/system/sys_info.h"
 #include "base/token.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
@@ -84,7 +85,8 @@ void AshTestHelper::SetUp(const InitParams& init_params,
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
-  if (!command_line_->GetProcessCommandLine()->HasSwitch(
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      !command_line_->GetProcessCommandLine()->HasSwitch(
           ::switches::kHostWindowBounds)) {
     // TODO(oshima): Disable native events instead of adding offset.
     command_line_->GetProcessCommandLine()->AppendSwitchASCII(

@@ -53,9 +53,9 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
 
 void SystemMenuButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(icon, kMenuIconColor));
+           gfx::CreateVectorIcon(icon, kIconOnLightBackgroundColor));
   SetImage(views::Button::STATE_DISABLED,
-           gfx::CreateVectorIcon(icon, kMenuIconColorDisabled));
+           gfx::CreateVectorIcon(icon, kIconOnLightBackgroundColorDisabled));
 }
 
 SystemMenuButton::~SystemMenuButton() = default;

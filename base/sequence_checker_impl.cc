@@ -44,6 +44,33 @@ class SequenceCheckerImpl::Core {
 SequenceCheckerImpl::SequenceCheckerImpl() : core_(std::make_unique<Core>()) {}
 SequenceCheckerImpl::~SequenceCheckerImpl() = default;
 
+SequenceCheckerImpl::SequenceCheckerImpl(SequenceCheckerImpl&& other) {
+  // Verify that |other| is called on its associated sequence and bind it now if
+  // it is currently detached (even if this isn't a DCHECK build).
+  const bool other_called_on_valid_sequence = other.CalledOnValidSequence();
+  DCHECK(other_called_on_valid_sequence);
+
+  core_ = std::move(other.core_);
+}
+
+SequenceCheckerImpl& SequenceCheckerImpl::operator=(
+    SequenceCheckerImpl&& other) {
+  // If |this| is not in a detached state it needs to be bound to the current
+  // sequence.
+  DCHECK(CalledOnValidSequence());
+
+  // Verify that |other| is called on its associated sequence and bind it now if
+  // it is currently detached (even if this isn't a DCHECK build).
+  const bool other_called_on_valid_sequence = other.CalledOnValidSequence();
+  DCHECK(other_called_on_valid_sequence);
+
+  // Intentionally not using either |lock_| in this method to let TSAN catch
+  // racy assign.
+  TS_UNCHECKED_READ(core_) = std::move(TS_UNCHECKED_READ(other.core_));
+
+  return *this;
+}
+
 bool SequenceCheckerImpl::CalledOnValidSequence() const {
   AutoLock auto_lock(lock_);
   if (!core_)

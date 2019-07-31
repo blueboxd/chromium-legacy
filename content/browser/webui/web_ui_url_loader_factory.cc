@@ -181,7 +181,7 @@ void StartURLLoader(const network::ResourceRequest& request,
   // TODO: fill all the time related field i.e. request_time response_time
   // request_start response_start
 
-  ResourceRequestInfo::WebContentsGetter wc_getter =
+  WebContents::Getter wc_getter =
       base::Bind(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
 
   bool gzipped = source->source()->IsGzipped(path);

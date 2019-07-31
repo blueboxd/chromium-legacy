@@ -39,6 +39,10 @@ class EVENTS_OZONE_EVDEV_EXPORT PalmDetectionFilter {
                       base::TimeTicks time,
                       std::bitset<kNumTouchEvdevSlots>* slots_to_hold,
                       std::bitset<kNumTouchEvdevSlots>* slots_to_suppress) = 0;
+
+  // The name of this filter, for testing purposes.
+  virtual std::string FilterNameForTesting() const = 0;
+
   virtual ~PalmDetectionFilter();
 
  protected:

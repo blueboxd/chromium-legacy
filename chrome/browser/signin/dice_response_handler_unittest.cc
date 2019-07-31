@@ -245,7 +245,8 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   // Check that the AccountInfo::is_under_advanced_protection is set.
   EXPECT_TRUE(
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value()
           .is_under_advanced_protection);
 }
@@ -305,7 +306,8 @@ TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id));
   EXPECT_FALSE(
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value()
           .is_under_advanced_protection);
 }
@@ -346,7 +348,8 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id_1));
   EXPECT_TRUE(
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id_1)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id_1)
           .value()
           .is_under_advanced_protection);
   // Simulate GaiaAuthFetcher success for the second request.
@@ -357,7 +360,8 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id_2));
   EXPECT_FALSE(
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id_2)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id_2)
           .value()
           .is_under_advanced_protection);
   // Check that the reconcilor was blocked and unblocked exactly once.

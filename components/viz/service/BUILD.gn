@@ -21,6 +21,8 @@ viz_component("service") {
     "display/ca_layer_overlay.h",
     "display/color_lut_cache.cc",
     "display/color_lut_cache.h",
+    "display/damage_frame_annotator.cc",
+    "display/damage_frame_annotator.h",
     "display/dc_layer_overlay.cc",
     "display/dc_layer_overlay.h",
     "display/direct_renderer.cc",

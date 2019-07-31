@@ -1,6 +1,7 @@
 include_rules = [
   "+ash/components/shortcut_viewer",
   "+chromeos/dbus/biod",
+  "+chromeos/services/network_config",
   "+components/discardable_memory/public/interfaces",
   "+content/public",
   "+content/shell",

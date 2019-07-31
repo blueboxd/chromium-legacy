@@ -383,7 +383,7 @@ jumbo_source_set("base") {
     public_deps += [ "//media/base/win:d3d11" ]
   }
 
-  if (is_chromecast) {
+  if (is_chromecast || is_fuchsia) {
     sources += [ "demuxer_memory_limit_low.cc" ]
   } else if (is_android) {
     sources += [ "demuxer_memory_limit_android.cc" ]

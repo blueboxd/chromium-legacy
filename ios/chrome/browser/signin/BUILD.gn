@@ -33,8 +33,6 @@ source_set("signin") {
     "identity_manager_factory.cc",
     "identity_manager_factory.h",
     "identity_manager_factory_observer.h",
-    "identity_service_creator.cc",
-    "identity_service_creator.h",
     "ios_chrome_signin_client.h",
     "ios_chrome_signin_client.mm",
     "ios_chrome_signin_status_metrics_provider_delegate.cc",
@@ -85,8 +83,6 @@ source_set("signin") {
     "//ios/web/common",
     "//ios/web/common:web_view_creation_util",
     "//net",
-    "//services/identity:lib",
-    "//services/service_manager/public/mojom",
     "//url",
   ]
 }

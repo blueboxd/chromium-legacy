@@ -14,7 +14,7 @@
 #include "base/task/post_task.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/image_capture.mojom.h"
-#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
 
 namespace media {
 

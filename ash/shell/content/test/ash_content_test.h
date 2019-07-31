@@ -33,6 +33,7 @@ class AshContentTest : public content::ContentBrowserTest {
  private:
   class Tracer;
 
+  gfx::Size test_window_size_;
   bool enable_trace_;
   std::unique_ptr<Tracer> tracer_;
 

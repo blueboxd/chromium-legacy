@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_PERMISSION_CONTROLLER_DELEGATE_H_
 
 #include "content/common/content_export.h"
+#include "content/public/browser/devtools_permission_overrides.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 class GURL;
@@ -16,6 +17,7 @@ class RenderFrameHost;
 
 class CONTENT_EXPORT PermissionControllerDelegate {
  public:
+  using PermissionOverrides = DevToolsPermissionOverrides::PermissionOverrides;
   virtual ~PermissionControllerDelegate() = default;
 
   // Requests a permission on behalf of a frame identified by
@@ -93,6 +95,17 @@ class CONTENT_EXPORT PermissionControllerDelegate {
   // an already unsubscribed |subscription_id| or providing the
   // |subscription_id| kNoPendingOperation is a no-op.
   virtual void UnsubscribePermissionStatusChange(int subscription_id) = 0;
+
+  // Manually overrides default permission settings of delegate, if overrides
+  // are tracked by the delegate. This method should only be called by the
+  // PermissionController owning the delegate.
+  virtual void SetPermissionOverridesForDevTools(
+      const GURL& origin,
+      const PermissionOverrides& overrides) {}
+
+  // Removes overrides that have been set, if any, for all origins. If delegate
+  // does not maintain own permission set, then nothing happens.
+  virtual void ResetPermissionOverridesForDevTools() {}
 };
 
 }  // namespace content

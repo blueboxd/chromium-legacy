@@ -117,11 +117,6 @@ void PrefetchURLLoader::FollowRedirect(
                           base::nullopt);
 }
 
-void PrefetchURLLoader::ProceedWithResponse() {
-  if (loader_)
-    loader_->ProceedWithResponse();
-}
-
 void PrefetchURLLoader::SetPriority(net::RequestPriority priority,
                                     int intra_priority_value) {
   if (loader_)

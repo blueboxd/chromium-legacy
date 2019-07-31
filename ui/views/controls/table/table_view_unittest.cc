@@ -191,7 +191,7 @@ int TestTableModel2::CompareValues(int row1, int row2, int column_id) {
 // Returns the view to model mapping as a string.
 std::string GetViewToModelAsString(TableView* table) {
   std::string result;
-  for (int i = 0; i < table->RowCount(); ++i) {
+  for (int i = 0; i < table->GetRowCount(); ++i) {
     if (i != 0)
       result += " ";
     result += base::NumberToString(table->ViewToModel(i));
@@ -202,7 +202,7 @@ std::string GetViewToModelAsString(TableView* table) {
 // Returns the model to view mapping as a string.
 std::string GetModelToViewAsString(TableView* table) {
   std::string result;
-  for (int i = 0; i < table->RowCount(); ++i) {
+  for (int i = 0; i < table->GetRowCount(); ++i) {
     if (i != 0)
       result += " ";
     result += base::NumberToString(table->ModelToView(i));
@@ -214,7 +214,7 @@ std::string GetModelToViewAsString(TableView* table) {
 // scrolled out of view are included; hidden columns are excluded.
 std::string GetRowsInViewOrderAsString(TableView* table) {
   std::string result;
-  for (int i = 0; i < table->RowCount(); ++i) {
+  for (int i = 0; i < table->GetRowCount(); ++i) {
     if (i != 0)
       result += ", ";  // Comma between each row.
 
@@ -344,7 +344,7 @@ class TableViewTest : public ViewsTestBase {
 
  private:
   gfx::Point GetPointForRow(int row) {
-    const int y = (row + 0.5) * table_->row_height();
+    const int y = (row + 0.5) * table_->GetRowHeight();
     return table_->GetBoundsInScreen().origin() + gfx::Vector2d(5, y);
   }
 
@@ -368,14 +368,15 @@ TEST_F(TableViewTest, UpdateVirtualAccessibilityChildren) {
   EXPECT_EQ(ax::mojom::Role::kListGrid, data.role);
   EXPECT_TRUE(data.HasState(ax::mojom::State::kFocusable));
   EXPECT_EQ(ax::mojom::Restriction::kReadOnly, data.GetRestriction());
-  EXPECT_EQ(table_->RowCount(), static_cast<int>(data.GetIntAttribute(
-                                    ax::mojom::IntAttribute::kTableRowCount)));
+  EXPECT_EQ(table_->GetRowCount(),
+            static_cast<int>(
+                data.GetIntAttribute(ax::mojom::IntAttribute::kTableRowCount)));
   EXPECT_EQ(helper_->visible_col_count(),
             static_cast<size_t>(data.GetIntAttribute(
                 ax::mojom::IntAttribute::kTableColumnCount)));
 
   // The header takes up another row.
-  ASSERT_EQ(size_t{table_->RowCount() + 1},
+  ASSERT_EQ(size_t{table_->GetRowCount() + 1},
             view_accessibility.virtual_children().size());
   const auto& header = view_accessibility.virtual_children().front();
   ASSERT_TRUE(header);
@@ -393,7 +394,7 @@ TEST_F(TableViewTest, UpdateVirtualAccessibilityChildren) {
 
   int i = 0;
   for (auto child_iter = view_accessibility.virtual_children().begin() + 1;
-       i < table_->RowCount(); ++child_iter, ++i) {
+       i < table_->GetRowCount(); ++child_iter, ++i) {
     const auto& row = *child_iter;
     ASSERT_TRUE(row);
     const ui::AXNodeData& row_data = row->GetData();
@@ -416,7 +417,7 @@ TEST_F(TableViewTest, UpdateVirtualAccessibilityChildren) {
 }
 
 TEST_F(TableViewTest, GetVirtualAccessibilityRow) {
-  for (int i = 0; i < table_->RowCount(); ++i) {
+  for (int i = 0; i < table_->GetRowCount(); ++i) {
     const AXVirtualView* row = helper_->GetVirtualAccessibilityRow(i);
     ASSERT_TRUE(row);
     const ui::AXNodeData& row_data = row->GetData();
@@ -427,7 +428,7 @@ TEST_F(TableViewTest, GetVirtualAccessibilityRow) {
 }
 
 TEST_F(TableViewTest, GetVirtualAccessibilityCell) {
-  for (int i = 0; i < table_->RowCount(); ++i) {
+  for (int i = 0; i < table_->GetRowCount(); ++i) {
     for (int j = 0; j < static_cast<int>(helper_->visible_col_count()); ++j) {
       const AXVirtualView* cell = helper_->GetVirtualAccessibilityCell(i, j);
       ASSERT_TRUE(cell);
@@ -991,7 +992,7 @@ TEST_F(TableViewTest, RemoveUnselectedRows) {
 TEST_F(TableViewTest, SelectionNoSelectOnRemove) {
   TableViewObserverImpl observer;
   table_->set_observer(&observer);
-  table_->set_select_on_remove(false);
+  table_->SetSelectOnRemove(false);
 
   // Initially no selection.
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());

@@ -98,8 +98,6 @@ class CORE_EXPORT ScrollingCoordinator final
 
   // Called when any frame has done its layout or compositing has changed.
   void NotifyGeometryChanged(LocalFrameView*);
-  // Called when any transform has changed.
-  void NotifyTransformChanged(LocalFrame*);
 
   // Update non-fast scrollable regions, touch event target rects, main thread
   // scrolling reasons, and whether the visual viewport is user scrollable.
@@ -164,6 +162,7 @@ class CORE_EXPORT ScrollingCoordinator final
       Region* scrolling_region,
       Region* fixed_region) const;
 
+  void UpdateNonFastScrollableRegions(LocalFrame*);
   void UpdateTouchEventTargetRectsIfNeeded(LocalFrame*);
 
   void UpdateUserInputScrollable(ScrollableArea*);

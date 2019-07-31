@@ -17,7 +17,7 @@
 namespace extensions {
 namespace api {
 
-class DocumentScanScanFunction : public UIThreadExtensionFunction {
+class DocumentScanScanFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("documentScan.scan", DOCUMENT_SCAN_SCAN)
   DocumentScanScanFunction();
@@ -25,7 +25,7 @@ class DocumentScanScanFunction : public UIThreadExtensionFunction {
  protected:
   ~DocumentScanScanFunction() override;
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:

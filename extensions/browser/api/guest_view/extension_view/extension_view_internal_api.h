@@ -14,8 +14,7 @@ namespace extensions {
 
 // An abstract base class for async extensionview APIs. It does a process ID
 // check in PreRunValidation.
-class ExtensionViewInternalExtensionFunction
-    : public UIThreadExtensionFunction {
+class ExtensionViewInternalExtensionFunction : public ExtensionFunction {
  public:
   ExtensionViewInternalExtensionFunction() {}
 
@@ -40,14 +39,14 @@ class ExtensionViewInternalLoadSrcFunction
   ~ExtensionViewInternalLoadSrcFunction() override {}
 
  private:
-  // UIThreadExtensionFunction implementation.
+  // ExtensionFunction implementation.
   ResponseAction Run() final;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewInternalLoadSrcFunction);
 };
 
 // Parses a src and determines whether or not it is valid.
-class ExtensionViewInternalParseSrcFunction : public UIThreadExtensionFunction {
+class ExtensionViewInternalParseSrcFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("extensionViewInternal.parseSrc",
                              EXTENSIONVIEWINTERNAL_PARSESRC)
@@ -57,7 +56,7 @@ class ExtensionViewInternalParseSrcFunction : public UIThreadExtensionFunction {
   ~ExtensionViewInternalParseSrcFunction() override {}
 
  private:
-  // UIThreadExtensionFunction implementation.
+  // ExtensionFunction implementation.
   ResponseAction Run() final;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewInternalParseSrcFunction);

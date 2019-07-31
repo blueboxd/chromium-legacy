@@ -923,11 +923,10 @@ base::Value PolicyUIHandler::GetPolicyNames() const {
 }
 
 base::Value PolicyUIHandler::GetPolicyValues() const {
-  return policy::GetAllPolicyValuesAsArray(
-      web_ui()->GetWebContents()->GetBrowserContext(),
-      true /* with_user_policies */, true /* convert_values */,
-      false /* with_device_data */, true /* is_pretty_print */,
-      true /* convert_types */);
+  return policy::ArrayPolicyConversions()
+      .WithBrowserContext(web_ui()->GetWebContents()->GetBrowserContext())
+      .EnableConvertValues(true)
+      .ToValue();
 }
 
 void PolicyUIHandler::SendStatus() {
@@ -1030,11 +1029,10 @@ void DoWritePoliciesToJSONFile(const base::FilePath& path,
 
 void PolicyUIHandler::WritePoliciesToJSONFile(
     const base::FilePath& path) const {
-  constexpr bool is_pretty_print = true;
-  base::Value dict = policy::GetAllPolicyValuesAsDictionary(
-      web_ui()->GetWebContents()->GetBrowserContext(),
-      true /* with_user_policies */, false /* convert_values */,
-      false /* with_device_data */, is_pretty_print, true /* convert_types */);
+  base::Value dict =
+      policy::DictionaryPolicyConversions()
+          .WithBrowserContext(web_ui()->GetWebContents()->GetBrowserContext())
+          .ToValue();
 
   base::Value chrome_metadata(base::Value::Type::DICTIONARY);
 
@@ -1085,8 +1083,7 @@ void PolicyUIHandler::WritePoliciesToJSONFile(
 
   std::string json_policies;
   base::JSONWriter::WriteWithOptions(
-      dict, (is_pretty_print ? base::JSONWriter::OPTIONS_PRETTY_PRINT : 0),
-      &json_policies);
+      dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_policies);
 
   base::PostTaskWithTraits(
       FROM_HERE,

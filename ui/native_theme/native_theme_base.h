@@ -31,7 +31,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
              Part part,
              State state,
              const gfx::Rect& rect,
-             const ExtraParams& extra) const override;
+             const ExtraParams& extra,
+             ColorScheme color_scheme) const override;
 
   bool SupportsNinePatch(Part part) const override;
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
@@ -45,7 +46,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   virtual void PaintArrowButton(cc::PaintCanvas* gc,
                                 const gfx::Rect& rect,
                                 Part direction,
-                                State state) const;
+                                State state,
+                                ColorScheme color_scheme) const;
   // Paint the scrollbar track. Done before the thumb so that it can contain
   // alpha.
   virtual void PaintScrollbarTrack(
@@ -53,88 +55,101 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       Part part,
       State state,
       const ScrollbarTrackExtraParams& extra_params,
-      const gfx::Rect& rect) const;
+      const gfx::Rect& rect,
+      ColorScheme color_scheme) const;
   // Draw the scrollbar thumb over the track.
   virtual void PaintScrollbarThumb(
       cc::PaintCanvas* canvas,
       Part part,
       State state,
       const gfx::Rect& rect,
-      NativeTheme::ScrollbarOverlayColorTheme theme) const;
+      NativeTheme::ScrollbarOverlayColorTheme theme,
+      ColorScheme color_scheme) const;
 
   virtual void PaintScrollbarCorner(cc::PaintCanvas* canvas,
                                     State state,
-                                    const gfx::Rect& rect) const;
+                                    const gfx::Rect& rect,
+                                    ColorScheme color_scheme) const;
 
   virtual void PaintCheckbox(cc::PaintCanvas* canvas,
                              State state,
                              const gfx::Rect& rect,
-                             const ButtonExtraParams& button) const;
+                             const ButtonExtraParams& button,
+                             ColorScheme color_scheme) const;
 
   virtual void PaintRadio(cc::PaintCanvas* canvas,
                           State state,
                           const gfx::Rect& rect,
-                          const ButtonExtraParams& button) const;
+                          const ButtonExtraParams& button,
+                          ColorScheme color_scheme) const;
 
   virtual void PaintButton(cc::PaintCanvas* canvas,
                            State state,
                            const gfx::Rect& rect,
-                           const ButtonExtraParams& button) const;
+                           const ButtonExtraParams& button,
+                           ColorScheme color_scheme) const;
 
   virtual void PaintTextField(cc::PaintCanvas* canvas,
                               State state,
                               const gfx::Rect& rect,
-                              const TextFieldExtraParams& text) const;
+                              const TextFieldExtraParams& text,
+                              ColorScheme color_scheme) const;
 
   virtual void PaintMenuList(cc::PaintCanvas* canvas,
                              State state,
                              const gfx::Rect& rect,
-                             const MenuListExtraParams& menu_list) const;
+                             const MenuListExtraParams& menu_list,
+                             ColorScheme color_scheme) const;
 
   virtual void PaintMenuPopupBackground(
       cc::PaintCanvas* canvas,
       const gfx::Size& size,
-      const MenuBackgroundExtraParams& menu_background) const;
+      const MenuBackgroundExtraParams& menu_background,
+      ColorScheme color_scheme) const;
 
-  virtual void PaintMenuItemBackground(
-      cc::PaintCanvas* canvas,
-      State state,
-      const gfx::Rect& rect,
-      const MenuItemExtraParams& menu_item) const;
+  virtual void PaintMenuItemBackground(cc::PaintCanvas* canvas,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const MenuItemExtraParams& menu_item,
+                                       ColorScheme color_scheme) const;
 
   virtual void PaintMenuSeparator(
       cc::PaintCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const MenuSeparatorExtraParams& menu_separator) const;
+      const MenuSeparatorExtraParams& menu_separator,
+      ColorScheme color_scheme) const;
 
   virtual void PaintSliderTrack(cc::PaintCanvas* canvas,
                                 State state,
                                 const gfx::Rect& rect,
-                                const SliderExtraParams& slider) const;
+                                const SliderExtraParams& slider,
+                                ColorScheme color_scheme) const;
 
   virtual void PaintSliderThumb(cc::PaintCanvas* canvas,
                                 State state,
                                 const gfx::Rect& rect,
-                                const SliderExtraParams& slider) const;
+                                const SliderExtraParams& slider,
+                                ColorScheme color_scheme) const;
 
   virtual void PaintInnerSpinButton(
       cc::PaintCanvas* canvas,
       State state,
       const gfx::Rect& rect,
-      const InnerSpinButtonExtraParams& spin_button) const;
+      const InnerSpinButtonExtraParams& spin_button,
+      ColorScheme color_scheme) const;
 
-  virtual void PaintProgressBar(
-      cc::PaintCanvas* canvas,
-      State state,
-      const gfx::Rect& rect,
-      const ProgressBarExtraParams& progress_bar) const;
+  virtual void PaintProgressBar(cc::PaintCanvas* canvas,
+                                State state,
+                                const gfx::Rect& rect,
+                                const ProgressBarExtraParams& progress_bar,
+                                ColorScheme color_scheme) const;
 
-  virtual void PaintFrameTopArea(
-      cc::PaintCanvas* canvas,
-      State state,
-      const gfx::Rect& rect,
-      const FrameTopAreaExtraParams& frame_top_area) const;
+  virtual void PaintFrameTopArea(cc::PaintCanvas* canvas,
+                                 State state,
+                                 const gfx::Rect& rect,
+                                 const FrameTopAreaExtraParams& frame_top_area,
+                                 ColorScheme color_scheme) const;
 
   // Shrinks checkbox/radio button rect, if necessary, to make room for padding
   // and drop shadow.
@@ -159,7 +174,7 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
                   SkColor color) const;
 
   // Returns the color used to draw the arrow.
-  SkColor GetArrowColor(State state) const;
+  SkColor GetArrowColor(State state, ColorScheme color_scheme) const;
 
   int scrollbar_width_;
 
@@ -192,7 +207,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   SkRect PaintCheckboxRadioCommon(cc::PaintCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
-                                  const SkScalar borderRadius) const;
+                                  const SkScalar borderRadius,
+                                  ColorScheme color_scheme) const;
 
   // The length of the arrow buttons, 0 means no buttons are drawn.
   int scrollbar_button_length_;

@@ -59,7 +59,7 @@ std::string DownloadManagerDelegate::ApplicationClientIdForFileScanning() {
 }
 
 void DownloadManagerDelegate::CheckDownloadAllowed(
-    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const WebContents::Getter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,

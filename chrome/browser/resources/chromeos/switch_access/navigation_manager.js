@@ -316,16 +316,16 @@ class NavigationManager {
    * node.
    * @public
    */
-  setSelectStart() {
-    this.textNavigationManager_.setSelectStart();
+  saveSelectStart() {
+    this.textNavigationManager_.saveSelectStart();
   }
 
   /**
    * Sets the selectionEnd variable based on the selection of the current node.
    * @public
    */
-  setSelectEnd() {
-    this.textNavigationManager_.setSelectEnd();
+  saveSelectEnd() {
+    this.textNavigationManager_.saveSelectEnd();
   }
 
   /**

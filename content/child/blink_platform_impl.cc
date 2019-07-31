@@ -488,6 +488,8 @@ const DataResource kDataResources[] = {
     {"calendarPicker.js", IDR_CALENDAR_PICKER_JS, ui::SCALE_FACTOR_NONE, true},
     {"calendarPicker.css", IDR_CALENDAR_PICKER_CSS, ui::SCALE_FACTOR_NONE,
      true},
+    {"calendar_picker_refresh.css", IDR_CALENDAR_PICKER_REFRESH_CSS,
+     ui::SCALE_FACTOR_NONE, true},
     {"listPicker.js", IDR_LIST_PICKER_JS, ui::SCALE_FACTOR_NONE, true},
     {"listPicker.css", IDR_LIST_PICKER_CSS, ui::SCALE_FACTOR_NONE, true},
     {"pickerButton.css", IDR_PICKER_BUTTON_CSS, ui::SCALE_FACTOR_NONE, true},

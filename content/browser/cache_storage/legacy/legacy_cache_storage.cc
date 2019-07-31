@@ -571,18 +571,27 @@ LegacyCacheStorage::LegacyCacheStorage(
       quota_manager_proxy_(quota_manager_proxy),
       owner_(owner),
       cache_storage_manager_(cache_storage_manager) {
-  if (memory_only)
+  if (memory_only) {
     cache_loader_.reset(new MemoryLoader(
         cache_task_runner_.get(), std::move(scheduler_task_runner),
         quota_manager_proxy.get(), blob_context, this, origin, owner));
-  else
-    cache_loader_.reset(new SimpleCacheLoader(
-        origin_path_, cache_task_runner_.get(),
-        std::move(scheduler_task_runner), quota_manager_proxy.get(),
-        blob_context, this, origin, owner));
+    return;
+  }
+
+  cache_loader_.reset(new SimpleCacheLoader(
+      origin_path_, cache_task_runner_.get(), std::move(scheduler_task_runner),
+      quota_manager_proxy.get(), blob_context, this, origin, owner));
+
+#if defined(OS_ANDROID)
+  app_status_listener_ = base::android::ApplicationStatusListener::New(
+      base::BindRepeating(&LegacyCacheStorage::OnApplicationStateChange,
+                          weak_factory_.GetWeakPtr()));
+#endif
 }
 
-LegacyCacheStorage::~LegacyCacheStorage() {}
+LegacyCacheStorage::~LegacyCacheStorage() {
+  FlushIndexIfDirty();
+}
 
 CacheStorageHandle LegacyCacheStorage::CreateHandle() {
   return CacheStorageHandle(weak_factory_.GetWeakPtr());
@@ -810,14 +819,19 @@ void LegacyCacheStorage::NotifyCacheContentChanged(
 }
 
 void LegacyCacheStorage::ScheduleWriteIndex() {
-  static const int64_t kWriteIndexDelaySecs = 5;
+  // These values are chosen to be equal or greater than the simple disk_cache
+  // index write delays.  We want the cache_storage index to be written last.
+  static const int64_t kWriteIndexDelayMilliseconds = 20050;
+  static const int64_t kWriteIndexBackgroundDelayMilliseconds = 150;
+  int64_t delay_ms = app_on_background_ ? kWriteIndexBackgroundDelayMilliseconds
+                                        : kWriteIndexDelayMilliseconds;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   index_write_task_.Reset(base::BindOnce(&LegacyCacheStorage::WriteIndex,
                                          weak_factory_.GetWeakPtr(),
                                          base::DoNothing::Once<bool>()));
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, index_write_task_.callback(),
-      base::TimeDelta::FromSeconds(kWriteIndexDelaySecs));
+      base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
 void LegacyCacheStorage::WriteIndex(base::OnceCallback<void(bool)> callback) {
@@ -1014,6 +1028,7 @@ void LegacyCacheStorage::CreateCacheDidCreateCache(
       cache_ptr->cache_padding_key()->key()));
 
   CacheStorageCacheHandle handle = cache_ptr->CreateHandle();
+  index_write_task_.Cancel();
   cache_loader_->WriteIndex(
       *cache_index_,
       base::BindOnce(&LegacyCacheStorage::CreateCacheDidWriteIndex,
@@ -1072,6 +1087,7 @@ void LegacyCacheStorage::DoomCacheImpl(const std::string& cache_name,
   DCHECK(scheduler_->IsRunningExclusiveOperation());
   LegacyCacheStorageCache::From(cache_handle)->SetObserver(nullptr);
   cache_index_->DoomCache(cache_name);
+  index_write_task_.Cancel();
   cache_loader_->WriteIndex(
       *cache_index_,
       base::BindOnce(&LegacyCacheStorage::DeleteCacheDidWriteIndex,
@@ -1396,5 +1412,25 @@ void LegacyCacheStorage::SizeImpl(SizeCallback callback) {
                               accumulator_ptr));
   }
 }
+
+void LegacyCacheStorage::FlushIndexIfDirty() {
+  if (!index_write_pending())
+    return;
+  index_write_task_.Cancel();
+  cache_loader_->WriteIndex(*cache_index_, base::DoNothing::Once<bool>());
+}
+
+#if defined(OS_ANDROID)
+void LegacyCacheStorage::OnApplicationStateChange(
+    base::android::ApplicationState state) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
+    app_on_background_ = false;
+  } else if (state == base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES) {
+    app_on_background_ = true;
+    FlushIndexIfDirty();
+  }
+}
+#endif
 
 }  // namespace content

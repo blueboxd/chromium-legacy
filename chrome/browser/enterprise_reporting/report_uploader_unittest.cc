@@ -35,7 +35,7 @@ class ReportUploaderTest : public ::testing::Test {
       int number_of_request,
       ReportUploader::ReportStatus expected_status) {
     DCHECK_LE(number_of_request, 2) << "Please update kOsUserNames above.";
-    std::queue<std::unique_ptr<em::ChromeDesktopReportRequest>> requests;
+    ReportUploader::Requests requests;
     for (int i = 0; i < number_of_request; i++) {
       auto request = std::make_unique<em::ChromeDesktopReportRequest>();
       request->set_os_user_name(kOsUserNames[i]);

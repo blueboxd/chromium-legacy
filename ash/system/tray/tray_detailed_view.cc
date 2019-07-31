@@ -242,7 +242,7 @@ class ScrollContentsView : public views::View {
     cc::PaintFlags flags;
     gfx::ShadowValues shadow;
     shadow.emplace_back(gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
-                        kMenuSeparatorColor);
+                        kSeparatorOnDarkBackgroundColor);
     flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
     flags.setAntiAlias(true);
     canvas->ClipRect(shadowed_area, SkClipOp::kDifference);

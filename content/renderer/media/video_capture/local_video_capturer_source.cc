@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
+#include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 
 namespace content {
 

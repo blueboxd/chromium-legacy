@@ -313,6 +313,16 @@
     "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
+    "prefix": "composite-after-paint",
+    "base": "scrollingcoordinator",
+    "args": ["--enable-blink-features=CompositeAfterPaint"]
+  },
+  {
+    "prefix": "paint-non-fast-scrollable-regions",
+    "base": "scrollingcoordinator",
+    "args": ["--enable-blink-features=PaintNonFastScrollableRegions"]
+  },
+  {
     "prefix": "scalefactor200",
     "base": "fast/hidpi/static",
     "args": ["--force-device-scale-factor=2"]

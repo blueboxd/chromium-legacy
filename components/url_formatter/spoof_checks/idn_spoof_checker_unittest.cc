@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace url_formatter {
 
@@ -1130,6 +1131,44 @@ TEST(IDNSpoofCheckerTest, UnsafeIDNToUnicodeWithDetails) {
     EXPECT_EQ(base::WideToUTF16(test_case.expected_unicode), result.result);
     EXPECT_EQ(test_case.expected_has_idn, result.has_idn_component);
     EXPECT_EQ(test_case.expected_matching_domain, result.matching_top_domain);
+  }
+}
+
+// Checks that skeletons are properly generated for domains with blocked
+// characters after using UnsafeIDNToUnicodeWithDetails.
+TEST(IDNSpoofCheckerTest, Skeletons) {
+  // All of these should produce the same skeleton. Not all of these are
+  // explicitly mapped in idn_spoof_checker.cc, ICU already handles some.
+  const GURL kTestCases[] = {
+      // U+2010 (Hyphen)
+      GURL("http://test‐site"),
+      // U+2011 (Non breaking hyphen)
+      GURL("http://test‑site"),
+      // U+2012 (Figure dash)
+      GURL("http://test‒site"),
+      // U+2013 (En dash)
+      GURL("http://test–site"),
+      // U+2014 (Em dash)
+      GURL("http://test—site"),
+      // U+2015 (Horizontal bar)
+      GURL("http://test―site"),
+      // U+4E00 (一)
+      GURL("http://test一site"),
+      // U+2212 (minus sign)
+      GURL("http://test−site"),
+      // U+2E3A (two-em dash)
+      GURL("http://test⸺site"),
+      // U+2E3B (three-em dash)
+      GURL("http://test⸻site"),
+  };
+
+  IDNSpoofChecker checker;
+  for (const GURL& url : kTestCases) {
+    const url_formatter::IDNConversionResult result =
+        UnsafeIDNToUnicodeWithDetails(url.host());
+    Skeletons skeletons = checker.GetSkeletons(result.result);
+    EXPECT_EQ(1u, skeletons.size());
+    EXPECT_EQ("test-site", *skeletons.begin());
   }
 }
 

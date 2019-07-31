@@ -290,9 +290,13 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
       [ContentSuggestionsLearnMoreItem accessibilityIdentifier]))
       assertWithMatcher:grey_notNil()];
 
-  // Open the last item.
+  // Open the last item. After the extra space of the last suggestion is
+  // removed, this test case fails on iPhoneX. Double-Tap on the last suggestion
+  // is a workaround.
+  // TODO(crbug.com/979143): Find out the reason and fix it. Also consider
+  // converting the test case to EG2 or deprecating MDCCollectionView.
   [CellWithMatcher(grey_accessibilityID(@"AdditionalSuggestion9"))
-      performAction:grey_tap()];
+      performAction:grey_doubleTap()];
 
   // Check that the page has been opened.
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];

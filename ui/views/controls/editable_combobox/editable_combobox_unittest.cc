@@ -193,6 +193,18 @@ void EditableComboboxTest::InitWidget() {
   container->AddChildView(dummy_focusable_view_);
   widget_->Show();
 
+#if defined(OS_MACOSX)
+  // The event loop needs to be flushed here, otherwise in various tests:
+  // 1. The actual showing of the native window backing the widget gets delayed
+  //    until a spin of the event loop.
+  // 2. The combobox menu object is triggered, and it starts listening for the
+  //    "window did become key" notification as a sign that it lost focus and
+  //    should close.
+  // 3. The event loop is spun, and the actual showing of the native window
+  //    triggers the close of the menu opened from within the window.
+  base::RunLoop().RunUntilIdle();
+#endif
+
   event_generator_ =
       std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget_));
   event_generator_->set_target(ui::test::EventGenerator::Target::WINDOW);

@@ -18,7 +18,6 @@ CustomLayoutChild::CustomLayoutChild(const CSSLayoutDefinition& definition,
       style_map_(MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           box->GetDocument(),
           box->StyleRef(),
-          box->GetNode(),
           definition.ChildNativeInvalidationProperties(),
           definition.ChildCustomInvalidationProperties())) {}
 

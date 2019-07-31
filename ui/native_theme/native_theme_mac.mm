@@ -176,7 +176,11 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
   return color;
 }
 
-SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
+SkColor NativeThemeMac::GetSystemColor(ColorId color_id,
+                                       ColorScheme color_scheme) const {
+  if (color_scheme == ColorScheme::kDefault)
+    color_scheme = GetSystemColorScheme();
+
   // Empirically, currentAppearance is incorrect when switching
   // appearances. It's unclear exactly why right now, so work
   // around it for the time being by resynchronizing.
@@ -190,9 +194,11 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
   if (UsesHighContrastColors()) {
     switch (color_id) {
       case kColorId_SelectedMenuItemForegroundColor:
-        return SystemDarkModeEnabled() ? SK_ColorBLACK : SK_ColorWHITE;
+        return color_scheme == ColorScheme::kDark ? SK_ColorBLACK
+                                                  : SK_ColorWHITE;
       case kColorId_FocusedMenuItemBackgroundColor:
-        return SystemDarkModeEnabled() ? SK_ColorLTGRAY : SK_ColorDKGRAY;
+        return color_scheme == ColorScheme::kDark ? SK_ColorLTGRAY
+                                                  : SK_ColorDKGRAY;
       default:
         break;
     }
@@ -205,8 +211,9 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_DisabledMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
     case kColorId_MenuSeparatorColor:
-      return SystemDarkModeEnabled() ? SkColorSetA(gfx::kGoogleGrey800, 0xCC)
-                                     : SkColorSetA(SK_ColorBLACK, 0x26);
+      return color_scheme == ColorScheme::kDark
+                 ? SkColorSetA(gfx::kGoogleGrey800, 0xCC)
+                 : SkColorSetA(SK_ColorBLACK, 0x26);
     case kColorId_MenuBorderColor:
       return SkColorSetA(SK_ColorBLACK, 0x60);
 
@@ -232,16 +239,17 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       break;
   }
 
-  return ApplySystemControlTint(GetAuraColor(color_id, this));
+  return ApplySystemControlTint(GetAuraColor(color_id, this, color_scheme));
 }
 
 void NativeThemeMac::PaintMenuPopupBackground(
     cc::PaintCanvas* canvas,
     const gfx::Size& size,
-    const MenuBackgroundExtraParams& menu_background) const {
+    const MenuBackgroundExtraParams& menu_background,
+    ColorScheme color_scheme) const {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(GetSystemColor(kColorId_MenuBackgroundColor));
+  flags.setColor(GetSystemColor(kColorId_MenuBackgroundColor, color_scheme));
   const SkScalar radius = SkIntToScalar(menu_background.corner_radius);
   SkRect rect = gfx::RectToSkRect(gfx::Rect(size));
   canvas->drawRoundRect(rect, radius, radius, flags);
@@ -251,14 +259,15 @@ void NativeThemeMac::PaintMenuItemBackground(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
-    const MenuItemExtraParams& menu_item) const {
+    const MenuItemExtraParams& menu_item,
+    ColorScheme color_scheme) const {
   switch (state) {
     case NativeTheme::kNormal:
     case NativeTheme::kDisabled:
       // Draw nothing over the regular background.
       break;
     case NativeTheme::kHovered:
-      PaintSelectedMenuItem(canvas, rect);
+      PaintSelectedMenuItem(canvas, rect, color_scheme);
       break;
     default:
       NOTREACHED();
@@ -298,10 +307,12 @@ NativeThemeMac::~NativeThemeMac() {
 }
 
 void NativeThemeMac::PaintSelectedMenuItem(cc::PaintCanvas* canvas,
-                                           const gfx::Rect& rect) const {
+                                           const gfx::Rect& rect,
+                                           ColorScheme color_scheme) const {
   // Draw the background.
   cc::PaintFlags flags;
-  flags.setColor(GetSystemColor(kColorId_FocusedMenuItemBackgroundColor));
+  flags.setColor(
+      GetSystemColor(kColorId_FocusedMenuItemBackgroundColor, color_scheme));
   canvas->drawRect(gfx::RectToSkRect(rect), flags);
 }
 

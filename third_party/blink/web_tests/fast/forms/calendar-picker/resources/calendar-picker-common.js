@@ -69,8 +69,8 @@ function hoverOverDayCellAt(column, row) {
     var y = offset[1];
     if (popupWindow.global.picker.calendarTableView.hasWeekNumberColumn)
         x += popupWindow.WeekNumberCell.Width;
-    x += (column + 0.5) * popupWindow.DayCell.Width;
-    y += (row + 0.5) * popupWindow.DayCell.Height + popupWindow.CalendarTableHeaderView.Height;
+    x += (column + 0.5) * popupWindow.DayCell.GetWidth();
+    y += (row + 0.5) * popupWindow.DayCell.GetHeight() + popupWindow.CalendarTableHeaderView.GetHeight();
     eventSender.mouseMoveTo(x, y);
 };
 

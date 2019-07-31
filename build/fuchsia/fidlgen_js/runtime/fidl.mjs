@@ -31,20 +31,20 @@ function $fidl__align(size) {
  * @constructor
  * @param {number} ordinal
  */
-function $fidl_Encoder(ordinal) {
+function $fidl_Encoder(ordinal, has_response) {
   var buf = new ArrayBuffer($fidl_kInitialBufferSize);
   this.data = new DataView(buf);
   this.extent = 0;
   this.handles = [];
-  this._encodeMessageHeader(ordinal);
+  this._encodeMessageHeader(ordinal, has_response);
 }
 
 /**
  * @param {number} ordinal
  */
-$fidl_Encoder.prototype._encodeMessageHeader = function(ordinal) {
+$fidl_Encoder.prototype._encodeMessageHeader = function(ordinal, has_response) {
   this.alloc($fidl_kMessageHeaderSize);
-  var txid = $fidl__nextTxid++ & $fidl__kUserspaceTxidMask;
+  var txid = has_response ? ($fidl__nextTxid++ & $fidl__kUserspaceTxidMask) : 0;
   this.data.setUint32($fidl_kMessageTxidOffset, txid, $fidl__kLE);
   this.data.setUint32($fidl_kMessageOrdinalOffset, ordinal, $fidl__kLE);
 };

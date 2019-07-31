@@ -48,9 +48,7 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
 // static
 const char TestBrowserState::kCorsExemptTestHeaderName[] = "ExemptTest";
 
-TestBrowserState::TestBrowserState() : is_off_the_record_(false) {
-  BrowserState::Initialize(this, GetStatePath());
-}
+TestBrowserState::TestBrowserState() : is_off_the_record_(false) {}
 
 TestBrowserState::~TestBrowserState() {}
 

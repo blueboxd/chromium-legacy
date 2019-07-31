@@ -4,16 +4,19 @@
 
 #include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
 
+#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/net/input_stream_reader.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
+#include "net/base/mime_sniffer.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -96,6 +99,8 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     std::unique_ptr<ResponseDelegate> response_delegate)
     : resource_request_(resource_request),
+      resource_response_head_(
+          std::make_unique<network::ResourceResponseHead>()),
       client_(std::move(client)),
       traffic_annotation_(traffic_annotation),
       response_delegate_(std::move(response_delegate)),
@@ -116,7 +121,6 @@ void AndroidStreamReaderURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {}
-void AndroidStreamReaderURLLoader::ProceedWithResponse() {}
 void AndroidStreamReaderURLLoader::SetPriority(net::RequestPriority priority,
                                                int intra_priority_value) {}
 void AndroidStreamReaderURLLoader::PauseReadingBodyFromNet() {}
@@ -214,7 +218,7 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
   // HttpResponseHeaders expects its input string to be terminated by two NULs.
   status.append("\0\0", 2);
 
-  network::ResourceResponseHead head;
+  network::ResourceResponseHead& head = *resource_response_head_;
   head.request_start = base::TimeTicks::Now();
   head.response_start = base::TimeTicks::Now();
   head.headers = new net::HttpResponseHeaders(status);
@@ -257,18 +261,14 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
   // file resources?). The old path does this as well.
   head.headers->AddHeader(kResponseHeaderViaShouldInterceptRequest);
 
-  DCHECK(client_.is_bound());
-  client_->OnReceiveResponse(head);
-
   SendBody();
 }
 
 void AndroidStreamReaderURLLoader::SendBody() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  mojo::ScopedDataPipeConsumerHandle consumer_handle;
   if (CreateDataPipe(nullptr /*options*/, &producer_handle_,
-                     &consumer_handle) != MOJO_RESULT_OK) {
+                     &consumer_handle_) != MOJO_RESULT_OK) {
     RequestComplete(net::ERR_FAILED);
     return;
   }
@@ -276,9 +276,28 @@ void AndroidStreamReaderURLLoader::SendBody() {
       producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
       base::BindRepeating(&AndroidStreamReaderURLLoader::OnDataPipeWritable,
                           base::Unretained(this)));
-  client_->OnStartLoadingResponseBody(std::move(consumer_handle));
 
+  // Send the response if possible now for 2 reasons:
+  // 1. If we don't need any more MIME type sniffing, there's no reason not to
+  //    tell the URLLoaderClient right away. Sending now should preserve
+  //    ordering between app-visible callbacks and the first read of the
+  //    InputStream (although we do not generally guarantee the ordering).
+  // 2. Sending this now lets us unittest the net::ERR_ABORTED case. The case
+  //    needs the ability to break the stream after getting the headers but
+  //    before finishing the read.
+  if (!base::FeatureList::IsEnabled(features::kWebViewSniffMimeType) ||
+      !resource_response_head_->mime_type.empty()) {
+    SendResponseToClient();
+  }
   ReadMore();
+}
+
+void AndroidStreamReaderURLLoader::SendResponseToClient() {
+  DCHECK(consumer_handle_.is_valid());
+  DCHECK(client_.is_bound());
+  client_->OnReceiveResponse(*resource_response_head_);
+  resource_response_head_ = nullptr;
+  client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
 }
 
 void AndroidStreamReaderURLLoader::ReadMore() {
@@ -337,6 +356,30 @@ void AndroidStreamReaderURLLoader::DidRead(int result) {
     RequestComplete(net::OK);
     return;
   }
+  if (consumer_handle_.is_valid()) {
+    // We only hit this on for the first buffer read, which we expect to be
+    // enough to determine the MIME type.
+    DCHECK(base::FeatureList::IsEnabled(features::kWebViewSniffMimeType));
+    if (resource_response_head_->mime_type.empty()) {
+      // Limit sniffing to the first net::kMaxBytesToSniff.
+      size_t data_length = result;
+      if (data_length > net::kMaxBytesToSniff)
+        data_length = net::kMaxBytesToSniff;
+
+      std::string new_type;
+      net::SniffMimeType(pending_buffer_->buffer(), data_length,
+                         resource_request_.url, std::string(),
+                         net::ForceSniffFileUrlsForHtml::kDisabled, &new_type);
+      // SniffMimeType() returns false if there is not enough data to
+      // determine the mime type. However, even if it returns false, it
+      // returns a new type that is probably better than the current one.
+      resource_response_head_->mime_type.assign(new_type);
+      resource_response_head_->did_mime_sniff = true;
+    }
+
+    SendResponseToClient();
+  }
+
   producer_handle_ = pending_buffer_->Complete(result);
   pending_buffer_ = nullptr;
 
@@ -358,6 +401,10 @@ void AndroidStreamReaderURLLoader::OnDataPipeWritable(MojoResult result) {
 
 void AndroidStreamReaderURLLoader::RequestComplete(int status_code) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (consumer_handle_.is_valid()) {
+    // We can hit this before reading any buffers under error conditions.
+    SendResponseToClient();
+  }
 
   client_->OnComplete(network::URLLoaderCompletionStatus(status_code));
   CleanUp();

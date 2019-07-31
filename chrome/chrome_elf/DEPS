@@ -2,7 +2,6 @@ include_rules = [
   "+chrome/app/chrome_crash_reporter_client_win.h",
   "+chrome/chrome_elf",
   "+chrome/common/chrome_switches.h",
-  "+chrome/common/chrome_version.h",
   "+chrome/install_static",
   "+components/crash/content/app/crashpad.h",
   "+components/crash/core/common/crash_keys.h",

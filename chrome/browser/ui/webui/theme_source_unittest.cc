@@ -24,10 +24,8 @@ class WebUISourcesTest : public testing::Test {
   size_t result_data_size() const { return result_data_size_; }
 
   void StartDataRequest(const std::string& source) {
-    theme_source()->StartDataRequest(
-        source,
-        content::ResourceRequestInfo::WebContentsGetter(),
-        callback_);
+    theme_source()->StartDataRequest(source, content::WebContents::Getter(),
+                                     callback_);
   }
 
   size_t result_data_size_;

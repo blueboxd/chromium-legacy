@@ -67,9 +67,9 @@ void InputDeviceInfo::SetVideoInputCapabilities(
     float min_frame_rate = 1.0f;
     float max_frame_rate = min_frame_rate;
     for (const auto& format : video_input_capabilities->formats) {
-      max_width = std::max(max_width, format->frame_size.width);
-      max_height = std::max(max_height, format->frame_size.height);
-      max_frame_rate = std::max(max_frame_rate, format->frame_rate);
+      max_width = std::max(max_width, format.frame_size.width());
+      max_height = std::max(max_height, format.frame_size.height());
+      max_frame_rate = std::max(max_frame_rate, format.frame_rate);
     }
     platform_capabilities_.width = {1, max_width};
     platform_capabilities_.height = {1, max_height};

@@ -21,6 +21,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import org.chromium.base.JniStaticTestMocker;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 
 import java.security.MessageDigest;
@@ -60,6 +61,7 @@ import javax.tools.Diagnostic;
 @AutoService(Processor.class)
 public class JniProcessor extends AbstractProcessor {
     private static final Class<NativeMethods> JNI_STATIC_NATIVES_CLASS = NativeMethods.class;
+    private static final Class<MainDex> MAIN_DEX_CLASS = MainDex.class;
 
     private static final String NATIVE_WRAPPER_CLASS_POSTFIX = "Jni";
 
@@ -184,9 +186,13 @@ public class JniProcessor extends AbstractProcessor {
             // method overridden will be a wrapper that calls its
             // native counterpart in NativeClass.
             boolean isNativesInterfacePublic = type.getModifiers().contains(Modifier.PUBLIC);
+            // If the outerType needs to be in the main dex, then the generated NativeWrapperClass
+            // should also be added to the main dex.
+            boolean addMainDexAnnotation = outerElement.getAnnotation(MAIN_DEX_CLASS) != null;
+
             TypeSpec nativeWrapperClassSpec =
                     createNativeWrapperClassSpec(getNameOfWrapperClass(outerClassName),
-                            isNativesInterfacePublic, type, methodMap);
+                            isNativesInterfacePublic, addMainDexAnnotation, type, methodMap);
 
             // Queue this file for writing.
             // Can't write right now because the wrapper class depends on NativeClass
@@ -318,11 +324,12 @@ public class JniProcessor extends AbstractProcessor {
      *
      * @param name name of the wrapper class.
      * @param isPublic if true, a public modifier will be added to this native wrapper.
+     * @param isMainDex if true, the @MainDex annotation will be added to this native wrapper.
      * @param nativeInterface the {@link NativeMethods} annotated type that this native wrapper
      *                        will implement.
      * @param methodMap a map from the old method name to the new method spec in NativeClass.
      * */
-    TypeSpec createNativeWrapperClassSpec(String name, boolean isPublic,
+    TypeSpec createNativeWrapperClassSpec(String name, boolean isPublic, boolean isMainDex,
             TypeElement nativeInterface, Map<String, MethodSpec> methodMap) {
         // The wrapper class builder.
         TypeName nativeInterfaceType = TypeName.get(nativeInterface.asType());
@@ -332,6 +339,9 @@ public class JniProcessor extends AbstractProcessor {
                                            .addAnnotation(createGeneratedAnnotation());
         if (isPublic) {
             builder.addModifiers(Modifier.PUBLIC);
+        }
+        if (isMainDex) {
+            builder.addAnnotation(MAIN_DEX_CLASS);
         }
 
         // Start by adding all the native method wrappers.

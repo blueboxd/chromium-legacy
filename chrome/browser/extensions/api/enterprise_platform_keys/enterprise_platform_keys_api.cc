@@ -281,11 +281,11 @@ EnterprisePlatformKeysChallengeMachineKeyFunction::Run() {
       this);
   // base::Unretained is safe on impl_ since its life-cycle matches |this| and
   // |callback| holds a reference to |this|.
-  base::Closure task = base::Bind(
-      &EPKPChallengeMachineKey::Run, base::Unretained(impl_),
-      scoped_refptr<UIThreadExtensionFunction>(AsUIThreadExtensionFunction()),
-      callback, StringFromVector(params->challenge),
-      params->register_key ? *params->register_key : false);
+  base::Closure task =
+      base::Bind(&EPKPChallengeMachineKey::Run, base::Unretained(impl_),
+                 scoped_refptr<ExtensionFunction>(this), callback,
+                 StringFromVector(params->challenge),
+                 params->register_key ? *params->register_key : false);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, task);
   return RespondLater();
 }
@@ -322,10 +322,10 @@ EnterprisePlatformKeysChallengeUserKeyFunction::Run() {
       &EnterprisePlatformKeysChallengeUserKeyFunction::OnChallengedKey, this);
   // base::Unretained is safe on impl_ since its life-cycle matches |this| and
   // |callback| holds a reference to |this|.
-  base::Closure task = base::Bind(
-      &EPKPChallengeUserKey::Run, base::Unretained(impl_),
-      scoped_refptr<UIThreadExtensionFunction>(AsUIThreadExtensionFunction()),
-      callback, StringFromVector(params->challenge), params->register_key);
+  base::Closure task =
+      base::Bind(&EPKPChallengeUserKey::Run, base::Unretained(impl_),
+                 scoped_refptr<ExtensionFunction>(this), callback,
+                 StringFromVector(params->challenge), params->register_key);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, task);
   return RespondLater();
 }

@@ -14,7 +14,6 @@
 
 class WebEngineNetLog;
 class WebEnginePermissionManager;
-class WebEngineURLRequestContextGetter;
 
 class WebEngineBrowserContext : public content::BrowserContext {
  public:
@@ -42,10 +41,6 @@ class WebEngineBrowserContext : public content::BrowserContext {
   content::BackgroundSyncController* GetBackgroundSyncController() override;
   content::BrowsingDataRemoverDelegate* GetBrowsingDataRemoverDelegate()
       override;
-  net::URLRequestContextGetter* CreateRequestContext(
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) override;
-  net::URLRequestContextGetter* CreateMediaRequestContext() override;
 
  private:
   // Contains URLRequestContextGetter required for resource loading.
@@ -54,7 +49,6 @@ class WebEngineBrowserContext : public content::BrowserContext {
   base::FilePath data_dir_path_;
 
   std::unique_ptr<WebEngineNetLog> net_log_;
-  scoped_refptr<WebEngineURLRequestContextGetter> url_request_getter_;
   std::unique_ptr<SimpleFactoryKey> simple_factory_key_;
   std::unique_ptr<ResourceContext> resource_context_;
   std::unique_ptr<WebEnginePermissionManager> permission_manager_;

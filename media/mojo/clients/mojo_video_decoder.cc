@@ -118,6 +118,7 @@ MojoVideoDecoder::MojoVideoDecoder(
     : task_runner_(task_runner),
       remote_decoder_info_(remote_decoder.PassInterface()),
       gpu_factories_(gpu_factories),
+      timestamps_(128),
       writer_capacity_(
           GetDefaultDecoderBufferConverterCapacity(DemuxerStream::VIDEO)),
       client_binding_(this),
@@ -223,11 +224,9 @@ void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
     return;
   }
 
-  int64_t timestamp = 0ll;
   if (!buffer->end_of_stream()) {
-    timestamp = buffer->timestamp().InMilliseconds();
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("media", "MojoVideoDecoder::Decode",
-                                      timestamp, "timestamp", timestamp);
+    timestamps_.Put(buffer->timestamp().InMilliseconds(),
+                    base::TimeTicks::Now());
   }
 
   mojom::DecoderBufferPtr mojo_buffer =
@@ -241,10 +240,9 @@ void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   uint64_t decode_id = decode_counter_++;
   pending_decodes_[decode_id] = std::move(bound_decode_cb);
-  remote_decoder_->Decode(
-      std::move(mojo_buffer),
-      base::Bind(&MojoVideoDecoder::OnDecodeDone, base::Unretained(this),
-                 decode_id, timestamp));
+  remote_decoder_->Decode(std::move(mojo_buffer),
+                          base::Bind(&MojoVideoDecoder::OnDecodeDone,
+                                     base::Unretained(this), decode_id));
 }
 
 void MojoVideoDecoder::OnVideoFrameDecoded(
@@ -265,15 +263,24 @@ void MojoVideoDecoder::OnVideoFrameDecoded(
             release_token.value()));
   }
   const int64_t timestamp = frame->timestamp().InMilliseconds();
-  TRACE_EVENT_NESTABLE_ASYNC_END1("media", "MojoVideoDecoder::Decode",
-                                  timestamp, "timestamp", timestamp);
+  const auto timestamp_it = timestamps_.Peek(timestamp);
+  if (timestamp_it != timestamps_.end()) {
+    const auto decode_start_time = timestamp_it->second;
+    const auto decode_end_time = base::TimeTicks::Now();
+
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+        "media", "MojoVideoDecoder::Decode", timestamp, decode_start_time);
+    TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP1(
+        "media", "MojoVideoDecoder::Decode", timestamp, decode_end_time,
+        "timestamp", timestamp);
+    UMA_HISTOGRAM_TIMES("Media.MojoVideoDecoder.Decode",
+                        decode_end_time - decode_start_time);
+  }
 
   output_cb_.Run(frame);
 }
 
-void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id,
-                                    int64_t timestamp,
-                                    DecodeStatus status) {
+void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -282,10 +289,6 @@ void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id,
     DLOG(ERROR) << "Decode request " << decode_id << " not found";
     Stop();
     return;
-  }
-  if (status != DecodeStatus::OK) {
-    TRACE_EVENT_NESTABLE_ASYNC_END1("media", "MojoVideoDecoder::Decode",
-                                    timestamp, "timestamp", timestamp);
   }
 
   DecodeCB decode_cb = std::move(it->second);

@@ -114,15 +114,6 @@ void InputMethodEngine::CommitTextToInputContext(int context_id,
   }
 }
 
-void InputMethodEngine::DeleteSurroundingTextToInputContext(
-    int offset,
-    size_t number_of_chars) {
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
-    input_context->DeleteSurroundingText(offset, number_of_chars);
-}
-
 bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
                                      const std::string& code) {
   DCHECK(event);
@@ -147,13 +138,6 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
 
   input_context->SendKeyEvent(event);
   return true;
-}
-
-void InputMethodEngine::ConfirmCompositionText() {
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
-    input_context->ConfirmCompositionText();
 }
 
 bool InputMethodEngine::IsActive() const {

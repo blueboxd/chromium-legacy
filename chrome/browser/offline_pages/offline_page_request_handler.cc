@@ -30,7 +30,6 @@
 #include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
@@ -254,7 +253,7 @@ void ReportAccessEntryPoint(
 }
 
 OfflinePageModel* GetOfflinePageModel(
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter) {
+    content::WebContents::Getter web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents = web_contents_getter.Run();
@@ -309,7 +308,7 @@ void SelectPagesForURLDone(
     const OfflinePageHeader& offline_header,
     OfflinePageRequestHandler::NetworkState network_state,
     base::WeakPtr<OfflinePageRequestHandler> job,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents::Getter web_contents_getter,
     const std::vector<OfflinePageItem>& offline_pages) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -345,7 +344,7 @@ void GetPageByOfflineIdDone(
     const GURL& url,
     const OfflinePageHeader& offline_header,
     OfflinePageRequestHandler::NetworkState network_state,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents::Getter web_contents_getter,
     base::WeakPtr<OfflinePageRequestHandler> job,
     const OfflinePageItem* offline_page) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -368,7 +367,7 @@ void GetPagesToServeURL(
     const GURL& url,
     const OfflinePageHeader& offline_header,
     OfflinePageRequestHandler::NetworkState network_state,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents::Getter web_contents_getter,
     OfflinePageRequestHandler::Delegate::TabIdGetter tab_id_getter,
     base::WeakPtr<OfflinePageRequestHandler> job) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -418,7 +417,7 @@ void GetPagesToServeURL(
 void VisitTrustedOfflinePageOnUI(
     const OfflinePageHeader& offline_header,
     OfflinePageRequestHandler::NetworkState network_state,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    content::WebContents::Getter web_contents_getter,
     const OfflinePageItem& offline_page,
     bool archive_is_in_internal_dir) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -452,8 +451,7 @@ void VisitTrustedOfflinePageOnUI(
           OfflinePageRequestHandler::NetworkState::PROHIBITIVELY_SLOW_NETWORK);
 }
 
-void ClearOfflinePageData(
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter) {
+void ClearOfflinePageData(content::WebContents::Getter web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // |web_contents_getter| is passed from IO thread. We need to check if

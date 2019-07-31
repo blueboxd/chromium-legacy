@@ -259,7 +259,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForBrowserState(browserState);
     base::Optional<AccountInfo> primary_account_info =
-        identity_manager->FindExtendedAccountInfoForAccount(
+        identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
             identity_manager->GetPrimaryAccountInfo());
     DCHECK(primary_account_info);
     NSString* hostedDomain =

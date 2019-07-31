@@ -66,7 +66,7 @@ base::LazySequencedTaskRunner g_media_task_runner =
                          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN));
 
 void OnPreferencesInit(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     const extensions::Extension* extension,
     MediaGalleryPrefId pref_id,
     base::OnceCallback<void(base::File::Error result)> callback) {
@@ -84,7 +84,7 @@ void OnPreferencesInit(
 }
 
 void AttemptAutoMountOnUIThread(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const content::WebContents::Getter& web_contents_getter,
     const std::string& storage_domain,
     const std::string& mount_point,
     base::OnceCallback<void(base::File::Error result)> callback) {
@@ -205,7 +205,7 @@ bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
                         base::CompareCase::SENSITIVE))
     return false;
 
-  content::ResourceRequestInfo::WebContentsGetter web_contents_getter;
+  content::WebContents::Getter web_contents_getter;
   if (request_info.content_id) {
     web_contents_getter = base::BindRepeating(
         &GetWebContentsFromFrameTreeNodeID, request_info.content_id);

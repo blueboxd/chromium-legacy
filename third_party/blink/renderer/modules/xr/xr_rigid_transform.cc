@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/geometry/dom_point_init.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
@@ -59,7 +60,29 @@ XRRigidTransform::XRRigidTransform(DOMPointInit* position,
 }
 
 XRRigidTransform* XRRigidTransform::Create(DOMPointInit* position,
-                                           DOMPointInit* orientation) {
+                                           DOMPointInit* orientation,
+                                           ExceptionState& exception_state) {
+  if (position && position->w() != 1.0) {
+    exception_state.ThrowTypeError("W component of position must be 1.0");
+    return nullptr;
+  }
+
+  if (orientation) {
+    double x = orientation->x();
+    double y = orientation->y();
+    double z = orientation->z();
+    double w = orientation->w();
+    double sq_len = x * x + y * y + z * z + w * w;
+
+    // The only way for the result of a square root to be 0 is if the squared
+    // number is 0, so save the square root operation and just compare to 0 now.
+    if (sq_len == 0.0) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        "Orientation's length cannot be 0");
+      return nullptr;
+    }
+  }
+
   return MakeGarbageCollected<XRRigidTransform>(position, orientation);
 }
 

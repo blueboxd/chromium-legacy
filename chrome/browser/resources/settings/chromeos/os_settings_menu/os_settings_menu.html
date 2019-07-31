@@ -44,12 +44,15 @@
       /* The "item" draws the icon, text, and rounded background. */
       a > .item {
         align-items: center;
-        border: 1px solid transparent;
+        /* Always apply border so item doesn't shift when focused. */
+        border-color: transparent;
         border-radius: 0 20px 20px 0;
+        border-style: solid;
+        border-width: 1px 1px 1px 0;
         color: var(--menu-text-color);
         display: flex;
         font-weight: 500;
-        margin-inline-end: 2px;  /* Margin so selected outline is visible. */
+        margin-inline-end: 2px;
         min-height: 32px;
         padding-inline-start: 24px;
         pointer-events: none;

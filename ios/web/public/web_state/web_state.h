@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -15,10 +16,11 @@
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/supports_user_data.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #include "ios/web/public/navigation/referrer.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -53,7 +55,6 @@ class WebFrame;
 class WebFramesManager;
 class WebInterstitial;
 class WebStateDelegate;
-class WebStateInterfaceProvider;
 class WebStateObserver;
 class WebStatePolicyDecider;
 
@@ -103,6 +104,48 @@ class WebState : public base::SupportsUserData {
 
     // Whether this navigation is initiated by the renderer process.
     bool is_renderer_initiated;
+  };
+
+  // InterfaceBinder can be instantiated by subclasses of WebState and returned
+  // by GetInterfaceBinderForMainFrame().
+  class InterfaceBinder {
+   public:
+    explicit InterfaceBinder(WebState* web_state);
+    ~InterfaceBinder();
+
+    template <typename Interface>
+    void AddInterface(
+        base::RepeatingCallback<void(mojo::PendingReceiver<Interface>)>
+            callback) {
+      AddInterface(
+          Interface::Name_,
+          base::BindRepeating(&WrapCallback<Interface>, std::move(callback)));
+    }
+
+    // Adds a callback to bind an interface receiver pipe carried by a
+    // GenericPendingReceiver.
+    using Callback =
+        base::RepeatingCallback<void(mojo::GenericPendingReceiver*)>;
+    void AddInterface(base::StringPiece interface_name, Callback callback);
+
+    // Attempts to bind |receiver| by matching its interface name against the
+    // callbacks registered on this InterfaceBinder.
+    void BindInterface(mojo::GenericPendingReceiver receiver);
+
+   private:
+    template <typename Interface>
+    static void WrapCallback(
+        base::RepeatingCallback<void(mojo::PendingReceiver<Interface>)>
+            callback,
+        mojo::GenericPendingReceiver* receiver) {
+      if (auto typed_receiver = receiver->As<Interface>())
+        callback.Run(std::move(typed_receiver));
+    }
+
+    WebState* const web_state_;
+    std::map<std::string, Callback> callbacks_;
+
+    DISALLOW_COPY_AND_ASSIGN(InterfaceBinder);
   };
 
   // Creates a new WebState.
@@ -282,9 +325,6 @@ class WebState : public base::SupportsUserData {
   // Returns the current CRWWebViewProxy object.
   virtual CRWWebViewProxyType GetWebViewProxy() const = 0;
 
-  // Returns Mojo interface registry for this WebState.
-  virtual WebStateInterfaceProvider* GetWebStateInterfaceProvider() = 0;
-
   // Typically an embedder will:
   //    - Implement this method to receive notification of changes to the page's
   //      |VisibleSecurityState|, updating security UI (e.g. a lock icon) to
@@ -294,23 +334,8 @@ class WebState : public base::SupportsUserData {
   //      the security state (e.g. a non-secure form element is edited).
   virtual void DidChangeVisibleSecurityState() = 0;
 
- protected:
-  // Binds |interface_pipe| to an implementation of |interface_name| that is
-  // scoped to this WebState instance (if that such an implementation is
-  // present). Embedders of //ios/web can inject interface implementations by
-  // overriding WebClient::BindInterfaceRequestFromMainFrame().
-  // NOTE: Callers should use the more-friendly wrapper below.
-  virtual void BindInterfaceRequestFromMainFrame(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe) {}
-
  public:
-  template <class Interface>
-  void BindInterfaceRequestFromMainFrame(
-      mojo::InterfaceRequest<Interface> request) {
-    BindInterfaceRequestFromMainFrame(Interface::Name_,
-                                      std::move(request.PassMessagePipe()));
-  }
+  virtual InterfaceBinder* GetInterfaceBinderForMainFrame();
 
   // Whether this WebState was created with an opener.
   // See CreateParams::created_with_opener for more details.

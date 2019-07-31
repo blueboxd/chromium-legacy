@@ -21,6 +21,7 @@
 
 namespace autofill_assistant {
 
+using ::testing::AnyOf;
 using ::testing::IsEmpty;
 
 const char* kTargetWebsitePath = "/autofill_assistant_target_website.html";
@@ -183,6 +184,16 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
                       ClientStatus* result_output,
                       const ClientStatus& status) {
     *result_output = status;
+    std::move(done_callback).Run();
+  }
+
+  void OnClientStatusAndReadyState(base::Closure done_callback,
+                                   ClientStatus* result_output,
+                                   DocumentReadyState* ready_state_out,
+                                   const ClientStatus& status,
+                                   DocumentReadyState ready_state) {
+    *result_output = status;
+    *ready_state_out = ready_state;
     std::move(done_callback).Run();
   }
 
@@ -1174,6 +1185,55 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, WaitForHeightChange) {
       content::ExecJs(shell(), "window.dispatchEvent(new Event('resize'))"));
   run_loop.Run();
   EXPECT_EQ(ACTION_APPLIED, result.proto_status());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       WaitMainDocumentReadyStateInteractive) {
+  ClientStatus status;
+  DocumentReadyState end_state;
+  base::RunLoop run_loop;
+  web_controller_->WaitForDocumentReadyState(
+      Selector(), DOCUMENT_INTERACTIVE,
+      base::BindOnce(&WebControllerBrowserTest::OnClientStatusAndReadyState,
+                     base::Unretained(this), run_loop.QuitClosure(), &status,
+                     &end_state));
+  run_loop.Run();
+
+  EXPECT_EQ(ACTION_APPLIED, status.proto_status()) << "Status: " << status;
+  EXPECT_THAT(end_state, AnyOf(DOCUMENT_INTERACTIVE, DOCUMENT_COMPLETE));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       WaitMainDocumentReadyStateComplete) {
+  ClientStatus status;
+  DocumentReadyState end_state;
+  base::RunLoop run_loop;
+  web_controller_->WaitForDocumentReadyState(
+      Selector(), DOCUMENT_COMPLETE,
+      base::BindOnce(&WebControllerBrowserTest::OnClientStatusAndReadyState,
+                     base::Unretained(this), run_loop.QuitClosure(), &status,
+                     &end_state));
+  run_loop.Run();
+
+  EXPECT_EQ(ACTION_APPLIED, status.proto_status()) << "Status: " << status;
+  EXPECT_EQ(DOCUMENT_COMPLETE, end_state);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       WaitFrameDocumentReadyStateLoaded) {
+  ClientStatus status;
+  DocumentReadyState end_state;
+  base::RunLoop run_loop;
+  web_controller_->WaitForDocumentReadyState(
+      Selector({"#iframe"}), DOCUMENT_LOADED,
+      base::BindOnce(&WebControllerBrowserTest::OnClientStatusAndReadyState,
+                     base::Unretained(this), run_loop.QuitClosure(), &status,
+                     &end_state));
+  run_loop.Run();
+
+  EXPECT_EQ(ACTION_APPLIED, status.proto_status()) << "Status: " << status;
+  EXPECT_THAT(end_state,
+              AnyOf(DOCUMENT_LOADED, DOCUMENT_INTERACTIVE, DOCUMENT_COMPLETE));
 }
 
 }  // namespace

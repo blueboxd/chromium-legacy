@@ -1152,6 +1152,78 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
 }
 #endif
 
+// Test that Previous/NextOnLineId attributes are present and properly linked on
+// InlineTextBoxes within a line.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityNextOnLine) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+
+  GURL test_pdf_url(
+      embedded_test_server()->GetURL("/pdf/accessibility/next-on-line.pdf"));
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
+  ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
+
+  // The test file contains several lines delimited with '<<' and '>>' markers.
+  // We loop over the content looking for these markers, and ensure that the
+  // NextOnLine and PreviousOnLine attributes are properly linked for all
+  // InlineTextBoxes within each delimited line.
+  int current_line = 0;
+  bool currently_in_delimited_line = false;
+  int32_t previous_node_id = 0;
+  int32_t previous_node_next_id = 0;
+
+  for (const auto& node : ax_tree.nodes) {
+    if (node.role != ax::mojom::Role::kInlineTextBox)
+      continue;
+
+    std::string name =
+        node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+    base::StringPiece trimmed_name =
+        base::TrimWhitespaceASCII(name, base::TRIM_ALL);
+
+    ASSERT_FALSE(trimmed_name.starts_with("<<") && trimmed_name.ends_with(">>"))
+        << "test is not useful if the runs have been pre-merged; consider "
+           "changing the input file";
+
+    if (trimmed_name.starts_with("<<")) {
+      // Started a delimited line; there should be no PreviousOnLine id.
+      ASSERT_FALSE(currently_in_delimited_line);
+      current_line++;
+      currently_in_delimited_line = true;
+      ASSERT_FALSE(
+          node.HasIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId))
+          << "line " << current_line;
+    } else if (currently_in_delimited_line) {
+      // We're in the middle of a delimited line; the previous node's
+      // NextOnLineId should point to us, and our PreviousOnLine id should point
+      // to the previous node.
+      ASSERT_EQ(node.id, previous_node_next_id) << "line " << current_line;
+      int32_t prev_id =
+          node.GetIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId);
+      ASSERT_EQ(prev_id, previous_node_id) << "line " << current_line;
+    }
+
+    if (trimmed_name.ends_with(">>")) {
+      // This is the end of a delimited line; there should be no NextOnLine id.
+      // (The previous node ids were already checked above.)
+      ASSERT_TRUE(currently_in_delimited_line);
+      currently_in_delimited_line = false;
+      ASSERT_FALSE(node.HasIntAttribute(ax::mojom::IntAttribute::kNextOnLineId))
+          << "line " << current_line;
+    }
+
+    // Keep track of the previous node & its NextOnLine id so that we can test
+    // against them when we encounter the next node.
+    previous_node_id = node.id;
+    previous_node_next_id =
+        node.GetIntAttribute(ax::mojom::IntAttribute::kNextOnLineId);
+  }
+  ASSERT_FALSE(currently_in_delimited_line);
+  ASSERT_EQ(current_line, 2);
+}
+
 // Test that if the plugin tries to load a URL that redirects then it will fail
 // to load. This is to avoid the source origin of the document changing during
 // the redirect, which can have security implications. https://crbug.com/653749.

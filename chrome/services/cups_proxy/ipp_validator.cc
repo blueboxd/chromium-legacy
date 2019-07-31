@@ -15,6 +15,7 @@
 
 #include "base/containers/span.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "chrome/services/cups_proxy/ipp_attribute_validator.h"
@@ -25,12 +26,11 @@
 namespace cups_proxy {
 namespace {
 
+using ValueType = cups_ipp_parser::mojom::ValueType;
+
 // Initial version only supports english lcoales.
 // TODO(crbug.com/945409): Extending to supporting arbitrary locales.
 const char kLocaleEnglish[] = "en";
-
-// Following ConvertXxx methods translate IPP attribute values to formats'
-// libCUPS APIs accept.
 
 // Converting to vector<char> for libCUPS API:
 // ippAddBooleans(..., int num_values, const char *values)
@@ -55,22 +55,21 @@ std::vector<const char*> ConvertStrings(
   return ret;
 }
 
-// Depending on |type|, returns the number of values associated with
-// |attr_value|.
+// Depending on |type|, returns the number of values associated with |attr|.
 size_t GetAttributeValuesSize(
     const cups_ipp_parser::mojom::IppAttributePtr& attr) {
   const auto& attr_value = attr->value;
   switch (attr->type) {
-    case cups_ipp_parser::mojom::ValueType::DATE:
+    case ValueType::DATE:
       return 1;
 
-    case cups_ipp_parser::mojom::ValueType::BOOLEAN:
+    case ValueType::BOOLEAN:
       DCHECK(attr_value->is_bools());
       return attr_value->get_bools().size();
-    case cups_ipp_parser::mojom::ValueType::INTEGER:
+    case ValueType::INTEGER:
       DCHECK(attr_value->is_ints());
       return attr_value->get_ints().size();
-    case cups_ipp_parser::mojom::ValueType::STRING:
+    case ValueType::STRING:
       DCHECK(attr_value->is_strings());
       return attr_value->get_strings().size();
 
@@ -121,6 +120,7 @@ base::Optional<HttpRequestLine> IppValidator::ValidateHttpRequestLine(
 
 base::Optional<std::vector<ipp_converter::HttpHeader>>
 IppValidator::ValidateHttpHeaders(
+    const size_t http_content_length,
     const base::flat_map<std::string, std::string>& headers) {
   // Sane, character-set checks.
   for (const auto& header : headers) {
@@ -130,9 +130,20 @@ IppValidator::ValidateHttpHeaders(
     }
   }
 
-  return std::vector<ipp_converter::HttpHeader>(headers.begin(), headers.end());
+  std::vector<ipp_converter::HttpHeader> ret(headers.begin(), headers.end());
+
+  // Update the ContentLength.
+  base::EraseIf(ret, [](const ipp_converter::HttpHeader& header) {
+    return header.first == "Content-Length";
+  });
+  ret.push_back({"Content-Length", base::NumberToString(http_content_length)});
+
+  return ret;
 }
 
+// Note: Since its possible to have valid IPP attributes that our
+// ipp_attribute_validator.cc is unaware of, we drop unknown attributes, rather
+// than fail the request.
 ipp_t* IppValidator::ValidateIppMessage(
     cups_ipp_parser::mojom::IppMessagePtr ipp_message) {
   printing::ScopedIppPtr ipp = printing::WrapIpp(ippNew());
@@ -161,13 +172,20 @@ ipp_t* IppValidator::ValidateIppMessage(
       return nullptr;
     }
 
-    if (!ValidateAttribute(ipp_oper_id, attribute->name, attribute->type,
-                           num_values)) {
+    auto ret = ValidateAttribute(ipp_oper_id, attribute->name, attribute->type,
+                                 num_values);
+    if (ret == ValidateAttributeResult::kFatalError) {
       return nullptr;
+    }
+    if (ret == ValidateAttributeResult::kUnknownAttribute) {
+      // We drop unknown attributes.
+      DVLOG(1) << "CupsProxy validation: dropping unknown attribute "
+               << attribute->name;
+      continue;
     }
 
     switch (attribute->type) {
-      case cups_ipp_parser::mojom::ValueType::BOOLEAN: {
+      case ValueType::BOOLEAN: {
         DCHECK(attribute->value->is_bools());
         std::vector<char> values =
             ConvertBooleans(attribute->value->get_bools());
@@ -180,7 +198,7 @@ ipp_t* IppValidator::ValidateIppMessage(
         }
         break;
       }
-      case cups_ipp_parser::mojom::ValueType::DATE: {
+      case ValueType::DATE: {
         DCHECK(attribute->value->is_date());
         std::vector<uint8_t> date = attribute->value->get_date();
 
@@ -195,7 +213,7 @@ ipp_t* IppValidator::ValidateIppMessage(
         }
         break;
       }
-      case cups_ipp_parser::mojom::ValueType::INTEGER: {
+      case ValueType::INTEGER: {
         DCHECK(attribute->value->is_ints());
         std::vector<int> values = attribute->value->get_ints();
 
@@ -208,7 +226,7 @@ ipp_t* IppValidator::ValidateIppMessage(
         }
         break;
       }
-      case cups_ipp_parser::mojom::ValueType::STRING: {
+      case ValueType::STRING: {
         DCHECK(attribute->value->is_strings());
 
         // Note: cstrings_values references attribute->value's strings, i.e.
@@ -261,9 +279,7 @@ bool IppValidator::ValidateIppData(const std::vector<uint8_t>& ipp_data) {
 }
 
 IppValidator::IppValidator(base::WeakPtr<CupsProxyServiceDelegate> delegate)
-    : delegate_(std::move(delegate)) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
+    : delegate_(std::move(delegate)) {}
 
 IppValidator::~IppValidator() = default;
 
@@ -272,19 +288,6 @@ base::Optional<IppRequest> IppValidator::ValidateIppRequest(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!delegate_) {
     // TODO(crbug/495409): Add fatal error option to bring down service.
-    return base::nullopt;
-  }
-
-  // Build request line.
-  auto request_line = ValidateHttpRequestLine(
-      to_validate->method, to_validate->endpoint, to_validate->http_version);
-  if (!request_line.has_value()) {
-    return base::nullopt;
-  }
-
-  // Build headers.
-  auto headers = ValidateHttpHeaders(to_validate->headers);
-  if (!headers.has_value()) {
     return base::nullopt;
   }
 
@@ -299,6 +302,22 @@ base::Optional<IppRequest> IppValidator::ValidateIppRequest(
   // Validate ipp data.
   // TODO(crbug/894607): Validate ippData (pdf).
   if (!ValidateIppData(to_validate->data)) {
+    return base::nullopt;
+  }
+
+  // Build request line.
+  auto request_line = ValidateHttpRequestLine(
+      to_validate->method, to_validate->endpoint, to_validate->http_version);
+  if (!request_line.has_value()) {
+    return base::nullopt;
+  }
+
+  // Build headers; must happen after ipp message/data since it requires the
+  // ContentLength.
+  const size_t http_content_length =
+      ippLength(ipp.get()) + to_validate->data.size();
+  auto headers = ValidateHttpHeaders(http_content_length, to_validate->headers);
+  if (!headers.has_value()) {
     return base::nullopt;
   }
 

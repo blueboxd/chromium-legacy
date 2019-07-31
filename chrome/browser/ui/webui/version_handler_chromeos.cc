@@ -16,6 +16,8 @@ VersionHandlerChromeOS::~VersionHandlerChromeOS() {}
 
 void VersionHandlerChromeOS::HandleRequestVersionInfo(
     const base::ListValue* args) {
+  VersionHandler::HandleRequestVersionInfo(args);
+
   // Start the asynchronous load of the versions.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -33,9 +35,6 @@ void VersionHandlerChromeOS::HandleRequestVersionInfo(
       base::Bind(&chromeos::version_loader::GetARCVersion),
       base::Bind(&VersionHandlerChromeOS::OnARCVersion,
                  weak_factory_.GetWeakPtr()));
-
-  // Parent class takes care of the rest.
-  VersionHandler::HandleRequestVersionInfo(args);
 }
 
 void VersionHandlerChromeOS::OnVersion(const std::string& version) {

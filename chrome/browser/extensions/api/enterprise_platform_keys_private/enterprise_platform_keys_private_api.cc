@@ -337,11 +337,10 @@ EPKPChallengeMachineKey::EPKPChallengeMachineKey(
 EPKPChallengeMachineKey::~EPKPChallengeMachineKey() {
 }
 
-void EPKPChallengeMachineKey::Run(
-    scoped_refptr<UIThreadExtensionFunction> caller,
-    const ChallengeKeyCallback& callback,
-    const std::string& challenge,
-    bool register_key) {
+void EPKPChallengeMachineKey::Run(scoped_refptr<ExtensionFunction> caller,
+                                  const ChallengeKeyCallback& callback,
+                                  const std::string& challenge,
+                                  bool register_key) {
   callback_ = callback;
   profile_ = ChromeExtensionFunctionDetails(caller.get()).GetProfile();
   extension_ = scoped_refptr<const Extension>(caller->extension());
@@ -372,7 +371,7 @@ void EPKPChallengeMachineKey::Run(
 }
 
 void EPKPChallengeMachineKey::DecodeAndRun(
-    scoped_refptr<UIThreadExtensionFunction> caller,
+    scoped_refptr<ExtensionFunction> caller,
     const ChallengeKeyCallback& callback,
     const std::string& encoded_challenge,
     bool register_key) {
@@ -489,7 +488,7 @@ void EPKPChallengeUserKey::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kAttestationExtensionWhitelist);
 }
 
-void EPKPChallengeUserKey::Run(scoped_refptr<UIThreadExtensionFunction> caller,
+void EPKPChallengeUserKey::Run(scoped_refptr<ExtensionFunction> caller,
                                const ChallengeKeyCallback& callback,
                                const std::string& challenge,
                                bool register_key) {
@@ -535,11 +534,10 @@ void EPKPChallengeUserKey::Run(scoped_refptr<UIThreadExtensionFunction> caller,
   }
 }
 
-void EPKPChallengeUserKey::DecodeAndRun(
-    scoped_refptr<UIThreadExtensionFunction> caller,
-    const ChallengeKeyCallback& callback,
-    const std::string& encoded_challenge,
-    bool register_key) {
+void EPKPChallengeUserKey::DecodeAndRun(scoped_refptr<ExtensionFunction> caller,
+                                        const ChallengeKeyCallback& callback,
+                                        const std::string& encoded_challenge,
+                                        bool register_key) {
   std::string challenge;
   if (!base::Base64Decode(encoded_challenge, &challenge)) {
     callback.Run(false, kChallengeBadBase64Error);
@@ -645,10 +643,10 @@ EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::Run() {
                  this);
   // base::Unretained is safe on impl_ since its life-cycle matches |this| and
   // |callback| holds a reference to |this|.
-  base::Closure task = base::Bind(
-      &EPKPChallengeMachineKey::DecodeAndRun, base::Unretained(impl_),
-      scoped_refptr<UIThreadExtensionFunction>(AsUIThreadExtensionFunction()),
-      callback, params->challenge, false);
+  base::Closure task = base::Bind(&EPKPChallengeMachineKey::DecodeAndRun,
+                                  base::Unretained(impl_),
+                                  scoped_refptr<ExtensionFunction>(this),
+                                  callback, params->challenge, false);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, task);
   return RespondLater();
 }
@@ -688,10 +686,10 @@ EnterprisePlatformKeysPrivateChallengeUserKeyFunction::Run() {
       this);
   // base::Unretained is safe on impl_ since its life-cycle matches |this| and
   // |callback| holds a reference to |this|.
-  base::Closure task = base::Bind(
-      &EPKPChallengeUserKey::DecodeAndRun, base::Unretained(impl_),
-      scoped_refptr<UIThreadExtensionFunction>(AsUIThreadExtensionFunction()),
-      callback, params->challenge, params->register_key);
+  base::Closure task =
+      base::Bind(&EPKPChallengeUserKey::DecodeAndRun, base::Unretained(impl_),
+                 scoped_refptr<ExtensionFunction>(this), callback,
+                 params->challenge, params->register_key);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, task);
   return RespondLater();
 }

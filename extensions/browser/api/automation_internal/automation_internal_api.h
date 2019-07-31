@@ -29,7 +29,7 @@ struct AXActionData;
 namespace extensions {
 
 // Implementation of the chrome.automation API.
-class AutomationInternalEnableTabFunction : public UIThreadExtensionFunction {
+class AutomationInternalEnableTabFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.enableTab",
                              AUTOMATIONINTERNAL_ENABLETAB)
  protected:
@@ -38,8 +38,7 @@ class AutomationInternalEnableTabFunction : public UIThreadExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class AutomationInternalPerformActionFunction
-    : public UIThreadExtensionFunction {
+class AutomationInternalPerformActionFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.performAction",
                              AUTOMATIONINTERNAL_PERFORMACTION)
  protected:
@@ -54,7 +53,7 @@ class AutomationInternalPerformActionFunction
       ui::AXActionData* data);
 };
 
-class AutomationInternalEnableFrameFunction : public UIThreadExtensionFunction {
+class AutomationInternalEnableFrameFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.enableFrame",
                              AUTOMATIONINTERNAL_ENABLEFRAME)
 
@@ -64,8 +63,7 @@ class AutomationInternalEnableFrameFunction : public UIThreadExtensionFunction {
   ExtensionFunction::ResponseAction Run() override;
 };
 
-class AutomationInternalEnableDesktopFunction
-    : public UIThreadExtensionFunction {
+class AutomationInternalEnableDesktopFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.enableDesktop",
                              AUTOMATIONINTERNAL_ENABLEDESKTOP)
  protected:
@@ -74,8 +72,7 @@ class AutomationInternalEnableDesktopFunction
   ResponseAction Run() override;
 };
 
-class AutomationInternalQuerySelectorFunction
-    : public UIThreadExtensionFunction {
+class AutomationInternalQuerySelectorFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.querySelector",
                              AUTOMATIONINTERNAL_QUERYSELECTOR)
 

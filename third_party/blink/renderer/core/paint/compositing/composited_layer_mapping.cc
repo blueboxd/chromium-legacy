@@ -1930,7 +1930,14 @@ void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
   // expensive.
   bool paints_hit_test =
       has_painted_content || GetLayoutObject().HasEffectiveAllowedTouchAction();
-  graphics_layer_->SetPaintsHitTest(paints_hit_test);
+  // TODO(pdr): When PaintNonFastScrollableRegions supports painting plugins
+  // that request wheel events, this should be updated to check:
+  // GetPluginContainer(GetLayoutObject())->WantsWheelEvents()).
+  bool paints_scroll_hit_test =
+      RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled() &&
+      (owning_layer_.GetScrollableArea() &&
+       owning_layer_.GetScrollableArea()->ScrollsOverflow());
+  graphics_layer_->SetPaintsHitTest(paints_hit_test || paints_scroll_hit_test);
 
   if (scrolling_layer_) {
     // m_scrollingLayer never has backing store.

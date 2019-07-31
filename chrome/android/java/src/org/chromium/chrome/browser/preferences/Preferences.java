@@ -24,8 +24,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -40,12 +38,13 @@ import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 /**
  * The Chrome settings activity.
  *
- * This activity displays a single Fragment, typically a PreferenceFragment. As the user navigates
- * through settings, a separate Preferences activity is created for each screen. Thus each fragment
- * may freely modify its activity's action bar or title. This mimics the behavior of
- * android.preference.PreferenceActivity.
+ * This activity displays a single {@link Fragment}, typically a {@link PreferenceFragmentCompat}.
+ * As the user navigates through settings, a separate Preferences activity is created for each
+ * screen. Thus each fragment may freely modify its activity's action bar or title. This mimics the
+ * behavior of {@link android.preference.PreferenceActivity}.
  *
- * If the preference overrides the root layout (e.g. {@link HomepageEditor}), add the following:
+ * If the main fragment is not an instance of {@link PreferenceFragmentCompat} (e.g. {@link
+ * HomepageEditor}) or overrides {@link PreferenceFragmentCompat}'s layout, add the following:
  * 1) preferences_action_bar_shadow.xml to the custom XML hierarchy and
  * 2) an OnScrollChangedListener to the main content's view's view tree observer via
  *    PreferenceUtils.getShowShadowOnScrollListener(...).
@@ -162,18 +161,22 @@ public class Preferences extends ChromeBaseAppCompatActivity
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
+
         Fragment fragment = getMainFragment();
-        if (fragment == null || fragment.getView() == null
-                || fragment.getView().findViewById(R.id.list) == null) {
+        if (!(fragment instanceof PreferenceFragmentCompat)) {
             return;
         }
-        View contentView = fragment.getActivity().findViewById(android.R.id.content);
-        if (contentView == null || !(contentView instanceof FrameLayout)) {
+
+        RecyclerView recyclerView = ((PreferenceFragmentCompat) fragment).getListView();
+        if (recyclerView == null) {
             return;
         }
-        View inflatedView = View.inflate(getApplicationContext(),
-                R.layout.preferences_action_bar_shadow, (ViewGroup) contentView);
-        RecyclerView recyclerView = fragment.getView().findViewById(R.id.list);
+
+        // Append action bar shadow to layout.
+        View inflatedView = getLayoutInflater().inflate(
+                R.layout.preferences_action_bar_shadow, findViewById(android.R.id.content));
+
+        // Display shadow on scroll.
         recyclerView.getViewTreeObserver().addOnScrollChangedListener(
                 PreferenceUtils.getShowShadowOnScrollListener(
                         recyclerView, inflatedView.findViewById(R.id.shadow)));

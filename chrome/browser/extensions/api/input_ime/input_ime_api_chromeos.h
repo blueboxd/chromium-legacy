@@ -21,7 +21,7 @@ class InputMethodEngine;
 
 namespace extensions {
 
-class InputImeClearCompositionFunction : public UIThreadExtensionFunction {
+class InputImeClearCompositionFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.clearComposition",
                              INPUT_IME_CLEARCOMPOSITION)
@@ -33,8 +33,7 @@ class InputImeClearCompositionFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class InputImeSetCandidateWindowPropertiesFunction
-    : public UIThreadExtensionFunction {
+class InputImeSetCandidateWindowPropertiesFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setCandidateWindowProperties",
                              INPUT_IME_SETCANDIDATEWINDOWPROPERTIES)
@@ -46,7 +45,7 @@ class InputImeSetCandidateWindowPropertiesFunction
   ResponseAction Run() override;
 };
 
-class InputImeSetCandidatesFunction : public UIThreadExtensionFunction {
+class InputImeSetCandidatesFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setCandidates", INPUT_IME_SETCANDIDATES)
 
@@ -57,7 +56,7 @@ class InputImeSetCandidatesFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class InputImeSetCursorPositionFunction : public UIThreadExtensionFunction {
+class InputImeSetCursorPositionFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setCursorPosition",
                              INPUT_IME_SETCURSORPOSITION)
@@ -69,7 +68,7 @@ class InputImeSetCursorPositionFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class InputImeSetMenuItemsFunction : public UIThreadExtensionFunction {
+class InputImeSetMenuItemsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setMenuItems", INPUT_IME_SETMENUITEMS)
 
@@ -80,7 +79,7 @@ class InputImeSetMenuItemsFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class InputImeUpdateMenuItemsFunction : public UIThreadExtensionFunction {
+class InputImeUpdateMenuItemsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.updateMenuItems",
                              INPUT_IME_UPDATEMENUITEMS)
@@ -92,7 +91,7 @@ class InputImeUpdateMenuItemsFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class InputImeDeleteSurroundingTextFunction : public UIThreadExtensionFunction {
+class InputImeDeleteSurroundingTextFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.deleteSurroundingText",
                              INPUT_IME_DELETESURROUNDINGTEXT)
@@ -103,7 +102,7 @@ class InputImeDeleteSurroundingTextFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class InputImeHideInputViewFunction : public UIThreadExtensionFunction {
+class InputImeHideInputViewFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.hideInputView",
                              INPUT_IME_HIDEINPUTVIEW)
@@ -111,19 +110,19 @@ class InputImeHideInputViewFunction : public UIThreadExtensionFunction {
  protected:
   ~InputImeHideInputViewFunction() override {}
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 };
 
 class InputMethodPrivateNotifyImeMenuItemActivatedFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   InputMethodPrivateNotifyImeMenuItemActivatedFunction() {}
 
  protected:
   ~InputMethodPrivateNotifyImeMenuItemActivatedFunction() override {}
 
-  // UIThreadExtensionFunction:
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -134,7 +133,7 @@ class InputMethodPrivateNotifyImeMenuItemActivatedFunction
 };
 
 class InputMethodPrivateGetCompositionBoundsFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getCompositionBounds",
                              INPUTMETHODPRIVATE_GETCOMPOSITIONBOUNDS)

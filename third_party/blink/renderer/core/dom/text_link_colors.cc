@@ -59,7 +59,7 @@ void TextLinkColors::ResetActiveLinkColor() {
 
 Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
                                         Color current_color,
-                                        ColorScheme color_scheme,
+                                        WebColorScheme color_scheme,
                                         bool for_visited_link) const {
   if (auto* color_value = DynamicTo<CSSColorValue>(value))
     return color_value->Value();

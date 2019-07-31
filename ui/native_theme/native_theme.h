@@ -100,6 +100,21 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kNumStates = kPressed + 1,
   };
 
+  // OS-level preferred color scheme. (Ex. high contrast or dark mode color
+  // preference.)
+  enum PreferredColorScheme {
+    kNoPreference,
+    kDark,
+    kLight,
+  };
+
+  // The color scheme used for painting the native controls.
+  enum class ColorScheme {
+    kDefault,
+    kLight,
+    kDark,
+  };
+
   // Each structure below holds extra information needed when painting a given
   // part.
 
@@ -254,11 +269,13 @@ class NATIVE_THEME_EXPORT NativeTheme {
                                 const ExtraParams& extra) const = 0;
 
   // Paint the part to the canvas.
-  virtual void Paint(cc::PaintCanvas* canvas,
-                     Part part,
-                     State state,
-                     const gfx::Rect& rect,
-                     const ExtraParams& extra) const = 0;
+  virtual void Paint(
+      cc::PaintCanvas* canvas,
+      Part part,
+      State state,
+      const gfx::Rect& rect,
+      const ExtraParams& extra,
+      ColorScheme color_scheme = ColorScheme::kDefault) const = 0;
 
   // Paint part during state transition, used for overlay scrollbar state
   // transition animation.
@@ -383,7 +400,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   };
 
   // Return a color from the system theme.
-  virtual SkColor GetSystemColor(ColorId color_id) const = 0;
+  virtual SkColor GetSystemColor(
+      ColorId color_id,
+      ColorScheme color_scheme = ColorScheme::kDefault) const = 0;
 
   // Returns a shared instance of the native theme that should be used for web
   // rendering. Do not use it in a normal application context (i.e. browser).
@@ -413,14 +432,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Whether OS-level dark mode is available in the current OS.
   virtual bool SystemDarkModeSupported() const;
 
-  // OS-level preferred color scheme. (Ex. high contrast or dark mode color
-  // preference.)
-  enum PreferredColorScheme {
-    kNoPreference,
-    kDark,
-    kLight,
-  };
-
   // Returns the OS-level user preferred color scheme. See the comment for
   // CalculatePreferredColorScheme() for details on how preferred color scheme
   // is calculated.
@@ -428,6 +439,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   // Returns the system's caption style.
   virtual base::Optional<CaptionStyle> GetSystemCaptionStyle() const;
+
+  ColorScheme GetSystemColorScheme() const;
 
  protected:
   NativeTheme();

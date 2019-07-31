@@ -44,7 +44,7 @@ Response BrowserHandler::Disable() {
     if (browser_context) {
       PermissionControllerImpl* permission_controller =
           PermissionControllerImpl::FromBrowserContext(browser_context);
-      permission_controller->ResetPermissionOverridesForDevTools();
+      permission_controller->ResetOverridesForDevTools();
     }
   }
   contexts_with_overridden_permissions_.clear();
@@ -211,19 +211,21 @@ Response BrowserHandler::GrantPermissions(
   Response response = FindBrowserContext(browser_context_id, &browser_context);
   if (!response.isSuccess())
     return response;
-  PermissionControllerImpl::PermissionOverrides overrides;
+
+  std::vector<PermissionType> internal_permissions;
+  internal_permissions.reserve(permissions->size());
   for (const protocol::Browser::PermissionType& t : *permissions) {
     PermissionType type;
     Response type_response = FromProtocolPermissionType(t, &type);
     if (!type_response.isSuccess())
       return type_response;
-    overrides.insert(type);
+    internal_permissions.push_back(type);
   }
 
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
   GURL url = GURL(origin).GetOrigin();
-  permission_controller->SetPermissionOverridesForDevTools(url, overrides);
+  permission_controller->GrantOverridesForDevTools(url, internal_permissions);
   contexts_with_overridden_permissions_.insert(
       browser_context_id.fromMaybe(""));
   return Response::OK();
@@ -237,7 +239,7 @@ Response BrowserHandler::ResetPermissions(
     return response;
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(browser_context);
-  permission_controller->ResetPermissionOverridesForDevTools();
+  permission_controller->ResetOverridesForDevTools();
   contexts_with_overridden_permissions_.erase(browser_context_id.fromMaybe(""));
   return Response::OK();
 }

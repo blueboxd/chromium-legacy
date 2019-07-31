@@ -316,9 +316,11 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
         /*going_left=*/accelerator.key_code() == ui::VKEY_OEM_4);
   }
 
-  desks_controller->MoveWindowFromActiveDeskTo(
-      window_to_move, target_desk,
-      DesksMoveWindowFromActiveDeskSource::kShortcut);
+  if (!desks_controller->MoveWindowFromActiveDeskTo(
+          window_to_move, target_desk,
+          DesksMoveWindowFromActiveDeskSource::kShortcut)) {
+    return;
+  }
 
   if (in_overview) {
     // We should not exit overview as a result of this shortcut.

@@ -9,7 +9,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
-#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -37,7 +37,7 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   // by calling MaybeProxyRequest().
   ProxyingURLLoaderFactory(
       std::unique_ptr<HeaderModificationDelegate> delegate,
-      content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      content::WebContents::Getter web_contents_getter,
       network::mojom::URLLoaderFactoryRequest request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory,
       DisconnectCallback on_disconnect);
@@ -78,12 +78,12 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   void RemoveRequest(InProgressRequest* request);
   void MaybeDestroySelf();
 
-  const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter() {
+  const content::WebContents::Getter& web_contents_getter() {
     return web_contents_getter_;
   }
 
   std::unique_ptr<HeaderModificationDelegate> delegate_;
-  content::ResourceRequestInfo::WebContentsGetter web_contents_getter_;
+  content::WebContents::Getter web_contents_getter_;
 
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
   std::set<std::unique_ptr<InProgressRequest>, base::UniquePtrComparator>

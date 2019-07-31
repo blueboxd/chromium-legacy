@@ -462,7 +462,7 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chromeos/services/multidevice_setup/public/cpp:manifest",
       "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/services/network_config/public/mojom",
-      "//media/capture/video/chromeos/mojo:cros_camera",
+      "//media/capture/video/chromeos/mojom:cros_camera",
     ]
 
     if (enable_cros_assistant) {
@@ -569,7 +569,6 @@ source_set("builtin_service_manifests") {
     "//chrome/common:buildflags",
     "//chrome/common:mojo_bindings",
     "//chrome/services/file_util/public/cpp:manifest",
-    "//components/services/patch/public/cpp:manifest",
     "//components/services/quarantine",
     "//components/services/quarantine/public/cpp:manifest",
     "//components/spellcheck/common:interfaces",
@@ -613,7 +612,6 @@ source_set("builtin_service_manifests") {
   if (is_chromeos) {
     deps += [
       "//ash/public/cpp:manifest",
-      "//chrome/services/cups_ipp_parser/public/cpp:manifest",
       "//chromeos/services/cellular_setup/public/cpp:manifest",
       "//chromeos/services/ime/public/cpp:manifest",
       "//chromeos/services/network_config/public/cpp:manifest",

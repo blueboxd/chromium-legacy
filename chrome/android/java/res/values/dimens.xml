@@ -388,7 +388,7 @@
     <dimen name="explore_sites_dense_category_padding_vertical_bottom">12dp</dimen>
     <dimen name="explore_sites_dense_category_padding_vertical_top">8dp</dimen>
 
-    <dimen name="explore_sites_dense_icon_corner_radius">2dp</dimen>
+    <dimen name="explore_sites_dense_icon_corner_radius">3dp</dimen>
     <dimen name="explore_sites_dense_icon_size">32dp</dimen>
     <dimen name="explore_sites_dense_icon_text_size">16dp</dimen>
     <dimen name="explore_sites_dense_offline_badge_margin_start">26dp</dimen>
@@ -402,7 +402,7 @@
 
     <dimen name="explore_sites_dense_title_bottom_icon_margin_top">4dp</dimen>
     <dimen name="explore_sites_dense_title_bottom_tile_view_height">72dp</dimen>
-    <dimen name="explore_sites_dense_title_bottom_tile_view_width">68dp</dimen>
+    <dimen name="explore_sites_dense_title_bottom_tile_view_width">64dp</dimen>
     <dimen name="explore_sites_dense_title_bottom_title_margin_start">40dp</dimen>
 
     <!-- Recent tabs page -->

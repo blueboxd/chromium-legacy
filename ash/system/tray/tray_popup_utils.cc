@@ -167,15 +167,6 @@ views::ImageView* TrayPopupUtils::CreateMainImageView() {
   return image;
 }
 
-views::ImageView* TrayPopupUtils::CreateMoreImageView() {
-  auto* image = new views::ImageView;
-  image->SetPreferredSize(gfx::Size(gfx::Size(kMenuIconSize, kMenuIconSize)));
-  image->EnableCanvasFlippingForRTLUI(true);
-  image->SetImage(
-      gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));
-  return image;
-}
-
 views::Slider* TrayPopupUtils::CreateSlider(views::SliderListener* listener) {
   views::Slider* slider = new views::Slider(listener);
   slider->SetBorder(views::CreateEmptyBorder(
@@ -237,7 +228,7 @@ views::LabelButton* TrayPopupUtils::CreateTrayPopupButton(
 views::Separator* TrayPopupUtils::CreateVerticalSeparator() {
   views::Separator* separator = new views::Separator();
   separator->SetPreferredHeight(24);
-  separator->SetColor(kMenuSeparatorColor);
+  separator->SetColor(kSeparatorOnLightBackgroundColor);
   return separator;
 }
 
@@ -322,7 +313,7 @@ gfx::Rect TrayPopupUtils::GetInkDropBounds(TrayPopupInkDropStyle ink_drop_style,
 
 views::Separator* TrayPopupUtils::CreateListItemSeparator(bool left_inset) {
   views::Separator* separator = new views::Separator();
-  separator->SetColor(kMenuSeparatorColor);
+  separator->SetColor(kSeparatorOnLightBackgroundColor);
   separator->SetBorder(views::CreateEmptyBorder(
       kMenuSeparatorVerticalPadding - views::Separator::kThickness,
       left_inset

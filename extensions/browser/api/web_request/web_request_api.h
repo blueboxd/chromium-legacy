@@ -750,7 +750,7 @@ class ExtensionWebRequestEventRouter {
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };
 
-class WebRequestInternalFunction : public UIThreadExtensionFunction {
+class WebRequestInternalFunction : public ExtensionFunction {
  public:
   WebRequestInternalFunction() {}
 

@@ -12,7 +12,7 @@ namespace extensions {
 namespace shell {
 
 // Stub. See the IDL file for documentation.
-class IdentityRemoveCachedAuthTokenFunction : public UIThreadExtensionFunction {
+class IdentityRemoveCachedAuthTokenFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.removeCachedAuthToken", UNKNOWN)
 

@@ -318,7 +318,7 @@ public class ChromeBrowserInitializer {
 
         int startupMode =
                 getBrowserStartupController().getStartupMode(delegate.startServiceManagerOnly());
-        tasks.add(UiThreadTaskTraits.BEST_EFFORT,
+        tasks.add(UiThreadTaskTraits.DEFAULT,
                 () -> { BackgroundTaskSchedulerExternalUma.reportStartupMode(startupMode); });
 
         if (isAsync) {

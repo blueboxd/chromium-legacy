@@ -57,6 +57,23 @@ class Shadow : public ui::ImplicitAnimationObserver, public ui::LayerOwner {
   void OnImplicitAnimationsCompleted() override;
 
  private:
+  // A shadow layer owner that correctly updates the nine patch layer details
+  // when it gets recreated.
+  class ShadowLayerOwner : public ui::LayerOwner {
+   public:
+    explicit ShadowLayerOwner(Shadow* owner,
+                              std::unique_ptr<Layer> layer = nullptr);
+    ~ShadowLayerOwner() override;
+
+    // ui::LayerOwner:
+    std::unique_ptr<Layer> RecreateLayer() override;
+
+   private:
+    Shadow* const owner_shadow_;
+
+    DISALLOW_COPY_AND_ASSIGN(ShadowLayerOwner);
+  };
+
   // Updates the shadow layer and its image to reflect |desired_elevation_|.
   void RecreateShadowLayer();
 
@@ -82,7 +99,7 @@ class Shadow : public ui::ImplicitAnimationObserver, public ui::LayerOwner {
   const gfx::ShadowDetails* details_ = nullptr;
 
   // The owner of the actual shadow layer corresponding to a cc::NinePatchLayer.
-  ui::LayerOwner shadow_layer_owner_;
+  ShadowLayerOwner shadow_layer_owner_;
 
   // When the elevation changes, the old shadow cross-fades with the new one.
   // When non-null, this owns an old |shadow_layer()| that's being animated out.

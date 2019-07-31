@@ -162,6 +162,10 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Used to switch the current platform only for testing.
   // You should not pass in a Platform object that is not fully instantiated.
+  //
+  // NOTE: Instead of calling this directly, us a ScopedTestingPlatformSupport
+  // which will restore the previous platform on exit, preventing tests from
+  // clobbering each other.
   static void SetCurrentPlatformForTesting(Platform*);
 
   // This sets up a minimally viable implementation of blink::Thread without

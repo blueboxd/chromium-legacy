@@ -135,14 +135,6 @@ bool IsTrayIcon(IconType icon_type) {
          icon_type == ICON_TYPE_TRAY_OOBE;
 }
 
-SkColor GetDefaultColorForIconType(IconType icon_type) {
-  if (icon_type == ICON_TYPE_TRAY_REGULAR)
-    return kTrayIconColor;
-  if (icon_type == ICON_TYPE_TRAY_OOBE)
-    return kOobeTrayIconColor;
-  return kUnifiedMenuIconColor;
-}
-
 bool IconTypeIsDark(IconType icon_type) {
   // Dark icon is used for OOBE tray icon because the background is white.
   return icon_type == ICON_TYPE_TRAY_OOBE;
@@ -235,7 +227,8 @@ gfx::ImageSkia ConnectingVpnImage(double animation) {
       kNetworkVpnIcon,
       gfx::Tween::ColorValueBetween(
           floored_animation_value,
-          SkColorSetA(kMenuIconColor, kConnectingImageAlpha), kMenuIconColor));
+          SkColorSetA(kIconOnLightBackgroundColor, kConnectingImageAlpha),
+          kIconOnLightBackgroundColor));
 }
 
 int StrengthIndex(int strength) {
@@ -446,6 +439,12 @@ NetworkIconImpl* FindAndUpdateImageImpl(const NetworkStateProperties* network,
 
 //------------------------------------------------------------------------------
 // Public interface
+
+SkColor GetDefaultColorForIconType(IconType icon_type) {
+  if (icon_type == network_icon::ICON_TYPE_TRAY_OOBE)
+    return kIconOnLightBackgroundColor;
+  return kIconOnDarkBackgroundColor;
+}
 
 const gfx::ImageSkia GetBasicImage(IconType icon_type,
                                    NetworkType network_type,

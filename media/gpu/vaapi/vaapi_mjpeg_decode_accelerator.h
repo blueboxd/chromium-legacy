@@ -21,11 +21,16 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace gpu {
+class GpuMemoryBufferSupport;
+}
+
 namespace media {
 
 class BitstreamBuffer;
 class ScopedVAImage;
 class UnalignedSharedMemory;
+class VaapiWrapper;
 class VideoFrame;
 
 // Class to provide MJPEG decode acceleration for Intel systems with hardware
@@ -65,11 +70,18 @@ class MEDIA_GPU_EXPORT VaapiMjpegDecodeAccelerator
                   std::unique_ptr<UnalignedSharedMemory> shm,
                   scoped_refptr<VideoFrame> video_frame);
 
-  // Puts contents of |image| into given |video_frame| and passes the
-  // |input_buffer_id| of the resulting picture to client for output.
-  bool OutputPictureOnTaskRunner(std::unique_ptr<ScopedVAImage> image,
-                                 int32_t input_buffer_id,
-                                 scoped_refptr<VideoFrame> video_frame);
+  // Puts contents of |surface| into given |video_frame| using VA-API Video
+  // Processing Pipeline (VPP), and passes the |input_buffer_id| of the
+  // resulting picture to client for output.
+  bool OutputPictureVppOnTaskRunner(const ScopedVASurface* surface,
+                                    int32_t input_buffer_id,
+                                    scoped_refptr<VideoFrame> video_frame);
+
+  // Puts contents of |image| into given |video_frame| using libyuv, and passes
+  // the |input_buffer_id| of the resulting picture to client for output.
+  bool OutputPictureLibYuvOnTaskRunner(std::unique_ptr<ScopedVAImage> image,
+                                       int32_t input_buffer_id,
+                                       scoped_refptr<VideoFrame> video_frame);
 
   // ChildThread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -82,8 +94,14 @@ class MEDIA_GPU_EXPORT VaapiMjpegDecodeAccelerator
 
   VaapiJpegDecoder decoder_;
 
-  // Comes after |decoder_| to ensure its destructor is executed before
-  // |decoder_| is destroyed.
+  // VaapiWrapper for VPP context. This is used to convert decoded data into
+  // client buffer.
+  scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper_;
+
+  // For creating GpuMemoryBuffer from client DMA buffer that can be mapped for
+  // software access.
+  std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
+
   base::Thread decoder_thread_;
   // Use this to post tasks to |decoder_thread_| instead of
   // |decoder_thread_.task_runner()| because the latter will be NULL once

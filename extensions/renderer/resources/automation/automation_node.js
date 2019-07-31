@@ -953,6 +953,8 @@ AutomationNodeImpl.prototype = {
       result += ' childTreeID=' + childTreeID;
     if (name)
       result += ' name=' + name;
+    if (this.className)
+      result += ' className=' + this.className;
     return result;
   },
 

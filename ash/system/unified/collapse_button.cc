@@ -62,10 +62,11 @@ const char* CollapseButton::GetClassName() const {
 }
 
 void CollapseButton::OnEnabledChanged() {
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kUnifiedMenuExpandIcon,
-                                 GetEnabled() ? kUnifiedMenuIconColor
-                                              : kUnifiedMenuIconColorDisabled));
+  SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(kUnifiedMenuExpandIcon,
+                            GetEnabled() ? kIconOnDarkBackgroundColor
+                                         : kIconOnDarkBackgroundColorDisabled));
 }
 
 }  // namespace ash

@@ -157,7 +157,6 @@ aggregate_vector_icons("ash_vector_icons") {
     "system_menu_audio_output.icon",
     "system_menu_add_connection.icon",
     "system_menu_arrow_back.icon",
-    "system_menu_arrow_right.icon",
     "system_menu_bluetooth.icon",
     "system_menu_bluetooth_connected.icon",
     "system_menu_bluetooth_disabled.icon",

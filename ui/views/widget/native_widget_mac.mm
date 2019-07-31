@@ -4,7 +4,9 @@
 
 #include "ui/views/widget/native_widget_mac.h"
 
+#include <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 #include <utility>
 
@@ -106,11 +108,29 @@ ui::ZOrderLevel ZOrderLevelForCGWindowLevel(CGWindowLevel level) {
 
 }  // namespace
 
+// Implements zoom following focus for macOS accessibility zoom.
+class NativeWidgetMac::ZoomFocusMonitor : public FocusChangeListener {
+ public:
+  ZoomFocusMonitor() = default;
+  ~ZoomFocusMonitor() override {}
+  void OnWillChangeFocus(View* focused_before, View* focused_now) override {}
+  void OnDidChangeFocus(View* focused_before, View* focused_now) override {
+    if (!focused_now || !UAZoomEnabled())
+      return;
+    // Web content handles its own zooming.
+    if (strcmp("WebView", focused_now->GetClassName()) == 0)
+      return;
+    NSRect rect = NSRectFromCGRect(focused_now->GetBoundsInScreen().ToCGRect());
+    UAZoomChangeFocus(&rect, nullptr, kUAZoomFocusTypeOther);
+  }
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, public:
 
 NativeWidgetMac::NativeWidgetMac(internal::NativeWidgetDelegate* delegate)
-    : delegate_(delegate),
+    : zoom_focus_monitor_(std::make_unique<ZoomFocusMonitor>()),
+      delegate_(delegate),
       ns_window_host_(new NativeWidgetMacNSWindowHost(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {}
 
@@ -122,6 +142,8 @@ NativeWidgetMac::~NativeWidgetMac() {
 }
 
 void NativeWidgetMac::WindowDestroying() {
+  if (auto* focus_manager = GetWidget()->GetFocusManager())
+    focus_manager->RemoveFocusChangeListener(zoom_focus_monitor_.get());
   OnWindowDestroying(GetNativeWindow());
   delegate_->OnNativeWidgetDestroying();
 }
@@ -208,6 +230,9 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
     GetNSWindowMojo()->MakeFirstResponder();
     ns_window_host_->SetFocusManager(focus_manager);
+    // Non-top-level widgets use the the top level widget's focus manager.
+    if (GetWidget() == GetTopLevelWidget())
+      focus_manager->AddFocusChangeListener(zoom_focus_monitor_.get());
   }
 
   ns_window_host_->CreateCompositor(params);

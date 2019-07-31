@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 
+#include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/clip_node.h"
@@ -831,6 +832,19 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
       !WidthAndHeightAreTheSame(radii.BottomLeft())) {
     return false;
   }
+
+  // Rounded corners that differ are not supported by the
+  // CALayerOverlay system on Mac. Instead of letting it fall back
+  // to the (worse for memory and battery) non-CALayerOverlay system
+  // for such cases, fall back to a non-fast border-radius mask for
+  // the effect node.
+#if defined(OS_MACOSX)
+  if (radii.TopLeft() != radii.TopRight() ||
+      radii.TopLeft() != radii.BottomRight() ||
+      radii.TopLeft() != radii.BottomLeft()) {
+    return false;
+  }
+#endif
 
   return true;
 }

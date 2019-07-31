@@ -467,11 +467,10 @@ static bool GetRequiredAttribs(const base::Lock* va_lock,
                                VAProfile profile,
                                std::vector<VAConfigAttrib>* required_attribs) {
   va_lock->AssertAcquired();
-  // No attribute for kVideoProcess.
-  if (mode == VaapiWrapper::kVideoProcess)
-    return true;
 
-  // VAConfigAttribRTFormat is common to both encode and decode |mode|s.
+  // Choose a suitable VAConfigAttribRTFormat for every |mode|. For video
+  // processing, the supported surface attribs may vary according to which RT
+  // format is set.
   if (profile == VAProfileVP9Profile2 || profile == VAProfileVP9Profile3) {
     required_attribs->push_back(
         {VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420_10BPP});
@@ -519,6 +518,7 @@ class VASupportedProfiles {
     VAProfile va_profile;
     gfx::Size min_resolution;
     gfx::Size max_resolution;
+    std::vector<uint32_t> pixel_formats;
     VaapiWrapper::InternalFormats supported_internal_formats;
   };
   static const VASupportedProfiles& Get();
@@ -641,9 +641,6 @@ VASupportedProfiles::VASupportedProfiles()
 std::vector<VASupportedProfiles::ProfileInfo>
 VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
     VaapiWrapper::CodecMode mode) const {
-  if (mode == VaapiWrapper::kVideoProcess)
-    return {ProfileInfo{VAProfileNone, gfx::Size()}};
-
   std::vector<ProfileInfo> supported_profile_infos;
   std::vector<VAProfile> va_profiles;
   if (!GetSupportedVAProfiles(&va_profiles))
@@ -665,7 +662,7 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
     if (IsBlackListedDriver(va_vendor_string, mode, va_profile))
       continue;
 
-    ProfileInfo profile_info;
+    ProfileInfo profile_info{};
     if (!FillProfileInfo_Locked(va_profile, entrypoint, required_attribs,
                                 &profile_info)) {
       LOG(ERROR) << "FillProfileInfo_Locked failed for va_profile "
@@ -805,6 +802,12 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
     } else if (attrib.type == VASurfaceAttribMinHeight) {
       profile_info->min_resolution.set_height(
           base::strict_cast<int>(attrib.value.value.i));
+    } else if (attrib.type == VASurfaceAttribPixelFormat) {
+      // According to va.h, VASurfaceAttribPixelFormat is meaningful as input to
+      // vaQuerySurfaceAttributes(). However, per the implementation of
+      // i965_QuerySurfaceAttributes(), our usage here should enumerate all the
+      // formats.
+      profile_info->pixel_formats.push_back(attrib.value.value.i);
     }
   }
   if (profile_info->max_resolution.IsEmpty()) {
@@ -1248,6 +1251,45 @@ bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
 }
 
 // static
+bool VaapiWrapper::IsVppResolutionAllowed(const gfx::Size& size) {
+  VASupportedProfiles::ProfileInfo profile_info;
+  if (!VASupportedProfiles::Get().IsProfileSupported(
+          kVideoProcess, VAProfileNone, &profile_info)) {
+    return false;
+  }
+  return gfx::Rect(profile_info.min_resolution.width(),
+                   profile_info.min_resolution.height(),
+                   profile_info.max_resolution.width(),
+                   profile_info.max_resolution.height())
+      .Contains(size.width(), size.height());
+}
+
+// static
+bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
+    unsigned int rt_format,
+    uint32_t fourcc) {
+  if (!IsDecodingSupportedForInternalFormat(VAProfileJPEGBaseline, rt_format))
+    return false;
+
+  VASupportedProfiles::ProfileInfo profile_info;
+  if (!VASupportedProfiles::Get().IsProfileSupported(
+          kVideoProcess, VAProfileNone, &profile_info)) {
+    return false;
+  }
+
+  // Workaround: for Mesa VAAPI driver, VPP only supports internal surface
+  // format for 4:2:0 JPEG image.
+  if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                       kMesaGalliumDriverPrefix,
+                       base::CompareCase::SENSITIVE) &&
+      rt_format != VA_RT_FORMAT_YUV420) {
+    return false;
+  }
+
+  return base::Contains(profile_info.pixel_formats, fourcc);
+}
+
+// static
 bool VaapiWrapper::IsJpegEncodeSupported() {
   return VASupportedProfiles::Get().IsProfileSupported(kEncode,
                                                        VAProfileJPEGBaseline);
@@ -1511,6 +1553,16 @@ VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(
   exported_pixmap->pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
       scoped_va_surface.size(), buffer_format, std::move(handle));
   return exported_pixmap;
+}
+
+bool VaapiWrapper::SyncSurface(VASurfaceID va_surface_id) {
+  DCHECK_NE(va_surface_id, VA_INVALID_ID);
+
+  base::AutoLock auto_lock(*va_lock_);
+
+  VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
+  VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
+  return true;
 }
 
 bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,

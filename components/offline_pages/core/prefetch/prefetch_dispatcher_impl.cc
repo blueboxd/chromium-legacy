@@ -100,9 +100,8 @@ void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
     const std::string& name_space,
     const std::vector<PrefetchURL>& prefetch_urls) {
   if (!prefetch_prefs::IsEnabled(pref_service_)) {
-    if (prefetch_prefs::IsForbiddenCheckDue(pref_service_)) {
+    if (prefetch_prefs::IsForbiddenCheckDue(pref_service_))
       CheckIfEnabledByServer(pref_service_, service_);
-    }
     return;
   }
 
@@ -134,6 +133,14 @@ void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
 
 void PrefetchDispatcherImpl::NewSuggestionsAvailable(
     SuggestionsProvider* suggestions_provider) {
+  // No need to GetKnownContent if prefetching is disabled (however, we don't
+  // want to prevent the server-forbidden check).
+  if (!prefetch_prefs::IsEnabled(pref_service_)) {
+    if (prefetch_prefs::IsForbiddenCheckDue(pref_service_))
+      CheckIfEnabledByServer(pref_service_, service_);
+    return;
+  }
+
   suggestions_provider->GetCurrentArticleSuggestions(
       base::BindOnce(&PrefetchDispatcherImpl::AddSuggestions, GetWeakPtr()));
 }

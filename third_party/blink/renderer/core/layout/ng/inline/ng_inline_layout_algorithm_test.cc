@@ -126,6 +126,38 @@ TEST_F(NGInlineLayoutAlgorithmTest, GenerateEllipsis) {
   EXPECT_EQ(line1.Children()[0]->GetLayoutObject(), ellipsis.GetLayoutObject());
 }
 
+TEST_F(NGInlineLayoutAlgorithmTest, EllipsisInlineBoxOnly) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    html, body { margin: 0; }
+    #container {
+      font: 10px/1 Ahem;
+      width: 5ch;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    span {
+      border: solid 10ch blue;
+    }
+    </style>
+    <div id=container><span></span></div>
+  )HTML");
+  scoped_refptr<const NGPhysicalBoxFragment> block =
+      GetBoxFragmentByElementId("container");
+  EXPECT_EQ(1u, block->Children().size());
+  const auto& line1 =
+      To<NGPhysicalLineBoxFragment>(*block->Children()[0].get());
+
+  // There should not be ellipsis in this line.
+  for (const auto& child : line1.Children()) {
+    if (const auto* text = DynamicTo<NGPhysicalTextFragment>(child.get())) {
+      EXPECT_FALSE(text->IsEllipsis());
+    }
+  }
+}
+
 // This test ensures box fragments are generated when necessary, even when the
 // line is empty. One such case is when the line contains a containing box of an
 // out-of-flow object.

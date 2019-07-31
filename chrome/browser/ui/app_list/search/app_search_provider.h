@@ -29,8 +29,6 @@ class OpenTabsUIDelegate;
 
 namespace app_list {
 
-class AppSearchResultRanker;
-
 class AppSearchProvider : public SearchProvider {
  public:
   class App;
@@ -44,14 +42,12 @@ class AppSearchProvider : public SearchProvider {
   AppSearchProvider(Profile* profile,
                     AppListControllerDelegate* list_controller,
                     base::Clock* clock,
-                    AppListModelUpdater* model_updater,
-                    AppSearchResultRanker* ranker);
+                    AppListModelUpdater* model_updater);
   ~AppSearchProvider() override;
 
   // SearchProvider overrides:
   void Start(const base::string16& query) override;
   void ViewClosing() override;
-  void Train(const std::string& id, RankingItemType type) override;
 
   // Refreshes apps and updates results inline
   void RefreshAppsAndUpdateResults();
@@ -68,8 +64,6 @@ class AppSearchProvider : public SearchProvider {
   sync_sessions::OpenTabsUIDelegate* open_tabs_ui_delegate_for_testing() {
     return open_tabs_ui_delegate_for_testing_;
   }
-
-  static std::string NormalizeIDForTest(const std::string& id);
 
  private:
   void UpdateResults();
@@ -97,7 +91,6 @@ class AppSearchProvider : public SearchProvider {
   AppListModelUpdater* const model_updater_;
   base::Clock* clock_;
   std::vector<std::unique_ptr<DataSource>> data_sources_;
-  AppSearchResultRanker* ranker_;
   sync_sessions::OpenTabsUIDelegate* open_tabs_ui_delegate_for_testing_ =
       nullptr;
   base::WeakPtrFactory<AppSearchProvider> refresh_apps_factory_;

@@ -61,7 +61,6 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
-#include "content/shell/browser/shell_network_delegate.h"
 #include "content/shell/browser/web_test/devtools_protocol_test_bindings.h"
 #include "content/shell/browser/web_test/fake_bluetooth_chooser.h"
 #include "content/shell/browser/web_test/test_info_extractor.h"
@@ -1362,17 +1361,11 @@ void BlinkTestController::OnSendBluetoothManualChooserEvent(
 }
 
 void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    ShellBrowserContext* browser_context =
-        ShellContentBrowserClient::Get()->browser_context();
-    browser_context->GetDefaultStoragePartition(browser_context)
-        ->GetCookieManagerForBrowserProcess()
-        ->BlockThirdPartyCookies(block);
-  } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(ShellNetworkDelegate::SetBlockThirdPartyCookies, block));
-  }
+  ShellBrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
+  browser_context->GetDefaultStoragePartition(browser_context)
+      ->GetCookieManagerForBrowserProcess()
+      ->BlockThirdPartyCookies(block);
 }
 
 mojom::WebTestControlAssociatedPtr& BlinkTestController::GetWebTestControlPtr(

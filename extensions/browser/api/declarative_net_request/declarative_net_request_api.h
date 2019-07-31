@@ -26,7 +26,7 @@ struct ReadJSONRulesResult;
 
 // Helper base class to update the set of allowed pages.
 class DeclarativeNetRequestUpdateAllowedPagesFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  protected:
   enum class Action {
     ADD,     // Add allowed pages.
@@ -87,8 +87,7 @@ class DeclarativeNetRequestRemoveAllowedPagesFunction
 
 // Implements the "declarativeNetRequest.getAllowedPages" extension
 // function.
-class DeclarativeNetRequestGetAllowedPagesFunction
-    : public UIThreadExtensionFunction {
+class DeclarativeNetRequestGetAllowedPagesFunction : public ExtensionFunction {
  public:
   DeclarativeNetRequestGetAllowedPagesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getAllowedPages",
@@ -106,7 +105,7 @@ class DeclarativeNetRequestGetAllowedPagesFunction
 };
 
 class DeclarativeNetRequestUpdateDynamicRulesFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  protected:
   DeclarativeNetRequestUpdateDynamicRulesFunction();
   ~DeclarativeNetRequestUpdateDynamicRulesFunction() override;
@@ -157,8 +156,7 @@ class DeclarativeNetRequestRemoveDynamicRulesFunction
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestRemoveDynamicRulesFunction);
 };
 
-class DeclarativeNetRequestGetDynamicRulesFunction
-    : public UIThreadExtensionFunction {
+class DeclarativeNetRequestGetDynamicRulesFunction : public ExtensionFunction {
  public:
   DeclarativeNetRequestGetDynamicRulesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getDynamicRules",
@@ -178,8 +176,7 @@ class DeclarativeNetRequestGetDynamicRulesFunction
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetDynamicRulesFunction);
 };
 
-class DeclarativeNetRequestGetMatchedRulesFunction
-    : public UIThreadExtensionFunction {
+class DeclarativeNetRequestGetMatchedRulesFunction : public ExtensionFunction {
  public:
   DeclarativeNetRequestGetMatchedRulesFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getMatchedRules",
@@ -196,7 +193,7 @@ class DeclarativeNetRequestGetMatchedRulesFunction
 };
 
 class DeclarativeNetRequestSetActionCountAsBadgeTextFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
  public:
   DeclarativeNetRequestSetActionCountAsBadgeTextFunction();
   DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.setActionCountAsBadgeText",

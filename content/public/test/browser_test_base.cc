@@ -490,7 +490,6 @@ bool BrowserTestBase::AllowFileAccessFromFiles() {
 }
 
 void BrowserTestBase::SimulateNetworkServiceCrash() {
-  CHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   CHECK(!IsInProcessNetworkService())
       << "Can't crash the network service if it's running in-process!";
   network::mojom::NetworkServiceTestPtr network_service_test;
@@ -602,8 +601,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 
     PreRunTestOnMainThread();
     std::unique_ptr<InitialNavigationObserver> initial_navigation_observer;
-    if (initial_web_contents_ &&
-        base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (initial_web_contents_) {
       // Some tests may add host_resolver() rules in their SetUpOnMainThread
       // method and navigate inside of it. This is a best effort to catch that
       // and sync the host_resolver() rules to the network process in that case,

@@ -63,7 +63,7 @@ void BackgroundFetchServiceImpl::CreateForFrame(
       RenderFrameHost::FromID(render_process_host->GetID(), render_frame_id);
   DCHECK(render_frame_host);
 
-  ResourceRequestInfo::WebContentsGetter wc_getter = base::NullCallback();
+  WebContents::Getter wc_getter = base::NullCallback();
 
   // Permissions need to go through the DownloadRequestLimiter if the fetch
   // is started from a top-level frame.
@@ -89,7 +89,7 @@ void BackgroundFetchServiceImpl::CreateOnIoThread(
     scoped_refptr<BackgroundFetchContext> background_fetch_context,
     url::Origin origin,
     int render_frame_tree_node_id,
-    ResourceRequestInfo::WebContentsGetter wc_getter,
+    WebContents::Getter wc_getter,
     blink::mojom::BackgroundFetchServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -104,7 +104,7 @@ BackgroundFetchServiceImpl::BackgroundFetchServiceImpl(
     scoped_refptr<BackgroundFetchContext> background_fetch_context,
     url::Origin origin,
     int render_frame_tree_node_id,
-    ResourceRequestInfo::WebContentsGetter wc_getter)
+    WebContents::Getter wc_getter)
     : background_fetch_context_(std::move(background_fetch_context)),
       origin_(std::move(origin)),
       render_frame_tree_node_id_(render_frame_tree_node_id),

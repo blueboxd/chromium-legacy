@@ -116,12 +116,6 @@ void AppCacheURLLoaderJob::FollowRedirect(
   NOTREACHED() << "appcache never produces redirects";
 }
 
-void AppCacheURLLoaderJob::ProceedWithResponse() {
-  // TODO(arthursonzogni):  Implement this if AppCache starts using the
-  // AppCacheURLLoader before the Network Service has shipped.
-  NOTREACHED();
-}
-
 void AppCacheURLLoaderJob::SetPriority(net::RequestPriority priority,
                                        int32_t intra_priority_value) {}
 void AppCacheURLLoaderJob::PauseReadingBodyFromNet() {}

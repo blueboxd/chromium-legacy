@@ -31,8 +31,9 @@ CONTENT_EXPORT double RoundKbpsToMbpsForTesting(
 CONTENT_EXPORT void AddNavigationRequestClientHintsHeaders(
     const GURL& url,
     net::HttpRequestHeaders* headers,
-    content::BrowserContext* context,
-    content::ClientHintsControllerDelegate* delegate);
+    BrowserContext* context,
+    bool javascript_enabled,
+    ClientHintsControllerDelegate* delegate);
 
 }  // namespace content
 

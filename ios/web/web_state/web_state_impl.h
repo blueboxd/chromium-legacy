@@ -51,7 +51,6 @@ class NavigationContextImpl;
 class NavigationManager;
 class SessionCertificatePolicyCacheImpl;
 class WebInterstitialImpl;
-class WebStateInterfaceProvider;
 class WebUIIOS;
 
 // Implementation of WebState.
@@ -222,11 +221,8 @@ class WebStateImpl : public WebState,
       const ScriptCommandCallback& callback,
       const std::string& command_prefix) override;
   id<CRWWebViewProxy> GetWebViewProxy() const override;
-  WebStateInterfaceProvider* GetWebStateInterfaceProvider() override;
   void DidChangeVisibleSecurityState() override;
-  void BindInterfaceRequestFromMainFrame(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  InterfaceBinder* GetInterfaceBinderForMainFrame() override;
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
   bool CanTakeSnapshot() const override;
@@ -384,9 +380,6 @@ class WebStateImpl : public WebState,
   // WebState::CreateParams::created_with_opener_ for more details.
   bool created_with_opener_;
 
-  // Mojo interface registry for this WebState.
-  std::unique_ptr<WebStateInterfaceProvider> web_state_interface_provider_;
-
   // The most recently restored session history that has not yet committed in
   // the WKWebView. This is reset in OnNavigationItemCommitted().
   CRWSessionStorage* restored_session_storage_;
@@ -399,6 +392,10 @@ class WebStateImpl : public WebState,
 
   // Whether a JavaScript dialog is currently being presented.
   bool running_javascript_dialog_ = false;
+
+  // The InterfaceBinder exposed by WebStateImpl. Used to handle Mojo interface
+  // requests from the main frame.
+  InterfaceBinder interface_binder_{this};
 
   base::WeakPtrFactory<WebStateImpl> weak_factory_;
 

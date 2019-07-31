@@ -172,7 +172,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                  RenderWidgetHostViewBase* target) override;
   void SetCursor(const WebCursor& cursor) override;
   void ShowContextMenuAtPoint(const gfx::Point& point,
-                              const ui::MenuSourceType source_type) override;
+                              const ui::MenuSourceType source_type,
+                              RenderWidgetHostViewBase* target) override;
 
   // HitTestRegionObserver
   void OnAggregatedHitTestRegionListUpdated(

@@ -39,11 +39,7 @@ class NoopNotificationScheduleService
   void OnStopTask(SchedulerTaskTime task_time) override;
 
   // UserActionHandler implementation.
-  void OnClick(SchedulerClientType type, const std::string& guid) override;
-  void OnActionClick(SchedulerClientType type,
-                     const std::string& guid,
-                     ActionButtonType button_type) override;
-  void OnDismiss(SchedulerClientType type, const std::string& guid) override;
+  void OnUserAction(const UserActionData& action_data) override;
 
   DISALLOW_COPY_AND_ASSIGN(NoopNotificationScheduleService);
 };

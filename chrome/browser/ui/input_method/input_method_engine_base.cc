@@ -150,8 +150,6 @@ InputMethodEngineBase::InputMethodEngineBase()
     : current_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       context_id_(0),
       next_context_id_(1),
-      composition_text_(new ui::CompositionText()),
-      composition_cursor_(0),
       profile_(nullptr),
       next_request_id_(1),
       composition_changed_(false),
@@ -212,12 +210,10 @@ void InputMethodEngineBase::Disable() {
   std::string last_component_id{active_component_id_};
   active_component_id_.clear();
   ConfirmCompositionText();
-  composition_text_.reset(new ui::CompositionText());
   observer_->OnDeactivated(last_component_id);
 }
 
 void InputMethodEngineBase::Reset() {
-  composition_text_.reset(new ui::CompositionText());
   observer_->OnReset(active_component_id_);
 }
 
@@ -276,9 +272,7 @@ bool InputMethodEngineBase::ClearComposition(int context_id,
     return false;
   }
 
-  composition_cursor_ = 0;
-  composition_text_.reset(new ui::CompositionText());
-  UpdateComposition(*composition_text_, composition_cursor_, false);
+  UpdateComposition(ui::CompositionText(), 0, false);
   return true;
 }
 
@@ -367,12 +361,10 @@ bool InputMethodEngineBase::SetComposition(
     return false;
   }
 
-  composition_cursor_ = cursor;
-  composition_text_.reset(new ui::CompositionText());
-  composition_text_->text = base::UTF8ToUTF16(text);
-
-  composition_text_->selection.set_start(selection_start);
-  composition_text_->selection.set_end(selection_end);
+  ui::CompositionText composition_text;
+  composition_text.text = base::UTF8ToUTF16(text);
+  composition_text.selection.set_start(selection_start);
+  composition_text.selection.set_end(selection_end);
 
   // TODO: Add support for displaying selected text in the composition string.
   for (auto segment = segments.begin(); segment != segments.end(); ++segment) {
@@ -395,11 +387,11 @@ bool InputMethodEngineBase::SetComposition(
 
     ime_text_span.start_offset = segment->start;
     ime_text_span.end_offset = segment->end;
-    composition_text_->ime_text_spans.push_back(ime_text_span);
+    composition_text.ime_text_spans.push_back(ime_text_span);
   }
 
   // TODO(nona): Makes focus out mode configuable, if necessary.
-  UpdateComposition(*composition_text_, composition_cursor_, true);
+  UpdateComposition(composition_text, cursor, true);
   return true;
 }
 
@@ -420,11 +412,7 @@ bool InputMethodEngineBase::SetCompositionRange(
 
   // When there is composition text, commit it to the text field first before
   // changing the composition range.
-  if (!composition_text_->text.empty()) {
-    const std::string composition_text_utf8 =
-        base::UTF16ToUTF8(composition_text_->text);
-    CommitTextToInputContext(context_id, composition_text_utf8);
-  }
+  ConfirmCompositionText();
 
   std::vector<ui::ImeTextSpan> text_spans;
   for (const auto& segment : segments) {
@@ -488,6 +476,22 @@ std::string InputMethodEngineBase::AddRequest(
   request_map_[request_id] = std::make_pair(component_id, std::move(key_data));
 
   return request_id;
+}
+
+void InputMethodEngineBase::DeleteSurroundingTextToInputContext(
+    int offset,
+    size_t number_of_chars) {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (input_context)
+    input_context->DeleteSurroundingText(offset, number_of_chars);
+}
+
+void InputMethodEngineBase::ConfirmCompositionText() {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (input_context)
+    input_context->ConfirmCompositionText();
 }
 
 }  // namespace input_method

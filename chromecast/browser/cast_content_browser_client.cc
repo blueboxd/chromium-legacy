@@ -429,8 +429,7 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
       cast_browser_main_parts_->browser_context();
   host->AddFilter(new extensions::ExtensionMessageFilter(render_process_id,
                                                          browser_context));
-  host->AddFilter(new extensions::IOThreadExtensionMessageFilter(
-      render_process_id, browser_context));
+  host->AddFilter(new extensions::IOThreadExtensionMessageFilter());
   host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(
       render_process_id, browser_context));
   host->AddFilter(

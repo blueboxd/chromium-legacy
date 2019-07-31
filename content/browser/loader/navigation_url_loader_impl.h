@@ -54,7 +54,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       PreviewsState new_previews_state) override;
-  void ProceedWithResponse() override;
 
   void OnReceiveResponse(
       scoped_refptr<network::ResourceResponse> response_head,

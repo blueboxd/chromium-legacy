@@ -89,6 +89,32 @@ class MockWebController : public WebController {
 
   MOCK_METHOD1(OnWaitForWindowHeightChange,
                void(base::OnceCallback<void(const ClientStatus&)>& callback));
+
+  MOCK_METHOD2(
+      OnGetDocumentReadyState,
+      void(const Selector&,
+           base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>&));
+
+  void GetDocumentReadyState(
+      const Selector& frame,
+      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+          callback) override {
+    OnGetDocumentReadyState(frame, callback);
+  }
+
+  MOCK_METHOD3(
+      OnWaitForDocumentReadyState,
+      void(const Selector&,
+           DocumentReadyState min_ready_state,
+           base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>&));
+
+  void WaitForDocumentReadyState(
+      const Selector& frame,
+      DocumentReadyState min_ready_state,
+      base::OnceCallback<void(const ClientStatus&, DocumentReadyState)>
+          callback) override {
+    OnWaitForDocumentReadyState(frame, min_ready_state, callback);
+  }
 };
 
 }  // namespace autofill_assistant

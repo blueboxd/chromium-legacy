@@ -46,7 +46,8 @@ const char* LabelTrayView::GetClassName() const {
 views::View* LabelTrayView::CreateChildView(
     const base::string16& message) const {
   HoverHighlightView* child = new HoverHighlightView(click_listener_);
-  gfx::ImageSkia icon_image = gfx::CreateVectorIcon(icon_, kMenuIconColor);
+  gfx::ImageSkia icon_image =
+      gfx::CreateVectorIcon(icon_, kIconOnLightBackgroundColor);
   child->AddIconAndLabelForDefaultView(icon_image, message);
   child->text_label()->SetMultiLine(true);
   child->text_label()->SetAllowCharacterBreak(true);

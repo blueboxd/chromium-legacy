@@ -35,5 +35,5 @@ const base::Feature kOmniboxUseDefaultSearchEngineFavicon{
 const base::Feature kLanguageSettings{"LanguageSettings",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kOptionalArticleThumbnail{
-    "OptionalArticleThumbnail", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOptionalArticleThumbnail{"OptionalArticleThumbnail",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};

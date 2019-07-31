@@ -281,30 +281,20 @@ bool InputMethodEngine::SetCompositionRange(
 
 void InputMethodEngine::CommitTextToInputContext(int context_id,
                                                  const std::string& text) {
-  bool committed = false;
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context) {
-    input_context->CommitText(text);
-    committed = true;
-  }
+  if (!input_context)
+    return;
 
-  if (committed && !composition_text_->text.empty()) {
-    // Records histograms for committed characters.
+  const bool had_composition_text = input_context->HasCompositionText();
+  input_context->CommitText(text);
+
+  if (had_composition_text) {
+    // Records histograms for committed characters with composition text.
     base::string16 wtext = base::UTF8ToUTF16(text);
     UMA_HISTOGRAM_CUSTOM_COUNTS("InputMethod.CommitLength", wtext.length(), 1,
                                 25, 25);
-    composition_text_.reset(new ui::CompositionText());
   }
-}
-
-void InputMethodEngine::DeleteSurroundingTextToInputContext(
-    int offset,
-    size_t number_of_chars) {
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
-    input_context->DeleteSurroundingText(offset, number_of_chars);
 }
 
 bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
@@ -328,15 +318,6 @@ bool InputMethodEngine::SendKeyEvent(ui::KeyEvent* event,
     return true;
   }
   return false;
-}
-
-void InputMethodEngine::ConfirmCompositionText() {
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context) {
-    input_context->ConfirmCompositionText();
-    composition_text_.reset(new ui::CompositionText());
-  }
 }
 
 void InputMethodEngine::EnableInputView() {

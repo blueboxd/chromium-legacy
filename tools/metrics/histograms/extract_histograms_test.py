@@ -21,12 +21,27 @@ class ExtractHistogramsTest(unittest.TestCase):
 </histograms>
 </histogram-configuration>
 """)
-    (_, have_errors) = extract_histograms._ExtractHistogramsFromXmlTree(
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
         histogram_without_summary, {})
     self.assertTrue(have_errors)
 
-  def testNewHistogramWithoutOwner(self):
-    histogram_without_owner = xml.dom.minidom.parseString("""
+  def testNewHistogramWithEmptyOwnerTag(self):
+    histogram_with_empty_owner_tag = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+ <histogram name="Test.Histogram" units="things">
+  <owner></owner>
+  <summary> This is a summary </summary>
+ </histogram>
+</histograms>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_empty_owner_tag, {})
+    self.assertTrue(have_errors)
+
+  def testNewHistogramWithoutOwnerTag(self):
+    histogram_without_owner_tag = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
  <histogram name="Test.Histogram" units="things">
@@ -35,8 +50,38 @@ class ExtractHistogramsTest(unittest.TestCase):
 </histograms>
 </histogram-configuration>
 """)
-    (_, have_errors) = extract_histograms._ExtractHistogramsFromXmlTree(
-        histogram_without_owner, {})
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_without_owner_tag, {})
+    self.assertTrue(have_errors)
+
+  def testNewHistogramWithCommaSeparatedOwners(self):
+    histogram_with_comma_separated_owners = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+ <histogram name="Test.Histogram" units="things">
+  <owner>cait@chromium.org, paul@chromium.org</owner>
+  <summary> This is a summary </summary>
+ </histogram>
+</histograms>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_comma_separated_owners, {})
+    self.assertTrue(have_errors)
+
+  def testNewHistogramWithInvalidOwner(self):
+    histogram_with_invalid_owner = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+ <histogram name="Test.Histogram" units="things">
+  <owner>sarah</owner>
+  <summary> This is a summary </summary>
+ </histogram>
+</histograms>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_invalid_owner, {})
     self.assertTrue(have_errors)
 
   def testNewHistogramWithOwnerPlaceHolder(self):
@@ -55,7 +100,7 @@ class ExtractHistogramsTest(unittest.TestCase):
 </histograms>
 </histogram-configuration>
 """)
-    (_, have_errors) = extract_histograms._ExtractHistogramsFromXmlTree(
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
         histogram_with_owner_placeholder, {})
     self.assertFalse(have_errors)
 
@@ -71,7 +116,7 @@ class ExtractHistogramsTest(unittest.TestCase):
 </histograms>
 </histogram-configuration>
 """)
-    (hists, have_errors) = extract_histograms._ExtractHistogramsFromXmlTree(
+    hists, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
         histogram_with_owner_placeholder, {})
     self.assertFalse(have_errors)
     self.assertIn('Test.Histogram', hists)

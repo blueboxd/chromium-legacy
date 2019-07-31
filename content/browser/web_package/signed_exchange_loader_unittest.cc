@@ -85,7 +85,6 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
                  void(const std::vector<std::string>&,
                       const net::HttpRequestHeaders&,
                       const base::Optional<GURL>&));
-    MOCK_METHOD0(ProceedWithResponse, void());
     MOCK_METHOD2(SetPriority,
                  void(net::RequestPriority priority,
                       int32_t intra_priority_value));

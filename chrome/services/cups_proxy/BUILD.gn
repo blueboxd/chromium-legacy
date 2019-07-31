@@ -22,8 +22,6 @@ source_set("cups_proxy") {
     "//chrome/services/cups_proxy/public/mojom",
     "//chromeos/dbus",
     "//net",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
   ]
 
   # We stub this service if libCUPS is not present.

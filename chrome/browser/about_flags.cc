@@ -30,6 +30,7 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
+#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -781,8 +782,12 @@ const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches5[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "5"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches6[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "6"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches7[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "7"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches8[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "8"}};
+const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches9[] = {
+    {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "9"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches10[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "10"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches12[] = {
@@ -798,8 +803,12 @@ const FeatureEntry::FeatureVariation
          base::size(kOmniboxUIMaxAutocompleteMatches5), nullptr},
         {"6 matches", kOmniboxUIMaxAutocompleteMatches6,
          base::size(kOmniboxUIMaxAutocompleteMatches6), nullptr},
+        {"7 matches", kOmniboxUIMaxAutocompleteMatches7,
+         base::size(kOmniboxUIMaxAutocompleteMatches7), nullptr},
         {"8 matches", kOmniboxUIMaxAutocompleteMatches8,
          base::size(kOmniboxUIMaxAutocompleteMatches8), nullptr},
+        {"9 matches", kOmniboxUIMaxAutocompleteMatches9,
+         base::size(kOmniboxUIMaxAutocompleteMatches9), nullptr},
         {"10 matches", kOmniboxUIMaxAutocompleteMatches10,
          base::size(kOmniboxUIMaxAutocompleteMatches10), nullptr},
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
@@ -1541,6 +1550,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-virtual-desks", flag_descriptions::kEnableVirtualDesksName,
      flag_descriptions::kEnableVirtualDesksDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kVirtualDesks)},
+    {"trim-on-all-frames-frozen", flag_descriptions::kTrimOnFreezeName,
+     flag_descriptions::kTrimOnFreezeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         performance_manager::features::chromeos::kTrimOnFreeze)},
+    {"trim-on-memory-pressure", flag_descriptions::kTrimOnMemoryPressureName,
+     flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         performance_manager::features::chromeos::kTrimOnMemoryPressure)},
 #endif  // OS_CHROMEOS
     {
         "disable-accelerated-video-decode",
@@ -2734,7 +2751,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
-         "OmniboxUIMaxAutocompleteVariations")},
+         "OmniboxBundledExperimentV1")},
 
     {"omnibox-max-url-matches", flag_descriptions::kOmniboxMaxURLMatchesName,
      flag_descriptions::kOmniboxMaxURLMatchesDescription, kOsAll,
@@ -2779,6 +2796,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxMaterialDesignWeatherIcons)},
+
+    {"omnibox-disable-instant-extended-limit",
+     flag_descriptions::kOmniboxDisableInstantExtendedLimitName,
+     flag_descriptions::kOmniboxDisableInstantExtendedLimitDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxDisableInstantExtendedLimit)},
 
     {"use-new-accept-language-header",
      flag_descriptions::kUseNewAcceptLanguageHeaderName,

@@ -186,8 +186,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
 ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
 }
 
-ResourceRequestInfo::WebContentsGetter
-ResourceRequestInfoImpl::GetWebContentsGetterForRequest() {
+WebContents::Getter ResourceRequestInfoImpl::GetWebContentsGetterForRequest() {
   // If we have a window id, try to use that.
   if (fetch_window_id_) {
     if (auto getter =

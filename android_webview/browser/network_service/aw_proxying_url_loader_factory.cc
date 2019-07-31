@@ -25,9 +25,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
@@ -75,7 +75,6 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
-  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -586,11 +585,6 @@ void InterceptedRequest::FollowRedirect(
     return;
 
   Restart();
-}
-
-void InterceptedRequest::ProceedWithResponse() {
-  if (target_loader_)
-    target_loader_->ProceedWithResponse();
 }
 
 void InterceptedRequest::SetPriority(net::RequestPriority priority,

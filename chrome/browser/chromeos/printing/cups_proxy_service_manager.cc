@@ -6,8 +6,10 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "chrome/browser/chromeos/printing/cups_proxy_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
 #include "content/public/browser/browser_context.h"
@@ -16,8 +18,12 @@
 namespace chromeos {
 
 CupsProxyServiceManager::CupsProxyServiceManager() : weak_factory_(this) {
-  CupsProxyClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
-      &CupsProxyServiceManager::OnDaemonAvailable, weak_factory_.GetWeakPtr()));
+  // Don't wait for the daemon if the feature is turned off anyway.
+  if (base::FeatureList::IsEnabled(features::kCrosVmCupsProxy)) {
+    CupsProxyClient::Get()->WaitForServiceToBeAvailable(
+        base::BindOnce(&CupsProxyServiceManager::OnDaemonAvailable,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 CupsProxyServiceManager::~CupsProxyServiceManager() = default;

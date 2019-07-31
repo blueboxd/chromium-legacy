@@ -106,7 +106,7 @@ DeclarativeNetRequestUpdateAllowedPagesFunction::UpdateAllowedPages(
 
 bool DeclarativeNetRequestUpdateAllowedPagesFunction::PreRunValidation(
     std::string* error) {
-  return UIThreadExtensionFunction::PreRunValidation(error) &&
+  return ExtensionFunction::PreRunValidation(error) &&
          HasRegisteredRuleset(browser_context(), extension_id(), error);
 }
 
@@ -155,7 +155,7 @@ DeclarativeNetRequestGetAllowedPagesFunction::
 
 bool DeclarativeNetRequestGetAllowedPagesFunction::PreRunValidation(
     std::string* error) {
-  return UIThreadExtensionFunction::PreRunValidation(error) &&
+  return ExtensionFunction::PreRunValidation(error) &&
          HasRegisteredRuleset(browser_context(), extension_id(), error);
 }
 
@@ -193,7 +193,7 @@ DeclarativeNetRequestUpdateDynamicRulesFunction::UpdateDynamicRules(
 
 bool DeclarativeNetRequestUpdateDynamicRulesFunction::PreRunValidation(
     std::string* error) {
-  return UIThreadExtensionFunction::PreRunValidation(error) &&
+  return ExtensionFunction::PreRunValidation(error) &&
          HasRegisteredRuleset(browser_context(), extension_id(), error);
 }
 
@@ -260,7 +260,7 @@ DeclarativeNetRequestGetDynamicRulesFunction::
 
 bool DeclarativeNetRequestGetDynamicRulesFunction::PreRunValidation(
     std::string* error) {
-  return UIThreadExtensionFunction::PreRunValidation(error) &&
+  return ExtensionFunction::PreRunValidation(error) &&
          HasRegisteredRuleset(browser_context(), extension_id(), error);
 }
 

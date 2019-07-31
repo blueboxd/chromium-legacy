@@ -158,8 +158,6 @@ class SubresourceLoader : public network::mojom::URLLoader,
   }
 
   // network::mojom::URLLoader implementation
-  void ProceedWithResponse() override { NOTREACHED(); }
-
   void ContinueFollowRedirect(
       SingleRequestURLLoaderFactory::RequestHandler handler) {
     if (handler) {

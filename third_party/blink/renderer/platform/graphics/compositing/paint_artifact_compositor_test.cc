@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
@@ -187,7 +188,8 @@ class PaintArtifactCompositorTest : public testing::Test,
     // Scroll hit test layers are marked as scrollable for hit testing but are
     // in the unscrolled transform space (scroll offset's parent).
     artifact.Chunk(*scroll_offset.Parent(), clip, effect)
-        .ScrollHitTest(scroll_offset);
+        .ScrollHitTest(&scroll_offset,
+                       scroll_offset.ScrollNode()->ContainerRect());
   }
 
   // Returns the |num|th scrollable layer. In CompositeAfterPaint, this will be
@@ -2828,6 +2830,30 @@ TEST_P(PaintArtifactCompositorTest,
   // The masks DrawsContent because it has content that it masks which also
   // DrawsContent.
   EXPECT_TRUE(clip_mask0->DrawsContent());
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       SynthesizedClipSimpleFastBorderNotSupportedMacNonEqualCorners) {
+  // Tests that on Mac, we fall back to a mask layer if the corners are not all
+  // the same radii.
+  FloatSize corner(30, 30);
+  FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
+                         FloatSize());
+  auto c1 = CreateClip(c0(), t0(), rrect);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *c1, e0())
+      .RectDrawing(FloatRect(0, 0, 100, 100), Color::kBlack);
+  Update(artifact.Build());
+
+#if defined(OS_MACOSX)
+  ASSERT_EQ(2u, RootLayer()->children().size());
+#else
+  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled())
+    ASSERT_EQ(1u, RootLayer()->children().size());
+  else
+    ASSERT_EQ(2u, RootLayer()->children().size());
+#endif
 }
 
 TEST_P(PaintArtifactCompositorTest, SynthesizedClipNested) {

@@ -121,12 +121,12 @@ class SyncAuthTest : public SyncTest {
 
   void DisableTokenFetchRetries() {
     // If ProfileSyncService observes a transient error like SERVICE_UNAVAILABLE
-    // or CONNECTION_FAILED, this means the OAuth2TokenService has given up
-    // trying to reach Gaia. In practice, OA2TS retries a fixed number of times,
-    // but the count is transparent to PSS.
+    // or CONNECTION_FAILED, this means the access token fetcher has given
+    // up trying to reach Gaia. In practice, the access token fetching code
+    // retries a fixed number of times, but the count is transparent to PSS.
     // Disable retries so that we instantly trigger the case where
-    // ProfileSyncService must pick up where OAuth2TokenService left off (in
-    // terms of retries).
+    // ProfileSyncService must pick up where the access token fetcher left off
+    // (in terms of retries).
     signin::DisableAccessTokenFetchRetries(
         IdentityManagerFactory::GetForProfile(GetProfile(0)));
   }
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, Sanity) {
 }
 
 // Verify that ProfileSyncService continues trying to fetch access tokens
-// when OAuth2TokenService has encountered more than a fixed number of
+// when the access token fetcher has encountered more than a fixed number of
 // HTTP_INTERNAL_SERVER_ERROR (500) errors.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnInternalServerError500) {
   ASSERT_TRUE(SetupSync());
@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnInternalServerError500) {
 }
 
 // Verify that ProfileSyncService continues trying to fetch access tokens
-// when OAuth2TokenService has encountered more than a fixed number of
+// when the access token fetcher has encountered more than a fixed number of
 // HTTP_FORBIDDEN (403) errors.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnHttpForbidden403) {
   ASSERT_TRUE(SetupSync());
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnHttpForbidden403) {
 }
 
 // Verify that ProfileSyncService continues trying to fetch access tokens
-// when OAuth2TokenService has encountered a URLRequestStatus of FAILED.
+// when the access token fetcher has encountered a URLRequestStatus of FAILED.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnRequestFailed) {
   ASSERT_TRUE(SetupSync());
   ASSERT_FALSE(AttemptToTriggerAuthError());
@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnRequestFailed) {
 }
 
 // Verify that ProfileSyncService continues trying to fetch access tokens
-// when OAuth2TokenService receives a malformed token.
+// when the access token fetcher receives a malformed token.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnMalformedToken) {
   ASSERT_TRUE(SetupSync());
   ASSERT_FALSE(AttemptToTriggerAuthError());
@@ -211,8 +211,8 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryOnMalformedToken) {
 }
 
 // Verify that ProfileSyncService ends up with an INVALID_GAIA_CREDENTIALS auth
-// error when an invalid_grant error is returned by OAuth2TokenService with an
-// HTTP_BAD_REQUEST (400) response code.
+// error when an invalid_grant error is returned by the access token fetcher
+// with an HTTP_BAD_REQUEST (400) response code.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, InvalidGrant) {
   ASSERT_TRUE(SetupSync());
   ASSERT_FALSE(AttemptToTriggerAuthError());
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, InvalidGrant) {
 }
 
 // Verify that ProfileSyncService retries after SERVICE_ERROR auth error when
-// an invalid_client error is returned by OAuth2TokenService with an
+// an invalid_client error is returned by the access token fetcher with an
 // HTTP_BAD_REQUEST (400) response code.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryInvalidClient) {
   ASSERT_TRUE(SetupSync());
@@ -242,7 +242,8 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryInvalidClient) {
 }
 
 // Verify that ProfileSyncService retries after REQUEST_CANCELED auth error
-// when OAuth2TokenService has encountered a URLRequestStatus of CANCELED.
+// when the access token fetcher has encountered a URLRequestStatus of
+// CANCELED.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryRequestCanceled) {
   ASSERT_TRUE(SetupSync());
   ASSERT_FALSE(AttemptToTriggerAuthError());
@@ -257,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryRequestCanceled) {
 
 // Verify that ProfileSyncService fails initial sync setup during backend
 // initialization and ends up with an INVALID_GAIA_CREDENTIALS auth error when
-// an invalid_grant error is returned by OAuth2TokenService with an
+// an invalid_grant error is returned by the access token fetcher with an
 // HTTP_BAD_REQUEST (400) response code.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, FailInitialSetupWithPersistentError) {
   ASSERT_TRUE(SetupClients());
@@ -274,8 +275,8 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, FailInitialSetupWithPersistentError) {
 
 // Verify that ProfileSyncService fails initial sync setup during backend
 // initialization, but continues trying to fetch access tokens when
-// OAuth2TokenService receives an HTTP_INTERNAL_SERVER_ERROR (500) response
-// code.
+// the access token fetcher receives an HTTP_INTERNAL_SERVER_ERROR (500)
+// response code.
 IN_PROC_BROWSER_TEST_F(SyncAuthTest, RetryInitialSetupWithTransientError) {
   ASSERT_TRUE(SetupClients());
   GetFakeServer()->SetHttpError(net::HTTP_UNAUTHORIZED);

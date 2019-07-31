@@ -14,8 +14,9 @@ NativeThemeDarkAura* NativeThemeDarkAura::instance() {
   return s_native_theme.get();
 }
 
-SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
-  return GetAuraColor(color_id, this);
+SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id,
+                                            ColorScheme color_scheme) const {
+  return GetAuraColor(color_id, this, color_scheme);
 }
 
 bool NativeThemeDarkAura::SystemDarkModeEnabled() const {

@@ -31,7 +31,6 @@
 #include "net/cert/cert_database.h"
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/signed_tree_head.h"
-#include "net/dns/dns_config.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
@@ -433,17 +432,16 @@ void NetworkService::CreateNetworkContext(
 }
 
 void NetworkService::ConfigureStubHostResolver(
-    bool stub_resolver_enabled,
+    bool insecure_dns_client_enabled,
+    net::DnsConfig::SecureDnsMode secure_dns_mode,
     base::Optional<std::vector<mojom::DnsOverHttpsServerPtr>>
         dns_over_https_servers) {
-  // If the stub resolver is not enabled, |dns_over_https_servers| has no
-  // effect.
-  DCHECK(stub_resolver_enabled || !dns_over_https_servers);
   DCHECK(!dns_over_https_servers || !dns_over_https_servers->empty());
 
   // Enable or disable the insecure part of DnsClient. "DnsClient" is the class
   // that implements the stub resolver.
-  host_resolver_manager_->SetInsecureDnsClientEnabled(stub_resolver_enabled);
+  host_resolver_manager_->SetInsecureDnsClientEnabled(
+      insecure_dns_client_enabled);
 
   // Configure DNS over HTTPS.
   if (!dns_over_https_servers || dns_over_https_servers.value().empty()) {
@@ -457,9 +455,7 @@ void NetworkService::ConfigureStubHostResolver(
     overrides.dns_over_https_servers.value().emplace_back(
         doh_server->server_template, doh_server->use_post);
   }
-  // TODO(crbug.com/985589): Allow the secure dns mode to be set independently
-  // of the insecure part of the stub resolver.
-  overrides.secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
+  overrides.secure_dns_mode = secure_dns_mode;
   host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }
 

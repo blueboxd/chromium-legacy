@@ -14,12 +14,9 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
-#include "build/util/webkit_version.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_input/warmer_welcome_input.pb.h"
@@ -1159,24 +1156,10 @@ void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
 
 void AssistantManagerServiceImpl::UpdateInternalOptions(
     assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  // Build user agent string.
-  std::string user_agent;
-  base::StringAppendF(&user_agent,
-                      "Mozilla/5.0 (X11; CrOS %s %s; %s) "
-                      "AppleWebKit/%d.%d (KHTML, like Gecko)",
-                      base::SysInfo::OperatingSystemArchitecture().c_str(),
-                      base::SysInfo::OperatingSystemVersion().c_str(),
-                      base::SysInfo::GetLsbReleaseBoard().c_str(),
-                      WEBKIT_VERSION_MAJOR, WEBKIT_VERSION_MINOR);
-
-  std::string arc_version = chromeos::version_loader::GetARCVersion();
-  if (!arc_version.empty())
-    base::StringAppendF(&user_agent, " ARC/%s", arc_version.c_str());
-
   // Build internal options
   auto* internal_options =
       assistant_manager_internal->CreateDefaultInternalOptions();
-  SetAssistantOptions(internal_options, user_agent,
+  SetAssistantOptions(internal_options,
                       service_->assistant_state()->locale().value(),
                       spoken_feedback_enabled_);
 

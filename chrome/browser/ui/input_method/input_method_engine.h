@@ -37,10 +37,7 @@ class InputMethodEngine : public InputMethodEngineBase,
       const std::vector<ui::ImeTextSpan>& text_spans) override;
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
-  void DeleteSurroundingTextToInputContext(int offset,
-                                           size_t number_of_chars) override;
   bool SendKeyEvent(ui::KeyEvent* ui_event, const std::string& code) override;
-  void ConfirmCompositionText() override;
   bool IsActive() const override;
 
   std::string GetExtensionId() const;

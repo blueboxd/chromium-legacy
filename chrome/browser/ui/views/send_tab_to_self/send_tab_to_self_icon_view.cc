@@ -50,21 +50,28 @@ bool SendTabToSelfIconView::Update() {
     return false;
   }
 
-  // Shows the send tab to self icon in omnibox when:
-  // send tab to self feature offered, and
-  // mouse focuses on the omnibox, and
-  // url has not been changed.
-  if (send_tab_to_self::ShouldOfferFeature(web_contents) &&
-      omnibox_view->model()->has_focus() &&
-      !omnibox_view->model()->user_input_in_progress()) {
-    // Shows the animation one time per browser session.
-    if (!was_animation_shown_) {
-      AnimateIn(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF);
-      was_animation_shown_ = true;
+  if (was_visible) {
+    // If send tab to self icon is showing:
+    // Hides the icon if the url is being editing.
+    if (omnibox_view->model()->user_input_in_progress()) {
+      SetVisible(false);
     }
-    SetVisible(true);
   } else {
-    SetVisible(false);
+    // If send tab to self icon is hiding:
+    // Shows the send tab to self icon in omnibox when:
+    // send tab to self feature offered, and
+    // mouse focuses on the omnibox, and
+    // url has not been changed.
+    if (send_tab_to_self::ShouldOfferFeature(web_contents) &&
+        omnibox_view->model()->has_focus() &&
+        !omnibox_view->model()->user_input_in_progress()) {
+      // Shows the animation one time per window.
+      if (!was_animation_shown_) {
+        AnimateIn(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF);
+        was_animation_shown_ = true;
+      }
+      SetVisible(true);
+    }
   }
 
   return was_visible != GetVisible();

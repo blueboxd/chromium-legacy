@@ -1402,8 +1402,9 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
   CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
   auto cache_handle =
       LegacyCacheStorage::From(cache_storage)->GetLoadedCache(kCacheName);
-  base::FilePath index_path =
-      LegacyCacheStorageCache::From(cache_handle)->path().AppendASCII("index");
+  base::FilePath cache_path =
+      LegacyCacheStorageCache::From(cache_handle)->path();
+  base::FilePath index_path = cache_path.AppendASCII("index");
   cache_handle = CacheStorageCacheHandle();
 
   DestroyStorageManager();
@@ -1411,6 +1412,16 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
   // Truncate the SimpleCache index to force an error when next opened.
   ASSERT_FALSE(index_path.empty());
   ASSERT_EQ(5, base::WriteFile(index_path, "hello", 5));
+
+  // The cache_storage index is written from a background thread and may be
+  // written just after our overwrite of the simple disk_cache index here.
+  // We need the cache directory to have a newer time stamp, though, in order
+  // for the Size() method to actually try calculating the size from the
+  // corrupted simple disk_cache.  Therefore we force the cache directory
+  // to have a much newer time to ensure the cache_storage index is not used
+  // in the following Size() call.
+  base::Time t = base::Time::Now() + base::TimeDelta::FromHours(1);
+  EXPECT_TRUE(base::TouchFile(cache_path, t, t));
 
   CreateStorageManager();
 

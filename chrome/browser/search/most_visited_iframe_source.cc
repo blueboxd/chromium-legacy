@@ -60,7 +60,7 @@ std::string MostVisitedIframeSource::GetSource() {
 
 void MostVisitedIframeSource::StartDataRequest(
     const std::string& path_and_query,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   GURL url(chrome::kChromeSearchMostVisitedUrl + path_and_query);
   std::string path(url.path());
@@ -170,7 +170,7 @@ void MostVisitedIframeSource::SendResource(
 
 void MostVisitedIframeSource::SendJSWithOrigin(
     int resource_id,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   std::string origin;
   if (!GetOrigin(wc_getter, &origin)) {
@@ -186,7 +186,7 @@ void MostVisitedIframeSource::SendJSWithOrigin(
 }
 
 bool MostVisitedIframeSource::GetOrigin(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     std::string* origin) const {
   if (wc_getter.is_null())
     return false;

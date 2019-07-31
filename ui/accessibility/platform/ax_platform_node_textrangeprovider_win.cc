@@ -32,7 +32,7 @@ AXPlatformNodeTextRangeProviderWin::AXPlatformNodeTextRangeProviderWin() {
 AXPlatformNodeTextRangeProviderWin::~AXPlatformNodeTextRangeProviderWin() {}
 
 ITextRangeProvider* AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-    ui::AXPlatformNodeWin* owner,
+    AXPlatformNodeWin* owner,
     AXPositionInstance start,
     AXPositionInstance end) {
   CComObject<AXPlatformNodeTextRangeProviderWin>* text_range_provider = nullptr;
@@ -127,14 +127,14 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
       // boundary, thus we only need to move the end position.
       AXPositionInstance end_backup = end_->Clone();
       end_ = start_->CreateNextCharacterPosition(
-          ui::AXBoundaryBehavior::CrossBoundary);
+          AXBoundaryBehavior::CrossBoundary);
 
       if (end_->IsNullPosition()) {
         // The previous could fail if the start is at the end of the last anchor
         // of the tree, try expanding to the previous character instead.
         AXPositionInstance start_backup = start_->Clone();
         start_ = start_->CreatePreviousCharacterPosition(
-            ui::AXBoundaryBehavior::CrossBoundary);
+            AXBoundaryBehavior::CrossBoundary);
 
         if (start_->IsNullPosition()) {
           // Text representation is empty, undo everything and exit.
@@ -143,35 +143,42 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
           return S_OK;
         }
         end_ = start_->CreateNextCharacterPosition(
-            ui::AXBoundaryBehavior::CrossBoundary);
+            AXBoundaryBehavior::CrossBoundary);
         DCHECK(!end_->IsNullPosition());
       }
       break;
     }
     case TextUnit_Format:
       start_ = start_->CreatePreviousFormatStartPosition(
-          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       end_ = start_->CreateNextFormatEndPosition(
-          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       break;
     case TextUnit_Word:
       start_ = start_->CreatePreviousWordStartPosition(
-          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-      end_ = start_->CreateNextWordEndPosition(
-          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+
+      // Since start_ is already located at a word boundary, we need to cross it
+      // in order to move to the next one; the only edge case here is the last
+      // word in the document, which will result in a null position.
+      end_ = start_->CreateNextWordStartPosition(
+          AXBoundaryBehavior::CrossBoundary);
+      if (end_->IsNullPosition())
+        end_ = start_->CreatePositionAtEndOfDocument();
       break;
     case TextUnit_Line:
       start_ = start_->CreatePreviousLineStartPosition(
-          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       end_ = start_->CreateNextLineEndPosition(
-          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       break;
     case TextUnit_Paragraph:
       start_ = start_->CreatePreviousParagraphStartPosition(
-          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       end_ = start_->CreateNextParagraphEndPosition(
-          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+          AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       break;
+
     // Since web content is not paginated, TextUnit_Page is not supported.
     // Substituting it by the next larger unit: TextUnit_Document.
     case TextUnit_Page:
@@ -186,9 +193,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
   // Some text positions are equal when compared, but they could be located at
   // different anchors, affecting how `GetEnclosingElement` works. Normalize the
   // endpoints to correctly enclose characters of the text representation.
-  AXPositionInstance normalized_start =
-      start_->AsLeafTextPositionBeforeCharacter();
-  AXPositionInstance normalized_end = end_->AsLeafTextPositionBeforeCharacter();
+  AXPositionInstance normalized_start = start_->AsPositionBeforeCharacter();
+  AXPositionInstance normalized_end = end_->AsPositionBeforeCharacter();
 
   if (!normalized_start->IsNullPosition()) {
     DCHECK_EQ(*start_, *normalized_start);
@@ -730,7 +736,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ScrollIntoView(
   UIA_VALIDATE_BOUNDS(root_screen_bounds);
   target_point += root_screen_bounds.OffsetFromOrigin();
 
-  ui::AXActionData action_data;
+  AXActionData action_data;
   action_data.action = ax::mojom::Action::kScrollToPoint;
   action_data.target_node_id = common_ancestor_anchor->id();
   action_data.target_point = target_point;
@@ -787,7 +793,7 @@ base::string16 AXPlatformNodeTextRangeProviderWin::GetString() {
   return range.GetText(AXTextConcatenationBehavior::kAsInnerText);
 }
 
-ui::AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {
+AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {
   return owner_;
 }
 
@@ -821,19 +827,23 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByWord(
     int* units_moved) {
   DCHECK_NE(count, 0);
 
-  CreateNextPositionFunction create_next_position = nullptr;
-  if (count > 0)
-    create_next_position =
-        is_start_endpoint ? &AXPositionInstanceType::CreateNextWordStartPosition
-                          : &AXPositionInstanceType::CreateNextWordEndPosition;
-  else
-    create_next_position =
-        is_start_endpoint
-            ? &AXPositionInstanceType::CreatePreviousWordStartPosition
-            : &AXPositionInstanceType::CreatePreviousWordEndPosition;
+  bool going_forward = count > 0;
+  AXPositionInstance new_position = MoveEndpointByUnitHelper(
+      std::move(endpoint),
+      going_forward ? &AXPositionInstanceType::CreateNextWordStartPosition
+                    : &AXPositionInstanceType::CreatePreviousWordStartPosition,
+      count, units_moved);
 
-  return MoveEndpointByUnitHelper(std::move(endpoint), create_next_position,
-                                  count, units_moved);
+  if (going_forward && *units_moved < count &&
+      !new_position->AsPositionBeforeCharacter()->IsNullPosition()) {
+    AXPositionInstance next_word_position =
+        new_position->CreatePositionAtEndOfDocument();
+    DCHECK(!next_word_position->IsNullPosition());
+
+    new_position = std::move(next_word_position);
+    ++*units_moved;
+  }
+  return new_position;
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -886,7 +896,7 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByParagraph(
   auto current_endpoint = endpoint->Clone();
   const bool forwards = count > 0;
   const int count_abs = std::abs(count);
-  const auto behavior = ui::AXBoundaryBehavior::CrossBoundary;
+  const auto behavior = AXBoundaryBehavior::CrossBoundary;
   int iteration = 0;
   for (iteration = 0; iteration < count_abs; ++iteration) {
     AXPositionInstance next_endpoint;

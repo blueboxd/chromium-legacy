@@ -198,7 +198,8 @@ void JNI_ProfileDownloader_StartFetchingAccountInfoFor(
 
   auto maybe_account_info =
       IdentityManagerFactory::GetForProfile(profile)
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(email);
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              email);
 
   if (!maybe_account_info.has_value()) {
     LOG(ERROR) << "Attempted to get AccountInfo for account not in the "

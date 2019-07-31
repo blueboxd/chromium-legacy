@@ -35,8 +35,7 @@ namespace {
 // original URL that started the request, but we're only interested in verifying
 // if it was issued by a history page, for whom this is the case. If it is not
 // possible to obtain the URL, we return the empty GURL.
-GURL GetUnsafeRequestOrigin(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter) {
+GURL GetUnsafeRequestOrigin(const content::WebContents::Getter& wc_getter) {
   content::WebContents* web_contents = wc_getter.Run();
   return web_contents ? web_contents->GetLastCommittedURL() : GURL();
 }
@@ -77,7 +76,7 @@ std::string FaviconSource::GetSource() {
 
 void FaviconSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_,

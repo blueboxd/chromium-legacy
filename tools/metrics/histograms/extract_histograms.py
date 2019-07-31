@@ -61,7 +61,9 @@ import logging
 import re
 import xml.dom.minidom
 
-OWNER_FIELD_PLACEHOLDER = (
+BASIC_EMAIL_REGEXP = r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$'
+
+OWNER_PLACEHOLDER = (
     'Please list the metric\'s owners. Add more owner tags as needed.')
 
 MAX_HISTOGRAM_SUFFIX_DEPENDENCY_DEPTH = 5
@@ -72,12 +74,13 @@ DEFAULT_BASE_HISTOGRAM_OBSOLETE_REASON = (
 EXPIRY_DATE_PATTERN = "%Y-%m-%d"
 EXPIRY_MILESTONE_RE = re.compile(r'M[0-9]{2,3}\Z')
 
+
 class Error(Exception):
   pass
 
 
 def _JoinChildNodes(tag):
-  """Join child nodes into a single text.
+  """Joins child nodes into a single text.
 
   Applicable to leafs like 'summary' and 'detail'. Removes any comment in the
   node.
@@ -94,7 +97,7 @@ def _JoinChildNodes(tag):
 
 
 def _NormalizeString(s):
-  r"""Replaces all whitespace sequences with a single space.
+  """Replaces all whitespace sequences with a single space.
 
   The function properly handles multi-line strings and XML escaped characters.
 
@@ -188,7 +191,7 @@ def _ExpandHistogramNameWithSuffixes(suffix_name, histogram_name,
 
 
 def ExtractEnumsFromXmlTree(tree):
-  """Extract all <enum> nodes in the tree into a dictionary."""
+  """Extracts all <enum> nodes in the tree into a dictionary."""
 
   enums = {}
   have_errors = False
@@ -251,31 +254,38 @@ def ExtractEnumsFromXmlTree(tree):
   return enums, have_errors
 
 
-def _ExtractOwners(xml_node):
-  """Extract owners information from owner tag under |xml_node|.
+def _ExtractOwners(histogram):
+  """Extracts owners information from the given histogram element.
 
   Args:
-    xml_node: The histogram node in histograms.xml.
+    histogram: A DOM Element corresponding to a histogram.
 
   Returns:
-    A tuple of owners information where the first element is a list of owners
-    extract from |xml_node| excluding the owner placeholder string, and the
-    second element is whether the owner tag is presented in |xml_node|
-    including the owner placeholder string.
-  """
-  owners = []
-  hasOwner = False
-  for owner_node in xml_node.getElementsByTagName('owner'):
-    owner_entry = _NormalizeString(_JoinChildNodes(owner_node))
-    hasOwner = True
-    if OWNER_FIELD_PLACEHOLDER not in owner_entry:
-      owners.append(owner_entry)
-  return owners, hasOwner
+    A tuple of owner-related info, e.g. (['alice@chromium.org'], True)
 
+    The first element is a list of the owners' email addresses, excluding the
+    owner placeholder string. The second element is a boolean indicating
+    whether the histogram has an owner. A histogram whose owner is the owner
+    placeholder string has an owner.
+  """
+  email_pattern = re.compile(BASIC_EMAIL_REGEXP)
+  owners = []
+  has_owner = False
+
+  for owner_node in histogram.getElementsByTagName('owner'):
+    owner_text = _NormalizeString(_JoinChildNodes(owner_node))
+    is_email = email_pattern.match(owner_text)
+
+    if owner_text and (is_email or OWNER_PLACEHOLDER in owner_text):
+      has_owner = True
+      if is_email:
+        owners.append(owner_text)
+
+  return owners, has_owner
 
 
 def _ValidateDateString(date_str):
-  """Check if |date_str| matches 'YYYY-MM-DD'.
+  """Checks if |date_str| matches 'YYYY-MM-DD'.
 
   Args:
     date_str: string
@@ -302,7 +312,7 @@ def _ProcessBaseHistogramAttribute(node, histogram_entry):
 
 
 def _ExtractHistogramsFromXmlTree(tree, enums):
-  """Extract all <histogram> nodes in the tree into a dictionary."""
+  """Extracts all <histogram> nodes in the tree into a dictionary."""
 
   # Process the histograms. The descriptions can include HTML tags.
   histograms = {}
@@ -387,9 +397,14 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
   return histograms, have_errors
 
 
-# Finds an <obsolete> node amongst |node|'s immediate children and returns its
-# content as a string. Returns None if no such node exists.
 def _GetObsoleteReason(node):
+  """If the node's histogram is obsolete, returns a string explanation.
+
+  Otherwise, returns None.
+
+  Args:
+    node: A DOM Element associated with a histogram.
+  """
   for child in node.childNodes:
     if child.localName == 'obsolete':
       # There can be at most 1 obsolete element per node.
@@ -398,7 +413,7 @@ def _GetObsoleteReason(node):
 
 
 def _UpdateHistogramsWithSuffixes(tree, histograms):
-  """Process <histogram_suffixes> tags and combine with affected histograms.
+  """Processes <histogram_suffixes> tags and combines with affected histograms.
 
   The histograms dictionary will be updated in-place by adding new histograms
   created by combining histograms themselves with histogram_suffixes targeting
@@ -551,7 +566,7 @@ def _UpdateHistogramsWithSuffixes(tree, histograms):
 
 
 def ExtractHistogramsFromDom(tree):
-  """Compute the histogram names and descriptions from the XML representation.
+  """Computes the histogram names and descriptions from the XML representation.
 
   Args:
     tree: A DOM tree of XML content.
@@ -571,7 +586,7 @@ def ExtractHistogramsFromDom(tree):
 
 
 def ExtractHistograms(filename):
-  """Load histogram definitions from a disk file.
+  """Loads histogram definitions from a disk file.
 
   Args:
     filename: a file path to load data from.

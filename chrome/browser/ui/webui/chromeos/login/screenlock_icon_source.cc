@@ -35,7 +35,7 @@ std::string ScreenlockIconSource::GetSource() const {
 
 void ScreenlockIconSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   if (!icon_provider_) {
     callback.Run(GetDefaultIcon().As1xPNGBytes().get());

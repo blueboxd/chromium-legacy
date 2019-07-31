@@ -106,20 +106,6 @@ interface BookmarkDelegate {
     DragStateDelegate getDragStateDelegate();
 
     /**
-     * Move a bookmark to the bottom of its folder.
-     *
-     * @param bookmarkId The bookmark to move.
-     */
-    void moveToBottom(BookmarkId bookmarkId);
-
-    /**
-     * Move a bookmark to the top of its folder.
-     *
-     * @param bookmarkId The bookmark to move.
-     */
-    void moveToTop(BookmarkId bookmarkId);
-
-    /**
      * Move a bookmark one position down within its folder.
      *
      * @param bookmarkId The bookmark to move.

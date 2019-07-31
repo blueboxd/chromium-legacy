@@ -15,7 +15,7 @@ namespace api {
 
 // API function that enables or disables web content accessibility support.
 class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
   ~AccessibilityPrivateSetNativeAccessibilityEnabledFunction() override {}
   ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION(
@@ -24,8 +24,7 @@ class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
 };
 
 // API function that sets the location of the accessibility focus ring.
-class AccessibilityPrivateSetFocusRingsFunction
-    : public UIThreadExtensionFunction {
+class AccessibilityPrivateSetFocusRingsFunction : public ExtensionFunction {
   ~AccessibilityPrivateSetFocusRingsFunction() override {}
   ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setFocusRings",
@@ -33,8 +32,7 @@ class AccessibilityPrivateSetFocusRingsFunction
 };
 
 // API function that sets the location of the accessibility highlights.
-class AccessibilityPrivateSetHighlightsFunction
-    : public UIThreadExtensionFunction {
+class AccessibilityPrivateSetHighlightsFunction : public ExtensionFunction {
   ~AccessibilityPrivateSetHighlightsFunction() override {}
   ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setHighlights",
@@ -43,7 +41,7 @@ class AccessibilityPrivateSetHighlightsFunction
 
 // API function that sets keyboard capture mode.
 class AccessibilityPrivateSetKeyboardListenerFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
   ~AccessibilityPrivateSetKeyboardListenerFunction() override {}
   ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setKeyboardListener",
@@ -51,8 +49,7 @@ class AccessibilityPrivateSetKeyboardListenerFunction
 };
 
 // API function that darkens or undarkens the screen.
-class AccessibilityPrivateDarkenScreenFunction
-    : public UIThreadExtensionFunction {
+class AccessibilityPrivateDarkenScreenFunction : public ExtensionFunction {
   ~AccessibilityPrivateDarkenScreenFunction() override {}
   ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.darkenScreen",
@@ -61,7 +58,7 @@ class AccessibilityPrivateDarkenScreenFunction
 
 // API function that sets the keys to be captured by Switch Access.
 class AccessibilityPrivateSetSwitchAccessKeysFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
   ~AccessibilityPrivateSetSwitchAccessKeysFunction() override {}
   ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setSwitchAccessKeys",
@@ -70,7 +67,7 @@ class AccessibilityPrivateSetSwitchAccessKeysFunction
 
 // API function that sets native ChromeVox ARC support.
 class AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
   ~AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction()
       override {}
   ResponseAction Run() override;
@@ -81,7 +78,7 @@ class AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction
 
 // API function that injects key events.
 class AccessibilityPrivateSendSyntheticKeyEventFunction
-    : public UIThreadExtensionFunction {
+    : public ExtensionFunction {
   ~AccessibilityPrivateSendSyntheticKeyEventFunction() override {}
   ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.sendSyntheticKeyEvent",

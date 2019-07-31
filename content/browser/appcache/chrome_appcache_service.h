@@ -25,10 +25,6 @@ namespace base {
 class FilePath;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace content {
 class BrowserContext;
 class ResourceContext;
@@ -64,7 +60,6 @@ class CONTENT_EXPORT ChromeAppCacheService
       const base::FilePath& cache_path,
       BrowserContext* browser_context,
       ResourceContext* resource_context,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
   void CreateBackend(

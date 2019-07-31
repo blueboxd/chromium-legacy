@@ -266,9 +266,6 @@ NetworkServiceTestHelper::~NetworkServiceTestHelper() = default;
 
 void NetworkServiceTestHelper::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   registry->AddInterface(
       base::Bind(&NetworkServiceTestHelper::BindNetworkServiceTestRequest,
                  base::Unretained(this)));

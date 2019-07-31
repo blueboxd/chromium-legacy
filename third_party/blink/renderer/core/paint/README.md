@@ -669,9 +669,30 @@ update the flags during the pre-painting tree walk to simplify the logic.
 
 ### Hit test painting
 
-Hit testing is done in paint-order. Hit test display items are emitted in the
-background phase of painting. Hit test display items are produced even if there
-is no painted content.
+Hit testing is done in paint-order, and to preserve this information the paint
+system is re-used to paint hit test display items in the background phase of
+painting. This information is then used in the compositor to implement cc-side
+hit testing. Hit test display items are produced even if there is no painted
+content.
+
+There are two types of hit test painting:
+
+1. [HitTestDisplayItem](../../platform/graphics/paint/hit_test_display_item.h)
+
+    Used for [touch action rects](http://docs.google.com/document/u/1/d/1ksiqEPkDeDuI_l5HvWlq1MfzFyDxSnsNB8YXIaXa3sE/view)
+    which are areas of the page that allow certain gesture effects, as well as
+    areas of the page that disallow touch events due to blocking touch event
+    handlers.
+
+2. [ScrollHitTestDisplayItem](../../platform/graphics/paint/scroll_hit_test_display_item.h)
+
+    Used to create
+    [non-fast scrollable regions](https://docs.google.com/document/d/1IyYJ6bVF7KZq96b_s5NrAzGtVoBXn_LQnya9y4yT3iw/view)
+    to prevent compositor scrolling of non-composited scrollers, plugins with
+    blocking scroll event handlers, and resize handles.
+
+    This is also used for CompositeAfterPaint to force a special cc::Layer that
+    is marked as being scrollable.
 
 ### PaintNG
 

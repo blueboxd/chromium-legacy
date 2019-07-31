@@ -223,10 +223,6 @@ void CorsURLLoader::FollowRedirect(
   network_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
 }
 
-void CorsURLLoader::ProceedWithResponse() {
-  NOTREACHED();
-}
-
 void CorsURLLoader::SetPriority(net::RequestPriority priority,
                                 int32_t intra_priority_value) {
   if (network_loader_)

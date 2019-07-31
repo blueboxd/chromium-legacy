@@ -21,14 +21,17 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace blink {
+class WebVideoCaptureImplManager;
+}
+
 namespace content {
 
-class VideoCaptureImplManager;
-
 // LocalVideoCapturerSource is a delegate used by MediaStreamVideoCapturerSource
-// for local video capture. It uses the Render singleton VideoCaptureImplManager
-// to start / stop and receive I420 frames from Chrome's video capture
-// implementation. This is a main Render thread only object.
+// for local video capture. It uses the Render singleton
+// WebVideoCaptureImplManager to start / stop and receive I420 frames from
+// Chrome's video capture implementation. This is a main Render thread only
+// object.
 class LocalVideoCapturerSource : public media::VideoCapturerSource {
  public:
   static std::unique_ptr<media::VideoCapturerSource> Create(
@@ -57,7 +60,7 @@ class LocalVideoCapturerSource : public media::VideoCapturerSource {
   // |session_id_| identifies the capture device used for this capture session.
   const media::VideoCaptureSessionId session_id_;
 
-  VideoCaptureImplManager* const manager_;
+  blink::WebVideoCaptureImplManager* const manager_;
 
   base::OnceClosure release_device_cb_;
 

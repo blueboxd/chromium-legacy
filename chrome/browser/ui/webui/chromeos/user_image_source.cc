@@ -179,7 +179,7 @@ std::string UserImageSource::GetSource() {
 
 void UserImageSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   std::string email;
   int frame = -1;

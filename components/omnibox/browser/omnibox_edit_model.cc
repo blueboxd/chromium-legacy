@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
@@ -847,6 +848,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
           match.destination_url)) {
     base::RecordAction(
         base::UserMetricsAction("OmniboxDestinationURLIsSearchOnDSP"));
+    base::UmaHistogramBoolean(
+        "Omnibox.Search.OffTheRecord",
+        client_->CreateAutocompleteProviderClient()->IsOffTheRecord());
   }
 
   if (match.destination_url.is_valid()) {

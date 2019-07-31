@@ -198,8 +198,6 @@ class CONTENT_EXPORT DownloadManagerImpl
       const download::DownloadUrlParameters::OnStartedCallback& on_started,
       download::InProgressDownloadManager::StartDownloadItemCallback callback)
       override;
-  net::URLRequestContextGetter* GetURLRequestContextGetter(
-      const download::DownloadCreateInfo& info) override;
 
   // Creates a new download item and call |callback|.
   void CreateNewDownloadItemToStart(

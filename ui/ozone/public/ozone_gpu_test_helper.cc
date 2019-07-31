@@ -5,7 +5,7 @@
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -106,7 +106,7 @@ bool OzoneGpuTestHelper::Initialize(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
   io_helper_thread_.reset(new base::Thread("IOHelperThread"));
   if (!io_helper_thread_->StartWithOptions(
-          base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
+          base::Thread::Options(base::MessagePumpType::IO, 0)))
     return false;
 
   fake_gpu_process_.reset(new FakeGpuProcess(ui_task_runner));

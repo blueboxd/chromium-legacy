@@ -36,6 +36,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -375,12 +376,13 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
 
 class LoadingPredictorBrowserTest : public InProcessBrowserTest {
  public:
-  LoadingPredictorBrowserTest() {}
+  LoadingPredictorBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kLoadingOnlyLearnHighPriorityResources);
+  }
   ~LoadingPredictorBrowserTest() override {}
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kLoadingOnlyLearnHighPriorityResources);
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     InProcessBrowserTest::SetUp();
   }
@@ -825,6 +827,209 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   connection_tracker()->WaitUntilFirstConnectionRead();
   EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
   EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
+}
+
+enum class NetworkIsolationKeyMode {
+  kNone,
+  kTopFrameOrigin,
+  kTopFrameAndFrameOrigins,
+};
+
+class LoadingPredictorNetworkIsolationKeyBrowserTest
+    : public LoadingPredictorBrowserTest,
+      public testing::WithParamInterface<NetworkIsolationKeyMode> {
+ public:
+  LoadingPredictorNetworkIsolationKeyBrowserTest() {
+    preconnecting_test_server_.AddDefaultHandlers(GetChromeTestDataDir());
+    EXPECT_TRUE(preconnecting_test_server_.Start());
+
+    switch (GetParam()) {
+      case NetworkIsolationKeyMode::kNone:
+        break;
+      case NetworkIsolationKeyMode::kTopFrameOrigin:
+        scoped_feature_list2_.InitWithFeatures(
+            // enabled_features
+            {net::features::kPartitionConnectionsByNetworkIsolationKey},
+            // disabled_features
+            {net::features::kAppendFrameOriginToNetworkIsolationKey});
+        break;
+      case NetworkIsolationKeyMode::kTopFrameAndFrameOrigins:
+        scoped_feature_list2_.InitWithFeatures(
+            // enabled_features
+            {net::features::kPartitionConnectionsByNetworkIsolationKey,
+             net::features::kAppendFrameOriginToNetworkIsolationKey},
+            // disabled_features
+            {});
+        break;
+    }
+  }
+
+  ~LoadingPredictorNetworkIsolationKeyBrowserTest() override {}
+
+  // One server is used to initiate preconnects, and one is preconnected to.
+  // This makes tracking preconnected sockets much easier, and removes all
+  // worried about favicon fetches and other sources of preconnects.
+  net::EmbeddedTestServer* preconnecting_test_server() {
+    return &preconnecting_test_server_;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list2_;
+
+  // Test server that initiates preconnect. Separate server from the one being
+  // preconnected to separate preconnected connection count.
+  net::EmbeddedTestServer preconnecting_test_server_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    LoadingPredictorNetworkIsolationKeyBrowserTest,
+    ::testing::Values(NetworkIsolationKeyMode::kNone,
+                      NetworkIsolationKeyMode::kTopFrameOrigin,
+                      NetworkIsolationKeyMode::kTopFrameAndFrameOrigins));
+
+IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
+                       LinkRelPreconnectMainFrame) {
+  const char kHost1[] = "host1.test";
+  const char kHost2[] = "host2.test";
+  GURL preconnect_url = embedded_test_server()->GetURL("/echo");
+
+  // Navigate two tabs, one to each host.
+
+  content::WebContents* tab1 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(), preconnecting_test_server()->GetURL(kHost1, "/title1.html"));
+
+  chrome::NewTab(browser());
+  content::WebContents* tab2 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(), preconnecting_test_server()->GetURL(kHost2, "/title1.html"));
+
+  std::string start_preconnect = base::StringPrintf(
+      "var link = document.createElement('link');"
+      "link.rel = 'preconnect';"
+      "link.crossOrigin = 'anonymous';"
+      "link.href = '%s';"
+      "document.head.appendChild(link);",
+      preconnect_url.spec().c_str());
+  ASSERT_TRUE(content::ExecJs(tab1->GetMainFrame(), start_preconnect));
+  connection_tracker()->WaitUntilFirstConnectionAccepted();
+  EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
+  EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
+
+  std::string fetch_resource = base::StringPrintf(
+      "(async () => {"
+      "  var resp = (await fetch('%s',"
+      "                          {credentials: 'omit',"
+      "                           mode: 'no-cors'}));"
+      "  return resp.status; })();",
+      preconnect_url.spec().c_str());
+  // Fetch a resource from the test server from tab 2, without CORS.
+  EXPECT_EQ(0, EvalJs(tab2->GetMainFrame(), fetch_resource));
+  if (GetParam() == NetworkIsolationKeyMode::kNone) {
+    // When not using NetworkIsolationKeys, the preconnected socket from a tab
+    // at one site is usable by a request from another site.
+    EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
+    EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
+  } else {
+    // When using NetworkIsolationKeys, the preconnected socket cannot be used.
+    EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
+    EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
+  }
+
+  // Now try fetching a resource from tab 1.
+  EXPECT_EQ(0, EvalJs(tab1->GetMainFrame(), fetch_resource));
+  // If the preconnected socket was not used before, it should now be used. If
+  // it was used before, a new socket will be used.
+  EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
+  EXPECT_EQ(2u, connection_tracker()->GetReadSocketCount());
+}
+
+IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
+                       LinkRelPreconnectSubFrame) {
+  const char kHost1[] = "host1.test";
+  const char kHost2[] = "host2.test";
+  GURL preconnect_url = embedded_test_server()->GetURL("/echo");
+
+  // Tab 1 has two iframes, one at kHost1, one at kHost2.
+  content::WebContents* tab1 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(), preconnecting_test_server()->GetURL(
+                     kHost1, GetPathWithPortReplacement(
+                                 "/predictors/two_iframes.html",
+                                 preconnecting_test_server()->port())));
+  std::vector<content::RenderFrameHost*> frames = tab1->GetAllFrames();
+  ASSERT_EQ(3u, frames.size());
+  ASSERT_EQ(kHost1, frames[0]->GetLastCommittedOrigin().host());
+  ASSERT_EQ(kHost1, frames[1]->GetLastCommittedOrigin().host());
+  ASSERT_EQ(kHost2, frames[2]->GetLastCommittedOrigin().host());
+
+  // Create another tab without an iframe, at kHost2.
+  chrome::NewTab(browser());
+  content::WebContents* tab2 =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(), preconnecting_test_server()->GetURL(kHost2, "/title1.html"));
+
+  // Preconnect a socket in the cross-origin iframe.
+  std::string start_preconnect = base::StringPrintf(
+      "var link = document.createElement('link');"
+      "link.rel = 'preconnect';"
+      "link.crossOrigin = 'anonymous';"
+      "link.href = '%s';"
+      "document.head.appendChild(link);",
+      preconnect_url.spec().c_str());
+  ASSERT_TRUE(content::ExecJs(frames[2], start_preconnect));
+  connection_tracker()->WaitUntilFirstConnectionAccepted();
+  EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
+  EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
+
+  std::string fetch_resource = base::StringPrintf(
+      "(async () => {"
+      "  var resp = (await fetch('%s',"
+      "                          {credentials: 'omit',"
+      "                           mode: 'no-cors'}));"
+      "  return resp.status; })();",
+      preconnect_url.spec().c_str());
+
+  // Fetch a resource from the test server from tab 2 iframe, without CORS.
+  EXPECT_EQ(0, EvalJs(tab2->GetMainFrame(), fetch_resource));
+  if (GetParam() == NetworkIsolationKeyMode::kNone) {
+    // When not using NetworkIsolationKeys, the preconnected socket from the
+    // iframe from the first tab can be used.
+    EXPECT_EQ(1u, connection_tracker()->GetAcceptedSocketCount());
+    EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
+  } else {
+    // Otherwise, the preconnected socket cannot be used.
+    EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
+    EXPECT_EQ(1u, connection_tracker()->GetReadSocketCount());
+  }
+
+  // Fetch a resource from the test server from the same-origin iframe, without
+  // CORS.
+  EXPECT_EQ(0, EvalJs(frames[1], fetch_resource));
+  if (GetParam() != NetworkIsolationKeyMode::kTopFrameAndFrameOrigins) {
+    // When not using NetworkIsolationKeys, a new socket is created and used.
+    //
+    // When using the origin of the main frame, the preconnected socket from the
+    // cross-origin iframe can be used, since only the top frame origin matters.
+    EXPECT_EQ(2u, connection_tracker()->GetAcceptedSocketCount());
+    EXPECT_EQ(2u, connection_tracker()->GetReadSocketCount());
+  } else {
+    // Otherwise, the preconnected socket cannot be used.
+    EXPECT_EQ(3u, connection_tracker()->GetAcceptedSocketCount());
+    EXPECT_EQ(2u, connection_tracker()->GetReadSocketCount());
+  }
+
+  // Now try fetching a resource the cross-site iframe.
+  EXPECT_EQ(0, EvalJs(frames[2], fetch_resource));
+  // If the preconnected socket was not used before, it should now be used. If
+  // it was used before, a new socket will be used.
+  EXPECT_EQ(3u, connection_tracker()->GetAcceptedSocketCount());
+  EXPECT_EQ(3u, connection_tracker()->GetReadSocketCount());
 }
 
 class LoadingPredictorBrowserTestWithProxy

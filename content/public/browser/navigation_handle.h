@@ -26,6 +26,7 @@ class GURL;
 namespace net {
 class HttpRequestHeaders;
 class HttpResponseHeaders;
+class ProxyServer;
 }  // namespace net
 
 namespace content {

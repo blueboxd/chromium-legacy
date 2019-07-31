@@ -28,10 +28,6 @@ namespace storage {
 class FileSystemContext;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 namespace mojom {
 class CookieManager;
@@ -79,10 +75,6 @@ class ZoomLevelDelegate;
 class CONTENT_EXPORT StoragePartition {
  public:
   virtual base::FilePath GetPath() = 0;
-  // These can't be called when the network service is enabled, since net/ runs
-  // in a separate process.
-  virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
-  virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
 
   // Returns a raw mojom::NetworkContext pointer. When network service crashes
   // or restarts, the raw pointer will not be valid or safe to use. Therefore,
@@ -224,16 +216,6 @@ class CONTENT_EXPORT StoragePartition {
       bool perform_storage_cleanup,
       const base::Time begin,
       const base::Time end,
-      base::OnceClosure callback) = 0;
-
-  // Clears the HTTP and media caches associated with this StoragePartition's
-  // request contexts. If |begin| and |end| are not null, only entries with
-  // timestamps inbetween are deleted. If |url_matcher| is not null, only
-  // entries with matching URLs are deleted.
-  virtual void ClearHttpAndMediaCaches(
-      const base::Time begin,
-      const base::Time end,
-      const base::Callback<bool(const GURL&)>& url_matcher,
       base::OnceClosure callback) = 0;
 
   // Clears code caches associated with this StoragePartition.

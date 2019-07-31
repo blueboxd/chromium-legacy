@@ -14,11 +14,11 @@ namespace ime {
 
 namespace {
 
-// TODO(https://crbug.com/837156): Use define instead.
-#if BUILDFLAG(ENABLE_CROS_IME_EXAMPLE_SO)
-const char kDecoderLibName[] = "input_decoder_example";
+#if BUILDFLAG(ENABLE_CROS_IME_SANITY_TEST_SO)
+// This is for development purposes only.
+const char kDecoderLibName[] = "imesanitytest";
 #else
-const char kDecoderLibName[] = "input_decoder_engine";
+const char kDecoderLibName[] = "imedecoder";
 #endif
 
 // A client delegate that makes calls on client side.

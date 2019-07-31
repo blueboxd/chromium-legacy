@@ -25,7 +25,6 @@
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 
 using crx_file::id_util::GenerateId;
@@ -214,10 +213,6 @@ class AppListSyncableServiceTest : public AppListTestBase {
     TestingBrowserProcess::GetGlobal()->SetProfileManager(
         new ProfileManagerWithoutInit(temp_dir_.GetPath()));
 
-    extensions::ExtensionSystem* extension_system =
-        extensions::ExtensionSystem::Get(profile_.get());
-    DCHECK(extension_system);
-
     model_updater_factory_scope_ = std::make_unique<
         app_list::AppListSyncableService::ScopedModelUpdaterFactoryForTest>(
         base::Bind([]() -> std::unique_ptr<AppListModelUpdater> {
@@ -225,8 +220,7 @@ class AppListSyncableServiceTest : public AppListTestBase {
         }));
 
     app_list_syncable_service_ =
-        std::make_unique<app_list::AppListSyncableService>(profile_.get(),
-                                                           extension_system);
+        std::make_unique<app_list::AppListSyncableService>(profile_.get());
     content::RunAllTasksUntilIdle();
 
     model_updater_test_api_ =

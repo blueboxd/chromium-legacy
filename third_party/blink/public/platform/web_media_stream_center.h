@@ -47,14 +47,11 @@ class WebMediaStreamCenter {
   virtual void DidCreateMediaStreamTrack(const WebMediaStreamTrack&) {}
   virtual void DidCloneMediaStreamTrack(const WebMediaStreamTrack& original,
                                         const WebMediaStreamTrack& clone) {}
-  virtual void DidSetContentHint(const WebMediaStreamTrack&) {}
   virtual void DidEnableMediaStreamTrack(const WebMediaStreamTrack&) {}
   virtual void DidDisableMediaStreamTrack(const WebMediaStreamTrack&) {}
 
   // Source functionality.
   virtual void DidStopMediaStreamSource(const WebMediaStreamSource&) {}
-  virtual void GetSourceSettings(const WebMediaStreamSource&,
-                                 WebMediaStreamTrack::Settings&) {}
 
   // Caller must take the ownership of the returned |WebAudioSourceProvider|
   // object.

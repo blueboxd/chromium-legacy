@@ -55,6 +55,12 @@ void WebApkHandlerDelegate::OnWebApkInfoRetrieved(
     const JavaParamRef<jstring>& jbacking_browser_package_name,
     const jboolean jis_backing_browser,
     const JavaParamRef<jstring>& jupdate_status) {
+  std::string backing_browser_package_name;
+  if (jbacking_browser_package_name) {
+    backing_browser_package_name = base::android::ConvertJavaStringToUTF8(
+        env, jbacking_browser_package_name);
+  }
+
   callback_.Run(WebApkInfo(
       base::android::ConvertJavaStringToUTF8(env, jname),
       base::android::ConvertJavaStringToUTF8(env, jshort_name),
@@ -71,9 +77,7 @@ void WebApkHandlerDelegate::OnWebApkInfoRetrieved(
       JavaColorToOptionalSkColor(jbackground_color),
       base::Time::FromJavaTime(jlast_update_check_time_ms),
       base::Time::FromJavaTime(jlast_update_completion_time_ms),
-      static_cast<bool>(jrelax_updates),
-      base::android::ConvertJavaStringToUTF8(env,
-                                             jbacking_browser_package_name),
+      static_cast<bool>(jrelax_updates), backing_browser_package_name,
       static_cast<bool>(jis_backing_browser),
       base::android::ConvertJavaStringToUTF8(env, jupdate_status)));
 }

@@ -1375,7 +1375,7 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
 
   // An a element that represents a hyperlink and that does not have any img
   // descendants.
-  if (IsHTMLAnchorElement(element))
+  if (IsA<HTMLAnchorElement>(element))
     return !Traversal<HTMLImageElement>::FirstWithin(element);
 
   // A button element

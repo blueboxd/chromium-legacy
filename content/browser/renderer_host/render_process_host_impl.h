@@ -218,6 +218,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
       const base::Optional<url::Origin>& origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       const net::NetworkIsolationKey& network_isolation_key,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,

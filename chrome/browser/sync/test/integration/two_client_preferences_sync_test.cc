@@ -44,7 +44,9 @@ class TwoClientPreferencesSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientPreferencesSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, E2E_ENABLED(Sanity)) {
+// TODO(crbug.com/988404): Enable once not flaky anymore.
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
+                       E2E_ENABLED(DISABLED_Sanity)) {
   DisableVerifier();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // Wait until sync settles before we override the prefs below.

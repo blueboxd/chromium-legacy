@@ -6,14 +6,16 @@
 // WifiDataProviderCommon and covered by it's unit tests.
 
 #include "services/device/geolocation/wifi_data_provider_win.h"
-#include "base/message_loop/message_loop.h"
+
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
 
 TEST(GeolocationWifiDataProviderWinTest, CreateDestroy) {
   // WifiDataProvider requires a task runner to be present.
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::UI);
   scoped_refptr<WifiDataProviderWin> instance(new WifiDataProviderWin);
   instance = NULL;
   SUCCEED();

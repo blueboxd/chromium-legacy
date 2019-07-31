@@ -4484,7 +4484,13 @@
   "ClientCertificateManagementAllowed": {
     "os": ["chromeos"],
     "test_policy": { "ClientCertificateManagementAllowed": 2 },
-    "pref_mappings": [{ "pref": "certificate_management_allowed" }]
+    "pref_mappings": [{ "pref": "client_certificate_management_allowed" }]
+  },
+
+  "CACertificateManagementAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "CACertificateManagementAllowed": 2 },
+    "pref_mappings": [{ "pref": "ca_certificate_management_allowed" }]
   },
 
   "VoiceInteractionContextEnabled": {

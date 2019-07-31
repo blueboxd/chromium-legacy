@@ -35,7 +35,7 @@ RenderFrameAudioOutputStreamFactoryHandle::CreateFactory(
                                                            render_frame_id));
   // Unretained is safe since |*handle| must be posted to the IO thread prior to
   // deletion.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&RenderFrameAudioOutputStreamFactoryHandle::Init,
                      base::Unretained(handle.get()), std::move(request)));

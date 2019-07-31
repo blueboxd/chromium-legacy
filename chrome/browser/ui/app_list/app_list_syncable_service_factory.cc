@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -47,8 +46,7 @@ std::unique_ptr<KeyedService> AppListSyncableServiceFactory::BuildInstanceFor(
   }
   VLOG(1) << "BuildInstanceFor: " << profile->GetDebugName()
           << " (" << profile << ")";
-  return std::make_unique<AppListSyncableService>(
-      profile, extensions::ExtensionSystem::Get(profile));
+  return std::make_unique<AppListSyncableService>(profile);
 }
 
 // static

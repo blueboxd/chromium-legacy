@@ -174,6 +174,11 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     resource_request.resource_type = static_cast<int>(ResourceType::kScript);
   }
 
+  // Upgrade the request to an a priori authenticated URL, if appropriate.
+  // https://w3c.github.io/webappsec-upgrade-insecure-requests/#upgrade-request
+  // TODO(https://crbug.com/987491): Set |ResourceRequest::upgrade_if_insecure_|
+  // appropriately.
+
   // TODO(https://crbug.com/824647): Support ES modules. Use "cors" as a mode
   // for service worker served as modules, and "omit" as a credentials mode:
   // https://html.spec.whatwg.org/C/#fetch-a-single-module-script

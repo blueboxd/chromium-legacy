@@ -42,8 +42,8 @@ password_manager::metrics_util::LinuxBackendMigrationStatus StepForMetrics(
       return LinuxBackendMigrationStatus::kNotAttempted;
     case PasswordStoreX::DEPRECATED_FAILED:
       return LinuxBackendMigrationStatus::kDeprecatedFailed;
-    case PasswordStoreX::COPIED_ALL:
-      return LinuxBackendMigrationStatus::kCopiedAll;
+    case PasswordStoreX::DEPRECATED_COPIED_ALL:
+      return LinuxBackendMigrationStatus::kDeprecatedCopiedAll;
     case PasswordStoreX::LOGIN_DB_REPLACED:
       return LinuxBackendMigrationStatus::kLoginDBReplaced;
     case PasswordStoreX::STARTED:
@@ -52,19 +52,70 @@ password_manager::metrics_util::LinuxBackendMigrationStatus StepForMetrics(
       return LinuxBackendMigrationStatus::kPostponed;
     case PasswordStoreX::DEPRECATED_FAILED_CREATE_ENCRYPTED:
       return LinuxBackendMigrationStatus::kDeprecatedFailedCreatedEncrypted;
-    case PasswordStoreX::FAILED_ACCESS_NATIVE:
-      return LinuxBackendMigrationStatus::kFailedAccessNative;
+    case PasswordStoreX::DEPRECATED_FAILED_ACCESS_NATIVE:
+      return LinuxBackendMigrationStatus::kDeprecatedFailedAccessNative;
     case PasswordStoreX::FAILED_REPLACE:
       return LinuxBackendMigrationStatus::kFailedReplace;
     case PasswordStoreX::FAILED_INIT_ENCRYPTED:
       return LinuxBackendMigrationStatus::kFailedInitEncrypted;
-    case PasswordStoreX::FAILED_RECREATE_ENCRYPTED:
-      return LinuxBackendMigrationStatus::kFailedRecreateEncrypted;
+    case PasswordStoreX::DEPRECATED_FAILED_RECREATE_ENCRYPTED:
+      return LinuxBackendMigrationStatus::kDeprecatedFailedRecreateEncrypted;
     case PasswordStoreX::FAILED_WRITE_TO_ENCRYPTED:
       return LinuxBackendMigrationStatus::kFailedWriteToEncrypted;
   }
   NOTREACHED();
   return LinuxBackendMigrationStatus::kNotAttempted;
+}
+
+// Reads and rewrites every entry in |login_db|, reading unecrypted and writing
+// encrypted. This should run in a transaction. Returns LOGIN_DB_REPLACED on
+// success, otherwise the step where the process failed.
+PasswordStoreX::MigrationToLoginDBStep EncryptDatabase(
+    password_manager::LoginDatabase* login_db) {
+  // Read the unencrypted entries.
+  login_db->disable_encryption();
+  std::map<int, std::unique_ptr<autofill::PasswordForm>> logins;
+  if (login_db->GetAllLogins(&logins) !=
+      password_manager::FormRetrievalResult::kSuccess) {
+    return PasswordStoreX::FAILED_INIT_ENCRYPTED;
+  }
+
+  // Re-insert the entries, encrypted this time.
+  login_db->enable_encryption();
+  for (const auto& password_form : logins) {
+    password_manager::UpdateLoginError error;
+    PasswordStoreChangeList changes =
+        login_db->UpdateLogin(*password_form.second, &error);
+    // Check that an existing entry was replaced.
+    if (error != password_manager::UpdateLoginError::kNone || changes.empty() ||
+        changes[0].type() != password_manager::PasswordStoreChange::UPDATE) {
+      return PasswordStoreX::FAILED_WRITE_TO_ENCRYPTED;
+    }
+  }
+
+  return PasswordStoreX::LOGIN_DB_REPLACED;
+}
+
+// Reads and rewrites every entry in |login_db|, reading unecrypted and writing
+// encrypted. Returns LOGIN_DB_REPLACED on success, otherwise the step where the
+// process failed.
+PasswordStoreX::MigrationToLoginDBStep MigrateUnencryptedDatabase(
+    password_manager::LoginDatabase* login_db) {
+  if (!login_db->BeginTransaction())
+    return PasswordStoreX::POSTPONED;
+
+  PasswordStoreX::MigrationToLoginDBStep encryption_result =
+      EncryptDatabase(login_db);
+
+  if (encryption_result == PasswordStoreX::LOGIN_DB_REPLACED) {
+    if (!login_db->CommitTransaction()) {
+      return PasswordStoreX::FAILED_REPLACE;
+    }
+  } else {
+    login_db->RollbackTransaction();
+  }
+
+  return encryption_result;
 }
 
 }  // namespace
@@ -161,17 +212,24 @@ void PasswordStoreX::CheckMigration() {
   if (migration_to_login_db_step_ == LOGIN_DB_REPLACED) {
     return;
   }
+
   // If the db is empty, there are no records to migrate, and we then can call
   // it a completed migration.
   if (login_db()->IsEmpty()) {
     UpdateMigrationToLoginDBStep(LOGIN_DB_REPLACED);
   } else {
-    // The migration hasn't completed yes. The records in the database aren't
-    // encrypted, so we must disable the encryption.
-    // TODO(crbug/950267): Handle users who have unencrypted entries in the
-    // database.
-    login_db()->disable_encryption();
-    UpdateMigrationToLoginDBStep(POSTPONED);
+    // The user has unencrypted entries in their login database. We will try to
+    // encrypt them.
+    UpdateMigrationToLoginDBStep(STARTED);
+    MigrationToLoginDBStep migration_result =
+        MigrateUnencryptedDatabase(login_db());
+    UpdateMigrationToLoginDBStep(migration_result);
+    // If the migration did not complete, then we will continue using the
+    // database without encryption.
+    if (migration_result == LOGIN_DB_REPLACED)
+      login_db()->enable_encryption();
+    else
+      login_db()->disable_encryption();
   }
 
   base::UmaHistogramEnumeration(

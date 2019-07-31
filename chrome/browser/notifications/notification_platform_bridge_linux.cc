@@ -487,6 +487,8 @@ class NotificationPlatformBridgeLinuxImpl
       server_version_ = base::Version(server_version);
     }
 
+    DCHECK(!connect_signals_in_progress_);
+    connect_signals_in_progress_ = true;
     connected_signals_barrier_ = base::BarrierClosure(
         2, base::Bind(&NotificationPlatformBridgeLinuxImpl::
                           OnConnectionInitializationFinishedOnTaskRunner,
@@ -505,6 +507,12 @@ class NotificationPlatformBridgeLinuxImpl
   }
 
   void CleanUpOnTaskRunner() {
+    if (connect_signals_in_progress_) {
+      // Connecting to a signal is still in progress. Defer cleanup task.
+      should_cleanup_on_signal_connected_ = true;
+      return;
+    }
+
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     if (bus_)
       bus_->ShutdownAndBlock();
@@ -889,12 +897,21 @@ class NotificationPlatformBridgeLinuxImpl
         "Notifications.Linux.BridgeInitializationStatus",
         static_cast<int>(status),
         static_cast<int>(ConnectionInitializationStatusCode::NUM_ITEMS));
+    bool success = status == ConnectionInitializationStatusCode::SUCCESS;
+
+    // Note: Not all code paths set connect_signals_in_progress_ to true!
+    connect_signals_in_progress_ = false;
+    if (should_cleanup_on_signal_connected_) {
+      // Mark as fail, so that observers don't think we're initialized.
+      success = false;
+      CleanUpOnTaskRunner();
+    }
+
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&NotificationPlatformBridgeLinuxImpl::
                            OnConnectionInitializationFinishedOnUiThread,
-                       this,
-                       status == ConnectionInitializationStatusCode::SUCCESS));
+                       this, success));
   }
 
   void OnSignalConnected(const std::string& interface_name,
@@ -994,6 +1011,13 @@ class NotificationPlatformBridgeLinuxImpl
   base::Version server_version_;
 
   base::Closure connected_signals_barrier_;
+
+  // Whether ConnectToSignal() is in progress.
+  bool connect_signals_in_progress_ = false;
+
+  // Calling CleanUp() while ConnectToSignal() is in progress leads to a crash.
+  // This flag is used to defer the cleanup task until signals are connected.
+  bool should_cleanup_on_signal_connected_ = false;
 
   scoped_refptr<base::RefCountedMemory> product_logo_png_bytes_;
   std::unique_ptr<ResourceFile> product_logo_file_;

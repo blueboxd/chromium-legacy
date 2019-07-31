@@ -10,6 +10,10 @@
 #include "components/network_hints/renderer/renderer_preconnect.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 
+namespace blink {
+class WebLocalFrame;
+}
+
 namespace network_hints {
 
 // The main entry point from blink for sending DNS prefetch requests to the
@@ -20,7 +24,8 @@ class PrescientNetworkingDispatcher : public blink::WebPrescientNetworking {
   ~PrescientNetworkingDispatcher() override;
 
   void PrefetchDNS(const blink::WebString& hostname) override;
-  void Preconnect(const blink::WebURL& url,
+  void Preconnect(blink::WebLocalFrame* web_local_frame,
+                  const blink::WebURL& url,
                   const bool allow_credentials) override;
 
  private:

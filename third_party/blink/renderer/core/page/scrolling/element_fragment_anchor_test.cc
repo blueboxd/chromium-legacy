@@ -74,8 +74,8 @@ TEST_F(ElementFragmentAnchorTest, FocusHandlerRunBeforeRaf) {
 
   // Click on the anchor element. This will cause a synchronous same-document
   // navigation.
-  HTMLAnchorElement* anchor =
-      ToHTMLAnchorElement(GetDocument().getElementById("anchorlink"));
+  auto* anchor =
+      To<HTMLAnchorElement>(GetDocument().getElementById("anchorlink"));
   anchor->click();
   ASSERT_EQ(GetDocument().body(), GetDocument().ActiveElement())
       << "Active element changed while rendering is blocked";

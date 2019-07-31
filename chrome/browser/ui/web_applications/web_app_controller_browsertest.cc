@@ -17,6 +17,7 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "net/dns/mock_host_resolver.h"
 
 namespace web_app {
 
@@ -89,6 +90,30 @@ content::WebContents* WebAppControllerBrowserTest::OpenApplication(
       apps::LaunchService::Get(profile())->OpenApplication(params);
   url_observer.Wait();
   return contents;
+}
+
+void WebAppControllerBrowserTest::SetUpInProcessBrowserTestFixture() {
+  extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+  cert_verifier_.SetUpInProcessBrowserTestFixture();
+}
+
+void WebAppControllerBrowserTest::TearDownInProcessBrowserTestFixture() {
+  extensions::ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
+  cert_verifier_.TearDownInProcessBrowserTestFixture();
+}
+
+void WebAppControllerBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
+  cert_verifier_.SetUpCommandLine(command_line);
+}
+
+void WebAppControllerBrowserTest::SetUpOnMainThread() {
+  extensions::ExtensionBrowserTest::SetUpOnMainThread();
+  host_resolver()->AddRule("*", "127.0.0.1");
+
+  // By default, all SSL cert checks are valid. Can be overridden in tests.
+  cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 }
 
 }  // namespace web_app

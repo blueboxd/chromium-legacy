@@ -20,7 +20,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/media/stream/user_media_client_impl.h"
-#include "content/renderer/media/video_capture/local_video_capturer_source.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -32,6 +31,7 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
+#include "third_party/blink/public/platform/modules/video_capture/local_video_capturer_source.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -1082,7 +1082,7 @@ UserMediaProcessor::CreateVideoSource(
       render_frame_->GetWebFrame(), stop_callback, device,
       current_request_info_->video_capture_settings().capture_params(),
       base::BindRepeating(
-          &LocalVideoCapturerSource::Create,
+          &blink::LocalVideoCapturerSource::Create,
           render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 }
 

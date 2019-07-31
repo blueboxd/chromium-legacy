@@ -30,7 +30,6 @@ constexpr uint64_t ToFeatureBit(WebSchedulerTrackedFeature feature) {
 // TODO(lowell): Finalize disallowed feature list, and test for each disallowed
 // feature.
 constexpr uint64_t kDisallowedFeatures =
-    ToFeatureBit(WebSchedulerTrackedFeature::kWebSocket) |
     ToFeatureBit(WebSchedulerTrackedFeature::kWebRTC) |
     ToFeatureBit(WebSchedulerTrackedFeature::kContainsPlugins) |
     ToFeatureBit(WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet) |

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.tasks;
 
-import org.chromium.base.TimeUtils;
+import org.chromium.base.TimeUtilsJni;
 
 import java.util.concurrent.TimeUnit;
 
@@ -61,7 +61,7 @@ public class EngagementTimeUtil {
     public long timeSinceLastEngagementFromTimeTicksMs(
             final long lastEngagementMs, final long currentEngagementTicksMs) {
         final long currentTimeMs = currentTime();
-        final long currentTimeTicksUs = TimeUtils.nativeGetTimeTicksNowUs();
+        final long currentTimeTicksUs = TimeUtilsJni.get().getTimeTicksNowUs();
         final long currentTimeTicksMs = TimeUnit.MICROSECONDS.toMillis(currentTimeTicksUs);
         final long offsetMs = currentTimeTicksMs - currentEngagementTicksMs;
         final long currentEngagementTimeMs = currentTimeMs - offsetMs;

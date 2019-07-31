@@ -46,7 +46,8 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   AdvancedSigninSettingsCoordinatorResultInterrupted,
 };
 
-@interface AdvancedSigninSettingsCoordinator ()
+@interface AdvancedSigninSettingsCoordinator () <
+    UIAdaptivePresentationControllerDelegate>
 
 // Google services settings coordinator.
 @property(nonatomic, strong)
@@ -67,6 +68,8 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
       [[AdvancedSigninSettingsNavigationController alloc] init];
   self.advancedSigninSettingsNavigationController.modalPresentationStyle =
       UIModalPresentationFormSheet;
+  self.advancedSigninSettingsNavigationController.presentationController
+      .delegate = self;
   self.googleServicesSettingsCoordinator = [[GoogleServicesSettingsCoordinator
       alloc]
       initWithBaseViewController:self.advancedSigninSettingsNavigationController
@@ -110,6 +113,18 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
       completion();
     }
   }
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
+  return NO;
+}
+
+- (void)presentationControllerDidAttemptToDismiss:
+    (UIPresentationController*)presentationController {
+  [self showDismissAlertDialog];
 }
 
 #pragma mark - Private
@@ -165,7 +180,7 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
-                           action:@selector(navigationCancelButtonAction)];
+                           action:@selector(showDismissAlertDialog)];
   cancelButton.accessibilityIdentifier = kSyncSettingsCancelButtonId;
   return cancelButton;
 }
@@ -182,9 +197,8 @@ typedef NS_ENUM(NSInteger, AdvancedSigninSettingsCoordinatorResult) {
   return confirmButton;
 }
 
-// Called by the cancel button from the navigation controller. Presents a
-// UIAlert to ask the user if wants to cancel the sign-in.
-- (void)navigationCancelButtonAction {
+// Presents an UIAlert to ask the user if wants to cancel the sign-in.
+- (void)showDismissAlertDialog {
   base::RecordAction(
       base::UserMetricsAction("Signin_Signin_CancelAdvancedSyncSettings"));
   self.cancelConfirmationAlertCoordinator = [[AlertCoordinator alloc]

@@ -49,7 +49,10 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   ~ChromeRenderMessageFilter() override;
 
   void OnDnsPrefetch(const network_hints::LookupRequest& request);
-  void OnPreconnect(const GURL& url, bool allow_credentials, int count);
+  void OnPreconnect(int render_frame_id,
+                    const GURL& url,
+                    bool allow_credentials,
+                    int count);
 
   void OnAllowDatabase(int render_frame_id,
                        const GURL& origin_url,

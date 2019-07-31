@@ -1544,7 +1544,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ColorSchemeChanged();
 
-  void ClearIsolatedWorldCSPForTesting(int world_id);
+  void ClearIsolatedWorldCSPForTesting(int32_t world_id);
 
   // A META element with name=color-scheme was added, removed, or modified.
   // Update the presentation level color-scheme property for the root element.

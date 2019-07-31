@@ -213,8 +213,23 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
   ASSERT_EQ(base::nullopt, last_badge_content_);
 }
 
-// TODO(https://crbug.com/966290): Add BadgeCannotBeChangedFromCrossSiteFrame
-// test from hosted_app_browsertest.cc
+// Tests that the badge cannot be set and cleared from a cross site frame.
+IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
+                       BadgeCannotBeChangedFromCrossSiteFrame) {
+  // Clearing from cross site frame should be a no-op.
+  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()",
+                                     cross_site_frame_);
+  ASSERT_FALSE(was_cleared_);
+  ASSERT_FALSE(was_flagged_);
+  ASSERT_TRUE(change_failed_);
+
+  // Setting from cross site frame should be a no-op.
+  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(77)",
+                                     cross_site_frame_);
+  ASSERT_FALSE(was_cleared_);
+  ASSERT_FALSE(was_flagged_);
+  ASSERT_TRUE(change_failed_);
+}
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,

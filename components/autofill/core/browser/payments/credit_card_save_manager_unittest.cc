@@ -17,6 +17,7 @@
 #include "base/guid.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -51,8 +52,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -153,9 +152,6 @@ class CreditCardSaveManagerTest : public testing::Test {
         /*profile_database=*/database_,
         /*is_off_the_record=*/false);
     autofill_driver_.reset(new TestAutofillDriver());
-    request_context_ = new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get());
-    autofill_driver_->SetURLRequestContext(request_context_.get());
     payments_client_ = new payments::TestPaymentsClient(
         autofill_driver_->GetURLLoaderFactory(),
         autofill_client_.GetIdentityManager(), &personal_data_);
@@ -187,8 +183,6 @@ class CreditCardSaveManagerTest : public testing::Test {
 
     personal_data_.SetPrefService(nullptr);
     personal_data_.ClearCreditCards();
-
-    request_context_ = nullptr;
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
@@ -362,7 +356,6 @@ class CreditCardSaveManagerTest : public testing::Test {
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   scoped_refptr<AutofillWebDataService> database_;
   MockPersonalDataManager personal_data_;
   MockAutocompleteHistoryManager autocomplete_history_manager_;

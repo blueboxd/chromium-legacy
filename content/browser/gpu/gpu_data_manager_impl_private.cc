@@ -657,9 +657,9 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 #endif
 
 #if defined(USE_OZONE)
-  gpu_preferences->message_loop_type = ui::OzonePlatform::GetInstance()
+  gpu_preferences->message_pump_type = ui::OzonePlatform::GetInstance()
                                            ->GetPlatformProperties()
-                                           .message_loop_type_for_gpu;
+                                           .message_pump_type_for_gpu;
 #endif
 }
 

@@ -69,6 +69,7 @@
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/task_scheduler/post_task_android.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"  // nogncheck
 #include "content/app/mojo/mojo_init.h"
 #include "content/app/service_manager_environment.h"
@@ -461,20 +462,22 @@ void BrowserTestBase::SetUp() {
     discardable_shared_memory_manager.reset();
     spawned_test_server_.reset();
   }
-  BrowserTaskExecutor::ResetForTesting();
+
+  base::PostTaskAndroid::SignalNativeSchedulerShutdown();
+  BrowserTaskExecutor::Shutdown();
 
   // Normally the BrowserMainLoop does this during shutdown but on Android we
   // don't go through shutdown, so this doesn't happen there. We do need it
   // for the test harness to be able to delete temp dirs.
   base::ThreadRestrictions::SetIOAllowed(true);
-#else
+#else   // defined(OS_ANDROID)
   auto ui_task = std::make_unique<base::Closure>(base::Bind(
       &BrowserTestBase::ProxyRunTestOnMainThreadLoop, base::Unretained(this)));
   GetContentMainParams()->ui_task = ui_task.release();
   GetContentMainParams()->created_main_parts_closure =
       created_main_parts_closure.release();
   EXPECT_EQ(expected_exit_code_, ContentMain(*GetContentMainParams()));
-#endif
+#endif  // defined(OS_ANDROID)
   TearDownInProcessBrowserTestFixture();
 }
 

@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
       base::Bind(&VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
                  base::Unretained(this),
                  std::move(quit_run_loop_on_current_thread_cb), true);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
@@ -322,7 +322,7 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
           }));
 
   base::Closure do_nothing;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,

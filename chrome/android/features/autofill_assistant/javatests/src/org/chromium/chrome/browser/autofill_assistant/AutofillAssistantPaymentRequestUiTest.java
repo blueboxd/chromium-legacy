@@ -590,14 +590,7 @@ public class AutofillAssistantPaymentRequestUiTest {
                                 acceptTermsText2));
         acceptMatcher = allOf(withText(acceptTermsText), isDisplayed());
 
-        assertThat(delegate.mLastLinkClicked, nullValue());
-
-        // First click marks the terms as accepted and ignores the link.
-        onView(acceptMatcher).perform(click());
-        assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.ACCEPTED));
-        assertThat(delegate.mLastLinkClicked, nullValue());
-
-        // Second click will trigger the link.
+        // Clicking the text will trigger the link.
         onView(acceptMatcher).perform(click());
         assertThat(delegate.mLastLinkClicked, is(42));
     }

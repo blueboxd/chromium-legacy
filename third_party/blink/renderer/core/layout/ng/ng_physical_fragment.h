@@ -310,6 +310,7 @@ class CORE_EXPORT NGPhysicalFragment
   // The following bitfields are only to be used by NGPhysicalBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned children_inline_ : 1;
+  unsigned has_fragment_items_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
   unsigned has_borders_ : 1;
   unsigned has_padding_ : 1;

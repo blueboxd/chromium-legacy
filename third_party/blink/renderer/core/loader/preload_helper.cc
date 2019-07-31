@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -188,7 +189,8 @@ void PreloadHelper::PreconnectIfNeeded(
         Platform::Current()->PrescientNetworking();
     if (web_prescient_networking) {
       web_prescient_networking->Preconnect(
-          params.href, params.cross_origin != kCrossOriginAttributeAnonymous);
+          WebLocalFrameImpl::FromFrame(frame), params.href,
+          params.cross_origin != kCrossOriginAttributeAnonymous);
     }
   }
 }

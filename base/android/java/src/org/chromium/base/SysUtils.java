@@ -16,6 +16,7 @@ import android.util.Log;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.CachedMetrics;
 
 import java.io.BufferedReader;
@@ -200,10 +201,8 @@ public class SysUtils {
      * enabled.
      */
     public static void logPageFaultCountToTracing() {
-        nativeLogPageFaultCountToTracing();
+        SysUtilsJni.get().logPageFaultCountToTracing();
     }
-
-    private static native void nativeLogPageFaultCountToTracing();
 
     /**
      * @return Whether or not this device should be considered a high end device from a disk
@@ -225,5 +224,10 @@ public class SysUtils {
             Log.v(TAG, "Cannot get disk data capacity", e);
         }
         return false;
+    }
+
+    @NativeMethods
+    interface Natives {
+        void logPageFaultCountToTracing();
     }
 }

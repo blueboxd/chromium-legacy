@@ -282,6 +282,10 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     }
   });
 
+  apiFunctions.setHandleRequest('importCrostiniImage', function(entry) {
+    const url = getEntryURL(entry);
+    fileManagerPrivateInternal.importCrostiniImage(url);
+  });
 });
 
 bindingUtil.registerEventArgumentMassager(

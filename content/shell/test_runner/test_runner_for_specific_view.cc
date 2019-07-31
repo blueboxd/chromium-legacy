@@ -603,7 +603,7 @@ void TestRunnerForSpecificView::SetDomainRelaxationForbiddenForURLScheme(
 
 v8::Local<v8::Value>
 TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
-    int world_id,
+    int32_t world_id,
     const std::string& script) {
   blink::WebScriptSource source(blink::WebString::FromUTF8(script));
   // This relies on the iframe focusing itself when it loads. This is a bit
@@ -617,14 +617,14 @@ TestRunnerForSpecificView::EvaluateScriptInIsolatedWorldAndReturnValue(
 }
 
 void TestRunnerForSpecificView::EvaluateScriptInIsolatedWorld(
-    int world_id,
+    int32_t world_id,
     const std::string& script) {
   blink::WebScriptSource source(blink::WebString::FromUTF8(script));
   web_view()->FocusedFrame()->ExecuteScriptInIsolatedWorld(world_id, source);
 }
 
 void TestRunnerForSpecificView::SetIsolatedWorldInfo(
-    int world_id,
+    int32_t world_id,
     v8::Local<v8::Value> security_origin,
     v8::Local<v8::Value> content_security_policy) {
   if (world_id <= content::ISOLATED_WORLD_ID_GLOBAL ||

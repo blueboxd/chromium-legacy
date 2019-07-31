@@ -15,10 +15,6 @@
 #include "third_party/blink/public/mojom/webauthn/internal_authenticator.mojom.h"
 #endif
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -58,9 +54,6 @@ class AutofillDriver {
 
   // Returns the ax tree id associated with this driver.
   virtual ui::AXTreeID GetAxTreeId() const = 0;
-
-  // Returns the URL request context information associated with this driver.
-  virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
 
   // Returns the URL loader factory associated with this driver.
   virtual scoped_refptr<network::SharedURLLoaderFactory>

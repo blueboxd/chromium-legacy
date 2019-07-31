@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
@@ -25,7 +26,7 @@ WebThreadScheduler::CreateMainThreadScheduler(
     base::Optional<base::Time> initial_virtual_time) {
   auto settings =
       base::sequence_manager::SequenceManager::Settings::Builder()
-          .SetMessagePumpType(base::MessagePump::Type::DEFAULT)
+          .SetMessagePumpType(base::MessagePumpType::DEFAULT)
           .SetRandomisedSamplingEnabled(true)
           .SetAddQueueTimeToTasks(true)
           .SetAntiStarvationLogicForPrioritiesDisabled(

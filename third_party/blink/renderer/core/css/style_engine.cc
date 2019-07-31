@@ -1796,7 +1796,6 @@ void StyleEngine::RecalcStyle(const StyleRecalcChange change) {
 
 void StyleEngine::RebuildLayoutTree() {
   DCHECK(GetDocument().documentElement());
-  DCHECK(GetDocument().ChildNeedsReattachLayoutTree());
   DCHECK(!InRebuildLayoutTree());
   in_layout_tree_rebuild_ = true;
 

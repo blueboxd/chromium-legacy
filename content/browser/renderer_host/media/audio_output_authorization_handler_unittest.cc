@@ -123,15 +123,14 @@ class AudioOutputAuthorizationHandlerTest : public RenderViewHostTestHarness {
     // enough for our code.
     for (int i = 0; i < 20; ++i) {
       base::RunLoop().RunUntilIdle();
-      SyncWith(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      SyncWith(base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
       SyncWith(audio_manager_->GetWorkerTaskRunner());
     }
   }
 
   std::string GetRawNondefaultId() {
     std::string id;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &AudioOutputAuthorizationHandlerTest::GetRawNondefaultIdOnIOThread,
@@ -193,7 +192,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeDefaultDevice_Ok) {
       std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
@@ -215,7 +214,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
@@ -238,7 +237,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID());
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::OverridePermissionsForTesting,
@@ -249,7 +248,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
                             std::string(), std::string()))
       .Times(1);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
@@ -271,7 +270,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID());
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::OverridePermissionsForTesting,
@@ -281,7 +280,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
                             raw_nondefault_id, std::string()))
       .Times(1);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
@@ -303,7 +302,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeInvalidDeviceId_NotFound) {
                             std::string(), std::string()))
       .Times(1);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
@@ -338,7 +337,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
                             std::string(), std::string()))
       .Times(1);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
@@ -362,7 +361,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
                             std::string()))
       .Times(1);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
@@ -384,7 +383,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   std::unique_ptr<AudioOutputAuthorizationHandler> handler =
       std::make_unique<AudioOutputAuthorizationHandler>(
           GetAudioSystem(), GetMediaStreamManager(), process()->GetID());
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::OverridePermissionsForTesting,
@@ -392,7 +391,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
 
   EXPECT_CALL(listener, Run(media::OUTPUT_DEVICE_STATUS_OK, _,
                             raw_nondefault_id, std::string()));
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
@@ -408,7 +407,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   context->set_media_device_id_salt("new salt");
   EXPECT_CALL(listener, Run(media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND, _, _,
                             std::string()));
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,

@@ -172,6 +172,7 @@ class BASE_EXPORT Value {
   int GetInt() const;
   double GetDouble() const;  // Implicitly converts from int if necessary.
   const std::string& GetString() const;
+  std::string& GetString();
   const BlobStorage& GetBlob() const;
 
   ListStorage& GetList();
@@ -211,6 +212,7 @@ class BASE_EXPORT Value {
 
   // |FindStringKey| returns |nullptr| if value is not found or not a string.
   const std::string* FindStringKey(StringPiece key) const;
+  std::string* FindStringKey(StringPiece key);
 
   // Returns nullptr is value is not found or not a binary.
   const BlobStorage* FindBlobKey(StringPiece key) const;
@@ -318,6 +320,7 @@ class BASE_EXPORT Value {
   base::Optional<int> FindIntPath(StringPiece path) const;
   base::Optional<double> FindDoublePath(StringPiece path) const;
   const std::string* FindStringPath(StringPiece path) const;
+  std::string* FindStringPath(StringPiece path);
   const BlobStorage* FindBlobPath(StringPiece path) const;
   Value* FindDictPath(StringPiece path);
   const Value* FindDictPath(StringPiece path) const;

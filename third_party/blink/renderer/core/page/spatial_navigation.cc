@@ -63,7 +63,7 @@ FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
   DCHECK(node);
   DCHECK(node->IsElementNode());
 
-  if (auto* area = ToHTMLAreaElementOrNull(*node)) {
+  if (auto* area = DynamicTo<HTMLAreaElement>(*node)) {
     HTMLImageElement* image = area->ImageElement();
     if (!image || !image->GetLayoutObject())
       return;
@@ -739,7 +739,7 @@ PhysicalRect SearchOrigin(const PhysicalRect& viewport_rect_of_root_frame,
     return OppositeEdge(direction, viewport_rect_of_root_frame);
   }
 
-  auto* area_element = ToHTMLAreaElementOrNull(focus_node);
+  auto* area_element = DynamicTo<HTMLAreaElement>(focus_node);
   if (area_element)
     focus_node = area_element->ImageElement();
 

@@ -249,6 +249,10 @@ div.mode-item>span {
   z-index: 0;
 }
 
+.mode-item.hide {
+  display: none;
+}
+
 .mode-item>input {
   height: 100%;
   position: absolute;
@@ -460,7 +464,8 @@ body._10sec #toggle-timer:checked {
   background-image: url(../images/camera_button_mic_off.svg);
 }
 
-#toggle-fps {
+body:not(.multi-fps) #toggle-fps,
+body:not(.video-mode) #toggle-fps {
   display: none;
 }
 

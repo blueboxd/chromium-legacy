@@ -51,7 +51,6 @@
 #include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
@@ -356,7 +355,8 @@ bool LayoutBlockFlow::IsSelfCollapsingBlock() const {
     DCHECK(CreatesNewFormattingContext());
     return false;
   }
-  DCHECK_EQ(!is_self_collapsing_, !CheckIfIsSelfCollapsingBlock());
+  if (!IsLayoutNGObject())
+    DCHECK_EQ(!is_self_collapsing_, !CheckIfIsSelfCollapsingBlock());
   return is_self_collapsing_;
 }
 
@@ -541,7 +541,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
     PositionDialog();
 
   ClearNeedsLayout();
-  UpdateIsSelfCollapsing();
+  is_self_collapsing_ = CheckIfIsSelfCollapsingBlock();
   NotifyDisplayLockDidLayout(DisplayLockContext::kSelf);
 }
 
@@ -2192,7 +2192,7 @@ void LayoutBlockFlow::MarginBeforeEstimateForChild(
   // require clearance to move past any floats. If that's the case we want to be
   // sure we estimate the correct position including margins after any floats
   // rather than use 'clearance' later which could give us the wrong position.
-  if (grandchild_box->StyleRef().Clear() != EClear::kNone &&
+  if (grandchild_box->StyleRef().HasClear() &&
       child_block_flow->MarginBeforeForChild(*grandchild_box) == 0)
     return;
 
@@ -2875,7 +2875,7 @@ LayoutUnit LayoutBlockFlow::GetClearDelta(LayoutBox* child,
 
   // At least one float is present. We need to perform the clearance
   // computation.
-  EClear clear = ResolvedClear(child->StyleRef(), StyleRef());
+  EClear clear = child->StyleRef().Clear(StyleRef());
   LayoutUnit logical_bottom = LowestFloatLogicalBottom(clear);
 
   // We also clear floats if we are too big to sit on the same line as a float
@@ -3682,7 +3682,7 @@ LayoutPoint LayoutBlockFlow::ComputeLogicalLocationForFloat(
 
   LayoutUnit float_logical_left;
 
-  if (ResolvedFloating(child_box->StyleRef(), StyleRef()) == EFloat::kLeft) {
+  if (child_box->StyleRef().Floating(StyleRef()) == EFloat::kLeft) {
     LayoutUnit height_remaining_left = LayoutUnit(1);
     LayoutUnit height_remaining_right = LayoutUnit(1);
     float_logical_left = LogicalLeftOffsetForPositioningFloat(
@@ -3739,7 +3739,7 @@ FloatingObject* LayoutBlockFlow::InsertFloatingObject(LayoutBox& float_box) {
   }
 
   // Create the special object entry & append it to the list
-  EFloat f = ResolvedFloating(float_box.StyleRef(), StyleRef());
+  EFloat f = float_box.StyleRef().Floating(StyleRef());
   DCHECK(f == EFloat::kLeft || f == EFloat::kRight);
   FloatingObject::Type type = f == EFloat::kLeft ? FloatingObject::kFloatLeft
                                                  : FloatingObject::kFloatRight;
@@ -3881,9 +3881,9 @@ LayoutUnit LayoutBlockFlow::PositionAndLayoutFloat(
   // FIXME Investigate if this can be removed. crbug.com/370006
   child.SetShouldCheckForPaintInvalidation();
 
-  logical_top_margin_edge = std::max(
-      logical_top_margin_edge,
-      LowestFloatLogicalBottom(ResolvedClear(child.StyleRef(), StyleRef())));
+  logical_top_margin_edge =
+      std::max(logical_top_margin_edge,
+               LowestFloatLogicalBottom(child.StyleRef().Clear(StyleRef())));
 
   bool is_paginated = View()->GetLayoutState()->IsPaginated();
   if (is_paginated && !ChildrenInline()) {

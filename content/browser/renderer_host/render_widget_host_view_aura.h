@@ -593,14 +593,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // True if in the process of handling a window bounds changed notification.
   bool in_bounds_changed_;
 
-  // True if the content of this view is occluded (i.e. not visible).
-  // Note that we keep |window_|'s target visibility true all the time. Its
-  // actual visibility (i.e. Window::IsVisible()) will depend on its location in
-  // the window tree hierarchy and whether its layer is drawn or not (due to
-  // e.g. occlusion). Hiding |window_| is unnecessary and will cause issues when
-  // the browser or app is mirrored for alt-tab, or virtual desks mini_views.
-  bool is_occluded_;
-
   // Our parent host view, if this is a popup.  NULL otherwise.
   RenderWidgetHostViewAura* popup_parent_host_view_;
 

@@ -10,8 +10,13 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/web_application_info.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
+
+namespace base {
+class CommandLine;
+}
 
 namespace content {
 class WebContents;
@@ -47,9 +52,19 @@ class WebAppControllerBrowserTest
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
+  // ExtensionBrowserTest:
+  void SetUpInProcessBrowserTestFixture() override;
+  void TearDownInProcessBrowserTestFixture() override;
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
+
+  // Similar to net::MockCertVerifier, but also updates the CertVerifier
+  // used by the NetworkService.
+  content::ContentMockCertVerifier cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppControllerBrowserTest);
 };

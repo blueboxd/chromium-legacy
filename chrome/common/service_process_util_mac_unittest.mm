@@ -14,11 +14,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "chrome/common/mac/launchd.h"
@@ -50,16 +50,17 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(MockLaunchd::MakeABundle(GetTempDirPath(), "Test",
                                          &bundle_path_, &executable_path_));
-    mock_launchd_.reset(new MockLaunchd(executable_path_, loop_.task_runner(),
-                                        run_loop_.QuitClosure(), true));
+    mock_launchd_.reset(new MockLaunchd(
+        executable_path_, scoped_task_environment_.GetMainThreadTaskRunner(),
+        run_loop_.QuitClosure(), true));
     scoped_launchd_instance_.reset(
         new Launchd::ScopedInstance(mock_launchd_.get()));
     ASSERT_TRUE(service_process_state_.Initialize());
     ASSERT_TRUE(service_process_state_.SignalReady(
         io_thread_.task_runner().get(), base::Closure()));
-    loop_.task_runner()->PostDelayedTask(FROM_HERE,
-                                         run_loop_.QuitWhenIdleClosure(),
-                                         TestTimeouts::action_max_timeout());
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
+        FROM_HERE, run_loop_.QuitWhenIdleClosure(),
+        TestTimeouts::action_max_timeout());
   }
 
   const MockLaunchd* mock_launchd() const { return mock_launchd_.get(); }
@@ -76,7 +77,8 @@ class ServiceProcessStateFileManipulationTest : public ::testing::Test {
 
  private:
   base::ScopedTempDir temp_dir_;
-  base::MessageLoopForUI loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   base::RunLoop run_loop_;
   base::Thread io_thread_;
   base::FilePath executable_path_, bundle_path_;

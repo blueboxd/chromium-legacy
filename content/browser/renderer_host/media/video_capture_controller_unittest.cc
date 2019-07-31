@@ -174,14 +174,14 @@ class VideoCaptureControllerTest
         media::VideoCaptureBufferType::kSharedMemory,
         std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
             controller_->GetWeakPtrForIOThread(),
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO})),
         buffer_pool_, media::VideoCaptureJpegDecoderFactoryCB()));
 #else
     device_client_.reset(new media::VideoCaptureDeviceClient(
         media::VideoCaptureBufferType::kSharedMemory,
         std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
             controller_->GetWeakPtrForIOThread(),
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO})),
         buffer_pool_));
 #endif  // defined(OS_CHROMEOS)
   }

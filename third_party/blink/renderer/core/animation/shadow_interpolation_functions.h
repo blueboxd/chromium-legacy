@@ -14,6 +14,7 @@ namespace blink {
 class ShadowData;
 class CSSValue;
 class StyleResolverState;
+class UnderlyingValue;
 
 class ShadowInterpolationFunctions {
  public:
@@ -25,8 +26,7 @@ class ShadowInterpolationFunctions {
   static PairwiseInterpolationValue MaybeMergeSingles(
       InterpolationValue&& start,
       InterpolationValue&& end);
-  static void Composite(std::unique_ptr<InterpolableValue>&,
-                        scoped_refptr<NonInterpolableValue>&,
+  static void Composite(UnderlyingValue&,
                         double underlying_fraction,
                         const InterpolableValue&,
                         const NonInterpolableValue*);

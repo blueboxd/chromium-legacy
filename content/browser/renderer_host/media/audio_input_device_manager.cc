@@ -121,10 +121,9 @@ void AudioInputDeviceManager::Close(const base::UnguessableToken& session_id) {
 
   // Post a callback through the listener on IO thread since
   // MediaStreamManager is expecting the callback asynchronously.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AudioInputDeviceManager::ClosedOnIOThread, this,
-                     stream_type, session_id));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&AudioInputDeviceManager::ClosedOnIOThread,
+                                this, stream_type, session_id));
 }
 
 #if defined(OS_CHROMEOS)
@@ -152,7 +151,7 @@ void AudioInputDeviceManager::KeyboardMicRegistration::DeregisterIfNeeded() {
     --*shared_registration_count_;
     DCHECK_GE(*shared_registration_count_, 0);
     if (*shared_registration_count_ == 0) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&SetKeyboardMicStreamActiveOnUIThread, false));
     }
@@ -169,7 +168,7 @@ void AudioInputDeviceManager::RegisterKeyboardMicStream(
 
   ++keyboard_mic_streams_count_;
   if (keyboard_mic_streams_count_ == 1) {
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SetKeyboardMicStreamActiveOnUIThread, true),
         base::BindOnce(std::move(callback),

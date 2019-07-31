@@ -3428,6 +3428,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/parameter/CommandLineParameter.java",
       "test/android/javatests/src/org/chromium/base/test/util/parameter/SkipCommandLineParameterization.java",
     ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
 
   android_library("base_java_process_launcher_test_support") {

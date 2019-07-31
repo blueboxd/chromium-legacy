@@ -4412,7 +4412,7 @@ class ContextLifetimeTestWebFrameClient
    public:
     Notification(WebLocalFrame* frame,
                  v8::Local<v8::Context> context,
-                 int world_id)
+                 int32_t world_id)
         : frame(frame),
           context(context->GetIsolate(), context),
           world_id(world_id) {}
@@ -4426,7 +4426,7 @@ class ContextLifetimeTestWebFrameClient
 
     WebLocalFrame* frame;
     v8::Persistent<v8::Context> context;
-    int world_id;
+    int32_t world_id;
   };
 
   ContextLifetimeTestWebFrameClient(
@@ -4455,13 +4455,13 @@ class ContextLifetimeTestWebFrameClient
   }
 
   void DidCreateScriptContext(v8::Local<v8::Context> context,
-                              int world_id) override {
+                              int32_t world_id) override {
     create_notifications_.push_back(
         std::make_unique<Notification>(Frame(), context, world_id));
   }
 
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
-                                int world_id) override {
+                                int32_t world_id) override {
     release_notifications_.push_back(
         std::make_unique<Notification>(Frame(), context, world_id));
   }
@@ -4590,7 +4590,7 @@ TEST_F(WebFrameTest, ContextNotificationsIsolatedWorlds) {
   // Add an isolated world.
   web_frame_client.Reset();
 
-  int isolated_world_id = 42;
+  int32_t isolated_world_id = 42;
   WebScriptSource script_source("hi!");
   web_view_helper.LocalMainFrame()->ExecuteScriptInIsolatedWorld(
       isolated_world_id, script_source);
@@ -4782,7 +4782,7 @@ class TestExecuteScriptDuringDidCreateScriptContext
 
   // frame_test_helpers::TestWebFrameClient:
   void DidCreateScriptContext(v8::Local<v8::Context> context,
-                              int world_id) override {
+                              int32_t world_id) override {
     Frame()->ExecuteScript(WebScriptSource("window.history = 'replaced';"));
   }
 };

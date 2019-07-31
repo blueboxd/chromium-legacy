@@ -543,6 +543,14 @@ python crlsetutil.py -o ../certificates/crlset_by_leaf_spki.raw \
 }
 CRLBYLEAFSPKI
 
+## Block a root cert directly by SPKI
+python crlsetutil.py -o ../certificates/crlset_by_root_spki.raw \
+<<CRLBYROOTSPKI
+{
+  "BlockedBySPKI": ["../certificates/root_ca_cert.pem"]
+}
+CRLBYROOTSPKI
+
 ## Block a leaf cert by issuer-hash-and-serial (ok_cert.pem == serial 3, by
 ## virtue of the serial file and ordering above.
 python crlsetutil.py -o ../certificates/crlset_by_root_serial.raw \

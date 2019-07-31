@@ -55,9 +55,6 @@ void AppendChildToLastNode(std::vector<base::Value>* buffer,
 // and the lengths of strings should be relatively small and we reduce the
 // memory consumption of the DOM, which may grow rather large.
 //
-// TODO(crbug.com/928595) Provide a FindStringKey that returns a mutable string
-// and append to that string.
-//
 // If the last child of the element in buffer is a text node, append |text| to
 // it and return true (successful coalescing). Otherwise return false.
 bool TryCoalesceString(std::vector<base::Value>* buffer,
@@ -72,8 +69,8 @@ bool TryCoalesceString(std::vector<base::Value>* buffer,
   auto& last_child = children->GetList().back();
   if (!IsTextNode(last_child))
     return false;
-  const std::string* old_text = last_child.FindStringKey("value");
-  last_child.SetStringKey("value", base::StrCat({*old_text, text}));
+  std::string* old_text = last_child.FindStringKey("value");
+  old_text->append(text.data(), text.size());
   return true;
 }
 

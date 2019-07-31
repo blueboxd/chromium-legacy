@@ -36,7 +36,6 @@
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/cache_test_util.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/mock_browsing_data_remover_delegate.h"
@@ -174,9 +173,6 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-      is_network_service_enabled_ = true;
-
     if (IsOutOfProcessNetworkService()) {
       // |MockCertVerifier| only seems to work when Network Service was enabled.
       command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
@@ -313,31 +309,14 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   }
 
   void CreateCacheEntry(const GURL& url) {
-    if (is_network_service_enabled_) {
-      ASSERT_EQ(net::OK, LoadBasicRequest(
-                             storage_partition()->GetNetworkContext(), url));
-    } else {
-      if (!cache_test_util_)
-        cache_test_util_ = std::make_unique<CacheTestUtil>(storage_partition());
-      cache_test_util_->CreateCacheEntries({url.spec()});
-    }
+    ASSERT_EQ(net::OK,
+              LoadBasicRequest(storage_partition()->GetNetworkContext(), url));
   }
 
   bool TestCacheEntry(const GURL& url) {
-    if (is_network_service_enabled_) {
-      return LoadBasicRequest(storage_partition()->GetNetworkContext(), url,
-                              0 /* process_id */, 0 /* render_frame_id */,
-                              net::LOAD_ONLY_FROM_CACHE) == net::OK;
-    } else {
-      return base::Contains(cache_test_util_->GetEntryKeys(), url.spec());
-    }
-  }
-
-  // Causes |!g_base_sync_primitives_disallowed.Get().Get()| issue if we don't
-  // destroy it before test ends.
-  void DestroyCacheTestUtilIfNecessary() {
-    if (cache_test_util_)
-      cache_test_util_ = nullptr;
+    return LoadBasicRequest(storage_partition()->GetNetworkContext(), url,
+                            0 /* process_id */, 0 /* render_frame_id */,
+                            net::LOAD_ONLY_FROM_CACHE) == net::OK;
   }
 
   GURL GetURLForHTTPSHost1(const std::string& relative_url) {
@@ -495,15 +474,9 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     std::move(callback).Run();
   }
 
-  // We can only use |MockCertVerifier| when Network Service was enabled.
-  bool is_network_service_enabled_ = false;
-
   // If this is set, |HandleRequest| will always respond with Clear-Site-Data.
   base::Lock clear_site_data_header_lock_;
   std::string clear_site_data_header_ GUARDED_BY(clear_site_data_header_lock_);
-
-  // Only used when |is_network_service_enabled_| is false.
-  std::unique_ptr<CacheTestUtil> cache_test_util_ = nullptr;
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   TestBrowsingDataRemoverDelegate embedder_delegate_;
@@ -989,8 +962,6 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   EXPECT_TRUE(TestCacheEntry(url2));
   EXPECT_FALSE(TestCacheEntry(url3));
   EXPECT_FALSE(TestCacheEntry(url4));
-
-  DestroyCacheTestUtilIfNecessary();
 }
 
 // Tests that closing the tab right after executing Clear-Site-Data does

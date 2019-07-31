@@ -65,11 +65,7 @@ static base::LazyInstance<base::PartitionAllocatorGeneric>::Leaky lazy_buffer =
 static base::LazyInstance<base::SizeSpecificPartitionAllocator<1024>>::Leaky
     lazy_layout = LAZY_INSTANCE_INITIALIZER;
 
-Partitions::ReportPartitionAllocSizeFunction Partitions::report_size_function_ =
-    nullptr;
-
-void Partitions::Initialize(
-    ReportPartitionAllocSizeFunction report_size_function) {
+void Partitions::Initialize() {
   base::subtle::SpinLock::Guard guard(initialization_lock_.Get());
 
   if (!initialized_) {
@@ -83,7 +79,6 @@ void Partitions::Initialize(
     array_buffer_allocator_->init();
     buffer_allocator_->init();
     layout_allocator_->init();
-    report_size_function_ = report_size_function;
 
     initialized_ = true;
   }
@@ -97,22 +92,6 @@ void Partitions::StartPeriodicReclaim(
     return;
 
   base::PartitionAllocMemoryReclaimer::Instance()->Start(task_runner);
-}
-
-void Partitions::ReportMemoryUsageHistogram() {
-  static size_t observed_max_size_in_mb = 0;
-
-  if (!report_size_function_)
-    return;
-  // We only report the memory in the main thread.
-  if (!IsMainThread())
-    return;
-  // +1 is for rounding up the sizeInMB.
-  size_t size_in_mb = Partitions::TotalSizeOfCommittedPages() / 1024 / 1024 + 1;
-  if (size_in_mb > observed_max_size_in_mb) {
-    report_size_function_(size_in_mb);
-    observed_max_size_in_mb = size_in_mb;
-  }
 }
 
 void Partitions::DumpMemoryStats(

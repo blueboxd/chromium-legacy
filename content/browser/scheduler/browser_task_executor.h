@@ -62,6 +62,8 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   //
   // Attention: This method can only be called once (as there must be only one
   // IO thread).
+  // Attention: Must be called after Create()
+  // Attention: Can not be called after Shutdown() or ResetForTesting()
   static std::unique_ptr<BrowserProcessSubThread> CreateIOThread();
 
   // Enables non best effort queues on the IO thread. Usually called from
@@ -83,7 +85,9 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
 
   // Winds down the BrowserTaskExecutor, after this no tasks can be executed
   // and the base::TaskExecutor APIs are non-functional but won't crash if
-  // called.
+  // called. In unittests however we need to clean up, so
+  // BrowserTaskExecutor::ResetForTesting should be
+  // called (~TestBrowserThreadBundle() takes care of this).
   static void Shutdown();
 
   // Unregister and delete the TaskExecutor after a test.

@@ -7,6 +7,8 @@
 
 #include "components/exo/surface_observer.h"
 #include "components/exo/surface_tree_host.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -74,6 +76,11 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
+  // Overridden from ui::View
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
+  void SetChildAxTreeId(ui::AXTreeID child_ax_tree_id);
+
  private:
   void CreateFullscreenShellSurfaceWidget(ui::WindowShowState show_state);
   void CommitWidget();
@@ -85,6 +92,7 @@ class FullscreenShellSurface : public SurfaceTreeHost,
   base::Optional<std::string> startup_id_;
   base::RepeatingClosure close_callback_;
   base::OnceClosure surface_destroyed_callback_;
+  ui::AXTreeID child_ax_tree_id_ = ui::AXTreeIDUnknown();
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenShellSurface);
 };

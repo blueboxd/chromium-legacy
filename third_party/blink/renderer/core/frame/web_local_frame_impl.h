@@ -111,13 +111,14 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) override;
   void DispatchUnloadEvent() override;
   void ExecuteScript(const WebScriptSource&) override;
-  void ExecuteScriptInIsolatedWorld(int world_id,
+  void ExecuteScriptInIsolatedWorld(int32_t world_id,
                                     const WebScriptSource&) override;
   WARN_UNUSED_RESULT v8::Local<v8::Value>
-  ExecuteScriptInIsolatedWorldAndReturnValue(int world_id,
+  ExecuteScriptInIsolatedWorldAndReturnValue(int32_t world_id,
                                              const WebScriptSource&) override;
-  void ClearIsolatedWorldCSPForTesting(int world_id) override;
-  void SetIsolatedWorldInfo(int world_id, const WebIsolatedWorldInfo&) override;
+  void ClearIsolatedWorldCSPForTesting(int32_t world_id) override;
+  void SetIsolatedWorldInfo(int32_t world_id,
+                            const WebIsolatedWorldInfo&) override;
   void Alert(const WebString& message) override;
   bool Confirm(const WebString& message) override;
   WebString Prompt(const WebString& message,
@@ -136,7 +137,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                                 v8::Local<v8::Value> argv[],
                                 WebScriptExecutionCallback*) override;
   void RequestExecuteScriptInIsolatedWorld(
-      int world_id,
+      int32_t world_id,
       const WebScriptSource* source_in,
       unsigned num_sources,
       bool user_gesture,

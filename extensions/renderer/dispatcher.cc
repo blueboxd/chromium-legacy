@@ -284,7 +284,7 @@ bool Dispatcher::IsExtensionActive(const std::string& extension_id) const {
 void Dispatcher::DidCreateScriptContext(
     blink::WebLocalFrame* frame,
     const v8::Local<v8::Context>& v8_context,
-    int world_id) {
+    int32_t world_id) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
   ScriptContext* context =
@@ -498,7 +498,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
 void Dispatcher::WillReleaseScriptContext(
     blink::WebLocalFrame* frame,
     const v8::Local<v8::Context>& v8_context,
-    int world_id) {
+    int32_t world_id) {
   ScriptContext* context = script_context_set_->GetByV8Context(v8_context);
   if (!context)
     return;

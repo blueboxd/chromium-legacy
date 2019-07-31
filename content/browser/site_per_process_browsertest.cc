@@ -13922,7 +13922,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Attempt to navigate the second tab to a.com.  This will attempt to reuse
   // the hung process.
-  NavigationHandleImpl::SetCommitTimeoutForTesting(
+  NavigationRequest::SetCommitTimeoutForTesting(
       base::TimeDelta::FromMilliseconds(100));
   GURL hung_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
   UnresponsiveRendererObserver unresponsive_renderer_observer(new_contents);
@@ -13935,7 +13935,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(hung_process, a_process);
 
   // Reset the timeout.
-  NavigationHandleImpl::SetCommitTimeoutForTesting(base::TimeDelta());
+  NavigationRequest::SetCommitTimeoutForTesting(base::TimeDelta());
 }
 
 // This is a regression test for https://crbug.com/881812 which complained that
@@ -13973,7 +13973,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Attempt to navigate the second tab to a.com.  This will attempt to reuse
   // the hung process.
   base::TimeDelta kTimeout = base::TimeDelta::FromMilliseconds(100);
-  NavigationHandleImpl::SetCommitTimeoutForTesting(kTimeout);
+  NavigationRequest::SetCommitTimeoutForTesting(kTimeout);
   GURL hung_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
   UnresponsiveRendererObserver unresponsive_renderer_observer(new_contents);
   EXPECT_TRUE(
@@ -13987,7 +13987,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(hung_process);
 
   // Reset the timeout.
-  NavigationHandleImpl::SetCommitTimeoutForTesting(base::TimeDelta());
+  NavigationRequest::SetCommitTimeoutForTesting(base::TimeDelta());
 }
 
 // Tests that an inner WebContents will reattach to its outer WebContents after

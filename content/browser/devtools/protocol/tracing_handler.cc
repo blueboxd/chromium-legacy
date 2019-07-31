@@ -904,8 +904,8 @@ Response TracingHandler::End() {
   if (return_as_stream_) {
     endpoint = new DevToolsStreamEndpoint(
         weak_factory_.GetWeakPtr(),
-        DevToolsStreamFile::Create(io_context_,
-                                   gzip_compression_ /* binary */));
+        DevToolsStreamFile::Create(
+            io_context_, gzip_compression_ || proto_format_ /* binary */));
     if (gzip_compression_) {
       endpoint = TracingControllerImpl::CreateCompressedStringEndpoint(
           endpoint, true /* compress_with_background_priority */);

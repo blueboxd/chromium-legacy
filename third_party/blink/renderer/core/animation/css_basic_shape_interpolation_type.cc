@@ -47,8 +47,8 @@ const BasicShape* GetBasicShape(const CSSProperty& property,
 class UnderlyingCompatibilityChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  UnderlyingCompatibilityChecker(
-      scoped_refptr<NonInterpolableValue> underlying_non_interpolable_value)
+  UnderlyingCompatibilityChecker(scoped_refptr<const NonInterpolableValue>
+                                     underlying_non_interpolable_value)
       : underlying_non_interpolable_value_(
             std::move(underlying_non_interpolable_value)) {}
 
@@ -60,7 +60,7 @@ class UnderlyingCompatibilityChecker
         *underlying.non_interpolable_value);
   }
 
-  scoped_refptr<NonInterpolableValue> underlying_non_interpolable_value_;
+  scoped_refptr<const NonInterpolableValue> underlying_non_interpolable_value_;
 };
 
 class InheritedShapeChecker

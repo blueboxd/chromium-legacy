@@ -748,6 +748,20 @@ TEST(ValuesTest, FindStringKey) {
   EXPECT_EQ(nullptr, dict.FindStringKey("dict"));
 }
 
+TEST(ValuesTest, MutableFindStringKey) {
+  Value::DictStorage storage;
+  storage.emplace("string", std::make_unique<Value>("foo"));
+  Value dict(std::move(storage));
+
+  *(dict.FindStringKey("string")) = "bar";
+
+  Value::DictStorage expected_storage;
+  expected_storage.emplace("string", std::make_unique<Value>("bar"));
+  Value expected_dict(std::move(expected_storage));
+
+  EXPECT_EQ(expected_dict, dict);
+}
+
 TEST(ValuesTest, FindDictKey) {
   Value::DictStorage storage;
   storage.emplace("null", std::make_unique<Value>(Value::Type::NONE));
@@ -2372,6 +2386,24 @@ TEST(ValuesTest, FromToUniquePtrValue) {
   std::unique_ptr<Value> val =
       Value::ToUniquePtrValue(std::move(dict_converted));
   EXPECT_EQ(dict_copy, *val);
+}
+
+TEST(ValuesTest, MutableFindStringPath) {
+  Value dict(Value::Type::DICTIONARY);
+  dict.SetStringPath("foo.bar", "value");
+
+  *(dict.FindStringPath("foo.bar")) = "new_value";
+
+  Value expected_dict(Value::Type::DICTIONARY);
+  expected_dict.SetStringPath("foo.bar", "new_value");
+
+  EXPECT_EQ(expected_dict, dict);
+}
+
+TEST(ValuesTest, MutableGetString) {
+  Value value("value");
+  value.GetString() = "new_value";
+  EXPECT_EQ("new_value", value.GetString());
 }
 
 }  // namespace base

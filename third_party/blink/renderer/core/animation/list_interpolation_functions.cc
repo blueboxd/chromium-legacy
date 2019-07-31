@@ -16,6 +16,45 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE(NonInterpolableList);
 
 const wtf_size_t kRepeatableListMaxLength = 1000;
 
+// An UnderlyingValue used for compositing list items.
+//
+// When new NonInterpolableValues are set, the NonInterpolableList::AutoBuilder
+// is modified at the corresponding index. The NonInterpolableValue of the
+// underlying_list is updated when the AutoBuilder goes out of scope (if
+// any calls to UnderlyingItemValue::SetNonInterpolableValue were made).
+class UnderlyingItemValue : public UnderlyingValue {
+  STACK_ALLOCATED();
+
+ public:
+  UnderlyingItemValue(UnderlyingValue& underlying_list,
+                      NonInterpolableList::AutoBuilder& builder,
+                      wtf_size_t index)
+      : underlying_list_(underlying_list), builder_(builder), index_(index) {}
+
+  InterpolableValue& MutableInterpolableValue() final {
+    return *ToInterpolableList(underlying_list_.MutableInterpolableValue())
+                .GetMutable(index_);
+  }
+  void SetInterpolableValue(
+      std::unique_ptr<InterpolableValue> interpolable_value) final {
+    ToInterpolableList(underlying_list_.MutableInterpolableValue())
+        .Set(index_, std::move(interpolable_value));
+  }
+  const NonInterpolableValue* GetNonInterpolableValue() const final {
+    return ToNonInterpolableList(*underlying_list_.GetNonInterpolableValue())
+        .Get(index_);
+  }
+  void SetNonInterpolableValue(
+      scoped_refptr<const NonInterpolableValue> non_interpolable_value) final {
+    builder_.Set(index_, std::move(non_interpolable_value));
+  }
+
+ private:
+  UnderlyingValue& underlying_list_;
+  NonInterpolableList::AutoBuilder& builder_;
+  wtf_size_t index_;
+};
+
 bool ListInterpolationFunctions::EqualValues(
     const InterpolationValue& a,
     const InterpolationValue& b,
@@ -122,16 +161,16 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
       std::make_unique<InterpolableList>(final_length);
   auto result_end_interpolable_list =
       std::make_unique<InterpolableList>(final_length);
-  Vector<scoped_refptr<NonInterpolableValue>> result_non_interpolable_values(
-      final_length);
+  Vector<scoped_refptr<const NonInterpolableValue>>
+      result_non_interpolable_values(final_length);
 
   InterpolableList& start_interpolable_list =
       ToInterpolableList(*start.interpolable_value);
   InterpolableList& end_interpolable_list =
       ToInterpolableList(*end.interpolable_value);
-  NonInterpolableList& start_non_interpolable_list =
+  const NonInterpolableList& start_non_interpolable_list =
       ToNonInterpolableList(*start.non_interpolable_value);
-  NonInterpolableList& end_non_interpolable_list =
+  const NonInterpolableList& end_non_interpolable_list =
       ToNonInterpolableList(*end.non_interpolable_value);
 
   for (wtf_size_t i = 0; i < final_length; i++) {
@@ -183,7 +222,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
 static void RepeatToLength(InterpolationValue& value, wtf_size_t length) {
   InterpolableList& interpolable_list =
       ToInterpolableList(*value.interpolable_value);
-  NonInterpolableList& non_interpolable_list =
+  const NonInterpolableList& non_interpolable_list =
       ToNonInterpolableList(*value.non_interpolable_value);
   wtf_size_t current_length = interpolable_list.length();
   DCHECK_GT(current_length, 0U);
@@ -191,7 +230,7 @@ static void RepeatToLength(InterpolationValue& value, wtf_size_t length) {
     return;
   DCHECK_LT(current_length, length);
   auto new_interpolable_list = std::make_unique<InterpolableList>(length);
-  Vector<scoped_refptr<NonInterpolableValue>> new_non_interpolable_values(
+  Vector<scoped_refptr<const NonInterpolableValue>> new_non_interpolable_values(
       length);
   for (wtf_size_t i = length; i-- > 0;) {
     new_interpolable_list->Set(
@@ -212,18 +251,18 @@ static void PadToSameLength(InterpolationValue& value,
                             const InterpolationValue& length_value) {
   InterpolableList& interpolable_list =
       ToInterpolableList(*value.interpolable_value);
-  NonInterpolableList& non_interpolable_list =
+  const NonInterpolableList& non_interpolable_list =
       ToNonInterpolableList(*value.non_interpolable_value);
   const wtf_size_t current_length = interpolable_list.length();
   InterpolableList& target_interpolable_list =
       ToInterpolableList(*length_value.interpolable_value);
-  NonInterpolableList& target_non_interpolable_list =
+  const NonInterpolableList& target_non_interpolable_list =
       ToNonInterpolableList(*length_value.non_interpolable_value);
   const wtf_size_t target_length = target_interpolable_list.length();
   DCHECK_LT(current_length, target_length);
   auto new_interpolable_list =
       std::make_unique<InterpolableList>(target_length);
-  Vector<scoped_refptr<NonInterpolableValue>> new_non_interpolable_values(
+  Vector<scoped_refptr<const NonInterpolableValue>> new_non_interpolable_values(
       target_length);
   wtf_size_t index = 0;
   for (; index < current_length; index++) {
@@ -319,15 +358,11 @@ void ListInterpolationFunctions::Composite(
     if (underlying_length < final_length) {
       RepeatToLength(underlying_value, final_length);
     }
-    InterpolableList& underlying_interpolable_list =
-        ToInterpolableList(*underlying_value.interpolable_value);
-    NonInterpolableList& underlying_non_interpolable_list =
-        ToNonInterpolableList(*underlying_value.non_interpolable_value);
+    NonInterpolableList::AutoBuilder builder(underlying_value_owner);
 
     for (wtf_size_t i = 0; i < final_length; i++) {
-      composite_item.Run(underlying_interpolable_list.GetMutable(i),
-                         underlying_non_interpolable_list.GetMutable(i),
-                         underlying_fraction,
+      UnderlyingItemValue underlying_item(underlying_value_owner, builder, i);
+      composite_item.Run(underlying_item, underlying_fraction,
                          *interpolable_list.Get(i % value_length),
                          non_interpolable_list.Get(i % value_length));
     }
@@ -342,19 +377,53 @@ void ListInterpolationFunctions::Composite(
     }
     InterpolableList& underlying_interpolable_list =
         ToInterpolableList(*underlying_value.interpolable_value);
-    NonInterpolableList& underlying_non_interpolable_list =
-        ToNonInterpolableList(*underlying_value.non_interpolable_value);
+
+    NonInterpolableList::AutoBuilder builder(underlying_value_owner);
 
     for (wtf_size_t i = 0; i < value_length; i++) {
-      composite_item.Run(underlying_interpolable_list.GetMutable(i),
-                         underlying_non_interpolable_list.GetMutable(i),
-                         underlying_fraction, *interpolable_list.Get(i),
+      UnderlyingItemValue underlying_item(underlying_value_owner, builder, i);
+      composite_item.Run(underlying_item, underlying_fraction,
+                         *interpolable_list.Get(i),
                          non_interpolable_list.Get(i));
     }
     for (wtf_size_t i = value_length; i < final_length; i++) {
       underlying_interpolable_list.GetMutable(i)->Scale(underlying_fraction);
     }
   }
+}
+
+NonInterpolableList::AutoBuilder::AutoBuilder(UnderlyingValue& underlying_value)
+    : underlying_value_(underlying_value) {
+  DCHECK(underlying_value.GetNonInterpolableValue());
+  DCHECK(IsNonInterpolableList(underlying_value_.GetNonInterpolableValue()));
+}
+
+NonInterpolableList::AutoBuilder::~AutoBuilder() {
+  // If no call to Set ever happened, there is no need to modify
+  // underlying_value_.
+  if (!list_.size())
+    return;
+  const auto& non_interpolable_list =
+      ToNonInterpolableList(*underlying_value_.GetNonInterpolableValue());
+  DCHECK_EQ(non_interpolable_list.length(), list_.size());
+  underlying_value_.SetNonInterpolableValue(
+      NonInterpolableList::Create(std::move(list_)));
+}
+
+void NonInterpolableList::AutoBuilder::Set(
+    wtf_size_t index,
+    scoped_refptr<const NonInterpolableValue> non_interpolable_value) {
+  // Copy list on first call to Set.
+  if (!list_.size()) {
+    const auto& non_interpolable_list =
+        ToNonInterpolableList(*underlying_value_.GetNonInterpolableValue());
+    wtf_size_t underlying_length = non_interpolable_list.length();
+    for (wtf_size_t i = 0; i < underlying_length; ++i)
+      list_.push_back(non_interpolable_list.Get(i));
+  }
+
+  DCHECK_LT(index, list_.size());
+  list_[index] = non_interpolable_value;
 }
 
 }  // namespace blink

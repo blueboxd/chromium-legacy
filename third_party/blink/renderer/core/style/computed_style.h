@@ -99,9 +99,11 @@ class BorderLeftColor;
 class BorderRightColor;
 class BorderTopColor;
 class CaretColor;
+class Clear;
 class Color;
 class ColumnRuleColor;
 class Fill;
+class Float;
 class FloodColor;
 class InternalVisitedBackgroundColor;
 class InternalVisitedBorderBottomColor;
@@ -118,6 +120,7 @@ class InternalVisitedTextFillColor;
 class InternalVisitedTextStrokeColor;
 class LightingColor;
 class OutlineColor;
+class Resize;
 class StopColor;
 class Stroke;
 class TextDecorationColor;
@@ -201,9 +204,11 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::BorderRightColor;
   friend class css_longhand::BorderTopColor;
   friend class css_longhand::CaretColor;
+  friend class css_longhand::Clear;
   friend class css_longhand::Color;
   friend class css_longhand::ColumnRuleColor;
   friend class css_longhand::Fill;
+  friend class css_longhand::Float;
   friend class css_longhand::FloodColor;
   friend class css_longhand::InternalVisitedBackgroundColor;
   friend class css_longhand::InternalVisitedBorderBottomColor;
@@ -220,6 +225,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedTextStrokeColor;
   friend class css_longhand::LightingColor;
   friend class css_longhand::OutlineColor;
+  friend class css_longhand::Resize;
   friend class css_longhand::StopColor;
   friend class css_longhand::Stroke;
   friend class css_longhand::TextDecorationColor;
@@ -1896,7 +1902,26 @@ class ComputedStyle : public ComputedStyleBase,
   bool CanRenderBorderImage() const;
 
   // Float utility functions.
-  bool IsFloating() const { return Floating() != EFloat::kNone; }
+  bool IsFloating() const { return FloatingInternal() != EFloat::kNone; }
+  EFloat UnresolvedFloating() const { return FloatingInternal(); }
+
+  EFloat Floating(const ComputedStyle& cb_style) const {
+    return Floating(cb_style.Direction());
+  }
+
+  EFloat Floating(TextDirection cb_direction) const {
+    const EFloat value = FloatingInternal();
+    switch (value) {
+      case EFloat::kInlineStart:
+      case EFloat::kInlineEnd: {
+        return IsLtr(cb_direction) == (value == EFloat::kInlineStart)
+                   ? EFloat::kLeft
+                   : EFloat::kRight;
+      }
+      default:
+        return value;
+    }
+  }
 
   // Mix-blend-mode utility functions.
   bool HasBlendMode() const { return GetBlendMode() != BlendMode::kNormal; }
@@ -1942,6 +1967,28 @@ class ComputedStyle : public ComputedStyleBase,
     return GetPosition() == EPosition::kSticky &&
            (!Top().IsAuto() || !Left().IsAuto() || !Right().IsAuto() ||
             !Bottom().IsAuto());
+  }
+
+  // Clear utility functions.
+  bool HasClear() const { return ClearInternal() != EClear::kNone; }
+  EClear UnresolvedClear() const { return ClearInternal(); }
+
+  EClear Clear(const ComputedStyle& cb_style) const {
+    return Clear(cb_style.Direction());
+  }
+
+  EClear Clear(TextDirection cb_direction) const {
+    const EClear value = ClearInternal();
+    switch (value) {
+      case EClear::kInlineStart:
+      case EClear::kInlineEnd: {
+        return IsLtr(cb_direction) == (value == EClear::kInlineStart)
+                   ? EClear::kLeft
+                   : EClear::kRight;
+      }
+      default:
+        return value;
+    }
   }
 
   // Clip utility functions.
@@ -2040,6 +2087,25 @@ class ComputedStyle : public ComputedStyleBase,
                              const IntPoint& hot_spot = IntPoint());
   void SetCursorList(CursorList*);
   void ClearCursorList();
+
+  // Resize utility functions.
+  bool HasResize() const { return ResizeInternal() != EResize::kNone; }
+  EResize UnresolvedResize() const { return ResizeInternal(); }
+
+  EResize Resize(const ComputedStyle& cb_style) const {
+    EResize value = ResizeInternal();
+    switch (value) {
+      case EResize::kBlock:
+      case EResize::kInline: {
+        return ::blink::IsHorizontalWritingMode(cb_style.GetWritingMode()) ==
+                       (value == EResize::kBlock)
+                   ? EResize::kVertical
+                   : EResize::kHorizontal;
+      }
+      default:
+        return value;
+    }
+  }
 
   // Text decoration utility functions.
   void ApplyTextDecorations(const Color& parent_text_decoration_color,
@@ -2323,8 +2389,7 @@ class ComputedStyle : public ComputedStyleBase,
   bool HasBoxDecorations() const {
     return HasBorderDecoration() || HasBorderRadius() || HasOutline() ||
            HasEffectiveAppearance() || BoxShadow() ||
-           HasFilterInducingProperty() || HasBackdropFilter() ||
-           Resize() != EResize::kNone;
+           HasFilterInducingProperty() || HasBackdropFilter() || HasResize();
   }
 
   // "Box decoration background" includes all box decorations and backgrounds
@@ -2397,6 +2462,10 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
  private:
+  EClear Clear() const { return ClearInternal(); }
+  EFloat Floating() const { return FloatingInternal(); }
+  EResize Resize() const { return ResizeInternal(); }
+
   void SetInternalVisitedColor(const Color& v) {
     SetInternalVisitedColorInternal(v);
   }

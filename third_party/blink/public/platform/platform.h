@@ -138,6 +138,7 @@ class WebTransmissionEncodingInfoHandler;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
+class WebVideoCaptureImplManager;
 
 namespace scheduler {
 class WebThreadScheduler;
@@ -648,6 +649,12 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual base::Optional<int> GetAgcStartupMinimumVolume() {
     return base::nullopt;
+  }
+
+  // VideoCapture -------------------------------------------------------
+
+  virtual WebVideoCaptureImplManager* GetVideoCaptureImplManager() {
+    return nullptr;
   }
 
   // WebWorker ----------------------------------------------------------

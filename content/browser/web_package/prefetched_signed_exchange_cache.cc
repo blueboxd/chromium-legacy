@@ -232,7 +232,6 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
                       const base::Optional<GURL>& new_url) override {
     NOTREACHED();
   }
-
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override {
     // There is nothing to do, because there is no prioritization mechanism for

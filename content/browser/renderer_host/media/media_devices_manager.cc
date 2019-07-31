@@ -436,8 +436,7 @@ void MediaDevicesManager::EnumerateDevices(
          !request_audio_input_capabilities);
 
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}).get(),
-      FROM_HERE,
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id,
                      render_frame_id),
       base::BindOnce(&MediaDevicesManager::CheckPermissionsForEnumerateDevices,
@@ -531,10 +530,9 @@ void MediaDevicesManager::StartMonitoring() {
   }
 
 #if defined(OS_MACOSX)
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&MediaDevicesManager::StartMonitoringOnUIThread,
-                     base::Unretained(this)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&MediaDevicesManager::StartMonitoringOnUIThread,
+                                base::Unretained(this)));
 #endif
 }
 
@@ -770,7 +768,7 @@ void MediaDevicesManager::GetAudioInputCapabilities(
     size_t capabilities_index =
         enumeration_states_[state_id].audio_capabilities.size() - 1;
     if (use_fake_devices_) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&MediaDevicesManager::GotAudioInputCapabilities,
                          weak_factory_.GetWeakPtr(), state_id,
@@ -1105,8 +1103,7 @@ void MediaDevicesManager::NotifyDeviceChangeSubscribers(
     const SubscriptionRequest& request = subscription.second;
     if (request.subscribe_types[type]) {
       base::PostTaskAndReplyWithResult(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
-              .get(),
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(),
           FROM_HERE,
           base::BindOnce(salt_and_origin_callback_, request.render_process_id,
                          request.render_frame_id),

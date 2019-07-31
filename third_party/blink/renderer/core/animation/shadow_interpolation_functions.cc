@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/animation/interpolation_value.h"
 #include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
 #include "third_party/blink/renderer/core/animation/non_interpolable_value.h"
+#include "third_party/blink/renderer/core/animation/underlying_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_shadow_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
@@ -153,15 +154,14 @@ ShadowInterpolationFunctions::CreateNeutralInterpolableValue() {
 }
 
 void ShadowInterpolationFunctions::Composite(
-    std::unique_ptr<InterpolableValue>& underlying_interpolable_value,
-    scoped_refptr<NonInterpolableValue>& underlying_non_interpolable_value,
+    UnderlyingValue& underlying_value,
     double underlying_fraction,
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) {
   DCHECK(NonInterpolableValuesAreCompatible(
-      underlying_non_interpolable_value.get(), non_interpolable_value));
+      underlying_value.GetNonInterpolableValue(), non_interpolable_value));
   InterpolableList& underlying_interpolable_list =
-      ToInterpolableList(*underlying_interpolable_value);
+      ToInterpolableList(underlying_value.MutableInterpolableValue());
   const InterpolableList& interpolable_list =
       ToInterpolableList(interpolable_value);
   underlying_interpolable_list.ScaleAndAdd(underlying_fraction,

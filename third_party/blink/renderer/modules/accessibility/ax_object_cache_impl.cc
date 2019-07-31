@@ -200,7 +200,7 @@ AXObject* AXObjectCacheImpl::FocusedObject() {
     focused_node = document_;
 
   // If it's an image map, get the focused link within the image map.
-  if (auto* area = ToHTMLAreaElementOrNull(focused_node))
+  if (auto* area = DynamicTo<HTMLAreaElement>(focused_node))
     return FocusedImageMapUIElement(area);
 
   // See if there's a page popup, for example a calendar picker.
@@ -257,7 +257,7 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
   // Menu list option and HTML area elements are indexed by DOM node, never by
   // layout object.
   LayoutObject* layout_object = node->GetLayoutObject();
-  if (IsMenuListOption(node) || IsHTMLAreaElement(node))
+  if (IsMenuListOption(node) || IsA<HTMLAreaElement>(node))
     layout_object = nullptr;
 
   AXID layout_id = layout_object ? layout_object_mapping_.at(layout_object) : 0;
@@ -267,7 +267,7 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
   DCHECK(!HashTraits<AXID>::IsDeletedValue(node_id));
 
   if (layout_object && node_id && !layout_id && !IsMenuListOption(node) &&
-      !IsHTMLAreaElement(node)) {
+      !IsA<HTMLAreaElement>(node)) {
     // This can happen if an AXNodeObject is created for a node that's not laid
     // out, but later something changes and it gets a layoutObject (like if it's
     // reparented). It's also possible the layout object changed.
@@ -405,7 +405,7 @@ AXObject* AXObjectCacheImpl::CreateFromNode(Node* node) {
                                                   *this);
   }
 
-  if (auto* area = ToHTMLAreaElementOrNull(node))
+  if (auto* area = DynamicTo<HTMLAreaElement>(node))
     return MakeGarbageCollected<AXImageMapLink>(area, *this);
 
   return MakeGarbageCollected<AXNodeObject>(node, *this);
@@ -446,7 +446,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   // If the node has a layout object, prefer using that as the primary key for
   // the AXObject, with the exception of an HTMLAreaElement, which is
   // created based on its node.
-  if (node->GetLayoutObject() && !IsHTMLAreaElement(node))
+  if (node->GetLayoutObject() && !IsA<HTMLAreaElement>(node))
     return GetOrCreate(node->GetLayoutObject());
 
   if (!LayoutTreeBuilderTraversal::Parent(*node))
@@ -482,7 +482,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   // Area elements are never created based on layout objects (see |Get|), so we
   // really should never get here.
   Node* node = layout_object->GetNode();
-  if (node && (IsMenuListOption(node) || IsHTMLAreaElement(node)))
+  if (node && (IsMenuListOption(node) || IsA<HTMLAreaElement>(node)))
     return nullptr;
 
   AXObject* new_obj = CreateFromRenderer(layout_object);

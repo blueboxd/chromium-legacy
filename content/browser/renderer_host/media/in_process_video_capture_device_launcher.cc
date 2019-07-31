@@ -54,8 +54,8 @@ namespace {
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     media::VideoCaptureJpegDecoder::DecodeDoneCB decode_done_cb,
     base::Callback<void(const std::string&)> send_log_message_cb) {
-  auto io_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-      {content::BrowserThread::IO});
+  auto io_task_runner =
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
   return std::make_unique<media::ScopedVideoCaptureJpegDecoder>(
       std::make_unique<media::VideoCaptureJpegDecoderImpl>(
           base::BindRepeating(
@@ -111,7 +111,7 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   // to the IO thread.
   auto receiver = std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
       receiver_on_io_thread,
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
   base::OnceClosure start_capture_closure;
   // Use of Unretained |this| is safe, because |done_cb| guarantees that |this|

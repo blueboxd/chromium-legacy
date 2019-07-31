@@ -23,7 +23,7 @@ namespace dom_distiller {
 class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
  public:
   DistillerJsRenderFrameObserver(content::RenderFrame* render_frame,
-                                 const int distiller_isolated_world_id,
+                                 const int32_t distiller_isolated_world_id,
                                  service_manager::BinderRegistry* registry);
   ~DistillerJsRenderFrameObserver() override;
 
@@ -33,7 +33,7 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
       base::Optional<blink::WebNavigationType> navigation_type) override;
   void DidFinishLoad() override;
   void DidCreateScriptContext(v8::Local<v8::Context> context,
-                              int world_id) override;
+                              int32_t world_id) override;
 
   // Flag the current page as a distiller page.
   void SetIsDistillerPage();
@@ -46,7 +46,7 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
   void OnDestruct() override;
 
   // The isolated world that the distiller object should be written to.
-  int distiller_isolated_world_id_;
+  int32_t distiller_isolated_world_id_;
 
   // Track if the current page is distilled. This is needed for testing.
   bool is_distiller_page_;

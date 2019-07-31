@@ -235,7 +235,7 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
 
   // Do not save ping attribute since anyway the ping will be blocked from
   // MHTML.
-  if (IsHTMLAnchorElement(element) &&
+  if (IsA<HTMLAnchorElement>(element) &&
       attribute.LocalName() == html_names::kPingAttr) {
     return true;
   }

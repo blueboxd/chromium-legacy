@@ -1303,7 +1303,7 @@
       },
       'Linux Viz': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'all',
@@ -1830,7 +1830,7 @@
       },
       'linux-wpt-fyi-rel': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests',
@@ -3278,7 +3278,7 @@
     'machines': {
       'Cast Audio Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'cast_shell',
@@ -3326,7 +3326,7 @@
       },
       'Leak Detection Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'isolated_scripts': 'leak_detection_isolated_scripts',

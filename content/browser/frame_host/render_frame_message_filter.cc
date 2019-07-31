@@ -44,8 +44,6 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -279,10 +277,6 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
       plugin_service_(plugin_service),
       profile_data_directory_(storage_partition->GetPath()),
 #endif  // ENABLE_PLUGINS
-      request_context_(
-          base::FeatureList::IsEnabled(network::features::kNetworkService)
-              ? nullptr
-              : storage_partition->GetURLRequestContext()),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
       incognito_(browser_context->IsOffTheRecord()),

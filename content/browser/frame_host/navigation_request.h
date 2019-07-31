@@ -7,19 +7,22 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
 #include "content/browser/initiator_csp_context.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "content/browser/web_package/bundled_exchanges_factory.h"
+#include "content/browser/web_package/bundled_exchanges_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
@@ -465,6 +468,23 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
 
   int64_t navigation_handle_id() { return navigation_handle_id_; }
 
+  // Sets the READY_TO_COMMIT -> DID_COMMIT timeout. Resets the timeout to the
+  // default value if |timeout| is zero.
+  static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);
+
+  const net::HttpRequestHeaders& request_headers() { return request_headers_; }
+
+  // Remove a request's header. If the header is not present, it has no effect.
+  // Must be called during a redirect.
+  void RemoveRequestHeader(const std::string& header_name);
+
+  // Set a request's header. If the header is already present, its value is
+  // overwritten. When modified during a navigation start, the headers will be
+  // applied to the initial network request. When modified during a redirect,
+  // the headers will be applied to the redirected request.
+  void SetRequestHeader(const std::string& header_name,
+                        const std::string& header_value);
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -746,6 +766,25 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // TODO(zetamoo): This can be removed once the navigation states are merged.
   void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
 
+  // Called if READY_TO_COMMIT -> COMMIT state transition takes an unusually
+  // long time.
+  void OnCommitTimeout();
+
+  // Called by the RenderProcessHost to handle the case when the process changed
+  // its state of being blocked.
+  void RenderProcessBlockedStateChanged(bool blocked);
+
+  void StopCommitTimeout();
+  void RestartCommitTimeout();
+
+  std::vector<std::string> TakeRemovedRequestHeaders() {
+    return std::move(removed_request_headers_);
+  }
+
+  net::HttpRequestHeaders TakeModifiedRequestHeaders() {
+    return std::move(modified_request_headers_);
+  }
+
   FrameTreeNode* frame_tree_node_;
 
   // Invariant: At least one of |loader_| or |render_frame_host_| is null.
@@ -951,10 +990,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // TODO(clamy): Revisit the unit test architecture.
   ThrottleChecksFinishedCallback complete_callback_for_testing_;
 
-  // The factory to handle the BundledExchanges that's bound to this request.
+  // The instance to process the BundledExchanges that's bound to this request.
   // Used to navigate to the main resource URL of the BundledExchanges, and
   // load it from the corresponding entry.
-  std::unique_ptr<BundledExchangesFactory> bundled_exchanges_factory_;
+  std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle_;
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;
@@ -965,6 +1004,24 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
   // corresponding provider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
+
+  // Timer for detecting an unexpectedly long time to commit a navigation.
+  base::OneShotTimer commit_timeout_timer_;
+
+  // The subscription to the notification of the changing of the render
+  // process's blocked state.
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+      render_process_blocked_state_changed_subscription_;
+
+  // The headers used for the request.
+  net::HttpRequestHeaders request_headers_;
+
+  // Used to update the request's headers. When modified during the navigation
+  // start, the headers will be applied to the initial network request. When
+  // modified during a redirect, the headers will be applied to the redirected
+  // request.
+  std::vector<std::string> removed_request_headers_;
+  net::HttpRequestHeaders modified_request_headers_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

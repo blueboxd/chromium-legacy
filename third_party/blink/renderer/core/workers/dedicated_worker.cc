@@ -248,6 +248,7 @@ void DedicatedWorker::Start() {
             outside_fetch_client_settings_object_->GetSecurityOrigin()),
         outside_fetch_client_settings_object_->GetReferrerPolicy(),
         KURL(outside_fetch_client_settings_object_->GetOutgoingReferrer()),
+        outside_fetch_client_settings_object_->GetInsecureRequestsPolicy(),
         blob_url_token.PassInterface().PassHandle());
     // Continue in OnScriptLoadStarted() or OnScriptLoadStartFailed().
     return;

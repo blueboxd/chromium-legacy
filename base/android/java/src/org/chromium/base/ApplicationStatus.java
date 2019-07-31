@@ -16,6 +16,7 @@ import android.view.Window;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -579,7 +580,7 @@ public class ApplicationStatus {
                 sNativeApplicationStateListener = new ApplicationStateListener() {
                     @Override
                     public void onApplicationStateChange(int newState) {
-                        nativeOnApplicationStateChange(newState);
+                        ApplicationStatusJni.get().onApplicationStateChange(newState);
                     }
                 };
                 registerApplicationStateListener(sNativeApplicationStateListener);
@@ -619,7 +620,10 @@ public class ApplicationStatus {
         return ApplicationState.HAS_DESTROYED_ACTIVITIES;
     }
 
-    // Called to notify the native side of state changes.
-    // IMPORTANT: This is always called on the main thread!
-    private static native void nativeOnApplicationStateChange(@ApplicationState int newState);
+    @NativeMethods
+    interface Natives {
+        // Called to notify the native side of state changes.
+        // IMPORTANT: This is always called on the main thread!
+        void onApplicationStateChange(@ApplicationState int newState);
+    }
 }

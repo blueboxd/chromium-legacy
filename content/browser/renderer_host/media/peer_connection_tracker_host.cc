@@ -81,7 +81,7 @@ void PeerConnectionTrackerHost::OnAddPeerConnection(
 
 void PeerConnectionTrackerHost::RemovePeerConnection(int lid) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&PeerConnectionTrackerHost::RemovePeerConnection, this,
                        lid));
@@ -102,7 +102,7 @@ void PeerConnectionTrackerHost::UpdatePeerConnection(int lid,
                                                      const std::string& type,
                                                      const std::string& value) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&PeerConnectionTrackerHost::UpdatePeerConnection, this,
                        lid, type, value));
@@ -127,7 +127,7 @@ void PeerConnectionTrackerHost::OnPeerConnectionSessionIdSet(
     int lid,
     const std::string& session_id) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&PeerConnectionTrackerHost::OnPeerConnectionSessionIdSet,
                        this, lid, session_id));
@@ -166,7 +166,7 @@ void PeerConnectionTrackerHost::GetUserMedia(
     const std::string& audio_constraints,
     const std::string& video_constraints) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&PeerConnectionTrackerHost::GetUserMedia, this, origin,
                        audio, video, audio_constraints, video_constraints));
@@ -183,7 +183,7 @@ void PeerConnectionTrackerHost::GetUserMedia(
 void PeerConnectionTrackerHost::WebRtcEventLogWrite(int lid,
                                                     const std::string& output) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&PeerConnectionTrackerHost::WebRtcEventLogWrite, this,
                        lid, output));
@@ -198,7 +198,7 @@ void PeerConnectionTrackerHost::WebRtcEventLogWrite(int lid,
 }
 
 void PeerConnectionTrackerHost::OnSuspend() {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PeerConnectionTrackerHost::SendOnSuspendOnUIThread,
                      this));

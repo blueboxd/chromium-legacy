@@ -10,10 +10,6 @@ const base::FilePath::CharType kAffiliationDatabaseFileName[] =
     FILE_PATH_LITERAL("Affiliation Database");
 const base::FilePath::CharType kLoginDataFileName[] =
     FILE_PATH_LITERAL("Login Data");
-#if defined(USE_X11)
-const base::FilePath::CharType kSecondLoginDataFileName[] =
-    FILE_PATH_LITERAL("Login Data 2");
-#endif  // defined(USE_X11)
 
 const char kPasswordManagerAccountDashboardURL[] =
     "https://passwords.google.com";

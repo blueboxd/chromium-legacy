@@ -1235,6 +1235,7 @@ if (!is_android) {
       "../browser/ui/views/webview_accessibility_browsertest.cc",
       "../browser/ui/web_applications/bookmark_app_browsertest.cc",
       "../browser/ui/web_applications/web_app_badging_browsertest.cc",
+      "../browser/ui/web_applications/web_app_file_handling_browsertest.cc",
       "../browser/ui/web_applications/web_app_ui_manager_impl_browsertest.cc",
       "../browser/ui/webauthn/authenticator_dialog_browsertest.cc",
       "../browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui_browsertest.cc",
@@ -4924,6 +4925,7 @@ test("unit_tests") {
       if (use_nss_certs) {
         sources += [
           "../browser/ui/views/crypto_module_password_dialog_view_unittest.cc",
+          "../browser/ui/webui/certificates_handler_unittest.cc",
         ]
       }
     }

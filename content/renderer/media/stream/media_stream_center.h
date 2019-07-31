@@ -31,8 +31,6 @@ class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
       const blink::WebMediaStreamTrack& original,
       const blink::WebMediaStreamTrack& clone) override;
 
-  void DidSetContentHint(const blink::WebMediaStreamTrack& track) override;
-
   void DidEnableMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
@@ -45,10 +43,6 @@ class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
 
   void DidStopMediaStreamSource(
       const blink::WebMediaStreamSource& web_source) override;
-
-  void GetSourceSettings(
-      const blink::WebMediaStreamSource& web_source,
-      blink::WebMediaStreamTrack::Settings& settings) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

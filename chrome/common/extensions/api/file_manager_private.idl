@@ -1233,6 +1233,11 @@ interface Functions {
   static void installLinuxPackage([instanceof=Entry] object entry,
                                   InstallLinuxPackageCallback callback);
 
+  // Imports a Crostini Image File (.tini). This overrides the existing Linux
+  // apps and files.
+  [nocompile]
+  static void importCrostiniImage([instanceof=Entry] object entry);
+
   // For a file in DriveFS, retrieves its thumbnail. If |cropToSquare| is true,
   // returns a thumbnail appropriate for file list or grid views; otherwise,
   // returns a thumbnail appropriate for quickview.

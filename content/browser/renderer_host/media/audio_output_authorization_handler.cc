@@ -170,7 +170,7 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
       trace_scope->UsingSessionId(session_id, device->id);
       // We don't need the origin for authorization in this case, but it's used
       // for hashing the device id before sending it back to the renderer.
-      base::PostTaskWithTraitsAndReplyWithResult(
+      base::PostTaskAndReplyWithResult(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&GetMediaDeviceSaltAndOrigin, render_process_id_,
                          render_frame_id),
@@ -191,7 +191,7 @@ void AudioOutputAuthorizationHandler::RequestDeviceAuthorization(
 
   trace_scope->CheckAccessStart(device_id);
   // Check device permissions if nondefault device is requested.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CheckAccessOnUIThread, render_process_id_,
                      render_frame_id, override_permissions_,

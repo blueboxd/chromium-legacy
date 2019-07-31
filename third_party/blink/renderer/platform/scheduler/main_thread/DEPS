@@ -15,5 +15,8 @@ specific_include_rules = {
   ],
   "frame_scheduler_impl.h": [
     "+net/base/request_priority.h"
-  ]
+  ],
+  "main_thread_unittest.cc": [
+    "+base/message_loop/message_pump_type.h",
+  ],
 }

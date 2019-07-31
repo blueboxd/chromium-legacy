@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_focus_cycler.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -291,6 +293,7 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
 
   views::View* root_view = browser_widget->GetRootView();
 
+  // pane1 contains view1 and view2, pane2 contains view3 and view4.
   views::AccessiblePaneView* pane1 = new views::AccessiblePaneView();
   root_view->AddChildView(pane1);
 
@@ -368,10 +371,10 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
   EXPECT_TRUE(wm::IsActiveWindow(browser_window));
   EXPECT_EQ(focus_manager->GetFocusedView(), view1);
 
-  // Similarly, pressing "Escape" while on the shelf.
-  // should do the same thing.
-  focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
-  EXPECT_TRUE(shelf_widget()->IsActive());
+  // Similarly, pressing "Escape" while on the shelf should do the same thing.
+  // Focus the navigation widget directly because the shelf has no apps here.
+  GetPrimaryShelf()->shelf_focus_cycler()->FocusNavigation(false /* last */);
+  EXPECT_TRUE(shelf_widget()->navigation_widget()->IsActive());
   event_generator->PressKey(ui::VKEY_ESCAPE, 0);
   EXPECT_TRUE(wm::IsActiveWindow(browser_window));
   EXPECT_EQ(focus_manager->GetFocusedView(), view1);
@@ -395,6 +398,9 @@ TEST_F(FocusCyclerTest, RemoveWidgetOnDisplayRemoved) {
   // Cycle focus to the status area.
   Shell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
   EXPECT_FALSE(wm::IsActiveWindow(window.get()));
+
+  // Cycle focus to the navigation widget.
+  Shell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
 
   // Cycle focus to the shelf.
   Shell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);

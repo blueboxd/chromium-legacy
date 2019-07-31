@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/fake/fake_display_delegate.h"
@@ -46,7 +46,7 @@ constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
 
     // When the Ozone X11 backend is running, use a UI loop to grab Expose
     // events. See GLSurfaceGLX and https://crbug.com/326995.
-    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_UI};
+    /*message_pump_type_for_gpu=*/base::MessagePumpType::UI};
 
 // Singleton OzonePlatform implementation for X11 platform.
 class OzonePlatformX11 : public OzonePlatform {

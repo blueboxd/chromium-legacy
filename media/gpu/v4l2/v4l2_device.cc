@@ -1004,8 +1004,15 @@ VideoPixelFormat V4L2Device::V4L2PixFmtToVideoPixelFormat(uint32_t pix_fmt) {
     case V4L2_PIX_FMT_NV12M:
       return PIXEL_FORMAT_NV12;
 
+    // V4L2_PIX_FMT_MT21C is only used for MT8173 hardware video decoder output
+    // and should be converted by MT8173 image processor for compositor to
+    // render. Since it is an intermediate format for video decoder,
+    // VideoPixelFormat shall not have its mapping. However, we need to create a
+    // VideoFrameLayout for the format to process the intermediate frame. Hence
+    // we map V4L2_PIX_FMT_MT21C to PIXEL_FORMAT_NV12 as their layout are the
+    // same.
     case V4L2_PIX_FMT_MT21C:
-      return PIXEL_FORMAT_MT21;
+      return PIXEL_FORMAT_NV12;
 
     case V4L2_PIX_FMT_YUV420:
     case V4L2_PIX_FMT_YUV420M:

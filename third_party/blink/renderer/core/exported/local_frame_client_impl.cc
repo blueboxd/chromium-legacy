@@ -269,14 +269,14 @@ void LocalFrameClientImpl::RunScriptsAtDocumentIdle() {
 
 void LocalFrameClientImpl::DidCreateScriptContext(
     v8::Local<v8::Context> context,
-    int world_id) {
+    int32_t world_id) {
   if (web_frame_->Client())
     web_frame_->Client()->DidCreateScriptContext(context, world_id);
 }
 
 void LocalFrameClientImpl::WillReleaseScriptContext(
     v8::Local<v8::Context> context,
-    int world_id) {
+    int32_t world_id) {
   if (web_frame_->Client()) {
     web_frame_->Client()->WillReleaseScriptContext(context, world_id);
   }

@@ -2697,8 +2697,7 @@ TEST_F(ShelfLayoutManagerTest, MousePressAppListBtnWhenShelfBeingDragged) {
   GetPrimaryShelf()->shelf_widget()->OnGestureEvent(&update_event);
 
   // Press the AppList button by mouse.
-  views::View* home_button =
-      GetPrimaryShelf()->GetShelfViewForTesting()->GetHomeButton();
+  views::View* home_button = GetPrimaryShelf()->shelf_widget()->GetHomeButton();
   GetEventGenerator()->MoveMouseTo(
       home_button->GetBoundsInScreen().CenterPoint());
   GetEventGenerator()->ClickLeftButton();
@@ -2977,7 +2976,7 @@ TEST_F(ShelfLayoutManagerTest, TapShelfItemInAutoHideShelf) {
   // Tap home button should not open the app list and shelf should keep
   // hidden.
   gfx::Rect home_button_bounds =
-      shelf->GetShelfViewForTesting()->GetHomeButton()->GetBoundsInScreen();
+      shelf->shelf_widget()->GetHomeButton()->GetBoundsInScreen();
   gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   home_button_bounds.Intersect(display_bounds);

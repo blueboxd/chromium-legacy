@@ -120,7 +120,8 @@ void XDGSurfaceWrapperV6::SetWindowGeometry(const gfx::Rect& bounds) {
 void XDGSurfaceWrapperV6::Configure(void* data,
                                     struct zxdg_surface_v6* zxdg_surface_v6,
                                     uint32_t serial) {
-  XDGSurfaceWrapperV6* surface = static_cast<XDGSurfaceWrapperV6*>(data);
+  auto* surface = static_cast<XDGSurfaceWrapperV6*>(data);
+  DCHECK(surface);  
   surface->pending_configure_serial_ = serial;
 
   if (surface->surface_for_popup_)
@@ -134,7 +135,8 @@ void XDGSurfaceWrapperV6::ConfigureTopLevel(
     int32_t width,
     int32_t height,
     struct wl_array* states) {
-  XDGSurfaceWrapperV6* surface = static_cast<XDGSurfaceWrapperV6*>(data);
+  auto* surface = static_cast<XDGSurfaceWrapperV6*>(data);
+  DCHECK(surface);
 
   bool is_maximized =
       CheckIfWlArrayHasValue(states, ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED);
@@ -151,7 +153,9 @@ void XDGSurfaceWrapperV6::ConfigureTopLevel(
 void XDGSurfaceWrapperV6::CloseTopLevel(
     void* data,
     struct zxdg_toplevel_v6* zxdg_toplevel_v6) {
-  NOTIMPLEMENTED();
+  auto* surface = static_cast<XDGSurfaceWrapperV6*>(data);
+  DCHECK(surface);
+  surface->wayland_window_->OnCloseRequest();
 }
 
 zxdg_surface_v6* XDGSurfaceWrapperV6::xdg_surface() const {

@@ -127,11 +127,6 @@ void SetAppIsDefaultForTest(Profile* profile, const std::string& id) {
       .OnApps(std::move(deltas));
 }
 
-bool AppIsDefaultForExtensionService(extensions::ExtensionService* service,
-                                     const std::string& id) {
-  return service && AppIsDefault(service->profile(), id);
-}
-
 bool IsUnRemovableDefaultApp(const std::string& id) {
   return id == extension_misc::kChromeAppId ||
          id == extensions::kWebStoreAppId ||
@@ -316,11 +311,9 @@ void AppListSyncableService::SetAppIsDefaultForTest(Profile* profile,
   app_list::SetAppIsDefaultForTest(profile, id);
 }
 
-AppListSyncableService::AppListSyncableService(
-    Profile* profile,
-    extensions::ExtensionSystem* extension_system)
+AppListSyncableService::AppListSyncableService(Profile* profile)
     : profile_(profile),
-      extension_system_(extension_system),
+      extension_system_(extensions::ExtensionSystem::Get(profile)),
       initial_sync_data_processed_(false),
       first_app_list_sync_(true),
       is_app_service_enabled_(
@@ -345,7 +338,7 @@ AppListSyncableService::AppListSyncableService(
   else
     model_updater_ = std::make_unique<ChromeAppListModelUpdater>(profile);
 
-  if (!extension_system) {
+  if (!extension_system_) {
     LOG(ERROR) << "AppListSyncableService created with no ExtensionSystem";
     return;
   }
@@ -695,8 +688,7 @@ bool AppListSyncableService::RemoveDefaultApp(const ChromeAppListItem* item,
   // If there is an existing REMOVE_DEFAULT_APP entry, and the app is
   // installed as a Default app, uninstall the app instead of adding it.
   if (sync_item->item_type == sync_pb::AppListSpecifics::TYPE_APP &&
-      AppIsDefaultForExtensionService(extension_system_->extension_service(),
-                                      item->id())) {
+      AppIsDefault(profile_, item->id())) {
     VLOG(2) << this
             << ": HandleDefaultApp: Uninstall: " << sync_item->ToString();
     UninstallExtension(extension_system_->extension_service(), item->id());
@@ -712,8 +704,7 @@ bool AppListSyncableService::RemoveDefaultApp(const ChromeAppListItem* item,
 
 bool AppListSyncableService::InterceptDeleteDefaultApp(SyncItem* sync_item) {
   if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_APP ||
-      !AppIsDefaultForExtensionService(extension_system_->extension_service(),
-                                       sync_item->item_id)) {
+      !AppIsDefault(profile_, sync_item->item_id)) {
     return false;
   }
 
@@ -926,8 +917,7 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
       ++updated_items;
     if (specifics.item_type() != sync_pb::AppListSpecifics::TYPE_FOLDER &&
         !IsUnRemovableDefaultApp(item_id) && !AppIsOem(item_id) &&
-        !AppIsDefaultForExtensionService(extension_system_->extension_service(),
-                                         item_id)) {
+        !AppIsDefault(profile_, item_id)) {
       VLOG(2) << "Syncing non-default item: " << item_id;
       first_app_list_sync_ = false;
     }

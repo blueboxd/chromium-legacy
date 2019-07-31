@@ -16,7 +16,7 @@ WorkingSetTrimmerPolicyWin::~WorkingSetTrimmerPolicyWin() = default;
 
 // static
 bool WorkingSetTrimmerPolicyWin::PlatformSupportsWorkingSetTrim() {
-  bool enabled = base::FeatureList::IsEnabled(features::kEmptyWorkingSet);
+  bool enabled = base::FeatureList::IsEnabled(::features::kEmptyWorkingSet);
   bool supported = mechanism::WorkingSetTrimmer::GetInstance()
                        ->PlatformSupportsWorkingSetTrim();
 

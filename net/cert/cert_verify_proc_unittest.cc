@@ -2686,6 +2686,48 @@ TEST_P(CertVerifyProcInternalTest, CRLSetLeafSerial) {
   EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
 }
 
+TEST_P(CertVerifyProcInternalTest, CRLSetRootReturnsChain) {
+  if (!SupportsCRLSet()) {
+    LOG(INFO) << "Skipping test as verifier doesn't support CRLSet";
+    return;
+  }
+
+  CertificateList ca_cert_list =
+      CreateCertificateListFromFile(GetTestCertsDirectory(), "root_ca_cert.pem",
+                                    X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, ca_cert_list.size());
+  ScopedTestRoot test_root(ca_cert_list[0].get());
+
+  scoped_refptr<X509Certificate> leaf = CreateCertificateChainFromFile(
+      GetTestCertsDirectory(), "ok_cert_by_intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_TRUE(leaf);
+  ASSERT_EQ(1U, leaf->intermediate_buffers().size());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(leaf.get(), "127.0.0.1", flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
+  EXPECT_THAT(error, IsOk());
+
+  // Test revocation of the root itself.
+  scoped_refptr<CRLSet> crl_set;
+  std::string crl_set_bytes;
+  ASSERT_TRUE(base::ReadFileToString(
+      GetTestCertsDirectory().AppendASCII("crlset_by_root_spki.raw"),
+      &crl_set_bytes));
+  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
+
+  error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
+                 CertificateList(), &verify_result);
+  EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+
+  EXPECT_EQ(3u, verify_result.public_key_hashes.size());
+  ASSERT_TRUE(verify_result.verified_cert);
+  EXPECT_EQ(2u, verify_result.verified_cert->intermediate_buffers().size());
+}
+
 // Tests that CertVerifyProc implementations apply CRLSet revocations by
 // subject.
 TEST_P(CertVerifyProcInternalTest, CRLSetRevokedBySubject) {

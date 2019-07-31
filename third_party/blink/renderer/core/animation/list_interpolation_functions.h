@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class UnderlyingValue;
 class UnderlyingValueOwner;
 class InterpolationType;
 
@@ -52,8 +53,7 @@ class CORE_EXPORT ListInterpolationFunctions {
       base::RepeatingCallback<bool(const NonInterpolableValue*,
                                    const NonInterpolableValue*)>;
   using CompositeItemCallback =
-      base::RepeatingCallback<void(std::unique_ptr<InterpolableValue>&,
-                                   scoped_refptr<NonInterpolableValue>&,
+      base::RepeatingCallback<void(UnderlyingValue&,
                                    double underlying_fraction,
                                    const InterpolableValue&,
                                    const NonInterpolableValue*)>;
@@ -74,7 +74,7 @@ class CORE_EXPORT NonInterpolableList : public NonInterpolableValue {
     return base::AdoptRef(new NonInterpolableList());
   }
   static scoped_refptr<NonInterpolableList> Create(
-      Vector<scoped_refptr<NonInterpolableValue>>&& list) {
+      Vector<scoped_refptr<const NonInterpolableValue>>&& list) {
     return base::AdoptRef(new NonInterpolableList(std::move(list)));
   }
 
@@ -82,19 +82,35 @@ class CORE_EXPORT NonInterpolableList : public NonInterpolableValue {
   const NonInterpolableValue* Get(wtf_size_t index) const {
     return list_[index].get();
   }
-  NonInterpolableValue* Get(wtf_size_t index) { return list_[index].get(); }
-  scoped_refptr<NonInterpolableValue>& GetMutable(wtf_size_t index) {
-    return list_[index];
-  }
+
+  // This class can update the NonInterpolableList of an UnderlyingValue with
+  // a series of mutations. The actual update of the list is delayed until the
+  // AutoBuilder object goes out of scope, to avoid creating a new list for
+  // every call to Set().
+  class CORE_EXPORT AutoBuilder {
+    STACK_ALLOCATED();
+
+   public:
+    // The UnderlyingValue provided here is assumed to contain a
+    // non-nullptr NonInterpolableList.
+    AutoBuilder(UnderlyingValue&);
+    ~AutoBuilder();
+
+    void Set(wtf_size_t index, scoped_refptr<const NonInterpolableValue>);
+
+   private:
+    UnderlyingValue& underlying_value_;
+    Vector<scoped_refptr<const NonInterpolableValue>> list_;
+  };
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
  private:
   NonInterpolableList() = default;
-  NonInterpolableList(Vector<scoped_refptr<NonInterpolableValue>>&& list)
+  NonInterpolableList(Vector<scoped_refptr<const NonInterpolableValue>>&& list)
       : list_(list) {}
 
-  Vector<scoped_refptr<NonInterpolableValue>> list_;
+  Vector<scoped_refptr<const NonInterpolableValue>> list_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(NonInterpolableList);
@@ -106,7 +122,8 @@ InterpolationValue ListInterpolationFunctions::CreateList(
   if (length == 0)
     return CreateEmptyList();
   auto interpolable_list = std::make_unique<InterpolableList>(length);
-  Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
+  Vector<scoped_refptr<const NonInterpolableValue>> non_interpolable_values(
+      length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue item = create_item(i);
     if (!item)

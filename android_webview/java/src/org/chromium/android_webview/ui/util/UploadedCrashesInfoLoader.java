@@ -61,7 +61,7 @@ public class UploadedCrashesInfoLoader extends CrashInfoLoader {
             return null;
         }
 
-        CrashInfo info = new CrashInfo();
+        CrashInfo info = new CrashInfo(components[2]);
         info.uploadState = UploadState.UPLOADED;
         try {
             info.uploadTime = Long.parseLong(components[0]);
@@ -69,7 +69,6 @@ public class UploadedCrashesInfoLoader extends CrashInfoLoader {
             return null;
         }
         info.uploadId = components[1];
-        info.localId = components[2];
 
         return info;
     }

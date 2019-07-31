@@ -27,7 +27,9 @@ import org.robolectric.annotation.Implements;
 
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordHistogramJni;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowRecordHistogram;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowUrlUtilities;
@@ -48,8 +50,7 @@ import java.util.HashSet;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE,
-        shadows = {ShadowUrlUtilities.class, ShadowRecordHistogram.class,
-                ShadowWebsitePreferenceBridge.class})
+        shadows = {ShadowUrlUtilities.class, ShadowWebsitePreferenceBridge.class})
 public class GeolocationHeaderUnitTest {
     private static final String SEARCH_URL = "https://www.google.com/search?q=potatoes";
 
@@ -98,12 +99,19 @@ public class GeolocationHeaderUnitTest {
     @Rule
     public TestRule mFeatureProcessor = new Features.JUnitProcessor();
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    @Mock
+    RecordHistogram.Natives mRecordHistogramMock;
+
     @Mock
     private Tab mTab;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mocker.mock(RecordHistogramJni.TEST_HOOKS, mRecordHistogramMock);
         GeolocationTracker.setLocationAgeForTesting(null);
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LocationSource.HIGH_ACCURACY);

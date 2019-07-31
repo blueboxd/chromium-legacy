@@ -65,7 +65,7 @@ class ClickToCallIconView : public PageActionIconView {
   SkColor loader_color_;
   std::unique_ptr<gfx::ThrobAnimation> loading_animation_;
   bool show_error_ = false;
-  ClickToCallSharingDialogController* last_controller_;
+  ClickToCallSharingDialogController* last_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ClickToCallIconView);
 };

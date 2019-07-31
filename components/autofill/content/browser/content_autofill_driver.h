@@ -56,7 +56,6 @@ class ContentAutofillDriver : public AutofillDriver,
   bool IsIncognito() const override;
   bool IsInMainFrame() const override;
   ui::AXTreeID GetAxTreeId() const override;
-  net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
   void ConnectToAuthenticator(

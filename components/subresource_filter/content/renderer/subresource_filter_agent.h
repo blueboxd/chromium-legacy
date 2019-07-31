@@ -86,7 +86,6 @@ class SubresourceFilterAgent
 
   void RecordHistogramsOnLoadCommitted(
       const mojom::ActivationState& activation_state);
-  void RecordHistogramsOnLoadFinished();
   void ResetInfoForNextCommit();
 
   const mojom::SubresourceFilterHostAssociatedPtr& GetSubresourceFilterHost();

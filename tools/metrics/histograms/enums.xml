@@ -6358,6 +6358,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Offered"/>
 </enum>
 
+<enum name="BooleanOffTheRecord">
+  <int value="0" label="Regular"/>
+  <int value="1" label="Off the record"/>
+</enum>
+
 <enum name="BooleanOnBattery">
   <int value="0" label="Not on battery"/>
   <int value="1" label="On Battery"/>
@@ -10732,6 +10737,7 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Log Lock"/>
   <int value="6" label="TPM Wipe"/>
   <int value="7" label="TRNG Stall"/>
+  <int value="8" label="Dcrypto Failure"/>
   <int value="200" label="Nvmem Malloc"/>
   <int value="201" label="Nvmem Page Header Size Mismatch"/>
   <int value="202" label="Nvmem Read Underrun"/>
@@ -17647,6 +17653,7 @@ Called by update_net_error_codes.py.-->
   <int value="576" label="CrostiniRootAccessAllowed"/>
   <int value="577" label="VmManagementCliAllowed"/>
   <int value="578" label="CheckURLsInRealTime"/>
+  <int value="579" label="CACertificateManagementAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -20166,6 +20173,7 @@ Called by update_net_error_codes.py.-->
   <int value="1362" label="ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE"/>
   <int value="1363" label="ACTION_ENABLE"/>
   <int value="1364" label="ACTION_DISABLE"/>
+  <int value="1365" label="FILEMANAGERPRIVATEINTERNAL_IMPORTCROSTINIIMAGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -33551,16 +33559,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="LinuxPasswordsMigrationToEncryptionStatus">
   <int value="0" label="Not attempted"/>
   <int value="1" label="(DEPRECATED) Failed"/>
-  <int value="2" label="Copied everything"/>
+  <int value="2" label="(DEPRECATED) Copied everything"/>
   <int value="3" label="The standard login database is encrypted"/>
   <int value="4" label="The migration is about to be attempted"/>
   <int value="5" label="No access to the native backend"/>
   <int value="6"
       label="(DEPRECATED) Could not create or write into the temporary file"/>
-  <int value="7" label="Could not read from the native backend"/>
+  <int value="7" label="(DEPRECATED) Could not read from the native backend"/>
   <int value="8" label="Could not replace old database"/>
   <int value="9" label="Could not initialise temporary database"/>
-  <int value="10" label="Could not reset temporary database"/>
+  <int value="10" label="(DEPRECATED) Could not reset temporary database"/>
   <int value="11" label="Could not write into temporary database"/>
 </enum>
 
@@ -60739,6 +60747,7 @@ Full version information for the fingerprint enum values:
   <int value="72" label=".orf"/>
   <int value="73" label=".raf"/>
   <int value="74" label=".rw2"/>
+  <int value="75" label=".tini"/>
 </enum>
 
 <enum name="VirtualKeyboardContainerType">

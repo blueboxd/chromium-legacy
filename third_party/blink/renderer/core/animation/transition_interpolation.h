@@ -95,7 +95,7 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
 
  private:
   const InterpolableValue& CurrentInterpolableValue() const;
-  NonInterpolableValue* CurrentNonInterpolableValue() const;
+  const NonInterpolableValue* CurrentNonInterpolableValue() const;
 
   const PropertyHandle property_;
   const InterpolationType& type_;

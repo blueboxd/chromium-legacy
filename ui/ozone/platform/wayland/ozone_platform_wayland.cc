@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_pump_type.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
@@ -64,7 +65,7 @@ constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
     // TODO(msisov, rjkroege): Remove after http://crbug.com/806092.
     /*requires_mojo=*/true,
 
-    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_DEFAULT};
+    /*message_pump_type_for_gpu=*/base::MessagePumpType::DEFAULT};
 
 class OzonePlatformWayland : public OzonePlatform {
  public:

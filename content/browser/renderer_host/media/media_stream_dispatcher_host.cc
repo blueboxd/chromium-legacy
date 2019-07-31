@@ -100,7 +100,7 @@ MediaStreamDispatcherHost::GetMediaStreamDeviceObserver() {
   observer.set_connection_error_handler(base::BindOnce(
       &MediaStreamDispatcherHost::OnMediaStreamDeviceObserverConnectionError,
       weak_factory_.GetWeakPtr()));
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BindMediaStreamDeviceObserverRequest, render_process_id_,
                      render_frame_id_, std::move(dispatcher_request)));
@@ -127,8 +127,7 @@ void MediaStreamDispatcherHost::GenerateStream(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}).get(),
-      FROM_HERE,
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id_,
                      render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoGenerateStream,
@@ -185,8 +184,7 @@ void MediaStreamDispatcherHost::OpenDevice(int32_t page_request_id,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}).get(),
-      FROM_HERE,
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
       base::BindOnce(salt_and_origin_callback_, render_process_id_,
                      render_frame_id_),
       base::BindOnce(&MediaStreamDispatcherHost::DoOpenDevice,

@@ -23,10 +23,6 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace network {
 struct ResourceResponse;
 }  // namespace network
@@ -77,11 +73,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
         std::unique_ptr<DownloadCreateInfo> info,
         const DownloadUrlParameters::OnStartedCallback& on_started,
         StartDownloadItemCallback callback) {}
-
-    // Gets the URLRequestContextGetter for sending requests.
-    // TODO(qinmin): remove this once network service is fully enabled.
-    virtual net::URLRequestContextGetter* GetURLRequestContextGetter(
-        const DownloadCreateInfo& download_create_info);
   };
 
   using IsOriginSecureCallback = base::RepeatingCallback<bool(const GURL&)>;

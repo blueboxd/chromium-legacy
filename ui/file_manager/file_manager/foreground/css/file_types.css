@@ -158,6 +158,12 @@ tree .tree-item[selected] > .tree-row >
       url(../images/filetype/2x/filetype_sites.png) 2x);
 }
 
+[file-type-icon='tini'] {
+  background-image: -webkit-image-set(
+      url(../images/filetype/filetype_tini.png) 1x,
+      url(../images/filetype/2x/filetype_tini.png) 2x);
+}
+
 [file-type-icon='video'] {
   background-image: -webkit-image-set(
       url(../images/filetype/filetype_video.png) 1x,

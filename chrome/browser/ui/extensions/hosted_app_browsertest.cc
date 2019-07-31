@@ -24,9 +24,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/badging/badge_manager.h"
-#include "chrome/browser/badging/badge_manager_delegate.h"
-#include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -86,7 +83,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/geometry/rect.h"
@@ -413,7 +409,7 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
   void SetUpOnMainThread() override {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-    // By default, all SSL cert checks are valid. Can be overriden in tests.
+    // By default, all SSL cert checks are valid. Can be overridden in tests.
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
   }
 
@@ -868,257 +864,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, InScopeHttpUrlsDisplayAppTitle) {
   EXPECT_EQ(base::ASCIIToUTF16("A Hosted App"),
             app_browser->GetWindowTitleForCurrentTab(false));
 }
-
-class HostedAppFileHandlingTest : public HostedAppTest {
- public:
-  HostedAppFileHandlingTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kNativeFileSystemAPI,
-         blink::features::kFileHandlingAPI},
-        {});
-  }
-
-  base::FilePath NewTestFilePath() {
-    // CreateTemporaryFile blocks, temporarily allow blocking.
-    base::ScopedAllowBlockingForTesting allow_blocking;
-
-    base::FilePath test_file_path;
-    base::CreateTemporaryFile(&test_file_path);
-    return test_file_path;
-  }
-
-  std::string InstallFileHandlingPWA() {
-    DCHECK_EQ(web_app_info_.app_url, GURL());
-    GURL url = GetSecureAppURL();
-
-    web_app_info_.app_url = url;
-    web_app_info_.scope = url.GetWithoutFilename();
-    web_app_info_.title = base::ASCIIToUTF16("A Hosted App");
-    web_app_info_.file_handler = blink::Manifest::FileHandler();
-    web_app_info_.file_handler->action =
-        https_server()->GetURL("app.com", "/ssl/blank_page.html");
-
-    {
-      std::vector<blink::Manifest::FileFilter> filters;
-      blink::Manifest::FileFilter text = {
-          base::ASCIIToUTF16("text"),
-          {base::ASCIIToUTF16(".txt"), base::ASCIIToUTF16("text/*")}};
-      filters.push_back(text);
-      web_app_info_.file_handler->files = std::move(filters);
-    }
-
-    app_ = InstallBookmarkApp(web_app_info_);
-    return app_->id();
-  }
-
-  content::WebContents* LaunchWithFiles(
-      const std::string& app_id,
-      const std::vector<base::FilePath>& files) {
-    AppLaunchParams params(browser()->profile(), app_id,
-                           extensions::LaunchContainer::kLaunchContainerWindow,
-                           WindowOpenDisposition::NEW_WINDOW,
-                           extensions::AppLaunchSource::kSourceFileHandler);
-    params.launch_files = files;
-
-    content::TestNavigationObserver navigation_observer(
-        web_app_info_.file_handler->action);
-    navigation_observer.StartWatchingNewWebContents();
-
-    content::WebContents* web_contents =
-        OpenApplicationWindow(params, web_app_info_.file_handler->action);
-    navigation_observer.Wait();
-    return web_contents;
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  WebApplicationInfo web_app_info_;
-};
-
-IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest, PWAsCanViewLaunchParams) {
-  ASSERT_TRUE(https_server()->Start());
-
-  const std::string app_id = InstallFileHandlingPWA();
-  content::WebContents* web_contents = LaunchWithFiles(app_id, {});
-  EXPECT_EQ(0, content::EvalJs(web_contents, "launchParams.files.length"));
-}
-
-IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest,
-                       PWAsCanReceiveFileLaunchParams) {
-  ASSERT_TRUE(https_server()->Start());
-
-  const std::string app_id = InstallFileHandlingPWA();
-  base::FilePath test_file_path = NewTestFilePath();
-  content::WebContents* web_contents =
-      LaunchWithFiles(app_id, {test_file_path});
-
-  EXPECT_EQ(1, content::EvalJs(web_contents, "launchParams.files.length"));
-  EXPECT_EQ(test_file_path.BaseName().value(),
-            content::EvalJs(web_contents, "launchParams.files[0].name"));
-}
-
-#if !defined(OS_ANDROID)
-class HostedAppBadgingTest : public HostedAppTest {
- public:
-  // Listens to BadgeManager events and forwards them to the test class.
-  class TestBadgeManagerDelegate : public badging::BadgeManagerDelegate {
-   public:
-    using SetBadgeCallback =
-        base::RepeatingCallback<void(const std::string&,
-                                     base::Optional<uint64_t>)>;
-    using ClearBadgeCallback =
-        base::RepeatingCallback<void(const std::string&)>;
-
-    using ChangeFailedCallback = base::RepeatingCallback<void()>;
-
-    TestBadgeManagerDelegate(Profile* profile,
-                             SetBadgeCallback on_set_badge,
-                             ClearBadgeCallback on_clear_badge,
-                             ChangeFailedCallback on_change_failed)
-        : badging::BadgeManagerDelegate(profile),
-          on_set_badge_(on_set_badge),
-          on_clear_badge_(on_clear_badge),
-          on_change_failed_(on_change_failed) {}
-
-    void OnBadgeSet(const std::string& app_id,
-                    base::Optional<uint64_t> contents) override {
-      on_set_badge_.Run(app_id, contents);
-    }
-
-    void OnBadgeCleared(const std::string& app_id) override {
-      on_clear_badge_.Run(app_id);
-    }
-
-    void OnBadgeChangeIgnoredForTesting() override { on_change_failed_.Run(); }
-
-   private:
-    SetBadgeCallback on_set_badge_;
-    ClearBadgeCallback on_clear_badge_;
-    ChangeFailedCallback on_change_failed_;
-  };
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    HostedAppTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("enable-blink-features", "Badging");
-  }
-
-  void SetUpOnMainThread() override {
-    HostedAppTest::SetUpOnMainThread();
-
-    ASSERT_TRUE(https_server()->Start());
-    ASSERT_TRUE(embedded_test_server()->Start());
-
-    InstallPWA(https_server()->GetURL(
-        "/ssl/page_with_in_scope_and_cross_site_frame.html"));
-    content::WebContents* web_contents =
-        app_browser_->tab_strip_model()->GetActiveWebContents();
-    // There should be exactly 3 frames:
-    // 1) The main frame.
-    // 2) A cross site frame, on https://example.com/
-    // 3) A sub frame in the app's scope.
-    auto frames = web_contents->GetAllFrames();
-    ASSERT_EQ(3u, frames.size());
-
-    main_frame_ = web_contents->GetMainFrame();
-    for (auto* frame : frames) {
-      if (frame->GetLastCommittedURL() == "https://example.com/")
-        cross_site_frame_ = frame;
-      else if (frame != main_frame_)
-        in_scope_frame_ = frame;
-    }
-
-    ASSERT_TRUE(main_frame_);
-    ASSERT_TRUE(in_scope_frame_);
-    ASSERT_TRUE(cross_site_frame_);
-
-    awaiter_ = std::make_unique<base::RunLoop>();
-
-    Profile* profile = app_browser_->profile();
-    std::unique_ptr<badging::BadgeManagerDelegate> delegate =
-        std::make_unique<TestBadgeManagerDelegate>(
-            profile,
-            base::BindRepeating(&HostedAppBadgingTest::OnBadgeSet,
-                                base::Unretained(this)),
-            base::BindRepeating(&HostedAppBadgingTest::OnBadgeCleared,
-                                base::Unretained(this)),
-            base::BindRepeating(&HostedAppBadgingTest::OnBadgeChangeFailed,
-                                base::Unretained(this)));
-    badging::BadgeManagerFactory::GetInstance()
-        ->GetForProfile(profile)
-        ->SetDelegate(std::move(delegate));
-  }
-
-  void OnBadgeSet(const std::string& app_id,
-                  base::Optional<uint64_t> badge_content) {
-    if (badge_content.has_value())
-      last_badge_content_ = badge_content;
-    else
-      was_flagged_ = true;
-
-    awaiter_->Quit();
-  }
-
-  void OnBadgeCleared(const std::string& app_id) {
-    was_cleared_ = true;
-    awaiter_->Quit();
-  }
-
-  void OnBadgeChangeFailed() {
-    change_failed_ = true;
-    awaiter_->Quit();
-  }
-
- protected:
-  void ExecuteScriptAndWaitForBadgeChange(std::string script,
-                                          RenderFrameHost* on) {
-    was_cleared_ = false;
-    was_flagged_ = false;
-    change_failed_ = false;
-    last_badge_content_ = base::nullopt;
-    awaiter_.reset(new base::RunLoop());
-
-    ASSERT_TRUE(content::ExecuteScript(on, script));
-
-    if (was_cleared_ || was_flagged_ || change_failed_ ||
-        last_badge_content_ != base::nullopt)
-      return;
-
-    awaiter_->Run();
-  }
-
-  RenderFrameHost* main_frame_;
-  RenderFrameHost* in_scope_frame_;
-  RenderFrameHost* cross_site_frame_;
-
-  bool was_cleared_ = false;
-  bool was_flagged_ = false;
-  bool change_failed_ = false;
-  base::Optional<uint64_t> last_badge_content_ = base::nullopt;
-
- private:
-  std::unique_ptr<base::RunLoop> awaiter_;
-};
-
-// Tests that the badge cannot be set and cleared from a cross site frame.
-// TODO(https://crbug.com/966290): Move to web_app_badging_browsertest.cc
-// when WebAppBrowserController::IsUrlInAppScope is implemented.
-IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest,
-                       BadgeCannotBeChangedFromCrossSiteFrame) {
-  // Clearing from cross site frame should be a no-op.
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()",
-                                     cross_site_frame_);
-  ASSERT_FALSE(was_cleared_);
-  ASSERT_FALSE(was_flagged_);
-  ASSERT_TRUE(change_failed_);
-
-  // Setting from cross site frame should be a no-op.
-  ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(77)",
-                                     cross_site_frame_);
-  ASSERT_FALSE(was_cleared_);
-  ASSERT_FALSE(was_flagged_);
-  ASSERT_TRUE(change_failed_);
-}
-#endif  // !defined(OS_CHROMEOS)
 
 using HostedAppPWAOnlyTest = HostedAppTest;
 using HostedAppPWAOnlyTestWithAutoupgradesDisabled =
@@ -2952,15 +2697,3 @@ INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     HostedAppSitePerProcessTest,
     ::testing::Values(AppType::HOSTED_APP));
-
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    HostedAppFileHandlingTest,
-    ::testing::Values(AppType::BOOKMARK_APP));
-
-#if !defined(OS_CHROMEOS)
-INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
-    HostedAppBadgingTest,
-    ::testing::Values(AppType::BOOKMARK_APP));
-#endif  // !defined(OS_CHROMEOS)

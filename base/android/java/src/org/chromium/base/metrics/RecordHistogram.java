@@ -9,6 +9,7 @@ import android.text.format.DateUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +67,7 @@ public class RecordHistogram {
     public static void recordBooleanHistogram(String name, boolean sample) {
         if (sDisabledBy != null) return;
         long key = getCachedHistogramKey(name);
-        long result = nativeRecordBooleanHistogram(name, key, sample);
+        long result = RecordHistogramJni.get().recordBooleanHistogram(name, key, sample);
         if (result != key) sCache.put(name, result);
     }
 
@@ -82,7 +83,8 @@ public class RecordHistogram {
     public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
         if (sDisabledBy != null) return;
         long key = getCachedHistogramKey(name);
-        long result = nativeRecordEnumeratedHistogram(name, key, sample, boundary);
+        long result =
+                RecordHistogramJni.get().recordEnumeratedHistogram(name, key, sample, boundary);
         if (result != key) sCache.put(name, result);
     }
 
@@ -129,7 +131,8 @@ public class RecordHistogram {
             String name, int sample, int min, int max, int numBuckets) {
         if (sDisabledBy != null) return;
         long key = getCachedHistogramKey(name);
-        long result = nativeRecordCustomCountHistogram(name, key, sample, min, max, numBuckets);
+        long result = RecordHistogramJni.get().recordCustomCountHistogram(
+                name, key, sample, min, max, numBuckets);
         if (result != key) sCache.put(name, result);
     }
 
@@ -146,7 +149,8 @@ public class RecordHistogram {
             String name, int sample, int min, int max, int numBuckets) {
         if (sDisabledBy != null) return;
         long key = getCachedHistogramKey(name);
-        long result = nativeRecordLinearCountHistogram(name, key, sample, min, max, numBuckets);
+        long result = RecordHistogramJni.get().recordLinearCountHistogram(
+                name, key, sample, min, max, numBuckets);
         if (result != key) sCache.put(name, result);
     }
 
@@ -159,7 +163,7 @@ public class RecordHistogram {
     public static void recordPercentageHistogram(String name, int sample) {
         if (sDisabledBy != null) return;
         long key = getCachedHistogramKey(name);
-        long result = nativeRecordEnumeratedHistogram(name, key, sample, 101);
+        long result = RecordHistogramJni.get().recordEnumeratedHistogram(name, key, sample, 101);
         if (result != key) sCache.put(name, result);
     }
 
@@ -172,7 +176,7 @@ public class RecordHistogram {
     public static void recordSparseHistogram(String name, int sample) {
         if (sDisabledBy != null) return;
         long key = getCachedHistogramKey(name);
-        long result = nativeRecordSparseHistogram(name, key, sample);
+        long result = RecordHistogramJni.get().recordSparseHistogram(name, key, sample);
         if (result != key) sCache.put(name, result);
     }
 
@@ -267,7 +271,7 @@ public class RecordHistogram {
         // the types returned by TimeUnit and System.currentTimeMillis() APIs, from which these
         // values come.
         assert max == clampToInt(max);
-        long result = nativeRecordCustomTimesHistogramMilliseconds(
+        long result = RecordHistogramJni.get().recordCustomTimesHistogramMilliseconds(
                 name, key, clampToInt(duration), clampToInt(min), clampToInt(max), numBuckets);
         if (result != key) sCache.put(name, result);
     }
@@ -279,7 +283,7 @@ public class RecordHistogram {
      */
     @VisibleForTesting
     public static int getHistogramValueCountForTesting(String name, int sample) {
-        return nativeGetHistogramValueCountForTesting(name, sample);
+        return RecordHistogramJni.get().getHistogramValueCountForTesting(name, sample);
     }
 
     /**
@@ -288,21 +292,21 @@ public class RecordHistogram {
      */
     @VisibleForTesting
     public static int getHistogramTotalCountForTesting(String name) {
-        return nativeGetHistogramTotalCountForTesting(name);
+        return RecordHistogramJni.get().getHistogramTotalCountForTesting(name);
     }
 
-    private static native long nativeRecordCustomTimesHistogramMilliseconds(
-            String name, long key, int duration, int min, int max, int numBuckets);
-
-    private static native long nativeRecordBooleanHistogram(String name, long key, boolean sample);
-    private static native long nativeRecordEnumeratedHistogram(
-            String name, long key, int sample, int boundary);
-    private static native long nativeRecordCustomCountHistogram(
-            String name, long key, int sample, int min, int max, int numBuckets);
-    private static native long nativeRecordLinearCountHistogram(
-            String name, long key, int sample, int min, int max, int numBuckets);
-    private static native long nativeRecordSparseHistogram(String name, long key, int sample);
-
-    private static native int nativeGetHistogramValueCountForTesting(String name, int sample);
-    private static native int nativeGetHistogramTotalCountForTesting(String name);
+    @NativeMethods
+    public interface Natives {
+        long recordCustomTimesHistogramMilliseconds(
+                String name, long key, int duration, int min, int max, int numBuckets);
+        long recordBooleanHistogram(String name, long key, boolean sample);
+        long recordEnumeratedHistogram(String name, long key, int sample, int boundary);
+        long recordCustomCountHistogram(
+                String name, long key, int sample, int min, int max, int numBuckets);
+        long recordLinearCountHistogram(
+                String name, long key, int sample, int min, int max, int numBuckets);
+        long recordSparseHistogram(String name, long key, int sample);
+        int getHistogramValueCountForTesting(String name, int sample);
+        int getHistogramTotalCountForTesting(String name);
+    }
 }

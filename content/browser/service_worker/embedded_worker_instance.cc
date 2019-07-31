@@ -997,17 +997,18 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
         rph, routing_id, &default_factory_receiver);
   }
 
+  // TODO(yhirano): Support COEP.
   if (GetNetworkFactoryCallbackForTest().is_null()) {
-    rph->CreateURLLoaderFactory(origin, nullptr /* preferences */,
-                                net::NetworkIsolationKey(origin, origin),
-                                std::move(default_header_client),
-                                std::move(default_factory_receiver));
+    rph->CreateURLLoaderFactory(
+        origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
+        nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
+        std::move(default_header_client), std::move(default_factory_receiver));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
-    rph->CreateURLLoaderFactory(origin, nullptr /* preferences */,
-                                net::NetworkIsolationKey(origin, origin),
-                                std::move(default_header_client),
-                                mojo::MakeRequest(&original_factory));
+    rph->CreateURLLoaderFactory(
+        origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
+        nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
+        std::move(default_header_client), mojo::MakeRequest(&original_factory));
     GetNetworkFactoryCallbackForTest().Run(std::move(default_factory_receiver),
                                            rph->GetID(),
                                            original_factory.PassInterface());

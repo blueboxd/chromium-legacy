@@ -12,6 +12,7 @@
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -103,6 +104,8 @@ TEST_F(PipTest, ShortcutNavigation) {
   EXPECT_FALSE(widget->IsActive());
 
   auto* shelf = AshTestBase::GetPrimaryShelf()->shelf_widget();
+  auto* navigation_widget =
+      AshTestBase::GetPrimaryShelf()->shelf_widget()->navigation_widget();
   auto* status_area =
       Shell::GetPrimaryRootWindowController()->GetStatusAreaWidget();
 
@@ -114,6 +117,9 @@ TEST_F(PipTest, ShortcutNavigation) {
   EXPECT_TRUE(status_area->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(navigation_widget->IsActive());
+
+  generator->PressKey(ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(widget->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN);
@@ -122,6 +128,9 @@ TEST_F(PipTest, ShortcutNavigation) {
   // Forward
   generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(widget->IsActive());
+
+  generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(navigation_widget->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(status_area->IsActive());

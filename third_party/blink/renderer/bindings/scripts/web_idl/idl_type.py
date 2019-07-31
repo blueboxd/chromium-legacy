@@ -138,9 +138,6 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
         WithDebugInfo.__init__(self, debug_info)
         self._is_optional = is_optional
 
-    def __str__(self):
-        return self.syntactic_form
-
     @property
     def syntactic_form(self):
         """
@@ -361,7 +358,7 @@ class IdlType(WithExtendedAttributes, WithCodeGeneratorInfo, WithDebugInfo):
     def _format_syntactic_form(self, syntactic_form_inner):
         """Helper function to implement |syntactic_form|."""
         optional_form = 'optional ' if self.is_optional else ''
-        ext_attr_form = ('{} '.format(self.extended_attributes)
+        ext_attr_form = ('{} '.format(self.extended_attributes.syntactic_form)
                          if self.extended_attributes else '')
         return '{}{}{}'.format(optional_form, ext_attr_form,
                                syntactic_form_inner)

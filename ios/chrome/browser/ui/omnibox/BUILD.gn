@@ -170,6 +170,33 @@ source_set("omnibox_internal") {
   ]
 }
 
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "omnibox_egtest.mm",
+  ]
+  deps = [
+    ":omnibox",
+    ":omnibox_internal",
+    "//base",
+    "//base/test:test_support",
+    "//components/omnibox/browser",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
+    "//ios/chrome/browser/ui/omnibox/popup:popup_ui",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+    "//ios/third_party/earl_grey:earl_grey+link",
+    "//testing/gmock",
+    "//ui/base",
+  ]
+  libs = [ "XCTest.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

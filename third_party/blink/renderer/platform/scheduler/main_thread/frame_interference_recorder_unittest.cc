@@ -362,14 +362,14 @@ TEST_F(FrameInterferenceRecorderTest, Nesting) {
       // When a nested loop is entered, complete the current task.
       recorder_.OnTaskCompleted(queue_a1_.get(), NowTicks());
 
-      const base::TimeTicks start = NowTicks();
+      const base::TimeTicks nested_start = NowTicks();
       {
         ScopedExpectSample expect_sample(this, queue_b1_.get(), kDelay);
-        recorder_.OnTaskStarted(queue_b1_.get(), EnqueueOrder(2), start);
+        recorder_.OnTaskStarted(queue_b1_.get(), EnqueueOrder(2), nested_start);
       }
       FastForwardBy(8 * kDelay);
-      const base::TimeTicks end = NowTicks();
-      recorder_.OnTaskCompleted(queue_b1_.get(), end);
+      const base::TimeTicks nested_end = NowTicks();
+      recorder_.OnTaskCompleted(queue_b1_.get(), nested_end);
 
       // When a nested loop is exited, resume the task that was running when the
       // nested loop was entered.

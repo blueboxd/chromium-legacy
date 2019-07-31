@@ -75,12 +75,11 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
       !document.GetFrame()->Selection().FrameIsFocusedAndActive())
     return;
 
-  Element* focused_element = document.FocusedElement();
-  if (!IsHTMLAreaElement(focused_element))
+  auto* area_element = DynamicTo<HTMLAreaElement>(document.FocusedElement());
+  if (!area_element)
     return;
 
-  HTMLAreaElement& area_element = ToHTMLAreaElement(*focused_element);
-  if (area_element.ImageElement() != layout_image_.GetNode())
+  if (area_element->ImageElement() != layout_image_.GetNode())
     return;
 
   // Even if the theme handles focus ring drawing for entire elements, it won't
@@ -89,13 +88,13 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
 
   // We use EnsureComputedStyle() instead of GetComputedStyle() here because
   // <area> is used and its style applied even if it has display:none.
-  const ComputedStyle& area_element_style = *area_element.EnsureComputedStyle();
+  const ComputedStyle* area_element_style = area_element->EnsureComputedStyle();
   // If the outline width is 0 we want to avoid drawing anything even if we
   // don't use the value directly.
-  if (!area_element_style.OutlineWidth())
+  if (!area_element_style->OutlineWidth())
     return;
 
-  Path path = area_element.GetPath(&layout_image_);
+  Path path = area_element->GetPath(&layout_image_);
   if (path.IsEmpty())
     return;
 
@@ -118,9 +117,9 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
   focus_rect.Move(paint_offset);
   paint_info.context.Clip(PixelSnappedIntRect(focus_rect));
   paint_info.context.DrawFocusRing(
-      path, area_element_style.GetOutlineStrokeWidthForFocusRing(),
-      area_element_style.OutlineOffset(),
-      layout_image_.ResolveColor(area_element_style,
+      path, area_element_style->GetOutlineStrokeWidthForFocusRing(),
+      area_element_style->OutlineOffset(),
+      layout_image_.ResolveColor(*area_element_style,
                                  GetCSSPropertyOutlineColor()));
   paint_info.context.Restore();
 }

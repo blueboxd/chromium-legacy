@@ -147,6 +147,10 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   }
 
   PaintPropertyChangeType NodeChanged() const { return changed_; }
+  bool NodeChangeAffectsRaster() const {
+    return changed_ != PaintPropertyChangeType::kUnchanged &&
+           changed_ != PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
+  }
 
 #if DCHECK_IS_ON()
   String ToTreeString() const;

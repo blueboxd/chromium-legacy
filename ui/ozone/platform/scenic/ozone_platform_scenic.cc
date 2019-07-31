@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/message_loop/message_pump_type.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/fuchsia/input_method_fuchsia.h"
 #include "ui/display/fake/fake_display_delegate.h"
@@ -44,7 +45,7 @@ constexpr OzonePlatform::PlatformProperties kScenicPlatformProperties{
     /*custom_frame_pref_default=*/false,
     /*use_system_title_bar=*/false,
     /*requires_mojo=*/true,
-    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_IO};
+    /*message_pump_type_for_gpu=*/base::MessagePumpType::IO};
 
 class ScenicPlatformEventSource : public ui::PlatformEventSource {
  public:

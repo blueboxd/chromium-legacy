@@ -629,7 +629,7 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsChildOfV1ShadowHost() const;
   bool IsChildOfV0ShadowHost() const;
   ShadowRoot* V1ShadowRootOfParent() const;
-  ContainerNode* GetReattachParent() const;
+  Element* GetReattachParent() const;
 
   bool IsDocumentTypeNode() const { return getNodeType() == kDocumentTypeNode; }
   virtual bool ChildTypeAllowed(NodeType) const { return false; }

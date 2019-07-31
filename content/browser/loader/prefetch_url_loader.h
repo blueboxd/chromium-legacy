@@ -26,10 +26,6 @@ namespace storage {
 class BlobStorageContext;
 }  // namespace storage
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -54,10 +50,9 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
 
-  // |url_loader_throttles_getter|, |resource_context| and
-  // |request_context_getter| may be used when a prefetch handler
-  // needs to additionally create a request (e.g. for fetching certificate
-  // if the prefetch was for a signed exchange).
+  // |url_loader_throttles_getter| and |resource_context| may be used when
+  // a prefetch handler needs to additionally create a request (e.g. for
+  // fetching certificate if the prefetch was for a signed exchange).
   // |frame_tree_node_id_getter| is called only on UI thread when NetworkService
   // is not enabled, but can be also called on IO thread otherwise.
   PrefetchURLLoader(
@@ -72,7 +67,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       BrowserContext* browser_context,
       ResourceContext* resource_context,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
           signed_exchange_prefetch_metric_recorder,
       scoped_refptr<PrefetchedSignedExchangeCache>
@@ -135,12 +129,9 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   // To be a URLLoader for the client.
   network::mojom::URLLoaderClientPtr forwarding_client_;
 
-  // |url_loader_throttles_getter_| and |resource_context_| should be
-  // valid as far as |request_context_getter_| returns non-null value.
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   BrowserContext* browser_context_;
   ResourceContext* resource_context_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   std::unique_ptr<mojo::DataPipeDrainer> pipe_drainer_;
 

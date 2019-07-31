@@ -47,7 +47,7 @@ public class SingleThreadTaskRunnerImpl extends TaskRunnerImpl implements Single
     public boolean belongsToCurrentThread() {
         synchronized (mLock) {
             if (mNativeTaskRunnerAndroid != 0)
-                return nativeBelongsToCurrentThread(mNativeTaskRunnerAndroid);
+                return TaskRunnerImplJni.get().belongsToCurrentThread(mNativeTaskRunnerAndroid);
         }
         if (mHandler != null) return mHandler.getLooper().getThread() == Thread.currentThread();
         assert (false);

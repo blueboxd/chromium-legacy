@@ -248,7 +248,7 @@ void FirstLetterPseudoElement::ClearRemainingTextLayoutObject() {
   DCHECK(remaining_text_layout_object_);
   remaining_text_layout_object_ = nullptr;
 
-  if (GetDocument().ChildNeedsReattachLayoutTree()) {
+  if (GetDocument().documentElement()->ChildNeedsReattachLayoutTree()) {
     // We are in the layout tree rebuild phase. We will do UpdateFirstLetter()
     // as part of RebuildFirstLetterLayoutTree() or AttachLayoutTree(). Marking
     // us style-dirty during layout tree rebuild is not allowed.

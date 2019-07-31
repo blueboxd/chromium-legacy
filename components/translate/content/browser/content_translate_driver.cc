@@ -143,8 +143,9 @@ ContentTranslateDriver::CreateURLLoaderFactory() {
   content::WebPreferences preferences =
       web_contents()->GetRenderViewHost()->GetWebkitPreferences();
   process->CreateURLLoaderFactory(
-      origin, &preferences, net::NetworkIsolationKey(),
-      std::move(null_header_client), mojo::MakeRequest(&factory));
+      origin, network::mojom::CrossOriginEmbedderPolicy::kNone, &preferences,
+      net::NetworkIsolationKey(), std::move(null_header_client),
+      mojo::MakeRequest(&factory));
   return factory;
 }
 

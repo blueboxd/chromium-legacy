@@ -284,17 +284,18 @@ void SharedWorkerHost::CreateNetworkFactory(
   url::Origin origin = instance_->constructor_origin();
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
 
+  // TODO(yhirano): Support COEP.
   if (GetCreateNetworkFactoryCallbackForSharedWorker().is_null()) {
     worker_process_host->CreateURLLoaderFactory(
-        origin, nullptr /* preferences */,
-        net::NetworkIsolationKey(origin, origin), std::move(no_header_client),
-        std::move(request));
+        origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
+        nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
+        std::move(no_header_client), std::move(request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
     worker_process_host->CreateURLLoaderFactory(
-        origin, nullptr /* preferences */,
-        net::NetworkIsolationKey(origin, origin), std::move(no_header_client),
-        mojo::MakeRequest(&original_factory));
+        origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
+        nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
+        std::move(no_header_client), mojo::MakeRequest(&original_factory));
     GetCreateNetworkFactoryCallbackForSharedWorker().Run(
         std::move(request), worker_process_id_,
         original_factory.PassInterface());

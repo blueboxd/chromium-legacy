@@ -39,7 +39,7 @@ class CSSRotateInterpolationType : public CSSInterpolationType {
   InterpolationValue MaybeConvertValue(const CSSValue&,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
-  void AdditiveKeyframeHook(InterpolationValue&) const final;
+  InterpolationValue MakeAdditive(InterpolationValue) const final;
 };
 
 }  // namespace blink

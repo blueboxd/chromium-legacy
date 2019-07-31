@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -49,10 +50,12 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
   const NGPhysicalBoxStrut padding =
       builder->initial_fragment_geometry_->padding.ConvertToPhysical(
           builder->GetWritingMode(), builder->Direction());
-  const size_t byte_size = sizeof(NGPhysicalBoxFragment) +
-                           sizeof(NGLink) * builder->children_.size() +
-                           (borders.IsZero() ? 0 : sizeof(borders)) +
-                           (padding.IsZero() ? 0 : sizeof(padding));
+  size_t byte_size = sizeof(NGPhysicalBoxFragment) +
+                     sizeof(NGLink) * builder->children_.size() +
+                     (borders.IsZero() ? 0 : sizeof(borders)) +
+                     (padding.IsZero() ? 0 : sizeof(padding));
+  if (builder->ItemsBuilder())
+    byte_size += sizeof(NGFragmentItems);
   // We store the children list inline in the fragment as a flexible
   // array. Therefore, we need to make sure to allocate enough space for
   // that array here, which requires a manual allocation + placement new.
@@ -80,6 +83,12 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
           builder->BoxType()),
       baselines_(builder->baselines_) {
   DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
+  has_fragment_items_ = !!builder->ItemsBuilder();
+  if (has_fragment_items_) {
+    NGFragmentItems* items =
+        const_cast<NGFragmentItems*>(ComputeItemsAddress());
+    builder->ItemsBuilder()->ToFragmentItems(items);
+  }
   has_borders_ = !borders.IsZero();
   if (has_borders_)
     *const_cast<NGPhysicalBoxStrut*>(ComputeBordersAddress()) = borders;

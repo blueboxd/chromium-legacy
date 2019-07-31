@@ -294,6 +294,26 @@ class FileManagerPrivateMountCrostiniFunction : public LoggedExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateMountCrostiniFunction);
 };
 
+// Implements the chrome.fileManagerPrivate.importCrostiniImage method.
+// Starts importing the crostini .tini image.
+class FileManagerPrivateInternalImportCrostiniImageFunction
+    : public LoggedExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.importCrostiniImage",
+                             FILEMANAGERPRIVATEINTERNAL_IMPORTCROSTINIIMAGE)
+  FileManagerPrivateInternalImportCrostiniImageFunction();
+
+ protected:
+  ~FileManagerPrivateInternalImportCrostiniImageFunction() override;
+
+ private:
+  ResponseAction Run() override;
+
+  std::string image_path_;
+  DISALLOW_COPY_AND_ASSIGN(
+      FileManagerPrivateInternalImportCrostiniImageFunction);
+};
+
 // Implements the chrome.fileManagerPrivate.sharePathsWithCrostini
 // method.  Shares specified paths.
 class FileManagerPrivateInternalSharePathsWithCrostiniFunction

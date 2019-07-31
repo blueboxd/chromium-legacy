@@ -1058,6 +1058,12 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
       SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
 }
 
+// Flakily fails on linux_chromium_tsan_rel_ng. http://crbug.com/989128
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_TimeQueryStarted DISABLED_TimeQueryStarted
+#else
+#define MAYBE_TimeQueryStarted TimeQueryStarted
+#endif
 TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryStarted) {
   base::HistogramTester histograms;
   base::Time network_time;
@@ -1089,6 +1095,13 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryStarted) {
 
 // Tests that an SSL interstitial is shown if the accuracy of the system
 // clock can't be determined because network time is unavailable.
+
+// Flakily fails on linux_chromium_tsan_rel_ng. http://crbug.com/989225
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_NoTimeQueries DISABLED_NoTimeQueries
+#else
+#define MAYBE_NoTimeQueries NoTimeQueries
+#endif
 TEST_F(SSLErrorHandlerDateInvalidTest, NoTimeQueries) {
   base::HistogramTester histograms;
   base::Time network_time;
@@ -1109,7 +1122,14 @@ TEST_F(SSLErrorHandlerDateInvalidTest, NoTimeQueries) {
 
 // Tests that an SSL interstitial is shown if determing the accuracy of
 // the system clock times out (e.g. because a network time query hangs).
-TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
+
+// Flakily fails on linux_chromium_tsan_rel_ng. http://crbug.com/989289
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_TimeQueryHangs DISABLED_TimeQueryHangs
+#else
+#define MAYBE_TimeQueryHangs TimeQueryHangs
+#endif
+TEST_F(SSLErrorHandlerDateInvalidTest, MAYBE_TimeQueryHangs) {
   base::HistogramTester histograms;
   base::Time network_time;
   base::TimeDelta uncertainty;

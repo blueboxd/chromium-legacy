@@ -21,7 +21,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "extensions/browser/extension_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -117,8 +116,8 @@ class CrostiniAppModelBuilderTest : public AppListTestBase {
             },
             profile()));
     // The AppListSyncableService creates the CrostiniAppModelBuilder.
-    sync_service_ = std::make_unique<app_list::AppListSyncableService>(
-        profile_.get(), extensions::ExtensionSystem::Get(profile_.get()));
+    sync_service_ =
+        std::make_unique<app_list::AppListSyncableService>(profile_.get());
     RemoveNonCrostiniApps(sync_service_.get());
   }
 

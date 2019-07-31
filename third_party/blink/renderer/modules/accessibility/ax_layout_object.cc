@@ -440,7 +440,7 @@ bool AXLayoutObject::IsLinked() const {
   if (!IsLinkable(*this))
     return false;
 
-  if (auto* anchor = ToHTMLAnchorElementOrNull(AnchorElement()))
+  if (auto* anchor = DynamicTo<HTMLAnchorElement>(AnchorElement()))
     return !anchor->Href().IsEmpty();
   return false;
 }
@@ -1704,7 +1704,7 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   if (!node)
     return nullptr;
 
-  if (auto* area = ToHTMLAreaElementOrNull(node))
+  if (auto* area = DynamicTo<HTMLAreaElement>(node))
     return AccessibilityImageMapHitTest(area, point);
 
   if (auto* option = ToHTMLOptionElementOrNull(node)) {
@@ -2166,7 +2166,7 @@ Element* AXLayoutObject::AnchorElement() const {
   if (!node)
     return nullptr;
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*node)) {
-    if (IsHTMLAnchorElement(runner) ||
+    if (IsA<HTMLAnchorElement>(runner) ||
         (runner.GetLayoutObject() &&
          cache.GetOrCreate(runner.GetLayoutObject())->IsAnchor()))
       return To<Element>(&runner);

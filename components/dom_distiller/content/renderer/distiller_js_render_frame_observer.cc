@@ -19,7 +19,7 @@ namespace dom_distiller {
 
 DistillerJsRenderFrameObserver::DistillerJsRenderFrameObserver(
     content::RenderFrame* render_frame,
-    const int distiller_isolated_world_id,
+    const int32_t distiller_isolated_world_id,
     service_manager::BinderRegistry* registry)
     : RenderFrameObserver(render_frame),
       distiller_isolated_world_id_(distiller_isolated_world_id),
@@ -46,7 +46,7 @@ void DistillerJsRenderFrameObserver::DidFinishLoad() {
 
 void DistillerJsRenderFrameObserver::DidCreateScriptContext(
     v8::Local<v8::Context> context,
-    int world_id) {
+    int32_t world_id) {
   if (world_id != distiller_isolated_world_id_ || !is_distiller_page_) {
     return;
   }

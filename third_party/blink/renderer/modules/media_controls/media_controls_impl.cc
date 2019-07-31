@@ -2007,7 +2007,7 @@ void MediaControlsImpl::UpdateActingAsAudioControls() {
 }
 
 bool MediaControlsImpl::ShouldShowAudioControls() const {
-  return (MediaElement().IsHTMLAudioElement() || is_acting_as_audio_controls_);
+  return IsA<HTMLAudioElement>(MediaElement()) || is_acting_as_audio_controls_;
 }
 
 bool MediaControlsImpl::ShouldShowVideoControls() const {

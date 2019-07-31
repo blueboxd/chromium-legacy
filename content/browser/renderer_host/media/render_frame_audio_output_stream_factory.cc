@@ -165,7 +165,7 @@ RenderFrameAudioOutputStreamFactory::~RenderFrameAudioOutputStreamFactory() {
   // as it doesn't post in case it is already executed on the right thread. That
   // causes issues in unit tests where the UI thread and the IO thread are the
   // same.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce([](std::unique_ptr<Core>) {}, std::move(core_)));
 }
@@ -200,7 +200,7 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
 
   // Unretained is safe since the destruction of |this| is posted to the IO
   // thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Core::Init, base::Unretained(this), std::move(request)));
 }

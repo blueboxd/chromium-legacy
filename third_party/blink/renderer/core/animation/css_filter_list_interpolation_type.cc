@@ -53,7 +53,7 @@ class UnderlyingFilterListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   UnderlyingFilterListChecker(
-      scoped_refptr<NonInterpolableList> non_interpolable_list)
+      scoped_refptr<const NonInterpolableList> non_interpolable_list)
       : non_interpolable_list_(std::move(non_interpolable_list)) {}
 
   bool IsValid(const StyleResolverState&,
@@ -73,7 +73,7 @@ class UnderlyingFilterListChecker
   }
 
  private:
-  scoped_refptr<NonInterpolableList> non_interpolable_list_;
+  scoped_refptr<const NonInterpolableList> non_interpolable_list_;
 };
 
 class InheritedFilterListChecker
@@ -101,7 +101,8 @@ InterpolationValue ConvertFilterList(const FilterOperations& filter_operations,
                                      double zoom) {
   wtf_size_t length = filter_operations.size();
   auto interpolable_list = std::make_unique<InterpolableList>(length);
-  Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
+  Vector<scoped_refptr<const NonInterpolableValue>> non_interpolable_values(
+      length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue filter_result =
         filter_interpolation_functions::MaybeConvertFilter(
@@ -164,7 +165,8 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
   const auto& list = To<CSSValueList>(value);
   wtf_size_t length = list.length();
   auto interpolable_list = std::make_unique<InterpolableList>(length);
-  Vector<scoped_refptr<NonInterpolableValue>> non_interpolable_values(length);
+  Vector<scoped_refptr<const NonInterpolableValue>> non_interpolable_values(
+      length);
   for (wtf_size_t i = 0; i < length; i++) {
     InterpolationValue item_result =
         filter_interpolation_functions::MaybeConvertCSSFilter(list.Item(i));
@@ -188,9 +190,9 @@ CSSFilterListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
 PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  NonInterpolableList& start_non_interpolable_list =
+  const NonInterpolableList& start_non_interpolable_list =
       ToNonInterpolableList(*start.non_interpolable_value);
-  NonInterpolableList& end_non_interpolable_list =
+  const NonInterpolableList& end_non_interpolable_list =
       ToNonInterpolableList(*end.non_interpolable_value);
   wtf_size_t start_length = start_non_interpolable_list.length();
   wtf_size_t end_length = end_non_interpolable_list.length();
@@ -284,9 +286,8 @@ void CSSFilterListInterpolationType::Composite(
   }
   underlying_value_owner.MutableValue().interpolable_value =
       std::move(extended_interpolable_list);
-  // const_cast to take a ref.
   underlying_value_owner.MutableValue().non_interpolable_value =
-      const_cast<NonInterpolableValue*>(value.non_interpolable_value.get());
+      value.non_interpolable_value;
 }
 
 void CSSFilterListInterpolationType::ApplyStandardPropertyValue(

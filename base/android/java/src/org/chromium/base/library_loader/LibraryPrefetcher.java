@@ -15,6 +15,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -35,7 +36,7 @@ public class LibraryPrefetcher {
     /**
      * Used to pass ordered code info back from native.
      */
-    private final static class OrderedCodeInfo {
+    final static class OrderedCodeInfo {
         public final String filename;
         public final long startOffset;
         public final long length;
@@ -77,21 +78,21 @@ public class LibraryPrefetcher {
         // to be simultaneous with it. Also, don't prefetch in this case, as this would
         // skew the results.
         if (coldStart && CommandLine.getInstance().hasSwitch("log-native-library-residency")) {
-            // nativePeriodicallyCollectResidency() sleeps, run it on another thread,
-            // and not on the thread pool.
-            new Thread(LibraryPrefetcher::nativePeriodicallyCollectResidency).start();
+            // LibraryPrefetcherJni.get().periodicallyCollectResidency() sleeps, run it on another
+            // thread, and not on the thread pool.
+            new Thread(LibraryPrefetcherJni.get()::periodicallyCollectResidency).start();
             return;
         }
 
         PostTask.postTask(TaskTraits.USER_BLOCKING, () -> {
-            int percentage = nativePercentageOfResidentNativeLibraryCode();
+            int percentage = LibraryPrefetcherJni.get().percentageOfResidentNativeLibraryCode();
             try (TraceEvent e =
                             TraceEvent.scoped("LibraryPrefetcher.asyncPrefetchLibrariesToMemory",
                                     Integer.toString(percentage))) {
                 // Arbitrary percentage threshold. If most of the native library is already
                 // resident (likely with monochrome), don't bother creating a prefetch process.
                 boolean prefetch = coldStart && percentage < 90;
-                if (prefetch) nativeForkAndPrefetchNativeLibrary();
+                if (prefetch) LibraryPrefetcherJni.get().forkAndPrefetchNativeLibrary();
                 if (percentage != -1) {
                     String histogram = "LibraryLoader.PercentageOfResidentCodeBeforePrefetch"
                             + (coldStart ? ".ColdStartup" : ".WarmStartup");
@@ -107,7 +108,7 @@ public class LibraryPrefetcher {
     @SuppressLint("WrongConstant")
     public static void maybePinOrderedCodeInMemory() {
         try (TraceEvent e = TraceEvent.scoped("LibraryPrefetcher::maybePinOrderedCodeInMemory")) {
-            OrderedCodeInfo info = nativeGetOrderedCodeInfo();
+            OrderedCodeInfo info = LibraryPrefetcherJni.get().getOrderedCodeInfo();
             if (info == null) return;
             TraceEvent.instant("pinOrderedCodeInMemory", info.toString());
 
@@ -137,19 +138,22 @@ public class LibraryPrefetcher {
         }
     }
 
-    // Finds the ranges corresponding to the native library pages, forks a new
-    // process to prefetch these pages and waits for it. The new process then
-    // terminates. This is blocking.
-    private static native void nativeForkAndPrefetchNativeLibrary();
+    @NativeMethods
+    interface Natives {
+        // Finds the ranges corresponding to the native library pages, forks a new
+        // process to prefetch these pages and waits for it. The new process then
+        // terminates. This is blocking.
+        void forkAndPrefetchNativeLibrary();
 
-    // Returns the percentage of the native library code page that are currently reseident in
-    // memory.
-    private static native int nativePercentageOfResidentNativeLibraryCode();
+        // Returns the percentage of the native library code page that are currently reseident in
+        // memory.
+        int percentageOfResidentNativeLibraryCode();
 
-    // Periodically logs native library residency from this thread.
-    private static native void nativePeriodicallyCollectResidency();
+        // Periodically logs native library residency from this thread.
+        void periodicallyCollectResidency();
 
-    // Returns the range within a file of the ordered code section, or null if this is not
-    // available.
-    private static native OrderedCodeInfo nativeGetOrderedCodeInfo();
+        // Returns the range within a file of the ordered code section, or null if this is not
+        // available.
+        OrderedCodeInfo getOrderedCodeInfo();
+    }
 }

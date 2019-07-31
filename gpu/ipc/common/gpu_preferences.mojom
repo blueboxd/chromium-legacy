@@ -5,7 +5,7 @@
 // gpu/config/gpu_preferences.h
 module gpu.mojom;
 
-import "mojo/public/mojom/base/message_loop_type.mojom";
+import "mojo/public/mojom/base/message_pump_type.mojom";
 import "ui/gfx/mojom/buffer_types.mojom";
 
 // Corresponds to gpu::VulkanImplementationName.
@@ -68,5 +68,5 @@ struct GpuPreferences {
   bool enable_metal;
   bool enable_gpu_benchmarking_extension;
   bool enable_webgpu;
-  mojo_base.mojom.MessageLoopType message_loop_type;
+  mojo_base.mojom.MessagePumpType message_pump_type;
 };

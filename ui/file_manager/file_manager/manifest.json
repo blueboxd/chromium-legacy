@@ -124,6 +124,11 @@
         "deb"
       ]
     },
+    "import-crostini-image": {
+      "extensions": [
+        "tini"
+      ]
+    },
     "select": {
       "extensions": ["*"]
     },

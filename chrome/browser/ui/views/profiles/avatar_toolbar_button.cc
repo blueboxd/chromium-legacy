@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
@@ -40,6 +42,9 @@
 #include "ui/views/controls/button/label_button_border.h"
 
 namespace {
+
+constexpr base::TimeDelta kEmailExpansionDuration =
+    base::TimeDelta::FromSeconds(3);
 
 ProfileAttributesEntry* GetProfileAttributesEntry(Profile* profile) {
   ProfileAttributesEntry* entry;
@@ -62,7 +67,8 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 #endif  // !defined(OS_CHROMEOS)
       browser_list_observer_(this),
       profile_observer_(this),
-      identity_manager_observer_(this) {
+      identity_manager_observer_(this),
+      weak_ptr_factory_(this) {
   if (IsIncognitoCounterActive())
     browser_list_observer_.Add(BrowserList::GetInstance());
 
@@ -100,6 +106,12 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   SetEnabled(!IsIncognito() || IsIncognitoCounterActive());
 #endif  // !defined(OS_CHROMEOS)
 
+  if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
+    // For consistency with identity representation, we need to have the avatar
+    // on the left and the (potential) user-name / email on the right.
+    SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
+
   // Set initial text and tooltip. UpdateIcon() needs to be called from the
   // outside as GetThemeProvider() is not available until the button is added to
   // ToolbarView's hierarchy.
@@ -111,7 +123,15 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
 AvatarToolbarButton::~AvatarToolbarButton() {}
 
 void AvatarToolbarButton::UpdateIcon() {
-  SetImage(views::Button::STATE_NORMAL, GetAvatarIcon());
+  gfx::Image gaia_image = GetGaiaImage();
+  SetImage(views::Button::STATE_NORMAL, GetAvatarIcon(gaia_image));
+
+  // TODO(crbug.com/983182): Move this logic to OnExtendedAccountInfoUpdated()
+  // once GetGaiaImage() is updated to use GetUnconsentedPrimaryAccountInfo().
+  if (waiting_for_image_to_show_user_email_ && !gaia_image.IsEmpty()) {
+    waiting_for_image_to_show_user_email_ = false;
+    ExpandToShowEmail();
+  }
 }
 
 void AvatarToolbarButton::UpdateText() {
@@ -155,6 +175,14 @@ void AvatarToolbarButton::UpdateText() {
         gfx::kGoogleBlue050, gfx::kGoogleBlue900);
 
     text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
+  } else if (user_email_to_show_.has_value() &&
+             !waiting_for_image_to_show_user_email_) {
+    text = base::UTF8ToUTF16(*user_email_to_show_);
+    if (GetThemeProvider()) {
+      const SkColor text_color =
+          GetThemeProvider()->GetColor(ThemeProperties::COLOR_TAB_TEXT);
+      SetEnabledTextColors(text_color);
+    }
   }
 
   SetInsets();
@@ -239,6 +267,18 @@ void AvatarToolbarButton::OnProfileNameChanged(
   UpdateText();
 }
 
+void AvatarToolbarButton::OnUnconsentedPrimaryAccountChanged(
+    const CoreAccountInfo& unconsented_primary_account_info) {
+  if (!unconsented_primary_account_info.IsEmpty() &&
+      base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
+    user_email_to_show_ = unconsented_primary_account_info.email;
+    // If we already have a gaia image, the pill will be immediately
+    // displayed by UpdateIcon().
+    waiting_for_image_to_show_user_email_ = true;
+    UpdateIcon();
+  }
+}
+
 void AvatarToolbarButton::OnAccountsInCookieUpdated(
     const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
@@ -258,6 +298,29 @@ void AvatarToolbarButton::OnExtendedAccountInfoRemoved(
 void AvatarToolbarButton::OnTouchUiChanged() {
   SetInsets();
   PreferredSizeChanged();
+}
+
+void AvatarToolbarButton::ExpandToShowEmail() {
+  DCHECK(user_email_to_show_.has_value());
+  DCHECK(!waiting_for_image_to_show_user_email_);
+
+  UpdateText();
+
+  // Hide the pill after a while.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&AvatarToolbarButton::ResetUserEmailToShow,
+                     weak_ptr_factory_.GetWeakPtr()),
+      kEmailExpansionDuration);
+}
+
+void AvatarToolbarButton::ResetUserEmailToShow() {
+  DCHECK(user_email_to_show_.has_value());
+  user_email_to_show_ = base::nullopt;
+
+  // Update the text to the pre-shown state. This also makes sure that we now
+  // reflect changes that happened while the identity pill was shown.
+  UpdateText();
 }
 
 bool AvatarToolbarButton::IsIncognito() const {
@@ -300,6 +363,9 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
   if (ShouldShowGenericIcon())
     return l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL);
 
+  if (user_email_to_show_.has_value() && !waiting_for_image_to_show_user_email_)
+    return base::UTF8ToUTF16(*user_email_to_show_);
+
   const base::string16 profile_name =
       profiles::GetAvatarNameForProfile(profile_->GetPath());
   switch (GetSyncState()) {
@@ -317,7 +383,8 @@ base::string16 AvatarToolbarButton::GetAvatarTooltipText() const {
   return base::string16();
 }
 
-gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
+gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
+    const gfx::Image& gaia_image) const {
   // Note that the non-touchable icon size is larger than the default to
   // make the avatar icon easier to read.
   const int icon_size =
@@ -333,8 +400,14 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
     return gfx::CreateVectorIcon(kUserMenuGuestIcon, icon_size, icon_color);
 
   gfx::Image avatar_icon;
-  if (!ShouldShowGenericIcon())
-    avatar_icon = GetIconImageFromProfile();
+  ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
+  if (!ShouldShowGenericIcon() && entry) {
+    if (!gaia_image.IsEmpty()) {
+      avatar_icon = gaia_image;
+    } else {
+      avatar_icon = entry->GetAvatarIcon();
+    }
+  }
 
   if (!avatar_icon.IsEmpty()) {
     return profiles::GetSizedAvatarIcon(avatar_icon, true, icon_size, icon_size,
@@ -345,7 +418,7 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon() const {
   return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size, icon_color);
 }
 
-gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
+gfx::Image AvatarToolbarButton::GetGaiaImage() const {
   ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
   if (!entry) {
     // This can happen if the user deletes the current profile.
@@ -372,6 +445,10 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
       !IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount() &&
       entry->IsUsingDefaultAvatar()) {
+    // TODO(crbug.com/983182): Update to use GetUnconsentedPrimaryAccountInfo()
+    // and maybe move this whole logic to OnExtendedAccountInfoUpdated() which
+    // is the only callback where the image can change (and cache the resulting
+    // image as and cache it as |unconsented_primary_account_gaia_image_|).
     std::vector<AccountInfo> promo_accounts =
         signin_ui_util::GetAccountsForDicePromos(profile_);
     if (!promo_accounts.empty()) {
@@ -379,8 +456,7 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
     }
   }
 #endif  // !defined(OS_CHROMEOS)
-
-  return entry->GetAvatarIcon();
+  return gfx::Image();
 }
 
 AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {

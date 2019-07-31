@@ -28,6 +28,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
@@ -89,7 +90,7 @@ public class LibraryLoader {
     private static LibraryLoader sInstance = new LibraryLoader();
 
     // One-way switch becomes true when the libraries are initialized (
-    // by calling nativeLibraryLoaded, which forwards to LibraryLoaded(...) in
+    // by calling LibraryLoaderJni.get().libraryLoaded, which forwards to LibraryLoaded(...) in
     // library_loader_hooks.cc).
     // Note that this member should remain a one-way switch, since it accessed from multiple
     // threads without a lock.
@@ -513,16 +514,17 @@ public class LibraryLoader {
 
         ensureCommandLineSwitchedAlreadyLocked();
 
-        if (!nativeLibraryLoaded(mLibraryProcessType)) {
-            Log.e(TAG, "error calling nativeLibraryLoaded");
+        if (!LibraryLoaderJni.get().libraryLoaded(mLibraryProcessType)) {
+            Log.e(TAG, "error calling LibraryLoaderJni.get().libraryLoaded");
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_FAILED_TO_REGISTER_JNI);
         }
 
         // Check that the version of the library we have loaded matches the version we expect
-        Log.i(TAG, String.format("Expected native library version number \"%s\", "
-                                   + "actual native library version number \"%s\"",
-                           NativeLibraries.sVersionNumber, nativeGetVersionNumber()));
-        if (!NativeLibraries.sVersionNumber.equals(nativeGetVersionNumber())) {
+        Log.i(TAG,
+                String.format("Expected native library version number \"%s\", "
+                                + "actual native library version number \"%s\"",
+                        NativeLibraries.sVersionNumber, LibraryLoaderJni.get().getVersionNumber()));
+        if (!NativeLibraries.sVersionNumber.equals(LibraryLoaderJni.get().getVersionNumber())) {
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_WRONG_VERSION);
         }
 
@@ -584,7 +586,7 @@ public class LibraryLoader {
     public void registerRendererProcessHistogram() {
         synchronized (mLock) {
             if (useChromiumLinker()) {
-                nativeRecordRendererLibraryLoadTime(mLibraryLoadTimeMs);
+                LibraryLoaderJni.get().recordRendererLibraryLoadTime(mLibraryLoadTimeMs);
             }
         }
     }
@@ -685,18 +687,21 @@ public class LibraryLoader {
                 ContextCompat.getCodeCacheDir(ContextUtils.getApplicationContext()), LIBRARY_DIR);
     }
 
-    // Only methods needed before or during normal JNI registration are during System.OnLoad.
-    // nativeLibraryLoaded is then called to register everything else.  This process is called
-    // "initialization".  This method will be mapped (by generated code) to the LibraryLoaded
-    // definition in base/android/library_loader/library_loader_hooks.cc.
-    //
-    // Return true on success and false on failure.
-    private native boolean nativeLibraryLoaded(@LibraryProcessType int processType);
+    @NativeMethods
+    interface Natives {
+        // Only methods needed before or during normal JNI registration are during System.OnLoad.
+        // nativeLibraryLoaded is then called to register everything else.  This process is called
+        // "initialization".  This method will be mapped (by generated code) to the LibraryLoaded
+        // definition in base/android/library_loader/library_loader_hooks.cc.
+        //
+        // Return true on success and false on failure.
+        boolean libraryLoaded(@LibraryProcessType int processType);
 
-    // Records the number of milliseconds it took to load the libraries in the renderer.
-    private native void nativeRecordRendererLibraryLoadTime(long libraryLoadTime);
+        // Records the number of milliseconds it took to load the libraries in the renderer.
+        void recordRendererLibraryLoadTime(long libraryLoadTime);
 
-    // Get the version of the native library. This is needed so that we can check we
-    // have the right version before initializing the (rest of the) JNI.
-    private native String nativeGetVersionNumber();
+        // Get the version of the native library. This is needed so that we can check we
+        // have the right version before initializing the (rest of the) JNI.
+        String getVersionNumber();
+    }
 }

@@ -88,7 +88,8 @@ static LineLayoutItem EnclosingUnderlineObject(
       return current;
 
     if (Node* node = current.GetNode()) {
-      if (IsHTMLAnchorElement(node) || node->HasTagName(html_names::kFontTag))
+      if (IsA<HTMLAnchorElement>(node) ||
+          node->HasTagName(html_names::kFontTag))
         return current;
     }
   }

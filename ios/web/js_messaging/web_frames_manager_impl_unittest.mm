@@ -4,8 +4,11 @@
 
 #include "ios/web/js_messaging/web_frames_manager_impl.h"
 
+#import "base/strings/string_number_conversions.h"
+#import "base/strings/sys_string_conversions.h"
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 #include "ios/web/js_messaging/web_frame_impl.h"
+#include "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -17,7 +20,10 @@
 
 namespace {
 
-const char kFrameId[] = "1effd8f52a067c8d3a01762d3c41dfd8";
+// Frame ids are base16 string of 128 bit numbers.
+const char kMainFrameId[] = "1effd8f52a067c8d3a01762d3c41dfd1";
+const char kFrame1Id[] = "1effd8f52a067c8d3a01762d3c41dfd2";
+const char kFrame2Id[] = "1effd8f52a067c8d3a01762d3c41dfd3";
 
 // A base64 encoded sample key.
 const char kFrameKey[] = "R7lsXtR74c6R9A9k691gUQ8JAd0be+w//Lntgcbjwrc=";
@@ -27,12 +33,6 @@ NSString* const kFrameBecameAvailableMessageName = @"FrameBecameAvailable";
 // Message command sent when a frame is unloading.
 NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 
-// Returns true if |web_frame| is contained in |frames|.
-bool ContainsWebFrame(std::set<web::WebFrame*> frames,
-                      web::WebFrame* web_frame) {
-  return frames.end() != std::find(frames.begin(), frames.end(), web_frame);
-}
-
 }  // namespace
 
 namespace web {
@@ -40,7 +40,93 @@ namespace web {
 class WebFramesManagerImplTest : public PlatformTest,
                                  public WebFramesManagerDelegate {
  protected:
-  WebFramesManagerImplTest() : frames_manager_(*this) {}
+  WebFramesManagerImplTest()
+      : frames_manager_(*this),
+        user_content_controller_(OCMClassMock([WKUserContentController class])),
+        router_([[CRWWKScriptMessageRouter alloc]
+            initWithUserContentController:user_content_controller_]),
+        web_view_(OCMClassMock([WKWebView class])),
+        main_frame_(kMainFrameId,
+                    /*is_main_frame=*/true,
+                    GURL("https://www.main.test")),
+        frame_1_(kFrame1Id,
+                 /*is_main_frame=*/false,
+                 GURL("https://www.frame1.test")),
+        frame_2_(kFrame2Id,
+                 /*is_main_frame=*/false,
+                 GURL("https://www.frame2.test")) {
+    // Notify |frames_manager_| that its associated WKWebView has changed from
+    // nil to |web_view_|.
+    frames_manager_.OnWebViewUpdated(nil, web_view_, router_);
+  }
+
+  // Sends a JS message of a newly loaded web frame to |router_| which will
+  // dispatch it to |frames_manager_|.
+  void SendFrameBecameAvailableMessage(const FakeWebFrame& web_frame) {
+    // Mock WKSecurityOrigin.
+    WKSecurityOrigin* security_origin = OCMClassMock([WKSecurityOrigin class]);
+    OCMStub([security_origin host])
+        .andReturn(
+            base::SysUTF8ToNSString(web_frame.GetSecurityOrigin().host()));
+    OCMStub([security_origin port])
+        .andReturn(web_frame.GetSecurityOrigin().EffectiveIntPort());
+    OCMStub([security_origin protocol])
+        .andReturn(
+            base::SysUTF8ToNSString(web_frame.GetSecurityOrigin().scheme()));
+
+    // Mock WKFrameInfo.
+    WKFrameInfo* frame_info = OCMClassMock([WKFrameInfo class]);
+    OCMStub([frame_info isMainFrame]).andReturn(web_frame.IsMainFrame());
+    OCMStub([frame_info securityOrigin]).andReturn(security_origin);
+
+    // Mock WKScriptMessage for "FrameBecameAvailable" message.
+    NSDictionary* body = @{
+      @"crwFrameId" : base::SysUTF8ToNSString(web_frame.GetFrameId()),
+      @"crwFrameKey" : base::SysUTF8ToNSString(kFrameKey),
+      @"crwFrameLastReceivedMessageId" : @-1,
+    };
+    WKScriptMessage* message = OCMClassMock([WKScriptMessage class]);
+    OCMStub([message body]).andReturn(body);
+    OCMStub([message frameInfo]).andReturn(frame_info);
+    OCMStub([message name]).andReturn(kFrameBecameAvailableMessageName);
+    OCMStub([message webView]).andReturn(web_view_);
+
+    [(id<WKScriptMessageHandler>)router_
+          userContentController:user_content_controller_
+        didReceiveScriptMessage:message];
+  }
+
+  // Sends a JS message of a newly unloaded web frame to |router_| which will
+  // dispatch it to |frames_manager_|.
+  void SendFrameBecameUnavailableMessage(const FakeWebFrame& web_frame) {
+    // Mock WKSecurityOrigin.
+    WKSecurityOrigin* security_origin = OCMClassMock([WKSecurityOrigin class]);
+    OCMStub([security_origin host])
+        .andReturn(
+            base::SysUTF8ToNSString(web_frame.GetSecurityOrigin().host()));
+    OCMStub([security_origin port])
+        .andReturn(web_frame.GetSecurityOrigin().EffectiveIntPort());
+    OCMStub([security_origin protocol])
+        .andReturn(
+            base::SysUTF8ToNSString(web_frame.GetSecurityOrigin().scheme()));
+
+    // Mock WKFrameInfo.
+    WKFrameInfo* frame_info = OCMClassMock([WKFrameInfo class]);
+    OCMStub([frame_info isMainFrame]).andReturn(web_frame.IsMainFrame());
+    OCMStub([frame_info securityOrigin]).andReturn(security_origin);
+
+    // Mock WKScriptMessage for "FrameBecameUnavailable" message.
+    WKScriptMessage* message = OCMClassMock([WKScriptMessage class]);
+    OCMStub([message body])
+        .andReturn(base::SysUTF8ToNSString(web_frame.GetFrameId()));
+    OCMStub([message frameInfo]).andReturn(frame_info);
+    OCMStub([message name]).andReturn(kFrameBecameUnavailableMessageName);
+    OCMStub([message webView]).andReturn(web_view_);
+
+    [(id<WKScriptMessageHandler>)router_
+          userContentController:user_content_controller_
+        didReceiveScriptMessage:message];
+  }
 
   // WebFramesManagerDelegate.
   void OnWebFrameAvailable(WebFrame* frame) override {}
@@ -49,232 +135,178 @@ class WebFramesManagerImplTest : public PlatformTest,
 
   TestWebState test_web_state_;
   WebFramesManagerImpl frames_manager_;
+  WKUserContentController* user_content_controller_ = nil;
+  CRWWKScriptMessageRouter* router_ = nil;
+  WKWebView* web_view_ = nil;
+  const FakeWebFrame main_frame_;
+  const FakeWebFrame frame_1_;
+  const FakeWebFrame frame_2_;
 };
 
-// Tests that the WebFrame for the main frame is returned.
-TEST_F(WebFramesManagerImplTest, GetMainWebFrame) {
-  GURL security_origin;
-  auto web_frame = std::make_unique<WebFrameImpl>(
-      "web_frame", /*is_main_frame=*/true, security_origin, &test_web_state_);
-  WebFrameImpl* web_frame_ptr = web_frame.get();
+// Tests main web frame construction/destruction.
+TEST_F(WebFramesManagerImplTest, MainWebFrame) {
+  SendFrameBecameAvailableMessage(main_frame_);
 
-  frames_manager_.AddFrame(std::move(web_frame));
-
-  EXPECT_EQ(web_frame_ptr, frames_manager_.GetMainWebFrame());
-  auto frames = frames_manager_.GetAllWebFrames();
-  EXPECT_EQ(1ul, frames.size());
-  EXPECT_TRUE(ContainsWebFrame(frames, web_frame_ptr));
-}
-
-// Tests that the WebFrame returns null if no main frame is known.
-TEST_F(WebFramesManagerImplTest, NoMainWebFrame) {
-  EXPECT_EQ(nullptr, frames_manager_.GetMainWebFrame());
-
-  GURL security_origin;
-  const std::string web_frame_frame_id = "web_frame";
-  auto web_frame =
-      std::make_unique<WebFrameImpl>(web_frame_frame_id, /*is_main_frame=*/true,
-                                     security_origin, &test_web_state_);
-
-  frames_manager_.AddFrame(std::move(web_frame));
-  frames_manager_.RemoveFrameWithId(web_frame_frame_id);
-
-  EXPECT_EQ(nullptr, frames_manager_.GetMainWebFrame());
-  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
-}
-
-// Tests that the WebFramesManagerImpl returns a list of all current WebFrame
-// objects.
-TEST_F(WebFramesManagerImplTest, AddFrames) {
-  GURL security_origin;
-  auto main_web_frame = std::make_unique<WebFrameImpl>(
-      "main_web_frame",
-      /*is_main_frame=*/true, security_origin, &test_web_state_);
-  WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
-  frames_manager_.AddFrame(std::move(main_web_frame));
-
-  auto child_web_frame = std::make_unique<WebFrameImpl>(
-      "child_web_frame",
-      /*is_main_frame=*/false, security_origin, &test_web_state_);
-  WebFrameImpl* child_web_frame_ptr = child_web_frame.get();
-  frames_manager_.AddFrame(std::move(child_web_frame));
-
-  auto frames = frames_manager_.GetAllWebFrames();
-  EXPECT_EQ(2ul, frames.size());
-  EXPECT_TRUE(ContainsWebFrame(frames, main_web_frame_ptr));
-  EXPECT_TRUE(ContainsWebFrame(frames, child_web_frame_ptr));
-}
-
-// Tests that the WebFramesManagerImpl correctly removes a WebFrame instance.
-TEST_F(WebFramesManagerImplTest, RemoveFrame) {
-  GURL security_origin;
-  auto main_web_frame = std::make_unique<WebFrameImpl>(
-      "main_web_frame",
-      /*is_main_frame=*/true, security_origin, &test_web_state_);
-  WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
-  frames_manager_.AddFrame(std::move(main_web_frame));
-
-  const std::string child_web_frame_1_frame_id = "child_web_frame_1_frame_id";
-  auto child_web_frame_1 = std::make_unique<WebFrameImpl>(
-      child_web_frame_1_frame_id,
-      /*is_main_frame=*/false, security_origin, &test_web_state_);
-  frames_manager_.AddFrame(std::move(child_web_frame_1));
-
-  auto child_web_frame_2 = std::make_unique<WebFrameImpl>(
-      "child_web_frame_2",
-      /*is_main_frame=*/false, security_origin, &test_web_state_);
-  WebFrameImpl* child_web_frame_2_ptr = child_web_frame_2.get();
-  frames_manager_.AddFrame(std::move(child_web_frame_2));
-
-  frames_manager_.RemoveFrameWithId(child_web_frame_1_frame_id);
-
-  auto frames = frames_manager_.GetAllWebFrames();
-  EXPECT_EQ(2ul, frames.size());
-  EXPECT_TRUE(ContainsWebFrame(frames, main_web_frame_ptr));
-  EXPECT_TRUE(ContainsWebFrame(frames, child_web_frame_2_ptr));
-}
-
-// Tests that all frames are removed after a call to |RemoveAllFrames|.
-TEST_F(WebFramesManagerImplTest, RemoveAllFrames) {
-  GURL security_origin;
-  frames_manager_.AddFrame(std::make_unique<WebFrameImpl>(
-      "main_web_frame",
-      /*is_main_frame=*/true, security_origin, &test_web_state_));
-  frames_manager_.AddFrame(std::make_unique<WebFrameImpl>(
-      "web_frame",
-      /*is_main_frame=*/false, security_origin, &test_web_state_));
-
-  ASSERT_EQ(2ul, frames_manager_.GetAllWebFrames().size());
-  frames_manager_.RemoveAllWebFrames();
-  EXPECT_EQ(nullptr, frames_manager_.GetMainWebFrame());
-  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
-}
-
-// Tests that the WebFramesManagerImpl correctly ignores attempted removal of an
-// already removed WebFrame.
-TEST_F(WebFramesManagerImplTest, RemoveNonexistantFrame) {
-  GURL security_origin;
-  const std::string main_web_frame_frame_id = "main_web_frame";
-  auto main_web_frame = std::make_unique<WebFrameImpl>(
-      main_web_frame_frame_id,
-      /*is_main_frame=*/true, security_origin, &test_web_state_);
-  WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
-
-  frames_manager_.AddFrame(std::move(main_web_frame));
-  auto frames = frames_manager_.GetAllWebFrames();
-  EXPECT_EQ(1ul, frames.size());
-  EXPECT_TRUE(ContainsWebFrame(frames, main_web_frame_ptr));
-
-  frames_manager_.RemoveFrameWithId(main_web_frame_frame_id);
-  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
-  frames_manager_.RemoveFrameWithId(main_web_frame_frame_id);
-  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
-}
-
-// Tests that a WebFrame is correctly returned by its frame id.
-TEST_F(WebFramesManagerImplTest, GetFrameWithId) {
-  GURL security_origin;
-
-  const std::string web_frame_frame_id = "web_frame_frame_id";
-  auto web_frame = std::make_unique<WebFrameImpl>(
-      web_frame_frame_id,
-      /*is_main_frame=*/false, security_origin, &test_web_state_);
-  WebFrameImpl* web_frame_ptr = web_frame.get();
-  frames_manager_.AddFrame(std::move(web_frame));
-
-  EXPECT_EQ(web_frame_ptr, frames_manager_.GetFrameWithId(web_frame_frame_id));
-  EXPECT_EQ(nullptr, frames_manager_.GetFrameWithId("invalid_id"));
-}
-
-// Tests that WebFramesManagerImpl will unregister callbacks for previous
-// WKWebView and register callbacks for new WKWebView. Also tests that
-// WebFramesManagerImpl creates new WebFrame when receiving
-// "FrameBecameAvailable" message and removes WebFrame when receiving
-// "FrameBecameUnavailable" message.
-TEST_F(WebFramesManagerImplTest, OnWebViewUpdated) {
-  // Mock WKUserContentController.
-  WKUserContentController* user_content_controller =
-      OCMClassMock([WKUserContentController class]);
-
-  // Set up CRWWKScriptMessageRouter.
-  CRWWKScriptMessageRouter* router = [[CRWWKScriptMessageRouter alloc]
-      initWithUserContentController:user_content_controller];
-
-  // Mock WKWebView.
-  WKWebView* web_view_1 = OCMClassMock([WKWebView class]);
-  WKWebView* web_view_2 = OCMClassMock([WKWebView class]);
-
-  // Mock WKSecurityOrigin.
-  WKSecurityOrigin* security_origin = OCMClassMock([WKSecurityOrigin class]);
-  OCMStub([security_origin host]).andReturn(@"www.crw.com");
-  OCMStub([security_origin port]).andReturn(443);
-  OCMStub([security_origin protocol]).andReturn(@"https");
-
-  // Mock WKFrameInfo.
-  WKFrameInfo* frame_info = OCMClassMock([WKFrameInfo class]);
-  OCMStub([frame_info isMainFrame]).andReturn(YES);
-  OCMStub([frame_info securityOrigin]).andReturn(security_origin);
-
-  // Mock WKScriptMessage for "FrameBecameAvailable" message.
-  NSDictionary* body = @{
-    @"crwFrameId" : [NSString stringWithUTF8String:kFrameId],
-    @"crwFrameKey" : [NSString stringWithUTF8String:kFrameKey],
-    @"crwFrameLastReceivedMessageId" : @-1,
-  };
-  WKScriptMessage* available_message = OCMClassMock([WKScriptMessage class]);
-  OCMStub([available_message body]).andReturn(body);
-  OCMStub([available_message frameInfo]).andReturn(frame_info);
-  OCMStub([available_message name]).andReturn(kFrameBecameAvailableMessageName);
-  OCMStub([available_message webView]).andReturn(web_view_1);
-
-  // Mock WKScriptMessage for "FrameBecameUnavailable" message.
-  WKScriptMessage* unavailable_message = OCMClassMock([WKScriptMessage class]);
-  OCMStub([unavailable_message body])
-      .andReturn([NSString stringWithUTF8String:kFrameId]);
-  OCMStub([unavailable_message frameInfo]).andReturn(frame_info);
-  OCMStub([unavailable_message name])
-      .andReturn(kFrameBecameUnavailableMessageName);
-  OCMStub([unavailable_message webView]).andReturn(web_view_1);
-
-  // Test begin!
-
-  // Tell the manager to change from nil to |web_view_1|.
-  frames_manager_.OnWebViewUpdated(nil, web_view_1, router);
-
-  // Send the "FrameBecameAvailable" to |router|.
-  [(id<WKScriptMessageHandler>)router
-        userContentController:user_content_controller
-      didReceiveScriptMessage:available_message];
-
-  // Check that the WebFrame for main frame is created.
-  ASSERT_EQ(1UL, frames_manager_.GetAllWebFrames().size());
+  EXPECT_EQ(1ul, frames_manager_.GetAllWebFrames().size());
   WebFrame* main_frame = frames_manager_.GetMainWebFrame();
+  WebFrame* main_frame_by_id =
+      frames_manager_.GetFrameWithId(main_frame_.GetFrameId());
   ASSERT_TRUE(main_frame);
-  EXPECT_EQ(kFrameId, main_frame->GetFrameId());
+  ASSERT_TRUE(main_frame_by_id);
+  EXPECT_EQ(main_frame, main_frame_by_id);
   EXPECT_TRUE(main_frame->IsMainFrame());
-  EXPECT_EQ(GURL("https://www.crw.com"), main_frame->GetSecurityOrigin());
+  EXPECT_EQ(main_frame_.GetSecurityOrigin(), main_frame->GetSecurityOrigin());
 
-  // Send the "FrameBecameUnavailable" to |router|.
-  [(id<WKScriptMessageHandler>)router
-        userContentController:user_content_controller
-      didReceiveScriptMessage:unavailable_message];
+  SendFrameBecameUnavailableMessage(main_frame_);
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
+  EXPECT_FALSE(frames_manager_.GetMainWebFrame());
+  EXPECT_FALSE(frames_manager_.GetFrameWithId(main_frame_.GetFrameId()));
+}
 
-  // Check that the WebFrame for main frame is removed.
-  ASSERT_EQ(0UL, frames_manager_.GetAllWebFrames().size());
-  ASSERT_FALSE(frames_manager_.GetMainWebFrame());
+// Tests multiple web frames construction/destruction.
+TEST_F(WebFramesManagerImplTest, MultipleWebFrame) {
+  // Add main frame.
+  SendFrameBecameAvailableMessage(main_frame_);
+  EXPECT_EQ(1ul, frames_manager_.GetAllWebFrames().size());
+  // Check main frame.
+  WebFrame* main_frame = frames_manager_.GetMainWebFrame();
+  WebFrame* main_frame_by_id =
+      frames_manager_.GetFrameWithId(main_frame_.GetFrameId());
+  ASSERT_TRUE(main_frame);
+  EXPECT_EQ(main_frame, main_frame_by_id);
+  EXPECT_TRUE(main_frame->IsMainFrame());
+  EXPECT_EQ(main_frame_.GetSecurityOrigin(), main_frame->GetSecurityOrigin());
 
-  // Tell the manager to change from |web_view_1| to |web_view_2|.
-  frames_manager_.OnWebViewUpdated(web_view_1, web_view_2, router);
+  // Add frame 1.
+  SendFrameBecameAvailableMessage(frame_1_);
+  EXPECT_EQ(2ul, frames_manager_.GetAllWebFrames().size());
+  // Check main frame.
+  main_frame = frames_manager_.GetMainWebFrame();
+  main_frame_by_id = frames_manager_.GetFrameWithId(main_frame_.GetFrameId());
+  ASSERT_TRUE(main_frame);
+  EXPECT_EQ(main_frame, main_frame_by_id);
+  EXPECT_TRUE(main_frame->IsMainFrame());
+  EXPECT_EQ(main_frame_.GetSecurityOrigin(), main_frame->GetSecurityOrigin());
+  // Check frame 1.
+  WebFrame* frame_1 = frames_manager_.GetFrameWithId(frame_1_.GetFrameId());
+  ASSERT_TRUE(frame_1);
+  EXPECT_FALSE(frame_1->IsMainFrame());
+  EXPECT_EQ(frame_1_.GetSecurityOrigin(), frame_1->GetSecurityOrigin());
 
-  // Send the "FrameBecameAvailable" of |web_view_1| to |router| again.
-  [(id<WKScriptMessageHandler>)router
-        userContentController:user_content_controller
-      didReceiveScriptMessage:available_message];
+  // Add frame 2.
+  SendFrameBecameAvailableMessage(frame_2_);
+  EXPECT_EQ(3ul, frames_manager_.GetAllWebFrames().size());
+  // Check main frame.
+  main_frame = frames_manager_.GetMainWebFrame();
+  main_frame_by_id = frames_manager_.GetFrameWithId(main_frame_.GetFrameId());
+  ASSERT_TRUE(main_frame);
+  EXPECT_EQ(main_frame, main_frame_by_id);
+  EXPECT_TRUE(main_frame->IsMainFrame());
+  EXPECT_EQ(main_frame_.GetSecurityOrigin(), main_frame->GetSecurityOrigin());
+  // Check frame 1.
+  frame_1 = frames_manager_.GetFrameWithId(frame_1_.GetFrameId());
+  ASSERT_TRUE(frame_1);
+  EXPECT_FALSE(frame_1->IsMainFrame());
+  EXPECT_EQ(frame_1_.GetSecurityOrigin(), frame_1->GetSecurityOrigin());
+  // Check frame 2.
+  WebFrame* frame_2 = frames_manager_.GetFrameWithId(frame_2_.GetFrameId());
+  ASSERT_TRUE(frame_2);
+  EXPECT_FALSE(frame_2->IsMainFrame());
+  EXPECT_EQ(frame_2_.GetSecurityOrigin(), frame_2->GetSecurityOrigin());
 
-  // Check that WebFramesManagerImpl doesn't reply JS messages from previous
-  // WKWebView.
-  ASSERT_EQ(0UL, frames_manager_.GetAllWebFrames().size());
-  ASSERT_FALSE(frames_manager_.GetMainWebFrame());
+  // Remove frame 1.
+  SendFrameBecameUnavailableMessage(frame_1_);
+  EXPECT_EQ(2ul, frames_manager_.GetAllWebFrames().size());
+  // Check main frame.
+  main_frame = frames_manager_.GetMainWebFrame();
+  main_frame_by_id = frames_manager_.GetFrameWithId(main_frame_.GetFrameId());
+  ASSERT_TRUE(main_frame);
+  EXPECT_EQ(main_frame, main_frame_by_id);
+  EXPECT_TRUE(main_frame->IsMainFrame());
+  EXPECT_EQ(main_frame_.GetSecurityOrigin(), main_frame->GetSecurityOrigin());
+  // Check frame 1.
+  frame_1 = frames_manager_.GetFrameWithId(frame_1_.GetFrameId());
+  EXPECT_FALSE(frame_1);
+  // Check frame 2.
+  frame_2 = frames_manager_.GetFrameWithId(frame_2_.GetFrameId());
+  ASSERT_TRUE(frame_2);
+  EXPECT_FALSE(frame_2->IsMainFrame());
+  EXPECT_EQ(frame_2_.GetSecurityOrigin(), frame_2->GetSecurityOrigin());
+
+  // Remove main frame.
+  SendFrameBecameUnavailableMessage(main_frame_);
+  EXPECT_EQ(1ul, frames_manager_.GetAllWebFrames().size());
+  // Check main frame.
+  main_frame = frames_manager_.GetMainWebFrame();
+  main_frame_by_id = frames_manager_.GetFrameWithId(main_frame_.GetFrameId());
+  EXPECT_FALSE(main_frame);
+  EXPECT_FALSE(main_frame_by_id);
+  // Check frame 1.
+  frame_1 = frames_manager_.GetFrameWithId(frame_1_.GetFrameId());
+  EXPECT_FALSE(frame_1);
+  // Check frame 2.
+  frame_2 = frames_manager_.GetFrameWithId(frame_2_.GetFrameId());
+  ASSERT_TRUE(frame_2);
+  EXPECT_FALSE(frame_2->IsMainFrame());
+  EXPECT_EQ(frame_2_.GetSecurityOrigin(), frame_2->GetSecurityOrigin());
+
+  // Remove frame 2.
+  SendFrameBecameUnavailableMessage(frame_2_);
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
+  // Check main frame.
+  main_frame = frames_manager_.GetMainWebFrame();
+  main_frame_by_id = frames_manager_.GetFrameWithId(main_frame_.GetFrameId());
+  EXPECT_FALSE(main_frame);
+  EXPECT_FALSE(main_frame_by_id);
+  // Check frame 1.
+  frame_1 = frames_manager_.GetFrameWithId(frame_1_.GetFrameId());
+  EXPECT_FALSE(frame_1);
+  // Check frame 2.
+  frame_2 = frames_manager_.GetFrameWithId(frame_2_.GetFrameId());
+  EXPECT_FALSE(frame_2);
+}
+
+// Tests WebFramesManagerImpl::RemoveAllWebFrames.
+TEST_F(WebFramesManagerImplTest, RemoveAllWebFrames) {
+  SendFrameBecameAvailableMessage(main_frame_);
+  SendFrameBecameAvailableMessage(frame_1_);
+  SendFrameBecameAvailableMessage(frame_2_);
+  EXPECT_EQ(3ul, frames_manager_.GetAllWebFrames().size());
+
+  frames_manager_.RemoveAllWebFrames();
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
+  // Check main frame.
+  EXPECT_FALSE(frames_manager_.GetMainWebFrame());
+  EXPECT_FALSE(frames_manager_.GetFrameWithId(main_frame_.GetFrameId()));
+  // Check frame 1.
+  EXPECT_FALSE(frames_manager_.GetFrameWithId(frame_1_.GetFrameId()));
+  // Check frame 2.
+  EXPECT_FALSE(frames_manager_.GetFrameWithId(frame_2_.GetFrameId()));
+}
+
+// Tests that WebFramesManagerImpl will ignore JS messages from previous
+// WKWebView after WebFramesManagerImpl::OnWebViewUpdated is called with a new
+// WKWebView, and that all web frames of previous WKWebView are removed.
+TEST_F(WebFramesManagerImplTest, OnWebViewUpdated) {
+  SendFrameBecameAvailableMessage(main_frame_);
+  SendFrameBecameAvailableMessage(frame_1_);
+  EXPECT_EQ(2ul, frames_manager_.GetAllWebFrames().size());
+
+  // Notify WebFramesManagerImpl that its associated WKWebView has changed from
+  // |web_view_| to a new WKWebView.
+  WKWebView* web_view_2 = OCMClassMock([WKWebView class]);
+  frames_manager_.OnWebViewUpdated(web_view_, web_view_2, router_);
+
+  // Send JS message of loaded/unloaded web frames in previous WKWebView (i.e.
+  // web_view_). |frames_manager_| should have unregistered JS message handlers
+  // for |web_view_| and removed all web frames, so no web frame should be
+  // added.
+  SendFrameBecameAvailableMessage(frame_1_);
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
+  SendFrameBecameAvailableMessage(frame_2_);
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
+  SendFrameBecameUnavailableMessage(frame_1_);
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
 }
 
 }  // namespace web

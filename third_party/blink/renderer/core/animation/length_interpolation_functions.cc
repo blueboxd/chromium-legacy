@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
 
+#include "third_party/blink/renderer/core/animation/underlying_value.h"
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
@@ -142,15 +143,18 @@ bool LengthInterpolationFunctions::HasPercentage(
 }
 
 void LengthInterpolationFunctions::Composite(
-    std::unique_ptr<InterpolableValue>& underlying_interpolable_value,
-    scoped_refptr<NonInterpolableValue>& underlying_non_interpolable_value,
+    UnderlyingValue& underlying_value,
     double underlying_fraction,
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) {
-  underlying_interpolable_value->ScaleAndAdd(underlying_fraction,
-                                             interpolable_value);
-  underlying_non_interpolable_value = CSSLengthNonInterpolableValue::Merge(
-      underlying_non_interpolable_value.get(), non_interpolable_value);
+  underlying_value.MutableInterpolableValue().ScaleAndAdd(underlying_fraction,
+                                                          interpolable_value);
+  const auto merged = CSSLengthNonInterpolableValue::Merge(
+      underlying_value.GetNonInterpolableValue(), non_interpolable_value);
+  if (HasPercentage(underlying_value.GetNonInterpolableValue()) !=
+      HasPercentage(merged.get())) {
+    underlying_value.SetNonInterpolableValue(merged);
+  }
 }
 
 void LengthInterpolationFunctions::SubtractFromOneHundredPercent(

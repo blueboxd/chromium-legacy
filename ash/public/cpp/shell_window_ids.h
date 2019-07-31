@@ -114,6 +114,9 @@ enum ShellWindowId {
   // The container for the lock screen modal windows.
   kShellWindowId_LockSystemModalContainer,
 
+  // The container for the shelf navigation widget.
+  kShellWindowId_ShelfNavigationContainer,
+
   // The container for the status area.
   kShellWindowId_StatusContainer,
 

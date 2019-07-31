@@ -26,6 +26,7 @@ source_set("browser_state") {
     "//components/sync_preferences",
     "//components/variations/net",
     "//components/webdata_services",
+    "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/net:net_types",
     "//ios/web/public/webui",
   ]

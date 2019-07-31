@@ -12,7 +12,18 @@ ImageProcessor::PortConfig::PortConfig(
     const VideoFrameLayout& layout,
     const gfx::Size& visible_size,
     const std::vector<VideoFrame::StorageType>& preferred_storage_types)
+    : PortConfig(layout,
+                 kUnassignedFourCC,
+                 visible_size,
+                 preferred_storage_types) {}
+
+ImageProcessor::PortConfig::PortConfig(
+    const VideoFrameLayout& layout,
+    uint32_t fourcc,
+    const gfx::Size& visible_size,
+    const std::vector<VideoFrame::StorageType>& preferred_storage_types)
     : layout(layout),
+      fourcc(fourcc),
       visible_size(visible_size),
       preferred_storage_types(preferred_storage_types) {}
 

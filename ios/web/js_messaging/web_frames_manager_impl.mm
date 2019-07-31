@@ -33,62 +33,10 @@ WebFramesManagerImpl::~WebFramesManagerImpl() {
   RemoveAllWebFrames();
 }
 
-void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
-  DCHECK(frame);
-  DCHECK(!frame->GetFrameId().empty());
-  if (frame->IsMainFrame()) {
-    DCHECK(!main_web_frame_);
-    main_web_frame_ = frame.get();
-  }
-  DCHECK(web_frames_.count(frame->GetFrameId()) == 0);
-  std::string frame_id = frame->GetFrameId();
-  web_frames_[frame_id] = std::move(frame);
-}
-
-void WebFramesManagerImpl::RemoveFrameWithId(const std::string& frame_id) {
-  DCHECK(!frame_id.empty());
-  // If the removed frame is a main frame, it should be the current one.
-  DCHECK(web_frames_.count(frame_id) == 0 ||
-         !web_frames_[frame_id]->IsMainFrame() ||
-         main_web_frame_ == web_frames_[frame_id].get());
-  if (web_frames_.count(frame_id) == 0) {
-    return;
-  }
-  if (main_web_frame_ && main_web_frame_->GetFrameId() == frame_id) {
-    main_web_frame_ = nullptr;
-  }
-  // The web::WebFrame destructor can call some callbacks that will try to
-  // access the frame via GetFrameWithId. This can lead to a reentrancy issue
-  // on |web_frames_|.
-  // To avoid this issue, keep the frame alive during the map operation and
-  // destroy it after.
-  auto keep_frame_alive = std::move(web_frames_[frame_id]);
-  web_frames_.erase(frame_id);
-}
-
 void WebFramesManagerImpl::RemoveAllWebFrames() {
   while (web_frames_.size()) {
     RemoveFrameWithId(web_frames_.begin()->first);
   }
-}
-
-WebFrame* WebFramesManagerImpl::GetFrameWithId(const std::string& frame_id) {
-  DCHECK(!frame_id.empty());
-  auto web_frames_it = web_frames_.find(frame_id);
-  return web_frames_it == web_frames_.end() ? nullptr
-                                            : web_frames_it->second.get();
-}
-
-std::set<WebFrame*> WebFramesManagerImpl::GetAllWebFrames() {
-  std::set<WebFrame*> frames;
-  for (const auto& it : web_frames_) {
-    frames.insert(it.second.get());
-  }
-  return frames;
-}
-
-WebFrame* WebFramesManagerImpl::GetMainWebFrame() {
-  return main_web_frame_;
 }
 
 void WebFramesManagerImpl::RegisterExistingFrames() {
@@ -102,6 +50,7 @@ void WebFramesManagerImpl::OnWebViewUpdated(
     CRWWKScriptMessageRouter* message_router) {
   DCHECK(old_web_view != new_web_view);
   if (old_web_view) {
+    RemoveAllWebFrames();
     [message_router
         removeScriptMessageHandlerForName:kFrameBecameAvailableMessageName
                                   webView:old_web_view];
@@ -130,6 +79,65 @@ void WebFramesManagerImpl::OnWebViewUpdated(
                            name:kFrameBecameUnavailableMessageName
                         webView:new_web_view];
   }
+}
+
+#pragma mark - WebFramesManager
+
+std::set<WebFrame*> WebFramesManagerImpl::GetAllWebFrames() {
+  std::set<WebFrame*> frames;
+  for (const auto& it : web_frames_) {
+    frames.insert(it.second.get());
+  }
+  return frames;
+}
+
+WebFrame* WebFramesManagerImpl::GetMainWebFrame() {
+  return main_web_frame_;
+}
+
+WebFrame* WebFramesManagerImpl::GetFrameWithId(const std::string& frame_id) {
+  DCHECK(!frame_id.empty());
+  auto web_frames_it = web_frames_.find(frame_id);
+  return web_frames_it == web_frames_.end() ? nullptr
+                                            : web_frames_it->second.get();
+}
+
+#pragma mark - Private
+
+void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
+  DCHECK(frame);
+  DCHECK(!frame->GetFrameId().empty());
+  if (frame->IsMainFrame()) {
+    DCHECK(!main_web_frame_);
+    main_web_frame_ = frame.get();
+  }
+  DCHECK(web_frames_.count(frame->GetFrameId()) == 0);
+  std::string frame_id = frame->GetFrameId();
+  web_frames_[frame_id] = std::move(frame);
+
+  delegate_.OnWebFrameAvailable(GetFrameWithId(frame_id));
+}
+
+void WebFramesManagerImpl::RemoveFrameWithId(const std::string& frame_id) {
+  DCHECK(!frame_id.empty());
+  // If the removed frame is a main frame, it should be the current one.
+  DCHECK(web_frames_.count(frame_id) == 0 ||
+         !web_frames_[frame_id]->IsMainFrame() ||
+         main_web_frame_ == web_frames_[frame_id].get());
+  if (web_frames_.count(frame_id) == 0) {
+    return;
+  }
+  delegate_.OnWebFrameUnavailable(web_frames_[frame_id].get());
+  if (main_web_frame_ && main_web_frame_->GetFrameId() == frame_id) {
+    main_web_frame_ = nullptr;
+  }
+  // The web::WebFrame destructor can call some callbacks that will try to
+  // access the frame via GetFrameWithId. This can lead to a reentrancy issue
+  // on |web_frames_|.
+  // To avoid this issue, keep the frame alive during the map operation and
+  // destroy it after.
+  auto keep_frame_alive = std::move(web_frames_[frame_id]);
+  web_frames_.erase(frame_id);
 }
 
 void WebFramesManagerImpl::OnFrameBecameAvailable(WKScriptMessage* message) {
@@ -172,7 +180,6 @@ void WebFramesManagerImpl::OnFrameBecameAvailable(WKScriptMessage* message) {
     }
 
     AddFrame(std::move(new_frame));
-    delegate_.OnWebFrameAvailable(GetFrameWithId(frame_id));
   }
 }
 
@@ -183,11 +190,7 @@ void WebFramesManagerImpl::OnFrameBecameUnavailable(WKScriptMessage* message) {
     return;
   }
   std::string frame_id = base::SysNSStringToUTF8(message.body);
-  WebFrame* frame = GetFrameWithId(frame_id);
-  if (frame) {
-    delegate_.OnWebFrameUnavailable(frame);
-    RemoveFrameWithId(frame_id);
-  }
+  RemoveFrameWithId(frame_id);
 }
 
 }  // namespace

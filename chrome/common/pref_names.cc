@@ -2691,12 +2691,22 @@ const char kAllowPopupsDuringPageUnload[] = "allow_popups_during_page_unload";
 
 #if defined(OS_CHROMEOS)
 // Enum that specifies client certificate management permissions for user. It
-// can have one of the following values. 0: Users can manage all certificates.
+// can have one of the following values.
+// 0: Users can manage all certificates.
 // 1: Users can manage user certificates, but not device certificates.
 // 2: Disallow users from managing certificates
 // Controlled by ClientCertificateManagementAllowed policy.
 const char kClientCertificateManagementAllowed[] =
-    "certificate_management_allowed";
+    "client_certificate_management_allowed";
+
+// Enum that specifies CA certificate management permissions for user. It
+// can have one of the following values.
+// 0: Users can manage all certificates.
+// 1: Users can manage user certificates, but not built-in certificates.
+// 2: Disallow users from managing certificates
+// Controlled by CACertificateManagementAllowed policy.
+const char kCACertificateManagementAllowed[] =
+    "ca_certificate_management_allowed";
 
 // Boolean that specifies whether the built-in certificate verifier should be
 // used. If false, Chrome will use the platform certificate verifier. If not

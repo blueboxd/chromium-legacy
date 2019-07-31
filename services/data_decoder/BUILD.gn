@@ -55,6 +55,7 @@ source_set("tests") {
     "bundled_exchanges_parser_unittest.cc",
     "image_decoder_impl_unittest.cc",
     "public/cpp/json_sanitizer_unittest.cc",
+    "public/cpp/safe_bundled_exchanges_parser_unittest.cc",
     "public/cpp/safe_xml_parser_unittest.cc",
     "public/cpp/testing_json_parser_unittest.cc",
     "xml_parser_unittest.cc",

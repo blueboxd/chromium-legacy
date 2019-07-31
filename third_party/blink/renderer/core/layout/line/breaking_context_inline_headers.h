@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/layout/line/line_width.h"
 #include "third_party/blink/renderer/core/layout/line/trailing_objects.h"
 #include "third_party/blink/renderer/core/layout/line/word_measurement.h"
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
@@ -421,11 +420,11 @@ inline void BreakingContext::HandleBR(EClear& clear) {
     // A <br> with clearance always needs a linebox in case the lines below it
     // get dirtied later and need to check for floats to clear - so if we're
     // ignoring spaces, stop ignoring them and add a run for this object.
-    if (ignoring_spaces_ && current_style_->Clear() != EClear::kNone)
+    if (ignoring_spaces_ && current_style_->HasClear())
       EnsureLineBoxInsideIgnoredSpaces(&line_midpoint_state_, br);
 
     if (!line_info_.IsEmpty())
-      clear = ResolvedClear(*current_style_, block_.StyleRef());
+      clear = current_style_->Clear(block_.StyleRef());
   }
   at_end_ = true;
 }

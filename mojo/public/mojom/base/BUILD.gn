@@ -16,7 +16,7 @@ mojom_component("base") {
     "generic_pending_receiver.mojom",
     "memory_allocator_dump_cross_process_uid.mojom",
     "memory_pressure_level.mojom",
-    "message_loop_type.mojom",
+    "message_pump_type.mojom",
     "process_id.mojom",
     "read_only_buffer.mojom",
     "ref_counted_memory.mojom",

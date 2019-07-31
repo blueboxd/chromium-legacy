@@ -217,7 +217,8 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   static User* CreateKioskAppUser(const AccountId& kiosk_app_account_id);
   static User* CreateArcKioskAppUser(const AccountId& arc_kiosk_account_id);
   static User* CreateSupervisedUser(const AccountId& account_id);
-  static User* CreatePublicAccountUser(const AccountId& account_id);
+  static User* CreatePublicAccountUser(const AccountId& account_id,
+                                       bool is_using_saml = false);
 
   const std::string* GetAccountLocale() const { return account_locale_.get(); }
 

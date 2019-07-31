@@ -237,10 +237,22 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   }
 }
 
+#pragma mark - UITableViewDelegate
+
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  // Items in this collection view are not deletable, so should not be seen
-  // as editable by the table view.
+  // If we don't allow the edit of the cell, the selection of the cell isn't
+  // forwarded.
+  return YES;
+}
+
+- (UITableViewCellEditingStyle)tableView:(UITableView*)tableView
+           editingStyleForRowAtIndexPath:(NSIndexPath*)indexPath {
+  return UITableViewCellEditingStyleNone;
+}
+
+- (BOOL)tableView:(UITableView*)tableview
+    shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath*)indexPath {
   return NO;
 }
 

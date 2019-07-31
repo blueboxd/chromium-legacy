@@ -14,12 +14,13 @@ namespace blink {
 
 class BasicShapeNonInterpolableValue : public NonInterpolableValue {
  public:
-  static scoped_refptr<NonInterpolableValue> Create(
+  static scoped_refptr<const NonInterpolableValue> Create(
       BasicShape::ShapeType type) {
     return base::AdoptRef(new BasicShapeNonInterpolableValue(type));
   }
-  static scoped_refptr<NonInterpolableValue> CreatePolygon(WindRule wind_rule,
-                                                           wtf_size_t size) {
+  static scoped_refptr<const NonInterpolableValue> CreatePolygon(
+      WindRule wind_rule,
+      wtf_size_t size) {
     return base::AdoptRef(new BasicShapeNonInterpolableValue(wind_rule, size));
   }
 

@@ -24,10 +24,6 @@ namespace storage {
 class BlobStorageContext;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -53,11 +49,9 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
  public:
   explicit PrefetchURLLoaderService(BrowserContext* browser_context);
 
-  // Must be called on the IO thread. The given |resource_context| will
-  // be valid as far as request_context_getter returns non-null context.
+  // Must be called on the IO thread.
   void InitializeResourceContext(
       ResourceContext* resource_context,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       ChromeBlobStorageContext* blob_storage_context);
 
   void GetFactory(
@@ -130,7 +124,6 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
   BrowserContext* browser_context_ = nullptr;
   // Not used when NavigationLoaderOnUI is enabled.
   ResourceContext* resource_context_ = nullptr;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   mojo::ReceiverSet<network::mojom::URLLoaderFactory,
                     std::unique_ptr<BindContext>>

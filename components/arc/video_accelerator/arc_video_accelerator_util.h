@@ -5,16 +5,28 @@
 #ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_ACCELERATOR_UTIL_H_
 #define COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_ACCELERATOR_UTIL_H_
 
+#include <vector>
+
 #include "base/files/scoped_file.h"
+#include "components/arc/video_accelerator/video_frame_plane.h"
+#include "media/base/video_types.h"
 #include "mojo/public/cpp/system/handle.h"
+#include "ui/gfx/geometry/size.h"
+
 namespace arc {
 
 // Creates ScopedFD from given mojo::ScopedHandle.
 // Returns invalid ScopedFD on failure.
 base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle);
 
-// Return the file size of |fd|.
+// Return the file size of |fd| in bytes.
 bool GetFileSize(const int fd, size_t* size);
 
+// Return true iff |planes| is valid for a video frame located on |fd|
+// and of |pixel_format| and |coded_size|.
+bool VerifyVideoFrame(media::VideoPixelFormat pixel_format,
+                      const gfx::Size& coded_size,
+                      int fd,
+                      const std::vector<VideoFramePlane>& planes);
 }  // namespace arc
 #endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_ACCELERATOR_UTIL_H_

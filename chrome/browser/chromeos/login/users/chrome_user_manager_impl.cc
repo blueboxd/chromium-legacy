@@ -750,7 +750,8 @@ void ChromeUserManagerImpl::LoadDeviceLocalAccounts(
 
     users_.push_back(
         CreateUserFromDeviceLocalAccount(account_id, type).release());
-    if (type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION)
+    if (type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION ||
+        type == policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION)
       UpdatePublicAccountDisplayName(account_id.GetUserEmail());
   }
 }
@@ -1205,7 +1206,8 @@ bool ChromeUserManagerImpl::UpdateAndCleanUpDeviceLocalAccounts(
                         AccountId::FromUserEmail(it->user_id), it->type)
                         .release());
     }
-    if (it->type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION) {
+    if (it->type == policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION ||
+        it->type == policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION) {
       UpdatePublicAccountDisplayName(it->user_id);
     }
   }
@@ -1546,6 +1548,10 @@ ChromeUserManagerImpl::CreateUserFromDeviceLocalAccount(
   switch (type) {
     case policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION:
       user.reset(user_manager::User::CreatePublicAccountUser(account_id));
+      break;
+    case policy::DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION:
+      user.reset(user_manager::User::CreatePublicAccountUser(
+          account_id, /*is_using_saml=*/true));
       break;
     case policy::DeviceLocalAccount::TYPE_KIOSK_APP:
       user.reset(user_manager::User::CreateKioskAppUser(account_id));

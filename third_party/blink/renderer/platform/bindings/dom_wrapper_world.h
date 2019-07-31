@@ -57,7 +57,7 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 
  public:
   // Per-thread global identifiers for DOMWrapperWorld.
-  enum WorldId {
+  enum WorldId : int32_t {
     kInvalidWorldId = -1,
     kMainWorldId = 0,
 
@@ -80,7 +80,7 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
     kWorker,
   };
 
-  static bool IsIsolatedWorldId(int world_id) {
+  static bool IsIsolatedWorldId(int32_t world_id) {
     return DOMWrapperWorld::kMainWorldId < world_id &&
            world_id < DOMWrapperWorld::kDOMWrapperWorldIsolatedWorldIdLimit;
   }
@@ -91,7 +91,7 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 
   // Ensures an IsolatedWorld for |worldId|.
   static scoped_refptr<DOMWrapperWorld> EnsureIsolatedWorld(v8::Isolate*,
-                                                            int world_id);
+                                                            int32_t world_id);
   ~DOMWrapperWorld();
   void Dispose();
 
@@ -117,7 +117,7 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 
   static DOMWrapperWorld& MainWorld();
 
-  static void SetNonMainWorldHumanReadableName(int world_id, const String&);
+  static void SetNonMainWorldHumanReadableName(int32_t world_id, const String&);
   String NonMainWorldHumanReadableName();
 
   // Associates an isolated world (see above for description) with a security
@@ -126,7 +126,7 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   // Note: if |security_origin| is null, the security origin stored for the
   // isolated world is cleared.
   static void SetIsolatedWorldSecurityOrigin(
-      int world_id,
+      int32_t world_id,
       scoped_refptr<SecurityOrigin> security_origin);
   SecurityOrigin* IsolatedWorldSecurityOrigin();
 
@@ -143,7 +143,7 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   DOMDataStore& DomDataStore() const { return *dom_data_store_; }
 
  private:
-  DOMWrapperWorld(v8::Isolate*, WorldType, int world_id);
+  DOMWrapperWorld(v8::Isolate*, WorldType, int32_t world_id);
 
   static unsigned number_of_non_main_worlds_in_main_thread_;
 
@@ -177,7 +177,7 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   static void DissociateDOMWindowWrappersInAllWorlds(ScriptWrappable*);
 
   const WorldType world_type_;
-  const int world_id_;
+  const int32_t world_id_;
   std::unique_ptr<DOMDataStore> dom_data_store_;
 };
 

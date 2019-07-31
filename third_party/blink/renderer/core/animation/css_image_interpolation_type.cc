@@ -50,8 +50,8 @@ class CSSImageNonInterpolableValue : public NonInterpolableValue {
   }
 
   static scoped_refptr<CSSImageNonInterpolableValue> Merge(
-      scoped_refptr<NonInterpolableValue> start,
-      scoped_refptr<NonInterpolableValue> end);
+      scoped_refptr<const NonInterpolableValue> start,
+      scoped_refptr<const NonInterpolableValue> end);
 
   CSSValue* Crossfade(double progress) const {
     if (is_single_ || progress <= 0)
@@ -82,8 +82,8 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSImageNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSImageNonInterpolableValue);
 
 scoped_refptr<CSSImageNonInterpolableValue> CSSImageNonInterpolableValue::Merge(
-    scoped_refptr<NonInterpolableValue> start,
-    scoped_refptr<NonInterpolableValue> end) {
+    scoped_refptr<const NonInterpolableValue> start,
+    scoped_refptr<const NonInterpolableValue> end) {
   const CSSImageNonInterpolableValue& start_image_pair =
       ToCSSImageNonInterpolableValue(*start);
   const CSSImageNonInterpolableValue& end_image_pair =

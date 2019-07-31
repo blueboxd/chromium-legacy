@@ -480,7 +480,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->IsLink())
     return ax::mojom::Role::kLink;
 
-  if (IsHTMLAnchorElement(*GetNode())) {
+  if (IsA<HTMLAnchorElement>(*GetNode())) {
     // We assume that an anchor element is LinkRole if it has event listners
     // even though it doesn't have kHrefAttr.
     if (IsClickable())
@@ -599,7 +599,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsHTMLDListElement(*GetNode()))
     return ax::mojom::Role::kDescriptionList;
 
-  if (IsHTMLAudioElement(*GetNode()))
+  if (IsA<HTMLAudioElement>(*GetNode()))
     return ax::mojom::Role::kAudio;
   if (IsHTMLVideoElement(*GetNode()))
     return ax::mojom::Role::kVideo;
@@ -993,7 +993,7 @@ bool AXNodeObject::IsInPageLinkTarget() const {
   if (element->ContainingShadowRoot())
     return false;
 
-  if (auto* anchor = ToHTMLAnchorElementOrNull(element)) {
+  if (auto* anchor = DynamicTo<HTMLAnchorElement>(element)) {
     return anchor->HasName() || anchor->HasID();
   }
 
@@ -1822,8 +1822,7 @@ KURL AXNodeObject::Url() const {
   if (IsAnchor()) {
     const Element* anchor = AnchorElement();
 
-    if (const HTMLAnchorElement* html_anchor =
-            ToHTMLAnchorElementOrNull(anchor)) {
+    if (const auto* html_anchor = DynamicTo<HTMLAnchorElement>(anchor)) {
       return html_anchor->Href();
     }
 
@@ -2554,7 +2553,7 @@ Element* AXNodeObject::AnchorElement() const {
   // NOTE: this assumes that any non-image with an anchor is an
   // HTMLAnchorElement
   for (; node; node = node->parentNode()) {
-    if (IsHTMLAnchorElement(*node) ||
+    if (IsA<HTMLAnchorElement>(*node) ||
         (node->GetLayoutObject() &&
          cache.GetOrCreate(node->GetLayoutObject())->IsAnchor()))
       return To<Element>(node);
@@ -3135,7 +3134,7 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   // 5.8 img or area Element
-  if (IsHTMLImageElement(GetNode()) || IsHTMLAreaElement(GetNode()) ||
+  if (IsHTMLImageElement(GetNode()) || IsA<HTMLAreaElement>(GetNode()) ||
       (GetLayoutObject() && GetLayoutObject()->IsSVGImage())) {
     // alt
     const AtomicString& alt = GetAttribute(kAltAttr);

@@ -23,6 +23,7 @@
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_layout_manager.h"
@@ -364,6 +365,8 @@ void ShelfWidget::Shutdown() {
   Shell::Get()->focus_cycler()->RemoveWidget(status_area_widget_.get());
   status_area_widget_.reset();
 
+  Shell::Get()->focus_cycler()->RemoveWidget(navigation_widget_.get());
+
   // Don't need to update the shelf background during shutdown.
   background_animator_.RemoveObserver(delegate_view_);
   shelf_->RemoveObserver(this);
@@ -371,6 +374,15 @@ void ShelfWidget::Shutdown() {
   // Don't need to observe focus/activation during shutdown.
   Shell::Get()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
+}
+
+void ShelfWidget::CreateNavigationWidget(aura::Window* container) {
+  DCHECK(container);
+  DCHECK(!navigation_widget_);
+  navigation_widget_ =
+      std::make_unique<ShelfNavigationWidget>(shelf_, shelf_view_);
+  navigation_widget_->Initialize(container);
+  Shell::Get()->focus_cycler()->AddWidget(navigation_widget_.get());
 }
 
 void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {
@@ -449,11 +461,11 @@ gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(
 }
 
 HomeButton* ShelfWidget::GetHomeButton() const {
-  return shelf_view_->GetHomeButton();
+  return navigation_widget_.get()->GetHomeButton();
 }
 
 BackButton* ShelfWidget::GetBackButton() const {
-  return shelf_view_->GetBackButton();
+  return navigation_widget_.get()->GetBackButton();
 }
 
 app_list::ApplicationDragAndDropHost*
@@ -485,11 +497,10 @@ bool ShelfWidget::OnNativeWidgetActivationChanged(bool active) {
     // overflow bubble's focus cycling. The setter of
     // |activated_from_overflow_bubble_| should handle focusing the correct
     // view.
-    if (activated_from_overflow_bubble_) {
+    if (activated_from_overflow_bubble_)
       activated_from_overflow_bubble_ = false;
-    } else {
+    else
       delegate_view_->SetPaneFocusAndFocusDefault();
-    }
   }
   return true;
 }

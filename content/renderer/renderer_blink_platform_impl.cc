@@ -84,6 +84,7 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
@@ -712,6 +713,12 @@ base::Optional<int> RendererBlinkPlatformImpl::GetAgcStartupMinimumVolume() {
     return base::Optional<int>();
   }
   return base::Optional<int>(startup_min_volume);
+}
+
+blink::WebVideoCaptureImplManager*
+RendererBlinkPlatformImpl::GetVideoCaptureImplManager() {
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread ? thread->video_capture_impl_manager() : nullptr;
 }
 
 //------------------------------------------------------------------------------

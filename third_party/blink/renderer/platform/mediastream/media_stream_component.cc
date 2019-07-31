@@ -35,7 +35,6 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
 
@@ -106,7 +105,9 @@ void MediaStreamComponent::SetContentHint(
     return;
   content_hint_ = hint;
 
-  MediaStreamCenter::Instance().DidSetContentHint(this);
+  WebPlatformMediaStreamTrack* native_track = GetPlatformTrack();
+  if (native_track)
+    native_track->SetContentHint(ContentHint());
 }
 
 void MediaStreamComponent::AudioSourceProviderImpl::ProvideInput(

@@ -28,6 +28,7 @@ class FocusCycler;
 class LoginShelfView;
 class Shelf;
 class ShelfLayoutManager;
+class ShelfNavigationWidget;
 class ShelfView;
 class StatusAreaWidget;
 
@@ -54,6 +55,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Returns true if the views-based shelf is being shown.
   static bool IsUsingViewsShelf();
 
+  void CreateNavigationWidget(aura::Window* container);
   void CreateStatusAreaWidget(aura::Window* status_container);
 
   void OnShelfAlignmentChanged();
@@ -67,6 +69,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   const Shelf* shelf() const { return shelf_; }
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
+  ShelfNavigationWidget* navigation_widget() const {
+    return navigation_widget_.get();
+  }
   StatusAreaWidget* status_area_widget() const {
     return status_area_widget_.get();
   }
@@ -150,6 +155,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;
 
+  std::unique_ptr<ShelfNavigationWidget> navigation_widget_;
   std::unique_ptr<StatusAreaWidget> status_area_widget_;
 
   // |delegate_view_| is the contents view of this widget and is cleaned up

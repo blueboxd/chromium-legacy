@@ -155,9 +155,9 @@ void ShadowRoot::RecalcStyle(const StyleRecalcChange change) {
 }
 
 void ShadowRoot::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
-  ClearNeedsReattachLayoutTree();
+  DCHECK(!NeedsReattachLayoutTree());
+  DCHECK(!ChildNeedsReattachLayoutTree());
   RebuildChildrenLayoutTrees(whitespace_attacher);
-  ClearChildNeedsReattachLayoutTree();
 }
 
 Node::InsertionNotificationRequest ShadowRoot::InsertedInto(

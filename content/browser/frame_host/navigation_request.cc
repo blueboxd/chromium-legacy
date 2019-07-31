@@ -99,6 +99,16 @@ namespace content {
 
 namespace {
 
+// Default timeout for the READY_TO_COMMIT -> COMMIT transition. Chosen
+// initially based on the Navigation.ReadyToCommitUntilCommit UMA, and then
+// refined based on feedback based on CrashExitCodes.Renderer/RESULT_CODE_HUNG.
+constexpr base::TimeDelta kDefaultCommitTimeout =
+    base::TimeDelta::FromSeconds(30);
+
+// Timeout for the READY_TO_COMMIT -> COMMIT transition.
+// Overrideable via SetCommitTimeoutForTesting.
+base::TimeDelta g_commit_timeout = kDefaultCommitTimeout;
+
 // crbug.com/954271: This feature is a part of an ablation study which makes
 // history navigations slower.
 // TODO(altimin): Clean this up after the study finishes.
@@ -687,7 +697,7 @@ NavigationRequest::NavigationRequest(
     base::FilePath url_path;
     if (net::FileURLToFilePath(common_params_->url, &url_path) &&
         url_path == specified_path) {
-      bundled_exchanges_factory_ = std::make_unique<BundledExchangesFactory>(
+      bundled_exchanges_handle_ = std::make_unique<BundledExchangesHandle>(
           BundledExchangesSource(specified_path));
     }
   }
@@ -1011,8 +1021,11 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   handle_state_ = NavigationRequest::INITIAL;
   navigation_handle_id_ = CreateUniqueHandleID();
 
+  request_headers_ = std::move(headers);
+  modified_request_headers_.Clear();
+  removed_request_headers_.clear();
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
-      base::WrapUnique(new NavigationHandleImpl(this, std::move(headers)));
+      base::WrapUnique(new NavigationHandleImpl(this));
 
   if (!frame_tree_node->navigation_request() && !is_for_commit) {
     // A callback could have cancelled this request synchronously in which case
@@ -1359,23 +1372,21 @@ void NavigationRequest::OnResponseStarted(
   if (commit_params_.was_activated == WasActivatedOption::kUnknown) {
     commit_params_.was_activated = WasActivatedOption::kNo;
 
-    if (navigation_handle_->IsRendererInitiated() &&
+    if (!browser_initiated_ &&
         (frame_tree_node_->has_received_user_gesture() ||
          frame_tree_node_->has_received_user_gesture_before_nav()) &&
         ShouldPropagateUserActivation(
             frame_tree_node_->current_origin(),
-            url::Origin::Create(navigation_handle_->GetURL()))) {
+            url::Origin::Create(common_params_->url))) {
       commit_params_.was_activated = WasActivatedOption::kYes;
-      // TODO(805871): the next check is relying on
-      // navigation_handle_->GetReferrer() but should ideally use a more
-      // reliable source for the originating URL when the navigation is renderer
-      // initiated.
-    } else if (((navigation_handle_->HasUserGesture() &&
-                 navigation_handle_->IsRendererInitiated()) ||
-                navigation_handle_->WasStartedFromContextMenu()) &&
+      // TODO(805871): the next check is relying on sanitized_referrer_ but
+      // should ideally use a more reliable source for the originating URL when
+      // the navigation is renderer initiated.
+    } else if (((common_params_->has_user_gesture && !browser_initiated_) ||
+                common_params_->started_from_context_menu) &&
                ShouldPropagateUserActivation(
-                   url::Origin::Create(navigation_handle_->GetReferrer().url),
-                   url::Origin::Create(navigation_handle_->GetURL()))) {
+                   url::Origin::Create(sanitized_referrer_->url),
+                   url::Origin::Create(common_params_->url))) {
       commit_params_.was_activated = WasActivatedOption::kYes;
     }
   }
@@ -1474,7 +1485,7 @@ void NavigationRequest::OnResponseStarted(
   // redirect or not in order to perform its checks. This is the reason why we
   // need to check the CSP both on request and response.
   net::Error net_error = CheckContentSecurityPolicy(
-      navigation_handle_->WasServerRedirect() /* has_followed_redirect */,
+      was_redirected_ /* has_followed_redirect */,
       false /* url_upgraded_after_redirect */, true /* is_response_check */);
   if (net_error != net::OK) {
     OnRequestFailedInternal(network::URLLoaderCompletionStatus(net_error),
@@ -1485,6 +1496,43 @@ void NavigationRequest::OnResponseStarted(
     // DO NOT ADD CODE after this. The previous call to OnRequestFailedInternal
     // has destroyed the NavigationRequest.
     return;
+  }
+
+  // https://mikewest.github.io/corpp/#process-navigation-response
+  if (base::FeatureList::IsEnabled(
+          network::features::kCrossOriginEmbedderPolicy) &&
+      render_frame_host_) {
+    auto cross_origin_embedder_policy =
+        network::mojom::CrossOriginEmbedderPolicy::kNone;
+    std::string header_value;
+    if (response_head->head.headers &&
+        response_head->head.headers->GetNormalizedHeader(
+            "cross-origin-embedder-policy", &header_value) &&
+        header_value == "require-corp") {
+      cross_origin_embedder_policy =
+          network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+    } else {
+      if (render_frame_host_->GetParent() &&
+          render_frame_host_->GetParent()->cross_origin_embedder_policy() ==
+              network::mojom::CrossOriginEmbedderPolicy::kRequireCorp) {
+        if (common_params_->url.SchemeIsBlob() ||
+            common_params_->url.SchemeIs("data")) {
+          cross_origin_embedder_policy =
+              network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
+        } else {
+          OnRequestFailedInternal(
+              network::URLLoaderCompletionStatus(net::ERR_FAILED),
+              false /* skip_throttles */,
+              base::nullopt /* error_page_content */,
+              false /* collapse_frame */);
+          // DO NOT ADD CODE after this. The previous call to
+          // OnRequestFailedInternal has destroyed the NavigationRequest.
+          return;
+        }
+      }
+    }
+    render_frame_host_->set_cross_origin_embedder_policy(
+        cross_origin_embedder_policy);
   }
 
   // Check if the navigation should be allowed to proceed.
@@ -1726,12 +1774,11 @@ void NavigationRequest::OnStartChecksComplete(
                                   : frame_tree_node_->parent()->IsMainFrame();
 
   std::unique_ptr<NavigationUIData> navigation_ui_data;
-  if (navigation_handle_->GetNavigationUIData())
-    navigation_ui_data = navigation_handle_->GetNavigationUIData()->Clone();
+  if (navigation_ui_data_)
+    navigation_ui_data = navigation_ui_data_->Clone();
 
   bool is_for_guests_only =
-      navigation_handle_->GetStartingSiteInstance()->GetSiteURL().
-          SchemeIs(kGuestScheme);
+      starting_site_instance_->GetSiteURL().SchemeIs(kGuestScheme);
 
   // Give DevTools a chance to override begin params (headers, skip SW)
   // before actually loading resource.
@@ -1754,14 +1801,14 @@ void NavigationRequest::OnStartChecksComplete(
   // Merge headers with embedder's headers.
   net::HttpRequestHeaders headers;
   headers.AddHeadersFromString(begin_params_->headers);
-  headers.MergeFrom(navigation_handle_->TakeModifiedRequestHeaders());
+  headers.MergeFrom(TakeModifiedRequestHeaders());
   begin_params_->headers = headers.ToString();
 
   // TODO(clamy): Avoid cloning the navigation params and create the
   // ResourceRequest directly here.
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptor;
-  if (bundled_exchanges_factory_)
-    interceptor.push_back(bundled_exchanges_factory_->CreateInterceptor());
+  if (bundled_exchanges_handle_)
+    interceptor.push_back(bundled_exchanges_handle_->CreateInterceptor());
   loader_ = NavigationURLLoader::Create(
       browser_context, browser_context->GetResourceContext(), partition,
       std::make_unique<NavigationRequestInfo>(
@@ -1821,10 +1868,8 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
-  net::HttpRequestHeaders modified_headers =
-      navigation_handle_->TakeModifiedRequestHeaders();
-  std::vector<std::string> removed_headers =
-      navigation_handle_->TakeRemovedRequestHeaders();
+  net::HttpRequestHeaders modified_headers = TakeModifiedRequestHeaders();
+  std::vector<std::string> removed_headers = TakeRemovedRequestHeaders();
 
   BrowserContext* browser_context =
       frame_tree_node_->navigator()->GetController()->GetBrowserContext();
@@ -1909,9 +1954,8 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       DownloadManagerImpl* download_manager = static_cast<DownloadManagerImpl*>(
           BrowserContext::GetDownloadManager(browser_context));
       download_manager->InterceptNavigation(
-          std::move(resource_request), navigation_handle_->GetRedirectChain(),
-          response_head_, std::move(response_body_),
-          std::move(url_loader_client_endpoints_),
+          std::move(resource_request), redirect_chain_, response_head_,
+          std::move(response_body_), std::move(url_loader_client_endpoints_),
           ssl_info_.has_value() ? ssl_info_->cert_status : 0,
           frame_tree_node_->frame_tree_node_id());
 
@@ -2012,8 +2056,7 @@ void NavigationRequest::CommitErrorPage(
 void NavigationRequest::CommitNavigation() {
   UpdateCommitNavigationParamsHistory();
   DCHECK(NeedsUrlLoader() == !!response_head_ ||
-         (navigation_handle_->WasServerRedirect() &&
-          common_params_->url.IsAboutBlank()));
+         (was_redirected_ && common_params_->url.IsAboutBlank()));
   DCHECK(!common_params_->url.SchemeIs(url::kJavaScriptScheme));
   DCHECK(!IsRendererDebugURL(common_params_->url));
   DCHECK(render_frame_host_ ==
@@ -2057,7 +2100,7 @@ void NavigationRequest::CommitNavigation() {
       is_view_source_, std::move(subresource_loader_params_),
       std::move(subresource_overrides_),
       std::move(service_worker_provider_info), devtools_navigation_token_,
-      std::move(bundled_exchanges_factory_));
+      std::move(bundled_exchanges_handle_));
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used
   // BrowserContext.  This is mostly needed to make sure the spare is warmed-up
@@ -2421,7 +2464,7 @@ void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
             "Navigating a cross-origin opener to a download (%s) is "
             "deprecated, see "
             "https://www.chromestatus.com/feature/5742188281462784.",
-            navigation_handle_->GetURL().spec().c_str()));
+            common_params_->url.spec().c_str()));
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin);
   }
@@ -2524,7 +2567,7 @@ void NavigationRequest::OnWillFailRequestProcessed(
   if (result.action() == NavigationThrottle::PROCEED) {
     handle_state_ = WILL_FAIL_REQUEST;
     result = NavigationThrottle::ThrottleCheckResult(
-        NavigationThrottle::PROCEED, navigation_handle_->GetNetErrorCode());
+        NavigationThrottle::PROCEED, net_error_);
   } else {
     handle_state_ = CANCELING;
   }
@@ -2747,7 +2790,7 @@ void NavigationRequest::DidCommitNavigation(
   // If an error page reloads, net_error_code might be 200 but we still want to
   // count it as an error page.
   if (params.base_url.spec() == kUnreachableWebDataURL ||
-      navigation_handle_->GetNetErrorCode() != net::OK) {
+      net_error_ != net::OK) {
     TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle",
                                  navigation_handle_.get(),
                                  "DidCommitNavigation: error page");
@@ -2759,7 +2802,7 @@ void NavigationRequest::DidCommitNavigation(
     handle_state_ = DID_COMMIT;
   }
 
-  navigation_handle_->StopCommitTimeout();
+  StopCommitTimeout();
 
   // Record metrics for the time it took to commit the navigation if it was to
   // another document without error.
@@ -2858,7 +2901,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
 
   handle_state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
-  navigation_handle_->RestartCommitTimeout();
+  RestartCommitTimeout();
 
   if (appcache_handle_)
     appcache_handle_->SetProcessId(render_frame_host_->GetProcess()->GetID());
@@ -2907,6 +2950,73 @@ void NavigationRequest::RunCompleteCallback(
 
   // No code after running the callback, as it might have resulted in our
   // destruction.
+}
+
+void NavigationRequest::RenderProcessBlockedStateChanged(bool blocked) {
+  if (blocked)
+    StopCommitTimeout();
+  else
+    RestartCommitTimeout();
+}
+
+void NavigationRequest::StopCommitTimeout() {
+  commit_timeout_timer_.Stop();
+  render_process_blocked_state_changed_subscription_.reset();
+  render_frame_host()->GetRenderWidgetHost()->RendererIsResponsive();
+}
+
+void NavigationRequest::RestartCommitTimeout() {
+  commit_timeout_timer_.Stop();
+  if (handle_state_ >= DID_COMMIT)
+    return;
+
+  RenderProcessHost* renderer_host =
+      render_frame_host()->GetRenderWidgetHost()->GetProcess();
+  if (!render_process_blocked_state_changed_subscription_) {
+    render_process_blocked_state_changed_subscription_ =
+        renderer_host->RegisterBlockStateChangedCallback(base::BindRepeating(
+            &NavigationRequest::RenderProcessBlockedStateChanged,
+            base::Unretained(this)));
+  }
+  if (!renderer_host->IsBlocked()) {
+    commit_timeout_timer_.Start(
+        FROM_HERE, g_commit_timeout,
+        base::BindRepeating(&NavigationRequest::OnCommitTimeout,
+                            weak_factory_.GetWeakPtr()));
+  }
+}
+
+void NavigationRequest::OnCommitTimeout() {
+  DCHECK_EQ(READY_TO_COMMIT, handle_state_);
+  render_process_blocked_state_changed_subscription_.reset();
+  render_frame_host()->GetRenderWidgetHost()->RendererIsUnresponsive(
+      base::BindRepeating(&NavigationRequest::RestartCommitTimeout,
+                          weak_factory_.GetWeakPtr()));
+}
+
+// static
+void NavigationRequest::SetCommitTimeoutForTesting(
+    const base::TimeDelta& timeout) {
+  if (timeout.is_zero())
+    g_commit_timeout = kDefaultCommitTimeout;
+  else
+    g_commit_timeout = timeout;
+}
+
+void NavigationRequest::RemoveRequestHeader(const std::string& header_name) {
+  DCHECK(handle_state_ == PROCESSING_WILL_REDIRECT_REQUEST ||
+         handle_state_ == WILL_REDIRECT_REQUEST);
+  removed_request_headers_.push_back(header_name);
+}
+
+void NavigationRequest::SetRequestHeader(const std::string& header_name,
+                                         const std::string& header_value) {
+  DCHECK(handle_state_ == INITIAL ||
+         handle_state_ == PROCESSING_WILL_START_REQUEST ||
+         handle_state_ == PROCESSING_WILL_REDIRECT_REQUEST ||
+         handle_state_ == WILL_START_REQUEST ||
+         handle_state_ == WILL_REDIRECT_REQUEST);
+  modified_request_headers_.SetHeader(header_name, header_value);
 }
 
 }  // namespace content

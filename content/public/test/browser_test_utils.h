@@ -755,7 +755,8 @@ enum EvalJsOptions {
 EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
                     const std::string& script,
                     int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                    int world_id = ISOLATED_WORLD_ID_GLOBAL) WARN_UNUSED_RESULT;
+                    int32_t world_id = ISOLATED_WORLD_ID_GLOBAL)
+    WARN_UNUSED_RESULT;
 
 // Like EvalJs(), except that |script| must call domAutomationController.send()
 // itself. This is the same as specifying the EXECUTE_SCRIPT_USE_MANUAL_REPLY
@@ -763,7 +764,7 @@ EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
 EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
                                    const std::string& script,
                                    int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                                   int world_id = ISOLATED_WORLD_ID_GLOBAL)
+                                   int32_t world_id = ISOLATED_WORLD_ID_GLOBAL)
     WARN_UNUSED_RESULT;
 
 // Run a script exactly the same as EvalJs(), but ignore the resulting value.
@@ -778,7 +779,7 @@ EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
 ::testing::AssertionResult ExecJs(const ToRenderFrameHost& execution_target,
                                   const std::string& script,
                                   int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
-                                  int world_id = ISOLATED_WORLD_ID_GLOBAL)
+                                  int32_t world_id = ISOLATED_WORLD_ID_GLOBAL)
     WARN_UNUSED_RESULT;
 
 // Walks the frame tree of the specified WebContents and returns the sole

@@ -63,7 +63,9 @@ class CORE_EXPORT CSSInterpolationType : public InterpolationType {
                                         const InterpolationValue& underlying,
                                         ConversionCheckers&) const final;
 
-  virtual void AdditiveKeyframeHook(InterpolationValue&) const {}
+  virtual InterpolationValue MakeAdditive(InterpolationValue value) const {
+    return value;
+  }
 
   InterpolationValue MaybeConvertUnderlyingValue(
       const InterpolationEnvironment&) const final;

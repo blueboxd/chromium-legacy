@@ -14,7 +14,7 @@ typemaps = [
   "//mojo/public/cpp/base/read_only_buffer.typemap",
   "//mojo/public/cpp/base/memory_allocator_dump_cross_process_uid.typemap",
   "//mojo/public/cpp/base/memory_pressure_level.typemap",
-  "//mojo/public/cpp/base/message_loop_type.typemap",
+  "//mojo/public/cpp/base/message_pump_type.typemap",
   "//mojo/public/cpp/base/process_id.typemap",
   "//mojo/public/cpp/base/ref_counted_memory.typemap",
   "//mojo/public/cpp/base/shared_memory.typemap",

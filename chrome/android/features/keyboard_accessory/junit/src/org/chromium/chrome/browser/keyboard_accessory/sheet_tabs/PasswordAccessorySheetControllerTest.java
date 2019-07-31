@@ -24,6 +24,7 @@ import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.Accessor
 import android.support.v7.widget.RecyclerView;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -32,9 +33,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordHistogramJni;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
@@ -55,10 +58,14 @@ import java.util.HashMap;
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
 public class PasswordAccessorySheetControllerTest {
+    @Rule
+    public JniMocker mocker = new JniMocker();
     @Mock
     private RecyclerView mMockView;
     @Mock
     private ListObservable.ListObserver<Void> mMockItemListObserver;
+    @Mock
+    private RecordHistogram.Natives mMockRecordHistogramNatives;
 
     private PasswordAccessorySheetCoordinator mCoordinator;
     private AccessorySheetTabModel mSheetDataPieces;
@@ -67,6 +74,7 @@ public class PasswordAccessorySheetControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
+        mocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogramNatives);
         mCoordinator = new PasswordAccessorySheetCoordinator(RuntimeEnvironment.application, null);
         assertNotNull(mCoordinator);
         mSheetDataPieces = mCoordinator.getSheetDataPiecesForTesting();

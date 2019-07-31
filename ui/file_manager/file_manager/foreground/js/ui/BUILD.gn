@@ -41,6 +41,7 @@ js_type_check("closure_compile_module") {
     ":files_confirm_dialog",
     ":files_menu",
     ":gear_menu",
+    ":import_crostini_image_dialog",
     ":install_linux_package_dialog",
     ":list_container",
     ":location_line",
@@ -249,6 +250,7 @@ js_library("file_manager_ui") {
     ":files_alert_dialog",
     ":files_confirm_dialog",
     ":gear_menu",
+    ":import_crostini_image_dialog",
     ":install_linux_package_dialog",
     ":list_container",
     ":location_line",
@@ -370,6 +372,14 @@ js_library("files_menu") {
 js_library("install_linux_package_dialog") {
   deps = [
     ":file_manager_dialog_base",
+  ]
+}
+
+js_library("import_crostini_image_dialog") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js/cr:ui",
+    "//ui/webui/resources/js/cr/ui:dialogs",
   ]
 }
 

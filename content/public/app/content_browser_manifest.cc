@@ -105,6 +105,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
                   "media.mojom.AndroidOverlayProvider",
               })
+          .RequireCapability("data_decoder", "bundled_exchanges_parser_factory")
           .RequireCapability("data_decoder", "image_decoder")
           .RequireCapability("data_decoder", "json_parser")
           .RequireCapability("data_decoder", "xml_parser")

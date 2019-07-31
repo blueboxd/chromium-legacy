@@ -2208,7 +2208,8 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
         layer->DirtyVisibleContentStatus();
     }
 
-    if (IsFloating() && (style_->Floating() != new_style.Floating())) {
+    if (IsFloating() &&
+        (style_->UnresolvedFloating() != new_style.UnresolvedFloating())) {
       // For changes in float styles, we need to conceivably remove ourselves
       // from the floating objects list.
       ToLayoutBox(this)->RemoveFloatingOrPositionedChildFromBlockLists();

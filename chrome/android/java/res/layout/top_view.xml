@@ -18,28 +18,43 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="16dp" />
 
-    <org.chromium.ui.widget.ChipView
-        android:id="@+id/email_filter"
-        android:gravity="center"
+    <LinearLayout
+        android:id="@+id/chip_container"
         android:layout_below="@id/explanation"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_width="wrap_content"
-        style="@style/SuggestionChip" />
+        android:orientation="horizontal"
+        android:paddingStart="10dp">
 
-    <org.chromium.ui.widget.ChipView
-        android:id="@+id/tel_filter"
-        android:gravity="center"
-        android:layout_below="@id/explanation"
-        android:layout_toEndOf="@id/email_filter"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_width="wrap_content"
-        style="@style/SuggestionChip" />
+        <org.chromium.ui.widget.ChipView
+            android:id="@+id/names_filter"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_width="wrap_content"
+            style="@style/SuggestionChip" />
+
+        <org.chromium.ui.widget.ChipView
+            android:id="@+id/email_filter"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_width="wrap_content"
+            style="@style/SuggestionChip" />
+
+        <org.chromium.ui.widget.ChipView
+            android:id="@+id/tel_filter"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_width="wrap_content"
+            style="@style/SuggestionChip" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/content"
-        android:layout_below="@id/email_filter"
+        android:layout_below="@id/chip_container"
         android:visibility="gone"
         style="@style/ListItemContainer">
 

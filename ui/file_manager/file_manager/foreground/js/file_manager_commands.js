@@ -599,14 +599,18 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
     const volumeInfo =
         CommandUtil.getElementVolumeInfo(event.target, fileManager);
     const entry = CommandUtil.getCommandEntry(fileManager, event.target);
-    if (!volumeInfo && !entry) {
+
+    let volumeType;
+    if (entry && entry instanceof EntryList) {
+      volumeType = entry.rootType;
+    } else if (volumeInfo) {
+      volumeType = volumeInfo.volumeType;
+    } else {
       event.canExecute = false;
       event.command.setHidden(true);
       return;
     }
 
-    const volumeType =
-        (entry instanceof EntryList) ? entry.rootType : volumeInfo.volumeType;
     event.canExecute =
         (volumeType === VolumeManagerCommon.VolumeType.ARCHIVE ||
          volumeType === VolumeManagerCommon.VolumeType.REMOVABLE ||

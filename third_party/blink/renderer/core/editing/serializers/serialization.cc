@@ -247,12 +247,11 @@ static HTMLElement* HighestAncestorToWrapMarkup(
   if (!special_common_ancestor && IsTabHTMLSpanElement(common_ancestor))
     special_common_ancestor = ToHTMLSpanElement(common_ancestor);
 
-  if (HTMLAnchorElement* enclosing_anchor =
-          ToHTMLAnchorElement(EnclosingElementWithTag(
-              Position::FirstPositionInNode(special_common_ancestor
-                                                ? *special_common_ancestor
-                                                : *common_ancestor),
-              kATag)))
+  if (auto* enclosing_anchor = To<HTMLAnchorElement>(EnclosingElementWithTag(
+          Position::FirstPositionInNode(special_common_ancestor
+                                            ? *special_common_ancestor
+                                            : *common_ancestor),
+          kATag)))
     special_common_ancestor = enclosing_anchor;
 
   return special_common_ancestor;

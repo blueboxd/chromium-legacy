@@ -526,7 +526,7 @@ void StoragePartitionImplMap::PostCreateInitialization(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&PrefetchURLLoaderService::InitializeResourceContext,
                          partition->GetPrefetchURLLoaderService(),
-                         browser_context_->GetResourceContext(), nullptr,
+                         browser_context_->GetResourceContext(),
                          base::RetainedRef(ChromeBlobStorageContext::GetFor(
                              browser_context_))));
     }

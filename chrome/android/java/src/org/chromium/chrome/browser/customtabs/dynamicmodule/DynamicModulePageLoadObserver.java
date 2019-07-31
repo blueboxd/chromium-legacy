@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.TimeUtils;
+import org.chromium.base.TimeUtilsJni;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.content_public.browser.WebContents;
@@ -51,7 +51,7 @@ public class DynamicModulePageLoadObserver implements PageLoadMetrics.Observer {
     public DynamicModulePageLoadObserver(ActivityTabProvider activityTabProvider) {
         mActivityTabProvider = activityTabProvider;
 
-        long nativeNowUs = TimeUtils.nativeGetTimeTicksNowUs();
+        long nativeNowUs = TimeUtilsJni.get().getTimeTicksNowUs();
         long javaNowUs = SystemClock.uptimeMillis() * 1000;
         mNativeTickOffsetUs = nativeNowUs - javaNowUs;
     }

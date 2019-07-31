@@ -1144,6 +1144,17 @@ TEST_P(WaylandWindowTest, SetOpaqueRegion) {
   VerifyAndClearExpectations();
 }
 
+TEST_P(WaylandWindowTest, OnCloseRequest) {
+  EXPECT_CALL(delegate_, OnCloseRequest());
+
+  if (xdg_surface_->xdg_toplevel())
+    zxdg_toplevel_v6_send_close(xdg_surface_->xdg_toplevel()->resource());
+  else
+    xdg_surface_send_close(xdg_surface_->resource());
+
+  Sync();
+}
+
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
                          WaylandWindowTest,
                          ::testing::Values(kXdgShellV5));

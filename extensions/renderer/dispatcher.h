@@ -103,7 +103,7 @@ class Dispatcher : public content::RenderThreadObserver,
 
   void DidCreateScriptContext(blink::WebLocalFrame* frame,
                               const v8::Local<v8::Context>& context,
-                              int world_id);
+                              int32_t world_id);
 
   // Runs on a different thread and should only use thread safe member
   // variables.
@@ -116,7 +116,7 @@ class Dispatcher : public content::RenderThreadObserver,
 
   void WillReleaseScriptContext(blink::WebLocalFrame* frame,
                                 const v8::Local<v8::Context>& context,
-                                int world_id);
+                                int32_t world_id);
 
   // Runs on worker thread and should not use any member variables.
   static void DidStartServiceWorkerContextOnWorkerThread(

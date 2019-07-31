@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/win/wrapped_window_proc.h"
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/gfx/win/window_impl.h"
@@ -128,7 +129,7 @@ bool ChildWindowWin::Initialize() {
     return true;
 
   thread_ = std::make_unique<base::Thread>("Window owner thread");
-  base::Thread::Options options(base::MessageLoop::TYPE_UI, 0);
+  base::Thread::Options options(base::MessagePumpType::UI, 0);
   thread_->StartWithOptions(options);
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,

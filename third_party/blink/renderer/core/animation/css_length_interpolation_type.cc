@@ -133,10 +133,8 @@ void CSSLengthInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  InterpolationValue& underlying = underlying_value_owner.MutableValue();
   LengthInterpolationFunctions::Composite(
-      underlying.interpolable_value, underlying.non_interpolable_value,
-      underlying_fraction, *value.interpolable_value,
+      underlying_value_owner, underlying_fraction, *value.interpolable_value,
       value.non_interpolable_value.get());
 }
 

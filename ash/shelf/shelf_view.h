@@ -49,8 +49,6 @@ class Separator;
 }  // namespace views
 
 namespace ash {
-class HomeButton;
-class BackButton;
 class DragImageView;
 class OverflowBubble;
 class OverflowButton;
@@ -149,8 +147,6 @@ class ASH_EXPORT ShelfView : public views::View,
     owner_overflow_bubble_ = owner;
   }
 
-  HomeButton* GetHomeButton() const;
-  BackButton* GetBackButton() const;
   OverflowButton* GetOverflowButton() const;
 
   // Updates the union of all the shelf item bounds shown by this shelf view.
@@ -359,9 +355,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns unowned pointer (view is owned by the view hierarchy).
   views::View* CreateViewForItem(const ShelfItem& item);
 
-  // Lays out control buttons background.
-  void LayoutAppListAndBackButtonHighlight();
-
   // Updates the visible range of overflow items in |overflow_view|.
   void UpdateOverflowRange(ShelfView* overflow_view) const;
 
@@ -373,8 +366,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Returns the index of the item after which the separator should be shown,
   // or -1 if no separator is required.
   int GetSeparatorIndex() const;
-
-  void CalculateBackAndHomeButtonsIdealBounds();
 
   // This method determines which centering strategy is adequate, returns that,
   // and sets the |first_visible_index_| and |last_visible_index_| fields
@@ -541,9 +532,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   bool CanPrepareForDrag(Pointer pointer, const ui::LocatedEvent& event);
 
-  // Updates the back button opacity and focus behavior based on tablet mode.
-  void UpdateBackButton();
-
   // Set background blur to the dragged image. |size| is the image size.
   void SetDragImageBlur(const gfx::Size& size, int blur_radius);
 
@@ -570,8 +558,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   std::unique_ptr<views::BoundsAnimator> bounds_animator_;
 
-  BackButton* back_button_ = nullptr;
-  HomeButton* home_button_ = nullptr;
   OverflowButton* overflow_button_ = nullptr;
 
   std::unique_ptr<OverflowBubble> overflow_bubble_;
@@ -595,10 +581,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // A reference to the view used as a separator between pinned and unpinned
   // items.
   views::Separator* separator_ = nullptr;
-
-  // A view to draw a background behind the app list and back buttons.
-  // Owned by the view hierarchy.
-  views::View* back_and_app_list_background_ = nullptr;
 
   // Position of the mouse down event in |drag_view_|'s coordinates.
   gfx::Point drag_origin_;

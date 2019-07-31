@@ -67,9 +67,18 @@ class CSSRotateNonInterpolableValue : public NonInterpolableValue {
         start.IsAdditive(), end.IsAdditive()));
   }
 
+  static scoped_refptr<CSSRotateNonInterpolableValue> CreateAdditive(
+      const CSSRotateNonInterpolableValue& other) {
+    DCHECK(other.is_single_);
+    const bool is_single = true;
+    const bool is_additive = true;
+    return base::AdoptRef(new CSSRotateNonInterpolableValue(
+        is_single, other.start_, other.end_, is_additive, is_additive));
+  }
+
   scoped_refptr<CSSRotateNonInterpolableValue> Composite(
       const CSSRotateNonInterpolableValue& other,
-      double other_progress) {
+      double other_progress) const {
     DCHECK(is_single_ && !is_start_additive_);
     if (other.is_single_) {
       DCHECK_EQ(other_progress, 0);
@@ -88,11 +97,6 @@ class CSSRotateNonInterpolableValue : public NonInterpolableValue {
             ? OptionalRotation::Add(GetOptionalRotation(), other.end_)
             : other.end_;
     return Create(OptionalRotation::Slerp(start, end, other_progress));
-  }
-
-  void SetSingleAdditive() {
-    DCHECK(is_single_);
-    is_start_additive_ = true;
   }
 
   OptionalRotation SlerpedRotation(double progress) const {
@@ -208,10 +212,11 @@ InterpolationValue CSSRotateInterpolationType::MaybeConvertValue(
       OptionalRotation(StyleBuilderConverter::ConvertRotation(value)));
 }
 
-void CSSRotateInterpolationType::AdditiveKeyframeHook(
-    InterpolationValue& value) const {
-  ToCSSRotateNonInterpolableValue(*value.non_interpolable_value)
-      .SetSingleAdditive();
+InterpolationValue CSSRotateInterpolationType::MakeAdditive(
+    InterpolationValue value) const {
+  value.non_interpolable_value = CSSRotateNonInterpolableValue::CreateAdditive(
+      ToCSSRotateNonInterpolableValue(*value.non_interpolable_value));
+  return value;
 }
 
 PairwiseInterpolationValue CSSRotateInterpolationType::MaybeMergeSingles(
@@ -236,7 +241,7 @@ void CSSRotateInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  CSSRotateNonInterpolableValue& underlying_non_interpolable_value =
+  const CSSRotateNonInterpolableValue& underlying_non_interpolable_value =
       ToCSSRotateNonInterpolableValue(
           *underlying_value_owner.Value().non_interpolable_value);
   const CSSRotateNonInterpolableValue& non_interpolable_value =

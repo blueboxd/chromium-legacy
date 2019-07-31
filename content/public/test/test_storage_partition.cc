@@ -16,15 +16,6 @@ base::FilePath TestStoragePartition::GetPath() {
   return file_path_;
 }
 
-net::URLRequestContextGetter* TestStoragePartition::GetURLRequestContext() {
-  return url_request_context_getter_;
-}
-
-net::URLRequestContextGetter*
-TestStoragePartition::GetMediaURLRequestContext() {
-  return media_url_request_context_getter_;
-}
-
 network::mojom::NetworkContext* TestStoragePartition::GetNetworkContext() {
   return network_context_;
 }
@@ -158,12 +149,6 @@ void TestStoragePartition::ClearData(
     bool perform_storage_cleanup,
     const base::Time begin,
     const base::Time end,
-    base::OnceClosure callback) {}
-
-void TestStoragePartition::ClearHttpAndMediaCaches(
-    const base::Time begin,
-    const base::Time end,
-    const base::Callback<bool(const GURL&)>& url_matcher,
     base::OnceClosure callback) {}
 
 void TestStoragePartition::ClearCodeCaches(

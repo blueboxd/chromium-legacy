@@ -1051,6 +1051,13 @@ chrome.fileManagerPrivate.getLinuxPackageInfo = function(entry, callback) {};
 chrome.fileManagerPrivate.installLinuxPackage = function(entry, callback) {};
 
 /**
+ * Imports a Crostini Image File (.tini). This overrides the existing Linux apps
+ * and files.
+ * @param {!Entry} entry
+ */
+chrome.fileManagerPrivate.importCrostiniImage = function(entry) {};
+
+/**
  * Detect character encoding.
  *
  * @param {!string} bytes a hex-encoded string. Every 2 characters represent

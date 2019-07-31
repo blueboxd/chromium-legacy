@@ -175,14 +175,13 @@ CertStatus MapCertErrorToCertStatus(int err) {
   return MapNetErrorToCertStatus(net_error);
 }
 
-// Saves some information about the certificate chain cert_list in
-// *verify_result.  The caller MUST initialize *verify_result before calling
-// this function.
+// Extracts the certificate chain from |cert_list| (and optionally |root_cert|)
+// into an X509Certificate. If this fails, returns nullptr.
 // Note that cert_list[0] is the end entity certificate.
-void GetCertChainInfo(CERTCertList* cert_list,
-                      CERTCertificate* root_cert,
-                      CertVerifyResult* verify_result) {
-  DCHECK(cert_list);
+scoped_refptr<X509Certificate> GetCertChainInfo(CERTCertList* cert_list,
+                                                CERTCertificate* root_cert) {
+  if (!cert_list)
+    return nullptr;
 
   CERTCertificate* verified_cert = NULL;
   std::vector<CERTCertificate*> verified_chain;
@@ -223,13 +222,8 @@ void GetCertChainInfo(CERTCertList* cert_list,
   if (root_cert)
     verified_chain.push_back(root_cert);
 
-  scoped_refptr<X509Certificate> verified_cert_with_chain =
-      x509_util::CreateX509CertificateFromCERTCertificate(verified_cert,
-                                                          verified_chain);
-  if (verified_cert_with_chain)
-    verify_result->verified_cert = std::move(verified_cert_with_chain);
-  else
-    verify_result->cert_status |= CERT_STATUS_INVALID;
+  return x509_util::CreateX509CertificateFromCERTCertificate(verified_cert,
+                                                             verified_chain);
 }
 
 // Returns true if the given certificate is one of the additional trust anchors.
@@ -345,6 +339,8 @@ struct CheckChainRevocationArgs {
   // The CRLSet to evaluate against.
   CRLSet* crl_set = nullptr;
 
+  ScopedCERTCertList chain;
+
   // The next callback to invoke, if the CRLSet does not report any errors.
   CERTChainVerifyCallback* next_callback = nullptr;
 
@@ -362,6 +358,9 @@ SECStatus CheckChainRevocationWithCRLSet(void* is_chain_valid_arg,
   CheckChainRevocationArgs* args =
       static_cast<CheckChainRevocationArgs*>(is_chain_valid_arg);
 
+  args->was_revoked = false;
+  args->chain.reset();
+
   CRLSetResult crlset_result = kCRLSetUnknown;
   if (args->crl_set) {
     crlset_result =
@@ -369,11 +368,25 @@ SECStatus CheckChainRevocationWithCRLSet(void* is_chain_valid_arg,
   }
 
   if (crlset_result == kCRLSetRevoked) {
+    // Record the current chain; as an application callback, libpkix will try
+    // to build a better chain, if possible, or otherwise unwind the path graph
+    // and forget that it found a potentially-valid, but application-rejected
+    // chain. For ease with later functions, this is implemented by duplicating
+    // the CERTCertList, which will take ownership of the certs inside it.
+    args->chain.reset(CERT_NewCertList());
+    for (CERTCertListNode* node = CERT_LIST_HEAD(current_chain);
+         !CERT_LIST_END(node, current_chain); node = CERT_LIST_NEXT(node)) {
+      if (CERT_AddCertToListTail(args->chain.get(),
+                                 CERT_DupCertificate(node->cert)) !=
+          SECSuccess) {
+        args->chain.reset();
+        break;
+      }
+    }
     args->was_revoked = true;
     *chain_ok = PR_FALSE;
     return SECSuccess;
   }
-  args->was_revoked = false;
 
   *chain_ok = PR_TRUE;
   if (!args->next_callback || !args->next_callback->isChainValid)
@@ -656,6 +669,9 @@ void AppendPublicKeyHashesAndTestKnownRoot(CERTCertList* cert_list,
                                            bool* known_root) {
   *known_root = false;
 
+  if (!cert_list)
+    return;
+
   // First, traverse the list to build the list of public key hashes, in order
   // of leaf to root.
   for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
@@ -909,6 +925,13 @@ int CertVerifyProcNSS::VerifyInternalImpl(
         cvout[cvout_cert_list_index].value.pointer.chain,
         cvout[cvout_trust_anchor_index].value.pointer.cert, &hashes,
         &known_root);
+  } else if (status == SECFailure &&
+             PORT_GetError() == SEC_ERROR_APPLICATION_CALLBACK_ERROR &&
+             check_chain_revocation_args.was_revoked) {
+    AppendPublicKeyHashesAndTestKnownRoot(
+        check_chain_revocation_args.chain.get(), nullptr, &hashes, &known_root);
+    // Restore the error (which may have been erased).
+    PORT_SetError(SEC_ERROR_APPLICATION_CALLBACK_ERROR);
   }
 
   if (status == SECSuccess &&
@@ -925,21 +948,40 @@ int CertVerifyProcNSS::VerifyInternalImpl(
           cvout[cvout_cert_list_index].value.pointer.chain,
           cvout[cvout_trust_anchor_index].value.pointer.cert, &hashes,
           &known_root);
+    } else if (status == SECFailure &&
+               PORT_GetError() == SEC_ERROR_APPLICATION_CALLBACK_ERROR &&
+               check_chain_revocation_args.was_revoked) {
+      AppendPublicKeyHashesAndTestKnownRoot(
+          check_chain_revocation_args.chain.get(), nullptr, &hashes,
+          &known_root);
+      // Restore the error (which may have been erased).
+      PORT_SetError(SEC_ERROR_APPLICATION_CALLBACK_ERROR);
     }
   }
 
-  if (status == SECSuccess) {
+  if (status == SECSuccess ||
+      (status == SECFailure &&
+       PORT_GetError() == SEC_ERROR_APPLICATION_CALLBACK_ERROR &&
+       check_chain_revocation_args.was_revoked)) {
     verify_result->public_key_hashes = hashes;
     verify_result->is_issued_by_known_root = known_root;
 
-    verify_result->is_issued_by_additional_trust_anchor =
-        IsAdditionalTrustAnchor(
-            trust_anchors.get(),
-            cvout[cvout_trust_anchor_index].value.pointer.cert);
-
-    GetCertChainInfo(cvout[cvout_cert_list_index].value.pointer.chain,
-                     cvout[cvout_trust_anchor_index].value.pointer.cert,
-                     verify_result);
+    if (status == SECFailure) {
+      verify_result->verified_cert =
+          GetCertChainInfo(check_chain_revocation_args.chain.get(), nullptr);
+      // Restore the error (which may have been erased).
+      PORT_SetError(SEC_ERROR_APPLICATION_CALLBACK_ERROR);
+    } else {
+      verify_result->verified_cert =
+          GetCertChainInfo(cvout[cvout_cert_list_index].value.pointer.chain,
+                           cvout[cvout_trust_anchor_index].value.pointer.cert);
+      verify_result->is_issued_by_additional_trust_anchor =
+          IsAdditionalTrustAnchor(
+              trust_anchors.get(),
+              cvout[cvout_trust_anchor_index].value.pointer.cert);
+    }
+    if (!verify_result->verified_cert)
+      verify_result->cert_status |= CERT_STATUS_INVALID;
   }
 
   CRLSetResult crl_set_result = kCRLSetUnknown;

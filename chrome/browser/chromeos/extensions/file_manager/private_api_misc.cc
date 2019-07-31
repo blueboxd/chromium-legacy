@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_package_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -709,6 +710,34 @@ void FileManagerPrivateMountCrostiniFunction::RestartCallback(
     return;
   }
   Respond(NoArguments());
+}
+
+FileManagerPrivateInternalImportCrostiniImageFunction::
+    FileManagerPrivateInternalImportCrostiniImageFunction() = default;
+
+FileManagerPrivateInternalImportCrostiniImageFunction::
+    ~FileManagerPrivateInternalImportCrostiniImageFunction() = default;
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateInternalImportCrostiniImageFunction::Run() {
+  using extensions::api::file_manager_private_internal::ImportCrostiniImage::
+      Params;
+
+  const auto params = Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  const scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          profile, render_frame_host());
+
+  base::FilePath path = file_system_context->CrackURL(GURL(params->url)).path();
+
+  crostini::CrostiniExportImport::GetForProfile(profile)->ImportContainer(
+      crostini::ContainerId{crostini::kCrostiniDefaultVmName,
+                            crostini::kCrostiniDefaultContainerName},
+      path, base::DoNothing());
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction

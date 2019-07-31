@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -253,7 +252,7 @@ void NGSimplifiedLayoutAlgorithm::AddChildFragment(
 
     exclusion_space_.Add(
         NGExclusion::Create(NGBfcRect(start_offset, end_offset),
-                            ResolvedFloating(child_style, Style()), nullptr));
+                            child_style.Floating(Style()), nullptr));
   }
 }
 

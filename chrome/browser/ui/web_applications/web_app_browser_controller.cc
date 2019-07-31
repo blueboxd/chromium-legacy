@@ -64,8 +64,20 @@ GURL WebAppBrowserController::GetAppLaunchURL() const {
 }
 
 bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
-  // TODO(https://crbug.com/966290): Complete implementation.
-  return true;
+  base::Optional<GURL> app_scope = registrar_.GetAppScope(app_id_);
+  if (!app_scope)
+    return false;
+
+  // https://w3c.github.io/manifest/#navigation-scope
+  // If url is same origin as scope and url path starts with scope path, return
+  // true. Otherwise, return false.
+  if (app_scope->GetOrigin() != url.GetOrigin())
+    return false;
+
+  std::string scope_path = app_scope->path();
+  std::string url_path = url.path();
+  return scope_path.size() <= url_path.size() &&
+         scope_path == url_path.substr(0, scope_path.size());
 }
 
 std::string WebAppBrowserController::GetAppShortName() const {

@@ -11,6 +11,7 @@ import android.util.Pair;
 import org.chromium.base.LifetimeAssert;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -72,7 +73,8 @@ public class TaskRunnerImpl implements TaskRunner {
 
     @GuardedBy("mLock")
     protected void destroyInternal() {
-        if (mNativeTaskRunnerAndroid != 0) nativeDestroy(mNativeTaskRunnerAndroid);
+        if (mNativeTaskRunnerAndroid != 0)
+            TaskRunnerImplJni.get().destroy(mNativeTaskRunnerAndroid);
         mNativeTaskRunnerAndroid = 0;
     }
 
@@ -158,7 +160,7 @@ public class TaskRunnerImpl implements TaskRunner {
     @GuardedBy("mLock")
     protected void initNativeTaskRunnerInternal() {
         if (mNativeTaskRunnerAndroid == 0) {
-            mNativeTaskRunnerAndroid = nativeInit(mTaskRunnerType,
+            mNativeTaskRunnerAndroid = TaskRunnerImplJni.get().init(mTaskRunnerType,
                     mTaskTraits.mPrioritySetExplicitly, mTaskTraits.mPriority,
                     mTaskTraits.mMayBlock, mTaskTraits.mUseThreadPool, mTaskTraits.mExtensionId,
                     mTaskTraits.mExtensionData);
@@ -181,15 +183,17 @@ public class TaskRunnerImpl implements TaskRunner {
 
     @GuardedBy("mLock")
     protected void postDelayedTaskToNative(Runnable r, long delay) {
-        nativePostDelayedTask(mNativeTaskRunnerAndroid, r, delay);
+        TaskRunnerImplJni.get().postDelayedTask(mNativeTaskRunnerAndroid, r, delay);
     }
 
-    // NB due to Proguard obfuscation it's easiest to pass the traits via arguments.
-    private native long nativeInit(@TaskRunnerType int taskRunnerType,
-            boolean prioritySetExplicitly, int priority, boolean mayBlock, boolean useThreadPool,
-            byte extensionId, byte[] extensionData);
-    private native void nativeDestroy(long nativeTaskRunnerAndroid);
-    private native void nativePostDelayedTask(
-            long nativeTaskRunnerAndroid, Runnable task, long delay);
-    protected native boolean nativeBelongsToCurrentThread(long nativeTaskRunnerAndroid);
+    @NativeMethods
+    interface Natives {
+        // NB due to Proguard obfuscation it's easiest to pass the traits via arguments.
+        long init(@TaskRunnerType int taskRunnerType, boolean prioritySetExplicitly, int priority,
+                boolean mayBlock, boolean useThreadPool, byte extensionId, byte[] extensionData);
+
+        void destroy(long nativeTaskRunnerAndroid);
+        void postDelayedTask(long nativeTaskRunnerAndroid, Runnable task, long delay);
+        boolean belongsToCurrentThread(long nativeTaskRunnerAndroid);
+    }
 }

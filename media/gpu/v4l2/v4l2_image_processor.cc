@@ -172,16 +172,19 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   }
 
   const VideoFrameLayout& input_layout = input_config.layout;
+
+  // Use input_config.fourcc as input format if it is specified, i.e. non-zero.
   const uint32_t input_format_fourcc =
-      V4L2Device::VideoFrameLayoutToV4L2PixFmt(input_layout);
+      input_config.fourcc == ImageProcessor::PortConfig::kUnassignedFourCC
+          ? V4L2Device::VideoFrameLayoutToV4L2PixFmt(input_layout)
+          : input_config.fourcc;
   if (!input_format_fourcc) {
     VLOGF(1) << "Invalid VideoFrameLayout: " << input_layout;
     return nullptr;
   }
   if (!device->Open(V4L2Device::Type::kImageProcessor, input_format_fourcc)) {
-    VLOGF(1) << "Failed to open device for input format: "
-             << VideoPixelFormatToString(input_layout.format())
-             << " fourcc: " << FourccToString(input_format_fourcc);
+    VLOGF(1) << "Failed to open device with input fourcc: "
+             << FourccToString(input_format_fourcc);
     return nullptr;
   }
 

@@ -5,8 +5,8 @@
 #include <wayland-server-core.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
@@ -18,7 +18,8 @@ constexpr uint32_t kXdgVersion5 = 5;
 }
 
 TEST(WaylandConnectionTest, UseUnstableVersion) {
-  base::MessageLoopForUI message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::UI);
   wl::TestWaylandServerThread server;
   EXPECT_CALL(*server.xdg_shell(),
               UseUnstableVersion(XDG_SHELL_VERSION_CURRENT));
@@ -32,7 +33,8 @@ TEST(WaylandConnectionTest, UseUnstableVersion) {
 }
 
 TEST(WaylandConnectionTest, Ping) {
-  base::MessageLoopForUI message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::UI);
   wl::TestWaylandServerThread server;
   ASSERT_TRUE(server.Start(kXdgVersion5));
   WaylandConnection connection;

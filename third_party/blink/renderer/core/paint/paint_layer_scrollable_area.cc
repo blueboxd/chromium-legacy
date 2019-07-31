@@ -77,7 +77,6 @@
 #include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -340,7 +339,7 @@ IntRect PaintLayerScrollableArea::ScrollCornerRect() const {
   // (b) Both scrollbars are present.
   bool has_horizontal_bar = HorizontalScrollbar();
   bool has_vertical_bar = VerticalScrollbar();
-  bool has_resizer = GetLayoutBox()->StyleRef().Resize() != EResize::kNone;
+  bool has_resizer = GetLayoutBox()->StyleRef().HasResize();
   if ((has_horizontal_bar && has_vertical_bar) ||
       (has_resizer && (has_horizontal_bar || has_vertical_bar))) {
     return CornerRect(GetLayoutBox()->PixelSnappedBorderBoxRect(
@@ -1700,7 +1699,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
     return false;
 
   IntRect resize_control_rect;
-  if (GetLayoutBox()->StyleRef().Resize() != EResize::kNone) {
+  if (GetLayoutBox()->StyleRef().HasResize()) {
     resize_control_rect =
         ResizerCornerRect(GetLayoutBox()->PixelSnappedBorderBoxRect(
                               Layer()->SubpixelAccumulation()),
@@ -1756,7 +1755,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
 IntRect PaintLayerScrollableArea::ResizerCornerRect(
     const IntRect& bounds,
     ResizerHitTestType resizer_hit_test_type) const {
-  if (GetLayoutBox()->StyleRef().Resize() == EResize::kNone)
+  if (!GetLayoutBox()->StyleRef().HasResize())
     return IntRect();
   IntRect corner = CornerRect(bounds);
 
@@ -1836,7 +1835,8 @@ void PaintLayerScrollableArea::UpdateResizerAreaSet() {
 void PaintLayerScrollableArea::UpdateResizerStyle(
     const ComputedStyle* old_style) {
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && old_style &&
-      old_style->Resize() != GetLayoutBox()->StyleRef().Resize()) {
+      old_style->UnresolvedResize() !=
+          GetLayoutBox()->StyleRef().UnresolvedResize()) {
     // Invalidate the composited scroll corner layer on resize style change.
     if (auto* graphics_layer = LayerForScrollCorner())
       graphics_layer->SetNeedsDisplay();
@@ -1972,9 +1972,8 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
   bool is_box_sizing_border =
       GetLayoutBox()->StyleRef().BoxSizing() == EBoxSizing::kBorderBox;
 
-  EResize resize =
-      ResolvedResize(GetLayoutBox()->StyleRef(),
-                     GetLayoutBox()->ContainingBlock()->StyleRef());
+  EResize resize = GetLayoutBox()->StyleRef().Resize(
+      GetLayoutBox()->ContainingBlock()->StyleRef());
   if (resize != EResize::kVertical && difference.Width()) {
     if (element->IsFormControlElement()) {
       // Make implicit margins from the theme explicit (see

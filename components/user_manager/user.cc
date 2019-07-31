@@ -309,8 +309,11 @@ User* User::CreateSupervisedUser(const AccountId& account_id) {
   return new SupervisedUser(account_id);
 }
 
-User* User::CreatePublicAccountUser(const AccountId& account_id) {
-  return new PublicAccountUser(account_id);
+User* User::CreatePublicAccountUser(const AccountId& account_id,
+                                    bool is_using_saml) {
+  User* user = new PublicAccountUser(account_id);
+  user->set_using_saml(is_using_saml);
+  return user;
 }
 
 void User::SetAccountLocale(const std::string& resolved_account_locale) {

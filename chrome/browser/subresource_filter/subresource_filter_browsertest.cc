@@ -84,14 +84,6 @@ static constexpr const char kTestFrameSetPath[] =
 // Names of DocumentLoad histograms.
 constexpr const char kDocumentLoadActivationLevel[] =
     "SubresourceFilter.DocumentLoad.ActivationState";
-constexpr const char kSubresourceLoadsTotal[] =
-    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total";
-constexpr const char kSubresourceLoadsEvaluated[] =
-    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated";
-constexpr const char kSubresourceLoadsMatchedRules[] =
-    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules";
-constexpr const char kSubresourceLoadsDisallowed[] =
-    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed";
 
 constexpr const char kSubresourceLoadsTotalForPage[] =
     "SubresourceFilter.PageLoad.NumSubresourceLoads.Total";
@@ -111,10 +103,6 @@ constexpr const char kEvaluationTotalWallDurationForPage[] =
     "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalWallDuration";
 constexpr const char kEvaluationTotalCPUDurationForPage[] =
     "SubresourceFilter.PageLoad.SubresourceEvaluation.TotalCPUDuration";
-constexpr const char kEvaluationTotalWallDurationForDocument[] =
-    "SubresourceFilter.DocumentLoad.SubresourceEvaluation.TotalWallDuration";
-constexpr const char kEvaluationTotalCPUDurationForDocument[] =
-    "SubresourceFilter.DocumentLoad.SubresourceEvaluation.TotalCPUDuration";
 constexpr const char kEvaluationWallDuration[] =
     "SubresourceFilter.SubresourceLoad.Evaluation.WallDuration";
 constexpr const char kEvaluationCPUDuration[] =
@@ -699,11 +687,6 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
   content::FetchHistogramsFromChildProcesses();
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  tester.ExpectTotalCount(kEvaluationTotalWallDurationForDocument,
-                          time_recorded ? 6 : 0);
-  tester.ExpectTotalCount(kEvaluationTotalCPUDurationForDocument,
-                          time_recorded ? 6 : 0);
-
   // 5 subframes, each with an include.js, plus a top level include.js.
   int num_subresource_checks = 5 + 5 + 1;
   tester.ExpectTotalCount(kEvaluationWallDuration,
@@ -723,16 +706,6 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
       kDocumentLoadActivationLevel,
       static_cast<base::Histogram::Sample>(mojom::ActivationLevel::kEnabled),
       6);
-
-  EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsTotal),
-              ::testing::ElementsAre(base::Bucket(0, 3), base::Bucket(2, 3)));
-  EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsEvaluated),
-              ::testing::ElementsAre(base::Bucket(0, 3), base::Bucket(2, 3)));
-
-  EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsMatchedRules),
-              ::testing::ElementsAre(base::Bucket(0, 4), base::Bucket(2, 2)));
-  EXPECT_THAT(tester.GetAllSamples(kSubresourceLoadsDisallowed),
-              ::testing::ElementsAre(base::Bucket(0, 4), base::Bucket(2, 2)));
 }
 
 }  // namespace
@@ -780,18 +753,11 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // But they still should not be recorded as the filtering is not activated.
-  tester.ExpectTotalCount(kEvaluationTotalWallDurationForDocument, 0);
-  tester.ExpectTotalCount(kEvaluationTotalCPUDurationForDocument, 0);
   tester.ExpectTotalCount(kEvaluationWallDuration, 0);
   tester.ExpectTotalCount(kEvaluationCPUDuration, 0);
 
   tester.ExpectTotalCount(kActivationWallDuration, 0);
   tester.ExpectTotalCount(kActivationCPUDuration, 0);
-
-  tester.ExpectTotalCount(kSubresourceLoadsTotal, 0);
-  tester.ExpectTotalCount(kSubresourceLoadsEvaluated, 0);
-  tester.ExpectTotalCount(kSubresourceLoadsMatchedRules, 0);
-  tester.ExpectTotalCount(kSubresourceLoadsDisallowed, 0);
 
   // Although SubresourceFilterAgents still record the activation decision.
   tester.ExpectUniqueSample(

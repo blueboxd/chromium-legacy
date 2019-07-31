@@ -68,42 +68,6 @@ arc::mojom::VideoDecodeAccelerator::Result ConvertErrorCode(
   }
 }
 
-// Return true iff |planes| is valid for a video frame located on |dmabuf_fd|
-// and of |pixel_format|.
-bool VerifyDmabuf(media::VideoPixelFormat pixel_format,
-                  const gfx::Size& coded_size,
-                  int dmabuf_fd,
-                  const std::vector<arc::VideoFramePlane>& planes) {
-  const size_t num_planes = media::VideoFrame::NumPlanes(pixel_format);
-  if (planes.size() != num_planes || num_planes == 0) {
-    VLOGF(1) << "Invalid number of dmabuf planes passed: " << planes.size()
-             << ", expected: " << num_planes;
-    return false;
-  }
-
-  size_t size;
-  if (!arc::GetFileSize(dmabuf_fd, &size))
-    return false;
-
-  for (size_t i = 0; i < planes.size(); ++i) {
-    const auto& plane = planes[i];
-
-    DVLOGF(4) << "Plane " << i << ", offset: " << plane.offset
-              << ", stride: " << plane.stride;
-
-    size_t rows = media::VideoFrame::Rows(i, pixel_format, coded_size.height());
-    base::CheckedNumeric<size_t> current_size(plane.offset);
-    current_size += base::CheckMul(plane.stride, rows);
-
-    if (!current_size.IsValid() || current_size.ValueOrDie() > size) {
-      VLOGF(1) << "Invalid strides/offsets.";
-      return false;
-    }
-  }
-
-  return true;
-}
-
 }  // namespace
 
 namespace arc {
@@ -438,13 +402,7 @@ void GpuArcVideoDecodeAccelerator::Decode(
   }
 }
 
-void GpuArcVideoDecodeAccelerator::AssignPictureBuffersDeprecated(
-    uint32_t count) {
-  AssignPictureBuffers(count, pending_coded_size_);
-}
-
-void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count,
-                                                        const gfx::Size& size) {
+void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count) {
   VLOGF(2) << "count=" << count;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!vda_) {
@@ -459,7 +417,7 @@ void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count,
     return;
   }
 
-  coded_size_ = size;
+  coded_size_ = pending_coded_size_;
   std::vector<media::PictureBuffer> buffers;
   for (uint32_t id = 0; id < count; ++id) {
     buffers.push_back(
@@ -527,7 +485,7 @@ void GpuArcVideoDecodeAccelerator::ImportBufferForPicture(
     }
     gmb_handle.native_pixmap_handle = std::move(protected_native_pixmap);
   } else {
-    if (!VerifyDmabuf(pixel_format, coded_size_, handle_fd.get(), planes)) {
+    if (!VerifyVideoFrame(pixel_format, coded_size_, handle_fd.get(), planes)) {
       VLOGF(1) << "Failed verifying dmabuf";
       client_->NotifyError(
           mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);

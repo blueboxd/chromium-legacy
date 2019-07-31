@@ -38,6 +38,7 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   View* GetDefaultFocusableChild() override;
 
   // Overridden from views::View:
+  const char* GetClassName() const override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
 

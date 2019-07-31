@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
@@ -763,7 +762,7 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
     NGBfcOffset bfc_offset = {ContainerBfcOffset().line_offset,
                               ContainerBfcOffset().block_offset + content_size};
     AdjustToClearance(
-        exclusion_space.ClearanceOffset(ResolvedClear(*item.Style(), Style())),
+        exclusion_space.ClearanceOffset(item.Style()->Clear(Style())),
         &bfc_offset);
     content_size = bfc_offset.block_offset - ContainerBfcOffset().block_offset;
   }
@@ -987,8 +986,8 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
       continue;
 
     container_builder_.AddAdjoiningObjectTypes(
-        ResolvedFloating(item.GetLayoutObject()->StyleRef().Floating(),
-                         ConstraintSpace().Direction()) == EFloat::kLeft
+        item.GetLayoutObject()->StyleRef().Floating(
+            ConstraintSpace().Direction()) == EFloat::kLeft
             ? kAdjoiningFloatLeft
             : kAdjoiningFloatRight);
 

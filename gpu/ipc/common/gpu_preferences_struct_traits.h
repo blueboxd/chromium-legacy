@@ -7,10 +7,10 @@
 
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_preferences.mojom.h"
-#include "mojo/public/cpp/base/message_loop_type_mojom_traits.h"
+#include "mojo/public/cpp/base/message_pump_type_mojom_traits.h"
 #include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 
 namespace mojo {
@@ -121,7 +121,7 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_gpu_benchmarking_extension =
         prefs.enable_gpu_benchmarking_extension();
     out->enable_webgpu = prefs.enable_webgpu();
-    if (!prefs.ReadMessageLoopType(&out->message_loop_type))
+    if (!prefs.ReadMessagePumpType(&out->message_pump_type))
       return false;
     return true;
   }
@@ -272,9 +272,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool enable_webgpu(const gpu::GpuPreferences& prefs) {
     return prefs.enable_webgpu;
   }
-  static base::MessageLoop::Type message_loop_type(
+  static base::MessagePumpType message_pump_type(
       const gpu::GpuPreferences& prefs) {
-    return prefs.message_loop_type;
+    return prefs.message_pump_type;
   }
 };
 

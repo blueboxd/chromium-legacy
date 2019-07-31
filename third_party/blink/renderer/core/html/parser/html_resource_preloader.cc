@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -48,7 +49,7 @@ void HTMLResourcePreloader::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 
-static void PreconnectHost(PreloadRequest* request) {
+static void PreconnectHost(LocalFrame* local_frame, PreloadRequest* request) {
   DCHECK(request);
   DCHECK(request->IsPreconnect());
   KURL host(request->BaseURL(), request->ResourceURL());
@@ -58,13 +59,14 @@ static void PreconnectHost(PreloadRequest* request) {
       Platform::Current()->PrescientNetworking();
   if (web_prescient_networking) {
     web_prescient_networking->Preconnect(
-        host, request->CrossOrigin() != kCrossOriginAttributeAnonymous);
+        WebLocalFrameImpl::FromFrame(local_frame), host,
+        request->CrossOrigin() != kCrossOriginAttributeAnonymous);
   }
 }
 
 void HTMLResourcePreloader::Preload(std::unique_ptr<PreloadRequest> preload) {
   if (preload->IsPreconnect()) {
-    PreconnectHost(preload.get());
+    PreconnectHost(document_->GetFrame(), preload.get());
     return;
   }
 

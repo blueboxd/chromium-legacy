@@ -16,7 +16,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -71,14 +70,11 @@ PrefetchURLLoaderService::PrefetchURLLoaderService(
 
 void PrefetchURLLoaderService::InitializeResourceContext(
     ResourceContext* resource_context,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled());
   DCHECK(!resource_context_);
-  DCHECK(!request_context_getter_);
   resource_context_ = resource_context;
-  request_context_getter_ = request_context_getter;
   blob_storage_context_ = blob_storage_context->context()->AsWeakPtr();
   preference_watcher_binding_.Bind(std::move(preference_watcher_request_));
 }
@@ -139,7 +135,7 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
           base::BindRepeating(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
               resource_request, frame_tree_node_id_getter),
-          browser_context_, resource_context_, request_context_getter_,
+          browser_context_, resource_context_,
           signed_exchange_prefetch_metric_recorder_,
           std::move(prefetched_signed_exchange_cache), blob_storage_context_,
           accept_langs_),
@@ -185,10 +181,6 @@ std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 PrefetchURLLoaderService::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      !request_context_getter_ ||
-      !request_context_getter_->GetURLRequestContext())
-    return std::vector<std::unique_ptr<blink::URLLoaderThrottle>>();
   int frame_tree_node_id = frame_tree_node_id_getter.Run();
   if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
     return GetContentClient()->browser()->CreateURLLoaderThrottles(

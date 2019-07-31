@@ -1254,6 +1254,9 @@
   <message name="IDS_FILE_BROWSER_EXCEL_FILE_TYPE" desc="Excel spreadsheet file type">
     Excel spreadsheet
   </message>
+  <message name="IDS_FILE_BROWSER_TINI_FILE_TYPE" desc="Crostini Image File file type">
+    Crostini image file
+  </message>
 
   <message name="IDS_FILE_BROWSER_GDOC_DOCUMENT_FILE_TYPE" desc="Google document file type">
     Google document

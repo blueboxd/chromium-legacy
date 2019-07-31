@@ -252,6 +252,10 @@ test.ENTRIES = {
       test.EntryType.DIRECTORY, '', 'PvmDefault/photos', '',
       test.SharedOption.NONE, 'Jan 1, 1980, 11:59 PM', 'photos', '--',
       'Folder'),
+
+  tiniFile: new test.TestEntryInfo(
+      test.EntryType.FILE, 'text.txt', 'test.tini', '', test.SharedOption.NONE,
+      'Jan 1, 1980, 11:59 PM', 'test.tini', '51 bytes', 'Crostini image file'),
 };
 
 /**

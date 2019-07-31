@@ -15,7 +15,6 @@ namespace base {
 
 jlong JNI_TaskRunnerImpl_Init(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
     jint task_runner_type,
     jboolean priority_set_explicitly,
     jint priority,
@@ -46,15 +45,13 @@ TaskRunnerAndroid::TaskRunnerAndroid(scoped_refptr<TaskRunner> task_runner)
 
 TaskRunnerAndroid::~TaskRunnerAndroid() = default;
 
-void TaskRunnerAndroid::Destroy(JNIEnv* env,
-                                const base::android::JavaRef<jobject>& caller) {
+void TaskRunnerAndroid::Destroy(JNIEnv* env) {
   // This could happen on any thread.
   delete this;
 }
 
 void TaskRunnerAndroid::PostDelayedTask(
     JNIEnv* env,
-    const base::android::JavaRef<jobject>& caller,
     const base::android::JavaRef<jobject>& task,
     jlong delay) {
   task_runner_->PostDelayedTask(
@@ -64,9 +61,7 @@ void TaskRunnerAndroid::PostDelayedTask(
       TimeDelta::FromMilliseconds(delay));
 }
 
-bool TaskRunnerAndroid::BelongsToCurrentThread(
-    JNIEnv* env,
-    const base::android::JavaRef<jobject>& caller) {
+bool TaskRunnerAndroid::BelongsToCurrentThread(JNIEnv* env) {
   return task_runner_->RunsTasksInCurrentSequence();
 }
 

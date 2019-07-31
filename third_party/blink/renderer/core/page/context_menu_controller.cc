@@ -277,7 +277,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
                 media_element))
           data.media_flags |= WebContextMenuData::kMediaPictureInPicture;
       }
-    } else if (IsHTMLAudioElement(*media_element))
+    } else if (IsA<HTMLAudioElement>(*media_element))
       data.media_type = WebContextMenuData::kMediaTypeAudio;
 
     data.suggested_filename = media_element->title();
@@ -450,7 +450,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     data.custom_items = menu_provider_->PopulateContextMenu();
   }
 
-  if (auto* anchor = ToHTMLAnchorElementOrNull(result.URLElement())) {
+  if (auto* anchor = DynamicTo<HTMLAnchorElement>(result.URLElement())) {
     // Extract suggested filename for same-origin URLS for saving file.
     const SecurityOrigin* origin =
         selected_frame->GetSecurityContext()->GetSecurityOrigin();

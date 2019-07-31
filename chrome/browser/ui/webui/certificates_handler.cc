@@ -57,6 +57,7 @@ static const char kCertificatesHandlerObjSignField[] = "objSign";
 static const char kCertificatesHandlerPolicyInstalledField[] = "policy";
 static const char kCertificatesHandlerWebTrustAnchorField[] = "webTrustAnchor";
 static const char kCertificatesHandlerCanBeDeletedField[] = "canBeDeleted";
+static const char kCertificatesHandlerCanBeEditedField[] = "canBeEdited";
 static const char kCertificatesHandlerSslField[] = "ssl";
 static const char kCertificatesHandlerSubnodesField[] = "subnodes";
 static const char kCertificatesHandlerContainsPolicyCertsField[] =
@@ -77,19 +78,6 @@ enum {
   IMPORT_SERVER_FILE_SELECTED,
   IMPORT_CA_FILE_SELECTED,
 };
-
-#if defined(OS_CHROMEOS)
-// Enumeration of certificate management permissions which corresponds to
-// values of policy ClientCertificateManagementAllowed.
-enum class CertificateManagementPermission : int {
-  // Allow users to manage all certificates
-  kAll = 0,
-  // Allow users to manage user certificates
-  kUserOnly = 1,
-  // Disallow users from managing certificates
-  kNone = 2
-};
-#endif
 
 std::string OrgNameToId(const std::string& org) {
   return "org-" + org;
@@ -457,6 +445,9 @@ void CertificatesHandler::HandleEditCATrust(const base::ListValue* args) {
   if (!cert_info)
     return;
 
+  CHECK(CanEditCertificate(cert_info))
+      << "Editing this certificate is not allowed";
+
   bool trust_ssl = false;
   bool trust_email = false;
   bool trust_obj_sign = false;
@@ -812,6 +803,11 @@ void CertificatesHandler::HandleImportCA(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   AssignWebUICallbackId(args);
 
+#if defined(OS_CHROMEOS)
+  CHECK(IsCACertificateManagementAllowedPolicy(CertificateSource::kImported))
+      << "Importing certificates is not allowed by policy";
+#endif  // defined(OS_CHROMEOS)
+
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this,
       std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
@@ -924,6 +920,9 @@ void CertificatesHandler::HandleDeleteCertificate(const base::ListValue* args) {
   if (!cert_info)
     return;
 
+  CHECK(CanDeleteCertificate(cert_info))
+      << "Deleting this certificate is not allowed";
+
   bool result = certificate_manager_model_->Delete(cert_info->cert());
   if (!result) {
     // TODO(mattm): better error messages?
@@ -945,13 +944,18 @@ void CertificatesHandler::OnCertificateManagerModelCreated(
 
 void CertificatesHandler::CertificateManagerModelReady() {
   bool client_import_allowed = true;
+  bool ca_import_allowed = true;
 #if defined(OS_CHROMEOS)
   client_import_allowed =
       IsClientCertificateManagementAllowedPolicy(Slot::kUser);
-#endif
+  ca_import_allowed =
+      IsCACertificateManagementAllowedPolicy(CertificateSource::kImported);
+#endif  // defined(OS_CHROMEOS)
   if (IsJavascriptAllowed()) {
-    FireWebUIListener("certificates-model-ready",
+    FireWebUIListener("client-import-allowed-changed",
                       base::Value(client_import_allowed));
+    FireWebUIListener("ca-import-allowed-changed",
+                      base::Value(ca_import_allowed));
   }
   certificate_manager_model_->Refresh();
 }
@@ -1019,6 +1023,8 @@ void CertificatesHandler::PopulateTree(const std::string& tab_name,
                        base::Value(cert_info->name()));
       cert_dict.SetKey(kCertificatesHandlerCanBeDeletedField,
                        base::Value(CanDeleteCertificate(cert_info)));
+      cert_dict.SetKey(kCertificatesHandlerCanBeEditedField,
+                       base::Value(CanEditCertificate(cert_info)));
       cert_dict.SetKey(kCertificatesHandlerUntrustedField,
                        base::Value(cert_info->untrusted()));
       cert_dict.SetKey(
@@ -1136,18 +1142,33 @@ bool CertificatesHandler::IsClientCertificateManagementAllowedPolicy(
     Slot slot) const {
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
-  auto policy_value = static_cast<CertificateManagementPermission>(
+  auto policy_value = static_cast<ClientCertificateManagementPermission>(
       prefs->GetInteger(prefs::kClientCertificateManagementAllowed));
 
   if (slot == Slot::kUser) {
-    return policy_value != CertificateManagementPermission::kNone;
+    return policy_value != ClientCertificateManagementPermission::kNone;
   }
-  return policy_value == CertificateManagementPermission::kAll;
+  return policy_value == ClientCertificateManagementPermission::kAll;
+}
+
+bool CertificatesHandler::IsCACertificateManagementAllowedPolicy(
+    CertificateSource source) const {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  PrefService* prefs = profile->GetPrefs();
+  auto policy_value = static_cast<CACertificateManagementPermission>(
+      prefs->GetInteger(prefs::kCACertificateManagementAllowed));
+
+  switch (source) {
+    case CertificateSource::kBuiltIn:
+      return policy_value == CACertificateManagementPermission::kAll;
+    case CertificateSource::kImported:
+      return policy_value != CACertificateManagementPermission::kNone;
+  }
 }
 #endif  // defined(OS_CHROMEOS)
 
 bool CertificatesHandler::CanDeleteCertificate(
-    const CertificateManagerModel::CertInfo* cert_info) {
+    const CertificateManagerModel::CertInfo* cert_info) const {
   if (!cert_info->can_be_deleted() ||
       cert_info->source() ==
           CertificateManagerModel::CertInfo::Source::kPolicy) {
@@ -1155,22 +1176,50 @@ bool CertificatesHandler::CanDeleteCertificate(
   }
 
 #if defined(OS_CHROMEOS)
-  return cert_info->type() == net::CertType::USER_CERT &&
-         IsClientCertificateManagementAllowedPolicy(
-             cert_info->device_wide() ? Slot::kSystem : Slot::kUser);
-#else
+  if (cert_info->type() == net::CertType::USER_CERT) {
+    return IsClientCertificateManagementAllowedPolicy(
+        cert_info->device_wide() ? Slot::kSystem : Slot::kUser);
+  }
+  if (cert_info->type() == net::CertType::CA_CERT) {
+    CertificateSource source = cert_info->can_be_deleted()
+                                   ? CertificateSource::kImported
+                                   : CertificateSource::kBuiltIn;
+    return IsCACertificateManagementAllowedPolicy(source);
+  }
+#endif  // defined(OS_CHROMEOS)
   return true;
-#endif
+}
+
+bool CertificatesHandler::CanEditCertificate(
+    const CertificateManagerModel::CertInfo* cert_info) const {
+  if ((cert_info->type() != net::CertType::CA_CERT) ||
+      (cert_info->source() ==
+       CertificateManagerModel::CertInfo::Source::kPolicy)) {
+    return false;
+  }
+#if defined(OS_CHROMEOS)
+  CertificateSource source = cert_info->can_be_deleted()
+                                 ? CertificateSource::kImported
+                                 : CertificateSource::kBuiltIn;
+  return IsCACertificateManagementAllowedPolicy(source);
+#endif  // defined(OS_CHROMEOS)
+  return true;
 }
 
 #if defined(OS_CHROMEOS)
 void CertificatesHandler::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  // Allow users to manage all certificates by default. This can be overridden
-  // by enterprise policy.
+  // Allow users to manage all client certificates by default. This can be
+  // overridden by enterprise policy.
   registry->RegisterIntegerPref(
       prefs::kClientCertificateManagementAllowed,
-      static_cast<int>(CertificateManagementPermission::kAll));
+      static_cast<int>(ClientCertificateManagementPermission::kAll));
+
+  // Allow users to manage all CA certificates by default. This can be
+  // overridden by enterprise policy.
+  registry->RegisterIntegerPref(
+      prefs::kCACertificateManagementAllowed,
+      static_cast<int>(CACertificateManagementPermission::kAll));
 }
 #endif  // defined(OS_CHROMEOS)
 

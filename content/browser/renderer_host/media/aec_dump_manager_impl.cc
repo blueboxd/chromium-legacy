@@ -73,7 +73,8 @@ void AecDumpManagerImpl::CreateFileAndStartDump(const base::FilePath& file_path,
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&CreateDumpFile, file_path_extended),
       base::BindOnce(&AecDumpManagerImpl::StartDump, weak_factory_.GetWeakPtr(),
@@ -89,8 +90,9 @@ void AecDumpManagerImpl::StartDump(int id, base::File file) {
   auto it = agents_.find(id);
   if (it == agents_.end()) {
     // Post the file close to avoid blocking the current thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::LOWEST, base::MayBlock()},
         base::BindOnce([](base::File) {}, std::move(file)));
     return;
   }

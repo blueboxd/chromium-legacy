@@ -64,8 +64,7 @@ class GpuArcVideoDecodeAccelerator
                   mojom::VideoDecodeClientPtr client,
                   InitializeCallback callback) override;
   void Decode(mojom::BitstreamBufferPtr bitstream_buffer) override;
-  void AssignPictureBuffersDeprecated(uint32_t count) override;
-  void AssignPictureBuffers(uint32_t count, const gfx::Size& size) override;
+  void AssignPictureBuffers(uint32_t count) override;
   void ImportBufferForPicture(int32_t picture_buffer_id,
                               mojom::HalPixelFormat format,
                               mojo::ScopedHandle handle,

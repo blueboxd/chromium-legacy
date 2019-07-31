@@ -304,9 +304,17 @@ class FileTasks {
     const appId = taskParts[0];
     const taskType = taskParts[1];
     const actionId = taskParts[2];
-    return (
-        appId === chrome.runtime.id && taskType === 'app' &&
-        (actionId === 'mount-archive' || actionId === 'install-linux-package'));
+    if (appId !== chrome.runtime.id || taskType !== 'app') {
+      return false;
+    }
+    switch (actionId) {
+      case 'mount-archive':
+      case 'install-linux-package':
+      case 'import-crostini-image':
+        return true;
+      default:
+        return false;
+    }
   }
 
   /**
@@ -373,6 +381,10 @@ class FileTasks {
         } else if (taskParts[2] === 'install-linux-package') {
           task.iconType = 'crostini';
           task.title = loadTimeData.getString('TASK_INSTALL_LINUX_PACKAGE');
+          task.verb = undefined;
+        } else if (taskParts[2] === 'import-crostini-image') {
+          task.iconType = 'tini';
+          task.title = loadTimeData.getString('TASK_IMPORT_CROSTINI_IMAGE');
           task.verb = undefined;
         } else if (taskParts[2] === 'view-swf') {
           // Do not render this task if disabled.
@@ -844,6 +856,10 @@ class FileTasks {
       this.installLinuxPackageInternal_();
       return;
     }
+    if (taskParts[2] === 'import-crostini-image') {
+      this.importCrostiniImageInternal_();
+      return;
+    }
 
     console.error('The specified task is not a valid internal task: ' + taskId);
   }
@@ -855,6 +871,17 @@ class FileTasks {
   installLinuxPackageInternal_() {
     assert(this.entries_.length === 1);
     this.ui_.installLinuxPackageDialog.showInstallLinuxPackageDialog(
+        this.entries_[0]);
+  }
+
+  /**
+   * Imports a Crostini Image File (.tini). This overrides the existing Linux
+   * apps and files.
+   * @private
+   */
+  importCrostiniImageInternal_() {
+    assert(this.entries_.length === 1);
+    this.ui_.importCrostiniImageDialog.showImportCrostiniImageDialog(
         this.entries_[0]);
   }
 
@@ -1274,7 +1301,8 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
   '.mhtml',    '.gdoc',        '.gsheet',
   '.gslides',  '.arw',         '.cr2',
   '.dng',      '.nef',         '.nrw',
-  '.orf',      '.raf',         '.rw2'
+  '.orf',      '.raf',         '.rw2',
+  '.tini'
 ]);
 
 /**

@@ -91,8 +91,6 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // StoragePartition interface.
   base::FilePath GetPath() override;
-  net::URLRequestContextGetter* GetURLRequestContext() override;
-  net::URLRequestContextGetter* GetMediaURLRequestContext() override;
   network::mojom::NetworkContext* GetNetworkContext() override;
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcess() override;
@@ -148,11 +146,6 @@ class CONTENT_EXPORT StoragePartitionImpl
                  const base::Time begin,
                  const base::Time end,
                  base::OnceClosure callback) override;
-  void ClearHttpAndMediaCaches(
-      const base::Time begin,
-      const base::Time end,
-      const base::Callback<bool(const GURL&)>& url_matcher,
-      base::OnceClosure callback) override;
   void ClearCodeCaches(
       const base::Time begin,
       const base::Time end,
@@ -252,7 +245,6 @@ class CONTENT_EXPORT StoragePartitionImpl
  private:
   class DataDeletionHelper;
   class QuotaManagedDataDeletionHelper;
-  class NetworkContextOwner;
   class URLLoaderFactoryForBrowserProcess;
 
   friend class BackgroundSyncManagerTest;
@@ -326,23 +318,6 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   void DeletionHelperDone(base::OnceClosure callback);
 
-  // Used by StoragePartitionImplMap.
-  //
-  // TODO(ajwong): These should be taken in the constructor and in Create() but
-  // because the URLRequestContextGetter still lives in Profile with a tangled
-  // initialization, if we try to retrieve the URLRequestContextGetter()
-  // before the default StoragePartition is created, we end up reentering the
-  // construction and double-initializing.  For now, we retain the legacy
-  // behavior while allowing StoragePartitionImpl to expose these accessors by
-  // letting StoragePartitionImplMap call these two private settings at the
-  // appropriate time.  These should move back into the constructor once
-  // URLRequestContextGetter's lifetime is sorted out. We should also move the
-  // PostCreateInitialization() out of StoragePartitionImplMap.
-  void SetURLRequestContext(
-      net::URLRequestContextGetter* url_request_context);
-  void SetMediaURLRequestContext(
-      net::URLRequestContextGetter* media_url_request_context);
-
   // Function used by the quota system to ask the embedder for the
   // storage configuration info.
   void GetQuotaSettings(storage::OptionalQuotaSettingsCallback callback);
@@ -359,8 +334,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   bool is_in_memory_;
   base::FilePath relative_partition_path_;
   base::FilePath partition_path_;
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
-  scoped_refptr<net::URLRequestContextGetter> media_url_request_context_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
@@ -426,10 +399,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   network::mojom::CookieManagerPtr cookie_manager_for_browser_process_;
   network::mojom::OriginPolicyManagerPtr
       origin_policy_manager_for_browser_process_;
-
-  // When the network service is disabled, a NetworkContext is created on the IO
-  // thread that wraps access to the URLRequestContext.
-  std::unique_ptr<NetworkContextOwner> network_context_owner_;
 
   // Raw pointer that should always be valid. The BrowserContext owns the
   // StoragePartitionImplMap which then owns StoragePartitionImpl. When the

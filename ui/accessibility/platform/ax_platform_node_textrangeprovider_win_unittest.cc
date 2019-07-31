@@ -976,7 +976,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   // Start endpoint is already on a word's start boundary.
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"definitely ");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"definitely");
 
   // Start endpoint is between a word's start and end boundaries.
   int count;
@@ -984,11 +984,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ -2,
       &count));
   ASSERT_EQ(-2, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"xtdefinitely ");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"xtdefinitely");
 
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
-      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 4, &count));
-  ASSERT_EQ(4, count);
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 5, &count));
+  ASSERT_EQ(5, count);
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"xtdefinitely not ");
 
   ASSERT_HRESULT_SUCCEEDED(
@@ -1009,7 +1009,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Word));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"not ");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"not");
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
@@ -1576,19 +1576,19 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
   // Move forward.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 1,
-                  /*expected_text*/ L"line ",
+                  /*expected_text*/ L"line",
                   /*expected_count*/ 1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 2,
-                  /*expected_text*/ L"text\n\n",
+                  /*expected_text*/ L"text",
                   /*expected_count*/ 2);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 2,
-                  /*expected_text*/ L"line\n",
+                  /*expected_text*/ L"line",
                   /*expected_count*/ 2);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 3,
-                  /*expected_text*/ L"Paragraph ",
+                  /*expected_text*/ L"Paragraph",
                   /*expected_count*/ 3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 6,
@@ -1604,26 +1604,26 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
   // Move backward.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -3,
-                  /*expected_text*/ L"Paragraph ",
+                  /*expected_text*/ L"Paragraph",
                   /*expected_count*/ -3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -3,
-                  /*expected_text*/ L"line\n",
+                  /*expected_text*/ L"line",
                   /*expected_count*/ -3);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -2,
-                  /*expected_text*/ L"text\n\n",
+                  /*expected_text*/ L"text",
                   /*expected_count*/ -2);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -6,
-                  /*expected_text*/ L"First ",
+                  /*expected_text*/ L"First",
                   /*expected_count*/ -3);
 
   // Moving backward by any number of words at the start of document
   // should have no effect.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -20,
-                  /*expected_text*/ L"First ",
+                  /*expected_text*/ L"First",
                   /*expected_count*/ 0);
 
   // Degenerate range moves.
@@ -2137,7 +2137,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
                                    /*count*/ -1,
-                                   /*expected_text*/ L"more ",
+                                   /*expected_text*/ L"more",
                                    /*expected_count*/ -1);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
@@ -2158,9 +2158,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       /*expected_count*/ -3);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
-                                   /*count*/ -1,
+                                   /*count*/ -2,
                                    /*expected_text*/ L"more text",
-                                   /*expected_count*/ -1);
+                                   /*expected_count*/ -2);
 
   // Moving the end past the start, then reverting.
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
@@ -2171,13 +2171,13 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
                                    /*count*/ 3,
-                                   /*expected_text*/ L"textmore text",
+                                   /*expected_text*/ L" textmore text",
                                    /*expected_count*/ 3);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Word,
-      /*count*/ 1,
+      /*count*/ 2,
       /*expected_text*/ L"more text",
-      /*expected_count*/ 1);
+      /*expected_count*/ 2);
 
   // Moving the endpoints further than both ends of the document.
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
@@ -2386,7 +2386,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ 1, &count));
   ASSERT_EQ(1, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some textmore ");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"some textmore");
 
   ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_End, TextUnit_Word, /*count*/ -1, &count));

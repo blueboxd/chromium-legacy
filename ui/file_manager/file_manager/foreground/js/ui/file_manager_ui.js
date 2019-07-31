@@ -111,6 +111,14 @@ class FileManagerUI {
         new cr.filebrowser.InstallLinuxPackageDialog(this.element);
 
     /**
+     * Dialog for import Crostini Image Files (.tini)
+     * @type {!cr.filebrowser.ImportCrostiniImageDialog}
+     * @const
+     */
+    this.importCrostiniImageDialog =
+        new cr.filebrowser.ImportCrostiniImageDialog(this.element);
+
+    /**
      * Dialog for formatting
      * @const {!HTMLElement}
      */

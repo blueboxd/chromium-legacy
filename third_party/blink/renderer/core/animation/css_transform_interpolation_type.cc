@@ -28,10 +28,20 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
         true, std::move(transform), EmptyTransformOperations(), false, false));
   }
 
+  static scoped_refptr<CSSTransformNonInterpolableValue> CreateAdditive(
+      const CSSTransformNonInterpolableValue& other) {
+    DCHECK(other.is_single_);
+    const bool is_single = true;
+    const bool is_additive = true;
+    return base::AdoptRef(new CSSTransformNonInterpolableValue(
+        is_single, TransformOperations(other.start_),
+        TransformOperations(other.end_), is_additive, is_additive));
+  }
+
   static scoped_refptr<CSSTransformNonInterpolableValue> Create(
-      CSSTransformNonInterpolableValue&& start,
+      const CSSTransformNonInterpolableValue& start,
       double start_fraction,
-      CSSTransformNonInterpolableValue&& end,
+      const CSSTransformNonInterpolableValue& end,
       double end_fraction) {
     return base::AdoptRef(new CSSTransformNonInterpolableValue(
         false, start.GetInterpolatedTransform(start_fraction),
@@ -41,7 +51,7 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
 
   scoped_refptr<CSSTransformNonInterpolableValue> Composite(
       const CSSTransformNonInterpolableValue& other,
-      double other_progress) {
+      double other_progress) const {
     DCHECK(!IsAdditive());
     if (other.is_single_) {
       DCHECK_EQ(other_progress, 0);
@@ -60,12 +70,6 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
     end.Operations() = other.is_end_additive_ ? Concat(Transform(), other.end_)
                                               : other.end_.Operations();
     return Create(end.Blend(start, other_progress));
-  }
-
-  void SetSingleAdditive() {
-    DCHECK(is_single_);
-    is_start_additive_ = true;
-    is_end_additive_ = true;
   }
 
   TransformOperations GetInterpolatedTransform(double progress) const {
@@ -103,7 +107,7 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
 
   Vector<scoped_refptr<TransformOperation>> Concat(
       const TransformOperations& a,
-      const TransformOperations& b) {
+      const TransformOperations& b) const {
     Vector<scoped_refptr<TransformOperation>> result;
     result.ReserveCapacity(a.size() + b.size());
     result.AppendVector(a.Operations());
@@ -206,10 +210,12 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertValue(
   return ConvertTransform(std::move(transform));
 }
 
-void CSSTransformInterpolationType::AdditiveKeyframeHook(
-    InterpolationValue& value) const {
-  ToCSSTransformNonInterpolableValue(*value.non_interpolable_value)
-      .SetSingleAdditive();
+InterpolationValue CSSTransformInterpolationType::MakeAdditive(
+    InterpolationValue value) const {
+  value.non_interpolable_value =
+      CSSTransformNonInterpolableValue::CreateAdditive(
+          ToCSSTransformNonInterpolableValue(*value.non_interpolable_value));
+  return value;
 }
 
 PairwiseInterpolationValue CSSTransformInterpolationType::MaybeMergeSingles(
@@ -241,7 +247,7 @@ void CSSTransformInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  CSSTransformNonInterpolableValue& underlying_non_interpolable_value =
+  const CSSTransformNonInterpolableValue& underlying_non_interpolable_value =
       ToCSSTransformNonInterpolableValue(
           *underlying_value_owner.Value().non_interpolable_value);
   const CSSTransformNonInterpolableValue& non_interpolable_value =

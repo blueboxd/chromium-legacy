@@ -385,7 +385,7 @@ class MediaStreamUIProxyFeaturePolicyTest
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &MediaStreamUIProxyFeaturePolicyTest::GetResultForRequestOnIOThread,
@@ -443,7 +443,7 @@ class MediaStreamUIProxyFeaturePolicyTest
       blink::mojom::MediaStreamRequestResult result) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     proxy_.reset();
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&MediaStreamUIProxyFeaturePolicyTest::FinishedGetResult,
                        base::Unretained(this), devices, result));

@@ -166,3 +166,39 @@ crostiniTasks.testErrorLoadingLinuxPackageInfo = async (done) => {
   await test.waitForElement(fakeRoot);
   done();
 };
+
+crostiniTasks.testImportCrostiniImage = async (done) => {
+  const dialog = '.cr-dialog-container.shown';
+
+  // Save old fmp.importCrostiniImage function.
+  const oldImportCrostiniImage = chrome.fileManagerPrivate.importCrostiniImage;
+  let importCrostiniImageCalled = false;
+  chrome.fileManagerPrivate.importCrostiniImage = (entry) => {
+    importCrostiniImageCalled = true;
+  };
+
+  // Save old fmp.getFileTasks and replace with version that returns the
+  // internal import crostini image handler.
+  const oldGetFileTasks = chrome.fileManagerPrivate.getFileTasks;
+  chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
+    setTimeout(
+        callback, 0, [{
+          taskId: `${test.FILE_MANAGER_EXTENSION_ID}|app|import-crostini-image`,
+        }]);
+  };
+
+  await test.setupAndWaitUntilReady([test.ENTRIES.tiniFile]);
+
+  assertTrue(test.fakeMouseDoubleClick('[file-name="test.tini"]'));
+  await test.waitForElement(dialog);
+
+  assertTrue(test.fakeMouseClick('button.cr-dialog-ok'));
+  await test.waitForElementLost(dialog);
+
+  assertTrue(importCrostiniImageCalled);
+
+  // Restore fmp.getFileTasks, fmp.importCrostiniImage.
+  chrome.fileManagerPrivate.getFileTasks = oldGetFileTasks;
+  chrome.fileManagerPrivate.importCrostiniImage = oldImportCrostiniImage;
+  done();
+};

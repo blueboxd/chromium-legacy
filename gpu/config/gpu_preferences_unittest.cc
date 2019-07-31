@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstring>
 
+#include "base/message_loop/message_pump_type.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_preferences.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,7 +73,7 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.enable_gpu_benchmarking_extension,
             right.enable_gpu_benchmarking_extension);
   EXPECT_EQ(left.enable_webgpu, right.enable_webgpu);
-  EXPECT_EQ(left.message_loop_type, right.message_loop_type);
+  EXPECT_EQ(left.message_pump_type, right.message_pump_type);
 }
 
 }  // namespace
@@ -155,8 +156,8 @@ TEST(GpuPreferencesTest, EncodeDecode) {
                                mojom::VulkanImplementationName::kNative)
     GPU_PREFERENCES_FIELD(enable_gpu_benchmarking_extension, true)
     GPU_PREFERENCES_FIELD(enable_webgpu, true)
-    GPU_PREFERENCES_FIELD_ENUM(message_loop_type, base::MessageLoop::TYPE_UI,
-                               base::MessageLoop::TYPE_UI)
+    GPU_PREFERENCES_FIELD_ENUM(message_pump_type, base::MessagePumpType::UI,
+                               base::MessagePumpType::UI)
 
     input_prefs.texture_target_exception_list.emplace_back(
         gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888);

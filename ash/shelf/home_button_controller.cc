@@ -13,7 +13,6 @@
 #include "ash/shelf/assistant_overlay.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf_button.h"
-#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_state.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"

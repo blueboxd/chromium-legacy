@@ -397,6 +397,13 @@ FileType.types = [
         'application/vnd\\.(ms-excel|' +
             'openxmlformats-officedocument\\.spreadsheetml\\.sheet)',
         'i')
+  },
+  {
+    type: 'archive',
+    icon: 'tini',
+    name: 'TINI_FILE_TYPE',
+    subtype: 'TGZ',
+    pattern: /\.tini$/i,
   }
 ];
 

@@ -328,9 +328,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void RunScriptsAtDocumentReady(bool document_is_empty) = 0;
   virtual void RunScriptsAtDocumentIdle() = 0;
 
-  virtual void DidCreateScriptContext(v8::Local<v8::Context>, int world_id) = 0;
+  virtual void DidCreateScriptContext(v8::Local<v8::Context>,
+                                      int32_t world_id) = 0;
   virtual void WillReleaseScriptContext(v8::Local<v8::Context>,
-                                        int world_id) = 0;
+                                        int32_t world_id) = 0;
   virtual bool AllowScriptExtensions() = 0;
 
   virtual void DidChangeScrollOffset() {}

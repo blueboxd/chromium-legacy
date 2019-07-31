@@ -2,6 +2,9 @@ specific_include_rules = {
  "scheduler_helper.cc": [
   "+base/task/sequence_manager/sequence_manager_impl.h",
  ],
+ "web_thread_scheduler.cc": [
+  "+base/message_loop/message_pump_type.h",
+ ],
 }
 
 

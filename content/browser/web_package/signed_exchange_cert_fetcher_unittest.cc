@@ -778,30 +778,12 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_AfterReceivingBody) {
 
 TEST_F(SignedExchangeCertFetcherTest, DataURL) {
   std::string data_url_string = "data:application/cert-chain+cbor";
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    std::string output;
-    base::Base64Encode(CreateTestData(), &output);
-    data_url_string += ";base64," + output;
-  } else {
-    data_url_string += ",foobar";
-  }
+  std::string output;
+  base::Base64Encode(CreateTestData(), &output);
+  data_url_string += ";base64," + output;
   const GURL data_url = GURL(data_url_string);
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
       CreateFetcherAndStart(data_url, false /* force_fetch */);
-
-  // SignedExchangeCertFetcher directly creates DataURLLoaderFactory for data
-  // scheme.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    EXPECT_EQ(data_url, mock_loader_factory_.url_request()->url);
-    network::ResourceResponseHead resource_response;
-    resource_response.mime_type = "application/cert-chain+cbor";
-    mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
-
-    mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
-        CreateTestDataFilledDataPipe());
-    mock_loader_factory_.client_ptr()->OnComplete(
-        network::URLLoaderCompletionStatus(net::OK));
-  }
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
@@ -815,15 +797,6 @@ TEST_F(SignedExchangeCertFetcherTest, DataURLWithWrongMimeType) {
   const GURL data_url = GURL("data:application/octet-stream,foobar");
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
       CreateFetcherAndStart(data_url, false /* force_fetch */);
-
-  // SignedExchangeCertFetcher directly creates DataURLLoaderFactory for data
-  // scheme.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    EXPECT_EQ(data_url, mock_loader_factory_.url_request()->url);
-    network::ResourceResponseHead resource_response;
-    resource_response.mime_type = "application/octet-stream";
-    mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
-  }
 
   RunUntilIdle();
 

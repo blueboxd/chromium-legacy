@@ -148,7 +148,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
     return PaintUsingFallbackTheme(node, style, paint_info, r);
 
   if (part == kButtonPart && node) {
-    if (IsHTMLAnchorElement(node)) {
+    if (IsA<HTMLAnchorElement>(node)) {
       Deprecation::CountDeprecation(
           doc, WebFeature::kCSSValueAppearanceButtonForAnchor);
       COUNT_APPEARANCE(doc, ButtonForNonButton);

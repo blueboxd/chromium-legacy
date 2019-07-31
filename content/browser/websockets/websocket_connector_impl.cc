@@ -6,7 +6,6 @@
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
-#include "content/browser/websockets/websocket_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/cpp/features.h"
@@ -37,13 +36,6 @@ void WebSocketConnectorImpl::Connect(
   const uint32_t options =
       GetContentClient()->browser()->GetWebSocketOptions(frame);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    WebSocketManager::CreateWebSocket(
-        url, requested_protocols, site_for_cookies, user_agent, process,
-        frame_id_, origin_, options, std::move(handshake_client),
-        std::move(websocket_client));
-    return;
-  }
   if (GetContentClient()->browser()->WillInterceptWebSocket(frame)) {
     GetContentClient()->browser()->CreateWebSocket(
         frame,

@@ -66,30 +66,27 @@ AudioOutputDelegateImpl::ControllerEventHandler::ControllerEventHandler(
     : delegate_(std::move(delegate)), stream_id_(stream_id) {}
 
 void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerCreated() {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AudioOutputDelegateImpl::SendCreatedNotification,
                      delegate_));
 }
 
 void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerPlaying() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AudioOutputDelegateImpl::UpdatePlayingState, delegate_,
-                     true));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&AudioOutputDelegateImpl::UpdatePlayingState,
+                                delegate_, true));
 }
 
 void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerPaused() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AudioOutputDelegateImpl::UpdatePlayingState, delegate_,
-                     false));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&AudioOutputDelegateImpl::UpdatePlayingState,
+                                delegate_, false));
 }
 
 void AudioOutputDelegateImpl::ControllerEventHandler::OnControllerError() {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AudioOutputDelegateImpl::OnError, delegate_));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&AudioOutputDelegateImpl::OnError, delegate_));
 }
 
 void AudioOutputDelegateImpl::ControllerEventHandler::OnLog(

@@ -45,13 +45,11 @@ namespace WTF {
 
 class WTF_EXPORT Partitions {
  public:
-  typedef void (*ReportPartitionAllocSizeFunction)(size_t);
-
   // Name of allocator used by tracing for marking sub-allocations while take
   // memory snapshots.
   static const char* const kAllocatedObjectPoolName;
 
-  static void Initialize(ReportPartitionAllocSizeFunction);
+  static void Initialize();
   static void StartPeriodicReclaim(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
   ALWAYS_INLINE static base::PartitionRootGeneric* ArrayBufferPartition() {
@@ -92,8 +90,6 @@ class WTF_EXPORT Partitions {
   }
 
   static size_t TotalActiveBytes();
-
-  static void ReportMemoryUsageHistogram();
 
   static void DumpMemoryStats(bool is_light_dump, base::PartitionStatsDumper*);
 
@@ -139,7 +135,6 @@ class WTF_EXPORT Partitions {
   static base::PartitionAllocatorGeneric* array_buffer_allocator_;
   static base::PartitionAllocatorGeneric* buffer_allocator_;
   static base::SizeSpecificPartitionAllocator<1024>* layout_allocator_;
-  static ReportPartitionAllocSizeFunction report_size_function_;
 };
 
 }  // namespace WTF

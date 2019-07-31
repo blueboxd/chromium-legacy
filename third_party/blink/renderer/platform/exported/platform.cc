@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/instrumentation/partition_alloc_memory_dump_provider.h"
@@ -130,18 +129,6 @@ static Platform* g_platform = nullptr;
 
 static GCTaskRunner* g_gc_task_runner = nullptr;
 
-static void MaxObservedSizeFunction(size_t size_in_mb) {
-  const size_t kSupportedMaxSizeInMB = 4 * 1024;
-  if (size_in_mb >= kSupportedMaxSizeInMB)
-    size_in_mb = kSupportedMaxSizeInMB - 1;
-
-  // Send a UseCounter only when we see the highest memory usage
-  // we've ever seen.
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, committed_size_histogram,
-                      ("PartitionAlloc.CommittedSize", kSupportedMaxSizeInMB));
-  committed_size_histogram.Count(size_in_mb);
-}
-
 static void CallOnMainThreadFunction(WTF::MainThreadFunction function,
                                      void* context) {
   PostCrossThreadTask(
@@ -150,7 +137,7 @@ static void CallOnMainThreadFunction(WTF::MainThreadFunction function,
 }
 
 Platform::Platform() {
-  WTF::Partitions::Initialize(MaxObservedSizeFunction);
+  WTF::Partitions::Initialize();
 }
 
 Platform::~Platform() = default;

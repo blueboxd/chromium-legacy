@@ -12,6 +12,8 @@
 #include "components/exo/wm_helper.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
@@ -179,6 +181,22 @@ TEST_F(FullscreenShellSurfaceTest, Bounds) {
       fullscreen_surface->GetWidget()->GetWindowBoundsInScreen();
   gfx::Rect expected_bounds(new_root_bounds.size());
   EXPECT_EQ(fullscreen_bounds, expected_bounds);
+}
+
+TEST_F(FullscreenShellSurfaceTest, SetAXChildTree) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<FullscreenShellSurface> fullscreen_surface(
+      new FullscreenShellSurface(surface.get()));
+  ui::AXNodeData node_data;
+  fullscreen_surface->GetAccessibleNodeData(&node_data);
+  EXPECT_FALSE(
+      node_data.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
+
+  ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  fullscreen_surface->SetChildAxTreeId(tree_id);
+  fullscreen_surface->GetAccessibleNodeData(&node_data);
+  EXPECT_TRUE(
+      node_data.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
 }
 
 }  // namespace

@@ -419,9 +419,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   compositor_node.source_node_id = parent_id;
 
   UpdateCcTransformLocalMatrix(compositor_node, transform_node);
-  compositor_node.transform_changed =
-      transform_node.NodeChanged() >=
-      PaintPropertyChangeType::kChangedOnlySimpleValues;
+  compositor_node.transform_changed = transform_node.NodeChangeAffectsRaster();
   compositor_node.flattens_inherited_transform =
       transform_node.FlattensInheritedTransform();
   compositor_node.sorting_context_id = transform_node.RenderingContextId();
@@ -1111,8 +1109,7 @@ void PropertyTreeManager::PopulateCcEffectNode(
   }
   effect_node.blend_mode = blend_mode;
   effect_node.double_sided = !effect.LocalTransformSpace().IsBackfaceHidden();
-  effect_node.effect_changed =
-      effect.NodeChanged() >= PaintPropertyChangeType::kChangedOnlySimpleValues;
+  effect_node.effect_changed = effect.NodeChangeAffectsRaster();
 }
 
 }  // namespace blink

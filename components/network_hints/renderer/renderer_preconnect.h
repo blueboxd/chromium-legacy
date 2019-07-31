@@ -20,6 +20,10 @@
 #include "base/macros.h"
 #include "url/gurl.h"
 
+namespace blink {
+class WebLocalFrame;
+}
+
 namespace network_hints {
 
 // An internal interface to the network_hints component for efficiently sending
@@ -30,7 +34,9 @@ class RendererPreconnect {
   ~RendererPreconnect();
 
   // Submit a preconnect request for a single connection.
-  void Preconnect(const GURL& url, bool allow_credentials);
+  void Preconnect(blink::WebLocalFrame* web_local_frame,
+                  const GURL& url,
+                  bool allow_credentials);
 
  private:
 

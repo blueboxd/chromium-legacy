@@ -82,6 +82,10 @@ views::View* StatusAreaWidgetDelegate::GetDefaultFocusableChild() {
                                        : GetFirstFocusableChild();
 }
 
+const char* StatusAreaWidgetDelegate::GetClassName() const {
+  return "ash/StatusAreaWidgetDelegate";
+}
+
 views::Widget* StatusAreaWidgetDelegate::GetWidget() {
   return View::GetWidget();
 }

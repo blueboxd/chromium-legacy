@@ -16,6 +16,7 @@
 
 #include "base/guid.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -49,8 +50,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/test_sync_service.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -69,9 +68,6 @@ class LocalCardMigrationManagerTest : public testing::Test {
     personal_data_.SetPrefService(autofill_client_.GetPrefs());
     personal_data_.SetSyncServiceForTest(&sync_service_);
     autofill_driver_.reset(new TestAutofillDriver());
-    request_context_ = new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get());
-    autofill_driver_->SetURLRequestContext(request_context_.get());
     payments_client_ = new payments::TestPaymentsClient(
         autofill_driver_->GetURLLoaderFactory(),
         autofill_client_.GetIdentityManager(), &personal_data_);
@@ -111,8 +107,6 @@ class LocalCardMigrationManagerTest : public testing::Test {
 
     personal_data_.SetPrefService(nullptr);
     personal_data_.ClearCreditCards();
-
-    request_context_ = nullptr;
   }
 
   void FormsSeen(const std::vector<FormData>& forms) {
@@ -315,7 +309,6 @@ class LocalCardMigrationManagerTest : public testing::Test {
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   TestPersonalDataManager personal_data_;
   MockAutocompleteHistoryManager autocomplete_history_manager_;
   syncer::TestSyncService sync_service_;

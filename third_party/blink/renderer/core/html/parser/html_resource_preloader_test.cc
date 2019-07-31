@@ -25,7 +25,9 @@ class PreloaderNetworkHintsMock : public WebPrescientNetworking {
   PreloaderNetworkHintsMock() : did_preconnect_(false) {}
 
   void PrefetchDNS(const WebString& hostname) override {}
-  void Preconnect(const WebURL& url, const bool allow_credentials) override {
+  void Preconnect(WebLocalFrame* web_local_frame,
+                  const WebURL& url,
+                  const bool allow_credentials) override {
     did_preconnect_ = true;
     is_https_ = url.ProtocolIs("https");
     allow_credentials_ = allow_credentials;

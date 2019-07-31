@@ -115,6 +115,7 @@ namespace fileManagerPrivateInternal {
                                     GetLinuxPackageInfoCallback callback);
     static void installLinuxPackage(DOMString url,
                                     InstallLinuxPackageCallback callback);
+    static void importCrostiniImage(DOMString url);
     static void getThumbnail(DOMString url,
                              boolean cropToSquare,
                              GetThumbnailCallback callback);

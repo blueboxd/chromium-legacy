@@ -57,7 +57,7 @@ class ServiceVideoCaptureProvider::ServiceProcessObserver
   ServiceProcessObserver(base::RepeatingClosure start_callback,
                          base::RepeatingClosure stop_callback)
       : io_task_runner_(
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO})),
         start_callback_(std::move(start_callback)),
         stop_callback_(std::move(stop_callback)) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -114,14 +114,14 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
 #endif  // defined(OS_CHROMEOS)
   if (features::IsVideoCaptureServiceEnabledForOutOfProcess()) {
     service_process_observer_.emplace(
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+        base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
         base::BindRepeating(&ServiceVideoCaptureProvider::OnServiceStarted,
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindRepeating(&ServiceVideoCaptureProvider::OnServiceStopped,
                             weak_ptr_factory_.GetWeakPtr()));
   } else if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
     // Connect immediately and permanently when the service runs in-process.
-    base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
+    base::CreateSingleThreadTaskRunner({BrowserThread::IO})
         ->PostTask(FROM_HERE,
                    base::Bind(&ServiceVideoCaptureProvider::OnServiceStarted,
                               weak_ptr_factory_.GetWeakPtr()));
@@ -212,8 +212,7 @@ ServiceVideoCaptureProvider::LazyConnectToService() {
   launcher_has_connected_to_source_provider_ = false;
   time_of_last_connect_ = base::TimeTicks::Now();
 
-  auto ui_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+  auto ui_task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
 #if defined(OS_CHROMEOS)
   video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
   if (!create_accelerator_factory_cb_)

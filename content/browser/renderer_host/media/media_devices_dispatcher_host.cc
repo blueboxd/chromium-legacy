@@ -131,8 +131,7 @@ void MediaDevicesDispatcherHost::GetVideoInputCapabilities(
     GetVideoInputCapabilitiesCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}).get(),
-      FROM_HERE,
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
       base::BindOnce(media_stream_manager_->media_devices_manager()
                          ->salt_and_origin_callback(),
                      render_process_id_, render_frame_id_),
@@ -159,8 +158,7 @@ void MediaDevicesDispatcherHost::GetAvailableVideoInputDeviceFormats(
 void MediaDevicesDispatcherHost::GetAudioInputCapabilities(
     GetAudioInputCapabilitiesCallback client_callback) {
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}).get(),
-      FROM_HERE,
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
       base::BindOnce(media_stream_manager_->media_devices_manager()
                          ->salt_and_origin_callback(),
                      render_process_id_, render_frame_id_),
@@ -267,8 +265,7 @@ void MediaDevicesDispatcherHost::GetVideoInputDeviceFormats(
     GetVideoInputDeviceFormatsCallback client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}).get(),
-      FROM_HERE,
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
       base::BindOnce(media_stream_manager_->media_devices_manager()
                          ->salt_and_origin_callback(),
                      render_process_id_, render_frame_id_),

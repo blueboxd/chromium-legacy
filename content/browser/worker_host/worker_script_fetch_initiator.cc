@@ -170,6 +170,12 @@ void WorkerScriptFetchInitiator::Start(
       break;
   }
 
+  // Upgrade the request to an a priori authenticated URL, if appropriate.
+  // https://w3c.github.io/webappsec-upgrade-insecure-requests/#upgrade-request
+  resource_request->upgrade_if_insecure =
+      outside_fetch_client_settings_object->insecure_requests_policy ==
+      blink::mojom::InsecureRequestsPolicy::kUpgrade;
+
   AddAdditionalRequestHeaders(resource_request.get(), browser_context);
 
   // When navigation on UI is enabled, service worker and appcache work on the

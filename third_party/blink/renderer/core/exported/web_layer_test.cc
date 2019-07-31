@@ -571,6 +571,91 @@ TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdate) {
   EXPECT_FALSE(transform_node->transform_changed);
 }
 
+// This test is similar to |DirectTransformPropertyUpdate| but tests that
+// the changed value of a directly updated transform is still set if some other
+// change causes PaintArtifactCompositor to run and do non-direct updates.
+TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdateCausesChange) {
+  // TODO(crbug.com/765003): CAP may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // CAP gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        #outer {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          transform: translate(1px, 2px);
+        }
+        #inner {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          background: lightblue;
+          transform: translate(3px, 4px);
+        }
+      </style>
+      <div id='outer'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* outer_element = GetElementById("outer");
+  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  DCHECK_EQ(outer_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                outer_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+  auto outer_transform_tree_index = outer_element_layer->transform_tree_index();
+  auto* outer_transform_node =
+      GetPropertyTrees()->transform_tree.Node(outer_transform_tree_index);
+
+  auto* inner_element = GetElementById("inner");
+  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  DCHECK_EQ(inner_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                inner_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+  auto inner_transform_tree_index = inner_element_layer->transform_tree_index();
+  auto* inner_transform_node =
+      GetPropertyTrees()->transform_tree.Node(inner_transform_tree_index);
+
+  // Initially, the transforms should be unchanged.
+  EXPECT_FALSE(outer_transform_node->transform_changed);
+  EXPECT_FALSE(inner_transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // Modifying the outer transform in a simple way should allow for a direct
+  // update of the outer transform. Modifying the inner transform in a
+  // non-simple way should not allow for a direct update of the inner transform.
+  outer_element->setAttribute(html_names::kStyleAttr,
+                              "transform: translate(5px, 6px)");
+  inner_element->setAttribute(html_names::kStyleAttr,
+                              "transform: rotate(30deg)");
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(outer_transform_node->transform_changed);
+  EXPECT_FALSE(inner_transform_node->transform_changed);
+  EXPECT_TRUE(paint_artifact_compositor()->NeedsUpdate());
+
+  // After a PaintArtifactCompositor update, which was needed due to the inner
+  // element's transform change, both the inner and outer transform nodes
+  // should be marked as changed to ensure they result in damage.
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(outer_transform_node->transform_changed);
+  EXPECT_TRUE(inner_transform_node->transform_changed);
+
+  // After a frame the |transform_changed| values should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(outer_transform_node->transform_changed);
+  EXPECT_FALSE(inner_transform_node->transform_changed);
+}
+
 // This test ensures that the correct transform nodes are created and bits set
 // so that the browser controls movement adjustments needed by bottom-fixed
 // elements will work.

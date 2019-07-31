@@ -332,8 +332,8 @@ cca.views.camera.Modes.prototype.updateModeSelectionUI = function(
     supportedModes) {
   document.querySelectorAll('.mode-item').forEach((element) => {
     const radio = element.querySelector('input[type=radio]');
-    element.style.display =
-        supportedModes.includes(radio.dataset.mode) ? '' : 'none';
+    element.classList.toggle(
+        'hide', !supportedModes.includes(radio.dataset.mode));
   });
 };
 

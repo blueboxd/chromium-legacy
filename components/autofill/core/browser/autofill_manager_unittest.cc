@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -68,8 +69,6 @@
 #include "components/variations/variations_params_manager.h"
 #include "components/version_info/channel.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -316,9 +315,6 @@ class AutofillManagerTest : public testing::Test {
 
     autofill_driver_ =
         std::make_unique<testing::NiceMock<MockAutofillDriver>>();
-    request_context_ = new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get());
-    autofill_driver_->SetURLRequestContext(request_context_.get());
     payments::TestPaymentsClient* payments_client =
         new payments::TestPaymentsClient(
             autofill_driver_->GetURLLoaderFactory(),
@@ -411,8 +407,6 @@ class AutofillManagerTest : public testing::Test {
 
     personal_data_.SetPrefService(nullptr);
     personal_data_.ClearCreditCards();
-
-    request_context_ = nullptr;
   }
 
   void GetAutofillSuggestions(int query_id,
@@ -598,7 +592,6 @@ class AutofillManagerTest : public testing::Test {
   std::unique_ptr<MockAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   std::unique_ptr<TestAutofillExternalDelegate> external_delegate_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   scoped_refptr<AutofillWebDataService> database_;
   MockAutofillDownloadManager* download_manager_;
   TestPersonalDataManager personal_data_;

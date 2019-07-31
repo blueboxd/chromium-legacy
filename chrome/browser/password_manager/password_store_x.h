@@ -35,7 +35,7 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
     // The last attempt was not completed.
     DEPRECATED_FAILED,
     // All the data is in the temporary encrypted loginDB.
-    COPIED_ALL,
+    DEPRECATED_COPIED_ALL,
     // The standard login database is encrypted.
     LOGIN_DB_REPLACED,
     // The migration is about to be attempted. This value was deprecated and
@@ -44,17 +44,17 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
     STARTED,
     // No access to the native backend.
     POSTPONED,
-    // Could not create or write into the temporary file.
+    // Could not create or write into the file.
     DEPRECATED_FAILED_CREATE_ENCRYPTED,
     // Could not read from the native backend.
-    FAILED_ACCESS_NATIVE,
+    DEPRECATED_FAILED_ACCESS_NATIVE,
     // Could not replace old database.
     FAILED_REPLACE,
-    // Could not initialise the temporary encrypted database.
+    // Could not initialise the encrypted database.
     FAILED_INIT_ENCRYPTED,
-    // Could not reset th temporary encrypted database.
-    FAILED_RECREATE_ENCRYPTED,
-    // Could not add entries into the temporary encrypted database.
+    // Could not reset the encrypted database.
+    DEPRECATED_FAILED_RECREATE_ENCRYPTED,
+    // Could not add entries into the encrypted database.
     FAILED_WRITE_TO_ENCRYPTED,
   };
 

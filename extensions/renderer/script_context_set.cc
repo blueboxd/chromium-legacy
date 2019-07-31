@@ -39,7 +39,7 @@ ScriptContextSet::~ScriptContextSet() {
 ScriptContext* ScriptContextSet::Register(
     blink::WebLocalFrame* frame,
     const v8::Local<v8::Context>& v8_context,
-    int world_id) {
+    int32_t world_id) {
   const Extension* extension =
       GetExtensionFromFrameAndWorld(frame, world_id, false);
   const Extension* effective_extension =
@@ -139,7 +139,7 @@ void ScriptContextSet::AddForTesting(std::unique_ptr<ScriptContext> context) {
 
 const Extension* ScriptContextSet::GetExtensionFromFrameAndWorld(
     blink::WebLocalFrame* frame,
-    int world_id,
+    int32_t world_id,
     bool use_effective_url) {
   std::string extension_id;
   if (world_id != 0) {
@@ -173,7 +173,7 @@ const Extension* ScriptContextSet::GetExtensionFromFrameAndWorld(
 
 Feature::Context ScriptContextSet::ClassifyJavaScriptContext(
     const Extension* extension,
-    int world_id,
+    int32_t world_id,
     const GURL& url,
     const blink::WebSecurityOrigin& origin) {
   // WARNING: This logic must match ProcessMap::GetContextType, as much as

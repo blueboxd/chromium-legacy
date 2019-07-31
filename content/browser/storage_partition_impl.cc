@@ -32,7 +32,6 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
-#include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
@@ -66,7 +65,6 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/network_context.h"
@@ -491,46 +489,6 @@ void OnServiceWorkerCookiesChangedOnIO(
 
 }  // namespace
 
-// Class to own the NetworkContext wrapping a storage partitions
-// URLRequestContext, when the ContentBrowserClient doesn't provide a
-// NetworkContext itself.
-//
-// Created on the UI thread, but must be initialized and destroyed on the IO
-// thread.
-class StoragePartitionImpl::NetworkContextOwner {
- public:
-  NetworkContextOwner() { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
-
-  ~NetworkContextOwner() { DCHECK_CURRENTLY_ON(BrowserThread::IO); }
-
-  void Initialize(network::mojom::NetworkContextRequest network_context_request,
-                  scoped_refptr<net::URLRequestContextGetter> context_getter) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-    network::mojom::NetworkContextParamsPtr network_context_params =
-        network::mojom::NetworkContextParams::New();
-    content::UpdateCorsExemptHeader(network_context_params.get());
-    variations::UpdateCorsExemptHeaderForVariations(
-
-        network_context_params.get());
-    context_getter_ = std::move(context_getter);
-    network_context_ = std::make_unique<network::NetworkContext>(
-        GetNetworkServiceImpl(), std::move(network_context_request),
-        context_getter_->GetURLRequestContext(),
-        network_context_params->cors_exempt_header_list);
-  }
-
- private:
-  // Reference to the URLRequestContextGetter for the URLRequestContext used by
-  // NetworkContext. Depending on the embedder's implementation, this may be
-  // needed to keep the URLRequestContext alive until the NetworkContext is
-  // destroyed.
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  std::unique_ptr<network::mojom::NetworkContext> network_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkContextOwner);
-};
-
 class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
     : public network::SharedURLLoaderFactory {
  public:
@@ -835,9 +793,6 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (GetGeneratedCodeCacheContext())
     GetGeneratedCodeCacheContext()->Shutdown();
-
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
-                            std::move(network_context_owner_));
 }
 
 // static
@@ -1011,18 +966,6 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
 
 base::FilePath StoragePartitionImpl::GetPath() {
   return partition_path_;
-}
-
-net::URLRequestContextGetter* StoragePartitionImpl::GetURLRequestContext() {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  return url_request_context_.get();
-}
-
-net::URLRequestContextGetter*
-StoragePartitionImpl::GetMediaURLRequestContext() {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    NOTREACHED();
-  return media_url_request_context_.get();
 }
 
 network::mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
@@ -1651,22 +1594,6 @@ void StoragePartitionImpl::ClearData(
                 begin, end, std::move(callback));
 }
 
-void StoragePartitionImpl::ClearHttpAndMediaCaches(
-    const base::Time begin,
-    const base::Time end,
-    const base::Callback<bool(const GURL&)>& url_matcher,
-    base::OnceClosure callback) {
-  // StoragePartitionHttpCacheDataRemover deletes itself when it is done.
-  if (url_matcher.is_null()) {
-    StoragePartitionHttpCacheDataRemover::CreateForRange(this, begin, end)
-        ->Remove(std::move(callback));
-  } else {
-    StoragePartitionHttpCacheDataRemover::CreateForURLsAndRange(
-        this, url_matcher, begin, end)
-        ->Remove(std::move(callback));
-  }
-}
-
 void StoragePartitionImpl::ClearCodeCaches(
     const base::Time begin,
     const base::Time end,
@@ -1766,16 +1693,6 @@ void StoragePartitionImpl::OverrideBackgroundSyncContextForTesting(
   background_sync_context_ = background_sync_context;
 }
 
-void StoragePartitionImpl::SetURLRequestContext(
-    net::URLRequestContextGetter* url_request_context) {
-  url_request_context_ = url_request_context;
-}
-
-void StoragePartitionImpl::SetMediaURLRequestContext(
-    net::URLRequestContextGetter* media_url_request_context) {
-  media_url_request_context_ = media_url_request_context;
-}
-
 void StoragePartitionImpl::GetQuotaSettings(
     storage::OptionalQuotaSettingsCallback callback) {
   GetContentClient()->browser()->GetQuotaSettings(browser_context_, this,
@@ -1785,19 +1702,8 @@ void StoragePartitionImpl::GetQuotaSettings(
 void StoragePartitionImpl::InitNetworkContext() {
   network_context_ = GetContentClient()->browser()->CreateNetworkContext(
       browser_context_, is_in_memory_, relative_partition_path_);
-  if (!network_context_) {
-    // TODO(mmenke): Remove once https://crbug.com/827928 is fixed.
-    CHECK(url_request_context_);
+  DCHECK(network_context_);
 
-    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-    DCHECK(!network_context_owner_);
-    network_context_owner_ = std::make_unique<NetworkContextOwner>();
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&NetworkContextOwner::Initialize,
-                       base::Unretained(network_context_owner_.get()),
-                       MakeRequest(&network_context_), url_request_context_));
-  }
   network::mojom::NetworkContextClientPtr client_ptr;
   network_context_client_binding_.Close();
   network_context_client_binding_.Bind(mojo::MakeRequest(&client_ptr));

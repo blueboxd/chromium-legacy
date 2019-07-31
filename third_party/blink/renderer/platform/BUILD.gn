@@ -484,6 +484,7 @@ jumbo_component("platform") {
     "exported/platform.cc",
     "exported/service_registry.cc",
     "exported/url_conversion.cc",
+    "exported/video_capture/local_video_capturer_source.cc",
     "exported/video_capture/web_video_capture_impl_manager.cc",
     "exported/web_audio_bus.cc",
     "exported/web_audio_device.cc",

@@ -192,23 +192,6 @@ base::LazyInstance<std::vector<
     WebContentsImpl::FriendWrapper::CreatedCallback>>::DestructorAtExit
     g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
-void NotifyCacheOnIO(
-    scoped_refptr<net::URLRequestContextGetter> request_context,
-    const GURL& url,
-    const std::string& http_method,
-    const base::Optional<url::Origin>& top_frame_origin,
-    const url::Origin& frame_origin) {
-  net::HttpCache* cache = request_context->GetURLRequestContext()->
-      http_transaction_factory()->GetCache();
-  net::NetworkIsolationKey network_isolation_key;
-  if (cache) {
-    if (top_frame_origin)
-      network_isolation_key =
-          net::NetworkIsolationKey(*top_frame_origin, frame_origin);
-    cache->OnExternalCacheHit(url, http_method, network_isolation_key);
-  }
-}
-
 bool HasMatchingProcess(FrameTree* tree, int render_process_id) {
   for (FrameTreeNode* node : tree->Nodes()) {
     if (node->current_frame_host()->GetProcess()->GetID() == render_process_id)
@@ -4538,21 +4521,8 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     StoragePartition* partition = source->GetProcess()->GetStoragePartition();
     const url::Origin& last_committed_origin = source->GetLastCommittedOrigin();
 
-    // We require different paths here because there is no NetworkContext
-    // for media cache.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      partition->GetNetworkContext()->NotifyExternalCacheHit(
-          url, http_method, top_frame_origin, last_committed_origin);
-    } else {
-      scoped_refptr<net::URLRequestContextGetter> request_context(
-          resource_type == ResourceType::kMedia
-              ? partition->GetMediaURLRequestContext()
-              : partition->GetURLRequestContext());
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&NotifyCacheOnIO, request_context, url, http_method,
-                         top_frame_origin, last_committed_origin));
-    }
+    partition->GetNetworkContext()->NotifyExternalCacheHit(
+        url, http_method, top_frame_origin, last_committed_origin);
   }
 }
 

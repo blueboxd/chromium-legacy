@@ -108,7 +108,7 @@ bool ShouldIgnoreContents(const Node& node) {
          (IsHTMLSelectElement(*element) &&
           ToHTMLSelectElement(*element).UsesMenuList()) ||
          IsHTMLStyleElement(*element) || IsHTMLScriptElement(*element) ||
-         IsHTMLVideoElement(*element) || IsHTMLAudioElement(*element) ||
+         IsHTMLVideoElement(*element) || IsA<HTMLAudioElement>(*element) ||
          (element->GetDisplayLockContext() &&
           !element->GetDisplayLockContext()->IsActivatable());
 }

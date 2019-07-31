@@ -13,7 +13,6 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -39,7 +38,6 @@ PrefetchURLLoader::PrefetchURLLoader(
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     BrowserContext* browser_context,
     ResourceContext* resource_context,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<SignedExchangePrefetchMetricRecorder>
         signed_exchange_prefetch_metric_recorder,
     scoped_refptr<PrefetchedSignedExchangeCache>
@@ -54,7 +52,6 @@ PrefetchURLLoader::PrefetchURLLoader(
       url_loader_throttles_getter_(url_loader_throttles_getter),
       browser_context_(browser_context),
       resource_context_(resource_context),
-      request_context_getter_(std::move(request_context_getter)),
       signed_exchange_prefetch_metric_recorder_(
           std::move(signed_exchange_prefetch_metric_recorder)),
       accept_langs_(accept_langs) {
@@ -154,8 +151,7 @@ void PrefetchURLLoader::OnReceiveResponse(
             frame_tree_node_id_getter_, resource_request_, response,
             mojo::ScopedDataPipeConsumerHandle(), std::move(loader_),
             client_binding_.Unbind(), network_loader_factory_,
-            url_loader_throttles_getter_, resource_context_,
-            request_context_getter_, this,
+            url_loader_throttles_getter_, this,
             signed_exchange_prefetch_metric_recorder_, accept_langs_);
     return;
   }

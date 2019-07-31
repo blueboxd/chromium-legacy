@@ -447,7 +447,7 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
     if (component.IsRepeatable()) {
       interpolation_type = std::make_unique<CSSCustomListInterpolationType>(
           property, &registration, std::move(interpolation_type),
-          component.GetRepeat());
+          component.GetType(), component.GetRepeat());
     }
 
     result.push_back(std::move(interpolation_type));

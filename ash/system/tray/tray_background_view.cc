@@ -271,7 +271,7 @@ void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   if (!delegate || !delegate->ShouldFocusOut(reverse))
     return;
 
-  shelf_->shelf_focus_cycler()->FocusOut(reverse, SourceView::kSystemTrayView);
+  shelf_->shelf_focus_cycler()->FocusOut(reverse, SourceView::kStatusAreaView);
 }
 
 void TrayBackgroundView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

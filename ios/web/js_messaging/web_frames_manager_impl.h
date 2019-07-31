@@ -36,26 +36,12 @@ class WebFramesManagerImpl : public WebFramesManager {
   explicit WebFramesManagerImpl(WebFramesManagerDelegate& delegate);
   ~WebFramesManagerImpl() override;
 
-  // Adds |frame| to the list of web frames associated with WebState.
-  // The frame must not be already in the frame manager (the frame manager must
-  // not have a frame with the same frame ID). If |frame| is a main frame, the
-  // frame manager must not have a main frame already.
-  void AddFrame(std::unique_ptr<WebFrame> frame);
-  // Removes the web frame with |frame_id|, if one exists, from the list of
-  // associated web frames.
-  // If the frame manager does not contain a frame with this ID, operation is a
-  // no-op.
-  void RemoveFrameWithId(const std::string& frame_id);
   // Removes all web frames from the list of associated web frames.
   void RemoveAllWebFrames();
+
   // Broadcasts a (not encrypted) JavaScript message to get the identifiers
   // and keys of existing frames.
   void RegisterExistingFrames();
-
-  // WebFramesManager overrides
-  std::set<WebFrame*> GetAllWebFrames() override;
-  WebFrame* GetMainWebFrame() override;
-  WebFrame* GetFrameWithId(const std::string& frame_id) override;
 
   // Use |message_router| to unregister JS message handlers for |old_web_view|
   // and register handlers for |new_web_view|. Owner of this class should call
@@ -64,7 +50,24 @@ class WebFramesManagerImpl : public WebFramesManager {
                         WKWebView* new_web_view,
                         CRWWKScriptMessageRouter* message_router);
 
+  // WebFramesManager overrides.
+  std::set<WebFrame*> GetAllWebFrames() override;
+  WebFrame* GetMainWebFrame() override;
+  WebFrame* GetFrameWithId(const std::string& frame_id) override;
+
  private:
+  // Adds |frame| to the list of web frames associated with WebState and invoke
+  // |delegate_|.OnWebFrameAvailable with |frame|. The frame must not be already
+  // in the frame manager (the frame manager must not have a frame with the same
+  // frame ID). If |frame| is a main frame, the frame manager must not have a
+  // main frame already.
+  void AddFrame(std::unique_ptr<WebFrame> frame);
+  // Removes the web frame with |frame_id|, if one exists, from the list of
+  // associated web frames, and invoke |delegate_|.OnWebFrameUnavailable with
+  // the web frame. If the frame manager does not contain a frame with
+  // |frame_id|, operation is a no-op.
+  void RemoveFrameWithId(const std::string& frame_id);
+
   // Handles FrameBecameAvailable JS message and creates new WebFrame based on
   // frame info from the message (e.g. ID, encryption key, message counter,
   // etc.).

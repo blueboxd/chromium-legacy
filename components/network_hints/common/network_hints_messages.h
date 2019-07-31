@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included file, no traditional include guard.
+// Silence presubmit and Tricium warnings about include guards
+// no-include-guard-because-multiply-included
+// NOLINT(build/header_guard)
+
 #include <string>
 #include <vector>
 
@@ -44,7 +47,8 @@ IPC_MESSAGE_CONTROL1(NetworkHintsMsg_DNSPrefetch,
 
 
 // Request for preconnect to host providing resource specified by URL
-IPC_MESSAGE_CONTROL3(NetworkHintsMsg_Preconnect,
+IPC_MESSAGE_CONTROL4(NetworkHintsMsg_Preconnect,
+                     int /* render_frame_id */,
                      GURL /* preconnect target url */,
                      bool /* Does connection have its credentials flag set */,
                      int /* number of connections */)

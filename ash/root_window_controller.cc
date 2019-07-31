@@ -107,6 +107,7 @@ bool IsInShelfContainer(aura::Window* container) {
     return false;
   int id = container->id();
   if (id == ash::kShellWindowId_StatusContainer ||
+      id == ash::kShellWindowId_ShelfNavigationContainer ||
       id == ash::kShellWindowId_ShelfContainer ||
       id == ash::kShellWindowId_ShelfBubbleContainer) {
     return true;
@@ -1028,6 +1029,13 @@ void RootWindowController::CreateContainers() {
                       lock_screen_related_containers);
   status_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
   status_container->SetProperty(kLockedToRootKey, true);
+
+  aura::Window* shelf_navigation_container = CreateContainer(
+      kShellWindowId_ShelfNavigationContainer, "ShelfNavigationContainer",
+      lock_screen_related_containers);
+  shelf_navigation_container->SetProperty(::wm::kUsesScreenCoordinatesKey,
+                                          true);
+  shelf_navigation_container->SetProperty(kLockedToRootKey, true);
 
   aura::Window* power_menu_container =
       CreateContainer(kShellWindowId_PowerMenuContainer, "PowerMenuContainer",

@@ -179,7 +179,7 @@ class InterstitialObserver : public content::WebContentsObserver {
 bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          const std::string& script,
                          bool user_gesture,
-                         int world_id,
+                         int32_t world_id,
                          std::unique_ptr<base::Value>* result)
     WARN_UNUSED_RESULT;
 
@@ -189,7 +189,7 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
 bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          const std::string& script,
                          bool user_gesture,
-                         int world_id,
+                         int32_t world_id,
                          std::unique_ptr<base::Value>* result) {
   // TODO(lukasza): Only get messages from the specific |render_frame_host|.
   DOMMessageQueue dom_message_queue(render_frame_host);
@@ -1505,7 +1505,7 @@ std::string AnnotateAndAdjustJsStackTraces(const std::string& js_error,
 testing::AssertionResult ExecJs(const ToRenderFrameHost& execution_target,
                                 const std::string& script,
                                 int options,
-                                int world_id) {
+                                int32_t world_id) {
   CHECK(!(options & EXECUTE_SCRIPT_USE_MANUAL_REPLY))
       << "USE_MANUAL_REPLY does not make sense with ExecJs.";
 
@@ -1529,7 +1529,7 @@ testing::AssertionResult ExecJs(const ToRenderFrameHost& execution_target,
 EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
                     const std::string& script,
                     int options,
-                    int world_id) {
+                    int32_t world_id) {
   // The sourceURL= parameter provides a string that replaces <anonymous> in
   // stack traces, if an Error is thrown. 'std::string' is meant to communicate
   // that this is a dynamic argument originating from C++ code.
@@ -1666,7 +1666,7 @@ EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
 EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
                                    const std::string& script,
                                    int options,
-                                   int world_id) {
+                                   int32_t world_id) {
   return EvalJs(execution_target, script,
                 options | EXECUTE_SCRIPT_USE_MANUAL_REPLY, world_id);
 }

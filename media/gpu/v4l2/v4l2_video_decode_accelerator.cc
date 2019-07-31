@@ -2431,17 +2431,29 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
       (output_mode_ == Config::OutputMode::ALLOCATE
            ? ImageProcessor::OutputMode::ALLOCATE
            : ImageProcessor::OutputMode::IMPORT);
-  size_t num_planes =
-      V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc_);
+  size_t num_planes = 0;
   base::Optional<VideoFrameLayout> input_layout;
-  if (num_planes == 1) {
-    input_layout = VideoFrameLayout::Create(
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
-        coded_size_);
-  } else {
+  // V4L2 specific format hack:
+  // If VDA's output format is V4L2_PIX_FMT_MT21C, which is a platform specific
+  // format and now is only used for MT8173 VDA output and its image processor
+  // input, we set VideoFrameLayout for image processor's input with format
+  // PIXEL_FORMAT_NV12 as NV12's layout is the same as MT21.
+  if (output_format_fourcc_ == V4L2_PIX_FMT_MT21C) {
+    num_planes = 2;
     input_layout = VideoFrameLayout::CreateMultiPlanar(
-        V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
-        coded_size_, std::vector<VideoFrameLayout::Plane>(num_planes));
+        PIXEL_FORMAT_NV12, coded_size_,
+        std::vector<VideoFrameLayout::Plane>(num_planes));
+  } else {
+    num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc_);
+    if (num_planes == 1) {
+      input_layout = VideoFrameLayout::Create(
+          V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
+          coded_size_);
+    } else {
+      input_layout = VideoFrameLayout::CreateMultiPlanar(
+          V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc_),
+          coded_size_, std::vector<VideoFrameLayout::Plane>(num_planes));
+    }
   }
   if (!input_layout) {
     VLOGF(1) << "Invalid input layout";
@@ -2471,8 +2483,8 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
   //     |image_processor_device_| from V4L2VideoDecodeAccelerator.
   image_processor_ = V4L2ImageProcessor::Create(
       image_processor_device_,
-      ImageProcessor::PortConfig(*input_layout, visible_size_,
-                                 {VideoFrame::STORAGE_DMABUFS}),
+      ImageProcessor::PortConfig(*input_layout, output_format_fourcc_,
+                                 visible_size_, {VideoFrame::STORAGE_DMABUFS}),
       ImageProcessor::PortConfig(*output_layout, visible_size_,
                                  {VideoFrame::STORAGE_DMABUFS}),
       image_processor_output_mode, output_buffer_map_.size(),

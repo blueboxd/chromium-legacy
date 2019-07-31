@@ -36,7 +36,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.hamcrest.Matchers.startsWith;
 
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
@@ -64,6 +63,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,6 +71,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.IntStringCallback;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
@@ -84,8 +85,11 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.sync.ModelType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
@@ -95,6 +99,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -226,6 +231,29 @@ public class SavePasswordsPreferencesTest {
      * delay used in production.
      */
     private final ManualCallbackDelayer mManualDelayer = new ManualCallbackDelayer();
+
+    private void overrideProfileSyncService(
+            final boolean usingPassphrase, final boolean syncingPasswords) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ProfileSyncService.overrideForTests(new ProfileSyncService() {
+                @Override
+                public boolean isUsingSecondaryPassphrase() {
+                    return usingPassphrase;
+                }
+
+                @Override
+                public Set<Integer> getActiveDataTypes() {
+                    if (syncingPasswords) return CollectionUtil.newHashSet(ModelType.PASSWORDS);
+                    return CollectionUtil.newHashSet(ModelType.AUTOFILL);
+                }
+            });
+        });
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
+    }
 
     /**
      * Helper to set up a fake source of displayed passwords.
@@ -487,6 +515,98 @@ public class SavePasswordsPreferencesTest {
                             SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
             Assert.assertFalse(onOffSwitch.isChecked());
         });
+    }
+
+    /**
+     *  Tests that the link pointing to managing passwords in the user's account is not displayed
+     *  for non signed in users.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testManageAccountLinkNotSignedIn() throws Exception {
+        // Add a password entry, because the link is only displayed if the password list is not
+        // empty.
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+        SavePasswordsPreferences savedPasswordPrefs =
+                (SavePasswordsPreferences) preferences.getMainFragment();
+        Assert.assertNull(savedPasswordPrefs.findPreference(
+                SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
+    }
+
+    /**
+     *  Tests that the link pointing to managing passwords in the user's account is not displayed
+     *  for signed in users, not syncing passwords.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testManageAccountLinkSignedInNotSyncing() throws Exception {
+        // Add a password entry, because the link is only displayed if the password list is not
+        // empty.
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+        ChromeSigninController.get().setSignedInAccountName("Test Account");
+        overrideProfileSyncService(false, false);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+        SavePasswordsPreferences savedPasswordPrefs =
+                (SavePasswordsPreferences) preferences.getMainFragment();
+
+        Assert.assertNull(savedPasswordPrefs.findPreference(
+                SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
+    }
+
+    /**
+     *  Tests that the link pointing to managing passwords in the user's account is displayed for
+     *  users syncing passwords.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testManageAccountLinkSyncing() throws Exception {
+        // Add a password entry, because the link is only displayed if the password list is not
+        // empty.
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+        ChromeSigninController.get().setSignedInAccountName("Test Account");
+        overrideProfileSyncService(false, true);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+        SavePasswordsPreferences savedPasswordPrefs =
+                (SavePasswordsPreferences) preferences.getMainFragment();
+
+        Assert.assertNotNull(savedPasswordPrefs.findPreference(
+                SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
+    }
+
+    /**
+     *  Tests that the link pointing to managing passwords in the user's account is not displayed
+     *  for users syncing passwords with custom passphrase.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testManageAccountLinkSyncingWithPassphrase() throws Exception {
+        // Add a password entry, because the link is only displayed if the password list is not
+        // empty.
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+        ChromeSigninController.get().setSignedInAccountName("Test Account");
+        overrideProfileSyncService(true, true);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+        SavePasswordsPreferences savedPasswordPrefs =
+                (SavePasswordsPreferences) preferences.getMainFragment();
+
+        Assert.assertNull(savedPasswordPrefs.findPreference(
+                SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
     }
 
     /**
@@ -1607,7 +1727,6 @@ public class SavePasswordsPreferencesTest {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
-        Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
 
         // Open the search which should hide the Account link.
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
@@ -1620,7 +1739,6 @@ public class SavePasswordsPreferencesTest {
             Espresso.onView(allOf(withText(god.getUserName()), withText(god.getUrl())))
                     .check(doesNotExist());
         }
-        Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
         Espresso.onView(withText(R.string.saved_passwords_none_text)).check(doesNotExist());
         // Check that the section header for saved passwords is not present. Do not confuse it with
         // the toolbar label which contains the same string, look for the one inside a linear
@@ -1682,7 +1800,6 @@ public class SavePasswordsPreferencesTest {
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title))
                 .check(matches(isDisplayed()));
-        Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
         if (menuInitiallyVisible.get()) { // Check overflow menu only on large screens that have it.
             Espresso.onView(withContentDescription(R.string.abc_action_menu_overflow_description))
                     .check(matches(isDisplayed()));
@@ -1691,7 +1808,6 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title)).check(doesNotExist());
-        Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
         Espresso.onView(isRoot()).check(
                 (root, e)
                         -> waitForView((ViewGroup) root,
@@ -1724,7 +1840,6 @@ public class SavePasswordsPreferencesTest {
                 .perform(click(), typeText("Zeu"), closeSoftKeyboard());
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title)).check(doesNotExist());
-        Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
 
         Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
                 .perform(click());
@@ -1732,7 +1847,6 @@ public class SavePasswordsPreferencesTest {
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title))
                 .check(matches(isDisplayed()));
-        Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
         Espresso.onView(withId(R.id.menu_id_search)).check(matches(isDisplayed()));
     }
 

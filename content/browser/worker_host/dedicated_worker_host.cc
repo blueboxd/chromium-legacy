@@ -257,7 +257,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     RenderProcessHost* worker_process_host = render_frame_host->GetProcess();
     DCHECK(worker_process_host);
     worker_process_host->CreateURLLoaderFactory(
-        origin_, nullptr /* preferences */,
+        origin_, render_frame_host->cross_origin_embedder_policy(),
+        nullptr /* preferences */,
         net::NetworkIsolationKey(top_frame_origin, origin_),
         std::move(no_header_client), std::move(request));
   }

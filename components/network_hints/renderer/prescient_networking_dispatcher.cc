@@ -24,10 +24,12 @@ void PrescientNetworkingDispatcher::PrefetchDNS(
   dns_prefetch_.Resolve(hostname_utf8.data(), hostname_utf8.length());
 }
 
-void PrescientNetworkingDispatcher::Preconnect(const blink::WebURL& url,
-                                               bool allow_credentials) {
+void PrescientNetworkingDispatcher::Preconnect(
+    blink::WebLocalFrame* web_local_frame,
+    const blink::WebURL& url,
+    bool allow_credentials) {
   VLOG(2) << "Preconnect: " << url.GetString().Utf8();
-  preconnect_.Preconnect(url, allow_credentials);
+  preconnect_.Preconnect(web_local_frame, url, allow_credentials);
 }
 
 }  // namespace network_hints

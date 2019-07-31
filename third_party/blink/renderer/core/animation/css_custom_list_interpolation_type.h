@@ -18,9 +18,11 @@ class CSSCustomListInterpolationType : public CSSInterpolationType {
       PropertyHandle property,
       const PropertyRegistration* registration,
       std::unique_ptr<CSSInterpolationType> inner_interpolation_type,
+      CSSSyntaxType syntax_type,
       CSSSyntaxRepeat syntax_repeat)
       : CSSInterpolationType(property, registration),
         inner_interpolation_type_(std::move(inner_interpolation_type)),
+        syntax_type_(syntax_type),
         syntax_repeat_(syntax_repeat) {
     DCHECK(property.IsCSSCustomProperty());
   }
@@ -66,6 +68,9 @@ class CSSCustomListInterpolationType : public CSSInterpolationType {
     return nullptr;
   }
 
+  ListInterpolationFunctions::NonInterpolableValuesAreCompatibleCallback
+  GetNonInterpolableValuesAreCompatibleCallback() const;
+
   // This InterpolationType represents the interpolation of elements inside
   // the list.
   //
@@ -77,6 +82,7 @@ class CSSCustomListInterpolationType : public CSSInterpolationType {
   // InterpolationType::Apply on inner_interpolation_type_.
   std::unique_ptr<CSSInterpolationType> inner_interpolation_type_;
 
+  const CSSSyntaxType syntax_type_;
   const CSSSyntaxRepeat syntax_repeat_;
 };
 

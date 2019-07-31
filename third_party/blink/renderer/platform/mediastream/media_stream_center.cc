@@ -90,11 +90,6 @@ void MediaStreamCenter::DidCloneMediaStreamTrack(MediaStreamComponent* original,
     private_->DidCloneMediaStreamTrack(original, clone);
 }
 
-void MediaStreamCenter::DidSetContentHint(MediaStreamComponent* track) {
-  if (private_)
-    private_->DidSetContentHint(track);
-}
-
 std::unique_ptr<AudioSourceProvider>
 MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
     MediaStreamComponent* track,
@@ -112,13 +107,6 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
 void MediaStreamCenter::DidStopMediaStreamSource(MediaStreamSource* source) {
   if (private_)
     private_->DidStopMediaStreamSource(source);
-}
-
-void MediaStreamCenter::GetSourceSettings(
-    MediaStreamSource* source,
-    WebMediaStreamTrack::Settings& settings) {
-  if (private_)
-    private_->GetSourceSettings(source, settings);
 }
 
 }  // namespace blink

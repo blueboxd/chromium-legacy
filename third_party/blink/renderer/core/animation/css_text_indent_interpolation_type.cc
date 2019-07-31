@@ -39,7 +39,7 @@ struct IndentMode {
 class CSSTextIndentNonInterpolableValue : public NonInterpolableValue {
  public:
   static scoped_refptr<CSSTextIndentNonInterpolableValue> Create(
-      scoped_refptr<NonInterpolableValue> length_non_interpolable_value,
+      scoped_refptr<const NonInterpolableValue> length_non_interpolable_value,
       const IndentMode& mode) {
     return base::AdoptRef(new CSSTextIndentNonInterpolableValue(
         std::move(length_non_interpolable_value), mode));
@@ -48,27 +48,68 @@ class CSSTextIndentNonInterpolableValue : public NonInterpolableValue {
   const NonInterpolableValue* LengthNonInterpolableValue() const {
     return length_non_interpolable_value_.get();
   }
-  scoped_refptr<NonInterpolableValue>& LengthNonInterpolableValue() {
-    return length_non_interpolable_value_;
-  }
   const IndentMode& Mode() const { return mode_; }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
  private:
   CSSTextIndentNonInterpolableValue(
-      scoped_refptr<NonInterpolableValue> length_non_interpolable_value,
+      scoped_refptr<const NonInterpolableValue> length_non_interpolable_value,
       const IndentMode& mode)
       : length_non_interpolable_value_(
             std::move(length_non_interpolable_value)),
         mode_(mode) {}
 
-  scoped_refptr<NonInterpolableValue> length_non_interpolable_value_;
+  scoped_refptr<const NonInterpolableValue> length_non_interpolable_value_;
   const IndentMode mode_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSTextIndentNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSTextIndentNonInterpolableValue);
+
+// A wrapper for the UnderlyingValue passed to
+// CSSTextIndentInterpolationType::Composite which can be forwarded to
+// LengthInterpolationFunctions::Composite.
+//
+// If LengthInterpolationFunctions::Composite calls SetNonInterpolableValue with
+// a new NonInterpolableValue, this class wraps it in a new
+// CSSTextIndentNonInterpolableValue before being set on the inner
+// UnderlyingValue.
+class UnderlyingTextIndentAsLengthValue : public UnderlyingValue {
+  STACK_ALLOCATED();
+
+ public:
+  UnderlyingTextIndentAsLengthValue(UnderlyingValue& inner_underlying_value,
+                                    IndentMode mode)
+      : inner_underlying_value_(inner_underlying_value), mode_(mode) {}
+
+  InterpolableValue& MutableInterpolableValue() final {
+    return inner_underlying_value_.MutableInterpolableValue();
+  }
+
+  void SetInterpolableValue(
+      std::unique_ptr<InterpolableValue> interpolable_value) final {
+    inner_underlying_value_.SetInterpolableValue(std::move(interpolable_value));
+  }
+
+  const NonInterpolableValue* GetNonInterpolableValue() const final {
+    const auto& text_indent_non_interpolable_value =
+        ToCSSTextIndentNonInterpolableValue(
+            *inner_underlying_value_.GetNonInterpolableValue());
+    return text_indent_non_interpolable_value.LengthNonInterpolableValue();
+  }
+
+  void SetNonInterpolableValue(
+      scoped_refptr<const NonInterpolableValue> non_interpolable_value) final {
+    inner_underlying_value_.SetNonInterpolableValue(
+        CSSTextIndentNonInterpolableValue::Create(
+            std::move(non_interpolable_value), mode_));
+  }
+
+ private:
+  UnderlyingValue& inner_underlying_value_;
+  const IndentMode mode_;
+};
 
 namespace {
 
@@ -186,9 +227,9 @@ CSSTextIndentInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
 PairwiseInterpolationValue CSSTextIndentInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  CSSTextIndentNonInterpolableValue& start_non_interpolable_value =
+  const CSSTextIndentNonInterpolableValue& start_non_interpolable_value =
       ToCSSTextIndentNonInterpolableValue(*start.non_interpolable_value);
-  CSSTextIndentNonInterpolableValue& end_non_interpolable_value =
+  const CSSTextIndentNonInterpolableValue& end_non_interpolable_value =
       ToCSSTextIndentNonInterpolableValue(*end.non_interpolable_value);
 
   if (start_non_interpolable_value.Mode() != end_non_interpolable_value.Mode())
@@ -226,12 +267,12 @@ void CSSTextIndentInterpolationType::Composite(
     return;
   }
 
+  UnderlyingTextIndentAsLengthValue underlying_text_indent_as_length(
+      underlying_value_owner, mode);
+
   LengthInterpolationFunctions::Composite(
-      underlying_value_owner.MutableValue().interpolable_value,
-      ToCSSTextIndentNonInterpolableValue(
-          *underlying_value_owner.MutableValue().non_interpolable_value)
-          .LengthNonInterpolableValue(),
-      underlying_fraction, *value.interpolable_value,
+      underlying_text_indent_as_length, underlying_fraction,
+      *value.interpolable_value,
       non_interpolable_value.LengthNonInterpolableValue());
 }
 

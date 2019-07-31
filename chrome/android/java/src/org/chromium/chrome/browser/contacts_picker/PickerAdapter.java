@@ -52,10 +52,11 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
      * The types of filters supported.
      */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({FilterType.EMAILS, FilterType.TELEPHONES})
+    @IntDef({FilterType.NAMES, FilterType.EMAILS, FilterType.TELEPHONES})
     public @interface FilterType {
-        int EMAILS = 0;
-        int TELEPHONES = 1;
+        int NAMES = 0;
+        int EMAILS = 1;
+        int TELEPHONES = 2;
     }
 
     /**
@@ -92,6 +93,9 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     // A list of search result indices into the larger data set.
     private ArrayList<Integer> mSearchResults;
 
+    // Whether to include names in the returned results.
+    private static boolean sIncludeNames;
+
     // Whether to include emails in the returned results.
     private static boolean sIncludeEmails;
 
@@ -112,6 +116,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         mCategoryView = categoryView;
         mContentResolver = contentResolver;
         mFormattedOrigin = formattedOrigin;
+        sIncludeNames = true;
         sIncludeEmails = true;
         sIncludeTelephones = true;
 
@@ -198,6 +203,8 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
                 mTopView.registerSelectAllCallback(mCategoryView);
                 mTopView.registerChipToggledCallback(this);
                 mTopView.updateCheckboxVisibility(mCategoryView.multiSelectionAllowed());
+                mTopView.updateChipVisibility(mCategoryView.includeNames,
+                        mCategoryView.includeEmails, mCategoryView.includeTel);
                 mCategoryView.setTopView(mTopView);
                 if (mContactDetails != null) mTopView.updateContactCount(mContactDetails.size());
                 return new TopViewHolder(mTopView);
@@ -246,14 +253,28 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
 
     @Override
     public void onChipToggled(@FilterType int chip) {
-        if (chip == FilterType.EMAILS) {
-            sIncludeEmails = !sIncludeEmails;
-        } else if (chip == FilterType.TELEPHONES) {
-            sIncludeTelephones = !sIncludeTelephones;
-        } else {
-            assert false;
+        switch (chip) {
+            case FilterType.NAMES:
+                sIncludeNames = !sIncludeNames;
+                break;
+            case FilterType.EMAILS:
+                sIncludeEmails = !sIncludeEmails;
+                break;
+            case FilterType.TELEPHONES:
+                sIncludeTelephones = !sIncludeTelephones;
+                break;
+            default:
+                assert false;
         }
+
         notifyDataSetChanged();
+    }
+
+    /**
+     * Returns true unless the adapter is filtering out names.
+     */
+    public static boolean includesNames() {
+        return sIncludeNames;
     }
 
     /**

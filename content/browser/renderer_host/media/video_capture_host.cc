@@ -110,7 +110,7 @@ void VideoCaptureHost::OnError(const VideoCaptureControllerID& controller_id,
                                media::VideoCaptureError error) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&VideoCaptureHost::DoError, weak_factory_.GetWeakPtr(),
                      controller_id, error));
@@ -159,10 +159,9 @@ void VideoCaptureHost::OnBufferReady(
 void VideoCaptureHost::OnEnded(const VideoCaptureControllerID& controller_id) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&VideoCaptureHost::DoEnded, weak_factory_.GetWeakPtr(),
-                     controller_id));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&VideoCaptureHost::DoEnded,
+                                weak_factory_.GetWeakPtr(), controller_id));
 }
 
 void VideoCaptureHost::OnStarted(
@@ -433,7 +432,7 @@ void VideoCaptureHost::NotifyStreamAdded() {
   ++number_of_active_streams_;
   // base::Unretained() usage is safe because |render_process_host_delegate_|
   // is destroyed on UI thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&RenderProcessHostDelegate::NotifyStreamAdded,
                      base::Unretained(render_process_host_delegate_.get())));
@@ -450,7 +449,7 @@ void VideoCaptureHost::NotifyStreamRemoved() {
   --number_of_active_streams_;
   // base::Unretained() usage is safe because |render_process_host_delegate_| is
   // destroyed on UI thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&RenderProcessHostDelegate::NotifyStreamRemoved,
                      base::Unretained(render_process_host_delegate_.get())));

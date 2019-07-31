@@ -25,6 +25,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
@@ -923,11 +924,14 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     }
   }
 
+  ShelfNavigationWidget* nav_widget = shelf_widget_->navigation_widget();
   StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
   base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
   {
     ui::ScopedLayerAnimationSettings shelf_animation_setter(
         GetLayer(shelf_widget_)->GetAnimator());
+    ui::ScopedLayerAnimationSettings nav_animation_setter(
+        GetLayer(nav_widget)->GetAnimator());
     ui::ScopedLayerAnimationSettings status_animation_setter(
         GetLayer(status_widget)->GetAnimator());
 
@@ -940,6 +944,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
       shelf_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
       shelf_animation_setter.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      nav_animation_setter.SetTransitionDuration(duration);
+      nav_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+      nav_animation_setter.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       status_animation_setter.SetTransitionDuration(duration);
       status_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
       status_animation_setter.SetPreemptionStrategy(
@@ -947,6 +955,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     } else {
       StopAnimating();
       shelf_animation_setter.SetTransitionDuration(base::TimeDelta());
+      nav_animation_setter.SetTransitionDuration(base::TimeDelta());
       status_animation_setter.SetTransitionDuration(base::TimeDelta());
     }
     if (observer)
@@ -957,12 +966,19 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
                               &shelf_bounds);
     shelf_widget_->SetBounds(shelf_bounds);
 
+    GetLayer(nav_widget)->SetOpacity(target_bounds.nav_opacity);
     GetLayer(status_widget)->SetOpacity(target_bounds.status_opacity);
 
     // Having a window which is visible but does not have an opacity is an
     // illegal state. We therefore hide the shelf here if required.
     if (!target_bounds.status_opacity)
       status_widget->Hide();
+
+    if (state_.IsActiveSessionState() && target_bounds.nav_opacity)
+      nav_widget->ShowInactive();
+    else
+      nav_widget->Hide();
+
     // Setting visibility during an animation causes the visibility property to
     // animate. Override the animation settings to immediately set the
     // visibility property. Opacity will still animate.
@@ -972,6 +988,13 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     ::wm::ConvertRectToScreen(status_widget->GetNativeWindow()->parent(),
                               &status_bounds);
     status_widget->SetBounds(status_bounds);
+
+    gfx::Vector2d nav_offset = target_bounds.shelf_bounds.OffsetFromOrigin();
+    gfx::Rect nav_bounds = target_bounds.nav_bounds_in_shelf;
+    nav_bounds.Offset(nav_offset);
+    ::wm::ConvertRectToScreen(nav_widget->GetNativeWindow()->parent(),
+                              &nav_bounds);
+    nav_widget->SetBounds(nav_bounds);
 
     // Do not update the work area when the alignment changes to BOTTOM_LOCKED
     // to prevent window movement when the screen is locked: crbug.com/622431
@@ -1089,11 +1112,20 @@ void ShelfLayoutManager::CalculateTargetBounds(
     status_origin.set_x(shelf_width - status_size.width());
   target_bounds->status_bounds_in_shelf = gfx::Rect(status_origin, status_size);
 
+  gfx::Point nav_origin =
+      gfx::Point(ShelfConstants::home_button_edge_spacing(),
+                 ShelfConstants::home_button_edge_spacing());
+  target_bounds->nav_bounds_in_shelf =
+      gfx::Rect(nav_origin, shelf_widget_->navigation_widget()->GetIdealSize());
+
   target_bounds->shelf_opacity = ComputeTargetOpacity(state);
-  target_bounds->status_opacity =
-      (state.IsShelfAutoHidden() && drag_status_ != kDragInProgress)
-          ? 0.0f
-          : target_bounds->shelf_opacity;
+  if (state.IsShelfAutoHidden() && drag_status_ != kDragInProgress) {
+    target_bounds->nav_opacity = 0.0f;
+    target_bounds->status_opacity = 0.0f;
+  } else {
+    target_bounds->nav_opacity = target_bounds->shelf_opacity;
+    target_bounds->status_opacity = target_bounds->shelf_opacity;
+  }
 
   if (drag_status_ == kDragInProgress)
     UpdateTargetBoundsForGesture(target_bounds);
@@ -1166,9 +1198,11 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       available_bounds.right() - (hidden_at_start ? 0 : shelf_size));
   if (horizontal) {
     target_bounds->shelf_bounds.set_y(baseline + translate);
+    target_bounds->nav_bounds_in_shelf.set_y(kShelfButtonSpacing);
     target_bounds->status_bounds_in_shelf.set_y(0);
   } else {
     target_bounds->shelf_bounds.set_x(baseline + translate);
+    target_bounds->nav_bounds_in_shelf.set_x(kShelfButtonSpacing);
     target_bounds->status_bounds_in_shelf.set_x(0);
   }
 }
@@ -1252,6 +1286,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->IsActive() ||
+      shelf_widget_->navigation_widget()->IsActive() ||
       (shelf_widget_->status_area_widget() &&
        shelf_widget_->status_area_widget()->IsActive())) {
     return SHELF_AUTO_HIDE_SHOWN;

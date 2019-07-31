@@ -94,9 +94,8 @@ class AppListSyncableService : public syncer::SyncableService,
 
   using SyncItemMap = std::map<std::string, std::unique_ptr<SyncItem>>;
 
-  // Populates the model when |extension_system| is ready.
-  AppListSyncableService(Profile* profile,
-                         extensions::ExtensionSystem* extension_system);
+  // Populates the model when |profile|'s extension system is ready.
+  explicit AppListSyncableService(Profile* profile);
 
   ~AppListSyncableService() override;
 

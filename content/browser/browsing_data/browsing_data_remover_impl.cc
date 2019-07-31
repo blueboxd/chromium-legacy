@@ -20,7 +20,6 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -427,19 +426,14 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     // TODO(msramek): Clear the cache of all renderers.
 
     // TODO(crbug.com/813882): implement retry on network service.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // The clearing of the HTTP cache happens in the network service process
-      // when enabled. Note that we've deprecated the concept of a media cache,
-      // and are now using a single cache for both purposes.
-      network_context->ClearHttpCache(
-          delete_begin, delete_end, filter_builder->BuildNetworkServiceFilter(),
-          CreateTaskCompletionClosureForMojo(TracingDataType::kHttpCache));
-    } else {
-      storage_partition->ClearHttpAndMediaCaches(
-          delete_begin, delete_end, nullable_filter,
-          CreateTaskCompletionClosureForMojo(
-              TracingDataType::kHttpAndMediaCaches));
-    }
+
+    // The clearing of the HTTP cache happens in the network service process
+    // when enabled. Note that we've deprecated the concept of a media cache,
+    // and are now using a single cache for both purposes.
+    network_context->ClearHttpCache(
+        delete_begin, delete_end, filter_builder->BuildNetworkServiceFilter(),
+        CreateTaskCompletionClosureForMojo(TracingDataType::kHttpCache));
+
     storage_partition->ClearCodeCaches(
         delete_begin, delete_end, nullable_filter,
         CreateTaskCompletionClosureForMojo(TracingDataType::kCodeCaches));

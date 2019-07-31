@@ -65,8 +65,7 @@ class MAYBE_RenderFrameAudioInputStreamFactoryTest
         audio_system_(media::AudioSystemImpl::CreateInstance()),
         media_stream_manager_(std::make_unique<MediaStreamManager>(
             audio_system_.get(),
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {BrowserThread::UI}))) {}
+            base::CreateSingleThreadTaskRunner({BrowserThread::UI}))) {}
 
   ~MAYBE_RenderFrameAudioInputStreamFactoryTest() override {}
 

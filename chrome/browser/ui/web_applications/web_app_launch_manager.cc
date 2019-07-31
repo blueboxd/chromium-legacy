@@ -91,8 +91,10 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
 
   return ShowWebApplicationWindow(
       params, params.app_id,
-      provider_->registrar().GetAppLaunchURL(params.app_id), browser,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB);
+      params.override_url.is_empty()
+          ? provider_->registrar().GetAppLaunchURL(params.app_id)
+          : params.override_url,
+      browser, WindowOpenDisposition::NEW_FOREGROUND_TAB);
 }
 
 bool WebAppLaunchManager::OpenApplicationWindow(

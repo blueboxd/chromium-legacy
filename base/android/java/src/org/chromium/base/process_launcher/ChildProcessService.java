@@ -24,6 +24,7 @@ import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.memory.MemoryPressureMonitor;
 
 import java.util.List;
@@ -172,7 +173,7 @@ public abstract class ChildProcessService extends Service {
                     return;
                 }
             }
-            nativeDumpProcessStack();
+            ChildProcessServiceJni.get().dumpProcessStack();
         }
 
     };
@@ -253,7 +254,8 @@ public abstract class ChildProcessService extends Service {
                         regionOffsets[i] = fdInfo.offset;
                         regionSizes[i] = fdInfo.size;
                     }
-                    nativeRegisterFileDescriptors(keys, fileIds, fds, regionOffsets, regionSizes);
+                    ChildProcessServiceJni.get().registerFileDescriptors(
+                            keys, fileIds, fds, regionOffsets, regionSizes);
 
                     mDelegate.onBeforeMain();
                     mDelegate.runMain();
@@ -262,7 +264,7 @@ public abstract class ChildProcessService extends Service {
                     } catch (RemoteException e) {
                         Log.e(TAG, "Failed to call clean exit callback.", e);
                     }
-                    nativeExitChildProcess();
+                    ChildProcessServiceJni.get().exitChildProcess();
                 } catch (InterruptedException e) {
                     Log.w(TAG, "%s startup failed: %s", MAIN_THREAD_NAME, e);
                 }
@@ -331,22 +333,24 @@ public abstract class ChildProcessService extends Service {
         }
     }
 
-    /**
-     * Helper for registering FileDescriptorInfo objects with GlobalFileDescriptors or
-     * FileDescriptorStore.
-     * This includes the IPC channel, the crash dump signals and resource related
-     * files.
-     */
-    private static native void nativeRegisterFileDescriptors(
-            String[] keys, int[] id, int[] fd, long[] offset, long[] size);
+    @NativeMethods
+    interface Natives {
+        /**
+         * Helper for registering FileDescriptorInfo objects with GlobalFileDescriptors or
+         * FileDescriptorStore.
+         * This includes the IPC channel, the crash dump signals and resource related
+         * files.
+         */
+        void registerFileDescriptors(String[] keys, int[] id, int[] fd, long[] offset, long[] size);
 
-    /**
-     * Force the child process to exit.
-     */
-    private static native void nativeExitChildProcess();
+        /**
+         * Force the child process to exit.
+         */
+        void exitChildProcess();
 
-    /**
-     * Dumps the child process stack without crashing it.
-     */
-    private static native void nativeDumpProcessStack();
+        /**
+         * Dumps the child process stack without crashing it.
+         */
+        void dumpProcessStack();
+    }
 }

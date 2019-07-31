@@ -37,8 +37,8 @@ void CheckPermissionAndGetSaltAndOrigin(
     // If we're not allowed to use the device, don't call |cb|.
     return;
   }
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(std::move(cb), salt_and_origin));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(std::move(cb), salt_and_origin));
 }
 
 void OldEnumerateOutputDevices(
@@ -73,7 +73,7 @@ RenderFrameAudioInputStreamFactoryHandle::CreateFactory(
           render_process_id, render_frame_id));
   // Unretained is safe since |*handle| must be posted to the IO thread prior to
   // deletion.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&RenderFrameAudioInputStreamFactoryHandle::Init,
                      base::Unretained(handle.get()), std::move(request)));
@@ -194,7 +194,7 @@ void OldRenderFrameAudioInputStreamFactory::AssociateInputAndOutputForAec(
       }
     }
   } else {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             CheckPermissionAndGetSaltAndOrigin, output_device_id,

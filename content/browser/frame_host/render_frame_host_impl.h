@@ -141,7 +141,7 @@ struct ResourceResponse;
 namespace content {
 class AppCacheNavigationHandle;
 class AuthenticatorImpl;
-class BundledExchangesFactory;
+class BundledExchangesHandle;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
@@ -243,14 +243,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          JavaScriptResultCallback callback) override;
   void ExecuteJavaScriptInIsolatedWorld(const base::string16& javascript,
                                         JavaScriptResultCallback callback,
-                                        int world_id) override;
+                                        int32_t world_id) override;
   void ExecuteJavaScriptForTests(
       const base::string16& javascript,
       JavaScriptResultCallback callback,
-      int world_id = ISOLATED_WORLD_ID_GLOBAL) override;
+      int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) override;
   void ExecuteJavaScriptWithUserGestureForTests(
       const base::string16& javascript,
-      int world_id = ISOLATED_WORLD_ID_GLOBAL) override;
+      int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) override;
   void ActivateFindInPageResultForAccessibility(int request_id) override;
   void InsertVisualStateCallback(VisualStateCallback callback) override;
   void CopyImageAt(int x, int y) override;
@@ -702,7 +702,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           subresource_overrides,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       const base::UnguessableToken& devtools_navigation_token,
-      std::unique_ptr<BundledExchangesFactory> bundled_exchanges_factory);
+      std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle);
 
   // Indicates that a navigation failed and that this RenderFrame should display
   // an error page.
@@ -998,6 +998,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void GetAudioContextManager(
       mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver);
+
+  // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
+  network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
+      const {
+    return cross_origin_embedder_policy_;
+  }
+  void set_cross_origin_embedder_policy(
+      network::mojom::CrossOriginEmbedderPolicy policy) {
+    cross_origin_embedder_policy_ = policy;
+  }
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1767,6 +1777,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Track this frame's last committed origin.
   url::Origin last_committed_origin_;
 
+  network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy_ =
+      network::mojom::CrossOriginEmbedderPolicy::kNone;
+
   // Track the site URL of the last site we committed successfully, as obtained
   // from SiteInstance::GetSiteURL.
   GURL last_committed_site_url_;
@@ -2248,7 +2261,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // The factory to load resources from the BundledExchanges source bound to
   // this file.
-  std::unique_ptr<BundledExchangesFactory> bundled_exchanges_factory_;
+  std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

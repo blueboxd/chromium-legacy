@@ -1567,7 +1567,8 @@
                   '|chrome/browser/ui/views/settings_reset_prompt',
     },
     'sharing': {
-      'filepath': 'chrome/browser/sharing/',
+      'filepath': 'chrome/browser/sharing/|'\
+                  'chrome/browser/ui/views/sharing/',
     },
     'site_engagement': {
       'filepath': 'chrome/browser/engagement/|'\
@@ -1912,7 +1913,8 @@
                       'yuzo+watch@chromium.org'],
     'add_to_homescreen': ['dominickn+watch-a2hs@chromium.org',
                           'hanxi+watch@chromium.org',
-                          'pkotwicz+watch@chromium.org'],
+                          'pkotwicz+watch@chromium.org',
+                          'webapks-watchlist@chromium.org'],
     'android_crash_reporting': ['asvitkine+watch@chromium.org',
                                 'wnwen+watch@chromium.org'],
     'android_crazy_linker': ['johnmaguire+watch@google.com'],

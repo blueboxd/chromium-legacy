@@ -275,7 +275,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     // runtime.
     main_thread_task_executor =
         std::make_unique<base::SingleThreadTaskExecutor>(
-            gpu_preferences.message_loop_type);
+            gpu_preferences.message_pump_type);
 #elif defined(OS_LINUX)
 #error "Unsupported Linux platform."
 #elif defined(OS_MACOSX)

@@ -212,8 +212,8 @@ TEST_F(SimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
 
   // Click on the anchor element. This will cause a synchronous same-document
   //  navigation.
-  HTMLAnchorElement* anchor =
-      ToHTMLAnchorElement(GetDocument().getElementById("anchorlink"));
+  auto* anchor =
+      To<HTMLAnchorElement>(GetDocument().getElementById("anchorlink"));
   anchor->click();
 
   // Even though the navigation is synchronous, the active element shouldn't be

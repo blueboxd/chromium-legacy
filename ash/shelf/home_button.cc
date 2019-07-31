@@ -52,6 +52,11 @@ void HomeButton::OnGestureEvent(ui::GestureEvent* event) {
     Button::OnGestureEvent(event);
 }
 
+base::string16 HomeButton::GetTooltipText(const gfx::Point& p) const {
+  // Don't show a tooltip if we're already showing the app list.
+  return IsShowingAppList() ? base::string16() : GetAccessibleName();
+}
+
 const char* HomeButton::GetClassName() const {
   return kViewClassName;
 }
@@ -59,12 +64,19 @@ const char* HomeButton::GetClassName() const {
 void HomeButton::OnShelfButtonAboutToRequestFocusFromTabTraversal(
     ShelfButton* button,
     bool reverse) {
+  const bool tablet_mode =
+      Shell::Get()->tablet_mode_controller() &&
+      Shell::Get()->tablet_mode_controller()->InTabletMode();
   DCHECK_EQ(button, this);
-  if (!reverse && Shell::Get()->tablet_mode_controller() &&
-      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-    // We're trying to focus this button by advancing from the last view of
-    // the shelf. Let the focus manager advance to the status area instead.
-    shelf()->shelf_focus_cycler()->FocusOut(reverse, SourceView::kShelfView);
+  // If the currently focused view is already this button, and we are not
+  // in tablet mode (meaning this is the only button in this widget), then we
+  // always want to focus out. We also want to focus out if we are in tablet
+  // mode and going in reverse (which means we're trying to loop back from
+  // the back button.
+  if ((!tablet_mode && GetFocusManager()->GetFocusedView() == this) ||
+      (reverse && tablet_mode)) {
+    shelf()->shelf_focus_cycler()->FocusOut(reverse,
+                                            SourceView::kShelfNavigationView);
   }
 }
 

@@ -144,14 +144,6 @@ void MediaStreamCenter::DidCloneMediaStreamTrack(
   }
 }
 
-void MediaStreamCenter::DidSetContentHint(
-    const blink::WebMediaStreamTrack& track) {
-  blink::WebPlatformMediaStreamTrack* native_track =
-      blink::WebPlatformMediaStreamTrack::GetTrack(track);
-  if (native_track)
-    native_track->SetContentHint(track.ContentHint());
-}
-
 void MediaStreamCenter::DidEnableMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   blink::WebPlatformMediaStreamTrack* native_track =
@@ -194,25 +186,6 @@ void MediaStreamCenter::DidStopMediaStreamSource(
       web_source.GetPlatformSource();
   DCHECK(source);
   source->StopSource();
-}
-
-void MediaStreamCenter::GetSourceSettings(
-    const blink::WebMediaStreamSource& web_source,
-    blink::WebMediaStreamTrack::Settings& settings) {
-  blink::MediaStreamAudioSource* const source =
-      blink::MediaStreamAudioSource::From(web_source);
-  if (!source)
-    return;
-
-  media::AudioParameters audio_parameters = source->GetAudioParameters();
-  if (audio_parameters.IsValid()) {
-    settings.sample_rate = audio_parameters.sample_rate();
-    settings.channel_count = audio_parameters.channels();
-    settings.latency = audio_parameters.GetBufferDuration().InSecondsF();
-  }
-  // kSampleFormatS16 is the format used for all audio input streams.
-  settings.sample_size =
-      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16);
 }
 
 }  // namespace content

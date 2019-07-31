@@ -191,6 +191,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   StatisticsTable& stats_table() { return stats_table_; }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
+  void enable_encryption() { use_encryption_ = true; }
   // This instance should not encrypt/decrypt password values using OSCrypt.
   void disable_encryption() { use_encryption_ = false; }
 #endif  // defined(OS_POSIX)

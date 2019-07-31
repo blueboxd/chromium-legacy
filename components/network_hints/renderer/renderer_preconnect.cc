@@ -8,6 +8,7 @@
 
 #include "components/network_hints/common/network_hints_common.h"
 #include "components/network_hints/common/network_hints_messages.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 
 using content::RenderThread;
@@ -20,12 +21,15 @@ RendererPreconnect::RendererPreconnect() {
 RendererPreconnect::~RendererPreconnect() {
 }
 
-void RendererPreconnect::Preconnect(const GURL& url, bool allow_credentials) {
-  if (!url.is_valid())
+void RendererPreconnect::Preconnect(blink::WebLocalFrame* web_local_frame,
+                                    const GURL& url,
+                                    bool allow_credentials) {
+  if (!url.is_valid() || !web_local_frame)
     return;
 
-  RenderThread::Get()->Send(
-      new NetworkHintsMsg_Preconnect(url, allow_credentials, 1));
+  RenderThread::Get()->Send(new NetworkHintsMsg_Preconnect(
+      content::RenderFrame::FromWebFrame(web_local_frame)->GetRoutingID(), url,
+      allow_credentials, 1));
 }
 
 }  // namespace network_hints

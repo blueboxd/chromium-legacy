@@ -316,24 +316,24 @@ class WebLocalFrame : public WebFrame {
   //
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
-  virtual void ExecuteScriptInIsolatedWorld(int world_id,
+  virtual void ExecuteScriptInIsolatedWorld(int32_t world_id,
                                             const WebScriptSource&) = 0;
 
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
   // DEPRECATED: Use WebLocalFrame::requestExecuteScriptInIsolatedWorld.
   WARN_UNUSED_RESULT virtual v8::Local<v8::Value>
-  ExecuteScriptInIsolatedWorldAndReturnValue(int world_id,
+  ExecuteScriptInIsolatedWorldAndReturnValue(int32_t world_id,
                                              const WebScriptSource&) = 0;
 
   // Clears the isolated world CSP stored for |world_id| by this frame's
   // Document.
-  virtual void ClearIsolatedWorldCSPForTesting(int world_id) = 0;
+  virtual void ClearIsolatedWorldCSPForTesting(int32_t world_id) = 0;
 
   // Sets up an isolated world by associating a |world_id| with |info|.
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
-  virtual void SetIsolatedWorldInfo(int world_id,
+  virtual void SetIsolatedWorldInfo(int32_t world_id,
                                     const WebIsolatedWorldInfo& info) = 0;
 
   // Executes script in the context of the current page and returns the value
@@ -387,7 +387,7 @@ class WebLocalFrame : public WebFrame {
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
   virtual void RequestExecuteScriptInIsolatedWorld(
-      int world_id,
+      int32_t world_id,
       const WebScriptSource* source_in,
       unsigned num_sources,
       bool user_gesture,

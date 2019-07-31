@@ -209,6 +209,32 @@ function showDefaultTaskDialogCalled(entries, mimeTypes) {
 }
 
 /**
+ * Returns a promise that resolves when showImportCrostiniImageDialog is called.
+ *
+ * @param {!Array<!Entry>} entries Entries.
+ * @return {!Promise}
+ */
+function showImportCrostiniImageDialogIsCalled(entries) {
+  return new Promise((resolve, reject) => {
+    const fileManager = getMockFileManager();
+    fileManager.ui.importCrostiniImageDialog = {
+      showImportCrostiniImageDialog: (entry) => {
+        resolve();
+      },
+    };
+
+    FileTasks
+        .create(
+            fileManager.volumeManager, fileManager.metadataModel,
+            fileManager.directoryModel, fileManager.ui, entries, [null],
+            mockTaskHistory, fileManager.namingController, fileManager.crostini)
+        .then(tasks => {
+          tasks.executeDefault();
+        });
+  });
+}
+
+/**
  * Tests opening a .exe file.
  */
 function testToOpenExeFile(callback) {
@@ -688,4 +714,29 @@ function testTaskRequiresCrostiniSharing() {
 
   const notRequiredOpenWithTask = createTask('appId|x|open-with');
   assertFalse(FileTasks.taskRequiresCrostiniSharing(notRequiredOpenWithTask));
+}
+
+/**
+ * Tests opening a .tini file. The import crostini image dialog should be
+ * called.
+ */
+function testToOpenTiniFileOpensImportCrostiniImageDialog(callback) {
+  window.chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
+    setTimeout(
+        callback.bind(
+            null,
+            [
+              {
+                taskId: 'test-extension-id|app|import-crostini-image',
+                isDefault: false,
+                isGenericFileHandler: false,
+              },
+            ]),
+        0);
+  };
+
+  const mockEntry =
+      new MockFileEntry(new MockFileSystem('testfilesystem'), '/test.tini');
+
+  reportPromise(showImportCrostiniImageDialogIsCalled([mockEntry]), callback);
 }

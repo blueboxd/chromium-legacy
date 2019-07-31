@@ -6,6 +6,7 @@ package org.chromium.base.task;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 import java.util.Collections;
 import java.util.Set;
@@ -85,9 +86,9 @@ public class PostTask {
             if (sPreNativeTaskRunners != null || taskTraits.mIsChoreographerFrame) {
                 getTaskExecutorForTraits(taskTraits).postDelayedTask(taskTraits, task, delay);
             } else {
-                nativePostDelayedTask(taskTraits.mPrioritySetExplicitly, taskTraits.mPriority,
-                        taskTraits.mMayBlock, taskTraits.mUseThreadPool, taskTraits.mExtensionId,
-                        taskTraits.mExtensionData, task, delay);
+                PostTaskJni.get().postDelayedTask(taskTraits.mPrioritySetExplicitly,
+                        taskTraits.mPriority, taskTraits.mMayBlock, taskTraits.mUseThreadPool,
+                        taskTraits.mExtensionId, taskTraits.mExtensionData, task, delay);
             }
         }
     }
@@ -256,7 +257,10 @@ public class PostTask {
         }
     }
 
-    private static native void nativePostDelayedTask(boolean prioritySetExplicitly, int priority,
-            boolean mayBlock, boolean useThreadPool, byte extensionId, byte[] extensionData,
-            Runnable task, long delay);
+    @NativeMethods
+    interface Natives {
+        void postDelayedTask(boolean prioritySetExplicitly, int priority, boolean mayBlock,
+                boolean useThreadPool, byte extensionId, byte[] extensionData, Runnable task,
+                long delay);
+    }
 }

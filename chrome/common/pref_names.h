@@ -952,6 +952,7 @@ extern const char kUsageStatsEnabled[];
 
 #if defined(OS_CHROMEOS)
 extern const char kClientCertificateManagementAllowed[];
+extern const char kCACertificateManagementAllowed[];
 extern const char kBuiltinCertificateVerifierEnabled[];
 #endif
 

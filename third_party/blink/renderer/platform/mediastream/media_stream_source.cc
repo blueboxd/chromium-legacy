@@ -30,10 +30,32 @@
 
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 
-#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
+
+namespace {
+
+void GetSourceSettings(const blink::WebMediaStreamSource& web_source,
+                       blink::WebMediaStreamTrack::Settings& settings) {
+  blink::MediaStreamAudioSource* const source =
+      blink::MediaStreamAudioSource::From(web_source);
+  if (!source)
+    return;
+
+  media::AudioParameters audio_parameters = source->GetAudioParameters();
+  if (audio_parameters.IsValid()) {
+    settings.sample_rate = audio_parameters.sample_rate();
+    settings.channel_count = audio_parameters.channels();
+    settings.latency = audio_parameters.GetBufferDuration().InSecondsF();
+  }
+  // kSampleFormatS16 is the format used for all audio input streams.
+  settings.sample_size =
+      media::SampleFormatToBitsPerChannel(media::kSampleFormatS16);
+}
+
+}  // namespace
 
 MediaStreamSource::MediaStreamSource(const String& id,
                                      StreamType type,
@@ -144,7 +166,7 @@ void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
   if (noise_supression_)
     settings.noise_supression = *noise_supression_;
 
-  MediaStreamCenter::Instance().GetSourceSettings(this, settings);
+  GetSourceSettings(this, settings);
 }
 
 void MediaStreamSource::SetAudioFormat(size_t number_of_channels,

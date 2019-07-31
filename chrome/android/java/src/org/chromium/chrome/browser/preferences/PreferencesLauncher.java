@@ -177,7 +177,7 @@ public class PreferencesLauncher {
         launchSettingsPage(currentActivity.get(), fragment);
     }
 
-    private static boolean isSyncingPasswordsWithoutCustomPassphrase() {
+    public static boolean isSyncingPasswordsWithoutCustomPassphrase() {
         ChromeSigninController signInController = ChromeSigninController.get();
         if (signInController == null || !signInController.isSignedIn()) return false;
 

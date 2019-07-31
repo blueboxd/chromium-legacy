@@ -204,8 +204,6 @@ target(link_target_type, "renderer") {
     "media/stream/user_media_client_impl.h",
     "media/stream/user_media_processor.cc",
     "media/stream/user_media_processor.h",
-    "media/video_capture/local_video_capturer_source.cc",
-    "media/video_capture/local_video_capturer_source.h",
     "media/webrtc/audio_codec_factory.cc",
     "media/webrtc/audio_codec_factory.h",
     "media/webrtc/media_stream_track_metrics.cc",

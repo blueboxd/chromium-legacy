@@ -30,7 +30,9 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/network_isolation_key.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -48,6 +50,34 @@ namespace {
 const uint32_t kRenderFilteredMessageClasses[] = {
     ChromeMsgStart, NetworkHintsMsgStart,
 };
+
+void StartPreconnect(
+    base::WeakPtr<predictors::PreconnectManager> preconnect_manager,
+    int render_process_id,
+    int render_frame_id,
+    const GURL& url,
+    bool allow_credentials) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!preconnect_manager)
+    return;
+
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return;
+
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return;
+
+  net::NetworkIsolationKey network_isolation_key(
+      web_contents->GetMainFrame()->GetLastCommittedOrigin(),
+      render_frame_host->GetLastCommittedOrigin());
+  preconnect_manager->StartPreconnectUrl(url, allow_credentials,
+                                         network_isolation_key);
+}
 
 }  // namespace
 
@@ -117,7 +147,8 @@ void ChromeRenderMessageFilter::OnDnsPrefetch(
   }
 }
 
-void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
+void ChromeRenderMessageFilter::OnPreconnect(int render_frame_id,
+                                             const GURL& url,
                                              bool allow_credentials,
                                              int count) {
   if (count < 1) {
@@ -134,14 +165,12 @@ void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
   if (!preconnect_manager_initialized_)
     return;
 
-  // TODO(mmenke):  Use process and frame ids to populate NetworkIsolationKey.
-  // May also need to think about enabling cross-site preconnects, though that
+  // TODO(mmenke):  Think about enabling cross-site preconnects, though that
   // will result in at least some cross-site information leakage.
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&predictors::PreconnectManager::StartPreconnectUrl,
-                     preconnect_manager_, url, allow_credentials,
-                     net::NetworkIsolationKey()));
+      base::BindOnce(&StartPreconnect, preconnect_manager_, render_process_id_,
+                     render_frame_id, url, allow_credentials));
 }
 
 void ChromeRenderMessageFilter::OnAllowDatabase(

@@ -10,7 +10,6 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
@@ -72,7 +71,7 @@ inline bool HasClearancePastAdjoiningFloats(
     NGAdjoiningObjectTypes adjoining_object_types,
     const ComputedStyle& child_style,
     const ComputedStyle& cb_style) {
-  return ToAdjoiningObjectTypes(ResolvedClear(child_style, cb_style)) &
+  return ToAdjoiningObjectTypes(child_style.Clear(cb_style)) &
          adjoining_object_types;
 }
 
@@ -205,7 +204,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       continue;
 
     const ComputedStyle& child_style = child.Style();
-    const EClear child_clear = ResolvedClear(child_style, Style());
+    const EClear child_clear = child_style.Clear(Style());
     bool child_is_new_fc = child.CreatesNewFormattingContext();
 
     // Conceptually floats and a single new-FC would just get positioned on a
@@ -263,7 +262,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
       // the content area, by e.g., negative margins. Such floats do not affect
       // the content size.
       if (float_inline_size > 0) {
-        if (ResolvedFloating(child_style, Style()) == EFloat::kLeft)
+        if (child_style.Floating(Style()) == EFloat::kLeft)
           float_left_inline_size += float_inline_size;
         else
           float_right_inline_size += float_inline_size;
@@ -357,7 +356,24 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 NOINLINE scoped_refptr<const NGLayoutResult>
 NGBlockLayoutAlgorithm::LayoutWithInlineChildLayoutContext() {
   NGInlineChildLayoutContext context;
-  return Layout(&context);
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    return Layout(&context);
+  return LayoutWithItemsBuilder(&context);
+}
+
+NOINLINE scoped_refptr<const NGLayoutResult>
+NGBlockLayoutAlgorithm::LayoutWithItemsBuilder(
+    NGInlineChildLayoutContext* context) {
+  NGFragmentItemsBuilder items_builder(&container_builder_);
+  container_builder_.SetItemsBuilder(&items_builder);
+  context->SetItemsBuilder(&items_builder);
+  scoped_refptr<const NGLayoutResult> result = Layout(context);
+  // Ensure stack-allocated |NGFragmentItemsBuilder| is not used anymore.
+  // TODO(kojii): Revisit when the storage of |NGFragmentItemsBuilder| is
+  // finalized.
+  container_builder_.SetItemsBuilder(nullptr);
+  context->SetItemsBuilder(nullptr);
+  return result;
 }
 
 inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
@@ -1155,7 +1171,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
   // The origin offset is where we should start looking for layout
   // opportunities. It needs to be adjusted by the child's clearance.
   AdjustToClearance(
-      exclusion_space_.ClearanceOffset(ResolvedClear(child.Style(), Style())),
+      exclusion_space_.ClearanceOffset(child.Style().Clear(Style())),
       &origin_offset);
   DCHECK(container_builder_.BfcBlockOffset());
 
@@ -1293,8 +1309,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     // Set the forced BFC block-offset to the appropriate clearance offset to
     // force this placement of this child.
     if (has_clearance_past_adjoining_floats) {
-      forced_bfc_block_offset = exclusion_space_.ClearanceOffset(
-          ResolvedClear(child.Style(), Style()));
+      forced_bfc_block_offset =
+          exclusion_space_.ClearanceOffset(child.Style().Clear(Style()));
     }
   }
 
@@ -1384,8 +1400,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
   // abort our layout if needed.
   if (!child_bfc_block_offset) {
     DCHECK(is_self_collapsing);
-    if (child_space.HasClearanceOffset() &&
-        child.Style().Clear() != EClear::kNone) {
+    if (child_space.HasClearanceOffset() && child.Style().HasClear()) {
       // This is a self-collapsing child that we collapsed through, so we have
       // to detect clearance manually. See if the child's hypothetical border
       // edge is past the relevant floats. If it's not, we need to apply
@@ -2236,7 +2251,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
                                     : ConstraintSpace().ClearanceOffset();
   if (child.IsBlock()) {
     LayoutUnit child_clearance_offset =
-        exclusion_space_.ClearanceOffset(ResolvedClear(child_style, Style()));
+        exclusion_space_.ClearanceOffset(child_style.Clear(Style()));
     clearance_offset = std::max(clearance_offset, child_clearance_offset);
     builder.SetTextDirection(child_style.Direction());
 

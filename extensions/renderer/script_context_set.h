@@ -57,7 +57,7 @@ class ScriptContextSet : public ScriptContextSetIterable {
   // Returns a weak reference to the new ScriptContext.
   ScriptContext* Register(blink::WebLocalFrame* frame,
                           const v8::Local<v8::Context>& v8_context,
-                          int world_id);
+                          int32_t world_id);
 
   // If the specified context is contained in this set, remove it, then delete
   // it asynchronously. After this call returns the context object will still
@@ -112,13 +112,13 @@ class ScriptContextSet : public ScriptContextSetIterable {
   // extension ID associated with the main world's JavaScript context. If the
   // JavaScript context isn't from an extension, returns empty string.
   const Extension* GetExtensionFromFrameAndWorld(blink::WebLocalFrame* frame,
-                                                 int world_id,
+                                                 int32_t world_id,
                                                  bool use_effective_url);
 
   // Returns the Feature::Context type of context for a JavaScript context.
   Feature::Context ClassifyJavaScriptContext(
       const Extension* extension,
-      int world_id,
+      int32_t world_id,
       const GURL& url,
       const blink::WebSecurityOrigin& origin);
 

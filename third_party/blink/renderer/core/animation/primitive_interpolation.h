@@ -48,7 +48,7 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
       const InterpolationType& type,
       std::unique_ptr<InterpolableValue> start,
       std::unique_ptr<InterpolableValue> end,
-      scoped_refptr<NonInterpolableValue> non_interpolable_value)
+      scoped_refptr<const NonInterpolableValue> non_interpolable_value)
       : type_(type),
         start_(std::move(start)),
         end_(std::move(end)),
@@ -86,7 +86,7 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
   const InterpolationType& type_;
   std::unique_ptr<InterpolableValue> start_;
   std::unique_ptr<InterpolableValue> end_;
-  scoped_refptr<NonInterpolableValue> non_interpolable_value_;
+  scoped_refptr<const NonInterpolableValue> non_interpolable_value_;
 };
 
 // Represents a pair of incompatible keyframes that fall back to 50% flip

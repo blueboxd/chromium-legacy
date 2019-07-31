@@ -163,7 +163,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   dummy_platform_ = std::make_unique<Platform>();
   Platform::SetCurrentPlatformForTesting(dummy_platform_.get());
 
-  WTF::Partitions::Initialize(nullptr);
+  WTF::Partitions::Initialize();
   WTF::Initialize(nullptr);
 
   // This must be called after WTF::Initialize(), because ThreadSpecific<>

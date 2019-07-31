@@ -62,6 +62,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
  private:
   NOINLINE scoped_refptr<const NGLayoutResult>
   LayoutWithInlineChildLayoutContext();
+  NOINLINE scoped_refptr<const NGLayoutResult> LayoutWithItemsBuilder(
+      NGInlineChildLayoutContext* context);
 
   inline scoped_refptr<const NGLayoutResult> Layout(
       NGInlineChildLayoutContext* inline_child_layout_context);

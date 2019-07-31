@@ -57,6 +57,7 @@ public class SavePasswordsPreferences
 
     public static final String PREF_SAVE_PASSWORDS_SWITCH = "save_passwords_switch";
     public static final String PREF_AUTOSIGNIN_SWITCH = "autosignin_switch";
+    public static final String PREF_KEY_MANAGE_ACCOUNT_LINK = "manage_account_link";
 
     // A PasswordEntryViewer receives a boolean value with this key. If set true, the the entry was
     // part of a search result.
@@ -64,7 +65,6 @@ public class SavePasswordsPreferences
 
     private static final String PREF_KEY_CATEGORY_SAVED_PASSWORDS = "saved_passwords";
     private static final String PREF_KEY_CATEGORY_EXCEPTIONS = "exceptions";
-    private static final String PREF_KEY_MANAGE_ACCOUNT_LINK = "manage_account_link";
     private static final String PREF_KEY_SAVED_PASSWORDS_NO_TEXT = "saved_passwords_no_text";
 
     private static final int ORDER_SWITCH = 0;
@@ -433,6 +433,9 @@ public class SavePasswordsPreferences
     }
 
     private void displayManageAccountLink() {
+        if (!PreferencesLauncher.isSyncingPasswordsWithoutCustomPassphrase()) {
+            return;
+        }
         if (mSearchQuery != null && !mNoPasswords) {
             return; // Don't add the Manage Account link if there is a search going on.
         }

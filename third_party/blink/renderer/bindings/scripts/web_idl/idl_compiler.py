@@ -70,7 +70,8 @@ class IdlCompiler(object):
         # Merge partial definitions.
         self._merge_partial_interfaces()
         self._merge_partial_dictionaries()
-
+        # Merge mixins.
+        self._merge_interface_mixins()
         # Updates on IRs are finished.  Create API objects.
         self._create_public_objects()
 
@@ -81,27 +82,6 @@ class IdlCompiler(object):
         return Database(self._db)
 
     def _merge_partial_interfaces(self):
-        def merge_partials(old_interfaces, partial_interfaces):
-            for identifier, old_interface in old_interfaces.iteritems():
-                new_interface = old_interface.make_copy()
-                for partial in partial_interfaces.get(identifier, []):
-                    new_interface.add_components(partial.components)
-                    new_interface.debug_info.add_locations(
-                        partial.debug_info.all_locations)
-                    new_interface.attributes.extend([
-                        attribute.make_copy()
-                        for attribute in partial.attributes
-                    ])
-                    new_interface.constants.extend([
-                        constant.make_copy() for constant in partial.constants
-                    ])
-                    new_interface.operations.extend([
-                        operation.make_copy()
-                        for operation in partial.operations
-                    ])
-
-            self._ir_map.add(new_interface)
-
         old_interfaces = self._ir_map.find_by_kind(
             IdentifierIRMap.IR.Kind.INTERFACE)
         partial_interfaces = self._ir_map.find_by_kind(
@@ -112,8 +92,8 @@ class IdlCompiler(object):
             IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN)
 
         self._ir_map.move_to_new_phase()
-        merge_partials(old_interfaces, partial_interfaces)
-        merge_partials(old_mixins, partial_mixins)
+        self._merge_interfaces(old_interfaces, partial_interfaces)
+        self._merge_interfaces(old_mixins, partial_mixins)
 
     def _merge_partial_dictionaries(self):
         old_dictionaries = self._ir_map.find_by_kind(
@@ -135,6 +115,41 @@ class IdlCompiler(object):
                     for member in partial_dictionary.own_members
                 ])
             self._ir_map.add(new_dictionary)
+
+    def _merge_interface_mixins(self):
+        interfaces = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.INTERFACE)
+        interface_mixins = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.INTERFACE_MIXIN)
+
+        identifier_to_mixin_map = {
+            identifier: [
+                interface_mixins[include.mixin_identifier]
+                for include in includes
+            ]
+            for identifier, includes in self._ir_map.find_by_kind(
+                IdentifierIRMap.IR.Kind.INCLUDES).iteritems()
+        }
+
+        self._ir_map.move_to_new_phase()
+        self._merge_interfaces(interfaces, identifier_to_mixin_map)
+
+    def _merge_interfaces(self, old_interfaces, interfaces_to_merge):
+        for identifier, old_interface in old_interfaces.iteritems():
+            new_interface = old_interface.make_copy()
+            for to_merge in interfaces_to_merge.get(identifier, []):
+                new_interface.add_components(to_merge.components)
+                new_interface.debug_info.add_locations(
+                    to_merge.debug_info.all_locations)
+                new_interface.attributes.extend([
+                    attribute.make_copy() for attribute in to_merge.attributes
+                ])
+                new_interface.constants.extend(
+                    [constant.make_copy() for constant in to_merge.constants])
+                new_interface.operations.extend([
+                    operation.make_copy() for operation in to_merge.operations
+                ])
+            self._ir_map.add(new_interface)
 
     def _create_public_objects(self):
         """Creates public representations of compiled objects."""

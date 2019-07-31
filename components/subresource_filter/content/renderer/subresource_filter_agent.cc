@@ -125,49 +125,6 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted(
   }
 }
 
-void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
-  DCHECK(filter_for_last_committed_load_);
-  const auto& statistics =
-      filter_for_last_committed_load_->filter().statistics();
-
-  UMA_HISTOGRAM_COUNTS_1000(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total",
-      statistics.num_loads_total);
-  UMA_HISTOGRAM_COUNTS_1000(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated",
-      statistics.num_loads_evaluated);
-  UMA_HISTOGRAM_COUNTS_1000(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules",
-      statistics.num_loads_matching_rules);
-  UMA_HISTOGRAM_COUNTS_1000(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed",
-      statistics.num_loads_disallowed);
-
-  // If ThreadTicks is not supported or performance measuring is switched off,
-  // then no time measurements have been collected.
-  if (ScopedThreadTimers::IsSupported() &&
-      filter_for_last_committed_load_->filter()
-          .activation_state()
-          .measure_performance) {
-    UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
-        "SubresourceFilter.DocumentLoad.SubresourceEvaluation."
-        "TotalWallDuration",
-        statistics.evaluation_total_wall_duration,
-        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
-        50);
-    UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
-        "SubresourceFilter.DocumentLoad.SubresourceEvaluation.TotalCPUDuration",
-        statistics.evaluation_total_cpu_duration,
-        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
-        50);
-  } else {
-    DCHECK(statistics.evaluation_total_wall_duration.is_zero());
-    DCHECK(statistics.evaluation_total_cpu_duration.is_zero());
-  }
-
-  SendDocumentLoadStatistics(statistics);
-}
-
 void SubresourceFilterAgent::ResetInfoForNextCommit() {
   activation_state_for_next_commit_ = mojom::ActivationState();
 }
@@ -265,7 +222,9 @@ void SubresourceFilterAgent::DidFailProvisionalLoad(
 void SubresourceFilterAgent::DidFinishLoad() {
   if (!filter_for_last_committed_load_)
     return;
-  RecordHistogramsOnLoadFinished();
+  const auto& statistics =
+      filter_for_last_committed_load_->filter().statistics();
+  SendDocumentLoadStatistics(statistics);
 }
 
 void SubresourceFilterAgent::WillCreateWorkerFetchContext(

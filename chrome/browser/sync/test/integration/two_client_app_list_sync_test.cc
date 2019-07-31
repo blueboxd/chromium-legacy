@@ -38,8 +38,8 @@ namespace {
 
 const size_t kNumDefaultApps = 2;
 
-bool AllProfilesHaveSameAppList() {
-  return SyncAppListHelper::GetInstance()->AllProfilesHaveSameAppList();
+bool AllProfilesHaveSameAppList(size_t* size_out = nullptr) {
+  return SyncAppListHelper::GetInstance()->AllProfilesHaveSameAppList(size_out);
 }
 
 const app_list::AppListSyncableService::SyncItem* GetSyncItem(
@@ -365,55 +365,80 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, Move) {
 
 // Install a Default App on both clients, then sync. Remove the app on one
 // client and sync. Ensure that the app is removed on the other client and
-// that a REMOVE_DEFAULT_APP entry exists.
+// that a TYPE_REMOVE_DEFAULT_APP entry exists.
 IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   ASSERT_TRUE(SetupClients());
   ASSERT_TRUE(SetupSync());
 
-  // Install a non-default app.
+  // Install a non-default app in two synchronized Profiles. We should end up
+  // with a certain number of apps, lets say N.
   InstallApp(GetProfile(0), 0);
   InstallApp(GetProfile(1), 0);
+  WaitForAppService(GetProfile(0));
+  WaitForAppService(GetProfile(1));
+  size_t number_of_apps = 0;
+  ASSERT_TRUE(AllProfilesHaveSameAppList(&number_of_apps));
+  const size_t initial_number_of_apps = number_of_apps;
 
-  // Install a default app in Profile 0 only.
+  // Install an app in Profile 0 only. At a later point, we'll mark it as
+  // default-installed, but for now, it's just a regular app.
+  //
+  // After sync'ing, we should have N+1 apps in both Profiles.
   const int default_app_index = 1;
   std::string default_app_id = InstallApp(GetProfile(0), default_app_index);
   AwaitQuiescenceAndInstallAppsPendingForSync();
+  ASSERT_TRUE(AllProfilesHaveSameAppList(&number_of_apps));
+  EXPECT_EQ(number_of_apps, initial_number_of_apps + 1);
 
-  ASSERT_TRUE(AllProfilesHaveSameAppList());
-
-  // Flag Default app in Profile 1.
+  // Mark that app as a default app, in Profile 1 only.
   using ALSS = app_list::AppListSyncableService;
   EXPECT_FALSE(ALSS::AppIsDefaultForTest(GetProfile(1), default_app_id));
   ALSS::SetAppIsDefaultForTest(GetProfile(1), default_app_id);
   EXPECT_TRUE(ALSS::AppIsDefaultForTest(GetProfile(1), default_app_id));
 
-  // Remove the default app in Profile 0 and verifier, ensure it was removed
-  // in Profile 1.
+  // Remove that app in Profile 0. After sync'ing, it should also be removed
+  // from Profile 1: we should go back to having N apps in both Profiles.
   UninstallApp(GetProfile(0), default_app_index);
   ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesHaveSameAppList());
+  ASSERT_TRUE(AllProfilesHaveSameAppList(&number_of_apps));
+  EXPECT_EQ(number_of_apps, initial_number_of_apps);
 
-  // Ensure that a REMOVE_DEFAULT_APP SyncItem entry exists in Profile 1.
-  const ALSS::SyncItem* sync_item = GetSyncItem(GetProfile(1), default_app_id);
-  ASSERT_TRUE(sync_item);
-  ASSERT_EQ(sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP,
-            sync_item->item_type);
+  // Ensure that a TYPE_REMOVE_DEFAULT_APP SyncItem exists in both Profiles.
+  for (int i = 0; i < 2; i++) {
+    const ALSS::SyncItem* sync_item =
+        GetSyncItem(GetProfile(i), default_app_id);
+    ASSERT_TRUE(sync_item);
+    EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP,
+              sync_item->item_type);
+  }
 
   // Re-Install the same app in Profile 0.
   std::string app_id2 = InstallApp(GetProfile(0), default_app_index);
   EXPECT_EQ(default_app_id, app_id2);
   WaitForAppService(GetProfile(0));
-  sync_item = GetSyncItem(GetProfile(0), app_id2);
-  EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_APP, sync_item->item_type);
+
+  // Ensure that the TYPE_REMOVE_DEFAULT_APP SyncItem was replaced with an
+  // TYPE_APP entry, for at least Profile 0. Whether or not Profile 1 has
+  // synchronized this change might depend on what side effects (such as
+  // pumping the event loop) calling WaitForAppService has.
+  {
+    const ALSS::SyncItem* sync_item = GetSyncItem(GetProfile(0), app_id2);
+    ASSERT_TRUE(sync_item);
+    EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_APP, sync_item->item_type);
+  }
+
+  // After sync'ing, we should have N+1 apps in both Profiles.
   AwaitQuiescenceAndInstallAppsPendingForSync();
+  ASSERT_TRUE(AllProfilesHaveSameAppList(&number_of_apps));
+  EXPECT_EQ(number_of_apps, initial_number_of_apps + 1);
 
-  ASSERT_TRUE(AllProfilesHaveSameAppList());
-
-  // Ensure that the REMOVE_DEFAULT_APP SyncItem entry in Profile 1 is replaced
-  // with an APP entry after an install.
-  sync_item = GetSyncItem(GetProfile(1), app_id2);
-  ASSERT_TRUE(sync_item);
-  EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_APP, sync_item->item_type);
+  // Ensure that the TYPE_REMOVE_DEFAULT_APP SyncItem was replaced with an
+  // TYPE_APP entry, for both Profiles.
+  for (int i = 0; i < 2; i++) {
+    const ALSS::SyncItem* sync_item = GetSyncItem(GetProfile(i), app_id2);
+    ASSERT_TRUE(sync_item);
+    EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_APP, sync_item->item_type);
+  }
 }
 
 #if !defined(OS_MACOSX)

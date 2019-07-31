@@ -16898,7 +16898,49 @@
       'desc': '''When this policy is set to enabled, all visited URLs will be checked with Safe Browsing in real time.
 
       When this policy is set to disabled, or not set, the consumer Safe Browsing checks will be applied.'''
-    }
+    },
+    {
+      'name': 'CACertificateManagementAllowed',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'All',
+          'value': 0,
+          'caption': '''Allow users to manage all certificates''',
+        },
+        {
+          'name': 'UserOnly',
+          'value': 1,
+          'caption': '''Allow users to manage user certificates''',
+        },
+        {
+          'name': 'None',
+          'value': 2,
+          'caption': '''Disallow users from managing certificates''',
+        },
+      ],
+      'supported_on': ['chrome_os:78-'],
+      'tags': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True
+      },
+      'example_value': 1,
+      'id': 579,
+      'caption': '''Allow users to manage installed CA certificates.''',
+      'desc': '''This policy controls whether user are able to import and remove CA certificates via Certificate Manager.
+
+      If this policy is set to ''Allow users to manage all certificates'' or left not set, users will be able to edit trust settings for all CA certificates, remove user-imported certificates and import certificates.
+
+      If this policy is set to ''Allow users to manage user certificates'', users will be able to manage only user-imported certificates and will not be able to change trust settings of built-in certificates.
+
+      If this policy is set to ''Disallow users to manage certificates'', users will not be able to manage CA certificates, they can only view CA certificates.''',
+    },
   ],
 
   'messages': {
@@ -17693,6 +17735,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 578,
+  'highest_id_currently_used': 579,
   'highest_atomic_group_id_currently_used': 37
 }

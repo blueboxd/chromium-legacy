@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/css_number_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/interpolation_value.h"
+#include "third_party/blink/renderer/core/animation/underlying_value.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -43,6 +44,35 @@ inline const TestNonInterpolableValue& ToTestNonInterpolableValue(
   return static_cast<const TestNonInterpolableValue&>(value);
 }
 
+class TestUnderlyingValue : public UnderlyingValue {
+  STACK_ALLOCATED();
+
+ public:
+  TestUnderlyingValue(InterpolationValue& interpolation_value)
+      : interpolation_value_(interpolation_value) {}
+
+  InterpolableValue& MutableInterpolableValue() final {
+    return *interpolation_value_.interpolable_value;
+  }
+
+  void SetInterpolableValue(
+      std::unique_ptr<InterpolableValue> interpolable_value) final {
+    interpolation_value_.interpolable_value = std::move(interpolable_value);
+  }
+
+  const NonInterpolableValue* GetNonInterpolableValue() const final {
+    return interpolation_value_.non_interpolable_value.get();
+  }
+
+  void SetNonInterpolableValue(
+      scoped_refptr<const NonInterpolableValue> non_interpolable_value) final {
+    interpolation_value_.non_interpolable_value = non_interpolable_value;
+  }
+
+ private:
+  InterpolationValue& interpolation_value_;
+};
+
 // Creates an InterpolationValue containing a list of interpolable and
 // non-interpolable values from the pairs of input.
 InterpolationValue CreateInterpolableList(
@@ -65,6 +95,16 @@ InterpolationValue CreateInterpolableList(const Vector<double>& values) {
       });
 }
 
+// Creates an InterpolationValue which contains a list of non-interpolable
+// values, but an interpolable list of zeroes.
+InterpolationValue CreateNonInterpolableList(const Vector<int>& values) {
+  return ListInterpolationFunctions::CreateList(
+      values.size(), [&values](size_t i) {
+        return InterpolationValue(std::make_unique<InterpolableNumber>(0),
+                                  TestNonInterpolableValue::Create(values[i]));
+      });
+}
+
 bool NonInterpolableValuesAreCompatible(const NonInterpolableValue* a,
                                         const NonInterpolableValue* b) {
   return (a ? ToTestNonInterpolableValue(*a).GetValue() : 0) ==
@@ -81,16 +121,14 @@ PairwiseInterpolationValue MaybeMergeSingles(InterpolationValue&& start,
                                     std::move(end.interpolable_value), nullptr);
 }
 
-void Composite(
-    std::unique_ptr<InterpolableValue>& underlying_interpolable_value,
-    scoped_refptr<NonInterpolableValue>& underlying_non_interpolable_value,
-    double underlying_fraction,
-    const InterpolableValue& interpolable_value,
-    const NonInterpolableValue* non_interpolable_value) {
+void Composite(UnderlyingValue& underlying_value,
+               double underlying_fraction,
+               const InterpolableValue& interpolable_value,
+               const NonInterpolableValue* non_interpolable_value) {
   DCHECK(NonInterpolableValuesAreCompatible(
-      underlying_non_interpolable_value.get(), non_interpolable_value));
-  underlying_interpolable_value->ScaleAndAdd(underlying_fraction,
-                                             interpolable_value);
+      underlying_value.GetNonInterpolableValue(), non_interpolable_value));
+  underlying_value.MutableInterpolableValue().ScaleAndAdd(underlying_fraction,
+                                                          interpolable_value);
 }
 
 }  // namespace
@@ -213,6 +251,140 @@ TEST(ListInterpolationFunctionsTest, EqualCompositeIncompatibleValues) {
   EXPECT_EQ(ToInterpolableNumber(result.Get(0))->Value(), 4.0);
   EXPECT_EQ(ToInterpolableNumber(result.Get(1))->Value(), 5.0);
   EXPECT_EQ(ToInterpolableNumber(result.Get(2))->Value(), 6.0);
+}
+
+TEST(ListInterpolationFunctionsTest, BuilderNoModify) {
+  auto list = CreateNonInterpolableList({1, 2, 3});
+  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+
+  {
+    TestUnderlyingValue underlying_value(list);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
+  }
+
+  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+
+  EXPECT_EQ(&before, &after);
+  ASSERT_EQ(3u, before.length());
+  EXPECT_EQ(1, ToTestNonInterpolableValue(*before.Get(0)).GetValue());
+  EXPECT_EQ(2, ToTestNonInterpolableValue(*before.Get(1)).GetValue());
+  EXPECT_EQ(3, ToTestNonInterpolableValue(*before.Get(2)).GetValue());
+}
+
+TEST(ListInterpolationFunctionsTest, BuilderModifyFirst) {
+  auto list = CreateNonInterpolableList({1, 2, 3});
+  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+
+  {
+    TestUnderlyingValue underlying_value(list);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
+    builder.Set(0, TestNonInterpolableValue::Create(4));
+  }
+
+  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+
+  EXPECT_NE(&before, &after);
+  ASSERT_EQ(3u, after.length());
+  EXPECT_EQ(4, ToTestNonInterpolableValue(*after.Get(0)).GetValue());
+  EXPECT_EQ(2, ToTestNonInterpolableValue(*after.Get(1)).GetValue());
+  EXPECT_EQ(3, ToTestNonInterpolableValue(*after.Get(2)).GetValue());
+}
+
+TEST(ListInterpolationFunctionsTest, BuilderModifyMiddle) {
+  auto list = CreateNonInterpolableList({1, 2, 3});
+  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+
+  {
+    TestUnderlyingValue underlying_value(list);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
+    builder.Set(1, TestNonInterpolableValue::Create(4));
+  }
+
+  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+
+  EXPECT_NE(&before, &after);
+  ASSERT_EQ(3u, after.length());
+  EXPECT_EQ(1, ToTestNonInterpolableValue(*after.Get(0)).GetValue());
+  EXPECT_EQ(4, ToTestNonInterpolableValue(*after.Get(1)).GetValue());
+  EXPECT_EQ(3, ToTestNonInterpolableValue(*after.Get(2)).GetValue());
+}
+
+TEST(ListInterpolationFunctionsTest, BuilderModifyLast) {
+  auto list = CreateNonInterpolableList({1, 2, 3});
+  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+
+  {
+    TestUnderlyingValue underlying_value(list);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
+    builder.Set(2, TestNonInterpolableValue::Create(4));
+  }
+
+  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+
+  EXPECT_NE(&before, &after);
+  ASSERT_EQ(3u, after.length());
+  EXPECT_EQ(1, ToTestNonInterpolableValue(*after.Get(0)).GetValue());
+  EXPECT_EQ(2, ToTestNonInterpolableValue(*after.Get(1)).GetValue());
+  EXPECT_EQ(4, ToTestNonInterpolableValue(*after.Get(2)).GetValue());
+}
+
+TEST(ListInterpolationFunctionsTest, BuilderModifyAll) {
+  auto list = CreateNonInterpolableList({1, 2, 3});
+  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+
+  {
+    TestUnderlyingValue underlying_value(list);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
+    builder.Set(0, TestNonInterpolableValue::Create(4));
+    builder.Set(1, TestNonInterpolableValue::Create(5));
+    builder.Set(2, TestNonInterpolableValue::Create(6));
+  }
+
+  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+
+  EXPECT_NE(&before, &after);
+  ASSERT_EQ(3u, after.length());
+  EXPECT_EQ(4, ToTestNonInterpolableValue(*after.Get(0)).GetValue());
+  EXPECT_EQ(5, ToTestNonInterpolableValue(*after.Get(1)).GetValue());
+  EXPECT_EQ(6, ToTestNonInterpolableValue(*after.Get(2)).GetValue());
+}
+
+TEST(ListInterpolationFunctionsTest, BuilderModifyReverse) {
+  auto list = CreateNonInterpolableList({1, 2, 3, 4, 5});
+  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+
+  {
+    TestUnderlyingValue underlying_value(list);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
+    builder.Set(3, TestNonInterpolableValue::Create(6));
+    builder.Set(1, TestNonInterpolableValue::Create(7));
+  }
+
+  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+
+  EXPECT_NE(&before, &after);
+  ASSERT_EQ(5u, after.length());
+  EXPECT_EQ(1, ToTestNonInterpolableValue(*after.Get(0)).GetValue());
+  EXPECT_EQ(7, ToTestNonInterpolableValue(*after.Get(1)).GetValue());
+  EXPECT_EQ(3, ToTestNonInterpolableValue(*after.Get(2)).GetValue());
+  EXPECT_EQ(6, ToTestNonInterpolableValue(*after.Get(3)).GetValue());
+  EXPECT_EQ(5, ToTestNonInterpolableValue(*after.Get(4)).GetValue());
+}
+
+TEST(ListInterpolationFunctionsTest, BuilderModifyListWithOneItem) {
+  auto list = CreateNonInterpolableList({1});
+  auto& before = ToNonInterpolableList(*list.non_interpolable_value);
+
+  {
+    TestUnderlyingValue underlying_value(list);
+    NonInterpolableList::AutoBuilder builder(underlying_value);
+    builder.Set(0, TestNonInterpolableValue::Create(4));
+  }
+
+  auto& after = ToNonInterpolableList(*list.non_interpolable_value);
+
+  EXPECT_NE(&before, &after);
+  EXPECT_EQ(4, ToTestNonInterpolableValue(*after.Get(0)).GetValue());
 }
 
 }  // namespace blink

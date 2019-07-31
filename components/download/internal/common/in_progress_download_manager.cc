@@ -160,12 +160,6 @@ InProgressDownloadManager::Delegate::GetDefaultDownloadDirectory() {
   return base::FilePath();
 }
 
-net::URLRequestContextGetter*
-InProgressDownloadManager::Delegate::GetURLRequestContextGetter(
-    const DownloadCreateInfo& download_create_info) {
-  return nullptr;
-}
-
 InProgressDownloadManager::InProgressDownloadManager(
     Delegate* delegate,
     const base::FilePath& in_progress_db_dir,
@@ -474,15 +468,8 @@ void InProgressDownloadManager::StartDownloadWithItem(
   // so that the DownloadItem can salvage what it can out of a failed
   // resumption attempt.
 
-  net::URLRequestContextGetter* url_request_context_getter = nullptr;
-  if (delegate_ &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    url_request_context_getter = delegate_->GetURLRequestContextGetter(*info);
-  }
-
   download->Start(std::move(download_file), std::move(info->request_handle),
-                  *info, std::move(url_loader_factory_getter),
-                  url_request_context_getter);
+                  *info, std::move(url_loader_factory_getter), nullptr);
 
   if (download_start_observer_)
     download_start_observer_->OnDownloadStarted(download);

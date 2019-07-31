@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -41,6 +42,8 @@ class WebDedicatedWorkerHostFactoryClient {
       const blink::WebSecurityOrigin& fetch_client_security_origin,
       network::mojom::ReferrerPolicy fetch_client_referrer_policy,
       const blink::WebURL& fetch_client_outgoing_referrer,
+      const blink::WebInsecureRequestPolicy
+          fetch_client_insecure_request_policy,
       mojo::ScopedMessagePipeHandle blob_url_token) = 0;
 
   // Clones the given WebWorkerFetchContext for nested workers.

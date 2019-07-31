@@ -19,7 +19,7 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
   }
 
   static scoped_refptr<CSSSizeNonInterpolableValue> Create(
-      scoped_refptr<NonInterpolableValue> length_non_interpolable_value) {
+      scoped_refptr<const NonInterpolableValue> length_non_interpolable_value) {
     return base::AdoptRef(new CSSSizeNonInterpolableValue(
         std::move(length_non_interpolable_value)));
   }
@@ -34,10 +34,6 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
     DCHECK(!IsKeyword());
     return length_non_interpolable_value_.get();
   }
-  scoped_refptr<NonInterpolableValue>& LengthNonInterpolableValue() {
-    DCHECK(!IsKeyword());
-    return length_non_interpolable_value_;
-  }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
@@ -48,17 +44,56 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
   }
 
   CSSSizeNonInterpolableValue(
-      scoped_refptr<NonInterpolableValue> length_non_interpolable_value)
+      scoped_refptr<const NonInterpolableValue> length_non_interpolable_value)
       : keyword_(CSSValueID::kInvalid),
         length_non_interpolable_value_(
             std::move(length_non_interpolable_value)) {}
 
   CSSValueID keyword_;
-  scoped_refptr<NonInterpolableValue> length_non_interpolable_value_;
+  scoped_refptr<const NonInterpolableValue> length_non_interpolable_value_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSSizeNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSSizeNonInterpolableValue);
+
+// A wrapper for the UnderlyingValue passed to
+// SizeInterpolationFunctions::Composite which can be forwarded to
+// LengthInterpolationFunctions::Composite.
+//
+// If LengthInterpolationFunctions::Composite calls SetNonInterpolableValue with
+// a new NonInterpolableValue, this class wraps it in a new
+// CSSSizeNonInterpolableValue before being set on the inner UnderlyingValue.
+class UnderlyingSizeAsLengthValue : public UnderlyingValue {
+  STACK_ALLOCATED();
+
+ public:
+  UnderlyingSizeAsLengthValue(UnderlyingValue& inner_underlying_value)
+      : inner_underlying_value_(inner_underlying_value) {}
+
+  InterpolableValue& MutableInterpolableValue() final {
+    return inner_underlying_value_.MutableInterpolableValue();
+  }
+
+  void SetInterpolableValue(
+      std::unique_ptr<InterpolableValue> interpolable_value) final {
+    inner_underlying_value_.SetInterpolableValue(std::move(interpolable_value));
+  }
+
+  const NonInterpolableValue* GetNonInterpolableValue() const final {
+    const auto& size_non_interpolable_value = ToCSSSizeNonInterpolableValue(
+        *inner_underlying_value_.GetNonInterpolableValue());
+    return size_non_interpolable_value.LengthNonInterpolableValue();
+  }
+
+  void SetNonInterpolableValue(
+      scoped_refptr<const NonInterpolableValue> non_interpolable_value) final {
+    inner_underlying_value_.SetNonInterpolableValue(
+        CSSSizeNonInterpolableValue::Create(std::move(non_interpolable_value)));
+  }
+
+ private:
+  UnderlyingValue& inner_underlying_value_;
+};
 
 static InterpolationValue ConvertKeyword(CSSValueID keyword) {
   return InterpolationValue(std::make_unique<InterpolableList>(0),
@@ -157,8 +192,7 @@ bool SizeInterpolationFunctions::NonInterpolableValuesAreCompatible(
 }
 
 void SizeInterpolationFunctions::Composite(
-    std::unique_ptr<InterpolableValue>& underlying_interpolable_value,
-    scoped_refptr<NonInterpolableValue>& underlying_non_interpolable_value,
+    UnderlyingValue& underlying_value,
     double underlying_fraction,
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) {
@@ -166,12 +200,9 @@ void SizeInterpolationFunctions::Composite(
       ToCSSSizeNonInterpolableValue(*non_interpolable_value);
   if (size_non_interpolable_value.IsKeyword())
     return;
-  auto& underlying_size_non_interpolable_value =
-      ToCSSSizeNonInterpolableValue(*underlying_non_interpolable_value);
+  UnderlyingSizeAsLengthValue underlying_size_as_length(underlying_value);
   LengthInterpolationFunctions::Composite(
-      underlying_interpolable_value,
-      underlying_size_non_interpolable_value.LengthNonInterpolableValue(),
-      underlying_fraction, interpolable_value,
+      underlying_size_as_length, underlying_fraction, interpolable_value,
       size_non_interpolable_value.LengthNonInterpolableValue());
 }
 

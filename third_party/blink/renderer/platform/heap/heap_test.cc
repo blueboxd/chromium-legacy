@@ -1566,9 +1566,11 @@ TEST(HeapDeathTest, PreFinalizerAllocationForbidden) {
 }
 
 #if DCHECK_IS_ON()
-class ResurrectingPreFinalizer
-    : public GarbageCollected<ResurrectingPreFinalizer> {
-  USING_PRE_FINALIZER(ResurrectingPreFinalizer, Dispose);
+namespace {
+
+class HeapTestResurrectingPreFinalizer
+    : public GarbageCollected<HeapTestResurrectingPreFinalizer> {
+  USING_PRE_FINALIZER(HeapTestResurrectingPreFinalizer, Dispose);
 
  public:
   enum TestType {
@@ -1598,9 +1600,9 @@ class ResurrectingPreFinalizer
     HeapHashSet<WeakMember<LinkedObject>> hash_set_weak_member;
   };
 
-  ResurrectingPreFinalizer(TestType test_type,
-                           GlobalStorage* storage,
-                           LinkedObject* object_that_dies)
+  HeapTestResurrectingPreFinalizer(TestType test_type,
+                                   GlobalStorage* storage,
+                                   LinkedObject* object_that_dies)
       : test_type_(test_type),
         storage_(storage),
         object_that_dies_(object_that_dies) {}
@@ -1632,29 +1634,31 @@ class ResurrectingPreFinalizer
   Member<LinkedObject> object_that_dies_;
 };
 
+}  // namespace
+
 TEST(HeapDeathTest, DiesOnResurrectedHeapVectorMember) {
-  Persistent<ResurrectingPreFinalizer::GlobalStorage> storage(
-      MakeGarbageCollected<ResurrectingPreFinalizer::GlobalStorage>());
-  MakeGarbageCollected<ResurrectingPreFinalizer>(
-      ResurrectingPreFinalizer::kHeapVectorMember, storage.Get(),
+  Persistent<HeapTestResurrectingPreFinalizer::GlobalStorage> storage(
+      MakeGarbageCollected<HeapTestResurrectingPreFinalizer::GlobalStorage>());
+  MakeGarbageCollected<HeapTestResurrectingPreFinalizer>(
+      HeapTestResurrectingPreFinalizer::kHeapVectorMember, storage.Get(),
       MakeGarbageCollected<LinkedObject>());
   TestSupportingGC::PreciselyCollectGarbage();
 }
 
 TEST(HeapDeathTest, DiesOnResurrectedHeapHashSetMember) {
-  Persistent<ResurrectingPreFinalizer::GlobalStorage> storage(
-      MakeGarbageCollected<ResurrectingPreFinalizer::GlobalStorage>());
-  MakeGarbageCollected<ResurrectingPreFinalizer>(
-      ResurrectingPreFinalizer::kHeapHashSetMember, storage.Get(),
+  Persistent<HeapTestResurrectingPreFinalizer::GlobalStorage> storage(
+      MakeGarbageCollected<HeapTestResurrectingPreFinalizer::GlobalStorage>());
+  MakeGarbageCollected<HeapTestResurrectingPreFinalizer>(
+      HeapTestResurrectingPreFinalizer::kHeapHashSetMember, storage.Get(),
       MakeGarbageCollected<LinkedObject>());
   TestSupportingGC::PreciselyCollectGarbage();
 }
 
 TEST(HeapDeathTest, DiesOnResurrectedHeapHashSetWeakMember) {
-  Persistent<ResurrectingPreFinalizer::GlobalStorage> storage(
-      MakeGarbageCollected<ResurrectingPreFinalizer::GlobalStorage>());
-  MakeGarbageCollected<ResurrectingPreFinalizer>(
-      ResurrectingPreFinalizer::kHeapHashSetWeakMember, storage.Get(),
+  Persistent<HeapTestResurrectingPreFinalizer::GlobalStorage> storage(
+      MakeGarbageCollected<HeapTestResurrectingPreFinalizer::GlobalStorage>());
+  MakeGarbageCollected<HeapTestResurrectingPreFinalizer>(
+      HeapTestResurrectingPreFinalizer::kHeapHashSetWeakMember, storage.Get(),
       MakeGarbageCollected<LinkedObject>());
   TestSupportingGC::PreciselyCollectGarbage();
 }

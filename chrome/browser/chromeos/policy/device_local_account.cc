@@ -242,6 +242,10 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
         accounts.push_back(DeviceLocalAccount(
             DeviceLocalAccount::TYPE_PUBLIC_SESSION, account_id, "", ""));
         break;
+      case DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION:
+        accounts.push_back(DeviceLocalAccount(
+            DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION, account_id, "", ""));
+        break;
       case DeviceLocalAccount::TYPE_KIOSK_APP: {
         std::string kiosk_app_id;
         std::string kiosk_app_update_url;
@@ -292,7 +296,7 @@ std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
         accounts.push_back(DeviceLocalAccount(arc_kiosk_app, account_id));
         break;
       }
-      case DeviceLocalAccount::TYPE_COUNT:
+      default:
         NOTREACHED();
     }
   }

@@ -320,6 +320,11 @@ const std::string& Value::GetString() const {
   return string_value_;
 }
 
+std::string& Value::GetString() {
+  CHECK(is_string());
+  return string_value_;
+}
+
 const Value::BlobStorage& Value::GetBlob() const {
   CHECK(is_blob());
   return binary_value_;
@@ -383,6 +388,11 @@ base::Optional<double> Value::FindDoubleKey(StringPiece key) const {
 
 const std::string* Value::FindStringKey(StringPiece key) const {
   const Value* result = FindKeyOfType(key, Type::STRING);
+  return result ? &result->string_value_ : nullptr;
+}
+
+std::string* Value::FindStringKey(StringPiece key) {
+  Value* result = FindKeyOfType(key, Type::STRING);
   return result ? &result->string_value_ : nullptr;
 }
 
@@ -524,6 +534,11 @@ const std::string* Value::FindStringPath(StringPiece path) const {
   if (!cur || !cur->is_string())
     return nullptr;
   return &cur->string_value_;
+}
+
+std::string* Value::FindStringPath(StringPiece path) {
+  return const_cast<std::string*>(
+      static_cast<const Value*>(this)->FindStringPath(path));
 }
 
 const Value::BlobStorage* Value::FindBlobPath(StringPiece path) const {

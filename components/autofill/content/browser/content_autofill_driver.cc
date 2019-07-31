@@ -86,12 +86,6 @@ ui::AXTreeID ContentAutofillDriver::GetAxTreeId() const {
   return render_frame_host_->GetAXTreeID();
 }
 
-net::URLRequestContextGetter* ContentAutofillDriver::GetURLRequestContext() {
-  return content::BrowserContext::GetDefaultStoragePartition(
-      render_frame_host_->GetSiteInstance()->GetBrowserContext())->
-          GetURLRequestContext();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 ContentAutofillDriver::GetURLLoaderFactory() {
   return content::BrowserContext::GetDefaultStoragePartition(

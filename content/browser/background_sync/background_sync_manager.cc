@@ -315,6 +315,28 @@ std::string GetEventStatusString(blink::ServiceWorkerStatusCode status_code) {
   }
 }
 
+int GetNumAttemptsAfterEvent(BackgroundSyncType sync_type,
+                             int current_num_attempts,
+                             int max_attempts,
+                             blink::mojom::BackgroundSyncState sync_state,
+                             bool succeeded) {
+  int num_attempts = ++current_num_attempts;
+
+  if (sync_type == BackgroundSyncType::PERIODIC) {
+    if (succeeded)
+      return 0;
+    if (num_attempts == max_attempts)
+      return 0;
+  }
+
+  if (sync_state ==
+      blink::mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING) {
+    return 0;
+  }
+
+  return num_attempts;
+}
+
 // This prevents the browser process from shutting down when the last browser
 // window is closed and there are one-shot Background Sync events ready to fire.
 std::unique_ptr<BackgroundSyncController::BackgroundSyncEventKeepAlive>
@@ -1918,16 +1940,12 @@ void BackgroundSyncManager::EventCompleteImpl(
             registration->sync_state());
 
   // It's important to update |num_attempts| before we update |delay_until|.
-  registration->set_num_attempts(registration->num_attempts() + 1);
-  if ((registration->sync_type() == BackgroundSyncType::PERIODIC &&
-       registration->num_attempts() == registration->max_attempts()) ||
-      (registration->sync_state() ==
-       blink::mojom::BackgroundSyncState::REREGISTERED_WHILE_FIRING)) {
-    registration->set_num_attempts(0);
-  }
+  bool succeeded = status_code == blink::ServiceWorkerStatusCode::kOk;
+  registration->set_num_attempts(GetNumAttemptsAfterEvent(
+      registration->sync_type(), registration->num_attempts(),
+      registration->max_attempts(), registration->sync_state(), succeeded));
 
   // If |delay_until| needs to be updated, get updated delay.
-  bool succeeded = status_code == blink::ServiceWorkerStatusCode::kOk;
   if (registration->sync_type() == BackgroundSyncType::PERIODIC ||
       (!succeeded &&
        registration->num_attempts() < registration->max_attempts())) {

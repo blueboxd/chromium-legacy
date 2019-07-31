@@ -170,6 +170,7 @@
 // <include src="ui/files_menu.js">
 // <include src="ui/gear_menu.js">
 // <include src="ui/install_linux_package_dialog.js">
+// <include src="ui/import_crostini_image_dialog.js">
 // <include src="ui/list_container.js">
 // <include src="ui/location_line.js">
 // <include src="ui/multi_profile_share_dialog.js">

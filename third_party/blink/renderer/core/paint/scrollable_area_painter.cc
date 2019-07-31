@@ -24,7 +24,7 @@ namespace blink {
 void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
                                          const IntPoint& paint_offset,
                                          const CullRect& cull_rect) {
-  if (GetScrollableArea().GetLayoutBox()->StyleRef().Resize() == EResize::kNone)
+  if (!GetScrollableArea().GetLayoutBox()->StyleRef().HasResize())
     return;
 
   IntRect abs_rect = GetScrollableArea().ResizerCornerRect(

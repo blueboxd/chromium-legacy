@@ -25,6 +25,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -60,8 +61,6 @@
 #include "components/sync/driver/test_sync_service.h"
 #include "components/version_info/channel.h"
 #include "net/base/url_util.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -159,9 +158,6 @@ class CreditCardAccessManagerTest : public testing::Test {
     accessor_.reset(new TestAccessor());
     autofill_driver_ =
         std::make_unique<testing::NiceMock<TestAutofillDriver>>();
-    request_context_ = new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get());
-    autofill_driver_->SetURLRequestContext(request_context_.get());
 
     payments_client_ = new payments::TestPaymentsClient(
         autofill_driver_->GetURLLoaderFactory(),
@@ -185,8 +181,6 @@ class CreditCardAccessManagerTest : public testing::Test {
 
     personal_data_manager_.SetPrefService(nullptr);
     personal_data_manager_.ClearCreditCards();
-
-    request_context_ = nullptr;
   }
 
   bool IsAuthenticationInProgress() {
@@ -265,7 +259,6 @@ class CreditCardAccessManagerTest : public testing::Test {
   payments::TestPaymentsClient* payments_client_;
   TestAutofillClient autofill_client_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   scoped_refptr<AutofillWebDataService> database_;
   TestPersonalDataManager personal_data_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;

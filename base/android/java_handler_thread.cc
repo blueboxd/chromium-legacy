@@ -81,7 +81,6 @@ void JavaHandlerThread::Stop() {
 }
 
 void JavaHandlerThread::InitializeThread(JNIEnv* env,
-                                         const JavaParamRef<jobject>& obj,
                                          jlong event) {
   base::ThreadIdNameManager::GetInstance()->RegisterThread(
       base::PlatformThread::CurrentHandle().platform_handle(),
@@ -95,8 +94,7 @@ void JavaHandlerThread::InitializeThread(JNIEnv* env,
   reinterpret_cast<base::WaitableEvent*>(event)->Signal();
 }
 
-void JavaHandlerThread::OnLooperStopped(JNIEnv* env,
-                                        const JavaParamRef<jobject>& obj) {
+void JavaHandlerThread::OnLooperStopped(JNIEnv* env) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   task_environment_.reset();
 

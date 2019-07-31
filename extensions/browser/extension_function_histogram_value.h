@@ -1425,6 +1425,7 @@ enum HistogramValue {
   ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE = 1362,
   ACTION_ENABLE = 1363,
   ACTION_DISABLE = 1364,
+  FILEMANAGERPRIVATEINTERNAL_IMPORTCROSTINIIMAGE = 1365,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

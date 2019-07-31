@@ -1089,23 +1089,6 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 
 #undef COUNT_BY_GC_REASON
   }
-
-  static constexpr size_t kSupportedMaxSizeInMB = 4 * 1024;
-  static size_t max_committed_size_in_mb = 0;
-
-  // +1 for rounding up the size to the next MB.
-  size_t size_in_mb =
-      event.allocated_space_in_bytes_before_sweeping / 1024 / 1024 + 1;
-  if (size_in_mb >= kSupportedMaxSizeInMB)
-    size_in_mb = kSupportedMaxSizeInMB - 1;
-  if (size_in_mb > max_committed_size_in_mb) {
-    // Only update the counter for the maximum value.
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, commited_size_histogram,
-                        ("BlinkGC.CommittedSize", kSupportedMaxSizeInMB));
-    commited_size_histogram.Count(
-        base::saturated_cast<base::Histogram::Sample>(size_in_mb));
-    max_committed_size_in_mb = size_in_mb;
-  }
 }
 
 }  // namespace
@@ -1719,8 +1702,6 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   current_gc_data_.visitor.reset();
 
   Heap().stats_collector()->NotifyMarkingCompleted(marked_bytes);
-
-  WTF::Partitions::ReportMemoryUsageHistogram();
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, total_object_space_histogram,

@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/sequence_manager.h"
@@ -52,7 +53,7 @@ class MainThreadTest : public testing::Test {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
     scheduler_.reset(new MainThreadSchedulerImpl(
         base::sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump(
-            base::MessagePump::Create(base::MessagePump::Type::DEFAULT),
+            base::MessagePump::Create(base::MessagePumpType::DEFAULT),
             base::sequence_manager::SequenceManager::Settings::Builder()
                 .SetTickClock(&clock_)
                 .Build()),

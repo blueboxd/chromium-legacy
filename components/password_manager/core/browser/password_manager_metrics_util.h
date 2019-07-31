@@ -283,7 +283,7 @@ enum class LinuxBackendMigrationStatus {
   // The last attempt was not completed.
   kDeprecatedFailed = 1,
   // All the data is in the encrypted loginDB.
-  kCopiedAll = 2,
+  kDeprecatedCopiedAll = 2,
   // The standard login database is encrypted.
   kLoginDBReplaced = 3,
   // The migration is about to be attempted.
@@ -294,13 +294,13 @@ enum class LinuxBackendMigrationStatus {
   // by more precise errors.
   kDeprecatedFailedCreatedEncrypted = 6,
   // Could not read from the native backend.
-  kFailedAccessNative = 7,
+  kDeprecatedFailedAccessNative = 7,
   // Could not replace old database.
   kFailedReplace = 8,
   // Could not initialise the temporary encrypted database.
   kFailedInitEncrypted,
   // Could not reset th temporary encrypted database.
-  kFailedRecreateEncrypted,
+  kDeprecatedFailedRecreateEncrypted,
   // Could not add entries into the temporary encrypted database.
   kFailedWriteToEncrypted,
   kMaxValue = kFailedWriteToEncrypted

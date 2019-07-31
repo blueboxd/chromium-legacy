@@ -20,6 +20,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -46,10 +47,7 @@ class HomeButtonTest : public AshTestBase {
   void SetUp() override { AshTestBase::SetUp(); }
 
   void SendGestureEvent(ui::GestureEvent* event) {
-    GetPrimaryShelf()
-        ->GetShelfViewForTesting()
-        ->GetHomeButton()
-        ->OnGestureEvent(event);
+    GetPrimaryShelf()->shelf_widget()->GetHomeButton()->OnGestureEvent(event);
   }
 
   void SendGestureEventToSecondaryDisplay(ui::GestureEvent* event) {
@@ -57,13 +55,13 @@ class HomeButtonTest : public AshTestBase {
     UpdateDisplay("1+1-1000x600,1002+0-600x400");
     // Send the gesture event to the secondary display.
     Shelf::ForWindow(Shell::GetAllRootWindows()[1])
-        ->GetShelfViewForTesting()
+        ->shelf_widget()
         ->GetHomeButton()
         ->OnGestureEvent(event);
   }
 
   const HomeButton* home_button() const {
-    return GetPrimaryShelf()->GetShelfViewForTesting()->GetHomeButton();
+    return GetPrimaryShelf()->shelf_widget()->GetHomeButton();
   }
 
  private:
@@ -74,9 +72,11 @@ TEST_F(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
 
-  // Start the drags from the center of the home button.
-  gfx::Point start = home_button()->GetCenterPoint();
-  views::View::ConvertPointToScreen(home_button(), &start);
+  // Start the drags from the center of the shelf.
+  const ShelfView* shelf_view = shelf->GetShelfViewForTesting();
+  gfx::Point start =
+      gfx::Point(shelf_view->width() / 2, shelf_view->height() / 2);
+  views::View::ConvertPointToScreen(shelf_view, &start);
   // Swiping up less than the threshold should trigger a peeking app list.
   gfx::Point end = start;
   end.set_y(shelf->GetIdealBounds().bottom() -
@@ -152,8 +152,8 @@ TEST_F(HomeButtonTest, ButtonPositionInTabletMode) {
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api.RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(ShelfConstants::home_button_edge_spacing(),
-            home_button()->bounds().x());
+  // Visual space around the home button is set at the widget level.
+  EXPECT_EQ(0, home_button()->bounds().x());
 }
 
 TEST_F(HomeButtonTest, LongPressGesture) {

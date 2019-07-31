@@ -3212,7 +3212,8 @@ crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/s
 # Note: even when fixed will still fail on Mac until crbug.com/953847
 # is addressed. Uncomment below line when fixing crbug.com/965829.
 #crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
-crbug.com/965829 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
+crbug.com/987115 [ Win ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure Crash ]
+crbug.com/965829 [ Mac Linux ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -3316,6 +3317,11 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-under
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-sorted-before-dispatch.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/mediacapture-fromelement/ended.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cues-pause-on-exit.html [ Timeout ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/workers/data-url-shared.html [ Crash ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/the-audio-api/the-convolvernode-interface/realtime-conv.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-svg-none-test_touch.html [ Timeout ]
@@ -6431,3 +6437,17 @@ crbug.com/626703 [ Mac ] external/wpt/css/cssom-view/scrollIntoView-sideways-rl-
 crbug.com/988890 [ Win7 Release ] external/wpt/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-insecure.http.html [ Pass Timeout ]
 crbug.com/988890 [ Win7 Release ] virtual/blink-cors/external/wpt/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-insecure.http.html [ Pass Timeout ]
 crbug.com/988890 [ Win7 Release ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/strict-origin-when-cross-origin/attr-referrer/same-origin/http-http/img-tag/keep-origin-redirect/same-insecure.http.html [ Pass Timeout ]
+
+# Sheriff 2019-07-31
+crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video-shadow.html [ Failure ]
+crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-shadow.html [ Failure ]
+crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-all.html [ Failure ]
+crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-padding.html [ Failure ]
+crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas.html [ Failure ]
+crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video-ratio.html [ Failure ]
+crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
+crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-border.html [ Failure ]
+crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-video.html [ Failure ]
+crbug.com/989365 [ Win7 ] virtual/blink-cors/http/tests/security/img-crossorigin-redirect-credentials.html [ Pass Timeout ]
+crbug.com/989365 [ Win7 ] http/tests/security/img-crossorigin-redirect-credentials.html [ Pass Timeout ]
+crbug.com/989365 [ Linux Debug ] external/wpt/cookie-store/serviceworker_cookieStore_subscriptions_eventhandler_attribute.tentative.https.html [ Pass Timeout ]

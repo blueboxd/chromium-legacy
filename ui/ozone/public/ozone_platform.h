@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/gfx/buffer_types.h"
 
@@ -103,10 +103,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // Currently used only by the Ozone/Wayland platform.
     bool requires_mojo = false;
 
-    // Determines the type of message loop that should be used for GPU service
+    // Determines the type of message pump that should be used for GPU service
     // and display compositor threads in the GPU process.
-    base::MessageLoop::Type message_loop_type_for_gpu =
-        base::MessageLoop::TYPE_DEFAULT;
+    base::MessagePumpType message_pump_type_for_gpu =
+        base::MessagePumpType::DEFAULT;
   };
 
   // Properties available in the host process after initialization.

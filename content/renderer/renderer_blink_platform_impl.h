@@ -159,6 +159,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override;
   base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() override;
   base::Optional<int> GetAgcStartupMinimumVolume() override;
+  blink::WebVideoCaptureImplManager* GetVideoCaptureImplManager() override;
 
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateOffscreenGraphicsContext3DProvider(

@@ -73,8 +73,10 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void RunScriptsAtDocumentReady(bool document_is_empty) override;
   void RunScriptsAtDocumentIdle() override;
 
-  void DidCreateScriptContext(v8::Local<v8::Context>, int world_id) override;
-  void WillReleaseScriptContext(v8::Local<v8::Context>, int world_id) override;
+  void DidCreateScriptContext(v8::Local<v8::Context>,
+                              int32_t world_id) override;
+  void WillReleaseScriptContext(v8::Local<v8::Context>,
+                                int32_t world_id) override;
 
   // Returns true if we should allow register V8 extensions to be added.
   bool AllowScriptExtensions() override;

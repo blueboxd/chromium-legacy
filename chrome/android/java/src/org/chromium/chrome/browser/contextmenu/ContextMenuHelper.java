@@ -17,7 +17,7 @@ import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
 
 import org.chromium.base.Callback;
-import org.chromium.base.TimeUtils;
+import org.chromium.base.TimeUtilsJni;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
@@ -113,7 +113,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         };
         mOnMenuShown = () -> {
             mSelectedItemBeforeDismiss = false;
-            mMenuShownTimeMs = TimeUnit.MICROSECONDS.toMillis(TimeUtils.nativeGetTimeTicksNowUs());
+            mMenuShownTimeMs =
+                    TimeUnit.MICROSECONDS.toMillis(TimeUtilsJni.get().getTimeTicksNowUs());
             RecordHistogram.recordBooleanHistogram("ContextMenu.Shown", mWebContents != null);
         };
         mOnMenuClosed = (notAbandoned) -> {
@@ -258,7 +259,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     private void recordTimeToTakeActionHistogram(boolean selectedItem) {
         final String action = selectedItem ? "SelectedItem" : "Abandoned";
         RecordHistogram.recordTimesHistogram("ContextMenu.TimeToTakeAction." + action,
-                TimeUnit.MICROSECONDS.toMillis(TimeUtils.nativeGetTimeTicksNowUs())
+                TimeUnit.MICROSECONDS.toMillis(TimeUtilsJni.get().getTimeTicksNowUs())
                         - mMenuShownTimeMs);
     }
 

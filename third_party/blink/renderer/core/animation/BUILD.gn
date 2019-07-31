@@ -239,6 +239,7 @@ blink_core_sources("animation") {
     "transition_keyframe.h",
     "typed_interpolation_value.h",
     "underlying_length_checker.h",
+    "underlying_value.h",
     "underlying_value_owner.cc",
     "underlying_value_owner.h",
     "worklet_animation_base.h",

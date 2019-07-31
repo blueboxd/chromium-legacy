@@ -694,7 +694,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
   }
 
-  [self removeAllWebFrames];
+  self.webStateImpl->GetWebFramesManagerImpl().RemoveAllWebFrames();
   // This must be reset at the end, since code above may need information about
   // the pending load.
   self.pendingNavigationInfo = nil;
@@ -817,7 +817,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   [self commitPendingNavigationInfoInWebView:webView];
 
-  [self removeAllWebFrames];
+  self.webStateImpl->GetWebFramesManagerImpl().RemoveAllWebFrames();
 
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
@@ -1064,7 +1064,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
           forNavigation:navigation
                 webView:webView
         provisionalLoad:NO];
-  [self removeAllWebFrames];
+  self.webStateImpl->GetWebFramesManagerImpl().RemoveAllWebFrames();
   _certVerificationErrors->Clear();
   [self forgetNullWKNavigation:navigation];
 }
@@ -1117,7 +1117,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   _certVerificationErrors->Clear();
   self.webProcessCrashed = YES;
-  [self removeAllWebFrames];
+  self.webStateImpl->GetWebFramesManagerImpl().RemoveAllWebFrames();
 
   [self.delegate navigationHandlerWebProcessDidCrash:self];
 }
@@ -1968,16 +1968,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                         forContext:context];
   self.webStateImpl->SetIsLoading(false);
   self.webStateImpl->OnPageLoaded(failingURL, NO);
-}
-
-// Clears the frames list.
-- (void)removeAllWebFrames {
-  web::WebFramesManagerImpl& framesManager =
-      self.webStateImpl->GetWebFramesManagerImpl();
-  for (auto* frame : framesManager.GetAllWebFrames()) {
-    self.webStateImpl->OnWebFrameUnavailable(frame);
-  }
-  framesManager.RemoveAllWebFrames();
 }
 
 // Resets any state that is associated with a specific document object (e.g.,

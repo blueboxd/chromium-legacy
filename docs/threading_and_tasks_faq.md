@@ -19,7 +19,7 @@ A task is posted through the `base/task/post_task.h` API with `TaskTraits`.
 
 * If `TaskTraits` don't contain `BrowserThread::UI/IO`:
     * If the task is posted through a `SingleThreadTaskRunner` obtained from
-      `CreateSingleThreadTaskRunnerWithTraits(..., mode)`:
+      `CreateSingleThreadTaskRunner(..., mode)`:
         * Where `mode` is `SingleThreadTaskRunnerThreadMode::DEDICATED`:
               * The task runs on a thread that only runs tasks from that
                 SingleThreadTaskRunner. This is not the main thread nor the IO
@@ -155,15 +155,15 @@ The following mappings can be useful when migrating code from a
 * base::ThreadLocalStorage::Slot -> base::SequenceLocalStorageSlot
 * BrowserThread::DeleteOnThread -> base::OnTaskRunnerDeleter / base::RefCountedDeleteOnSequence
 * BrowserMessageFilter::OverrideThreadForMessage() -> BrowserMessageFilter::OverrideTaskRunnerForMessage()
-* CreateSingleThreadTaskRunnerWithTraits() -> CreateSequencedTaskRunnerWithTraits()
-     * Every CreateSingleThreadTaskRunnerWithTraits() usage, outside of
+* CreateSingleThreadTaskRunner() -> CreateSequencedTaskRunner()
+     * Every CreateSingleThreadTaskRunner() usage, outside of
        BrowserThread::UI/IO, should be accompanied with a comment and ideally a
        bug to make it sequence when the sequence-unfriendly dependency is
        addressed.
 
 ### How to ensure mutual exclusion between tasks posted by a component?
 
-Create a `SequencedTaskRunner` using `CreateSequencedTaskRunnerWithTraits()` and
+Create a `SequencedTaskRunner` using `CreateSequencedTaskRunner()` and
 store it on an object that can be accessed from all the PostTask() call sites
 that require mutual exclusion. If there isn't a shared object that can own a
 common `SequencedTaskRunner`, use
@@ -190,7 +190,7 @@ for all tasks to run.
 int g_condition = false;
 
 base::RunLoop run_loop;
-base::PostTaskWithTraits(FROM_HERE, {}, base::BindOnce(
+base::PostTask(FROM_HERE, {}, base::BindOnce(
     [] (base::OnceClosure closure) {
         g_condition = true;
         std::move(quit_closure).Run();

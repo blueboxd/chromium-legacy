@@ -153,8 +153,45 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
     return;
   }
 
-  size_t allocation_size =
-      media::VideoFrame::AllocationSize(format, coded_size_);
+  if (!VerifyVideoFrame(format, coded_size_, fd.get(), planes)) {
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
+  const size_t num_planes = media::VideoFrame::NumPlanes(format);
+  // This is guaranteed because format is I420 here.
+  DCHECK_EQ(num_planes, 3u);
+  std::vector<media::VideoFrameLayout::Plane> layout_planes(num_planes);
+  for (size_t i = 0; i < num_planes; i++) {
+    layout_planes[i].stride = planes[i].stride;
+    layout_planes[i].offset = planes[i].offset;
+    if (i != num_planes - 1) {
+      layout_planes[i].size = planes[i + 1].offset - planes[i].offset;
+    } else {
+      layout_planes[i].size =
+          media::VideoFrame::Rows(i, format, visible_size_.height()) *
+          planes[i].stride;
+    }
+  }
+
+  auto layout = media::VideoFrameLayout::CreateWithPlanes(
+      format, coded_size_, std::move(layout_planes));
+  if (!layout) {
+    DLOG(ERROR) << "Failed to create VideoFrameLayout.";
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
+  base::CheckedNumeric<size_t> map_size = planes[0].offset;
+  for (size_t i = 0; i < num_planes; i++) {
+    map_size += layout->planes()[i].size;
+  }
+  if (!map_size.IsValid()) {
+    DLOG(ERROR) << "Invalid map_size";
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
   // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
   // TODO(rockot): This fd comes from a mojo::ScopedHandle in
   // GpuArcVideoService::BindSharedMemory. That should be passed through,
@@ -164,24 +201,11 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
       base::subtle::PlatformSharedMemoryRegion::Take(
           std::move(fd),
           base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
-          allocation_size, guid);
+          map_size.ValueOrDie(), guid);
   base::UnsafeSharedMemoryRegion shared_region =
       base::UnsafeSharedMemoryRegion::Deserialize(std::move(platform_region));
-
-  base::CheckedNumeric<off_t> map_offset = planes[0].offset;
-  base::CheckedNumeric<size_t> map_size = allocation_size;
-  const uint32_t aligned_offset =
-      planes[0].offset % base::SysInfo::VMAllocationGranularity();
-  map_offset -= aligned_offset;
-  map_size += aligned_offset;
-
-  if (!map_offset.IsValid() || !map_size.IsValid()) {
-    DLOG(ERROR) << "Invalid map_offset or map_size";
-    client_->NotifyError(Error::kInvalidArgumentError);
-    return;
-  }
   base::WritableSharedMemoryMapping mapping =
-      shared_region.MapAt(map_offset.ValueOrDie(), map_size.ValueOrDie());
+      shared_region.MapAt(0u, map_size.ValueOrDie());
   if (!mapping.IsValid()) {
     DLOG(ERROR) << "Failed to map memory.";
     client_->NotifyError(Error::kPlatformFailureError);
@@ -189,12 +213,23 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
   }
 
   uint8_t* shm_memory = mapping.GetMemoryAsSpan<uint8_t>().data();
-  auto frame = media::VideoFrame::WrapExternalData(
-      format, coded_size_, gfx::Rect(visible_size_), visible_size_,
-      shm_memory + aligned_offset, allocation_size,
+  DCHECK_EQ(layout->planes().size(), num_planes);
+  auto frame = media::VideoFrame::WrapExternalYuvDataWithLayout(
+      *layout, gfx::Rect(visible_size_), visible_size_,
+      shm_memory + layout->planes()[0].offset,
+      shm_memory + layout->planes()[1].offset,
+      shm_memory + layout->planes()[2].offset,
       base::TimeDelta::FromMicroseconds(timestamp));
-  frame->BackWithOwnedSharedMemory(std::move(shared_region), std::move(mapping),
-                                   planes[0].offset);
+  if (!frame) {
+    DLOG(ERROR) << "Failed to create VideoFrame";
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+  frame->BackWithOwnedSharedMemory(std::move(shared_region),
+                                   std::move(mapping));
+  // Add the function to |callback| to |frame|'s  destruction observer. When the
+  // |frame| goes out of scope, it executes |callback|.
+  frame->AddDestructionObserver(std::move(callback));
   accelerator_->Encode(frame, force_keyframe);
 }
 

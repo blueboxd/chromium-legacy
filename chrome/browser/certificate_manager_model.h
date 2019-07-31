@@ -103,6 +103,18 @@ class CertificateManagerModel {
     bool device_wide_;
 
     DISALLOW_COPY_AND_ASSIGN(CertInfo);
+
+    FRIEND_TEST_ALL_PREFIXES(CertificateHandlerTest,
+                             CanDeleteCertificateCommonTest);
+    FRIEND_TEST_ALL_PREFIXES(CertificateHandlerTest,
+                             CanDeleteUserCertificateTest);
+    FRIEND_TEST_ALL_PREFIXES(CertificateHandlerTest,
+                             CanDeleteCACertificateTest);
+    FRIEND_TEST_ALL_PREFIXES(CertificateHandlerTest,
+                             CanEditCertificateCommonTest);
+    FRIEND_TEST_ALL_PREFIXES(CertificateHandlerTest,
+                             CanEditUserCertificateTest);
+    FRIEND_TEST_ALL_PREFIXES(CertificateHandlerTest, CanEditCACertificateTest);
   };
 
   class CertsSource;

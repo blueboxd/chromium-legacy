@@ -47,6 +47,7 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
     const blink::WebSecurityOrigin& fetch_client_security_origin,
     network::mojom::ReferrerPolicy fetch_client_referrer_policy,
     const blink::WebURL& fetch_client_outgoing_referrer,
+    const blink::WebInsecureRequestPolicy fetch_client_insecure_request_policy,
     mojo::ScopedMessagePipeHandle blob_url_token) {
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
   blink::mojom::DedicatedWorkerHostFactoryClientPtr client_ptr;
@@ -58,6 +59,10 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
       fetch_client_referrer_policy;
   outside_fetch_client_settings_object->outgoing_referrer =
       fetch_client_outgoing_referrer;
+  outside_fetch_client_settings_object->insecure_requests_policy =
+      fetch_client_insecure_request_policy & blink::kUpgradeInsecureRequests
+          ? blink::mojom::InsecureRequestsPolicy::kUpgrade
+          : blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade;
 
   factory_->CreateWorkerHostAndStartScriptLoad(
       script_url, script_origin, credentials_mode,

@@ -454,12 +454,8 @@ bool Histogram::InspectConstructionArguments(StringPiece name,
     // them here.
     // Blink.UseCounter legitimately has more than 1000 entries in its enum.
     // Arc.OOMKills: https://crbug.com/916757
-    // BlinkGC.CommittedSize: https://crbug.com/916761
-    // PartitionAlloc.CommittedSize: https://crbug.com/916761
     if (!name.starts_with("Blink.UseCounter") &&
-        !name.starts_with("Arc.OOMKills.") &&
-        name != "BlinkGC.CommittedSize" &&
-        name != "PartitionAlloc.CommittedSize") {
+        !name.starts_with("Arc.OOMKills.")) {
       DVLOG(1) << "Histogram: " << name
                << " has bad bucket_count: " << *bucket_count << " (limit "
                << kBucketCount_MAX << ")";

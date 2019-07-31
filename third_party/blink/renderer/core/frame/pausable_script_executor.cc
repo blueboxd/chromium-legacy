@@ -30,7 +30,7 @@ namespace {
 class WebScriptExecutor : public PausableScriptExecutor::Executor {
  public:
   WebScriptExecutor(const HeapVector<ScriptSourceCode>& sources,
-                    int world_id,
+                    int32_t world_id,
                     bool user_gesture);
 
   Vector<v8::Local<v8::Value>> Execute(LocalFrame*) override;
@@ -42,13 +42,13 @@ class WebScriptExecutor : public PausableScriptExecutor::Executor {
 
  private:
   HeapVector<ScriptSourceCode> sources_;
-  int world_id_;
+  int32_t world_id_;
   bool user_gesture_;
 };
 
 WebScriptExecutor::WebScriptExecutor(
     const HeapVector<ScriptSourceCode>& sources,
-    int world_id,
+    int32_t world_id,
     bool user_gesture)
     : sources_(sources), world_id_(world_id), user_gesture_(user_gesture) {}
 

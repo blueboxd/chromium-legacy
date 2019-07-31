@@ -210,10 +210,11 @@ class TEST_RUNNER_EXPORT TestRunnerForSpecificView {
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
   v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
-      int world_id,
+      int32_t world_id,
       const std::string& script);
-  void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
-  void SetIsolatedWorldInfo(int world_id,
+  void EvaluateScriptInIsolatedWorld(int32_t world_id,
+                                     const std::string& script);
+  void SetIsolatedWorldInfo(int32_t world_id,
                             v8::Local<v8::Value> security_origin,
                             v8::Local<v8::Value> content_security_policy);
   bool FindString(const std::string& search_text,

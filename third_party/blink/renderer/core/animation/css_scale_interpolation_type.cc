@@ -91,6 +91,13 @@ class CSSScaleNonInterpolableValue : public NonInterpolableValue {
         new CSSScaleNonInterpolableValue(scale, scale, false, false));
   }
 
+  static scoped_refptr<CSSScaleNonInterpolableValue> CreateAdditive(
+      const CSSScaleNonInterpolableValue& other) {
+    const bool is_additive = true;
+    return base::AdoptRef(new CSSScaleNonInterpolableValue(
+        other.start_, other.end_, is_additive, is_additive));
+  }
+
   static scoped_refptr<CSSScaleNonInterpolableValue> Merge(
       const CSSScaleNonInterpolableValue& start,
       const CSSScaleNonInterpolableValue& end) {
@@ -103,11 +110,6 @@ class CSSScaleNonInterpolableValue : public NonInterpolableValue {
   const Scale& end() const { return end_; }
   bool IsStartAdditive() const { return is_start_additive_; }
   bool IsEndAdditive() const { return is_end_additive_; }
-
-  void SetIsAdditive() {
-    is_start_additive_ = true;
-    is_end_additive_ = true;
-  }
 
   DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
 
@@ -191,9 +193,11 @@ InterpolationValue CSSScaleInterpolationType::MaybeConvertValue(
   }
 }
 
-void CSSScaleInterpolationType::AdditiveKeyframeHook(
-    InterpolationValue& value) const {
-  ToCSSScaleNonInterpolableValue(*value.non_interpolable_value).SetIsAdditive();
+InterpolationValue CSSScaleInterpolationType::MakeAdditive(
+    InterpolationValue value) const {
+  value.non_interpolable_value = CSSScaleNonInterpolableValue::CreateAdditive(
+      ToCSSScaleNonInterpolableValue(*value.non_interpolable_value));
+  return value;
 }
 
 PairwiseInterpolationValue CSSScaleInterpolationType::MaybeMergeSingles(

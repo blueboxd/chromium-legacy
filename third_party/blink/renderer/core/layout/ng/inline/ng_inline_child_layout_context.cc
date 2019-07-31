@@ -10,7 +10,7 @@ namespace {
 
 struct SameSizeAsNGInlineChildLayoutContext {
   base::Optional<NGInlineLayoutStateStack> box_states_;
-  void* pointer;
+  void* pointers[2];
   unsigned number;
 };
 

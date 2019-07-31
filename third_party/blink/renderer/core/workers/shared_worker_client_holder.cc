@@ -113,11 +113,18 @@ void SharedWorkerClientHolder::Connect(
               ->GetProperties()
               .GetFetchClientSettingsObject());
 
+  mojom::InsecureRequestsPolicy insecure_requests_policy =
+      outside_fetch_client_settings_object->GetInsecureRequestsPolicy() &
+              kUpgradeInsecureRequests
+          ? mojom::InsecureRequestsPolicy::kUpgrade
+          : mojom::InsecureRequestsPolicy::kDoNotUpgrade;
+
   connector_->Connect(
       std::move(info),
       mojom::blink::FetchClientSettingsObject::New(
           outside_fetch_client_settings_object->GetReferrerPolicy(),
-          KURL(outside_fetch_client_settings_object->GetOutgoingReferrer())),
+          KURL(outside_fetch_client_settings_object->GetOutgoingReferrer()),
+          insecure_requests_policy),
       std::move(client_ptr),
       worker->GetExecutionContext()->IsSecureContext()
           ? mojom::SharedWorkerCreationContextType::kSecure

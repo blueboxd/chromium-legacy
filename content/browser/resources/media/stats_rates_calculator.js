@@ -230,6 +230,13 @@ class StatsRatesCalculator {
           ['bytesReceived', 'timestamp'],
           ['packetsReceived', 'timestamp'],
           ['framesDecoded', 'timestamp'],
+          [
+            'totalDecodeTime', 'framesDecoded',
+            '[totalDecodeTime/framesDecoded_in_ms]',
+            (value) => {
+              return value * 1000;  // s -> ms
+            }
+          ],
           ['qpSum', 'framesDecoded'],
         ],
       },

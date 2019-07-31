@@ -209,7 +209,9 @@ for filename, substitutions in (
     ('test/js/strings.js', (
         ('$GRDP', json.dumps(strings, sort_keys=True, indent=2)),
     )),
-    ('foreground/elements/elements_bundle.html', ()),
+    ('foreground/elements/elements_bundle.html', (
+        ('="files_xf', '="' + elements_path('files_xf')),
+    )),
     ('foreground/js/elements_importer.js', (
         ("= 'foreground", "= 'test/gen/foreground"),
     )),
@@ -236,7 +238,6 @@ for filename, substitutions in (
     ('foreground/elements/files_toast.html', ()),
     ('foreground/elements/files_toggle_ripple.html', ()),
     ('foreground/elements/files_tooltip.html', ()),
-    ('foreground/elements/files_xf_elements.html', ()),
     ('foreground/elements/icons.html', ()),
     ):
   buf = i18n(read('ui/file_manager/file_manager/' + filename))

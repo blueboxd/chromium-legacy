@@ -77,10 +77,6 @@ ui::AXTreeID AutofillDriverIOS::GetAxTreeId() const {
   return ui::AXTreeIDUnknown();
 }
 
-net::URLRequestContextGetter* AutofillDriverIOS::GetURLRequestContext() {
-  return web_state_->GetBrowserState()->GetRequestContext();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 AutofillDriverIOS::GetURLLoaderFactory() {
   return base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(

@@ -44,6 +44,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -387,8 +388,9 @@ void HandleRotatePaneFocus(FocusCycler::Direction direction) {
 void HandleFocusShelf() {
   base::RecordAction(UserMetricsAction("Accel_Focus_Shelf"));
   // TODO(jamescook): Should this be GetRootWindowForNewWindows()?
+  // Focus the home button.
   Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
-  Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+  shelf->shelf_focus_cycler()->FocusNavigation(false /* lastElement */);
 }
 
 views::Widget* FindPipWidget() {

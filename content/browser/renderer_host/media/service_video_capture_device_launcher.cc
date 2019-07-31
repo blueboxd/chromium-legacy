@@ -112,8 +112,8 @@ void ServiceVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   auto receiver_adapter =
       std::make_unique<video_capture::ReceiverMediaToMojoAdapter>(
           std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
-              std::move(receiver), base::CreateSingleThreadTaskRunnerWithTraits(
-                                       {BrowserThread::IO})));
+              std::move(receiver),
+              base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
   video_capture::mojom::ReceiverPtr receiver_proxy;
   mojo::MakeStrongBinding<video_capture::mojom::Receiver>(
       std::move(receiver_adapter), mojo::MakeRequest(&receiver_proxy));

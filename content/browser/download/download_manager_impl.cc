@@ -74,7 +74,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
-#include "net/url_request/url_request_context.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
@@ -618,14 +617,6 @@ void DownloadManagerImpl::CreateNewDownloadItemToStart(
   }
 
   OnDownloadStarted(download, on_started);
-}
-
-net::URLRequestContextGetter* DownloadManagerImpl::GetURLRequestContextGetter(
-    const download::DownloadCreateInfo& info) {
-  StoragePartition* storage_partition = GetStoragePartition(
-      browser_context_, info.render_process_id, info.render_frame_id);
-  return storage_partition ? storage_partition->GetURLRequestContext()
-                           : nullptr;
 }
 
 service_manager::Connector* DownloadManagerImpl::GetServiceManagerConnector() {

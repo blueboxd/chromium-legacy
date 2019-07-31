@@ -844,7 +844,7 @@ TextAutosizer::Fingerprint TextAutosizer::ComputeFingerprint(
     data.packed_style_properties_ |=
         (static_cast<unsigned>(style->GetPosition()) << 1);
     data.packed_style_properties_ |=
-        (static_cast<unsigned>(style->Floating()) << 4);
+        (static_cast<unsigned>(style->UnresolvedFloating()) << 4);
     data.packed_style_properties_ |=
         (static_cast<unsigned>(style->Display()) << 7);
     data.packed_style_properties_ |= (style->Width().GetType() << 12);

@@ -12,7 +12,7 @@
 namespace dom_distiller {
 
 // Set the world for JavaScript to execute in. This can only be called once.
-void SetDistillerJavaScriptWorldId(const int id);
+void SetDistillerJavaScriptWorldId(const int32_t id);
 
 bool DistillerJavaScriptWorldIdIsSet();
 

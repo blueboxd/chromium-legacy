@@ -163,7 +163,7 @@ void ScriptController::DisableEval(const String& error_message) {
 }
 
 void ScriptController::DisableEvalForIsolatedWorld(
-    int world_id,
+    int32_t world_id,
     const String& error_message) {
   DCHECK(DOMWrapperWorld::IsIsolatedWorldId(world_id));
   scoped_refptr<DOMWrapperWorld> world =
@@ -359,7 +359,7 @@ v8::Local<v8::Value> ScriptController::EvaluateScriptInMainWorld(
 }
 
 v8::Local<v8::Value> ScriptController::ExecuteScriptInIsolatedWorld(
-    int world_id,
+    int32_t world_id,
     const ScriptSourceCode& source,
     const KURL& base_url,
     SanitizeScriptErrors sanitize_script_errors) {

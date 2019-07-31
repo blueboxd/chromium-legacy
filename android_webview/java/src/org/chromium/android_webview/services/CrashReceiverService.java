@@ -157,9 +157,9 @@ public class CrashReceiverService extends Service {
     public static boolean writeCrashInfoToLogFile(
             File logFile, File crashFile, Map<String, String> crashInfoMap) {
         try {
-            CrashInfo crashInfo = new CrashInfo();
-            crashInfo.localId = CrashFileManager.getCrashLocalIdFromFileName(crashFile.getName());
-            if (crashInfo.localId == null) return false;
+            String localId = CrashFileManager.getCrashLocalIdFromFileName(crashFile.getName());
+            if (localId == null) return false;
+            CrashInfo crashInfo = new CrashInfo(localId);
             crashInfo.captureTime = crashFile.lastModified();
 
             if (crashInfoMap == null) return false;

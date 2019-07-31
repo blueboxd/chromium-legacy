@@ -17,7 +17,7 @@ namespace offline_pages {
 
 RenderFrameScriptInjector::RenderFrameScriptInjector(
     content::RenderFrameHost* render_frame_host,
-    int isolated_world_id)
+    int32_t isolated_world_id)
     : render_frame_host_(render_frame_host),
       isolated_world_id_(isolated_world_id) {
   DCHECK(render_frame_host_);

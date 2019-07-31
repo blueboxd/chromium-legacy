@@ -206,7 +206,7 @@ void BookmarkAppNavigationBrowserTest::SetUpCommandLine(
 void BookmarkAppNavigationBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
   host_resolver()->AddRule("*", "127.0.0.1");
-  // By default, all SSL cert checks are valid. Can be overriden in tests.
+  // By default, all SSL cert checks are valid. Can be overridden in tests.
   cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 }
 

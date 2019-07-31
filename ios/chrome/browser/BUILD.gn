@@ -38,8 +38,6 @@ source_set("browser") {
     "chrome_root_coordinator.mm",
     "chrome_switches.cc",
     "chrome_switches.h",
-    "chrome_url_constants.cc",
-    "chrome_url_constants.h",
     "chrome_url_util.h",
     "chrome_url_util.mm",
     "crash_loop_detection_util.h",
@@ -148,10 +146,24 @@ source_set("browser") {
   ]
   public_deps = [
     ":chrome_paths",
+    ":chrome_url_constants",
   ]
   allow_circular_includes_from = [
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/browser_state",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("chrome_url_constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "chrome_url_constants.cc",
+    "chrome_url_constants.h",
+  ]
+
+  deps = [
+    "//base",
   ]
   libs = [ "UIKit.framework" ]
 }

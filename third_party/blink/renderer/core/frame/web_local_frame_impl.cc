@@ -693,7 +693,7 @@ void WebLocalFrameImpl::ExecuteScript(const WebScriptSource& source) {
 }
 
 void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
-    int world_id,
+    int32_t world_id,
     const WebScriptSource& source_in) {
   DCHECK(GetFrame());
   CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
@@ -708,7 +708,7 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
 
 v8::Local<v8::Value>
 WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
-    int world_id,
+    int32_t world_id,
     const WebScriptSource& source_in) {
   DCHECK(GetFrame());
   CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
@@ -720,7 +720,7 @@ WebLocalFrameImpl::ExecuteScriptInIsolatedWorldAndReturnValue(
       world_id, source_in, KURL(), SanitizeScriptErrors::kDoNotSanitize);
 }
 
-void WebLocalFrameImpl::ClearIsolatedWorldCSPForTesting(int world_id) {
+void WebLocalFrameImpl::ClearIsolatedWorldCSPForTesting(int32_t world_id) {
   if (!GetFrame())
     return;
   if (world_id <= DOMWrapperWorld::kMainWorldId ||
@@ -731,7 +731,7 @@ void WebLocalFrameImpl::ClearIsolatedWorldCSPForTesting(int world_id) {
   GetFrame()->GetDocument()->ClearIsolatedWorldCSPForTesting(world_id);
 }
 
-void WebLocalFrameImpl::SetIsolatedWorldInfo(int world_id,
+void WebLocalFrameImpl::SetIsolatedWorldInfo(int32_t world_id,
                                              const WebIsolatedWorldInfo& info) {
   DCHECK(GetFrame());
   CHECK_GT(world_id, DOMWrapperWorld::kMainWorldId);
@@ -817,7 +817,7 @@ void WebLocalFrameImpl::RequestExecuteV8Function(
 }
 
 void WebLocalFrameImpl::RequestExecuteScriptInIsolatedWorld(
-    int world_id,
+    int32_t world_id,
     const WebScriptSource* sources_in,
     unsigned num_sources,
     bool user_gesture,
@@ -2014,7 +2014,7 @@ void WebLocalFrameImpl::SendPings(const WebURL& destination_url) {
   DCHECK(GetFrame());
   if (Node* node = ContextMenuNodeInner()) {
     Element* anchor = node->EnclosingLinkEventParentOrSelf();
-    if (auto* html_anchor = ToHTMLAnchorElementOrNull(anchor))
+    if (auto* html_anchor = DynamicTo<HTMLAnchorElement>(anchor))
       html_anchor->SendPings(destination_url);
   }
 }
@@ -2507,7 +2507,7 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
     const WebMediaPlayerAction& action) {
   HitTestResult result = HitTestResultForVisualViewportPos(location);
   Node* node = result.InnerNode();
-  if (!IsHTMLVideoElement(*node) && !IsHTMLAudioElement(*node))
+  if (!IsHTMLVideoElement(*node) && !IsA<HTMLAudioElement>(*node))
     return;
 
   HTMLMediaElement* media_element = ToHTMLMediaElement(node);

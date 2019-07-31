@@ -61,7 +61,6 @@ class PLATFORM_EXPORT MediaStreamCenter {
   void DidCloneMediaStreamTrack(MediaStreamComponent* original,
                                 MediaStreamComponent* clone);
   void DidSetMediaStreamTrackEnabled(MediaStreamComponent*);
-  void DidSetContentHint(MediaStreamComponent*);
   std::unique_ptr<AudioSourceProvider> CreateWebAudioSourceFromMediaStreamTrack(
       MediaStreamComponent*,
       int context_sample_rate);
@@ -69,8 +68,6 @@ class PLATFORM_EXPORT MediaStreamCenter {
   void DidCreateMediaStreamAndTracks(MediaStreamDescriptor*);
 
   void DidStopMediaStreamSource(MediaStreamSource*);
-
-  void GetSourceSettings(MediaStreamSource*, WebMediaStreamTrack::Settings&);
 
  private:
   MediaStreamCenter();

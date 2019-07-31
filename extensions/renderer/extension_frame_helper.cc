@@ -331,7 +331,7 @@ void ExtensionFrameHelper::ReadyToCommitNavigation(
 
 void ExtensionFrameHelper::DidCreateScriptContext(
     v8::Local<v8::Context> context,
-    int world_id) {
+    int32_t world_id) {
   if (world_id == kMainWorldId &&
       render_frame()->IsBrowserSideNavigationPending()) {
     DCHECK(!delayed_main_world_script_initialization_);
@@ -347,7 +347,7 @@ void ExtensionFrameHelper::DidCreateScriptContext(
 
 void ExtensionFrameHelper::WillReleaseScriptContext(
     v8::Local<v8::Context> context,
-    int world_id) {
+    int32_t world_id) {
   extension_dispatcher_->WillReleaseScriptContext(
       render_frame()->GetWebFrame(), context, world_id);
 }

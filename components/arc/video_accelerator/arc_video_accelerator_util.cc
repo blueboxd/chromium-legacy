@@ -8,6 +8,8 @@
 #include <unistd.h>
 
 #include "base/files/platform_file.h"
+#include "base/numerics/checked_math.h"
+#include "media/base/video_frame.h"
 #include "media/gpu/macros.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -47,6 +49,51 @@ bool GetFileSize(const int fd, size_t* size) {
   }
 
   *size = static_cast<size_t>(fd_size);
+  return true;
+}
+
+bool VerifyVideoFrame(media::VideoPixelFormat pixel_format,
+                      const gfx::Size& coded_size,
+                      int fd,
+                      const std::vector<VideoFramePlane>& planes) {
+  const size_t num_planes = media::VideoFrame::NumPlanes(pixel_format);
+  if (planes.size() != num_planes || num_planes == 0) {
+    VLOGF(1) << "Invalid number of dmabuf planes passed: " << planes.size()
+             << ", expected: " << num_planes;
+    return false;
+  }
+
+  // We expect offset monotonically increase.
+  for (size_t i = 1; i < num_planes; i++) {
+    if (planes[i].offset < planes[i - 1].offset)
+      return false;
+  }
+
+  size_t file_size_in_bytes;
+  if (!GetFileSize(fd, &file_size_in_bytes))
+    return false;
+
+  for (size_t i = 0; i < planes.size(); ++i) {
+    const auto& plane = planes[i];
+
+    DVLOGF(4) << "Plane " << i << ", offset: " << plane.offset
+              << ", stride: " << plane.stride;
+
+    // Check |offset| + (the size of a plane) on each plane is not larger than
+    // |file_size_in_bytes|. This ensures we don't access out of a buffer
+    // referred by |fd|.
+    size_t row_bytes =
+        media::VideoFrame::RowBytes(i, pixel_format, coded_size.height());
+    base::CheckedNumeric<size_t> current_size(plane.offset);
+    current_size += base::CheckMul(plane.stride, row_bytes);
+
+    if (!current_size.IsValid() ||
+        current_size.ValueOrDie() > file_size_in_bytes) {
+      VLOGF(1) << "Invalid strides/offsets.";
+      return false;
+    }
+  }
+
   return true;
 }
 

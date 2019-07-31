@@ -5,6 +5,8 @@
 #ifndef MEDIA_GPU_IMAGE_PROCESSOR_H_
 #define MEDIA_GPU_IMAGE_PROCESSOR_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -46,15 +48,26 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   };
 
   // Encapsulates ImageProcessor input / output configurations.
+  // Note that |fourcc| is used when format cannot be described in |layout|,
+  // e.g. platform specific format not listed in VideoPixelFormat. The default
+  // value of |fourcc| is kUnassignedFourCC.
   struct MEDIA_GPU_EXPORT PortConfig {
     PortConfig() = delete;
     PortConfig(
         const VideoFrameLayout& layout,
         const gfx::Size& visible_size,
         const std::vector<VideoFrame::StorageType>& preferred_storage_types);
+    PortConfig(
+        const VideoFrameLayout& layout,
+        uint32_t fourcc,
+        const gfx::Size& visible_size,
+        const std::vector<VideoFrame::StorageType>& preferred_storage_types);
     ~PortConfig();
 
+    static const uint32_t kUnassignedFourCC = 0u;
+
     const VideoFrameLayout layout;
+    const uint32_t fourcc;
     const gfx::Size visible_size;
     const std::vector<VideoFrame::StorageType> preferred_storage_types;
   };

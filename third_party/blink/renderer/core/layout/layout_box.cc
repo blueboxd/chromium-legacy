@@ -970,8 +970,7 @@ bool LayoutBox::CanResize() const {
   // We need a special case for <iframe> because they never have
   // hasOverflowClip(). However, they do "implicitly" clip their contents, so
   // we want to allow resizing them also.
-  return (HasOverflowClip() || IsLayoutIFrame()) &&
-         StyleRef().Resize() != EResize::kNone;
+  return (HasOverflowClip() || IsLayoutIFrame()) && StyleRef().HasResize();
 }
 
 int LayoutBox::VerticalScrollbarWidth() const {

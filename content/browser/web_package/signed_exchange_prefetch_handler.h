@@ -17,7 +17,6 @@
 
 namespace net {
 struct SHA256HashValue;
-class URLRequestContextGetter;
 }
 
 namespace network {
@@ -30,7 +29,6 @@ class URLLoaderThrottle;
 
 namespace content {
 
-class ResourceContext;
 class SignedExchangeLoader;
 class SignedExchangePrefetchMetricRecorder;
 
@@ -54,8 +52,6 @@ class SignedExchangePrefetchHandler final
       network::mojom::URLLoaderClientRequest network_client_request,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       URLLoaderThrottlesGetter loader_throttles_getter,
-      ResourceContext* resource_context,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       network::mojom::URLLoaderClient* forwarding_client,
       scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
       const std::string& accept_langs);

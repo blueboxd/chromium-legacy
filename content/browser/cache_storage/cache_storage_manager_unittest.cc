@@ -1387,7 +1387,13 @@ TEST_F(CacheStorageManagerTest, DeletedCacheIgnoredInIndex) {
   EXPECT_EQ(new_cache_size, Size(origin1_));
 }
 
-TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
+// Flakily fails on Fuchsia x64. http://crbug.com/989313
+#if defined(OS_FUCHSIA)
+#define MAYBE_TestErrorInitializingCache DISABLED_TestErrorInitializingCache
+#else
+#define MAYBE_TestErrorInitializingCache TestErrorInitializingCache
+#endif
+TEST_F(CacheStorageManagerTest, MAYBE_TestErrorInitializingCache) {
   if (MemoryOnly())
     return;
   const GURL kFooURL("http://example.com/foo");

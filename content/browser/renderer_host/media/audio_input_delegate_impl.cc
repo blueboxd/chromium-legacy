@@ -67,7 +67,7 @@ class AudioInputDelegateImpl::ControllerEventHandler
       : stream_id_(stream_id), weak_delegate_(std::move(weak_delegate)) {}
 
   void OnCreated(bool initially_muted) override {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&AudioInputDelegateImpl::SendCreatedNotification,
                        weak_delegate_, initially_muted));
@@ -78,7 +78,7 @@ class AudioInputDelegateImpl::ControllerEventHandler
     // we log it here.
     LogMessage(stream_id_,
                base::StringPrintf("AIC reports error_code=%d", error_code));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&AudioInputDelegateImpl::OnError, weak_delegate_));
   }
@@ -90,9 +90,9 @@ class AudioInputDelegateImpl::ControllerEventHandler
   void OnMuted(bool is_muted) override {
     LogMessage(stream_id_, is_muted ? "OnMuted: State changed to muted"
                                     : "OnMuted: State changed to not muted");
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(&AudioInputDelegateImpl::OnMuted,
-                                            weak_delegate_, is_muted));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&AudioInputDelegateImpl::OnMuted,
+                                  weak_delegate_, is_muted));
   }
 
  private:
@@ -183,7 +183,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
       stream_id_(stream_id),
       render_process_id_(render_process_id) {
   // Prevent process backgrounding while audio input is active:
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&NotifyProcessHostStreamAdded, render_process_id_));
 
@@ -234,7 +234,7 @@ AudioInputDelegateImpl::~AudioInputDelegateImpl() {
   audio_log_->OnClosed();
   LogMessage(stream_id_, "Closing stream");
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&NotifyProcessHostStreamRemoved, render_process_id_));
 

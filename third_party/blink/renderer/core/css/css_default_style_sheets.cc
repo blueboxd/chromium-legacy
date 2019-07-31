@@ -195,7 +195,7 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   }
 
   if (!media_controls_style_sheet_ && HasMediaControlsStyleSheetLoader() &&
-      (IsHTMLVideoElement(element) || IsHTMLAudioElement(element))) {
+      (IsHTMLVideoElement(element) || IsA<HTMLAudioElement>(element))) {
     // FIXME: We should assert that this sheet only contains rules for <video>
     // and <audio>.
     media_controls_style_sheet_ =

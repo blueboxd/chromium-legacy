@@ -5,28 +5,78 @@
 #ifndef SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_BUNDLED_EXCHANGES_PARSER_H_
 #define SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_BUNDLED_EXCHANGES_PARSER_H_
 
+#include <string>
+
+#include "base/containers/flat_map.h"
+#include "base/files/file.h"
+#include "base/optional.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 
 namespace service_manager {
 class Connector;
-}
+}  // namespace service_manager
 
 namespace data_decoder {
 
-// Parses bundle's metadata from |data_source| via the data_decoder service.
-void ParseBundledExchangesMetadata(
-    service_manager::Connector* connector,
-    mojo::PendingRemote<mojom::BundleDataSource> data_source,
-    mojom::BundledExchangesParser::ParseMetadataCallback callback);
+// A class to wrap remote mojom::BundledExchangesParserFactory and
+// mojom::BundledExchangesParser service.
+class SafeBundledExchangesParser {
+ public:
+  SafeBundledExchangesParser();
+  // Remaining callbacks on flight will be dropped.
+  ~SafeBundledExchangesParser();
 
-// Parses a response from |data_source| that starts at |response_offset| and
-// has length |response_length|, via the data_decoder service.
-void ParseBundledExchangesResponse(
-    service_manager::Connector* connector,
-    mojo::PendingRemote<mojom::BundleDataSource> data_source,
-    uint64_t response_offset,
-    uint64_t response_length,
-    mojom::BundledExchangesParser::ParseResponseCallback callback);
+  // Binds |this| instance to the given |file| for subsequent parse calls.
+  // |connector| can be null if SetBundledExchangesParserForTesting() was
+  // called.
+  void OpenFile(service_manager::Connector* connector, base::File file);
+
+  // Binds |this| instance to the given |data_source| for subsequent parse
+  // calls. |connector| can be null if SetBundledExchangesParserForTesting()
+  // was called.
+  void OpenDataSource(service_manager::Connector* connector,
+                      mojo::PendingRemote<mojom::BundleDataSource> data_source);
+
+  // Parses metadata. See mojom::BundledExchangesParser::ParseMetadata for
+  // details. This method fails when it's called before the previous call
+  // finishes.
+  void ParseMetadata(
+      mojom::BundledExchangesParser::ParseMetadataCallback callback);
+
+  // Parses response. See mojom::BundledExchangesParser::ParseResponse for
+  // details.
+  void ParseResponse(
+      uint64_t response_offset,
+      uint64_t response_length,
+      mojom::BundledExchangesParser::ParseResponseCallback callback);
+
+  // Sets alternative BundledExchangesParserFactory that will be used to create
+  // BundledExchangesParser for testing purpose.
+  void SetBundledExchangesParserFactoryForTesting(
+      std::unique_ptr<mojom::BundledExchangesParserFactory> factory);
+
+ private:
+  void OnDisconnect();
+  void OnMetadataParsed(mojom::BundleMetadataPtr metadata,
+                        const base::Optional<std::string>& error_message);
+  void OnResponseParsed(size_t callback_id,
+                        mojom::BundleResponsePtr response,
+                        const base::Optional<std::string>& error_message);
+
+  mojo::Remote<mojom::BundledExchangesParser> parser_;
+  mojom::BundledExchangesParser::ParseMetadataCallback metadata_callback_;
+  base::flat_map<size_t, mojom::BundledExchangesParser::ParseResponseCallback>
+      response_callbacks_;
+  size_t response_callback_next_id_ = 0;
+  bool disconnected_ = true;
+  std::unique_ptr<mojom::BundledExchangesParserFactory> factory_for_testing_ =
+      nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(SafeBundledExchangesParser);
+};
 
 }  // namespace data_decoder
 

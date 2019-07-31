@@ -13,6 +13,7 @@ import android.os.SystemClock;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -313,7 +314,7 @@ public class EarlyTraceEvent {
     private static void dumpEvents(List<Event> events) {
         long offsetNanos = getOffsetNanos();
         for (Event e : events) {
-            nativeRecordEarlyEvent(e.mName, e.mBeginTimeNanos + offsetNanos,
+            EarlyTraceEventJni.get().recordEarlyEvent(e.mName, e.mBeginTimeNanos + offsetNanos,
                     e.mEndTimeNanos + offsetNanos, e.mThreadId,
                     e.mEndThreadTimeMillis - e.mBeginThreadTimeMillis);
         }
@@ -322,15 +323,17 @@ public class EarlyTraceEvent {
         long offsetNanos = getOffsetNanos();
         for (AsyncEvent e : events) {
             if (e.mIsStart) {
-                nativeRecordEarlyStartAsyncEvent(e.mName, e.mId, e.mTimestampNanos + offsetNanos);
+                EarlyTraceEventJni.get().recordEarlyStartAsyncEvent(
+                        e.mName, e.mId, e.mTimestampNanos + offsetNanos);
             } else {
-                nativeRecordEarlyFinishAsyncEvent(e.mName, e.mId, e.mTimestampNanos + offsetNanos);
+                EarlyTraceEventJni.get().recordEarlyFinishAsyncEvent(
+                        e.mName, e.mId, e.mTimestampNanos + offsetNanos);
             }
         }
     }
 
     private static long getOffsetNanos() {
-        long nativeNowNanos = TimeUtils.nativeGetTimeTicksNowUs() * 1000;
+        long nativeNowNanos = TimeUtilsJni.get().getTimeTicksNowUs() * 1000;
         long javaNowNanos = Event.elapsedRealtimeNanos();
         return nativeNowNanos - javaNowNanos;
     }
@@ -345,10 +348,11 @@ public class EarlyTraceEvent {
         return name + "@" + Process.myTid();
     }
 
-    private static native void nativeRecordEarlyEvent(String name, long beginTimNanos,
-            long endTimeNanos, int threadId, long threadDurationMillis);
-    private static native void nativeRecordEarlyStartAsyncEvent(
-            String name, long id, long timestamp);
-    private static native void nativeRecordEarlyFinishAsyncEvent(
-            String name, long id, long timestamp);
+    @NativeMethods
+    interface Natives {
+        void recordEarlyEvent(String name, long beginTimNanos, long endTimeNanos, int threadId,
+                long threadDurationMillis);
+        void recordEarlyStartAsyncEvent(String name, long id, long timestamp);
+        void recordEarlyFinishAsyncEvent(String name, long id, long timestamp);
+    }
 }

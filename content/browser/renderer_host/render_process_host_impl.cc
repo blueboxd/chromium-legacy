@@ -135,7 +135,6 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
-#include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/content_switches_internal.h"
@@ -2392,13 +2391,18 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
   // Since this function is about to get deprecated (crbug.com/891872), it
   // should be fine to not add support for network isolation thus sending empty
   // key.
-  CreateURLLoaderFactory(request_initiator_site_lock, nullptr /* preferences */,
-                         net::NetworkIsolationKey(),
+  //
+  // We may not be able to allow powerful APIs such as memory measurement APIs
+  // (see https://crbug.com/887967) without removing this call.
+  CreateURLLoaderFactory(request_initiator_site_lock,
+                         network::mojom::CrossOriginEmbedderPolicy::kNone,
+                         nullptr /* preferences */, net::NetworkIsolationKey(),
                          nullptr /* header_client */, std::move(request));
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
     const base::Optional<url::Origin>& origin,
+    network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     const net::NetworkIsolationKey& network_isolation_key,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
@@ -2431,6 +2435,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
             switches::kDisableWebSecurity);
     params->network_isolation_key = network_isolation_key;
     params->header_client = std::move(header_client);
+    params->cross_origin_embedder_policy = embedder_policy;
 
     if (params->disable_web_security) {
       // --disable-web-security also disables Cross-Origin Read Blocking (CORB).

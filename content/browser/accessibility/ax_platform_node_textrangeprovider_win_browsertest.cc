@@ -92,32 +92,21 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
     observer.Wait();
   }
 
-  BrowserAccessibilityManager* GetManager() const {
-    WebContentsImpl* web_contents =
-        static_cast<WebContentsImpl*>(shell()->web_contents());
-    return web_contents->GetRootBrowserAccessibilityManager();
-  }
-
-  ComPtr<ITextRangeProvider> GetTextRangeProviderFromTextNode(
-      const BrowserAccessibility* target_node) {
-    ComPtr<IRawElementProviderSimple> provider_simple =
-        ToBrowserAccessibilityWin(target_node)->GetCOM();
-    DCHECK_NE(nullptr, provider_simple.Get());
+  void GetTextRangeProviderFromTextNode(
+      ComPtr<ITextRangeProvider>& text_range_provider,
+      BrowserAccessibility* target_browser_accessibility) {
+    auto* provider_simple =
+        ToBrowserAccessibilityWin(target_browser_accessibility)->GetCOM();
+    ASSERT_NE(nullptr, provider_simple);
 
     ComPtr<ITextProvider> text_provider;
-    DCHECK(SUCCEEDED(provider_simple->GetPatternProvider(UIA_TextPatternId,
-                                                         &text_provider)));
-    DCHECK_NE(nullptr, text_provider.Get());
+    EXPECT_HRESULT_SUCCEEDED(
+        provider_simple->GetPatternProvider(UIA_TextPatternId, &text_provider));
+    ASSERT_NE(nullptr, text_provider.Get());
 
-    ComPtr<ITextRangeProvider> text_range_provider;
-    DCHECK(SUCCEEDED(text_provider->get_DocumentRange(&text_range_provider)));
-    return text_range_provider;
-  }
-
-  ComPtr<ITextRangeProvider> GetDocumentRangeForMarkup(
-      const std::string& html_markup) {
-    LoadInitialAccessibilityTreeFromHtml(html_markup);
-    return GetTextRangeProviderFromTextNode(GetManager()->GetRoot());
+    EXPECT_HRESULT_SUCCEEDED(
+        text_provider->get_DocumentRange(&text_range_provider));
+    ASSERT_NE(nullptr, text_range_provider.Get());
   }
 
   // Run through ITextRangeProvider::ScrollIntoView top tests. It's assumed that
@@ -349,35 +338,6 @@ class AXPlatformNodeTextRangeProviderWinBrowserTest
     ScrollIntoViewBrowserTestTemplate(expected_role_start, fstart, fstart_arg,
                                       expected_role_end, fend, fend_arg, false);
   }
-
-  void AssertMoveByUnitForMarkup(
-      const TextUnit& unit,
-      const std::string& html_markup,
-      const std::vector<const wchar_t*>& expected_text) {
-    ComPtr<ITextRangeProvider> text_range =
-        GetDocumentRangeForMarkup(html_markup);
-
-    ASSERT_NE(nullptr, text_range);
-    text_range->ExpandToEnclosingUnit(unit);
-
-    size_t index = 0;
-    int count_moved = 1;
-    while (count_moved == 1 && index < expected_text.size()) {
-      EXPECT_UIA_TEXTRANGE_EQ(text_range, expected_text[index++]);
-      ASSERT_HRESULT_SUCCEEDED(text_range->Move(unit, 1, &count_moved));
-    }
-    EXPECT_EQ(expected_text.size(), index);
-    EXPECT_EQ(0, count_moved);
-
-    count_moved = -1;
-    index = expected_text.size();
-    while (count_moved == -1 && index > 0) {
-      EXPECT_UIA_TEXTRANGE_EQ(text_range, expected_text[--index]);
-      ASSERT_HRESULT_SUCCEEDED(text_range->Move(unit, -1, &count_moved));
-    }
-    EXPECT_EQ(0, count_moved);
-    EXPECT_EQ(0u, index);
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
@@ -404,8 +364,8 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   EXPECT_TRUE(node->PlatformIsLeaf());
   EXPECT_EQ(0u, node->PlatformChildCount());
 
-  ComPtr<ITextRangeProvider> text_range_provider =
-      GetTextRangeProviderFromTextNode(node);
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, node);
   ASSERT_NE(nullptr, text_range_provider.Get());
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"AsdfAsdfAsdf");
 
@@ -608,8 +568,8 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   EXPECT_TRUE(node->PlatformIsLeaf());
   EXPECT_EQ(0u, node->PlatformChildCount());
 
-  ComPtr<ITextRangeProvider> text_range_provider =
-      GetTextRangeProviderFromTextNode(node);
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, node);
   ASSERT_NE(nullptr, text_range_provider.Get());
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"plain 1");
 
@@ -681,8 +641,8 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   EXPECT_TRUE(node->PlatformIsLeaf());
   EXPECT_EQ(0u, node->PlatformChildCount());
 
-  ComPtr<ITextRangeProvider> text_range_provider =
-      GetTextRangeProviderFromTextNode(node);
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, node);
   ASSERT_NE(nullptr, text_range_provider.Get());
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"plain 1");
 
@@ -835,6 +795,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       FindNode(ax::mojom::Role::kStaticText, "end");
   ASSERT_NE(nullptr, end_node);
 
+  ComPtr<ITextRangeProvider> text_range_provider;
 
   std::vector<base::string16> paragraphs = {
       L"start",
@@ -845,8 +806,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   };
 
   // FORWARD NAVIGATION
-  ComPtr<ITextRangeProvider> text_range_provider =
-      GetTextRangeProviderFromTextNode(start_node);
+  GetTextRangeProviderFromTextNode(text_range_provider, start_node);
   ASSERT_NE(nullptr, text_range_provider.Get());
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"start");
 
@@ -917,7 +877,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       /*expected_count*/ 1);
 
   // REVERSE NAVIGATION
-  text_range_provider = GetTextRangeProviderFromTextNode(end_node);
+  GetTextRangeProviderFromTextNode(text_range_provider, end_node);
   ASSERT_NE(nullptr, text_range_provider.Get());
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"end");
 
@@ -1023,7 +983,7 @@ IN_PROC_BROWSER_TEST_F(
   };
 
   // FORWARD NAVIGATION
-  text_range_provider = GetTextRangeProviderFromTextNode(start_node);
+  GetTextRangeProviderFromTextNode(text_range_provider, start_node);
   ASSERT_NE(nullptr, text_range_provider.Get());
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"start");
 
@@ -1059,7 +1019,7 @@ IN_PROC_BROWSER_TEST_F(
       /*expected_count*/ 1);
 
   // REVERSE NAVIGATION
-  text_range_provider = GetTextRangeProviderFromTextNode(end_node);
+  GetTextRangeProviderFromTextNode(text_range_provider, end_node);
   ASSERT_NE(nullptr, text_range_provider.Get());
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"end");
 
@@ -1108,8 +1068,8 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   EXPECT_TRUE(node->PlatformIsLeaf());
   EXPECT_EQ(0u, node->PlatformChildCount());
 
-  ComPtr<ITextRangeProvider> text_range_provider =
-      GetTextRangeProviderFromTextNode(node);
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, node);
   ASSERT_NE(nullptr, text_range_provider.Get());
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"After frame");
 
@@ -1126,12 +1086,12 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
                                    /*count*/ -3,
-                                   /*expected_text*/ L"Text in ",
+                                   /*expected_text*/ L"Text in",
                                    /*expected_count*/ -3);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
                                    /*count*/ 2,
-                                   /*expected_text*/ L"Text in iframe\nAfter ",
+                                   /*expected_text*/ L"Text in iframe\nAfter",
                                    /*expected_count*/ 2);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Line,
@@ -1163,11 +1123,11 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ 2,
-                  /*expected_text*/ L"Text ",
+                  /*expected_text*/ L"Text",
                   /*expected_count*/ 2);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
                   /*count*/ -1,
-                  /*expected_text*/ L"frame\n",
+                  /*expected_text*/ L"frame",
                   /*expected_count*/ -1);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
@@ -1243,8 +1203,8 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   EXPECT_TRUE(node->PlatformIsLeaf());
   EXPECT_EQ(0u, node->PlatformChildCount());
 
-  ComPtr<ITextRangeProvider> text_range_provider =
-      GetTextRangeProviderFromTextNode(node);
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, node);
   ASSERT_NE(nullptr, text_range_provider.Get());
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"After frame");
 
@@ -1261,12 +1221,12 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
                                    /*count*/ -3,
-                                   /*expected_text*/ L"Text in ",
+                                   /*expected_text*/ L"Text in",
                                    /*expected_count*/ -3);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(text_range_provider,
                                    TextPatternRangeEndpoint_End, TextUnit_Word,
                                    /*count*/ 2,
-                                   /*expected_text*/ L"Text in iframe\nAfter ",
+                                   /*expected_text*/ L"Text in iframe\nAfter",
                                    /*expected_count*/ 2);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Line,
@@ -1308,8 +1268,8 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   EXPECT_TRUE(node->PlatformIsLeaf());
   EXPECT_EQ(0u, node->PlatformChildCount());
 
-  ComPtr<ITextRangeProvider> text_range_provider =
-      GetTextRangeProviderFromTextNode(node);
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(text_range_provider, node);
   ASSERT_NE(nullptr, text_range_provider.Get());
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"plain");
 
@@ -1339,28 +1299,4 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
   EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"italic\ntext");
 }
-
-IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
-                       EntireMarkupSuccessiveMoveByWord) {
-  AssertMoveByUnitForMarkup(TextUnit_Word, "this is a test.",
-                            {L"this ", L"is ", L"a ", L"test."});
-
-  AssertMoveByUnitForMarkup(TextUnit_Word,
-                            "    this    is      a      test.    ",
-                            {L"this ", L"is ", L"a ", L"test."});
-
-  AssertMoveByUnitForMarkup(
-      TextUnit_Word, "It said: to be continued...",
-      {L"It ", L"said: ", L"to ", L"be ", L"continued..."});
-
-  AssertMoveByUnitForMarkup(TextUnit_Word,
-                            "a <a>link with multiple words</a> and text after.",
-                            {L"a ", L"link ", L"with ", L"multiple ", L"words ",
-                             L"and ", L"text ", L"after."});
-
-  // AssertMoveByUnitForMarkup(
-  //     TextUnit_Word, "<ul><li>item one</li><li>item two</li></ul>",
-  //     {L"* ", L"item ", L"one\n", L"* ", L"item ", L"two"});
-}
-
 }  // namespace content

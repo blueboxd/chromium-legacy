@@ -1407,7 +1407,7 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
           // Delete id attribute from the second element because the same id
           // cannot be used for more than one element
           element->removeAttribute(html_names::kIdAttr);
-          if (IsHTMLAnchorElement(element))
+          if (IsA<HTMLAnchorElement>(element.Get()))
             element->removeAttribute(html_names::kNameAttr);
           SurroundNodeRangeWithElement(child, child, &wrapper, editing_state);
           if (editing_state->IsAborted())

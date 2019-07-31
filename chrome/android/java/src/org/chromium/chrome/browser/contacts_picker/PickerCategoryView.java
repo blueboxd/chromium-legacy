@@ -341,7 +341,8 @@ public class PickerCategoryView extends RelativeLayout
 
         for (ContactDetails contactDetails : selectedContacts) {
             contacts.add(new ContactsPickerListener.Contact(
-                    getContactPropertyValues(includeNames, true, contactDetails.getDisplayNames()),
+                    getContactPropertyValues(includeNames, PickerAdapter.includesNames(),
+                            contactDetails.getDisplayNames()),
                     getContactPropertyValues(includeEmails, PickerAdapter.includesEmails(),
                             contactDetails.getEmails()),
                     getContactPropertyValues(includeTel, PickerAdapter.includesTelephones(),

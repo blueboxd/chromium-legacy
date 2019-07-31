@@ -155,7 +155,7 @@ static bool StopPropagateTextDecorations(const ComputedStyle& style,
 // The <a> behavior is non-standard.
 static bool OverridesTextDecorationColors(const Element* element) {
   return element &&
-         (IsHTMLFontElement(element) || IsHTMLAnchorElement(element));
+         (IsHTMLFontElement(element) || IsA<HTMLAnchorElement>(element));
 }
 
 // FIXME: This helper is only needed because pseudoStyleForElement passes a null

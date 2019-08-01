@@ -1,0 +1,23 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Entry point module to run benchmarks with Telemetry and process results.
+
+This wires up together both the Telemetry command line and runner, responsible
+of running stories and collecting artifacts (traces, logs, etc.), together with
+the results_processor, responsible of processing such artifacts and e.g. run
+metrics to produce various kinds of outputs (histograms, csv, results.html).
+"""
+
+from core import results_processor
+from telemetry import command_line
+
+
+def main(config):
+  options = command_line.ParseArgs(
+      environment=config,
+      results_arg_parser=results_processor.ArgumentParser())
+  results_processor.ProcessOptions(options)
+  command_line.RunCommand(options)
+  results_processor.ProcessResults(options)

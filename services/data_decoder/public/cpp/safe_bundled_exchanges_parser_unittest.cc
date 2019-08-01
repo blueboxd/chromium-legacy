@@ -126,7 +126,7 @@ TEST_F(SafeBundledExchangesParserTest, ParseGoldenFile) {
         [](base::Closure quit_closure,
            mojom::BundleMetadataPtr* metadata_result,
            mojom::BundleMetadataPtr metadata,
-           const base::Optional<std::string>& error) {
+           mojom::BundleMetadataParseErrorPtr error) {
           EXPECT_TRUE(metadata);
           EXPECT_FALSE(error);
           if (metadata)
@@ -149,7 +149,7 @@ TEST_F(SafeBundledExchangesParserTest, ParseGoldenFile) {
             [](base::Closure quit_closure,
                std::vector<mojom::BundleResponsePtr>* responses,
                mojom::BundleResponsePtr response,
-               const base::Optional<std::string>& error) {
+               mojom::BundleResponseParseErrorPtr error) {
               EXPECT_TRUE(response);
               EXPECT_FALSE(error);
               if (response)
@@ -177,11 +177,11 @@ TEST_F(SafeBundledExchangesParserTest, CallWithoutOpen) {
   bool metadata_parsed = false;
   parser.ParseMetadata(base::BindOnce(
       [](bool* metadata_parsed, mojom::BundleMetadataPtr metadata,
-         const base::Optional<std::string>& error) {
+         mojom::BundleMetadataParseErrorPtr error) {
         EXPECT_FALSE(metadata);
         EXPECT_TRUE(error);
         if (error)
-          EXPECT_EQ(kConnectionError, *error);
+          EXPECT_EQ(kConnectionError, error->message);
         *metadata_parsed = true;
       },
       &metadata_parsed));
@@ -192,11 +192,11 @@ TEST_F(SafeBundledExchangesParserTest, CallWithoutOpen) {
       0u, 0u,
       base::BindOnce(
           [](bool* response_parsed, mojom::BundleResponsePtr response,
-             const base::Optional<std::string>& error) {
+             mojom::BundleResponseParseErrorPtr error) {
             EXPECT_FALSE(response);
             EXPECT_TRUE(error);
             if (error)
-              EXPECT_EQ(kConnectionError, *error);
+              EXPECT_EQ(kConnectionError, error->message);
             *response_parsed = true;
           },
           &response_parsed));
@@ -243,11 +243,11 @@ TEST_F(SafeBundledExchangesParserTest, ConnectionError) {
   parser.ParseMetadata(base::BindOnce(
       [](base::Closure quit_closure, bool* parsed,
          mojom::BundleMetadataPtr metadata,
-         const base::Optional<std::string>& error) {
+         mojom::BundleMetadataParseErrorPtr error) {
         EXPECT_FALSE(metadata);
         EXPECT_TRUE(error);
         if (error)
-          EXPECT_EQ(kConnectionError, *error);
+          EXPECT_EQ(kConnectionError, error->message);
         *parsed = true;
         std::move(quit_closure).Run();
       },

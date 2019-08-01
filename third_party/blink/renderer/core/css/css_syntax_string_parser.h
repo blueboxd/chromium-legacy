@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_STRING_PARSER_H_
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer_input_stream.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -14,7 +14,7 @@ namespace blink {
 
 class CSSTokenizerInputStream;
 
-// Produces a CSSSyntaxDescriptor from a CSSTokenizerInputStream.
+// Produces a CSSSyntaxDefinition from a CSSTokenizerInputStream.
 //
 // https://drafts.css-houdini.org/css-properties-values-api-1/#parsing-syntax
 class CORE_EXPORT CSSSyntaxStringParser {
@@ -23,8 +23,8 @@ class CORE_EXPORT CSSSyntaxStringParser {
  public:
   explicit CSSSyntaxStringParser(const String&);
 
-  // https://drafts.css-houdini.org/css-properties-values-api-1/#consume-syntax-descriptor
-  base::Optional<CSSSyntaxDescriptor> Parse();
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#consume-syntax-definition
+  base::Optional<CSSSyntaxDefinition> Parse();
 
  private:
   // https://drafts.css-houdini.org/css-properties-values-api-1/#consume-syntax-component

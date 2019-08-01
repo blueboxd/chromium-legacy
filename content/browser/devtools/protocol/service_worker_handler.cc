@@ -384,8 +384,8 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
     for (const auto& client : version.clients) {
       if (client.second.type ==
           blink::mojom::ServiceWorkerProviderType::kForWindow) {
-        // PlzNavigate: a navigation may not yet be associated with a
-        // RenderFrameHost. Use the |web_contents_getter| instead.
+        // A navigation may not yet be associated with a RenderFrameHost. Use
+        // the |web_contents_getter| instead.
         WebContents* web_contents =
             client.second.web_contents_getter
                 ? client.second.web_contents_getter.Run()

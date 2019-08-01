@@ -515,7 +515,7 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
       PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
                            *dummy_page_holder_->GetDocument().documentElement(),
-                           nullptr /* pseudo_element */, initial, initial);
+                           initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   state.SetStyle(style);

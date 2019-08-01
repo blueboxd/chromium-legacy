@@ -173,9 +173,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // Called when the network stack started handling the navigation request
   // so that the |timestamp| when it happened can be recorded into an histogram.
   // The |url| is used to verify we're tracking the correct navigation.
-  // TODO(carlosk): once PlzNavigate is the only navigation implementation
-  // remove the URL parameter and rename this method to better suit its naming
-  // conventions.
+  // TODO(carlosk): Remove the URL parameter and rename this method to better
+  // suit naming conventions.
   virtual void LogResourceRequestTime(base::TimeTicks timestamp,
                                       const GURL& url) {}
 

@@ -336,9 +336,9 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
     // Must set font in case the filter uses any font-relative units (em, ex)
     filter_style->SetFont(font_for_filter_);
 
-    StyleResolverState resolver_state(
-        style_resolution_host->GetDocument(), *style_resolution_host,
-        nullptr /* pseudo_element */, filter_style.get(), filter_style.get());
+    StyleResolverState resolver_state(style_resolution_host->GetDocument(),
+                                      *style_resolution_host,
+                                      filter_style.get(), filter_style.get());
     resolver_state.SetStyle(filter_style);
 
     StyleBuilder::ApplyProperty(GetCSSPropertyFilter(), resolver_state,

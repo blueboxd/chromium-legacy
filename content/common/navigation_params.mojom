@@ -72,13 +72,8 @@ enum NavigationType {
 
 // Provided by the renderer ----------------------------------------------------
 //
-// This struct holds parameters sent by the renderer to the browser. It is only
-// used in PlzNavigate (since in the current architecture, the renderer does not
-// inform the browser of navigations until they commit).
-
-// This struct is not used outside of the PlzNavigate project.
-// PlzNavigate: parameters needed to start a navigation on the IO thread,
-// following a renderer-initiated navigation request.
+// This struct holds parameters sent by the renderer to the browser, that are
+// needed to start a navigation.
 struct BeginNavigationParams {
 
   // Additional HTTP request headers.

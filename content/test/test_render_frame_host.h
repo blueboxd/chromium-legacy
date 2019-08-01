@@ -118,7 +118,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // DEPRECATED: use NavigationSimulator instead.
   void SimulateNavigationCommit(const GURL& url);
 
-  // PlzNavigate: this method simulates receiving a BeginNavigation IPC.
+  // This method simulates receiving a BeginNavigation IPC.
+  // DEPRECATED: use NavigationSimulator instead.
   void SendRendererInitiatedNavigationRequest(const GURL& url,
                                               bool has_user_gesture);
 
@@ -135,10 +136,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   }
 
   // Advances the RenderFrameHost (and through it the RenderFrameHostManager) to
-  // a state where a new navigation can be committed by a renderer. Currently,
-  // this simulates a BeforeUnload ACK from the renderer.
-  // PlzNavigate: this simulates a BeforeUnload ACK from the renderer, and the
-  // interaction with the IO thread up until the response is ready to commit.
+  // a state where a new navigation can be committed by a renderer. This
+  // simulates a BeforeUnload ACK from the renderer, and the interaction with
+  // the IO thread up until the response is ready to commit.
   void PrepareForCommit();
 
   // Like PrepareForCommit, but with the socket address when needed.

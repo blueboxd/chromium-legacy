@@ -107,6 +107,8 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
   DISABLED_EnsureRemoteVideoMuteDoesntMuteAudio
 #define MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks \
   DISABLED_EstablishAudioVideoCallAndVerifyUnmutingWorks
+#define MAYBE_EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks \
+  DISABLED_EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks
 
 #else
 
@@ -124,6 +126,8 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase,
   EnsureRemoteVideoMuteDoesntMuteAudio
 #define MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks \
   EstablishAudioVideoCallAndVerifyUnmutingWorks
+#define MAYBE_EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks \
+  EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks
 
 #endif  // defined(OS_MACOSX)
 
@@ -199,6 +203,15 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioBrowserTest,
       BuildConstraints(kAudioConstraints, kVideoConstraints);
   MakeAudioDetectingPeerConnectionCall("callAndEnsureAudioTrackUnmutingWorks(" +
                                        constraints + ");");
+}
+
+// TODO(crbug.com/988432): This test is a temporary replacement for:
+// external/wpt/webrtc/RTCRtpReceiver-getSynchronizationSources.https.html
+IN_PROC_BROWSER_TEST_P(
+    WebRtcAudioBrowserTest,
+    MAYBE_EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks) {
+  MakeAudioDetectingPeerConnectionCall(
+      "testEstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks();");
 }
 
 // We run these tests with the audio service both in and out of the browser

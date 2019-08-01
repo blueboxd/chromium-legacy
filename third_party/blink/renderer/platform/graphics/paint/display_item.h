@@ -130,6 +130,8 @@ class PLATFORM_EXPORT DisplayItem {
     // Used both for specifying the paint-order scroll location, and for non-
     // composited scroll hit testing (see: scroll_hit_test_display_item.h).
     kScrollHitTest,
+    // Used to prevent composited scrolling on plugins with wheel handlers.
+    kPluginScrollHitTest,
 
     kLayerChunkBackground,
     kLayerChunkNegativeZOrderChildren,
@@ -244,7 +246,10 @@ class PLATFORM_EXPORT DisplayItem {
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGEffect)
 
   bool IsHitTest() const { return type_ == kHitTest; }
-  bool IsScrollHitTest() const { return type_ == kScrollHitTest; }
+  bool IsScrollHitTest() const {
+    return type_ == kScrollHitTest || IsPluginScrollHitTest();
+  }
+  bool IsPluginScrollHitTest() const { return type_ == kPluginScrollHitTest; }
 
   bool IsCacheable() const { return is_cacheable_; }
   void SetUncacheable() { is_cacheable_ = false; }

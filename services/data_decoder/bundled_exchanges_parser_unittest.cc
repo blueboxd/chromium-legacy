@@ -75,7 +75,7 @@ mojom::BundleMetadataPtr ParseBundle(TestDataSource* data_source) {
   mojom::BundleMetadataPtr result;
   parser.ParseMetadata(base::BindLambdaForTesting(
       [&result, &run_loop](mojom::BundleMetadataPtr metadata,
-                           const base::Optional<std::string>& error) {
+                           mojom::BundleMetadataParseErrorPtr error) {
         result = std::move(metadata);
         run_loop.QuitClosure().Run();
       }));
@@ -99,7 +99,7 @@ mojom::BundleResponsePtr ParseResponse(TestDataSource* data_source,
       item->response_offset, item->response_length,
       base::BindLambdaForTesting(
           [&result, &run_loop](mojom::BundleResponsePtr response,
-                               const base::Optional<std::string>& error) {
+                               mojom::BundleResponseParseErrorPtr error) {
             result = std::move(response);
             run_loop.QuitClosure().Run();
           }));

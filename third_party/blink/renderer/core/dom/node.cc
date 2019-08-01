@@ -1909,7 +1909,7 @@ String Node::textContent(bool convert_brs_to_newlines) const {
 
   StringBuilder content;
   for (const Node& node : NodeTraversal::InclusiveDescendantsOf(*this)) {
-    if (IsHTMLBRElement(node) && convert_brs_to_newlines) {
+    if (IsA<HTMLBRElement>(node) && convert_brs_to_newlines) {
       content.Append('\n');
     } else if (auto* text_node = DynamicTo<Text>(node)) {
       content.Append(text_node->data());
@@ -2331,7 +2331,7 @@ String Node::ToMarkedTreeString(const Node* marked_node1,
                                 const char* marked_label2) const {
   const Node* root_node;
   const Node* node = this;
-  while (node->ParentOrShadowHostNode() && !IsHTMLBodyElement(*node))
+  while (node->ParentOrShadowHostNode() && !IsA<HTMLBodyElement>(*node))
     node = node->ParentOrShadowHostNode();
   root_node = node;
 
@@ -2348,7 +2348,7 @@ String Node::ToMarkedFlatTreeString(const Node* marked_node1,
                                     const char* marked_label2) const {
   const Node* root_node;
   const Node* node = this;
-  while (node->ParentOrShadowHostNode() && !IsHTMLBodyElement(*node))
+  while (node->ParentOrShadowHostNode() && !IsA<HTMLBodyElement>(*node))
     node = node->ParentOrShadowHostNode();
   root_node = node;
 

@@ -21,6 +21,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_helper.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
@@ -46,38 +47,11 @@ const char AppLaunchEventLogger::kShouldSync[] = "should_sync";
 namespace {
 
 constexpr unsigned int kNumRandomAppsToLog = 25;
-const char kArcScheme[] = "arc://";
-const char kExtensionSchemeWithDelimiter[] = "chrome-extension://";
 
 constexpr base::TimeDelta kHourDuration = base::TimeDelta::FromHours(1);
 constexpr base::TimeDelta kDayDuration = base::TimeDelta::FromDays(1);
 constexpr int kMinutesInAnHour = 60;
 constexpr int kQuarterHoursInADay = 24 * 4;
-constexpr float kTotalHoursBucketSizeMultiplier = 1.25;
-
-constexpr std::array<chromeos::power::ml::Bucket, 2> kClickBuckets = {
-    {{20, 1}, {200, 10}}};
-constexpr std::array<chromeos::power::ml::Bucket, 6>
-    kTimeSinceLastClickBuckets = {{{60, 1},
-                                   {600, 60},
-                                   {1200, 300},
-                                   {3600, 600},
-                                   {18000, 1800},
-                                   {86400, 3600}}};
-
-// Returns the nearest bucket for |value|, where bucket sizes are determined
-// exponentially, with each bucket size increasing by a factor of |base|.
-// The return value is rounded to the nearest integer.
-int ExponentialBucket(int value, float base) {
-  if (base <= 0) {
-    LOG(DFATAL) << "Base of exponential must be positive.";
-    return 0;
-  }
-  if (value <= 0) {
-    return 0;
-  }
-  return round(pow(base, round(log(value) / log(base))));
-}
 
 // Selects a random sample of size |sample_size| from |population|.
 std::vector<std::string> Sample(const std::vector<std::string>& population,
@@ -97,18 +71,6 @@ std::vector<std::string> Sample(const std::vector<std::string>& population,
     index++;
   }
   return sample;
-}
-
-int HourOfDay(base::Time time) {
-  base::Time::Exploded exploded;
-  time.LocalExplode(&exploded);
-  return exploded.hour;
-}
-
-int DayOfWeek(base::Time time) {
-  base::Time::Exploded exploded;
-  time.LocalExplode(&exploded);
-  return exploded.day_of_week;
 }
 
 }  // namespace

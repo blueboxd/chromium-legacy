@@ -21,6 +21,12 @@ function CrostiniImpl() {
    * @private @dict {!Object<!Array<string>>}
    */
   this.shared_paths_ = {};
+
+  /**
+   * True if root access to specified VM is allowed.
+   * @private {Object<boolean>}
+   */
+  this.rootAccessAllowed_ = {};
 }
 
 /**
@@ -75,6 +81,12 @@ CrostiniImpl.UMA_ROOT_TYPE_OTHER = 'Other';
  */
 CrostiniImpl.prototype.init = function(volumeManager) {
   this.volumeManager_ = volumeManager;
+  this.enabled_[CrostiniImpl.DEFAULT_VM] =
+      loadTimeData.getBoolean('CROSTINI_ENABLED');
+  this.enabled_[CrostiniImpl.PLUGIN_VM] =
+      loadTimeData.getBoolean('PLUGIN_VM_ENABLED');
+  this.rootAccessAllowed_[CrostiniImpl.DEFAULT_VM] =
+      loadTimeData.getBoolean('CROSTINI_ROOT_ACCESS_ALLOWED');
 };
 
 /**
@@ -82,7 +94,7 @@ CrostiniImpl.prototype.init = function(volumeManager) {
  */
 CrostiniImpl.prototype.listen = function() {
   chrome.fileManagerPrivate.onCrostiniChanged.addListener(
-      this.onChange_.bind(this));
+      this.onCrostiniChanged_.bind(this));
 };
 
 /**
@@ -101,6 +113,26 @@ CrostiniImpl.prototype.setEnabled = function(vmName, enabled) {
  */
 CrostiniImpl.prototype.isEnabled = function(vmName) {
   return this.enabled_[vmName];
+};
+
+/**
+ * Set whether the specified VM allows root access.
+ * @param {string} vmName
+ * @param {boolean} allowed
+ */
+// TODO(crbug.com/988375): add dynamic pref change functionality for
+// RootAccessAllowed.
+CrostiniImpl.prototype.setRootAccessAllowed = function(vmName, allowed) {
+  this.rootAccessAllowed_[vmName] = allowed;
+};
+
+/**
+ * Returns true if root access to specified VM is allowed.
+ * @param {string} vmName
+ * @return {boolean}
+ */
+CrostiniImpl.prototype.isRootAccessAllowed = function(vmName) {
+  return this.rootAccessAllowed_[vmName];
 };
 
 /**
@@ -175,19 +207,28 @@ CrostiniImpl.prototype.unregisterSharedPath = function(vmName, entry) {
 };
 
 /**
- * Handles shared path changes.
+ * Handles events for enable/disable, share/unshare.
  * @param {chrome.fileManagerPrivate.CrostiniEvent} event
  * @private
  */
-CrostiniImpl.prototype.onChange_ = function(event) {
-  if (event.eventType === 'share') {
-    for (const entry of event.entries) {
-      this.registerSharedPath(event.vmName, entry);
-    }
-  } else if (event.eventType === 'unshare') {
-    for (const entry of event.entries) {
-      this.unregisterSharedPath(event.vmName, entry);
-    }
+CrostiniImpl.prototype.onCrostiniChanged_ = function(event) {
+  switch (event.eventType) {
+    case chrome.fileManagerPrivate.CrostiniEventType.ENABLE:
+      this.setEnabled(event.vmName, true);
+      break;
+    case chrome.fileManagerPrivate.CrostiniEventType.DISABLE:
+      this.setEnabled(event.vmName, false);
+      break;
+    case chrome.fileManagerPrivate.CrostiniEventType.SHARE:
+      for (const entry of event.entries) {
+        this.registerSharedPath(event.vmName, entry);
+      }
+      break;
+    case chrome.fileManagerPrivate.CrostiniEventType.UNSHARE:
+      for (const entry of event.entries) {
+        this.unregisterSharedPath(event.vmName, entry);
+      }
+      break;
   }
 };
 

@@ -13,6 +13,8 @@ traits_headers = [
   "//services/network/public/cpp/network_ipc_param_traits.h",
   "//services/network/public/cpp/url_request_mojom_traits.h",
   "//services/network/public/cpp/network_isolation_key_mojom_traits.h",
+  "//url/mojom/origin_mojom_traits.h",
+  "//url/mojom/url_gurl_mojom_traits.h",
 ]
 public_deps = [
   "//base",

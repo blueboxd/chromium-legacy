@@ -52,8 +52,8 @@ function styleSheetFactory() {
           border-color: red;
         }
       `);
-      // TODO(jacksteinberg): use offset-block-end: / offset-inline-end: over bottom: / right:
-      // when implemented https://bugs.chromium.org/p/chromium/issues/detail?id=538475
+      // TODO(jacksteinberg): use offset-block-end: / offset-inline-end: over
+      // bottom: / right: when implemented http://crbug.com/538475.
     }
     return stylesheet;
   };
@@ -108,7 +108,8 @@ export class StdToastElement extends HTMLElement {
     if (!this.hasAttribute('role')) {
       this.setAttribute('role', 'status');
     }
-    // TODO(jacksteinberg): use https://github.com/whatwg/html/pull/4658 when implemented
+    // TODO(jacksteinberg): use https://github.com/whatwg/html/pull/4658
+    // when implemented
   }
 
   get action() {
@@ -172,7 +173,8 @@ export class StdToastElement extends HTMLElement {
 
   show({duration = DEFAULT_DURATION} = {}) {
     if (duration <= 0) {
-      throw new RangeError(`Invalid Argument: duration must be greater than 0 [${duration} given]`);
+      throw new RangeError(`Invalid Argument: duration must be greater ` +
+                           `than 0 [${duration} given]`);
     }
 
     this.setAttribute('open', '');

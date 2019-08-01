@@ -626,9 +626,9 @@ void ResourceDispatcher::ContinueForNavigation(int request_id) {
   request_info->should_follow_redirect = false;
 
   URLLoaderClientImpl* client_ptr = request_info->url_loader_client.get();
-  // PlzNavigate: during navigations, the ResourceResponse has already been
-  // received on the browser side, and has been passed down to the renderer.
-  // Replay the redirects that happened during navigation.
+  // During navigations, the ResourceResponse has already been received on the
+  // browser side, and has been passed down to the renderer. Replay the
+  // redirects that happened during navigation.
   DCHECK_EQ(response_override->redirect_responses.size(),
             response_override->redirect_infos.size());
   for (size_t i = 0; i < response_override->redirect_responses.size(); ++i) {

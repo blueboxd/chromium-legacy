@@ -17,9 +17,6 @@ namespace extensions {
 
 class Extension;
 
-bool CanBookmarkAppBePinnedToShelf();
-void BookmarkAppPinToShelf(const Extension* extension);
-
 bool CanBookmarkAppReparentTab(Profile* profile,
                                const Extension* extension,
                                bool shortcut_created);

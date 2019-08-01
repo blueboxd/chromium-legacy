@@ -749,8 +749,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
 void NavigationEntryImpl::ResetForCommit(FrameNavigationEntry* frame_entry) {
   // Any state that only matters when a navigation entry is pending should be
   // cleared here.
-  // TODO(creis): This state should be moved to NavigationRequest once
-  // PlzNavigate is enabled.
+  // TODO(creis): This state should be moved to NavigationRequest.
   SetPostData(nullptr);
   set_is_renderer_initiated(false);
   set_should_replace_entry(false);

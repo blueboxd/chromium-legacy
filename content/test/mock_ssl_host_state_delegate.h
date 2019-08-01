@@ -23,8 +23,7 @@ class MockSSLHostStateDelegate : public SSLHostStateDelegate {
 
   CertJudgment QueryPolicy(const std::string& host,
                            const net::X509Certificate& cert,
-                           int error,
-                           bool* expired_previous_decision) override;
+                           int error) override;
 
   void HostRanInsecureContent(const std::string& host,
                               int child_id,

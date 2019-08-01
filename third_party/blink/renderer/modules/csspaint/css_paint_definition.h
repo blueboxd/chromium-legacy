@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_CSS_PAINT_DEFINITION_H_
 
 #include "third_party/blink/renderer/core/css/css_property_names.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -39,7 +39,7 @@ class MODULES_EXPORT CSSPaintDefinition final
       V8PaintCallback* paint,
       const Vector<CSSPropertyID>& native_invalidation_properties,
       const Vector<AtomicString>& custom_invalidation_properties,
-      const Vector<CSSSyntaxDescriptor>& input_argument_types,
+      const Vector<CSSSyntaxDefinition>& input_argument_types,
       const PaintRenderingContext2DSettings*);
   virtual ~CSSPaintDefinition();
 
@@ -62,7 +62,7 @@ class MODULES_EXPORT CSSPaintDefinition final
   const Vector<AtomicString>& CustomInvalidationProperties() const {
     return custom_invalidation_properties_;
   }
-  const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const {
+  const Vector<CSSSyntaxDefinition>& InputArgumentTypes() const {
     return input_argument_types_;
   }
   const PaintRenderingContext2DSettings* GetPaintRenderingContext2DSettings()
@@ -96,7 +96,7 @@ class MODULES_EXPORT CSSPaintDefinition final
   Vector<CSSPropertyID> native_invalidation_properties_;
   Vector<AtomicString> custom_invalidation_properties_;
   // Input argument types, if applicable.
-  Vector<CSSSyntaxDescriptor> input_argument_types_;
+  Vector<CSSSyntaxDefinition> input_argument_types_;
   Member<const PaintRenderingContext2DSettings> context_settings_;
 };
 

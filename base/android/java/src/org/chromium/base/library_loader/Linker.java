@@ -10,7 +10,8 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
+import android.os.SystemClock;
+import android.support.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -18,9 +19,8 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.annotations.AccessedByNative;
 import org.chromium.base.annotations.JniIgnoreNatives;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -28,7 +28,7 @@ import javax.annotation.concurrent.GuardedBy;
  * Technical note:
  *
  * The point of this class is to provide an alternative to System.loadLibrary()
- * to load native shared libraries. One specific feature that it supports is the
+ * to load the native shared library. One specific feature that it supports is the
  * ability to save RAM by sharing the ELF RELRO sections between renderer
  * processes.
  *
@@ -47,6 +47,7 @@ import javax.annotation.concurrent.GuardedBy;
  * first one. On the other hand, this requires careful communication between
  * the process where the shared RELRO is created and the one(s) where it is used.
  *
+ * LegacyLinker only:
  * Note that swapping the regular RELRO with the shared one is not an atomic
  * operation. Care must be taken that no other thread tries to run native code
  * that accesses it during it. In practice, this means the swap must happen
@@ -72,64 +73,44 @@ import javax.annotation.concurrent.GuardedBy;
  * - The common library load addresses are randomized for each instance of
  *   the program on the device. See getRandomBaseLoadAddress() for more
  *   details on how this is obtained.
- *
- * - When loading several libraries in service processes, a simple incremental
- *   approach from the original random base load address is used. This is
- *   sufficient to deal correctly with component builds (which can use dozens
- *   of shared libraries), while regular builds always embed a single shared
- *   library per APK.
  */
 
 /**
  * Here's an explanation of how this class is supposed to be used:
  *
- *  - Native shared libraries should be loaded with Linker.loadLibrary(),
+ *  - The native shared library must be loaded with Linker.loadLibrary(),
  *    instead of System.loadLibrary(). The two functions should behave the same
  *    (at a high level).
  *
- *  - Before loading any library, prepareLibraryLoad() should be called.
- *
- *  - After loading all libraries, finishLibraryLoad() should be called, before
- *    running any native code from any of the libraries (except their static
- *    constructors, which can't be avoided).
+ *  - Before loading the library, setApkFilePath() must be called when loading from the APK.
  *
  *  - A service process shall call either initServiceProcess() or
- *    disableSharedRelros() early (i.e. before any loadLibrary() call).
+ *    disableSharedRelros() early (i.e. before loadLibrary() is called).
  *    Otherwise, the linker considers that it is running inside the browser
  *    process. This is because various Chromium projects have vastly
  *    different initialization paths.
  *
- *    disableSharedRelros() completely disables shared RELROs, and loadLibrary()
+ *    disableSharedRelros() completely disables shared RELRO, and loadLibrary()
  *    will behave exactly like System.loadLibrary().
  *
- *    initServiceProcess(baseLoadAddress) indicates that shared RELROs are to be
+ *    initServiceProcess(baseLoadAddress) indicates that shared RELRO are to be
  *    used in this process.
  *
  *  - The browser is in charge of deciding where in memory each library should
  *    be loaded. This address must be passed to each service process (see
- *    ChromiumLinkerParams.java in content for a helper class to do so).
+ *    ChromiumLinkerParams.java in //content for a helper class to do so).
  *
- *  - The browser will also generate shared RELROs for each library it loads.
- *    More specifically, by default when in the browser process, the linker
- *    will:
+ *  - The browser will also generate shared RELRO for the loaded library.
  *
- *       - Load libraries randomly (just like System.loadLibrary()).
- *       - Compute the fixed address to be used to load the same library
- *         in service processes.
- *       - Create a shared memory region populated with the RELRO region
- *         content pre-relocated for the specific fixed address above.
- *
- *  - Once all libraries are loaded in the browser process, one can call
- *    getSharedRelros() which returns a Bundle instance containing a map that
- *    links each loaded library to its shared RELRO region.
+ *  - Once the library has been loaded in the browser process, one can call getSharedRelros() which
+ *    returns a Bundle instance containing the shared RELRO region.
  *
  *    This Bundle must be passed to each service process, for example through
  *    a Binder call (note that the Bundle includes file descriptors and cannot
  *    be added as an Intent extra).
  *
- *  - In a service process, finishLibraryLoad() and/or loadLibrary() may
- *    block until the RELRO section Bundle is received. This is typically
- *    done by calling useSharedRelros() from another thread.
+ *  - In a service process, loadLibrary() may block until the RELRO section Bundle is received. This
+ *    is typically done by calling provideSharedRelros() from another thread.
  *
  *    This method also ensures the process uses the shared RELROs.
  */
@@ -151,12 +132,6 @@ public abstract class Linker {
     // The name of a class that implements TestRunner.
     private String mTestRunnerClassName;
 
-    // Size of the area requested when using ASLR to obtain a random load address.
-    // Should match the value of kAddressSpaceReservationSize on the JNI side.
-    // Used when computing the load addresses of multiple loaded libraries to
-    // ensure that we don't try to load outside the area originally requested.
-    protected static final int ADDRESS_SPACE_RESERVATION = 192 * 1024 * 1024;
-
     // Constants used to indicate a given Linker implementation, for testing.
     //   LEGACY       -> Always uses the LegacyLinker implementation.
     //   MODERN       -> Always uses the ModernLinker implementation.
@@ -166,40 +141,69 @@ public abstract class Linker {
 
     // Singleton.
     protected static final Object sLock = new Object();
+
+    @GuardedBy("sLock")
     private static Linker sSingleton;
 
-    // Variables below are used in derived classes.
-    // Becomes true after linker initialization.
-    protected boolean mInitialized;
+    @GuardedBy("sLock")
+    protected LibInfo mLibInfo;
 
     // Becomes true to indicate this process needs to wait for a shared RELRO in LibraryLoad().
+    @GuardedBy("sLock")
     protected boolean mWaitForSharedRelros;
 
-    // Cached Bundle representation of the RELRO sections map for transfer across processes.
-    protected Bundle mSharedRelrosBundle;
-
     // Set to true if this runs in the browser process. Disabled by initServiceProcess().
+    @GuardedBy("sLock")
     protected boolean mInBrowserProcess = true;
 
     // Current common random base load address. A value of -1 indicates not yet initialized.
+    @GuardedBy("sLock")
     protected long mBaseLoadAddress = -1;
 
-    // Current fixed-location load address for the next library called by loadLibrary().
-    // Initialized to mBaseLoadAddress in prepareLibraryLoad(), and then adjusted as each
-    // library is loaded by loadLibrary().
-    protected long mCurrentLoadAddress = -1;
+    /**
+     * States for library loading. The only transitions are forward ones.
+     *
+     * The states are:
+     * - UNINITIALIZED: Initial state.
+     * - INITIALIZED: After linker initialization. Required for using the linker.
+     *
+     * When loading a library, there are several cases:
+     * - relro will be shared: the browser process loads the library and provides them, other
+     *   processes wait for them to load the library (ModernLinker), or load then wait
+     *   (LegacyLinker).
+     * - relro will not be shared.
+     *
+     * Once the library has been loaded, in the browser process the state is DONE_PROVIDE_RELRO,
+     * and in other processes DONE.
+     *
+     * Transitions are then:
+     * All processes: UNINITIALIZED -> INITIALIZED
+     * Browser: INITIALIZED -> DONE_PROVIDE_RELRO
+     * Other:   INITIALIZED -> DONE
+     *
+     * When relro sharing is not happening:
+     * INITIALIZED -> DONE_PROVIDE_RELRO (Browser in case of relro sharing error)
+     * INITIALIZED -> DONE (Other processes, or browser when relro sharing was disabled from the
+     * start, possibly due to a retry after a load failure.)
+     */
+    @IntDef({State.UNINITIALIZED, State.INITIALIZED, State.DONE_PROVIDE_RELRO, State.DONE})
+    @Retention(RetentionPolicy.SOURCE)
+    protected @interface State {
+        int UNINITIALIZED = 0;
+        int INITIALIZED = 1;
+        int DONE_PROVIDE_RELRO = 2;
+        int DONE = 3;
+    }
 
-    // The map of libraries that are currently loaded in this process.
-    protected HashMap<String, LibInfo> mLoadedLibraries;
+    @GuardedBy("sLock")
+    @State
+    protected int mState = State.UNINITIALIZED;
 
     // Protected singleton constructor.
     protected Linker() {}
 
     /**
      * Get singleton instance. Returns either a LegacyLinker or a ModernLinker.
-     *
-     * Returns a ModernLinker if running on Android M or later, otherwise returns
-     * a LegacyLinker.
      *
      * ModernLinker requires OS features from Android M and later: a system linker
      * that handles packed relocations and load from APK, and |android_dlopen_ext()|
@@ -265,15 +269,337 @@ public abstract class Linker {
      * Call this method before loading any libraries to indicate that this
      * process shall neither create or reuse shared RELRO sections.
      */
-    public void disableSharedRelros() {
+    public final void disableSharedRelros() {
         if (DEBUG) Log.i(TAG, "disableSharedRelros() called");
         synchronized (sLock) {
             ensureInitializedLocked();
+            assert mState == State.INITIALIZED; // Not after the library has been loaded.
             mInBrowserProcess = false;
             mWaitForSharedRelros = false;
         }
     }
 
+    /**
+     * Obtain a random base load address at which to place loaded libraries.
+     *
+     * @return new base load address
+     */
+    protected static long getRandomBaseLoadAddress() {
+        // nativeGetRandomBaseLoadAddress() returns an address at which it has previously
+        // successfully mapped an area larger than the largest library we expect to load,
+        // on the basis that we will be able, with high probability, to map our library
+        // into it.
+        //
+        // One issue with this is that we do not yet know the size of the library that
+        // we will load is. If it is smaller than the size we used to obtain a random
+        // address the library mapping may still succeed. The other issue is that
+        // although highly unlikely, there is no guarantee that something else does not
+        // map into the area we are going to use between here and when we try to map into it.
+        //
+        // The above notes mean that all of this is probabilistic. It is however okay to do
+        // because if, worst case and unlikely, we get unlucky in our choice of address,
+        // the back-out and retry without the shared RELRO in the ChildProcessService will
+        // keep things running.
+        final long address = nativeGetRandomBaseLoadAddress();
+        if (DEBUG) Log.i(TAG, "Random native base load address: 0x%x", address);
+        return address;
+    }
+
+    /** Tell the linker about the APK path, if the library is loaded from the APK. */
+    abstract void setApkFilePath(String path);
+
+    /**
+     * Load a native shared library with the Chromium linker. Note the crazy linker treats
+     * libraries and files as equivalent, so you can only open one library in a given zip
+     * file. The library must not be the Chromium linker library.
+     *
+     * @param libFilePath The path of the library (possibly in the zip file).
+     * @param isFixesAddressPermitted Whether the library can be loaded at a fixed address for RELRO
+     * sharing.
+     */
+    final void loadLibrary(String libFilePath, boolean isFixedAddressPermitted) {
+        if (DEBUG) Log.i(TAG, "loadLibrary: %s", libFilePath);
+        assert !libFilePath.equals(LINKER_JNI_LIBRARY);
+        synchronized (sLock) {
+            loadLibraryImplLocked(libFilePath, isFixedAddressPermitted);
+        }
+    }
+
+    /**
+     * Call this to send a Bundle containing the shared RELRO section to be used in this process. If
+     * initServiceProcess() was previously called, loadLibrary() will not exit until this method is
+     * called in another thread with a non-null value.
+     *
+     * @param bundle The Bundle instance containing the shared RELRO section to use in this process.
+     */
+    public final void provideSharedRelros(Bundle bundle) {
+        if (DEBUG) Log.i(TAG, "provideSharedRelros() called with %s", bundle);
+        synchronized (sLock) {
+            assert mState != State.DONE && mState != State.DONE_PROVIDE_RELRO;
+            // Note that in certain cases, this can be called before
+            // initServiceProcess() in service processes.
+            mLibInfo = LibInfo.fromBundle(bundle);
+            // Tell any listener blocked in loadLibraryImplLocked() about it.
+            sLock.notifyAll();
+        }
+    }
+
+    /**
+     * Call this to retrieve the shared RELRO sections created in this process,
+     * after loading the library.
+     *
+     * @return a new Bundle instance, or null if RELRO sharing is disabled on
+     * this system, or if initServiceProcess() was called previously.
+     */
+    public final Bundle getSharedRelros() {
+        synchronized (sLock) {
+            if (mState == State.DONE_PROVIDE_RELRO) {
+                assert mInBrowserProcess;
+                Bundle result = mLibInfo.toBundle();
+                if (DEBUG) Log.i(TAG, "getSharedRelros() = %s", result.toString());
+                return result;
+            }
+
+            if (DEBUG) Log.i(TAG, "getSharedRelros() = null");
+            return null;
+        }
+    }
+
+    /**
+     * Call this method before loading the library to indicate that this process is ready to reuse
+     * shared RELRO sections from another one. Typically used when starting service processes.
+     *
+     * @param baseLoadAddress the base library load address to use.
+     */
+    public final void initServiceProcess(long baseLoadAddress) {
+        if (DEBUG) Log.i(TAG, "initServiceProcess(0x%x) called", baseLoadAddress);
+        synchronized (sLock) {
+            ensureInitializedLocked();
+            assert mState == State.INITIALIZED;
+
+            mInBrowserProcess = false;
+            mWaitForSharedRelros = true;
+            mBaseLoadAddress = baseLoadAddress;
+        }
+    }
+
+    /**
+     * Retrieve the base load address of the shared RELRO section.  This also enforces the creation
+     * of the shared RELRO section, which can later be retrieved with getSharedRelros().
+     *
+     * @return a common, random base load address, or 0 if RELRO sharing is
+     * disabled.
+     */
+    public final long getBaseLoadAddress() {
+        synchronized (sLock) {
+            ensureInitializedLocked();
+            setupBaseLoadAddressLocked();
+            if (DEBUG) Log.i(TAG, "getBaseLoadAddress() returns 0x%x", mBaseLoadAddress);
+
+            return mBaseLoadAddress;
+        }
+    }
+
+    /**
+     * Implements loading the native shared library with the Chromium linker.
+     *
+     * Load a native shared library with the Chromium linker. If the library is within a zip file
+     * it must be uncompressed and page aligned.
+     *
+     * If asked to wait for shared RELROs, this function will block until the shared RELRO bundle
+     * is received by provideSharedRelros().
+     *
+     * @param libFilePath The path of the library (possibly in the zip file).
+     * @param isFixedAddressPermitted If true, uses a fixed load address if one was
+     * supplied, otherwise ignores the fixed address and loads wherever available.
+     */
+    abstract void loadLibraryImplLocked(String libFilePath, boolean isFixedAddressPermitted);
+
+    /** Load the Linker JNI library. Throws UnsatisfiedLinkError on error. */
+    @SuppressLint({"UnsafeDynamicallyLoadedCode"})
+    @GuardedBy("sLock")
+    private void loadLinkerJniLibraryLocked() {
+        assert mState == State.UNINITIALIZED;
+
+        LibraryLoader.setEnvForNative();
+        if (DEBUG) Log.i(TAG, "Loading lib%s.so", LINKER_JNI_LIBRARY);
+
+        try {
+            System.loadLibrary(LINKER_JNI_LIBRARY);
+        } catch (UnsatisfiedLinkError e) {
+            if (LibraryLoader.PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
+                System.load(LibraryLoader.getExtractedLibraryPath(
+                        ContextUtils.getApplicationContext().getApplicationInfo(),
+                        LINKER_JNI_LIBRARY));
+            } else {
+                // Cannot continue if we cannot load the linker. Technically we could try to
+                // load the library with the system linker on Android M+, but this should never
+                // happen, better to catch it in crash reports.
+                throw e;
+            }
+        }
+    }
+
+    // Used internally to initialize the linker's data. Loads JNI.
+    @GuardedBy("sLock")
+    protected final void ensureInitializedLocked() {
+        if (mState != State.UNINITIALIZED) return;
+
+        loadLinkerJniLibraryLocked();
+        // Force generation of random base load address, as well as creation of shared RELRO
+        // sections in this process.
+        if (mInBrowserProcess) setupBaseLoadAddressLocked();
+
+        mState = State.INITIALIZED;
+    }
+
+    // Used internally to wait for shared RELROs. Returns once useSharedRelros() has been
+    // called to supply a valid shared RELROs bundle.
+    @GuardedBy("sLock")
+    protected final void waitForSharedRelrosLocked() {
+        if (DEBUG) Log.i(TAG, "waitForSharedRelros() called");
+
+        // Wait until notified by useSharedRelros() that shared RELROs have arrived.
+        //
+        // Note that the relocations may already have been provided by the time we arrive here, so
+        // this may return immediately.
+        long startTime = DEBUG ? SystemClock.uptimeMillis() : 0;
+        while (mLibInfo == null) {
+            try {
+                sLock.wait();
+            } catch (InterruptedException e) {
+                // Continue waiting even if we were just interrupted.
+            }
+        }
+
+        if (DEBUG) {
+            Log.i(TAG, "Time to wait for shared RELRO: %d ms",
+                    SystemClock.uptimeMillis() - startTime);
+        }
+    }
+
+    // Used internally to lazily setup the common random base load address.
+    @GuardedBy("sLock")
+    private void setupBaseLoadAddressLocked() {
+        if (mBaseLoadAddress == -1) {
+            mBaseLoadAddress = getRandomBaseLoadAddress();
+            if (mBaseLoadAddress == 0) {
+                // If the random address is 0 there are issues with finding enough
+                // free address space, so disable RELRO shared / fixed load addresses.
+                Log.w(TAG, "Disabling shared RELROs due address space pressure");
+                mWaitForSharedRelros = false;
+            }
+        }
+    }
+
+    /**
+     * Record information for a given library.
+     *
+     * IMPORTANT: Native code knows about this class's fields, so
+     * don't change them without modifying the corresponding C++ sources.
+     * Also, the LibInfo instance owns the shared RELRO file descriptor.
+     */
+    @JniIgnoreNatives
+    protected static class LibInfo implements Parcelable {
+        private static final String EXTRA_LINKER_LIB_INFO = "libinfo";
+
+        LibInfo() {}
+
+        // from Parcelable
+        LibInfo(Parcel in) {
+            // See below in writeToParcel() for the serializatiom protocol.
+            mLibFilePath = in.readString();
+            mLoadAddress = in.readLong();
+            mLoadSize = in.readLong();
+            mRelroStart = in.readLong();
+            mRelroSize = in.readLong();
+            boolean hasRelroFd = in.readInt() != 0;
+            if (hasRelroFd) {
+                ParcelFileDescriptor fd = ParcelFileDescriptor.CREATOR.createFromParcel(in);
+                // If CreateSharedRelro fails, the OS file descriptor will be -1 and |fd| will be
+                // null.
+                if (fd != null) {
+                    mRelroFd = fd.detachFd();
+                }
+            } else {
+                mRelroFd = -1;
+            }
+        }
+
+        public void close() {
+            if (mRelroFd >= 0) {
+                StreamUtil.closeQuietly(ParcelFileDescriptor.adoptFd(mRelroFd));
+                mRelroFd = -1;
+            }
+        }
+
+        public static LibInfo fromBundle(Bundle bundle) {
+            return bundle.getParcelable(EXTRA_LINKER_LIB_INFO);
+        }
+
+        public Bundle toBundle() {
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(EXTRA_LINKER_LIB_INFO, this);
+            return bundle;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            out.writeString(mLibFilePath);
+            out.writeLong(mLoadAddress);
+            out.writeLong(mLoadSize);
+            out.writeLong(mRelroStart);
+            out.writeLong(mRelroSize);
+            // Parcel#writeBoolean() is API level 29, so use an int instead.
+            // We use this as a flag as we cannot serialize an invalid fd.
+            out.writeInt(mRelroFd >= 0 ? 1 : 0);
+            if (mRelroFd >= 0) {
+                try {
+                    ParcelFileDescriptor fd = ParcelFileDescriptor.fromFd(mRelroFd);
+                    fd.writeToParcel(out, 0);
+                    fd.close();
+                } catch (java.io.IOException e) {
+                    Log.e(TAG, "Can't write LibInfo file descriptor to parcel", e);
+                }
+            }
+        }
+
+        @Override
+        public int describeContents() {
+            return Parcelable.CONTENTS_FILE_DESCRIPTOR;
+        }
+
+        // From Parcelable
+        public static final Parcelable.Creator<LibInfo> CREATOR =
+                new Parcelable.Creator<LibInfo>() {
+                    @Override
+                    public LibInfo createFromParcel(Parcel in) {
+                        return new LibInfo(in);
+                    }
+
+                    @Override
+                    public LibInfo[] newArray(int size) {
+                        return new LibInfo[size];
+                    }
+                };
+
+        public String mLibFilePath;
+
+        // IMPORTANT: Don't change these fields without modifying the
+        // native code that accesses them directly!
+        @AccessedByNative
+        public long mLoadAddress; // page-aligned library load address.
+        @AccessedByNative
+        public long mLoadSize;    // page-aligned library load size.
+        @AccessedByNative
+        public long mRelroStart;  // page-aligned address in memory, or 0 if none.
+        @AccessedByNative
+        public long mRelroSize;   // page-aligned size in memory, or 0.
+        @AccessedByNative
+        public int mRelroFd = -1; // shared RELRO file descriptor, or -1
+    }
+
+    /* ---------------------- Testing support methods. ---------------------- */
     /**
      * Check that native library linker tests are enabled.
      * If not enabled, calls to testing functions will fail with an assertion
@@ -402,303 +728,6 @@ public abstract class Linker {
             }
 
             Log.i(TAG, "All linker tests passed");
-        }
-    }
-
-    /**
-     * Determine whether a library is the linker library.
-     *
-     * @param library the name of the library.
-     * @return true is the library is the Linker's own JNI library.
-     */
-    boolean isChromiumLinkerLibrary(String library) {
-        return library.equals(LINKER_JNI_LIBRARY);
-    }
-
-    /**
-     * Obtain a random base load address at which to place loaded libraries.
-     *
-     * @return new base load address
-     */
-    protected long getRandomBaseLoadAddress() {
-        // nativeGetRandomBaseLoadAddress() returns an address at which it has previously
-        // successfully mapped an area larger than the largest library we expect to load,
-        // on the basis that we will be able, with high probability, to map our library
-        // into it.
-        //
-        // One issue with this is that we do not yet know the size of the library that
-        // we will load is. If it is smaller than the size we used to obtain a random
-        // address the library mapping may still succeed. The other issue is that
-        // although highly unlikely, there is no guarantee that something else does not
-        // map into the area we are going to use between here and when we try to map into it.
-        //
-        // The above notes mean that all of this is probablistic. It is however okay to do
-        // because if, worst case and unlikely, we get unlucky in our choice of address,
-        // the back-out and retry without the shared RELRO in the ChildProcessService will
-        // keep things running.
-        final long address = nativeGetRandomBaseLoadAddress();
-        if (DEBUG) {
-            Log.i(TAG, String.format(Locale.US, "Random native base load address: 0x%x", address));
-        }
-        return address;
-    }
-
-    /**
-     * Load a native shared library with the Chromium linker. Note the crazy linker treats
-     * libraries and files as equivalent, so you can only open one library in a given zip
-     * file. The library must not be the Chromium linker library.
-     *
-     * @param libFilePath The path of the library (possibly in the zip file).
-     */
-    void loadLibrary(String libFilePath) {
-        if (DEBUG) {
-            Log.i(TAG, "loadLibrary: " + libFilePath);
-        }
-        final boolean isFixedAddressPermitted = true;
-        loadLibraryImpl(libFilePath, isFixedAddressPermitted);
-    }
-
-    /**
-     * Load a native shared library with the Chromium linker, ignoring any
-     * requested fixed address for RELRO sharing. Note the crazy linker treats libraries and
-     * files as equivalent, so you can only open one library in a given zip file. The
-     * library must not be the Chromium linker library.
-     *
-     * @param libFilePath The path of the library (possibly in the zip file).
-     */
-    void loadLibraryNoFixedAddress(String libFilePath) {
-        if (DEBUG) {
-            Log.i(TAG, "loadLibraryAtAnyAddress: " + libFilePath);
-        }
-        final boolean isFixedAddressPermitted = false;
-        loadLibraryImpl(libFilePath, isFixedAddressPermitted);
-    }
-
-    /**
-     * Call this method just before loading any native shared libraries in this process.
-     *
-     * @param apkFilePath Optional current APK file path. If provided, the linker
-     * will try to load libraries directly from it.
-     */
-    abstract void prepareLibraryLoad(@Nullable String apkFilePath);
-
-    /**
-     * Call this method just after loading all native shared libraries in this process.
-     */
-    abstract void finishLibraryLoad();
-
-    /**
-     * Call this to send a Bundle containing the shared RELRO sections to be
-     * used in this process. If initServiceProcess() was previously called,
-     * finishLibraryLoad() will not exit until this method is called in another
-     * thread with a non-null value.
-     *
-     * @param bundle The Bundle instance containing a map of shared RELRO sections
-     * to use in this process.
-     */
-    public abstract void useSharedRelros(Bundle bundle);
-
-    /**
-     * Call this to retrieve the shared RELRO sections created in this process,
-     * after loading all libraries.
-     *
-     * @return a new Bundle instance, or null if RELRO sharing is disabled on
-     * this system, or if initServiceProcess() was called previously.
-     */
-    public abstract Bundle getSharedRelros();
-
-    /**
-     * Call this method before loading any libraries to indicate that this
-     * process is ready to reuse shared RELRO sections from another one.
-     * Typically used when starting service processes.
-     *
-     * @param baseLoadAddress the base library load address to use.
-     */
-    public void initServiceProcess(long baseLoadAddress) {
-        if (DEBUG) Log.i(TAG, "initServiceProcess(0x%x) called", baseLoadAddress);
-        synchronized (sLock) {
-            ensureInitializedLocked();
-            mInBrowserProcess = false;
-            mWaitForSharedRelros = true;
-            mBaseLoadAddress = baseLoadAddress;
-            mCurrentLoadAddress = baseLoadAddress;
-        }
-    }
-
-    /**
-     * Retrieve the base load address of all shared RELRO sections.
-     * This also enforces the creation of shared RELRO sections in
-     * prepareLibraryLoad(), which can later be retrieved with getSharedRelros().
-     *
-     * @return a common, random base load address, or 0 if RELRO sharing is
-     * disabled.
-     */
-    public abstract long getBaseLoadAddress();
-
-    /**
-     * Implements loading a native shared library with the Chromium linker.
-     *
-     * @param libFilePath The path of the library (possibly in the zip file).
-     * @param isFixedAddressPermitted If true, uses a fixed load address if one was
-     * supplied, otherwise ignores the fixed address and loads wherever available.
-     */
-    abstract void loadLibraryImpl(String libFilePath, boolean isFixedAddressPermitted);
-
-    /**
-     * Load the Linker JNI library. Throws UnsatisfiedLinkError on error.
-     */
-    @SuppressLint({"UnsafeDynamicallyLoadedCode"})
-    protected static void loadLinkerJniLibrary() {
-        LibraryLoader.setEnvForNative();
-        if (DEBUG) {
-            String libName = "lib" + LINKER_JNI_LIBRARY + ".so";
-            Log.i(TAG, "Loading %s", libName);
-        }
-        try {
-            System.loadLibrary(LINKER_JNI_LIBRARY);
-        } catch (UnsatisfiedLinkError e) {
-            if (LibraryLoader.PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-                System.load(LibraryLoader.getExtractedLibraryPath(
-                        ContextUtils.getApplicationContext().getApplicationInfo(),
-                        LINKER_JNI_LIBRARY));
-            } else {
-                // Cannot continue if we cannot load the linker. Technically we could try to
-                // load the library with the system linker on Android M+, but this should never
-                // happen, better to catch it in crash reports.
-                throw e;
-            }
-        }
-    }
-
-    // Used internally to initialize the linker's data. Loads JNI.
-    @GuardedBy("sLock")
-    protected void ensureInitializedLocked() {
-        if (mInitialized) return;
-
-        loadLinkerJniLibrary();
-        mInitialized = true;
-    }
-
-    // Used internally to lazily setup the common random base load address.
-    @GuardedBy("sLock")
-    protected void setupBaseLoadAddressLocked() {
-        if (mBaseLoadAddress == -1) {
-            mBaseLoadAddress = getRandomBaseLoadAddress();
-            mCurrentLoadAddress = mBaseLoadAddress;
-            if (mBaseLoadAddress == 0) {
-                // If the random address is 0 there are issues with finding enough
-                // free address space, so disable RELRO shared / fixed load addresses.
-                Log.w(TAG, "Disabling shared RELROs due address space pressure");
-                mWaitForSharedRelros = false;
-            }
-        }
-    }
-
-    /**
-     * Record information for a given library.
-     * IMPORTANT: Native code knows about this class's fields, so
-     * don't change them without modifying the corresponding C++ sources.
-     * Also, the LibInfo instance owns the shared RELRO file descriptor.
-     */
-    @JniIgnoreNatives
-    protected static class LibInfo implements Parcelable {
-        LibInfo() {}
-
-        // from Parcelable
-        LibInfo(Parcel in) {
-            mLoadAddress = in.readLong();
-            mLoadSize = in.readLong();
-            mRelroStart = in.readLong();
-            mRelroSize = in.readLong();
-            ParcelFileDescriptor fd = ParcelFileDescriptor.CREATOR.createFromParcel(in);
-            // If CreateSharedRelro fails, the OS file descriptor will be -1 and |fd| will be null.
-            if (fd != null) {
-                mRelroFd = fd.detachFd();
-            }
-        }
-
-        public void close() {
-            if (mRelroFd >= 0) {
-                StreamUtil.closeQuietly(ParcelFileDescriptor.adoptFd(mRelroFd));
-                mRelroFd = -1;
-            }
-        }
-
-        // from Parcelable
-        @Override
-        public void writeToParcel(Parcel out, int flags) {
-            if (mRelroFd >= 0) {
-                out.writeLong(mLoadAddress);
-                out.writeLong(mLoadSize);
-                out.writeLong(mRelroStart);
-                out.writeLong(mRelroSize);
-                try {
-                    ParcelFileDescriptor fd = ParcelFileDescriptor.fromFd(mRelroFd);
-                    fd.writeToParcel(out, 0);
-                    fd.close();
-                } catch (java.io.IOException e) {
-                    Log.e(TAG, "Can't write LibInfo file descriptor to parcel", e);
-                }
-            }
-        }
-
-        // from Parcelable
-        @Override
-        public int describeContents() {
-            return Parcelable.CONTENTS_FILE_DESCRIPTOR;
-        }
-
-        // from Parcelable
-        public static final Parcelable.Creator<LibInfo> CREATOR =
-                new Parcelable.Creator<LibInfo>() {
-                    @Override
-                    public LibInfo createFromParcel(Parcel in) {
-                        return new LibInfo(in);
-                    }
-
-                    @Override
-                    public LibInfo[] newArray(int size) {
-                        return new LibInfo[size];
-                    }
-                };
-
-        // IMPORTANT: Don't change these fields without modifying the
-        // native code that accesses them directly!
-        @AccessedByNative
-        public long mLoadAddress; // page-aligned library load address.
-        @AccessedByNative
-        public long mLoadSize;    // page-aligned library load size.
-        @AccessedByNative
-        public long mRelroStart;  // page-aligned address in memory, or 0 if none.
-        @AccessedByNative
-        public long mRelroSize;   // page-aligned size in memory, or 0.
-        @AccessedByNative
-        public int mRelroFd = -1; // shared RELRO file descriptor, or -1
-    }
-
-    // Create a Bundle from a map of LibInfo objects.
-    protected static Bundle createBundleFromLibInfoMap(HashMap<String, LibInfo> map) {
-        Bundle bundle = new Bundle(map.size());
-        for (Map.Entry<String, LibInfo> entry : map.entrySet()) {
-            bundle.putParcelable(entry.getKey(), entry.getValue());
-        }
-        return bundle;
-    }
-
-    // Create a new LibInfo map from a Bundle.
-    protected static HashMap<String, LibInfo> createLibInfoMapFromBundle(Bundle bundle) {
-        HashMap<String, LibInfo> map = new HashMap<String, LibInfo>();
-        for (String library : bundle.keySet()) {
-            LibInfo libInfo = bundle.getParcelable(library);
-            map.put(library, libInfo);
-        }
-        return map;
-    }
-
-    // Call the close() method on all values of a LibInfo map.
-    protected static void closeLibInfoMap(HashMap<String, LibInfo> map) {
-        for (Map.Entry<String, LibInfo> entry : map.entrySet()) {
-            entry.getValue().close();
         }
     }
 

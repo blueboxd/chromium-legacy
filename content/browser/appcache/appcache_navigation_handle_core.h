@@ -23,7 +23,6 @@ class AppCacheHost;
 class AppCacheServiceImpl;
 class ChromeAppCacheService;
 
-// PlzNavigate
 // This class is used to manage the lifetime of AppCacheHosts
 // created during navigations. This class is created on the UI thread, but
 // should only be accessed from the IO thread afterwards. It is the IO thread

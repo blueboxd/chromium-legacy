@@ -122,7 +122,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                            const char* audio_file_data,
                            size_t data_size) override;
 
-  blink::WebBlobRegistry* GetBlobRegistry() override;
   scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
       blink::WebLocalFrame* web_frame,
       const media::AudioSourceParameters& params) override;
@@ -238,8 +237,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   // If true, the renderer process is locked to a site.
   bool is_locked_to_site_;
-
-  std::unique_ptr<blink::WebBlobRegistry> blob_registry_;
 
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

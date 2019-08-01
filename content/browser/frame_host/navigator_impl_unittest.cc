@@ -122,7 +122,7 @@ TEST_F(NavigatorTest, SimpleBrowserInitiatedNavigationFromNonLiveRenderer) {
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }
 
-// PlzNavigate: Test a complete renderer-initiated same-site navigation.
+// Tests a complete renderer-initiated same-site navigation.
 TEST_F(NavigatorTest, SimpleRendererInitiatedSameSiteNavigation) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.chromium.org/Home");
@@ -171,7 +171,7 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedSameSiteNavigation) {
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }
 
-// PlzNavigate: Test a complete renderer-initiated navigation that should be
+// Tests a complete renderer-initiated navigation that should be
 // cross-site but does not result in a SiteInstance swap because its
 // renderer-initiated.
 TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
@@ -231,7 +231,7 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
   }
 }
 
-// PlzNavigate: Test that a beforeUnload denial cancels the navigation.
+// Tests that a beforeUnload denial cancels the navigation.
 TEST_F(NavigatorTest, BeforeUnloadDenialCancelNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
@@ -354,7 +354,7 @@ TEST_F(NavigatorTest, BeginNavigation) {
   }
 }
 
-// PlzNavigate: Test that committing an HTTP 204 or HTTP 205 response cancels
+// Tests that committing an HTTP 204 or HTTP 205 response cancels
 // the navigation.
 TEST_F(NavigatorTest, NoContent) {
   const GURL kUrl1("http://www.chromium.org/");
@@ -636,7 +636,7 @@ TEST_F(NavigatorTest, RendererUserInitiatedNavigationCancel) {
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
 }
 
-// PlzNavigate: Test that a renderer-initiated user-initiated navigation is
+// Tests that a renderer-initiated user-initiated navigation is
 // canceled if a renderer-initiated non-user-initiated request is issued in the
 // meantime.
 TEST_F(NavigatorTest,

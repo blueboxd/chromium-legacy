@@ -322,8 +322,7 @@ void NavigatorImpl::DidNavigate(
   // DidNavigateMainFramePostCommit / DidNavigateAnyFramePostCommit (only if
   // necessary, please).
 
-  // TODO(carlosk): Move this out when PlzNavigate implementation properly calls
-  // the observer methods.
+  // TODO(carlosk): Move this out.
   RecordNavigationMetrics(details, params, site_instance);
 
   // Run post-commit tasks.

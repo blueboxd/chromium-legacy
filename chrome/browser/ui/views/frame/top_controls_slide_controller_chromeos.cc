@@ -371,6 +371,11 @@ void TopControlsSlideControllerChromeOS::SetShownRatio(
     return;
   }
 
+  // Skip |shown_ratio_| update if the changes is not from the active
+  // WebContents.
+  if (contents != browser_view_->GetActiveWebContents())
+    return;
+
   if (shown_ratio_ == ratio)
     return;
 

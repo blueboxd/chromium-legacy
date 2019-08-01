@@ -1121,20 +1121,19 @@ class FileManager extends cr.EventTarget {
         assert(this.directoryModel_), assert(this.androidAppListModel_));
 
     this.ui_.initDirectoryTree(directoryTree);
-    this.crostini_.setEnabled(
-        constants.DEFAULT_CROSTINI_VM,
-        loadTimeData.getBoolean('CROSTINI_ENABLED'));
-    this.crostini_.setEnabled(
-        constants.PLUGIN_VM, loadTimeData.getBoolean('PLUGIN_VM_ENABLED'));
-    const crostiniPromise = this.setupCrostini_();
-    chrome.fileManagerPrivate.onCrostiniChanged.addListener(
-        this.onCrostiniChanged_.bind(this));
-
     chrome.fileManagerPrivate.onPreferencesChanged.addListener(() => {
       this.onPreferencesChanged_();
     });
     this.onPreferencesChanged_();
-    return crostiniPromise;
+
+    // The fmp.onCrostiniChanged receives enabled/disabled events via a pref
+    // watcher and share/unshare events.  The enabled/disabled prefs are
+    // handled in fmp.onCrostiniChanged rather than fmp.onPreferencesChanged
+    // to keep crostini logic colocated, and to have an API that best supports
+    // multiple VMs.
+    chrome.fileManagerPrivate.onCrostiniChanged.addListener(
+        this.onCrostiniChanged_.bind(this));
+    return this.setupCrostini_();
   }
 
   /**
@@ -1212,11 +1211,19 @@ class FileManager extends cr.EventTarget {
   }
 
   /**
+   * Listens for the enable/disable events in order to show/hide
+   * the 'Linux files' root.
+   *
    * @param {chrome.fileManagerPrivate.CrostiniEvent} event
    * @return {!Promise<void>}
    * @private
    */
   async onCrostiniChanged_(event) {
+    // The background |this.crostini_| object also listens to all crostini
+    // events including enable/disable and share/unshare.  But to ensure we
+    // don't have any race conditions between bg and fg, we set enabled status
+    // on it before calling |setupCrostini_| which reads enabled status from it
+    // to determine whether 'Linux files' is shown.
     switch (event.eventType) {
       case chrome.fileManagerPrivate.CrostiniEventType.ENABLE:
         this.crostini_.setEnabled(event.vmName, true);

@@ -19,6 +19,7 @@ import android.view.View;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -918,7 +919,8 @@ class TabListMediator {
         return mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().index();
     }
 
-    private void updateFaviconForTab(Tab tab, @Nullable Bitmap icon) {
+    @VisibleForTesting
+    void updateFaviconForTab(Tab tab, @Nullable Bitmap icon) {
         int modelIndex = mModel.indexFromId(tab.getId());
         if (modelIndex == Tab.INVALID_TAB_ID) return;
         // For tab group card in grid tab switcher, the favicon is set to be null.
@@ -935,8 +937,11 @@ class TabListMediator {
         }
         Callback<Drawable> faviconCallback = drawable -> {
             assert drawable != null;
-            if (drawable != null) {
-                mModel.get(modelIndex).set(TabProperties.FAVICON, drawable);
+            // Need to re-get the index because the original index can be stale when callback is
+            // triggered.
+            int index = mModel.indexFromId(tab.getId());
+            if (index != Tab.INVALID_TAB_ID && drawable != null) {
+                mModel.get(index).set(TabProperties.FAVICON, drawable);
             }
         };
         mTabListFaviconProvider.getFaviconForUrlAsync(

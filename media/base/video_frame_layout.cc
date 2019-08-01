@@ -55,7 +55,6 @@ size_t VideoFrameLayout::NumPlanes(VideoPixelFormat format) {
       return 1;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
-    case PIXEL_FORMAT_MT21:
     case PIXEL_FORMAT_P016LE:
       return 2;
     case PIXEL_FORMAT_I420:

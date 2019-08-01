@@ -645,7 +645,7 @@ void LocalFrameClientImpl::DownloadURL(
     return;
   DCHECK(web_frame_->GetFrame()->GetDocument());
   mojom::blink::BlobURLTokenPtr blob_url_token;
-  if (request.Url().ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled()) {
+  if (request.Url().ProtocolIs("blob")) {
     web_frame_->GetFrame()->GetDocument()->GetPublicURLManager().Resolve(
         request.Url(), MakeRequest(&blob_url_token));
   }

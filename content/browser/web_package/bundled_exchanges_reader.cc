@@ -224,7 +224,7 @@ void BundledExchangesReader::ReadMetadataInternal(MetadataCallback callback,
 void BundledExchangesReader::OnMetadataParsed(
     MetadataCallback callback,
     data_decoder::mojom::BundleMetadataPtr metadata,
-    const base::Optional<std::string>& error) {
+    data_decoder::mojom::BundleMetadataParseErrorPtr error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!metadata_ready_);
 
@@ -239,13 +239,13 @@ void BundledExchangesReader::OnMetadataParsed(
     for (auto& item : metadata->index)
       entries_.insert(std::make_pair(item->request_url, std::move(item)));
   }
-  std::move(callback).Run(error);
+  std::move(callback).Run(std::move(error));
 }
 
 void BundledExchangesReader::OnResponseParsed(
     ResponseCallback callback,
     data_decoder::mojom::BundleResponsePtr response,
-    const base::Optional<std::string>& error) {
+    data_decoder::mojom::BundleResponseParseErrorPtr error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(metadata_ready_);
 

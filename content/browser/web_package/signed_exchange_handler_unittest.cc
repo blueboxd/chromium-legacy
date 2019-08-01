@@ -564,8 +564,7 @@ TEST_P(SignedExchangeHandlerTest, CertWithoutExtensionShouldBeRejected) {
   ReadStream(source_, nullptr);
 }
 
-TEST_P(SignedExchangeHandlerTest,
-       CertIssuedAfterMay2019AndValidMoreThan90DaysShouldBeRejected) {
+TEST_P(SignedExchangeHandlerTest, CertValidMoreThan90DaysShouldBeRejected) {
   mock_cert_fetcher_factory_->ExpectFetch(
       GURL("https://cert.example.org/cert.msg"),
       GetTestFileContents(
@@ -573,56 +572,6 @@ TEST_P(SignedExchangeHandlerTest,
   SetupMockCertVerifier("prime256v1-sha256-validity-too-long.public.pem",
                         CreateCertVerifyResult());
   SetSourceStreamContents("test.example.org_cert_validity_too_long.sxg");
-
-  CreateSignedExchangeHandler(CreateTestURLRequestContext());
-  WaitForHeader();
-
-  ASSERT_TRUE(read_header());
-  EXPECT_EQ(SignedExchangeLoadResult::kCertValidityPeriodTooLong, result());
-  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
-  EXPECT_EQ(kTestSxgInnerURL, inner_url());
-  // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
-  ReadStream(source_, nullptr);
-}
-
-TEST_P(SignedExchangeHandlerTest,
-       CertIssuedAfterMay2019AndValidFor90DaysShouldBeAccepted) {
-  SignedExchangeHandler::SetVerificationTimeForTesting(
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromSeconds(kCertValidityPeriodEnforcementDate));
-  mock_cert_fetcher_factory_->ExpectFetch(
-      GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents(
-          "test.example.org-valid-for-90-days.public.pem.cbor"));
-  SetupMockCertVerifier("prime256v1-sha256-valid-for-90-days.public.pem",
-                        CreateCertVerifyResult());
-  SetSourceStreamContents("test.example.org_cert_valid_for_90_days.sxg");
-
-  CreateSignedExchangeHandler(CreateTestURLRequestContext());
-  WaitForHeader();
-
-  ASSERT_TRUE(read_header());
-  EXPECT_EQ(SignedExchangeLoadResult::kSuccess, result());
-  EXPECT_EQ(net::OK, error());
-  std::string payload;
-  int rv = ReadPayloadStream(&payload);
-  std::string expected_payload = GetTestFileContents("test.html");
-
-  EXPECT_EQ(expected_payload, payload);
-  EXPECT_EQ(static_cast<int>(expected_payload.size()), rv);
-}
-
-TEST_P(SignedExchangeHandlerTest,
-       CertValidMoreThan90DaysShouldBeRejectedAfterAugust2019) {
-  SignedExchangeHandler::SetVerificationTimeForTesting(
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromSeconds(kCertValidityPeriodEnforcementDate));
-  mock_cert_fetcher_factory_->ExpectFetch(
-      GURL("https://cert.example.org/cert.msg"),
-      GetTestFileContents("test.example.org.public.pem.cbor"));
-  SetupMockCertVerifier("prime256v1-sha256.public.pem",
-                        CreateCertVerifyResult());
-  SetSourceStreamContents("test.example.org_test.sxg");
 
   CreateSignedExchangeHandler(CreateTestURLRequestContext());
   WaitForHeader();

@@ -277,8 +277,9 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                               const GURL& unreachable_url,
                               bool replace_current_item) = 0;
 
-  // If PlzNavigate is enabled, returns true in between teh time that Blink
-  // requests navigation until the browser responds with the result.
+  // Returns true in between the time that Blink requests navigation until the
+  // browser responds with the result.
+  // TODO(ahemery): Rename this to be more explicit.
   virtual bool IsBrowserSideNavigationPending() = 0;
 
   // Renderer scheduler frame-specific task queues handles.

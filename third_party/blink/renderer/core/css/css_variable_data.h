@@ -16,7 +16,7 @@
 namespace blink {
 
 class CSSParserTokenRange;
-class CSSSyntaxDescriptor;
+class CSSSyntaxDefinition;
 enum class SecureContextMode;
 
 class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
@@ -78,7 +78,7 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
 
   const WTF::TextEncoding& Charset() const { return charset_; }
 
-  const CSSValue* ParseForSyntax(const CSSSyntaxDescriptor&,
+  const CSSValue* ParseForSyntax(const CSSSyntaxDefinition&,
                                  SecureContextMode) const;
 
  private:

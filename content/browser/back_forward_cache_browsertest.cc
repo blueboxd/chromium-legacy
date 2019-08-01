@@ -793,4 +793,23 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_FALSE(delete_rfh_a.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
 }
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebGL) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page with WebGL usage
+  GURL url(embedded_test_server()->GetURL(
+      "example.com", "/back_forward_cache/page_with_webgl.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameDeletedObserver delete_rfh_a(current_frame_host());
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // The page had an active WebGL context when we navigated away,
+  // so it shouldn't have been cached.
+  delete_rfh_a.WaitUntilDeleted();
+}
+
 }  // namespace content

@@ -863,9 +863,8 @@ void WebViewGuest::DidFinishNavigation(
       LoadAbort(navigation_handle->IsInMainFrame(), navigation_handle->GetURL(),
                 error_code);
     }
-    // The old behavior, before PlzNavigate, was that on failed navigations the
-    // webview would fire a loadabort (for the failed navigation) and a
-    // loadcommit (for the error page).
+    // Originally, on failed navigations the webview we would fire a loadabort
+    // (for the failed navigation) and a loadcommit (for the error page).
     if (!navigation_handle->IsErrorPage())
       return;
   }

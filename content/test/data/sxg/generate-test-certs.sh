@@ -24,21 +24,21 @@ openssl ecparam -out prime256v1.key -name prime256v1 -genkey
 openssl req -new -sha256 -key prime256v1.key -out prime256v1-sha256.csr \
   -subj '/CN=test.example.org/O=Test/C=US'
 
-# Generate a certificate. This will be rejected after 2019-08-01, because
-# the validity period is more than 90 days.
+# Generate a certificate whose validity period starts at 2019-06-01 and
+# valid for 90 days.
 openssl ca -batch \
   -config ca.cnf \
   -extensions sxg_cert \
-  -startdate 190101000000Z \
-  -enddate   200101000000Z \
+  -startdate 190601000000Z \
+  -enddate   190830000000Z \
   -in  prime256v1-sha256.csr \
   -out prime256v1-sha256.public.pem
 
 # Generate a certificate without CanSignHttpExchangesDraft extension.
 openssl ca -batch \
   -config ca.cnf \
-  -startdate 190101000000Z \
-  -enddate   200101000000Z \
+  -startdate 190601000000Z \
+  -enddate   190830000000Z \
   -in  prime256v1-sha256.csr \
   -out prime256v1-sha256-noext.public.pem
 
@@ -52,16 +52,6 @@ openssl ca -batch \
   -in  prime256v1-sha256.csr \
   -out prime256v1-sha256-validity-too-long.public.pem
 
-# Generate a certificate whose validity period starts at 2019-06-01 and
-# valid for 90 days.
-openssl ca -batch \
-  -config ca.cnf \
-  -extensions sxg_cert \
-  -startdate 190601000000Z \
-  -enddate   190830000000Z \
-  -in  prime256v1-sha256.csr \
-  -out prime256v1-sha256-valid-for-90-days.public.pem
-
 # Generate a "secp384r1 ecdsa with sha256" key/cert pair for negative test
 openssl ecparam -out secp384r1.key -name secp384r1 -genkey
 
@@ -72,8 +62,8 @@ openssl req -new -sha256 -key secp384r1.key -out secp384r1-sha256.csr \
 openssl ca -batch \
   -config ca.cnf \
   -extensions sxg_cert \
-  -startdate 190101000000Z \
-  -enddate   200101000000Z \
+  -startdate 190601000000Z \
+  -enddate   190830000000Z \
   -in  secp384r1-sha256.csr \
   -out secp384r1-sha256.public.pem
 

@@ -200,7 +200,7 @@ class ExtendedAttributes(object):
         return key in self._ext_attrs
 
     def __iter__(self):
-        """Yields all ExtendedAttribute instances."""
+        """Yields all ExtendedAttribute instances in a certain sorted order."""
         for key in self._keys:
             for ext_attr in self._ext_attrs[key]:
                 yield ext_attr

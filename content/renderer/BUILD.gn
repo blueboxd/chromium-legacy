@@ -48,8 +48,6 @@ target(link_target_type, "renderer") {
     "accessibility/render_accessibility_impl.h",
     "android/synchronous_layer_tree_frame_sink.cc",
     "android/synchronous_layer_tree_frame_sink.h",
-    "blob_storage/webblobregistry_impl.cc",
-    "blob_storage/webblobregistry_impl.h",
     "browser_plugin/browser_plugin.cc",
     "browser_plugin/browser_plugin.h",
     "browser_plugin/browser_plugin_manager.cc",

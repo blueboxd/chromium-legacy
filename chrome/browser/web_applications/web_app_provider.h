@@ -96,6 +96,8 @@ class WebAppProvider : public WebAppProviderBase {
  protected:
   virtual void StartImpl();
 
+  // Create subsystems that work with either BMO and Extension backends.
+  void CreateCommonSubsystems(Profile* profile);
   // Create extension-independent subsystems.
   void CreateWebAppsSubsystems(Profile* profile);
   // ... or create legacy extension-based subsystems.

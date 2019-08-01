@@ -1151,7 +1151,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // IPC Message handlers.
   void OnDetach();
-  void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnUpdateState(const PageState& state);
   void OnBeforeUnloadACK(
@@ -1311,6 +1310,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
+  void FrameFocused() override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif
@@ -1366,6 +1366,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // crashes).
   bool CreateNetworkServiceDefaultFactoryAndObserve(
       const base::Optional<url::Origin>& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
 
@@ -1374,6 +1375,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // crashes).
   bool CreateNetworkServiceDefaultFactoryInternal(
       const base::Optional<url::Origin>& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
 
@@ -1782,9 +1784,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // from SiteInstance::GetSiteURL.
   GURL last_committed_site_url_;
 
-  // The most recent non-error URL to commit in this frame.  Remove this in
-  // favor of GetLastCommittedURL() once PlzNavigate is enabled or cross-process
-  // transfers work for net errors.  See https://crbug.com/588314.
+  // The most recent non-error URL to commit in this frame.
+  // TODO(clamy): Remove this in favor of GetLastCommittedURL().
+  // See https://crbug.com/588314.
   GURL last_successful_url_;
 
   std::map<uint64_t, VisualStateCallback> visual_state_callbacks_;

@@ -34,6 +34,9 @@ class WebAppUiManager {
   // Migrates an app's OS attributes (e.g pin position, app list
   // folder/position, shortcuts).
   virtual void MigrateOSAttributes(const AppId& from, const AppId& to) = 0;
+
+  virtual bool CanAddAppToQuickLaunchBar() const = 0;
+  virtual void AddAppToQuickLaunchBar(const AppId& app_id) = 0;
 };
 
 }  // namespace web_app

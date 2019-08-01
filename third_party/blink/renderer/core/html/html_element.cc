@@ -216,7 +216,7 @@ void HTMLElement::MapLanguageAttributeToLocale(
     UseCounter::Count(GetDocument(), WebFeature::kLangAttribute);
     if (IsHTMLHtmlElement(*this))
       UseCounter::Count(GetDocument(), WebFeature::kLangAttributeOnHTML);
-    else if (IsHTMLBodyElement(*this))
+    else if (IsA<HTMLBodyElement>(*this))
       UseCounter::Count(GetDocument(), WebFeature::kLangAttributeOnBody);
     String html_language = value.GetString();
     wtf_size_t first_separator = html_language.find('-');
@@ -317,7 +317,7 @@ void HTMLElement::CollectStyleForPresentationAttribute(
       if (IsValidDirAttribute(value)) {
         AddPropertyToPresentationAttributeStyle(
             style, CSSPropertyID::kDirection, value);
-      } else if (IsHTMLBodyElement(*this)) {
+      } else if (IsA<HTMLBodyElement>(*this)) {
         AddPropertyToPresentationAttributeStyle(
             style, CSSPropertyID::kDirection, "ltr");
       }

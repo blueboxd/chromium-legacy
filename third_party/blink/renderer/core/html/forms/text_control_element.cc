@@ -648,7 +648,7 @@ SelectionInDOMTree TextControlElement::Selection() const {
   Node* end_node = nullptr;
   for (Node& node : NodeTraversal::DescendantsOf(*inner_text)) {
     DCHECK(!node.hasChildren());
-    DCHECK(node.IsTextNode() || IsHTMLBRElement(node));
+    DCHECK(node.IsTextNode() || IsA<HTMLBRElement>(node));
     int length = node.IsTextNode() ? Position::LastOffsetInNode(node) : 1;
 
     if (offset <= start && start <= offset + length)
@@ -818,7 +818,7 @@ void TextControlElement::SetInnerEditorValue(const String& value) {
 
   // If the last child is a trailing <br> that's appended below, remove it
   // first so as to enable setInnerText() fast path of updating a text node.
-  if (IsHTMLBRElement(inner_editor->lastChild()))
+  if (IsA<HTMLBRElement>(inner_editor->lastChild()))
     inner_editor->RemoveChild(inner_editor->lastChild(), ASSERT_NO_EXCEPTION);
 
   // We don't use setTextContent.  It triggers unnecessary paint.
@@ -850,15 +850,15 @@ String TextControlElement::InnerEditorValue() const {
   if (auto* first_child_text_node = DynamicTo<Text>(first_child)) {
     Node* second_child = first_child.nextSibling();
     if (!second_child ||
-        (!second_child->nextSibling() && IsHTMLBRElement(*second_child)))
+        (!second_child->nextSibling() && IsA<HTMLBRElement>(*second_child)))
       return first_child_text_node->data();
-  } else if (!first_child.nextSibling() && IsHTMLBRElement(first_child)) {
+  } else if (!first_child.nextSibling() && IsA<HTMLBRElement>(first_child)) {
     return g_empty_string;
   }
 
   StringBuilder result;
   for (Node& node : NodeTraversal::InclusiveDescendantsOf(*inner_editor)) {
-    if (IsHTMLBRElement(node)) {
+    if (IsA<HTMLBRElement>(node)) {
       DCHECK_EQ(&node, inner_editor->lastChild());
       if (&node != inner_editor->lastChild())
         result.Append(kNewlineCharacter);
@@ -909,7 +909,7 @@ String TextControlElement::ValueWithHardLineBreaks() const {
 
   StringBuilder result;
   for (Node& node : NodeTraversal::DescendantsOf(*inner_text)) {
-    if (IsHTMLBRElement(node)) {
+    if (IsA<HTMLBRElement>(node)) {
       DCHECK_EQ(&node, inner_text->lastChild());
       if (&node != inner_text->lastChild())
         result.Append(kNewlineCharacter);

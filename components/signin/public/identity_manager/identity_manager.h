@@ -394,22 +394,10 @@ class IdentityManager : public KeyedService,
   // initialized.
   void OnNetworkInitialized();
 
-  // Returns |true| if migration of the account ID from normalized email is
-  // supported for the current platform.
-  static bool IsAccountIdMigrationSupported();
-
-  // Registers per-install prefs used by this class.
-  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
-
-  // Registers per-profile prefs used by this class.
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
-
-  // Picks the correct account_id for the specified account depending on the
-  // migration state.
-  // TODO(https://crbug.com/883272): Remove once all platform have migrated to
-  // the new account_id based on gaia (currently, only Chrome OS remains).
-  CoreAccountId PickAccountIdForAccount(const std::string& gaia,
-                                        const std::string& email) const;
+  // Methods related to migration of account IDs from email to Gaia ID.
+  // TODO(https://crbug.com/883272): Remove these once all platforms have
+  // migrated to the new account_id based on gaia (currently, only ChromeOS
+  // remains).
 
   // Possible values for the account ID migration state, needs to be kept in
   // sync with AccountTrackerService::AccountIdMigrationState.
@@ -420,8 +408,20 @@ class IdentityManager : public KeyedService,
     NUM_MIGRATION_STATES
   };
 
-  // Returns the currently saved state for the migration of accounts IDs.
+  // Returns the currently saved state of the migration of account IDs.
   AccountIdMigrationState GetAccountIdMigrationState() const;
+
+  // Picks the correct account_id for the specified account depending on the
+  // migration state.
+  CoreAccountId PickAccountIdForAccount(const std::string& gaia,
+                                        const std::string& email) const;
+
+  // Methods used only by embedder-level factory classes.
+
+  // Registers per-install prefs used by this class.
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+  // Registers per-profile prefs used by this class.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   // Explicitly triggers the loading of accounts in the context of supervised

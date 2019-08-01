@@ -35,6 +35,20 @@ Crostini.prototype.setEnabled = function(vmName, enabled) {};
 Crostini.prototype.isEnabled = function(vmName) {};
 
 /**
+ * Set whether the specified VM allows root access.
+ * @param {string} vmName
+ * @param {boolean} allowed
+ */
+Crostini.prototype.setRootAccessAllowed = function(vmName, allowed) {};
+
+/**
+ * Returns true if root access to specified VM is allowed.
+ * @param {string} vmName
+ * @return {boolean}
+ */
+Crostini.prototype.isRootAccessAllowed = function(vmName) {};
+
+/**
  * Registers an entry as a shared path for the specified VM.
  * @param {string} vmName
  * @param {!Entry} entry

@@ -16,11 +16,41 @@
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace web_app {
 
 using Result = WebAppUrlLoader::Result;
+
+// Returns a redirect response to |dest| URL.
+std::unique_ptr<net::test_server::HttpResponse> HandleServerRedirect(
+    const std::string& dest,
+    const net::test_server::HttpRequest& request) {
+  GURL request_url = request.GetURL();
+  LOG(INFO) << "Redirecting from " << request_url << " to " << dest;
+
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_FOUND);
+  http_response->AddCustomHeader("Location", dest);
+  http_response->set_content_type("text/html");
+  http_response->set_content(base::StringPrintf(
+      "<html><head></head><body>Redirecting to %s</body></html>",
+      dest.c_str()));
+  return http_response;
+}
+
+// Run |handler| on requests that exactly match the |relative_url|.
+std::unique_ptr<net::test_server::HttpResponse> HandleMatchingRequest(
+    const std::string& relative_url,
+    const net::EmbeddedTestServer::HandleRequestCallback& handler,
+    const net::test_server::HttpRequest& request) {
+  GURL match = request.GetURL().Resolve(relative_url);
+  if (request.GetURL() == match)
+    return handler.Run(request);
+  return nullptr;
+}
 
 class WebAppUrlLoaderTest : public InProcessBrowserTest {
  public:
@@ -32,7 +62,6 @@ class WebAppUrlLoaderTest : public InProcessBrowserTest {
         content::WebContents::CreateParams(browser()->profile()));
 
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void TearDownOnMainThread() override {
@@ -63,18 +92,55 @@ class WebAppUrlLoaderTest : public InProcessBrowserTest {
 
   void ResetWebContents() { web_contents_.reset(); }
 
+  // Set up a server redirect from |src_relative| (a relative URL) to |dest|.
+  // Must be called before the server is started.
+  void SetupRedirect(const std::string& src_relative, const std::string& dest) {
+    embedded_test_server()->RegisterRequestHandler(
+        base::BindRepeating(&HandleMatchingRequest, src_relative,
+                            base::BindRepeating(&HandleServerRedirect, dest)));
+  }
+
  private:
   std::unique_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppUrlLoaderTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, Success) {
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, Loaded) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   WebAppUrlLoader loader;
   EXPECT_EQ(Result::kUrlLoaded, LoadUrlAndWait(&loader, "/simple.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, LoadedWithParamChange) {
+  SetupRedirect("/test-redirect", "/test-redirect?param=stuff");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppUrlLoader loader;
+
+  EXPECT_EQ(Result::kUrlLoaded, LoadUrlAndWait(&loader, "/test-redirect"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, LoadedWithParamAndRefChange) {
+  // Note we cannot test the ref change in isolation as it is not sent to the
+  // server, so we cannot check it in the request handler.
+  SetupRedirect("/test-redirect", "/test-redirect?param=foo#ref");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppUrlLoader loader;
+
+  EXPECT_EQ(Result::kUrlLoaded, LoadUrlAndWait(&loader, "/test-redirect"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, RedirectWithPathChange) {
+  SetupRedirect("/test-redirect", "/test-redirect-new-path");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppUrlLoader loader;
+
+  EXPECT_EQ(Result::kRedirectedUrlLoaded,
+            LoadUrlAndWait(&loader, "/test-redirect"));
+}
+
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, 302FoundRedirect) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   WebAppUrlLoader loader;
 
   const GURL final_url = embedded_test_server()->GetURL("/simple.html");
@@ -84,6 +150,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, 302FoundRedirect) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, Hung) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner);
 
@@ -108,6 +175,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, Hung) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, WebContentsDestroyed) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   WebAppUrlLoader loader;
   base::Optional<Result> result;
 
@@ -133,6 +201,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, WebContentsDestroyed) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, MultipleLoadUrlCalls) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   WebAppUrlLoader loader;
   base::Optional<Result> title1_result;
   base::Optional<Result> title2_result;

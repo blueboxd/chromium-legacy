@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/frame_proxy.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -63,9 +64,9 @@ class RenderWidgetHostView;
 // forward. It also instructs the RenderFrameHost to run the unload event
 // handler and is kept alive for the duration. Once the event handling is
 // complete, the RenderFrameHost is deleted.
-class RenderFrameProxyHost
-    : public IPC::Listener,
-      public IPC::Sender {
+class RenderFrameProxyHost : public IPC::Listener,
+                             public IPC::Sender,
+                             public mojom::RenderFrameProxyHost {
  public:
   static RenderFrameProxyHost* FromID(int process_id, int routing_id);
 
@@ -135,9 +136,9 @@ class RenderFrameProxyHost
   void BubbleLogicalScroll(blink::WebScrollDirection direction,
                            ui::input_types::ScrollGranularity granularity);
 
-  void set_render_frame_proxy_created(bool created) {
-    render_frame_proxy_created_ = created;
-  }
+  // Sets render frame proxy created state. If |created| is false, any existing
+  // mojo connections to RenderFrameProxyHost will be closed.
+  void SetRenderFrameProxyCreated(bool created);
 
   // Returns if the RenderFrameProxy for this host is alive.
   bool is_render_frame_proxy_live() { return render_frame_proxy_created_; }
@@ -150,8 +151,15 @@ class RenderFrameProxyHost
   void OnRouteMessageEvent(const FrameMsg_PostMessage_Params& params);
   void OnDidChangeOpener(int32_t opener_routing_id);
   void OnAdvanceFocus(blink::WebFocusType type, int32_t source_routing_id);
-  void OnFrameFocused();
   void OnPrintCrossProcessSubframe(const gfx::Rect& rect, int document_cookie);
+
+  // IPC::Listener
+  void OnAssociatedInterfaceRequest(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
+
+  // mojom::RenderFrameProxyHost
+  void FrameFocused() override;
 
   // This RenderFrameProxyHost's routing id.
   int routing_id_;
@@ -185,6 +193,10 @@ class RenderFrameProxyHost
   // TODO(creis): RenderViewHost will eventually go away and be replaced with
   // some form of page context.
   scoped_refptr<RenderViewHostImpl> render_view_host_;
+
+  // Mojo binding to this RenderFrameProxyHost.
+  mojo::AssociatedBinding<mojom::RenderFrameProxyHost>
+      frame_proxy_host_associated_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxyHost);
 };

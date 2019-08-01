@@ -71,7 +71,7 @@ class BundledExchangesParserFuzzer {
   }
 
   void OnParseMetadata(data_decoder::mojom::BundleMetadataPtr metadata,
-                       const base::Optional<std::string>& error) {
+                       data_decoder::mojom::BundleMetadataParseErrorPtr error) {
     if (!metadata) {
       std::move(quit_loop_).Run();
       return;
@@ -95,7 +95,7 @@ class BundledExchangesParserFuzzer {
 
   void OnParseResponse(size_t index,
                        data_decoder::mojom::BundleResponsePtr response,
-                       const base::Optional<std::string>& error_message) {
+                       data_decoder::mojom::BundleResponseParseErrorPtr error) {
     ParseResponses(index + 1);
   }
 

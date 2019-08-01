@@ -81,7 +81,7 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
     return nullptr;
 
   mojom::blink::BlobURLTokenPtr blob_url_token;
-  if (script_url.ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled()) {
+  if (script_url.ProtocolIs("blob")) {
     document->GetPublicURLManager().Resolve(script_url,
                                             MakeRequest(&blob_url_token));
   }

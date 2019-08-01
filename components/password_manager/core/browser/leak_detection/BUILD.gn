@@ -11,8 +11,51 @@ fuzzable_proto_library("proto") {
   ]
 }
 
+source_set("leak_detection_interface_headers") {
+  sources = [
+    "leak_detection_check.h",
+    "leak_detection_request_factory.h",
+  ]
+  deps = [
+    "//base",
+    "//url",
+  ]
+}
+
 jumbo_source_set("leak_detection") {
+  sources = [
+    "authenticated_leak_check.cc",
+    "authenticated_leak_check.h",
+    "leak_detection_check.h",
+    "leak_detection_request_factory.h",
+    "leak_detection_request_factory_impl.cc",
+    "leak_detection_request_factory_impl.h",
+  ]
+
+  public_deps = [
+    ":leak_detection_interface_headers",
+  ]
+
   deps = [
     ":proto",
+    "//base",
+    "//components/password_manager/core/common",
+    "//url",
+  ]
+}
+
+jumbo_source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "authenticated_leak_check_unittest.cc",
+    "leak_detection_request_factory_impl_unittest.cc",
+  ]
+
+  deps = [
+    ":leak_detection",
+    "//base/test:test_support",
+    "//components/password_manager/core/common",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

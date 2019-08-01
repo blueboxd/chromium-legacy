@@ -19,7 +19,19 @@ ScrollHitTestDisplayItem::ScrollHitTestDisplayItem(
       scroll_offset_node_(scroll_offset_node),
       scroll_container_bounds_(scroll_container_bounds) {
   DCHECK(RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
-  DCHECK(IsScrollHitTest());
+#if DCHECK_IS_ON()
+  if (type == DisplayItem::Type::kPluginScrollHitTest) {
+    // Plugin scroll hit tests are only used to prevent composited scrolling
+    // and should not have a scroll offset node.
+    DCHECK(!scroll_offset_node);
+  } else if (type == DisplayItem::Type::kScrollHitTest) {
+    DCHECK(scroll_offset_node);
+    // The scroll offset transform node should have an associated scroll node.
+    DCHECK(scroll_offset_node_->ScrollNode());
+  } else {
+    NOTREACHED();
+  }
+#endif
 }
 
 ScrollHitTestDisplayItem::~ScrollHitTestDisplayItem() = default;

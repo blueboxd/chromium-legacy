@@ -20,6 +20,7 @@ namespace web_app {
 class WebAppUrlLoader {
  public:
   enum class Result {
+    // The provided URL (or one differing only in query params) was loaded.
     kUrlLoaded,
     // The provided URL redirected to another URL and the final URL
     // was loaded.

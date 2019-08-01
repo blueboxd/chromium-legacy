@@ -168,10 +168,8 @@ public class LibraryLoader {
      */
     public void ensureInitialized(@LibraryProcessType int processType) throws ProcessInitException {
         synchronized (mLock) {
-            if (mInitialized) {
-                // Already initialized, nothing to do.
-                return;
-            }
+            if (mInitialized) return;
+
             loadAlreadyLocked(ContextUtils.getApplicationContext().getApplicationInfo(),
                     false /* inZygote */);
             initializeAlreadyLocked(processType);
@@ -303,14 +301,14 @@ public class LibraryLoader {
         boolean loadAtFixedAddress = true;
         boolean success = true;
         try {
-            linker.loadLibrary(libFilePath);
+            linker.loadLibrary(libFilePath, true /* isFixedAddressPermitted */);
         } catch (UnsatisfiedLinkError e) {
             Log.w(TAG, "Failed to load native library with shared RELRO, retrying without");
             sLoadStatusRecorder.recordLoadAttempt(
                     false /* success */, isFirstAttempt, true /* loadAtFixedAddress */);
             loadAtFixedAddress = false;
             success = false;
-            linker.loadLibraryNoFixedAddress(libFilePath);
+            linker.loadLibrary(libFilePath, false /* isFixedAddressPermitted */);
             success = true;
         } finally {
             sLoadStatusRecorder.recordLoadAttempt(success, isFirstAttempt, loadAtFixedAddress);
@@ -332,101 +330,88 @@ public class LibraryLoader {
     // triggering JNI_OnLoad in native code.
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint({"DefaultLocale", "UnsafeDynamicallyLoadedCode"})
+    @GuardedBy("mLock")
     private void loadAlreadyLocked(ApplicationInfo appInfo, boolean inZygote)
             throws ProcessInitException {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadAlreadyLocked")) {
-            if (!mLoaded) {
-                assert !mInitialized;
+            if (mLoaded) return;
 
-                long startTime = SystemClock.uptimeMillis();
+            assert !mInitialized;
 
-                if (useChromiumLinker() && !inZygote) {
-                    // Load libraries using the Chromium linker.
-                    Linker linker = Linker.getInstance();
+            long startTime = SystemClock.uptimeMillis();
 
-                    String apkFilePath = isInZipFile() ? appInfo.sourceDir : null;
-                    linker.prepareLibraryLoad(apkFilePath);
+            if (useChromiumLinker() && !inZygote) {
+                Linker linker = Linker.getInstance();
 
-                    // See base/android/linker/config.gni, the chromium linker is only enabled
-                    // when we have a sinble library.
-                    assert NativeLibraries.LIBRARIES.length == 1;
-                    for (String library : NativeLibraries.LIBRARIES) {
-                        // Don't self-load the linker. This is because the build system is
-                        // not clever enough to understand that all the libraries packaged
-                        // in the final .apk don't need to be explicitly loaded.
-                        if (linker.isChromiumLinkerLibrary(library)) {
-                            if (DEBUG) Log.i(TAG, "ignoring self-linker load");
-                            continue;
-                        }
+                // See base/android/linker/config.gni, the chromium linker is only enabled when we
+                // have a single library.
+                assert NativeLibraries.LIBRARIES.length == 1;
+                String library = NativeLibraries.LIBRARIES[0];
 
-                        if (apkFilePath != null) {
-                            Log.i(TAG, " Loading " + library + " from within " + apkFilePath);
-                        } else {
-                            Log.i(TAG, "Loading " + library);
-                        }
-
-                        try {
-                            // Load the library using this Linker. May throw UnsatisfiedLinkError.
-                            loadLibraryWithCustomLinkerAlreadyLocked(linker,
-                                    System.mapLibraryName(library), true /* isFirstAttempt */);
-                        } catch (UnsatisfiedLinkError e) {
-                            if (!isInZipFile() && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
-                                loadLibraryWithCustomLinkerAlreadyLocked(linker,
-                                        getExtractedLibraryPath(appInfo, library),
-                                        false /* isFirstAttempt */);
-                            } else {
-                                Log.e(TAG, "Unable to load library: " + library);
-                                throw(e);
-                            }
-                        }
-                    }
-
-                    linker.finishLibraryLoad();
+                if (isInZipFile()) {
+                    String sourceDir = appInfo.sourceDir;
+                    linker.setApkFilePath(sourceDir);
+                    Log.i(TAG, " Loading %s from within %s", library, sourceDir);
                 } else {
-                    setEnvForNative();
-                    preloadAlreadyLocked(appInfo);
-
-                    // If the libraries are located in the zip file, assert that the device API
-                    // level is M or higher. On devices lower than M, the libraries should
-                    // always be loaded by LegacyLinker.
-                    assert !isInZipFile() || Build.VERSION.SDK_INT >= VERSION_CODES.M;
-
-                    // Load libraries using the system linker.
-                    for (String library : NativeLibraries.LIBRARIES) {
-                        try {
-                            if (!isInZipFile()) {
-                                // The extract and retry logic isn't needed because this path is
-                                // used only for local development.
-                                System.loadLibrary(library);
-                            } else {
-                                // Load directly from the APK.
-                                boolean is64Bit = ApiHelperForM.isProcess64Bit();
-                                String zipFilePath = appInfo.sourceDir;
-                                // In API level 23 and above, it’s possible to open a .so file
-                                // directly from the APK of the path form
-                                // "my_zip_file.zip!/libs/libstuff.so". See:
-                                // https://android.googlesource.com/platform/bionic/+/master/android-changes-for-ndk-developers.md#opening-shared-libraries-directly-from-an-apk
-                                String libraryName = zipFilePath + "!/"
-                                        + makeLibraryPathInZipFile(library, true, is64Bit);
-                                Log.i(TAG, "libraryName: " + libraryName);
-                                System.load(libraryName);
-                            }
-                        } catch (UnsatisfiedLinkError e) {
-                            Log.e(TAG, "Unable to load library: " + library);
-                            throw(e);
-                        }
-                    }
+                    Log.i(TAG, "Loading %s", library);
                 }
 
-                long stopTime = SystemClock.uptimeMillis();
-                mLibraryLoadTimeMs = stopTime - startTime;
-                Log.i(TAG, String.format("Time to load native libraries: %d ms (timestamps %d-%d)",
-                        mLibraryLoadTimeMs,
-                        startTime % 10000,
-                        stopTime % 10000));
+                try {
+                    // Load the library using this Linker. May throw UnsatisfiedLinkError.
+                    loadLibraryWithCustomLinkerAlreadyLocked(
+                            linker, System.mapLibraryName(library), true /* isFirstAttempt */);
+                } catch (UnsatisfiedLinkError e) {
+                    if (!isInZipFile() && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
+                        loadLibraryWithCustomLinkerAlreadyLocked(linker,
+                                getExtractedLibraryPath(appInfo, library),
+                                false /* isFirstAttempt */);
+                    } else {
+                        Log.e(TAG, "Unable to load library: " + library);
+                        throw(e);
+                    }
+                }
+            } else {
+                setEnvForNative();
+                preloadAlreadyLocked(appInfo);
 
-                mLoaded = true;
+                // If the libraries are located in the zip file, assert that the device API level is
+                // M or higher. On devices lower than M, the libraries should always be loaded by
+                // LegacyLinker.
+                assert !isInZipFile() || Build.VERSION.SDK_INT >= VERSION_CODES.M;
+
+                // Load libraries using the system linker.
+                for (String library : NativeLibraries.LIBRARIES) {
+                    try {
+                        if (!isInZipFile()) {
+                            // The extract and retry logic isn't needed because this path is used
+                            // only for local development.
+                            System.loadLibrary(library);
+                        } else {
+                            // Load directly from the APK.
+                            boolean is64Bit = ApiHelperForM.isProcess64Bit();
+                            String zipFilePath = appInfo.sourceDir;
+                            // In API level 23 and above, it’s possible to open a .so file directly
+                            // from the APK of the path form
+                            // "my_zip_file.zip!/libs/libstuff.so". See:
+                            // https://android.googlesource.com/platform/bionic/+/master/android-changes-for-ndk-developers.md#opening-shared-libraries-directly-from-an-apk
+                            String libraryName = zipFilePath + "!/"
+                                    + makeLibraryPathInZipFile(library, true, is64Bit);
+                            Log.i(TAG, "libraryName: " + libraryName);
+                            System.load(libraryName);
+                        }
+                    } catch (UnsatisfiedLinkError e) {
+                        Log.e(TAG, "Unable to load library: " + library);
+                        throw(e);
+                    }
+                }
             }
+
+            long stopTime = SystemClock.uptimeMillis();
+            mLibraryLoadTimeMs = stopTime - startTime;
+            Log.i(TAG, "Time to load native libraries: %d ms (timestamps %d-%d)",
+                    mLibraryLoadTimeMs, startTime % 10000, stopTime % 10000);
+
+            mLoaded = true;
         } catch (UnsatisfiedLinkError e) {
             throw new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED, e);
         }
@@ -483,6 +468,7 @@ public class LibraryLoader {
     // Switch the CommandLine over from Java to native if it hasn't already been done.
     // This must happen after the code is loaded and after JNI is ready (since after the
     // switch the Java CommandLine will delegate all calls the native CommandLine).
+    @GuardedBy("mLock")
     private void ensureCommandLineSwitchedAlreadyLocked() {
         assert mLoaded;
         if (mCommandLineSwitched) {
@@ -493,6 +479,7 @@ public class LibraryLoader {
     }
 
     // Invoke base::android::LibraryLoaded in library_loader_hooks.cc
+    @GuardedBy("mLock")
     private void initializeAlreadyLocked(@LibraryProcessType int processType)
             throws ProcessInitException {
         if (mInitialized) {

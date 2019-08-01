@@ -546,8 +546,9 @@ void WebAppInstallTask::OnShortcutsCreated(
   if (install_params_)
     add_to_quick_launch_bar = install_params_->add_to_quick_launch_bar;
 
-  if (add_to_quick_launch_bar && install_finalizer_->CanPinAppToShelf())
-    install_finalizer_->PinAppToShelf(app_id);
+  if (add_to_quick_launch_bar &&
+      install_finalizer_->CanAddAppToQuickLaunchBar())
+    install_finalizer_->AddAppToQuickLaunchBar(app_id);
 
   // TODO(loyso): Reparenting must be implemented in
   // chrome/browser/ui/web_applications/ UI layer as a post-install step.

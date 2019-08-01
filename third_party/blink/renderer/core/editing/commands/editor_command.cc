@@ -1207,7 +1207,7 @@ static bool EnabledSelectAll(LocalFrame& frame,
     // When the editable contains a BR only, it appears as an empty line, in
     // which case allowing select-all confuses users.
     if (root->firstChild() == root->lastChild() &&
-        IsHTMLBRElement(root->firstChild()))
+        IsA<HTMLBRElement>(root->firstChild()))
       return false;
 
     // TODO(amaralp): Return false if already fully selected.

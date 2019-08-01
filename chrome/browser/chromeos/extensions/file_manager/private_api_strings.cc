@@ -53,6 +53,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean("CROSTINI_ENABLED",
                    crostini::IsCrostiniEnabled(
                        Profile::FromBrowserContext(browser_context())));
+  dict->SetBoolean("CROSTINI_ROOT_ACCESS_ALLOWED",
+                   crostini::IsCrostiniRootAccessAllowed(
+                       Profile::FromBrowserContext(browser_context())));
   dict->SetBoolean("DRIVE_FS_ENABLED",
                    base::FeatureList::IsEnabled(chromeos::features::kDriveFs));
   dict->SetBoolean("FEEDBACK_PANEL_ENABLED",

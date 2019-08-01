@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -479,8 +480,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, FragmentURLNavigation) {
   WaitForURLOnServer(fragment_url);
 }
 
+// Flakily fails on mac-rel. http://crbug.com/972871
+#if defined(OS_MACOSX)
+#define MAYBE_NavigationChainForwardBack DISABLED_NavigationChainForwardBack
+#else
+#define MAYBE_NavigationChainForwardBack NavigationChainForwardBack
+#endif
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       NavigationChainForwardBack) {
+                       MAYBE_NavigationChainForwardBack) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(CheckInitialState(0));
 

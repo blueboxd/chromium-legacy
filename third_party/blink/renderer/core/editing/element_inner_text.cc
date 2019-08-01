@@ -322,7 +322,7 @@ void ElementInnerTextCollector::ProcessNode(const Node& node) {
 
   // 6. If node is a br element, then append a string containing a single U+000A
   // LINE FEED (LF) character to items.
-  if (IsHTMLBRElement(node)) {
+  if (IsA<HTMLBRElement>(node)) {
     ProcessChildren(node);
     result_.EmitNewline();
     return;

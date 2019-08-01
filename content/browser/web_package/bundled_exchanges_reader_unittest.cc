@@ -31,11 +31,11 @@ class MockParser final : public data_decoder::mojom::BundledExchangesParser {
 
   void RunMetadataCallback(data_decoder::mojom::BundleMetadataPtr metadata) {
     base::RunLoop().RunUntilIdle();
-    std::move(metadata_callback_).Run(std::move(metadata), base::nullopt);
+    std::move(metadata_callback_).Run(std::move(metadata), nullptr);
   }
   void RunResponseCallback(data_decoder::mojom::BundleResponsePtr response) {
     base::RunLoop().RunUntilIdle();
-    std::move(response_callback_).Run(std::move(response), base::nullopt);
+    std::move(response_callback_).Run(std::move(response), nullptr);
   }
 
   void WaitUntilParseMetadataCalled(base::OnceClosure closure) {
@@ -140,7 +140,8 @@ class BundledExchangesReaderTest : public testing::Test {
   void ReadMetadata() {
     base::RunLoop run_loop;
     reader_->ReadMetadata(base::BindOnce(
-        [](base::Closure quit_closure, base::Optional<std::string> error) {
+        [](base::Closure quit_closure,
+           data_decoder::mojom::BundleMetadataParseErrorPtr error) {
           EXPECT_FALSE(error);
           std::move(quit_closure).Run();
         },

@@ -116,7 +116,6 @@ class Thread;
 struct ThreadCreationParams;
 class WebAudioBus;
 class WebAudioLatencyHint;
-class WebBlobRegistry;
 class WebCrypto;
 class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
@@ -221,11 +220,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       const WebString& device_id) {
     return nullptr;
   }
-
-  // Blob ----------------------------------------------------------------
-
-  // Must return non-null.
-  virtual WebBlobRegistry* GetBlobRegistry() { return nullptr; }
 
   // Database (WebSQL) ---------------------------------------------------
 

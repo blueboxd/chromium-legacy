@@ -264,7 +264,7 @@ Request* Request::CreateRequestWithRequestOrString(
     // Parsing URLs should also resolve blob URLs. This is important because
     // fetching of a blob URL should work even after the URL is revoked as long
     // as the request was created while the URL was still valid.
-    if (parsed_url.ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled()) {
+    if (parsed_url.ProtocolIs("blob")) {
       network::mojom::blink::URLLoaderFactoryPtr url_loader_factory;
       ExecutionContext::From(script_state)
           ->GetPublicURLManager()

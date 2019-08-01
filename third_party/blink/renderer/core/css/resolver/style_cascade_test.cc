@@ -53,7 +53,7 @@ class TestCascade {
 
  public:
   TestCascade(Document& document, Element* target = nullptr)
-      : state_(document, target ? *target : *document.body(), nullptr),
+      : state_(document, target ? *target : *document.body()),
         cascade_(InitState(state_)) {}
 
   scoped_refptr<ComputedStyle> TakeStyle() { return state_.TakeStyle(); }
@@ -448,7 +448,7 @@ TEST_F(StyleCascadeTest, ApplyCustomProperty) {
 }
 
 TEST_F(StyleCascadeTest, Copy) {
-  StyleResolverState state(GetDocument(), *GetDocument().body(), nullptr);
+  StyleResolverState state(GetDocument(), *GetDocument().body());
 
   TestCascade cascade(GetDocument());
   cascade.Add("--x", "10px");

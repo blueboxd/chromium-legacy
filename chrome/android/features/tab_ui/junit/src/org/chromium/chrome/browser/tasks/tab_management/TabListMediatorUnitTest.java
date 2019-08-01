@@ -265,6 +265,25 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    public void updateFavicon_StaleIndex() {
+        initAndAssertAllProperties();
+        mModel.get(0).set(TabProperties.FAVICON, null);
+        mModel.get(1).set(TabProperties.FAVICON, null);
+
+        mMediator.updateFaviconForTab(mTab2, null);
+        assertThat(mModel.indexFromId(TAB2_ID), equalTo(1));
+        // Before executing callback, there is a deletion in tab list model which makes the index
+        // stale.
+        mModel.removeAt(0);
+        assertThat(mModel.indexFromId(TAB2_ID), equalTo(0));
+
+        // Start to execute callback.
+        mCallbackCaptor.getValue().onResult(mFaviconDrawable);
+
+        assertThat(mModel.get(0).get(TabProperties.FAVICON), equalTo(mFaviconDrawable));
+    }
+
+    @Test
     public void sendsSelectSignalCorrectly() {
         initAndAssertAllProperties();
 

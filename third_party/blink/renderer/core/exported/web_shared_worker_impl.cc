@@ -113,11 +113,6 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
 
 void WebSharedWorkerImpl::OnShadowPageInitialized() {
   DCHECK(IsMainThread());
-
-  // This shadow page's address space will be used for creating outside
-  // FetchClientSettingsObject.
-  shadow_page_->GetDocument()->SetAddressSpace(creation_address_space_);
-
   ContinueStartWorkerContext();
 }
 
@@ -245,22 +240,26 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
   if (asked_to_terminate_)
     return;
 
-  // FIXME: this document's origin is pristine and without any extra privileges
-  // (e.g. GrantUniversalAccess) that can be overriden in regular documents
-  // via WebPreference by embedders. (crbug.com/254993)
-  Document* document = shadow_page_->GetDocument();
-
   // Creates 'outside settings' used in the "Processing model" algorithm in the
   // HTML spec:
   // https://html.spec.whatwg.org/C/#worker-processing-model
   //
   // TODO(nhiroki): According to the spec, the 'outside settings' should
-  // correspond to the Document that called 'new SharedWorker()'. However,
-  // for now there is no way to pass the settings object over mojo IPCs, so as
-  // a stopgap the shadow page's Document is used here.
+  // correspond to the Document that called 'new SharedWorker()'. The browser
+  // process should pass it up to here.
+  scoped_refptr<const SecurityOrigin> starter_origin =
+      SecurityOrigin::Create(script_request_url_);
   auto* outside_settings_object =
       MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-          document->Fetcher()->GetProperties().GetFetchClientSettingsObject());
+          /*global_object_url=*/script_request_url_,
+          /*base_url=*/script_request_url_, starter_origin,
+          network::mojom::ReferrerPolicy::kDefault,
+          /*outgoing_referrer=*/String(),
+          CalculateHttpsState(starter_origin.get()),
+          AllowedByNosniff::MimeTypeCheck::kLax, creation_address_space_,
+          /*insecure_request_policy=*/kBlockAllMixedContent,
+          FetchClientSettingsObject::InsecureNavigationsSet(),
+          /*mixed_autoupgrade_opt_out=*/false);
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
       client_->CreateWorkerFetchContext();
@@ -271,6 +270,11 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
   // TODO(nhiroki); Set |script_type| to mojom::ScriptType::kModule for module
   // fetch (https://crbug.com/824646).
   mojom::ScriptType script_type = mojom::ScriptType::kClassic;
+
+  bool starter_secure_context =
+      starter_origin->IsPotentiallyTrustworthy() ||
+      SchemeRegistry::SchemeShouldBypassSecureContextCheck(
+          starter_origin->Protocol());
 
   auto worker_settings = std::make_unique<WorkerSettings>(
       false /* disable_reading_from_canvas */,
@@ -285,9 +289,10 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
       script_request_url_, script_type,
       OffMainThreadWorkerScriptFetchOption::kEnabled, name_,
-      document->UserAgent(), std::move(web_worker_fetch_context),
-      Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
-      outside_settings_object->GetSecurityOrigin(), document->IsSecureContext(),
+      shadow_page_->GetDocument()->UserAgent(),
+      std::move(web_worker_fetch_context), Vector<CSPHeaderAndType>(),
+      outside_settings_object->GetReferrerPolicy(),
+      outside_settings_object->GetSecurityOrigin(), starter_secure_context,
       outside_settings_object->GetHttpsState(), CreateWorkerClients(),
       std::make_unique<SharedWorkerContentSettingsProxy>(
           std::move(content_settings_info_)),

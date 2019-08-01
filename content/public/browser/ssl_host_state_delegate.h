@@ -52,12 +52,9 @@ class SSLHostStateDelegate {
       const base::Callback<bool(const std::string&)>& host_filter) = 0;
 
   // Queries whether |cert| is allowed for |host| and |error|. Returns true in
-  // |expired_previous_decision| if a previous user decision expired immediately
-  // prior to this query, otherwise false.
   virtual CertJudgment QueryPolicy(const std::string& host,
                                    const net::X509Certificate& cert,
-                                   int error,
-                                   bool* expired_previous_decision) = 0;
+                                   int error) = 0;
 
   // Records that a host has run insecure content of the given |content_type|.
   virtual void HostRanInsecureContent(const std::string& host,

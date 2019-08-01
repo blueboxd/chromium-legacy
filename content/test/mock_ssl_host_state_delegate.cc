@@ -36,8 +36,7 @@ void MockSSLHostStateDelegate::Clear(
 SSLHostStateDelegate::CertJudgment MockSSLHostStateDelegate::QueryPolicy(
     const std::string& host,
     const net::X509Certificate& cert,
-    int error,
-    bool* expired_previous_decision) {
+    int error) {
   if (exceptions_.find(host) == exceptions_.end())
     return SSLHostStateDelegate::DENIED;
 

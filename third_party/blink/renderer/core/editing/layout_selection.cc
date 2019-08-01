@@ -471,7 +471,7 @@ static base::Optional<unsigned> ComputeEndOffset(
 static bool IsPositionValidText(const Position& position) {
   if (position.AnchorNode()->IsTextNode() && position.IsOffsetInAnchor())
     return true;
-  if ((IsHTMLBRElement(position.AnchorNode()) ||
+  if ((IsA<HTMLBRElement>(position.AnchorNode()) ||
        IsHTMLWBRElement(position.AnchorNode())) &&
       (position.IsBeforeAnchor() || position.IsAfterAnchor()))
     return true;
@@ -506,7 +506,7 @@ static base::Optional<unsigned> GetTextContentOffsetStart(
     return GetTextContentOffset(Position(node, node_offset.value()));
   }
 
-  DCHECK(IsHTMLWBRElement(node) || IsHTMLBRElement(node)) << node;
+  DCHECK(IsHTMLWBRElement(node) || IsA<HTMLBRElement>(node)) << node;
   DCHECK(!node_offset.has_value()) << node;
   return GetTextContentOffset(Position::BeforeNode(node));
 }
@@ -523,7 +523,7 @@ static base::Optional<unsigned> GetTextContentOffsetEnd(
     return GetTextContentOffset(Position(node, node_offset.value()));
   }
 
-  DCHECK(IsHTMLWBRElement(node) || IsHTMLBRElement(node)) << node;
+  DCHECK(IsHTMLWBRElement(node) || IsA<HTMLBRElement>(node)) << node;
   DCHECK(!node_offset.has_value()) << node;
   return GetTextContentOffset(Position::AfterNode(node));
 }

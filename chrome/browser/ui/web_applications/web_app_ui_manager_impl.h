@@ -40,6 +40,8 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                    base::OnceClosure callback) override;
   void MigrateOSAttributes(const AppId& from, const AppId& to) override;
+  bool CanAddAppToQuickLaunchBar() const override;
+  void AddAppToQuickLaunchBar(const AppId& app_id) override;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;

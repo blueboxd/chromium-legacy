@@ -30,6 +30,10 @@
                      unsigned long firstIndex,
                      long baseVertex,
                      unsigned long firstInstance);
+    void drawIndirect(GPUBuffer indirectBuffer,
+                      unsigned long long indirectOffset);
+    void drawIndexedIndirect(GPUBuffer indirectBuffer,
+                             unsigned long long indirectOffset);
 
     void endPass();
 };

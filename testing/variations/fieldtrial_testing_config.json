@@ -5266,6 +5266,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "tab_grid_layout_android_new_tab": "NewTabVariation"
+                    },
                     "enable_features": [
                         "TabGridLayoutAndroid"
                     ]

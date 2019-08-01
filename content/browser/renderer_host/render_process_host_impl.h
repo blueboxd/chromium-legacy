@@ -756,7 +756,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // True after ProcessDied(), until the next call to Init().
   bool is_dead_ = false;
 
-  // PlzNavigate
   // Stores the time at which the first call to Init happened.
   base::TimeTicks init_time_;
 

@@ -8,13 +8,14 @@ dictionary GPUBindGroupLayoutBinding {
     required unsigned long binding;
     required GPUShaderStageFlags visibility;
     required GPUBindingType type;
+    boolean multisampled = false;
     boolean dynamic = false;
 };
 
 enum GPUBindingType {
     "uniform-buffer",
-    "dynamic-uniform-buffer",
+    "storage-buffer",
+    "readonly-storage-buffer",
     "sampler",
     "sampled-texture",
-    "storage-buffer",
 };

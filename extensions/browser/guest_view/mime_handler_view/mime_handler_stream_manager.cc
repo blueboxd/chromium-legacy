@@ -194,10 +194,10 @@ void MimeHandlerStreamManager::EmbedderObserver::RenderFrameDeleted(
   if (!IsTrackedRenderFrameHost(render_frame_host))
     return;
 
-  // PlzNavigate: the MimeHandlerStreamManager::EmbedderObserver is initialized
-  // before the final RenderFrameHost for the navigation has been chosen. When
-  // it is later picked, a specualtive RenderFrameHost might be deleted. Do not
-  // abort the stream in that case.
+  // The MimeHandlerStreamManager::EmbedderObserver is initialized before the
+  // final RenderFrameHost for the navigation has been chosen. When it is later
+  // picked, a specualtive RenderFrameHost might be deleted. Do not abort the
+  // stream in that case.
   if (frame_tree_node_id_ != -1 && !render_frame_host->IsCurrent())
     return;
 

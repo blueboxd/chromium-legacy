@@ -273,9 +273,8 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
   bool success = value->GetAsDictionary(&dict);
   DCHECK(success);
 
-  bool expired_previous_decision;  // unused value in this function
-  base::DictionaryValue* cert_dict = GetValidCertDecisionsDict(
-      dict, CREATE_DICTIONARY_ENTRIES, &expired_previous_decision);
+  base::DictionaryValue* cert_dict =
+      GetValidCertDecisionsDict(dict, CREATE_DICTIONARY_ENTRIES);
   // If a a valid certificate dictionary cannot be extracted from the content
   // setting, that means it's in an unknown format. Unfortunately, there's
   // nothing to be done in that case, so a silent fail is the only option.
@@ -313,17 +312,12 @@ void ChromeSSLHostStateDelegate::Clear(
 content::SSLHostStateDelegate::CertJudgment
 ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
                                         const net::X509Certificate& cert,
-                                        int error,
-                                        bool* expired_previous_decision) {
+                                        int error) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   GURL url = GetSecureGURLForHost(host);
   std::unique_ptr<base::Value> value(map->GetWebsiteSetting(
       url, url, CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS, std::string(), NULL));
-
-  // Set a default value in case this method is short circuited and doesn't do a
-  // full query.
-  *expired_previous_decision = false;
 
   // If the appropriate flag is set, let requests on localhost go
   // through even if there are certificate errors. Errors on localhost
@@ -342,8 +336,8 @@ ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
   DCHECK(success);
 
   base::DictionaryValue* cert_error_dict;  // Owned by value
-  cert_error_dict = GetValidCertDecisionsDict(
-      dict, DO_NOT_CREATE_DICTIONARY_ENTRIES, expired_previous_decision);
+  cert_error_dict =
+      GetValidCertDecisionsDict(dict, DO_NOT_CREATE_DICTIONARY_ENTRIES);
   if (!cert_error_dict) {
     // This revoke is necessary to clear any old expired setting that may be
     // lingering in the case that an old decision expried.
@@ -563,12 +557,7 @@ ChromeSSLHostStateDelegate::GetRecurrentInterstitialMode() const {
 // expired, a new dictionary will be created.
 base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
     base::DictionaryValue* dict,
-    CreateDictionaryEntriesDisposition create_entries,
-    bool* expired_previous_decision) {
-  // This needs to be done first in case the method is short circuited by an
-  // early failure.
-  *expired_previous_decision = false;
-
+    CreateDictionaryEntriesDisposition create_entries) {
   // Extract the version of the certificate decision structure from the content
   // setting.
   int version;
@@ -621,8 +610,6 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
   // - Expired and |create_entries| is CREATE_DICTIONARY_ENTRIES, update the
   // expiration time.
   if (decision_expiration.ToInternalValue() <= now.ToInternalValue()) {
-    *expired_previous_decision = true;
-
     if (create_entries == DO_NOT_CREATE_DICTIONARY_ENTRIES)
       return NULL;
 

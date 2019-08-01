@@ -9,7 +9,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -74,14 +74,14 @@ class MockCSSPaintImageGenerator : public CSSPaintImageGenerator {
   MOCK_CONST_METHOD0(NativeInvalidationProperties, Vector<CSSPropertyID>&());
   MOCK_CONST_METHOD0(CustomInvalidationProperties, Vector<AtomicString>&());
   MOCK_CONST_METHOD0(HasAlpha, bool());
-  MOCK_CONST_METHOD0(InputArgumentTypes, Vector<CSSSyntaxDescriptor>&());
+  MOCK_CONST_METHOD0(InputArgumentTypes, Vector<CSSSyntaxDefinition>&());
   MOCK_CONST_METHOD0(IsImageGeneratorReady, bool());
   MOCK_CONST_METHOD0(WorkletId, int());
 
  private:
   Vector<CSSPropertyID> native_properties_;
   Vector<AtomicString> custom_properties_;
-  Vector<CSSSyntaxDescriptor> input_argument_types_;
+  Vector<CSSSyntaxDefinition> input_argument_types_;
 };
 
 // CSSPaintImageGenerator requires that CSSPaintImageGeneratorCreateFunction be

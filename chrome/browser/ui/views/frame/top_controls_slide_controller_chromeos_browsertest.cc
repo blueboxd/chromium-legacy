@@ -281,7 +281,7 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
   }
 
   void OpenUrlAtIndex(const GURL& url, int index) {
-    AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
+    AddTabAtIndex(index, url, ui::PAGE_TRANSITION_TYPED);
     TabNonEmptyPaintWaiter waiter(
         browser()->tab_strip_model()->GetActiveWebContents());
     waiter.Wait();
@@ -1108,9 +1108,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   }
 }
 
-// Disabled due to flakiness: https://crbug.com/983791.
-IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       DISABLED_TestPermissionBubble) {
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());

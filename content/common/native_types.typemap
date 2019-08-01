@@ -33,8 +33,8 @@ public_headers = [
 traits_headers = [
   "//content/common/frame_messages.h",
   "//content/common/input_messages.h",
-  "//content/common/input/input_event_struct_traits.h",
-  "//content/common/input/touch_action_optional_struct_traits.h",
+  "//content/common/input/input_event_mojom_traits.h",
+  "//content/common/input/touch_action_optional_mojom_traits.h",
   "//content/common/view_messages.h",
   "//content/common/widget_messages.h",
   "//content/public/common/common_param_traits.h",

@@ -222,6 +222,25 @@ async function openFileDialogSendEscapeKey(volume, name) {
 }
 
 /**
+ * Tests for display:none status of feedback panels in Files app.
+ *
+ * @param {string} type Type of dialog to open.
+ */
+async function checkFeedbackDisplayHidden(type) {
+  // Open dialog of the specified 'type'.
+  chrome.fileSystem.chooseEntry({type: type}, (entry) => {});
+  const appId = await remoteCall.waitForWindow('dialog#');
+
+  // Wait to finish initial load.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+  // Check the display style of the feedback panels container.
+  const element = await remoteCall.waitForElementStyles(
+      appId, ['.files-feedback-panels'], ['display']);
+  // Check that CSS display style is 'none'.
+  chrome.test.assertTrue(element.styles['display'] === 'none');
+}
+
+/**
  * Test file present in Downloads.
  * @{!string}
  */
@@ -274,6 +293,20 @@ testcase.openFileDialogCancelDownloads = () => {
  */
 testcase.openFileDialogEscapeDownloads = () => {
   return openFileDialogSendEscapeKey('downloads', TEST_LOCAL_FILE);
+};
+
+/**
+ * Tests the feedback panels are hidden when using an open file dialog.
+ */
+testcase.openFileDialogPanelsDisabled = () => {
+  return checkFeedbackDisplayHidden('openFile');
+};
+
+/**
+ * Tests the feedback panels are hidden when using a save file dialog.
+ */
+testcase.saveFileDialogPanelsDisabled = () => {
+  return checkFeedbackDisplayHidden('saveFile');
 };
 
 /**

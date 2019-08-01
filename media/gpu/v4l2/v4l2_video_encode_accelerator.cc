@@ -613,6 +613,13 @@ void V4L2VideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
     return;
   }
 
+  if (frame &&
+      !ReconfigureFormatIfNeeded(frame->format(), frame->coded_size())) {
+    NOTIFY_ERROR(kInvalidArgumentError);
+    encoder_state_ = kError;
+    return;
+  }
+
   if (image_processor_) {
     image_processor_input_queue_.emplace(std::move(frame), force_keyframe);
     InputImageProcessorTask();
@@ -620,6 +627,70 @@ void V4L2VideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
     encoder_input_queue_.emplace(std::move(frame), force_keyframe);
     Enqueue();
   }
+}
+
+bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
+    VideoPixelFormat format,
+    const gfx::Size& new_frame_size) {
+  // We should apply the frame size change to ImageProcessor if there is.
+  if (image_processor_) {
+    // Stride is the same. There is no need of executing S_FMT again.
+    if (image_processor_->input_layout().coded_size() == new_frame_size) {
+      return true;
+    }
+
+    VLOGF(2) << "Call S_FMT with a new size=" << new_frame_size.ToString()
+             << ", the previous size ="
+             << device_input_layout_->coded_size().ToString();
+    if (input_streamon_ || output_streamon_) {
+      VLOGF(1) << "Input frame size is changed during encoding";
+      NOTIFY_ERROR(kInvalidArgumentError);
+      return false;
+    }
+
+    // TODO(hiroh): Decide the appropriate planar in some way.
+    auto input_layout = VideoFrameLayout::CreateMultiPlanar(
+        format, new_frame_size,
+        std::vector<VideoFrameLayout::Plane>(VideoFrame::NumPlanes(format)));
+    if (!input_layout) {
+      VLOGF(1) << "Invalid image processor input layout";
+      return false;
+    }
+
+    if (!CreateImageProcessor(*input_layout, *device_input_layout_,
+                              visible_size_)) {
+      NOTIFY_ERROR(kPlatformFailureError);
+      return false;
+    }
+    if (image_processor_->input_layout().coded_size().width() !=
+        new_frame_size.width()) {
+      NOTIFY_ERROR(kPlatformFailureError);
+      return false;
+    }
+
+    return true;
+  }
+
+  if (new_frame_size != device_input_layout_->coded_size()) {
+    VLOGF(2) << "Call S_FMT with a new size=" << new_frame_size.ToString()
+             << ", the previous size ="
+             << device_input_layout_->coded_size().ToString();
+    if (input_streamon_ || output_streamon_) {
+      VLOGF(1) << "Input frame size is changed during encoding";
+      NOTIFY_ERROR(kInvalidArgumentError);
+      return false;
+    }
+    if (!NegotiateInputFormat(device_input_layout_->format(), new_frame_size)) {
+      NOTIFY_ERROR(kPlatformFailureError);
+      return false;
+    }
+    if (device_input_layout_->coded_size().width() != new_frame_size.width()) {
+      NOTIFY_ERROR(kPlatformFailureError);
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void V4L2VideoEncodeAccelerator::InputImageProcessorTask() {
@@ -808,6 +879,12 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
     }
   }
 
+  if (!input_streamon_) {
+    // We don't have to enqueue any buffers in the output queue until we enqueue
+    // buffers in the input queue. This enables to call S_FMT in Encode() on
+    // the first frame.
+    return;
+  }
   // Enqueue all the outputs we can.
   const int old_outputs_queued = output_buffer_queued_count_;
   while (!free_output_buffers_.empty() && !encoder_output_queue_.empty()) {
@@ -1240,7 +1317,8 @@ bool V4L2VideoEncodeAccelerator::SetOutputFormat(
 }
 
 bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
-    VideoPixelFormat input_format) {
+    VideoPixelFormat input_format,
+    const gfx::Size& size) {
   VLOGF(2);
   DCHECK(encoder_thread_.task_runner()->BelongsToCurrentThread());
   DCHECK(!input_streamon_);
@@ -1257,30 +1335,29 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   }
 
   for (const auto pix_fmt : pix_fmt_candidates) {
-    auto trying_format = V4L2Device::V4L2PixFmtToVideoPixelFormat(pix_fmt);
-    DCHECK_NE(trying_format, PIXEL_FORMAT_UNKNOWN);
-    size_t planes_count = VideoFrame::NumPlanes(trying_format);
+    size_t planes_count = V4L2Device::GetNumPlanesOfV4L2PixFmt(pix_fmt);
+    DCHECK_GT(planes_count, 0u);
     DCHECK_LE(planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
-    VLOGF(2) << "Trying S_FMT with " << FourccToString(pix_fmt) << " ("
-             << trying_format << ").";
+    DVLOGF(3) << "Trying S_FMT with " << FourccToString(pix_fmt);
+
     struct v4l2_format format{};
     format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-    format.fmt.pix_mp.width = visible_size_.width();
-    format.fmt.pix_mp.height = visible_size_.height();
+    format.fmt.pix_mp.width = size.width();
+    format.fmt.pix_mp.height = size.height();
     format.fmt.pix_mp.pixelformat = pix_fmt;
     format.fmt.pix_mp.num_planes = planes_count;
     if (device_->Ioctl(VIDIOC_S_FMT, &format) == 0 &&
         format.fmt.pix_mp.pixelformat == pix_fmt) {
-      VLOGF(2) << "Success: S_FMT with " << FourccToString(pix_fmt);
+      DVLOGF(3) << "Success: S_FMT with " << FourccToString(pix_fmt);
       device_input_layout_ = V4L2Device::V4L2FormatToVideoFrameLayout(format);
       if (!device_input_layout_) {
         VLOGF(1) << "Invalid device_input_layout_";
         return false;
       }
-      VLOG(2) << "Negotiated device_input_layout_: " << *device_input_layout_;
+      DVLOG(3) << "Negotiated device_input_layout_: " << *device_input_layout_;
       if (!gfx::Rect(device_input_layout_->coded_size())
-               .Contains(gfx::Rect(visible_size_))) {
-        VLOGF(1) << "Input size " << visible_size_.ToString()
+               .Contains(gfx::Rect(size))) {
+        VLOGF(1) << "Input size " << size.ToString()
                  << " exceeds encoder capability. Size encoder can handle: "
                  << device_input_layout_->coded_size().ToString();
         return false;
@@ -1305,7 +1382,7 @@ bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
   if (!SetOutputFormat(output_profile))
     return false;
 
-  if (!NegotiateInputFormat(input_format))
+  if (!NegotiateInputFormat(input_format, visible_size_))
     return false;
 
   struct v4l2_rect visible_rect;

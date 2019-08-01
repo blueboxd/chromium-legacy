@@ -209,8 +209,8 @@ class EventRouter
       const std::string& file_system_name,
       const std::string& full_path);
 
-  // Called when crostini is enabled/disabled.
-  void OnCrostiniEnabledChanged();
+  // Called when a VM is enabled/disabled.
+  void OnCrostiniEnabledChanged(const std::string& vm_name);
 
   base::Time last_copy_progress_event_;
 

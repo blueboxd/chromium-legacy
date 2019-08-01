@@ -95,11 +95,7 @@ class CONTENT_EXPORT SSLManager {
 
  private:
   // Helper method for handling certificate errors.
-  //
-  // |expired_previous_decision| indicates whether a user decision had been
-  // previously made but the decision has expired.
-  void OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
-                           bool expired_previous_decision);
+  void OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler);
 
   // Updates the NavigationEntry's |content_status| flags according to state in
   // |ssl_host_state_delegate|. |add_content_status_flags| and

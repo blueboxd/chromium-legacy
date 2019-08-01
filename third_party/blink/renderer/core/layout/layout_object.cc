@@ -3565,7 +3565,7 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
     if (ancestor->CanContainAbsolutePositionObjects())
       break;
 
-    if (IsHTMLBodyElement(*node))
+    if (IsA<HTMLBodyElement>(*node))
       break;
 
     if (!IsPositioned() &&

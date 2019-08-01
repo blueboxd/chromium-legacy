@@ -338,7 +338,7 @@ Position PreviousRootInlineBoxCandidatePosition(
       break;
 
     const Position& candidate =
-        IsHTMLBRElement(*runner)
+        IsA<HTMLBRElement>(*runner)
             ? Position::BeforeNode(*runner)
             : Position::EditingPositionOf(runner, CaretMaxOffset(runner));
     if (IsVisuallyEquivalentCandidate(candidate))

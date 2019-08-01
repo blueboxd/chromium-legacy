@@ -82,10 +82,10 @@ bool VerifyVideoFrame(media::VideoPixelFormat pixel_format,
     // Check |offset| + (the size of a plane) on each plane is not larger than
     // |file_size_in_bytes|. This ensures we don't access out of a buffer
     // referred by |fd|.
-    size_t row_bytes =
-        media::VideoFrame::RowBytes(i, pixel_format, coded_size.height());
+    size_t plane_height =
+        media::VideoFrame::Rows(i, pixel_format, coded_size.height());
     base::CheckedNumeric<size_t> current_size(plane.offset);
-    current_size += base::CheckMul(plane.stride, row_bytes);
+    current_size += base::CheckMul(plane.stride, plane_height);
 
     if (!current_size.IsValid() ||
         current_size.ValueOrDie() > file_size_in_bytes) {

@@ -392,9 +392,19 @@ void IdentityManager::OnNetworkInitialized() {
   account_fetcher_service_->OnNetworkInitialized();
 }
 
-// static
-bool IdentityManager::IsAccountIdMigrationSupported() {
-  return AccountTrackerService::IsMigrationSupported();
+IdentityManager::AccountIdMigrationState
+IdentityManager::GetAccountIdMigrationState() const {
+  return static_cast<IdentityManager::AccountIdMigrationState>(
+      account_tracker_service_->GetMigrationState());
+}
+
+CoreAccountId IdentityManager::PickAccountIdForAccount(
+    const std::string& gaia,
+    const std::string& email) const {
+  // TODO(triploblastic@): Remove explicit conversion once
+  // primary_account_manager has been fixed to use CoreAccountId.
+  return CoreAccountId(
+      account_tracker_service_->PickAccountIdForAccount(gaia, email));
 }
 
 // static
@@ -411,21 +421,6 @@ void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(registry);
 #endif
-}
-
-CoreAccountId IdentityManager::PickAccountIdForAccount(
-    const std::string& gaia,
-    const std::string& email) const {
-  // TODO(triploblastic@): Remove explicit conversion once
-  // primary_account_manager has been fixed to use CoreAccountId.
-  return CoreAccountId(
-      account_tracker_service_->PickAccountIdForAccount(gaia, email));
-}
-
-IdentityManager::AccountIdMigrationState
-IdentityManager::GetAccountIdMigrationState() const {
-  return static_cast<IdentityManager::AccountIdMigrationState>(
-      account_tracker_service_->GetMigrationState());
 }
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)

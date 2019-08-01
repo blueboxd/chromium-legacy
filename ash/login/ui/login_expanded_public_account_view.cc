@@ -70,7 +70,7 @@ constexpr int kTopSpacingForLabelInRegularViewDp = 65;
 constexpr int kSpacingBetweenLabelsDp = 17;
 constexpr int kSpacingBetweenSelectionMenusDp = 15;
 constexpr int kSpacingBetweenSelectionTitleAndButtonDp = 3;
-constexpr int kSpacingBetweenLanguageMenuAndAdvancedViewButtonDp = 34;
+constexpr int kSpacingBetweenLanguageMenuAndAdvancedViewButtonDp = 4;
 constexpr int kSpacingBetweenAdvancedViewButtonAndLabelDp = 32;
 constexpr int kTopSpacingForUserViewDp = 62;
 

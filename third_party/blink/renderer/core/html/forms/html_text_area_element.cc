@@ -285,7 +285,7 @@ void HTMLTextAreaElement::SubtreeHasChanged() {
   for (Node& node : NodeTraversal::DescendantsOf(*inner_editor)) {
     if (node.IsTextNode())
       continue;
-    DCHECK(IsHTMLBRElement(node));
+    DCHECK(IsA<HTMLBRElement>(node));
     DCHECK_EQ(&node, inner_editor->lastChild());
   }
 #endif

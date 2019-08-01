@@ -88,8 +88,7 @@ void AwSSLHostStateDelegate::Clear(
 SSLHostStateDelegate::CertJudgment AwSSLHostStateDelegate::QueryPolicy(
     const std::string& host,
     const net::X509Certificate& cert,
-    int error,
-    bool* expired_previous_decision) {
+    int error) {
   return cert_policy_for_host_[host].Check(cert, error)
              ? SSLHostStateDelegate::ALLOWED
              : SSLHostStateDelegate::DENIED;

@@ -583,7 +583,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldEmitNewlineForNode(
     bool emits_original_text) {
   LayoutObject* layout_object = node.GetLayoutObject();
 
-  if (layout_object ? !layout_object->IsBR() : !IsHTMLBRElement(node))
+  if (layout_object ? !layout_object->IsBR() : !IsA<HTMLBRElement>(node))
     return false;
   return emits_original_text || !(node.IsInShadowTree() &&
                                   IsHTMLInputElement(*node.OwnerShadowHost()));
@@ -719,7 +719,7 @@ bool TextIteratorAlgorithm<Strategy>::ShouldRepresentNodeOffsetZero() {
           EVisibility::kVisible ||
       (node_->GetLayoutObject()->IsLayoutBlockFlow() &&
        !To<LayoutBlock>(node_->GetLayoutObject())->Size().Height() &&
-       !IsHTMLBodyElement(*node_)))
+       !IsA<HTMLBodyElement>(*node_)))
     return false;
 
   // The startPos.isNotNull() check is needed because the start could be before

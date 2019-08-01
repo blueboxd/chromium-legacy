@@ -28,7 +28,8 @@ mkdir $sctdir
 # Make dummy OCSP and SCT data for cbor certificate chains.
 echo -n OCSP >$tmpdir/ocsp; echo -n SCT >$sctdir/dummy.sct
 
-# Generate the certificate chain of "*.example.org".
+# Generate the certificate chain of "*.example.org", whose validity period is
+# exactly 90 days.
 gen-certurl -pem prime256v1-sha256.public.pem \
   -ocsp $tmpdir/ocsp -sctDir $sctdir > test.example.org.public.pem.cbor
 
@@ -37,12 +38,6 @@ gen-certurl -pem prime256v1-sha256.public.pem \
 gen-certurl -pem prime256v1-sha256-validity-too-long.public.pem \
   -ocsp $tmpdir/ocsp -sctDir $sctdir \
   > test.example.org-validity-too-long.public.pem.cbor
-
-# Generate the certificate chain of "*.example.org", whose validity period is
-# exactly 90 days.
-gen-certurl -pem prime256v1-sha256-valid-for-90-days.public.pem \
-  -ocsp $tmpdir/ocsp -sctDir $sctdir \
-  > test.example.org-valid-for-90-days.public.pem.cbor
 
 # Generate the certificate chain of "*.example.org", without
 # CanSignHttpExchangesDraft extension.
@@ -140,22 +135,6 @@ gen-signedexchange \
   -date $signature_date \
   -expire 168h \
   -o test.example.org_cert_validity_too_long.sxg \
-  -miRecordSize 100
-
-# Generate the signed exchange file whose certificate's validity period is
-# exactly 90 days.
-gen-signedexchange \
-  -version 1b3 \
-  -uri https://test.example.org/test/ \
-  -status 200 \
-  -content test.html \
-  -certificate prime256v1-sha256-valid-for-90-days.public.pem \
-  -certUrl https://cert.example.org/cert.msg \
-  -validityUrl https://test.example.org/resource.validity.msg \
-  -privateKey prime256v1.key \
-  -date $signature_date \
-  -expire 168h \
-  -o test.example.org_cert_valid_for_90_days.sxg \
   -miRecordSize 100
 
 # Generate the signed exchange file with invalid URL.

@@ -4556,7 +4556,7 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
 }
 
 void RenderFrameImpl::FrameFocused() {
-  Send(new FrameHostMsg_FrameFocused(routing_id_));
+  GetFrameHost()->FrameFocused();
 }
 
 void RenderFrameImpl::DidChangeName(const blink::WebString& name) {

@@ -225,13 +225,6 @@ class OAuth2AccessTokenManager {
       const std::string& client_secret,
       const ScopeSet& scopes);
 
-  // Add a new entry to the cache.
-  void RegisterTokenResponse(
-      const std::string& client_id,
-      const CoreAccountId& account_id,
-      const ScopeSet& scopes,
-      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
-
   // Returns a currently valid OAuth2 access token for the given set of scopes,
   // or NULL if none have been cached. Note the user of this method should
   // ensure no entry with the same |client_scopes| is added before the usage of
@@ -312,6 +305,13 @@ class OAuth2AccessTokenManager {
       RequestImpl* request,
       const RequestParameters& client_scopes);
 
+  // Add a new entry to the cache.
+  void RegisterTokenResponse(
+      const std::string& client_id,
+      const CoreAccountId& account_id,
+      const ScopeSet& scopes,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
+
   // Removes an access token for the given set of scopes from the cache.
   // Returns true if the entry was removed, otherwise false.
   bool RemoveCachedTokenResponse(const RequestParameters& client_scopes,
@@ -339,6 +339,7 @@ class OAuth2AccessTokenManager {
 
   FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenManagerTest, ClearCache);
   FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenManagerTest, ClearCacheForAccount);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenManagerTest, OnAccessTokenRemoved);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2AccessTokenManager);
 };

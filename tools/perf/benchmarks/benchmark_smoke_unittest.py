@@ -19,7 +19,9 @@ from telemetry import benchmark as benchmark_module
 from telemetry import decorators
 from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
+
 from py_utils import discover
+from py_utils import tempfile_ext
 
 from benchmarks import jetstream
 from benchmarks import kraken
@@ -49,18 +51,26 @@ def SmokeTestGenerator(benchmark, num_pages=1):
   @decorators.Disabled('android')  # crbug.com/641934
   def BenchmarkSmokeTest(self):
     class SinglePageBenchmark(benchmark):  # pylint: disable=no-init
-      # Only measure a single page so that this test cycles reasonably quickly.
-      options = benchmark.options.copy()
-      options['pageset_repeat'] = 1
-
       def CreateStorySet(self, options):
         # pylint: disable=super-on-old-class
         story_set = super(SinglePageBenchmark, self).CreateStorySet(options)
+
+        # We want to prevent benchmarks from accidentally trying to upload too
+        # much data to the chrome perf dashboard. So this tests tries to
+        # estimate the amount of values that the benchmark _would_ create when
+        # running on the waterfall, and fails if too many values are produced.
+        # As we run a single story and not the whole benchmark, the number of
+        # max values allowed is scaled proportionally.
+        # TODO(crbug.com/981349): This logic is only really valid for legacy
+        # values, and does not take histograms into account. An alternative
+        # should be implemented when using the results processor.
+        type(self).MAX_NUM_VALUES = MAX_NUM_VALUES / len(story_set)
 
         # Only smoke test the first story since smoke testing everything takes
         # too long.
         for s in story_set.stories[num_pages:]:
           story_set.RemoveStory(s)
+
         return story_set
 
     # Some benchmarks are running multiple iterations
@@ -68,35 +78,19 @@ def SmokeTestGenerator(benchmark, num_pages=1):
     if hasattr(SinglePageBenchmark, 'enable_smoke_test_mode'):
       SinglePageBenchmark.enable_smoke_test_mode = True
 
-    # Set the benchmark's default arguments.
-    options = options_for_unittests.GetCopy()
-    options.output_formats = ['none']
-    parser = options.CreateParser()
+    with tempfile_ext.NamedTemporaryDirectory() as temp_dir:
+      # Set the benchmark's default arguments.
+      options = options_for_unittests.GetRunOptions(
+          output_dir=temp_dir,
+          benchmark_cls=SinglePageBenchmark)
+      options.pageset_repeat = 1  # For smoke testing only run the page once.
 
-    SinglePageBenchmark.AddCommandLineArgs(parser)
-    benchmark_module.AddCommandLineArgs(parser)
-    SinglePageBenchmark.SetArgumentDefaults(parser)
-    options.MergeDefaultValues(parser.get_default_values())
+      single_page_benchmark = SinglePageBenchmark()
+      with open(path_util.GetExpectationsPath()) as fp:
+        single_page_benchmark.AugmentExpectationsWithParser(fp.read())
 
-    # Prevent benchmarks from accidentally trying to upload too much data to the
-    # chromeperf dashboard. The number of values uploaded is equal to (the
-    # average number of values produced by a single story) * (1 + (the number of
-    # stories)). The "1 + " accounts for values summarized across all stories.
-    # We can approximate "the average number of values produced by a single
-    # story" as the number of values produced by the first story.
-    # pageset_repeat doesn't matter because values are summarized across
-    # repetitions before uploading.
-    story_set = benchmark().CreateStorySet(options)
-    SinglePageBenchmark.MAX_NUM_VALUES = MAX_NUM_VALUES / len(story_set.stories)
+      return_code = single_page_benchmark.Run(options)
 
-    SinglePageBenchmark.ProcessCommandLineArgs(None, options)
-    benchmark_module.ProcessCommandLineArgs(None, options)
-
-    single_page_benchmark = SinglePageBenchmark()
-    with open(path_util.GetExpectationsPath()) as fp:
-      single_page_benchmark.AugmentExpectationsWithParser(fp.read())
-
-    return_code = single_page_benchmark.Run(options)
     if return_code == -1:
       self.skipTest('The benchmark was not run.')
     self.assertEqual(0, return_code, msg='Failed: %s' % benchmark)

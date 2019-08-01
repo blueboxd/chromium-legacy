@@ -187,6 +187,38 @@ TEST_F('SetTimeDialogBrowserTest', 'All', function() {
             assertGT(timeInSeconds, todaySeconds);
           });
     });
+
+    suite('NullTimezone', () => {
+      suiteSetup(() => {
+        loadTimeData.overrideValues({
+          currentTimezoneId: '',
+          timezoneList: [],
+        });
+      });
+
+      test('SetDateNullTimezone', () => {
+        const dateInput = setTimeElement.$$('#dateInput');
+        assertTrue(!!dateInput);
+
+        assertEquals(null, setTimeElement.$$('#timezoneSelect'));
+
+        // Simulate the user changing the date picker backward by one hour.
+        const today = dateInput.valueAsDate;
+        const nextWeek = new Date(today.getTime() - 60 * 60 * 1000);
+        dateInput.focus();
+        dateInput.valueAsDate = nextWeek;
+        setTimeElement.$$('#doneButton').click();
+
+        // Verify the page sends a request to move time backward.
+        return testBrowserProxy.whenCalled('setTimeInSeconds')
+            .then(timeInSeconds => {
+              const todaySeconds = today.getTime() / 1000;
+              // The exact value isn't important (it depends on the current
+              // time).
+              assertGT(todaySeconds, timeInSeconds);
+            });
+      });
+    });
   });
 
   mocha.run();

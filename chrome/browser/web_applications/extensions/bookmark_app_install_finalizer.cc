@@ -205,15 +205,6 @@ void BookmarkAppInstallFinalizer::CreateOsShortcuts(
                                std::move(callback));
 }
 
-bool BookmarkAppInstallFinalizer::CanPinAppToShelf() const {
-  return CanBookmarkAppBePinnedToShelf();
-}
-
-void BookmarkAppInstallFinalizer::PinAppToShelf(const web_app::AppId& app_id) {
-  const Extension* app = GetExtensionById(profile_, app_id);
-  BookmarkAppPinToShelf(app);
-}
-
 bool BookmarkAppInstallFinalizer::CanReparentTab(const web_app::AppId& app_id,
                                                  bool shortcut_created) const {
   const Extension* app = GetExtensionById(profile_, app_id);

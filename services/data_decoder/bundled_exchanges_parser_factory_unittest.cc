@@ -159,9 +159,9 @@ TEST_F(BundledExchangesParserFactoryTest, GetParserForFile) {
   {
     base::RunLoop run_loop;
     parser->ParseMetadata(base::BindLambdaForTesting(
-        [&metadata, &run_loop](mojom::BundleMetadataPtr metadata_ptr,
-                               const base::Optional<std::string>& error) {
-          metadata = std::move(metadata_ptr);
+        [&metadata, &run_loop](mojom::BundleMetadataPtr parsed_metadata,
+                               mojom::BundleMetadataParseErrorPtr error) {
+          metadata = std::move(parsed_metadata);
           run_loop.QuitClosure().Run();
         }));
     run_loop.Run();
@@ -178,7 +178,7 @@ TEST_F(BundledExchangesParserFactoryTest, GetParserForFile) {
         index[i]->response_offset, index[i]->response_length,
         base::BindLambdaForTesting(
             [&responses, &run_loop](mojom::BundleResponsePtr response,
-                                    const base::Optional<std::string>& error) {
+                                    mojom::BundleResponseParseErrorPtr error) {
               ASSERT_TRUE(response);
               ASSERT_FALSE(error);
               responses.push_back(std::move(response));

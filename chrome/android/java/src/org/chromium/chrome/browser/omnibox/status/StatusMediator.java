@@ -13,7 +13,6 @@ import android.view.View;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
-import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -86,9 +85,6 @@ class StatusMediator {
             mPageIsPreview = pageIsPreview;
             updateStatusVisibility();
             updateColorTheme();
-            if (mPageIsPreview) {
-                PreviewsUma.recordVerboseStatusTextShown(mVerboseStatusSpaceAvailable);
-            }
         }
     }
 

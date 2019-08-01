@@ -60676,7 +60676,7 @@ Full version information for the fingerprint enum values:
   <int value="12" label="RGB24"/>
   <int value="13" label="RGB32 (Deprecated in M77)"/>
   <int value="14" label="MJPEG"/>
-  <int value="15" label="MT21"/>
+  <int value="15" label="MT21 (Deprecated in M78)"/>
   <int value="16" label="YUV420P9"/>
   <int value="17" label="YUV420P10"/>
   <int value="18" label="YUV422P9"/>

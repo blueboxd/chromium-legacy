@@ -55,6 +55,8 @@ class GPURenderPassEncoder : public DawnObject<DawnRenderPassEncoder> {
                    uint32_t firstIndex,
                    int32_t baseVertex,
                    uint32_t firstInstance);
+  void drawIndirect(GPUBuffer* indirectBuffer, uint64_t indirectOffset);
+  void drawIndexedIndirect(GPUBuffer* indirectBuffer, uint64_t indirectOffset);
 
   void endPass();
 

@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
 
 #include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 
 namespace blink {
 

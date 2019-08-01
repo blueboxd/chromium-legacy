@@ -79,12 +79,12 @@ void TestInstallFinalizer::CreateOsShortcuts(
       base::BindOnce(std::move(callback), true /* shortcuts_created */));
 }
 
-bool TestInstallFinalizer::CanPinAppToShelf() const {
+bool TestInstallFinalizer::CanAddAppToQuickLaunchBar() const {
   return true;
 }
 
-void TestInstallFinalizer::PinAppToShelf(const AppId& app_id) {
-  ++num_pin_app_to_shelf_calls_;
+void TestInstallFinalizer::AddAppToQuickLaunchBar(const AppId& app_id) {
+  ++num_add_app_to_quick_launch_bar_calls_;
 }
 
 bool TestInstallFinalizer::CanReparentTab(const AppId& app_id,

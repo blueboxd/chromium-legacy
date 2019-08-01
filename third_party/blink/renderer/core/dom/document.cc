@@ -2405,7 +2405,7 @@ void Document::PropagateStyleToViewport() {
     // <body> child.
     // Also see LayoutBoxModelObject::BackgroundTransfersToView()
     if (body_style && IsHTMLHtmlElement(documentElement()) &&
-        IsHTMLBodyElement(body) && !background_style->HasBackground()) {
+        IsA<HTMLBodyElement>(body) && !background_style->HasBackground()) {
       background_style = body_style;
     }
 
@@ -3689,7 +3689,7 @@ HTMLElement* Document::body() const {
   for (HTMLElement* child =
            Traversal<HTMLElement>::FirstChild(*documentElement());
        child; child = Traversal<HTMLElement>::NextSibling(*child)) {
-    if (IsHTMLFrameSetElement(*child) || IsHTMLBodyElement(*child))
+    if (IsHTMLFrameSetElement(*child) || IsA<HTMLBodyElement>(*child))
       return child;
   }
 
@@ -3703,7 +3703,7 @@ HTMLBodyElement* Document::FirstBodyElement() const {
   for (HTMLElement* child =
            Traversal<HTMLElement>::FirstChild(*documentElement());
        child; child = Traversal<HTMLElement>::NextSibling(*child)) {
-    if (auto* body = ToHTMLBodyElementOrNull(*child))
+    if (auto* body = DynamicTo<HTMLBodyElement>(*child))
       return body;
   }
 
@@ -3726,7 +3726,7 @@ void Document::setBody(HTMLElement* prp_new_body,
     return;
   }
 
-  if (!IsHTMLBodyElement(*new_body) && !IsHTMLFrameSetElement(*new_body)) {
+  if (!IsA<HTMLBodyElement>(*new_body) && !IsHTMLFrameSetElement(*new_body)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kHierarchyRequestError,
         "The new body element is of type '" + new_body->tagName() +

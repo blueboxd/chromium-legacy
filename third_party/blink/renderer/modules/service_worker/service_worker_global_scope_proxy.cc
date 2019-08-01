@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
-#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/exported/web_embedded_worker_impl.h"
@@ -61,21 +60,17 @@
 
 namespace blink {
 
-ServiceWorkerGlobalScopeProxy* ServiceWorkerGlobalScopeProxy::Create(
-    WebEmbeddedWorkerImpl& embedded_worker,
-    WebServiceWorkerContextClient& client) {
-  return MakeGarbageCollected<ServiceWorkerGlobalScopeProxy>(embedded_worker,
-                                                             client);
+std::unique_ptr<ServiceWorkerGlobalScopeProxy>
+ServiceWorkerGlobalScopeProxy::Create(WebEmbeddedWorkerImpl& embedded_worker,
+                                      WebServiceWorkerContextClient& client) {
+  return std::make_unique<ServiceWorkerGlobalScopeProxy>(embedded_worker,
+                                                         client);
 }
 
 ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
   DCHECK(IsMainThread());
   // Verify that the proxy has been detached.
   DCHECK(!embedded_worker_);
-}
-
-void ServiceWorkerGlobalScopeProxy::Trace(blink::Visitor* visitor) {
-  visitor->Trace(parent_execution_context_task_runners_);
 }
 
 void ServiceWorkerGlobalScopeProxy::BindServiceWorker(
@@ -264,8 +259,7 @@ void ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() {
   // ServiceWorkerGlobalScope expects us to terminate the thread, so request
   // that here.
   PostCrossThreadTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
-      FROM_HERE,
+      *parent_task_runner_, FROM_HERE,
       CrossThreadBindOnce(&WebEmbeddedWorkerImpl::TerminateWorkerContext,
                           CrossThreadUnretained(embedded_worker_)));
 
@@ -320,12 +314,7 @@ ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
       worker_global_scope_(nullptr) {
   DCHECK(IsMainThread());
   DETACH_FROM_THREAD(worker_thread_checker_);
-  // ServiceWorker can sometimes run tasks that are initiated by/associated
-  // with a document's frame but these documents can be from a different
-  // process. So we intentionally populate the task runners with default task
-  // runners of the main thread.
-  parent_execution_context_task_runners_ =
-      ParentExecutionContextTaskRunners::Create();
+  parent_task_runner_ = Thread::Current()->GetTaskRunner();
 }
 
 void ServiceWorkerGlobalScopeProxy::Detach() {

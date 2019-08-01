@@ -61,11 +61,11 @@ bool IsPreMultiplied(CSSSyntaxType type) {
 CSSSyntaxStringParser::CSSSyntaxStringParser(const String& string)
     : string_(string.StripWhiteSpace()), input_(string_) {}
 
-base::Optional<CSSSyntaxDescriptor> CSSSyntaxStringParser::Parse() {
+base::Optional<CSSSyntaxDefinition> CSSSyntaxStringParser::Parse() {
   if (string_.IsEmpty())
     return base::nullopt;
   if (string_.length() == 1 && string_[0] == '*')
-    return CSSSyntaxDescriptor::CreateUniversal();
+    return CSSSyntaxDefinition::CreateUniversal();
 
   Vector<CSSSyntaxComponent> components;
 
@@ -82,7 +82,7 @@ base::Optional<CSSSyntaxDescriptor> CSSSyntaxStringParser::Parse() {
     return base::nullopt;
   }
 
-  return CSSSyntaxDescriptor(std::move(components));
+  return CSSSyntaxDefinition(std::move(components));
 }
 
 bool CSSSyntaxStringParser::ConsumeSyntaxComponent(

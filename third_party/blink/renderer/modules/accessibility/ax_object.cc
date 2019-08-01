@@ -1496,7 +1496,7 @@ String AXObject::GetName(ax::mojom::NameFrom& name_from,
 
   ax::mojom::Role role = RoleValue();
   if (!GetNode() ||
-      (!IsHTMLBRElement(GetNode()) && role != ax::mojom::Role::kStaticText &&
+      (!IsA<HTMLBRElement>(GetNode()) && role != ax::mojom::Role::kStaticText &&
        role != ax::mojom::Role::kInlineTextBox))
     text = CollapseWhitespace(text);
 

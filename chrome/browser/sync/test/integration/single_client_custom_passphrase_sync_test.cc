@@ -412,7 +412,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
-                       PRE_ShouldLoadUSSCustomPassphraseInDirectoryMode) {
+                       MAYBE_PRE_ShouldLoadUSSCustomPassphraseInDirectoryMode) {
   base::test::ScopedFeatureList override_features;
   // TODO(crbug.com/922900): Don't disable scrypt derivation and use it as key
   // derivation method in ShouldLoadUSSCustomPassphraseInDirectoryMode, once
@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
-                       ShouldLoadUSSCustomPassphraseInDirectoryMode) {
+                       MAYBE_ShouldLoadUSSCustomPassphraseInDirectoryMode) {
   // We should be able to decrypt bookmarks with passphrase, which was set when
   // kSyncUSSNigori was enabled, without providing it again once kSyncUSSNigori
   // is disabled.

@@ -286,7 +286,6 @@ class CONTENT_EXPORT FrameTreeNode {
   void TransferNavigationRequestOwnership(
       RenderFrameHostImpl* render_frame_host);
 
-  // PlzNavigate
   // Takes ownership of |navigation_request| and makes it the current
   // NavigationRequest of this frame. This corresponds to the start of a new
   // navigation. If there was an ongoing navigation request before calling this
@@ -294,7 +293,6 @@ class CONTENT_EXPORT FrameTreeNode {
   void CreatedNavigationRequest(
       std::unique_ptr<NavigationRequest> navigation_request);
 
-  // PlzNavigate
   // Resets the current navigation request. If |keep_state| is true, any state
   // created by the NavigationRequest (e.g. speculative RenderFrameHost,
   // loading state) will not be reset by the function.
@@ -525,7 +523,6 @@ class CONTENT_EXPORT FrameTreeNode {
   // Note that dynamic updates only take effect on the next frame navigation.
   FrameOwnerProperties frame_owner_properties_;
 
-  // PlzNavigate
   // Owns an ongoing NavigationRequest until it is ready to commit. It will then
   // be reset and a RenderFrameHost will be responsible for the navigation.
   std::unique_ptr<NavigationRequest> navigation_request_;

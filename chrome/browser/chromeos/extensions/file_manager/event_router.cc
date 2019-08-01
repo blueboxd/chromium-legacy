@@ -585,7 +585,8 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(
       crostini::prefs::kCrostiniEnabled,
       base::BindRepeating(&EventRouter::OnCrostiniEnabledChanged,
-                          weak_factory_.GetWeakPtr()));
+                          weak_factory_.GetWeakPtr(),
+                          crostini::kCrostiniDefaultVmName));
   pref_change_registrar_->Add(arc::prefs::kArcEnabled, callback);
   pref_change_registrar_->Add(arc::prefs::kArcHasAccessToRemovableMedia,
                               callback);
@@ -1144,10 +1145,11 @@ void EventRouter::OnUnshare(const std::string& vm_name,
   }
 }
 
-void EventRouter::OnCrostiniEnabledChanged() {
+void EventRouter::OnCrostiniEnabledChanged(const std::string& vm_name) {
   for (const auto& extension_id : GetEventListenerExtensionIds(
            profile_, file_manager_private::OnCrostiniChanged::kEventName)) {
     file_manager_private::CrostiniEvent event;
+    event.vm_name = vm_name;
     event.event_type =
         profile_->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled)
             ? file_manager_private::CROSTINI_EVENT_TYPE_ENABLE

@@ -61,6 +61,8 @@
   _page = page;
   _smallNewTabButton.page = page;
   _largeNewTabButton.page = page;
+  // Reset the title of UIBarButtonItem to update the title in a11y modal panel.
+  _newTabButtonItem.title = _largeNewTabButton.accessibilityLabel;
   [self updateLayout];
 }
 
@@ -107,24 +109,15 @@
                            target:nil
                            action:nil];
 
-  UIImage* regularImage = [UIImage imageNamed:@"new_tab_toolbar_button"];
-  UIImage* incognitoImage =
-      [UIImage imageNamed:@"new_tab_toolbar_button_incognito"];
-  _smallNewTabButton =
-      [[TabGridNewTabButton alloc] initWithRegularImage:regularImage
-                                         incognitoImage:incognitoImage];
+  _smallNewTabButton = [[TabGridNewTabButton alloc]
+      initWithRegularImage:[UIImage imageNamed:@"new_tab_toolbar_button"]
+            incognitoImage:[UIImage
+                               imageNamed:@"new_tab_toolbar_button_incognito"]];
   _smallNewTabButton.translatesAutoresizingMaskIntoConstraints = NO;
   _smallNewTabButton.page = self.page;
 
   _newTabButtonItem =
       [[UIBarButtonItem alloc] initWithCustomView:_smallNewTabButton];
-  // Set UIBarButtonItem.image to get a built-in accessibility modal panel.
-  // The panel will be shown when user long press on the button, under
-  // accessibility font size. The image will be normalized into a bi-color
-  // image, so the incognito image is suitable because it has a transparent
-  // "+". Use the larger image for higher resolution.
-  _newTabButtonItem.image = incognitoImage;
-  _newTabButtonItem.title = _smallNewTabButton.accessibilityLabel;
 
   _compactConstraints = @[
     [_toolbar.topAnchor constraintEqualToAnchor:self.topAnchor],
@@ -135,10 +128,11 @@
   ];
 
   // For other layout, display a floating new tab button.
+  UIImage* incognitoImage =
+      [UIImage imageNamed:@"new_tab_floating_button_incognito"];
   _largeNewTabButton = [[TabGridNewTabButton alloc]
       initWithRegularImage:[UIImage imageNamed:@"new_tab_floating_button"]
-            incognitoImage:
-                [UIImage imageNamed:@"new_tab_floating_button_incognito"]];
+            incognitoImage:incognitoImage];
   _largeNewTabButton.translatesAutoresizingMaskIntoConstraints = NO;
   _largeNewTabButton.page = self.page;
 
@@ -151,6 +145,14 @@
         constraintEqualToAnchor:self.trailingAnchor
                        constant:-kTabGridFloatingButtonHorizontalInset],
   ];
+
+  // When a11y font size is used, long press on UIBarButtonItem will show a
+  // built-in a11y modal panel with image and title if set. The image will be
+  // normalized into a bi-color image, so the incognito image is suitable
+  // because it has a transparent "+". Use the larger image for higher
+  // resolution.
+  _newTabButtonItem.image = incognitoImage;
+  _newTabButtonItem.title = _largeNewTabButton.accessibilityLabel;
 }
 
 - (void)updateLayout {

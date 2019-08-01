@@ -1516,6 +1516,12 @@ config("default_warnings") {
           # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
           "-Wno-ignored-pragma-optimize",
         ]
+        if (llvm_force_head_revision) {
+          cflags += [
+            # TODO(https://crbug.com/989932): Evaluate and possibly enable.
+            "-Wno-implicit-int-float-conversion",
+          ]
+        }
       }
     }
   }

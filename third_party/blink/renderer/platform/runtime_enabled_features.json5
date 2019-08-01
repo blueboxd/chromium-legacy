@@ -1486,7 +1486,7 @@
     },
     {
       name: "SignedExchangeSubresourcePrefetch",
-      origin_trial_feature_name: "SignedExchangeSubresourcePrefetchM77",
+      origin_trial_feature_name: "SignedExchangeSubresourcePrefetchM78",
       status: "experimental",
     },
     {

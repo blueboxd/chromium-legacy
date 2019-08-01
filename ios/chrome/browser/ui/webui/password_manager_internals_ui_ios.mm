@@ -10,6 +10,7 @@
 #include "components/version_info/version_info.h"
 #include "components/version_ui/version_handler_helper.h"
 #include "components/version_ui/version_ui_constants.h"
+#import "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
@@ -43,6 +44,8 @@ web::WebUIIOSDataSource* CreatePasswordManagerInternalsHTMLSource() {
   source->AddString(version_ui::kCL, version_info::GetLastChange());
   source->AddString(version_ui::kUserAgent, web::GetWebClient()->GetUserAgent(
                                                 web::UserAgentType::MOBILE));
+  source->AddString("app_locale",
+                    GetApplicationContext()->GetApplicationLocale());
   return source;
 }
 

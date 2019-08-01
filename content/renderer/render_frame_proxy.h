@@ -11,11 +11,13 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_messages.h"
+#include "content/common/frame_proxy.mojom.h"
 #include "content/common/frame_visual_properties.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/child_frame_compositor.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -226,6 +228,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   void ResendVisualProperties();
 
+  mojom::RenderFrameProxyHost* GetFrameProxyHost();
+  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces();
+
   // IPC handlers
   void OnDeleteProxy();
   void OnChildFrameProcessGone();
@@ -288,6 +293,12 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // Stores the WebRemoteFrame we are associated with.
   blink::WebRemoteFrame* web_frame_;
   std::string unique_name_;
+
+  // Provides the mojo interface to this RenderFrameProxy's
+  // RenderFrameProxyHost.
+  mojom::RenderFrameProxyHostAssociatedPtr frame_proxy_host_ptr_;
+  std::unique_ptr<blink::AssociatedInterfaceProvider>
+      remote_associated_interfaces_;
 
   // Can be nullptr when this RenderFrameProxy's parent is not a RenderFrame.
   std::unique_ptr<ChildFrameCompositingHelper> compositing_helper_;

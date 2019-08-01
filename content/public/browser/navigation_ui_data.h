@@ -9,7 +9,6 @@
 
 namespace content {
 
-// PlzNavigate
 // Copyable interface for embedders to pass opaque data to content/. It is
 // expected to be created on the UI thread at the start of the navigation, and
 // content/ will transfer it to the IO thread as a clone.

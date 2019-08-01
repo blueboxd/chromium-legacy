@@ -159,8 +159,7 @@ NavigationURLScheme GetScheme(const GURL& url) {
 }
 
 // Returns the net load flags to use based on the navigation type.
-// TODO(clamy): Remove the blink code that sets the caching flags when
-// PlzNavigate launches.
+// TODO(clamy): Remove the blink code that sets the caching flags.
 void UpdateLoadFlagsWithCacheFlags(int* load_flags,
                                    mojom::NavigationType navigation_type,
                                    bool is_post) {
@@ -549,8 +548,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   navigation_request->blob_url_loader_factory_ =
       frame_entry.blob_url_loader_factory();
 
-  if (blink::BlobUtils::MojoBlobURLsEnabled() &&
-      navigation_request->common_params().url.SchemeIsBlob() &&
+  if (navigation_request->common_params().url.SchemeIsBlob() &&
       !navigation_request->blob_url_loader_factory_) {
     // If this navigation entry came from session history then the blob factory
     // would have been cleared in NavigationEntryImpl::ResetForCommit(). This is
@@ -581,10 +579,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache) {
   // Only normal navigations to a different document or reloads are expected.
-  // - Renderer-initiated fragment-navigations never take place in the browser,
-  //   even with PlzNavigate.
+  // - Renderer-initiated same document navigations never start in the browser.
   // - Restore-navigations are always browser-initiated.
-  // - History-navigations use the browser-initiated path, event the ones that
+  // - History-navigations use the browser-initiated path, even the ones that
   //   are initiated by a javascript script, please see the IPC message
   //   FrameHostMsg_GoToEntryAtOffset.
   DCHECK(NavigationTypeUtils::IsReload(common_params->navigation_type) ||
@@ -1478,7 +1475,7 @@ void NavigationRequest::OnResponseStarted(
     common_params_->source_location.reset();
 
     // Allow the embedder to cancel the cross-process commit if needed.
-    // TODO(clamy): Rename ShouldTransferNavigation once PlzNavigate ships.
+    // TODO(clamy): Rename ShouldTransferNavigation.
     if (!frame_tree_node_->navigator()->GetDelegate()->ShouldTransferNavigation(
             frame_tree_node_->IsMainFrame())) {
       net_error_ = net::ERR_ABORTED;

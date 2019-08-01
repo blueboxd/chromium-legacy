@@ -187,7 +187,6 @@ class CONTENT_EXPORT AppCacheHost : public blink::mojom::AppCacheHost,
   AppCacheStorage* storage() const { return storage_; }
   blink::mojom::AppCacheFrontend* frontend() const { return frontend_; }
 
-  // PlzNavigate:
   // The AppCacheHost instance is created with a null AppCacheFrontend
   // pointer when the navigation starts. We need to switch it to the
   // actual frontend when the navigation commits.

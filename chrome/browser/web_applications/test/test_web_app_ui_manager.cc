@@ -42,4 +42,13 @@ void TestWebAppUiManager::NotifyOnAllAppWindowsClosed(
                      }));
 }
 
+void TestWebAppUiManager::MigrateOSAttributes(const AppId& from,
+                                              const AppId& to) {}
+
+bool TestWebAppUiManager::CanAddAppToQuickLaunchBar() const {
+  return false;
+}
+
+void TestWebAppUiManager::AddAppToQuickLaunchBar(const AppId& app_id) {}
+
 }  // namespace web_app

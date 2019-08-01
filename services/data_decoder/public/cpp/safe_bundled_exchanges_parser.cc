@@ -62,7 +62,8 @@ void SafeBundledExchangesParser::ParseMetadata(
   // This method is designed to be called once. So, allowing only once
   // simultaneous request is fine enough.
   if (disconnected_ || !metadata_callback_.is_null()) {
-    std::move(callback).Run(nullptr, kConnectionError);
+    std::move(callback).Run(
+        nullptr, mojom::BundleMetadataParseError::New(kConnectionError));
     return;
   }
   metadata_callback_ = std::move(callback);
@@ -79,7 +80,8 @@ void SafeBundledExchangesParser::ParseResponse(
   // we just make the new request fail with kConnectionError.
   if (disconnected_ ||
       response_callbacks_.contains(response_callback_next_id_)) {
-    std::move(callback).Run(nullptr, kConnectionError);
+    std::move(callback).Run(
+        nullptr, mojom::BundleResponseParseError::New(kConnectionError));
     return;
   }
   size_t callback_id = response_callback_next_id_++;
@@ -93,29 +95,30 @@ void SafeBundledExchangesParser::ParseResponse(
 void SafeBundledExchangesParser::OnDisconnect() {
   disconnected_ = true;
   if (!metadata_callback_.is_null())
-    std::move(metadata_callback_).Run(nullptr, kConnectionError);
+    std::move(metadata_callback_)
+        .Run(nullptr, mojom::BundleMetadataParseError::New(kConnectionError));
   for (auto& callback : response_callbacks_)
-    std::move(callback.second).Run(nullptr, kConnectionError);
+    std::move(callback.second)
+        .Run(nullptr, mojom::BundleResponseParseError::New(kConnectionError));
   response_callbacks_.clear();
 }
 
 void SafeBundledExchangesParser::OnMetadataParsed(
     mojom::BundleMetadataPtr metadata,
-    const base::Optional<std::string>& error_message) {
+    mojom::BundleMetadataParseErrorPtr error) {
   DCHECK(!metadata_callback_.is_null());
-  std::move(metadata_callback_)
-      .Run(std::move(metadata), std::move(error_message));
+  std::move(metadata_callback_).Run(std::move(metadata), std::move(error));
 }
 
 void SafeBundledExchangesParser::OnResponseParsed(
     size_t callback_id,
     mojom::BundleResponsePtr response,
-    const base::Optional<std::string>& error_message) {
+    mojom::BundleResponseParseErrorPtr error) {
   auto it = response_callbacks_.find(callback_id);
   DCHECK(it != response_callbacks_.end());
   auto callback = std::move(it->second);
   response_callbacks_.erase(it);
-  std::move(callback).Run(std::move(response), std::move(error_message));
+  std::move(callback).Run(std::move(response), std::move(error));
 }
 
 void SafeBundledExchangesParser::SetBundledExchangesParserFactoryForTesting(

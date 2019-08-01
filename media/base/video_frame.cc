@@ -103,7 +103,6 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
       return false;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
-    case PIXEL_FORMAT_MT21:
     case PIXEL_FORMAT_I420:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_YUY2:
@@ -753,8 +752,7 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_P016LE:
       return 2;
     case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_NV21:
-    case PIXEL_FORMAT_MT21: {
+    case PIXEL_FORMAT_NV21: {
       static const int bytes_per_element[] = {1, 2};
       DCHECK_LT(plane, base::size(bytes_per_element));
       return bytes_per_element[plane];
@@ -1123,7 +1121,6 @@ gfx::Size VideoFrame::SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_I420A:
         case PIXEL_FORMAT_NV12:
         case PIXEL_FORMAT_NV21:
-        case PIXEL_FORMAT_MT21:
         case PIXEL_FORMAT_YUV420P9:
         case PIXEL_FORMAT_YUV420P10:
         case PIXEL_FORMAT_YUV420P12:

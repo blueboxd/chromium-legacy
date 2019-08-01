@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_DOCUMENT_PAINT_DEFINITION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_DOCUMENT_PAINT_DEFINITION_H_
 
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -27,7 +27,7 @@ class MODULES_EXPORT DocumentPaintDefinition {
   explicit DocumentPaintDefinition(
       const Vector<CSSPropertyID>& native_invalidation_properties,
       const Vector<AtomicString>& custom_invalidation_properties,
-      const Vector<CSSSyntaxDescriptor>& input_argument_types,
+      const Vector<CSSSyntaxDefinition>& input_argument_types,
       bool alpha);
   virtual ~DocumentPaintDefinition();
 
@@ -37,7 +37,7 @@ class MODULES_EXPORT DocumentPaintDefinition {
   const Vector<AtomicString>& CustomInvalidationProperties() const {
     return custom_invalidation_properties_;
   }
-  const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const {
+  const Vector<CSSSyntaxDefinition>& InputArgumentTypes() const {
     return input_argument_types_;
   }
   bool alpha() const { return alpha_; }
@@ -45,7 +45,7 @@ class MODULES_EXPORT DocumentPaintDefinition {
   bool RegisterAdditionalPaintDefinition(const CSSPaintDefinition&);
   bool RegisterAdditionalPaintDefinition(const Vector<CSSPropertyID>&,
                                          const Vector<String>&,
-                                         const Vector<CSSSyntaxDescriptor>&,
+                                         const Vector<CSSSyntaxDefinition>&,
                                          bool alpha);
 
   unsigned GetRegisteredDefinitionCount() const {
@@ -55,7 +55,7 @@ class MODULES_EXPORT DocumentPaintDefinition {
  private:
   Vector<CSSPropertyID> native_invalidation_properties_;
   Vector<AtomicString> custom_invalidation_properties_;
-  Vector<CSSSyntaxDescriptor> input_argument_types_;
+  Vector<CSSSyntaxDefinition> input_argument_types_;
   bool alpha_;
   unsigned registered_definitions_count_;
 };

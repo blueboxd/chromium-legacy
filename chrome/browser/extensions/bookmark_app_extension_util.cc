@@ -25,29 +25,9 @@
 #if defined(OS_CHROMEOS)
 // gn check complains on Linux Ozone.
 #include "ash/public/cpp/shelf_model.h"  // nogncheck
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #endif
 
 namespace extensions {
-
-bool CanBookmarkAppBePinnedToShelf() {
-#if defined(OS_CHROMEOS)
-  return true;
-#else
-  return false;
-#endif
-}
-
-void BookmarkAppPinToShelf(const Extension* extension) {
-  DCHECK(CanBookmarkAppBePinnedToShelf());
-#if defined(OS_CHROMEOS)
-  // ChromeLauncherController does not exist in unit tests.
-  if (auto* controller = ChromeLauncherController::instance()) {
-    controller->PinAppWithID(extension->id());
-    controller->UpdateV1AppState(extension->id());
-  }
-#endif  // defined(OS_CHROMEOS)
-}
 
 bool CanBookmarkAppReparentTab(Profile* profile,
                                const Extension* extension,

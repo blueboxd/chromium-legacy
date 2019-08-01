@@ -83,9 +83,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
         if (LibraryLoader.useChromiumLinker() && !LibraryLoader.getInstance().isLoadedByZygote()) {
             Bundle sharedRelros = connectionBundle.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
-            if (sharedRelros != null) {
-                getLinker().useSharedRelros(sharedRelros);
-            }
+            if (sharedRelros != null) getLinker().provideSharedRelros(sharedRelros);
         }
     }
 

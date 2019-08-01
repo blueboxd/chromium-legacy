@@ -342,14 +342,13 @@ void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
 }
 
 void SSLManager::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
-  bool expired_previous_decision = false;
   // First we check if we know the policy for this error.
   DCHECK(handler->ssl_info().is_valid());
   SSLHostStateDelegate::CertJudgment judgment =
       ssl_host_state_delegate_
           ? ssl_host_state_delegate_->QueryPolicy(
                 handler->request_url().host(), *handler->ssl_info().cert.get(),
-                handler->cert_error(), &expired_previous_decision)
+                handler->cert_error())
           : SSLHostStateDelegate::DENIED;
 
   if (judgment == SSLHostStateDelegate::ALLOWED) {
@@ -363,7 +362,7 @@ void SSLManager::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
     handler->ContinueRequest();
     return;
   }
-  OnCertErrorInternal(std::move(handler), expired_previous_decision);
+  OnCertErrorInternal(std::move(handler));
 }
 
 void SSLManager::DidStartResourceResponse(const GURL& url,
@@ -385,8 +384,7 @@ void SSLManager::DidStartResourceResponse(const GURL& url,
   ssl_host_state_delegate_->RevokeUserAllowExceptions(url.host());
 }
 
-void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
-                                     bool expired_previous_decision) {
+void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler) {
   WebContents* web_contents = handler->web_contents();
   int cert_error = handler->cert_error();
   const net::SSLInfo& ssl_info = handler->ssl_info();
@@ -407,7 +405,7 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
 
   GetContentClient()->browser()->AllowCertificateError(
       web_contents, cert_error, ssl_info, request_url, is_main_frame_request,
-      fatal, expired_previous_decision,
+      fatal,
       base::Bind(&OnAllowCertificateWithRecordDecision, true,
                  std::move(callback)));
 }

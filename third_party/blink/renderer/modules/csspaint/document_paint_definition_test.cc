@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_syntax_component.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -24,7 +24,7 @@ TEST(DocumentPaintDefinitionTest, NativeInvalidationProperties) {
       CSSPropertyID::kTop,
   };
   Vector<AtomicString> custom_invalidation_properties;
-  Vector<CSSSyntaxDescriptor> input_argument_types;
+  Vector<CSSSyntaxDefinition> input_argument_types;
 
   DocumentPaintDefinition document_definition(native_invalidation_properties,
                                               custom_invalidation_properties,
@@ -42,7 +42,7 @@ TEST(DocumentPaintDefinitionTest, CustomInvalidationProperties) {
       "--my-property",
       "--another-property",
   };
-  Vector<CSSSyntaxDescriptor> input_argument_types;
+  Vector<CSSSyntaxDefinition> input_argument_types;
 
   DocumentPaintDefinition document_definition(native_invalidation_properties,
                                               custom_invalidation_properties,
@@ -57,7 +57,7 @@ TEST(DocumentPaintDefinitionTest, CustomInvalidationProperties) {
 TEST(DocumentPaintDefinitionTest, Alpha) {
   Vector<CSSPropertyID> native_invalidation_properties;
   Vector<AtomicString> custom_invalidation_properties;
-  Vector<CSSSyntaxDescriptor> input_argument_types;
+  Vector<CSSSyntaxDefinition> input_argument_types;
 
   DocumentPaintDefinition document_definition_with_alpha(
       native_invalidation_properties, custom_invalidation_properties,
@@ -73,7 +73,7 @@ TEST(DocumentPaintDefinitionTest, Alpha) {
 TEST(DocumentPaintDefinitionTest, InputArgumentTypes) {
   Vector<CSSPropertyID> native_invalidation_properties;
   Vector<AtomicString> custom_invalidation_properties;
-  Vector<CSSSyntaxDescriptor> input_argument_types = {
+  Vector<CSSSyntaxDefinition> input_argument_types = {
       CSSSyntaxStringParser("<length> | <color>").Parse().value(),
       CSSSyntaxStringParser("<integer> | foo | <color>").Parse().value()};
 

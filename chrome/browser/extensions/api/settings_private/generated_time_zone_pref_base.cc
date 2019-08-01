@@ -4,9 +4,11 @@
 
 #include "chrome/browser/extensions/api/settings_private/generated_time_zone_pref_base.h"
 
+#include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "components/user_manager/user_manager.h"
 
@@ -39,6 +41,11 @@ void GeneratedTimeZonePrefBase::UpdateTimeZonePrefControlledBy(
   if (chromeos::system::TimeZoneResolverManager::
           IsTimeZoneResolutionPolicyControlled()) {
     out_pref->controlled_by = settings_api::CONTROLLED_BY_DEVICE_POLICY;
+    out_pref->enforcement = settings_api::ENFORCEMENT_ENFORCED;
+  } else if (profile_->IsChild() &&
+             !base::FeatureList::IsEnabled(
+                 features::kParentAccessCodeForTimeChange)) {
+    out_pref->controlled_by = settings_api::ControlledBy::CONTROLLED_BY_PARENT;
     out_pref->enforcement = settings_api::ENFORCEMENT_ENFORCED;
   } else if (!profile_->IsSameProfile(
                  ProfileManager::GetPrimaryUserProfile())) {

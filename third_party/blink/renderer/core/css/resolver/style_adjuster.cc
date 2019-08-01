@@ -302,7 +302,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   if (style.Display() == EDisplay::kContents) {
     // See https://drafts.csswg.org/css-display/#unbox-html
     // Some of these elements are handled with other adjustments above.
-    if (IsHTMLBRElement(element) || IsHTMLWBRElement(element) ||
+    if (IsA<HTMLBRElement>(element) || IsHTMLWBRElement(element) ||
         IsHTMLMeterElement(element) || IsHTMLProgressElement(element) ||
         IsHTMLCanvasElement(element) || IsHTMLMediaElement(element) ||
         IsHTMLInputElement(element) || IsHTMLTextAreaElement(element) ||

@@ -192,7 +192,7 @@ Node* EnclosingBlockToSplitTreeTo(Node* start_node) {
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*start_node)) {
     if (!HasEditableStyle(runner))
       return last_block;
-    if (IsTableCell(&runner) || IsHTMLBodyElement(&runner) ||
+    if (IsTableCell(&runner) || IsA<HTMLBodyElement>(&runner) ||
         !runner.parentNode() || !HasEditableStyle(*runner.parentNode()) ||
         IsElementForFormatBlock(&runner))
       return &runner;

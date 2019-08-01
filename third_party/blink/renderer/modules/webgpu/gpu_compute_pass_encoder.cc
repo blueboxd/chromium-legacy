@@ -47,6 +47,12 @@ void GPUComputePassEncoder::dispatch(uint32_t x, uint32_t y, uint32_t z) {
   GetProcs().computePassEncoderDispatch(GetHandle(), x, y, z);
 }
 
+void GPUComputePassEncoder::dispatchIndirect(GPUBuffer* indirectBuffer,
+                                             uint64_t indirectOffset) {
+  GetProcs().computePassEncoderDispatchIndirect(
+      GetHandle(), indirectBuffer->GetHandle(), indirectOffset);
+}
+
 void GPUComputePassEncoder::endPass() {
   GetProcs().computePassEncoderEndPass(GetHandle());
 }

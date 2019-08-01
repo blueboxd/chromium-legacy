@@ -629,7 +629,8 @@ void PaintArtifactCompositor::LayerizeGroup(
       // Case A: The next chunk belongs to the current group but no subgroup.
       const auto& last_display_item =
           paint_artifact.GetDisplayItemList()[chunk_it->begin_index];
-      bool item_for_scrolling = last_display_item.IsScrollHitTest();
+      bool item_for_scrolling = last_display_item.IsScrollHitTest() &&
+                                !last_display_item.IsPluginScrollHitTest();
       bool requires_own_layer = last_display_item.IsForeignLayer() ||
                                 // TODO(pdr): This should require a direct
                                 // compositing reason.

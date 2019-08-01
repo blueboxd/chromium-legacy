@@ -6,7 +6,7 @@
 
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_deferred_image.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
@@ -139,7 +139,7 @@ bool CSSPaintValue::ParseInputArguments(const Document& document) {
     return true;
 
   DCHECK(generator_->IsImageGeneratorReady());
-  const Vector<CSSSyntaxDescriptor>& input_argument_types =
+  const Vector<CSSSyntaxDefinition>& input_argument_types =
       generator_->InputArgumentTypes();
   if (argument_variable_data_.size() != input_argument_types.size()) {
     input_arguments_invalid_ = true;

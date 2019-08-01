@@ -39,8 +39,8 @@ class CONTENT_EXPORT BundledExchangesReader final {
   // Starts parsing, and runs |callback| when meta data gets to be available.
   // |error| is set only on failures.
   // Other methods below are only available after this |callback| invocation.
-  using MetadataCallback =
-      base::OnceCallback<void(base::Optional<std::string> error)>;
+  using MetadataCallback = base::OnceCallback<void(
+      data_decoder::mojom::BundleMetadataParseErrorPtr error)>;
   void ReadMetadata(MetadataCallback callback);
 
   // Gets data_decoder::mojom::BundleResponsePtr for the given |url| that
@@ -98,10 +98,10 @@ class CONTENT_EXPORT BundledExchangesReader final {
 
   void OnMetadataParsed(MetadataCallback callback,
                         data_decoder::mojom::BundleMetadataPtr metadata,
-                        const base::Optional<std::string>& error);
+                        data_decoder::mojom::BundleMetadataParseErrorPtr error);
   void OnResponseParsed(ResponseCallback callback,
                         data_decoder::mojom::BundleResponsePtr response,
-                        const base::Optional<std::string>& error);
+                        data_decoder::mojom::BundleResponseParseErrorPtr error);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -17,7 +17,6 @@ namespace content {
 
 namespace {
 
-// PlzNavigate
 // A UI thread singleton helper class for browser side navigations. When browser
 // side navigations are enabled, initialize this class before doing any
 // operation that may start a navigation request on the UI thread. Use TearDown

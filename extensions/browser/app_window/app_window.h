@@ -587,8 +587,8 @@ class AppWindow : public content::WebContentsDelegate,
   // race condition of loading custom app icon and app content simultaneously.
   bool window_ready_ = false;
 
-  // PlzNavigate: these callbacks are called when the navigation is finished on
-  // both browser and renderer sides.
+  // These callbacks are called when the navigation is finished on both browser
+  // and renderer sides.
   std::vector<DidFinishFirstNavigationCallback>
       on_did_finish_first_navigation_callbacks_;
   // Whether the first navigation was completed in both browser and renderer

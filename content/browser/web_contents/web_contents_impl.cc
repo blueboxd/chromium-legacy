@@ -6179,7 +6179,7 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
     // the outer WebContents FrameTreeNode is at |source|'s SiteInstance.
     // Transfer the focus to the inner WebContents if the outer WebContents is
     // focused. This branch is used when an inner WebContents is focused through
-    // its RenderFrameProxyHost (via FrameHostMsg_FrameFocused IPC, used to
+    // its RenderFrameProxyHost (via FrameFocused mojo call, used to
     // implement the window.focus() API).
     if (GetFocusedWebContents() == GetOuterWebContents())
       SetAsFocusedWebContentsIfNecessary();

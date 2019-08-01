@@ -1310,6 +1310,13 @@ void CrostiniManager::InstallLinuxPackage(
     std::string container_name,
     std::string package_path,
     InstallLinuxPackageCallback callback) {
+  if (!IsCrostiniRootAccessAllowed(profile_)) {
+    LOG(ERROR) << "Attempted to install package when root access to Crostini "
+                  "VM not allowed.";
+    std::move(callback).Run(CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED);
+    return;
+  }
+
   if (!GetCiceroneClient()->IsInstallLinuxPackageProgressSignalConnected()) {
     // Technically we could still start the install, but we wouldn't be able to
     // detect when the install completes, successfully or otherwise.

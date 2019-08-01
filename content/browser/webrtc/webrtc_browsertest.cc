@@ -243,6 +243,15 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
       "testGetSettingsReportsValuesForRemoteTracks();");
 }
 
+// TODO(crbug.com/988432): This test is a temporary replacement for:
+// external/wpt/webrtc/RTCRtpReceiver-getSynchronizationSources.https.html
+IN_PROC_BROWSER_TEST_F(
+    MAYBE_WebRtcBrowserTest,
+    EstablishVideoOnlyCallAndVerifyGetSynchronizationSourcesWorks) {
+  MakeTypicalPeerConnectionCall(
+      "testEstablishVideoOnlyCallAndVerifyGetSynchronizationSourcesWorks();");
+}
+
 #if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
 // This test is to make sure HW H264 work normally on supported devices, since
 // there is no SW H264 fallback available on Android.

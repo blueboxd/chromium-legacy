@@ -12,7 +12,6 @@
 
 namespace content {
 
-// PlzNavigate
 // Manages creation of the NavigationURLLoaders; when registered, all created
 // NavigationURLLoaderss will be TestNavigationURLLoaderss. This automatically
 // registers itself when it goes in scope, and unregisters itself when it goes

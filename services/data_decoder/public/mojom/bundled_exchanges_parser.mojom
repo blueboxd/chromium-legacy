@@ -23,19 +23,28 @@ interface BundledExchangesParserFactory {
 // application/webbundle data provided on the construction at the factory above.
 interface BundledExchangesParser {
   // Parses bundle's metadata.
-  ParseMetadata() => (BundleMetadata? Result, string? error);
+  ParseMetadata() => (BundleMetadata? Result, BundleMetadataParseError? error);
 
   // Parses a response from the range
   // |[response_offset, response_offset + response_length)|.
   ParseResponse(uint64 response_offset,
                 uint64 response_length)
-      => (BundleResponse? Result, string? error);
+      => (BundleResponse? Result, BundleResponseParseError? error);
 };
 
 // Data source that provides application/webbundle data to the parser.
 interface BundleDataSource {
   GetSize() => (uint64 size);
   Read(uint64 offset, uint64 length) => (array<uint8>? buffer);
+};
+
+struct BundleMetadataParseError {
+  string message;
+  // TODO(crbug.com/969596): Add fields for error type and fallback URL.
+};
+
+struct BundleResponseParseError {
+  string message;
 };
 
 struct BundleMetadata {

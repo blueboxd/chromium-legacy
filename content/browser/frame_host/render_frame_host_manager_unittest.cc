@@ -2905,8 +2905,8 @@ TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
   }
 }
 
-// PlzNavigate: Tests that the correct intermediary and final navigation states
-// are reached when navigating from a renderer that is not live to a WebUI URL.
+// Tests that the correct intermediary and final navigation states are reached
+// when navigating from a renderer that is not live to a WebUI URL.
 TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   set_should_create_webui(true);
   RenderFrameHostManager* manager = contents()->GetRenderManagerForTesting();
@@ -2981,8 +2981,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   EXPECT_FALSE(manager->GetNavigatingWebUI());
 }
 
-// PlzNavigate: Tests that the correct intermediary and final navigation states
-// are reached when navigating same-site between two WebUIs of the same type.
+// Tests that the correct intermediary and final navigation states are reached
+// when navigating same-site between two WebUIs of the same type.
 TEST_F(RenderFrameHostManagerTest, NavigateSameSiteBetweenWebUIs) {
   set_should_create_webui(true);
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(),
@@ -3022,8 +3022,8 @@ TEST_F(RenderFrameHostManagerTest, NavigateSameSiteBetweenWebUIs) {
   EXPECT_FALSE(host->pending_web_ui());
 }
 
-// PlzNavigate: Tests that the correct intermediary and final navigation states
-// are reached when navigating cross-site between two different WebUI types.
+// Tests that the correct intermediary and final navigation states are reached
+// when navigating cross-site between two different WebUI types.
 TEST_F(RenderFrameHostManagerTest, NavigateCrossSiteBetweenWebUIs) {
   // Cross-site navigations will always cause the change of the WebUI instance
   // but for consistency sake different types will be set for each navigation.

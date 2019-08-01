@@ -1010,7 +1010,7 @@ void CompositeEditCommand::RemovePlaceholderAt(const Position& p) {
 
   // We are certain that the position is at a line break, but it may be a br or
   // a preserved newline.
-  if (IsHTMLBRElement(*p.AnchorNode())) {
+  if (IsA<HTMLBRElement>(*p.AnchorNode())) {
     // Removing a BR element won't dispatch synchronous events.
     RemoveNode(p.AnchorNode(), ASSERT_NO_EDITING_ABORT);
     return;
@@ -1099,7 +1099,7 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
   DCHECK(new_block);
 
   bool end_was_br =
-      IsHTMLBRElement(*visible_paragraph_end.DeepEquivalent().AnchorNode());
+      IsA<HTMLBRElement>(*visible_paragraph_end.DeepEquivalent().AnchorNode());
 
   // Inserting default paragraph element can change visible position. We
   // should update visible positions before use them.
@@ -1121,7 +1121,7 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
   if (editing_state->IsAborted())
     return nullptr;
 
-  if (new_block->lastChild() && IsHTMLBRElement(*new_block->lastChild()) &&
+  if (new_block->lastChild() && IsA<HTMLBRElement>(*new_block->lastChild()) &&
       !end_was_br) {
     RemoveNode(new_block->lastChild(), editing_state);
     if (editing_state->IsAborted())
@@ -1278,7 +1278,7 @@ void CompositeEditCommand::CleanupAfterDeletion(EditingState* editing_state,
       return;
 
     // Normally deletion will leave a br as a placeholder.
-    if (IsHTMLBRElement(*node)) {
+    if (IsA<HTMLBRElement>(*node)) {
       RemoveNodeAndPruneAncestors(node, editing_state, destination_node);
 
       // If the selection to move was empty and in an empty block that
@@ -1821,12 +1821,12 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
   Position caret_pos(MostForwardCaretPosition(caret.DeepEquivalent()));
   // A line break is either a br or a preserved newline.
   DCHECK(
-      IsHTMLBRElement(caret_pos.AnchorNode()) ||
+      IsA<HTMLBRElement>(caret_pos.AnchorNode()) ||
       (caret_pos.AnchorNode()->IsTextNode() &&
        caret_pos.AnchorNode()->GetLayoutObject()->Style()->PreserveNewline()))
       << caret_pos;
 
-  if (IsHTMLBRElement(*caret_pos.AnchorNode())) {
+  if (IsA<HTMLBRElement>(*caret_pos.AnchorNode())) {
     RemoveNodeAndPruneAncestors(caret_pos.AnchorNode(), editing_state);
     if (editing_state->IsAborted())
       return false;

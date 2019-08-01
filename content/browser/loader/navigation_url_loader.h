@@ -32,10 +32,10 @@ class ServiceWorkerNavigationHandle;
 class StoragePartition;
 struct NavigationRequestInfo;
 
-// PlzNavigate: The navigation logic's UI thread entry point into the resource
-// loading stack. It exposes an interface to control the request prior to
-// receiving the response. If the NavigationURLLoader is destroyed before
-// OnResponseStarted is called, the request is aborted.
+// The navigation logic's UI thread entry point into the resource loading stack.
+// It exposes an interface to control the request prior to receiving the
+// response. If the NavigationURLLoader is destroyed before OnResponseStarted is
+// called, the request is aborted.
 class CONTENT_EXPORT NavigationURLLoader {
  public:
   // Creates a NavigationURLLoader. The caller is responsible for ensuring that

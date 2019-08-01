@@ -283,7 +283,7 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
 
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
   StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
-                           nullptr /* pseudo_element */, initial, initial);
+                           initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->InheritFrom(*initial);
@@ -294,7 +294,7 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
   const auto* prop3 = CreateCustomProperty("--prop3", "var(--prop2)");
 
   // Register prop3 to make it non-inherited.
-  base::Optional<CSSSyntaxDescriptor> token_syntax =
+  base::Optional<CSSSyntaxDefinition> token_syntax =
       CSSSyntaxStringParser("*").Parse();
   ASSERT_TRUE(token_syntax);
   String initial_value_str("foo");
@@ -471,7 +471,7 @@ TEST_F(CSSVariableResolverTest, CSSWideKeywords) {
 
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
   StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
-                           nullptr /* pseudo_element */, initial, initial);
+                           initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->InheritFrom(*initial);

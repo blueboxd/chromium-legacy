@@ -515,9 +515,6 @@ crbug.com/980290 scrollingcoordinator/non-fast-scrollable-region-transformed-ifr
 crbug.com/980290 scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Failure ]
 crbug.com/980290 scrollingcoordinator/non-fast-scrollable-visibility-change.html [ Failure ]
 
-# Need to support painting non-fast scrollable regions for plugins.
-crbug.com/864567 scrollingcoordinator/plugin-with-wheel-handler.html [ Failure ]
-
 # These failures need to be triaged and are being added to unblock the CQ (see: https://crbug.com/966981).
 crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-frame-no-scroll-manual.tentative.html [ Failure ]
 crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-main-frame-manual.tentative.html [ Failure ]

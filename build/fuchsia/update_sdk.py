@@ -8,6 +8,8 @@ entry so that it only runs when .gclient's target_os includes 'fuchsia'."""
 
 from __future__ import print_function
 
+import argparse
+import logging
 import os
 import re
 import shutil
@@ -34,6 +36,7 @@ def GetSdkGeneration(hash):
 
   cmd = [os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'gsutil.py'), 'ls',
          '-L', GetSdkBucketForPlatform() + hash]
+  logging.debug("Running '%s'", " ".join(cmd))
   sdk_details = subprocess.check_output(cmd)
   m = re.search('Generation:\s*(\d*)', sdk_details)
   if not m:
@@ -112,10 +115,19 @@ def DownloadAndUnpackFromCloudStorage(url, output_dir):
   # to disk first.
   cmd = [os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'gsutil.py'),
          'cp', url, '-']
-  task = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-  tarfile.open(mode='r|gz', fileobj=task.stdout).extractall(path=output_dir)
+  logging.debug('Running "%s"', ' '.join(cmd))
+  task = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+  try:
+    tarfile.open(mode='r|gz', fileobj=task.stdout).extractall(path=output_dir)
+  except tarfile.ReadError:
+    task.wait()
+    stderr = task.stderr.read()
+    raise subprocess.CalledProcessError(task.returncode, cmd,
+      "Failed to read a tarfile from gsutil.py.{}".format(
+        stderr if stderr else ""))
   task.wait()
-  assert task.returncode == 0
+  if task.returncode:
+    raise subprocess.CalledProcessError(task.returncode, cmd, task.stderr.read())
 
 
 def DownloadSdkBootImages(sdk_hash):
@@ -136,9 +148,13 @@ def DownloadSdkBootImages(sdk_hash):
 
 
 def main():
-  if len(sys.argv) != 1:
-    print('usage: %s' % sys.argv[0], file=sys.stderr)
-    return 1
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--verbose", "-v",
+    action="store_true",
+    help="Enable debug-level logging.")
+  args = parser.parse_args()
+
+  logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARNING)
 
   # Quietly exit if there's no SDK support for this platform.
   try:
@@ -167,8 +183,10 @@ def main():
 
         # Nothing to do. Generate sdk/BUILD.gn anyway, in case the conversion
         # script changed.
-        subprocess.check_call([os.path.join(SDK_ROOT, '..',
-                                            'gen_build_defs.py')])
+        logging.info("Generating sdk/BUILD.gn")
+        cmd = [os.path.join(SDK_ROOT, '..', 'gen_build_defs.py')]
+        logging.debug("Running '%s'", " ".join(cmd))
+        subprocess.check_call(cmd)
         return 0
 
   print('Downloading SDK %s...' % sdk_hash)
@@ -184,9 +202,18 @@ def main():
                                    SDK_ROOT)
 
   # Generate sdk/BUILD.gn.
-  subprocess.check_call([os.path.join(SDK_ROOT, '..', 'gen_build_defs.py')])
+  cmd = [os.path.join(SDK_ROOT, '..', 'gen_build_defs.py')]
+  logging.debug("Running '%s'", " ".join(cmd))
+  subprocess.check_call(cmd)
 
-  DownloadSdkBootImages(sdk_hash)
+  try:
+    DownloadSdkBootImages(sdk_hash)
+  except subprocess.CalledProcessError as e:
+    logging.error((
+      "command '%s' failed with status %d.%s"),
+      " ".join(e.cmd), e.returncode,
+      " Details: " + e.output if e.output else "")
+    return 1
 
   with open(hash_filename, 'w') as f:
     f.write(sdk_hash)

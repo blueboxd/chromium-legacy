@@ -112,6 +112,8 @@ class MockFrameHost : public mojom::FrameHost {
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override {}
 
+  void FrameFocused() override {}
+
  protected:
   // mojom::FrameHost:
   void CreateNewWindow(mojom::CreateNewWindowParamsPtr,

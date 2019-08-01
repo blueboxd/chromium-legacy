@@ -39,7 +39,7 @@ CSSPaintDefinition::CSSPaintDefinition(
     V8PaintCallback* paint,
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<AtomicString>& custom_invalidation_properties,
-    const Vector<CSSSyntaxDescriptor>& input_argument_types,
+    const Vector<CSSSyntaxDefinition>& input_argument_types,
     const PaintRenderingContext2DSettings* context_settings)
     : script_state_(script_state),
       constructor_(constructor),

@@ -36,8 +36,7 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForWorker::CreateURLLoader(
   // actually creating the URL loader here. Other subresource loading will
   // immediately create the URL loader so resolving those blob URLs here is
   // simplest.
-  if (request.Url().ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled() &&
-      !url_loader_factory) {
+  if (request.Url().ProtocolIs("blob") && !url_loader_factory) {
     global_scope_->GetPublicURLManager().Resolve(
         request.Url(), MakeRequest(&url_loader_factory));
   }

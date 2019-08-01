@@ -44,22 +44,18 @@
 #include "third_party/blink/renderer/core/url/dom_url.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/blob/blob_registry.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
-class BlobURLRegistry final : public URLRegistry {
+// TODO(https://crbug.com/989876): This is not used any more, refactor
+// PublicURLManager to deprecate this.
+class NullURLRegistry final : public URLRegistry {
  public:
-  // SecurityOrigin is passed together with KURL so that the registry can
-  // save it for entries from whose KURL the origin is not recoverable by
-  // using BlobURL::getOrigin().
-  void RegisterURL(SecurityOrigin*, const KURL&, URLRegistrable*) override;
-  void UnregisterURL(const KURL&) override;
-
-  static URLRegistry& Registry();
+  void RegisterURL(SecurityOrigin*, const KURL&, URLRegistrable*) override {}
+  void UnregisterURL(const KURL&) override {}
 };
 
 // Helper class to asynchronously read from a Blob using a FileReaderLoader.
@@ -110,28 +106,6 @@ class BlobFileReaderClient : public blink::FileReaderLoaderClient {
   Persistent<ScriptPromiseResolver> resolver_;
   const FileReaderLoader::ReadType read_type_;
 };
-
-void BlobURLRegistry::RegisterURL(SecurityOrigin* origin,
-                                  const KURL& public_url,
-                                  URLRegistrable* registrable_object) {
-  DCHECK_EQ(&registrable_object->Registry(), this);
-  Blob* blob = static_cast<Blob*>(registrable_object);
-  BlobRegistry::RegisterPublicBlobURL(origin, public_url,
-                                      blob->GetBlobDataHandle());
-}
-
-void BlobURLRegistry::UnregisterURL(const KURL& public_url) {
-  BlobRegistry::RevokePublicBlobURL(public_url);
-}
-
-URLRegistry& BlobURLRegistry::Registry() {
-  // This is called on multiple threads.
-  // (This code assumes it is safe to register or unregister URLs on
-  // BlobURLRegistry (that is implemented by the embedder) on
-  // multiple threads.)
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(BlobURLRegistry, instance, ());
-  return instance;
-}
 
 Blob::Blob(scoped_refptr<BlobDataHandle> data_handle)
     : blob_data_handle_(std::move(data_handle)) {}
@@ -279,7 +253,8 @@ void Blob::AppendTo(BlobData& blob_data) const {
 }
 
 URLRegistry& Blob::Registry() const {
-  return BlobURLRegistry::Registry();
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(NullURLRegistry, instance, ());
+  return instance;
 }
 
 mojom::blink::BlobPtr Blob::AsMojoBlob() {

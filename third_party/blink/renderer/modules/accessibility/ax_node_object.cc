@@ -194,7 +194,7 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
     return kIgnoreObject;
   }
 
-  if (CanSetFocusAttribute() && GetNode() && !IsHTMLBodyElement(GetNode()))
+  if (CanSetFocusAttribute() && GetNode() && !IsA<HTMLBodyElement>(GetNode()))
     return kIncludeObject;
 
   if (IsLink() || IsInPageLinkTarget())
@@ -2038,7 +2038,7 @@ String AXNodeObject::TextAlternative(bool recursive,
 
       if (auto* text_node = DynamicTo<Text>(node))
         text_alternative = text_node->wholeText();
-      else if (IsHTMLBRElement(node))
+      else if (IsA<HTMLBRElement>(node))
         text_alternative = String("\n");
       else
         text_alternative = TextFromDescendants(visited, false);

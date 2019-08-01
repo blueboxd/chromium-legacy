@@ -226,7 +226,8 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
     // to the canvas. Just dirty the entire canvas when our style changes
     // substantially.
     if ((diff.NeedsFullPaintInvalidation() || diff.NeedsLayout()) &&
-        GetNode() && (IsDocumentElement() || IsHTMLBodyElement(*GetNode()))) {
+        GetNode() &&
+        (IsDocumentElement() || IsA<HTMLBodyElement>(*GetNode()))) {
       View()->SetShouldDoFullPaintInvalidation();
     }
 

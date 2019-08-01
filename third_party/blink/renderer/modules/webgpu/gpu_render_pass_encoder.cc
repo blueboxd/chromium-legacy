@@ -113,6 +113,18 @@ void GPURenderPassEncoder::drawIndexed(uint32_t indexCount,
                                           firstInstance);
 }
 
+void GPURenderPassEncoder::drawIndirect(GPUBuffer* indirectBuffer,
+                                        uint64_t indirectOffset) {
+  GetProcs().renderPassEncoderDrawIndirect(
+      GetHandle(), indirectBuffer->GetHandle(), indirectOffset);
+}
+
+void GPURenderPassEncoder::drawIndexedIndirect(GPUBuffer* indirectBuffer,
+                                               uint64_t indirectOffset) {
+  GetProcs().renderPassEncoderDrawIndexedIndirect(
+      GetHandle(), indirectBuffer->GetHandle(), indirectOffset);
+}
+
 void GPURenderPassEncoder::endPass() {
   GetProcs().renderPassEncoderEndPass(GetHandle());
 }

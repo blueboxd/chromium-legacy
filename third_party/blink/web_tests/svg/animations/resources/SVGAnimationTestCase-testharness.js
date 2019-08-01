@@ -1,3 +1,37 @@
+// NOTE(edvardt):
+// This file is a slimmed down wrapper for the old SVGAnimationTestCase.js,
+// it has some convenience functions and should not be used for new tests.
+// New tests should not build on this API as it's just meant to keep things
+// working.
+
+// Helper functions
+const xlinkNS = "http://www.w3.org/1999/xlink"
+
+function expectFillColor(element, red, green, blue) {
+    let color = window.getComputedStyle(element, null).fill;
+    var re = new RegExp("rgba?\\(([^, ]*), ([^, ]*), ([^, ]*)(?:, )?([^, ]*)\\)");
+    rgb = re.exec(color);
+    assert_approx_equals(Number(rgb[1]), red, 2.0);
+    assert_approx_equals(Number(rgb[2]), green, 2.0);
+    assert_approx_equals(Number(rgb[3]), blue, 2.0);
+}
+
+function expectColor(element, red, green, blue, property) {
+    if (typeof property != "string")
+      color = getComputedStyle(element).getPropertyValue("color");
+    else
+      color = getComputedStyle(element).getPropertyValue(property);
+    var re = new RegExp("rgba?\\(([^, ]*), ([^, ]*), ([^, ]*)(?:, )?([^, ]*)\\)");
+    rgb = re.exec(color);
+    assert_approx_equals(Number(rgb[1]), red, 2.0);
+    assert_approx_equals(Number(rgb[2]), green, 2.0);
+    assert_approx_equals(Number(rgb[3]), blue, 2.0);
+}
+
+function createSVGElement(type) {
+  return document.createElementNS("http://www.w3.org/2000/svg", type);
+}
+
 // Inspired by Layoutests/animations/animation-test-helpers.js
 function moveAnimationTimelineAndSample(index) {
     var animationId = expectedResults[index][0];
@@ -10,7 +44,13 @@ function moveAnimationTimelineAndSample(index) {
 
     // The sample time is relative to the start time of the animation, take that into account.
     rootSVGElement.setCurrentTime(newTime);
-    sampleCallback();
+
+    // NOTE(edvardt):
+    // This is a dumb hack, some of the old tests sampled before the animation start, this
+    // isn't technically part of the animation tests and is "impossible" to translate since
+    // tests start automatically. Thus I solved it by skipping it.
+    if (time != 0.0)
+        sampleCallback();
 }
 
 var currentTest = 0;
@@ -38,13 +78,7 @@ function runAnimationTest(t, expected) {
     testCount = expectedResults.length;
     currentTest = 0;
 
-    // Immediately sample, if the first time is zero.
-    if (expectedResults[0][1] == 0) {
-        expectedResults[0][2]();
-        ++currentTest;
-    }
-
-  setTimeout(t.step_func(function () { sampleAnimation(this); }), 50);
+    setTimeout(t.step_func(function () { sampleAnimation(this); }), 50);
 }
 
 function smil_async_test(func) {

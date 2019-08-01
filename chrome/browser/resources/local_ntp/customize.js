@@ -977,6 +977,8 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     return;
   }
 
+  $(customize.IDS.REFRESH_TOGGLE).checked = false;
+
   if (customize.selectedOptions.background &&
       customize.selectedOptions.background.id == tile.id) {
     // If the clicked tile is already selected do nothing.
@@ -1051,6 +1053,11 @@ customize.richerPicker_toggleRefreshDaily = function(toggledOn) {
   $(customize.IDS.MENU_DONE).disabled = !toggledOn;
   if (!toggledOn) {
     return;
+  }
+
+  if (customize.selectedOptions.background) {
+    customize.richerPicker_removeSelectedState(
+        customize.selectedOptions.background);
   }
 
   customize.selectedOptions.backgroundData = {

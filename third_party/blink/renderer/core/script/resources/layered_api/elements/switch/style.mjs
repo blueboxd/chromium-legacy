@@ -164,20 +164,21 @@ function setupTransitionCounter(element) {
       ++element.runningTransitions;
     }
   });
-  let handleEndOrCancel = e => {
+  function handleEndOrCancel(e) {
     // Need to check runningTransitions>0 due to superfluous transitioncancel
     // events; crbug.com/979556.
     if (e.target === element && element.runningTransitions > 0) {
       --element.runningTransitions;
     }
-  };
+  }
   element.addEventListener('transitionend', handleEndOrCancel);
   element.addEventListener('transitioncancel', handleEndOrCancel);
 }
 
 /**
- * Add '$part-transitioning' part to the element, and remove it on 'transitionend'
- * event or remove it immediately if the element has no transitions.
+ * Add '$part-transitioning' part to the element, and remove it on
+ * 'transitionend' event or remove it immediately if the element has no
+ * transitions.
  *
  * TODO(tkent): We should apply custom state.
  *
@@ -211,14 +212,14 @@ export function markTransition(element) {
     // If the element has a transition, it must start on the rendering just
     // after this rAF callback. So we check runningTransitions in the next
     // frame.
-    const removeIfNoTransitions = () => {
+    function removeIfNoTransitions() {
       // No transitions started, or all transitions were completed.
       if (element.runningTransitions === 0) {
         element.part.remove(partName);
       } else {
         window.requestAnimationFrame(removeIfNoTransitions);
       }
-    };
+    }
     window.requestAnimationFrame(removeIfNoTransitions);
   });
 }

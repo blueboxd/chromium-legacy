@@ -219,10 +219,6 @@ TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
   g_test_platform = nullptr;
 }
 
-blink::WebBlobRegistry* TestBlinkWebUnitTestSupport::GetBlobRegistry() {
-  return &blob_registry_;
-}
-
 std::unique_ptr<blink::WebURLLoaderFactory>
 TestBlinkWebUnitTestSupport::CreateDefaultURLLoaderFactory() {
   return std::make_unique<WebURLLoaderFactoryWithMock>(

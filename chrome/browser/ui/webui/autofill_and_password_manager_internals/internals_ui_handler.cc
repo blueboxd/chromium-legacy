@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/autofill_and_password_manager_internals/internals_ui_handler.h"
 
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/channel_info.h"
@@ -37,6 +38,7 @@ content::WebUIDataSource* CreateInternalsHTMLSource(
   source->AddString(version_ui::kVersionModifier, chrome::GetChannelName());
   source->AddString(version_ui::kCL, version_info::GetLastChange());
   source->AddString(version_ui::kUserAgent, GetUserAgent());
+  source->AddString("app_locale", g_browser_process->GetApplicationLocale());
   return source;
 }
 

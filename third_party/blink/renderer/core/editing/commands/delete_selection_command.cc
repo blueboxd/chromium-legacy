@@ -427,8 +427,9 @@ bool DeleteSelectionCommand::HandleSpecialCaseBRDelete(
 
   // Check for special-case where the selection contains only a BR on a line by
   // itself after another BR.
-  bool upstream_start_is_br = IsHTMLBRElement(*node_after_upstream_start);
-  bool downstream_start_is_br = IsHTMLBRElement(*node_after_downstream_start);
+  bool upstream_start_is_br = IsA<HTMLBRElement>(*node_after_upstream_start);
+  bool downstream_start_is_br =
+      IsA<HTMLBRElement>(*node_after_downstream_start);
   bool is_br_on_line_by_itself =
       upstream_start_is_br && downstream_start_is_br &&
       node_after_downstream_start == node_after_upstream_end;
@@ -888,7 +889,7 @@ void DeleteSelectionCommand::MergeParagraphs(EditingState* editing_state) {
               .X() >
           AbsoluteCaretBoundsOf(merge_destination.ToPositionWithAffinity())
               .X()) {
-    if (IsHTMLBRElement(
+    if (IsA<HTMLBRElement>(
             *MostForwardCaretPosition(merge_destination.DeepEquivalent())
                  .AnchorNode())) {
       RemoveNodeAndPruneAncestors(

@@ -103,6 +103,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -148,6 +149,15 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
   // Don't paint anything if the plugin doesn't intersect.
   if (!cull_rect.Intersects(FrameRect()))
     return;
+
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    if (WantsWheelEvents()) {
+      ScrollHitTestDisplayItem::Record(
+          context, *GetLayoutEmbeddedContent(),
+          DisplayItem::kPluginScrollHitTest, nullptr,
+          GetLayoutEmbeddedContent()->FirstFragment().VisualRect());
+    }
+  }
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && layer_) {
     layer_->SetBounds(gfx::Size(Size()));
@@ -639,6 +649,12 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
       if (IsAttached()) {
         LocalFrameView* frame_view = element_->GetDocument().GetFrame()->View();
         scrolling_coordinator->NotifyGeometryChanged(frame_view);
+
+        if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+          // Scroll hit test display items depend on wheel events. The scroll
+          // hit test display items paint in the background phase.
+          GetLayoutEmbeddedContent()->SetBackgroundNeedsFullPaintInvalidation();
+        }
       }
     }
   }
@@ -722,7 +738,7 @@ bool WebPluginContainerImpl::CanProcessDrag() const {
   return web_plugin_->CanProcessDrag();
 }
 
-bool WebPluginContainerImpl::WantsWheelEvents() {
+bool WebPluginContainerImpl::WantsWheelEvents() const {
   return wants_wheel_events_;
 }
 

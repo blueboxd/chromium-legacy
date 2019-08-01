@@ -129,7 +129,7 @@ class RefByIdFactory(object):
     """
 
     def __init__(self, target_attrs=None, target_attrs_with_priority=None):
-        self._references = set()
+        self._references = []
         # |_is_frozen| is initially False and you can create new references.
         # The first invocation of |for_each| freezes the factory and you can no
         # longer create a new reference
@@ -151,7 +151,7 @@ class RefByIdFactory(object):
             target_attrs=self._target_attrs,
             target_attrs_with_priority=self._target_attrs_with_priority,
             pass_key=_REF_BY_ID_PASS_KEY)
-        self._references.add(ref)
+        self._references.append(ref)
         return ref
 
     def for_each(self, callback):

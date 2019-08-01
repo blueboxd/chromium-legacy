@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_paint_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_paint_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -37,7 +37,7 @@ namespace {
 
 bool ParseInputArguments(v8::Local<v8::Context> context,
                          v8::Local<v8::Object> constructor,
-                         Vector<CSSSyntaxDescriptor>* input_argument_types,
+                         Vector<CSSSyntaxDefinition>* input_argument_types,
                          ExceptionState* exception_state) {
   v8::Isolate* isolate = context->GetIsolate();
   v8::TryCatch block(isolate);
@@ -59,13 +59,13 @@ bool ParseInputArguments(v8::Local<v8::Context> context,
         return false;
 
       for (const auto& type : argument_types) {
-        base::Optional<CSSSyntaxDescriptor> syntax_descriptor =
+        base::Optional<CSSSyntaxDefinition> syntax_definition =
             CSSSyntaxStringParser(type).Parse();
-        if (!syntax_descriptor) {
+        if (!syntax_definition) {
           exception_state->ThrowTypeError("Invalid argument types.");
           return false;
         }
-        input_argument_types->push_back(std::move(*syntax_descriptor));
+        input_argument_types->push_back(std::move(*syntax_definition));
       }
     }
   }
@@ -186,7 +186,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
 
   // Get input argument types. Parse the argument type values only when
   // cssPaintAPIArguments is enabled.
-  Vector<CSSSyntaxDescriptor> input_argument_types;
+  Vector<CSSSyntaxDefinition> input_argument_types;
   if (!ParseInputArguments(context, v8_paint_ctor, &input_argument_types,
                            &exception_state))
     return;

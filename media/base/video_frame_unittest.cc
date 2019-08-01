@@ -603,7 +603,6 @@ TEST(VideoFrame, AllocationSize_OddSize) {
       case PIXEL_FORMAT_I420:
       case PIXEL_FORMAT_NV12:
       case PIXEL_FORMAT_NV21:
-      case PIXEL_FORMAT_MT21:
         EXPECT_EQ(36u, VideoFrame::AllocationSize(format, size))
             << VideoPixelFormatToString(format);
         break;

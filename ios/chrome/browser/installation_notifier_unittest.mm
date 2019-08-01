@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/installation_notifier.h"
+#include "base/message_loop/message_loop_current.h"
 
 #include <stdint.h>
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
-#include "base/message_loop/message_loop.h"
-#include "ios/web/public/test/test_web_thread.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
 #include "net/base/backoff_entry.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -92,9 +92,6 @@
 namespace {
 
 class InstallationNotifierTest : public PlatformTest {
- public:
-  InstallationNotifierTest() : ui_thread_(web::WebThread::UI, &message_loop_) {}
-
  protected:
   void SetUp() override {
     installationNotifier_ = [InstallationNotifier sharedInstance];
@@ -125,8 +122,7 @@ class InstallationNotifierTest : public PlatformTest {
                 50 + jitter * expectedDelayInMSec);
   }
 
-  base::MessageLoopForUI message_loop_;
-  web::TestWebThread ui_thread_;
+  web::TestWebThreadBundle thread_bundle_;
   __weak InstallationNotifier* installationNotifier_;
   __weak FakeDispatcher* dispatcher_;
   MockNotificationReceiver* notificationReceiver1_;

@@ -9,7 +9,7 @@ namespace blink {
 DocumentPaintDefinition::DocumentPaintDefinition(
     const Vector<CSSPropertyID>& native_invalidation_properties,
     const Vector<AtomicString>& custom_invalidation_properties,
-    const Vector<CSSSyntaxDescriptor>& input_argument_types,
+    const Vector<CSSSyntaxDefinition>& input_argument_types,
     bool alpha)
     : native_invalidation_properties_(native_invalidation_properties),
       custom_invalidation_properties_(custom_invalidation_properties),
@@ -33,7 +33,7 @@ bool DocumentPaintDefinition::RegisterAdditionalPaintDefinition(
 bool DocumentPaintDefinition::RegisterAdditionalPaintDefinition(
     const Vector<CSSPropertyID>& native_properties,
     const Vector<String>& custom_properties,
-    const Vector<CSSSyntaxDescriptor>& input_argument_types,
+    const Vector<CSSSyntaxDefinition>& input_argument_types,
     bool alpha) {
   if (native_properties != NativeInvalidationProperties() ||
       !std::equal(custom_properties.begin(), custom_properties.end(),

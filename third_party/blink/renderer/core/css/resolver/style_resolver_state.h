@@ -52,15 +52,14 @@ class CORE_EXPORT StyleResolverState {
 
  public:
   StyleResolverState(Document&,
-                     const ElementResolveContext&,
-                     PseudoElement* pseudo_element,
-                     const ComputedStyle* parent_style,
-                     const ComputedStyle* layout_parent_style);
-  StyleResolverState(Document&,
                      Element&,
-                     PseudoElement* pseudo_element,
                      const ComputedStyle* parent_style = nullptr,
                      const ComputedStyle* layout_parent_style = nullptr);
+  StyleResolverState(Document&,
+                     Element&,
+                     PseudoId,
+                     const ComputedStyle* parent_style,
+                     const ComputedStyle* layout_parent_style);
   ~StyleResolverState();
 
   // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to
@@ -180,6 +179,15 @@ class CORE_EXPORT StyleResolverState {
       const cssvalue::CSSPendingSubstitutionValue&) const;
 
  private:
+  enum class AnimatingElementType { kElement, kPseudoElement };
+
+  StyleResolverState(Document&,
+                     Element&,
+                     PseudoElement*,
+                     AnimatingElementType,
+                     const ComputedStyle* parent_style,
+                     const ComputedStyle* layout_parent_style);
+
   CSSToLengthConversionData UnzoomedLengthConversionData(
       const ComputedStyle* font_style) const;
 
@@ -210,7 +218,8 @@ class CORE_EXPORT StyleResolverState {
   std::unique_ptr<CachedUAStyle> cached_ua_style_;
 
   ElementStyleResources element_style_resources_;
-  Member<PseudoElement> pseudo_element_;
+  Member<Element> pseudo_element_;
+  AnimatingElementType animating_element_type_;
 
   mutable HeapHashMap<
       Member<const cssvalue::CSSPendingSubstitutionValue>,

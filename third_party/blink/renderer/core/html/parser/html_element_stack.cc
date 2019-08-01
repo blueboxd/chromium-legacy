@@ -508,7 +508,7 @@ void HTMLElementStack::PopCommon() {
 
 void HTMLElementStack::RemoveNonTopCommon(Element* element) {
   DCHECK(!IsHTMLHtmlElement(element));
-  DCHECK(!IsHTMLBodyElement(element));
+  DCHECK(!IsA<HTMLBodyElement>(element));
   DCHECK_NE(Top(), element);
   for (ElementRecord* pos = top_.Get(); pos; pos = pos->Next()) {
     if (pos->Next()->GetElement() == element) {

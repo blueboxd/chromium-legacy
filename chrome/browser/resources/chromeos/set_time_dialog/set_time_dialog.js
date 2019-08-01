@@ -267,11 +267,15 @@ Polymer({
   applyTime_: function() {
     const now = this.getInputTime_();
 
-    // Add timezone offset to get real time.
-    const timezoneDelta = getTimezoneDelta(
-        /** @type {string} */ (loadTimeData.getValue('currentTimezoneId')),
-        this.selectedTimezone_);
-    now.setMilliseconds(now.getMilliseconds() + timezoneDelta);
+    if (this.isTimezoneVisible_) {
+      // Add timezone offset to get real time. This is only necessary when the
+      // timezone was updated, which is only possible when the dropdown is
+      // visible.
+      const timezoneDelta = getTimezoneDelta(
+          /** @type {string} */ (loadTimeData.getValue('currentTimezoneId')),
+          this.selectedTimezone_);
+      now.setMilliseconds(now.getMilliseconds() + timezoneDelta);
+    }
 
     const seconds = Math.floor(now / 1000);
     this.browserProxy_.setTimeInSeconds(seconds);

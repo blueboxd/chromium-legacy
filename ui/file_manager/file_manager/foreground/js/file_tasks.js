@@ -100,10 +100,13 @@ class FileTasks {
 
         // Linux package installation is currently only supported for a single
         // file which is inside the Linux container, or in a shareable volume.
+        // Furthermore, linux package installation is only allowed if user has
+        // root access to the Linux container.
         // TODO(timloh): Instead of filtering these out, we probably should
         // show a dialog with an error message, similar to when attempting to
         // run Crostini tasks with non-Crostini entries.
         if (entries.length !== 1 ||
+            !crostini.isRootAccessAllowed(constants.DEFAULT_CROSTINI_VM) ||
             !(FileTasks.isCrostiniEntry(entries[0], volumeManager) ||
               crostini.canSharePath(
                   constants.DEFAULT_CROSTINI_VM, entries[0],

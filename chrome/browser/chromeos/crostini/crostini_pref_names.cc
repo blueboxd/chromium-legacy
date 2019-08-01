@@ -38,7 +38,7 @@ const char kUserCrostiniExportImportUIAllowedByPolicy[] =
 const char kVmManagementCliAllowedByPolicy[] =
     "crostini.vm_management_cli_allowed_by_policy";
 // A boolean preference representing a user level enterprise policy to allow
-// Crostini root access.
+// Crostini root access in the default Crostini VM.
 // TODO(https://crbug.com/983998): The features that have to be implemented.
 const char kUserCrostiniRootAccessAllowedByPolicy[] =
     "crostini.user_root_access_allowed_by_policy";

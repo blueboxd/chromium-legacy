@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/workers/worklet.h"
 #include "third_party/blink/renderer/modules/csspaint/document_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope_proxy.h"
@@ -72,7 +72,7 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
       const String& name,
       Vector<CSSPropertyID> native_properties,
       Vector<String> custom_properties,
-      Vector<CSSSyntaxDescriptor> input_argument_types,
+      Vector<CSSSyntaxDefinition> input_argument_types,
       double alpha);
 
   HeapVector<Member<WorkletGlobalScopeProxy>>& GetGlobalScopesForTesting() {

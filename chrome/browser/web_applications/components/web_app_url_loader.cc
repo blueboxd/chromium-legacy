@@ -19,6 +19,14 @@ namespace web_app {
 constexpr base::TimeDelta WebAppUrlLoader::kSecondsToWaitForWebContentsLoad;
 
 namespace {
+bool EqualsIgnoringQueryAndRef(const GURL& a, const GURL& b) {
+  if (a == b)
+    return true;
+  GURL::Replacements replace;
+  replace.ClearQuery();
+  replace.ClearRef();
+  return a.ReplaceComponents(replace) == b.ReplaceComponents(replace);
+}
 
 class LoaderTask : public content::WebContentsObserver {
  public:
@@ -57,13 +65,13 @@ class LoaderTask : public content::WebContentsObserver {
 
     timer_.Stop();
 
-    if (validated_url != url_) {
-      LOG(ERROR) << "Error loading " << url_;
-      LOG(ERROR) << "  page redirected to " << validated_url;
-      PostResultTask(WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+    if (EqualsIgnoringQueryAndRef(validated_url, url_)) {
+      PostResultTask(WebAppUrlLoader::Result::kUrlLoaded);
       return;
     }
-    PostResultTask(WebAppUrlLoader::Result::kUrlLoaded);
+    LOG(ERROR) << "Error loading " << url_;
+    LOG(ERROR) << "  page redirected to " << validated_url;
+    PostResultTask(WebAppUrlLoader::Result::kRedirectedUrlLoaded);
   }
 
   void DidFailLoad(content::RenderFrameHost* render_frame_host,

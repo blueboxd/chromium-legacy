@@ -25,8 +25,6 @@ blink_platform_sources("blob") {
     "blob_bytes_provider.h",
     "blob_data.cc",
     "blob_data.h",
-    "blob_registry.cc",
-    "blob_registry.h",
     "blob_url.cc",
     "blob_url.h",
     "serialized_blob_struct_traits.cc",

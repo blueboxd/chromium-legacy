@@ -444,14 +444,14 @@ ContainerNode* HighestEditableRoot(const Position& position) {
   if (!highest_root)
     return nullptr;
 
-  if (IsHTMLBodyElement(*highest_root))
+  if (IsA<HTMLBodyElement>(*highest_root))
     return highest_root;
 
   ContainerNode* node = highest_root->parentNode();
   while (node) {
     if (HasEditableStyle(*node))
       highest_root = node;
-    if (IsHTMLBodyElement(*node))
+    if (IsA<HTMLBodyElement>(*node))
       break;
     node = node->parentNode();
   }
@@ -985,7 +985,7 @@ Element* EnclosingBlockFlowElement(const Node& node) {
     return const_cast<Element*>(To<Element>(&node));
 
   for (Node& runner : NodeTraversal::AncestorsOf(node)) {
-    if (IsBlockFlowElement(runner) || IsHTMLBodyElement(runner))
+    if (IsBlockFlowElement(runner) || IsA<HTMLBodyElement>(runner))
       return To<Element>(&runner);
   }
   return nullptr;

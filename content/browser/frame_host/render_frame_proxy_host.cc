@@ -65,12 +65,14 @@ RenderFrameProxyHost::RenderFrameProxyHost(
       process_(site_instance->GetProcess()),
       frame_tree_node_(frame_tree_node),
       render_frame_proxy_created_(false),
-      render_view_host_(std::move(render_view_host)) {
+      render_view_host_(std::move(render_view_host)),
+      frame_proxy_host_associated_binding_(this) {
   GetProcess()->AddRoute(routing_id_, this);
-  CHECK(g_routing_id_frame_proxy_map.Get().insert(
-      std::make_pair(
-          RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_),
-          this)).second);
+  CHECK(
+      g_routing_id_frame_proxy_map.Get()
+          .insert(std::make_pair(
+              RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_), this))
+          .second);
   CHECK(render_view_host_ ||
         frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate());
 
@@ -158,7 +160,6 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_RouteMessageEvent, OnRouteMessageEvent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_AdvanceFocus, OnAdvanceFocus)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PrintCrossProcessSubframe,
                         OnPrintCrossProcessSubframe)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -220,7 +221,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
       frame_tree_node_->current_replication_state(),
       frame_tree_node_->devtools_frame_token());
 
-  set_render_frame_proxy_created(true);
+  SetRenderFrameProxyCreated(true);
 
   // If this proxy was created for a frame that hasn't yet finished loading,
   // let the renderer know so it can also mark the proxy as loading. See
@@ -238,6 +239,22 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   }
 
   return true;
+}
+
+void RenderFrameProxyHost::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  frame_proxy_host_associated_binding_.Bind(
+      mojom::RenderFrameProxyHostAssociatedRequest(std::move(handle)));
+}
+
+void RenderFrameProxyHost::SetRenderFrameProxyCreated(bool created) {
+  if (!created) {
+    // If the renderer process has gone away, created can be false. In that
+    // case, invalidate the mojo connection.
+    frame_proxy_host_associated_binding_.Close();
+  }
+  render_frame_proxy_created_ = created;
 }
 
 void RenderFrameProxyHost::UpdateOpener() {
@@ -502,7 +519,7 @@ void RenderFrameProxyHost::OnAdvanceFocus(blink::WebFocusType type,
       source_rfh);
 }
 
-void RenderFrameProxyHost::OnFrameFocused() {
+void RenderFrameProxyHost::FrameFocused() {
   frame_tree_node_->current_frame_host()->delegate()->SetFocusedFrame(
       frame_tree_node_, GetSiteInstance());
 }

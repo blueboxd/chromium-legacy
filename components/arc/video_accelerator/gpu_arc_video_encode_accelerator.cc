@@ -175,7 +175,8 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
   }
 
   auto layout = media::VideoFrameLayout::CreateWithPlanes(
-      format, coded_size_, std::move(layout_planes));
+      format, gfx::Size(layout_planes[0].stride, coded_size_.height()),
+      std::move(layout_planes));
   if (!layout) {
     DLOG(ERROR) << "Failed to create VideoFrameLayout.";
     client_->NotifyError(Error::kInvalidArgumentError);

@@ -103,7 +103,7 @@ TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
       MakeGarbageCollected<HTMLBodyElement>(*document_without_frame));
 
   // Create an input element with type "range" inside a document without frame.
-  ToHTMLBodyElement(html->firstChild())
+  To<HTMLBodyElement>(html->firstChild())
       ->SetInnerHTMLFromString("<input type='range' />");
   document_without_frame->AppendChild(html);
 

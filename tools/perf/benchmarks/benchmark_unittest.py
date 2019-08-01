@@ -12,7 +12,7 @@ from core import perf_benchmark
 
 from telemetry import benchmark as benchmark_module
 from telemetry import decorators
-from telemetry.internal.browser import browser_options
+from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
 
 from py_utils import discover
@@ -24,13 +24,12 @@ def _GetAllPerfBenchmarks():
 
 
 def _BenchmarkOptionsTestGenerator(benchmark):
-  def testBenchmarkOptions(self):  # pylint: disable=unused-argument
-    """Invalid options will raise benchmark.InvalidOptionsError."""
-    options = browser_options.BrowserFinderOptions()
-    parser = options.CreateParser()
-    benchmark.AddCommandLineArgs(parser)
-    benchmark_module.AddCommandLineArgs(parser)
-    benchmark.SetArgumentDefaults(parser)
+  def testBenchmarkOptions(self):
+    """Tests whether benchmark options can be constructed without errors."""
+    try:
+      options_for_unittests.GetRunOptions(benchmark_cls=benchmark)
+    except benchmark_module.InvalidOptionsError as exc:
+      self.fail(str(exc))
   return testBenchmarkOptions
 
 

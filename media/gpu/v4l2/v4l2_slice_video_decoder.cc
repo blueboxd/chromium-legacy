@@ -221,8 +221,14 @@ void V4L2SliceVideoDecoder::DestroyTask() {
 
   // Stop and Destroy device.
   StopStreamV4L2Queue();
-  input_queue_->DeallocateBuffers();
-  output_queue_->DeallocateBuffers();
+  if (input_queue_) {
+    input_queue_->DeallocateBuffers();
+    input_queue_ = nullptr;
+  }
+  if (output_queue_) {
+    output_queue_->DeallocateBuffers();
+    output_queue_ = nullptr;
+  }
   DCHECK(surfaces_at_device_.empty());
 
   weak_this_factory_.InvalidateWeakPtrs();
@@ -910,7 +916,6 @@ bool V4L2SliceVideoDecoder::StartStreamV4L2Queue() {
 
 bool V4L2SliceVideoDecoder::StopStreamV4L2Queue() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK_NE(state_, State::kUninitialized);
   DVLOGF(3);
 
   if (!device_poll_thread_.IsRunning())
@@ -930,13 +935,12 @@ bool V4L2SliceVideoDecoder::StopStreamV4L2Queue() {
     return false;
   }
 
-  // Streamoff input queue.
-  if (input_queue_->IsStreaming())
+  // Streamoff input and output queue.
+  if (input_queue_)
     input_queue_->Streamoff();
-
-  // Streamoff output queue.
-  if (output_queue_->IsStreaming())
+  if (output_queue_)
     output_queue_->Streamoff();
+
   while (!surfaces_at_device_.empty())
     surfaces_at_device_.pop();
 

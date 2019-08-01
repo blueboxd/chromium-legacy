@@ -904,7 +904,7 @@ void RenderFrameProxy::AdvanceFocus(blink::WebFocusType type,
 }
 
 void RenderFrameProxy::FrameFocused() {
-  Send(new FrameHostMsg_FrameFocused(routing_id_));
+  GetFrameProxyHost()->FrameFocused();
 }
 
 base::UnguessableToken RenderFrameProxy::GetDevToolsFrameToken() {
@@ -953,6 +953,26 @@ const viz::LocalSurfaceId& RenderFrameProxy::GetLocalSurfaceId() const {
   return parent_local_surface_id_allocator_
       ->GetCurrentLocalSurfaceIdAllocation()
       .local_surface_id();
+}
+
+mojom::RenderFrameProxyHost* RenderFrameProxy::GetFrameProxyHost() {
+  if (!frame_proxy_host_ptr_.is_bound())
+    GetRemoteAssociatedInterfaces()->GetInterface(&frame_proxy_host_ptr_);
+  return frame_proxy_host_ptr_.get();
+}
+
+blink::AssociatedInterfaceProvider*
+RenderFrameProxy::GetRemoteAssociatedInterfaces() {
+  if (!remote_associated_interfaces_) {
+    ChildThreadImpl* thread = ChildThreadImpl::current();
+    blink::mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
+    thread->GetRemoteRouteProvider()->GetRoute(
+        routing_id_, mojo::MakeRequest(&remote_interfaces));
+    remote_associated_interfaces_ =
+        std::make_unique<blink::AssociatedInterfaceProvider>(
+            std::move(remote_interfaces));
+  }
+  return remote_associated_interfaces_.get();
 }
 
 void RenderFrameProxy::WasEvicted() {

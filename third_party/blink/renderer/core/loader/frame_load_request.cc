@@ -66,8 +66,7 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
     DCHECK(!resource_request_.RequestorOrigin());
     resource_request_.SetRequestorOrigin(origin_document->GetSecurityOrigin());
 
-    if (resource_request.Url().ProtocolIs("blob") &&
-        BlobUtils::MojoBlobURLsEnabled()) {
+    if (resource_request.Url().ProtocolIs("blob")) {
       blob_url_token_ = base::MakeRefCounted<
           base::RefCountedData<mojom::blink::BlobURLTokenPtr>>();
       origin_document->GetPublicURLManager().Resolve(

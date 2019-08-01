@@ -153,7 +153,8 @@ class CrostiniManagerTest : public testing::Test {
   ~CrostiniManagerTest() override { chromeos::DBusThreadManager::Shutdown(); }
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kCrostini, features::kCrostiniAdvancedAccessControls}, {});
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
     crostini_manager_ = std::make_unique<CrostiniManager>(profile_.get());
@@ -315,6 +316,16 @@ TEST_F(CrostiniManagerTest, StopVmSuccess) {
                               CrostiniResult::SUCCESS));
   run_loop()->Run();
   EXPECT_TRUE(fake_concierge_client_->stop_vm_called());
+}
+
+TEST_F(CrostiniManagerTest, InstallLinuxPackageRootAccessError) {
+  profile()->GetPrefs()->SetBoolean(
+      crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, false);
+  crostini_manager()->InstallLinuxPackage(
+      kVmName, kContainerName, "/tmp/package.deb",
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED));
+  run_loop()->Run();
 }
 
 TEST_F(CrostiniManagerTest, InstallLinuxPackageSignalNotConnectedError) {

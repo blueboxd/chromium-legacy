@@ -14,6 +14,7 @@
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
@@ -48,14 +49,14 @@ class BundledExchangesHandle final {
                             network::mojom::URLLoaderRequest request,
                             network::mojom::URLLoaderClientPtr client);
   void MayRedirectStartURLLoader();
-  void OnMetadataReady(base::Optional<std::string> error);
+  void OnMetadataReady(data_decoder::mojom::BundleMetadataParseErrorPtr error);
 
   const BundledExchangesSource source_;
 
   base::WeakPtr<StartURLRedirectLoader> redirect_loader_;
   std::unique_ptr<BundledExchangesReader> reader_;
   GURL start_url_;
-  base::Optional<std::string> start_url_error_;
+  data_decoder::mojom::BundleMetadataParseErrorPtr start_url_error_;
   bool is_redirected_ = false;
 
   base::WeakPtrFactory<BundledExchangesHandle> weak_factory_{this};

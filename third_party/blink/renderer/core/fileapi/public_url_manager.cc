@@ -111,9 +111,7 @@ String PublicURLManager::RegisterURL(URLRegistrable* registrable) {
   DCHECK(!url.IsEmpty());
   const String& url_string = url.GetString();
 
-  mojom::blink::BlobPtr blob;
-  if (BlobUtils::MojoBlobURLsEnabled())
-    blob = registrable->AsMojoBlob();
+  mojom::blink::BlobPtr blob = registrable->AsMojoBlob();
   if (blob) {
     // Measure how much jank the following synchronous IPC introduces.
     SCOPED_UMA_HISTOGRAM_TIMER("Storage.Blob.RegisterPublicURLTime");
@@ -144,14 +142,13 @@ void PublicURLManager::Revoke(const KURL& url) {
           GetExecutionContext()->GetSecurityOrigin()))
     return;
 
-  if (BlobUtils::MojoBlobURLsEnabled()) {
-    if (!url_store_) {
-      BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
-          GetExecutionContext()->GetSecurityOrigin(), MakeRequest(&url_store_));
-    }
-    url_store_->Revoke(url);
-    mojo_urls_.erase(url.GetString());
+  if (!url_store_) {
+    BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
+        GetExecutionContext()->GetSecurityOrigin(), MakeRequest(&url_store_));
   }
+  url_store_->Revoke(url);
+  mojo_urls_.erase(url.GetString());
+
   RemoveFromOriginMap(url);
   auto it = url_to_registry_.find(url.GetString());
   if (it == url_to_registry_.end())
@@ -166,7 +163,6 @@ void PublicURLManager::Resolve(
   if (is_stopped_)
     return;
 
-  DCHECK(BlobUtils::MojoBlobURLsEnabled());
   DCHECK(url.ProtocolIs("blob"));
   if (!url_store_) {
     BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(
@@ -181,7 +177,6 @@ void PublicURLManager::Resolve(
   if (is_stopped_)
     return;
 
-  DCHECK(BlobUtils::MojoBlobURLsEnabled());
   DCHECK(url.ProtocolIs("blob"));
   if (!url_store_) {
     BlobDataHandle::GetBlobRegistry()->URLStoreForOrigin(

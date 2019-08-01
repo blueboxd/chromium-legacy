@@ -120,7 +120,7 @@ void SSLErrorNavigationThrottle::QueueShowInterstitial(
   // navigation.
   std::move(handle_ssl_error_callback)
       .Run(web_contents, net_error, ssl_info, request_url,
-           false /* expired_previous_decision */, std::move(ssl_cert_reporter),
+           std::move(ssl_cert_reporter),
            base::Callback<void(content::CertificateRequestResultType)>(),
            base::BindOnce(&SSLErrorNavigationThrottle::ShowInterstitial,
                           weak_ptr_factory_.GetWeakPtr(), net_error));

@@ -15,6 +15,8 @@
     void dispatch(unsigned long x,
                   optional unsigned long y = 1,
                   optional unsigned long z = 1);
+    void dispatchIndirect(GPUBuffer indirectBuffer,
+                          unsigned long long indirectOffset);
 
     void endPass();
 };

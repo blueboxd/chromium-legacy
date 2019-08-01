@@ -1791,9 +1791,6 @@
         },
       },
       'linux-chromium-tests-staging-builder': {
-        'mixins': [
-          'linux-trusty',
-        ],
         'additional_compile_targets': [
           'all'
         ],
@@ -4173,7 +4170,7 @@
     'machines': {
       'Linux - Future': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'client_v8_chromium_gtests',
@@ -4182,7 +4179,7 @@
       },
       'Linux - Future (dbg)': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'client_v8_chromium_gtests',

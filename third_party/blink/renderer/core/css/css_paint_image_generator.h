@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class CSSSyntaxDescriptor;
+class CSSSyntaxDefinition;
 class Document;
 class Image;
 class ImageResourceObserver;
@@ -58,7 +58,7 @@ class CORE_EXPORT CSSPaintImageGenerator
   virtual const Vector<CSSPropertyID>& NativeInvalidationProperties() const = 0;
   virtual const Vector<AtomicString>& CustomInvalidationProperties() const = 0;
   virtual bool HasAlpha() const = 0;
-  virtual const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const = 0;
+  virtual const Vector<CSSSyntaxDefinition>& InputArgumentTypes() const = 0;
   virtual bool IsImageGeneratorReady() const = 0;
   virtual int WorkletId() const = 0;
 

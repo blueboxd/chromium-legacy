@@ -155,8 +155,7 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Whether the navigation was initiated by a user gesture. Note that this
   // will return false for browser-initiated navigations.
-  // TODO(clamy): when PlzNavigate launches, this should return true for
-  // browser-initiated navigations.
+  // TODO(clamy): This should return true for browser-initiated navigations.
   virtual bool HasUserGesture() = 0;
 
   // Returns the page transition type.

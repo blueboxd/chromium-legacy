@@ -722,10 +722,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
 
   SelectorFilterParentScope::EnsureParentStackIsPushed();
 
-  ElementResolveContext element_context(*element);
-
-  StyleResolverState state(GetDocument(), element_context,
-                           nullptr /* pseudo_element */, default_parent,
+  StyleResolverState state(GetDocument(), *element, default_parent,
                            default_layout_parent);
 
   const ComputedStyle* base_computed_style = CalculateBaseComputedStyle(state);
@@ -842,7 +839,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     StyleAdjuster::AdjustComputedStyle(state, element);
   }
 
-  if (IsHTMLBodyElement(*element))
+  if (IsA<HTMLBodyElement>(*element))
     GetDocument().GetTextLinkColors().SetTextColor(state.Style()->GetColor());
 
   SetAnimationUpdateIfNeeded(state, *element);
@@ -865,8 +862,7 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
     const CSSValue* value) {
   // TODO(alancutter): Avoid creating a StyleResolverState just to apply a
   // single value on a ComputedStyle.
-  StyleResolverState state(element.GetDocument(), element,
-                           nullptr /* pseudo_element */, parent_style,
+  StyleResolverState state(element.GetDocument(), element, parent_style,
                            parent_style);
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
@@ -971,10 +967,9 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
   if (!element)
     return nullptr;
 
-  StyleResolverState state(
-      GetDocument(), *element,
-      element->GetPseudoElement(pseudo_style_request.pseudo_id), parent_style,
-      parent_layout_object_style);
+  StyleResolverState state(GetDocument(), *element,
+                           pseudo_style_request.pseudo_id, parent_style,
+                           parent_layout_object_style);
   if (!PseudoStyleForElementInternal(*element, pseudo_style_request, state)) {
     if (pseudo_style_request.type == PseudoStyleRequest::kForRenderer)
       return nullptr;
@@ -996,8 +991,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(int page_index) {
     return initial_style;
 
   StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
-                           nullptr /* pseudo_element */, initial_style.get(),
-                           initial_style.get());
+                           initial_style.get(), initial_style.get());
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   const ComputedStyle* root_element_style =
@@ -1095,8 +1089,7 @@ void StyleResolver::AddMatchedRulesToTracker(
 StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
                                                    unsigned rules_to_include) {
   DCHECK(element);
-  StyleResolverState state(GetDocument(), *element,
-                           nullptr /* pseudo_element */);
+  StyleResolverState state(GetDocument(), *element);
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
                                  state.Style());
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
@@ -1110,8 +1103,7 @@ RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
     PseudoId pseudo_id,
     unsigned rules_to_include) {
   DCHECK(element);
-  StyleResolverState state(GetDocument(), *element,
-                           nullptr /* pseudo_element */);
+  StyleResolverState state(GetDocument(), *element);
   ElementRuleCollector collector(state.ElementContext(), selector_filter_,
                                  state.Style());
   collector.SetMode(SelectorChecker::kCollectingCSSRules);
@@ -2202,8 +2194,7 @@ void StyleResolver::ComputeFont(Element& element,
   };
 
   // TODO(timloh): This is weird, the style is being used as its own parent
-  StyleResolverState state(GetDocument(), element, nullptr /* pseudo_element */,
-                           style, style);
+  StyleResolverState state(GetDocument(), element, style, style);
   state.SetStyle(style);
 
   for (const CSSProperty* property : properties) {

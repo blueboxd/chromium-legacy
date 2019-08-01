@@ -177,7 +177,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // initialize renderer-side state just before the RenderFrame commits the
   // navigation.
   //
-  // PlzNavigate
   // This is the first point in time where a RenderFrameHost is associated with
   // the navigation.
   virtual void ReadyToCommitNavigation(NavigationHandle* navigation_handle) {}
@@ -210,10 +209,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // be called multiple times for a given navigation, such as a typed URL
   // followed by a cross-process client or server redirect.
   //
-  // SOON TO BE DEPRECATED. Use DidStartNavigation instead in PlzNavigate. In
-  // default mode, it is still necessary to override this function to be
-  // notified about a navigation earlier than DidStartProvisionalLoad. This
-  // function will be removed when PlzNavigate is enabled.
+  // SOON TO BE DEPRECATED. Use DidStartNavigation instead.
+  // TODO(clamy): Remove this function.
   virtual void DidStartNavigationToPendingEntry(const GURL& url,
                                                 ReloadType reload_type) {}
 

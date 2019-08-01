@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class CSSSyntaxDescriptor;
+class CSSSyntaxDefinition;
 class Document;
 class DocumentPaintDefinition;
 class Image;
@@ -40,7 +40,7 @@ class MODULES_EXPORT CSSPaintImageGeneratorImpl final
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const final;
   const Vector<AtomicString>& CustomInvalidationProperties() const final;
   bool HasAlpha() const final;
-  const Vector<CSSSyntaxDescriptor>& InputArgumentTypes() const final;
+  const Vector<CSSSyntaxDefinition>& InputArgumentTypes() const final;
   bool IsImageGeneratorReady() const final;
   int WorkletId() const final;
 

@@ -21,12 +21,15 @@ class WebContents;
 namespace web_app {
 
 enum class InstallResultCode;
+class WebAppUiManager;
 
 // An abstract finalizer for the installation process, represents the last step.
 // Takes WebApplicationInfo as input, writes data to disk (e.g icons, shortcuts)
 // and registers an app.
 class InstallFinalizer {
  public:
+  void SetSubsystems(WebAppUiManager* ui_manager);
+
   using InstallFinalizedCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
   using UninstallExternalWebAppCallback =
@@ -57,9 +60,9 @@ class InstallFinalizer {
   virtual void CreateOsShortcuts(const AppId& app_id,
                                  bool add_to_desktop,
                                  CreateOsShortcutsCallback callback) = 0;
-
-  virtual bool CanPinAppToShelf() const = 0;
-  virtual void PinAppToShelf(const AppId& app_id) = 0;
+  // |virtual| for testing.
+  virtual bool CanAddAppToQuickLaunchBar() const;
+  virtual void AddAppToQuickLaunchBar(const AppId& app_id);
 
   virtual bool CanReparentTab(const AppId& app_id,
                               bool shortcut_created) const = 0;
@@ -74,6 +77,12 @@ class InstallFinalizer {
       const WebApplicationInfo& web_app_info) const = 0;
 
   virtual ~InstallFinalizer() = default;
+
+ protected:
+  WebAppUiManager& ui_manager() const { return *ui_manager_; }
+
+ private:
+  WebAppUiManager* ui_manager_ = nullptr;
 };
 
 }  // namespace web_app

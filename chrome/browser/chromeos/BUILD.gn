@@ -2996,3 +2996,14 @@ fuzzer_test("smb_url_fuzzer") {
 
   seed_corpus = "smb_client/fuzzer_data/smb_url_corpus"
 }
+
+fuzzer_test("zeroconf_printer_detector_fuzzer") {
+  sources = [
+    "printing/zeroconf_printer_detector_fuzzer.cc",
+  ]
+  deps = [
+    "//base/test:test_support",
+    "//chrome/browser",
+    "//chrome/browser/chromeos",
+  ]
+}

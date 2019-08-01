@@ -61,10 +61,10 @@ class SafeBundledExchangesParser {
  private:
   void OnDisconnect();
   void OnMetadataParsed(mojom::BundleMetadataPtr metadata,
-                        const base::Optional<std::string>& error_message);
+                        mojom::BundleMetadataParseErrorPtr error);
   void OnResponseParsed(size_t callback_id,
                         mojom::BundleResponsePtr response,
-                        const base::Optional<std::string>& error_message);
+                        mojom::BundleResponseParseErrorPtr error);
 
   mojo::Remote<mojom::BundledExchangesParser> parser_;
   mojom::BundledExchangesParser::ParseMetadataCallback metadata_callback_;

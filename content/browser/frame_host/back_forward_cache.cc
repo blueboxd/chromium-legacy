@@ -47,7 +47,10 @@ constexpr uint64_t kDisallowedFeatures =
     ToFeatureBit(
         WebSchedulerTrackedFeature::kRequestedBackgroundWorkPermission) |
     ToFeatureBit(WebSchedulerTrackedFeature::kBroadcastChannel) |
-    ToFeatureBit(WebSchedulerTrackedFeature::kIndexedDBConnection);
+    ToFeatureBit(WebSchedulerTrackedFeature::kIndexedDBConnection) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kWebGL) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kWebVR) |
+    ToFeatureBit(WebSchedulerTrackedFeature::kWebXR);
 
 void SetPageFrozenImpl(
     RenderFrameHostImpl* render_frame_host,

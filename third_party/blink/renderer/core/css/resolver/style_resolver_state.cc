@@ -33,11 +33,12 @@ namespace blink {
 
 StyleResolverState::StyleResolverState(
     Document& document,
-    const ElementResolveContext& element_context,
+    Element& element,
     PseudoElement* pseudo_element,
+    AnimatingElementType animating_element_type,
     const ComputedStyle* parent_style,
     const ComputedStyle* layout_parent_style)
-    : element_context_(element_context),
+    : element_context_(element),
       document_(document),
       style_(nullptr),
       parent_style_(parent_style),
@@ -49,7 +50,8 @@ StyleResolverState::StyleResolverState(
       element_style_resources_(GetElement(),
                                document.DevicePixelRatio(),
                                pseudo_element),
-      pseudo_element_(pseudo_element) {
+      pseudo_element_(pseudo_element),
+      animating_element_type_(animating_element_type) {
   DCHECK(!!parent_style_ == !!layout_parent_style_);
 
   if (!parent_style_) {
@@ -67,12 +69,24 @@ StyleResolverState::StyleResolverState(
 
 StyleResolverState::StyleResolverState(Document& document,
                                        Element& element,
-                                       PseudoElement* pseudo_element,
                                        const ComputedStyle* parent_style,
                                        const ComputedStyle* layout_parent_style)
     : StyleResolverState(document,
-                         ElementResolveContext(element),
-                         pseudo_element,
+                         element,
+                         nullptr /* pseudo_element */,
+                         AnimatingElementType::kElement,
+                         parent_style,
+                         layout_parent_style) {}
+
+StyleResolverState::StyleResolverState(Document& document,
+                                       Element& element,
+                                       PseudoId pseudo_id,
+                                       const ComputedStyle* parent_style,
+                                       const ComputedStyle* layout_parent_style)
+    : StyleResolverState(document,
+                         element,
+                         element.GetPseudoElement(pseudo_id),
+                         AnimatingElementType::kPseudoElement,
                          parent_style,
                          layout_parent_style) {}
 
@@ -193,11 +207,10 @@ StyleResolverState::ParsedPropertiesForPendingSubstitutionCache(
 }
 
 const Element* StyleResolverState::GetAnimatingElement() const {
-  // The animating element may be this element, or the pseudo element we are
-  // resolving style for.
-  DCHECK(!pseudo_element_ ||
-         pseudo_element_->ParentOrShadowHostElement() == GetElement());
-  return pseudo_element_ ? pseudo_element_.Get() : &GetElement();
+  if (animating_element_type_ == AnimatingElementType::kElement)
+    return &GetElement();
+  DCHECK_EQ(AnimatingElementType::kPseudoElement, animating_element_type_);
+  return pseudo_element_;
 }
 
 }  // namespace blink

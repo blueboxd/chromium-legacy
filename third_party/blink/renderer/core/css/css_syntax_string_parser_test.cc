@@ -12,12 +12,12 @@ class CSSSyntaxStringParserTest : public testing::Test {
  public:
   base::Optional<CSSSyntaxComponent> ParseSingleComponent(
       const String& syntax) {
-    auto descriptor = CSSSyntaxStringParser(syntax).Parse();
-    if (!descriptor)
+    auto definition = CSSSyntaxStringParser(syntax).Parse();
+    if (!definition)
       return base::nullopt;
-    if (descriptor->Components().size() != 1)
+    if (definition->Components().size() != 1)
       return base::nullopt;
-    return descriptor->Components()[0];
+    return definition->Components()[0];
   }
 
   base::Optional<CSSSyntaxType> ParseSingleType(const String& syntax) {
@@ -34,14 +34,14 @@ class CSSSyntaxStringParserTest : public testing::Test {
   }
 
   size_t ParseNumberOfComponents(const String& syntax) {
-    auto descriptor = CSSSyntaxStringParser(syntax).Parse();
-    if (!descriptor)
+    auto definition = CSSSyntaxStringParser(syntax).Parse();
+    if (!definition)
       return 0;
-    return descriptor->Components().size();
+    return definition->Components().size();
   }
 
-  CSSSyntaxDescriptor CreateUniversalDescriptor() {
-    return CSSSyntaxDescriptor::CreateUniversal();
+  CSSSyntaxDefinition CreateUniversalDescriptor() {
+    return CSSSyntaxDefinition::CreateUniversal();
   }
 };
 

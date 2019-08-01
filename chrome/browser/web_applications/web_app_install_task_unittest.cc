@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/browser/web_applications/test/test_web_app_database.h"
+#include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -123,8 +124,11 @@ class WebAppInstallTaskTest : public WebAppTest {
     icon_manager_ =
         std::make_unique<WebAppIconManager>(profile(), std::move(file_utils));
 
+    ui_manager_ = std::make_unique<TestWebAppUiManager>();
+
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
         registrar_.get(), icon_manager_.get());
+    install_finalizer_->SetSubsystems(ui_manager_.get());
 
     auto data_retriever = std::make_unique<TestDataRetriever>();
     data_retriever_ = data_retriever.get();
@@ -258,6 +262,7 @@ class WebAppInstallTaskTest : public WebAppTest {
   std::unique_ptr<WebAppRegistrar> registrar_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppInstallTask> install_task_;
+  std::unique_ptr<TestWebAppUiManager> ui_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
 
   // Owned by install_task_:
@@ -666,7 +671,8 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsCalled) {
   EXPECT_EQ(1, test_install_finalizer().num_create_os_shortcuts_calls());
   EXPECT_EQ(1, test_install_finalizer().num_reparent_tab_calls());
   EXPECT_EQ(1, test_install_finalizer().num_reveal_appshim_calls());
-  EXPECT_EQ(1, test_install_finalizer().num_pin_app_to_shelf_calls());
+  EXPECT_EQ(1,
+            test_install_finalizer().num_add_app_to_quick_launch_bar_calls());
 }
 
 TEST_F(WebAppInstallTaskTest, FinalizerMethodsNotCalled) {
@@ -682,7 +688,8 @@ TEST_F(WebAppInstallTaskTest, FinalizerMethodsNotCalled) {
   EXPECT_EQ(0, test_install_finalizer().num_create_os_shortcuts_calls());
   EXPECT_EQ(0, test_install_finalizer().num_reparent_tab_calls());
   EXPECT_EQ(0, test_install_finalizer().num_reveal_appshim_calls());
-  EXPECT_EQ(0, test_install_finalizer().num_pin_app_to_shelf_calls());
+  EXPECT_EQ(0,
+            test_install_finalizer().num_add_app_to_quick_launch_bar_calls());
 }
 
 TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {

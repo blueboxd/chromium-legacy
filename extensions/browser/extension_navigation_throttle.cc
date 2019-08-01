@@ -98,9 +98,8 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     guest_view::GuestViewBase* guest =
         guest_view::GuestViewBase::FromWebContents(web_contents);
     if (url_has_extension_scheme && guest) {
-      // This variant of this logic applies to PlzNavigate top-level
-      // navigations. It is performed for subresources, and for non-PlzNavigate
-      // top navigations, in url_request_util::AllowCrossRendererResourceLoad.
+      // This only handles top-level navigations. For subresources, is is done
+      // in url_request_util::AllowCrossRendererResourceLoad.
       const std::string& owner_extension_id = guest->owner_host();
       const Extension* owner_extension =
           registry->enabled_extensions().GetByID(owner_extension_id);
@@ -192,7 +191,7 @@ ExtensionNavigationThrottle::WillRedirectRequest() {
   ThrottleCheckResult result = WillStartOrRedirectRequest();
   if (result.action() == BLOCK_REQUEST) {
     // TODO(nick): https://crbug.com/695421 means that BLOCK_REQUEST does not
-    // work here. Once PlzNavigate is enabled 100%, just return |result|.
+    // work here. Just return |result|.
     return CANCEL;
   }
   return result;

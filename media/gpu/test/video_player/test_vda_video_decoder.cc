@@ -195,7 +195,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
   ASSERT_EQ(video_frames_.size(), 0u);
   ASSERT_EQ(textures_per_buffer, 1u);
   DVLOGF(4) << "Requested " << requested_num_of_buffers
-            << " picture buffers with size " << dimensions.height() << "x"
+            << " picture buffers with size " << dimensions.width() << "x"
             << dimensions.height();
 
   // If using allocate mode the format requested here might be

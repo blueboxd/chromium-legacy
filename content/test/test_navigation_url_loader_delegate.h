@@ -24,7 +24,6 @@ struct ResourceResponse;
 
 namespace content {
 
-// PlzNavigate
 // Test implementation of NavigationURLLoaderDelegate to monitor navigation
 // progress in the network stack.
 class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {

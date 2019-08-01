@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_COMPUTE_PASS_ENCODER_H_
 
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 
 namespace blink {
 
@@ -29,6 +30,7 @@ class GPUComputePassEncoder : public DawnObject<DawnComputePassEncoder> {
                     const Vector<uint64_t>& dynamicOffsets);
   void setPipeline(GPUComputePipeline* pipeline);
   void dispatch(uint32_t x, uint32_t y, uint32_t z);
+  void dispatchIndirect(GPUBuffer* indirectBuffer, uint64_t indirectOffset);
   void endPass();
 
  private:

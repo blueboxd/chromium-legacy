@@ -85,11 +85,6 @@ const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable mojo Blob URL interface and better blob URL lifetime management.
-// Can be enabled independently of NetworkService.
-const base::Feature kMojoBlobURLs{"MojoBlobURLs",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Used to control the collection of anchor element metrics (crbug.com/856683).
 // If kNavigationPredictor is enabled, then metrics of anchor elements
 // in the first viewport after the page load and the metrics of the clicked

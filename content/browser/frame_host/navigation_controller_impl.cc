@@ -2610,8 +2610,7 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   // cannot make new requests.  Unblock (and disable) it to allow this
   // navigation to succeed.  The interstitial will stay visible until the
   // resulting DidNavigate.
-  // TODO(clamy): See if this can be removed now that PlzNavigate has shipped.
-  // See https://crbug.com/849250
+  // TODO(clamy): See if this can be removed. See https://crbug.com/849250.
   if (delegate_->GetInterstitialPage()) {
     static_cast<InterstitialPageImpl*>(delegate_->GetInterstitialPage())
         ->CancelForNavigation();
@@ -2885,8 +2884,7 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
   // in params even if the navigation is to a blob URL. If that happens, lookup
   // the correct url loader factory to use here.
   auto blob_url_loader_factory = params.blob_url_loader_factory;
-  if (!blob_url_loader_factory && blink::BlobUtils::MojoBlobURLsEnabled() &&
-      params.url.SchemeIsBlob()) {
+  if (!blob_url_loader_factory && params.url.SchemeIsBlob()) {
     blob_url_loader_factory = ChromeBlobStorageContext::URLLoaderFactoryForUrl(
         GetBrowserContext(), params.url);
   }

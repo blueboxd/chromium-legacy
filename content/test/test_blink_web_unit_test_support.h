@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/child/blink_platform_impl.h"
-#include "content/test/mock_webblob_registry_impl.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 
 namespace blink {
@@ -46,8 +45,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   explicit TestBlinkWebUnitTestSupport(
       SchedulerType scheduler_type = SchedulerType::kMockScheduler);
   ~TestBlinkWebUnitTestSupport() override;
-
-  blink::WebBlobRegistry* GetBlobRegistry() override;
 
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
       override;
@@ -85,7 +82,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
-  MockWebBlobRegistryImpl blob_registry_;
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
   base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;

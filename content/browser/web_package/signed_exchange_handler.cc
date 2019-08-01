@@ -563,41 +563,19 @@ SignedExchangeLoadResult SignedExchangeHandler::CheckCertRequirements(
     return SignedExchangeLoadResult::kCertRequirementsNotMet;
   }
 
-  // - Clients MUST reject certificates with this extension that were issued
-  // after 2019-05-01 and have a Validity Period longer than 90 days. [spec
-  // text]
   // - After 2019-08-01, clients MUST reject all certificates with this
   // extension that have a Validity Period longer than 90 days. [spec text]
-  // TODO(crbug.com/953165): Simplify this logic after 2019-08-01.
   base::TimeDelta validity_period =
       verified_cert->valid_expiry() - verified_cert->valid_start();
-  if (validity_period > base::TimeDelta::FromDays(90)) {
-    // 2019-05-01 00:00:00 UTC.
-    const base::Time kRequirementStartDateForIssuance =
-        base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1556668800);
-    if (verified_cert->valid_start() >= kRequirementStartDateForIssuance &&
-        !unverified_cert_chain_->ShouldIgnoreErrors()) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy_.get(),
-          "Signed Exchange's certificate issued after 2019-05-01 must not have "
-          "a validity period longer than 90 days.",
-          std::make_pair(0 /* signature_index */,
-                         SignedExchangeError::Field::kSignatureCertUrl));
-      return SignedExchangeLoadResult::kCertValidityPeriodTooLong;
-    }
-    // 2019-08-01 00:00:00 UTC.
-    const base::Time kRequirementStartDateForVerification =
-        base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1564617600);
-    if (GetVerificationTime() >= kRequirementStartDateForVerification &&
-        !unverified_cert_chain_->ShouldIgnoreErrors()) {
-      signed_exchange_utils::ReportErrorAndTraceEvent(
-          devtools_proxy_.get(),
-          "After 2019-08-01, Signed Exchange's certificate must not have a "
-          "validity period longer than 90 days.",
-          std::make_pair(0 /* signature_index */,
-                         SignedExchangeError::Field::kSignatureCertUrl));
-      return SignedExchangeLoadResult::kCertValidityPeriodTooLong;
-    }
+  if (validity_period > base::TimeDelta::FromDays(90) &&
+      !unverified_cert_chain_->ShouldIgnoreErrors()) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy_.get(),
+        "After 2019-08-01, Signed Exchange's certificate must not have a "
+        "validity period longer than 90 days.",
+        std::make_pair(0 /* signature_index */,
+                       SignedExchangeError::Field::kSignatureCertUrl));
+    return SignedExchangeLoadResult::kCertValidityPeriodTooLong;
   }
   return SignedExchangeLoadResult::kSuccess;
 }

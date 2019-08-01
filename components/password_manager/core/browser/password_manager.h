@@ -21,6 +21,8 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
+#include "components/password_manager/core/browser/leak_detection_delegate.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 
@@ -172,8 +174,13 @@ class PasswordManager : public FormSubmissionObserver {
   PasswordFormManagerInterface* GetSubmittedManagerForTest() const {
     return GetSubmittedManager();
   }
+#if !defined(OS_IOS)
+  void set_leak_factory(std::unique_ptr<LeakDetectionRequestFactory> factory) {
+    leak_delegate_.set_leak_factory(std::move(factory));
+  }
+#endif  // !defined(OS_IOS)
 
-#endif
+#endif  // defined(UNIT_TEST)
 
   // Reports the priority of a PasswordGenerationRequirementsSpec for a
   // generated password. See
@@ -402,6 +409,11 @@ class PasswordManager : public FormSubmissionObserver {
   // PasswordManager does not need to show a save/update prompt since
   // CredentialManagerImpl takes care of it.
   bool store_password_called_ = false;
+
+#if !defined(OS_IOS)
+  // Helper for making the requests on leak detection.
+  LeakDetectionDelegate leak_delegate_;
+#endif  // !defined(OS_IOS)
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

@@ -285,7 +285,7 @@ class BundledExchangesParser::MetadataParser
   void ParseBundleHeader(uint64_t expected_data_length,
                          const base::Optional<std::vector<uint8_t>>& data) {
     if (!data || data->size() != expected_data_length) {
-      RunCallbackAndDestroy(nullptr, "Error reading bundle header.");
+      RunErrorCallbackAndDestroy("Error reading bundle header.");
       return;
     }
 
@@ -301,7 +301,7 @@ class BundledExchangesParser::MetadataParser
     if (!magic ||
         !std::equal(magic->begin(), magic->end(), std::begin(kBundleMagicBytes),
                     std::end(kBundleMagicBytes))) {
-      RunCallbackAndDestroy(nullptr, "Wrong magic bytes.");
+      RunErrorCallbackAndDestroy("Wrong magic bytes.");
       return;
     }
 
@@ -311,15 +311,14 @@ class BundledExchangesParser::MetadataParser
     const auto section_lengths_length =
         input.ReadCBORHeader(CBORType::kByteString);
     if (!section_lengths_length) {
-      RunCallbackAndDestroy(nullptr,
-                            "Cannot parse the size of section-lengths.");
+      RunErrorCallbackAndDestroy("Cannot parse the size of section-lengths.");
       return;
     }
     // Step 4. "If sectionLengthsLength is 8192 (8*1024) or greater, return an
     // error."
     if (*section_lengths_length >= kMaxSectionLengthsCBORSize) {
-      RunCallbackAndDestroy(
-          nullptr, "The section-lengths CBOR must be smaller than 8192 bytes.");
+      RunErrorCallbackAndDestroy(
+          "The section-lengths CBOR must be smaller than 8192 bytes.");
       return;
     }
 
@@ -328,7 +327,7 @@ class BundledExchangesParser::MetadataParser
     // error, return that error."
     const auto section_lengths_bytes = input.ReadBytes(*section_lengths_length);
     if (!section_lengths_bytes) {
-      RunCallbackAndDestroy(nullptr, "Cannot read section-lengths.");
+      RunErrorCallbackAndDestroy("Cannot read section-lengths.");
       return;
     }
 
@@ -338,7 +337,7 @@ class BundledExchangesParser::MetadataParser
     // error, return an error."
     const auto section_lengths = ParseSectionLengths(*section_lengths_bytes);
     if (!section_lengths) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse section-lengths.");
+      RunErrorCallbackAndDestroy("Cannot parse section-lengths.");
       return;
     }
 
@@ -346,14 +345,14 @@ class BundledExchangesParser::MetadataParser
     // type and argument of a CBOR item from stream (Section 3.5.3)."
     const auto num_sections = input.ReadCBORHeader(CBORType::kArray);
     if (!num_sections) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse the number of sections.");
+      RunErrorCallbackAndDestroy("Cannot parse the number of sections.");
       return;
     }
 
     // Step 8. "If sectionsType is not 4 (a CBOR array) or numSections is not
     // half of the length of sectionLengths, return an error."
     if (*num_sections != section_lengths->size()) {
-      RunCallbackAndDestroy(nullptr, "Unexpected number of sections.");
+      RunErrorCallbackAndDestroy("Unexpected number of sections.");
       return;
     }
 
@@ -393,7 +392,7 @@ class BundledExchangesParser::MetadataParser
                            name, std::make_pair(current_offset, length)))
                        .second;
       if (!added) {
-        RunCallbackAndDestroy(nullptr, "Duplicated section.");
+        RunErrorCallbackAndDestroy("Duplicated section.");
         return;
       }
 
@@ -401,7 +400,7 @@ class BundledExchangesParser::MetadataParser
       if (!base::CheckAdd(current_offset, length)
                .AssignIfValid(&current_offset) ||
           current_offset > size_) {
-        RunCallbackAndDestroy(nullptr, "Section doesn't fit in the bundle.");
+        RunErrorCallbackAndDestroy("Section doesn't fit in the bundle.");
         return;
       }
     }
@@ -411,23 +410,23 @@ class BundledExchangesParser::MetadataParser
     // know the requests by the time their responses arrive."
     if (section_lengths->empty() ||
         section_lengths->back().first != kResponsesSection) {
-      RunCallbackAndDestroy(
-          nullptr, "Responses section is not the last in section-lengths.");
+      RunErrorCallbackAndDestroy(
+          "Responses section is not the last in section-lengths.");
       return;
     }
 
     // Read the index section.
     auto index_section = section_offsets_.find(kIndexSection);
     if (index_section == section_offsets_.end()) {
-      RunCallbackAndDestroy(nullptr, "No index section.");
+      RunErrorCallbackAndDestroy("No index section.");
       return;
     }
     const uint64_t index_section_offset = index_section->second.first;
     const uint64_t index_section_length = index_section->second.second;
 
     if (index_section_length > kMaxIndexSectionSize) {
-      RunCallbackAndDestroy(nullptr,
-                            "Index section larger than 1MB is not supported.");
+      RunErrorCallbackAndDestroy(
+          "Index section larger than 1MB is not supported.");
       return;
     }
 
@@ -442,7 +441,7 @@ class BundledExchangesParser::MetadataParser
   void ParseIndexSection(uint64_t expected_data_length,
                          const base::Optional<std::vector<uint8_t>>& data) {
     if (!data || data->size() != expected_data_length) {
-      RunCallbackAndDestroy(nullptr, "Error reading index section.");
+      RunErrorCallbackAndDestroy("Error reading index section.");
       return;
     }
 
@@ -454,11 +453,11 @@ class BundledExchangesParser::MetadataParser
         cbor::Reader::Read(*data, &error);
     if (!index_section_value) {
       VLOG(1) << cbor::Reader::ErrorCodeToString(error);
-      RunCallbackAndDestroy(nullptr, "Error parsing index section.");
+      RunErrorCallbackAndDestroy("Error parsing index section.");
       return;
     }
     if (!index_section_value->is_array()) {
-      RunCallbackAndDestroy(nullptr, "Index section must be an array.");
+      RunErrorCallbackAndDestroy("Index section must be an array.");
       return;
     }
 
@@ -489,7 +488,7 @@ class BundledExchangesParser::MetadataParser
     // Step 2.1. "Seek to offset sectionOffsets["responses"].offset in stream.
     // If this fails, return an error."
     if (!data || data->size() != expected_data_length) {
-      RunCallbackAndDestroy(nullptr, "Error reading responses section header.");
+      RunErrorCallbackAndDestroy("Error reading responses section header.");
       return;
     }
     InputReader input(*data);
@@ -499,8 +498,7 @@ class BundledExchangesParser::MetadataParser
     // returns an error, return that error."
     auto num_responses = input.ReadCBORHeader(CBORType::kArray);
     if (!num_responses) {
-      RunCallbackAndDestroy(
-          nullptr,
+      RunErrorCallbackAndDestroy(
           "Cannot parse the number of elements of the responses section.");
       return;
     }
@@ -508,8 +506,8 @@ class BundledExchangesParser::MetadataParser
     // not half of the length of index, return an error."
     if (index_section_array.size() % 2 != 0 ||
         *num_responses != index_section_array.size() / 2) {
-      RunCallbackAndDestroy(
-          nullptr, "Wrong number of elements in the responses section.");
+      RunErrorCallbackAndDestroy(
+          "Wrong number of elements in the responses section.");
       return;
     }
 
@@ -532,8 +530,8 @@ class BundledExchangesParser::MetadataParser
       // algorithm in Section 3.6. If this returns an error, return that error."
       auto parsed_headers = ConvertCBORValueToHeaders(cbor_http_request_value);
       if (!parsed_headers) {
-        RunCallbackAndDestroy(nullptr,
-                              "Cannot parse headers in the index section.");
+        RunErrorCallbackAndDestroy(
+            "Cannot parse headers in the index section.");
         return;
       }
 
@@ -544,15 +542,15 @@ class BundledExchangesParser::MetadataParser
       if (parsed_headers->pseudos.size() != 2 ||
           pseudo_method == parsed_headers->pseudos.end() ||
           pseudo_url == parsed_headers->pseudos.end()) {
-        RunCallbackAndDestroy(nullptr,
-                              "Request headers map must have exactly two "
-                              "pseudo-headers, :method and :url.");
+        RunErrorCallbackAndDestroy(
+            "Request headers map must have exactly two pseudo-headers, :method "
+            "and :url.");
         return;
       }
 
       // Step 5.3. "If pseudos[':method'] is not 'GET', return an error."
       if (pseudo_method->second != "GET") {
-        RunCallbackAndDestroy(nullptr, "Request method must be GET.");
+        RunErrorCallbackAndDestroy("Request method must be GET.");
         return;
       }
 
@@ -564,9 +562,9 @@ class BundledExchangesParser::MetadataParser
       // includes credentials, return an error."
       if (!parsed_url.is_valid() || parsed_url.has_ref() ||
           parsed_url.has_username() || parsed_url.has_password()) {
-        RunCallbackAndDestroy(nullptr,
-                              ":url in header map must be a valid URL without "
-                              "fragment or credentials.");
+        RunErrorCallbackAndDestroy(
+            ":url in header map must be a valid URL without fragment or "
+            "credentials.");
         return;
       }
 
@@ -588,8 +586,7 @@ class BundledExchangesParser::MetadataParser
       // Step 5.8. "If currentOffset + length is greater than
       // sectionOffsets["responses"].length, return an error."
       if (!length_value.is_unsigned()) {
-        RunCallbackAndDestroy(
-            nullptr,
+        RunErrorCallbackAndDestroy(
             "Length value in the index section should be an unsigned.");
         return;
       }
@@ -599,9 +596,9 @@ class BundledExchangesParser::MetadataParser
       if (!base::CheckAdd(current_offset, length)
                .AssignIfValid(&response_end) ||
           response_end > section_offsets_[kResponsesSection].second) {
-        RunCallbackAndDestroy(nullptr,
-                              "Index map is invalid: total length of responses "
-                              "exceeds the length of the responses section.");
+        RunErrorCallbackAndDestroy(
+            "Index map is invalid: total length of responses exceeds the "
+            "length of the responses section.");
         return;
       }
 
@@ -621,21 +618,24 @@ class BundledExchangesParser::MetadataParser
     }
 
     // We're done.
-    RunCallbackAndDestroy(
-        mojom::BundleMetadata::New(std::move(items_), manifest_url_),
-        base::nullopt);
+    RunSuccessCallbackAndDestroy(
+        mojom::BundleMetadata::New(std::move(items_), manifest_url_));
   }
 
-  void RunCallbackAndDestroy(mojom::BundleMetadataPtr metadata,
-                             const base::Optional<std::string>& error) {
-    DCHECK((metadata && !error) || (!metadata && error));
-    std::move(callback_).Run(std::move(metadata), error);
+  void RunSuccessCallbackAndDestroy(mojom::BundleMetadataPtr metadata) {
+    std::move(callback_).Run(std::move(metadata), nullptr);
+    delete this;
+  }
+
+  void RunErrorCallbackAndDestroy(const std::string& message) {
+    std::move(callback_).Run(nullptr,
+                             mojom::BundleMetadataParseError::New(message));
     delete this;
   }
 
   // Implements SharedBundleDataSource::Observer.
   void OnDisconnect() override {
-    RunCallbackAndDestroy(nullptr, "Data source disconnected.");
+    RunErrorCallbackAndDestroy("Data source disconnected.");
   }
 
   scoped_refptr<SharedBundleDataSource> data_source_;
@@ -682,7 +682,7 @@ class BundledExchangesParser::ResponseParser
     // Step 1. "Seek to offset requestMetadata.offset in stream. If this fails,
     // return an error."
     if (!data || data->size() != expected_data_length) {
-      RunCallbackAndDestroy(nullptr, "Error reading response header.");
+      RunErrorCallbackAndDestroy("Error reading response header.");
       return;
     }
     InputReader input(*data);
@@ -691,7 +691,7 @@ class BundledExchangesParser::ResponseParser
     // return an error."
     auto num_elements = input.ReadCBORHeader(CBORType::kArray);
     if (!num_elements || *num_elements != 2) {
-      RunCallbackAndDestroy(nullptr, "Array size of response must be 2.");
+      RunErrorCallbackAndDestroy("Array size of response must be 2.");
       return;
     }
 
@@ -700,14 +700,14 @@ class BundledExchangesParser::ResponseParser
     // error, return that error."
     auto header_length = input.ReadCBORHeader(CBORType::kByteString);
     if (!header_length) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse response header length.");
+      RunErrorCallbackAndDestroy("Cannot parse response header length.");
       return;
     }
 
     // Step 4. "If headerLength is 524288 (512*1024) or greater, return an
     // error."
     if (*header_length >= kMaxResponseHeaderLength) {
-      RunCallbackAndDestroy(nullptr, "Response header is too big.");
+      RunErrorCallbackAndDestroy("Response header is too big.");
       return;
     }
 
@@ -728,14 +728,14 @@ class BundledExchangesParser::ResponseParser
     // If either the read or parse returns an error, return that error."
     auto headers_bytes = input.ReadBytes(*header_length);
     if (!headers_bytes) {
-      RunCallbackAndDestroy(nullptr, "Cannot read response headers.");
+      RunErrorCallbackAndDestroy("Cannot read response headers.");
       return;
     }
     cbor::Reader::DecoderError error;
     base::Optional<cbor::Value> headers_value =
         cbor::Reader::Read(*headers_bytes, &error);
     if (!headers_value) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse response headers.");
+      RunErrorCallbackAndDestroy("Cannot parse response headers.");
       return;
     }
 
@@ -744,7 +744,7 @@ class BundledExchangesParser::ResponseParser
     // If this returns an error, return that error."
     auto parsed_headers = ConvertCBORValueToHeaders(*headers_value);
     if (!parsed_headers) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse response headers.");
+      RunErrorCallbackAndDestroy("Cannot parse response headers.");
       return;
     }
 
@@ -753,8 +753,7 @@ class BundledExchangesParser::ResponseParser
     const auto pseudo_status = parsed_headers->pseudos.find(":status");
     if (parsed_headers->pseudos.size() != 1 ||
         pseudo_status == parsed_headers->pseudos.end()) {
-      RunCallbackAndDestroy(
-          nullptr,
+      RunErrorCallbackAndDestroy(
           "Response headers map must have exactly one pseudo-header, :status.");
       return;
     }
@@ -767,7 +766,7 @@ class BundledExchangesParser::ResponseParser
         !std::all_of(status_str.begin(), status_str.end(),
                      base::IsAsciiDigit<char>) ||
         !base::StringToInt(status_str, &status)) {
-      RunCallbackAndDestroy(nullptr, ":status must be 3 ASCII decimal digits.");
+      RunErrorCallbackAndDestroy(":status must be 3 ASCII decimal digits.");
       return;
     }
 
@@ -782,14 +781,14 @@ class BundledExchangesParser::ResponseParser
     // error, return that error."
     auto payload_length = input.ReadCBORHeader(CBORType::kByteString);
     if (!payload_length) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse response payload length.");
+      RunErrorCallbackAndDestroy("Cannot parse response payload length.");
       return;
     }
 
     // Step 11. "If stream.currentOffset + payloadLength !=
     // requestMetadata.offset + requestMetadata.length, return an error."
     if (input.CurrentOffset() + *payload_length != response_length_) {
-      RunCallbackAndDestroy(nullptr, "Unexpected payload length.");
+      RunErrorCallbackAndDestroy("Unexpected payload length.");
       return;
     }
 
@@ -807,19 +806,23 @@ class BundledExchangesParser::ResponseParser
     response->response_headers = std::move(parsed_headers->headers);
     response->payload_offset = response_offset_ + input.CurrentOffset();
     response->payload_length = *payload_length;
-    RunCallbackAndDestroy(std::move(response), base::nullopt);
+    RunSuccessCallbackAndDestroy(std::move(response));
   }
 
-  void RunCallbackAndDestroy(mojom::BundleResponsePtr response,
-                             const base::Optional<std::string>& error) {
-    DCHECK((response && !error) || (!response && error));
-    std::move(callback_).Run(std::move(response), error);
+  void RunSuccessCallbackAndDestroy(mojom::BundleResponsePtr response) {
+    std::move(callback_).Run(std::move(response), nullptr);
+    delete this;
+  }
+
+  void RunErrorCallbackAndDestroy(const std::string& message) {
+    std::move(callback_).Run(nullptr,
+                             mojom::BundleResponseParseError::New(message));
     delete this;
   }
 
   // Implements SharedBundleDataSource::Observer.
   void OnDisconnect() override {
-    RunCallbackAndDestroy(nullptr, "Data source disconnected.");
+    RunErrorCallbackAndDestroy("Data source disconnected.");
   }
 
   scoped_refptr<SharedBundleDataSource> data_source_;

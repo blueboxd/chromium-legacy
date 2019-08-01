@@ -70,8 +70,6 @@ class PublicURLManagerTest : public testing::Test {
   PublicURLManagerTest() : url_store_binding_(&url_store_) {}
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kMojoBlobURLs);
-
     execution_context_ = MakeGarbageCollected<NullExecutionContext>();
     // By default this creates a unique origin, which is exactly what this test
     // wants.
@@ -95,7 +93,6 @@ class PublicURLManagerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   Persistent<NullExecutionContext> execution_context_;
 
   FakeBlobURLStore url_store_;

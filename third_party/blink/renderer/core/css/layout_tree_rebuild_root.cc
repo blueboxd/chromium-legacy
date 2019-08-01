@@ -12,6 +12,7 @@ Element& LayoutTreeRebuildRoot::RootElement() const {
   Node* root_node = GetRootNode();
   DCHECK(root_node);
   DCHECK(root_node->isConnected());
+  DCHECK(root_node->GetDocument().documentElement());
   // We need to start from the closest non-dirty ancestor which has a
   // LayoutObject to make WhitespaceAttacher work correctly because text node
   // siblings of nodes being re-attached needs to be traversed to re-evaluate
@@ -28,9 +29,9 @@ Element& LayoutTreeRebuildRoot::RootElement() const {
     if (root_element)
       return *root_element;
   }
-  if (root_node->IsDocumentNode())
-    return *root_node->GetDocument().documentElement();
-  return To<Element>(*root_node);
+  if (Element* element = DynamicTo<Element>(root_node))
+    return *element;
+  return *root_node->GetDocument().documentElement();
 }
 
 #if DCHECK_IS_ON()

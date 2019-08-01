@@ -4,13 +4,12 @@
 
 // Private property symbols
 // TODO(tkent): Use private fields.
-const _value = Symbol();
-const _trackElement = Symbol();
-const _fillElement = Symbol();
-const _slotElement = Symbol();
+const _value = Symbol('A boolean track value field');
+const _trackElement = Symbol('A track element field');
+const _fillElement = Symbol('A trackFill element field');
+const _slotElement = Symbol('A slot element field');
 
 export class SwitchTrack {
-
   /**
    * @param {!Document} factory A factory for elements created for this track.
    */
@@ -30,13 +29,13 @@ export class SwitchTrack {
    * @param {Boolean} newValue
    */
   set value(newValue) {
-    let oldValue = this[_value];
+    const oldValue = this[_value];
     this[_value] = Boolean(newValue);
 
-    let bar = this[_fillElement];
+    const bar = this[_fillElement];
     if (bar) {
       bar.style.inlineSize = this[_value] ? '100%' : '0%';
-      if (oldValue != this[_value]) {
+      if (oldValue !== this[_value]) {
         this._addSlot();
       }
     }

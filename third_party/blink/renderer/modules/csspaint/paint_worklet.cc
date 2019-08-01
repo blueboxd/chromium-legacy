@@ -190,7 +190,7 @@ void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
     const String& name,
     Vector<CSSPropertyID> native_properties,
     Vector<String> custom_properties,
-    Vector<CSSSyntaxDescriptor> input_argument_types,
+    Vector<CSSSyntaxDefinition> input_argument_types,
     double alpha) {
   if (document_definition_map_.Contains(name)) {
     DocumentPaintDefinition* document_definition =

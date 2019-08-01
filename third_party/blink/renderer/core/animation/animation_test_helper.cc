@@ -78,8 +78,7 @@ void EnsureInterpolatedValueCached(const ActiveInterpolations& interpolations,
   // require our callers to propertly register every animation they pass in
   // here, which the current tests do not do.
   auto style = ComputedStyle::Create();
-  StyleResolverState state(document, *element, nullptr /* pseudo_element */,
-                           style.get(), style.get());
+  StyleResolverState state(document, *element, style.get(), style.get());
   state.SetStyle(style);
   CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry(),
                                state.GetDocument());

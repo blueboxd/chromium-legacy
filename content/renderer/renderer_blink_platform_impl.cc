@@ -40,7 +40,6 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/blob_storage/webblobregistry_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_dispatcher.h"
@@ -88,7 +87,6 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
-#include "third_party/blink/public/platform/web_blob_registry.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -118,7 +116,6 @@
 using blink::Platform;
 using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;
-using blink::WebBlobRegistry;
 using blink::WebMediaStreamTrack;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
@@ -185,7 +182,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
                      ->GetConnector()
                      ->Clone();
     thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
-    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
 #if defined(OS_LINUX)
     font_loader_ = sk_make_sp<font_service::FontLoader>(connector_.get());
     SkFontConfigInterface::SetGlobal(font_loader_);
@@ -507,13 +503,6 @@ bool RendererBlinkPlatformImpl::DecodeAudioFileData(
     size_t data_size) {
   return content::DecodeAudioFileData(destination_bus, audio_file_data,
                                       data_size);
-}
-
-//------------------------------------------------------------------------------
-
-WebBlobRegistry* RendererBlinkPlatformImpl::GetBlobRegistry() {
-  // blob_registry_ can be NULL when running some tests.
-  return blob_registry_.get();
 }
 
 //------------------------------------------------------------------------------

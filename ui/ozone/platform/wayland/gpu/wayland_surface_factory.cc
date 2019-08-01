@@ -170,6 +170,19 @@ scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
 #endif
 }
 
+void WaylandSurfaceFactory::CreateNativePixmapAsync(
+    gfx::AcceleratedWidget widget,
+    VkDevice vk_device,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    NativePixmapCallback callback) {
+  // CreateNativePixmap is non-blocking operation. Thus, it is safe to call it
+  // and return the result with the provided callback.
+  std::move(callback).Run(
+      CreateNativePixmap(widget, vk_device, size, format, usage));
+}
+
 scoped_refptr<gfx::NativePixmap>
 WaylandSurfaceFactory::CreateNativePixmapFromHandle(
     gfx::AcceleratedWidget widget,

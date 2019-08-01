@@ -22,7 +22,7 @@ namespace content {
 
 // Helper class to intercept URLLoaderFactory calls for tests.
 // This intercepts:
-//   -frame requests (which start from the browser, with PlzNavigate)
+//   -frame requests (which start from the browser)
 //   -subresource requests from pages and dedicad workers and shared workers.
 //     -at ResourceMessageFilter for non network-service code path
 //     -by sending renderer an intermediate URLLoaderFactory for network-service

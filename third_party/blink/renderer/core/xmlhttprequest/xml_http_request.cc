@@ -707,7 +707,7 @@ void XMLHttpRequest::open(const AtomicString& method,
 
   url_ = url;
 
-  if (url_.ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled()) {
+  if (url_.ProtocolIs("blob")) {
     GetExecutionContext()->GetPublicURLManager().Resolve(
         url_, MakeRequest(&blob_url_loader_factory_));
   }

@@ -3524,28 +3524,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeBlobURL) {
                download->GetTargetFilePath().BaseName().value().c_str());
 }
 
-class DownloadContentTestWithMojoBlobURLs : public DownloadContentTest {
- public:
-  DownloadContentTestWithMojoBlobURLs() {
-    scoped_feature_list_.InitAndEnableFeature(blink::features::kMojoBlobURLs);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(DownloadContentTestWithMojoBlobURLs,
-                       DownloadAttributeBlobURL) {
-  GURL document_url =
-      embedded_test_server()->GetURL("/download/download-attribute-blob.html");
-  download::DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), document_url);
-  WaitForCompletion(download);
-
-  EXPECT_STREQ(FILE_PATH_LITERAL("suggested-filename.txt"),
-               download->GetTargetFilePath().BaseName().value().c_str());
-}
-
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameSiteCookie) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   net::EmbeddedTestServer test_server;

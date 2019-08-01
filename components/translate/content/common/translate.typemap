@@ -8,9 +8,9 @@ public_headers = [
   "//components/translate/core/common/translate_errors.h",
 ]
 traits_headers =
-    [ "//components/translate/content/common/translate_struct_traits.h" ]
+    [ "//components/translate/content/common/translate_mojom_traits.h" ]
 sources = [
-  "//components/translate/content/common/translate_struct_traits.cc",
+  "//components/translate/content/common/translate_mojom_traits.cc",
 ]
 deps = [
   "//base",

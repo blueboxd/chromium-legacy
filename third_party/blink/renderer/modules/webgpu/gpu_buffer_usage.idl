@@ -17,4 +17,5 @@ typedef unsigned long GPUBufferUsageFlags;
     const unsigned long VERTEX = 32;
     const unsigned long UNIFORM = 64;
     const unsigned long STORAGE = 128;
+    const unsigned long INDIRECT = 256;
 };

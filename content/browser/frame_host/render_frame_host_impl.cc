@@ -1217,7 +1217,8 @@ void RenderFrameHostImpl::ExecuteMediaPlayerActionAtLocation(
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
   return CreateNetworkServiceDefaultFactoryInternal(
-      last_committed_origin_, std::move(default_factory_request));
+      last_committed_origin_, network_isolation_key_,
+      std::move(default_factory_request));
 }
 
 void RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
@@ -1261,7 +1262,7 @@ RenderFrameHostImpl::CreateInitiatorSpecificURLLoaderFactories(
   for (const url::Origin& initiator : initiator_origins) {
     network::mojom::URLLoaderFactoryPtrInfo factory_info;
     CreateNetworkServiceDefaultFactoryAndObserve(
-        initiator, mojo::MakeRequest(&factory_info));
+        initiator, network_isolation_key_, mojo::MakeRequest(&factory_info));
     result[initiator] = std::move(factory_info);
   }
   return result;
@@ -1424,7 +1425,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeforeUnload_ACK, OnBeforeUnloadACK)
@@ -1842,7 +1842,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
         GetProcess()->GetID(), previous_routing_id);
     // We have also created a RenderFrameProxy in CreateFrame above, so
     // remember that.
-    proxy->set_render_frame_proxy_created(true);
+    proxy->SetRenderFrameProxyCreated(true);
   }
 
   // The renderer now has a RenderFrame for this RenderFrameHost.  Note that
@@ -2050,8 +2050,8 @@ void RenderFrameHostImpl::DidNavigate(
   // (see https://crbug.com/560511).  Instead, the next cross-process navigation
   // or transfer should decide whether to swap as if the net error had not
   // occurred.
-  // TODO(creis): Remove this block and always set the URL once transfers handle
-  // network errors or PlzNavigate is enabled.  See https://crbug.com/588314.
+  // TODO(creis): Remove this block and always set the URL.
+  // See https://crbug.com/588314.
   if (!params.url_is_unreachable)
     last_successful_url_ = params.url;
 
@@ -2248,7 +2248,7 @@ void RenderFrameHostImpl::OnDetach() {
   PendingDeletionCheckCompletedOnSubtree();  // Can delete |this|.
 }
 
-void RenderFrameHostImpl::OnFrameFocused() {
+void RenderFrameHostImpl::FrameFocused() {
   if (!is_active())
     return;
 
@@ -2518,7 +2518,7 @@ void RenderFrameHostImpl::SwapOut(
                                          is_loading, replication_state));
     // Remember that a RenderFrameProxy was created as part of processing the
     // SwapOut message above.
-    proxy->set_render_frame_proxy_created(true);
+    proxy->SetRenderFrameProxyCreated(true);
 
     StartPendingDeletionOnSubtree();
   }
@@ -2994,7 +2994,8 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   bool bypass_redirect_checks = false;
   if (recreate_default_url_loader_factory_after_network_service_crash_) {
     bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-        last_committed_origin_, mojo::MakeRequest(&default_factory_info));
+        last_committed_origin_, network_isolation_key_,
+        mojo::MakeRequest(&default_factory_info));
   }
 
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -4047,8 +4048,7 @@ void RenderFrameHostImpl::BeginNavigation(
   // situation where a renderer currently doesn't have an easy way of resolving
   // the blob URL. For those situations resolve the blob URL here, as we don't
   // care about ordering with other blob URL manipulation anyway.
-  if (blink::BlobUtils::MojoBlobURLsEnabled() &&
-      validated_params->url.SchemeIsBlob() && !blob_url_loader_factory) {
+  if (validated_params->url.SchemeIsBlob() && !blob_url_loader_factory) {
     blob_url_loader_factory = ChromeBlobStorageContext::URLLoaderFactoryForUrl(
         GetSiteInstance()->GetBrowserContext(), validated_params->url);
   }
@@ -4946,6 +4946,7 @@ void RenderFrameHostImpl::CommitNavigation(
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
               GetOriginForURLLoaderFactory(navigation_request),
+              network_isolation_key_,
               pending_default_factory.InitWithNewPipeAndPassReceiver());
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
@@ -5225,7 +5226,7 @@ void RenderFrameHostImpl::FailedNavigation(
   // TODO(domfarolino, crbug.com/955171): Replace this with Remote.
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-      origin, mojo::MakeRequest(&default_factory_info));
+      origin, network_isolation_key_, mojo::MakeRequest(&default_factory_info));
   subresource_loader_factories =
       std::make_unique<blink::URLLoaderFactoryBundleInfo>(
           std::move(default_factory_info),
@@ -5753,10 +5754,11 @@ void RenderFrameHostImpl::NavigationRequestCancelled(
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     const base::Optional<url::Origin>& origin,
+    const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryInternal(
-      origin, std::move(default_factory_receiver));
+      origin, network_isolation_key, std::move(default_factory_receiver));
 
   // Add connection error observer when Network Service is running
   // out-of-process.
@@ -5781,6 +5783,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     const base::Optional<url::Origin>& origin,
+    const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
   auto* context = GetSiteInstance()->GetBrowserContext();
@@ -5801,14 +5804,14 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   WebPreferences preferences = GetRenderViewHost()->GetWebkitPreferences();
   if (GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {
     GetProcess()->CreateURLLoaderFactory(origin, cross_origin_embedder_policy_,
-                                         &preferences, network_isolation_key_,
+                                         &preferences, network_isolation_key,
                                          std::move(header_client),
                                          std::move(default_factory_receiver));
   } else {
     mojo::Remote<network::mojom::URLLoaderFactory> original_factory;
     GetProcess()->CreateURLLoaderFactory(
         origin, cross_origin_embedder_policy_, &preferences,
-        network_isolation_key_, std::move(header_client),
+        network_isolation_key, std::move(header_client),
         original_factory.BindNewPipeAndPassReceiver());
     GetCreateNetworkFactoryCallbackForRenderFrame().Run(
         std::move(default_factory_receiver), GetProcess()->GetID(),

@@ -83,7 +83,9 @@ class BundledExchangesHandle::StartURLRedirectLoader final
         /*is_signed_exchange_fallback_redirect=*/false);
   }
 
-  void OnReadyToRedirect(const GURL& url, base::Optional<std::string> error) {
+  void OnReadyToRedirect(
+      const GURL& url,
+      data_decoder::mojom::BundleMetadataParseErrorPtr error) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(client_.is_connected());
 
@@ -192,7 +194,7 @@ void BundledExchangesHandle::MayRedirectStartURLLoader() {
 }
 
 void BundledExchangesHandle::OnMetadataReady(
-    base::Optional<std::string> error) {
+    data_decoder::mojom::BundleMetadataParseErrorPtr error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   start_url_ = std::move(reader_->GetStartURL());

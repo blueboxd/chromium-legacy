@@ -103,7 +103,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   bool SupportsKeyboardFocus() const;
   bool SupportsInputMethod() const;
   bool CanProcessDrag() const;
-  bool WantsWheelEvents();
+  bool WantsWheelEvents() const;
   void UpdateAllLifecyclePhases();
   void InvalidateRect(const IntRect&);
   void SetFocused(bool, WebFocusType);

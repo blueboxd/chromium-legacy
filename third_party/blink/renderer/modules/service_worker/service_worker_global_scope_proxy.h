@@ -39,7 +39,6 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -47,7 +46,6 @@
 
 namespace blink {
 
-class ParentExecutionContextTaskRunners;
 class ServiceWorkerGlobalScope;
 class WebEmbeddedWorkerImpl;
 class WebServiceWorkerContextClient;
@@ -64,13 +62,12 @@ class WebServiceWorkerContextClient;
 // An instance of this class is supposed to outlive until
 // workerThreadTerminated() is called by its corresponding
 // WorkerGlobalScope.
-class ServiceWorkerGlobalScopeProxy final
-    : public GarbageCollectedFinalized<ServiceWorkerGlobalScopeProxy>,
-      public WebServiceWorkerContextProxy,
-      public WorkerReportingProxy {
+class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
+                                            public WorkerReportingProxy {
  public:
-  static ServiceWorkerGlobalScopeProxy* Create(WebEmbeddedWorkerImpl&,
-                                               WebServiceWorkerContextClient&);
+  static std::unique_ptr<ServiceWorkerGlobalScopeProxy> Create(
+      WebEmbeddedWorkerImpl&,
+      WebServiceWorkerContextClient&);
 
   ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerImpl&,
                                 WebServiceWorkerContextClient&);
@@ -131,8 +128,6 @@ class ServiceWorkerGlobalScopeProxy final
       mojom::blink::FetchEventPreloadHandlePtr preload_handle);
   void RequestTermination(base::OnceCallback<void(bool)> callback);
 
-  void Trace(blink::Visitor*);
-
   // Detaches this proxy object entirely from the outside world, clearing out
   // all references.
   //
@@ -150,8 +145,7 @@ class ServiceWorkerGlobalScopeProxy final
   // as part of its finalization.
   WebEmbeddedWorkerImpl* embedded_worker_;
 
-  Member<ParentExecutionContextTaskRunners>
-      parent_execution_context_task_runners_;
+  scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner_;
 
   WebServiceWorkerContextClient* client_;
 

@@ -420,22 +420,6 @@ bool LoadNoSharedRelocations(const String& path) {
 
 }  // namespace
 
-// Get the CPU ABI string for which the linker is running.
-//
-// The returned string is used to construct the path to libchrome.so when
-// loading directly from APK.
-//
-// |env| is the current JNI environment handle.
-// |clazz| is the static class handle for org.chromium.base.Linker,
-// and is ignored here.
-// Returns the CPU ABI string for which the linker is running.
-JNI_GENERATOR_EXPORT jstring
-Java_org_chromium_base_library_1loader_ModernLinker_nativeGetCpuAbi(
-    JNIEnv* env,
-    jclass clazz) {
-  return env->NewStringUTF(CURRENT_ABI);
-}
-
 JNI_GENERATOR_EXPORT jboolean
 Java_org_chromium_base_library_1loader_ModernLinker_nativeLoadLibraryCreateRelros(
     JNIEnv* env,

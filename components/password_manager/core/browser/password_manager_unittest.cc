@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -23,6 +24,8 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
@@ -58,6 +61,7 @@ using base::Feature;
 using base::TestMockTimeTaskRunner;
 using testing::_;
 using testing::AnyNumber;
+using testing::ByMove;
 using testing::Invoke;
 using testing::IsNull;
 using testing::Mock;
@@ -83,6 +87,17 @@ MATCHER_P(FormIgnoreDate, expected, "") {
   expected_with_date.date_created = arg.date_created;
   return arg == expected_with_date;
 }
+
+class MockLeakDetectionCheck : public LeakDetectionCheck {
+ public:
+  MOCK_METHOD3(Start,
+               void(const GURL&, base::StringPiece16, base::StringPiece16));
+};
+
+class MockLeakDetectionRequestFactory : public LeakDetectionRequestFactory {
+ public:
+  MOCK_CONST_METHOD0(TryCreateLeakCheck, std::unique_ptr<LeakDetectionCheck>());
+};
 
 class MockStoreResultFilter : public StubCredentialsFilter {
  public:
@@ -3828,5 +3843,40 @@ TEST_F(PasswordManagerTest, FillingAndSavingFallbacksOnNonPasswordForm) {
     testing::Mock::VerifyAndClearExpectations(&client_);
   }
 }
+
+#if !defined(OS_IOS)
+// Check that on successful login the credentials are checked for leak.
+TEST_F(PasswordManagerTest, StartLeakDetection) {
+  auto mock_factory =
+      std::make_unique<testing::StrictMock<MockLeakDetectionRequestFactory>>();
+  MockLeakDetectionRequestFactory* weak_factory = mock_factory.get();
+  manager()->set_leak_factory(std::move(mock_factory));
+
+  const PasswordForm form = MakeSimpleForm();
+  std::vector<PasswordForm> observed = {form};
+  EXPECT_CALL(*store_, GetLogins)
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled).WillRepeatedly(Return(true));
+  OnPasswordFormSubmitted(form);
+
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr)
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+  auto check_instance = std::make_unique<MockLeakDetectionCheck>();
+  EXPECT_CALL(*check_instance,
+              Start(form.origin, base::StringPiece16(form.username_value),
+                    base::StringPiece16(form.password_value)));
+  EXPECT_CALL(*weak_factory, TryCreateLeakCheck())
+      .WillOnce(Return(ByMove(std::move(check_instance))));
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+#endif  // !defined(OS_IOS)
 
 }  // namespace password_manager

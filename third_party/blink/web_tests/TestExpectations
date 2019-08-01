@@ -150,12 +150,6 @@ crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scr
 crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Failure ]
 crbug.com/980290 virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-visibility-change.html [ Failure ]
 
-# Need to support painting non-fast scrollable regions for plugins.
-crbug.com/864567 virtual/composite-after-paint/scrollingcoordinator/plugin-with-wheel-handler.html [ Failure ]
-crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/plugin-with-wheel-handler.html [ Failure ]
-crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Failure ]
-crbug.com/864567 virtual/paint-non-fast-scrollable-regions/scrollingcoordinator/non-fast-scrollable-region-nested.html [ Failure ]
-
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
@@ -6392,6 +6386,16 @@ crbug.com/959129 virtual/threaded/http/tests/devtools/tracing/timeline-script-pa
 crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
 crbug.com/988298 [ Linux ] http/tests/devtools/extensions/extensions-panel.js [ Pass Timeout ]
 
+# WebRTC tests that fails (by timing out) because `getSynchronizationSources()`
+# on the audio side needs a hardware sink for the returned dictionary entries to
+# get updated.
+#
+# Temporarily replaced by:
+#   - WebRtcAudioBrowserTest.EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks
+#   - WebRtcBrowserTest.EstablishVideoOnlyCallAndVerifyGetSynchronizationSourcesWorks
+crbug.com/988432 external/wpt/webrtc/RTCRtpReceiver-getSynchronizationSources.https.html [ Pass Timeout ]
+crbug.com/988432 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpReceiver-getSynchronizationSources.https.html [ Pass Timeout ]
+
 # Sheriff 2019-07-29
 crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure Timeout ]
 crbug.com/988074 [ Linux ] virtual/cors-rfc1918/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
@@ -6428,3 +6432,53 @@ crbug.com/989755 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/auth-
 crbug.com/989756 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/access-control-base-https-other-https.html [ Pass Failure ]
 crbug.com/989756 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/access-control-base-https-other-https.html [ Pass Failure ]
 crbug.com/989756 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/access-control-base-https-other-https.html [ Pass Failure ]
+
+# Sheriff 2019-08-01
+crbug.com/989860 [ Mac10.13 Linux Debug ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
+crbug.com/989863 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker/thorough/auth-base-https-other-https.html [ Pass Failure ]
+crbug.com/989863 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker/thorough/auth-base-https-other-https.html [ Pass Failure ]
+crbug.com/989863 [ Linux ] http/tests/fetch/serviceworker/thorough/auth-base-https-other-https.html [ Pass Failure ]
+crbug.com/989848 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/cookie-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989848 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/cookie-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989848 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/cookie-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989825 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker/thorough/cors-preflight-base-https-other-https.html [ Pass Failure ]
+crbug.com/989825 [ Linux ]  http/tests/fetch/serviceworker/thorough/cors-preflight-base-https-other-https.html [ Pass Failure ]
+crbug.com/989825 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker/thorough/cors-preflight-base-https-other-https.html [ Pass Failure ]
+crbug.com/989824 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/redirect-base-https-other-https.html [ Pass Failure ]
+crbug.com/989824 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/redirect-base-https-other-https.html [ Pass Failure ]
+crbug.com/989824 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/redirect-base-https-other-https.html [ Pass Failure ]
+crbug.com/989823 [ Linux ] http/tests/fetch/serviceworker/thorough/cors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989823 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker/thorough/cors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989823 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker/thorough/cors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989811 [ Linux ] http/tests/fetch/serviceworker/thorough/redirect-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989811 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker/thorough/redirect-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989811 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker/thorough/redirect-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989808 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/scheme-data-base-https-other-https.html [ Pass Failure ]
+crbug.com/989808 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/scheme-data-base-https-other-https.html [ Pass Failure ]
+crbug.com/989808 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/scheme-data-base-https-other-https.html [ Pass Failure ]
+crbug.com/989807 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker/thorough/cookie-base-https-other-https.html [ Pass Failure ]
+crbug.com/989807 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker/thorough/cookie-base-https-other-https.html [ Pass Failure ]
+crbug.com/989807 [ Linux ] http/tests/fetch/serviceworker/thorough/cookie-base-https-other-https.html [ Pass Failure ]
+crbug.com/989806 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/cors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989806 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/cors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989806 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/cors-base-https-other-https.html [ Pass Failure ]
+crbug.com/989805 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/redirect-credentials-base-https-other-https.html [ Pass Failure ]
+crbug.com/989805 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/redirect-credentials-base-https-other-https.html [ Pass Failure ]
+crbug.com/989805 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/redirect-credentials-base-https-other-https.html [ Pass Failure ]
+crbug.com/989757 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker/thorough/redirect-base-https-other-https.html [ Pass Failure ]
+crbug.com/989879 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker/thorough/scheme-data-base-https-other-https.html [ Pass Failure ]
+crbug.com/989879 [ Linux ] http/tests/fetch/serviceworker/thorough/scheme-data-base-https-other-https.html [ Pass Failure ]
+crbug.com/989879 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker/thorough/scheme-data-base-https-other-https.html [ Pass Failure ]
+crbug.com/989878 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/scheme-blob-base-https-other-https.html [ Pass Failure ]
+crbug.com/989878 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/scheme-blob-base-https-other-https.html [ Pass Failure ]
+crbug.com/989878 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/scheme-blob-base-https-other-https.html [ Pass Failure ]
+crbug.com/989756 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker/thorough/redirect-password-base-https-other-https.html [ Pass Failure ]
+crbug.com/989717 [ Fuchsia ] http/tests/preload/avoid_delaying_onload_link_preload.html [ Pass Failure ]
+crbug.com/988074 [ Linux ] virtual/not-omt-sw-fetch/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
+crbug.com/988074 [ Linux ] virtual/omt-worker-fetch/http/tests/security/cors-rfc1918/addressspace-serviceworker-basic.html [ Pass Failure ]
+crbug.com/948167 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/redirect-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/948167 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/redirect-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/948167 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/redirect-nocors-base-https-other-https.html [ Pass Failure ]
+crbug.com/855860 [ Linux ] virtual/streaming-preload/http/tests/fetch/serviceworker-proxied/thorough/redirect-password-base-https-other-https.html [ Pass Failure ]
+crbug.com/855860 [ Linux ] http/tests/fetch/serviceworker-proxied/thorough/redirect-password-base-https-other-https.html [ Pass Failure ]
+crbug.com/855860 [ Linux ] virtual/blink-cors/http/tests/fetch/serviceworker-proxied/thorough/redirect-password-base-https-other-https.html [ Pass Failure ]

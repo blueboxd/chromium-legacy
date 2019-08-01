@@ -1074,10 +1074,6 @@ TEST_P(ScrollingCoordinatorTest, PluginBecomesLayoutInline) {
 // Ensure NonFastScrollableRegions are correctly generated for both fixed and
 // in-flow plugins that need them.
 TEST_P(ScrollingCoordinatorTest, NonFastScrollableRegionsForPlugins) {
-  // TODO(pdr): Paint non-fast scrollable regions for plugins.
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
-    return;
-
   LoadHTML(R"HTML(
     <style>
       body {
@@ -1114,17 +1110,47 @@ TEST_P(ScrollingCoordinatorTest, NonFastScrollableRegionsForPlugins) {
 
   ForceFullCompositingUpdate();
 
-  Region scrolling;
-  Region fixed;
-  Page* page = GetFrame()->GetPage();
-  page->GetScrollingCoordinator()
-      ->ComputeShouldHandleScrollGestureOnMainThreadRegion(
-          To<LocalFrame>(page->MainFrame()), &scrolling, &fixed);
+  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    Region scrolling;
+    Region fixed;
+    Page* page = GetFrame()->GetPage();
+    page->GetScrollingCoordinator()
+        ->ComputeShouldHandleScrollGestureOnMainThreadRegion(
+            To<LocalFrame>(page->MainFrame()), &scrolling, &fixed);
 
-  EXPECT_TRUE(scrolling.IsRect());
-  EXPECT_TRUE(fixed.IsRect());
-  EXPECT_EQ(scrolling.Rects().at(0), IntRect(0, 0, 300, 300));
-  EXPECT_EQ(fixed.Rects().at(0), IntRect(0, 500, 200, 200));
+    EXPECT_TRUE(scrolling.IsRect());
+    EXPECT_TRUE(fixed.IsRect());
+    EXPECT_EQ(scrolling.Rects().at(0), IntRect(0, 0, 300, 300));
+    EXPECT_EQ(fixed.Rects().at(0), IntRect(0, 500, 200, 200));
+  }
+
+  // The non-fixed plugin should create a non-fast scrollable region in the
+  // scrolling contents layer of the LayoutView.
+  auto* layout_viewport = GetFrame()->View()->LayoutViewport();
+  auto* mapping = layout_viewport->Layer()->GetCompositedLayerMapping();
+  auto* viewport_non_fast_layer = mapping->ScrollingContentsLayer()->CcLayer();
+  EXPECT_EQ(viewport_non_fast_layer->non_fast_scrollable_region().bounds(),
+            gfx::Rect(0, 0, 300, 300));
+
+  // The fixed plugin should create a non-fast scrollable region in a fixed
+  // cc::Layer.
+  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    // The fixed non-fast region should be on the visual viewport's scrolling
+    // layer. This is not correct in all cases and is a restriction of the
+    // pre-PaintNonFsatScrollableRegions code.
+    auto* non_fast_layer =
+        GetFrame()->GetPage()->GetVisualViewport().ScrollLayer()->CcLayer();
+    EXPECT_EQ(non_fast_layer->non_fast_scrollable_region().bounds(),
+              gfx::Rect(0, 500, 200, 200));
+  } else {
+    auto* fixed = GetFrame()->GetDocument()->getElementById("fixed");
+    auto* fixed_object = ToLayoutBox(fixed->GetLayoutObject());
+    auto* fixed_graphics_layer =
+        fixed_object->EnclosingLayer()->GraphicsLayerBacking(fixed_object);
+    EXPECT_EQ(
+        fixed_graphics_layer->CcLayer()->non_fast_scrollable_region().bounds(),
+        gfx::Rect(0, 0, 200, 200));
+  }
 }
 
 TEST_P(ScrollingCoordinatorTest, NonFastScrollableRegionWithBorder) {

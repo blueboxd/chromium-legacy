@@ -984,7 +984,7 @@ RenderFrameHostManager::SiteInstanceDescriptor::SiteInstanceDescriptor(
       relation(relation_to_current) {}
 
 void RenderFrameHostManager::RenderProcessGone(SiteInstanceImpl* instance) {
-  GetRenderFrameProxyHost(instance)->set_render_frame_proxy_created(false);
+  GetRenderFrameProxyHost(instance)->SetRenderFrameProxyCreated(false);
 }
 
 void RenderFrameHostManager::CancelPendingIfNecessary(
@@ -2134,7 +2134,7 @@ void RenderFrameHostManager::SwapOuterDelegateFrame(
       render_frame_host->GetRoutingID(), proxy->GetRoutingID(),
       false /* is_loading */,
       render_frame_host->frame_tree_node()->current_replication_state()));
-  proxy->set_render_frame_proxy_created(true);
+  proxy->SetRenderFrameProxyCreated(true);
 }
 
 void RenderFrameHostManager::SetRWHViewForInnerContents(
@@ -2165,7 +2165,7 @@ bool RenderFrameHostManager::InitRenderView(
       frame_tree_node_->current_replication_state());
 
   if (created && proxy) {
-    proxy->set_render_frame_proxy_created(true);
+    proxy->SetRenderFrameProxyCreated(true);
 
     // If this main frame proxy was created for a frame that hasn't yet
     // finished loading, let the renderer know so it can also mark the proxy as

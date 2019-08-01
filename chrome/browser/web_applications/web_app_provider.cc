@@ -20,9 +20,9 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
-#include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/external_web_app_manager.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
+#include "chrome/browser/web_applications/pending_app_manager_impl.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -63,14 +63,12 @@ WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
   // Exclude secondary off-the-record profiles.
   DCHECK(!profile_->IsOffTheRecord());
 
-  audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
+  CreateCommonSubsystems(profile_);
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
     CreateWebAppsSubsystems(profile_);
   else
     CreateBookmarkAppsSubsystems(profile_);
-
-  ui_manager_ = WebAppUiManager::Create(profile);
 }
 
 WebAppProvider::~WebAppProvider() = default;
@@ -137,6 +135,13 @@ void WebAppProvider::StartImpl() {
   StartRegistry();
 }
 
+void WebAppProvider::CreateCommonSubsystems(Profile* profile) {
+  audio_focus_id_map_ = std::make_unique<WebAppAudioFocusIdMap>();
+  install_manager_ = std::make_unique<WebAppInstallManager>(profile);
+  pending_app_manager_ = std::make_unique<PendingAppManagerImpl>(profile);
+  ui_manager_ = WebAppUiManager::Create(profile);
+}
+
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
   database_ = std::make_unique<WebAppDatabase>(database_factory_.get());
@@ -150,8 +155,6 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   // ConnectSubsystems().
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       web_app_registrar.get(), icon_manager_.get());
-  install_manager_ = std::make_unique<WebAppInstallManager>(profile);
-
   sync_manager_ = std::make_unique<WebAppSyncManager>();
 
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
@@ -162,11 +165,6 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
 void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   install_finalizer_ =
       std::make_unique<extensions::BookmarkAppInstallFinalizer>(profile);
-
-  install_manager_ = std::make_unique<WebAppInstallManager>(profile);
-
-  pending_app_manager_ =
-      std::make_unique<extensions::PendingBookmarkAppManager>(profile);
 
   external_web_app_manager_ = std::make_unique<ExternalWebAppManager>(profile);
 
@@ -181,6 +179,8 @@ void WebAppProvider::ConnectSubsystems() {
   DCHECK(!started_);
 
   install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
+  install_finalizer_->SetSubsystems(ui_manager_.get());
+
   // TODO(crbug.com/877898): Port all other managers to support BMO.
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
     pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),

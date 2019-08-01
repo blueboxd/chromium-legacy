@@ -17,17 +17,20 @@ namespace blink {
 
 template <>
 DawnBindingType AsDawnEnum<DawnBindingType>(const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "uniform-buffer") {
+    return DAWN_BINDING_TYPE_UNIFORM_BUFFER;
+  }
+  if (webgpu_enum == "storage-buffer") {
+    return DAWN_BINDING_TYPE_STORAGE_BUFFER;
+  }
+  if (webgpu_enum == "readonly-storage-buffer") {
+    return DAWN_BINDING_TYPE_READONLY_STORAGE_BUFFER;
+  }
   if (webgpu_enum == "sampler") {
     return DAWN_BINDING_TYPE_SAMPLER;
   }
   if (webgpu_enum == "sampled-texture") {
     return DAWN_BINDING_TYPE_SAMPLED_TEXTURE;
-  }
-  if (webgpu_enum == "storage-buffer") {
-    return DAWN_BINDING_TYPE_STORAGE_BUFFER;
-  }
-  if (webgpu_enum == "uniform-buffer") {
-    return DAWN_BINDING_TYPE_UNIFORM_BUFFER;
   }
   NOTREACHED();
   return DAWN_BINDING_TYPE_FORCE32;

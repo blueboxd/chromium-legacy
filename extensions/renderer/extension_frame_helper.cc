@@ -337,7 +337,7 @@ void ExtensionFrameHelper::DidCreateScriptContext(
     DCHECK(!delayed_main_world_script_initialization_);
     // Defer initializing the extensions script context now because it depends
     // on having the URL of the provisional load which isn't available at this
-    // point with PlzNavigate.
+    // point.
     delayed_main_world_script_initialization_ = true;
   } else {
     extension_dispatcher_->DidCreateScriptContext(render_frame()->GetWebFrame(),

@@ -234,8 +234,7 @@ void DedicatedWorker::Start() {
     }
 
     mojom::blink::BlobURLTokenPtr blob_url_token;
-    if (script_request_url_.ProtocolIs("blob") &&
-        BlobUtils::MojoBlobURLsEnabled()) {
+    if (script_request_url_.ProtocolIs("blob")) {
       GetExecutionContext()->GetPublicURLManager().Resolve(
           script_request_url_, MakeRequest(&blob_url_token));
     }

@@ -146,7 +146,8 @@ static bool NeedInterchangeNewlineAfter(
   // Add an interchange newline if a paragraph break is selected and a br won't
   // already be added to the markup to represent it.
   return IsEndOfParagraph(v) && IsStartOfParagraph(next) &&
-         !(IsHTMLBRElement(*upstream_node) && upstream_node == downstream_node);
+         !(IsA<HTMLBRElement>(*upstream_node) &&
+           upstream_node == downstream_node);
 }
 
 template <typename Strategy>
@@ -231,7 +232,7 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
     Node* common_ancestor = Strategy::CommonAncestor(
         *start_.ComputeContainerNode(), *end_.ComputeContainerNode());
     DCHECK(common_ancestor);
-    HTMLBodyElement* body = ToHTMLBodyElement(EnclosingElementWithTag(
+    auto* body = To<HTMLBodyElement>(EnclosingElementWithTag(
         Position::FirstPositionInNode(*common_ancestor), kBodyTag));
     HTMLBodyElement* fully_selected_root = nullptr;
     // FIXME: Do this for all fully selected blocks, not just the body.
@@ -305,7 +306,7 @@ String StyledMarkupSerializer<Strategy>::CreateMarkup() {
 
   // FIXME: The interchange newline should be placed in the block that it's in,
   // not after all of the content, unconditionally.
-  if (!(last_closed && IsHTMLBRElement(*last_closed)) && ShouldAnnotate() &&
+  if (!(last_closed && IsA<HTMLBRElement>(*last_closed)) && ShouldAnnotate() &&
       NeedInterchangeNewlineAt(visible_end))
     markup_accumulator.AppendInterchangeNewline();
 
@@ -582,7 +583,7 @@ bool StyledMarkupTraverser<Strategy>::ContainsOnlyBRElement(
   auto* const first_child = element.firstChild();
   if (!first_child)
     return false;
-  return IsHTMLBRElement(first_child) && first_child == element.lastChild();
+  return IsA<HTMLBRElement>(first_child) && first_child == element.lastChild();
 }
 
 template class StyledMarkupSerializer<EditingStrategy>;

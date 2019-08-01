@@ -43,8 +43,8 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
     custom_user_agent_ = custom_user_agent;
   }
 
-  // PlzNavigate: |navigation_response_override| is used to override certain
-  // parameters of navigation requests.
+  // |navigation_response_override| is used to override certain parameters of
+  // navigation requests.
   std::unique_ptr<NavigationResponseOverrideParameters>
   TakeNavigationResponseOverrideOwnership() {
     return std::move(navigation_response_override_);

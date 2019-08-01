@@ -121,9 +121,9 @@ bool CSSPaintImageGeneratorImpl::HasAlpha() const {
   return definition->alpha();
 }
 
-const Vector<CSSSyntaxDescriptor>&
+const Vector<CSSSyntaxDefinition>&
 CSSPaintImageGeneratorImpl::InputArgumentTypes() const {
-  DEFINE_STATIC_LOCAL(Vector<CSSSyntaxDescriptor>, empty_vector, ());
+  DEFINE_STATIC_LOCAL(Vector<CSSSyntaxDefinition>, empty_vector, ());
   DocumentPaintDefinition* definition;
   if (!GetValidDocumentDefinition(definition))
     return empty_vector;

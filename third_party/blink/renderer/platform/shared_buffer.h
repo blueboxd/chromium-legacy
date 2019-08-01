@@ -201,7 +201,9 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   };
 
  private:
-  class Segment;
+  struct SegmentDeleter;
+  using Segment = std::unique_ptr<char[], SegmentDeleter>;
+  static Segment CreateSegment();
 
   SharedBuffer();
   explicit SharedBuffer(wtf_size_t);

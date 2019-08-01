@@ -17,6 +17,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #endif
 
 namespace web_app {
@@ -85,6 +86,25 @@ void WebAppUiManagerImpl::MigrateOSAttributes(const AppId& from,
   app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
       ->TransferItemAttributes(from, to);
 #endif
+}
+
+bool WebAppUiManagerImpl::CanAddAppToQuickLaunchBar() const {
+#if defined(OS_CHROMEOS)
+  return true;
+#else
+  return false;
+#endif
+}
+
+void WebAppUiManagerImpl::AddAppToQuickLaunchBar(const AppId& app_id) {
+  DCHECK(CanAddAppToQuickLaunchBar());
+#if defined(OS_CHROMEOS)
+  // ChromeLauncherController does not exist in unit tests.
+  if (auto* controller = ChromeLauncherController::instance()) {
+    controller->PinAppWithID(app_id);
+    controller->UpdateV1AppState(app_id);
+  }
+#endif  // defined(OS_CHROMEOS)
 }
 
 void WebAppUiManagerImpl::OnBrowserAdded(Browser* browser) {

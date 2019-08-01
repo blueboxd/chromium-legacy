@@ -129,8 +129,8 @@ class ServiceWorkerMetrics {
     // The service worker started up in a new process.
     NEW_PROCESS,
     // The service worker started up in an existing unready process. (Ex: The
-    // process was created for the navigation by PlzNavigate but the IPC
-    // connection is not established yet.)
+    // process was created for the navigation but the IPC connection is not
+    // established yet.)
     EXISTING_UNREADY_PROCESS,
     // The service worker started up in an existing ready process.
     EXISTING_READY_PROCESS

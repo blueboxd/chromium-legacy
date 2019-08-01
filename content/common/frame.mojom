@@ -546,4 +546,7 @@ interface FrameHost {
   ShowCreatedWindow(int32 pending_widget_routing_id,
                     ui.mojom.WindowOpenDisposition disposition,
                     gfx.mojom.Rect rect, bool opened_by_user_gesture);
+
+  // Sent by the renderer when the frame becomes focused.
+  FrameFocused();
 };

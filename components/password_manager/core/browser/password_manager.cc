@@ -1164,6 +1164,9 @@ void PasswordManager::OnLoginSuccessful() {
   DCHECK(submitted_manager->GetSubmittedForm());
 
   client_->GetStoreResultFilter()->ReportFormLoginSuccess(*submitted_manager);
+#if !defined(OS_IOS)
+  leak_delegate_.StartLeakCheck(*submitted_manager->GetSubmittedForm());
+#endif
 
   auto submission_event =
       submitted_manager->GetSubmittedForm()->submission_event;

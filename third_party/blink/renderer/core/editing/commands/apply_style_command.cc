@@ -904,7 +904,7 @@ void ApplyStyleCommand::FixRangeAndApplyInlineStyle(
 
   // FIXME: Callers should perform this operation on a Range that includes the
   // br if they want style applied to the empty line.
-  if (start == end && IsHTMLBRElement(*start.AnchorNode()))
+  if (start == end && IsA<HTMLBRElement>(*start.AnchorNode()))
     past_end_node = NodeTraversal::Next(*start.AnchorNode());
 
   // Start from the highest fully selected ancestor so that we can modify the
@@ -1034,7 +1034,7 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
     Node* sibling = node->nextSibling();
     while (sibling && sibling != past_end_node &&
            !sibling->contains(past_end_node) &&
-           (!IsEnclosingBlock(sibling) || IsHTMLBRElement(*sibling)) &&
+           (!IsEnclosingBlock(sibling) || IsA<HTMLBRElement>(*sibling)) &&
            !ContainsNonEditableRegion(*sibling)) {
       run_end = sibling;
       sibling = run_end->nextSibling();
@@ -1741,7 +1741,7 @@ bool ApplyStyleCommand::MergeEndWithNextIfIdentical(
     end_node = end.AnchorNode()->parentNode();
   }
 
-  if (!end_node->IsElementNode() || IsHTMLBRElement(*end_node))
+  if (!end_node->IsElementNode() || IsA<HTMLBRElement>(*end_node))
     return false;
 
   Node* next_sibling = end_node->nextSibling();

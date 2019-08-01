@@ -780,7 +780,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
 
     // stop before going above the body, up into the head
     // return the last visible streamer position
-    if (IsHTMLBodyElement(*current_node) && current_pos.AtEndOfNode())
+    if (IsA<HTMLBodyElement>(*current_node) && current_pos.AtEndOfNode())
       break;
 
     // There is no caret position in non-text svg elements.

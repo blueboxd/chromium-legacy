@@ -579,7 +579,7 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
   Element* block =
       EnclosingBlock(context.StartPosition().NodeAsRangeFirstNode());
   bool use_clones_of_enclosing_block =
-      block && !IsHTMLBodyElement(*block) && !IsHTMLHtmlElement(*block) &&
+      block && !IsA<HTMLBodyElement>(*block) && !IsHTMLHtmlElement(*block) &&
       block != RootEditableElementOf(context.StartPosition());
 
   Vector<String> list;
@@ -696,7 +696,7 @@ DocumentFragment* CreateContextualFragment(
   for (Node* node = fragment->firstChild(); node; node = next_node) {
     next_node = node->nextSibling();
     if (IsHTMLHtmlElement(*node) || IsHTMLHeadElement(*node) ||
-        IsHTMLBodyElement(*node)) {
+        IsA<HTMLBodyElement>(*node)) {
       auto* element = To<HTMLElement>(node);
       if (Node* first_child = element->firstChild())
         next_node = first_child;

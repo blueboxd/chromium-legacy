@@ -14,13 +14,13 @@ import unittest
 from core import path_util
 from core import perf_benchmark
 
-from telemetry import benchmark as benchmark_module
 from telemetry import decorators
 from telemetry.internal.browser import browser_finder
 from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
 
 from py_utils import discover
+from py_utils import tempfile_ext
 
 from benchmarks import system_health
 
@@ -183,11 +183,22 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
   # failing, disable it by putting it into the _DISABLED_TESTS list above.
   @decorators.Disabled('chromeos')  # crbug.com/351114
   def RunTest(self):
-
     class SinglePageBenchmark(benchmark_class):  # pylint: disable=no-init
       def CreateStorySet(self, options):
         # pylint: disable=super-on-old-class
         story_set = super(SinglePageBenchmark, self).CreateStorySet(options)
+
+        # We want to prevent benchmarks from accidentally trying to upload too
+        # much data to the chrome perf dashboard. So this tests tries to
+        # estimate the amount of values that the benchmark _would_ create when
+        # running on the waterfall, and fails if too many values are produced.
+        # As we run a single story and not the whole benchmark, the number of
+        # max values allowed is scaled proportionally.
+        # TODO(crbug.com/981349): This logic is only really valid for legacy
+        # values, and does not take histograms into account. An alternative
+        # should be implemented when using the results processor.
+        type(self).MAX_NUM_VALUES = MAX_NUM_VALUES / len(story_set)
+
         stories_to_remove = [s for s in story_set.stories if s !=
                              story_to_smoke_test]
         for s in stories_to_remove:
@@ -195,40 +206,32 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
         assert story_set.stories
         return story_set
 
-    options = GenerateBenchmarkOptions(benchmark_class)
+    with tempfile_ext.NamedTemporaryDirectory() as temp_dir:
+      # Set the benchmark's default arguments.
+      options = GenerateBenchmarkOptions(
+          output_dir=temp_dir,
+          benchmark_cls=SinglePageBenchmark)
+      possible_browser = browser_finder.FindBrowser(options)
+      if possible_browser is None:
+        self.skipTest('Cannot find the browser to run the test.')
 
-    # Prevent benchmarks from accidentally trying to upload too much data to the
-    # chromeperf dashboard. The number of values uploaded is equal to (the
-    # average number of values produced by a single story) * (1 + (the number of
-    # stories)). The "1 + " accounts for values summarized across all stories.
-    # We can approximate "the average number of values produced by a single
-    # story" as the number of values produced by the given story.
-    # pageset_repeat doesn't matter because values are summarized across
-    # repetitions before uploading.
-    story_set = benchmark_class().CreateStorySet(options)
-    SinglePageBenchmark.MAX_NUM_VALUES = MAX_NUM_VALUES / len(story_set.stories)
+      simplified_test_name = self.id().replace(
+          'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.',
+          '')
 
-    possible_browser = browser_finder.FindBrowser(options)
-    if possible_browser is None:
-      self.skipTest('Cannot find the browser to run the test.')
+      # Sanity check to ensure that that substring removal was effective.
+      assert len(simplified_test_name) < len(self.id())
 
+      if (simplified_test_name in _DISABLED_TESTS and
+          not options.run_disabled_tests):
+        self.skipTest('Test is explicitly disabled')
 
-    simplified_test_name = self.id().replace(
-        'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.',
-        '')
+      single_page_benchmark = SinglePageBenchmark()
+      with open(path_util.GetExpectationsPath()) as fp:
+        single_page_benchmark.AugmentExpectationsWithParser(fp.read())
 
-    # Sanity check to ensure that that substring removal was effective.
-    assert len(simplified_test_name) < len(self.id())
+      return_code = single_page_benchmark.Run(options)
 
-    if (simplified_test_name in _DISABLED_TESTS and
-        not options.run_disabled_tests):
-      self.skipTest('Test is explicitly disabled')
-
-    single_page_benchmark = SinglePageBenchmark()
-    with open(path_util.GetExpectationsPath()) as fp:
-      single_page_benchmark.AugmentExpectationsWithParser(fp.read())
-
-    return_code = single_page_benchmark.Run(options)
     if return_code == -1:
       self.skipTest('The benchmark was not run.')
     self.assertEqual(0, return_code, msg='Failed: %s' % benchmark_class)
@@ -247,31 +250,17 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
   return SystemHealthBenchmarkSmokeTest(methodName=test_method_name)
 
 
-def GenerateBenchmarkOptions(benchmark_class):
-  # Set the benchmark's default arguments.
-  options = options_for_unittests.GetCopy()
-  options.output_formats = ['none']
-  parser = options.CreateParser()
-
-  # TODO(nednguyen): probably this logic of setting up the benchmark options
-  # parser & processing the options should be sharable with telemetry's
-  # core.
-  benchmark_class.AddCommandLineArgs(parser)
-  benchmark_module.AddCommandLineArgs(parser)
-  benchmark_class.SetArgumentDefaults(parser)
-  options.MergeDefaultValues(parser.get_default_values())
-
-  benchmark_class.ProcessCommandLineArgs(None, options)
-  benchmark_module.ProcessCommandLineArgs(None, options)
-  # Only measure a single story so that this test cycles reasonably quickly.
-  options.pageset_repeat = 1
+def GenerateBenchmarkOptions(output_dir, benchmark_cls):
+  options = options_for_unittests.GetRunOptions(
+      output_dir=output_dir, benchmark_cls=benchmark_cls)
+  options.pageset_repeat = 1  # For smoke testing only run each page once.
 
   # Enable browser logging in the smoke test only. Hopefully, this will detect
   # all crashes and hence remove the need to enable logging in actual perf
   # benchmarks.
   options.browser_options.logging_verbosity = 'non-verbose'
-  options.target_platforms = benchmark_class.GetSupportedPlatformNames(
-      benchmark_class.SUPPORTED_PLATFORMS)
+  options.target_platforms = benchmark_cls.GetSupportedPlatformNames(
+      benchmark_cls.SUPPORTED_PLATFORMS)
   return options
 
 

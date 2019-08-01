@@ -17,12 +17,12 @@
  *     this argument is omitted.
  */
 export function installBool(proto, attrName, propName = attrName) {
-  let getter = function() {
+  function getter() {
     return this.hasAttribute(attrName);
-  };
-  let setter = function(value) {
+  }
+  function setter(value) {
     this.toggleAttribute(attrName, Boolean(value));
-  };
+  }
   Object.defineProperty(
       getter, 'name',
       {configurable: true, enumerable: false, value: 'get ' + propName});
@@ -44,13 +44,13 @@ export function installBool(proto, attrName, propName = attrName) {
  *     this argument is omitted.
  */
 export function installString(proto, attrName, propName = attrName) {
-  let getter = function() {
-    let value = this.getAttribute(attrName);
+  function getter() {
+    const value = this.getAttribute(attrName);
     return value === null ? '' : value;
-  };
-  let setter = function(value) {
+  }
+  function setter(value) {
     this.setAttribute(attrName, value);
-  };
+  }
   Object.defineProperty(
       getter, 'name',
       {configurable: true, enumerable: false, value: 'get ' + propName});

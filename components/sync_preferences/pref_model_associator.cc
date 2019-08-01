@@ -38,14 +38,6 @@ namespace sync_preferences {
 
 namespace {
 
-// Enables deleting a pref from Sync if the the user clears it on a client. If
-// this feature is disabled, clearing a pref will cause setting it to the
-// default value instead of deleting it from sync.
-// TODO(crbug.com/943579): This has been introduced in M75 as a safety
-// mechanism, should be removed in M78 if no issues are observed.
-const base::Feature kSyncDeleteClearedPref{"SyncDeleteClearedPrefs",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 const sync_pb::PreferenceSpecifics& GetSpecifics(const syncer::SyncData& pref) {
   DCHECK(pref.GetDataType() == syncer::PREFERENCES ||
          pref.GetDataType() == syncer::PRIORITY_PREFERENCES);
@@ -526,8 +518,7 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
       LOG(ERROR) << "Failed to update preference.";
       return;
     }
-    if (!base::FeatureList::IsEnabled(kSyncDeleteClearedPref) ||
-        pref_accessor_->GetPreferenceState(type_, name).persisted_value) {
+    if (pref_accessor_->GetPreferenceState(type_, name).persisted_value) {
       // If the pref was updated, update it.
       changes.push_back(syncer::SyncChange(
           FROM_HERE, syncer::SyncChange::ACTION_UPDATE, sync_data));

@@ -106,7 +106,7 @@ class BookmarkAppInstallFinalizerInstallOnly
         FROM_HERE,
         base::BindOnce(std::move(callback), true /*shortcuts_created*/));
   }
-  void PinAppToShelf(const web_app::AppId& app_id) override {}
+  void AddAppToQuickLaunchBar(const web_app::AppId& app_id) override {}
   void ReparentTab(const web_app::AppId& app_id,
                    content::WebContents* web_contents) override {}
   void RevealAppShim(const web_app::AppId& app_id) override {}

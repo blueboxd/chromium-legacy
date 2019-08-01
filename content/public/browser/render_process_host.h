@@ -336,7 +336,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual std::unique_ptr<base::PersistentMemoryAllocator>
   TakeMetricsAllocator() = 0;
 
-  // PlzNavigate
   // Returns the time the first call to Init completed successfully (after a new
   // renderer process was created); further calls to Init won't change this
   // value.

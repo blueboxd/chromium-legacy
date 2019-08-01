@@ -170,8 +170,8 @@ FrameTreeNode::~FrameTreeNode() {
 
   if (navigation_request_) {
     navigation_request_.reset();
-    // PlzNavigate: if a frame with a pending navigation is detached, make sure
-    // the WebContents (and its observers) update their loading state.
+    // If a frame with a pending navigation is detached, make sure the
+    // WebContents (and its observers) update their loading state.
     did_stop_loading = true;
   }
 

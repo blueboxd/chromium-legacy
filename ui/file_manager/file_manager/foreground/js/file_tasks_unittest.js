@@ -532,41 +532,70 @@ function testOpenZipWithZipArchiver(callback) {
   reportPromise(promise, callback);
 }
 
+function setUpInstallLinuxPackage() {
+  const fileManager = getMockFileManager();
+  fileManager.volumeManager.getLocationInfo = entry => {
+    return /** @type {!EntryLocation} */ ({
+      rootType: VolumeManagerCommon.RootType.CROSTINI,
+    });
+  };
+  const fileTask = {
+    taskId: 'test-extension-id|app|install-linux-package',
+    isDefault: false,
+    isGenericFileHandler: false,
+    title: '__MSG_INSTALL_LINUX_PACKAGE__',
+  };
+  window.chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
+    setTimeout(callback.bind(null, [fileTask]), 0);
+  };
+  return fileManager;
+}
+
 /**
  * Tests opening a .deb file. The crostini linux package install dialog should
  * be called.
  */
 function testOpenInstallLinuxPackageDialog(callback) {
-  window.chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
-    setTimeout(
-        callback.bind(
-            null,
-            [
-              {
-                taskId: 'test-extension-id|app|install-linux-package',
-                isDefault: false,
-                isGenericFileHandler: false,
-                title: '__MSG_INSTALL_LINUX_PACKAGE__',
-              },
-            ]),
-        0);
-  };
-
+  const fileManager = setUpInstallLinuxPackage();
+  fileManager.crostini.setRootAccessAllowed('termina', true);
   const mockFileSystem = new MockFileSystem('volumeId');
   const mockEntry = new MockFileEntry(mockFileSystem, '/test.deb');
 
   const promise = new Promise((resolve, reject) => {
-    const fileManager = getMockFileManager();
     fileManager.ui.installLinuxPackageDialog = {
       showInstallLinuxPackageDialog: function(entry) {
         resolve();
       },
     };
 
-    fileManager.volumeManager.getLocationInfo = entry => {
-      return /** @type {!EntryLocation} */ ({
-        rootType: VolumeManagerCommon.RootType.CROSTINI,
-      });
+    FileTasks
+        .create(
+            fileManager.volumeManager, fileManager.metadataModel,
+            fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
+            mockTaskHistory, fileManager.namingController, fileManager.crostini)
+        .then(tasks => {
+          tasks.executeDefault();
+        });
+  });
+
+  reportPromise(promise, callback);
+}
+
+/**
+ * Tests opening a .deb file. Since root access is denied, the crostini
+ * linux package install dialog is not shown.  The default action is taken.
+ */
+function testInstallLinuxPackageNotAllowedNoRootAccess(callback) {
+  const fileManager = setUpInstallLinuxPackage();
+  fileManager.crostini.setRootAccessAllowed('termina', false);
+  const mockFileSystem = new MockFileSystem('volumeId');
+  const mockEntry = new MockFileEntry(mockFileSystem, '/test.deb');
+
+  const promise = new Promise((resolve, reject) => {
+    // The Install Linux dialog is not shown,
+    // chrome.fileManagerPrivate.executeTask is called as the default action.
+    window.chrome.fileManagerPrivate.executeTask = () => {
+      resolve();
     };
 
     FileTasks

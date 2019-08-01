@@ -73,7 +73,7 @@ Refer to README.md for content description and update process.
  <item id="devtools_handle_front_end_messages" hash_code="135636011" type="0" content_hash_code="76808593" os_list="linux,windows" file_path="content/shell/browser/shell_devtools_bindings.cc"/>
  <item id="devtools_hard_coded_data_source" hash_code="111565057" type="0" content_hash_code="75183720" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui.cc"/>
  <item id="devtools_http_handler" hash_code="49160454" type="0" content_hash_code="88414393" os_list="linux,windows" file_path="content/browser/devtools/devtools_http_handler.cc"/>
- <item id="devtools_interceptor" hash_code="98123737" type="0" content_hash_code="64591843" os_list="linux,windows" file_path="content/browser/devtools/devtools_url_interceptor_request_job.cc"/>
+ <item id="devtools_interceptor" hash_code="98123737" type="0" deprecated="2019-07-31" content_hash_code="64591843" file_path=""/>
  <item id="devtools_network_resource" hash_code="129652775" type="0" content_hash_code="32810159" os_list="linux,windows" file_path="chrome/browser/devtools/devtools_ui_bindings.cc"/>
  <item id="dial_get_app_info" hash_code="15952025" type="0" deprecated="2018-02-27" content_hash_code="90542080" file_path=""/>
  <item id="dial_get_device_description" hash_code="50422598" type="0" deprecated="2018-02-27" content_hash_code="129827780" file_path=""/>
@@ -140,7 +140,7 @@ Refer to README.md for content description and update process.
  <item id="interest_feed_send" hash_code="76717919" type="0" content_hash_code="34678180" os_list="linux,windows" file_path="components/feed/core/feed_networking_host.cc"/>
  <item id="intranet_redirect_detector" hash_code="21785164" type="0" content_hash_code="62025595" os_list="linux,windows" file_path="chrome/browser/intranet_redirect_detector.cc"/>
  <item id="invalidation_service" hash_code="72354423" type="0" content_hash_code="78425687" os_list="linux,windows" file_path="components/invalidation/impl/gcm_network_channel.cc"/>
- <item id="kids_chrome_management_client_classify_url" hash_code="109987793" type="0" content_hash_code="112740597" os_list="linux,windows" file_path="chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client.cc"/>
+ <item id="kids_chrome_management_client_classify_url" hash_code="109987793" type="0" deprecated="2019-07-30" content_hash_code="112740597" file_path=""/>
  <item id="lib_address_input" hash_code="50816767" type="0" content_hash_code="57977576" os_list="linux,windows" file_path="third_party/libaddressinput/chromium/chrome_metadata_source.cc"/>
  <item id="logo_service" hash_code="35473769" type="0" content_hash_code="20271299" os_list="linux,windows" file_path="components/search_provider_logos/logo_service_impl.cc"/>
  <item id="logo_tracker" hash_code="36859107" type="0" deprecated="2018-12-07" content_hash_code="67588075" file_path=""/>

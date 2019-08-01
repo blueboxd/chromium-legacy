@@ -713,9 +713,7 @@ class NavigationDisableWebSecurityTest : public NavigationBrowserTest {
 // Test to verify that an exploited renderer process trying to specify a
 // non-empty URL for base_url_for_data_url on navigation is correctly
 // terminated.
-// TODO(nasko): This test case belongs better in
-// security_exploit_browsertest.cc, so move it there once PlzNavigate is on
-// by default.
+// TODO(nasko): Move this test to security_exploit_browsertest.cc.
 IN_PROC_BROWSER_TEST_P(NavigationDisableWebSecurityTest,
                        ValidateBaseUrlForDataUrl) {
   GURL start_url(embedded_test_server()->GetURL("/title1.html"));

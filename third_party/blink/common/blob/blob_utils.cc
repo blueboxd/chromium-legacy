@@ -15,12 +15,6 @@ namespace blink {
 
 constexpr uint64_t BlobUtils::kUnknownSize;
 
-// static
-bool BlobUtils::MojoBlobURLsEnabled() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-         base::FeatureList::IsEnabled(blink::features::kMojoBlobURLs);
-}
-
 namespace {
 
 const base::Feature kBlobDataPipeTuningFeature{

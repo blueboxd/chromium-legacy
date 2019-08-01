@@ -501,7 +501,7 @@ bool SpatialNavigationController::IsValidCandidate(
   // issues since the document/body will likely contain most of the other
   // content on the page.
   if (frame->IsMainFrame()) {
-    if (IsHTMLHtmlElement(element) || IsHTMLBodyElement(element))
+    if (IsHTMLHtmlElement(element) || IsA<HTMLBodyElement>(element))
       return false;
   }
 
@@ -579,7 +579,7 @@ void SpatialNavigationController::OnSpatialNavigationStateChanged() {
 }
 
 bool SpatialNavigationController::UpdateCanExitFocus(Element* element) {
-  bool can_exit_focus = IsFocused(element) && !IsHTMLBodyElement(element);
+  bool can_exit_focus = IsFocused(element) && !IsA<HTMLBodyElement>(element);
   if (can_exit_focus == spatial_navigation_state_->can_exit_focus)
     return false;
   spatial_navigation_state_->can_exit_focus = can_exit_focus;

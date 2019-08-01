@@ -2108,6 +2108,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "setCrostiniEnabled") {
+    bool enabled;
+    ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
+    profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled,
+                                      enabled);
+    return;
+  }
+
   if (name == "useCellularNetwork") {
     net::NetworkChangeNotifier::NotifyObserversOfMaxBandwidthChangeForTests(
         net::NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(

@@ -137,7 +137,7 @@ bool AXObjectCache::IsInsideFocusableElementOrARIAWidget(const Node& node) {
         return true;
     }
     cur_node = cur_node->parentNode();
-  } while (cur_node && !IsHTMLBodyElement(node));
+  } while (cur_node && !IsA<HTMLBodyElement>(node));
   return false;
 }
 

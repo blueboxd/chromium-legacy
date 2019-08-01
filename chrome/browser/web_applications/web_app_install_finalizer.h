@@ -36,8 +36,6 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void CreateOsShortcuts(const AppId& app_id,
                          bool add_to_desktop,
                          CreateOsShortcutsCallback callback) override;
-  bool CanPinAppToShelf() const override;
-  void PinAppToShelf(const AppId& app_id) override;
   bool CanReparentTab(const AppId& app_id,
                       bool shortcut_created) const override;
   void ReparentTab(const AppId& app_id,

@@ -300,8 +300,8 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
   bool has_navigation_ui_data_;
 };
 
-// PlzNavigate
-// A NavigationControllerTest run with --enable-browser-side-navigation.
+// "Legacy" class that was used to run NavigationControllerTest with the now
+// defunct --enable-browser-side-navigation flag.
 // TODO(clamy): Make those regular NavigationControllerTests.
 class NavigationControllerTestWithBrowserSideNavigation
     : public NavigationControllerTest {

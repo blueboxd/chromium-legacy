@@ -1040,9 +1040,6 @@ uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(const VideoPixelFormat format,
   switch (format) {
     case PIXEL_FORMAT_NV12:
       return single_planar ? V4L2_PIX_FMT_NV12 : V4L2_PIX_FMT_NV12M;
-    case PIXEL_FORMAT_MT21:
-      // No single plane format for MT21.
-      return single_planar ? 0 : V4L2_PIX_FMT_MT21C;
     case PIXEL_FORMAT_I420:
       return single_planar ? V4L2_PIX_FMT_YUV420 : V4L2_PIX_FMT_YUV420M;
     case PIXEL_FORMAT_YV12:

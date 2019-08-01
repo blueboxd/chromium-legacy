@@ -1663,13 +1663,11 @@ class NavigationLogger : public WebContentsObserver {
   std::vector<GURL> finished_navigation_urls_;
 };
 
-// There was a bug without PlzNavigate that happened when a navigation was
-// blocked after a redirect. Blink didn't know about the redirect and tried
-// to commit an error page to the pre-redirect URL. The result was that the
-// NavigationHandle was not found on the browser-side and a new NavigationHandle
-// created for committing the error page. This test makes sure that only one
-// NavigationHandle is used for committing the error page.
-// See https://crbug.com/695421
+// Verifies that when a navigation is blocked after a redirect, the renderer
+// doesn't try to commit an error page to the pre-redirect URL. This would cause
+// a NavigationHandle mismatch and a new NavigationHandle creation to commit
+// the error page. This test makes sure that only one NavigationHandle is used
+// for committing the error page. See https://crbug.com/695421
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, BlockedOnRedirect) {
   const GURL kUrl = embedded_test_server()->GetURL("/title1.html");
   const GURL kRedirectingUrl =
@@ -2036,15 +2034,13 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
       // Same usernames in both frames.
       // Relative URLs on top-level pages that were loaded with embedded
-      // credentials should load correctly. It doesn't work correctly when
-      // PlzNavigate is disabled. See https://crbug.com/756846.
+      // credentials should load correctly.
       {GURL("http://user@a.com/frame_tree/page_with_one_frame.html"),
        GURL("http://user@a.com/title1.html"), false},
 
       // Same usernames and passwords in both frames.
       // Relative URLs on top-level pages that were loaded with embedded
-      // credentials should load correctly. It doesn't work correctly when
-      // PlzNavigate is disabled. See https://crbug.com/756846.
+      // credentials should load correctly.
       {GURL("http://user:pass@a.com/frame_tree/page_with_one_frame.html"),
        GURL("http://user:pass@a.com/title1.html"), false},
 

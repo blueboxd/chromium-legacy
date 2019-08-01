@@ -74,7 +74,7 @@ TEST_F(EditingCommandsUtilitiesTest, TidyUpHTMLStructureFromDiv) {
   TidyUpHTMLStructure(GetDocument());
 
   EXPECT_TRUE(IsHTMLHtmlElement(GetDocument().documentElement()));
-  EXPECT_TRUE(IsHTMLBodyElement(GetDocument().body()));
+  EXPECT_TRUE(IsA<HTMLBodyElement>(GetDocument().body()));
   EXPECT_EQ(GetDocument().body(), div->parentNode());
 }
 
@@ -86,7 +86,7 @@ TEST_F(EditingCommandsUtilitiesTest, TidyUpHTMLStructureFromHead) {
   TidyUpHTMLStructure(GetDocument());
 
   EXPECT_TRUE(IsHTMLHtmlElement(GetDocument().documentElement()));
-  EXPECT_TRUE(IsHTMLBodyElement(GetDocument().body()));
+  EXPECT_TRUE(IsA<HTMLBodyElement>(GetDocument().body()));
   EXPECT_EQ(GetDocument().documentElement(), head->parentNode());
 }
 

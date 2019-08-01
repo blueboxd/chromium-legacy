@@ -795,7 +795,7 @@ void LocalFrameView::UpdateLayout() {
       if (body && body->GetLayoutObject()) {
         if (IsHTMLFrameSetElement(*body)) {
           body->GetLayoutObject()->SetChildNeedsLayout();
-        } else if (IsHTMLBodyElement(*body)) {
+        } else if (IsA<HTMLBodyElement>(*body)) {
           if (!first_layout_ && size_.Height() != GetLayoutSize().Height() &&
               body->GetLayoutObject()->EnclosingBox()->StretchesToViewport())
             body->GetLayoutObject()->SetChildNeedsLayout();

@@ -46,26 +46,15 @@ static inline size_t OffsetInSegment(size_t position) {
   return position % SharedBuffer::kSegmentSize;
 }
 
-class SharedBuffer::Segment final {
-  USING_FAST_MALLOC(Segment);
-
- public:
-  Segment() {
-    ptr_.reset(static_cast<char*>(WTF::Partitions::FastMalloc(
-        SharedBuffer::kSegmentSize, "blink::SharedBuffer")));
-  }
-  ~Segment() = default;
-  Segment(Segment&&) = default;
-
-  char* get() { return ptr_.get(); }
-  const char* get() const { return ptr_.get(); }
-
- private:
-  struct Deleter {
-    void operator()(char* p) const { WTF::Partitions::FastFree(p); }
-  };
-  std::unique_ptr<char[], Deleter> ptr_;
+struct SharedBuffer::SegmentDeleter {
+  void operator()(char* p) const { WTF::Partitions::FastFree(p); }
 };
+
+SharedBuffer::Segment SharedBuffer::CreateSegment() {
+  return std::unique_ptr<char[], SegmentDeleter>(
+      static_cast<char*>(WTF::Partitions::FastMalloc(SharedBuffer::kSegmentSize,
+                                                     "blink::SharedBuffer")));
+}
 
 SharedBuffer::Iterator& SharedBuffer::Iterator::operator++() {
   DCHECK(!IsEnd());
@@ -158,7 +147,7 @@ void SharedBuffer::AppendInternal(const char* data, size_t length) {
 
   while (length > 0) {
     if (!position_in_segment)
-      segments_.push_back(Segment());
+      segments_.push_back(CreateSegment());
 
     size_t bytes_to_copy = std::min(length, kSegmentSize - position_in_segment);
     memcpy(segments_.back().get() + position_in_segment, data, bytes_to_copy);

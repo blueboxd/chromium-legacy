@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -192,7 +192,7 @@ TEST_F(PaintWorkletTest, NativeAndCustomProperties) {
   TestPaintWorklet* paint_worklet_to_test = GetTestPaintWorklet();
   paint_worklet_to_test->RegisterMainThreadDocumentPaintDefinition(
       "foo", native_invalidation_properties, custom_invalidation_properties,
-      Vector<CSSSyntaxDescriptor>(), true);
+      Vector<CSSSyntaxDefinition>(), true);
 
   CSSPaintImageGeneratorImpl* generator =
       MakeGarbageCollected<CSSPaintImageGeneratorImpl>(paint_worklet_to_test,

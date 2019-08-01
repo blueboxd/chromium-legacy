@@ -51,7 +51,7 @@ class RunInfo(object):
 
 def update_expected(test_paths, serve_root, log_file_names,
                     update_properties, rev_old=None, rev_new="HEAD",
-                    ignore_existing=False, sync_root=None, stability=None):
+                    full_update=False, sync_root=None, disable_intermittent=None):
     """Update the metadata files for web-platform-tests based on
     the results obtained in a previous run or runs
 
@@ -63,12 +63,12 @@ def update_expected(test_paths, serve_root, log_file_names,
 
     for metadata_path, updated_ini in update_from_logs(id_test_map,
                                                        update_properties,
-                                                       ignore_existing,
-                                                       stability,
+                                                       disable_intermittent,
+                                                       full_update,
                                                        *log_file_names):
 
         write_new_expected(metadata_path, updated_ini)
-        if stability:
+        if disable_intermittent:
             for test in updated_ini.iterchildren():
                 for subtest in test.iterchildren():
                     if subtest.new_disabled:
@@ -214,22 +214,26 @@ def load_test_data(test_paths):
     return id_test_map
 
 
-def update_from_logs(id_test_map, update_properties, ignore_existing, stability,
+def update_from_logs(id_test_map, update_properties, disable_intermittent, full_update,
                      *log_filenames):
 
-    updater = ExpectedUpdater(id_test_map,
-                              ignore_existing=ignore_existing)
+    updater = ExpectedUpdater(id_test_map)
 
     for i, log_filename in enumerate(log_filenames):
         print("Processing log %d/%d" % (i + 1, len(log_filenames)))
         with open(log_filename) as f:
             updater.update_from_log(f)
 
-    for item in update_results(id_test_map, update_properties, stability):
+    for item in update_results(id_test_map, update_properties, disable_intermittent, full_update):
         yield item
 
 
-def update_results(id_test_map, update_properties, stability):
+def update_results(id_test_map,
+                   update_properties,
+                   full_update,
+                   disable_intermittent,
+                   update_intermittent=False,
+                   remove_intermittent=False):
     test_file_items = set(id_test_map.itervalues())
 
     default_expected_by_type = {}
@@ -240,7 +244,9 @@ def update_results(id_test_map, update_properties, stability):
             default_expected_by_type[(test_type, True)] = test_cls.subtest_result_cls.default_expected
 
     for test_file in test_file_items:
-        updated_expected = test_file.update(stability, default_expected_by_type, update_properties)
+        updated_expected = test_file.update(default_expected_by_type, update_properties,
+                                            full_update, disable_intermittent,
+                                            update_intermittent, remove_intermittent)
         if updated_expected is not None and updated_expected.modified:
             yield test_file.metadata_path, updated_expected
 
@@ -258,7 +264,8 @@ def write_new_expected(metadata_path, expected):
     # Serialize the data back to a file
     path = expected_path(metadata_path, expected.test_path)
     if not expected.is_empty:
-        manifest_str = wptmanifest.serialize(expected.node, skip_empty_data=True)
+        manifest_str = wptmanifest.serialize(expected.node,
+                                             skip_empty_data=True)
         assert manifest_str != ""
         dir = os.path.split(path)[0]
         if not os.path.exists(dir):
@@ -281,9 +288,8 @@ def write_new_expected(metadata_path, expected):
 
 
 class ExpectedUpdater(object):
-    def __init__(self, id_test_map, ignore_existing=False):
+    def __init__(self, id_test_map):
         self.id_test_map = id_test_map
-        self.ignore_existing = ignore_existing
         self.run_info = None
         self.action_map = {"suite_start": self.suite_start,
                            "test_start": self.test_start,
@@ -331,11 +337,11 @@ class ExpectedUpdater(object):
                                            "subtest": subtest["name"],
                                            "status": subtest["status"],
                                            "expected": subtest.get("expected"),
-                                           "known_intermittent": subtest.get("known_intermittent")})
+                                           "known_intermittent": subtest.get("known_intermittent", [])})
             action_map["test_end"]({"test": test["test"],
                                     "status": test["status"],
                                     "expected": test.get("expected"),
-                                    "known_intermittent": test.get("known_intermittent")})
+                                    "known_intermittent": test.get("known_intermittent", [])})
             if "asserts" in test:
                 asserts = test["asserts"]
                 action_map["assertion_count"]({"test": test["test"],
@@ -360,14 +366,11 @@ class ExpectedUpdater(object):
     def test_start(self, data):
         test_id = intern(data["test"].encode("utf8"))
         try:
-            test_data = self.id_test_map[test_id]
+            self.id_test_map[test_id]
         except KeyError:
             print("Test not found %s, skipping" % test_id)
             return
 
-        if self.ignore_existing:
-            test_data.set_requires_update()
-            test_data.clear.add("expected")
         self.tests_visited[test_id] = set()
 
     def test_status(self, data):
@@ -544,6 +547,10 @@ class TestFileData(object):
     def set_requires_update(self):
         self._requires_update = True
 
+    @property
+    def requires_update(self):
+        return self._requires_update
+
     def set(self, test_id, subtest_id, prop, run_info, value):
         self.data[test_id][subtest_id].append(prop_intern.store(prop),
                                               run_info,
@@ -561,11 +568,49 @@ class TestFileData(object):
                                             update_properties)
         return expected_data
 
-    def update(self, stability, default_expected_by_type, update_properties):
-        if not self._requires_update:
+    def is_disabled(self, test):
+        # This conservatively assumes that anything that was disabled remains disabled
+        # we could probably do better by checking if it's in the full set of run infos
+        return test.has_key("disabled")
+
+    def orphan_subtests(self, expected):
+        # Return subtest nodes present in the expected file, but missing from the data
+        rv = []
+
+        for test_id, subtests in self.data.iteritems():
+            test = expected.get_test(test_id.decode("utf8"))
+            if not test:
+                continue
+            seen_subtests = set(item.decode("utf8") for item in subtests.iterkeys() if item is not None)
+            missing_subtests = set(test.subtests.keys()) - seen_subtests
+            for item in missing_subtests:
+                expected_subtest = test.get_subtest(item)
+                if not self.is_disabled(expected_subtest):
+                    rv.append(expected_subtest)
+
+        return rv
+
+    def update(self, default_expected_by_type, update_properties,
+               full_update=False, disable_intermittent=None, update_intermittent=False,
+               remove_intermittent=False):
+        # If we are doing a full update, we may need to prune missing nodes
+        # even if the expectations didn't change
+        if not self.requires_update and not full_update:
             return
 
         expected = self.expected(update_properties)
+
+        if full_update:
+            orphans = self.orphan_subtests(expected)
+
+            if not self.requires_update and not orphans:
+                return
+
+            if orphans:
+                expected.modified = True
+                for item in orphans:
+                    item.remove()
+
         expected_by_test = {}
 
         for test_id in self.tests:
@@ -604,11 +649,20 @@ class TestFileData(object):
                     elif prop == "asserts":
                         item_expected.set_asserts(run_info, value)
 
-        expected.update(stability=stability)
+        expected.update(full_update=full_update,
+                        disable_intermittent=disable_intermittent,
+                        update_intermittent=update_intermittent,
+                        remove_intermittent=remove_intermittent)
         for test in expected.iterchildren():
             for subtest in test.iterchildren():
-                subtest.update(stability=stability)
-            test.update(stability=stability)
+                subtest.update(full_update=full_update,
+                               disable_intermittent=disable_intermittent,
+                               update_intermittent=update_intermittent,
+                               remove_intermittent=remove_intermittent)
+            test.update(full_update=full_update,
+                        disable_intermittent=disable_intermittent,
+                        update_intermittent=update_intermittent,
+                        remove_intermittent=remove_intermittent)
 
         return expected
 

@@ -28,7 +28,6 @@ enum VideoCapturePixelFormat {
   XRGB,
   RGB24,
   MJPEG,
-  MT21,
   YUV420P9,
   YUV420P10,
   YUV422P9,

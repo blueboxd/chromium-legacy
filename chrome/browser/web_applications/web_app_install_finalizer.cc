@@ -120,17 +120,6 @@ void WebAppInstallFinalizer::CreateOsShortcuts(
       base::BindOnce(std::move(callback), false /* shortcuts_created */));
 }
 
-bool WebAppInstallFinalizer::CanPinAppToShelf() const {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void WebAppInstallFinalizer::PinAppToShelf(const AppId& app_id) {
-  // TODO(loyso): Implement it.
-  NOTIMPLEMENTED();
-}
-
 bool WebAppInstallFinalizer::CanReparentTab(const AppId& app_id,
                                             bool shortcut_created) const {
   // TODO(loyso): Implement it.

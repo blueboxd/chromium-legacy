@@ -286,7 +286,7 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
 
   const Node* const end_node = end_box->GetLineLayoutItem().NonPseudoNode();
   DCHECK(end_node);
-  if (IsHTMLBRElement(*end_node)) {
+  if (IsA<HTMLBRElement>(*end_node)) {
     return PositionWithAffinityTemplate<Strategy>(
         PositionTemplate<Strategy>::BeforeNode(*end_node),
         TextAffinity::kUpstreamIfPossible);

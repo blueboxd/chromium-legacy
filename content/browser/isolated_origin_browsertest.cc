@@ -858,9 +858,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   new_shell->web_contents()->GetController().LoadURL(
       isolated_url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 
-  // Wait for response from the isolated origin.  After this returns,
-  // PlzNavigate has made the final pick for the process to use for this
-  // navigation as part of NavigationRequest::OnResponseStarted.
+  // Wait for the response from the isolated origin. After this returns, we made
+  // the final pick for the process to use for this navigation as part of
+  // NavigationRequest::OnResponseStarted.
   EXPECT_TRUE(isolated_delayer.WaitForResponse());
 
   // Now, proceed with the response and commit the non-isolated URL.  This
@@ -996,10 +996,9 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   shell()->web_contents()->GetController().LoadURL(
       slow_url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 
-  // Wait for response for foo.com.  After this returns,
-  // PlzNavigate should have made the final pick for the process to use for
-  // foo.com, so this should mark the process as "used" and ineligible for
-  // reuse by isolated.foo.com below.
+  // Wait for the response for foo.com.  After this returns, we should have made
+  // the final pick for the process to use for foo.com, so this should mark the
+  // process as "used" and ineligible for reuse by isolated.foo.com below.
   EXPECT_TRUE(foo_delayer.WaitForResponse());
 
   // Open a new, unrelated tab, navigate it to isolated.foo.com, and wait for
@@ -1575,17 +1574,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, AIsolatedCA) {
   }
 }
 
-class IsolatedOriginTestWithMojoBlobURLs : public IsolatedOriginTest {
- public:
-  IsolatedOriginTestWithMojoBlobURLs() {
-    scoped_feature_list_.InitAndEnableFeature(blink::features::kMojoBlobURLs);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(IsolatedOriginTestWithMojoBlobURLs, NavigateToBlobURL) {
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, NavigateToBlobURL) {
   GURL top_url(
       embedded_test_server()->GetURL("www.foo.com", "/page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), top_url));

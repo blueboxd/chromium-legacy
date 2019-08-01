@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -15,15 +16,6 @@
 #include "chrome/browser/notifications/scheduler/internal/icon_entry.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-// TODO(crbug.com/961073): Fix memory leaks in tests and re-enable on LSAN.
-#ifdef LEAK_SANITIZER
-#define MAYBE_AddDuplicate DISABLED_AddDuplicate
-#define MAYBE_Add DISABLED_Add
-#else
-#define MAYBE_AddDuplicate AddDuplicate
-#define MAYBE_Add Add
-#endif
 
 namespace notifications {
 namespace {
@@ -58,13 +50,14 @@ class IconStoreTest : public testing::Test {
     db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   }
 
-  void Load(const std::string& key) {
-    store()->Load(key, base::BindOnce(&IconStoreTest::OnEntryLoaded,
-                                      base::Unretained(this)));
+  void LoadIcons(std::vector<std::string> keys) {
+    store()->LoadIcons(keys, base::BindOnce(&IconStoreTest::OnEntriesLoaded,
+                                            base::Unretained(this)));
   }
 
-  void OnEntryLoaded(bool success, std::unique_ptr<IconEntry> entry) {
-    loaded_entry_ = std::move(entry);
+  void OnEntriesLoaded(bool success,
+                       std::unique_ptr<std::vector<IconEntry>> entries) {
+    loaded_entries_ = std::move(entries);
     load_result_ = success;
   }
 
@@ -72,19 +65,23 @@ class IconStoreTest : public testing::Test {
   IconStore* store() { return store_.get(); }
   leveldb_proto::test::FakeDB<proto::Icon, IconEntry>* db() { return db_; }
   bool load_result() const { return load_result_; }
-  IconEntry* loaded_entry() { return loaded_entry_.get(); }
+  const std::vector<IconEntry>* loaded_entries() {
+    return loaded_entries_.get();
+  }
 
-  void VerifyEntry(const std::string& uuid, const std::string& data) {
-    DCHECK(loaded_entry_);
-    EXPECT_EQ(loaded_entry_->uuid, uuid);
-    EXPECT_EQ(loaded_entry_->data, data);
+  void VerifyEntries(std::vector<std::pair<std::string, std::string>> inputs) {
+    EXPECT_EQ(inputs.size(), loaded_entries_->size());
+    for (size_t i = 0; i < inputs.size(); i++) {
+      EXPECT_EQ(loaded_entries_->at(i).uuid, inputs[i].first);
+      EXPECT_EQ(loaded_entries_->at(i).data, inputs[i].second);
+    }
   }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<IconStore> store_;
   std::map<std::string, proto::Icon> db_entries_;
-  std::unique_ptr<IconEntry> loaded_entry_;
+  std::unique_ptr<std::vector<IconEntry>> loaded_entries_;
   bool load_result_;
   leveldb_proto::test::FakeDB<proto::Icon, IconEntry>* db_;
 
@@ -105,57 +102,55 @@ TEST_F(IconStoreTest, InitFailed) {
 
 TEST_F(IconStoreTest, LoadOne) {
   InitDb();
-  Load(kEntryId);
-  db()->GetCallback(true);
+  LoadIcons({kEntryId});
+  db()->LoadCallback(true);
 
   // Verify data is loaded.
-  DCHECK(loaded_entry());
+  DCHECK(loaded_entries());
   EXPECT_TRUE(load_result());
-  VerifyEntry(kEntryId, kEntryData);
+  VerifyEntries({{kEntryId, kEntryData}});
 }
 
 TEST_F(IconStoreTest, LoadFailed) {
   InitDb();
-  Load(kEntryId);
-  db()->GetCallback(false);
+  LoadIcons({kEntryId});
+  db()->LoadCallback(false);
 
   // Verify load failure.
-  EXPECT_FALSE(loaded_entry());
+  EXPECT_FALSE(loaded_entries());
   EXPECT_FALSE(load_result());
 }
 
-TEST_F(IconStoreTest, MAYBE_Add) {
+TEST_F(IconStoreTest, Add) {
   InitDb();
 
-  auto new_entry = std::make_unique<IconEntry>();
-  new_entry->uuid = kEntryId2;
-  new_entry->data = kEntryData;
-
+  IconEntry new_entry;
+  new_entry.uuid = kEntryId2;
+  new_entry.data = kEntryData2;
   store()->Add(std::move(new_entry), base::DoNothing());
   db()->UpdateCallback(true);
 
   // Verify the entry is added.
-  Load(kEntryId2);
-  db()->GetCallback(true);
+  LoadIcons({kEntryId2});
+  db()->LoadCallback(true);
   EXPECT_TRUE(load_result());
-  VerifyEntry(kEntryId2, kEntryData);
+  VerifyEntries({{kEntryId2, kEntryData2}});
 }
 
-TEST_F(IconStoreTest, MAYBE_AddDuplicate) {
+TEST_F(IconStoreTest, AddDuplicate) {
   InitDb();
 
-  auto new_entry = std::make_unique<IconEntry>();
-  new_entry->uuid = kEntryId;
-  new_entry->data = kEntryData2;
-
+  IconEntry new_entry;
+  new_entry.uuid = kEntryId;
+  new_entry.data = kEntryData2;
   store()->Add(std::move(new_entry), base::DoNothing());
   db()->UpdateCallback(true);
 
   // Add a duplicate id is currently allowed, we just update the entry.
-  Load(kEntryId);
-  db()->GetCallback(true);
+  LoadIcons({kEntryId});
+  db()->LoadCallback(true);
   EXPECT_TRUE(load_result());
-  VerifyEntry(kEntryId, kEntryData2);
+  VerifyEntries({{kEntryId, kEntryData2}});
 }
 
 TEST_F(IconStoreTest, Delete) {
@@ -167,10 +162,58 @@ TEST_F(IconStoreTest, Delete) {
   db()->UpdateCallback(true);
 
   // No entry can be loaded, move nullptr as result.
-  Load(kEntryId);
-  db()->GetCallback(true);
-  EXPECT_FALSE(loaded_entry());
+  LoadIcons({kEntryId});
+  db()->LoadCallback(true);
+
   EXPECT_TRUE(load_result());
+  VerifyEntries({});
+}
+
+TEST_F(IconStoreTest, DeleteIcons) {
+  InitDb();
+
+  // Add one extra entry first.
+  IconEntry new_entry;
+  new_entry.uuid = kEntryId2;
+  new_entry.data = kEntryData2;
+  store()->Add(std::move(new_entry), base::DoNothing());
+  db()->UpdateCallback(true);
+
+  std::vector<std::string> keys = {kEntryId, kEntryId2};
+  store()->DeleteIcons(
+      keys, base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
+  db()->UpdateCallback(true);
+
+  LoadIcons(keys);
+  db()->LoadCallback(true);
+
+  // Verify no entries are loaded.
+  EXPECT_TRUE(load_result());
+  VerifyEntries({});
+}
+
+TEST_F(IconStoreTest, AddAndLoadIcons) {
+  InitDb();
+
+  std::vector<IconEntry> input(2);
+  input[0].uuid = kEntryId;
+  input[0].data = kEntryData;
+  input[1].uuid = kEntryId2;
+  input[1].data = kEntryData2;
+
+  store()->AddIcons(std::move(input), base::DoNothing());
+  db()->UpdateCallback(true);
+
+  std::vector<std::string> keys = {kEntryId, kEntryId2};
+  LoadIcons(keys);
+  db()->LoadCallback(true);
+
+  // Verify entries loaded correctly.
+  EXPECT_TRUE(load_result());
+  std::vector<std::pair<std::string, std::string>> inputs = {
+      {std::move(kEntryId), std::move(kEntryData)},
+      {std::move(kEntryId2), std::move(kEntryData2)}};
+  VerifyEntries(std::move(inputs));
 }
 
 }  // namespace

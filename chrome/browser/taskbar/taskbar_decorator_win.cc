@@ -101,8 +101,8 @@ void SetOverlayIcon(HWND hwnd,
 void PostSetOverlayIcon(HWND hwnd,
                         std::unique_ptr<SkBitmap> bitmap,
                         const std::string& alt_text) {
-  base::CreateCOMSTATaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+  base::CreateCOMSTATaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE})
       ->PostTask(FROM_HERE, base::BindOnce(&SetOverlayIcon, hwnd,
                                            base::Passed(&bitmap), alt_text));
 }

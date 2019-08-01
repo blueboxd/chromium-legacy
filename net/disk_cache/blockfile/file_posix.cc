@@ -73,8 +73,9 @@ bool File::Read(void* buffer, size_t buffer_len, size_t offset,
     return false;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       base::BindOnce(&File::DoRead, base::Unretained(this), buffer, buffer_len,
                      offset),
       base::BindOnce(&File::OnOperationComplete, this, callback));
@@ -101,8 +102,9 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset,
   // finish before it reads from the network again.
   // TODO(fdoray): Consider removing this from the critical path of network
   // requests and changing the priority to BACKGROUND.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       base::BindOnce(&File::DoWrite, base::Unretained(this), buffer, buffer_len,
                      offset),
       base::BindOnce(&File::OnOperationComplete, this, callback));

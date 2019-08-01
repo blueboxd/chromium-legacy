@@ -79,7 +79,7 @@ void SupportedAudioVideoChecker::StartPreWriteValidation(
   DCHECK(callback_.is_null());
   callback_ = result_callback;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&SupportedAudioVideoChecker::RetrieveConnectorOnUIThread,
                      weak_factory_.GetWeakPtr()));
@@ -96,7 +96,7 @@ void SupportedAudioVideoChecker::RetrieveConnectorOnUIThread(
   // We need a fresh connector so that we can use it on the IO thread. It has
   // to be retrieved from the UI thread. We must use static method and pass a
   // WeakPtr around as WeakPtrs are not thread-safe.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&SupportedAudioVideoChecker::OnConnectorRetrieved,
                      this_ptr, content::GetSystemConnector()->Clone()));
@@ -110,8 +110,9 @@ void SupportedAudioVideoChecker::OnConnectorRetrieved(
   if (!this_ptr)
     return;
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&OpenBlocking, this_ptr->path_),
       base::BindOnce(&SupportedAudioVideoChecker::OnFileOpen, this_ptr,
                      std::move(connector)));

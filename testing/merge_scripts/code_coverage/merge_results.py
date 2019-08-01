@@ -85,6 +85,9 @@ def main():
               'w') as f:
       json.dump(invalid_profiles, f)
 
+    mark_invalid_shards(
+        coverage_merger.get_shards_to_retry(invalid_profiles),
+        params.jsons_to_merge)
   logging.info('Merging %d test results', len(params.jsons_to_merge))
   failed = False
 
@@ -114,15 +117,11 @@ def main():
       failed = True
       logging.warning('Additional merge script %s exited with %s' %
                       (params.additional_merge_script, rc))
-    mark_invalid_shards(coverage_merger.get_shards_to_retry(invalid_profiles),
-                        params.summary_json, params.output_json)
   elif len(params.jsons_to_merge) == 1:
     logging.info("Only one output needs to be merged; directly copying it.")
     with open(params.jsons_to_merge[0]) as f_read:
       with open(params.output_json, 'w') as f_write:
         f_write.write(f_read.read())
-    mark_invalid_shards(coverage_merger.get_shards_to_retry(invalid_profiles),
-                        params.summary_json, params.output_json)
   else:
     logging.warning(
         "This script was told to merge %d test results, but no additional "
@@ -130,35 +129,27 @@ def main():
 
   return 1 if (failed or bool(invalid_profiles)) else 0
 
-def mark_invalid_shards(bad_shards, summary_file, output_file):
+
+def mark_invalid_shards(bad_shards, jsons_to_merge):
+  """Removes results json files from bad shards.
+
+  This is needed so that the caller (e.g. recipe) knows to retry, or otherwise
+  treat the tests in that shard as not having valid results. Note that this only
+  removes the results from the local machine, as these are expected to remain in
+  the shard's isolated output.
+
+  Args:
+    bad_shards: list of task_ids of the shards that are bad or corrupted.
+    jsons_to_merge: The path to the jsons with the results of the tests.
+  """
   if not bad_shards:
     return
-  shard_indices = []
-  try:
-    with open(summary_file) as f:
-      summary = json.load(f)
-  except (OSError, ValueError):
-    logging.warning('Could not read summary.json, not marking invalid shards')
-    return
-
-  for i in range(len(summary['shards'])):
-    shard_info = summary['shards'][i]
-    shard_id = (shard_info['task_id']
-                if shard_info and 'task_id' in shard_info
-                else 'unknown')
-    if shard_id in bad_shards or shard_id == 'unknown':
-      shard_indices.append(i)
-
-  try:
-    with open(output_file) as f:
-      output = json.load(f)
-  except (OSError, ValueError):
-    logging.warning('Invalid/missing output.json, overwriting')
-    output = {}
-  output.setdefault('missing_shards', [])
-  output['missing_shards'].extend(shard_indices)
-  with open(output_file, 'w') as f:
-    json.dump(output, f)
+  for f in jsons_to_merge:
+    for task_id in bad_shards:
+      if task_id in f:
+        # Remove results json if it corresponds to a bad shard.
+        os.remove(f)
+        break
 
 
 if __name__ == '__main__':

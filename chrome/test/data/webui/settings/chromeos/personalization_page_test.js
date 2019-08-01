@@ -101,9 +101,8 @@ suite('PersonalizationHandler', function() {
     await personalizationBrowserProxy.whenCalled('openWallpaperManager');
   });
 
-  test('wallpaperSettingVisible', async () => {
-    personalizationPage.set('pageVisibility.setWallpaper', false);
-    await personalizationBrowserProxy.whenCalled('isWallpaperSettingVisible');
+  test('wallpaperSettingVisible', function() {
+    personalizationPage.showWallpaperRow_ = false;
     Polymer.dom.flush();
     assertTrue(personalizationPage.$$('#wallpaperButton').hidden);
   });

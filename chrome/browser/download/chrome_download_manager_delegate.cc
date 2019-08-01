@@ -862,8 +862,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       }
 
       if (reason == DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE) {
-        OnDownloadCanceled(
-            download, DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
+        OnDownloadCanceled(download, true /* has_no_external_storage */);
         callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
         return;
       }
@@ -872,9 +871,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       // is no way to prompt user for a dialog. This could happen after chrome
       // gets killed, and user tries to resume a download while another app has
       // created the target file (not the temporary .crdownload file).
-      OnDownloadCanceled(
-          download,
-          DownloadController::CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET);
+      OnDownloadCanceled(download, false /* has_no_external_storage */);
       callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
     } else if (reason == DownloadConfirmationReason::TARGET_CONFLICT) {
       // If there is a file that already has the same name, try to generate a
@@ -935,8 +932,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
         return;
 
       case DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE:
-        OnDownloadCanceled(
-            download, DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
+        OnDownloadCanceled(download, true /* has_no_external_storage */);
         callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
         return;
 
@@ -970,9 +966,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       // gets killed, and user tries to resume a download while another app has
       // created the target file (not the temporary .crdownload file).
       case DownloadConfirmationReason::UNEXPECTED:
-        OnDownloadCanceled(
-            download,
-            DownloadController::CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET);
+        OnDownloadCanceled(download, false /* has_no_external_storage */);
         callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
         return;
     }
@@ -1063,8 +1057,8 @@ void ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone(
 
 void ChromeDownloadManagerDelegate::OnDownloadCanceled(
     download::DownloadItem* download,
-    DownloadController::DownloadCancelReason reason) {
-  DownloadManagerService::OnDownloadCanceled(download, reason);
+    bool has_no_external_storage) {
+  DownloadManagerService::OnDownloadCanceled(download, has_no_external_storage);
 }
 #endif  // defined(OS_ANDROID)
 

@@ -43,7 +43,6 @@ imageset("bookmark_blue_new_folder") {
 imageset("bookmark_empty_star") {
   sources = [
     "bookmark_empty_star.imageset/Contents.json",
-    "bookmark_empty_star.imageset/bookmark_empty_star.png",
     "bookmark_empty_star.imageset/bookmark_empty_star@2x.png",
     "bookmark_empty_star.imageset/bookmark_empty_star@3x.png",
   ]

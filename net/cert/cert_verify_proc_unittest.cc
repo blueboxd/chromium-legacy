@@ -2512,57 +2512,6 @@ TEST_P(CertVerifyProcInternalTest, IsIssuedByKnownRootIgnoresTestRoots) {
 }
 
 // Test verification with a leaf that does not contain embedded SCTs, and which
-// has a notBefore date after 2018/10/15, and with no |sct_list|.
-// On recent macOS and iOS versions this should fail to verify.
-TEST_P(CertVerifyProcInternalTest, LeafNewerThan20181015NoScts) {
-  scoped_refptr<X509Certificate> chain = CreateCertificateChainFromFile(
-      GetTestCertsDirectory(), "treadclimber.pem",
-      X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
-  ASSERT_TRUE(chain);
-  if (base::Time::Now() > chain->valid_expiry()) {
-    FAIL() << "This test uses a certificate chain which is now expired. Please "
-              "disable and file a bug against mattm.";
-    return;
-  }
-
-  // Verification should pass, except on recent macOS / iOS systems.
-  int flags = 0;
-  CertVerifyResult verify_result;
-  int error = verify_proc()->Verify(
-      chain.get(), "treadclimber.com", /*ocsp_response=*/std::string(),
-      /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
-      CertificateList(), &verify_result);
-
-#if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
-  if (verify_proc_type() == CERT_VERIFY_PROC_IOS) {
-    if (base::ios::IsRunningOnOrLater(12, 2, 0)) {
-      // TODO(mattm): Check if this can this be mapped to some better error.
-      EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
-      EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
-      return;
-    }
-  }
-#elif defined(OS_MACOSX)
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC ||
-      verify_proc_type() == CERT_VERIFY_PROC_IOS) {
-    if (__builtin_available(macOS 10.14.2, iOS 13, *)) {
-      // TODO(mattm): SecTrustEvaluate just gives a generic
-      // CSSMERR_TP_VERIFY_ACTION_FAILED error. Not sure there's much that
-      // could be done about that.
-      EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
-      EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
-      return;
-    }
-  }
-#endif
-  // On older macOS and iOS versions, and all other verifiers, verification
-  // should succeed:
-  EXPECT_THAT(error, IsOk());
-  EXPECT_EQ(0U, verify_result.cert_status);
-  EXPECT_TRUE(verify_result.is_issued_by_known_root);
-}
-
-// Test verification with a leaf that does not contain embedded SCTs, and which
 // has a notBefore date after 2018/10/15, and passing a valid |sct_list| to
 // Verify(). Verification should succeed on all platforms. (Assuming the
 // verifier trusts the SCT Logs used in |sct_list|.)

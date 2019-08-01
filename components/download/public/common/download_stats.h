@@ -279,12 +279,6 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDangerousDownloadAccept(
     DownloadDangerType danger_type,
     const base::FilePath& file_path);
 
-// Record a dangerous download discard event.
-COMPONENTS_DOWNLOAD_EXPORT void RecordDangerousDownloadDiscard(
-    DownloadDiscardReason reason,
-    DownloadDangerType danger_type,
-    const base::FilePath& file_path);
-
 // Returns the type of download.
 COMPONENTS_DOWNLOAD_EXPORT DownloadContent
 DownloadContentFromMimeType(const std::string& mime_type_string,

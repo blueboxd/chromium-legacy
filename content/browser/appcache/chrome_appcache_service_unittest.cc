@@ -73,13 +73,12 @@ ChromeAppCacheServiceTest::CreateAppCacheServiceImpl(
   auto mock_policy = base::MakeRefCounted<MockSpecialStoragePolicy>();
   mock_policy->AddProtected(kProtectedManifestURL.GetOrigin());
   mock_policy->AddSessionOnly(kSessionOnlyManifestURL.GetOrigin());
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&ChromeAppCacheService::InitializeOnLoaderThread,
-                     appcache_service, appcache_path,
-                     nullptr /* browser_context */,
-                     browser_context_.GetResourceContext(),
-                     std::move(mock_policy)));
+      base::BindOnce(
+          &ChromeAppCacheService::InitializeOnLoaderThread, appcache_service,
+          appcache_path, nullptr /* browser_context */,
+          browser_context_.GetResourceContext(), std::move(mock_policy)));
   // Steps needed to initialize the storage of AppCache data.
   thread_bundle_.RunUntilIdle();
   if (init_storage) {

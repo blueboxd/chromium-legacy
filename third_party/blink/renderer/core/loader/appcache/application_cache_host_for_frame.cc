@@ -10,8 +10,10 @@
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -43,13 +45,13 @@ ApplicationCacheHostForFrame::ApplicationCacheHostForFrame(
     DocumentLoader* document_loader,
     mojom::blink::DocumentInterfaceBroker* interface_broker,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : ApplicationCacheHost(document_loader,
-                           interface_broker,
-                           std::move(task_runner)),
-      local_frame_(document_loader->GetFrame()) {}
+    : ApplicationCacheHost(interface_broker, std::move(task_runner)),
+      local_frame_(document_loader->GetFrame()),
+      document_loader_(document_loader) {}
 
-void ApplicationCacheHostForFrame::DetachFromDocumentLoader() {
-  ApplicationCacheHost::DetachFromDocumentLoader();
+void ApplicationCacheHostForFrame::Detach() {
+  ApplicationCacheHost::Detach();
+  document_loader_ = nullptr;
   SetApplicationCache(nullptr);
 }
 
@@ -80,7 +82,7 @@ bool ApplicationCacheHostForFrame::SwapCache() {
   if (!success)
     return false;
   backend_host_->GetStatus(&status_);
-  probe::UpdateApplicationCacheStatus(GetDocumentLoader()->GetFrame());
+  probe::UpdateApplicationCacheStatus(document_loader_->GetFrame());
   return true;
 }
 
@@ -132,13 +134,32 @@ void ApplicationCacheHostForFrame::SetSubresourceFactory(
       std::move(pending_factories));
 }
 
+void ApplicationCacheHostForFrame::WillStartLoading(ResourceRequest& request) {
+  if (!IsApplicationCacheEnabled() || !backend_host_.is_bound())
+    return;
+  const base::UnguessableToken& host_id = GetHostID();
+  if (!host_id.is_empty())
+    request.SetAppCacheHostID(host_id);
+}
+
 void ApplicationCacheHostForFrame::WillStartLoadingMainResource(
     DocumentLoader* loader,
     const KURL& url,
     const String& method) {
-  ApplicationCacheHost::WillStartLoadingMainResource(loader, url, method);
-  if (!backend_host_.is_bound())
+  if (!IsApplicationCacheEnabled())
     return;
+
+  // PlzNavigate: The browser passes the ID to be used.
+  DCHECK(GetHostID().is_empty());
+  if (!document_loader_->AppcacheHostId().is_empty())
+    SetHostID(document_loader_->AppcacheHostId());
+  else
+    SetHostID(base::UnguessableToken::Create());
+
+  // We defer binding to backend to avoid unnecessary binding around creating
+  // empty documents. At this point, we're initiating a main resource load for
+  // the document, so its for real.
+  BindBackend();
 
   original_main_resource_url_ = ClearUrlRef(url);
   is_get_method_ = (method == kHttpGETMethod);
@@ -184,7 +205,7 @@ void ApplicationCacheHostForFrame::SelectCacheWithoutManifest() {
 
 void ApplicationCacheHostForFrame::SelectCacheWithManifest(
     const KURL& manifest_url) {
-  LocalFrame* frame = GetDocumentLoader()->GetFrame();
+  LocalFrame* frame = document_loader_->GetFrame();
   Document* document = frame->GetDocument();
   if (document->IsSandboxed(WebSandboxFlags::kOrigin)) {
     // Prevent sandboxes from establishing application caches.
@@ -275,6 +296,7 @@ void ApplicationCacheHostForFrame::DidReceiveResponseForMainResource(
 void ApplicationCacheHostForFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(dom_application_cache_);
   visitor->Trace(local_frame_);
+  visitor->Trace(document_loader_);
   ApplicationCacheHost::Trace(visitor);
 }
 
@@ -287,7 +309,7 @@ void ApplicationCacheHostForFrame::NotifyApplicationCache(
     int error_status,
     const String& error_message) {
   if (id != mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT) {
-    probe::UpdateApplicationCacheStatus(GetDocumentLoader()->GetFrame());
+    probe::UpdateApplicationCacheStatus(document_loader_->GetFrame());
   }
 
   if (defers_events_) {
@@ -327,6 +349,14 @@ void ApplicationCacheHostForFrame::DispatchDOMEvent(
     event = Event::Create(event_type);
   }
   dom_application_cache_->DispatchEvent(*event);
+}
+
+bool ApplicationCacheHostForFrame::IsApplicationCacheEnabled() {
+  DCHECK(document_loader_->GetFrame());
+  return document_loader_->GetFrame()->GetSettings() &&
+         document_loader_->GetFrame()
+             ->GetSettings()
+             ->GetOfflineWebApplicationCacheEnabled();
 }
 
 }  // namespace blink

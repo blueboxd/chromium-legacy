@@ -23,6 +23,10 @@ namespace content {
 
 namespace {
 
+static bool g_jaws = false;
+static bool g_nvda = false;
+static bool g_zoomtext = false;
+
 // Enables accessibility based on three possible clues that indicate
 // accessibility API usage.
 //
@@ -146,31 +150,37 @@ void BrowserAccessibilityStateImpl::
     return;
 
   // Look for DLLs of assistive technology known to work with Chrome.
-  bool jaws = false;
-  bool nvda = false;
-  bool satogo = false;
-  bool zoomtext = false;
   size_t module_count = bytes_required / sizeof(HMODULE);
+  bool satogo = false;  // Very few users -- do not need uniques
   for (size_t i = 0; i < module_count; i++) {
     TCHAR filename[MAX_PATH];
     GetModuleFileName(modules[i], filename, base::size(filename));
     base::string16 module_name(base::FilePath(filename).BaseName().value());
     if (base::LowerCaseEqualsASCII(module_name, "fsdomsrv.dll"))
-      jaws = true;
+      g_jaws = true;
     if (base::LowerCaseEqualsASCII(module_name, "vbufbackend_gecko_ia2.dll") ||
         base::LowerCaseEqualsASCII(module_name, "nvdahelperremote.dll"))
-      nvda = true;
+      g_nvda = true;
     if (base::LowerCaseEqualsASCII(module_name, "stsaw32.dll"))
       satogo = true;
     if (base::LowerCaseEqualsASCII(module_name, "zslhook.dll") ||
         base::LowerCaseEqualsASCII(module_name, "zslhook64.dll"))
-      zoomtext = true;
+      g_zoomtext = true;
   }
 
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinJAWS", jaws);
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinNVDA", nvda);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinJAWS", g_jaws);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinNVDA", g_nvda);
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinSAToGo", satogo);
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinZoomText", zoomtext);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinZoomText", g_zoomtext);
+}
+
+void BrowserAccessibilityStateImpl::UpdateUniqueUserHistograms() {
+  ui::AXMode mode = GetAccessibilityMode();
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinScreenReader2.EveryReport",
+                        mode.has_mode(ui::AXMode::kScreenReader));
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinJAWS.EveryReport", g_jaws);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinNVDA.EveryReport", g_nvda);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinZoomText.EveryReport", g_zoomtext);
 }
 
 }  // namespace content

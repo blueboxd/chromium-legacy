@@ -60,25 +60,24 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
  public:
   using AppInfo = apps::IntentPickerAppInfo;
 
+  IntentPickerBubbleView(views::View* anchor_view,
+                         std::vector<AppInfo> app_info,
+                         IntentPickerResponse intent_picker_cb,
+                         content::WebContents* web_contents,
+                         bool show_stay_in_chrome,
+                         bool show_remember_selection);
   ~IntentPickerBubbleView() override;
+
   static views::Widget* ShowBubble(views::View* anchor_view,
                                    content::WebContents* web_contents,
                                    std::vector<AppInfo> app_info,
                                    bool show_stay_in_chrome,
                                    bool show_remember_selection,
                                    IntentPickerResponse intent_picker_cb);
-  static std::unique_ptr<IntentPickerBubbleView> CreateBubbleView(
-      std::vector<AppInfo> app_info,
-      bool show_stay_in_chrome,
-      bool show_remember_selection,
-      IntentPickerResponse intent_picker_cb,
-      content::WebContents* web_contents);
   static IntentPickerBubbleView* intent_picker_bubble() {
     return intent_picker_bubble_;
   }
   static void CloseCurrentBubble();
-
-  const std::vector<AppInfo>& GetAppInfoForTesting() const { return app_info_; }
 
   // LocationBarBubbleDelegateView overrides:
   bool Accept() override;
@@ -104,11 +103,16 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, ChromeNotInCandidates);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, StayInChromeTest);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, WebContentsTiedToBubble);
-  IntentPickerBubbleView(std::vector<AppInfo> app_info,
-                         IntentPickerResponse intent_picker_cb,
-                         content::WebContents* web_contents,
-                         bool show_stay_in_chrome,
-                         bool show_remember_selection);
+
+  static std::unique_ptr<IntentPickerBubbleView> CreateBubbleViewForTesting(
+      views::View* anchor_view,
+      std::vector<AppInfo> app_info,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
+      IntentPickerResponse intent_picker_cb,
+      content::WebContents* web_contents);
+
+  const std::vector<AppInfo>& app_info_for_testing() const { return app_info_; }
 
   // views::BubbleDialogDelegateView overrides:
   void OnWidgetDestroying(views::Widget* widget) override;

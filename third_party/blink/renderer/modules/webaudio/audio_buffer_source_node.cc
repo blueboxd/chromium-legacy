@@ -793,4 +793,16 @@ void AudioBufferSourceNode::start(double when,
                                       exception_state);
 }
 
+void AudioBufferSourceNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+  GraphTracer().DidCreateAudioParam(detune_);
+  GraphTracer().DidCreateAudioParam(playback_rate_);
+}
+
+void AudioBufferSourceNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioParam(detune_);
+  GraphTracer().WillDestroyAudioParam(playback_rate_);
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

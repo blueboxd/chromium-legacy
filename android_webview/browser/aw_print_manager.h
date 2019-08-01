@@ -34,7 +34,6 @@ class AwPrintManager : public printing::PrintManager,
 
  private:
   friend class content::WebContentsUserData<AwPrintManager>;
-  struct FrameDispatchHelper;
 
   AwPrintManager(content::WebContents* contents,
                  const printing::PrintSettings& settings,
@@ -42,17 +41,14 @@ class AwPrintManager : public printing::PrintManager,
                  PdfWritingDoneCallback callback);
 
   // printing::PrintManager:
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
-
-  // IPC Handlers
+  void OnDidPrintDocument(
+      content::RenderFrameHost* render_frame_host,
+      const PrintHostMsg_DidPrintDocument_Params& params) override;
   void OnGetDefaultPrintSettings(content::RenderFrameHost* render_frame_host,
-                                 IPC::Message* reply_msg);
+                                 IPC::Message* reply_msg) override;
   void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
                        const PrintHostMsg_ScriptedPrint_Params& params,
-                       IPC::Message* reply_msg);
-  void OnDidPrintDocument(content::RenderFrameHost* render_frame_host,
-                          const PrintHostMsg_DidPrintDocument_Params& params);
+                       IPC::Message* reply_msg) override;
 
   printing::PrintSettings settings_;
 

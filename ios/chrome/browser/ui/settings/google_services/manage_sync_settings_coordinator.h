@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ApplicationCommands;
+@protocol BrowserCommands;
 @class ManageSyncSettingsCoordinator;
 
 // Delegate for ManageSyncSettingsCoordinator.
@@ -27,7 +28,7 @@
 // Delegate.
 @property(nonatomic, weak) id<ManageSyncSettingsCoordinatorDelegate> delegate;
 // Global dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
 @end
 

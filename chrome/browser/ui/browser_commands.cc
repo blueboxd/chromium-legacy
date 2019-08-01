@@ -285,10 +285,6 @@ void ReloadInternal(Browser* browser,
     WebContents* new_tab =
         GetTabAndRevertIfNecessaryHelper(browser, disposition, selected_tab);
 
-    // Notify RenderViewHostDelegate of the user gesture; this is
-    // normally done in Browser::Navigate, but a reload bypasses Navigate.
-    new_tab->NavigatedByUser();
-
     // If the selected_tab is the activated page, give the focus to it, as this
     // is caused by a user action
     if (selected_tab == active_contents &&

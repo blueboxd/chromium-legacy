@@ -10,7 +10,6 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -219,7 +218,7 @@ int StartHostMain(int argc, char** argv) {
   // URLRequestContextGetter.
   base::SingleThreadTaskExecutor main_thread_task_executor;
   g_main_thread_task_executor = &main_thread_task_executor;
-  base::Thread::Options io_thread_options(base::MessagePumpType::IO, 0);
+  base::Thread::Options io_thread_options(base::MessagePump::Type::IO, 0);
   base::Thread io_thread("IO thread");
   io_thread.StartWithOptions(io_thread_options);
 

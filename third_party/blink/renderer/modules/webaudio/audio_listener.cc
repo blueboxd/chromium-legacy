@@ -27,6 +27,8 @@
  */
 
 #include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
+
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/panner_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
@@ -35,7 +37,7 @@
 namespace blink {
 
 AudioListener::AudioListener(BaseAudioContext& context)
-    : InspectorHelperMixin(context.Uuid()),
+    : InspectorHelperMixin(context.GraphTracer(), context.Uuid()),
       position_x_(AudioParam::Create(
           context,
           Uuid(),
@@ -132,6 +134,7 @@ void AudioListener::Trace(blink::Visitor* visitor) {
   visitor->Trace(up_y_);
   visitor->Trace(up_z_);
 
+  InspectorHelperMixin::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -346,6 +349,32 @@ void AudioListener::SetUpVector(const FloatPoint3D& up_vector,
   up_z_->setValueAtTime(up_vector.Z(), now, exceptionState);
 
   MarkPannersAsDirty(PannerHandler::kAzimuthElevationDirty);
+}
+
+void AudioListener::ReportDidCreate() {
+  GraphTracer().DidCreateAudioListener(this);
+  GraphTracer().DidCreateAudioParam(position_x_);
+  GraphTracer().DidCreateAudioParam(position_y_);
+  GraphTracer().DidCreateAudioParam(position_z_);
+  GraphTracer().DidCreateAudioParam(forward_x_);
+  GraphTracer().DidCreateAudioParam(forward_y_);
+  GraphTracer().DidCreateAudioParam(forward_z_);
+  GraphTracer().DidCreateAudioParam(up_x_);
+  GraphTracer().DidCreateAudioParam(up_y_);
+  GraphTracer().DidCreateAudioParam(up_z_);
+}
+
+void AudioListener::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioParam(position_x_);
+  GraphTracer().WillDestroyAudioParam(position_y_);
+  GraphTracer().WillDestroyAudioParam(position_z_);
+  GraphTracer().WillDestroyAudioParam(forward_x_);
+  GraphTracer().WillDestroyAudioParam(forward_y_);
+  GraphTracer().WillDestroyAudioParam(forward_z_);
+  GraphTracer().WillDestroyAudioParam(up_x_);
+  GraphTracer().WillDestroyAudioParam(up_y_);
+  GraphTracer().WillDestroyAudioParam(up_z_);
+  GraphTracer().WillDestroyAudioListener(this);
 }
 
 }  // namespace blink

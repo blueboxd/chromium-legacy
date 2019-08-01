@@ -100,7 +100,7 @@ class FakeNavigationClient : public mojom::NavigationClient {
   // mojom::NavigationClientPtr implementation:
   void CommitNavigation(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& request_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -120,7 +120,7 @@ class FakeNavigationClient : public mojom::NavigationClient {
   }
   void CommitFailedNavigation(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,
@@ -221,7 +221,7 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
   common_params->referrer = blink::mojom::Referrer::New();
   common_params->navigation_start = base::TimeTicks::Now();
   navigation_client_->CommitNavigation(
-      std::move(common_params), CommitNavigationParams(),
+      std::move(common_params), CreateCommitNavigationParams(),
       network::ResourceResponseHead(), mojo::ScopedDataPipeConsumerHandle(),
       nullptr, nullptr, base::nullopt, nullptr, std::move(info),
       mojo::NullRemote(), base::UnguessableToken::Create(),

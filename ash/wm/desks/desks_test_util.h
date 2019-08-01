@@ -37,6 +37,10 @@ class DeskSwitchAnimationWaiter : public DesksController::Observer {
 // complete before returning.
 void ActivateDesk(const Desk* desk);
 
+// Removes the given |desk| and waits for the desk-removal animation to finish
+// if one would launch.
+void RemoveDesk(const Desk* desk);
+
 }  // namespace ash
 
 #endif  // ASH_WM_DESKS_DESKS_TEST_UTIL_H_

@@ -26,6 +26,12 @@ struct PageInsetSizes {
   int bottom;
 };
 
+// Given a right page's |bottom_gap|, reduce it to only the part of |bottom_gap|
+// that is directly below the right page by translating |bottom_gap| to |page_x|
+// and halving its width. This avoids over-drawing empty space on the already
+// drawn left page and the empty space to the right of the page.
+void AdjustBottomGapForRightSidePage(int page_x, pp::Rect* bottom_gap);
+
 // Given |rect_size|, sets the width of |doc_size| to the max of |rect_size|'s
 // width and |doc_size|'s width. Also adds the height of |rect_size| to
 // |doc_size|'s height.

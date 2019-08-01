@@ -55,10 +55,6 @@ void NewDesk() {
   DesksController::Get()->NewDesk(DesksCreationRemovalSource::kButton);
 }
 
-void RemoveDesk(const Desk* desk) {
-  DesksController::Get()->RemoveDesk(desk, DesksCreationRemovalSource::kButton);
-}
-
 std::unique_ptr<aura::Window> CreateTransientWindow(
     aura::Window* transient_parent,
     const gfx::Rect& bounds) {
@@ -2024,7 +2020,9 @@ TEST_F(DesksAcceleratorsTest, RemoveDesk) {
   Desk* desk_3 = controller->desks()[2].get();
   EXPECT_TRUE(desk_1->is_active());
   const int flags = ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN;
+  DeskSwitchAnimationWaiter waiter;
   SendAccelerator(ui::VKEY_OEM_MINUS, flags);
+  waiter.Wait();
   ASSERT_EQ(2u, controller->desks().size());
   EXPECT_TRUE(desk_2->is_active());
 
@@ -2036,6 +2034,35 @@ TEST_F(DesksAcceleratorsTest, RemoveDesk) {
   ASSERT_EQ(1u, controller->desks().size());
   EXPECT_TRUE(desk_3->is_active());
   EXPECT_TRUE(overview_controller->InOverviewSession());
+}
+
+TEST_F(DesksAcceleratorsTest, RemoveRightmostDesk) {
+  auto* controller = DesksController::Get();
+  // Create a few desks and remove them outside and inside overview using the
+  // shortcut.
+  NewDesk();
+  NewDesk();
+  ASSERT_EQ(3u, controller->desks().size());
+  Desk* desk_1 = controller->desks()[0].get();
+  Desk* desk_2 = controller->desks()[1].get();
+  Desk* desk_3 = controller->desks()[2].get();
+  ActivateDesk(desk_3);
+  EXPECT_TRUE(desk_3->is_active());
+  const int flags = ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN;
+  {
+    DeskSwitchAnimationWaiter waiter;
+    SendAccelerator(ui::VKEY_OEM_MINUS, flags);
+    waiter.Wait();
+  }
+  ASSERT_EQ(2u, controller->desks().size());
+  EXPECT_TRUE(desk_2->is_active());
+  {
+    DeskSwitchAnimationWaiter waiter;
+    SendAccelerator(ui::VKEY_OEM_MINUS, flags);
+    waiter.Wait();
+  }
+  ASSERT_EQ(1u, controller->desks().size());
+  EXPECT_TRUE(desk_1->is_active());
 }
 
 TEST_F(DesksAcceleratorsTest, LeftRightDeskActivation) {

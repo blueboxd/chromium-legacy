@@ -65,12 +65,12 @@ struct OverlayCheck_Params {
   OverlayCheck_Params(const OverlayCheck_Params& other);
   ~OverlayCheck_Params();
 
-
   gfx::Size buffer_size;
   gfx::OverlayTransform transform = gfx::OVERLAY_TRANSFORM_NONE;
   gfx::BufferFormat format = gfx::BufferFormat::BGRA_8888;
   gfx::Rect display_rect;
   gfx::RectF crop_rect;
+  bool is_opaque = false;
   int plane_z_order = 0;
   // By default we mark this configuration valid for promoting it to an overlay.
   bool is_overlay_candidate = true;

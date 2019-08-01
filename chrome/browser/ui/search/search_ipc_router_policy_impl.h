@@ -47,7 +47,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldSendMostVisitedInfo() override;
   bool ShouldSendThemeBackgroundInfo() override;
   bool ShouldSendLocalBackgroundSelected() override;
-  bool ShouldProcessSetCustomBackgroundURLWithAttributions() override;
+  bool ShouldProcessSetCustomBackgroundInfo() override;
   bool ShouldProcessSelectLocalBackgroundImage() override;
   bool ShouldProcessBlocklistSearchSuggestion() override;
   bool ShouldProcessBlocklistSearchSuggestionWithHash() override;

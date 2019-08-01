@@ -26,13 +26,16 @@ class AutoScanManager {
      * Length of auto-scan interval in milliseconds.
      * @private {number}
      */
-    this.scanTime_ =
-        switchAccess.getNumberPreference(SAConstants.Preference.AUTO_SCAN_TIME);
+    this.scanTime_ = SCAN_TIME_NOT_INITIALIZED;
+  }
 
-    const enabled = switchAccess.getBooleanPreference(
-        SAConstants.Preference.ENABLE_AUTO_SCAN);
-    if (enabled)
-      this.start_();
+  /** Finishes setup of auto scan manager once Prefs are loaded. */
+  onPrefsReady() {
+    this.scanTime_ = this.switchAccess_.getNumberPreference(
+        SAConstants.Preference.AUTO_SCAN_TIME);
+    const enabled = this.switchAccess_.getBooleanPreference(
+        SAConstants.Preference.AUTO_SCAN_ENABLED);
+    if (enabled) this.start_();
   }
 
   /**
@@ -92,8 +95,17 @@ class AutoScanManager {
    * @private
    */
   start_() {
+    if (this.scanTime_ === SCAN_TIME_NOT_INITIALIZED)
+      return;
+
     this.intervalID_ = window.setInterval(
         this.switchAccess_.moveForward.bind(this.switchAccess_),
         this.scanTime_);
   }
 }
+
+/**
+ * Sentinel value that indicates an uninitialized scan time.
+ * @type {number}
+ */
+const SCAN_TIME_NOT_INITIALIZED = -1;

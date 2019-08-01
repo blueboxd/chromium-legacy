@@ -13,6 +13,7 @@
 #include "content/browser/android/render_widget_host_connector.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
 
@@ -99,6 +100,7 @@ class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
   void UpdateFrameInfo(const gfx::SelectionBound& selection_start,
                        float dip_scale,
                        float content_offset_ypix);
+  void OnRenderFrameMetadataChangedAfterActivation(const gfx::SizeF& new_size);
 
   // Called from native -> java
   void CancelComposition();
@@ -111,7 +113,6 @@ class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
   }
 
   void UpdateState(const TextInputState& state);
-  void UpdateAfterViewSizeChanged();
   void UpdateOnTouchDown();
 
   void AdvanceFocusInForm(JNIEnv*,
@@ -127,6 +128,8 @@ class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& text,
       const base::string16& text16);
+
+  gfx::SizeF old_viewport_size_;
 
   // Current RenderWidgetHostView connected to this instance. Can be null.
   RenderWidgetHostViewAndroid* rwhva_;

@@ -21,7 +21,9 @@ import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -29,6 +31,7 @@ import android.widget.ImageView;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -105,6 +108,7 @@ class TabListRecyclerView extends RecyclerView {
     private ImageView mShadowImageView;
     private int mShadowTopMargin;
     private TabListOnScrollListener mScrollListener;
+    private View mRecyclerViewFooter;
 
     /**
      * Basic constructor to use during inflation from xml.
@@ -440,5 +444,38 @@ class TabListRecyclerView extends RecyclerView {
     private static boolean isOverlap(
             float left1, float top1, float left2, float top2, float threshold) {
         return Math.abs(left1 - left2) < threshold && Math.abs(top1 - top2) < threshold;
+    }
+
+    /**
+     * This method creates a {@link TabListMediator.IphProvider} that can show IPH for drag-and-drop
+     * in GridTabSwitcher.
+     * @return The {@link TabListMediator.IphProvider} that can be used to show IPH.
+     * TODO(yuezhanggg): Replace this workaround with a footer itemView after we have generic list
+     * view adapter (crbug: 909779).
+     */
+    TabListMediator.IphProvider setupIphProvider() {
+        final int height = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_height);
+        final int padding = (int) getResources().getDimension(R.dimen.tab_grid_iph_card_padding);
+        // Listener to close the footer.
+        View.OnClickListener closeListener = view -> {
+            ((ViewGroup) mRecyclerViewFooter.getParent()).removeView(mRecyclerViewFooter);
+            mRecyclerViewFooter = null;
+            // Restore the recyclerview to its original state.
+            setPadding(0, 0, 0, 0);
+            setScrollBarStyle(SCROLLBARS_INSIDE_OVERLAY);
+        };
+
+        return anchor -> {
+            if (getChildCount() == 0) return;
+            if (mRecyclerViewFooter != null) return;
+            TabGridIphItemView iphView =
+                    (TabGridIphItemView) LayoutInflater.from(getContext())
+                            .inflate(R.layout.iph_card_item_layout, (ViewGroup) anchor, false);
+            ((ViewGroup) anchor).addView(iphView);
+            mRecyclerViewFooter = iphView;
+            iphView.setupCloseIphEntranceButtonOnclickListener(closeListener);
+            setPadding(0, 0, 0, height + padding);
+            setScrollBarStyle(SCROLLBARS_OUTSIDE_OVERLAY);
+        };
     }
 }

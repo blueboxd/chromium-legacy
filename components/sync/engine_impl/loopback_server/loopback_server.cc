@@ -281,23 +281,6 @@ bool LoopbackServer::CreateDefaultPermanentItems() {
     }
     top_level_permanent_item_ids_[model_type] = top_level_entity->GetId();
     SaveEntity(std::move(top_level_entity));
-
-    if (model_type == syncer::BOOKMARKS) {
-      if (!CreatePermanentBookmarkFolder(kBookmarkBarFolderServerTag,
-                                         kBookmarkBarFolderName)) {
-        return false;
-      }
-      if (!CreatePermanentBookmarkFolder(kOtherBookmarksFolderServerTag,
-                                         kOtherBookmarksFolderName)) {
-        return false;
-      }
-      // This folder is called "Synced Bookmarks" by sync and is renamed
-      // "Mobile Bookmarks" by the mobile client UIs.
-      if (!CreatePermanentBookmarkFolder(kSyncedBookmarksFolderServerTag,
-                                         kSyncedBookmarksFolderName)) {
-        return false;
-      }
-    }
   }
 
   return true;
@@ -346,6 +329,7 @@ net::HttpStatusCode LoopbackServer::HandleCommand(const string& request,
       case sync_pb::ClientToServerMessage::GET_UPDATES:
         success = HandleGetUpdatesRequest(
             message.get_updates(), message.store_birthday(),
+            message.invalidator_client_id(),
             response_proto.mutable_get_updates(), &datatypes_to_migrate);
         break;
       case sync_pb::ClientToServerMessage::COMMIT:
@@ -395,9 +379,40 @@ void LoopbackServer::EnableStrongConsistencyWithConflictDetectionModel() {
 bool LoopbackServer::HandleGetUpdatesRequest(
     const sync_pb::GetUpdatesMessage& get_updates,
     const std::string& store_birthday,
+    const std::string& invalidator_client_id,
     sync_pb::GetUpdatesResponse* response,
     std::vector<ModelType>* datatypes_to_migrate) {
   response->set_changes_remaining(0);
+
+  bool is_initial_bookmark_sync = false;
+  for (const sync_pb::DataTypeProgressMarker& marker :
+       get_updates.from_progress_marker()) {
+    if (GetModelTypeFromSpecificsFieldNumber(marker.data_type_id()) !=
+        syncer::BOOKMARKS) {
+      continue;
+    }
+    if (!marker.has_token() || marker.token().empty()) {
+      is_initial_bookmark_sync = true;
+      break;
+    }
+  }
+
+  if (is_initial_bookmark_sync) {
+    if (!CreatePermanentBookmarkFolder(kBookmarkBarFolderServerTag,
+                                       kBookmarkBarFolderName)) {
+      return false;
+    }
+    if (!CreatePermanentBookmarkFolder(kOtherBookmarksFolderServerTag,
+                                       kOtherBookmarksFolderName)) {
+      return false;
+    }
+    // This folder is called "Synced Bookmarks" by sync and is renamed
+    // "Mobile Bookmarks" by the mobile client UIs.
+    if (!CreatePermanentBookmarkFolder(kSyncedBookmarksFolderServerTag,
+                                       kSyncedBookmarksFolderName)) {
+      return false;
+    }
+  }
 
   // It's a protocol-level contract that the birthday should only be empty
   // during the initial sync cycle, which requires all progress markers to be
@@ -462,6 +477,12 @@ bool LoopbackServer::HandleGetUpdatesRequest(
   }
 
   sieve->SetProgressMarkers(response);
+  // During initial bookmark sync, we create new entities for bookmark permanent
+  // folders, and hence we should inform the observers.
+  if (is_initial_bookmark_sync && observer_for_tests_) {
+    observer_for_tests_->OnCommit(invalidator_client_id, {syncer::BOOKMARKS});
+  }
+
   return true;
 }
 

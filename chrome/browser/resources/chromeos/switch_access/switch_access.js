@@ -29,12 +29,6 @@ class SwitchAccess {
     this.autoScanManager_ = null;
 
     /**
-     * Handles keyboard input.
-     * @private {KeyEventHandler}
-     */
-    this.keyEventHandler_ = null;
-
-    /**
      * Handles interactions with the accessibility tree, including moving to and
      * selecting nodes.
      * @private {NavigationManager}
@@ -69,9 +63,11 @@ class SwitchAccess {
    */
   init_() {
     this.commands_ = new Commands(this);
-    this.switchAccessPreferences_ = new SwitchAccessPreferences(this);
     this.autoScanManager_ = new AutoScanManager(this);
-    this.keyEventHandler_ = new KeyEventHandler(this);
+    const onPrefsReady =
+        this.autoScanManager_.onPrefsReady.bind(this.autoScanManager_);
+    this.switchAccessPreferences_ =
+        new SwitchAccessPreferences(this, onPrefsReady);
 
     chrome.automation.getDesktop(function(desktop) {
       this.navigationManager_ = new NavigationManager(desktop);
@@ -124,15 +120,6 @@ class SwitchAccess {
   }
 
   /**
-   * Open the options page in a new tab.
-   * @override
-   */
-  showOptionsPage() {
-    const optionsPage = {url: 'options.html'};
-    chrome.tabs.create(optionsPage);
-  }
-
-  /**
    * Returns whether or not the feature flag
    * for text editing is enabled.
    * @return {boolean}
@@ -140,48 +127,6 @@ class SwitchAccess {
    */
   textEditingEnabled() {
     return this.enableTextEditing_;
-  }
-
-  /**
-   * Return a list of the names of all user commands.
-   * @override
-   * @return {!Array<!SAConstants.Command>}
-   */
-  getCommands() {
-    return Object.values(SAConstants.Command);
-  }
-
-  /**
-   * Checks if the given string is a valid Switch Access command.
-   * @param {string} command
-   * @return {boolean}
-   */
-  hasCommand(command) {
-    return Object.values(SAConstants.Command).includes(command);
-  }
-
-  /**
-   * Forwards the keycodes received from keyPressed events to |callback|.
-   * @param {function(number)} callback
-   */
-  listenForKeycodes(callback) {
-    this.keyEventHandler_.listenForKeycodes(callback);
-  }
-
-  /**
-   * Stops forwarding keycodes.
-   */
-  stopListeningForKeycodes() {
-    this.keyEventHandler_.stopListeningForKeycodes();
-  }
-
-  /**
-   * Run the function binding for the specified command.
-   * @override
-   * @param {!SAConstants.Command} command
-   */
-  runCommand(command) {
-    this.commands_.runCommand(command);
   }
 
   /**
@@ -201,15 +146,12 @@ class SwitchAccess {
   onPreferencesChanged(changes) {
     for (const key of Object.keys(changes)) {
       switch (key) {
-        case 'enableAutoScan':
+        case SAConstants.Preference.AUTO_SCAN_ENABLED:
           this.autoScanManager_.setEnabled(changes[key]);
           break;
-        case 'autoScanTime':
+        case SAConstants.Preference.AUTO_SCAN_TIME:
           this.autoScanManager_.setScanTime(changes[key]);
           break;
-        default:
-          if (this.hasCommand(key))
-            this.keyEventHandler_.updateSwitchAccessKeys();
       }
     }
   }
@@ -260,18 +202,6 @@ class SwitchAccess {
    */
   getNumberPreferenceIfDefined(key) {
     return this.switchAccessPreferences_.getNumberPreferenceIfDefined(key);
-  }
-
-  /**
-   * Returns true if |keyCode| is already used to run a command from the
-   * keyboard.
-   *
-   * @override
-   * @param {number} keyCode
-   * @return {boolean}
-   */
-  keyCodeIsUsed(keyCode) {
-    return this.switchAccessPreferences_.keyCodeIsUsed(keyCode);
   }
 
   /**

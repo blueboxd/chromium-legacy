@@ -130,7 +130,7 @@ content::WebContents* GetWebContentsByFrameID(int render_process_id,
 
 content::WebContents::Getter GetWebContentsGetter(
     content::WebContents* web_contents) {
-  // PlzNavigate: The FrameTreeNode ID should be used to access the WebContents.
+  // The FrameTreeNode ID should be used to access the WebContents.
   int frame_tree_node_id = web_contents->GetMainFrame()->GetFrameTreeNodeId();
   if (frame_tree_node_id != -1) {
     return base::Bind(content::WebContents::FromFrameTreeNodeId,

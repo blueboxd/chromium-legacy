@@ -1444,6 +1444,42 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
   navigation_listener_.RunUntilUrlAndTitleEquals(page1_url, kPage1Title);
 }
 
+// Tests SetNavigationEventListener() immediately returns a NavigationEvent,
+// even in the absence of a new navigation.
+IN_PROC_BROWSER_TEST_F(FrameImplTest, ImmediateNavigationEvent) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL page_url(embedded_test_server()->GetURL(kPage1Path));
+
+  // The first NavigationState received should be empty.
+  base::RunLoop run_loop;
+  navigation_listener_.SetBeforeAckHook(base::BindRepeating(
+      [](base::RunLoop* run_loop, const fuchsia::web::NavigationState& change,
+         OnNavigationStateChangedCallback callback) {
+        EXPECT_TRUE(change.IsEmpty());
+        run_loop->Quit();
+        callback();
+      },
+      base::Unretained(&run_loop)));
+  fuchsia::web::FramePtr frame = CreateFrame();
+  run_loop.Run();
+  navigation_listener_.SetBeforeAckHook({});
+
+  // Navigate to a page and wait for the navigation to complete.
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), page_url.spec()));
+  navigation_listener_.RunUntilUrlEquals(page_url);
+
+  // Attach a new navigation listener, we should get the new page state, even if
+  // no new navigation occurred.
+  cr_fuchsia::TestNavigationListener navigation_listener2;
+  fidl::Binding<fuchsia::web::NavigationEventListener>
+      navigation_listener_binding(&navigation_listener2);
+  frame->SetNavigationEventListener(navigation_listener_binding.NewBinding());
+  navigation_listener2.RunUntilUrlAndTitleEquals(page_url, kPage1Title);
+}
+
 class RequestMonitoringFrameImplBrowserTest : public FrameImplTest {
  public:
   RequestMonitoringFrameImplBrowserTest() = default;

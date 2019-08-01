@@ -36,7 +36,7 @@ uniform, predictable two day commitment for all triagers.
 ### Required:
 
 * Identify new network bugs on the bug tracker, looking at [this issue tracker
-  query](https://bugs.chromium.org/p/chromium/issues/list?q=status%3Aunconfirmed&sort=-id&num=1000).
+  query](https://bugs.chromium.org/p/chromium/issues/list?q=status%3Aunconfirmed+-commentby=425761728072-pa1bs18esuhp2cp2qfa1u9vb6p1v6kfu@developer.gserviceaccount.com&sort=-id&num=1000).
 
   * All Unconfirmed issues filed during your triage rotation should be scanned
     for suspected network bugs, a network component assigned and a

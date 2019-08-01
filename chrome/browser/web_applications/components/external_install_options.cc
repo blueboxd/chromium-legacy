@@ -72,4 +72,21 @@ std::ostream& operator<<(std::ostream& out,
              << install_options.reinstall_placeholder;
 }
 
+InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
+    const ExternalInstallOptions& install_options) {
+  InstallManager::InstallParams params;
+
+  params.launch_container = install_options.launch_container;
+
+  params.add_to_applications_menu = install_options.add_to_applications_menu;
+  params.add_to_desktop = install_options.add_to_desktop;
+  params.add_to_quick_launch_bar = install_options.add_to_quick_launch_bar;
+
+  params.bypass_service_worker_check =
+      install_options.bypass_service_worker_check;
+  params.require_manifest = install_options.require_manifest;
+
+  return params;
+}
+
 }  // namespace web_app

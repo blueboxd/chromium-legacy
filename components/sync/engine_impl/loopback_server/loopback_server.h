@@ -94,6 +94,7 @@ class LoopbackServer {
   // Processes a GetUpdates call.
   bool HandleGetUpdatesRequest(const sync_pb::GetUpdatesMessage& get_updates,
                                const std::string& store_birthday,
+                               const std::string& invalidator_client_id,
                                sync_pb::GetUpdatesResponse* response,
                                std::vector<ModelType>* datatypes_to_migrate);
 

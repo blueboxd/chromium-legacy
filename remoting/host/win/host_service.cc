@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -206,7 +205,7 @@ void HostService::CreateLauncher(
   // Launch the I/O thread.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
       AutoThread::CreateWithType(kIoThreadName, task_runner,
-                                 base::MessagePumpType::IO);
+                                 base::MessagePump::Type::IO);
   if (!io_task_runner.get()) {
     LOG(FATAL) << "Failed to start the I/O thread";
     return;
@@ -238,7 +237,8 @@ int HostService::RunAsService() {
 }
 
 void HostService::RunAsServiceImpl() {
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   base::RunLoop run_loop;
   main_task_runner_ = main_task_executor.task_runner();
   weak_ptr_ = weak_factory_.GetWeakPtr();
@@ -296,7 +296,8 @@ void HostService::RunAsServiceImpl() {
 }
 
 int HostService::RunInConsole() {
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   base::RunLoop run_loop;
   main_task_runner_ = main_task_executor.task_runner();
   weak_ptr_ = weak_factory_.GetWeakPtr();

@@ -277,4 +277,20 @@ void BiquadFilterNode::getFrequencyResponse(
       mag_response.View()->Data(), phase_response.View()->Data());
 }
 
+void BiquadFilterNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+  GraphTracer().DidCreateAudioParam(detune_);
+  GraphTracer().DidCreateAudioParam(frequency_);
+  GraphTracer().DidCreateAudioParam(gain_);
+  GraphTracer().DidCreateAudioParam(q_);
+}
+
+void BiquadFilterNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioParam(detune_);
+  GraphTracer().WillDestroyAudioParam(frequency_);
+  GraphTracer().WillDestroyAudioParam(gain_);
+  GraphTracer().WillDestroyAudioParam(q_);
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

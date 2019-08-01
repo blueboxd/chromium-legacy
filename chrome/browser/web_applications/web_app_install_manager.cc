@@ -84,14 +84,15 @@ void WebAppInstallManager::InstallWebAppFromInfo(
   tasks_.insert(std::move(task));
 }
 
-void WebAppInstallManager::InstallWebAppWithOptions(
+void WebAppInstallManager::InstallWebAppWithParams(
     content::WebContents* web_contents,
-    const ExternalInstallOptions& install_options,
+    const InstallParams& install_params,
+    WebappInstallSource install_source,
     OnceInstallCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), finalizer(), data_retriever_factory_.Run());
-  task->InstallWebAppWithOptions(
-      web_contents, install_options,
+  task->InstallWebAppWithParams(
+      web_contents, install_params, install_source,
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 

@@ -20,8 +20,6 @@ class GURL;
 
 namespace favicon {
 
-class FaviconServerFetcherParams;
-
 // The large icon service provides methods to access large icons.
 class LargeIconService : public KeyedService {
  public:
@@ -101,7 +99,7 @@ class LargeIconService : public KeyedService {
   // TODO(victorvianna): Consider moving |may_page_url_be_private| and/or
   // |should_trim_page_url_path| inside the parameters struct.
   virtual void GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-      std::unique_ptr<FaviconServerFetcherParams> params,
+      const GURL& page_url,
       bool may_page_url_be_private,
       bool should_trim_page_url_path,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,

@@ -17,7 +17,7 @@ let testFunction = function() {
 
   return navigator.xr.requestSession('inline').then(session => {
     session.updateRenderState({
-      baseLayer: new XRWebGLLayer(session, webgl, { compositionDisabled: true })
+      baseLayer: new XRWebGLLayer(session, webgl)
     });
 
     return session.requestReferenceSpace('viewer').then(space => {

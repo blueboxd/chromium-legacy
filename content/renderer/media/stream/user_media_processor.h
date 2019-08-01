@@ -41,7 +41,6 @@ class WebString;
 
 namespace content {
 
-class PeerConnectionDependencyFactory;
 class RenderFrameImpl;
 
 // TODO(guidou): Add |request_id| and |is_processing_user_gesture| to
@@ -67,9 +66,8 @@ class CONTENT_EXPORT UserMediaProcessor
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       const blink::mojom::MediaDevicesDispatcherHostPtr&()>;
-  // |render_frame| and |dependency_factory| must outlive this instance.
+  // |render_frame| must outlive this instance.
   UserMediaProcessor(RenderFrameImpl* render_frame,
-                     PeerConnectionDependencyFactory* dependency_factory,
                      std::unique_ptr<blink::WebMediaStreamDeviceObserver>
                          media_stream_device_observer,
                      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
@@ -279,12 +277,6 @@ class CONTENT_EXPORT UserMediaProcessor
   void SelectVideoContentSettings();
 
   void GenerateStreamForCurrentRequestInfo();
-
-  // Weak ref to a PeerConnectionDependencyFactory, owned by the RenderThread.
-  // It's valid for the lifetime of RenderThread.
-  // TODO(xians): Remove this dependency once audio do not need it for local
-  // audio.
-  PeerConnectionDependencyFactory* const dependency_factory_;
 
   // UserMediaProcessor owns blink::WebMediaStreamDeviceObserver instead of
   // RenderFrameImpl (or RenderFrameObserver) to ensure tear-down occurs in the

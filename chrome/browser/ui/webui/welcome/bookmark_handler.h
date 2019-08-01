@@ -11,7 +11,7 @@
 
 class PrefService;
 
-namespace nux {
+namespace welcome {
 
 class BookmarkHandler : public content::WebUIMessageHandler {
  public:
@@ -32,6 +32,6 @@ class BookmarkHandler : public content::WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(BookmarkHandler);
 };
 
-}  // namespace nux
+}  // namespace welcome
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_BOOKMARK_HANDLER_H_

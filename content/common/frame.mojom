@@ -78,10 +78,6 @@ interface Frame {
               gfx.mojom.Rect clip_rect);
 };
 
-// See src/content/common/navigation_params.h
-[Native]
-struct CommitNavigationParams;
-
 // Implemented by the frame provider and currently must be associated with the
 // legacy IPC channel.
 // KEEP THE COMMIT FUNCTIONS IN SYNC in content/common/navigation_client.mojom.

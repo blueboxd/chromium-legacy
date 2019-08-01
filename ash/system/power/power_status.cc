@@ -46,7 +46,7 @@ const SkColor kBatteryBadgeColor = gfx::kGoogleGrey900;
 
 // The color used for the battery's badge and charged color when the battery
 // charge level is critically low and the device is not plugged in.
-const SkColor kBatteryAlertColor = gfx::kGoogleRedDark600;
+const SkColor kBatteryAlertColor = gfx::kGoogleRed300;
 
 class BatteryImageSource : public gfx::CanvasImageSource {
  public:

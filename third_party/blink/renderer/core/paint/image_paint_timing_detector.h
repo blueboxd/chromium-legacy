@@ -13,6 +13,7 @@
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -234,15 +235,15 @@ class CORE_EXPORT ImagePaintTimingDetector final
   void ReportSwapTime(unsigned last_queued_frame_index,
                       WebWidgetClient::SwapResult,
                       base::TimeTicks);
+  void ResetCallbackManagerForTesting(PaintTimingCallbackManager* manager) {
+    callback_manager_ = manager;
+  }
   void RegisterNotifySwapTime();
   void ReportCandidateToTrace(ImageRecord&);
   void ReportNoCandidateToTrace();
   void Deactivate();
 
   void UpdateCandidate();
-
-  base::RepeatingCallback<void(WebWidgetClient::ReportTimeCallback)>
-      notify_swap_time_override_for_testing_;
 
   // Used to find the last candidate.
   unsigned count_candidates_ = 0;
@@ -265,6 +266,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
 
   ImageRecordsManager records_manager_;
   Member<LocalFrameView> frame_view_;
+  Member<PaintTimingCallbackManager> callback_manager_;
 };
 }  // namespace blink
 

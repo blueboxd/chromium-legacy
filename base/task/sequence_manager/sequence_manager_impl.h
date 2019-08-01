@@ -22,7 +22,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -144,7 +143,7 @@ class BASE_EXPORT SequenceManagerImpl
   scoped_refptr<SingleThreadTaskRunner> GetTaskRunner();
   bool IsBoundToCurrentThread() const;
   MessagePump* GetMessagePump() const;
-  bool IsType(MessagePumpType type) const;
+  bool IsType(MessagePump::Type type) const;
   void SetAddQueueTimeToTasks(bool enable);
   void SetTaskExecutionAllowed(bool allowed);
   bool IsTaskExecutionAllowed() const;
@@ -155,7 +154,7 @@ class BASE_EXPORT SequenceManagerImpl
   void BindToCurrentThread(std::unique_ptr<MessagePump> pump);
   void DeletePendingTasks();
   bool HasTasks();
-  MessagePumpType GetType() const;
+  MessagePump::Type GetType() const;
 
   // Requests that a task to process work is scheduled.
   void ScheduleWork();

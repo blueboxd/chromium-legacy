@@ -156,6 +156,10 @@ NET_EXPORT CanonicalCookie::CookieInclusionStatus
 CookieWouldBeExcludedDueToSameSite(const CanonicalCookie& cookie,
                                    const CookieOptions& options);
 
+// Returns whether the respective SameSite feature is enabled.
+NET_EXPORT bool IsSameSiteByDefaultCookiesEnabled();
+NET_EXPORT bool IsCookiesWithoutSameSiteMustBeSecureEnabled();
+
 // Takes a OnceCallback with only a CookieList and binds it to a callback that
 // also accepts a CookieStatusList, making it compatible with
 // CookieStore::GetCookieListCallback.

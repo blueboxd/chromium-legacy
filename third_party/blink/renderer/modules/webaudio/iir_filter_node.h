@@ -73,6 +73,10 @@ class IIRFilterNode : public AudioNode {
                             NotShared<DOMFloat32Array> phase_response,
                             ExceptionState&);
 
+  // InspectorHelperMixin
+  void ReportDidCreate() final;
+  void ReportWillBeDestroyed() final;
+
  private:
   IIRProcessor* GetIIRFilterProcessor() const;
 };

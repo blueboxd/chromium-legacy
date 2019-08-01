@@ -25,7 +25,7 @@ static_library("router") {
   ]
   public_deps = [
     "//chrome/common/media_router:router",
-    "//chrome/common/media_router/mojo:media_router",
+    "//chrome/common/media_router/mojom:media_router",
   ]
   sources = [
     "issue_manager.cc",
@@ -110,6 +110,8 @@ static_library("router") {
       "providers/cast/cast_app_discovery_service.h",
       "providers/cast/cast_internal_message_util.cc",
       "providers/cast/cast_internal_message_util.h",
+      "providers/cast/cast_media_controller.cc",
+      "providers/cast/cast_media_controller.h",
       "providers/cast/cast_media_route_provider.cc",
       "providers/cast/cast_media_route_provider.h",
       "providers/cast/cast_media_route_provider_metrics.cc",
@@ -191,8 +193,8 @@ static_library("test_support") {
   if (enable_extensions) {
     deps += [
       "discovery",
-      "//chrome/common/media_router/mojo:media_router",
-      "//chrome/common/media_router/mojo:media_router_test_interfaces",
+      "//chrome/common/media_router/mojom:media_router",
+      "//chrome/common/media_router/mojom:media_router_test_interfaces",
       "//extensions/browser",
       "//extensions/common",
     ]

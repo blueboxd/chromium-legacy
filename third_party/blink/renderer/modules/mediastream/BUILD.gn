@@ -71,6 +71,7 @@ blink_modules_sources("mediastream") {
     "web_media_stream_device_observer.cc",
     "web_media_stream_utils.cc",
     "webaudio_media_stream_audio_sink.cc",
+    "webaudio_media_stream_audio_sink.h",
     "webmediaplayer_ms.cc",
     "webmediaplayer_ms_compositor.cc",
     "webmediaplayer_ms_compositor.h",

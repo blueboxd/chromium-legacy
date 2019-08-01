@@ -38,14 +38,17 @@ const base::Feature kLockScreenMediaControls{"LockScreenMediaControls",
 const base::Feature kHideArcMediaNotifications{
     "HideArcMediaNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kMediaSessionNotification{"MediaSessionNotification",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMultiDisplayOverviewAndSplitView{
     "MultiDisplayOverviewAndSplitView", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNewOverviewLayout{"NewOverviewLayout",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 

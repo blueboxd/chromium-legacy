@@ -176,7 +176,7 @@ KeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
   const base::FilePath& profile_path = context->GetPath();
   return new WebDataServiceWrapper(
       profile_path, g_browser_process->GetApplicationLocale(),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
       base::BindRepeating(&ProfileErrorCallback));
 }
 

@@ -49,7 +49,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -63,7 +62,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/process_memory_dump.h"
-#include "net/base/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
@@ -1217,9 +1215,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   // If both SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
   // are enabled, non-SameSite cookies without the Secure attribute will be
   // rejected.
-  if (base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies) &&
-      base::FeatureList::IsEnabled(
-          features::kCookiesWithoutSameSiteMustBeSecure) &&
+  if (cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled() &&
       cc->GetEffectiveSameSite() == CookieSameSite::NO_RESTRICTION &&
       !cc->IsSecure()) {
     DVLOG(net::cookie_util::kVlogSetCookies)

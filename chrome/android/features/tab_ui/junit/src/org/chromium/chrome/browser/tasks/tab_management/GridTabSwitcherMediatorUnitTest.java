@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -64,6 +65,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyObservable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -83,9 +85,11 @@ public class GridTabSwitcherMediatorUnitTest {
     private static final String TAB1_TITLE = "Tab1";
     private static final String TAB2_TITLE = "Tab2";
     private static final String TAB3_TITLE = "Tab3";
+    private static final String TAB4_TITLE = "Tab4";
     private static final int TAB1_ID = 456;
     private static final int TAB2_ID = 789;
     private static final int TAB3_ID = 123;
+    private static final int TAB4_ID = 357;
 
     @Mock
     GridTabSwitcherMediator.ResetHandler mResetHandler;
@@ -424,6 +428,63 @@ public class GridTabSwitcherMediatorUnitTest {
 
         mTabModelObserverCaptor.getValue().didSelectTab(mTab1, TabSelectionType.FROM_USER, TAB3_ID);
         verify(mLayout).onTabSelecting(anyLong(), eq(TAB1_ID));
+    }
+
+    @Test
+    @DisableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
+    public void openDialogButton_FlagDisabled() {
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(false);
+        // Set up a tab group.
+        Tab newTab = prepareTab(TAB4_ID, TAB4_TITLE);
+        doReturn(new ArrayList<>(Arrays.asList(mTab1, newTab)))
+                .when(mTabModelFilter)
+                .getRelatedTabList(TAB1_ID);
+
+        assertThat(mMediator.openTabGridDialog(mTab1), equalTo(null));
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
+    public void openDialogButton_SingleTab() {
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
+        // Mock that tab 1 is a single tab.
+        doReturn(new ArrayList<>(Arrays.asList(mTab1)))
+                .when(mTabModelFilter)
+                .getRelatedTabList(TAB1_ID);
+        assertThat(mMediator.openTabGridDialog(mTab1), equalTo(null));
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
+    public void openDialogButton_TabGroup_NotEmpty() {
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
+        // Set up a tab group.
+        Tab newTab = prepareTab(TAB4_ID, TAB4_TITLE);
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, newTab));
+        doReturn(tabs).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
+
+        TabListMediator.TabActionListener listener = mMediator.openTabGridDialog(mTab1);
+        assertThat(listener, notNullValue());
+
+        listener.run(TAB1_ID);
+        verify(mTabGridDialogResetHandler).resetWithListOfTabs(eq(tabs));
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
+    public void openDialogButton_TabGroup_Empty() {
+        FeatureUtilities.setTabGroupsAndroidEnabledForTesting(true);
+        mMediator.setTabGridDialogResetHandler(mTabGridDialogResetHandler);
+        // Assume that due to tab model change, current group becomes empty in current model.
+        doReturn(new ArrayList<>()).when(mTabModelFilter).getRelatedTabList(TAB1_ID);
+
+        TabListMediator.TabActionListener listener = mMediator.openTabGridDialog(mTab1);
+        assertThat(listener, notNullValue());
+
+        listener.run(TAB1_ID);
+        verify(mTabGridDialogResetHandler).resetWithListOfTabs(eq(null));
     }
 
     private void initAndAssertAllProperties() {

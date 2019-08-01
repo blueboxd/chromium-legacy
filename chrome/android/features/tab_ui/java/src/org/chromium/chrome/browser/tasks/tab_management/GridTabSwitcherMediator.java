@@ -309,7 +309,10 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
      *               in TabModel.
      */
     private void recordUserSwitchedTab(Tab tab, int lastId) {
-        if (tab == null) return;
+        if (tab == null) {
+            assert false : "New selected tab cannot be null when recording tab switch.";
+            return;
+        }
 
         Tab fromTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), lastId);
         assert fromTab != null;
@@ -444,10 +447,12 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
     public boolean onBackPressed() {
         if (!mContainerViewModel.get(IS_VISIBLE)) return false;
         if (mTabSelectionEditorController.handleBackPressed()) return true;
+        if (mTabModelSelector.getCurrentTab() == null) return false;
 
         recordUserSwitchedTab(
                 mTabModelSelector.getCurrentTab(), mTabModelSelector.getCurrentTabId());
         onTabSelecting(mTabModelSelector.getCurrentTabId());
+
         return true;
     }
 
@@ -496,8 +501,13 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
         if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) return null;
         if (!ableToOpenDialog(tab)) return null;
         assert getRelatedTabs(tab.getId()).size() != 1;
+        assert mTabGridDialogResetHandler != null;
         return tabId -> {
-            mTabGridDialogResetHandler.resetWithListOfTabs(getRelatedTabs(tabId));
+            List<Tab> relatedTabs = getRelatedTabs(tabId);
+            if (relatedTabs.size() == 0) {
+                relatedTabs = null;
+            }
+            mTabGridDialogResetHandler.resetWithListOfTabs(relatedTabs);
         };
     }
 

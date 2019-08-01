@@ -250,12 +250,8 @@ void CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
 void CallStackProfileBuilder::PassProfilesToMetricsProvider(
     SampledProfile sampled_profile) {
   if (sampled_profile.process() == BROWSER_PROCESS) {
-    // TODO(crbug.com/973430): Remove the check once profile reporting on
-    // Android is sorted out.
-#if !defined(OS_ANDROID)
     GetBrowserProcessReceiverCallbackInstance().Run(profile_start_time_,
                                                     std::move(sampled_profile));
-#endif
   } else {
     g_child_call_stack_profile_collector.Get()
         .ChildCallStackProfileCollector::Collect(profile_start_time_,

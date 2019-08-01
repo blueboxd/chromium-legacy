@@ -18,6 +18,9 @@ namespace ui {
 
 constexpr base::TimeDelta InputPredictor::kMaxTimeDelta;
 constexpr base::TimeDelta InputPredictor::kMaxResampleTime;
+constexpr base::TimeDelta InputPredictor::kMaxPredictionTime;
+constexpr base::TimeDelta InputPredictor::kTimeInterval;
+constexpr base::TimeDelta InputPredictor::kMinimumTimeInterval;
 
 KalmanPredictor::KalmanPredictor(const bool enable_time_filtering)
     : enable_time_filtering_(enable_time_filtering) {}
@@ -79,6 +82,13 @@ bool KalmanPredictor::GeneratePrediction(base::TimeTicks predict_time,
   result->pos.set_x(position.x());
   result->pos.set_y(position.y());
   return true;
+}
+
+base::TimeDelta KalmanPredictor::TimeInterval() const {
+  return time_filter_.GetPosition()
+             ? std::max(kMinimumTimeInterval, base::TimeDelta::FromMilliseconds(
+                                                  time_filter_.GetPosition()))
+             : kTimeInterval;
 }
 
 gfx::Vector2dF KalmanPredictor::PredictPosition() const {

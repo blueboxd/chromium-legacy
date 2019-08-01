@@ -80,7 +80,12 @@ void RecordPageChangeInteraction(TabSwitcherPageChangeInteraction interaction) {
 // Computes the page from the offset and width of |scrollView|.
 TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
   CGFloat pageWidth = scrollView.frame.size.width;
-  NSUInteger page = lround(scrollView.contentOffset.x / pageWidth);
+  CGFloat offset = scrollView.contentOffset.x;
+  NSUInteger page = lround(offset / pageWidth);
+  // Fence |page| to valid values; page values of 3 (rounded up from 2.5) are
+  // possible, as are large int values if |pageWidth| is somehow very small.
+  page = page < TabGridPageIncognitoTabs ? TabGridPageIncognitoTabs : page;
+  page = page > TabGridPageRemoteTabs ? TabGridPageRemoteTabs : page;
   if (UseRTLLayout()) {
     // In RTL, page indexes are inverted, so subtract |page| from the highest-
     // index TabGridPage value.

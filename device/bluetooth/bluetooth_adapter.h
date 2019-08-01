@@ -170,6 +170,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                              bool is_now_connected) {}
 #endif
 
+#if defined(OS_CHROMEOS)
+    // Called when the battery level of the device has been updated.
+    virtual void DeviceBatteryChanged(
+        BluetoothAdapter* adapter,
+        BluetoothDevice* device,
+        base::Optional<uint8_t> new_battery_percentage) {}
+#endif
+
     // Called when the device |device| is removed from the adapter |adapter|,
     // either as a result of a discovered device being lost between discovering
     // phases or pairing information deleted. |device| should not be
@@ -582,6 +590,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   void NotifyDevicePairedChanged(BluetoothDevice* device,
                                  bool new_paired_status);
 #endif
+
+#if defined(OS_CHROMEOS)
+  void NotifyDeviceBatteryChanged(BluetoothDevice* device);
+#endif
+
   void NotifyGattServiceAdded(BluetoothRemoteGattService* service);
   void NotifyGattServiceRemoved(BluetoothRemoteGattService* service);
   void NotifyGattServiceChanged(BluetoothRemoteGattService* service);

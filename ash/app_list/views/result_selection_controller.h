@@ -5,6 +5,7 @@
 #ifndef ASH_APP_LIST_VIEWS_RESULT_SELECTION_CONTROLLER_H_
 #define ASH_APP_LIST_VIEWS_RESULT_SELECTION_CONTROLLER_H_
 
+#include <memory>
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
@@ -93,7 +94,8 @@ class APP_LIST_EXPORT ResultSelectionController {
       const ResultLocationDetails& location);
 
   // Sets the current selection to the provided |location|.
-  void SetSelection(const ResultLocationDetails& location);
+  void SetSelection(const ResultLocationDetails& location,
+                    bool reverse_tab_order);
 
   SearchResultBaseView* GetResultAtLocation(
       const ResultLocationDetails& location);

@@ -2,13 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Args for all uses of the closure compiler
-common_closure_args = [
-  "extra_annotation_name=attribute",
-  "extra_annotation_name=demo",
-  "extra_annotation_name=element",
-]
-
 strict_error_checking_closure_args = [
   "jscomp_error=accessControls",
   "jscomp_error=ambiguousFunctionDecl",
@@ -32,33 +25,23 @@ strict_error_checking_closure_args = [
 ]
 
 # Additional closure args for performing full checks.
-checking_closure_args = strict_error_checking_closure_args + [
-                          "compilation_level=SIMPLE_OPTIMIZATIONS",
+default_closure_args = strict_error_checking_closure_args + [
+                         "compilation_level=SIMPLE_OPTIMIZATIONS",
 
-                          "language_in=ECMASCRIPT_2017",
-                          "language_out=ECMASCRIPT5_STRICT",
+                         "extra_annotation_name=attribute",
+                         "extra_annotation_name=demo",
+                         "extra_annotation_name=element",
 
-                          "chrome_pass",
-                          "polymer_pass",
+                         "language_in=ECMASCRIPT_2017",
+                         "language_out=ECMASCRIPT5_STRICT",
 
-                          "jscomp_off=duplicate",
+                         "chrome_pass",
+                         "polymer_pass",
 
-                          "js_module_root=../../ui/webui/resources/",
-                          "js_module_root=gen/ui/webui/resources/",
-                        ]
+                         "jscomp_off=duplicate",
 
-# Additional closure arguments for minifying
-minifying_closure_args = [
-  "compilation_level=WHITESPACE_ONLY",
-
-  "language_in=ECMASCRIPT_NEXT",
-  "language_out=ECMASCRIPT_2017",
-
-  # TODO(wychen): turn on 'use strict'. crbug.com/729689
-  "emit_use_strict=false",
-]
-
-# For compatibility with old uses.
-default_closure_args = common_closure_args + checking_closure_args
+                         "js_module_root=../../ui/webui/resources/",
+                         "js_module_root=gen/ui/webui/resources/",
+                       ]
 
 default_disabled_closure_args = [ "jscomp_off=duplicate" ]

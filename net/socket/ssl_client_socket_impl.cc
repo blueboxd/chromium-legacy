@@ -69,6 +69,9 @@ namespace net {
 
 namespace {
 
+constexpr base::FeatureParam<std::string> kPostQuantumGroup{
+    &features::kPostQuantumCECPQ2, "group", ""};
+
 // This constant can be any non-negative/non-zero value (eg: it does not
 // overlap with any value of the net::Error range, including net::OK).
 const int kSSLClientSocketNoPendingResult = 1;
@@ -322,10 +325,26 @@ class SSLClientSocketImpl::SSLContext {
         nullptr /* compression not supported */, DecompressBrotliCert);
 #endif
 
-    if (base::FeatureList::IsEnabled(features::kPostQuantumCECPQ2)) {
-      static const int kCurves[] = {NID_CECPQ2, NID_X25519,
-                                    NID_X9_62_prime256v1, NID_secp384r1};
-      SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
+    const std::string post_quantum_group = kPostQuantumGroup.Get();
+    if (!post_quantum_group.empty()) {
+      bool send_signal = false;
+      if (post_quantum_group == "Control") {
+        send_signal = true;
+      } else if (post_quantum_group == "CECPQ2") {
+        send_signal = true;
+        static const int kCurves[] = {NID_CECPQ2, NID_X25519,
+                                      NID_X9_62_prime256v1, NID_secp384r1};
+        SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
+      } else if (post_quantum_group == "CECPQ2b") {
+        send_signal = true;
+        static const int kCurves[] = {NID_CECPQ2b, NID_X25519,
+                                      NID_X9_62_prime256v1, NID_secp384r1};
+        SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
+      }
+
+      if (send_signal) {
+        SSL_CTX_enable_pq_experiment_signal(ssl_ctx_.get());
+      }
     }
   }
 
@@ -611,6 +630,8 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->key_exchange_group = SSL_get_curve_id(ssl_.get());
   ssl_info->peer_signature_algorithm =
       SSL_get_peer_signature_algorithm(ssl_.get());
+  ssl_info->server_in_post_quantum_experiment =
+      SSL_pq_experiment_signal_seen(ssl_.get());
 
   SSLConnectionStatusSetCipherSuite(
       static_cast<uint16_t>(SSL_CIPHER_get_id(cipher)),

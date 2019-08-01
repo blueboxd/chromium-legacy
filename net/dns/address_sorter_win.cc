@@ -44,11 +44,11 @@ class AddressSorterWin : public AddressSorter {
    public:
     static void Start(const AddressList& list, CallbackType callback) {
       auto job = base::WrapRefCounted(new Job(list, std::move(callback)));
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE,
-          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-          base::BindOnce(&Job::Run, job),
-          base::BindOnce(&Job::OnComplete, job));
+      base::PostTaskAndReply(FROM_HERE,
+                             {base::ThreadPool(), base::MayBlock(),
+                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                             base::BindOnce(&Job::Run, job),
+                             base::BindOnce(&Job::OnComplete, job));
     }
 
    private:

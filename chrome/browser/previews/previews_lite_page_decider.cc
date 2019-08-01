@@ -41,6 +41,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
+#include "url/origin.h"
 
 namespace {
 const char kUserNeedsNotification[] =
@@ -92,8 +94,11 @@ void PreconnectToLitePagesServer(content::BrowserContext* browser_context) {
   if (!loading_predictor || !loading_predictor->preconnect_manager())
     return;
 
+  url::Origin previews_origin =
+      url::Origin::Create(previews::params::GetLitePagePreviewsDomainURL());
   loading_predictor->preconnect_manager()->StartPreconnectUrl(
-      previews::params::GetLitePagePreviewsDomainURL(), true);
+      previews::params::GetLitePagePreviewsDomainURL(), true,
+      net::NetworkIsolationKey(previews_origin, previews_origin));
 }
 
 }  // namespace

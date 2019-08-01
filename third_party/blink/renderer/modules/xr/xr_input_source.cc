@@ -83,6 +83,13 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
 
     updated_source->pointer_transform_matrix_ =
         TryGetTransformationMatrix(desc->pointer_offset);
+
+    // Update the profiles list in-place.
+    // TODO(crbug.com/989244): Re-create the XRInputSource object if necessary.
+    updated_source->profiles_.clear();
+    for (const auto& name : desc->profiles) {
+      updated_source->profiles_.push_back(name);
+    }
   }
 
   updated_source->base_pose_matrix_ = TryGetTransformationMatrix(state->grip);

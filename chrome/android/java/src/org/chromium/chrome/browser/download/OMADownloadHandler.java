@@ -37,9 +37,11 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueResponse;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.download.R;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.ui.UiUtils;
@@ -326,9 +328,14 @@ public class OMADownloadHandler extends BroadcastReceiver {
 
         @Override
         protected void onPostExecute(OMAInfo omaInfo) {
-            DownloadManagerService.getDownloadManagerService().removeDownload(
-                    mDownloadInfo.getDownloadGuid(), mDownloadInfo.isOffTheRecord(),
-                    false /* externallyRemoved */);
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
+                OfflineContentAggregatorFactory.get().removeItem(mDownloadInfo.getContentId());
+            } else {
+                DownloadManagerService.getDownloadManagerService().removeDownload(
+                        mDownloadInfo.getDownloadGuid(), mDownloadInfo.isOffTheRecord(),
+                        false /* externallyRemoved */);
+            }
+
             if (omaInfo == null) return;
             // Send notification if required attributes are missing.
             if (omaInfo.getTypes().isEmpty() || getSize(omaInfo) <= 0
@@ -827,6 +834,10 @@ public class OMADownloadHandler extends BroadcastReceiver {
             builder.setBytesTotalSize(result.bytesTotal);
             if (!TextUtils.isEmpty(result.fileName)) builder.setFileName(result.fileName);
             if (!TextUtils.isEmpty(result.mimeType)) builder.setMimeType(result.mimeType);
+
+            // Since the requested file path may not be same as the actual file path, set it to
+            // null. This will result in using contentUri instead.
+            builder.setFilePath(null);
             item.setDownloadInfo(builder.build());
 
             showDownloadsUi(downloadId, item, result, installNotifyURI);

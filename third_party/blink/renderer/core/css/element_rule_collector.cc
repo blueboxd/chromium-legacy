@@ -73,7 +73,7 @@ StyleRuleList* ElementRuleCollector::MatchedStyleRuleList() {
   return style_rule_list_.Release();
 }
 
-CSSRuleList* ElementRuleCollector::MatchedCSSRuleList() {
+RuleIndexList* ElementRuleCollector::MatchedCSSRuleList() {
   DCHECK_EQ(mode_, SelectorChecker::kCollectingCSSRules);
   return css_rule_list_.Release();
 }
@@ -88,9 +88,9 @@ inline StyleRuleList* ElementRuleCollector::EnsureStyleRuleList() {
   return style_rule_list_;
 }
 
-inline StaticCSSRuleList* ElementRuleCollector::EnsureRuleList() {
+inline RuleIndexList* ElementRuleCollector::EnsureRuleList() {
   if (!css_rule_list_)
-    css_rule_list_ = MakeGarbageCollected<StaticCSSRuleList>();
+    css_rule_list_ = MakeGarbageCollected<RuleIndexList>();
   return css_rule_list_.Get();
 }
 
@@ -287,18 +287,19 @@ CSSRule* ElementRuleCollector::FindStyleRule(CSSRuleCollection* css_rules,
 
 void ElementRuleCollector::AppendCSSOMWrapperForRule(
     CSSStyleSheet* parent_style_sheet,
-    StyleRule* rule) {
+    const RuleData* rule_data) {
   // |parentStyleSheet| is 0 if and only if the |rule| is coming from User
   // Agent. In this case, it is safe to create CSSOM wrappers without
   // parentStyleSheets as they will be used only by inspector which will not try
   // to edit them.
   CSSRule* css_rule = nullptr;
+  StyleRule* rule = rule_data->Rule();
   if (parent_style_sheet)
     css_rule = FindStyleRule(parent_style_sheet, rule);
   else
     css_rule = rule->CreateCSSOMWrapper();
   DCHECK(!parent_style_sheet || css_rule);
-  EnsureRuleList()->Rules().push_back(css_rule);
+  EnsureRuleList()->emplace_back(css_rule, rule_data->SelectorIndex());
 }
 
 void ElementRuleCollector::SortAndTransferMatchedRules() {
@@ -314,10 +315,11 @@ void ElementRuleCollector::SortAndTransferMatchedRules() {
   }
 
   if (mode_ == SelectorChecker::kCollectingCSSRules) {
-    for (unsigned i = 0; i < matched_rules_.size(); ++i)
+    for (unsigned i = 0; i < matched_rules_.size(); ++i) {
       AppendCSSOMWrapperForRule(
           const_cast<CSSStyleSheet*>(matched_rules_[i].ParentStyleSheet()),
-          matched_rules_[i].GetRuleData()->Rule());
+          matched_rules_[i].GetRuleData());
+    }
     return;
   }
 

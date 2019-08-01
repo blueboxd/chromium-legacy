@@ -10,6 +10,7 @@
 #include "base/test/simple_test_clock.h"
 #include "components/favicon/core/large_icon_service_impl.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "components/url_formatter/url_formatter.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
@@ -74,7 +75,11 @@ class ReadingListMediatorTest
                      reading_list::ADDED_VIA_CURRENT_APP);
     model_->SetReadStatus(GURL("http://chromium.org/read2"), true);
     large_icon_service_.reset(new favicon::LargeIconServiceImpl(
-        &mock_favicon_service_, /*image_fetcher=*/nullptr));
+        &mock_favicon_service_, /*image_fetcher=*/nullptr,
+        /*desired_size_in_dip_for_server_requests=*/24,
+        /*icon_type_for_server_requests=*/
+        favicon_base::IconType::kTouchIcon,
+        /*google_server_client_param=*/"test_chrome"));
 
     favicon_loader.reset(new FaviconLoader(large_icon_service_.get()));
     mediator_ = [[ReadingListMediator alloc]

@@ -675,7 +675,7 @@ TEST_F(ScopedTaskEnvironmentTest, MultiThreadedMockTime) {
 
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, post_main_thread_delayed_task, kOneMs);
-  CreateSequencedTaskRunnerWithTraits({ThreadPool()})
+  CreateSequencedTaskRunner({ThreadPool()})
       ->PostDelayedTask(FROM_HERE, post_thread_pool_delayed_task, kOneMs);
 
   scoped_task_environment.FastForwardUntilNoTasksRemain();

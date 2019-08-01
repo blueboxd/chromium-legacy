@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -22,7 +21,6 @@
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -36,19 +34,9 @@ namespace content {
 
 namespace {
 
-enum class NetworkServiceState {
-  kDisabled,
-  kEnabled,
-};
-
-class StoragePartititionImplBrowsertest
-    : public ContentBrowserTest,
-      public testing::WithParamInterface<NetworkServiceState> {
+class StoragePartititionImplBrowsertest : public ContentBrowserTest {
  public:
-  StoragePartititionImplBrowsertest() {
-    if (GetParam() == NetworkServiceState::kEnabled)
-      feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-  }
+  StoragePartititionImplBrowsertest() {}
   ~StoragePartititionImplBrowsertest() override {}
 
   GURL GetTestURL() const {
@@ -58,7 +46,6 @@ class StoragePartititionImplBrowsertest
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Creates a SimpleURLLoader and starts it to download |url|. Blocks until the
@@ -97,7 +84,7 @@ void CheckSimpleURLLoaderState(network::SimpleURLLoader* url_loader,
 // Make sure that the NetworkContext returned by a StoragePartition works, both
 // with the network service enabled and with it disabled, when one is created
 // that wraps the URLRequestContext created by the BrowserContext.
-IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest, NetworkContext) {
+IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest, NetworkContext) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   network::mojom::URLLoaderFactoryParamsPtr params =
@@ -135,7 +122,7 @@ IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest, NetworkContext) {
 
 // Make sure the factory info returned from
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| works.
-IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest,
+IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest,
                        GetURLLoaderFactoryForBrowserProcessIOThread) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -154,7 +141,7 @@ IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest,
 // Make sure the factory info returned from
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| doesn't
 // crash if it's called after the StoragePartition is deleted.
-IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest,
+IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest,
                        BrowserIOFactoryInfoAfterStoragePartitionGone) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -178,7 +165,7 @@ IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest,
 // Make sure the factory constructed from
 // |StoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread()| doesn't
 // crash if it's called after the StoragePartition is deleted.
-IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest,
+IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest,
                        BrowserIOFactoryAfterStoragePartitionGone) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -200,7 +187,7 @@ IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest,
 
 // Checks that the network::URLLoaderIntercpetor works as expected with the
 // SharedURLLoaderFactory returned by StoragePartititionImpl.
-IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest,
+IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest,
                        URLLoaderInterceptor) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL kEchoUrl(embedded_test_server()->GetURL("/echo"));
@@ -245,20 +232,5 @@ IN_PROC_BROWSER_TEST_P(StoragePartititionImplBrowsertest,
     CheckSimpleURLLoaderState(url_loader.get(), net::OK, net::HTTP_OK);
   }
 }
-
-// NetworkServiceState::kEnabled currently DCHECKs on Android, as Android isn't
-// expected to create extra processes.
-#if defined(OS_ANDROID)
-INSTANTIATE_TEST_SUITE_P(
-    /* No test prefix */,
-    StoragePartititionImplBrowsertest,
-    ::testing::Values(NetworkServiceState::kDisabled));
-#else  // !defined(OS_ANDROID)
-INSTANTIATE_TEST_SUITE_P(
-    /* No test prefix */,
-    StoragePartititionImplBrowsertest,
-    ::testing::Values(NetworkServiceState::kDisabled,
-                      NetworkServiceState::kEnabled));
-#endif
 
 }  // namespace content

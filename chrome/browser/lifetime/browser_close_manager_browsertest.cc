@@ -97,8 +97,8 @@ class RepeatedNotificationObserver : public content::NotificationObserver {
                const content::NotificationDetails& details) override {
     ASSERT_GT(num_outstanding_, 0);
     if (!--num_outstanding_ && running_) {
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               run_loop_.QuitClosure());
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     run_loop_.QuitClosure());
     }
   }
 

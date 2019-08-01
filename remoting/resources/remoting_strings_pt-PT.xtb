@@ -72,7 +72,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="2405928220797050937">Esta aplicação já não é suportada. Para garantir que recebe as mais recentes funcionalidades e atualizações de segurança, utilize a <ph name="LINK_BEGIN" />aplicação Web do Ambiente de Trabalho Remoto do Chrome<ph name="LINK_END" />.</translation>
 <translation id="2431841749166974386">É necessário um passo de configuração adicional para poder controlar remotamente esta máquina com o <ph name="PRODUCT_NAME" />.
 
-Para ativar esta funcionalidade, selecione "<ph name="BUTTON_NAME" />" para apresentar o painel de preferências de Segurança e privacidade e, em seguida, selecione a caixa junto a "<ph name="SERVICE_SCRIPT_NAME" />".
+De modo a ativar esta funcionalidade, selecione "<ph name="BUTTON_NAME" />" para apresentar o painel de preferências de Segurança e privacidade e, em seguida, selecione a caixa junto a "<ph name="SERVICE_SCRIPT_NAME" />".
 
 Se o "<ph name="SERVICE_SCRIPT_NAME" />" já está presente e já foi verificado, pode ter de o remover e, em seguida, adicioná-lo novamente.</translation>
 <translation id="2499160551253595098">Ajude-nos a melhorar o Ambiente de Trabalho Remoto do Chrome, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>

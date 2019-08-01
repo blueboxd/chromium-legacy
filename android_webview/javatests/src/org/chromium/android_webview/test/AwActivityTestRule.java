@@ -10,6 +10,7 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
 import android.util.AndroidRuntimeException;
+import android.util.Base64;
 import android.view.ViewGroup;
 
 import org.junit.Assert;
@@ -234,6 +235,13 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         loadDataAsync(awContents, data, mimeType, isBase64Encoded);
         onPageFinishedHelper.waitForCallback(
                 currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+    }
+
+    public void loadHtmlSync(final AwContents awContents, CallbackHelper onPageFinishedHelper,
+            final String html) throws Throwable {
+        int currentCallCount = onPageFinishedHelper.getCallCount();
+        final String encodedData = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
+        loadDataSync(awContents, onPageFinishedHelper, encodedData, "text/html", true);
     }
 
     public void loadDataSyncWithCharset(final AwContents awContents,

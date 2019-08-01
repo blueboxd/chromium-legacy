@@ -11,6 +11,7 @@
 #include "base/fuchsia/service_directory.h"
 #include "fuchsia/base/agent_manager.h"
 #include "fuchsia/runners/cast/api_bindings_client.h"
+#include "fuchsia/runners/cast/application_controller_impl.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 #include "fuchsia/runners/cast/touch_input_bindings.h"
 #include "fuchsia/runners/common/web_component.h"
@@ -52,6 +53,7 @@ class CastComponent : public WebComponent,
   NamedMessagePortConnector connector_;
   std::unique_ptr<TouchInputBindings> touch_input_;
   std::unique_ptr<ApiBindingsClient> api_bindings_client_;
+  std::unique_ptr<ApplicationControllerImpl> application_controller_;
 
   fidl::Binding<fuchsia::web::NavigationEventListener>
       navigation_listener_binding_;

@@ -35,8 +35,8 @@ class SystemDnsConfigChangeNotifierTest : public TestWithScopedTaskEnvironment {
   // Set up a change notifier, owned on a dedicated blockable task runner, with
   // a faked underlying DnsConfigService.
   SystemDnsConfigChangeNotifierTest()
-      : notifier_task_runner_(
-            base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})) {
+      : notifier_task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock()})) {
     auto test_service = std::make_unique<TestDnsConfigService>();
     notifier_task_runner_->PostTask(
         FROM_HERE,

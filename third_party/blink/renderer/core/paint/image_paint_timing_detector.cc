@@ -5,20 +5,12 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
-#include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource.h"
-#include "third_party/blink/renderer/core/layout/layout_video.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
-#include "third_party/blink/renderer/core/style/style_fetched_image.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
@@ -69,7 +61,9 @@ static bool LargeImageFirst(const base::WeakPtr<ImageRecord>& a,
 }
 
 ImagePaintTimingDetector::ImagePaintTimingDetector(LocalFrameView* frame_view)
-    : frame_view_(frame_view) {}
+    : frame_view_(frame_view),
+      callback_manager_(
+          MakeGarbageCollected<PaintTimingCallbackManagerImpl>()) {}
 
 void ImagePaintTimingDetector::PopulateTraceValue(
     TracedValue& value,
@@ -180,20 +174,13 @@ void ImagePaintTimingDetector::RegisterNotifySwapTime() {
   auto callback = CrossThreadBindOnce(&ImagePaintTimingDetector::ReportSwapTime,
                                       WrapCrossThreadWeakPersistent(this),
                                       last_registered_frame_index_);
-  if (notify_swap_time_override_for_testing_) {
-    // Run is not to run the |callback|, but to queue it.
-    notify_swap_time_override_for_testing_.Run(
-        ConvertToBaseOnceCallback(std::move(callback)));
-    num_pending_swap_callbacks_++;
-    return;
-  }
   // ReportSwapTime on layerTreeView will queue a swap-promise, the callback is
   // called when the swap for current render frame completes or fails to happen.
   LocalFrame& frame = frame_view_->GetFrame();
   if (!frame.GetPage())
     return;
 
-  frame.GetPage()->GetChromeClient().NotifySwapTime(frame, std::move(callback));
+  callback_manager_->RegisterCallback(frame, std::move(callback));
   num_pending_swap_callbacks_++;
 }
 
@@ -339,5 +326,6 @@ ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() const {
 
 void ImagePaintTimingDetector::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_view_);
+  visitor->Trace(callback_manager_);
 }
 }  // namespace blink

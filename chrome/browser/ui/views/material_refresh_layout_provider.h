@@ -10,8 +10,8 @@
 
 class MaterialRefreshLayoutProvider : public ChromeLayoutProvider {
  public:
-  MaterialRefreshLayoutProvider() = default;
-  ~MaterialRefreshLayoutProvider() override = default;
+  MaterialRefreshLayoutProvider();
+  ~MaterialRefreshLayoutProvider() override;
 
   // ChromeLayoutProvider:
   int GetDistanceMetric(int metric) const override;
@@ -22,6 +22,9 @@ class MaterialRefreshLayoutProvider : public ChromeLayoutProvider {
       views::EmphasisMetric emphasis_metric) const override;
   gfx::ShadowValues MakeShadowValues(int elevation,
                                      SkColor color) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MaterialRefreshLayoutProvider);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_MATERIAL_REFRESH_LAYOUT_PROVIDER_H_

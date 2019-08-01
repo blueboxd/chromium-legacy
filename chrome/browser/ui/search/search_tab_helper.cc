@@ -370,14 +370,16 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
   omnibox_view->OnAfterPossibleChange(true);
 }
 
-void SearchTabHelper::OnSetCustomBackgroundURLWithAttributions(
+void SearchTabHelper::OnSetCustomBackgroundInfo(
     const GURL& background_url,
     const std::string& attribution_line_1,
     const std::string& attribution_line_2,
-    const GURL& action_url) {
+    const GURL& action_url,
+    const std::string& collection_id) {
   if (instant_service_) {
-    instant_service_->SetCustomBackgroundURLWithAttributions(
-        background_url, attribution_line_1, attribution_line_2, action_url);
+    instant_service_->SetCustomBackgroundInfo(
+        background_url, attribution_line_1, attribution_line_2, action_url,
+        collection_id);
   }
 }
 

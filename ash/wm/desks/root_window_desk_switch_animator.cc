@@ -5,6 +5,8 @@
 #include "ash/wm/desks/root_window_desk_switch_animator.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -14,6 +16,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -29,6 +32,12 @@ constexpr int kMaxScreenshotRetries = 2;
 
 constexpr base::TimeDelta kAnimationDuration =
     base::TimeDelta::FromMilliseconds(300);
+
+// The amount, by which the detached old layers of the removed desk's windows,
+// is translated vertically during the for-remove desk switch animation.
+constexpr int kRemovedDeskWindowYTranslation = 20;
+constexpr base::TimeDelta kRemovedDeskWindowTranslationDuration =
+    base::TimeDelta::FromMilliseconds(100);
 
 // Create the layer that will be the parent of the screenshot layer, with a
 // solid black color to act as the background showing behind the two
@@ -100,14 +109,18 @@ RootWindowDeskSwitchAnimator::RootWindowDeskSwitchAnimator(
     aura::Window* root,
     const Desk* ending_desk,
     Delegate* delegate,
-    bool move_left)
+    bool move_left,
+    bool for_remove)
     : root_window_(root),
+      starting_desk_(DesksController::Get()->active_desk()),
       ending_desk_(ending_desk),
       delegate_(delegate),
       animation_layer_owner_(CreateAnimationLayerOwner(root)),
       x_translation_offset_(root->layer()->size().width() + kDesksSpacing),
-      move_left_(move_left) {
+      move_left_(move_left),
+      for_remove_(for_remove) {
   DCHECK(root_window_);
+  DCHECK(starting_desk_);
   DCHECK(ending_desk_);
   DCHECK(delegate_);
 }
@@ -122,6 +135,23 @@ RootWindowDeskSwitchAnimator::~RootWindowDeskSwitchAnimator() {
 }
 
 void RootWindowDeskSwitchAnimator::TakeStartingDeskScreenshot() {
+  if (for_remove_) {
+    // The active desk is about to be removed. Recreate and detach its old
+    // layers to animate them in a jump-like animation.
+    auto* desk_container =
+        starting_desk_->GetDeskContainerForRoot(root_window_);
+    old_windows_layer_tree_owner_ = wm::RecreateLayers(desk_container);
+    root_window_->layer()->Add(old_windows_layer_tree_owner_->root());
+    root_window_->layer()->StackAtTop(old_windows_layer_tree_owner_->root());
+
+    // We don't take a screenshot of the soon-to-be-removed desk, we use an
+    // empty black solid color layer.
+    auto black_layer = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+    black_layer->SetColor(SK_ColorBLACK);
+    CompleteAnimationPhase1WithLayer(std::move(black_layer));
+    return;
+  }
+
   TakeScreenshot(
       root_window_,
       base::BindOnce(
@@ -179,6 +209,22 @@ void RootWindowDeskSwitchAnimator::StartAnimation() {
   settings.SetTransitionDuration(kAnimationDuration);
   settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   animation_layer->SetTransform(animation_layer_ending_transfrom);
+
+  if (for_remove_) {
+    DCHECK(old_windows_layer_tree_owner_);
+    auto* old_windows_layer = old_windows_layer_tree_owner_->root();
+    DCHECK(old_windows_layer);
+
+    // Translate the old layers of removed desk's windows back down by
+    // `kRemovedDeskWindowYTranslation`.
+    gfx::Transform transform = old_windows_layer->GetTargetTransform();
+    ui::ScopedLayerAnimationSettings settings(old_windows_layer->GetAnimator());
+    settings.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
+    settings.SetTransitionDuration(kRemovedDeskWindowTranslationDuration);
+    settings.SetTweenType(gfx::Tween::EASE_IN);
+    transform.Translate(0, kRemovedDeskWindowYTranslation);
+    old_windows_layer->SetTransform(transform);
+  }
 }
 
 void RootWindowDeskSwitchAnimator::OnImplicitAnimationsCompleted() {
@@ -188,27 +234,11 @@ void RootWindowDeskSwitchAnimator::OnImplicitAnimationsCompleted() {
   delegate_->OnDeskSwitchAnimationFinished();
 }
 
-void RootWindowDeskSwitchAnimator::OnStartingDeskScreenshotTaken(
-    std::unique_ptr<viz::CopyOutputResult> copy_result) {
-  if (!copy_result || copy_result->IsEmpty()) {
-    // A frame may be activated before the screenshot requests are satisfied,
-    // leading to us getting an empty |result|. Rerequest the screenshot.
-    // (See viz::Surface::ActivateFrame()).
-    if (++starting_desk_screenshot_retries_ <= kMaxScreenshotRetries) {
-      TakeStartingDeskScreenshot();
-    } else {
-      LOG(ERROR) << "Received multiple empty screenshots of the starting desk.";
-      NOTREACHED();
-      starting_desk_screenshot_taken_ = true;
-      delegate_->OnStartingDeskScreenshotTaken(ending_desk_);
-    }
+void RootWindowDeskSwitchAnimator::CompleteAnimationPhase1WithLayer(
+    std::unique_ptr<ui::Layer> layer) {
+  DCHECK(layer);
 
-    return;
-  }
-
-  ui::Layer* starting_desk_screenshot_layer =
-      CreateLayerFromScreenshotResult(std::move(copy_result)).release();
-
+  ui::Layer* starting_desk_screenshot_layer = layer.release();
   gfx::Rect screenshot_bounds(root_window_->layer()->size());
   gfx::Transform animation_layer_starting_transfrom;
 
@@ -251,10 +281,51 @@ void RootWindowDeskSwitchAnimator::OnStartingDeskScreenshotTaken(
   // etc.) are not visible to the user.
   auto* root_layer = root_window_->layer();
   root_layer->Add(animation_layer);
-  root_layer->StackAtTop(animation_layer);
+
+  if (for_remove_) {
+    DCHECK(old_windows_layer_tree_owner_);
+    auto* old_windows_layer = old_windows_layer_tree_owner_->root();
+    DCHECK(old_windows_layer);
+    root_layer->StackBelow(animation_layer, old_windows_layer);
+
+    // Translate the old layers of the removed desk's windows up by
+    // `kRemovedDeskWindowYTranslation`.
+    gfx::Transform transform = old_windows_layer->GetTargetTransform();
+    ui::ScopedLayerAnimationSettings settings(old_windows_layer->GetAnimator());
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    settings.SetTransitionDuration(kRemovedDeskWindowTranslationDuration);
+    settings.SetTweenType(gfx::Tween::EASE_OUT);
+    transform.Translate(0, -kRemovedDeskWindowYTranslation);
+    old_windows_layer->SetTransform(transform);
+  } else {
+    root_layer->StackAtTop(animation_layer);
+  }
 
   starting_desk_screenshot_taken_ = true;
   delegate_->OnStartingDeskScreenshotTaken(ending_desk_);
+}
+
+void RootWindowDeskSwitchAnimator::OnStartingDeskScreenshotTaken(
+    std::unique_ptr<viz::CopyOutputResult> copy_result) {
+  if (!copy_result || copy_result->IsEmpty()) {
+    // A frame may be activated before the screenshot requests are satisfied,
+    // leading to us getting an empty |result|. Rerequest the screenshot.
+    // (See viz::Surface::ActivateFrame()).
+    if (++starting_desk_screenshot_retries_ <= kMaxScreenshotRetries) {
+      TakeStartingDeskScreenshot();
+    } else {
+      LOG(ERROR) << "Received multiple empty screenshots of the starting desk.";
+      NOTREACHED();
+      starting_desk_screenshot_taken_ = true;
+      delegate_->OnStartingDeskScreenshotTaken(ending_desk_);
+    }
+
+    return;
+  }
+
+  CompleteAnimationPhase1WithLayer(
+      CreateLayerFromScreenshotResult(std::move(copy_result)));
 }
 
 void RootWindowDeskSwitchAnimator::OnEndingDeskScreenshotTaken(

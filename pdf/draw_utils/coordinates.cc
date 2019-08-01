@@ -12,6 +12,11 @@
 namespace chrome_pdf {
 namespace draw_utils {
 
+void AdjustBottomGapForRightSidePage(int page_x, pp::Rect* bottom_gap) {
+  bottom_gap->set_x(page_x);
+  bottom_gap->set_width(bottom_gap->width() / 2);
+}
+
 void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size) {
   int width_diff = std::max(0, rect_size.width() - doc_size->width());
   doc_size->Enlarge(width_diff, rect_size.height());

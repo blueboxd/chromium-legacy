@@ -192,9 +192,8 @@ class FileSystemEntryURLLoader
 
     url_ = params_.file_system_context->CrackURL(request.url);
     if (!url_.is_valid()) {
-      const FileSystemRequestInfo request_info = {request.url, nullptr,
-                                                  params_.storage_domain,
-                                                  params_.frame_tree_node_id};
+      const FileSystemRequestInfo request_info = {
+          request.url, params_.storage_domain, params_.frame_tree_node_id};
       params_.file_system_context->AttemptAutoMountForURLRequest(
           request_info,
           base::BindOnce(&FileSystemEntryURLLoader::DidAttemptAutoMount,

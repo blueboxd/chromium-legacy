@@ -108,16 +108,18 @@ class SearchIPCRouter : public content::WebContentsObserver,
     // if the |text| is empty) into the omnibox.
     virtual void PasteIntoOmnibox(const base::string16& text) = 0;
 
-    // Called when a custom background with attributions is selected on the NTP.
+    // Called when a custom background is configured on the NTP.
     // background_url: Url of the background image.
     // attribution_line_1: First attribution line for the image.
     // attribution_line_2: Second attribution line for the image.
     // action_url: Url to learn more about the backgrounds image.
-    virtual void OnSetCustomBackgroundURLWithAttributions(
+    // collection_id: Id of the collection that was selected.
+    virtual void OnSetCustomBackgroundInfo(
         const GURL& background_url,
         const std::string& attribution_line_1,
         const std::string& attribution_line_2,
-        const GURL& action_url) = 0;
+        const GURL& action_url,
+        const std::string& collection_id) = 0;
 
     // Called to open the file select dialog for selecting a
     // NTP background image.
@@ -184,7 +186,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldSendMostVisitedInfo() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
     virtual bool ShouldSendLocalBackgroundSelected() = 0;
-    virtual bool ShouldProcessSetCustomBackgroundURLWithAttributions() = 0;
+    virtual bool ShouldProcessSetCustomBackgroundInfo() = 0;
     virtual bool ShouldProcessSelectLocalBackgroundImage() = 0;
     virtual bool ShouldProcessBlocklistSearchSuggestion() = 0;
     virtual bool ShouldProcessBlocklistSearchSuggestionWithHash() = 0;
@@ -276,11 +278,11 @@ class SearchIPCRouter : public content::WebContentsObserver,
       const ntp_tiles::NTPTileImpression& impression) override;
   void PasteAndOpenDropdown(int page_seq_no,
                             const base::string16& text) override;
-  void SetCustomBackgroundURLWithAttributions(
-      const GURL& background_url,
-      const std::string& attribution_line_1,
-      const std::string& attribution_line_2,
-      const GURL& action_url) override;
+  void SetCustomBackgroundInfo(const GURL& background_url,
+                               const std::string& attribution_line_1,
+                               const std::string& attribution_line_2,
+                               const GURL& action_url,
+                               const std::string& collection_id) override;
   void SelectLocalBackgroundImage() override;
   void BlocklistSearchSuggestion(int32_t task_version,
                                  int64_t task_id) override;

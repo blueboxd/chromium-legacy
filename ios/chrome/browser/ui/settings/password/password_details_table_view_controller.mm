@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
@@ -473,7 +474,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   MDCSnackbarMessage* copyPasswordResultMessage =
       [MDCSnackbarMessage messageWithText:message];
   copyPasswordResultMessage.category = @"PasswordsSnackbarCategory";
-  [MDCSnackbarManager showMessage:copyPasswordResultMessage];
+  [self.dispatcher showSnackbarMessage:copyPasswordResultMessage
+                          bottomOffset:0];
 }
 
 // Deletes the password with a deletion confirmation alert.

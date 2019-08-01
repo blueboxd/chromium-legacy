@@ -6,10 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_DETECTOR_H_
 
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -22,6 +24,37 @@ class LocalFrameView;
 class PropertyTreeState;
 class TextPaintTimingDetector;
 struct WebFloatRect;
+
+using ReportTimeCallback =
+    WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
+                                      base::TimeTicks)>;
+// |PaintTimingCallbackManager| is an interface between
+// |ImagePaintTimingDetector|/|TextPaintTimingDetector| and |ChromeClient|.
+// As |ChromeClient| is shared among the paint-timing-detecters, it
+// makes it hard to test each detector without being affected other detectors.
+// The interface, however, allows unit tests to mock |ChromeClient| for each
+// detector. With the mock, |ImagePaintTimingDetector|'s callback does not need
+// to store in the same queue as |TextPaintTimingDetector|'s. The separate
+// queue makes it possible to pop an |ImagePaintTimingDetector|'s callback
+// without having to popping the |TextPaintTimingDetector|'s.
+class PaintTimingCallbackManager : public GarbageCollectedMixin {
+ public:
+  virtual void RegisterCallback(LocalFrame&, ReportTimeCallback) = 0;
+};
+
+using ReportTimeCallback =
+    WTF::CrossThreadOnceFunction<void(WebWidgetClient::SwapResult,
+                                      base::TimeTicks)>;
+
+class PaintTimingCallbackManagerImpl
+    : public GarbageCollected<PaintTimingCallbackManagerImpl>,
+      public PaintTimingCallbackManager {
+  USING_GARBAGE_COLLECTED_MIXIN(PaintTimingCallbackManagerImpl);
+
+ public:
+  void RegisterCallback(LocalFrame&, ReportTimeCallback) override;
+  void Trace(Visitor* visitor) override {}
+};
 
 // PaintTimingDetector contains some of paint metric detectors,
 // providing common infrastructure for these detectors.

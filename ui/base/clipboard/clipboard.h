@@ -34,6 +34,11 @@ namespace ui {
 class TestClipboard;
 class ScopedClipboardWriter;
 
+// Clipboard:
+// - reads from and writes to the system clipboard.
+// - specifies an ordering in which to write types to the clipboard
+//   (see |ObjectType|).
+// - is generalized for all targets/operating systems.
 class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
  public:
   static bool IsSupportedClipboardType(ClipboardType type) {

@@ -223,7 +223,7 @@ class SQLitePersistentReportingAndNelStoreTest
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
 };
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest, CreateDBAndTables) {

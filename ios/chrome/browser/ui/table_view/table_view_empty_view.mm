@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/table_view/table_view_empty_view.h"
 
+#import "ios/chrome/common/colors/semantic_color_names.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -22,7 +24,7 @@ NSAttributedString* GetAttributedMessage(NSString* message) {
   NSDictionary* default_attributes = @{
     NSFontAttributeName :
         [UIFont preferredFontForTextStyle:UIFontTextStyleBody],
-    NSForegroundColorAttributeName : [UIColor grayColor],
+    NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
     NSParagraphStyleAttributeName : paragraph_style
   };
   return [[NSAttributedString alloc] initWithString:message

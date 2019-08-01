@@ -11,7 +11,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome/bookmark_item.h"
-#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/onboarding_welcome_resources.h"
@@ -24,7 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace nux {
+namespace welcome {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -141,4 +141,4 @@ void GoogleAppsHandler::HandleGetGoogleAppsList(const base::ListValue* args) {
       BookmarkItemsToListValue(google_apps_.data(), google_apps_.size()));
 }
 
-}  // namespace nux
+}  // namespace welcome

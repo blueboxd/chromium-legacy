@@ -227,13 +227,23 @@ class NoStatePrefetchBrowserTest
 
 class NoStatePrefetchBrowserTestHttpCache
     : public NoStatePrefetchBrowserTest,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  protected:
   void SetUp() override {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          net::features::kSplitCacheByNetworkIsolationKey);
-    }
+    bool split_cache_by_network_isolation_key;
+    bool append_frame_origin_to_network_isolation_key;
+    std::tie(split_cache_by_network_isolation_key,
+             append_frame_origin_to_network_isolation_key) = GetParam();
+
+    std::vector<base::Feature> disabled_and_enabled_features[2];
+
+    disabled_and_enabled_features[split_cache_by_network_isolation_key]
+        .push_back(net::features::kSplitCacheByNetworkIsolationKey);
+    disabled_and_enabled_features[append_frame_origin_to_network_isolation_key]
+        .push_back(net::features::kAppendFrameOriginToNetworkIsolationKey);
+
+    feature_list_.InitWithFeatures(disabled_and_enabled_features[true],
+                                   disabled_and_enabled_features[false]);
     NoStatePrefetchBrowserTest::SetUp();
   }
 
@@ -241,12 +251,48 @@ class NoStatePrefetchBrowserTestHttpCache
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(DefaultKeyedHttpCache,
-                         NoStatePrefetchBrowserTestHttpCache,
-                         ::testing::Values(false));
-INSTANTIATE_TEST_SUITE_P(DoubleKeyedHttpCache,
-                         NoStatePrefetchBrowserTestHttpCache,
-                         ::testing::Values(true));
+using NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin =
+    NoStatePrefetchBrowserTestHttpCache;
+
+// Test that the network isolation key is correctly populated during a prefetch,
+// with feature kAppendFrameOriginToNetworkIsolationKey disabled and enabled
+// respectively.
+IN_PROC_BROWSER_TEST_P(
+    NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin,
+    PrefetchTwoCrossOriginFrames) {
+  bool append_frame_origin_to_network_isolation_key;
+  std::tie(std::ignore, append_frame_origin_to_network_isolation_key) =
+      GetParam();
+
+  GURL image_src =
+      embedded_test_server()->GetURL("/prerender/cacheable_image.png");
+  base::StringPairs replacement_text_img_src;
+  replacement_text_img_src.push_back(
+      std::make_pair("IMAGE_SRC", image_src.spec()));
+  std::string iframe_path = net::test_server::GetFilePathWithReplacements(
+      "/prerender/one_image.html", replacement_text_img_src);
+
+  GURL iframe_src_1 = embedded_test_server()->GetURL("www.a.com", iframe_path);
+  GURL iframe_src_2 = embedded_test_server()->GetURL("www.b.com", iframe_path);
+
+  base::StringPairs replacement_text_iframe_src;
+  replacement_text_iframe_src.push_back(
+      std::make_pair("IFRAME_1_SRC", iframe_src_1.spec()));
+  replacement_text_iframe_src.push_back(
+      std::make_pair("IFRAME_2_SRC", iframe_src_2.spec()));
+  std::string prerender_path = net::test_server::GetFilePathWithReplacements(
+      "/prerender/two_iframes.html", replacement_text_iframe_src);
+  ui_test_utils::NavigateToURL(current_browser(),
+                               src_server()->GetURL(prerender_path));
+
+  WaitForRequestCount(image_src,
+                      append_frame_origin_to_network_isolation_key ? 2 : 1);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    NoStatePrefetchBrowserTestHttpCache_DefaultAndAppendFrameOrigin,
+    ::testing::Combine(::testing::Values(true), ::testing::Bool()));
 
 // Checks that a page is correctly prefetched in the case of a
 // <link rel=prerender> tag and the JavaScript on the page is not executed.
@@ -276,10 +322,15 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchBigger) {
   WaitForRequestCount(src_server()->GetURL(kPrefetchPngRedirect), 1);
 }
 
+using NoStatePrefetchBrowserTestHttpCache_DefaultAndDoubleKeyedHttpCache =
+    NoStatePrefetchBrowserTestHttpCache;
+
 // Checks that a page load following a prefetch reuses preload-scanned resources
 // and link rel 'prerender' main resource from cache without failing over to
 // network.
-IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTestHttpCache, LoadAfterPrefetch) {
+IN_PROC_BROWSER_TEST_P(
+    NoStatePrefetchBrowserTestHttpCache_DefaultAndDoubleKeyedHttpCache,
+    LoadAfterPrefetch) {
   {
     std::unique_ptr<TestPrerender> test_prerender = PrefetchFromFile(
         kPrefetchPageBigger, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
@@ -298,8 +349,9 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTestHttpCache, LoadAfterPrefetch) {
 // Checks that a page load following a cross origin prefetch reuses
 // preload-scanned resources and link rel 'prerender' main resource
 // from cache without failing over to network.
-IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTestHttpCache,
-                       LoadAfterPrefetchCrossOrigin) {
+IN_PROC_BROWSER_TEST_P(
+    NoStatePrefetchBrowserTestHttpCache_DefaultAndDoubleKeyedHttpCache,
+    LoadAfterPrefetchCrossOrigin) {
   static const std::string kSecondaryDomain = "www.foo.com";
   GURL cross_domain_url =
       embedded_test_server()->GetURL(kSecondaryDomain, kPrefetchPageBigger);
@@ -315,6 +367,11 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTestHttpCache,
   WaitForRequestCount(src_server()->GetURL(kPrefetchJpeg), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPng2), 1);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    NoStatePrefetchBrowserTestHttpCache_DefaultAndDoubleKeyedHttpCache,
+    ::testing::Combine(::testing::Bool(), ::testing::Values(false)));
 
 // Checks that the expected resource types are fetched via NoState Prefetch.
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchAllResourceTypes) {

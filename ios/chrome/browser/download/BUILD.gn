@@ -19,13 +19,15 @@ source_set("download") {
     "download_manager_tab_helper_delegate.h",
     "google_drive_app_util.h",
     "google_drive_app_util.mm",
-    "pass_kit_mime_type.cc",
-    "pass_kit_mime_type.h",
     "pass_kit_tab_helper.h",
     "pass_kit_tab_helper.mm",
     "pass_kit_tab_helper_delegate.h",
     "usdz_mime_type.cc",
     "usdz_mime_type.h",
+  ]
+
+  public_deps = [
+    ":pass_kit_mime_type",
   ]
 
   deps = [
@@ -53,6 +55,19 @@ source_set("features") {
   sources = [
     "features.h",
     "features.mm",
+  ]
+
+  deps = [
+    "//base",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("pass_kit_mime_type") {
+  sources = [
+    "pass_kit_mime_type.cc",
+    "pass_kit_mime_type.h",
   ]
 
   deps = [

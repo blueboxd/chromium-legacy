@@ -1329,7 +1329,8 @@ void UDPSocketPosix::FlushPending() {
 // ways.
 base::SequencedTaskRunner* UDPSocketPosix::GetTaskRunner() {
   if (task_runner_ == nullptr) {
-    task_runner_ = CreateSequencedTaskRunnerWithTraits(base::TaskTraits());
+    task_runner_ =
+        CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool()));
   }
   return task_runner_.get();
 }

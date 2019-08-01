@@ -8,7 +8,6 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
@@ -71,7 +70,8 @@ int main(int argc, char** argv) {
 
   mojo::core::Init();
 
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("OzoneDemo");
 
   ui::OzonePlatform::InitParams params;

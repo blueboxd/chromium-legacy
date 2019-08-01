@@ -235,7 +235,10 @@ void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
     if (is_new_origin || now - last_omnibox_preconnect_time_ >=
                              kMinDelayBetweenPreconnectRequests) {
       last_omnibox_preconnect_time_ = now;
-      preconnect_manager()->StartPreconnectUrl(url, true);
+      // Not to be confused with |origin|.
+      url::Origin url_origin = url::Origin::Create(url);
+      preconnect_manager()->StartPreconnectUrl(
+          url, true, net::NetworkIsolationKey(url_origin, url_origin));
     }
     return;
   }

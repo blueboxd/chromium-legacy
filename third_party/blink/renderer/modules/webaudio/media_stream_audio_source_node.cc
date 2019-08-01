@@ -203,4 +203,12 @@ bool MediaStreamAudioSourceNode::HasPendingActivity() const {
   return (context()->ContextState() == BaseAudioContext::kRunning);
 }
 
+void MediaStreamAudioSourceNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+}
+
+void MediaStreamAudioSourceNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

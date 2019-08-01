@@ -70,10 +70,9 @@ class AfterStartupTaskTest : public testing::Test {
  public:
   AfterStartupTaskTest() {
     ui_thread_ = base::MakeRefCounted<WrappedTaskRunner>(
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::UI}));
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
     background_sequence_ = base::MakeRefCounted<WrappedTaskRunner>(
-        base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits()));
+        base::CreateSequencedTaskRunner(base::TaskTraits(base::ThreadPool())));
     AfterStartupTaskUtils::UnsafeResetForTesting();
   }
 

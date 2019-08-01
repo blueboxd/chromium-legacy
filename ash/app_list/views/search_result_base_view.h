@@ -13,6 +13,7 @@
 namespace app_list {
 
 class SearchResult;
+class SearchResultActionsView;
 
 // Base class for views that observe and display a search result
 class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
@@ -21,8 +22,22 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
  public:
   SearchResultBaseView();
 
-  // Set or remove the background highlight.
-  void SetBackgroundHighlighted(bool enabled);
+  // Set whether the result is selected. It updates the background highlight,
+  // and selects the result action associated with the result if
+  // SearchBoxSelection feature is enabled.
+  //
+  // |reverse_tab_order| - Indicates whether the selection was set as part of
+  //     reverse tab traversal. Should be set when selection was changed while
+  //     handling TAB keyboard key. Ignored if |selected| is false.
+  void SetSelected(bool selected, base::Optional<bool> reverse_tab_order);
+
+  // Selects the next result action for the view, if the result supports
+  // non-default actions (see actions_view_).
+  // |reverse_tab_order| - whether the action was selected while handling TAB
+  // key in reverse tab order.
+  //
+  // Returns whether the selected result action was changed.
+  bool SelectNextResultAction(bool reverse_tab_order);
 
   SearchResult* result() const { return result_; }
   void SetResult(SearchResult* result);
@@ -42,7 +57,7 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
   // Clears the result without calling |OnResultChanged| or |OnResultChanging|
   void ClearResult();
 
-  bool background_highlighted() const { return background_highlighted_; }
+  bool selected() const { return selected_; }
 
   int index_in_container() const { return index_in_container_.value(); }
 
@@ -59,8 +74,31 @@ class APP_LIST_EXPORT SearchResultBaseView : public views::Button,
 
   void UpdateAccessibleName();
 
+  void set_actions_view(SearchResultActionsView* actions_view) {
+    actions_view_ = actions_view;
+  }
+
+  SearchResultActionsView* actions_view() { return actions_view_; }
+
  private:
-  bool background_highlighted_ = false;
+  // Selects the initial action that should be associated with the result view,
+  // notifying a11y hierarchy of the selection. If the result view does not
+  // support result actions (i.e. does not have actions_view_), this will just
+  // announce the current result view selection.
+  // |reverse_tab_order| - whether the action was selected in reverse tab order.
+  void SelectInitialResultAction(bool reverse_tab_order);
+
+  // If non-default result action was selected, clears the actions_view_'s
+  // selection state.
+  void ClearSelectedResultAction();
+
+  // Whether the result is currently selected.
+  bool selected_ = false;
+
+  // Expected to be set by result view implementations that supports
+  // extra result actions. It points to the view containing result actions
+  // buttons. Owned by the views hierarchy.
+  SearchResultActionsView* actions_view_ = nullptr;
 
   // The index of this view within a |SearchResultContainerView| that holds it.
   base::Optional<int> index_in_container_;

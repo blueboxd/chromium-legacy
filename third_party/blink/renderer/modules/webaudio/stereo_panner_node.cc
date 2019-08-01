@@ -185,4 +185,14 @@ AudioParam* StereoPannerNode::pan() const {
   return pan_;
 }
 
+void StereoPannerNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+  GraphTracer().DidCreateAudioParam(pan_);
+}
+
+void StereoPannerNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioParam(pan_);
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

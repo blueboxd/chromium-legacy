@@ -5,16 +5,21 @@
 #include "chrome/browser/password_manager/touch_to_fill_controller.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/autofill/mock_autofill_popup_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_controller.h"
-#include "components/autofill/core/browser/ui/popup_item_ids.h"
-#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/password_manager/core/browser/origin_credential_store.h"
+#include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using autofill::MockAutofillPopupController;
+using password_manager::CredentialPair;
+
+struct MockPasswordManagerDriver : password_manager::StubPasswordManagerDriver {
+  MOCK_METHOD2(FillSuggestion,
+               void(const base::string16&, const base::string16&));
+};
 
 class TouchToFillControllerTest : public testing::Test {
  protected:
@@ -22,9 +27,7 @@ class TouchToFillControllerTest : public testing::Test {
     return mock_manual_filling_controller_;
   }
 
-  MockAutofillPopupController& popup_controller() {
-    return mock_popup_controller_;
-  }
+  MockPasswordManagerDriver& driver() { return driver_; }
 
   TouchToFillController* touch_to_fill_controller() {
     return touch_to_fill_controller_.get();
@@ -33,7 +36,7 @@ class TouchToFillControllerTest : public testing::Test {
  private:
   testing::StrictMock<MockManualFillingController>
       mock_manual_filling_controller_;
-  MockAutofillPopupController mock_popup_controller_;
+  MockPasswordManagerDriver driver_;
   std::unique_ptr<TouchToFillController> touch_to_fill_controller_ =
       TouchToFillController::CreateForTesting(
           mock_manual_filling_controller_.AsWeakPtr());
@@ -52,50 +55,125 @@ TEST_F(TouchToFillControllerTest, AllowedForWebContents) {
   }
 }
 
-TEST_F(TouchToFillControllerTest, Show) {
-  // Test the appropriate translation of autofill suggestions into
-  // AccessorySheetData. Use masked passwords to mirror production behavior.
-  // Test both empty and non-empty realms.
-  const base::string16 alice_user = base::ASCIIToUTF16("Alice");
-  const base::string16 alice_pass = base::ASCIIToUTF16("*****");
-  const base::string16 alice_realm;
-
-  const base::string16 bob_user = base::ASCIIToUTF16("Bob");
-  const base::string16 bob_pass = base::ASCIIToUTF16("***");
-  const base::string16 bob_realm = base::ASCIIToUTF16("https://example.com");
-
-  autofill::Suggestion alice(alice_user);
-  alice.additional_label = alice_pass;
-  alice.frontend_id = autofill::POPUP_ITEM_ID_USERNAME_ENTRY;
-
-  autofill::Suggestion bob(bob_user);
-  bob.additional_label = bob_pass;
-  bob.label = bob_realm;
-  bob.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
-
-  // Add an "All Saved Passwords" entry, which should be ignored.
-  autofill::Suggestion all_passwords;
-  all_passwords.frontend_id = autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY;
-  popup_controller().set_suggestions({alice, bob, all_passwords});
-
+TEST_F(TouchToFillControllerTest, Show_Empty) {
   EXPECT_CALL(manual_filling_controller(),
-              RefreshSuggestions(
-                  autofill::AccessorySheetData::Builder(
-                      autofill::AccessoryTabType::TOUCH_TO_FILL,
-                      base::ASCIIToUTF16("Touch to Fill"))
-                      .AddUserInfo()
-                      .AppendField(alice_user, alice_user, "0", false, true)
-                      .AppendField(alice_pass, alice_pass, "0", true, false)
-                      .AppendField(alice_realm, alice_realm, "0", false, false)
-                      .AddUserInfo()
-                      .AppendField(bob_user, bob_user, "1", false, true)
-                      .AppendField(bob_pass, bob_pass, "1", true, false)
-                      .AppendField(bob_realm, bob_realm, "1", false, false)
-                      .Build()));
-  touch_to_fill_controller()->Show(popup_controller().GetSuggestions(),
-                                   popup_controller().AsWeakPtr());
+              RefreshSuggestions(autofill::AccessorySheetData::Builder(
+                                     autofill::AccessoryTabType::TOUCH_TO_FILL,
+                                     base::ASCIIToUTF16("Touch to Fill"))
+                                     .Build()));
+  touch_to_fill_controller()->Show({}, driver().AsWeakPtr());
+}
 
-  EXPECT_CALL(popup_controller(), AcceptSuggestion(1));
-  touch_to_fill_controller()->OnFillingTriggered(
-      autofill::UserInfo::Field(bob_user, bob_user, "1", false, true));
+TEST_F(TouchToFillControllerTest, Show_And_Fill) {
+  CredentialPair alice(
+      base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
+      GURL("https://example.com"), /*is_public_suffix_match=*/false);
+
+  EXPECT_CALL(
+      manual_filling_controller(),
+      RefreshSuggestions(
+          autofill::AccessorySheetData::Builder(
+              autofill::AccessoryTabType::TOUCH_TO_FILL,
+              base::ASCIIToUTF16("Touch to Fill"))
+              .AddUserInfo()
+              .AppendField(base::ASCIIToUTF16("alice"),
+                           base::ASCIIToUTF16("alice"), "0",
+                           /*is_obfuscated=*/false, /*is_selectable=*/true)
+              .AppendField(base::ASCIIToUTF16("p4ssw0rd"),
+                           base::ASCIIToUTF16("p4ssw0rd"), "0",
+                           /*is_obfuscated=*/true, /*is_selectable=*/false)
+              .Build()));
+  touch_to_fill_controller()->Show(std::vector<CredentialPair>{alice},
+                                   driver().AsWeakPtr());
+
+  // Test that OnFillingTriggered() with the right id results in the appropriate
+  // call to FillSuggestion() and UpdateSourceAvailability().
+  EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("alice"),
+                                       base::ASCIIToUTF16("p4ssw0rd")));
+  EXPECT_CALL(manual_filling_controller(),
+              UpdateSourceAvailability(
+                  ManualFillingController::FillingSource::TOUCH_TO_FILL,
+                  /*has_suggestions=*/false));
+
+  // Test that we correctly log the absence of an Android credential.
+  base::HistogramTester tester;
+  touch_to_fill_controller()->OnFillingTriggered(autofill::UserInfo::Field(
+      base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("alice"), "0",
+      /*is_obfuscated=*/false, /*is_selectable=*/true));
+  tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
+                            false, 1);
+}
+
+TEST_F(TouchToFillControllerTest, Show_PSL_Credential) {
+  // Test that showing a PSL credentials results in the origin being passed to
+  // the manual filling controller.
+  CredentialPair alice(
+      base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
+      GURL("https://sub.example.com/"), /*is_public_suffix_match=*/true);
+
+  EXPECT_CALL(
+      manual_filling_controller(),
+      RefreshSuggestions(
+          autofill::AccessorySheetData::Builder(
+              autofill::AccessoryTabType::TOUCH_TO_FILL,
+              base::ASCIIToUTF16("Touch to Fill"))
+              .AddUserInfo("https://sub.example.com/")
+              .AppendField(base::ASCIIToUTF16("alice"),
+                           base::ASCIIToUTF16("alice"), "0",
+                           /*is_obfuscated=*/false, /*is_selectable=*/true)
+              .AppendField(base::ASCIIToUTF16("p4ssw0rd"),
+                           base::ASCIIToUTF16("p4ssw0rd"), "0",
+                           /*is_obfuscated=*/true, /*is_selectable=*/false)
+              .Build()));
+  touch_to_fill_controller()->Show(std::vector<CredentialPair>{alice},
+                                   driver().AsWeakPtr());
+}
+
+TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
+  // Test multiple credentials with one of them being an Android credential.
+  CredentialPair alice(
+      base::ASCIIToUTF16("alice"), base::ASCIIToUTF16("p4ssw0rd"),
+      GURL("https://example.com"), /*is_public_suffix_match=*/false);
+
+  CredentialPair bob(base::ASCIIToUTF16("bob"), base::ASCIIToUTF16("s3cr3t"),
+                     GURL("android://hash@com.example.my"),
+                     /*is_public_suffix_match=*/false);
+
+  EXPECT_CALL(
+      manual_filling_controller(),
+      RefreshSuggestions(
+          autofill::AccessorySheetData::Builder(
+              autofill::AccessoryTabType::TOUCH_TO_FILL,
+              base::ASCIIToUTF16("Touch to Fill"))
+              .AddUserInfo()
+              .AppendField(base::ASCIIToUTF16("alice"),
+                           base::ASCIIToUTF16("alice"), "0",
+                           /*is_obfuscated=*/false, /*is_selectable=*/true)
+              .AppendField(base::ASCIIToUTF16("p4ssw0rd"),
+                           base::ASCIIToUTF16("p4ssw0rd"), "0",
+                           /*is_obfuscated=*/true, /*is_selectable=*/false)
+              .AddUserInfo()
+              .AppendField(base::ASCIIToUTF16("bob"), base::ASCIIToUTF16("bob"),
+                           "1", /*is_obfuscated=*/false, /*is_selectable=*/true)
+              .AppendField(base::ASCIIToUTF16("s3cr3t"),
+                           base::ASCIIToUTF16("s3cr3t"), "1",
+                           /*is_obfuscated=*/true, /*is_selectable=*/false)
+              .Build()));
+  touch_to_fill_controller()->Show(std::vector<CredentialPair>{alice, bob},
+                                   driver().AsWeakPtr());
+
+  EXPECT_CALL(driver(), FillSuggestion(base::ASCIIToUTF16("bob"),
+                                       base::ASCIIToUTF16("s3cr3t")));
+  EXPECT_CALL(manual_filling_controller(),
+              UpdateSourceAvailability(
+                  ManualFillingController::FillingSource::TOUCH_TO_FILL,
+                  /*has_suggestions=*/false));
+
+  // Test that we correctly log the presence of an Android credential.
+  base::HistogramTester tester;
+  touch_to_fill_controller()->OnFillingTriggered(autofill::UserInfo::Field(
+      base::ASCIIToUTF16("bob"), base::ASCIIToUTF16("bob"), "1",
+      /*is_obfuscated=*/false, /*is_selectable=*/true));
+  tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
+                            true, 1);
 }

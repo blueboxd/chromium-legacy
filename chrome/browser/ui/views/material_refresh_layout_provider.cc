@@ -4,10 +4,17 @@
 
 #include "chrome/browser/ui/views/material_refresh_layout_provider.h"
 
+#include <algorithm>
+
+#include "base/logging.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/views/layout/layout_provider.h"
 
-#include <algorithm>
+MaterialRefreshLayoutProvider::MaterialRefreshLayoutProvider() = default;
+
+MaterialRefreshLayoutProvider::~MaterialRefreshLayoutProvider() = default;
 
 int MaterialRefreshLayoutProvider::GetDistanceMetric(int metric) const {
   switch (metric) {

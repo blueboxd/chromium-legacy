@@ -77,6 +77,7 @@ TEST(CanonicalCookie, CreationCornerCases) {
 TEST(CanonicalCookieTest, Create) {
   // Test creating cookies from a cookie string.
   GURL url("http://www.example.com/test/foo.html");
+  GURL https_url("https://www.example.com/test/foo.html");
   base::Time creation_time = base::Time::Now();
   CookieOptions options;
 
@@ -96,21 +97,21 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_EQ("/", cookie->Path());
   EXPECT_FALSE(cookie->IsSecure());
 
-  // Test creating secure cookies.
-  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone disallows
-  // insecure URLs from setting secure cookies.
+  // Test creating secure cookies. Secure scheme is not checked upon creation,
+  // so a URL of any scheme can create a Secure cookie.
   CanonicalCookie::CookieInclusionStatus status;
   cookie = CanonicalCookie::Create(url, "A=2; Secure", creation_time, options,
                                    &status);
-  EXPECT_FALSE(cookie.get());
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
-            status);
+  EXPECT_TRUE(cookie->IsSecure());
 
-  // Test creating http only cookies.
+  cookie = CanonicalCookie::Create(https_url, "A=2; Secure", creation_time,
+                                   options, &status);
+  EXPECT_TRUE(cookie->IsSecure());
+
+  // Test creating http only cookies. HttpOnly is not checked upon creation.
   cookie = CanonicalCookie::Create(url, "A=2; HttpOnly", creation_time, options,
                                    &status);
-  EXPECT_FALSE(cookie.get());
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY, status);
+  EXPECT_TRUE(cookie->IsHttpOnly());
 
   CookieOptions httponly_options;
   httponly_options.set_include_httponly();
@@ -118,7 +119,7 @@ TEST(CanonicalCookieTest, Create) {
                                    httponly_options);
   EXPECT_TRUE(cookie->IsHttpOnly());
 
-  // Test creating SameSite cookies.
+  // Test creating SameSite cookies. SameSite is not checked upon creation.
   CookieOptions same_site_options;
   same_site_options.set_same_site_cookie_context(
       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
@@ -143,8 +144,55 @@ TEST(CanonicalCookieTest, Create) {
   ASSERT_TRUE(cookie.get());
   EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookie->SameSite());
 
+  same_site_options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", creation_time,
+                                   same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Lax", creation_time,
+                                   same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::LAX_MODE, cookie->SameSite());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Extended", creation_time,
+                                   same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, cookie->SameSite());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", creation_time,
+                                   same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
+  cookie =
+      CanonicalCookie::Create(url, "A=2", creation_time, same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookie->SameSite());
+
+  same_site_options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::CROSS_SITE);
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", creation_time,
+                                   same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Lax", creation_time,
+                                   same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::LAX_MODE, cookie->SameSite());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Extended", creation_time,
+                                   same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, cookie->SameSite());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", creation_time,
+                                   same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
+  cookie =
+      CanonicalCookie::Create(url, "A=2", creation_time, same_site_options);
+  ASSERT_TRUE(cookie.get());
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, cookie->SameSite());
+
   // Test the creating cookies using specific parameter instead of a cookie
   // string.
+  // TODO(chlily): Move this elsewhere. This doesn't test the Create() method.
   cookie = std::make_unique<CanonicalCookie>(
       "A", "2", ".www.example.com", "/test", creation_time, base::Time(),
       base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
@@ -197,61 +245,44 @@ TEST(CanonicalCookieTest, CreateSameSiteInCrossSiteContexts) {
   std::unique_ptr<CanonicalCookie> cookie;
   CookieOptions options;
 
-  // In SAME_SITE_STRICT contexts, any `SameSite` value can be set:
+  // A cookie can be created from any SameSiteContext regardless of SameSite
+  // value (it is upon setting the cookie that the SameSiteContext comes into
+  // effect).
+  // In SAME_SITE_STRICT contexts, any `SameSite` value can be created:
   options.set_same_site_cookie_context(
       CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", now, options);
   EXPECT_TRUE(cookie.get());
   cookie = CanonicalCookie::Create(url, "A=2; SameSite=Lax", now, options);
   EXPECT_TRUE(cookie.get());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", now, options);
+  EXPECT_TRUE(cookie.get());
   cookie = CanonicalCookie::Create(url, "A=2;", now, options);
   EXPECT_TRUE(cookie.get());
 
-  // In SAME_SITE_LAX contexts, any `SameSite` value can be set:
+  // In SAME_SITE_LAX contexts, any `SameSite` value can be created:
   options.set_same_site_cookie_context(
       CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
   cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", now, options);
   EXPECT_TRUE(cookie.get());
   cookie = CanonicalCookie::Create(url, "A=2; SameSite=Lax", now, options);
   EXPECT_TRUE(cookie.get());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", now, options);
+  EXPECT_TRUE(cookie.get());
   cookie = CanonicalCookie::Create(url, "A=2;", now, options);
   EXPECT_TRUE(cookie.get());
 
-  {
-    // In CROSS_SITE contexts, the `SameSite` attribute must be omitted,
-    // or none --- if the experiment requiring explicit none isn't on.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(features::kSameSiteByDefaultCookies);
-
-    options.set_same_site_cookie_context(
-        CookieOptions::SameSiteCookieContext::CROSS_SITE);
-    cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", now, options);
-    EXPECT_FALSE(cookie.get());
-    cookie = CanonicalCookie::Create(url, "A=2; SameSite=Lax", now, options);
-    EXPECT_FALSE(cookie.get());
-    cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", now, options);
-    EXPECT_TRUE(cookie.get());
-    cookie = CanonicalCookie::Create(url, "A=2;", now, options);
-    EXPECT_TRUE(cookie.get());
-  }
-
-  {
-    // With the kSameSiteByDefaultCookies experiments, an explicit
-    // SameSite=None is required in a cross-site environment.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kSameSiteByDefaultCookies);
-
-    options.set_same_site_cookie_context(
-        CookieOptions::SameSiteCookieContext::CROSS_SITE);
-    cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", now, options);
-    EXPECT_FALSE(cookie.get());
-    cookie = CanonicalCookie::Create(url, "A=2; SameSite=Lax", now, options);
-    EXPECT_FALSE(cookie.get());
-    cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", now, options);
-    EXPECT_TRUE(cookie.get());
-    cookie = CanonicalCookie::Create(url, "A=2;", now, options);
-    EXPECT_FALSE(cookie.get());
-  }
+  // In CROSS_SITE contexts, any `SameSite` value can be created:
+  options.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::CROSS_SITE);
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", now, options);
+  EXPECT_TRUE(cookie.get());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Lax", now, options);
+  EXPECT_TRUE(cookie.get());
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=None", now, options);
+  EXPECT_TRUE(cookie.get());
+  cookie = CanonicalCookie::Create(url, "A=2;", now, options);
+  EXPECT_TRUE(cookie.get());
 }
 
 TEST(CanonicalCookieTest, CreateInvalidHttpOnly) {
@@ -260,11 +291,13 @@ TEST(CanonicalCookieTest, CreateInvalidHttpOnly) {
   CookieOptions options;
   CanonicalCookie::CookieInclusionStatus status;
 
+  // An HttpOnly cookie can be created regardless of the CookieOptions. (It is
+  // upon setting the cookie that the exclude_httponly() in the CookieOptions
+  // comes into effect.)
   options.set_exclude_httponly();
   std::unique_ptr<CanonicalCookie> cookie =
       CanonicalCookie::Create(url, "A=2; HttpOnly", now, options, &status);
-  EXPECT_EQ(nullptr, cookie.get());
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY, status);
+  EXPECT_TRUE(cookie->IsHttpOnly());
 }
 
 TEST(CanonicalCookieTest, CreateWithInvalidDomain) {
@@ -815,7 +848,7 @@ TEST(CanonicalCookieTest, SecureCookiePrefix) {
   // A __Secure- cookie can't be set on a non-secure origin.
   EXPECT_FALSE(CanonicalCookie::Create(http_url, "__Secure-A=B; Secure",
                                        creation_time, options, &status));
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
             status);
 }
 
@@ -844,7 +877,7 @@ TEST(CanonicalCookieTest, HostCookiePrefix) {
   EXPECT_FALSE(CanonicalCookie::Create(
       http_url, "__Host-A=B; Domain=" + domain + "; Path=/; Secure;",
       creation_time, options, &status));
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
             status);
   EXPECT_TRUE(CanonicalCookie::Create(https_url, "__Host-A=B; Path=/; Secure;",
                                       creation_time, options));
@@ -895,7 +928,7 @@ TEST(CanonicalCookieTest, HostCookiePrefix) {
       options));
 }
 
-TEST(CanonicalCookieTest, EnforceSecureCookiesRequireSecureScheme) {
+TEST(CanonicalCookieTest, CanCreateSecureCookiesFromAnyScheme) {
   GURL http_url("http://www.example.com");
   GURL https_url("https://www.example.com");
   base::Time creation_time = base::Time::Now();
@@ -911,7 +944,7 @@ TEST(CanonicalCookieTest, EnforceSecureCookiesRequireSecureScheme) {
       https_url, "a=b; Secure", creation_time, options));
 
   EXPECT_TRUE(http_cookie_no_secure.get());
-  EXPECT_FALSE(http_cookie_secure.get());
+  EXPECT_TRUE(http_cookie_secure.get());
   EXPECT_TRUE(https_cookie_no_secure.get());
   EXPECT_TRUE(https_cookie_secure.get());
 }

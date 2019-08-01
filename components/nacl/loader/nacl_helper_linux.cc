@@ -25,7 +25,6 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
 #include "base/posix/unix_domain_socket.h"
@@ -122,7 +121,7 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
   // The Mojo EDK must be initialized before using IPC.
   mojo::core::Init();
 
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
 #if defined(OS_NACL_NONSFI)
   CHECK(uses_nonsfi_mode);
   nacl::nonsfi::NonSfiListener listener;

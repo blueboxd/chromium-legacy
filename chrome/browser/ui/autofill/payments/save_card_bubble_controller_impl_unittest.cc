@@ -1638,7 +1638,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
 
   // Sign-in promo should be shown after accepting local save.
   EXPECT_EQ(BubbleType::SIGN_IN_PROMO, controller()->GetBubbleType());
-  EXPECT_NE(nullptr, controller()->save_card_bubble_view());
+  EXPECT_NE(nullptr, controller()->GetSaveCardBubbleView());
 }
 
 // Tests for Manage Cards.
@@ -1652,7 +1652,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   // After closing the sign-in promo, clicking the icon should bring
   // up the Manage cards bubble.
   EXPECT_EQ(BubbleType::MANAGE_CARDS, controller()->GetBubbleType());
-  EXPECT_NE(nullptr, controller()->save_card_bubble_view());
+  EXPECT_NE(nullptr, controller()->GetSaveCardBubbleView());
 }
 
 TEST_F(
@@ -1700,7 +1700,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
 
   // Icon should disappear after navigating away.
   EXPECT_FALSE(controller()->IsIconVisible());
-  EXPECT_EQ(nullptr, controller()->save_card_bubble_view());
+  EXPECT_EQ(nullptr, controller()->GetSaveCardBubbleView());
 }
 
 TEST_F(SaveCardBubbleControllerImplTest,
@@ -1775,7 +1775,7 @@ TEST_F(SaveCardBubbleControllerImplTest,
   // Icon should disappear after an upload save,
   // even when this flag is enabled.
   EXPECT_FALSE(controller()->IsIconVisible());
-  EXPECT_EQ(nullptr, controller()->save_card_bubble_view());
+  EXPECT_EQ(nullptr, controller()->GetSaveCardBubbleView());
 }
 
 TEST_F(SaveCardBubbleControllerImplTest,

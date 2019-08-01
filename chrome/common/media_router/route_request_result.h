@@ -35,7 +35,7 @@ class RouteRequestResult {
   // - RouteRequestResultCode in media_router.mojom
   // - MediaRouteProviderResult enum in tools/metrics/histograms.xml
   // - mr.RouteRequestResultCode in route_request_error.js
-  // - media_router_struct_traits.h
+  // - media_router_mojom_traits.h
   enum ResultCode {
     UNKNOWN_ERROR = 0,
     OK = 1,

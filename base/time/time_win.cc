@@ -31,9 +31,9 @@
 // will only increase the system-wide timer if we're not running on battery
 // power.
 
-#include "base/feature_list.h"
 #include "base/time/time.h"
 
+#include <windows.foundation.h>
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdint.h>
@@ -41,6 +41,7 @@
 #include "base/atomicops.h"
 #include "base/bit_cast.h"
 #include "base/cpu.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
@@ -759,6 +760,18 @@ TimeDelta TimeDelta::FromQPCValue(LONGLONG qpc_value) {
 // static
 TimeDelta TimeDelta::FromFileTime(FILETIME ft) {
   return TimeDelta::FromMicroseconds(FileTimeToMicroseconds(ft));
+}
+
+// static
+TimeDelta TimeDelta::FromWinrtDateTime(ABI::Windows::Foundation::DateTime dt) {
+  // UniversalTime is 100 ns intervals since January 1, 1601 (UTC)
+  return TimeDelta::FromMicroseconds(dt.UniversalTime / 10);
+}
+
+ABI::Windows::Foundation::DateTime TimeDelta::ToWinrtDateTime() const {
+  ABI::Windows::Foundation::DateTime date_time;
+  date_time.UniversalTime = InMicroseconds() * 10;
+  return date_time;
 }
 
 }  // namespace base

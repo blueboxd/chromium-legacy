@@ -30,9 +30,9 @@ SandboxedRarAnalyzer::SandboxedRarAnalyzer(
 void SandboxedRarAnalyzer::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SandboxedRarAnalyzer::PrepareFileToAnalyze, this));
 }
@@ -92,15 +92,14 @@ void SandboxedRarAnalyzer::PrepareFileToAnalyze() {
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&SandboxedRarAnalyzer::AnalyzeFile, this, std::move(file),
-                     std::move(temp_file)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&SandboxedRarAnalyzer::AnalyzeFile, this,
+                                std::move(file), std::move(temp_file)));
 }
 
 void SandboxedRarAnalyzer::ReportFileFailure() {
   DCHECK(!analyzer_ptr_);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(callback_, safe_browsing::ArchiveAnalyzerResults()));
 }

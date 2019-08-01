@@ -39,24 +39,6 @@ class DownloadController : public DownloadControllerBase {
                              const DownloadInfo& info) override;
   void AboutToResumeDownload(download::DownloadItem* download_item) override;
 
-  // UMA histogram enum for download cancellation reasons. Keep this
-  // in sync with MobileDownloadCancelReason in histograms.xml. This should be
-  // append only.
-  enum DownloadCancelReason {
-    CANCEL_REASON_NOT_CANCELED = 0,
-    CANCEL_REASON_ACTION_BUTTON,
-    CANCEL_REASON_NOTIFICATION_DISMISSED,
-    CANCEL_REASON_OVERWRITE_INFOBAR_DISMISSED,
-    CANCEL_REASON_NO_STORAGE_PERMISSION,
-    CANCEL_REASON_DANGEROUS_DOWNLOAD_INFOBAR_DISMISSED,
-    CANCEL_REASON_NO_EXTERNAL_STORAGE,
-    CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET,
-    CANCEL_REASON_OTHER_NATIVE_RESONS,
-    CANCEL_REASON_USER_CANCELED,
-    CANCEL_REASON_MAX
-  };
-  static void RecordDownloadCancelReason(DownloadCancelReason reason);
-
   // UMA histogram enum for download storage permission requests. Keep this
   // in sync with MobileDownloadStoragePermission in histograms.xml. This should
   // be append only.

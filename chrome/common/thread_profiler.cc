@@ -159,12 +159,8 @@ std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread() {
 // static
 void ThreadProfiler::SetMainThreadTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-#if !defined(OS_ANDROID)
-  // TODO(asvitkine): The code path where we create the profiler instance in
-  // chrome_main.cc does not run on Android.
   DCHECK(g_main_thread_instance);
   g_main_thread_instance->SetMainThreadTaskRunnerImpl(task_runner);
-#endif
 }
 
 void ThreadProfiler::SetAuxUnwinderFactory(

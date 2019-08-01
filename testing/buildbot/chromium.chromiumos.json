@@ -655,8 +655,7 @@
               "pool": "chrome-cros-dut"
             }
           ],
-          "idempotent": false,
-          "shards": 2
+          "idempotent": false
         },
         "trigger_script": {
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"
@@ -684,7 +683,7 @@
             }
           ],
           "idempotent": false,
-          "shards": 12
+          "shards": 10
         },
         "trigger_script": {
           "script": "//testing/trigger_scripts/chromeos_device_trigger.py"

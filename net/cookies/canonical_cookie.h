@@ -32,6 +32,8 @@ class NET_EXPORT CanonicalCookie {
   // the resulting CanonicalCookies should not be relied on to be canonical
   // unless the caller has done appropriate validation and canonicalization
   // themselves.
+  // NOTE: Prefer using CreateSanitizedCookie() over directly using this
+  // constructor.
   CanonicalCookie(const std::string& name,
                   const std::string& value,
                   const std::string& domain,
@@ -58,15 +60,14 @@ class NET_EXPORT CanonicalCookie {
     EXCLUDE_NOT_ON_PATH,
     EXCLUDE_SAMESITE_STRICT,
     EXCLUDE_SAMESITE_LAX,
-    // TODO(crbug.com/953995): Implement EXTENDED_MODE which will use the
-    // following value.
+    // TODO(crbug.com/989171): Replace this with FirstPartyLax and
+    // FirstPartyStrict.
     EXCLUDE_SAMESITE_EXTENDED,
     // The following two are used for the SameSiteByDefaultCookies experiment,
     // where if the SameSite attribute is not specified, it will be treated as
     // SameSite=Lax by default.
     EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX,
     // This is used if SameSite=None is specified, but the cookie is not Secure.
-    // TODO(chlily): Implement the above.
     EXCLUDE_SAMESITE_NONE_INSECURE,
     EXCLUDE_USER_PREFERENCES,
 
@@ -83,10 +84,20 @@ class NET_EXPORT CanonicalCookie {
   };
 
   // Creates a new |CanonicalCookie| from the |cookie_line| and the
-  // |creation_time|.  Canonicalizes and validates inputs.  May return NULL if
+  // |creation_time|.  Canonicalizes inputs.  May return nullptr if
   // an attribute value is invalid.  |url| must be valid.  |creation_time| may
   // not be null. Sets optional |status| to the relevant CookieInclusionStatus
-  // if provided
+  // if provided.
+  //
+  // SameSite and HttpOnly related parameters in |options| are not checked here,
+  // so creation of CanonicalCookies with e.g. SameSite=Strict from a cross-site
+  // context is allowed. The same |options| should be given when creating and
+  // setting a cookie. Create() also does not check whether |url| has a secure
+  // scheme if attempting to create a Secure cookie. The Secure, SameSite, and
+  // HttpOnly related parameters should be checked when setting the cookie in
+  // the CookieStore.
+  //
+  // If a cookie is returned, |cookie->IsCanonical()| will be true.
   static std::unique_ptr<CanonicalCookie> Create(
       const GURL& url,
       const std::string& cookie_line,

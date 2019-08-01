@@ -189,11 +189,9 @@ function testMountArchiveAndUnmount(callback) {
     const numberOfVolumes = volumeManager.volumeInfoList.length;
 
     // Mount an archive
-    const mounted = new Promise(
-        (resolve, reject) => volumeManager.mountArchive(
-            'filesystem:chrome-extension://extensionid/external/' +
-                'Downloads-test/foobar.zip',
-            resolve, reject));
+    const mounted = volumeManager.mountArchive(
+        'filesystem:chrome-extension://extensionid/external/' +
+        'Downloads-test/foobar.zip');
 
     mockChrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
       eventType: 'mount',
@@ -219,9 +217,7 @@ function testMountArchiveAndUnmount(callback) {
     const entry =
         new MockFileEntry(new MockFileSystem('archive:foobar.zip'), '/foo.txt');
     const volumeInfo = volumeManager.getVolumeInfo(entry);
-    await new Promise(
-        (resolve, reject) =>
-            volumeManager.unmount(volumeInfo, resolve, reject));
+    await volumeManager.unmount(volumeInfo);
 
     assertEquals(numberOfVolumes, volumeManager.volumeInfoList.length);
   };

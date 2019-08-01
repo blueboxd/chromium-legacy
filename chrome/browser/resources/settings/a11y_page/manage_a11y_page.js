@@ -200,7 +200,7 @@ Polymer({
 
   /** @private */
   onSwitchAccessSettingsTap_: function() {
-    chrome.send('showSwitchAccessSettings');
+    settings.navigateTo(settings.routes.MANAGE_SWITCH_ACCESS_SETTINGS);
   },
 
   /** @private */

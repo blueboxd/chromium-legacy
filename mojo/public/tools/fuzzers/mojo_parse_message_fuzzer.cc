@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
@@ -37,7 +36,7 @@ void FuzzMessage(const uint8_t* data, size_t size, base::RunLoop* run) {
  * ThreadPool, because Mojo messages must be sent and processed from
  * TaskRunners. */
 struct Environment {
-  Environment() : main_thread_task_executor(base::MessagePumpType::UI) {
+  Environment() : main_thread_task_executor(base::MessagePump::Type::UI) {
     base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
         "MojoParseMessageFuzzerProcess");
     mojo::core::Init();

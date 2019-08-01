@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_param.h"
 
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
@@ -315,7 +316,7 @@ AudioParam::AudioParam(BaseAudioContext& context,
                        AudioParamHandler::AutomationRateMode rate_mode,
                        float min_value,
                        float max_value)
-    : InspectorHelperMixin(parent_uuid),
+    : InspectorHelperMixin(context.GraphTracer(), parent_uuid),
       handler_(AudioParamHandler::Create(context,
                                          param_type,
                                          default_value,
@@ -352,6 +353,7 @@ AudioParam::~AudioParam() {
 
 void AudioParam::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
+  InspectorHelperMixin::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
 

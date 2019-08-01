@@ -494,7 +494,7 @@ void LoginPasswordView::Backspace() {
 
 void LoginPasswordView::SetPlaceholderText(
     const base::string16& placeholder_text) {
-  textfield_->set_placeholder_text(placeholder_text);
+  textfield_->SetPlaceholderText(placeholder_text);
   SchedulePaint();
 }
 

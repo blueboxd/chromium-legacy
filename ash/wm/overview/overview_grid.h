@@ -320,6 +320,14 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   std::vector<gfx::RectF> GetWindowRects(
       const base::flat_set<OverviewItem*>& ignored_items);
 
+  // Gets the layout of the overview items. Currently only for tablet mode.
+  // Positions up to six windows into two rows of equal height, scaling each
+  // window to fit that height. Additional windows are placed off-screen.
+  // |ignored_items| won't be shown along with the other windows in overview
+  // mode.
+  std::vector<gfx::RectF> GetWindowRectsForTabletModeLayout(
+      const base::flat_set<OverviewItem*>& ignored_items);
+
   // Attempts to fit all |out_rects| inside |bounds|. The method ensures that
   // the |out_rects| vector has appropriate size and populates it with the
   // values placing rects next to each other left-to-right in rows of equal

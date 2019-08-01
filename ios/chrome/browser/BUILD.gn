@@ -17,6 +17,7 @@ source_set("chrome_paths") {
 
   deps = [
     "//base",
+    "//build:branding_buildflags",
     "//components/gcm_driver",
   ]
 }

@@ -210,7 +210,7 @@ TEST_F(AssociatedInterfaceTest, InterfacesAtBothEnds) {
 class TestSender {
  public:
   TestSender()
-      : task_runner_(base::CreateSequencedTaskRunnerWithTraits({})),
+      : task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
         next_sender_(nullptr),
         max_value_to_send_(-1) {}
 
@@ -257,7 +257,7 @@ class TestSender {
 class TestReceiver {
  public:
   TestReceiver()
-      : task_runner_(base::CreateSequencedTaskRunnerWithTraits({})),
+      : task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
         expected_calls_(0) {}
 
   void SetUp(PendingAssociatedReceiver<IntegerSender> receiver0,
@@ -981,7 +981,8 @@ TEST_F(AssociatedInterfaceTest, SharedAssociatedRemote) {
   // Test the thread safe pointer can be used from another thread.
   base::RunLoop run_loop;
 
-  auto sender_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
+  auto sender_task_runner =
+      base::CreateSequencedTaskRunner({base::ThreadPool()});
   auto quit_closure = run_loop.QuitClosure();
   sender_task_runner->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&] {
@@ -1005,7 +1006,7 @@ struct ForwarderTestContext {
 
 TEST_F(AssociatedInterfaceTest, SharedAssociatedRemoteWithTaskRunner) {
   const scoped_refptr<base::SequencedTaskRunner> other_thread_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({});
+      base::CreateSequencedTaskRunner({base::ThreadPool()});
 
   ForwarderTestContext* context = new ForwarderTestContext();
   PendingAssociatedRemote<IntegerSender> pending_remote;

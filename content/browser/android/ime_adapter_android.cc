@@ -189,14 +189,6 @@ void ImeAdapterAndroid::UpdateState(const TextInputState& state) {
       state.composition_end, state.reply_to_request);
 }
 
-void ImeAdapterAndroid::UpdateAfterViewSizeChanged() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
-  if (obj.is_null())
-    return;
-  Java_ImeAdapterImpl_updateAfterViewSizeChanged(env, obj);
-}
-
 void ImeAdapterAndroid::UpdateOnTouchDown() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
@@ -230,6 +222,24 @@ void ImeAdapterAndroid::UpdateFrameInfo(
       env, obj, dip_scale, content_offset_ypix, has_insertion_marker,
       is_insertion_marker_visible, insertion_marker_horizontal,
       insertion_marker_top, insertion_marker_bottom);
+}
+
+void ImeAdapterAndroid::OnRenderFrameMetadataChangedAfterActivation(
+    const gfx::SizeF& new_viewport_size) {
+  if (old_viewport_size_ == new_viewport_size)
+    return;
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
+  if (obj.is_null())
+    return;
+
+  const jboolean surface_height_reduced =
+      new_viewport_size.width() == old_viewport_size_.width() &&
+      new_viewport_size.height() < old_viewport_size_.height();
+  old_viewport_size_ = new_viewport_size;
+  Java_ImeAdapterImpl_onResizeScrollableViewport(env, obj,
+                                                 surface_height_reduced);
 }
 
 bool ImeAdapterAndroid::SendKeyEvent(

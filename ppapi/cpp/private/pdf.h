@@ -74,7 +74,9 @@ class PDF {
       const InstanceHandle& instance,
       PP_PrivateAccessibilityPageInfo* page_info,
       PP_PrivateAccessibilityTextRunInfo text_runs[],
-      PP_PrivateAccessibilityCharInfo chars[]);
+      PP_PrivateAccessibilityCharInfo chars[],
+      PP_PrivateAccessibilityLinkInfo links[],
+      PP_PrivateAccessibilityImageInfo images[]);
   static void SetCrashData(const InstanceHandle& instance,
                            const char* pdf_url,
                            const char* top_level_url);

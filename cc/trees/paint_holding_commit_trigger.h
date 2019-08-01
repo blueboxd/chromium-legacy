@@ -19,8 +19,10 @@ enum class PaintHoldingCommitTrigger {
   kFirstContentfulPaint = 2,
   // The commit was triggered by a timeout waiting for FCP
   kTimeout = 3,
+  // The timeout was never set, probably due to non-main frame
+  kNotDeferred = 4,
   // Required for UMA enum
-  kMaxValue = kTimeout
+  kMaxValue = kNotDeferred
 };
 
 }  // namespace cc

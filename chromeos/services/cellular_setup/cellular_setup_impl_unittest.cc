@@ -42,11 +42,13 @@ class FakeOtaActivatorFactory : public OtaActivatorImpl::Factory {
       base::OnceClosure on_finished_callback,
       NetworkStateHandler* network_state_handler,
       NetworkConnectionHandler* network_connection_handler,
-      NetworkActivationHandler* network_activation_handler) override {
+      NetworkActivationHandler* network_activation_handler,
+      scoped_refptr<base::TaskRunner> task_runner) override {
     EXPECT_TRUE(activation_delegate);
     EXPECT_TRUE(network_state_handler);
     EXPECT_TRUE(network_connection_handler);
     EXPECT_TRUE(network_activation_handler);
+    EXPECT_TRUE(task_runner);
 
     auto fake_ota_activator =
         std::make_unique<FakeOtaActivator>(std::move(on_finished_callback));

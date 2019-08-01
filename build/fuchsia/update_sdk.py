@@ -16,12 +16,10 @@ import sys
 import tarfile
 import tempfile
 
-from common import GetHostOsFromPlatform, GetHostArchFromPlatform, SDK_ROOT, \
-                   IMAGES_ROOT
+from common import GetHostOsFromPlatform, GetHostArchFromPlatform, \
+                   DIR_SOURCE_ROOT, SDK_ROOT, IMAGES_ROOT
 
-REPOSITORY_ROOT = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..'))
-sys.path.append(os.path.join(REPOSITORY_ROOT, 'build'))
+sys.path.append(os.path.join(DIR_SOURCE_ROOT, 'build'))
 
 import find_depot_tools
 
@@ -85,13 +83,14 @@ def EnsureDirExists(path):
     os.makedirs(path)
 
 
-# Removes previous SDK from the specified path if it's detected there.
-def Cleanup():
-  hash_file = os.path.join(SDK_ROOT, '.hash')
+# Removes legacy SDK if it's detected.
+def CleanupLegacySDK():
+  legacy_sdk_root = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk')
+  hash_file = os.path.join(legacy_sdk_root, '.hash')
   if os.path.exists(hash_file):
-    print('Removing old SDK from %s.' % SDK_ROOT)
+    print('Removing legacy SDK.')
     for d in SDK_SUBDIRS:
-      to_remove = os.path.join(SDK_ROOT, d)
+      to_remove = os.path.join(legacy_sdk_root, d)
       if os.path.isdir(to_remove):
         shutil.rmtree(to_remove)
     os.remove(hash_file)
@@ -150,7 +149,7 @@ def main():
   # Previously SDK was unpacked in //third_party/fuchsia-sdk instead of
   # //third_party/fuchsia-sdk/sdk . Remove the old files if they are still
   # there.
-  Cleanup()
+  CleanupLegacySDK()
 
   sdk_hash = GetSdkHashForPlatform()
   if not sdk_hash:

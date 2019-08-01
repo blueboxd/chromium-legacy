@@ -1387,13 +1387,7 @@ TEST_F(CacheStorageManagerTest, DeletedCacheIgnoredInIndex) {
   EXPECT_EQ(new_cache_size, Size(origin1_));
 }
 
-// Flakily fails on Fuchsia x64. http://crbug.com/989313
-#if defined(OS_FUCHSIA)
-#define MAYBE_TestErrorInitializingCache DISABLED_TestErrorInitializingCache
-#else
-#define MAYBE_TestErrorInitializingCache TestErrorInitializingCache
-#endif
-TEST_F(CacheStorageManagerTest, MAYBE_TestErrorInitializingCache) {
+TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
   if (MemoryOnly())
     return;
   const GURL kFooURL("http://example.com/foo");
@@ -1408,9 +1402,8 @@ TEST_F(CacheStorageManagerTest, MAYBE_TestErrorInitializingCache) {
   CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
   auto cache_handle =
       LegacyCacheStorage::From(cache_storage)->GetLoadedCache(kCacheName);
-  base::FilePath cache_path =
-      LegacyCacheStorageCache::From(cache_handle)->path();
-  base::FilePath index_path = cache_path.AppendASCII("index");
+  base::FilePath index_path =
+      LegacyCacheStorageCache::From(cache_handle)->path().AppendASCII("index");
   cache_handle = CacheStorageCacheHandle();
 
   DestroyStorageManager();
@@ -1418,16 +1411,6 @@ TEST_F(CacheStorageManagerTest, MAYBE_TestErrorInitializingCache) {
   // Truncate the SimpleCache index to force an error when next opened.
   ASSERT_FALSE(index_path.empty());
   ASSERT_EQ(5, base::WriteFile(index_path, "hello", 5));
-
-  // The cache_storage index is written from a background thread and may be
-  // written just after our overwrite of the simple disk_cache index here.
-  // We need the cache directory to have a newer time stamp, though, in order
-  // for the Size() method to actually try calculating the size from the
-  // corrupted simple disk_cache.  Therefore we force the cache directory
-  // to have a much newer time to ensure the cache_storage index is not used
-  // in the following Size() call.
-  base::Time t = base::Time::Now() + base::TimeDelta::FromHours(1);
-  EXPECT_TRUE(base::TouchFile(cache_path, t, t));
 
   CreateStorageManager();
 
@@ -1611,7 +1594,7 @@ TEST_P(CacheStorageManagerLegacyOnlyTestP, OpenRunsSerially) {
   EXPECT_FALSE(Delete(origin1_, "tmp"));  // Init storage.
   CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
   auto* impl = LegacyCacheStorage::From(cache_storage);
-  auto id = impl->StartAsyncOperationForTesting();
+  impl->StartAsyncOperationForTesting();
 
   base::RunLoop open_loop;
   cache_storage.value()->OpenCache(
@@ -1622,7 +1605,7 @@ TEST_P(CacheStorageManagerLegacyOnlyTestP, OpenRunsSerially) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(callback_cache_handle_.value());
 
-  impl->CompleteAsyncOperationForTesting(id);
+  impl->CompleteAsyncOperationForTesting();
   open_loop.Run();
   EXPECT_TRUE(callback_cache_handle_.value());
 }

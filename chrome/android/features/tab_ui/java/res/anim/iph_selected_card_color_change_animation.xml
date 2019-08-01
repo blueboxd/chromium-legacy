@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <objectAnimator
+        android:propertyName="fillColor"
+        android:duration="300"
+        android:startOffset="1000"
+        android:valueFrom="@color/default_icon_color_white"
+        android:valueTo="@color/google_blue_50"
+        android:valueType="intType" />
+    <objectAnimator
+        android:propertyName="fillColor"
+        android:duration="300"
+        android:startOffset="3650"
+        android:valueFrom="@color/google_blue_50"
+        android:valueTo="@color/default_icon_color_white"
+        android:valueType="intType" />
+</set>

@@ -17,7 +17,6 @@
 #include "net/net_buildflags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/network_context.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace safe_browsing {
@@ -39,24 +38,13 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     url_loader_factory_.reset();
     network_context_.reset();
     request_context_getter_ = nullptr;
-    if (internal_state_) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&InternalState::Reset, internal_state_));
-    }
   }
 
   network::mojom::NetworkContext* GetNetworkContext() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     if (!network_context_ || network_context_.encountered_error()) {
-      if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-        content::GetNetworkService()->CreateNetworkContext(
-            MakeRequest(&network_context_), CreateNetworkContextParams());
-      } else {
-        internal_state_ = base::MakeRefCounted<InternalState>();
-        internal_state_->Initialize(request_context_getter_,
-                                    MakeRequest(&network_context_));
-      }
+      content::GetNetworkService()->CreateNetworkContext(
+          MakeRequest(&network_context_), CreateNetworkContextParams());
     }
     return network_context_.get();
   }
@@ -108,46 +96,6 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
   }
 
  private:
-  // This class holds on to the network::NetworkContext object on the IO thread.
-  class InternalState : public base::RefCountedThreadSafe<InternalState> {
-   public:
-    InternalState() = default;
-
-    void Initialize(
-        scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-        network::mojom::NetworkContextRequest network_context_request) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&InternalState::InitOnIO, this, request_context_getter,
-                         std::move(network_context_request)));
-    }
-
-    void Reset() {
-      DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-      network_context_impl_.reset();
-      request_context_getter_ = nullptr;
-    }
-
-   private:
-    friend class base::RefCountedThreadSafe<InternalState>;
-    virtual ~InternalState() {}
-
-    void InitOnIO(
-        scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-        network::mojom::NetworkContextRequest network_context_request) {
-      request_context_getter_ = std::move(request_context_getter);
-      network_context_impl_ = std::make_unique<network::NetworkContext>(
-          content::GetNetworkServiceImpl(), std::move(network_context_request),
-          request_context_getter_->GetURLRequestContext(),
-          /*cors_exempt_header_list=*/std::vector<std::string>());
-    }
-
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-    std::unique_ptr<network::NetworkContext> network_context_impl_;
-
-    DISALLOW_COPY_AND_ASSIGN(InternalState);
-  };
-
   friend class base::RefCounted<SharedURLLoaderFactory>;
   ~SharedURLLoaderFactory() override = default;
 
@@ -178,7 +126,6 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
   NetworkContextParamsFactory network_context_params_factory_;
   network::mojom::NetworkContextPtr network_context_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
-  scoped_refptr<InternalState> internal_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedURLLoaderFactory);
 };

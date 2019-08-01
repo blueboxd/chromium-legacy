@@ -71,7 +71,6 @@ ChromeDuplicateDownloadInfoBarDelegate::ChromeDuplicateDownloadInfoBarDelegate(
               ->IsOffTheRecord()),
       file_selected_callback_(file_selected_callback) {
   download_item_->AddObserver(this);
-  RecordDuplicateInfobarType(INFOBAR_SHOWN);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -81,13 +80,11 @@ ChromeDuplicateDownloadInfoBarDelegate::GetIdentifier() const {
 
 bool ChromeDuplicateDownloadInfoBarDelegate::Accept() {
   if (!download_item_) {
-    RecordDuplicateInfobarType(INFOBAR_DOWNLOAD_CANCELED);
     return true;
   }
 
   base::FilePath download_dir;
   if (!base::android::GetDownloadsDirectory(&download_dir)) {
-    RecordDuplicateInfobarType(INFOBAR_NO_DOWNLOAD_DIR);
     return true;
   }
 
@@ -96,7 +93,6 @@ bool ChromeDuplicateDownloadInfoBarDelegate::Accept() {
       base::FilePath(), /* fallback_directory */
       true, download::DownloadPathReservationTracker::UNIQUIFY,
       base::Bind(&CreateNewFileDone, file_selected_callback_));
-  RecordDuplicateInfobarType(INFOBAR_CREATE_NEW_FILE);
   return true;
 }
 
@@ -106,9 +102,6 @@ bool ChromeDuplicateDownloadInfoBarDelegate::Cancel() {
 
   file_selected_callback_.Run(DownloadConfirmationResult::CANCELED,
                               base::FilePath());
-  // TODO(qinmin): rename this histogram enum.
-  DownloadController::RecordDownloadCancelReason(
-      DownloadController::CANCEL_REASON_OVERWRITE_INFOBAR_DISMISSED);
   return true;
 }
 
@@ -122,12 +115,6 @@ void ChromeDuplicateDownloadInfoBarDelegate::InfoBarDismissed() {
 
 bool ChromeDuplicateDownloadInfoBarDelegate::IsOffTheRecord() const {
   return is_off_the_record_;
-}
-
-void ChromeDuplicateDownloadInfoBarDelegate::RecordDuplicateInfobarType(
-    DuplicateInfobarType type) {
-  UMA_HISTOGRAM_ENUMERATION("MobileDownload.DuplicateInfobar", type,
-                            INFOBAR_MAX);
 }
 
 }  // namespace android

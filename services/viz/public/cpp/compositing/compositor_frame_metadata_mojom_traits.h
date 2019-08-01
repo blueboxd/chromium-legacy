@@ -114,6 +114,10 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.preferred_frame_interval;
   }
 
+  static gfx::Rect mirror_rect(const viz::CompositorFrameMetadata& metadata) {
+    return metadata.mirror_rect;
+  }
+
 #if defined(OS_ANDROID)
   static float max_page_scale_factor(
       const viz::CompositorFrameMetadata& metadata) {

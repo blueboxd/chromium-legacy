@@ -32,8 +32,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
@@ -561,7 +559,8 @@ public class DownloadManagerService
                     if (success) item.setSystemDownloadId(systemDownloadId);
                 }
                 boolean canResolve = success
-                        && (isOMADownloadDescription(item.getDownloadInfo().getMimeType())
+                        && (DownloadUtils.isOMADownloadDescription(
+                                    item.getDownloadInfo().getMimeType())
                                 || canResolveDownloadItem(item, isSupportedMimeType));
                 return Pair.create(success, canResolve);
             }
@@ -597,6 +596,11 @@ public class DownloadManagerService
         }
     }
 
+    @CalledByNative
+    private void handleOMADownload(DownloadItem download, long systemDownloadId) {
+        mOMADownloadHandler.handleOMADownload(download.getDownloadInfo(), systemDownloadId);
+    }
+
     /**
      * Handle auto opennable files after download completes.
      * TODO(qinmin): move this to DownloadManagerBridge.
@@ -604,7 +608,7 @@ public class DownloadManagerService
      * @param download A download item.
      */
     private void handleAutoOpenAfterDownload(DownloadItem download) {
-        if (isOMADownloadDescription(download.getDownloadInfo().getMimeType())) {
+        if (DownloadUtils.isOMADownloadDescription(download.getDownloadInfo().getMimeType())) {
             mOMADownloadHandler.handleOMADownload(
                     download.getDownloadInfo(), download.getSystemDownloadId());
             return;
@@ -780,32 +784,10 @@ public class DownloadManagerService
             return;
         }
 
+        // TODO(shaktisahu): We should show this on infobar instead.
         DownloadUtils.showDownloadStartToast(ContextUtils.getApplicationContext());
         addUmaStatsEntry(new DownloadUmaStatsEntry(String.valueOf(response.downloadId),
                 downloadItem.getStartTime(), 0, false, true, 0, 0));
-    }
-
-    /**
-     * Determines if the download should be immediately opened after
-     * downloading.
-     *
-     * @param mimeType The mime type of the download.
-     * @param hasUserGesture Whether the download is associated with an user gesture.
-     * @return true if the downloaded content should be opened, or false otherwise.
-     */
-    @VisibleForTesting
-    static boolean shouldOpenAfterDownload(String mimeType, boolean hasUserGesture) {
-        return hasUserGesture && MIME_TYPES_TO_OPEN.contains(mimeType);
-    }
-
-    /**
-     * Returns true if the download is for OMA download description file.
-     *
-     * @param mimeType The mime type of the download.
-     * @return true if the downloaded is OMA download description, or false otherwise.
-     */
-    static boolean isOMADownloadDescription(String mimeType) {
-        return OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(mimeType);
     }
 
     @Nullable
@@ -911,7 +893,7 @@ public class DownloadManagerService
     public static boolean canResolveDownload(
             String filePath, String mimeType, long systemDownloadId) {
         assert !ThreadUtils.runningOnUiThread();
-        if (isOMADownloadDescription(mimeType)) return true;
+        if (DownloadUtils.isOMADownloadDescription(mimeType)) return true;
 
         Intent intent = getLaunchIntentForDownload(filePath, systemDownloadId,
                 DownloadManagerService.isSupportedMimeType(mimeType), null, null, mimeType);
@@ -1153,9 +1135,7 @@ public class DownloadManagerService
             return;
         }
 
-        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
-            DownloadManagerBridge.removeCompletedDownload(downloadGuid, externallyRemoved);
-        });
+        DownloadManagerBridge.removeCompletedDownload(downloadGuid, externallyRemoved);
     }
 
     /**
@@ -1232,7 +1212,9 @@ public class DownloadManagerService
     public void onSuccessNotificationShown(
             DownloadInfo info, boolean canResolve, int notificationId, long systemDownloadId) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
-            if (canResolve && shouldOpenAfterDownload(info.getMimeType(), info.hasUserGesture())) {
+            if (canResolve
+                    && DownloadUtils.shouldAutoOpenDownload(
+                            info.getMimeType(), info.hasUserGesture())) {
                 DownloadItem item = new DownloadItem(false, info);
                 item.setSystemDownloadId(systemDownloadId);
                 handleAutoOpenAfterDownload(item);
@@ -1372,7 +1354,7 @@ public class DownloadManagerService
 
                         @Override
                         protected void onPostExecute(Boolean canResolve) {
-                            if (shouldOpenAfterDownload(
+                            if (DownloadUtils.shouldAutoOpenDownload(
                                         result.mimeType, item.getDownloadInfo().hasUserGesture())
                                     && canResolve) {
                                 handleAutoOpenAfterDownload(item);
@@ -1821,10 +1803,11 @@ public class DownloadManagerService
             public Boolean doInBackground() {
                 DownloadInfo info = downloadItem.getDownloadInfo();
                 boolean isSupportedMimeType = isSupportedMimeType(info.getMimeType());
-                boolean canResolve = isOMADownloadDescription(info.getMimeType())
+                boolean canResolve = DownloadUtils.isOMADownloadDescription(info.getMimeType())
                         || canResolveDownloadItem(downloadItem, isSupportedMimeType);
                 return canResolve
-                        && shouldOpenAfterDownload(info.getMimeType(), info.hasUserGesture());
+                        && DownloadUtils.shouldAutoOpenDownload(
+                                info.getMimeType(), info.hasUserGesture());
             }
             @Override
             protected void onPostExecute(Boolean result) {

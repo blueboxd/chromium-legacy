@@ -14,7 +14,6 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_request_info.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/proxy_server.h"
@@ -25,24 +24,6 @@
 using content::BrowserThread;
 
 namespace android_webview {
-
-namespace {
-
-void OnReceivedHttpErrorOnUiThread(
-    const content::WebContents::Getter& web_contents_getter,
-    const AwWebResourceRequest& request,
-    std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> http_error_info) {
-  AwContentsClientBridge* client =
-      AwContentsClientBridge::FromWebContentsGetter(web_contents_getter);
-  if (!client) {
-    DLOG(WARNING) << "client is null, onReceivedHttpError dropped for "
-                  << request.url;
-    return;
-  }
-  client->OnReceivedHttpError(request, std::move(http_error_info));
-}
-
-}  // namespace
 
 AwNetworkDelegate::AwNetworkDelegate() {}
 
@@ -71,23 +52,6 @@ int AwNetworkDelegate::OnHeadersReceived(
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (original_response_headers->response_code() >= 400) {
-    content::ResourceRequestInfo* request_info =
-        content::ResourceRequestInfo::ForRequest(request);
-    // A request info may not exist for requests not originating from content.
-    if (request_info == nullptr)
-        return net::OK;
-
-    // extract out the info we need before posting to UI thread.
-    std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> error_info =
-        AwContentsClientBridge::ExtractHttpErrorInfo(original_response_headers);
-
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&OnReceivedHttpErrorOnUiThread,
-                       request_info->GetWebContentsGetterForRequest(),
-                       AwWebResourceRequest(*request), std::move(error_info)));
-  }
   return net::OK;
 }
 

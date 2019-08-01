@@ -231,8 +231,8 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
         url::Origin::Create(GURL("https://initiator.example.com"));
     request_ = NavigationRequest::CreateBrowserInitiated(
         main_test_rfh()->frame_tree_node(), std::move(common_params),
-        CommitNavigationParams(), false /* browser-initiated */, std::string(),
-        *frame_entry, nullptr, nullptr, nullptr);
+        CreateCommitNavigationParams(), false /* browser-initiated */,
+        std::string(), *frame_entry, nullptr, nullptr, nullptr);
     request_->CreateNavigationHandle(true);
   }
 

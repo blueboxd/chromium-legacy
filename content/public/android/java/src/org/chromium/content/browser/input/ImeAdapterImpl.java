@@ -512,10 +512,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         }
     }
 
-    /**
-     * Call this when we get result from ResultReceiver passed in calling showSoftInput().
-     * @param resultCode The result of showSoftInput() as defined in InputMethodManager.
-     */
+    @Override
     public void onShowKeyboardReceiveResult(int resultCode) {
         View containerView = getContainerView();
         if (resultCode == InputMethodManager.RESULT_SHOWN) {
@@ -531,25 +528,6 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
             // Also, the VR soft keyboard always reports RESULT_UNCHANGED_SHOWN as it
             // doesn't affect the size of the web contents.
             mWebContents.scrollFocusedEditableNodeIntoView();
-        }
-    }
-
-    @CalledByNative
-    private void updateAfterViewSizeChanged() {
-        // Execute a delayed form focus operation because the OSK was brought up earlier.
-        if (!mFocusPreOSKViewportRect.isEmpty()) {
-            Rect rect = new Rect();
-            getContainerView().getWindowVisibleDisplayFrame(rect);
-            if (!rect.equals(mFocusPreOSKViewportRect)) {
-                // Only assume the OSK triggered the onSizeChanged if width was preserved.
-                if (rect.width() == mFocusPreOSKViewportRect.width()) {
-                    assert mWebContents != null;
-                    mWebContents.scrollFocusedEditableNodeIntoView();
-                }
-                // Zero the rect to prevent the above operation from issuing the delayed
-                // form focus event.
-                cancelRequestToScrollFocusedEditableNodeIntoView();
-            }
         }
     }
 
@@ -994,6 +972,30 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver, UserData
         mCursorAnchorInfoController.onUpdateFrameInfo(scaleFactor, contentOffsetYPix,
                 hasInsertionMarker, isInsertionMarkerVisible, insertionMarkerHorizontal,
                 insertionMarkerTop, insertionMarkerBottom, getContainerView());
+    }
+
+    @CalledByNative
+    private void onResizeScrollableViewport(boolean contentsHeightReduced) {
+        if (!contentsHeightReduced) {
+            cancelRequestToScrollFocusedEditableNodeIntoView();
+            return;
+        }
+
+        // Execute a delayed form focus operation because the OSK was brought up earlier.
+        if (!mFocusPreOSKViewportRect.isEmpty()) {
+            Rect rect = new Rect();
+            getContainerView().getWindowVisibleDisplayFrame(rect);
+            if (!rect.equals(mFocusPreOSKViewportRect)) {
+                // Only assume the OSK triggered the onSizeChanged if width was preserved.
+                if (rect.width() == mFocusPreOSKViewportRect.width()) {
+                    assert mWebContents != null;
+                    mWebContents.scrollFocusedEditableNodeIntoView();
+                }
+                // Zero the rect to prevent the above operation from issuing the delayed
+                // form focus event.
+                cancelRequestToScrollFocusedEditableNodeIntoView();
+            }
+        }
     }
 
     private int getUnderlineColorForSuggestionSpan(SuggestionSpan suggestionSpan) {

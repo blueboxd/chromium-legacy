@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
@@ -92,7 +91,7 @@ class FakeChannelDelegate : public Channel::Delegate {
 // Message deserialization may register handles in the global handle table. We
 // need to initialize Core for that to be OK.
 struct Environment {
-  Environment() : main_thread_task_executor(base::MessagePumpType::IO) {
+  Environment() : main_thread_task_executor(base::MessagePump::Type::IO) {
     InitializeCore();
   }
 

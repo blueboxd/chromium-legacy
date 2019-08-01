@@ -107,10 +107,11 @@ interface EmbeddedSearch {
                        mojo_base.mojom.String16 text_to_be_pasted);
 
   // Updates the NTP custom background preferences.
-  SetCustomBackgroundURLWithAttributions(url.mojom.Url background_url,
+  SetCustomBackgroundInfo(url.mojom.Url background_url,
                                          string attribution_line_1,
                                          string attribution_line_2,
-                                         url.mojom.Url action_url);
+                                         url.mojom.Url action_url,
+                                         string collection_id);
 
   // Let the user select a local file for the NTP background.
   SelectLocalBackgroundImage();

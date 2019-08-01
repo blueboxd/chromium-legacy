@@ -293,7 +293,7 @@ void MemoryPressureMonitor::ScheduleEarlyCheck() {
 void MemoryPressureMonitor::ScheduleWaitForKernelNotification() {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      {ThreadPool(), MayBlock(), TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       kernel_waiting_callback_,
       base::BindRepeating(&MemoryPressureMonitor::HandleKernelNotification,
                           weak_ptr_factory_.GetWeakPtr()));

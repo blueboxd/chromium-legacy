@@ -252,7 +252,7 @@ template <typename Interface>
 class TestSyncServiceSequence {
  public:
   TestSyncServiceSequence()
-      : task_runner_(base::CreateSequencedTaskRunnerWithTraits({})),
+      : task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})),
         ping_called_(false) {}
 
   void SetUp(InterfaceRequest<Interface> request) {
@@ -432,7 +432,8 @@ void RunTestOnSequencedTaskRunner(
     std::unique_ptr<SequencedTaskRunnerTestBase> test) {
   base::RunLoop run_loop;
   test->Init(run_loop.QuitClosure());
-  base::CreateSequencedTaskRunnerWithTraits({base::WithBaseSyncPrimitives()})
+  base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::WithBaseSyncPrimitives()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&SequencedTaskRunnerTestBase::RunTest,
                                 base::Unretained(test.release())));

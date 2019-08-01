@@ -171,7 +171,7 @@ void ModuleInspector::SetModuleInspectionResultForTesting(
 void ModuleInspector::EnsureUtilWinServiceBound() {
   DCHECK(base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature));
 
-  if (remote_util_win_)
+  if (test_remote_util_win_)
     return;
 
   remote_util_win_ = LaunchUtilWinServiceInstance();
@@ -253,7 +253,13 @@ void ModuleInspector::StartInspectingModule() {
 
   if (base::FeatureList::IsEnabled(kWinOOPInspectModuleFeature)) {
     EnsureUtilWinServiceBound();
-    remote_util_win_->InspectModule(
+
+    // Use the test UtilWin remote if it exists.
+    chrome::mojom::UtilWin* util_win = test_remote_util_win_
+                                           ? test_remote_util_win_.get()
+                                           : remote_util_win_.get();
+
+    util_win->InspectModule(
         module_key.module_path,
         base::BindOnce(&ModuleInspector::OnModuleNewlyInspected,
                        weak_ptr_factory_.GetWeakPtr(), module_key));

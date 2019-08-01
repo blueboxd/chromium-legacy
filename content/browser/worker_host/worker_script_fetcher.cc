@@ -12,7 +12,6 @@
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
@@ -57,7 +56,6 @@ void WorkerScriptFetcher::CreateAndStart(
     std::unique_ptr<network::ResourceRequest> resource_request,
     CreateAndStartCallback callback) {
   DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   // This fetcher will delete itself. See the class level comment.
   (new WorkerScriptFetcher(std::move(script_loader_factory),
                            std::move(resource_request), std::move(callback)))

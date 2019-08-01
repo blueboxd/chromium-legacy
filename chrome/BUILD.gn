@@ -1874,6 +1874,7 @@ if (is_android) {
       "//chrome/browser/ui",
       "//chrome/child",
       "//chrome/common",
+      "//chrome/common/profiler",
       "//chrome/gpu",
       "//chrome/renderer",
       "//components/gwp_asan/buildflags",

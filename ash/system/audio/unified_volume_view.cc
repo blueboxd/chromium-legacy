@@ -157,10 +157,15 @@ void UnifiedVolumeView::Update(bool by_user) {
   // Indicate that the slider is inactive when it's muted.
   slider()->SetIsActive(!is_muted);
 
-  // The button should be gray whay muted and colored otherwise.
+  // The button should be gray when muted and colored otherwise.
   button()->SetToggled(!is_muted);
   button()->SetVectorIcon(is_muted ? kUnifiedMenuVolumeMuteIcon
                                    : GetVolumeIconForLevel(level));
+  base::string16 state_tooltip_text = l10n_util::GetStringUTF16(
+      is_muted ? IDS_ASH_STATUS_TRAY_VOLUME_STATE_MUTED
+               : IDS_ASH_STATUS_TRAY_VOLUME_STATE_ON);
+  button()->SetTooltipText(l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_VOLUME, state_tooltip_text));
 
   more_button_->SetVisible(CrasAudioHandler::Get()->has_alternative_input() ||
                            CrasAudioHandler::Get()->has_alternative_output());

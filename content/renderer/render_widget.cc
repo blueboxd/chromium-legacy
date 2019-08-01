@@ -3394,8 +3394,7 @@ void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
 void RenderWidget::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                            bool use_anchor,
                                            float new_page_scale,
-                                           double duration_sec) {
-  base::TimeDelta duration = base::TimeDelta::FromSecondsD(duration_sec);
+                                           base::TimeDelta duration) {
   layer_tree_view_->layer_tree_host()->StartPageScaleAnimation(
       target_offset, use_anchor, new_page_scale, duration);
 }

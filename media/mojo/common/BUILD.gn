@@ -19,7 +19,7 @@ jumbo_source_set("common") {
   deps = [
     ":mojo_shared_buffer_video_frame",
     "//base",
-    "//gpu/ipc/common:struct_traits",
+    "//gpu/ipc/common:mojom_traits",
     "//media",
     "//media/mojo/interfaces",
     "//mojo/public/cpp/bindings",

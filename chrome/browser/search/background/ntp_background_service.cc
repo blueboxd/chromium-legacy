@@ -361,10 +361,26 @@ bool NtpBackgroundService::IsValidBackdropUrl(const GURL& url) const {
   return false;
 }
 
+bool NtpBackgroundService::IsValidBackdropCollection(
+    const std::string& collection_id) const {
+  for (auto& collection : collection_info_) {
+    if (collection.collection_id == collection_id)
+      return true;
+  }
+  return false;
+}
+
 void NtpBackgroundService::AddValidBackdropUrlForTesting(const GURL& url) {
   CollectionImage image;
   image.image_url = url;
   collection_images_.push_back(image);
+}
+
+void NtpBackgroundService::AddValidBackdropCollectionForTesting(
+    const std::string& collection_id) {
+  CollectionInfo collection;
+  collection.collection_id = collection_id;
+  collection_info_.push_back(collection);
 }
 
 void NtpBackgroundService::AddValidBackdropUrlWithThumbnailForTesting(
@@ -374,6 +390,11 @@ void NtpBackgroundService::AddValidBackdropUrlWithThumbnailForTesting(
   image.image_url = url;
   image.thumbnail_image_url = thumbnail_url;
   collection_images_.push_back(image);
+}
+
+void NtpBackgroundService::SetNextCollectionImageForTesting(
+    const CollectionImage& image) {
+  next_image_ = image;
 }
 
 const GURL& NtpBackgroundService::GetThumbnailUrl(const GURL& image_url) {
@@ -394,7 +415,7 @@ void NtpBackgroundService::NotifyObservers(FetchComplete fetch_complete) {
         observer.OnCollectionImagesAvailable();
         break;
       case FetchComplete::NEXT_IMAGE_INFO:
-        // TODO(crbug.com/850317): OnNextCollectionImageAvailable()
+        observer.OnNextCollectionImageAvailable();
         break;
     }
   }

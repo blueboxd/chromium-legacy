@@ -959,8 +959,13 @@ bool PasswordAutofillAgent::IsUsernameOrPasswordField(
 bool PasswordAutofillAgent::TryToShowTouchToFill(
     const WebFormControlElement& control_element) {
   const WebInputElement* element = ToWebInputElement(&control_element);
-  return element && (base::Contains(web_input_to_password_info_, *element) ||
-                     base::Contains(password_to_username_, *element));
+  if (!element || (!base::Contains(web_input_to_password_info_, *element) &&
+                   !base::Contains(password_to_username_, *element))) {
+    return false;
+  }
+
+  GetPasswordManagerDriver()->ShowTouchToFill();
+  return true;
 }
 
 bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,

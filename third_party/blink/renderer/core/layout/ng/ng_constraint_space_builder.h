@@ -134,27 +134,27 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetIsFixedSizeInline(bool b) {
+  NGConstraintSpaceBuilder& SetIsFixedInlineSize(bool b) {
     if (LIKELY(is_in_parallel_flow_))
-      space_.bitfields_.is_fixed_size_inline = b;
+      space_.bitfields_.is_fixed_inline_size = b;
     else
-      space_.bitfields_.is_fixed_size_block = b;
+      space_.bitfields_.is_fixed_block_size = b;
 
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetIsFixedSizeBlock(bool b) {
+  NGConstraintSpaceBuilder& SetIsFixedBlockSize(bool b) {
     if (LIKELY(is_in_parallel_flow_))
-      space_.bitfields_.is_fixed_size_block = b;
+      space_.bitfields_.is_fixed_block_size = b;
     else
-      space_.bitfields_.is_fixed_size_inline = b;
+      space_.bitfields_.is_fixed_inline_size = b;
 
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetFixedSizeBlockIsDefinite(bool b) {
+  NGConstraintSpaceBuilder& SetIsFixedBlockSizeIndefinite(bool b) {
     if (LIKELY(is_in_parallel_flow_ || !force_orthogonal_writing_mode_root_))
-      SetFlag(NGConstraintSpace::kFixedSizeBlockIsDefinite, b);
+      SetFlag(NGConstraintSpace::kIsFixedBlockSizeIndefinite, b);
 
     return *this;
   }

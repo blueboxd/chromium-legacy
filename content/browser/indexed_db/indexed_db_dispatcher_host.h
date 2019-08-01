@@ -56,6 +56,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
                           blink::mojom::IDBDatabaseAssociatedRequest request);
 
   blink::mojom::IDBCursorAssociatedPtrInfo CreateCursorBinding(
+      const url::Origin& origin,
       std::unique_ptr<IndexedDBCursor> cursor);
   void RemoveCursorBinding(mojo::BindingId binding_id);
 

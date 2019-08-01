@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">次回から表示しない</translation>
 <translation id="1692118695553449118">同期は有効です</translation>
 <translation id="169515064810179024">サイトによるモーション センサーへのアクセスをブロックする</translation>
-<translation id="1697480839793160072">電話</translation>
-<translation id="1698058317516161971">メール</translation>
 <translation id="1717218214683051432">モーション センサー</translation>
 <translation id="1718835860248848330">1 時間以内</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" />に更新</translation>
@@ -239,7 +237,6 @@
 <translation id="2707726405694321444">ページを更新</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="271033894570825754">新しいファイル</translation>
-<translation id="2714850608275780394">コードを待っています</translation>
 <translation id="2728754400939377704">サイトで並べ替え</translation>
 <translation id="2744248271121720757">単語をタップすると、検索をすばやく実行したり、関連する操作メニューを確認したりできます</translation>
 <translation id="2760989362628427051">デバイスのダークテーマまたはバッテリー セーバーがオンのときにダークテーマをオンにする</translation>
@@ -306,7 +303,6 @@
 <translation id="3236059992281584593">残り 1 分</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">このページをブックマークに追加します</translation>
-<translation id="3254626532848657899">一番下に移動</translation>
 <translation id="3259831549858767975">ページ上のすべての要素を縮小する</translation>
 <translation id="3269093882174072735">画像を読み込む</translation>
 <translation id="3269956123044984603">他のデバイスと同じタブを使用するには、Android のアカウント設定で [データの自動同期] を有効にします。</translation>
@@ -507,7 +503,6 @@
 
 この設定を変更する場合は<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />してください</translation>
 <translation id="4807098396393229769">カード名義人（半角英文字）</translation>
-<translation id="4816465935029283692">データの種類</translation>
 <translation id="4824958205181053313">同期をキャンセルしますか？</translation>
 <translation id="4837753911714442426">ページの印刷オプションを開く</translation>
 <translation id="4842092870884894799">パスワード作成のポップアップを表示しています</translation>
@@ -791,7 +786,6 @@
 <translation id="6767294960381293877">タブを共有するデバイスのリストが画面の下半分に表示されました。</translation>
 <translation id="6782111308708962316">サードパーティのウェブサイトが Cookie データを保存したり読み取ったりできないようにします</translation>
 <translation id="6790428901817661496">再生</translation>
-<translation id="679325081238418596">ブックマーク、履歴、パスワードなどの設定をどのデバイスでも利用できるようにします</translation>
 <translation id="6803423358608456383">開いているタブは画面の半分の高さで表示されています</translation>
 <translation id="6811034713472274749">ページを表示できます</translation>
 <translation id="6818926723028410516">アイテムを選択</translation>
@@ -825,8 +819,6 @@
 <translation id="7022756207310403729">ブラウザで開く</translation>
 <translation id="702463548815491781">TalkBack またはスイッチ アクセスを有効にしている場合におすすめです</translation>
 <translation id="7029809446516969842">パスワード</translation>
-<translation id="7031882061095297553">同期先</translation>
-<translation id="7034608350006174882">Google Pay のカードと住所</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7055152154916055070">リダイレクトがブロックされました</translation>
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>
@@ -1092,7 +1084,6 @@
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信します</translation>
 <translation id="8993760627012879038">新しいタブをシークレット モードで開く</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> で管理されているアカウントでログインして、Chrome データの管理を管理者に委ねようとしています。この操作を行うと、データはこのアカウントに恒久的に関連付けられます。Chrome からログアウトすると、データはこのデバイスから削除されますが、Google アカウントには残ります。</translation>
-<translation id="9005637476204108703">アカウントを管理するにはここをタップ</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
 <translation id="9040142327097499898">通知が許可されていますが、位置情報がデバイスでオフになっています。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 個の動画}other{# 個の動画}}</translation>
@@ -1114,7 +1105,6 @@
 <translation id="9155898266292537608">単語をタップするだけでも検索できます</translation>
 <translation id="9169594135889675189">グループに新しいタブを追加</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
-<translation id="9190112541605496997">アカウントを管理するには [アカウントを管理] をタップします</translation>
 <translation id="9204836675896933765">残り 1 ファイル</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">画像</translation>

@@ -77,9 +77,7 @@
 #include "content/browser/background_sync/one_shot_background_sync_service_impl.h"
 #include "content/browser/background_sync/periodic_background_sync_service_impl.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/blob_storage/blob_dispatcher_host.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
-#include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main.h"
@@ -197,7 +195,6 @@
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/network/cross_origin_read_blocking.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/embedder/switches.h"
@@ -1124,68 +1121,40 @@ GetBroadcastChannelProviderRequestHandler() {
   return *instance;
 }
 
-void RemoveCorbExceptionForPluginOnIOThread(int process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // Without NetworkService the exception list is stored directly in the browser
-  // process.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    network::CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
-}
-
 // This is the entry point (i.e. this is called on the UI thread *before*
 // we post a task for RemoveCorbExceptionForPluginOnIOThread).
 void RemoveCorbExceptionForPluginOnUIThread(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    GetCurrentCorbPluginExceptions().erase(process_id);
-    GetNetworkService()->RemoveCorbExceptionForPlugin(process_id);
-  } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&RemoveCorbExceptionForPluginOnIOThread, process_id));
-  }
+  GetCurrentCorbPluginExceptions().erase(process_id);
+  GetNetworkService()->RemoveCorbExceptionForPlugin(process_id);
 }
 
 void AddCorbExceptionForPluginOnUIThread(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderProcessHost* process = RenderProcessHostImpl::FromID(process_id);
-  if (!process) {
-    // In this case the exception won't be added via NetworkService (because of
-    // the early return below), but we need to proactively do clean-up on IO
-    // thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&RemoveCorbExceptionForPluginOnIOThread, process_id));
+  if (!process)
     return;
-  }
+
   process->CleanupCorbExceptionForPluginUponDestruction();
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    static base::NoDestructor<
-        std::unique_ptr<base::CallbackList<void()>::Subscription>>
-        s_crash_handler_subscription;
-    if (!*s_crash_handler_subscription) {
-      *s_crash_handler_subscription = RegisterNetworkServiceCrashHandler(
-          base::BindRepeating(&OnNetworkServiceCrashForCorb));
-    }
-
-    GetCurrentCorbPluginExceptions().insert(process_id);
-    GetNetworkService()->AddCorbExceptionForPlugin(process_id);
+  static base::NoDestructor<
+      std::unique_ptr<base::CallbackList<void()>::Subscription>>
+      s_crash_handler_subscription;
+  if (!*s_crash_handler_subscription) {
+    *s_crash_handler_subscription = RegisterNetworkServiceCrashHandler(
+        base::BindRepeating(&OnNetworkServiceCrashForCorb));
   }
+
+  GetCurrentCorbPluginExceptions().insert(process_id);
+  GetNetworkService()->AddCorbExceptionForPlugin(process_id);
 }
 
 // This is the entry point (i.e. this is called on the IO thread *before*
 // we post a task for AddCorbExceptionForPluginOnUIThread).
 void AddCorbExceptionForPluginOnIOThread(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // Without NetworkService the exception list is stored directly in the browser
-  // process.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    network::CrossOriginReadBlocking::AddExceptionForPlugin(process_id);
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
@@ -1869,18 +1838,11 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetBrowserContext(), storage_partition_impl_, widget_helper_.get());
   AddFilter(render_frame_message_filter_.get());
 
-  BrowserContext* browser_context = GetBrowserContext();
-  // Several filters need the Blob storage context, so fetch it in advance.
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_context =
-      ChromeBlobStorageContext::GetFor(browser_context);
-
   peer_connection_tracker_host_ = new PeerConnectionTrackerHost(GetID());
   AddFilter(peer_connection_tracker_host_.get());
 #if BUILDFLAG(ENABLE_PLUGINS)
   AddFilter(new PepperRendererConnection(GetID()));
 #endif
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    AddFilter(new BlobDispatcherHost(GetID(), blob_storage_context));
 #if defined(OS_MACOSX)
   AddFilter(new TextInputClientMessageFilter());
 #endif
@@ -2147,13 +2109,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   associated_registry->AddInterface(base::BindRepeating(
       &RenderProcessHostImpl::CreateRendererHost, base::Unretained(this)));
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    AddUIThreadInterface(
-        registry.get(),
-        base::BindRepeating(
-            &RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess,
-            base::Unretained(this)));
-  }
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(
+          &RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess,
+          base::Unretained(this)));
 
   registry->AddInterface(
       base::BindRepeating(&BlobRegistryWrapper::Bind,

@@ -286,7 +286,7 @@ class WebWidgetClient {
   virtual void StartPageScaleAnimation(const gfx::Vector2d& destination,
                                        bool use_anchor,
                                        float new_page_scale,
-                                       double duration_sec) {}
+                                       base::TimeDelta duration) {}
 
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp.

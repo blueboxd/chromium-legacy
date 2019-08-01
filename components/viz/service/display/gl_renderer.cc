@@ -980,8 +980,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   base::Optional<DisplayResourceProvider::ScopedReadLockSkImage>
       backdrop_image_lock;
   if (quad->mask_applies_to_backdrop && quad->mask_resource_id()) {
-    backdrop_image_lock.emplace(resource_provider_, quad->mask_resource_id(),
-                                kPremul_SkAlphaType, kTopLeft_GrSurfaceOrigin);
+    backdrop_image_lock.emplace(resource_provider_, quad->mask_resource_id());
     // TODO(984766): This will be null on Mac, so masks will not be applied.
     mask_image = backdrop_image_lock->sk_image();
   }

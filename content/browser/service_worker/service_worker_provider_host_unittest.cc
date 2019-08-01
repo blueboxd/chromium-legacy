@@ -29,7 +29,6 @@
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "mojo/core/embedder/embedder.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -311,8 +310,7 @@ class ServiceWorkerProviderHostTestWithPlzDedicatedWorker
     // PlzDedicatedWorker is enabled.
     scoped_feature_list_.InitWithFeatures(
         {blink::features::kOffMainThreadDedicatedWorkerScriptFetch,
-         blink::features::kPlzDedicatedWorker,
-         network::features::kNetworkService} /* enabled_features */,
+         blink::features::kPlzDedicatedWorker} /* enabled_features */,
         {} /* disabled_features */);
   }
 

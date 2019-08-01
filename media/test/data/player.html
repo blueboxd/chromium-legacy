@@ -16,7 +16,7 @@ function Log(message) {
 }
 
 function onLogEvent(e) {
-  Log('Event: ' + e.type);
+  Log('Event: ' + e.type +' video: ' + getVideoStatus(e.target));
 }
 
 function getTimeRanges(range) {
@@ -32,6 +32,8 @@ function getVideoStatus(video) {
     return 'null';
   }
   const result = [];
+  result.push(`readyState: ${video.readyState}`);
+  result.push(`networkState: ${video.networkState}`);
   result.push(`paused: ${video.paused}`);
   result.push(`ended: ${video.ended}`);
   result.push(`currentTime: ${video.currentTime}`);
@@ -176,13 +178,21 @@ function RunTest() {
   player.addEventListener('timeupdate', SeekTestTimeoutSetup, false);
 
   // Log events.
+  player.addEventListener('abort', onLogEvent);
   player.addEventListener('canplay', onLogEvent);
-  player.addEventListener('load', onLogEvent);
-  player.addEventListener('playing', onLogEvent);
-  player.addEventListener('play', onLogEvent);
   player.addEventListener('canplaythrough', onLogEvent);
+  player.addEventListener('durationchange', onLogEvent);
+  player.addEventListener('emptied', onLogEvent);
+  player.addEventListener('loadeddata', onLogEvent);
+  player.addEventListener('loadedmetadata', onLogEvent);
+  player.addEventListener('loadstart', onLogEvent);
+  player.addEventListener('play', onLogEvent);
+  player.addEventListener('playing', onLogEvent);
+  player.addEventListener('progress', onLogEvent);
   player.addEventListener('stalled', onLogEvent);
+  player.addEventListener('suspend', onLogEvent);
   player.addEventListener('waiting', onLogEvent);
+
   setInterval(function () {
     Log('heartbeat #' + ++heartbeatCount +
     ' video: ' + getVideoStatus(player));

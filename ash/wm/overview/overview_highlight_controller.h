@@ -76,6 +76,8 @@ class ASH_EXPORT OverviewHighlightController {
 
  private:
   class HighlightWidget;
+  friend class DesksOverviewHighlightControllerTest;
+  friend class OverviewHighlightControllerTest;
 
   // Returns a vector of views that can be traversed via overview tabbing.
   // Includes desk mini views, the new desk button and overview items.

@@ -602,4 +602,16 @@ void OscillatorNode::setPeriodicWave(PeriodicWave* wave) {
   GetOscillatorHandler().SetPeriodicWave(wave);
 }
 
+void OscillatorNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+  GraphTracer().DidCreateAudioParam(detune_);
+  GraphTracer().DidCreateAudioParam(frequency_);
+}
+
+void OscillatorNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioParam(detune_);
+  GraphTracer().WillDestroyAudioParam(frequency_);
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

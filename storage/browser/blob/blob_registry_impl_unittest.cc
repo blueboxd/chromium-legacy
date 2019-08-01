@@ -58,7 +58,7 @@ class BlobRegistryImplTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     context_ = std::make_unique<BlobStorageContext>(
         data_dir_.GetPath(),
-        base::CreateTaskRunnerWithTraits({base::MayBlock()}));
+        base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()}));
     auto storage_policy =
         base::MakeRefCounted<content::MockSpecialStoragePolicy>();
     file_system_context_ = base::MakeRefCounted<storage::FileSystemContext>(
@@ -140,8 +140,8 @@ class BlobRegistryImplTest : public testing::Test {
   blink::mojom::BytesProviderPtrInfo CreateBytesProvider(
       const std::string& bytes) {
     if (!bytes_provider_runner_) {
-      bytes_provider_runner_ =
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      bytes_provider_runner_ = base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock()});
     }
     blink::mojom::BytesProviderPtrInfo result;
     auto provider = std::make_unique<MockBytesProvider>(
@@ -156,8 +156,8 @@ class BlobRegistryImplTest : public testing::Test {
   void CreateBytesProvider(const std::string& bytes,
                            blink::mojom::BytesProviderRequest request) {
     if (!bytes_provider_runner_) {
-      bytes_provider_runner_ =
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      bytes_provider_runner_ = base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock()});
     }
     auto provider = std::make_unique<MockBytesProvider>(
         std::vector<uint8_t>(bytes.begin(), bytes.end()), &reply_request_count_,

@@ -33,7 +33,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/download/download_location_dialog_bridge.h"
 #endif
 
@@ -172,9 +171,8 @@ class ChromeDownloadManagerDelegate
                        const GetFileMimeTypeCallback& callback) override;
 
 #if defined(OS_ANDROID)
-  virtual void OnDownloadCanceled(
-      download::DownloadItem* download,
-      DownloadController::DownloadCancelReason reason);
+  virtual void OnDownloadCanceled(download::DownloadItem* download,
+                                  bool has_no_external_storage);
 #endif
 
   // Called when the file picker returns the confirmation result.

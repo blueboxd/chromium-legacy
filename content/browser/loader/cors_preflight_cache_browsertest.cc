@@ -35,8 +35,7 @@ const base::string16 kTestDone = base::string16(base::ASCIIToUTF16("DONE"));
 class CorsPreflightCacheBrowserTest : public ContentBrowserTest {
  protected:
   CorsPreflightCacheBrowserTest() {
-    scoped_feature_list_.InitWithFeatures({network::features::kOutOfBlinkCors,
-                                           network::features::kNetworkService},
+    scoped_feature_list_.InitWithFeatures({network::features::kOutOfBlinkCors},
                                           {});
   }
   ~CorsPreflightCacheBrowserTest() override = default;

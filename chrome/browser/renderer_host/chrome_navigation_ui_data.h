@@ -21,7 +21,6 @@ class NavigationHandle;
 
 enum class WindowOpenDisposition;
 
-// PlzNavigate
 // Contains data that is passed from the UI thread to the IO thread at the
 // beginning of each navigation. The class is instantiated on the UI thread,
 // then a copy created using Clone is passed to the content::ResourceRequestInfo

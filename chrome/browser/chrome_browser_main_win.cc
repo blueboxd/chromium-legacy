@@ -381,9 +381,10 @@ void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
         // Failed to get the TimeDateStamp directly from memory. The next step
         // to try is to read the file on disk. This must be done in a blocking
         // task.
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE,
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
             base::BindOnce(&HandleModuleLoadEventWithoutTimeDateStamp,
                            event.module_path, event.module_size));
@@ -427,7 +428,7 @@ void ShowCloseBrowserFirstMessageBox() {
 
 void MaybePostSettingsResetPrompt() {
   if (base::FeatureList::IsEnabled(safe_browsing::kSettingsResetPrompt)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::Bind(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
@@ -565,7 +566,7 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
       !ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() ||
       !ModuleBlacklistCacheUpdater::IsBlockingEnabled())
     ThirdPartyConflictsManager::DisableThirdPartyModuleBlocking(
-        base::CreateTaskRunnerWithTraits(
+        base::CreateTaskRunner(
             {base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
              base::MayBlock()})
@@ -605,9 +606,9 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
 
   // Record UMA data about whether the fault-tolerant heap is enabled.
   // Use a delayed task to minimize the impact on startup time.
-  base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                  base::BindOnce(&DetectFaultTolerantHeap),
-                                  base::TimeDelta::FromMinutes(1));
+  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                        base::BindOnce(&DetectFaultTolerantHeap),
+                        base::TimeDelta::FromMinutes(1));
 
   // Start the swap thrashing monitor if it's enabled.
   //

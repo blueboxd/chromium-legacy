@@ -11,7 +11,6 @@
 #include "base/base_jni_headers/JavaHandlerThread_jni.h"
 #include "base/bind.h"
 #include "base/message_loop/message_pump.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequence_manager/sequence_manager_impl.h"
@@ -147,13 +146,13 @@ void JavaHandlerThread::QuitThreadSafely() {
 JavaHandlerThread::TaskEnvironment::TaskEnvironment()
     : sequence_manager(sequence_manager::CreateUnboundSequenceManager(
           sequence_manager::SequenceManager::Settings::Builder()
-              .SetMessagePumpType(base::MessagePumpType::JAVA)
+              .SetMessagePumpType(base::MessagePump::Type::JAVA)
               .Build())),
       default_task_queue(sequence_manager->CreateTaskQueue(
           sequence_manager::TaskQueue::Spec("default_tq"))) {
   // TYPE_JAVA to get the Android java style message loop.
   std::unique_ptr<MessagePump> message_pump =
-      MessagePump::Create(base::MessagePumpType::JAVA);
+      MessagePump::Create(base::MessagePump::Type::JAVA);
   pump = static_cast<MessagePumpForUI*>(message_pump.get());
 
   // We must set SetTaskRunner before binding because the Android UI pump

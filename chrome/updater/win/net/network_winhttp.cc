@@ -340,10 +340,10 @@ void NetworkFetcherWinHTTP::RequestError(const WINHTTP_ASYNC_RESULT* result) {
 
 void NetworkFetcherWinHTTP::WriteDataToFile() {
   constexpr base::TaskTraits kTaskTraits = {
-      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(&NetworkFetcherWinHTTP::WriteDataToFileBlocking,
                      base::Unretained(this)),

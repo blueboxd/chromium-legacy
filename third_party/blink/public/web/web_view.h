@@ -182,8 +182,10 @@ class WebView {
   // send it.
   virtual void ClearFocusedElement() = 0;
 
-  // Smooth scroll the root layer to |targetX|, |targetY| in |durationMs|.
-  virtual void SmoothScroll(int target_x, int target_y, uint64_t duration_ms) {}
+  // Smooth scroll the root layer to |targetX|, |targetY| in |duration|.
+  virtual void SmoothScroll(int target_x,
+                            int target_y,
+                            base::TimeDelta duration) {}
 
   // Advance the focus of the WebView forward to the next element or to the
   // previous element in the tab sequence (if reverse is true).

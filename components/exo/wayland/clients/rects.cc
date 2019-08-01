@@ -21,7 +21,6 @@
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/scoped_generic.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -573,7 +572,8 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   exo::wayland::clients::RectsClient client;
   return client.Run(params, max_frames_pending, num_rects, num_benchmark_runs,
                     base::TimeDelta::FromMilliseconds(benchmark_interval_ms),

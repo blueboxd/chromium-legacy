@@ -398,10 +398,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   NavigateFrame(kSubframeNames[0], allowed_empty_subdocument_url);
 
   // Finally, navigate the first subframe to an allowed URL that redirects to a
-  // disallowed URL, and verify that:
-  //  -- The navigation gets blocked and the frame collapsed (with PlzNavigate).
-  //  -- The navigation is cancelled, but the frame is not collapsed (without
-  //  PlzNavigate, where BLOCK_REQUEST_AND_COLLAPSE is not supported).
+  // disallowed URL, and verify that the navigation gets blocked and the frame
+  // collapsed.
   GURL disallowed_subdocument_url(
       GetTestUrl("subresource_filter/frame_with_included_script.html"));
   GURL redirect_to_disallowed_subdocument_url(embedded_test_server()->GetURL(

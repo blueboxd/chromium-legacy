@@ -29,7 +29,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -164,7 +163,6 @@ class FileSystemURLLoaderFactoryTest
  protected:
   FileSystemURLLoaderFactoryTest() : file_util_(nullptr) {
     std::vector<base::Feature> features;
-    features.push_back(network::features::kNetworkService);
     if (GetParam() == TestMode::kIncognito ||
         GetParam() == TestMode::kRegularWithIncognitoEnabled) {
       features.push_back(storage::features::kEnableFilesystemInIncognito);

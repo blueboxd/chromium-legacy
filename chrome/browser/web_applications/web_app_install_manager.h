@@ -51,9 +51,10 @@ class WebAppInstallManager final : public InstallManager {
       bool no_network_install,
       WebappInstallSource install_source,
       OnceInstallCallback callback) override;
-  void InstallWebAppWithOptions(content::WebContents* web_contents,
-                                const ExternalInstallOptions& install_options,
-                                OnceInstallCallback callback) override;
+  void InstallWebAppWithParams(content::WebContents* web_contents,
+                               const InstallParams& install_params,
+                               WebappInstallSource install_source,
+                               OnceInstallCallback callback) override;
   void InstallOrUpdateWebAppFromSync(
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,

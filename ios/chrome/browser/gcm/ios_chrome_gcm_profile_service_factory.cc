@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -66,7 +67,7 @@ IOSChromeGCMProfileServiceFactory::GetInstance() {
 
 // static
 std::string IOSChromeGCMProfileServiceFactory::GetProductCategoryForSubtypes() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return "com.chrome.ios";
 #else
   return "org.chromium.ios";

@@ -112,9 +112,8 @@ class ChromePluginTest : public InProcessBrowserTest {
   static void CrashFlash() {
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&CrashFlashInternal, runner->QuitClosure()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&CrashFlashInternal, runner->QuitClosure()));
     runner->Run();
   }
 
@@ -142,7 +141,7 @@ class ChromePluginTest : public InProcessBrowserTest {
     int actual = 0;
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&CountPluginProcesses, &actual, runner->QuitClosure()));
     runner->Run();
@@ -159,7 +158,7 @@ class ChromePluginTest : public InProcessBrowserTest {
       found = true;
     }
     ASSERT_TRUE(found) << "Didn't find Flash process!";
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_task);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, quit_task);
   }
 
   static void GetPluginsInfoCallback(
@@ -175,7 +174,7 @@ class ChromePluginTest : public InProcessBrowserTest {
       if (iter.GetData().process_type == content::PROCESS_TYPE_PPAPI_PLUGIN)
         (*count)++;
     }
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, quit_task);
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, quit_task);
   }
 };
 

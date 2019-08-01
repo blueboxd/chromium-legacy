@@ -55,7 +55,7 @@ mojom("mojo_test_types") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "content_capture_struct_traits_unittest.cc",
+    "content_capture_mojom_traits_unittest.cc",
   ]
 
   public_deps = [

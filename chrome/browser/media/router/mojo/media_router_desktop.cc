@@ -166,11 +166,10 @@ void MediaRouterDesktop::RegisterExtensionMediaRouteProvider(
   // executes commands to the MRP and its route controllers. Commands to the
   // route controllers, once executed, will be queued in Mojo pipes until the
   // Mojo requests are bound to implementations.
-  // TODO(takumif): Once we have route controllers for MRPs other than the
-  // extension MRP, we'll need to group them by MRP so that below is performed
-  // only for extension route controllers.
-  for (const auto& pair : route_controllers_)
-    InitMediaRouteController(pair.second);
+  for (const auto& pair : route_controllers_) {
+    if (GetProviderIdForRoute(pair.first).value_or(UNKNOWN) == EXTENSION)
+      InitMediaRouteController(pair.second);
+  }
   extension_provider_proxy_->RegisterMediaRouteProvider(
       std::move(extension_provider_ptr));
 }

@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 @protocol ApplicationCommands;
+@protocol BrowserCommands;
 @protocol SettingsMainPageCommands;
 @class SigninInteractionController;
 namespace ios {
@@ -42,8 +43,8 @@ extern NSString* const kSettingsVoiceSearchCellId;
 // Initializes a new SettingsTableViewController. |browserState| must not
 // be nil and must not be an off-the-record browser state.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:(id<ApplicationCommands>)dispatcher
-    NS_DESIGNATED_INITIALIZER;
+                          dispatcher:(id<ApplicationCommands, BrowserCommands>)
+                                         dispatcher NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)style
                            appBarStyle:

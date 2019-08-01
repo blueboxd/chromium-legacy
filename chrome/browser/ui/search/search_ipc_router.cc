@@ -349,16 +349,18 @@ void SearchIPCRouter::PasteAndOpenDropdown(int page_seq_no,
   delegate_->PasteIntoOmnibox(text);
 }
 
-void SearchIPCRouter::SetCustomBackgroundURLWithAttributions(
+void SearchIPCRouter::SetCustomBackgroundInfo(
     const GURL& background_url,
     const std::string& attribution_line_1,
     const std::string& attribution_line_2,
-    const GURL& action_url) {
-  if (!policy_->ShouldProcessSetCustomBackgroundURLWithAttributions())
+    const GURL& action_url,
+    const std::string& collection_id) {
+  if (!policy_->ShouldProcessSetCustomBackgroundInfo())
     return;
 
-  delegate_->OnSetCustomBackgroundURLWithAttributions(
-      background_url, attribution_line_1, attribution_line_2, action_url);
+  delegate_->OnSetCustomBackgroundInfo(background_url, attribution_line_1,
+                                       attribution_line_2, action_url,
+                                       collection_id);
 }
 
 void SearchIPCRouter::SelectLocalBackgroundImage() {

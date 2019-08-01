@@ -1105,7 +1105,7 @@ StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
   return collector.MatchedStyleRuleList();
 }
 
-CSSRuleList* StyleResolver::PseudoCSSRulesForElement(
+RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
     Element* element,
     PseudoId pseudo_id,
     unsigned rules_to_include) {
@@ -1123,8 +1123,8 @@ CSSRuleList* StyleResolver::PseudoCSSRulesForElement(
   return collector.MatchedCSSRuleList();
 }
 
-CSSRuleList* StyleResolver::CssRulesForElement(Element* element,
-                                               unsigned rules_to_include) {
+RuleIndexList* StyleResolver::CssRulesForElement(Element* element,
+                                                 unsigned rules_to_include) {
   return PseudoCSSRulesForElement(element, kPseudoIdNone, rules_to_include);
 }
 

@@ -127,10 +127,11 @@ URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
 URLRequestMockHTTPJob::URLRequestMockHTTPJob(URLRequest* request,
                                              NetworkDelegate* network_delegate,
                                              const base::FilePath& file_path)
-    : URLRequestFileJob(request,
-                        network_delegate,
-                        file_path,
-                        base::CreateTaskRunnerWithTraits({base::MayBlock()})) {}
+    : URLRequestFileJob(
+          request,
+          network_delegate,
+          file_path,
+          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()})) {}
 
 URLRequestMockHTTPJob::~URLRequestMockHTTPJob() = default;
 
@@ -157,8 +158,9 @@ void URLRequestMockHTTPJob::OnReadComplete(net::IOBuffer* buffer, int result) {
 
 // Public virtual version.
 void URLRequestMockHTTPJob::Start() {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()}, base::Bind(&DoFileIO, file_path_),
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::Bind(&DoFileIO, file_path_),
       base::Bind(&URLRequestMockHTTPJob::SetHeadersAndStart,
                  weak_ptr_factory_.GetWeakPtr()));
 }

@@ -17,6 +17,7 @@
 #include "components/favicon/core/large_icon_service_impl.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
+#include "components/favicon_base/favicon_types.h"
 #import "ios/chrome/app/spotlight/bookmarks_spotlight_manager.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
 #import "ios/chrome/app/spotlight/spotlight_util.h"
@@ -65,7 +66,10 @@ class SpotlightManagerTest : public PlatformTest {
   SpotlightManagerTest() {
     model_ = bookmarks::TestBookmarkClient::CreateModel();
     large_icon_service_.reset(new favicon::LargeIconServiceImpl(
-        &mock_favicon_service_, /*image_fetcher=*/nullptr));
+        &mock_favicon_service_, /*image_fetcher=*/nullptr,
+        /*desired_size_in_dip_for_server_requests=*/0,
+        /*icon_type_for_server_requests=*/favicon_base::IconType::kTouchIcon,
+        /*google_server_client_param=*/"test_chrome"));
     bookmarksSpotlightManager_ = [[BookmarksSpotlightManager alloc]
         initWithLargeIconService:large_icon_service_.get()
                    bookmarkModel:model_.get()];

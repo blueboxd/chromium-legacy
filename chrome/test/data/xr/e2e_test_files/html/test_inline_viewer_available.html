@@ -53,7 +53,7 @@ identity reference space
         }
 
         session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl, { compositionDisabled: true })
+            baseLayer: new XRWebGLLayer(session, gl)
         });
         session.requestAnimationFrame(onRequestAnimationFrame);
       })

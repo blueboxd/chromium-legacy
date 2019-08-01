@@ -1032,13 +1032,10 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithOptions_GuestProfile) {
   auto install_task = std::make_unique<WebAppInstallTask>(
       guest_profile, install_finalizer_.get(), std::move(data_retriever));
 
-  ExternalInstallOptions install_options{
-      app_url, LaunchContainer::kDefault,
-      ExternalInstallSource::kExternalDefault};
-
   base::RunLoop run_loop;
-  install_task->InstallWebAppWithOptions(
-      web_contents(), install_options,
+  install_task->InstallWebAppWithParams(
+      web_contents(), InstallManager::InstallParams{},
+      WebappInstallSource::EXTERNAL_DEFAULT,
       base::BindLambdaForTesting(
           [&](const AppId& app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccess, code);

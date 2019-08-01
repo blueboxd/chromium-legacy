@@ -102,8 +102,7 @@ class ProcessSingletonPosixTest : public testing::Test {
 
   void TearDown() override {
     scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})
-            .get()));
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get()));
     ASSERT_TRUE(io_helper->Run());
 
     // Destruct the ProcessSingleton object before the IO thread so that its

@@ -1136,11 +1136,10 @@ TEST_F(PromiseTest, CurriedVoidPromiseModified) {
                                    promise_resolver->promise()))
         .ThenHere(FROM_HERE, base::BindOnce([](int v) { EXPECT_EQ(v, 42); }))
         .ThenHere(FROM_HERE, run_loop.QuitClosure());
-    PostTaskWithTraits(FROM_HERE, {ThreadPool()},
-                       base::BindLambdaForTesting([&]() {
-                         promise_resolver->Resolve(42);
-                         promise_resolver.reset();
-                       }));
+    PostTask(FROM_HERE, {ThreadPool()}, BindLambdaForTesting([&]() {
+               promise_resolver->Resolve(42);
+               promise_resolver.reset();
+             }));
     run_loop.Run();
     scoped_task_environment_.RunUntilIdle();
   }

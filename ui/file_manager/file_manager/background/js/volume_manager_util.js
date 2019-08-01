@@ -97,9 +97,7 @@ volumeManagerUtil.createVolumeInfo = volumeMetadata => {
       break;
   }
 
-  console.warn(
-      'Requesting file system: ' + volumeMetadata.volumeType + ' ' +
-      volumeMetadata.volumeId);
+  console.warn(`Getting file system '${volumeMetadata.volumeId}'`);
   return util
       .timeoutPromise(
           new Promise((resolve, reject) => {
@@ -132,7 +130,7 @@ volumeManagerUtil.createVolumeInfo = volumeMetadata => {
                         if (chrome.runtime.lastError) {
                           reject(chrome.runtime.lastError.message);
                         } else if (!entries[0]) {
-                          reject('Resolving for external context failed.');
+                          reject('Resolving for external context failed');
                         } else {
                           resolve(entries[0].filesystem);
                         }
@@ -145,7 +143,7 @@ volumeManagerUtil.createVolumeInfo = volumeMetadata => {
       .then(
           /** @param {!FileSystem} fileSystem */
           fileSystem => {
-            console.warn('File system obtained: ' + volumeMetadata.volumeId);
+            console.warn(`Got file system '${volumeMetadata.volumeId}'`);
             if (volumeMetadata.volumeType ===
                 VolumeManagerCommon.VolumeType.DRIVE) {
               // After file system is mounted, we "read" drive grand root
@@ -156,7 +154,7 @@ volumeManagerUtil.createVolumeInfo = volumeMetadata => {
               fileSystem.root.createReader().readEntries(
                   () => {/* do nothing */}, error => {
                     console.warn(
-                        'Triggering full feed fetch has failed: ' + error.name);
+                        `Triggering full feed fetch has failed: ${error.name}`);
                   });
             }
             return new VolumeInfoImpl(
@@ -178,9 +176,8 @@ volumeManagerUtil.createVolumeInfo = volumeMetadata => {
       .catch(
           /** @param {*} error */
           error => {
-            console.warn(
-                'Failed to mount a file system: ' + volumeMetadata.volumeId +
-                ' because of: ' + (error.stack || error));
+            console.error(`Cannot mount file system '${
+                volumeMetadata.volumeId}': ${error.stack || error}`);
 
             // TODO(crbug/847729): Report a mount error via UMA.
 

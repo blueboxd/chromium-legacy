@@ -115,7 +115,6 @@ UserMediaClientImpl::UserMediaClientImpl(
 // |user_media_processor_|.
 UserMediaClientImpl::UserMediaClientImpl(
     RenderFrameImpl* render_frame,
-    PeerConnectionDependencyFactory* dependency_factory,
     std::unique_ptr<blink::WebMediaStreamDeviceObserver>
         media_stream_device_observer,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -123,7 +122,6 @@ UserMediaClientImpl::UserMediaClientImpl(
           render_frame,
           std::make_unique<UserMediaProcessor>(
               render_frame,
-              dependency_factory,
               std::move(media_stream_device_observer),
               base::BindRepeating(
                   &UserMediaClientImpl::GetMediaDevicesDispatcher,

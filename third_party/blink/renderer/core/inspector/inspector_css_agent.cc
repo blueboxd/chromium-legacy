@@ -133,11 +133,12 @@ String CreateShorthandValue(Document* document,
   return style->getPropertyValue(shorthand);
 }
 
-HeapVector<Member<CSSStyleRule>> FilterDuplicateRules(CSSRuleList* rule_list) {
+HeapVector<Member<CSSStyleRule>> FilterDuplicateRules(
+    RuleIndexList* rule_list) {
   HeapVector<Member<CSSStyleRule>> uniq_rules;
   HeapHashSet<Member<CSSRule>> uniq_rules_set;
-  for (unsigned i = rule_list ? rule_list->length() : 0; i > 0; --i) {
-    CSSRule* rule = rule_list->item(i - 1);
+  for (unsigned i = rule_list ? rule_list->size() : 0; i > 0; --i) {
+    CSSRule* rule = rule_list->at(i - 1).first;
     auto* style_rule = DynamicTo<CSSStyleRule>(rule);
     if (!style_rule || uniq_rules_set.Contains(rule))
       continue;
@@ -950,7 +951,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   StyleResolver& style_resolver = owner_document->EnsureStyleResolver();
 
   element->UpdateDistributionForUnknownReasons();
-  CSSRuleList* matched_rules = style_resolver.PseudoCSSRulesForElement(
+  RuleIndexList* matched_rules = style_resolver.PseudoCSSRulesForElement(
       element, element_pseudo_id, StyleResolver::kAllCSSRules);
   *matched_css_rules = BuildArrayForMatchedRuleList(
       matched_rules, original_element, kPseudoIdNone);
@@ -971,10 +972,10 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   for (PseudoId pseudo_id = kFirstPublicPseudoId;
        pseudo_id < kAfterLastInternalPseudoId;
        pseudo_id = static_cast<PseudoId>(pseudo_id + 1)) {
-    CSSRuleList* matched_rules = style_resolver.PseudoCSSRulesForElement(
+    RuleIndexList* matched_rules = style_resolver.PseudoCSSRulesForElement(
         element, pseudo_id, StyleResolver::kAllCSSRules);
     protocol::DOM::PseudoType pseudo_type;
-    if (matched_rules && matched_rules->length() &&
+    if (matched_rules && matched_rules->size() &&
         dom_agent_->GetPseudoElementType(pseudo_id, &pseudo_type)) {
       pseudo_id_matches->fromJust()->emplace_back(
           protocol::CSS::PseudoElementMatches::create()
@@ -992,7 +993,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   while (parent_element) {
     StyleResolver& parent_style_resolver =
         parent_element->ownerDocument()->EnsureStyleResolver();
-    CSSRuleList* parent_matched_rules =
+    RuleIndexList* parent_matched_rules =
         parent_style_resolver.CssRulesForElement(parent_element,
                                                  StyleResolver::kAllCSSRules);
     std::unique_ptr<protocol::CSS::InheritedStyleEntry> entry =
@@ -1996,58 +1997,65 @@ std::unique_ptr<protocol::CSS::CSSRule> InspectorCSSAgent::BuildObjectForRule(
   return result;
 }
 
-static inline bool MatchesPseudoElement(const CSSSelector* selector,
-                                        PseudoId element_pseudo_id) {
-  // According to http://www.w3.org/TR/css3-selectors/#pseudo-elements, "Only
-  // one pseudo-element may appear per selector."
-  // As such, check the last selector in the tag history.
-  for (; !selector->IsLastInTagHistory(); ++selector) {
-  }
-  PseudoId selector_pseudo_id =
-      CSSSelector::GetPseudoId(selector->GetPseudoType());
-
-  // FIXME: This only covers the case of matching pseudo-element selectors
-  // against PseudoElements.  We should come up with a solution for matching
-  // pseudo-element selectors against ordinary Elements, too.
-  return selector_pseudo_id == element_pseudo_id;
-}
-
 std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>>
 InspectorCSSAgent::BuildArrayForMatchedRuleList(
-    CSSRuleList* rule_list,
+    RuleIndexList* rule_list,
     Element* element,
     PseudoId matches_for_pseudo_id) {
   auto result = std::make_unique<protocol::Array<protocol::CSS::RuleMatch>>();
   if (!rule_list)
     return result;
 
-  HeapVector<Member<CSSStyleRule>> uniq_rules = FilterDuplicateRules(rule_list);
-  for (unsigned i = 0; i < uniq_rules.size(); ++i) {
-    CSSStyleRule* rule = uniq_rules.at(i).Get();
+  // Dedupe matches coming from the same rule source.
+  HeapVector<Member<CSSStyleRule>> uniq_rules;
+  HeapHashSet<Member<CSSRule>> uniq_rules_set;
+  HeapHashMap<Member<CSSStyleRule>, std::unique_ptr<Vector<unsigned>>>
+      rule_indices;
+  for (auto it = rule_list->rbegin(); it != rule_list->rend(); ++it) {
+    CSSRule* rule = it->first;
+    auto* style_rule = DynamicTo<CSSStyleRule>(rule);
+    if (!style_rule)
+      continue;
+    if (!uniq_rules_set.Contains(rule)) {
+      uniq_rules_set.insert(rule);
+      uniq_rules.push_back(style_rule);
+      rule_indices.Set(style_rule, std::make_unique<Vector<unsigned>>());
+    }
+    rule_indices.at(style_rule)->push_back(it->second);
+  }
+
+  for (auto it = uniq_rules.rbegin(); it != uniq_rules.rend(); ++it) {
+    CSSStyleRule* rule = it->Get();
     std::unique_ptr<protocol::CSS::CSSRule> rule_object =
         BuildObjectForRule(rule);
     if (!rule_object)
       continue;
+
+    // Transform complex rule_indices into client-friendly, compound-basis for
+    // matching_selectors.
+    // e.g. ".foo + .bar, h1, body h1" for <h1>
+    //  (complex): {.foo: 0, .bar: 1, h1: 2, body: 3, h1: 4}, matches: [2, 4]
+    // (compound): {.foo: 0, .bar: 0, h1: 1, body: 2, h1: 2}, matches: [1, 2]
     auto matching_selectors = std::make_unique<protocol::Array<int>>();
-    const CSSSelectorList& selector_list = rule->GetStyleRule()->SelectorList();
-    wtf_size_t index = 0;
-    PseudoId element_pseudo_id =
-        matches_for_pseudo_id ? matches_for_pseudo_id : element->GetPseudoId();
-    for (const CSSSelector* selector = selector_list.First(); selector;
-         selector = CSSSelectorList::Next(*selector)) {
-      const CSSSelector* first_tag_history_selector = selector;
-      bool matched = false;
-      if (element_pseudo_id)
-        matched = MatchesPseudoElement(
-            selector, element_pseudo_id);  // Modifies |selector|.
-      else
-        matched = element->matches(
-            AtomicString(first_tag_history_selector->SelectorText()),
-            IGNORE_EXCEPTION_FOR_TESTING);
-      if (matched)
-        matching_selectors->emplace_back(index);
-      ++index;
+    if (rule->GetStyleRule() && rule->GetStyleRule()->SelectorList().First()) {
+      const CSSSelectorList& list = rule->GetStyleRule()->SelectorList();
+      // Compound index (0 -> 1 -> 2).
+      int compound = 0;
+      // Complex index of the next compound (0 -> 2 -> 3 -> kNotFound).
+      wtf_size_t next_compound_start = list.IndexOfNextSelectorAfter(0);
+
+      std::sort(rule_indices.at(rule)->begin(), rule_indices.at(rule)->end());
+      for (unsigned complex_match : (*rule_indices.at(rule))) {
+        while (complex_match >= next_compound_start &&
+               next_compound_start != kNotFound) {
+          next_compound_start =
+              list.IndexOfNextSelectorAfter(next_compound_start);
+          compound++;
+        }
+        matching_selectors->push_back(compound);
+      }
     }
+
     result->emplace_back(
         protocol::CSS::RuleMatch::create()
             .setRule(std::move(rule_object))

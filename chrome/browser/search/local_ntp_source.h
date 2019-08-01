@@ -88,6 +88,7 @@ class LocalNtpSource : public content::URLDataSource,
   // Overridden from NtpBackgroundServiceObserver:
   void OnCollectionInfoAvailable() override;
   void OnCollectionImagesAvailable() override;
+  void OnNextCollectionImageAvailable() override {}
   void OnNtpBackgroundServiceShuttingDown() override;
 
   // Overridden from OneGoogleBarServiceObserver:

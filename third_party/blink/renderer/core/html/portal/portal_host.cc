@@ -59,7 +59,7 @@ Document* PortalHost::GetDocument() const {
 }
 
 void PortalHost::OnPortalActivated() {
-  portal_host_ptr_.reset();
+  portal_host_.reset();
 }
 
 void PortalHost::postMessage(ScriptState* script_state,
@@ -127,14 +127,14 @@ void PortalHost::ReceiveMessage(
 }
 
 mojom::blink::PortalHost& PortalHost::GetPortalHostInterface() {
-  if (!portal_host_ptr_) {
+  if (!portal_host_) {
     DCHECK(GetDocument()->GetFrame());
     GetDocument()
         ->GetFrame()
         ->GetRemoteNavigationAssociatedInterfaces()
-        ->GetInterface(&portal_host_ptr_);
+        ->GetInterface(&portal_host_);
   }
-  return *portal_host_ptr_;
+  return *portal_host_.get();
 }
 
 }  // namespace blink

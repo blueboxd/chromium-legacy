@@ -102,8 +102,6 @@ class TestWebUIDataSource : public URLDataSource {
 class NetworkServiceBrowserTest : public ContentBrowserTest {
  public:
   NetworkServiceBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
     EXPECT_TRUE(embedded_test_server()->Start());
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
 
@@ -181,7 +179,6 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
 
  private:
   WebUITestWebUIControllerFactory factory_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceBrowserTest);
@@ -420,7 +417,6 @@ class NetworkServiceInProcessBrowserTest : public ContentBrowserTest {
  public:
   NetworkServiceInProcessBrowserTest() {
     std::vector<base::Feature> features;
-    features.push_back(network::features::kNetworkService);
     features.push_back(features::kNetworkServiceInProcess);
     scoped_feature_list_.InitWithFeatures(features,
                                           std::vector<base::Feature>());
@@ -450,10 +446,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceInProcessBrowserTest, Basic) {
 
 class NetworkServiceInvalidLogBrowserTest : public ContentBrowserTest {
  public:
-  NetworkServiceInvalidLogBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
-  }
+  NetworkServiceInvalidLogBrowserTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(network::switches::kLogNetLog, "/abc/def");
@@ -465,7 +458,6 @@ class NetworkServiceInvalidLogBrowserTest : public ContentBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceInvalidLogBrowserTest);
 };

@@ -18,6 +18,7 @@
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/pdf_accessibility_shared.h"
 #include "ppapi/shared_impl/var.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
 
@@ -212,13 +213,31 @@ void PDFResource::SetAccessibilityViewportInfo(
 void PDFResource::SetAccessibilityPageInfo(
     PP_PrivateAccessibilityPageInfo* page_info,
     PP_PrivateAccessibilityTextRunInfo text_runs[],
-    PP_PrivateAccessibilityCharInfo chars[]) {
+    PP_PrivateAccessibilityCharInfo chars[],
+    PP_PrivateAccessibilityLinkInfo links[],
+    PP_PrivateAccessibilityImageInfo images[]) {
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_run_vector(
       text_runs, text_runs + page_info->text_run_count);
   std::vector<PP_PrivateAccessibilityCharInfo> char_vector(
       chars, chars + page_info->char_count);
+  // Pepper APIs require us to pass strings as char*, but IPC expects
+  // std::string. Convert information for links and images to meet these
+  // requirements.
+  std::vector<ppapi::PdfAccessibilityLinkInfo> link_vector;
+  link_vector.reserve(page_info->link_count);
+  for (size_t i = 0; i < page_info->link_count; i++) {
+    ppapi::PdfAccessibilityLinkInfo link(links[i]);
+    link_vector.emplace_back(link);
+  }
+  std::vector<ppapi::PdfAccessibilityImageInfo> image_vector;
+  image_vector.reserve(page_info->image_count);
+  for (size_t i = 0; i < page_info->image_count; i++) {
+    ppapi::PdfAccessibilityImageInfo image(images[i]);
+    image_vector.emplace_back(image);
+  }
   Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityPageInfo(
-                     *page_info, text_run_vector, char_vector));
+                     *page_info, text_run_vector, char_vector, link_vector,
+                     image_vector));
 }
 
 void PDFResource::SetCrashData(const char* pdf_url, const char* top_level_url) {

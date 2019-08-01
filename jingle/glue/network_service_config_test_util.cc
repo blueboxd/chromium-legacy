@@ -44,7 +44,7 @@ NetworkServiceConfigTestUtil::NetworkServiceConfigTestUtil(
 
 NetworkServiceConfigTestUtil::NetworkServiceConfigTestUtil(
     NetworkContextGetter network_context_getter)
-    : net_runner_(base::CreateSingleThreadTaskRunnerWithTraits({})),
+    : net_runner_(base::CreateSingleThreadTaskRunner({base::ThreadPool()})),
       mojo_runner_(base::SequencedTaskRunnerHandle::Get()),
       network_context_getter_(network_context_getter),
       weak_ptr_factory_(this) {}

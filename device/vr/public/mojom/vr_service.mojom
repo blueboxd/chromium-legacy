@@ -95,6 +95,12 @@ struct XRInputSourceDescription {
 
   // Transform from the grip matrix to the pointer's origin and orientation.
   gfx.mojom.Transform? pointer_offset;
+
+  // List of 0 or more names describing both the preferred visual representation
+  // and behavior of the associated input source. Each name is lowercase with no
+  // spaces and has separate words concatenated with a "-". These names are
+  // sorted in descending order of specificity.
+  array<string> profiles;
 };
 
 struct XRInputSourceState {

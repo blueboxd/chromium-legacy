@@ -7,6 +7,7 @@
 #include <mmsystem.h>
 #include <process.h>
 #include <stdint.h>
+#include <windows.foundation.h>
 
 #include <cmath>
 #include <limits>
@@ -364,6 +365,32 @@ TEST(TimeDelta, FromFileTime) {
   // 2^32 * 100 ns ~= 2^32 * 10 us.
   EXPECT_EQ(TimeDelta::FromMicroseconds((1ull << 32) / 10),
             TimeDelta::FromFileTime(ft));
+}
+
+TEST(TimeDelta, FromWinrtDateTime) {
+  ABI::Windows::Foundation::DateTime dt;
+  dt.UniversalTime = 0;
+
+  // 0 UniversalTime = no delta since epoch.
+  EXPECT_EQ(TimeDelta(), TimeDelta::FromWinrtDateTime(dt));
+
+  dt.UniversalTime = 101;
+
+  // 101 * 100 ns ~= 10.1 microseconds.
+  EXPECT_EQ(TimeDelta::FromMicrosecondsD(10.1),
+            TimeDelta::FromWinrtDateTime(dt));
+}
+
+TEST(TimeDelta, ToWinrtDateTime) {
+  auto time_delta = TimeDelta::FromSeconds(0);
+
+  // No delta since epoch = 0 DateTime.
+  EXPECT_EQ(0, time_delta.ToWinrtDateTime().UniversalTime);
+
+  time_delta = TimeDelta::FromMicrosecondsD(10);
+
+  // 10 microseconds = 100 * 100 ns.
+  EXPECT_EQ(100, time_delta.ToWinrtDateTime().UniversalTime);
 }
 
 TEST(HighResolutionTimer, GetUsage) {

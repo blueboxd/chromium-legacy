@@ -2425,8 +2425,8 @@ TEST_F(AbstractPromiseTest, SingleRejectPrerequisitePolicyALLModified) {
               p->OnRejected();
             }));
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {},
+    base::PostTask(
+        FROM_HERE, {base::ThreadPool()},
         base::Bind([](scoped_refptr<AbstractPromise> p2) { p2->OnRejected(); },
                    p2));
 

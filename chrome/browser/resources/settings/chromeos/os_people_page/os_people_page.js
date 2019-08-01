@@ -47,7 +47,7 @@ Polymer({
 
     /**
      * Dictionary defining page visibility.
-     * @type {!PeoplePageVisibility}
+     * @type {!PageVisibility}
      */
     pageVisibility: Object,
 

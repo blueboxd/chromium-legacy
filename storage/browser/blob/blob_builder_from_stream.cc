@@ -154,7 +154,7 @@ class BlobBuilderFromStream::WritePipeToFileHelper
       base::FilePath file_path,
       uint64_t max_file_size,
       DoneCallback callback) {
-    base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})
+    base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
         ->PostTask(
             FROM_HERE,
             base::BindOnce(
@@ -170,7 +170,7 @@ class BlobBuilderFromStream::WritePipeToFileHelper
       base::File file,
       uint64_t max_file_size,
       DoneCallback callback) {
-    base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})
+    base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
         ->PostTask(
             FROM_HERE,
             base::BindOnce(&WritePipeToFileHelper::CreateAndStartOnFileSequence,

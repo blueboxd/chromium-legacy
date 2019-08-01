@@ -69,6 +69,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 설정을 사용 중지하거나 설정하지 않으면 원격 지원 호스트가 사용자의 컨텍스트에서 실행되며 원격 사용자는 데스크톱에서 관리자 창으로 상호 작용할 수 없습니다.</translation>
 <translation id="1096105751829466145">기본 검색 공급자</translation>
+<translation id="1099024407376270611">방문한 URL의 세이프 브라우징 평판 실시간 확인</translation>
 <translation id="1099282607296956954">모든 사이트에 사이트 격리 사용 설정</translation>
 <translation id="1100570158310952027">
       이 정책에서는 안전하지 않은 출처의 보안 제한이 적용되지 않을
@@ -717,6 +718,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 설정을 구성하면 빠른 잠금 해제를 사용하는 사용자에게 이 설정에 따라 잠금 화면에 비밀번호를 입력하라는 메시지가 표시됩니다.
 
           이 설정을 구성하지 않으면 빠른 잠금 해제를 사용하는 사용자는 매일 잠금 화면에 비밀번호를 입력해야 합니다</translation>
+<translation id="219297066914002620">가상 머신 관리 콘솔 도구를 사용 설정 또는 사용 중지하도록 <ph name="PRODUCT_OS_NAME" />에 지시합니다.
+
+      정책이 True로 설정되어 있거나 설정되어 있지 않은 경우 사용자는 VM 관리 CLI를 사용할 수 있습니다.
+      그렇지 않으면 모든 VM 관리 CLI가 사용 중지되거나 숨겨집니다.
+      </translation>
 <translation id="2194470398825717446">이 정책은 M61부터 지원이 중단되었으므로 EcryptfsMigrationStrategy를 대신 사용하세요.
 
       ecryptfs가 포함되어 배송된 기기의 작동 방식을 지정하며 ex4 암호화로 전환해야 합니다.
@@ -2013,6 +2019,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="4508686775017063528">이 정책을 'true'로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />이(가) 사용 설정되어 사용자가 앱 메뉴, 페이지 컨텍스트 메뉴, Cast 지원 웹사이트의 미디어 컨트롤, Cast 툴바 아이콘(표시된 경우)을 통해 실행할 수 있습니다.
 
           이 정책을 'false'로 설정하면 <ph name="PRODUCT_NAME" />이(가) 사용 중지됩니다.</translation>
+<translation id="4510923771103268849">사용자는 Crostini 컨테이너에 대한 루트 액세스 권한을 가질 수 있음</translation>
 <translation id="4515404363392014383">신뢰할 수 있는 소스에서 세이프 브라우징을 사용할 수 있도록 허용</translation>
 <translation id="4518251772179446575">사이트에서 사용자의 실제 위치를 추적할 때마다 확인</translation>
 <translation id="4519046672992331730"><ph name="PRODUCT_NAME" />의 검색주소창에서 추천 검색어를 사용하도록 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
@@ -2096,6 +2103,10 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 정책이 설정되어 있지 않으면 서버가 인트라넷으로 감지된 경우에도 <ph name="PRODUCT_NAME" />이(가) 사용자 자격증명을 위임하지 않습니다.</translation>
 <translation id="4752880493649142945">RemoteAccessHostTokenValidationUrl에 연결하기 위한 클라이언트 인증서</translation>
+<translation id="4756984056524699088">이 사용자에게 Crostini 컨테이너에 대한 루트 액세스 권한을 허용합니다.
+
+      이 정책이 True로 설정되어 있거나 설정되어 있지 않은 경우 Crostini 컨테이너에 대한 루트 액세스 권한이 사용자에게 부여됩니다.
+      False로 설정되어 있는 경우 기존 및 신규 Crostini 컨테이너에 대한 루트 액세스 권한 모두가 사용자에게 부여되지 않습니다.</translation>
 <translation id="4759650396863318477"><ph name="PRODUCT_NAME" />을(를) 재실행할 필요가 있거나 대기 중인 업데이트 적용을 위해 <ph name="PRODUCT_OS_NAME" /> 기기를 다시 시작해야 한다는 알림 기간을 밀리초 간격으로 설정할 수 있습니다.
 
       이 기간 동안 업데이트를 해야 한다는 알림이 사용자에게 반복적으로 표시됩니다. <ph name="PRODUCT_OS_NAME" /> 기기의 경우 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 정책에 따라 재시작 알림이 작업 표시줄에 표시됩니다. <ph name="PRODUCT_NAME" /> 브라우저의 경우 알림 기간 중 3분의 1이 지나면 앱 메뉴가 변경되면서 재실행이 필요하다는 알림이 표시됩니다. 알림 기간 중 3분의 2가 지나면 알림 색상이 바뀌며 알림 기간이 모두 지나면 다시 한번 바뀝니다. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 정책을 통해 사용 설정되는 추가 알림도 이와 동일한 일정을 따릅니다.
@@ -2255,6 +2266,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 설정을 끄거나 설정하지 않으면 우선순위가 가장 높은 출처의 목록 항목만 가져오며, 다른 모든 출처는 충돌되지만 무시된 것으로 표시됩니다.</translation>
 <translation id="5141670636904227950">로그인 화면에서 기본 화면 돋보기 유형을 사용하도록 설정</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" />에서 다음 URL 패턴을 항상 렌더링</translation>
+<translation id="5146261336206349846">이 정책이 사용 설정되어 있는 경우 세이프 브라우징을 이용해 방문한 모든 URL을 실시간으로 확인합니다.
+
+      사용 중지되어 있거나 설정되어 있지 않은 경우 일반 세이프 브라우징 확인이 적용됩니다.</translation>
 <translation id="5148753489738115745"><ph name="PRODUCT_FRAME_NAME" />이(가) <ph name="PRODUCT_NAME" />을(를) 실행할 때 사용되는 추가 매개변수를 지정하도록 허용합니다.
 
           해당 정책이 설정되지 않았다면 기본 명령줄이 사용됩니다.</translation>
@@ -2317,6 +2331,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5208240613060747912">알림 표시가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultNotificationsSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
+<translation id="5212810195096589189">VM CLI 권한 지정</translation>
 <translation id="5213038356678567351">브라우저 전환을 실행해서는 안 되는 웹사이트입니다.</translation>
 <translation id="5219844027738217407">Android 앱의 경우 이 정책은 마이크에만 영향을 줍니다. 이 정책이 true로 설정되면 마이크는 모든 앱에서 음소거되며 예외는 없습니다.</translation>
 <translation id="5221394278852982313">해당 공급업체 및 제품 ID로 USB 기기에 대한 액세스 권한이 자동 부여되는 사이트를 URL 목록 설정을 통해 지정할 수 있습니다. 이 정책이 유효하려면 목록의 각 항목에 기기 및 URL이 모두 포함되어 있어야 합니다. 기기의 각 항목에는 공급업체 ID 및 제품 ID 입력란이 포함될 수 있습니다. 생략된 모든 ID는 공급업체 ID가 지정되지 않으면 제품 ID도 지정될 수 없다는 하나의 예외 사항이 있는 와일드 카드로 취급됩니다. 그렇지 않은 경우 정책은 유효하지 않게 되며 무시됩니다.

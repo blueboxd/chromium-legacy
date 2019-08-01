@@ -38,4 +38,8 @@ bool EmptyPredictor::GeneratePrediction(base::TimeTicks predict_time,
   return true;
 }
 
+base::TimeDelta EmptyPredictor::TimeInterval() const {
+  return kTimeInterval;
+}
+
 }  // namespace ui

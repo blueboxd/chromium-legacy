@@ -299,8 +299,9 @@ window.chrome.embeddedSearch.newTabPage.setBackgroundURL;
  * @param {string} attribution_line_1
  * @param {string} attribution_line_2
  * @param {string} attribution_action_url
+ * @param {string} collection_id
  */
-window.chrome.embeddedSearch.newTabPage.setBackgroundURLWithAttributions;
+window.chrome.embeddedSearch.newTabPage.setBackgroundInfo;
 
 /**
  * @return {Object} theme_background_info

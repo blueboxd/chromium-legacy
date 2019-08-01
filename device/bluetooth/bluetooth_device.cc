@@ -465,6 +465,20 @@ BluetoothDevice::GetPrimaryServicesByUUID(const BluetoothUUID& service_uuid) {
   return services;
 }
 
+#if defined(OS_CHROMEOS)
+void BluetoothDevice::SetBatteryPercentage(
+    base::Optional<uint8_t> battery_percentage) {
+  if (battery_percentage)
+    DCHECK_LE(battery_percentage.value(), 100);
+
+  if (battery_percentage_ == battery_percentage)
+    return;
+
+  battery_percentage_ = battery_percentage;
+  GetAdapter()->NotifyDeviceBatteryChanged(this);
+}
+#endif
+
 void BluetoothDevice::DidConnectGatt() {
   for (const auto& callback : create_gatt_connection_success_callbacks_) {
     callback.Run(

@@ -214,7 +214,7 @@ bool SearchResultPageView::IsFirstResultTile() const {
 
 bool SearchResultPageView::IsFirstResultHighlighted() const {
   DCHECK(first_result_view_);
-  return first_result_view_->background_highlighted();
+  return first_result_view_->selected();
 }
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -317,7 +317,7 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 
     // Clear the first search result view's background highlight.
     if (first_result_view_ && first_result_view_ != focused_view)
-      first_result_view_->SetBackgroundHighlighted(false);
+      first_result_view_->SetSelected(false, base::nullopt);
   }
 
   first_result_view_ = result_container_views_[0]->GetFirstResultView();
@@ -344,7 +344,7 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
     // the focus is not set on the first result to prevent frequent focus switch
     // between the search box and the first result when the user is typing
     // query.
-    first_result_view_->SetBackgroundHighlighted(true);
+    first_result_view_->SetSelected(true, base::nullopt);
   }
 }
 

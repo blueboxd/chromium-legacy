@@ -16,16 +16,14 @@
     <div route-path="default">
       <settings-toggle-button
           pref="{{prefs.gdata.disabled}}"
-          label="$i18n{disconnectGoogleDriveAccount}"
-          hidden="[[!pageVisibility.googleDrive]]">
+          label="$i18n{disconnectGoogleDriveAccount}">
       </settings-toggle-button>
       <cr-link-row id="smbShares" class="hr" on-click="onTapSmbShares_"
-          hidden="[[!pageVisibility.smbShares]]"
-          label="$i18n{smbSharesTitle}"></cr-link-row>
+          label="$i18n{smbSharesTitle}">
+      </cr-link-row>
     </div>
     <template is="dom-if" route-path="/smbShares">
       <settings-subpage
-          hidden="[[!pageVisibility.smbShares]]"
           associated-control="[[$$('#smbShares')]]"
           page-title="$i18n{smbSharesTitle}">
         <settings-smb-shares-page prefs="[[prefs]]">

@@ -54,10 +54,11 @@ class ASH_EXPORT SwitchAccessEventHandler : public ui::EventHandler {
   }
 
  private:
+  bool ShouldCancelEvent(const ui::KeyEvent& event) const;
+  bool ShouldForwardEvent(const ui::KeyEvent& event) const;
+
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
-
-  bool ShouldForwardEvent(const ui::KeyEvent& event) const;
 
   // The delegate used to send key events to the Switch Access extension.
   SwitchAccessEventHandlerDelegate* delegate_;

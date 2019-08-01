@@ -886,44 +886,45 @@ class FileTasks {
   }
 
   /**
-   * The core implementation of mounts archives.
+   * The core implementation of mount archives.
    * @private
    */
-  mountArchivesInternal_() {
+  async mountArchivesInternal_() {
     const tracker = this.directoryModel_.createDirectoryChangeTracker();
     tracker.start();
+    try {
+      // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+      // crbug.com/345527.
+      const urls = util.entriesToURLs(this.entries_);
+      const promises = urls.map(async (url) => {
+        try {
+          const volumeInfo = await this.volumeManager_.mountArchive(url);
+          if (tracker.hasChanged) {
+            return;
+          }
 
-    // TODO(mtomasz): Move conversion from entry to url to custom bindings.
-    // crbug.com/345527.
-    const urls = util.entriesToURLs(this.entries_);
-    for (let index = 0; index < urls.length; ++index) {
-      // TODO(mtomasz): Pass Entry instead of URL.
-      this.volumeManager_.mountArchive(urls[index], volumeInfo => {
-        if (tracker.hasChanged) {
-          tracker.stop();
-          return;
+          try {
+            const displayRoot = await volumeInfo.resolveDisplayRoot();
+            if (tracker.hasChanged) {
+              return;
+            }
+
+            this.directoryModel_.changeDirectoryEntry(displayRoot);
+          } catch (error) {
+            console.error('Cannot resolve display root after mounting:', error);
+          }
+        } catch (error) {
+          const path = util.extractFilePath(url);
+          const namePos = path.lastIndexOf('/');
+          this.ui_.alertDialog.show(
+              strf('ARCHIVE_MOUNT_FAILED', path.substr(namePos + 1), error),
+              null, null);
         }
-        volumeInfo.resolveDisplayRoot(
-            displayRoot => {
-              if (tracker.hasChanged) {
-                tracker.stop();
-                return;
-              }
-              this.directoryModel_.changeDirectoryEntry(displayRoot);
-            },
-            () => {
-              console.warn(
-                  'Failed to resolve the display root after mounting.');
-              tracker.stop();
-            });
-      }, ((url, error) => {
-           tracker.stop();
-           const path = util.extractFilePath(url);
-           const namePos = path.lastIndexOf('/');
-           this.ui_.alertDialog.show(
-               strf('ARCHIVE_MOUNT_FAILED', path.substr(namePos + 1), error),
-               null, null);
-         }).bind(null, urls[index]));
+      });
+
+      await Promise.all(promises);
+    } finally {
+      tracker.stop();
     }
   }
 

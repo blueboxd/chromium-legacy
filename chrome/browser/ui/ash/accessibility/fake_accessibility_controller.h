@@ -45,6 +45,8 @@ class FakeAccessibilityController : ash::AccessibilityController {
   base::string16 GetBatteryDescription() const override;
   void SetVirtualKeyboardVisible(bool is_visible) override;
   void NotifyAccessibilityStatusChanged() override;
+  bool IsAccessibilityFeatureVisibleInTrayMenu(
+      const std::string& path) override;
 
  private:
   bool was_client_set_ = false;

@@ -134,9 +134,7 @@ class NativeMediaFileUtilTest : public testing::Test {
         std::make_unique<MediaFileSystemBackend>(data_dir_.GetPath()));
 
     file_system_context_ = new storage::FileSystemContext(
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::IO})
-            .get(),
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}).get(),
         base::SequencedTaskRunnerHandle::Get().get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
         storage_policy.get(), NULL, std::move(additional_providers),

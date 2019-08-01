@@ -515,8 +515,6 @@ jumbo_source_set("browser") {
     "background_sync/periodic_background_sync_service_impl.h",
     "bad_message.cc",
     "bad_message.h",
-    "blob_storage/blob_dispatcher_host.cc",
-    "blob_storage/blob_dispatcher_host.h",
     "blob_storage/blob_internals_url_loader.cc",
     "blob_storage/blob_internals_url_loader.h",
     "blob_storage/blob_registry_wrapper.cc",
@@ -1121,10 +1119,6 @@ jumbo_source_set("browser") {
     "loader/prefetch_url_loader.h",
     "loader/prefetch_url_loader_service.cc",
     "loader/prefetch_url_loader_service.h",
-    "loader/resource_request_info_impl.cc",
-    "loader/resource_request_info_impl.h",
-    "loader/resource_requester_info.cc",
-    "loader/resource_requester_info.h",
     "loader/shared_cors_origin_access_list_impl.cc",
     "loader/shared_cors_origin_access_list_impl.h",
     "loader/single_request_url_loader_factory.cc",
@@ -2553,6 +2547,12 @@ jumbo_source_set("browser") {
       "//chromeos/dbus/power:power_manager_proto",
       "//chromeos/network",
       "//components/session_manager/core",
+    ]
+  } else {
+    sources += [
+      # ChromeOS accessibility metrics provider is in chromeos_metrics_provider.
+      "accessibility/accessibility_metrics_provider.cc",
+      "accessibility/accessibility_metrics_provider.h",
     ]
   }
 

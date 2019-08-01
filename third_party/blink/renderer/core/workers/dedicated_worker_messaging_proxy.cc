@@ -70,8 +70,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
             WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
                 *GetExecutionContext());
         GetWorkerThread()->FetchAndRunClassicScript(
-            script_url, outside_settings_object, resource_timing_notifier,
-            stack_id);
+            script_url, outside_settings_object.CopyData(),
+            resource_timing_notifier, stack_id);
         break;
       }
       case OffMainThreadWorkerScriptFetchOption::kDisabled:
@@ -94,8 +94,8 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
         WorkerResourceTimingNotifierImpl::CreateForOutsideResourceFetcher(
             *GetExecutionContext());
     GetWorkerThread()->FetchAndRunModuleScript(
-        script_url, outside_settings_object, resource_timing_notifier,
-        credentials_mode);
+        script_url, outside_settings_object.CopyData(),
+        resource_timing_notifier, credentials_mode);
   } else {
     NOTREACHED();
   }

@@ -9,6 +9,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chromeos/network/fake_network_activation_handler.h"
 #include "chromeos/network/fake_network_connection_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -57,13 +58,15 @@ class CellularSetupOtaActivatorImplTest : public testing::Test {
   }
 
   void BuildOtaActivator() {
+    auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     ota_activator_ = OtaActivatorImpl::Factory::Create(
         fake_activation_delegate_->GenerateInterfacePtr(),
         base::BindOnce(&CellularSetupOtaActivatorImplTest::OnFinished,
                        base::Unretained(this)),
         test_helper_.network_state_handler(),
         fake_network_connection_handler_.get(),
-        fake_network_activation_handler_.get());
+        fake_network_activation_handler_.get(), test_task_runner);
+    test_task_runner->RunUntilIdle();
     carrier_portal_handler_ptr_ = ota_activator_->GenerateInterfacePtr();
   }
 

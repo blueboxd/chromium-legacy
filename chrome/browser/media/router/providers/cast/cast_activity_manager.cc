@@ -15,7 +15,7 @@
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "chrome/browser/media/router/providers/cast/mirroring_activity_record.h"
 #include "chrome/common/media_router/media_source.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
+#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "url/origin.h"
 
 using blink::mojom::PresentationConnectionCloseReason;
@@ -89,6 +89,7 @@ void CastActivityManager::LaunchSession(
   MediaRoute route(route_id, source, sink_id, /* description */ std::string(),
                    /* is_local */ true, /* for_display */ true);
   route.set_incognito(incognito);
+  route.set_controller_type(RouteControllerType::kGeneric);
   DVLOG(1) << "LaunchSession: source_id=" << cast_source.source_id()
            << ", route_id: " << route_id << ", sink_id=" << sink_id;
   DoLaunchSessionParams params(route, cast_source, sink, origin, tab_id,
@@ -385,6 +386,18 @@ void CastActivityManager::TerminateSession(
   activity->SendStopSessionMessageToReceiver(
       base::nullopt,  // TODO(jrw): Get the real client ID.
       hash_token_, std::move(callback));
+}
+
+bool CastActivityManager::CreateMediaController(
+    const std::string& route_id,
+    mojom::MediaControllerRequest media_controller,
+    mojom::MediaStatusObserverPtr observer) {
+  auto activity_it = activities_.find(route_id);
+  if (activity_it == activities_.end())
+    return false;
+  activity_it->second->CreateMediaController(std::move(media_controller),
+                                             std::move(observer));
+  return true;
 }
 
 CastActivityManager::ActivityMap::iterator

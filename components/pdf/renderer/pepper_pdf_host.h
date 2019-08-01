@@ -21,6 +21,7 @@
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/serialized_structs.h"
+#include "ppapi/shared_impl/pdf_accessibility_shared.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -117,7 +118,9 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
       ppapi::host::HostMessageContext* context,
       const PP_PrivateAccessibilityPageInfo& page_info,
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars);
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+      const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
   int32_t OnHostMsgSelectionChanged(ppapi::host::HostMessageContext* context,
                                     const PP_FloatPoint& left,
                                     int32_t left_height,

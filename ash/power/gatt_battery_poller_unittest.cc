@@ -165,7 +165,7 @@ TEST_F(GattBatteryPollerTest, RetryPollingAfterAnError) {
 }
 
 TEST_F(GattBatteryPollerTest, DoesNotModifyBatteryValueAfterAnError) {
-  mock_device_->set_battery_percentage(kBatteryPercentage);
+  mock_device_->SetBatteryPercentage(kBatteryPercentage);
 
   CreateGattBatteryPoller();
   EXPECT_EQ(1, fetchers_created_count());
@@ -180,7 +180,7 @@ TEST_F(GattBatteryPollerTest, DoesNotModifyBatteryValueAfterAnError) {
 TEST_F(GattBatteryPollerTest, StopsRetryingAfterMaxRetryCount) {
   // Set a battery level to the device. Expect it resets after maximum retry
   // count is exceeded.
-  mock_device_->set_battery_percentage(kBatteryPercentage);
+  mock_device_->SetBatteryPercentage(kBatteryPercentage);
   CreateGattBatteryPoller();
 
   const int kMaxRetryCount = 3;

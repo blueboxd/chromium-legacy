@@ -390,7 +390,6 @@ source_set("blink_headers") {
     "web/modules/mediastream/web_media_stream_device_observer.h",
     "web/modules/mediastream/web_media_stream_renderer_factory.h",
     "web/modules/mediastream/web_media_stream_utils.h",
-    "web/modules/mediastream/webaudio_media_stream_audio_sink.h",
     "web/modules/mediastream/webmediaplayer_ms.h",
     "web/modules/peerconnection/media_stream_remote_video_source.h",
     "web/modules/service_worker/web_service_worker_context_client.h",

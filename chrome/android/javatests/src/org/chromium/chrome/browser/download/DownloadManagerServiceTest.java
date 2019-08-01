@@ -536,28 +536,21 @@ public class DownloadManagerServiceTest {
     }
 
     /**
-     * Test to make sure {@link DownloadManagerService#shouldOpenAfterDownload}
+     * Test to make sure {@link DownloadUtils#shouldAutoOpenDownload}
      * returns the right result for varying MIME types and Content-Dispositions.
      */
     @Test
     @SmallTest
     @Feature({"Download"})
-    public void testShouldOpenAfterDownload() {
+    public void testshouldAutoOpenDownload() {
         // Should not open any download type MIME types.
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/download", true));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/octet-stream", true));
-        Assert.assertTrue(DownloadManagerService.shouldOpenAfterDownload("application/pdf", true));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/pdf", false));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
-        Assert.assertFalse(
-                DownloadManagerService.shouldOpenAfterDownload("application/x-download", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/download", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/octet-stream", true));
+        Assert.assertTrue(DownloadUtils.shouldAutoOpenDownload("application/pdf", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/pdf", false));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
+        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
     }
 }

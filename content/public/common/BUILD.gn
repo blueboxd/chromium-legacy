@@ -209,7 +209,6 @@ jumbo_source_set("common_sources") {
     "use_zoom_for_dsf_policy.cc",
     "use_zoom_for_dsf_policy.h",
     "user_agent.h",
-    "was_activated_option.h",
     "web_preferences.cc",
     "web_preferences.h",
     "webplugininfo.cc",
@@ -366,6 +365,7 @@ mojom("interfaces") {
     "resource_load_info.mojom",
     "resource_usage_reporter.mojom",
     "transferrable_url_loader.mojom",
+    "was_activated_option.mojom",
     "webplugininfo.mojom",
     "window_container_type.mojom",
   ]

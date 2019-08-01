@@ -461,6 +461,10 @@ std::string HexEncode(const void* bytes, size_t size) {
   return ret;
 }
 
+std::string HexEncode(base::span<const uint8_t> bytes) {
+  return HexEncode(bytes.data(), bytes.size());
+}
+
 bool HexStringToInt(StringPiece input, int* output) {
   return IteratorRangeToNumber<HexIteratorRangeToIntTraits>::Invoke(
     input.begin(), input.end(), output);

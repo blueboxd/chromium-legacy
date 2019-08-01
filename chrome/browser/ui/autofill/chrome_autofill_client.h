@@ -24,7 +24,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
-#include "components/autofill/core/browser/ui/payments/save_card_bubble_controller.h"
+#include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
 #include "components/zoom/zoom_observer.h"
 #endif  // !defined(OS_ANDROID)
 

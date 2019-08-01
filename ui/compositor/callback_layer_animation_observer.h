@@ -167,9 +167,8 @@ class COMPOSITOR_EXPORT CallbackLayerAnimationObserver
   // The callback to invoke once all the animation sequences have finished.
   AnimationEndedCallback animation_ended_callback_;
 
-  // Set to true in the destructor (if non-NULL). Used to detect deletion while
-  // calling out.
-  bool* destroyed_ = nullptr;
+  // Used to detect deletion while calling out.
+  base::WeakPtrFactory<CallbackLayerAnimationObserver> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CallbackLayerAnimationObserver);
 };

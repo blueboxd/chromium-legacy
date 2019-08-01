@@ -72,6 +72,8 @@ using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
     AuthenticatorStatus,
     GetAssertionAuthenticatorResponsePtr>;
 
+constexpr char kOkMessage[] = "webauth: OK";
+
 constexpr char kPublicKeyErrorMessage[] =
     "webauth: NotSupportedError: Required parameters missing in "
     "`options.publicKey`.";
@@ -96,6 +98,12 @@ constexpr char kRelyingPartyRpIconUrlSecurityErrorMessage[] =
 
 constexpr char kAbortErrorMessage[] =
     "webauth: AbortError: Request has been aborted.";
+
+constexpr char kOriginMismatchMessage[] =
+    "webauth: NotAllowedError: The following credential operations can only "
+    "occur in a document which is same-origin with all of its ancestors: "
+    "storage/retrieval of 'PasswordCredential' and 'FederatedCredential', and "
+    "creation/retrieval of 'PublicKeyCredential'";
 
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
@@ -907,7 +915,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 
     ASSERT_TRUE(content::ExecuteScriptAndExtractString(
         shell()->web_contents()->GetMainFrame(), script, &result));
-    ASSERT_EQ("webauth: OK", result);
+    ASSERT_EQ(kOkMessage, result);
   }
 }
 
@@ -1111,6 +1119,71 @@ base::Optional<std::string> ExecuteScriptAndExtractPrefixedString(
   }
 }
 
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       RequestsFromIFrames) {
+  static constexpr char kOuterHost[] = "acme.com";
+  static constexpr char kInnerHost[] = "notacme.com";
+  NavigateToURL(shell(), GetHttpsURL(kOuterHost, "/page_with_iframe.html"));
+
+  auto* virtual_device_factory = InjectVirtualFidoDeviceFactory();
+  static constexpr uint8_t kOuterCredentialID = 1;
+  static constexpr uint8_t kOuterCredentialIDArray[] = {kOuterCredentialID};
+  static constexpr uint8_t kInnerCredentialID = 2;
+  static constexpr uint8_t kInnerCredentialIDArray[] = {kInnerCredentialID};
+  ASSERT_TRUE(virtual_device_factory->mutable_state()->InjectRegistration(
+      kOuterCredentialIDArray, kOuterHost));
+  ASSERT_TRUE(virtual_device_factory->mutable_state()->InjectRegistration(
+      kInnerCredentialIDArray, kInnerHost));
+
+  for (const auto cross_origin : {false, true}) {
+    SCOPED_TRACE(cross_origin);
+
+    if (cross_origin) {
+      // Create a cross-origin iframe by loading it from notacme.com.
+      NavigateIframeToURL(shell()->web_contents(), "test_iframe",
+                          GetHttpsURL(kInnerHost, "/title2.html"));
+    } else {
+      // Create a same-origin iframe by loading it from www.acme.com.
+      NavigateIframeToURL(shell()->web_contents(), "test_iframe",
+                          GetHttpsURL(kOuterHost, "/title2.html"));
+    }
+
+    std::vector<RenderFrameHost*> frames =
+        shell()->web_contents()->GetAllFrames();
+    // GetAllFrames is documented to return a breadth-first list of frames. Thus
+    // there should be exactly two: the main frame and the contained iframe.
+    ASSERT_EQ(2u, frames.size());
+    RenderFrameHost* const iframe = frames[1];
+
+    std::string result;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        iframe, BuildCreateCallWithParameters(CreateParameters()), &result));
+    if (cross_origin) {
+      EXPECT_EQ(kOriginMismatchMessage, result);
+    } else {
+      EXPECT_EQ(kOkMessage, result);
+    }
+
+    const int credential_id =
+        cross_origin ? kInnerCredentialID : kOuterCredentialID;
+    const std::string allow_credentials = base::StringPrintf(
+        "allowCredentials: "
+        "[{ type: 'public-key',"
+        "   id: new Uint8Array([%d]),"
+        "}]",
+        credential_id);
+    GetParameters get_params;
+    get_params.allow_credentials = allow_credentials.c_str();
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        iframe, BuildGetCallWithParameters(get_params), &result));
+    if (cross_origin) {
+      EXPECT_EQ(kOriginMismatchMessage, result);
+    } else {
+      EXPECT_EQ(kOkMessage, result);
+    }
+  }
+}
+
 // Tests that a credentials.create() call triggered by the main frame will
 // successfully complete even if a subframe navigation takes place while the
 // request is waiting for user consent.
@@ -1135,7 +1208,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       shell()->web_contents(),
       BuildCreateCallWithParameters(CreateParameters()), "webauth: ");
   ASSERT_TRUE(result);
-  ASSERT_EQ("webauth: OK", *result);
+  ASSERT_EQ(kOkMessage, *result);
   ASSERT_TRUE(prompt_callback_was_invoked);
 }
 
@@ -1192,7 +1265,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
         shell()->web_contents(), BuildCreateCallWithParameters(parameters),
         "webauth: ");
     ASSERT_TRUE(result);
-    ASSERT_EQ("webauth: OK", *result);
+    ASSERT_EQ(kOkMessage, *result);
     ASSERT_TRUE(prompt_callback_was_invoked);
   }
 }
@@ -1209,7 +1282,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinMakeCredential) {
       shell()->web_contents(),
       BuildCreateCallWithParameters(CreateParameters()), "webauth: ");
   ASSERT_TRUE(result);
-  ASSERT_EQ("webauth: OK", *result);
+  ASSERT_EQ(kOkMessage, *result);
 }
 
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
@@ -1239,7 +1312,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest, WinGetAssertion) {
       shell()->web_contents(), BuildGetCallWithParameters(GetParameters()),
       "webauth: ");
   ASSERT_TRUE(result);
-  ASSERT_EQ("webauth: OK", *result);
+  ASSERT_EQ(kOkMessage, *result);
 
   // The authenticator response was good but the return code indicated failure.
   fake_api.set_hresult(E_FAIL);

@@ -113,8 +113,8 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(FetchCallback callback) {
     result.emplace_back(origin, 0, base::Time());
   }
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), result));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), result));
 }
 
 void CannedBrowsingDataDatabaseHelper::DeleteDatabase(

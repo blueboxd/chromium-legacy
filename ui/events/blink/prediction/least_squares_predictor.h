@@ -38,6 +38,9 @@ class LeastSquaresPredictor : public InputPredictor {
   bool GeneratePrediction(base::TimeTicks predict_time,
                           InputData* result) const override;
 
+  // Return the averaged value of time intervals.
+  base::TimeDelta TimeInterval() const override;
+
  private:
   // Generate X matrix from time_ queue.
   gfx::Matrix3F GetXMatrix() const;

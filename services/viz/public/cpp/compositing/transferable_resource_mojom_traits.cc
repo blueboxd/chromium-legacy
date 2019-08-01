@@ -4,9 +4,9 @@
 
 #include "services/viz/public/cpp/compositing/transferable_resource_mojom_traits.h"
 
-#include "gpu/ipc/common/mailbox_holder_struct_traits.h"
-#include "gpu/ipc/common/mailbox_struct_traits.h"
-#include "gpu/ipc/common/sync_token_struct_traits.h"
+#include "gpu/ipc/common/mailbox_holder_mojom_traits.h"
+#include "gpu/ipc/common/mailbox_mojom_traits.h"
+#include "gpu/ipc/common/sync_token_mojom_traits.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojom/color_space_mojom_traits.h"
 

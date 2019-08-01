@@ -1083,7 +1083,7 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
     return;
 
   if (application_cache_host_) {
-    application_cache_host_->DetachFromDocumentLoader();
+    application_cache_host_->Detach();
     application_cache_host_.Clear();
   }
   service_worker_network_provider_ = nullptr;

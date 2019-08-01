@@ -84,9 +84,12 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(dictation_view_,
                                             dictation_enabled_);
 
-  high_contrast_enabled_ = controller->high_contrast_enabled();
-  TrayPopupUtils::UpdateCheckMarkVisibility(high_contrast_view_,
-                                            high_contrast_enabled_);
+  if (high_contrast_view_ &&
+      controller->GetTrayVisiblityOfHighContrastSetting()) {
+    high_contrast_enabled_ = controller->high_contrast_enabled();
+    TrayPopupUtils::UpdateCheckMarkVisibility(high_contrast_view_,
+                                              high_contrast_enabled_);
+  }
 
   screen_magnifier_enabled_ = delegate->IsMagnifierEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(screen_magnifier_view_,
@@ -111,13 +114,18 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
                                               switch_access_enabled_);
   }
 
-  large_cursor_enabled_ = controller->large_cursor_enabled();
-  TrayPopupUtils::UpdateCheckMarkVisibility(large_cursor_view_,
-                                            large_cursor_enabled_);
+  if (large_cursor_view_ &&
+      controller->GetTrayVisiblityOfLargeCursorSetting()) {
+    large_cursor_enabled_ = controller->large_cursor_enabled();
+    TrayPopupUtils::UpdateCheckMarkVisibility(large_cursor_view_,
+                                              large_cursor_enabled_);
+  }
 
-  mono_audio_enabled_ = controller->mono_audio_enabled();
-  TrayPopupUtils::UpdateCheckMarkVisibility(mono_audio_view_,
-                                            mono_audio_enabled_);
+  if (mono_audio_view_ && controller->GetTrayVisiblityOfMonoAudioSetting()) {
+    mono_audio_enabled_ = controller->mono_audio_enabled();
+    TrayPopupUtils::UpdateCheckMarkVisibility(mono_audio_view_,
+                                              mono_audio_enabled_);
+  }
 
   caret_highlight_enabled_ = controller->caret_highlight_enabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(caret_highlight_view_,
@@ -169,12 +177,14 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION),
       dictation_enabled_);
 
-  high_contrast_enabled_ = controller->high_contrast_enabled();
-  high_contrast_view_ = AddScrollListCheckableItem(
-      kSystemMenuAccessibilityContrastIcon,
-      l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE),
-      high_contrast_enabled_);
+  if (controller->GetTrayVisiblityOfHighContrastSetting()) {
+    high_contrast_enabled_ = controller->high_contrast_enabled();
+    high_contrast_view_ = AddScrollListCheckableItem(
+        kSystemMenuAccessibilityContrastIcon,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE),
+        high_contrast_enabled_);
+  }
 
   screen_magnifier_enabled_ = delegate->IsMagnifierEnabled();
   screen_magnifier_view_ = AddScrollListCheckableItem(
@@ -221,15 +231,20 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
 
   AddScrollListSubHeader(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS);
 
-  large_cursor_enabled_ = controller->large_cursor_enabled();
-  large_cursor_view_ = AddScrollListCheckableItem(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR),
-      large_cursor_enabled_);
+  if (controller->GetTrayVisiblityOfLargeCursorSetting()) {
+    large_cursor_enabled_ = controller->large_cursor_enabled();
+    large_cursor_view_ = AddScrollListCheckableItem(
+        l10n_util::GetStringUTF16(
+            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR),
+        large_cursor_enabled_);
+  }
 
-  mono_audio_enabled_ = controller->mono_audio_enabled();
-  mono_audio_view_ = AddScrollListCheckableItem(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO),
-      mono_audio_enabled_);
+  if (controller->GetTrayVisiblityOfMonoAudioSetting()) {
+    mono_audio_enabled_ = controller->mono_audio_enabled();
+    mono_audio_view_ = AddScrollListCheckableItem(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO),
+        mono_audio_enabled_);
+  }
 
   caret_highlight_enabled_ = controller->caret_highlight_enabled();
   caret_highlight_view_ = AddScrollListCheckableItem(

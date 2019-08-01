@@ -79,8 +79,6 @@ void DownloadLocationDialogBridgeImpl::OnCanceled(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   if (location_callback_) {
-    DownloadController::RecordDownloadCancelReason(
-        DownloadController::CANCEL_REASON_USER_CANCELED);
     CompleteLocationSelection(DownloadLocationDialogResult::USER_CANCELED,
                               base::FilePath());
   }

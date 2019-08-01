@@ -194,10 +194,9 @@ void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
                                                 base::BlockingType::MAY_BLOCK);
 
   DefaultWebClientState state = CheckIsDefaultImpl();
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&DefaultBrowserWorker::OnCheckIsDefaultComplete, this,
-                     state, is_following_set_as_default));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&DefaultBrowserWorker::OnCheckIsDefaultComplete,
+                                this, state, is_following_set_as_default));
 }
 
 void DefaultWebClientWorker::SetAsDefault() {

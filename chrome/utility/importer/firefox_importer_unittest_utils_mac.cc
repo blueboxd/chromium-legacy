@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -183,7 +182,7 @@ FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy() {
 bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   // Create a new task executor and spawn the child process.
   main_task_executor_ = std::make_unique<base::SingleThreadTaskExecutor>(
-      base::MessagePumpType::IO);
+      base::MessagePump::Type::IO);
 
   mojo::OutgoingInvitation invitation;
   std::string token = base::NumberToString(base::RandUint64());
@@ -242,7 +241,7 @@ std::vector<autofill::PasswordForm> FFUnitTestDecryptorProxy::ParseSignons(
 
 // Entry function in child process.
 MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
 
   auto* command_line = base::CommandLine::ForCurrentProcess();
   auto endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(

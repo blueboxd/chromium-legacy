@@ -66,8 +66,9 @@ void WinWebAuthnApiAuthenticator::MakeCredential(
   }
   is_pending_ = true;
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       base::BindOnce(&AuthenticatorMakeCredentialBlocking, win_api_,
                      current_window_, cancellation_id_, std::move(request)),
       base::BindOnce(&WinWebAuthnApiAuthenticator::MakeCredentialDone,
@@ -108,8 +109,9 @@ void WinWebAuthnApiAuthenticator::GetAssertion(CtapGetAssertionRequest request,
 
   is_pending_ = true;
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       base::BindOnce(&AuthenticatorGetAssertionBlocking, win_api_,
                      current_window_, cancellation_id_, std::move(request)),
       base::BindOnce(&WinWebAuthnApiAuthenticator::GetAssertionDone,

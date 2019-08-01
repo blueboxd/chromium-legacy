@@ -29,4 +29,6 @@ TEST_F(SnackbarCoordinatorTest, RegistersDispatching) {
   [coordinator start];
   EXPECT_OCMOCK_VERIFY(dispatcher);
   EXPECT_TRUE([coordinator respondsToSelector:@selector(showSnackbarMessage:)]);
+  EXPECT_TRUE([coordinator respondsToSelector:@selector(showSnackbarMessage:
+                                                               bottomOffset:)]);
 }

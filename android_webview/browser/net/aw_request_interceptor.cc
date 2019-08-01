@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_job.h"
 #include "url/url_constants.h"
@@ -88,17 +87,7 @@ class ShouldInterceptRequestAdaptor
       : io_thread_client_(std::move(io_thread_client)), weak_factory_(this) {}
   ~ShouldInterceptRequestAdaptor() override {}
 
-  void ObtainDelegate(net::URLRequest* request, Callback callback) override {
-    callback_ = std::move(callback);
-    io_thread_client_->ShouldInterceptRequestAsync(
-        // The request is only used while preparing the call, not retained.
-        AwWebResourceRequest(*request),
-        base::BindOnce(
-            &ShouldInterceptRequestAdaptor::WebResourceResponseObtained,
-            // The lifetime of the DelegateObtainer is managed by
-            // AndroidStreamReaderURLRequestJob, it might get deleted.
-            weak_factory_.GetWeakPtr()));
-  }
+  void ObtainDelegate(net::URLRequest* request, Callback callback) override {}
 
  private:
   void WebResourceResponseObtained(
@@ -120,25 +109,7 @@ class ShouldInterceptRequestAdaptor
 
 std::unique_ptr<AwContentsIoThreadClient> GetCorrespondingIoThreadClient(
     net::URLRequest* request) {
-  if (content::ResourceRequestInfo::OriginatedFromServiceWorker(request))
-    return AwContentsIoThreadClient::GetServiceWorkerIoThreadClient();
-  int render_process_id, render_frame_id;
-  if (!content::ResourceRequestInfo::GetRenderFrameForRequest(
-      request, &render_process_id, &render_frame_id)) {
-    return nullptr;
-  }
-
-  if (render_process_id == -1 || render_frame_id == -1) {
-    content::ResourceRequestInfo* resourceRequestInfo =
-        content::ResourceRequestInfo::ForRequest(request);
-    if (resourceRequestInfo == nullptr) {
-      return nullptr;
-    }
-    return AwContentsIoThreadClient::FromID(
-        resourceRequestInfo->GetFrameTreeNodeId());
-  }
-
-  return AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
+  return nullptr;
 }
 
 }  // namespace

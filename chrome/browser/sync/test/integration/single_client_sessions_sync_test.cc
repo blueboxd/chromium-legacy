@@ -38,7 +38,6 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/mojom/window_open_disposition.mojom.h"
 
 namespace {
 

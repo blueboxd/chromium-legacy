@@ -45,8 +45,8 @@ void RunDeleteOnIO(const base::Location& from_here,
     return;
   }
 
-  base::PostTaskWithTraits(from_here, {BrowserThread::IO},
-                           base::BindOnce(std::move(callback), result));
+  base::PostTask(from_here, {BrowserThread::IO},
+                 base::BindOnce(std::move(callback), result));
 }
 }  // namespace
 

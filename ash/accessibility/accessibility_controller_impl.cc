@@ -515,6 +515,11 @@ void AccessibilityControllerImpl::SetHighContrastEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
+bool AccessibilityControllerImpl::GetTrayVisiblityOfHighContrastSetting() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityHighContrastEnabled);
+}
+
 void AccessibilityControllerImpl::SetLargeCursorEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -523,12 +528,22 @@ void AccessibilityControllerImpl::SetLargeCursorEnabled(bool enabled) {
   active_user_prefs_->CommitPendingWrite();
 }
 
+bool AccessibilityControllerImpl::GetTrayVisiblityOfLargeCursorSetting() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityLargeCursorEnabled);
+}
+
 void AccessibilityControllerImpl::SetMonoAudioEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
   active_user_prefs_->SetBoolean(prefs::kAccessibilityMonoAudioEnabled,
                                  enabled);
   active_user_prefs_->CommitPendingWrite();
+}
+
+bool AccessibilityControllerImpl::GetTrayVisiblityOfMonoAudioSetting() {
+  return IsAccessibilityFeatureVisibleInTrayMenu(
+      prefs::kAccessibilityMonoAudioEnabled);
 }
 
 void AccessibilityControllerImpl::SetSpokenFeedbackEnabled(
@@ -1352,6 +1367,17 @@ void AccessibilityControllerImpl::SetVirtualKeyboardVisible(bool is_visible) {
 void AccessibilityControllerImpl::NotifyAccessibilityStatusChanged() {
   for (auto& observer : observers_)
     observer.OnAccessibilityStatusChanged();
+}
+
+bool AccessibilityControllerImpl::IsAccessibilityFeatureVisibleInTrayMenu(
+    const std::string& path) {
+  if (!active_user_prefs_)
+    return true;
+  if (active_user_prefs_->FindPreference(path)->IsManaged() &&
+      !active_user_prefs_->GetBoolean(path)) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace ash

@@ -7,6 +7,10 @@
 
 #include <string>
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

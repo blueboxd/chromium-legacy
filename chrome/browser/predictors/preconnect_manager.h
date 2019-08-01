@@ -152,16 +152,10 @@ class PreconnectManager {
   // |network_isolation_key| specifies the key that network requests for the
   // preconnected URL are expected to use. If a request is issued with a
   // different key, it may not use the preconnected socket.
-  //
-  // TODO(https://crbug.com/966896): Update consumers and make
-  // |network_isolation_key| a mandatory argument. Note that this is a temporary
-  // style guide violation, but keeping this until all consumers correctly fill
-  // the argument reduces the chances of forgetting to update one.
   virtual void StartPreconnectUrl(
       const GURL& url,
       bool allow_credentials,
-      net::NetworkIsolationKey network_isolation_key =
-          net::NetworkIsolationKey());
+      net::NetworkIsolationKey network_isolation_key);
 
   // No additional jobs keyed by the |url| will be queued after this.
   virtual void Stop(const GURL& url);

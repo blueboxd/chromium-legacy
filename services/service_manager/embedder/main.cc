@@ -13,7 +13,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
@@ -177,11 +176,11 @@ int RunServiceManager(MainDelegate* delegate) {
   NonEmbedderProcessInit();
 
   base::SingleThreadTaskExecutor main_thread_task_executor(
-      base::MessagePumpType::UI);
+      base::MessagePump::Type::UI);
 
   base::Thread ipc_thread("IPC thread");
   ipc_thread.StartWithOptions(
-      base::Thread::Options(base::MessagePumpType::IO, 0));
+      base::Thread::Options(base::MessagePump::Type::IO, 0));
   mojo::core::ScopedIPCSupport ipc_support(
       ipc_thread.task_runner(),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
@@ -218,7 +217,7 @@ int RunService(MainDelegate* delegate) {
   service_manager::ServiceExecutableEnvironment environment;
 
   base::SingleThreadTaskExecutor main_thread_task_executor(
-      base::MessagePumpType::UI);
+      base::MessagePump::Type::UI);
   base::RunLoop run_loop;
 
   std::string service_name =

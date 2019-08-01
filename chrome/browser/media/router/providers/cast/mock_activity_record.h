@@ -65,6 +65,9 @@ class MockActivityRecord : public ActivityRecord {
   MOCK_METHOD1(OnAppMessage, void(const cast_channel::CastMessage& message));
   MOCK_METHOD1(OnInternalMessage,
                void(const cast_channel::InternalMessage& message));
+  MOCK_METHOD2(CreateMediaController,
+               void(mojom::MediaControllerRequest media_controller,
+                    mojom::MediaStatusObserverPtr observer));
 };
 
 }  // namespace media_router

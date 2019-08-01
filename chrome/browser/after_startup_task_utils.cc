@@ -101,9 +101,9 @@ void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     // Posted with USER_VISIBLE priority to avoid this becoming an after startup
     // task itself.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(QueueTask, std::move(queued_task)));
+    base::PostTask(FROM_HERE,
+                   {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+                   base::BindOnce(QueueTask, std::move(queued_task)));
     return;
   }
 
@@ -218,11 +218,10 @@ void StartupObserver::Start() {
   delay = base::TimeDelta::FromMinutes(kLongerDelayMins);
 #endif  // !defined(OS_ANDROID)
 
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&StartupObserver::OnFailsafeTimeout,
-                     weak_factory_.GetWeakPtr()),
-      delay);
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                        base::BindOnce(&StartupObserver::OnFailsafeTimeout,
+                                       weak_factory_.GetWeakPtr()),
+                        delay);
 }
 
 }  // namespace

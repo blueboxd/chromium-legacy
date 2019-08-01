@@ -134,10 +134,7 @@ function onSessionStarted(session) {
 
   let sessionType = getSessionType(session);
 
-  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl, {
-      compositionDisabled: sessionType == sessionTypes.MAGIC_WINDOW
-    })
-  });
+  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
   session.requestReferenceSpace(referenceSpaceMap[sessionType])
       .then( (refSpace) => {
         sessionInfos[sessionType].currentRefSpace = refSpace;

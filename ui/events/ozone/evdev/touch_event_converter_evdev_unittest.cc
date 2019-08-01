@@ -16,11 +16,11 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
-#include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -251,7 +251,6 @@ class TouchEventConverterEvdevTest : public testing::Test {
         std::move(events_in), base::FilePath(kTestDevicePath), devinfo,
         shared_palm_state_.get(), dispatcher_.get()));
     device_->Initialize(devinfo);
-    loop_ = new base::MessageLoopForUI;
 
     test_clock_.reset(new ui::test::ScopedEventTestTickClock());
     ui::DeviceDataManager::CreateInstance();
@@ -259,7 +258,6 @@ class TouchEventConverterEvdevTest : public testing::Test {
 
   void TearDown() override {
     device_.reset();
-    delete loop_;
   }
 
   void UpdateTime(struct input_event* queue, long count, timeval time) const {
@@ -306,7 +304,8 @@ class TouchEventConverterEvdevTest : public testing::Test {
   base::HistogramTester histogram_tester_;
 
  private:
-  base::MessageLoop* loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<ui::MockTouchEventConverterEvdev> device_;
   std::unique_ptr<ui::MockDeviceEventDispatcherEvdev> dispatcher_;
   std::unique_ptr<ui::test::ScopedEventTestTickClock> test_clock_;

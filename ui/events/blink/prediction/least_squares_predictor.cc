@@ -98,4 +98,12 @@ bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks predict_time,
   return false;
 }
 
+base::TimeDelta LeastSquaresPredictor::TimeInterval() const {
+  if (time_.size() > 1) {
+    return std::max(kMinimumTimeInterval,
+                    (time_.back() - time_.front()) / (time_.size() - 1));
+  }
+  return kTimeInterval;
+}
+
 }  // namespace ui

@@ -317,7 +317,8 @@ void SignOut() {
 }
 
 // Make sure that providing metrics consent doesn't enable UKM w/o sync.
-- (void)testConsentAddedButNoSync {
+// TODO(crbug.com/989726): Re-enable this crashing test.
+- (void)DISABLED_testConsentAddedButNoSync {
   SignOut();
   UpdateMetricsConsent(false);
   AssertUKMEnabled(false);

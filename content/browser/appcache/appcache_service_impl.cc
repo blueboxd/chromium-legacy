@@ -375,8 +375,9 @@ AppCacheStorageReference::~AppCacheStorageReference() {}
 AppCacheServiceImpl::AppCacheServiceImpl(
     storage::QuotaManagerProxy* quota_manager_proxy,
     base::WeakPtr<StoragePartitionImpl> partition)
-    : db_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    : db_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       appcache_policy_(nullptr),
       quota_client_(nullptr),
@@ -404,7 +405,7 @@ AppCacheServiceImpl::~AppCacheServiceImpl() {
     if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       quota_client_->NotifyAppCacheDestroyed();
     } else {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheDestroyed,
                          base::Unretained(quota_client_)));

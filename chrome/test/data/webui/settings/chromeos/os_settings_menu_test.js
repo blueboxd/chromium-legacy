@@ -118,29 +118,4 @@ suite('OSSettingsMenuReset', function() {
     // BASIC has no sub page selected.
     assertFalse(!!selector.selected);
   });
-
-  test('pageVisibility', function() {
-    function assertPageVisibility(shown) {
-      assertEquals(shown, !settingsMenu.$$('#advancedButton').hidden);
-      assertEquals(shown, !settingsMenu.$$('#advancedSubmenu').hidden);
-      assertEquals(shown, !settingsMenu.$$('#multidevice').hidden);
-      assertEquals(shown, !settingsMenu.$$('#people').hidden);
-      assertEquals(shown, !settingsMenu.$$('#reset').hidden);
-    }
-
-    // Menu items are shown by default.
-    assertPageVisibility(true);
-
-    // Set the visibility of the pages under test to "false".
-    settingsMenu.pageVisibility = Object.assign(settings.pageVisibility, {
-      advancedSettings: false,
-      multidevice: false,
-      people: false,
-      reset: false
-    });
-    Polymer.dom.flush();
-
-    // Now the menu items should be hidden.
-    assertPageVisibility(false);
-  });
 });

@@ -35,8 +35,7 @@ void AudioGraphTracer::SetInspectorAgent(InspectorWebAudioAgent* agent) {
     inspector_agent_->DidCreateBaseAudioContext(context);
 }
 
-void AudioGraphTracer::DidCreateBaseAudioContext(
-    BaseAudioContext* context) {
+void AudioGraphTracer::DidCreateBaseAudioContext(BaseAudioContext* context) {
   DCHECK(!contexts_.Contains(context));
 
   contexts_.insert(context);
@@ -44,8 +43,7 @@ void AudioGraphTracer::DidCreateBaseAudioContext(
     inspector_agent_->DidCreateBaseAudioContext(context);
 }
 
-void AudioGraphTracer::WillDestroyBaseAudioContext(
-    BaseAudioContext* context) {
+void AudioGraphTracer::WillDestroyBaseAudioContext(BaseAudioContext* context) {
   DCHECK(contexts_.Contains(context));
 
   contexts_.erase(context);
@@ -53,8 +51,7 @@ void AudioGraphTracer::WillDestroyBaseAudioContext(
     inspector_agent_->WillDestroyBaseAudioContext(context);
 }
 
-void AudioGraphTracer::DidChangeBaseAudioContext(
-    BaseAudioContext* context) {
+void AudioGraphTracer::DidChangeBaseAudioContext(BaseAudioContext* context) {
   DCHECK(contexts_.Contains(context));
 
   if (inspector_agent_)

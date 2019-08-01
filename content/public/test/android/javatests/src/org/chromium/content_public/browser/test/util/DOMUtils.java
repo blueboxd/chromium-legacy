@@ -253,7 +253,22 @@ public class DOMUtils {
      */
     public static boolean clickNode(final WebContents webContents, String nodeId,
             boolean goThroughRootAndroidView) throws InterruptedException, TimeoutException {
-        scrollNodeIntoView(webContents, nodeId);
+        return clickNode(
+                webContents, nodeId, goThroughRootAndroidView, true /* shouldScrollIntoView */);
+    }
+
+    /**
+     * Click a DOM node by its id.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @param goThroughRootAndroidView Whether the input should be routed through the Root View for
+     *        the CVC.
+     * @param shouldScrollIntoView Whether to scroll the node into view first.
+     */
+    public static boolean clickNode(final WebContents webContents, String nodeId,
+            boolean goThroughRootAndroidView, boolean shouldScrollIntoView)
+            throws InterruptedException, TimeoutException {
+        if (shouldScrollIntoView) scrollNodeIntoView(webContents, nodeId);
         int[] clickTarget = getClickTargetForNode(webContents, nodeId);
         if (goThroughRootAndroidView) {
             return TouchCommon.singleClickView(

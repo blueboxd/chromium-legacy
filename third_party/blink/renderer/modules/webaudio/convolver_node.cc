@@ -320,4 +320,12 @@ void ConvolverNode::Trace(Visitor* visitor) {
   AudioNode::Trace(visitor);
 }
 
+void ConvolverNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+}
+
+void ConvolverNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

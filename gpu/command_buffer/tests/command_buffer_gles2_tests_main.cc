@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -20,9 +19,9 @@ namespace {
 
 int RunHelper(base::TestSuite* testSuite) {
 #if defined(USE_OZONE)
-  base::SingleThreadTaskExecutor executor(base::MessagePumpType::UI);
+  base::SingleThreadTaskExecutor executor(base::MessagePump::Type::UI);
 #else
-  base::SingleThreadTaskExecutor executor(base::MessagePumpType::IO);
+  base::SingleThreadTaskExecutor executor(base::MessagePump::Type::IO);
 #endif
   return testSuite->Run();
 }

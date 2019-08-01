@@ -24,6 +24,8 @@ class DownloadUtils {
   static std::string RemapGenericMimeType(const std::string& mime_type,
                                           const GURL& url,
                                           const std::string& file_name);
+  static bool ShouldAutoOpenDownload(download::DownloadItem* item);
+  static bool IsOmaDownloadDescription(const std::string& mime_type);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_UTILS_H_

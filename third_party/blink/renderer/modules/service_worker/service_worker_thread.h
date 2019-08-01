@@ -63,7 +63,8 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
                                  const v8_inspector::V8StackTraceId& stack_id);
   void RunInstalledModuleScript(
       const KURL& module_url_record,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+          outside_settings_object_data,
       network::mojom::CredentialsMode);
 
  private:

@@ -7448,7 +7448,6 @@ interface SerialPort
     attribute @@toStringTag
     getter readable
     getter writable
-    method clearReadError
     method close
     method constructor
     method open

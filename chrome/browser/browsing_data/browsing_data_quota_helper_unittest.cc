@@ -39,8 +39,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     EXPECT_TRUE(dir_.CreateUniqueTempDir());
     quota_manager_ = new storage::QuotaManager(
         false, dir_.GetPath(),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}).get(),
-        nullptr, storage::GetQuotaSettingsFunc());
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), nullptr,
+        storage::GetQuotaSettingsFunc());
     helper_ = new BrowsingDataQuotaHelperImpl(quota_manager_.get());
   }
 

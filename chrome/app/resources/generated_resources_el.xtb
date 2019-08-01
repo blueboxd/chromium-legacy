@@ -203,7 +203,6 @@
 <translation id="1289513325360489062">Χωρίς πρόσβαση στα δεδομένα αυτού του ιστοτόπου</translation>
 <translation id="1293264513303784526">Συσκευή USB-C (αριστερή θύρα)</translation>
 <translation id="1293556467332435079">Αρχεία</translation>
-<translation id="1296497012903089238">Τύπος πιστοποιητικού</translation>
 <translation id="1297175357211070620">Προορισμός</translation>
 <translation id="1300415640239881824">Ο τομέας <ph name="DOMAIN" /> απαιτεί την επαλήθευση του αναγνωριστικού της συσκευής σας από το Google, για να καθορίσει την καταλληλότητά της για βελτιωμένη αναπαραγωγή προστατευμένου περιεχομένου.</translation>
 <translation id="1300806585489372370">Για να αλλάξετε αυτήν τη ρύθμιση, θα πρέπει πρώτα να <ph name="BEGIN_LINK" />ενεργοποιήσετε τα αναγνωριστικά<ph name="END_LINK" /></translation>
@@ -1706,7 +1705,6 @@
 <translation id="3543597750097719865">Υπογραφή X9.62 ECDSA με SHA-512</translation>
 <translation id="3544879808695557954">Όνομα χρήστη (προαιρετικά)</translation>
 <translation id="354602065659584722">Το επιβλαβές λογισμικό καταργήθηκε</translation>
-<translation id="3547495624659668105">Έκδοση PRL</translation>
 <translation id="3547954654003013442">Ρυθμίσεις διακομιστή μεσολάβησης</translation>
 <translation id="3550915441744863158">Το Chrome ενημερώνεται αυτόματα έτσι ώστε να έχετε πάντα στη διάθεσή σας τη νεότερη έκδοση.</translation>
 <translation id="3551320343578183772">Κλείσιμο Καρτέλας</translation>
@@ -1999,7 +1997,6 @@
 <translation id="3937734102568271121">Να μεταφράζονται πάντα τα <ph name="LANGUAGE" /></translation>
 <translation id="3938128855950761626">Συσκευές από τον πάροχο υπηρεσιών <ph name="VENDOR_ID" /></translation>
 <translation id="3940233957883229251">Ενεργοποίηση αυτόματης επανάληψης</translation>
-<translation id="3941357410013254652">Αναγνωριστικό καναλιού</translation>
 <translation id="3941565636838060942">Για απόκρυψη της πρόσβασης σε αυτό το πρόγραμμα, πρέπει να το απεγκαταστήσετε χρησιμοποιώντας το
   <ph name="CONTROL_PANEL_APPLET_NAME" /> στον Πίνακα ελέγχου.
 
@@ -3429,7 +3426,6 @@
 <translation id="6129691635767514872">Τα επιλεγμένα δεδομένα καταργήθηκαν από το Chrome και από τις συγχρονισμένες συσκευές. Ο Λογαριασμός σας Google μπορεί να διαθέτει άλλες μορφές ιστορικού περιήγησης, όπως αναζητήσεις και δραστηριότητα από άλλες υπηρεσίες Google στη διεύθυνση <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Σχόλιο πιστοποιητικού Netscape</translation>
 <translation id="6129953537138746214">Κενό</translation>
-<translation id="6135622770221372891">Αναγνωριστικά καναλιών</translation>
 <translation id="6136114942382973861">Κλείσιμο γραμμής λήψεων</translation>
 <translation id="6137767437444130246">Πιστοποιητικό χρήστη</translation>
 <translation id="6138680304137685902">Υπογραφή X9.62 ECDSA με SHA-384</translation>

@@ -88,14 +88,16 @@ void ServiceWorkerThread::RunInstalledClassicScript(
 
 void ServiceWorkerThread::RunInstalledModuleScript(
     const KURL& module_url_record,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+        outside_settings_object_data,
     network::mojom::CredentialsMode credentials_mode) {
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       CrossThreadBindOnce(
           &ServiceWorkerThread::RunInstalledModuleScriptOnWorkerThread,
           CrossThreadUnretained(this), module_url_record,
-          WTF::Passed(outside_settings_object.CopyData()), credentials_mode));
+          WTF::Passed(std::move(outside_settings_object_data)),
+          credentials_mode));
 }
 
 void ServiceWorkerThread::RunInstalledClassicScriptOnWorkerThread(

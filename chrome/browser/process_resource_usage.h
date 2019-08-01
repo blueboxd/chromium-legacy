@@ -46,7 +46,7 @@
 //     content::mojom::ResourceUsageReporterPtr service;
 //     mojo::InterfaceRequest<content::mojom::ResourceUsageReporter> request =
 //         mojo::MakeRequest(&service);
-//     base::PostTaskWithTraits(
+//     base::PostTask(
 //         FROM_HERE, {content::BrowserThread::IO},
 //         base::Bind(&Foo::ConnectToService, this, base::Passed(&request)));
 //     resource_usage_.reset(new ProcessResourceUsage(std::move(service)));

@@ -156,5 +156,22 @@ TEST_F(KalmanPredictorTest, PredictQuadraticValueTimeFiltered) {
   ValidatePredictor(x, y, t);
 }
 
+// Tests the kalman predictor time interval filter.
+TEST_F(KalmanPredictorTest, TimeInterval) {
+  predictor_ =
+      std::make_unique<ui::KalmanPredictor>(true /* enable_time_filtering */);
+  EXPECT_EQ(predictor_->TimeInterval(), kExpectedDefaultTimeInterval);
+  std::vector<double> x = {0, 2, 8, 18};
+  std::vector<double> y = {10, 11, 14, 19};
+  std::vector<double> t = {7, 14, 21, 28};
+  for (size_t i = 0; i < t.size(); i++) {
+    InputPredictor::InputData data = {gfx::PointF(x[i], y[i]),
+                                      FromMilliseconds(t[i])};
+    predictor_->Update(data);
+  }
+  EXPECT_EQ(predictor_->TimeInterval().InMillisecondsF(),
+            base::TimeDelta::FromMilliseconds(7).InMillisecondsF());
+}
+
 }  // namespace test
 }  // namespace ui

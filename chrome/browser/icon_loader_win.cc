@@ -32,7 +32,7 @@ IconLoader::IconGroup IconLoader::GroupForFilepath(
 scoped_refptr<base::TaskRunner> IconLoader::GetReadIconTaskRunner() {
   // Technically speaking, only a thread with COM is needed, not one that has
   // a COM STA. However, this is what is available for now.
-  return base::CreateCOMSTATaskRunnerWithTraits(traits());
+  return base::CreateCOMSTATaskRunner(traits());
 }
 
 void IconLoader::ReadIcon() {

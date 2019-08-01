@@ -2837,9 +2837,8 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
         page_in_screen.bottom(), dirty_in_screen);
 
     if (page_index % 2 == 1) {
-      // Only draw over the right two-up view column with empty space.
-      bottom_in_screen.set_width(bottom_in_screen.width() / 2);
-      bottom_in_screen.set_x(page_in_screen.x());
+      draw_utils::AdjustBottomGapForRightSidePage(page_in_screen.x(),
+                                                  &bottom_in_screen);
     }
 
     bottom_in_screen = bottom_in_screen.Intersect(dirty_in_screen);

@@ -9,12 +9,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "net/base/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/http/http_util.h"
@@ -498,6 +500,16 @@ CanonicalCookie::CookieInclusionStatus CookieWouldBeExcludedDueToSameSite(
   }
 
   return CanonicalCookie::CookieInclusionStatus::INCLUDE;
+}
+
+bool IsSameSiteByDefaultCookiesEnabled() {
+  return base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies);
+}
+
+bool IsCookiesWithoutSameSiteMustBeSecureEnabled() {
+  return IsSameSiteByDefaultCookiesEnabled() &&
+         base::FeatureList::IsEnabled(
+             features::kCookiesWithoutSameSiteMustBeSecure);
 }
 
 base::OnceCallback<void(const CookieList&, const CookieStatusList&)>

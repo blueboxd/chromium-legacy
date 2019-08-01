@@ -63,7 +63,9 @@ class PPAPI_PROXY_EXPORT PDFResource
   void SetAccessibilityPageInfo(
       PP_PrivateAccessibilityPageInfo* page_info,
       PP_PrivateAccessibilityTextRunInfo text_runs[],
-      PP_PrivateAccessibilityCharInfo chars[]) override;
+      PP_PrivateAccessibilityCharInfo chars[],
+      PP_PrivateAccessibilityLinkInfo links[],
+      PP_PrivateAccessibilityImageInfo images[]) override;
   void SetCrashData(const char* pdf_url, const char* top_level_url) override;
   void SelectionChanged(const PP_FloatPoint& left,
                         int32_t left_height,

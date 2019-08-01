@@ -70,7 +70,6 @@
 #include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
@@ -660,22 +659,18 @@ ServiceManagerContext::ServiceManagerContext(
         base::BindRepeating(&CreateTracingService));
   }
 
-  bool network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
-  if (network_service_enabled) {
-    if (IsInProcessNetworkService()) {
-      scoped_refptr<base::SequencedTaskRunner> task_runner =
-          service_manager_thread_task_runner_;
-      if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
-        base::Thread::Options options(base::MessagePumpType::IO, 0);
-        network_service_thread_.StartWithOptions(options);
-        task_runner = network_service_thread_.task_runner();
-      }
-
-      GetNetworkTaskRunner()->StartWithTaskRunner(task_runner);
-      RegisterInProcessService(mojom::kNetworkServiceName, task_runner,
-                               base::BindRepeating(&CreateNetworkService));
+  if (IsInProcessNetworkService()) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner =
+        service_manager_thread_task_runner_;
+    if (base::FeatureList::IsEnabled(kNetworkServiceDedicatedThread)) {
+      base::Thread::Options options(base::MessagePumpType::IO, 0);
+      network_service_thread_.StartWithOptions(options);
+      task_runner = network_service_thread_.task_runner();
     }
+
+    GetNetworkTaskRunner()->StartWithTaskRunner(task_runner);
+    RegisterInProcessService(mojom::kNetworkServiceName, task_runner,
+                             base::BindRepeating(&CreateNetworkService));
   }
 
   in_process_context_->Start(

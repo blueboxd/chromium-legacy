@@ -200,7 +200,7 @@ void CheckClientDownloadRequest::Start() {
   // If whitelist check passes, FinishRequest() will be called to avoid
   // analyzing file. Otherwise, AnalyzeFile() will be called to continue with
   // analysis.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CheckUrlAgainstWhitelist, url_chain_.back(),
                      database_manager_),
@@ -213,7 +213,7 @@ void CheckClientDownloadRequest::Start() {
 void CheckClientDownloadRequest::StartTimeout() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   timeout_start_time_ = base::TimeTicks::Now();
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CheckClientDownloadRequest::FinishRequest,
                      weakptr_factory_.GetWeakPtr(),
@@ -295,7 +295,7 @@ void CheckClientDownloadRequest::OnURLLoaderComplete(
       }
     }
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &WebUIInfoSingleton::AddToClientDownloadResponsesReceived,
@@ -458,7 +458,7 @@ void CheckClientDownloadRequest::OnFileFeatureExtractionDone(
   detached_code_signatures_.CopyFrom(results.detached_code_signatures);
 #endif
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CheckCertificateChainAgainstWhitelist, signature_info_,
                      database_manager_),
@@ -469,10 +469,9 @@ void CheckClientDownloadRequest::OnFileFeatureExtractionDone(
   // We wait until after the file checks finish to start the timeout, as
   // windows can cause permissions errors if the timeout fired while we were
   // checking the file signature and we tried to complete the download.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CheckClientDownloadRequest::StartTimeout,
-                     weakptr_factory_.GetWeakPtr()));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&CheckClientDownloadRequest::StartTimeout,
+                                weakptr_factory_.GetWeakPtr()));
 }
 
 bool CheckClientDownloadRequest::ShouldSampleWhitelistedDownload() {
@@ -789,7 +788,7 @@ void CheckClientDownloadRequest::SendRequest() {
   // The following is to log this ClientDownloadRequest on any open
   // chrome://safe-browsing pages. If no such page is open, the request is
   // dropped and the |request| object deleted.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WebUIInfoSingleton::AddToClientDownloadRequestsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),

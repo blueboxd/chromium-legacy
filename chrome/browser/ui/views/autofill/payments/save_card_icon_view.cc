@@ -6,8 +6,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -19,14 +18,12 @@
 namespace autofill {
 
 SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
-                                   Browser* browser,
                                    PageActionIconView::Delegate* delegate,
                                    const gfx::FontList& font_list)
     : PageActionIconView(command_updater,
                          IDC_SAVE_CREDIT_CARD_FOR_PAGE,
                          delegate,
-                         font_list),
-      browser_(browser) {
+                         font_list) {
   DCHECK(delegate);
   SetID(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
 
@@ -36,12 +33,12 @@ SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
 SaveCardIconView::~SaveCardIconView() {}
 
 views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
-  SaveCardBubbleControllerImpl* controller = GetController();
+  SaveCardBubbleController* controller = GetController();
   if (!controller)
     return nullptr;
 
   return static_cast<autofill::SaveCardBubbleViews*>(
-      controller->save_card_bubble_view());
+      controller->GetSaveCardBubbleView());
 }
 
 bool SaveCardIconView::Update() {
@@ -51,7 +48,7 @@ bool SaveCardIconView::Update() {
   const bool was_visible = GetVisible();
 
   // |controller| may be nullptr due to lazy initialization.
-  SaveCardBubbleControllerImpl* controller = GetController();
+  SaveCardBubbleController* controller = GetController();
   bool enabled = controller && controller->IsIconVisible();
 
   enabled &= SetCommandEnabled(enabled);
@@ -74,21 +71,19 @@ base::string16 SaveCardIconView::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD);
 }
 
-SaveCardBubbleControllerImpl* SaveCardIconView::GetController() const {
-  if (!browser_)
-    return nullptr;
+SaveCardBubbleController* SaveCardIconView::GetController() const {
   content::WebContents* web_contents = GetWebContents();
-
   if (!web_contents)
     return nullptr;
-  return autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
+
+  return SaveCardBubbleController::GetOrCreate(web_contents);
 }
 
 void SaveCardIconView::AnimationEnded(const gfx::Animation* animation) {
   IconLabelBubbleView::AnimationEnded(animation);
 
   // |controller| may be nullptr due to lazy initialization.
-  SaveCardBubbleControllerImpl* controller = GetController();
+  SaveCardBubbleController* controller = GetController();
   if (controller)
     controller->OnAnimationEnded();
 }

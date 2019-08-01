@@ -1334,8 +1334,8 @@ void DscpManager::RequestHandle() {
   }
 
   handle_is_initializing_ = true;
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&DscpManager::DoCreateHandle, api_),
       base::BindOnce(&DscpManager::OnHandleCreated, api_,
                      weak_ptr_factory_.GetWeakPtr()));

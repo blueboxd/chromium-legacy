@@ -57,8 +57,9 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   // Needs to be called after we have chrome::DIR_USER_DATA and
   // g_browser_process.  This happens in PreCreateThreads.
   // base::GetLinuxDistro() will initialize its value if needed.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(base::IgnoreResult(&base::GetLinuxDistro)));
 #endif
 
@@ -75,8 +76,8 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
   // Forward the product name
   config->product_name = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   // OSCrypt may target keyring, which requires calls from the main thread.
-  config->main_thread_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-      {content::BrowserThread::UI});
+  config->main_thread_runner =
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
   // OSCrypt can be disabled in a special settings file.
   config->should_use_preference =
       parsed_command_line().HasSwitch(switches::kEnableEncryptionSelection);

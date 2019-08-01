@@ -41,6 +41,8 @@ base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
   background_info.SetKey("attribution_line_1", base::Value(std::string()));
   background_info.SetKey("attribution_line_2", base::Value(std::string()));
   background_info.SetKey("attribution_action_url", base::Value(std::string()));
+  background_info.SetKey("collection_id", base::Value(std::string()));
+  background_info.SetKey("resume_token", base::Value(std::string()));
 
   return background_info;
 }
@@ -183,8 +185,8 @@ TEST_F(InstantServiceTest, SetCustomBackgroundURL) {
   const GURL kUrl("https://www.foo.com");
 
   instant_service_->AddValidBackdropUrlForTesting(kUrl);
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, std::string(), std::string(), GURL());
+  instant_service_->SetCustomBackgroundInfo(kUrl, std::string(), std::string(),
+                                            GURL(), std::string());
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kUrl, theme_info->custom_background_url);
@@ -201,23 +203,23 @@ TEST_F(InstantServiceTest, SetCustomBackgroundURLInvalidURL) {
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kValidUrl.spec(), theme_info->custom_background_url.spec());
 
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kInvalidUrl, std::string(), std::string(), GURL());
+  instant_service_->SetCustomBackgroundInfo(
+      kInvalidUrl, std::string(), std::string(), GURL(), std::string());
 
   theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(std::string(), theme_info->custom_background_url.spec());
   EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
 }
 
-TEST_F(InstantServiceTest, SetCustomBackgroundURLWithAttributions) {
+TEST_F(InstantServiceTest, SetCustomBackgroundInfo) {
   ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
   const GURL kUrl("https://www.foo.com");
   const std::string kAttributionLine1 = "foo";
   const std::string kAttributionLine2 = "bar";
   const GURL kActionUrl("https://www.bar.com");
   instant_service_->AddValidBackdropUrlForTesting(kUrl);
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
+  instant_service_->SetCustomBackgroundInfo(
+      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl, std::string());
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kUrl, theme_info->custom_background_url);
@@ -238,8 +240,8 @@ TEST_F(InstantServiceTest, ChangingSearchProviderClearsThemeInfoAndPref) {
 
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   instant_service_->AddValidBackdropUrlForTesting(kUrl);
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
+  instant_service_->SetCustomBackgroundInfo(
+      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl, std::string());
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kUrl, theme_info->custom_background_url);
@@ -350,31 +352,34 @@ TEST_F(InstantServiceTest, CustomBackgroundAttributionActionUrlReset) {
 
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   instant_service_->AddValidBackdropUrlForTesting(kUrl);
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, kAttributionLine1, kAttributionLine2, kHttpsActionUrl);
+  instant_service_->SetCustomBackgroundInfo(kUrl, kAttributionLine1,
+                                            kAttributionLine2, kHttpsActionUrl,
+                                            std::string());
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kHttpsActionUrl,
             theme_info->custom_background_attribution_action_url);
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, kAttributionLine1, kAttributionLine2, kHttpActionUrl);
+  instant_service_->SetCustomBackgroundInfo(kUrl, kAttributionLine1,
+                                            kAttributionLine2, kHttpActionUrl,
+                                            std::string());
 
   theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(GURL(), theme_info->custom_background_attribution_action_url);
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, kAttributionLine1, kAttributionLine2, kHttpsActionUrl);
+  instant_service_->SetCustomBackgroundInfo(kUrl, kAttributionLine1,
+                                            kAttributionLine2, kHttpsActionUrl,
+                                            std::string());
 
   theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kHttpsActionUrl,
             theme_info->custom_background_attribution_action_url);
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, kAttributionLine1, kAttributionLine2, GURL());
+  instant_service_->SetCustomBackgroundInfo(
+      kUrl, kAttributionLine1, kAttributionLine2, GURL(), std::string());
 
   theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(GURL(), theme_info->custom_background_attribution_action_url);
@@ -537,8 +542,8 @@ TEST_F(InstantServiceTest, LocalImageDoesNotHaveAttribution) {
       profile()->GetTestingPrefService();
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   instant_service_->AddValidBackdropUrlForTesting(kUrl);
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
+  instant_service_->SetCustomBackgroundInfo(
+      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl, std::string());
 
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   ASSERT_EQ(kAttributionLine1,
@@ -594,8 +599,8 @@ TEST_F(InstantServiceTest, TestUpdateCustomBackgroundColor) {
 
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   instant_service_->AddValidBackdropUrlForTesting(kUrl);
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
+  instant_service_->SetCustomBackgroundInfo(
+      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl, std::string());
 
   // Background color will not update if background timestamp has changed.
   instant_service_->UpdateCustomBackgroundColorAsync(
@@ -638,8 +643,8 @@ TEST_F(InstantServiceTest, LocalImageDoesNotUpdateCustomBackgroundColor) {
 
   SetUserSelectedDefaultSearchProvider("{google:baseURL}");
   instant_service_->AddValidBackdropUrlForTesting(kUrl);
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
+  instant_service_->SetCustomBackgroundInfo(
+      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl, std::string());
   base::TimeTicks time_set =
       instant_service_->GetBackgroundUpdatedTimestampForTesting();
 
@@ -654,4 +659,55 @@ TEST_F(InstantServiceTest, LocalImageDoesNotUpdateCustomBackgroundColor) {
   EXPECT_FALSE(CheckBackgroundColor(
       SK_ColorRED,
       pref_service->GetDictionary(prefs::kNtpCustomBackgroundDict)));
+}
+
+TEST_F(InstantServiceTest, SetCustomBackgroundCollectionId) {
+  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
+  const std::string kInvalidId("aarrtt");
+  const std::string kValidId("art");
+
+  // A valid id should update the pref/background.
+  CollectionImage image;
+  image.collection_id = kValidId;
+  image.image_url = GURL("https://www.test.com/");
+  instant_service_->SetNextCollectionImageForTesting(image);
+
+  instant_service_->AddValidBackdropCollectionForTesting(kValidId);
+  instant_service_->SetCustomBackgroundInfo(GURL(), "", "", GURL(), kValidId);
+  thread_bundle()->RunUntilIdle();
+
+  ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
+  EXPECT_EQ(kValidId, theme_info->collection_id);
+  EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
+
+  // An invalid id should clear the pref/background.
+  CollectionImage image2;
+  instant_service_->SetNextCollectionImageForTesting(image2);
+  instant_service_->SetCustomBackgroundInfo(GURL(), "", "", GURL(), kInvalidId);
+  thread_bundle()->RunUntilIdle();
+
+  theme_info = instant_service_->GetInitializedThemeInfo();
+  EXPECT_EQ(std::string(), theme_info->collection_id);
+  EXPECT_FALSE(instant_service_->IsCustomBackgroundSet());
+}
+
+TEST_F(InstantServiceTest, CollectionIdTakePriorityOverBackgroundURL) {
+  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
+  const std::string kValidId("art");
+  const GURL kUrl("https://www.foo.com/");
+
+  CollectionImage image;
+  image.collection_id = kValidId;
+  image.image_url = GURL("https://www.test.com/");
+  instant_service_->SetNextCollectionImageForTesting(image);
+  instant_service_->AddValidBackdropUrlForTesting(kUrl);
+  instant_service_->AddValidBackdropCollectionForTesting(kValidId);
+
+  instant_service_->SetCustomBackgroundInfo(kUrl, "", "", GURL(), kValidId);
+  thread_bundle()->RunUntilIdle();
+
+  ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
+  EXPECT_EQ(kValidId, theme_info->collection_id);
+  EXPECT_EQ("https://www.test.com/", theme_info->custom_background_url);
+  EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }

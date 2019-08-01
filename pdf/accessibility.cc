@@ -14,7 +14,9 @@ bool GetAccessibilityInfo(
     int32_t page_index,
     PP_PrivateAccessibilityPageInfo* page_info,
     std::vector<PP_PrivateAccessibilityTextRunInfo>* text_runs,
-    std::vector<PP_PrivateAccessibilityCharInfo>* chars) {
+    std::vector<PP_PrivateAccessibilityCharInfo>* chars,
+    std::vector<PP_PrivateAccessibilityLinkInfo>* links,
+    std::vector<PP_PrivateAccessibilityImageInfo>* images) {
   int page_count = engine->GetNumberOfPages();
   if (page_index < 0 || page_index >= page_count)
     return false;
@@ -70,6 +72,9 @@ bool GetAccessibilityInfo(
   }
 
   page_info->text_run_count = text_runs->size();
+  // TODO(crbug.com/981448): Populate |links| and |images|.
+  page_info->link_count = links->size();
+  page_info->image_count = images->size();
   return true;
 }
 

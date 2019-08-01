@@ -72,7 +72,7 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
         blink::mojom::StorageType::kSyncable};
     for (auto type : types) {
       tasks_ += 1;
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&storage::QuotaManager::GetOriginsModifiedSince,
                          quota_manager, type, begin_, origins_callback));
@@ -158,9 +158,9 @@ void SiteDataCountingHelper::GetCookiesCallback(
       origins.push_back(url);
     }
   }
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&SiteDataCountingHelper::Done,
-                                          base::Unretained(this), origins));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&SiteDataCountingHelper::Done,
+                                base::Unretained(this), origins));
 }
 
 void SiteDataCountingHelper::GetQuotaOriginsCallback(
@@ -171,10 +171,9 @@ void SiteDataCountingHelper::GetQuotaOriginsCallback(
   urls.resize(origins.size());
   for (const url::Origin& origin : origins)
     urls.push_back(origin.GetURL());
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&SiteDataCountingHelper::Done, base::Unretained(this),
-                     std::move(urls)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&SiteDataCountingHelper::Done,
+                                base::Unretained(this), std::move(urls)));
 }
 
 void SiteDataCountingHelper::GetLocalStorageUsageInfoCallback(

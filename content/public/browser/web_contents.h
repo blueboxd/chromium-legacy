@@ -776,10 +776,6 @@ class WebContents : public PageNavigator,
   // WebContentsDelegate.
   virtual void SystemDragEnded(RenderWidgetHost* source_rwh) = 0;
 
-  // The user initiated navigation to this page (as opposed to a navigation that
-  // could have been triggered without user interaction).
-  virtual void NavigatedByUser() = 0;
-
   // Indicates if this tab was explicitly closed by the user (control-w, close
   // tab menu item...). This is false for actions that indirectly close the tab,
   // such as closing the window.  The setter is maintained by TabStripModel, and

@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/lazy_task_runner.h"
 #include "base/task/sequence_manager/sequence_manager.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/traits_bag.h"
 #include "build/build_config.h"
@@ -335,6 +336,11 @@ class ScopedTaskEnvironment {
   std::unique_ptr<RunLoop::ScopedRunTimeoutForTest> run_loop_timeout_;
 
   std::unique_ptr<bool> owns_instance_ = std::make_unique<bool>(true);
+
+  // Used to verify thread-affinity of operations that must occur on the main
+  // thread. This is the case for anything that modifies or drives the
+  // |sequence_manager_|.
+  THREAD_CHECKER(main_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ScopedTaskEnvironment);
 };

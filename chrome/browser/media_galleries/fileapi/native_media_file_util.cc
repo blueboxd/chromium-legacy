@@ -535,9 +535,8 @@ void NativeMediaFileUtil::Core::GetFileInfoOnTaskRunnerThread(
   base::File::Info file_info;
   base::File::Error error =
       GetFileInfoSync(context.get(), url, &file_info, NULL);
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(std::move(callback), error, file_info));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(std::move(callback), error, file_info));
 }
 
 void NativeMediaFileUtil::Core::ReadDirectoryOnTaskRunnerThread(
@@ -548,9 +547,9 @@ void NativeMediaFileUtil::Core::ReadDirectoryOnTaskRunnerThread(
   DCHECK(IsOnTaskRunnerThread(context.get()));
   EntryList entry_list;
   base::File::Error error = ReadDirectorySync(context.get(), url, &entry_list);
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(std::move(callback), error,
-                                          entry_list, false /* has_more */));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(std::move(callback), error, entry_list,
+                                false /* has_more */));
 }
 
 void NativeMediaFileUtil::Core::CreateSnapshotFileOnTaskRunnerThread(
@@ -564,9 +563,9 @@ void NativeMediaFileUtil::Core::CreateSnapshotFileOnTaskRunnerThread(
   scoped_refptr<storage::ShareableFileReference> file_ref;
   base::File::Error error = CreateSnapshotFileSync(
       context.get(), url, &file_info, &platform_path, &file_ref);
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(std::move(callback), error, file_info,
-                                          platform_path, file_ref));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(std::move(callback), error, file_info,
+                                platform_path, file_ref));
 }
 
 base::File::Error NativeMediaFileUtil::Core::GetFileInfoSync(

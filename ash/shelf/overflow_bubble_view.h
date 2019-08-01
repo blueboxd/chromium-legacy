@@ -23,7 +23,7 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   enum LayoutStrategy {
     // The arrow buttons are not shown. It means that there is enough space to
     // accommodate all of shelf icons.
-    NOT_SHOW_ARROW_BUTTON,
+    NOT_SHOW_ARROW_BUTTONS,
 
     // Only the left arrow button is shown.
     SHOW_LEFT_ARROW_BUTTON,
@@ -52,6 +52,9 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   int ScrollByXOffset(float x_offset, bool animating);
   int ScrollByYOffset(float y_offset, bool animating);
 
+  int GetFirstVisibleIndexForTest() const;
+  int GetLastVisibleIndexForTest() const;
+
   // views::BubbleDialogDelegateView:
   gfx::Rect GetBubbleBounds() override;
   bool CanActivate() const override;
@@ -73,6 +76,8 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
 
   // Minimum margin around the bubble so that it doesn't hug the screen edges.
   static constexpr int kMinimumMargin = 8;
+
+  static constexpr int kFadingZone = 16;
 
  private:
   friend class OverflowBubbleViewTestAPI;

@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/signin/constants.h"
 
 @protocol ApplicationCommands;
+@protocol BrowserCommands;
 namespace ios {
 class ChromeBrowserState;
 }
@@ -34,8 +35,8 @@ class ChromeBrowserState;
 // * |browserState| is the current browser state. Must not be nil.
 // * |dispatcher| is the dispatcher to be sent commands from this class.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:(id<ApplicationCommands>)dispatcher
-    NS_DESIGNATED_INITIALIZER;
+                          dispatcher:(id<ApplicationCommands, BrowserCommands>)
+                                         dispatcher NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 

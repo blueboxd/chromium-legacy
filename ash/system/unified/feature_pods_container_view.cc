@@ -214,11 +214,6 @@ void FeaturePodsContainerView::SetMaxHeight(int max_height) {
        kUnifiedFeaturePodTopPadding) /
       (kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding);
 
-  std::cout << (max_height - kUnifiedFeaturePodBottomPadding -
-                kUnifiedFeaturePodTopPadding) /
-                   (kUnifiedFeaturePodSize.height() +
-                    kUnifiedFeaturePodVerticalPadding)
-            << std::endl;
   feature_pod_rows = std::min(feature_pod_rows, kUnifiedFeaturePodMaxRows);
   feature_pod_rows = std::max(feature_pod_rows, kUnifiedFeaturePodMinRows);
 

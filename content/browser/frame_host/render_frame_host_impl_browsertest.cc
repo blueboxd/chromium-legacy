@@ -49,7 +49,6 @@
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-test-utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -2593,14 +2592,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
     EXPECT_EQ("", child_d->current_frame_host()
                       ->ComputeSiteForCookiesForNavigation(c_url)
                       .host());
-  }
-
-  // The rest of the test relies on
-  // RegisterNonNetworkNavigationURLLoaderFactories, which needs NetworkService
-  // on.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    SetBrowserClientForTesting(old_client);
-    return;
   }
 
   // Now try with a trusted scheme that gives first-partiness.

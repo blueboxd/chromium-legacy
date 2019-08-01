@@ -114,4 +114,13 @@ void LinearPredictor::GeneratePredictionSecondOrder(float pred_dt,
   result->pos += ScaleVector2d(acceleration, 0.5 * pred_dt * pred_dt);
 }
 
+base::TimeDelta LinearPredictor::TimeInterval() const {
+  if (events_queue_.size() > 1) {
+    return std::max(kMinimumTimeInterval, (events_queue_.back().time_stamp -
+                                           events_queue_.front().time_stamp) /
+                                              (events_queue_.size() - 1));
+  }
+  return kTimeInterval;
+}
+
 }  // namespace ui

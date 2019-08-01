@@ -236,14 +236,14 @@ mojom("test_interfaces") {
   ]
 }
 
-source_set("struct_traits") {
+source_set("mojom_traits") {
   sources = [
-    "context_result_struct_traits.h",
-    "mailbox_holder_struct_traits.h",
-    "mailbox_struct_traits.h",
-    "memory_stats_struct_traits.h",
-    "surface_handle_struct_traits.h",
-    "sync_token_struct_traits.h",
+    "context_result_mojom_traits.h",
+    "mailbox_holder_mojom_traits.h",
+    "mailbox_mojom_traits.h",
+    "memory_stats_mojom_traits.h",
+    "surface_handle_mojom_traits.h",
+    "sync_token_mojom_traits.h",
   ]
   deps = [
     ":interfaces_shared_cpp_sources",

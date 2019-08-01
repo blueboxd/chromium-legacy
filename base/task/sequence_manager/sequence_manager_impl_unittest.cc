@@ -20,7 +20,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_default.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -181,7 +180,7 @@ class FixtureWithMockTaskRunner final : public Fixture {
             ThreadTaskRunnerHandle::Get(),
             mock_tick_clock(),
             SequenceManager::Settings::Builder()
-                .SetMessagePumpType(MessagePumpType::DEFAULT)
+                .SetMessagePumpType(MessagePump::Type::DEFAULT)
                 .SetRandomisedSamplingEnabled(false)
                 .SetTickClock(mock_tick_clock())
                 .SetAntiStarvationLogicForPrioritiesDisabled(
@@ -256,7 +255,7 @@ class FixtureWithMockMessagePump : public Fixture {
     pump_ = pump.get();
     auto settings =
         SequenceManager::Settings::Builder()
-            .SetMessagePumpType(MessagePumpType::DEFAULT)
+            .SetMessagePumpType(MessagePump::Type::DEFAULT)
             .SetRandomisedSamplingEnabled(false)
             .SetTickClock(mock_tick_clock())
             .SetAntiStarvationLogicForPrioritiesDisabled(
@@ -345,7 +344,7 @@ class FixtureWithMessageLoop : public Fixture {
 
     sequence_manager_ = SequenceManagerForTest::CreateOnCurrentThread(
         SequenceManager::Settings::Builder()
-            .SetMessagePumpType(MessagePumpType::DEFAULT)
+            .SetMessagePumpType(MessagePump::Type::DEFAULT)
             .SetRandomisedSamplingEnabled(false)
             .SetTickClock(mock_tick_clock())
             .SetAntiStarvationLogicForPrioritiesDisabled(

@@ -89,21 +89,22 @@ void SwitchAccessEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   DCHECK(IsSwitchAccessEnabled());
   DCHECK(event);
 
-  if (ShouldForwardEvent(*event)) {
+  if (ShouldCancelEvent(*event)) {
     CancelEvent(event);
+    // Old method of sending information forwarded all events cancelled.
     // TODO(anastasi): Remove event dispatch once settings migration is
     // complete.
     delegate_->DispatchKeyEvent(*event);
-
-    // The Command events are currently sent, but ignored. The next step of the
-    // migration will be to switch from using the key events to using the
-    // commands, and the final step will be to remove the key events entirely.
-    SwitchAccessCommand command = command_for_key_code_[event->key_code()];
-    delegate_->SendSwitchAccessCommand(command);
+    if (ShouldForwardEvent(*event)) {
+      // The Command events are now used by Switch Access. The next step of
+      // the migration will be to remove the key events entirely.
+      SwitchAccessCommand command = command_for_key_code_[event->key_code()];
+      delegate_->SendSwitchAccessCommand(command);
+    }
   }
 }
 
-bool SwitchAccessEventHandler::ShouldForwardEvent(
+bool SwitchAccessEventHandler::ShouldCancelEvent(
     const ui::KeyEvent& event) const {
   // Ignore virtual key events so users can type with the onscreen keyboard.
   if (ignore_virtual_key_events_ && !event.HasNativeEvent())
@@ -112,7 +113,14 @@ bool SwitchAccessEventHandler::ShouldForwardEvent(
   if (forward_key_events_)
     return true;
 
-  return keys_to_capture_.find(event.key_code()) != keys_to_capture_.end();
+  return key_codes_to_capture_.count(event.key_code()) > 0;
+}
+
+// Returns whether to forward an event, assuming that ShouldCancelEvent(event)
+// returns true.
+bool SwitchAccessEventHandler::ShouldForwardEvent(
+    const ui::KeyEvent& event) const {
+  return event.type() == ui::ET_KEY_PRESSED;
 }
 
 }  // namespace ash

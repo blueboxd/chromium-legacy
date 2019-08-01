@@ -364,7 +364,7 @@ const gfx::FontList& EditableCombobox::GetFontList() const {
 }
 
 void EditableCombobox::SelectRange(const gfx::Range& range) {
-  textfield_->SelectRange(range);
+  textfield_->SetSelectedRange(range);
 }
 
 void EditableCombobox::SetAccessibleName(const base::string16& name) {
@@ -415,7 +415,7 @@ void EditableCombobox::OnThemeChanged() {
 void EditableCombobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kComboBoxGrouping;
 
-  node_data->SetName(textfield_->accessible_name());
+  node_data->SetName(textfield_->GetAccessibleName());
   node_data->SetValue(GetText());
 }
 

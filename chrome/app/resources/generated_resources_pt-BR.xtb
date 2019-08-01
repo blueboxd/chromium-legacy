@@ -203,7 +203,6 @@
 <translation id="1289513325360489062">Não é possível acessar os dados deste site</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (porta da esquerda)</translation>
 <translation id="1293556467332435079">Arquivos</translation>
-<translation id="1296497012903089238">Tipo de certificado</translation>
 <translation id="1297175357211070620">Destino</translation>
 <translation id="1300415640239881824">O domínio <ph name="DOMAIN" /> quer que a identidade do seu dispositivo seja verificada pelo Google para determinar se ele está qualificado para reprodução aprimorada de conteúdo protegido.</translation>
 <translation id="1300806585489372370">Para alterar essa configuração, primeiro <ph name="BEGIN_LINK" />ative os identificadores<ph name="END_LINK" /></translation>
@@ -1706,7 +1705,6 @@
 <translation id="3543597750097719865">Assinatura X9.62 ECDSA com SHA-512</translation>
 <translation id="3544879808695557954">Nome de usuário (opcional)</translation>
 <translation id="354602065659584722">Software perigoso removido</translation>
-<translation id="3547495624659668105">Versão de PRL</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="3550915441744863158">O Google Chrome é atualizado automaticamente para que você tenha sempre a versão mais recente.</translation>
 <translation id="3551320343578183772">Fechar guia</translation>
@@ -1999,7 +1997,6 @@
 <translation id="3937734102568271121">Sempre traduzir do <ph name="LANGUAGE" /></translation>
 <translation id="3938128855950761626">Dispositivos do fornecedor <ph name="VENDOR_ID" /></translation>
 <translation id="3940233957883229251">Ativar repetição automática</translation>
-<translation id="3941357410013254652">ID do canal</translation>
 <translation id="3941565636838060942">Para ocultar o acesso a este programa, desinstale-o, usando 
   <ph name="CONTROL_PANEL_APPLET_NAME" /> no Painel de controle.
 
@@ -3429,7 +3426,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6129691635767514872">Os dados selecionados foram removidos do Chrome e dos dispositivos sincronizados. É possível que sua Conta do Google tenha outras formas de histórico de navegação, como pesquisas e atividades de outros serviços do Google em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Comentário do certificado do Netscape</translation>
 <translation id="6129953537138746214">Espaço</translation>
-<translation id="6135622770221372891">IDs de canais</translation>
 <translation id="6136114942382973861">Fechar barra de downloads</translation>
 <translation id="6137767437444130246">Certificado do usuário</translation>
 <translation id="6138680304137685902">Assinatura X9.62 ECDSA com SHA-384</translation>

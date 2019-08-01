@@ -28,7 +28,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "net/base/network_isolation_key.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -118,7 +117,6 @@ SharedWorkerHost::SharedWorkerHost(
       worker_process_id_(worker_process_id),
       next_connection_request_id_(1),
       interface_provider_binding_(this) {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(instance_);
   // Set up the worker interface request. This is needed first in either
   // AddClient() or Start(). AddClient() can sometimes be called before Start()

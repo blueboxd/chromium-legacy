@@ -537,6 +537,13 @@ base::string16 Textfield::GetPlaceholderText() const {
   return placeholder_text_;
 }
 
+void Textfield::SetPlaceholderText(const base::string16& text) {
+  if (placeholder_text_ == text)
+    return;
+
+  placeholder_text_ = text;
+}
+
 gfx::HorizontalAlignment Textfield::GetHorizontalAlignment() const {
   return GetRenderText()->horizontal_alignment();
 }
@@ -559,7 +566,7 @@ const gfx::Range& Textfield::GetSelectedRange() const {
   return GetRenderText()->selection();
 }
 
-void Textfield::SelectRange(const gfx::Range& range) {
+void Textfield::SetSelectedRange(const gfx::Range& range) {
   model_->SelectRange(range);
   UpdateAfterChange(false, true);
 }
@@ -600,6 +607,10 @@ void Textfield::ApplyStyle(gfx::TextStyle style,
   SchedulePaint();
 }
 
+bool Textfield::GetInvalid() const {
+  return invalid_;
+}
+
 void Textfield::SetInvalid(bool invalid) {
   if (invalid == invalid_)
     return;
@@ -611,6 +622,10 @@ void Textfield::SetInvalid(bool invalid) {
 
 void Textfield::ClearEditHistory() {
   model_->ClearEditHistory();
+}
+
+base::string16 Textfield::GetAccessibleName() const {
+  return accessible_name_;
 }
 
 void Textfield::SetAccessibleName(const base::string16& name) {
@@ -1601,7 +1616,7 @@ bool Textfield::SetEditableSelectionRange(const gfx::Range& range) {
   if (!ImeEditingAllowed() || !range.IsValid())
     return false;
   OnBeforeUserAction();
-  SelectRange(range);
+  SetSelectedRange(range);
   OnAfterUserAction();
   return true;
 }

@@ -104,14 +104,15 @@ class ContentPasswordManagerDriver
   void HideManualFallbackForSaving() override;
   void SameDocumentNavigation(
       const autofill::PasswordForm& password_form) override;
-  void ShowPasswordSuggestions(base::i18n::TextDirection text_direction,
-                               const base::string16& typed_username,
-                               int options,
-                               const gfx::RectF& bounds) override;
   void RecordSavePasswordProgress(const std::string& log) override;
   void UserModifiedPasswordField() override;
   void UserModifiedNonPasswordField(uint32_t renderer_id,
                                     const base::string16& value) override;
+  void ShowPasswordSuggestions(base::i18n::TextDirection text_direction,
+                               const base::string16& typed_username,
+                               int options,
+                               const gfx::RectF& bounds) override;
+  void ShowTouchToFill() override;
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;
   void FocusedInputChanged(

@@ -13,11 +13,8 @@ Polymer({
   is: 'settings-personalization-page',
 
   properties: {
-    /**
-     * Dictionary defining page visibility.
-     * @type {!PersonalizationPageVisibility}
-     */
-    pageVisibility: Object,
+    /** @private */
+    showWallpaperRow_: {type: Boolean, value: true},
 
     /** @private */
     isWallpaperPolicyControlled_: {type: Boolean, value: true},
@@ -47,8 +44,7 @@ Polymer({
   ready: function() {
     this.browserProxy_.isWallpaperSettingVisible().then(
         isWallpaperSettingVisible => {
-          assert(this.pageVisibility);
-          this.pageVisibility.setWallpaper = isWallpaperSettingVisible;
+          this.showWallpaperRow_ = isWallpaperSettingVisible;
         });
     this.browserProxy_.isWallpaperPolicyControlled().then(
         isPolicyControlled => {

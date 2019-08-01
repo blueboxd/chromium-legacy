@@ -14,7 +14,6 @@
 
 namespace net {
 class HttpRequestHeaders;
-class URLRequest;
 }
 
 namespace network {
@@ -28,7 +27,6 @@ namespace android_webview {
 // The fields are ultimately guided by android.webkit.WebResourceRequest:
 // https://developer.android.com/reference/android/webkit/WebResourceRequest.html
 struct AwWebResourceRequest final {
-  explicit AwWebResourceRequest(const net::URLRequest& request);
   explicit AwWebResourceRequest(const network::ResourceRequest& request);
   AwWebResourceRequest(const std::string& in_url,
                        const std::string& in_method,

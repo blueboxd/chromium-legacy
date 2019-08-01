@@ -52,6 +52,7 @@ js2gtest("browser_tests_js_webui") {
     "cr_elements/cr_elements_browsertest.js",
     "find_shortcut_behavior_browsertest.js",
     "history/history_browsertest.js",
+    "js/webui_resource_module_async_browsertest.js",
     "js2gtest_browsertest.js",
     "load_time_data_browsertest.js",
     "management/a11y/management_a11y_test.js",
@@ -81,10 +82,6 @@ js2gtest("browser_tests_js_webui") {
     "text_defaults_browsertest.js",
     "webui_resource_async_browsertest.js",
   ]
-
-  if (!optimize_webui) {
-    sources += [ "js/webui_resource_module_async_browsertest.js" ]
-  }
 
   extra_js_files = [
     "test_browser_proxy.js",

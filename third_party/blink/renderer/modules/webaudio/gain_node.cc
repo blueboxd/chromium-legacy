@@ -177,4 +177,14 @@ void GainNode::Trace(blink::Visitor* visitor) {
   AudioNode::Trace(visitor);
 }
 
+void GainNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+  GraphTracer().DidCreateAudioParam(gain_);
+}
+
+void GainNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioParam(gain_);
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

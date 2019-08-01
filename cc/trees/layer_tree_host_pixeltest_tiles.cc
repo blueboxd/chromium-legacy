@@ -238,7 +238,9 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidationMultiThread, FullRaster) {
 using LayerTreeHostTilesTestPartialInvalidationLowBitDepth =
     LayerTreeHostTilesTestPartialInvalidation;
 
-// TODO(crbug.com/963446): Enable these tests for Vulkan.
+// This test doesn't work on Vulkan because on our hardware we can't render to
+// RGBA4444 format using either SwiftShader or native Vulkan. See
+// crbug.com/987278 for details
 INSTANTIATE_TEST_SUITE_P(
     ,
     LayerTreeHostTilesTestPartialInvalidationLowBitDepth,

@@ -168,4 +168,14 @@ AudioParam* ConstantSourceNode::offset() {
   return offset_;
 }
 
+void ConstantSourceNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+  GraphTracer().DidCreateAudioParam(offset_);
+}
+
+void ConstantSourceNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioParam(offset_);
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

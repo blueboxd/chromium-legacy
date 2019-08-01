@@ -129,6 +129,8 @@ class ImageBitmapFactories final
     ~ImageBitmapLoader() override;
 
    private:
+    SEQUENCE_CHECKER(sequence_checker_);
+
     enum ImageBitmapRejectionReason {
       kUndecodableImageBitmapRejectionReason,
       kAllocationFailureImageBitmapRejectionReason,
@@ -137,11 +139,11 @@ class ImageBitmapFactories final
     void RejectPromise(ImageBitmapRejectionReason);
 
     void ScheduleAsyncImageBitmapDecoding(DOMArrayBuffer*);
-    void DecodeImageOnDecoderThread(
-        scoped_refptr<base::SingleThreadTaskRunner>,
-        DOMArrayBuffer*,
-        const String& premultiply_alpha_option,
-        const String& color_space_conversion_option);
+    void DecodeImageOnDecoderThread(scoped_refptr<base::SingleThreadTaskRunner>,
+                                    DOMArrayBuffer*,
+                                    const String& premultiply_alpha_option,
+                                    const String& color_space_conversion_option,
+                                    bool scheduled_from_main_thread);
     void ResolvePromiseOnOriginalThread(sk_sp<SkImage>);
 
     // ContextLifecycleObserver

@@ -149,8 +149,8 @@ class FetcherClient {
       : url_request_context_(new TestURLRequestContext()),
         fetcher_(new MockDhcpPacFileAdapterFetcher(
             url_request_context_.get(),
-            base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(),
+            base::CreateSequencedTaskRunner(
+                {base::ThreadPool(), base::MayBlock(),
                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
   void WaitForResult(int expected_error) {
@@ -312,8 +312,8 @@ TEST(DhcpPacFileAdapterFetcher, MockDhcpRealFetch) {
   TestURLRequestContext url_request_context;
   client.fetcher_.reset(new MockDhcpRealFetchPacFileAdapterFetcher(
       &url_request_context,
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(),
+      base::CreateTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})));
   client.fetcher_->configured_url_ = configured_url.spec();
   client.RunTest();

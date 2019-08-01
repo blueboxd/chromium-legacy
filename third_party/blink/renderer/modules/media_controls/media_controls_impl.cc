@@ -29,7 +29,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
@@ -601,9 +600,9 @@ void MediaControlsImpl::InitializeControls() {
 
 void MediaControlsImpl::PopulatePanel() {
   // Clear the panels.
-  panel_->setInnerHTML(StringOrTrustedHTML::FromString(""));
+  panel_->SetInnerHTMLFromString("");
   if (media_button_panel_)
-    media_button_panel_->setInnerHTML(StringOrTrustedHTML::FromString(""));
+    media_button_panel_->SetInnerHTMLFromString("");
 
   Element* button_panel = panel_;
   if (ShouldShowVideoControls()) {

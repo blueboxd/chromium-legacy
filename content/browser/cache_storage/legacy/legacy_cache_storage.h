@@ -15,15 +15,9 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "build/build_config.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
-#include "content/browser/cache_storage/cache_storage_scheduler_types.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_cache.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/application_status_listener.h"
-#endif
 
 namespace base {
 class SequencedTaskRunner;
@@ -125,8 +119,8 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
 
   // The functions below are for tests to verify that the operations run
   // serially.
-  CacheStorageSchedulerId StartAsyncOperationForTesting();
-  void CompleteAsyncOperationForTesting(CacheStorageSchedulerId id);
+  void StartAsyncOperationForTesting();
+  void CompleteAsyncOperationForTesting();
 
   // Removes the manager reference. Called before this storage is deleted by the
   // manager, since it is removed from manager's storage map before deleting.
@@ -265,12 +259,6 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
   bool InitiateScheduledIndexWriteForTest(
       base::OnceCallback<void(bool)> callback);
 
-  void FlushIndexIfDirty();
-
-#if defined(OS_ANDROID)
-  void OnApplicationStateChange(base::android::ApplicationState state);
-#endif
-
   // Whether or not we've loaded the list of cache names into memory.
   bool initialized_;
   bool initializing_;
@@ -307,22 +295,12 @@ class CONTENT_EXPORT LegacyCacheStorage : public CacheStorage,
   // The owner that this CacheStorage is associated with.
   CacheStorageOwner owner_;
 
-  CacheStorageSchedulerId init_id_ = -1;
-
   // The manager that owns this cache storage. Only set to null by
   // RemoveManager() when this cache storage is being deleted.
   LegacyCacheStorageManager* cache_storage_manager_;
 
   base::CancelableOnceClosure index_write_task_;
   size_t handle_ref_count_ = 0;
-
-#if defined(OS_ANDROID)
-  std::unique_ptr<base::android::ApplicationStatusListener>
-      app_status_listener_;
-#endif
-
-  // True if running on android and the app is in the background.
-  bool app_on_background_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<LegacyCacheStorage> weak_factory_{this};

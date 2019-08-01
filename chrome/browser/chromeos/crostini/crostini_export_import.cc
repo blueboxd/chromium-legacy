@@ -103,7 +103,7 @@ void CrostiniExportImport::OpenFileDialog(ExportImportType type,
   ui::SelectFileDialog::FileTypeInfo file_types;
   file_types.allowed_paths =
       ui::SelectFileDialog::FileTypeInfo::NATIVE_OR_DRIVE_PATH;
-  file_types.extensions = {{"tar.gz", "tgz"}};
+  file_types.extensions = {{"tini", "tar.gz", "tgz"}};
 
   switch (type) {
     case ExportImportType::EXPORT:
@@ -113,7 +113,7 @@ void CrostiniExportImport::OpenFileDialog(ExportImportType type,
       base::Time::Now().LocalExplode(&exploded);
       default_path =
           pref_service->GetFilePath(prefs::kDownloadDefaultDirectory)
-              .Append(base::StringPrintf("chromeos-linux-%04d-%02d-%02d.tar.gz",
+              .Append(base::StringPrintf("chromeos-linux-%04d-%02d-%02d.tini",
                                          exploded.year, exploded.month,
                                          exploded.day_of_month));
       break;

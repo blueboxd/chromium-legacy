@@ -328,9 +328,7 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
 
 void PaintLayer::UpdateLayerPositionRecursive() {
   auto old_location = location_without_position_offset_;
-  auto old_offset_for_in_flow_rel_position =
-      rare_data_ ? rare_data_->offset_for_in_flow_rel_position
-                 : PhysicalOffset();
+  auto old_offset_for_in_flow_rel_position = OffsetForInFlowRelPosition();
   UpdateLayerPosition();
 
   if (location_without_position_offset_ != old_location) {
@@ -1525,9 +1523,13 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
     return nullptr;
 
   location += layer->LocationWithoutPositionOffset();
-  if (layer->GetLayoutObject().IsInFlowPositioned())
+  if (layer->GetLayoutObject().IsRelPositioned()) {
+    location += layer->OffsetForInFlowRelPosition();
+  } else if (layer->GetLayoutObject().IsInFlowPositioned()) {
     location += layer->GetLayoutObject().OffsetForInFlowPosition();
+  }
   location -= PhysicalOffset(containing_layer->ScrolledContentOffset());
+
   return containing_layer;
 }
 

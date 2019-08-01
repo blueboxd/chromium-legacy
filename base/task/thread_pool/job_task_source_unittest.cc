@@ -20,8 +20,8 @@ namespace internal {
 TEST(ThreadPoolJobTaskSourceTest, RunTasks) {
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
       DoNothing(), /* num_tasks_to_run */ 2);
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT});
 
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
@@ -55,8 +55,8 @@ TEST(ThreadPoolJobTaskSourceTest, RunTasks) {
 TEST(ThreadPoolJobTaskSourceTest, SkipTask) {
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
       DoNothing(), /* num_tasks_to_run */ 1);
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT});
 
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
@@ -73,8 +73,8 @@ TEST(ThreadPoolJobTaskSourceTest, SkipTask) {
 TEST(ThreadPoolJobTaskSourceTest, RunTasksInParallel) {
   auto job_task = base::MakeRefCounted<test::MockJobTask>(
       DoNothing(), /* num_tasks_to_run */ 2);
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT});
 
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
@@ -115,8 +115,8 @@ TEST(ThreadPoolJobTaskSourceTest, InvalidTakeTask) {
   auto job_task =
       base::MakeRefCounted<test::MockJobTask>(DoNothing(),
                                               /* num_tasks_to_run */ 1);
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT});
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
 
@@ -135,8 +135,8 @@ TEST(ThreadPoolJobTaskSourceTest, InvalidDidProcessTask) {
   auto job_task =
       base::MakeRefCounted<test::MockJobTask>(DoNothing(),
                                               /* num_tasks_to_run */ 1);
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT});
   TaskSource::Transaction task_source_transaction(
       task_source->BeginTransaction());
 

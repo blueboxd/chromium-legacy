@@ -20,7 +20,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/media/stream/user_media_client_impl.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/base/audio_parameters.h"
@@ -446,17 +445,14 @@ void UserMediaProcessor::RequestInfo::OnAudioSourceStarted(
 
 UserMediaProcessor::UserMediaProcessor(
     RenderFrameImpl* render_frame,
-    PeerConnectionDependencyFactory* dependency_factory,
     std::unique_ptr<blink::WebMediaStreamDeviceObserver>
         media_stream_device_observer,
     MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : dependency_factory_(dependency_factory),
-      media_stream_device_observer_(std::move(media_stream_device_observer)),
+    : media_stream_device_observer_(std::move(media_stream_device_observer)),
       media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
       render_frame_(render_frame),
       task_runner_(std::move(task_runner)) {
-  DCHECK(dependency_factory_);
   DCHECK(media_stream_device_observer_.get());
 }
 

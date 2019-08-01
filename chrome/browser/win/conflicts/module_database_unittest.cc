@@ -7,10 +7,12 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/win/conflicts/module_database_observer.h"
 #include "chrome/browser/win/conflicts/module_info.h"
+#include "chrome/services/util_win/util_win_impl.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -42,7 +44,12 @@ class ModuleDatabaseTest : public testing::Test {
             base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         module_database_(std::make_unique<ModuleDatabase>(
-            /* third_party_blocking_policy_enabled = */ false)) {}
+            /* third_party_blocking_policy_enabled = */ false)) {
+    mojo::PendingRemote<chrome::mojom::UtilWin> remote;
+    util_win_impl_.emplace(remote.InitWithNewPipeAndPassReceiver());
+    module_database_->module_inspector_.SetRemoteUtilWinForTesting(
+        std::move(remote));
+  }
 
   ~ModuleDatabaseTest() override {
     module_database_ = nullptr;
@@ -73,6 +80,8 @@ class ModuleDatabaseTest : public testing::Test {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   ScopedTestingLocalState scoped_testing_local_state_;
+
+  base::Optional<UtilWinImpl> util_win_impl_;
 
   std::unique_ptr<ModuleDatabase> module_database_;
 

@@ -242,7 +242,8 @@ void BrowserPolicyConnectorChromeOS::Init(
 
   device_scheduled_update_checker_ =
       std::make_unique<DeviceScheduledUpdateChecker>(
-          chromeos::CrosSettings::Get());
+          chromeos::CrosSettings::Get(),
+          chromeos::NetworkHandler::Get()->network_state_handler());
 
   device_cloud_external_data_policy_handlers_.emplace_back(
       std::make_unique<policy::DeviceNativePrintersExternalDataHandler>(
@@ -283,6 +284,8 @@ void BrowserPolicyConnectorChromeOS::Shutdown() {
 
   if (device_cloud_policy_manager_)
     device_cloud_policy_manager_->RemoveDeviceCloudPolicyManagerObserver(this);
+
+  device_scheduled_update_checker_.reset();
 
   if (hostname_handler_)
     hostname_handler_->Shutdown();

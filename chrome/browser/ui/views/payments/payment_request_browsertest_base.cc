@@ -747,7 +747,7 @@ bool PaymentRequestBrowserTestBase::IsEditorTextfieldInvalid(
       static_cast<ValidatingTextfield*>(delegate_->dialog_view()->GetViewByID(
           EditorViewController::GetInputFieldViewId(type)));
   DCHECK(textfield);
-  return textfield->invalid();
+  return textfield->GetInvalid();
 }
 
 bool PaymentRequestBrowserTestBase::IsEditorComboboxInvalid(

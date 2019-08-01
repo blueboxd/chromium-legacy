@@ -44,6 +44,7 @@ class PannerHandler;
 // defined in the OpenAL specification.
 
 class AudioListener : public ScriptWrappable, public InspectorHelperMixin {
+  USING_GARBAGE_COLLECTED_MIXIN(AudioListener);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -126,6 +127,11 @@ class AudioListener : public ScriptWrappable, public InspectorHelperMixin {
   void CreateAndLoadHRTFDatabaseLoader(float);
   bool IsHRTFDatabaseLoaded();
   void WaitForHRTFDatabaseLoaderThreadCompletion();
+
+  // InspectorHelperMixin: Note that this object belongs to a BaseAudioContext,
+  // so these methods get called by the parent context.
+  void ReportDidCreate() final;
+  void ReportWillBeDestroyed() final;
 
   void Trace(blink::Visitor*) override;
 

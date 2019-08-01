@@ -20,9 +20,9 @@
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/test/begin_frame_args_test.h"
-#include "gpu/ipc/common/mailbox_holder_struct_traits.h"
-#include "gpu/ipc/common/mailbox_struct_traits.h"
-#include "gpu/ipc/common/sync_token_struct_traits.h"
+#include "gpu/ipc/common/mailbox_holder_mojom_traits.h"
+#include "gpu/ipc/common/mailbox_mojom_traits.h"
+#include "gpu/ipc/common/sync_token_mojom_traits.h"
 #include "ipc/ipc_message_utils.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -640,6 +640,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const float top_bar_shown_ratio(1.0f);
   const base::TimeTicks local_surface_id_allocation_time =
       base::TimeTicks::Now();
+  const gfx::Rect mirror_rect(10, 10, 50, 50);
 
 #if defined(OS_ANDROID)
   const float max_page_scale_factor = 4.6f;
@@ -677,6 +678,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.top_controls_height = top_bar_height;
   input.top_controls_shown_ratio = top_bar_shown_ratio;
   input.local_surface_id_allocation_time = local_surface_id_allocation_time;
+  input.mirror_rect = mirror_rect;
 
 #if defined(OS_ANDROID)
   input.max_page_scale_factor = max_page_scale_factor;
@@ -717,6 +719,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
   EXPECT_EQ(local_surface_id_allocation_time,
             output.local_surface_id_allocation_time);
+  EXPECT_EQ(mirror_rect, output.mirror_rect);
 
 #if defined(OS_ANDROID)
   EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);

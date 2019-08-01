@@ -9,7 +9,7 @@
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
 #include "ppapi/c/private/ppb_pdf.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/system/sys_info.h"
@@ -76,8 +76,10 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   PP_PrivateAccessibilityPageInfo page_info;
   std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
   std::vector<PP_PrivateAccessibilityCharInfo> chars;
-  ASSERT_TRUE(
-      GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs, &chars));
+  std::vector<PP_PrivateAccessibilityLinkInfo> links;
+  std::vector<PP_PrivateAccessibilityImageInfo> images;
+  ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
+                                   &chars, &links, &images));
   EXPECT_EQ(0u, page_info.page_index);
   EXPECT_EQ(5, page_info.bounds.point.x);
   EXPECT_EQ(3, page_info.bounds.point.y);
@@ -85,6 +87,10 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   EXPECT_EQ(266, page_info.bounds.size.height);
   EXPECT_EQ(text_runs.size(), page_info.text_run_count);
   EXPECT_EQ(chars.size(), page_info.char_count);
+  // TODO(crbug.com/981448): Test the contents of |links| and |images| when
+  // populated.
+  EXPECT_EQ(links.size(), page_info.link_count);
+  EXPECT_EQ(images.size(), page_info.image_count);
 
 #if defined(OS_CHROMEOS)
   bool is_chromeos = base::SysInfo::IsRunningOnChromeOS();

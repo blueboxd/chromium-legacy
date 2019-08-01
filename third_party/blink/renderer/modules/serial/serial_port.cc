@@ -17,6 +17,10 @@
 namespace blink {
 
 namespace {
+const char kResourcesExhaustedReadBuffer[] =
+    "Resources exhausted allocating read buffer.";
+const char kResourcesExhaustedWriteBuffer[] =
+    "Resources exhausted allocation write buffer.";
 const char kOpenError[] = "Failed to open serial port.";
 const char kUnexpectedCloseError[] = "The port closed unexpectedly.";
 const int kMaxBufferSize = 16 * 1024 * 1024; /* 16 MiB */
@@ -122,7 +126,7 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kQuotaExceededError,
-                          "Resources exhausted allocating read buffer."));
+                          kResourcesExhaustedReadBuffer));
   }
 
   // Pipe handle pair for the WritableStream.
@@ -132,7 +136,7 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kQuotaExceededError,
-                          "Resources exhausted allocating read buffer."));
+                          kResourcesExhaustedWriteBuffer));
   }
 
   device::mojom::blink::SerialPortClientPtr client_ptr;
@@ -153,37 +157,54 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
   return open_resolver_->Promise();
 }
 
-void SerialPort::clearReadError(ScriptState* script_state,
-                                ExceptionState& exception_state) {
-  if (!port_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Port is not open.");
-    return;
-  }
+ReadableStream* SerialPort::readable(ScriptState* script_state,
+                                     ExceptionState& exception_state) {
+  if (readable_)
+    return readable_;
 
-  if (underlying_source_) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "No error to clear.");
-    return;
-  }
+  if (!port_ || open_resolver_)
+    return nullptr;
 
   mojo::ScopedDataPipeConsumerHandle readable_pipe;
   mojo::ScopedDataPipeProducerHandle readable_pipe_producer;
   if (!CreateDataPipe(&readable_pipe_producer, &readable_pipe)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kQuotaExceededError,
-        "Resources exhausted allocating read buffer.");
-    return;
+    exception_state.ThrowDOMException(DOMExceptionCode::kQuotaExceededError,
+                                      kResourcesExhaustedReadBuffer);
+    return nullptr;
   }
 
   port_->ClearReadError(std::move(readable_pipe_producer));
   InitializeReadableStream(script_state, std::move(readable_pipe));
+  return readable_;
+}
+
+WritableStream* SerialPort::writable(ScriptState* script_state,
+                                     ExceptionState& exception_state) {
+  if (writable_)
+    return writable_;
+
+  if (!port_ || open_resolver_)
+    return nullptr;
+
+  mojo::ScopedDataPipeProducerHandle writable_pipe;
+  mojo::ScopedDataPipeConsumerHandle writable_pipe_consumer;
+  if (!CreateDataPipe(&writable_pipe, &writable_pipe_consumer)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kQuotaExceededError,
+                                      kResourcesExhaustedWriteBuffer);
+    return nullptr;
+  }
+
+  port_->ClearSendError(std::move(writable_pipe_consumer));
+  InitializeWritableStream(script_state, std::move(writable_pipe));
+  return writable_;
 }
 
 void SerialPort::close() {
   if (underlying_source_) {
     // The ReadableStream will report "done" when the data pipe is closed.
     underlying_source_->ExpectClose();
+    underlying_source_ = nullptr;
+    readable_ = nullptr;
   }
   if (underlying_sink_) {
     // TODO(crbug.com/893334): Rather than triggering an error on the
@@ -191,8 +212,12 @@ void SerialPort::close() {
     // is locked.
     underlying_sink_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kInvalidStateError, "The port has been closed."));
+    underlying_sink_ = nullptr;
+    writable_ = nullptr;
   }
-  ContextDestroyed();
+  port_.reset();
+  if (client_binding_.is_bound())
+    client_binding_.Unbind();
 }
 
 void SerialPort::UnderlyingSourceClosed() {
@@ -208,12 +233,6 @@ void SerialPort::UnderlyingSinkClosed() {
 void SerialPort::ContextDestroyed() {
   // Release connection-related resources as quickly as possible.
   port_.reset();
-  if (client_binding_.is_bound())
-    client_binding_.Unbind();
-  readable_ = nullptr;
-  underlying_source_ = nullptr;
-  writable_ = nullptr;
-  underlying_sink_ = nullptr;
 }
 
 void SerialPort::Trace(Visitor* visitor) {
@@ -266,6 +285,7 @@ bool SerialPort::CreateDataPipe(mojo::ScopedDataPipeProducerHandle* producer,
 }
 
 void SerialPort::OnConnectionError() {
+  port_.reset();
   if (open_resolver_) {
     open_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNetworkError, kOpenError));
@@ -279,7 +299,8 @@ void SerialPort::OnConnectionError() {
     underlying_sink_->SignalErrorOnClose(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNetworkError, kUnexpectedCloseError));
   }
-  ContextDestroyed();
+  if (client_binding_.is_bound())
+    client_binding_.Unbind();
 }
 
 void SerialPort::OnOpen(

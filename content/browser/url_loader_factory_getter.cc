@@ -132,26 +132,17 @@ void URLLoaderFactoryGetter::Initialize(StoragePartitionImpl* partition) {
   // created on the IO thread, and the request send back to the UI thread.
   // TODO(mmenke):  Is one less thread hop on startup worth the extra complexity
   // of two different pipe creation paths?
-  DCHECK(!pending_network_factory_request_.is_pending());
   network::mojom::URLLoaderFactoryPtr network_factory;
-  pending_network_factory_request_ = MakeRequest(&network_factory);
+  network::mojom::URLLoaderFactoryRequest pending_network_factory_request =
+      MakeRequest(&network_factory);
 
-  // If NetworkService is disabled, HandleFactoryRequests should be called after
-  // NetworkContext in |partition_| is ready.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    HandleFactoryRequests();
+  HandleNetworkFactoryRequestOnUIThread(
+      std::move(pending_network_factory_request), false);
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&URLLoaderFactoryGetter::InitializeOnIOThread, this,
                      network_factory.PassInterface()));
-}
-
-void URLLoaderFactoryGetter::HandleFactoryRequests() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(pending_network_factory_request_.is_pending());
-  HandleNetworkFactoryRequestOnUIThread(
-      std::move(pending_network_factory_request_), false);
 }
 
 void URLLoaderFactoryGetter::OnStoragePartitionDestroyed() {

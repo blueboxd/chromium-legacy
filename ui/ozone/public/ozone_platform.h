@@ -103,8 +103,8 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // Currently used only by the Ozone/Wayland platform.
     bool requires_mojo = false;
 
-    // Determines the type of message pump that should be used for GPU service
-    // and display compositor threads in the GPU process.
+    // Determines the type of message pump that should be used for GPU main
+    // thread.
     base::MessagePumpType message_pump_type_for_gpu =
         base::MessagePumpType::DEFAULT;
   };

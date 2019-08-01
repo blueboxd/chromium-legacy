@@ -50,9 +50,6 @@ constexpr int kMaxIntentPickerLabelButtonWidth = 320;
 constexpr gfx::Insets kSeparatorPadding(16, 0, 16, 0);
 constexpr SkColor kSeparatorColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 
-// UI position wrt the Top Container
-constexpr int kTopContainerMerge = 3;
-
 constexpr char kInvalidLaunchName[] = "";
 
 bool IsKeyboardCodeArrow(ui::KeyboardCode key_code) {
@@ -137,28 +134,10 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
              apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER, false);
     return nullptr;
   }
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   intent_picker_bubble_ = new IntentPickerBubbleView(
-      std::move(app_info), std::move(intent_picker_cb), web_contents,
-      show_stay_in_chrome, show_remember_selection);
+      anchor_view, std::move(app_info), std::move(intent_picker_cb),
+      web_contents, show_stay_in_chrome, show_remember_selection);
   intent_picker_bubble_->set_margins(gfx::Insets());
-
-  if (anchor_view) {
-    intent_picker_bubble_->SetAnchorView(anchor_view);
-    intent_picker_bubble_->SetArrow(views::BubbleBorder::TOP_RIGHT);
-  } else {
-    intent_picker_bubble_->set_parent_window(
-        platform_util::GetViewForWindow(browser_view->GetNativeWindow()));
-    // Using the TopContainerBoundsInScreen Rect to specify an anchor for the
-    // the UI. Rect allow us to set the coordinates(x,y), the width and height
-    // for the new Rectangle.
-    intent_picker_bubble_->SetAnchorRect(
-        gfx::Rect(browser_view->GetTopContainerBoundsInScreen().x(),
-                  browser_view->GetTopContainerBoundsInScreen().y(),
-                  browser_view->GetTopContainerBoundsInScreen().width(),
-                  browser_view->GetTopContainerBoundsInScreen().height() -
-                      kTopContainerMerge));
-  }
   intent_picker_bubble_->Initialize();
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(intent_picker_bubble_);
@@ -183,14 +162,16 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
 
 // static
 std::unique_ptr<IntentPickerBubbleView>
-IntentPickerBubbleView::CreateBubbleView(std::vector<AppInfo> app_info,
-                                         bool show_stay_in_chrome,
-                                         bool show_remember_selection,
-                                         IntentPickerResponse intent_picker_cb,
-                                         content::WebContents* web_contents) {
-  std::unique_ptr<IntentPickerBubbleView> bubble(new IntentPickerBubbleView(
-      std::move(app_info), std::move(intent_picker_cb), web_contents,
-      show_stay_in_chrome, show_remember_selection));
+IntentPickerBubbleView::CreateBubbleViewForTesting(
+    views::View* anchor_view,
+    std::vector<AppInfo> app_info,
+    bool show_stay_in_chrome,
+    bool show_remember_selection,
+    IntentPickerResponse intent_picker_cb,
+    content::WebContents* web_contents) {
+  auto bubble = std::make_unique<IntentPickerBubbleView>(
+      anchor_view, std::move(app_info), std::move(intent_picker_cb),
+      web_contents, show_stay_in_chrome, show_remember_selection);
   bubble->Initialize();
   return bubble;
 }
@@ -261,19 +242,19 @@ base::string16 IntentPickerBubbleView::GetDialogButtonLabel(
 }
 
 IntentPickerBubbleView::IntentPickerBubbleView(
+    views::View* anchor_view,
     std::vector<AppInfo> app_info,
     IntentPickerResponse intent_picker_cb,
     content::WebContents* web_contents,
     bool show_stay_in_chrome,
     bool show_remember_selection)
-    : LocationBarBubbleDelegateView(nullptr /* anchor_view */,
-                                    gfx::Point(),
-                                    web_contents),
+    : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
       intent_picker_cb_(std::move(intent_picker_cb)),
       selected_app_tag_(0),
       app_info_(std::move(app_info)),
       show_stay_in_chrome_(show_stay_in_chrome),
       show_remember_selection_(show_remember_selection) {
+  DCHECK(anchor_view);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);
 }
 

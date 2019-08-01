@@ -97,6 +97,10 @@ class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
 
   void Trace(Visitor*) final;
 
+  // InspectorHelperMixin
+  void ReportDidCreate() final;
+  void ReportWillBeDestroyed() final;
+
  private:
   const Member<MediaStreamSource> source_;
   const Member<MediaStream> stream_;

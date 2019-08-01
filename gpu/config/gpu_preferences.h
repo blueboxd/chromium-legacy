@@ -36,7 +36,7 @@ enum VulkanImplementationName : uint32_t {
 // NOTE: if you modify this structure then you must also modify the
 // following two files to keep them in sync:
 //   src/gpu/ipc/common/gpu_preferences.mojom
-//   src/gpu/ipc/common/gpu_preferences_struct_traits.h
+//   src/gpu/ipc/common/gpu_preferences_mojom_traits.h
 struct GPU_EXPORT GpuPreferences {
  public:
   GpuPreferences();

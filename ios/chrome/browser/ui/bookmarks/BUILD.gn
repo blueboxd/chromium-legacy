@@ -93,6 +93,7 @@ source_set("bookmarks") {
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:presentation",
     "//ios/chrome/browser/ui/table_view:styler",
+    "//ios/chrome/browser/ui/table_view/resources:placeholder_image_tint_color",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/undo",
     "//ios/chrome/browser/url_loading",

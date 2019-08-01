@@ -4,16 +4,6 @@
 
 module ui.mojom;
 
-// Window "show" state.
-enum WindowShowState {
-  kDefault,
-  kNormal,
-  kMinimized,
-  kMaximized,
-  kInactive,
-  kFullscreen,
-};
-
 // Dialog button identifiers used to specify which buttons to show the user.
 enum DialogButton {
   NONE,
@@ -35,35 +25,4 @@ enum ModalType {
 
   // Window is modal to all other windows.
   SYSTEM
-};
-
-// Defines the type of hit-test defined in ui/base/hit_test.h. Not defining
-// the typemap since HitTestCompat enum is not defined in Windows.
-enum HitTest {
-  kNowhere = 0,
-  kBorder,
-  kBottom,
-  kBottomLeft,
-  kBottomRight,
-  kCaption,
-  kClient,
-  kClose,
-  kError,
-  kGrowbox,
-  kHelp,
-  kHScroll,
-  kLeft,
-  kMenu,
-  kMaxButton,
-  kMinButton,
-  kReduce,
-  kRight,
-  kSize,
-  kSysMenu,
-  kTop,
-  kTopLeft,
-  kTopRight,
-  kTransparent,
-  kVScroll,
-  kZoom
 };

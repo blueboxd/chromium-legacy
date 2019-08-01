@@ -282,11 +282,6 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
  protected:
   bool IsDocument() const;
-  // Is in a focused textfield with a related suggestion popup available,
-  // such as for the Autofill feature. The suggestion popup can be either hidden
-  // and available or already visible. This indicates next down arrow key will
-  // navigate within the suggestion popup.
-  bool IsFocusedInputWithSuggestions() const;
   bool IsRichTextField() const;
   bool IsSelectionItemSupported() const;
 

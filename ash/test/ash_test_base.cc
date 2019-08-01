@@ -509,12 +509,12 @@ void AshTestBase::SwapPrimaryDisplay() {
       display_manager()->GetSecondaryDisplay().id());
 }
 
-display::Display AshTestBase::GetPrimaryDisplay() {
+display::Display AshTestBase::GetPrimaryDisplay() const {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(
       Shell::GetPrimaryRootWindow());
 }
 
-display::Display AshTestBase::GetSecondaryDisplay() {
+display::Display AshTestBase::GetSecondaryDisplay() const {
   return ash_test_helper_.GetSecondaryDisplay();
 }
 

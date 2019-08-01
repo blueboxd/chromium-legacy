@@ -19,12 +19,6 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * Dictionary defining page visibility.
-     * @type {!DownloadsPageVisibility}
-     */
-    pageVisibility: Object,
-
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,

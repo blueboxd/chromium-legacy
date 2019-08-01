@@ -310,4 +310,22 @@ AudioParam* DynamicsCompressorNode::release() const {
   return release_;
 }
 
+void DynamicsCompressorNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+  GraphTracer().DidCreateAudioParam(attack_);
+  GraphTracer().DidCreateAudioParam(knee_);
+  GraphTracer().DidCreateAudioParam(ratio_);
+  GraphTracer().DidCreateAudioParam(release_);
+  GraphTracer().DidCreateAudioParam(threshold_);
+}
+
+void DynamicsCompressorNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioParam(attack_);
+  GraphTracer().WillDestroyAudioParam(knee_);
+  GraphTracer().WillDestroyAudioParam(ratio_);
+  GraphTracer().WillDestroyAudioParam(release_);
+  GraphTracer().WillDestroyAudioParam(threshold_);
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

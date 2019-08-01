@@ -312,9 +312,10 @@ TEST_F(LoadingPredictorTest, TestDontPredictOmniboxHints) {
 
 TEST_F(LoadingPredictorPreconnectTest, TestHandleOmniboxHint) {
   const GURL preconnect_suggestion = GURL("http://search.com/kittens");
-  EXPECT_CALL(*mock_preconnect_manager_,
-              StartPreconnectUrl(preconnect_suggestion, true,
-                                 net::NetworkIsolationKey()));
+  EXPECT_CALL(
+      *mock_preconnect_manager_,
+      StartPreconnectUrl(preconnect_suggestion, true,
+                         CreateNetworkIsolationKey(preconnect_suggestion)));
   predictor_->PrepareForPageLoad(preconnect_suggestion, HintOrigin::OMNIBOX,
                                  true);
   // The second suggestion for the same host should be filtered out.

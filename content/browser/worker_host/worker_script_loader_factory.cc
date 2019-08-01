@@ -15,7 +15,6 @@
 #include "content/browser/worker_host/worker_script_loader.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
@@ -36,7 +35,6 @@ WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
       resource_context_getter_(resource_context_getter),
       loader_factory_(std::move(loader_factory)) {
   DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   if (service_worker_handle) {
     service_worker_handle_ = service_worker_handle->AsWeakPtr();

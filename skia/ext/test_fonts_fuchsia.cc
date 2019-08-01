@@ -26,7 +26,7 @@ fuchsia::fonts::ProviderSyncPtr RunTestProviderWithTestFonts(
   // fonts, which must be bundled in the calling process' package.
   fuchsia::sys::LaunchInfo launch_info;
   launch_info.url = "fuchsia-pkg://fuchsia.com/fonts#meta/fonts.cmx";
-  launch_info.arguments.reset(
+  launch_info.arguments.emplace(
       {"--no-default-fonts",
        "--font-manifest=/test_fonts/fuchsia_test_fonts_manifest.json"});
   launch_info.flat_namespace = fuchsia::sys::FlatNamespace::New();

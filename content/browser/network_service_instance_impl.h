@@ -26,6 +26,24 @@ CONTENT_EXPORT void ResetNetworkServiceForTesting();
 CONTENT_EXPORT std::unique_ptr<base::CallbackList<void()>::Subscription>
 RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler);
 
+// Corresponds to the "NetworkServiceAvailability" histogram enumeration type in
+// src/tools/metrics/histograms/enums.xml.
+//
+// DO NOT REORDER OR CHANGE THE MEANING OF THESE VALUES.
+enum class NetworkServiceAvailability {
+  AVAILABLE = 0,
+  NOT_CREATED = 1,
+  NOT_BOUND = 2,
+  ENCOUNTERED_ERROR = 3,
+  NOT_RESPONDING = 4,
+  kMaxValue = NOT_RESPONDING
+};
+
+// TODO(http://crbug.com/934317): Remove these when done debugging renderer
+// hangs.
+CONTENT_EXPORT NetworkServiceAvailability GetNetworkServiceAvailability();
+CONTENT_EXPORT base::TimeDelta GetTimeSinceLastNetworkServiceCrash();
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_NETWORK_SERVICE_INSTANCE_IMPL_H_

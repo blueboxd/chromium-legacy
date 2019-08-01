@@ -10,6 +10,7 @@
 #include <sys/mman.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+
 #include <algorithm>
 #include <memory>
 #include <utility>
@@ -288,8 +289,7 @@ HardwareDisplayControllerInfo::HardwareDisplayControllerInfo(
     size_t index)
     : connector_(std::move(connector)), crtc_(std::move(crtc)), index_(index) {}
 
-HardwareDisplayControllerInfo::~HardwareDisplayControllerInfo() {
-}
+HardwareDisplayControllerInfo::~HardwareDisplayControllerInfo() = default;
 
 std::vector<std::unique_ptr<HardwareDisplayControllerInfo>>
 GetAvailableDisplayControllerInfos(int fd) {
@@ -587,6 +587,7 @@ OverlaySurfaceCandidateList CreateOverlaySurfaceCandidateListFrom(
     osc.format = p.format;
     osc.display_rect = gfx::RectF(p.display_rect);
     osc.crop_rect = p.crop_rect;
+    osc.is_opaque = p.is_opaque;
     osc.plane_z_order = p.plane_z_order;
     osc.overlay_handled = p.is_overlay_candidate;
     candidates.push_back(osc);

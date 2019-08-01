@@ -1113,6 +1113,9 @@ extern const char kTabHoverCardsDescription[];
 extern const char kTabHoverCardImagesName[];
 extern const char kTabHoverCardImagesDescription[];
 
+extern const char kTabOutlinesInLowContrastThemesName[];
+extern const char kTabOutlinesInLowContrastThemesDescription[];
+
 extern const char kTabsInCbdName[];
 extern const char kTabsInCbdDescription[];
 
@@ -1166,6 +1169,9 @@ extern const char kTreatUnsafeDownloadsAsActiveDescription[];
 
 extern const char kTrySupportedChannelLayoutsName[];
 extern const char kTrySupportedChannelLayoutsDescription[];
+
+extern const char kUnexpireFlagsM77Name[];
+extern const char kUnexpireFlagsM77Description[];
 
 extern const char kUnifiedConsentName[];
 extern const char kUnifiedConsentDescription[];
@@ -1908,6 +1914,9 @@ extern const char kEnableGoogleAssistantDspDescription[];
 
 extern const char kEnableGoogleAssistantStereoInputName[];
 extern const char kEnableGoogleAssistantStereoInputDescription[];
+
+extern const char kEnableHeuristicStylusPalmRejectionName[];
+extern const char kEnableHeuristicStylusPalmRejectionDescription[];
 
 extern const char kEnableHomeLauncherName[];
 extern const char kEnableHomeLauncherDescription[];

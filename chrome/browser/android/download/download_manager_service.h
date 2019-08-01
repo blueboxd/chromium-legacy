@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/download/download_manager_utils.h"
 #include "components/download/public/common/all_download_event_notifier.h"
 #include "components/download/public/common/in_progress_download_manager.h"
@@ -38,9 +37,8 @@ class DownloadManagerService
  public:
   static void CreateAutoResumptionHandler();
 
-  static void OnDownloadCanceled(
-      download::DownloadItem* download,
-      DownloadController::DownloadCancelReason reason);
+  static void OnDownloadCanceled(download::DownloadItem* download,
+                                 bool has_no_external_storage);
 
   static DownloadManagerService* GetInstance();
 
@@ -62,6 +60,11 @@ class DownloadManagerService
   // Called to show the download manager, with a choice to focus on prefetched
   // content instead of regular downloads.
   void ShowDownloadManager(bool show_prefetched_content);
+
+  // Called to handle subsequent steps, after a download was determined as a OMA
+  // download type.
+  void HandleOMADownload(download::DownloadItem* download,
+                         int64_t system_download_id);
 
   // Called to open a given download item.
   void OpenDownload(download::DownloadItem* download, int source);

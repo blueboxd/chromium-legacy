@@ -11,7 +11,7 @@
 
 @class CommandDispatcher;
 
-// Coodinator that handles commands to show snackbars.
+// Coordinator that handles commands to show snackbars.
 @interface SnackbarCoordinator : ChromeCoordinator
 
 // The dispatcher used to register commands.

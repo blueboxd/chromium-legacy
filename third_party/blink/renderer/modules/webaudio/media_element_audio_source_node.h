@@ -136,6 +136,10 @@ class MediaElementAudioSourceNode final : public AudioNode,
   void unlock() override
       UNLOCK_FUNCTION(GetMediaElementAudioSourceHandler().GetProcessLock());
 
+  // InspectorHelperMixin
+  void ReportDidCreate() final;
+  void ReportWillBeDestroyed() final;
+
  private:
   Member<HTMLMediaElement> media_element_;
 };

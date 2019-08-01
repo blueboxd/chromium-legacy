@@ -50,12 +50,12 @@ scoped_refptr<base::SequencedTaskRunner> CreateFileTaskRunner() {
   // logged-in user, while the process as a whole runs as SYSTEM. Since user
   // impersonation is per-thread on Windows, we need a dedicated thread to
   // ensure that no other code is accidentally run with the wrong privileges.
-  return base::CreateSingleThreadTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  return base::CreateSingleThreadTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::SingleThreadTaskRunnerThreadMode::DEDICATED);
 #else
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  return base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 #endif
 }
 

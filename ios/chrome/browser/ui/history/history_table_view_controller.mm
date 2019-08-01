@@ -271,9 +271,11 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // If there are no results and no URLs have been loaded, report that no
   // history entries were found.
   if (results.empty() && self.empty && !self.searchInProgress) {
+    UIImage* emptyImage = [[UIImage imageNamed:@"empty_history"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
                                            IDS_HISTORY_NO_RESULTS)
-                                 image:[UIImage imageNamed:@"empty_history"]];
+                                 image:emptyImage];
     [self updateToolbarButtons];
     return;
   }
@@ -676,9 +678,11 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   if ([self.tableViewModel numberOfSections] == 1) {
     self.empty = YES;
     if (!self.searchInProgress) {
+      UIImage* emptyImage = [[UIImage imageNamed:@"empty_history"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
       [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
                                              IDS_HISTORY_NO_RESULTS)
-                                   image:[UIImage imageNamed:@"empty_history"]];
+                                   image:emptyImage];
     }
   }
   [self updateEntriesStatusMessage];

@@ -36,10 +36,6 @@ namespace leveleb {
 class Env;
 }
 
-namespace net {
-class URLRequest;
-}
-
 namespace storage {
 
 class AsyncFileUtil;
@@ -66,8 +62,6 @@ struct FileSystemInfo;
 struct FileSystemRequestInfo {
   // The original request URL (always set).
   const GURL url;
-  // The network request (only set when not using the network service).
-  const net::URLRequest* request = nullptr;
   // The storage domain (always set).
   const std::string storage_domain;
   // Set by the network service for use by callbacks.

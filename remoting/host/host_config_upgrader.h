@@ -10,7 +10,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/values.h"
@@ -48,7 +47,7 @@ class HostConfigUpgrader {
 
   void WriteConfig();
 
-  base::SingleThreadTaskExecutor io_task_executor_{base::MessagePumpType::IO};
+  base::SingleThreadTaskExecutor io_task_executor_{base::MessagePump::Type::IO};
   base::RunLoop run_loop_;
   int exit_code_ = 0;
   base::FilePath config_path_;

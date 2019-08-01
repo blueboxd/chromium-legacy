@@ -44,12 +44,14 @@
 				<integer>0</integer>
 				<integer>1</integer>
 				<integer>2</integer>
+				<integer>3</integer>
 			</array>
 			<key>Titles</key>
 			<array>
 				<string>Default</string>
 				<string>Tip Command Test</string>
 				<string>Tip Move to Dock Promo</string>
+				<string>Tip Review Updated ToS</string>
 			</array>
 		</dict>
 		<dict>

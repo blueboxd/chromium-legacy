@@ -85,11 +85,12 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
                void(const ntp_tiles::NTPTileImpression& impression));
   MOCK_METHOD1(PasteIntoOmnibox, void(const base::string16&));
   MOCK_METHOD1(OnSetCustomBackgroundURL, void(const GURL& url));
-  MOCK_METHOD4(OnSetCustomBackgroundURLWithAttributions,
+  MOCK_METHOD5(OnSetCustomBackgroundInfo,
                void(const GURL& background_url,
                     const std::string& attribution1,
                     const std::string& attribution2,
-                    const GURL& attributionActionUrl));
+                    const GURL& attributionActionUrl,
+                    const std::string& collection_id));
   MOCK_METHOD0(OnSelectLocalBackgroundImage, void());
   MOCK_METHOD2(OnBlocklistSearchSuggestion,
                void(int task_version, long task_id));
@@ -124,7 +125,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD0(ShouldProcessLogSuggestionEventWithValue, bool());
   MOCK_METHOD1(ShouldProcessPasteIntoOmnibox, bool(bool));
   MOCK_METHOD0(ShouldProcessSetCustomBackgroundURL, bool());
-  MOCK_METHOD0(ShouldProcessSetCustomBackgroundURLWithAttributions, bool());
+  MOCK_METHOD0(ShouldProcessSetCustomBackgroundInfo, bool());
   MOCK_METHOD0(ShouldProcessSelectLocalBackgroundImage, bool());
   MOCK_METHOD0(ShouldProcessBlocklistSearchSuggestion, bool());
   MOCK_METHOD0(ShouldProcessBlocklistSearchSuggestionWithHash, bool());
@@ -869,7 +870,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendLocalBackgroundSelectedMsg) {
   GetSearchIPCRouter().SendLocalBackgroundSelected();
 }
 
-TEST_F(SearchIPCRouterTest, ProcessSetCustomBackgroundURLWithAttributionsMsg) {
+TEST_F(SearchIPCRouterTest, ProcessSetCustomBackgroundInfoMsg) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
@@ -877,18 +878,20 @@ TEST_F(SearchIPCRouterTest, ProcessSetCustomBackgroundURLWithAttributionsMsg) {
   std::string attr1("foo");
   std::string attr2("bar");
   GURL action_url("www.bar.com");
-  EXPECT_CALL(*mock_delegate(), OnSetCustomBackgroundURLWithAttributions(
-                                    bg_url, attr1, attr2, action_url))
+  std::string collection_id("Art");
+  EXPECT_CALL(*mock_delegate(),
+              OnSetCustomBackgroundInfo(bg_url, attr1, attr2, action_url,
+                                        collection_id))
       .Times(1);
-  EXPECT_CALL(*policy, ShouldProcessSetCustomBackgroundURLWithAttributions())
+  EXPECT_CALL(*policy, ShouldProcessSetCustomBackgroundInfo())
       .Times(1)
       .WillOnce(Return(true));
 
-  GetSearchIPCRouter().SetCustomBackgroundURLWithAttributions(
-      bg_url, attr1, attr2, action_url);
+  GetSearchIPCRouter().SetCustomBackgroundInfo(bg_url, attr1, attr2, action_url,
+                                               collection_id);
 }
 
-TEST_F(SearchIPCRouterTest, IgnoreSetCustomBackgroundURLWithAttributionsMsg) {
+TEST_F(SearchIPCRouterTest, IgnoreSetCustomBackgroundInfoMsg) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
@@ -896,15 +899,17 @@ TEST_F(SearchIPCRouterTest, IgnoreSetCustomBackgroundURLWithAttributionsMsg) {
   std::string attr1("foo");
   std::string attr2("bar");
   GURL action_url("www.bar.com");
-  EXPECT_CALL(*mock_delegate(), OnSetCustomBackgroundURLWithAttributions(
-                                    bg_url, attr1, attr2, action_url))
+  std::string collection_id("Art");
+  EXPECT_CALL(*mock_delegate(),
+              OnSetCustomBackgroundInfo(bg_url, attr1, attr2, action_url,
+                                        collection_id))
       .Times(0);
-  EXPECT_CALL(*policy, ShouldProcessSetCustomBackgroundURLWithAttributions())
+  EXPECT_CALL(*policy, ShouldProcessSetCustomBackgroundInfo())
       .Times(1)
       .WillOnce(Return(false));
 
-  GetSearchIPCRouter().SetCustomBackgroundURLWithAttributions(
-      bg_url, attr1, attr2, action_url);
+  GetSearchIPCRouter().SetCustomBackgroundInfo(bg_url, attr1, attr2, action_url,
+                                               collection_id);
 }
 
 TEST_F(SearchIPCRouterTest, ProcessSelectLocalBackgroundImageMsg) {

@@ -68,6 +68,9 @@ struct ThemeBackgroundInfo {
   // Url to learn more info about the custom background.
   GURL custom_background_attribution_action_url;
 
+  // Id of the collection being used for "daily refresh".
+  std::string collection_id;
+
   // The theme background color. Always valid.
   SkColor background_color;
 
@@ -105,8 +108,16 @@ struct ThemeBackgroundInfo {
   // The theme name.
   std::string theme_name;
 
-  // The color id for Chrome Colors. Valid only if Chrome Colors is set.
+  // The color id for Chrome Colors. It is -1 if Chrome Colors is not set, 0
+  // when Chrome Colors is set but not from predefined color list, and > 0 if
+  // Chrome Colors is set from predefined color list.
   int color_id;
+
+  // The dark color for Chrome Colors. Valid only if Chrome Colors is set.
+  SkColor color_dark;
+
+  // The light color for Chrome Colors. Valid only if Chrome Colors is set.
+  SkColor color_light;
 };
 
 struct InstantMostVisitedItem {

@@ -57,28 +57,11 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  if (!webgl_context->IsXRCompatible()) {
+  if (session->immersive() && !webgl_context->IsXRCompatible()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
-        "This context is not marked as XR compatible.");
-    return nullptr;
-  }
-
-  bool composition_disabled = initializer->compositionDisabled();
-
-  if (composition_disabled && session->immersive()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Cannot create an XRWebGLLayer with "
-                                      "compositionDisabled for an immersive "
-                                      "XRSession.");
-    return nullptr;
-  }
-
-  if (!composition_disabled && !session->immersive()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "compositionDisabled is required when "
-                                      "creating an XRWebGLLayer for an inline "
-                                      "XRSession.");
+        "WebGL context must be marked as XR compatible in order to "
+        "use with an immersive XRSession");
     return nullptr;
   }
 
@@ -101,7 +84,9 @@ XRWebGLLayer* XRWebGLLayer::Create(
 
   double framebuffer_scale = 1.0;
 
-  if (composition_disabled) {
+  // Inline sessions don't go through the XR compositor, so they don't need to
+  // allocate a separate drawing buffer or expose a framebuffer.
+  if (!session->immersive()) {
     return MakeGarbageCollected<XRWebGLLayer>(session, webgl_context, nullptr,
                                               nullptr, framebuffer_scale,
                                               ignore_depth_values);

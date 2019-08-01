@@ -1851,7 +1851,7 @@
         'mixins': [
             'intel_iris_5100',
             'limited_capacity_bot',
-            'mac_10.14_beta',
+            'mac_10.15_beta',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
@@ -2434,9 +2434,7 @@
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_and_mobile_representative_perf_fyi_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests',
-          # Temporarily disabled due to timeouts causing invalid test results.
-          # TODO(jmadill): Re-enable once timeout is resolved. http://crbug.com/987623
-          # 'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
+          'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
         },
       },
       'Android FYI Release (Nexus 6)': {
@@ -4322,6 +4320,18 @@
   {
     'name': 'tryserver.chromium.android',
     'machines': {
+      'android-kitkat-arm-coverage-dbg': {
+        'mixins': [
+          'code-coverage',
+          'kitkat',
+          'hammerhead',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+          'junit_tests': 'chromium_junit_tests',
+        },
+        'os_type': 'android',
+      },
       'android_blink_rel': {
         'mixins': [
           'kitkat',

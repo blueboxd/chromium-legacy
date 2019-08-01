@@ -19,7 +19,7 @@
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
+#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "url/origin.h"
 
@@ -104,6 +104,10 @@ class CastActivityManager : public CastActivityManagerBase,
   void TerminateSession(
       const MediaRoute::Id& route_id,
       mojom::MediaRouteProvider::TerminateRouteCallback callback);
+
+  bool CreateMediaController(const std::string& route_id,
+                             mojom::MediaControllerRequest media_controller,
+                             mojom::MediaStatusObserverPtr observer);
 
   const MediaRoute* GetRoute(const MediaRoute::Id& route_id) const;
   std::vector<MediaRoute> GetRoutes() const;

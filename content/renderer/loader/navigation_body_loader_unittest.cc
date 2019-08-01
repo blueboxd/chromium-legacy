@@ -48,8 +48,9 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     auto common_params = mojom::CommonNavigationParams::New();
     common_params->referrer = blink::mojom::Referrer::New();
     common_params->navigation_start = base::TimeTicks::Now();
+    auto commit_params = CreateCommitNavigationParams();
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-        *common_params, CommitNavigationParams(), 1 /* request_id */,
+        *common_params, *commit_params, 1 /* request_id */,
         network::ResourceResponseHead(),
         mojo::ScopedDataPipeConsumerHandle() /* response_body */,
         std::move(endpoints),
@@ -316,11 +317,12 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
   common_params->referrer = blink::mojom::Referrer::New();
   common_params->navigation_start = base::TimeTicks::Now();
   common_params->url = GURL("https://example.test");
+  auto commit_params = CreateCommitNavigationParams();
 
   blink::WebNavigationParams navigation_params;
   auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
   NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
-      *common_params, CommitNavigationParams(), 1 /* request_id */, response,
+      *common_params, *commit_params, 1 /* request_id */, response,
       mojo::ScopedDataPipeConsumerHandle() /* response_body */,
       std::move(endpoints),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),

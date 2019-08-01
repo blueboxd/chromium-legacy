@@ -307,7 +307,6 @@ jumbo_static_library("browser") {
     sources += [
       "ui/payments/local_card_migration_bubble_controller.h",
       "ui/payments/local_card_migration_dialog_controller.h",
-      "ui/payments/save_card_bubble_controller.h",
     ]
   }
 

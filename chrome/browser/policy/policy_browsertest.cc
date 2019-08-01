@@ -68,7 +68,6 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_cache_fake.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
@@ -86,8 +85,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
-#include "chrome/browser/translate/chrome_translate_client.h"
-#include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -100,7 +97,7 @@
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
-#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -131,7 +128,6 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/download/public/common/download_item.h"
 #include "components/google/core/common/google_util.h"
-#include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/network_time/network_time_tracker.h"
@@ -157,8 +153,6 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/translate/core/browser/language_state.h"
-#include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/update_client/net/url_loader_post_interceptor.h"
 #include "components/update_client/update_client.h"
@@ -3220,79 +3214,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeletingBrowsingHistoryDisabled) {
       prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistoryBasic));
 }
 
-// TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
-#if !defined(USE_AURA)
-// http://crbug.com/241691 PolicyTest.TranslateEnabled is failing regularly.
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_TranslateEnabled) {
-  // Verifies that translate can be forced enabled or disabled by policy.
-
-  // Get the InfoBarService, and verify that there are no infobars on startup.
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents);
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
-  ASSERT_TRUE(infobar_service);
-  EXPECT_EQ(0u, infobar_service->infobar_count());
-
-  // Force enable the translate feature.
-  PolicyMap policies;
-  policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(true)), nullptr);
-  UpdateProviderPolicy(policies);
-  // Instead of waiting for an infobar, this test waits for
-  // NOTIFICATION_TAB_LANGUAGE_DETERMINED because that's what the
-  // TranslateManager observes. This allows checking that an infobar is NOT
-  // shown below, without polling for infobars for some indeterminate amount of
-  // time.
-  GURL url = ui_test_utils::GetTestUrl(
-      base::FilePath(),
-      base::FilePath(FILE_PATH_LITERAL("translate/fr_test.html")));
-  content::WindowedNotificationObserver language_observer1(
-      chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-      content::NotificationService::AllSources());
-  ui_test_utils::NavigateToURL(browser(), url);
-  language_observer1.Wait();
-
-  // Verify the translation detected for this tab.
-  ChromeTranslateClient* chrome_translate_client =
-      ChromeTranslateClient::FromWebContents(contents);
-  ASSERT_TRUE(chrome_translate_client);
-  translate::LanguageState& language_state =
-      chrome_translate_client->GetLanguageState();
-  EXPECT_EQ("fr", language_state.original_language());
-  EXPECT_TRUE(language_state.page_needs_translation());
-  EXPECT_FALSE(language_state.translation_pending());
-  EXPECT_FALSE(language_state.translation_declined());
-  EXPECT_FALSE(language_state.IsPageTranslated());
-
-  // Verify that the translate infobar showed up.
-  ASSERT_EQ(1u, infobar_service->infobar_count());
-  infobars::InfoBar* infobar = infobar_service->infobar_at(0);
-  translate::TranslateInfoBarDelegate* translate_infobar_delegate =
-      infobar->delegate()->AsTranslateInfoBarDelegate();
-  ASSERT_TRUE(translate_infobar_delegate);
-  EXPECT_EQ(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
-            translate_infobar_delegate->translate_step());
-  EXPECT_EQ("fr", translate_infobar_delegate->original_language_code());
-
-  // Now force disable translate.
-  infobar_service->RemoveInfoBar(infobar);
-  EXPECT_EQ(0u, infobar_service->infobar_count());
-  policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(false)), nullptr);
-  UpdateProviderPolicy(policies);
-  // Navigating to the same URL now doesn't trigger an infobar.
-  content::WindowedNotificationObserver language_observer2(
-      chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
-      content::NotificationService::AllSources());
-  ui_test_utils::NavigateToURL(browser(), url);
-  language_observer2.Wait();
-  EXPECT_EQ(0u, infobar_service->infobar_count());
-}
-#endif  // !defined(USE_AURA)
-
 IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {
   // Checks that URLs can be blacklisted, and that exceptions can be made to
   // the blacklist.
@@ -3634,9 +3555,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
   // Verify that the window is not in fullscreen mode.
   EXPECT_FALSE(window->GetBaseWindow()->IsFullscreen());
 
-  // For PlzNavigate case, we have to wait for the navigation to commit since
-  // the JS object registration is delayed (see
-  // AppWindowCreateFunction::RunAsync).
+  // We have to wait for the navigation to commit since the JS object
+  // registration is delayed (see AppWindowCreateFunction::RunAsync).
   content::WaitForLoadStop(window->web_contents());
 
   // Verify that the window cannot be toggled into fullscreen mode via apps
@@ -6756,7 +6676,7 @@ class PromotionalTabsEnabledPolicyTest
       public testing::WithParamInterface<BooleanPolicy> {
  protected:
   PromotionalTabsEnabledPolicyTest() {
-    scoped_feature_list_.InitWithFeatures({nux::kNuxOnboardingForceEnabled},
+    scoped_feature_list_.InitWithFeatures({welcome::kOnboardingForceEnabled},
                                           {});
   }
   ~PromotionalTabsEnabledPolicyTest() = default;

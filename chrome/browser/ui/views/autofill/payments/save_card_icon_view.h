@@ -8,12 +8,11 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
-class Browser;
 class CommandUpdater;
 
 namespace autofill {
 
-class SaveCardBubbleControllerImpl;
+class SaveCardBubbleController;
 
 // The location bar icon to show the Save Credit Card bubble where the user can
 // choose to save the credit card info to use again later without re-entering
@@ -21,7 +20,6 @@ class SaveCardBubbleControllerImpl;
 class SaveCardIconView : public PageActionIconView {
  public:
   SaveCardIconView(CommandUpdater* command_updater,
-                   Browser* browser,
                    PageActionIconView::Delegate* delegate,
                    const gfx::FontList& font_list);
   ~SaveCardIconView() override;
@@ -39,13 +37,10 @@ class SaveCardIconView : public PageActionIconView {
  private:
   friend class SaveCardBubbleViewsFullFormBrowserTest;
 
-  SaveCardBubbleControllerImpl* GetController() const;
+  SaveCardBubbleController* GetController() const;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
-
-  // May be nullptr.
-  Browser* const browser_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardIconView);
 };

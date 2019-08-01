@@ -33,22 +33,6 @@ int SaveDataToFd(int fd,
 
 }  // namespace
 
-struct AwPrintManager::FrameDispatchHelper {
-  AwPrintManager* manager;
-  content::RenderFrameHost* render_frame_host;
-
-  bool Send(IPC::Message* msg) { return render_frame_host->Send(msg); }
-
-  void OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
-    manager->OnGetDefaultPrintSettings(render_frame_host, reply_msg);
-  }
-
-  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& scripted_params,
-                       IPC::Message* reply_msg) {
-    manager->OnScriptedPrint(render_frame_host, scripted_params, reply_msg);
-  }
-};
-
 // static
 AwPrintManager* AwPrintManager::CreateForWebContents(
     content::WebContents* contents,
@@ -83,23 +67,6 @@ bool AwPrintManager::PrintNow() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* rfh = web_contents()->GetMainFrame();
   return rfh->Send(new PrintMsg_PrintPages(rfh->GetRoutingID()));
-}
-
-bool AwPrintManager::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  FrameDispatchHelper helper = {this, render_frame_host};
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(AwPrintManager, message, render_frame_host)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintDocument, OnDidPrintDocument)
-    IPC_MESSAGE_FORWARD_DELAY_REPLY(
-        PrintHostMsg_GetDefaultPrintSettings, &helper,
-        FrameDispatchHelper::OnGetDefaultPrintSettings)
-    IPC_MESSAGE_FORWARD_DELAY_REPLY(PrintHostMsg_ScriptedPrint, &helper,
-                                    FrameDispatchHelper::OnScriptedPrint)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled || PrintManager::OnMessageReceived(message, render_frame_host);
 }
 
 void AwPrintManager::OnGetDefaultPrintSettings(

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -40,8 +41,7 @@ namespace {
 
 const char kThreadName[] = "VizCompositorThread";
 
-std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread(
-    base::MessagePumpType message_pump_type) {
+std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
   const base::ThreadPriority thread_priority =
       base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)
           ? base::ThreadPriority::DISPLAY
@@ -55,7 +55,11 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread(
   auto thread = std::make_unique<base::Thread>(kThreadName);
 
   base::Thread::Options thread_options;
-  thread_options.message_pump_type = message_pump_type;
+
+#if defined(OS_FUCHSIA)
+  // An IO message pump is needed to use FIDL.
+  thread_options.message_pump_type = base::MessagePumpType::IO;
+#endif
 
 #if defined(OS_MACOSX)
   // Increase the thread priority to get more reliable values in performance
@@ -76,9 +80,8 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread(
 
 }  // namespace
 
-VizCompositorThreadRunner::VizCompositorThreadRunner(
-    base::MessagePumpType message_pump_type)
-    : thread_(CreateAndStartCompositorThread(message_pump_type)),
+VizCompositorThreadRunner::VizCompositorThreadRunner()
+    : thread_(CreateAndStartCompositorThread()),
       task_runner_(thread_->task_runner()) {}
 
 VizCompositorThreadRunner::~VizCompositorThreadRunner() {

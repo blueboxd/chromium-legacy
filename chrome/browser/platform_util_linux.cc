@@ -164,9 +164,9 @@ void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
 
 void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::WithBaseSyncPrimitives(), base::MayBlock(),
+      {base::ThreadPool(), base::WithBaseSyncPrimitives(), base::MayBlock(),
        base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&CheckNautilusIsDefault),
       base::BindOnce(&ShowItem, profile, full_path));

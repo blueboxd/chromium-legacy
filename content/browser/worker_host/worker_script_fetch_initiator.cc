@@ -45,7 +45,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/network_isolation_key.h"
 #include "services/network/loader_util.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
@@ -90,7 +89,6 @@ void WorkerScriptFetchInitiator::Start(
     const std::string& storage_domain,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(storage_partition);
   DCHECK(resource_type == ResourceType::kWorker ||
          resource_type == ResourceType::kSharedWorker)

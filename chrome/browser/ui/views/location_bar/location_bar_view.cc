@@ -269,14 +269,14 @@ void LocationBarView::Init() {
     if (!base::FeatureList::IsEnabled(
             autofill::features::kAutofillEnableToolbarStatusChip)) {
       auto save_credit_card_icon_view =
-          std::make_unique<autofill::SaveCardIconView>(
-              command_updater(), browser_, this, font_list);
+          std::make_unique<autofill::SaveCardIconView>(command_updater(), this,
+                                                       font_list);
       save_credit_card_icon_view_ = save_credit_card_icon_view.get();
       page_action_icons.push_back(std::move(save_credit_card_icon_view));
 
       auto local_card_migration_icon_view =
           std::make_unique<autofill::LocalCardMigrationIconView>(
-              command_updater(), browser_, this, font_list);
+              command_updater(), this, font_list);
       local_card_migration_icon_view_ = local_card_migration_icon_view.get();
       page_action_icons.push_back(std::move(local_card_migration_icon_view));
     }

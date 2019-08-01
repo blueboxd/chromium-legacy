@@ -45,8 +45,9 @@ void SandboxedShortcutParser::FindAndParseChromeShortcutsInFoldersAsync(
     const std::vector<base::FilePath>& folders,
     const FilePathSet& chrome_exe_locations,
     ShortcutsParsingDoneCallback callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::WithBaseSyncPrimitives()},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives()},
       base::BindOnce(
           &SandboxedShortcutParser::FindAndParseChromeShortcutsInFolders,
           base::Unretained(this), folders, chrome_exe_locations,

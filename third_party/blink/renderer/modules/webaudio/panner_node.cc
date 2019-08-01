@@ -893,4 +893,24 @@ void PannerNode::Trace(blink::Visitor* visitor) {
   AudioNode::Trace(visitor);
 }
 
+void PannerNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+  GraphTracer().DidCreateAudioParam(position_x_);
+  GraphTracer().DidCreateAudioParam(position_y_);
+  GraphTracer().DidCreateAudioParam(position_z_);
+  GraphTracer().DidCreateAudioParam(orientation_x_);
+  GraphTracer().DidCreateAudioParam(orientation_y_);
+  GraphTracer().DidCreateAudioParam(orientation_z_);
+}
+
+void PannerNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioParam(position_x_);
+  GraphTracer().WillDestroyAudioParam(position_y_);
+  GraphTracer().WillDestroyAudioParam(position_z_);
+  GraphTracer().WillDestroyAudioParam(orientation_x_);
+  GraphTracer().WillDestroyAudioParam(orientation_y_);
+  GraphTracer().WillDestroyAudioParam(orientation_z_);
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

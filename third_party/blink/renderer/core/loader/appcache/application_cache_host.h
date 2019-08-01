@@ -64,11 +64,10 @@ class CORE_EXPORT ApplicationCacheHost
   // |interface_broker| can be null for workers and |task_runner| is null for
   // kAppCacheForNone.
   explicit ApplicationCacheHost(
-      DocumentLoader* document_loader,
       mojom::blink::DocumentInterfaceBroker* interface_broker,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplicationCacheHost() override;
-  virtual void DetachFromDocumentLoader();
+  virtual void Detach();
 
   struct CacheInfo {
     STACK_ALLOCATED();
@@ -92,9 +91,6 @@ class CORE_EXPORT ApplicationCacheHost
     int64_t padding_sizes_ = 0;
   };
 
-  // Annotate request for ApplicationCache.
-  void WillStartLoading(ResourceRequest&);
-
   mojom::blink::AppCacheStatus GetStatus() const;
   virtual bool Update() { return false; }
   virtual bool SwapCache() { return false; }
@@ -106,7 +102,10 @@ class CORE_EXPORT ApplicationCacheHost
 
   void FillResourceList(Vector<mojom::blink::AppCacheResourceInfo>*);
   CacheInfo ApplicationCacheInfo();
+
   const base::UnguessableToken& GetHostID() const;
+  void SetHostID(const base::UnguessableToken& host_id);
+
   void SelectCacheForSharedWorker(int64_t app_cache_id,
                                   base::OnceClosure completion_callback);
 
@@ -122,20 +121,22 @@ class CORE_EXPORT ApplicationCacheHost
   void SetSubresourceFactory(
       network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override {}
 
+  virtual void WillStartLoading(ResourceRequest&) {}
   virtual void WillStartLoadingMainResource(DocumentLoader* loader,
                                             const KURL& url,
-                                            const String& method);
+                                            const String& method) {}
   virtual void SelectCacheWithoutManifest() {}
   virtual void SelectCacheWithManifest(const KURL& manifest_url) {}
   virtual void DidReceiveResponseForMainResource(const ResourceResponse&) {}
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor*) {}
 
  protected:
-  DocumentLoader* GetDocumentLoader() const { return document_loader_; }
-
   mojo::Remote<mojom::blink::AppCacheHost> backend_host_;
   mojom::blink::AppCacheStatus status_ =
       mojom::blink::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+
+  // Non-empty |host_id_| must be set before calling this function.
+  bool BindBackend();
 
  private:
   virtual void NotifyApplicationCache(mojom::AppCacheEventID,
@@ -147,11 +148,6 @@ class CORE_EXPORT ApplicationCacheHost
                                       const String& error_message) {}
 
   void GetAssociatedCacheInfo(CacheInfo* info);
-  bool IsApplicationCacheEnabled();
-  bool BindBackend();
-
-  // TODO(https://crbug.com/982996): Move this to ApplicationCacheHostForFrame.
-  Member<DocumentLoader> document_loader_;
 
   mojo::Receiver<mojom::blink::AppCacheFrontend> receiver_{this};
   base::UnguessableToken host_id_;

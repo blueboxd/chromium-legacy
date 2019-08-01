@@ -51,7 +51,7 @@ class BlobTransportStrategyTest : public testing::Test {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
 
     bytes_provider_runner_ =
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
     mock_time_ = base::Time::Now();
 
     limits_.max_ipc_memory_size = kTestBlobStorageIPCThresholdBytes;

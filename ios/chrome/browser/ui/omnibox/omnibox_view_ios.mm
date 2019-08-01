@@ -641,6 +641,8 @@ bool OmniboxViewIOS::OnCopy() {
 void OmniboxViewIOS::WillPaste() {
   if (model())
     model()->OnPaste();
+
+  [field_ exitPreEditState];
 }
 
 // static

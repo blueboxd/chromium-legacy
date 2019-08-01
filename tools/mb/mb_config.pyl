@@ -272,6 +272,7 @@
 
       'mac-hermetic-upgrade-rel': 'release_bot',
 
+      'Deterministic Fuchsia (dbg)': 'debug_bot_fuchsia',
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
@@ -633,6 +634,7 @@
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
+      'android-kitkat-arm-coverage-dbg': 'android_debug_static_trybot_java_coverage',
       'android-kitkat-arm-rel': 'android_release_trybot',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
@@ -708,6 +710,7 @@
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-arm-generic-rel': 'cros_chrome_sdk_dchecks_always_on',
       'chromeos-kevin-compile-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-kevin-experimental-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
@@ -1025,6 +1028,10 @@
 
     'android_debug_static_bot_x86': [
       'android', 'debug_static_bot', 'x86',
+    ],
+
+    'android_debug_static_trybot_java_coverage': [
+      'android', 'debug_static_trybot', 'strip_debug_info', 'java_coverage',
     ],
 
     'android_debug_trybot': [
@@ -2108,6 +2115,10 @@
 
     'debug_static_bot': {
       'mixins': ['debug', 'static', 'minimal_symbols', 'goma'],
+    },
+
+    'debug_static_trybot': {
+      'mixins': ['debug_static_bot'],
     },
 
     'debug_trybot': {

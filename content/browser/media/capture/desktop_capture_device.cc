@@ -587,9 +587,9 @@ DesktopCaptureDevice::DesktopCaptureDevice(
     : thread_("desktopCaptureThread") {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // On Windows/OSX the thread must be a UI thread.
-  base::MessagePumpType thread_type = base::MessagePumpType::UI;
+  base::MessagePumpType thread_type = base::MessagePump::Type::UI;
 #else
-  base::MessagePumpType thread_type = base::MessagePumpType::DEFAULT;
+  base::MessagePumpType thread_type = base::MessagePump::Type::DEFAULT;
 #endif
 
   thread_.StartWithOptions(base::Thread::Options(thread_type, 0));

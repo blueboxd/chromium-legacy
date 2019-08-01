@@ -16,7 +16,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/site_instance.h"
 #include "crypto/sha2.h"
 #include "net/url_request/url_request.h"
@@ -127,19 +126,6 @@ class ResourceRequestDetectorClient
 };
 
 }  // namespace
-
-// static
-ResourceRequestInfo ResourceRequestDetector::GetRequestInfo(
-    const net::URLRequest* request) {
-  ResourceRequestInfo info;
-  info.url = request->url();
-  content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(request);
-  info.resource_type = request_info->GetResourceType();
-  content::ResourceRequestInfo::GetRenderFrameForRequest(
-      request, &info.render_process_id, &info.render_frame_id);
-  return info;
-}
 
 ResourceRequestDetector::ResourceRequestDetector(
     scoped_refptr<SafeBrowsingDatabaseManager> database_manager,

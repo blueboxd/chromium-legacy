@@ -25,7 +25,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
@@ -164,17 +163,9 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
     ASSERT_TRUE(https_test_server_.Start());
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionManagementApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(
-        extensions::switches::kWhitelistedExtensionID,
-        "odfeghegfpmohakomgihhcnoboeecemb");
-  }
-
   void RunTest(const char* web_app_path,
                const char* background_script,
-               bool from_webstore,
-               bool whitelisted) {
+               bool from_webstore) {
     static constexpr char kManifest[] =
         R"({
             "name": "Management API Test",
@@ -183,56 +174,19 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
             "background": { "scripts": ["background.js"] },
             "replacement_web_app": "%s"
           })";
-
-    static constexpr char kPem[] =
-        "-----BEGIN PRIVATE KEY-----"
-        "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCs5ycnzJEUSwlN"
-        "U7yAuywl8vro4dXew7Eijdd+gYwHAtaQyKxpeJHy09eusWKTfHEaOdqfqssqPMnl"
-        "XqoC+Tyt/24xM6rw6uSyAV78DRSAl7AxiyemxTh5P2rzaN4ytJayLpZDzwi38zeZ"
-        "QJC4TcSk04bclB2zfLFmMe8W53oxdE8vV6Xa2TPFigR6PV0FcRE40cCPHFhRTDwz"
-        "C04b/qW30Ceix2AeLPT4+qsGroq5kLt7zTgvaA+QToKeZNX41snk1w2u/IhOXG+J"
-        "0jyZnFU1lgnA9ScMW0laA+Ba2WXB5tLPgyRyyABRRaT5oiJCxRLQc+HFnMdUftGK"
-        "D4MKnf+/AgMBAAECggEADJ+/8x7zhMjJwBSaEcgYvBiWi0RZ6i7dkwlKL5lj0Os7"
-        "IU0VkYnVFiaze7TF3sDaPTD2Lmw48zeHAjE8NoVeEdIxiHQeSgLMedaxybNmyNDK"
-        "c4OWfI2vxuKDe4wvlQIscowGOqM2HsAqUg0tw9chwWsUUKyb0owLI8wHieOSv2OA"
-        "w8UlhflqkXLBUc4Mx3iqkIwAyrxQXT/vlA0M8/QvikK/zfeZYZ4f8tg23m3T0fV3"
-        "HC4k/Q09MFyUvURVYNpbPHrL83/ZbaHBniEjy+qBX4POO4xrKhow77tr/znB8bsA"
-        "T3mRwrEnYoIZmkwxlAdOMNxSYcAKZh4jPWOut0VQ0QKBgQDk341ysCaNzRq7nscR"
-        "RzDtpAA+UPcS2vcssXKDRjhsTp31qsUsVsYjTX+O/sv2uyb4HikYiFZOe3iPIfOl"
-        "ni7ZfhYFMMIZFjjP0cjQ7C/+ArxGb96DcTbRf7SNTDOLTtZy1jZSgIRek+2vvcr1"
-        "a/xPUMCxLEZdUPu+AVhKYHKHOQKBgQDBZVr04r4s5/BygRR3NhFgquI8ffdPHZzC"
-        "riEO1X/YOucTs+F+qwTvr25kRozpEjFsZJUibJTDngX9OziatAQdnjt5CtabOXd/"
-        "1rSgUadWEvRrcy/aaouCE1J+1unX6Kk5RHmIsK1YP3wC6JrHmqfnEVq9kaoUubTC"
-        "WHZfgjQGtwKBgF3B0nD8Bh8quVvIlGXYkwuWll7wzfYUaxMM8gsi1fRQVFcSCMm8"
-        "FljZ43pRmH5PdoxH1q/tEeX+oImJ8ASVgz2ncB/aNHkQaF+B4dDsIFDfD/+Ozkls"
-        "NHen5+/GGotj1WefpwsvCIqx8LmAd0cIYIihXP53U6/gf+/7Hw8A6YnJAoGAEbhs"
-        "xiWEkW7LLGLBck7k9ruRsUNFht1KwNfdtZNAfJqhE8AWuFmJQUEM12lTfgOpvanV"
-        "tGrIksgG+nYTsLEv81rNTkD8+wof9fnBYTM6Jvvjo3jReKzsjYWhuHeOw7bQ0quA"
-        "i1LM/1oJzeZsUD/OhLClZNtU/0Mo2enrJsMyay8CgYEApCQ8BDMYewQj2MCM92Vw"
-        "DWDzqQpfaGIG/eDAeEtdicbfdih3zUWfhEVOpnvf7s7nS8bMVpAo9pGW6sT/s8eX"
-        "POGiP9efxb2uHsX06pkAYZm9nddIliWnm0/eDBmSSXPymAZaNYFrex4wxMII20K/"
-        "ZX1nuseC+Lx0yzxa/c+iCWg="
-        "-----END PRIVATE KEY-----";
-
     extensions::TestExtensionDir extension_dir;
     extension_dir.WriteManifest(base::StringPrintf(
         kManifest, https_test_server_.GetURL(web_app_path).spec().c_str()));
     extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
                             background_script);
-
-    base::FilePath crx;
-    if (whitelisted)
-      crx = extension_dir.PackWithPem(kPem);
-    else
-      crx = extension_dir.Pack();
-
     extensions::ResultCatcher catcher;
     if (from_webstore) {
       // |expected_change| is the expected change in the number of installed
       // extensions.
-      ASSERT_TRUE(InstallExtensionFromWebstore(crx, 1 /* expected_change */));
+      ASSERT_TRUE(InstallExtensionFromWebstore(extension_dir.UnpackedPath(),
+                                               1 /* expected_change */));
     } else {
-      ASSERT_TRUE(LoadExtension(crx));
+      ASSERT_TRUE(LoadExtension(extension_dir.UnpackedPath()));
     }
 
     ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -240,16 +194,6 @@ class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
 
   net::EmbeddedTestServer https_test_server_;
 };
-
-IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotWhitelisted) {
-  static constexpr char kBackground[] = R"(
-    chrome.test.assertEq(undefined, chrome.management.installReplacementWebApp);
-    chrome.test.notifyPass();
-  )";
-
-  RunTest("/management/install_replacement_web_app/good_web_app/index.html",
-          kBackground, true /* from_webstore */, false /* whitelisted */);
-}
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotWebstore) {
   static constexpr char kBackground[] = R"(
@@ -260,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotWebstore) {
   });)";
 
   RunTest("/management/install_replacement_web_app/good_web_app/index.html",
-          kBackground, false /* from_webstore */, true /* whitelisted */);
+          kBackground, false /* from_webstore */);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NoGesture) {
@@ -272,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NoGesture) {
   });)";
 
   RunTest("/management/install_replacement_web_app/good_web_app/index.html",
-          kBackground, true /* from_webstore */, true /* whitelisted */);
+          kBackground, true /* from_webstore */);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotInstallableWebApp) {
@@ -286,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotInstallableWebApp) {
          });)";
 
   RunTest("/management/install_replacement_web_app/bad_web_app/index.html",
-          kBackground, true /* from_webstore */, true /* whitelisted */);
+          kBackground, true /* from_webstore */);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
@@ -320,8 +264,7 @@ IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
       web_app::WebAppProviderBase::GetProviderBase(browser()->profile());
   EXPECT_FALSE(provider->registrar().IsInstalled(good_web_app_url));
 
-  RunTest(kGoodWebAppURL, kBackground, true /* from_webstore */,
-          true /* whitelisted */);
+  RunTest(kGoodWebAppURL, kBackground, true /* from_webstore */);
   EXPECT_TRUE(provider->registrar().IsInstalled(good_web_app_url));
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 }

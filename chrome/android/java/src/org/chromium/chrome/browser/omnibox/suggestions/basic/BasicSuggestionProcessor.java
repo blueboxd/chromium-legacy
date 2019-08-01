@@ -266,24 +266,18 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
 
         if (suggestion.getType() == OmniboxSuggestionType.SEARCH_SUGGEST_TAIL) {
             String fillIntoEdit = suggestion.getFillIntoEdit();
-            // Data sanity checks.
-            if (fillIntoEdit.startsWith(userQuery) && fillIntoEdit.endsWith(suggestedQuery)
-                    && fillIntoEdit.length() < userQuery.length() + suggestedQuery.length()) {
-                final String ellipsisPrefix = "\u2026 ";
-                suggestedQuery = ellipsisPrefix + suggestedQuery;
-
-                // Offset the match classifications by the length of the ellipsis prefix to ensure
-                // the highlighting remains correct.
-                for (int i = 0; i < classifications.size(); i++) {
-                    classifications.set(i,
-                            new OmniboxSuggestion.MatchClassification(
-                                    classifications.get(i).offset + ellipsisPrefix.length(),
-                                    classifications.get(i).style));
-                }
-                classifications.add(0,
+            final String ellipsisPrefix = "\u2026 ";
+            suggestedQuery = ellipsisPrefix + suggestedQuery;
+            // Offset the match classifications by the length of the ellipsis prefix to ensure
+            // the highlighting remains correct.
+            for (int i = 0; i < classifications.size(); i++) {
+                classifications.set(i,
                         new OmniboxSuggestion.MatchClassification(
-                                0, MatchClassificationStyle.NONE));
+                                classifications.get(i).offset + ellipsisPrefix.length(),
+                                classifications.get(i).style));
             }
+            classifications.add(
+                    0, new OmniboxSuggestion.MatchClassification(0, MatchClassificationStyle.NONE));
         }
 
         Spannable str = SpannableString.valueOf(suggestedQuery);

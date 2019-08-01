@@ -305,6 +305,20 @@ def AddDeviceOptions(parser):
            'to the specified file.')
 
 
+def AddEmulatorOptions(parser):
+  """Adds emulator-specific options to |parser|."""
+  parser = parser.add_argument_group('emulator arguments')
+
+  parser.add_argument(
+      '--avd-name',
+      help='Run and manage the lifetime of an AVD with the given name.')
+  parser.add_argument(
+      '--emulator-home',
+      type=os.path.realpath,
+      help='Emulator home directory '
+      '(see ANDROID_EMULATOR_HOME: http://bit.ly/2K32oEy)')
+
+
 def AddGTestOptions(parser):
   """Adds gtest options to |parser|."""
 
@@ -877,6 +891,7 @@ def main():
       help='googletest-based C++ tests')
   AddCommonOptions(subp)
   AddDeviceOptions(subp)
+  AddEmulatorOptions(subp)
   AddGTestOptions(subp)
   AddTracingOptions(subp)
   AddCommandLineOptions(subp)
@@ -886,6 +901,7 @@ def main():
       help='InstrumentationTestCase-based Java tests')
   AddCommonOptions(subp)
   AddDeviceOptions(subp)
+  AddEmulatorOptions(subp)
   AddInstrumentationTestOptions(subp)
   AddTracingOptions(subp)
   AddCommandLineOptions(subp)
@@ -901,6 +917,7 @@ def main():
       help='linker tests')
   AddCommonOptions(subp)
   AddDeviceOptions(subp)
+  AddEmulatorOptions(subp)
   AddLinkerTestOptions(subp)
 
   subp = command_parsers.add_parser(
@@ -908,6 +925,7 @@ def main():
       help="tests based on Android's monkey command")
   AddCommonOptions(subp)
   AddDeviceOptions(subp)
+  AddEmulatorOptions(subp)
   AddMonkeyTestOptions(subp)
 
   subp = command_parsers.add_parser(

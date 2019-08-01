@@ -35,6 +35,8 @@ extern const char kTabHoverCardsFeatureParameterName[];
 
 extern const base::Feature kTabHoverCardImages;
 
+extern const base::Feature kTabOutlinesInLowContrastThemes;
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 extern const base::Feature kEnableDbusAndX11StatusIcons;
 #endif

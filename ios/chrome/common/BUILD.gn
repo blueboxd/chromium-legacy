@@ -18,6 +18,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//build:branding_buildflags",
     "//components/version_info",
     "//components/version_info:version_string",
     "//ios/chrome/common/app_group:main_app",

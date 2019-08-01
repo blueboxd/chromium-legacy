@@ -11,7 +11,6 @@
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_navigation_ui_data.h"
 #include "chromecast/browser/cast_network_request_interceptor.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/child_process_host.h"
 #include "net/base/net_errors.h"
 
@@ -64,32 +63,7 @@ int CastNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     net::CompletionOnceCallback callback,
     GURL* new_url) {
-  if (!network_request_interceptor_->IsInitialized())
-    return net::OK;
-
-  // Get session id
-  std::string session_id;
-  content::ResourceRequestInfo* request_info =
-      content::ResourceRequestInfo::ForRequest(request);
-  CastNavigationUIData* nav_data =
-      request_info ? static_cast<CastNavigationUIData*>(
-                         request_info->GetNavigationUIData())
-                   : nullptr;
-  if (nav_data) {
-    session_id = nav_data->session_id();
-  }
-
-  // Get render process PID
-  int render_process_id;
-  int render_frame_id;
-  if (!content::ResourceRequestInfo::GetRenderFrameForRequest(
-          request, &render_process_id, &render_frame_id)) {
-    render_process_id = content::ChildProcessHost::kInvalidUniqueID;
-    render_frame_id = content::ChildProcessHost::kInvalidUniqueID;
-  }
-  return network_request_interceptor_->OnBeforeURLRequest(
-      request, session_id, render_process_id, render_frame_id,
-      std::move(callback), new_url);
+  return net::OK;
 }
 
 int CastNetworkDelegate::OnBeforeStartTransaction(

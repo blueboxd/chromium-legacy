@@ -43,7 +43,6 @@
 
 namespace blink {
 
-class CSSRuleList;
 class CSSValue;
 class CompositorKeyframeValue;
 class Document;
@@ -113,10 +112,10 @@ class CORE_EXPORT StyleResolver final
         kUAAndUserCSSRules | kAuthorCSSRules | kCrossOriginCSSRules,
     kAllCSSRules = kAllButEmptyCSSRules | kEmptyCSSRules,
   };
-  CSSRuleList* CssRulesForElement(
+  RuleIndexList* CssRulesForElement(
       Element*,
       unsigned rules_to_include = kAllButEmptyCSSRules);
-  CSSRuleList* PseudoCSSRulesForElement(
+  RuleIndexList* PseudoCSSRulesForElement(
       Element*,
       PseudoId,
       unsigned rules_to_include = kAllButEmptyCSSRules);

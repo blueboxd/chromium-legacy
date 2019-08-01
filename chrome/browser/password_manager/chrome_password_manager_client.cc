@@ -108,6 +108,7 @@
 #include "chrome/browser/password_manager/password_accessory_controller_impl.h"
 #include "chrome/browser/password_manager/password_generation_controller.h"
 #include "chrome/browser/password_manager/save_password_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
 #include "chrome/browser/ui/android/snackbars/auto_signin_prompt_controller.h"
 #include "components/password_manager/core/browser/credential_cache.h"
@@ -125,6 +126,7 @@ using autofill::mojom::FocusedFieldType;
 using password_manager::BadMessageReason;
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerClientHelper;
+using password_manager::PasswordManagerDriver;
 using password_manager::PasswordManagerMetricsRecorder;
 using password_manager::metrics_util::PasswordType;
 using sessions::SerializedNavigationEntry;
@@ -401,11 +403,28 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
 #endif
 }
 
+void ChromePasswordManagerClient::ShowTouchToFill(
+    PasswordManagerDriver* driver) {
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/957532): Make TouchToFillController simply a member of this
+  // class and make it independent of the ManualFillingController.
+  if (!TouchToFillController::AllowedForWebContents(web_contents()))
+    return;
+
+  TouchToFillController::GetOrCreate(web_contents())
+      ->Show(credential_cache_
+                 .GetCredentialStore(url::Origin::Create(
+                     driver->GetLastCommittedURL().GetOrigin()))
+                 .GetCredentials(),
+             driver->AsWeakPtr());
+#endif
+}
+
 void ChromePasswordManagerClient::GeneratePassword() {
 #if defined(OS_ANDROID)
   PasswordGenerationController* generation_controller =
       PasswordGenerationController::GetIfExisting(web_contents());
-  base::WeakPtr<password_manager::PasswordManagerDriver> driver =
+  base::WeakPtr<PasswordManagerDriver> driver =
       generation_controller->GetActiveFrameDriver();
   if (!driver)
     return;
@@ -747,9 +766,8 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
     return;
 #if defined(OS_ANDROID)
   if (PasswordGenerationController::AllowedForWebContents(web_contents())) {
-    password_manager::PasswordManagerDriver* driver =
-        driver_factory_->GetDriverForFrame(
-            password_generation_driver_bindings_.GetCurrentTargetFrame());
+    PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
+        password_generation_driver_bindings_.GetCurrentTargetFrame());
     DCHECK(driver);
 
     PasswordGenerationController* generation_controller =
@@ -824,9 +842,8 @@ void ChromePasswordManagerClient::PresaveGeneratedPassword(
   if (popup_controller_)
     popup_controller_->UpdatePassword(password_form.password_value);
 
-  password_manager::PasswordManagerDriver* driver =
-      driver_factory_->GetDriverForFrame(
-          password_generation_driver_bindings_.GetCurrentTargetFrame());
+  PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
+      password_generation_driver_bindings_.GetCurrentTargetFrame());
   password_manager_.OnPresaveGeneratedPassword(driver, password_form);
 }
 
@@ -838,9 +855,8 @@ void ChromePasswordManagerClient::PasswordNoLongerGenerated(
           BadMessageReason::CPMD_BAD_ORIGIN_PASSWORD_NO_LONGER_GENERATED))
     return;
 
-  password_manager::PasswordManagerDriver* driver =
-      driver_factory_->GetDriverForFrame(
-          password_generation_driver_bindings_.GetCurrentTargetFrame());
+  PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
+      password_generation_driver_bindings_.GetCurrentTargetFrame());
   password_manager_.OnPasswordNoLongerGenerated(driver, password_form);
 
   PasswordGenerationPopupController* controller = popup_controller_.get();
@@ -1085,7 +1101,7 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
 }
 
 void ChromePasswordManagerClient::FocusedInputChanged(
-    password_manager::PasswordManagerDriver* driver,
+    PasswordManagerDriver* driver,
     autofill::mojom::FocusedFieldType focused_field_type) {
 #if defined(OS_ANDROID)
   ManualFillingController::GetOrCreate(web_contents())

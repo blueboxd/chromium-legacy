@@ -49,9 +49,6 @@ declare_args() {
   # volume streams to a single one.
   is_single_volume = false
 
-  # Set to true to start music apps in headless mode.
-  enable_headless_music_mode = false
-
   # Set to true to keep Android activities alive when they are moved to the
   # background.
   enable_background_activities = false

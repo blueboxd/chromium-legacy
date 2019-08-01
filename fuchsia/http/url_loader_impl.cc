@@ -420,12 +420,13 @@ oldhttp::URLResponse URLLoaderImpl::BuildResponse(int net_error) {
     size_t iter = 0;
     std::string header_name;
     std::string header_value;
+    response.headers.emplace();
     while (response_headers->EnumerateHeaderLines(&iter, &header_name,
                                                   &header_value)) {
       oldhttp::HttpHeader header;
       header.name = header_name;
       header.value = header_value;
-      response.headers.push_back(header);
+      response.headers->push_back(header);
     }
   }
 

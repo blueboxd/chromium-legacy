@@ -562,6 +562,11 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
     NOTREACHED();
   }
 
+  if (is_controller) {
+    description->profiles.push_back("windows-mixed-reality");
+    description->profiles.push_back("touchpad-thumbstick-controller");
+  }
+
   source_state->description = std::move(description);
 
   input_state.source_state = std::move(source_state);

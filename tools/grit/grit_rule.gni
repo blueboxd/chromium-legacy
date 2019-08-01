@@ -224,10 +224,8 @@ if (current_toolchain != host_toolchain) {
   }
 }
 
-# TODO(aberent): Enable for other platforms once the build machines have
-#                Java on them (and hence can run the closure compiler).
 _strip_resource_files = is_android && is_official_build
-_js_minifier = "//third_party/closure_compiler/js_minify.py"
+_js_minifier = "//tools/grit/minify_with_uglify.py"
 
 grit_resource_id_file = "//tools/gritsettings/resource_ids"
 grit_info_script = "//tools/grit/grit_info.py"
@@ -405,12 +403,6 @@ template("grit") {
     }
     if (_strip_resource_files) {
       js_minifier_command = rebase_path(_js_minifier, root_build_dir)
-      js_minifier_command = "$js_minifier_command --closure_args"
-      foreach(closure_arg,
-              common_closure_args + minifying_closure_args +
-                  default_disabled_closure_args) {
-        js_minifier_command = "$js_minifier_command $closure_arg"
-      }
       args += [
         "--js-minifier",
         js_minifier_command,

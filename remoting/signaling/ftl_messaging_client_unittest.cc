@@ -171,7 +171,7 @@ class FtlMessagingClientTest : public testing::Test {
 
 void FtlMessagingClientTest::SetUp() {
   server_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   server_ = std::make_unique<test::GrpcAsyncTestServer>(
       std::make_unique<Messaging::AsyncService>());
   FtlGrpcContext::SetChannelForTesting(server_->CreateInProcessChannel());

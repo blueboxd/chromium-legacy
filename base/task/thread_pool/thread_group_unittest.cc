@@ -564,7 +564,7 @@ TEST_P(ThreadGroupTestAllExecutionModes, NoWorkerEnvironment) {
 TEST_P(ThreadGroupTest, ShouldYieldSingleTask) {
   StartThreadGroup();
 
-  test::CreateTaskRunner(TaskPriority::USER_BLOCKING,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_BLOCKING},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(
           FROM_HERE, BindLambdaForTesting([&]() {
@@ -597,7 +597,7 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSource) {
       }),
       /* num_tasks_to_run */ kMaxTasks);
   scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, TaskTraits());
+      job_task->GetJobTaskSource(FROM_HERE, {ThreadPool()});
 
   auto registered_task_source =
       task_tracker_.WillQueueTaskSource(std::move(task_source));
@@ -643,8 +643,8 @@ TEST_P(ThreadGroupTest, JobTaskSourceUpdatePriority) {
         }
       }),
       /* num_tasks_to_run */ kMaxTasks);
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::BEST_EFFORT);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT});
 
   auto registered_task_source = task_tracker_.WillQueueTaskSource(task_source);
   EXPECT_TRUE(registered_task_source);

@@ -37,7 +37,6 @@ class SearchResultListViewTest;
 class AppListViewDelegate;
 class SearchResult;
 class SearchResultListView;
-class SearchResultActionsView;
 
 // SearchResultView displays a SearchResult.
 class APP_LIST_EXPORT SearchResultView
@@ -54,8 +53,6 @@ class APP_LIST_EXPORT SearchResultView
 
   // Sets/gets SearchResult displayed by this view.
   void OnResultChanged() override;
-
-  bool selected() const { return selected_; }
 
   void SetDisplayIcon(const gfx::ImageSkia& source);
 
@@ -111,6 +108,7 @@ class APP_LIST_EXPORT SearchResultView
 
   // SearchResultActionsViewDelegate overrides:
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
+  void OnSearchResultActionsUnSelected() override;
   bool IsSearchResultHoveredOrSelected() override;
 
   // Invoked when the context menu closes.
@@ -127,12 +125,9 @@ class APP_LIST_EXPORT SearchResultView
   views::ImageView* badge_icon_;    // Owned by views hierarchy.
   std::unique_ptr<gfx::RenderText> title_text_;
   std::unique_ptr<gfx::RenderText> details_text_;
-  SearchResultActionsView* actions_view_;  // Owned by the views hierarchy.
 
   std::unique_ptr<AppListMenuModelAdapter> context_menu_;
 
-  // Whether this view is selected.
-  bool selected_ = false;
   // Whether the removal confirmation dialog is invoked by long press touch.
   bool confirm_remove_by_long_press_ = false;
 

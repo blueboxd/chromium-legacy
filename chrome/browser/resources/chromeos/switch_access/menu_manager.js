@@ -337,7 +337,7 @@ class MenuManager {
     if (actions.length === 0)
       return null;
 
-    actions.push(SAConstants.MenuAction.OPTIONS);
+    actions.push(SAConstants.MenuAction.SETTINGS);
     return actions;
   }
 
@@ -376,8 +376,9 @@ class MenuManager {
       case SAConstants.MenuAction.DICTATION:
         chrome.accessibilityPrivate.toggleDictation();
         break;
-      case SAConstants.MenuAction.OPTIONS:
-        window.switchAccess.showOptionsPage();
+      case SAConstants.MenuAction.SETTINGS:
+        chrome.accessibilityPrivate.openSettingsSubpage(
+            'manageAccessibility/switchAccess');
         break;
       case SAConstants.MenuAction.SCROLL_DOWN:
       case SAConstants.MenuAction.SCROLL_UP:
@@ -415,6 +416,18 @@ class MenuManager {
         break;
       case SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
         this.navigationManager_.moveUpOneLineOfText();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.CUT:
+        this.navigationManager_.cut();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.COPY:
+        this.navigationManager_.copy();
+        exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.PASTE:
+        this.navigationManager_.paste();
         exitAfterAction = false;
         break;
       case SAConstants.MenuAction.SELECT_START:

@@ -32,7 +32,7 @@
 @property(nonatomic, strong) SigninInteractionController* controller;
 
 // The dispatcher to which commands should be sent.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
 // The UIViewController upon which UI should be presented.
 @property(nonatomic, strong) UIViewController* presentingViewController;
@@ -52,7 +52,8 @@
 @implementation SigninInteractionCoordinator
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+                          dispatcher:(id<ApplicationCommands, BrowserCommands>)
+                                         dispatcher {
   self = [super init];
   if (self) {
     DCHECK(browserState);

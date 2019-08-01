@@ -91,8 +91,8 @@ class TwoPhaseUploaderTest : public testing::Test {
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
   std::unique_ptr<network::TestNetworkServiceClient> network_service_client_;
   scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory_;
 };

@@ -241,4 +241,12 @@ void MediaStreamAudioDestinationNode::Trace(Visitor* visitor) {
   AudioBasicInspectorNode::Trace(visitor);
 }
 
+void MediaStreamAudioDestinationNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+}
+
+void MediaStreamAudioDestinationNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

@@ -195,6 +195,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
                   bool key_only,
                   blink::mojom::IDBTaskType task_type,
                   blink::mojom::IDBDatabase::OpenCursorCallback callback,
+                  const url::Origin& origin,
                   base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host);
   void Count(IndexedDBTransaction* transaction,
              int64_t object_store_id,
@@ -271,6 +272,7 @@ class CONTENT_EXPORT IndexedDBDatabase {
   struct OpenCursorOperationParams;
   leveldb::Status OpenCursorOperation(
       std::unique_ptr<OpenCursorOperationParams> params,
+      const url::Origin& origin,
       base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
       IndexedDBTransaction* transaction);
   leveldb::Status CountOperation(

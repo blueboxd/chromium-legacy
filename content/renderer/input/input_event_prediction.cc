@@ -18,14 +18,6 @@ using blink::WebTouchEvent;
 
 namespace content {
 
-namespace {
-
-constexpr uint32_t kPredictEventCount = 3;
-constexpr base::TimeDelta kPredictionInterval =
-    base::TimeDelta::FromMilliseconds(8);
-
-}  // namespace
-
 InputEventPrediction::InputEventPrediction(bool enable_resampling)
     : enable_resampling_(enable_resampling) {
   // When resampling is enabled, set predictor type by resampling flag params;
@@ -67,15 +59,7 @@ void InputEventPrediction::HandleEvents(
       if (enable_resampling_)
         ApplyResampling(frame_time, coalesced_event.EventPointer());
 
-      base::TimeTicks predict_time =
-          coalesced_event.CoalescedEvent(coalesced_size - 1).TimeStamp() +
-          kPredictionInterval;
-
-      for (uint32_t i = 0; i < kPredictEventCount; i++) {
-        if (!AddPredictedEvent(predict_time, coalesced_event))
-          break;
-        predict_time += kPredictionInterval;
-      }
+      AddPredictedEvents(coalesced_event);
       break;
     }
     case WebInputEvent::kTouchScrollStarted:
@@ -177,33 +161,61 @@ void InputEventPrediction::ResetPredictor(const WebInputEvent& event) {
   }
 }
 
-bool InputEventPrediction::AddPredictedEvent(
-    base::TimeTicks predict_time,
+void InputEventPrediction::AddPredictedEvents(
     blink::WebCoalescedInputEvent& coalesced_event) {
-  ui::WebScopedInputEvent predicted_event =
-      ui::WebInputEventTraits::Clone(coalesced_event.Event());
-  bool success = false;
-  if (predicted_event->GetType() == WebInputEvent::kTouchMove) {
-    WebTouchEvent& touch_event = static_cast<WebTouchEvent&>(*predicted_event);
-    success = true;
-    for (unsigned i = 0; i < touch_event.touches_length; ++i) {
-      if (!GetPointerPrediction(predict_time, &touch_event.touches[i]))
-        success = false;
+  base::TimeTicks predict_time = last_event_timestamp_;
+  base::TimeTicks max_prediction_timestamp =
+      last_event_timestamp_ + mouse_predictor_->MaxPredictionTime();
+  bool success = true;
+  while (success) {
+    ui::WebScopedInputEvent predicted_event =
+        ui::WebInputEventTraits::Clone(coalesced_event.Event());
+    success = false;
+    if (predicted_event->GetType() == WebInputEvent::kTouchMove) {
+      WebTouchEvent& touch_event =
+          static_cast<WebTouchEvent&>(*predicted_event);
+      // Average all touch intervals
+      base::TimeDelta touch_time_interval;
+      for (unsigned i = 0; i < touch_event.touches_length; ++i) {
+        touch_time_interval +=
+            GetPredictionTimeInterval(&touch_event.touches[i]);
+      }
+      predict_time += touch_time_interval / touch_event.touches_length;
+      if (predict_time <= max_prediction_timestamp) {
+        success = true;
+        for (unsigned i = 0; i < touch_event.touches_length; ++i)
+          success &=
+              GetPointerPrediction(predict_time, &touch_event.touches[i]);
+      }
+    } else if (predicted_event->GetType() == WebInputEvent::kMouseMove) {
+      WebMouseEvent& mouse_event =
+          static_cast<WebMouseEvent&>(*predicted_event);
+      predict_time += GetPredictionTimeInterval(&mouse_event);
+      success = predict_time <= max_prediction_timestamp &&
+                GetPointerPrediction(predict_time, &mouse_event);
+    } else if (predicted_event->GetType() == WebInputEvent::kPointerMove) {
+      WebPointerEvent& pointer_event =
+          static_cast<WebPointerEvent&>(*predicted_event);
+      predict_time += GetPredictionTimeInterval(&pointer_event);
+      success = predict_time <= max_prediction_timestamp &&
+                GetPointerPrediction(predict_time, &pointer_event);
     }
-  } else if (predicted_event->GetType() == WebInputEvent::kMouseMove) {
-    if (GetPointerPrediction(predict_time,
-                             &static_cast<WebMouseEvent&>(*predicted_event)))
-      success = true;
-  } else if (predicted_event->GetType() == WebInputEvent::kPointerMove) {
-    if (GetPointerPrediction(predict_time,
-                             &static_cast<WebPointerEvent&>(*predicted_event)))
-      success = true;
+    if (success) {
+      predicted_event->SetTimeStamp(predict_time);
+      coalesced_event.AddPredictedEvent(*predicted_event);
+    }
   }
-  if (success) {
-    predicted_event->SetTimeStamp(predict_time);
-    coalesced_event.AddPredictedEvent(*predicted_event);
+}
+
+base::TimeDelta InputEventPrediction::GetPredictionTimeInterval(
+    WebPointerProperties* event) const {
+  if (event->pointer_type != WebPointerProperties::PointerType::kMouse) {
+    auto predictor = pointer_id_predictor_map_.find(event->id);
+    if (predictor != pointer_id_predictor_map_.end()) {
+      return predictor->second->TimeInterval();
+    }
   }
-  return success;
+  return mouse_predictor_->TimeInterval();
 }
 
 void InputEventPrediction::UpdateSinglePointer(

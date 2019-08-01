@@ -131,8 +131,6 @@ namespace content {
 
 namespace {
 
-bool g_sandbox_enabled = true;
-
 media::AudioParameters GetAudioHardwareParams() {
   blink::WebLocalFrame* const web_frame =
       blink::WebLocalFrame::FrameForCurrentContext();
@@ -198,7 +196,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   }
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-  if (g_sandbox_enabled && sandboxEnabled()) {
+  if (sandboxEnabled()) {
 #if defined(OS_MACOSX)
     sandbox_support_.reset(new WebSandboxSupportMac(connector_.get()));
 #else
@@ -560,15 +558,6 @@ RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
 std::unique_ptr<blink::WebRTCCertificateGenerator>
 RendererBlinkPlatformImpl::CreateRTCCertificateGenerator() {
   return std::make_unique<RTCCertificateGenerator>();
-}
-
-//------------------------------------------------------------------------------
-
-// static
-bool RendererBlinkPlatformImpl::SetSandboxEnabledForTesting(bool enable) {
-  bool was_enabled = g_sandbox_enabled;
-  g_sandbox_enabled = enable;
-  return was_enabled;
 }
 
 //------------------------------------------------------------------------------

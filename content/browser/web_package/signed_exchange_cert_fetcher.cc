@@ -26,7 +26,6 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/loader_util.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
@@ -144,8 +143,7 @@ void SignedExchangeCertFetcher::Start() {
   }
   // When NetworkService enabled, data URL is not handled by the passed
   // URLRequestContext's SharedURLLoaderFactory.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      resource_request_->url.SchemeIs(url::kDataScheme)) {
+  if (resource_request_->url.SchemeIs(url::kDataScheme)) {
     shared_url_loader_factory_ =
         base::MakeRefCounted<SingleRequestURLLoaderFactory>(
             base::BindOnce(&SignedExchangeCertFetcher::OnDataURLRequest,

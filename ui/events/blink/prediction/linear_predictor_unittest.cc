@@ -118,5 +118,33 @@ TEST_F(LinearPredictorSecondOrderTest, ConstantPositionAndVelocity) {
   ValidatePredictor(x, y, t, pred_ts, pred_x, pred_y);
 }
 
+// Test time interval in first order
+TEST_F(LinearPredictorFirstOrderTest, TimeInterval) {
+  EXPECT_EQ(predictor_->TimeInterval(), kExpectedDefaultTimeInterval);
+  std::vector<double> x = {10, 20};
+  std::vector<double> y = {5, 25};
+  std::vector<double> t = {17, 33};
+  size_t n = static_cast<size_t>(LinearPredictor::EquationOrder::kFirstOrder);
+  for (size_t i = 0; i < n; i++) {
+    predictor_->Update({gfx::PointF(x[i], y[i]), FromMilliseconds(t[i])});
+  }
+  EXPECT_EQ(predictor_->TimeInterval(),
+            base::TimeDelta::FromMilliseconds(t[1] - t[0]));
+}
+
+// Test time interval in second order
+TEST_F(LinearPredictorSecondOrderTest, TimeInterval) {
+  EXPECT_EQ(predictor_->TimeInterval(), kExpectedDefaultTimeInterval);
+  std::vector<double> x = {0, 10, 20};
+  std::vector<double> y = {0, 5, 25};
+  std::vector<double> t = {0, 17, 33};
+  size_t n = static_cast<size_t>(LinearPredictor::EquationOrder::kSecondOrder);
+  for (size_t i = 0; i < n; i++) {
+    predictor_->Update({gfx::PointF(x[i], y[i]), FromMilliseconds(t[i])});
+  }
+  EXPECT_EQ(predictor_->TimeInterval(),
+            base::TimeDelta::FromMillisecondsD((t[2] - t[0]) / 2));
+}
+
 }  // namespace test
 }  // namespace ui

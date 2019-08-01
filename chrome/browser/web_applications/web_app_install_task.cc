@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -142,17 +143,17 @@ void WebAppInstallTask::InstallWebAppFromInfo(
                                       std::move(callback));
 }
 
-void WebAppInstallTask::InstallWebAppWithOptions(
+void WebAppInstallTask::InstallWebAppWithParams(
     content::WebContents* contents,
-    const ExternalInstallOptions& install_options,
+    const InstallManager::InstallParams& install_params,
+    WebappInstallSource install_source,
     InstallManager::OnceInstallCallback install_callback) {
   CheckInstallPreconditions();
 
   Observe(contents);
   install_callback_ = std::move(install_callback);
-  install_source_ = ConvertExternalInstallSourceToInstallSource(
-      install_options.install_source);
-  install_options_ = install_options;
+  install_source_ = install_source;
+  install_params_ = install_params;
   background_installation_ = true;
 
   data_retriever_->GetWebApplicationInfo(
@@ -245,8 +246,8 @@ void WebAppInstallTask::OnGetWebApplicationInfo(
   }
 
   bool bypass_service_worker_check = false;
-  if (install_options_)
-    bypass_service_worker_check = install_options_->bypass_service_worker_check;
+  if (install_params_)
+    bypass_service_worker_check = install_params_->bypass_service_worker_check;
 
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
       web_contents(), bypass_service_worker_check,
@@ -266,7 +267,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
 
   DCHECK(web_app_info);
 
-  if (install_options_ && install_options_->require_manifest &&
+  if (install_params_ && install_params_->require_manifest &&
       !valid_manifest_for_web_app) {
     LOG(WARNING) << "Did not install " << web_app_info->app_url.spec()
                  << " because it didn't have a manifest for web app";
@@ -285,8 +286,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
       GetValidIconUrlsToDownload(*web_app_info, /*data=*/nullptr);
 
   // A system app should always have a manifest icon.
-  if (install_options_ && install_options_->install_source ==
-                              ExternalInstallSource::kSystemInstalled) {
+  if (install_source_ == WebappInstallSource::SYSTEM_DEFAULT) {
     DCHECK(!manifest.icons.empty());
   }
 
@@ -308,7 +308,7 @@ void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
   // If we have install options, this is not a user-triggered install, and thus
   // cannot be sent to the store.
   if (base::FeatureList::IsEnabled(features::kApkWebAppInstalls) &&
-      for_installable_site == ForInstallableSite::kYes && !install_options_) {
+      for_installable_site == ForInstallableSite::kYes && !install_params_) {
     for (const auto& application : manifest.related_applications) {
       std::string id = base::UTF16ToUTF8(application.id.string());
       if (!base::EqualsASCII(application.platform.string(),
@@ -475,9 +475,8 @@ void WebAppInstallTask::OnDialogCompleted(
 
   InstallFinalizer::FinalizeOptions finalize_options;
   finalize_options.install_source = install_source_;
-  if (install_options_) {
-    finalize_options.force_launch_container =
-        install_options_->launch_container;
+  if (install_params_) {
+    finalize_options.force_launch_container = install_params_->launch_container;
   }
 
   install_finalizer_->FinalizeInstall(
@@ -517,9 +516,9 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
   bool add_to_applications_menu = true;
   bool add_to_desktop = true;
 
-  if (install_options_) {
-    add_to_applications_menu = install_options_->add_to_applications_menu;
-    add_to_desktop = install_options_->add_to_desktop;
+  if (install_params_) {
+    add_to_applications_menu = install_params_->add_to_applications_menu;
+    add_to_desktop = install_params_->add_to_desktop;
   }
 
   auto create_shortcuts_callback = base::BindOnce(
@@ -544,8 +543,8 @@ void WebAppInstallTask::OnShortcutsCreated(
     return;
 
   bool add_to_quick_launch_bar = true;
-  if (install_options_)
-    add_to_quick_launch_bar = install_options_->add_to_quick_launch_bar;
+  if (install_params_)
+    add_to_quick_launch_bar = install_params_->add_to_quick_launch_bar;
 
   if (add_to_quick_launch_bar && install_finalizer_->CanPinAppToShelf())
     install_finalizer_->PinAppToShelf(app_id);

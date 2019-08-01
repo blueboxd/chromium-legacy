@@ -185,10 +185,6 @@ IN_PROC_BROWSER_TEST_P(
   std::tie(std::ignore, test_same_network_isolation_key, worker_type) =
       GetParam();
 
-  // TODO(http://crbug.com/984099): Fix this with network service disabled.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   if (worker_type == WorkerType::kSharedWorker && !SupportsSharedWorker())
     return;
 
@@ -297,10 +293,6 @@ class ServiceWorkerMainScriptRequestNetworkIsolationKeyBrowserTest
 IN_PROC_BROWSER_TEST_P(
     ServiceWorkerMainScriptRequestNetworkIsolationKeyBrowserTest,
     ServiceWorkerMainScriptRequest) {
-  // TODO(http://crbug.com/984099): Fix this with network service disabled.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Discard the old process to clear the in-memory cache.
   CrossProcessNavigation();
 

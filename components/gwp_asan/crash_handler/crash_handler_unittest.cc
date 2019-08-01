@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/no_destructor.h"
+#include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
@@ -42,6 +43,7 @@ constexpr size_t kAllocationSize = 902;
 constexpr int kSuccess = 0;
 constexpr size_t kTotalPages = AllocatorState::kMaxSlots;
 
+#if !defined(OS_ANDROID)
 int HandlerMainAdaptor(int argc, char* argv[]) {
   crashpad::UserStreamDataSources user_stream_data_sources;
   user_stream_data_sources.push_back(
@@ -74,6 +76,7 @@ MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
 
   return 0;
 }
+#endif  // !defined(OS_ANDROID)
 
 // Child process that launches the crashpad handler and then crashes.
 MULTIPROCESS_TEST_MAIN(CrashingProcess) {
@@ -114,9 +117,10 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   base::FilePath metrics_dir(FILE_PATH_LITERAL(""));
   std::map<std::string, std::string> annotations;
   std::vector<std::string> arguments;
-  arguments.push_back("--test-child-process=CrashpadHandler");
 
   crashpad::CrashpadClient* client = new crashpad::CrashpadClient();
+#if !defined(OS_ANDROID)
+  arguments.push_back("--test-child-process=CrashpadHandler");
   bool handler = client->StartHandler(/* handler */ cmd_line->GetProgram(),
                                       /* database */ directory,
                                       /* metrics_dir */ metrics_dir,
@@ -125,6 +129,27 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
                                       /* arguments */ arguments,
                                       /* restartable */ false,
                                       /* asynchronous_start */ false);
+#else
+  // TODO: Once the minSdkVersion is >= Q define a CrashpadHandlerMain() and
+  // use the /system/bin/linker approach instead of using
+  // libchrome_crashpad_handler.so
+  base::FilePath modules;
+  if (!base::PathService::Get(base::DIR_MODULE, &modules)) {
+    LOG(ERROR) << "Failed to read DIR_MODULE";
+    return kSuccess;
+  }
+
+  base::FilePath executable_path =
+      modules.AppendASCII("libchrome_crashpad_handler.so");
+
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string library_path;
+  env->GetVar("LD_LIBRARY_PATH", &library_path);
+  env->SetVar("LD_LIBRARY_PATH", library_path + ":" + modules.value());
+
+  bool handler = client->StartHandlerAtCrash(
+      executable_path, directory, metrics_dir, "", annotations, arguments);
+#endif
   if (!handler) {
     LOG(ERROR) << "Crash handler failed to launch";
     return kSuccess;

@@ -14,6 +14,8 @@
 
 namespace ui {
 
+// ClipboardOzone is not yet shipped in production. It is a work in progress
+// for desktop Linux Wayland support.
 class ClipboardOzone : public Clipboard {
  private:
   friend class Clipboard;

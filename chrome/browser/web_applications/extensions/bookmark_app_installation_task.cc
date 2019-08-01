@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -133,8 +134,13 @@ void BookmarkAppInstallationTask::ContinueWebAppInstall(
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
   DCHECK(provider);
 
-  provider->install_manager().InstallWebAppWithOptions(
-      web_contents, install_options_,
+  auto install_params =
+      web_app::ConvertExternalInstallOptionsToParams(install_options_);
+  auto install_source = web_app::ConvertExternalInstallSourceToInstallSource(
+      install_options_.install_source);
+
+  provider->install_manager().InstallWebAppWithParams(
+      web_contents, install_params, install_source,
       base::BindOnce(&BookmarkAppInstallationTask::OnWebAppInstalled,
                      weak_ptr_factory_.GetWeakPtr(), false /* is_placeholder */,
                      std::move(result_callback)));

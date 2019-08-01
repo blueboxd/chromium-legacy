@@ -99,7 +99,7 @@ void SendTabToSelfBubbleViewImpl::Show(DisplayReason reason) {
   ShowForReason(reason);
 }
 
-const std::vector<std::unique_ptr<SendTabToSelfBubbleDeviceButton>>&
+const std::vector<SendTabToSelfBubbleDeviceButton*>&
 SendTabToSelfBubbleViewImpl::GetDeviceButtonsForTest() {
   return device_buttons_;
 }
@@ -128,7 +128,7 @@ void SendTabToSelfBubbleViewImpl::CreateScrollView() {
 
 void SendTabToSelfBubbleViewImpl::PopulateScrollView(
     const std::vector<TargetDeviceInfo>& devices) {
-  device_buttons_.clear();
+  DCHECK(device_buttons_.empty());
   auto device_list_view = std::make_unique<views::View>();
   device_list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -137,8 +137,8 @@ void SendTabToSelfBubbleViewImpl::PopulateScrollView(
     auto device_button = std::make_unique<SendTabToSelfBubbleDeviceButton>(
         this, device,
         /** button_tag */ tag++);
-    device_buttons_.push_back(std::move(device_button));
-    device_list_view->AddChildView(device_buttons_.back().get());
+    device_buttons_.push_back(device_button.get());
+    device_list_view->AddChildView(std::move(device_button));
   }
   scroll_view_->SetContents(std::move(device_list_view));
 
@@ -150,7 +150,10 @@ void SendTabToSelfBubbleViewImpl::DevicePressed(size_t index) {
   if (!controller_) {
     return;
   }
-  SendTabToSelfBubbleDeviceButton* device_button = device_buttons_[index].get();
+
+  DCHECK_LT(index, device_buttons_.size());
+
+  SendTabToSelfBubbleDeviceButton* device_button = device_buttons_[index];
   controller_->OnDeviceSelected(device_button->device_name(),
                                 device_button->device_guid());
   Hide();

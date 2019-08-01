@@ -220,4 +220,9 @@ void MaximizeIfSnapped(aura::Window* window) {
   }
 }
 
+bool ShouldUseTabletModeGridLayout() {
+  return base::FeatureList::IsEnabled(features::kNewOverviewLayout) &&
+         Shell::Get()->tablet_mode_controller()->InTabletMode();
+}
+
 }  // namespace ash

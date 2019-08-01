@@ -149,11 +149,11 @@ class SearchBox : public content::RenderFrameObserver,
 
   // Updates the NTP custom background preferences, sometimes this includes
   // image attributions.
-  void SetCustomBackgroundURLWithAttributions(
-      const GURL& background_url,
-      const std::string& attribution_line_1,
-      const std::string& attribution_line_2,
-      const GURL& action_url);
+  void SetCustomBackgroundInfo(const GURL& background_url,
+                               const std::string& attribution_line_1,
+                               const std::string& attribution_line_2,
+                               const GURL& action_url,
+                               const std::string& collection_id);
 
   // Let the user select a local file for the NTP background.
   void SelectLocalBackgroundImage();

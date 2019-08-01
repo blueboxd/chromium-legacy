@@ -12,6 +12,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_member.h"
@@ -393,7 +394,7 @@ id<GREYMatcher> BandwidthSettingsButton() {
 // Split here:  Official build vs. Development build.
 // Official builds allow recording and uploading of data, honoring the
 // metrics prefs.  Development builds should never record or upload data.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Official build.
   // The values of the prefs and the wwan vs wifi state should be honored by
   // the services, turning on and off according to the rules laid out above.

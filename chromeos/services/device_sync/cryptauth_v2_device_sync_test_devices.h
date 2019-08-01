@@ -42,7 +42,8 @@ const CryptAuthDevice& GetLocalDeviceForTest();
 const CryptAuthDevice& GetRemoteDeviceNeedsGroupPrivateKeyForTest();
 const CryptAuthDevice& GetRemoteDeviceHasGroupPrivateKeyForTest();
 const CryptAuthDevice& GetTestDeviceWithId(const std::string& id);
-const std::vector<CryptAuthDevice>& GetAllTestDevicesWithoutMetadata();
+const std::vector<CryptAuthDevice>& GetAllTestDevices();
+const std::vector<CryptAuthDevice>& GetAllTestDevicesWithoutRemoteMetadata();
 
 const base::flat_set<std::string>& GetAllTestDeviceIds();
 const base::flat_set<std::string>& GetAllTestDeviceIdsThatNeedGroupPrivateKey();

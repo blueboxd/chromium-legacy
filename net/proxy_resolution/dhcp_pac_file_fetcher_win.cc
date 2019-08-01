@@ -186,9 +186,9 @@ class TaskRunnerWithCap : public base::TaskRunner {
   }
 
   const scoped_refptr<base::TaskRunner> task_runner_ =
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
-           base::TaskPriority::USER_VISIBLE});
+      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+                              base::TaskPriority::USER_VISIBLE});
 
   // Synchronizes access to members below.
   base::Lock lock_;

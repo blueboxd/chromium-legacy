@@ -106,22 +106,19 @@ void DownloadManagerService::CreateAutoResumptionHandler() {
 // static
 void DownloadManagerService::OnDownloadCanceled(
     download::DownloadItem* download,
-    DownloadController::DownloadCancelReason reason) {
+    bool has_no_external_storage) {
   if (download->IsTransient()) {
     LOG(WARNING) << "Transient download should not have user interaction!";
     return;
   }
 
   // Inform the user in Java UI about file writing failures.
-  bool has_no_external_storage =
-      (reason == DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> j_item =
       JNI_DownloadManagerService_CreateJavaDownloadItem(env, download);
   Java_DownloadManagerService_onDownloadItemCanceled(env, j_item,
                                                      has_no_external_storage);
-  DownloadController::RecordDownloadCancelReason(reason);
 }
 
 // static
@@ -260,6 +257,19 @@ void DownloadManagerService::OpenDownload(download::DownloadItem* download,
       JNI_DownloadManagerService_CreateJavaDownloadItem(env, download);
 
   Java_DownloadManagerService_openDownloadItem(env, java_ref_, j_item, source);
+}
+
+void DownloadManagerService::HandleOMADownload(download::DownloadItem* download,
+                                               int64_t system_download_id) {
+  if (java_ref_.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_item =
+      JNI_DownloadManagerService_CreateJavaDownloadItem(env, download);
+
+  Java_DownloadManagerService_handleOMADownload(env, java_ref_, j_item,
+                                                system_download_id);
 }
 
 void DownloadManagerService::OpenDownload(
@@ -408,8 +418,6 @@ void DownloadManagerService::CancelDownload(
     const JavaParamRef<jstring>& jdownload_guid,
     bool is_off_the_record) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
-  DownloadController::RecordDownloadCancelReason(
-      DownloadController::CANCEL_REASON_ACTION_BUTTON);
   if (is_pending_downloads_loaded_ || is_off_the_record)
     CancelDownloadInternal(download_guid, is_off_the_record);
   else
@@ -629,8 +637,6 @@ void DownloadManagerService::OnResumptionFailed(
       FROM_HERE,
       base::BindOnce(&DownloadManagerService::OnResumptionFailedInternal,
                      base::Unretained(this), download_guid));
-  DownloadController::RecordDownloadCancelReason(
-      DownloadController::CANCEL_REASON_NOT_CANCELED);
 }
 
 void DownloadManagerService::OnResumptionFailedInternal(

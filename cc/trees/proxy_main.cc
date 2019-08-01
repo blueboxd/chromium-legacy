@@ -204,7 +204,11 @@ void ProxyMain::BeginMainFrame(
   // may also stop deferring in BeginMainFrame, but maintain the status
   // from this point to keep scroll in sync.
   if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
-    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
+    // Only record a reason of kTimeout if the timeout was set, otherwise
+    // record kNotDeferred, indicating that a timeout was never set.
+    StopDeferringCommits(commits_restart_time_.is_null()
+                             ? PaintHoldingCommitTrigger::kNotDeferred
+                             : PaintHoldingCommitTrigger::kTimeout);
   }
   skip_commit |= defer_commits_;
 
@@ -478,7 +482,7 @@ void ProxyMain::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
   if (!defer_commits_)
     return;
   defer_commits_ = false;
-  UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger", trigger);
+  UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger2", trigger);
   commits_restart_time_ = base::TimeTicks();
   TRACE_EVENT_ASYNC_END0("cc", "ProxyMain::SetDeferCommits", this);
 }

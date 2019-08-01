@@ -107,8 +107,7 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessSelectLocalBackgroundImage() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
-bool SearchIPCRouterPolicyImpl::
-    ShouldProcessSetCustomBackgroundURLWithAttributions() {
+bool SearchIPCRouterPolicyImpl::ShouldProcessSetCustomBackgroundInfo() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 

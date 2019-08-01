@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/policy/task_executor_with_retries.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/power/native_timer.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "third_party/icu/source/i18n/unicode/calendar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -27,7 +28,9 @@ namespace policy {
 class DeviceScheduledUpdateChecker
     : public chromeos::system::TimezoneSettings::Observer {
  public:
-  explicit DeviceScheduledUpdateChecker(chromeos::CrosSettings* cros_settings);
+  DeviceScheduledUpdateChecker(
+      chromeos::CrosSettings* cros_settings,
+      chromeos::NetworkStateHandler* network_state_handler);
   ~DeviceScheduledUpdateChecker() override;
 
   // Frequency at which the update check should occur.

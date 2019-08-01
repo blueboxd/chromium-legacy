@@ -543,7 +543,7 @@ test("gpu_unittests") {
     "ipc/client/command_buffer_proxy_impl_unittest.cc",
     "ipc/common/gpu_memory_buffer_impl_shared_memory_unittest.cc",
     "ipc/common/gpu_memory_buffer_impl_test_template.h",
-    "ipc/common/struct_traits_unittest.cc",
+    "ipc/common/mojom_traits_unittest.cc",
     "ipc/host/shader_disk_cache_unittest.cc",
     "ipc/service/gpu_channel_manager_unittest.cc",
     "ipc/service/gpu_channel_test_common.cc",

@@ -62,7 +62,7 @@ void DecodeImage(
   service_manager::mojom::ConnectorRequest connector_request;
   std::unique_ptr<service_manager::Connector> connector =
       service_manager::Connector::Create(&connector_request);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&BindToBrowserConnector, std::move(connector_request)));
 
@@ -169,7 +169,7 @@ void ImageDecoder::StartWithOptionsImpl(
   // operation happening on a thread which always has a ThreadTaskRunnerHandle.
   // We arbitrarily use the IO thread here to match details of the legacy
   // implementation.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&DecodeImage, std::move(image_data), codec, shrink_to_fit,
                      desired_image_frame_size, callback,

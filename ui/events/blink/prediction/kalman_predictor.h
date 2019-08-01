@@ -38,6 +38,9 @@ class KalmanPredictor : public InputPredictor {
   bool GeneratePrediction(base::TimeTicks predict_time,
                           InputData* result) const override;
 
+  // Return the filtered value of time intervals.
+  base::TimeDelta TimeInterval() const override;
+
  private:
   // The following functions get the predicted values from kalman filters.
   gfx::Vector2dF PredictPosition() const;

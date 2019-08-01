@@ -52,7 +52,8 @@ std::vector<uint8_t> StringToUnsignedVector(base::StringPiece str) {
 class FakeAdditionalHeadersProvider
     : public fuchsia::web::AdditionalHeadersProvider {
  public:
-  FakeAdditionalHeadersProvider(base::fuchsia::ServiceDirectory* directory)
+  explicit FakeAdditionalHeadersProvider(
+      base::fuchsia::ServiceDirectory* directory)
       : binding_(directory, this) {}
   ~FakeAdditionalHeadersProvider() override = default;
 
@@ -73,12 +74,39 @@ class FakeAdditionalHeadersProvider
   DISALLOW_COPY_AND_ASSIGN(FakeAdditionalHeadersProvider);
 };
 
+class FakeApplicationControllerReceiver
+    : public chromium::cast::ApplicationControllerReceiver {
+ public:
+  FakeApplicationControllerReceiver() = default;
+  ~FakeApplicationControllerReceiver() final = default;
+
+  chromium::cast::ApplicationController* controller() {
+    if (!controller_)
+      return nullptr;
+
+    return controller_.get();
+  }
+
+ private:
+  // chromium::cast::ApplicationControllerReceiver implementation.
+  void SetApplicationController(
+      fidl::InterfaceHandle<chromium::cast::ApplicationController> controller)
+      final {
+    controller_ = controller.Bind();
+  }
+
+  chromium::cast::ApplicationControllerPtr controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeApplicationControllerReceiver);
+};
+
 class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
  public:
   FakeComponentState(
       base::StringPiece component_url,
       chromium::cast::ApplicationConfigManager* app_config_manager,
-      chromium::cast::ApiBindings* bindings_manager)
+      chromium::cast::ApiBindings* bindings_manager,
+      bool provide_controller_receiver)
       : ComponentStateBase(component_url),
         app_config_binding_(service_directory(), app_config_manager),
         additional_headers_provider_(
@@ -89,10 +117,19 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
           base::fuchsia::ScopedServiceBinding<chromium::cast::ApiBindings>>(
           service_directory(), bindings_manager);
     }
+
+    if (provide_controller_receiver) {
+      controller_receiver_binding_.emplace(service_directory(),
+                                           &controller_receiver_);
+    }
   }
   ~FakeComponentState() override {
     if (on_delete_)
       std::move(on_delete_).Run();
+  }
+
+  FakeApplicationControllerReceiver* controller_receiver() {
+    return &controller_receiver_;
   }
 
   void set_on_delete(base::OnceClosure on_delete) {
@@ -107,6 +144,10 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
       base::fuchsia::ScopedServiceBinding<chromium::cast::ApiBindings>>
       bindings_manager_binding_;
   std::unique_ptr<FakeAdditionalHeadersProvider> additional_headers_provider_;
+  FakeApplicationControllerReceiver controller_receiver_;
+  base::Optional<base::fuchsia::ScopedServiceBinding<
+      chromium::cast::ApplicationControllerReceiver>>
+      controller_receiver_binding_;
   base::OnceClosure on_delete_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeComponentState);
@@ -194,7 +235,8 @@ class CastRunnerIntegrationTest : public testing::Test {
       base::StringPiece component_url) {
     auto component_state = std::make_unique<FakeComponentState>(
         component_url, &app_config_manager_,
-        (provide_api_bindings_ ? &api_bindings_ : nullptr));
+        (provide_api_bindings_ ? &api_bindings_ : nullptr),
+        provide_controller_receiver_);
     component_state_ = component_state.get();
     return component_state;
   }
@@ -207,6 +249,11 @@ class CastRunnerIntegrationTest : public testing::Test {
   FakeApplicationConfigManager app_config_manager_;
 
   TestApiBindings api_bindings_;
+
+  // If set, publishes a ApplicationControllerReceiver service from the agent.
+  // TODO(crbug.com/953958): Remove this flag and make provisioning of the
+  // receiver service mandatory once CastAgent supports it.
+  bool provide_controller_receiver_ = true;
 
   // If set, publishes an ApiBindings service from the Agent.
   bool provide_api_bindings_ = true;
@@ -374,4 +421,40 @@ TEST_F(CastRunnerIntegrationTest, AdditionalHeadersProvider) {
   EXPECT_EQ(result->GetString(), "Value");
 }
 
+TEST_F(CastRunnerIntegrationTest, ApplicationControllerBound) {
+  const char kCastChannelAppId[] = "00000001";
+  const char kCastChannelAppPath[] = "/defaultresponse";
+  app_config_manager_.AddAppMapping(kCastChannelAppId,
+                                    test_server_.GetURL(kCastChannelAppPath));
+
+  fuchsia::sys::ComponentControllerPtr component_controller =
+      StartCastComponent(base::StringPrintf("cast:%s", kCastChannelAppId));
+
+  // Spin the message loop to handle creation of the component state.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(component_state_);
+  EXPECT_TRUE(component_state_->controller_receiver()->controller());
+}
+
+// Verify that we gracefully handle the interim case where the Agent doesn't
+// publish the ApplicationController service.
+// TODO(crbug.com/953958): Remove this test case once CastAgent provides the
+// service.
+TEST_F(CastRunnerIntegrationTest, ApplicationControllerNotSupported) {
+  const char kCastChannelAppId[] = "00000001";
+  const char kCastChannelAppPath[] = "/defaultresponse";
+
+  provide_controller_receiver_ = false;
+
+  app_config_manager_.AddAppMapping(kCastChannelAppId,
+                                    test_server_.GetURL(kCastChannelAppPath));
+
+  fuchsia::sys::ComponentControllerPtr component_controller =
+      StartCastComponent(base::StringPrintf("cast:%s", kCastChannelAppId));
+
+  // Spin the message loop to handle creation of the component state.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(component_state_);
+  EXPECT_FALSE(component_state_->controller_receiver()->controller());
+}
 }  // namespace castrunner

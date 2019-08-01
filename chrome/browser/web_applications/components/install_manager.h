@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
@@ -26,7 +27,6 @@ namespace web_app {
 enum class InstallResultCode;
 class InstallFinalizer;
 class AppRegistrar;
-struct ExternalInstallOptions;
 
 // TODO(loyso): Rework this interface. Unify the API and merge similar
 // InstallWebAppZZZZ functions.
@@ -87,12 +87,23 @@ class InstallManager {
       WebappInstallSource install_source,
       OnceInstallCallback callback) = 0;
 
+  // These params are a subset of ExternalInstallOptions.
+  struct InstallParams {
+    LaunchContainer launch_container = LaunchContainer::kDefault;
+
+    bool add_to_applications_menu = true;
+    bool add_to_desktop = true;
+    bool add_to_quick_launch_bar = true;
+
+    bool bypass_service_worker_check = false;
+    bool require_manifest = false;
+  };
   // Starts a background web app installation process for a given
   // |web_contents|.
-  virtual void InstallWebAppWithOptions(
-      content::WebContents* web_contents,
-      const ExternalInstallOptions& install_options,
-      OnceInstallCallback callback) = 0;
+  virtual void InstallWebAppWithParams(content::WebContents* web_contents,
+                                       const InstallParams& install_params,
+                                       WebappInstallSource install_source,
+                                       OnceInstallCallback callback) = 0;
 
   // Starts background installation or an update of a web app from the sync
   // system. |web_application_info| contains received sync data. Icons will be

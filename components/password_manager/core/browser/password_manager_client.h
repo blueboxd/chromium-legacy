@@ -140,7 +140,7 @@ class PasswordManagerClient {
   // Informs the embedder that the focus changed to a different input in the
   // same frame (e.g. tabbed from email to password field).
   virtual void FocusedInputChanged(
-      password_manager::PasswordManagerDriver* driver,
+      PasswordManagerDriver* driver,
       autofill::mojom::FocusedFieldType focused_field_type) = 0;
 
   // Informs the embedder of a password forms that the user should choose from.
@@ -151,6 +151,9 @@ class PasswordManagerClient {
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_forms,
       const GURL& origin,
       const CredentialsCallback& callback) = 0;
+
+  // Instructs the client to show the Touch To Fill UI.
+  virtual void ShowTouchToFill(PasswordManagerDriver* driver);
 
   // Informs the embedder that the user has manually requested to generate a
   // password in the focused password field.

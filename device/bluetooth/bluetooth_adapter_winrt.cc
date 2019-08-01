@@ -648,8 +648,9 @@ void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
 
   // Some of the initialization work requires loading libraries and should not
   // be run on the browser main thread.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&BluetoothAdapterWinrt::PerformSlowInitTasks),
       base::BindOnce(&BluetoothAdapterWinrt::CompleteInitAgile,
                      weak_ptr_factory_.GetWeakPtr(), std::move(init_cb)));

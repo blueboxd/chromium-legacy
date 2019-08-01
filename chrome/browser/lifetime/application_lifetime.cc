@@ -260,8 +260,8 @@ void AttemptRestart() {
   // Make sure we don't send stop request to the session manager.
   g_send_stop_request_to_session_manager = false;
   // Run exit process in clean stack.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&ExitIgnoreUnloadHandlers));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ExitIgnoreUnloadHandlers));
 #else
   // Set the flag to restore state after the restart.
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);

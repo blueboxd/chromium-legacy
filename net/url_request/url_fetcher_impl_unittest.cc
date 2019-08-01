@@ -569,7 +569,8 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
 
 // Verifies that a URLFetcher works correctly on a ThreadPool Sequence.
 TEST_F(URLFetcherTest, SequencedTaskTest) {
-  auto sequenced_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
+  auto sequenced_task_runner =
+      base::CreateSequencedTaskRunner({base::ThreadPool()});
 
   // Since we cannot use StartFetchAndWait(), which runs a nested RunLoop owned
   // by the Delegate, in the ThreadPool, this test is split into two Callbacks,

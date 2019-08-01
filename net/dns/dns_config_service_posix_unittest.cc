@@ -206,7 +206,7 @@ TEST(DnsConfigServicePosixTest, DestroyOnDifferentThread) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
 
   scoped_refptr<base::SequencedTaskRunner> runner =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   std::unique_ptr<internal::DnsConfigServicePosix, base::OnTaskRunnerDeleter>
       service(new internal::DnsConfigServicePosix(),
               base::OnTaskRunnerDeleter(runner));

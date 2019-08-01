@@ -3987,8 +3987,9 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
 
     network_service_client.WaitUntilRawResponse(1u);
-    // On these failures the cookie object is not created
-    EXPECT_FALSE(network_service_client.raw_response_cookies()[0].cookie);
+    // On these failures the cookie object is created but not included.
+    EXPECT_TRUE(
+        network_service_client.raw_response_cookies()[0].cookie->IsSecure());
     EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
               network_service_client.raw_response_cookies()[0].status);
   }
@@ -4068,8 +4069,9 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
     delete_run_loop.Run();
     EXPECT_EQ(net::OK, loader_client.completion_status().error_code);
     network_service_client.WaitUntilRawResponse(1u);
-    // On these failures the cookie object is not created
-    EXPECT_FALSE(network_service_client.raw_response_cookies()[0].cookie);
+    // On these failures the cookie object is created but not included.
+    EXPECT_TRUE(
+        network_service_client.raw_response_cookies()[0].cookie->IsSecure());
     EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
               network_service_client.raw_response_cookies()[0].status);
 

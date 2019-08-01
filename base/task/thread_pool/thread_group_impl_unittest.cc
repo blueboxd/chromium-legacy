@@ -310,8 +310,8 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
         test::WaitWithoutBlockingObserver(&threads_continue);
       }),
       /* num_tasks_to_run */ kMaxTasks);
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, TaskPriority::USER_VISIBLE);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool(), TaskPriority::USER_VISIBLE});
 
   auto registered_task_source = task_tracker_.WillQueueTaskSource(task_source);
   ASSERT_TRUE(registered_task_source);
@@ -327,7 +327,7 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
   // Note: This is only true because this test is using a single ThreadGroup.
   //       Under the ThreadPool this wouldn't be racy because BEST_EFFORT tasks
   //       run in an independent ThreadGroup.
-  test::CreateTaskRunner(TaskPriority::BEST_EFFORT,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::BEST_EFFORT},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(
           FROM_HERE, BindLambdaForTesting([&]() {
@@ -338,7 +338,7 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
   EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_BLOCKING));
 
   // Posting a USER_VISIBLE task should cause BEST_EFFORT tasks to yield.
-  test::CreateTaskRunner(TaskPriority::USER_VISIBLE,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_VISIBLE},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    EXPECT_FALSE(
@@ -350,7 +350,7 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
 
   // Posting a USER_BLOCKING task should cause BEST_EFFORT and USER_VISIBLE
   // tasks to yield.
-  test::CreateTaskRunner(TaskPriority::USER_BLOCKING,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_BLOCKING},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    // Once this task got to start, no other task needs to yield.
@@ -1340,7 +1340,7 @@ TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblockedShouldYield) {
 
   // Post a USER_VISIBLE task that can't run since workers are saturated. This
   // should cause BEST_EFFORT tasks to yield.
-  test::CreateTaskRunner(TaskPriority::USER_VISIBLE,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_VISIBLE},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(
           FROM_HERE, BindLambdaForTesting([&]() {
@@ -1350,7 +1350,7 @@ TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblockedShouldYield) {
 
   // Post a USER_BLOCKING task that can't run since workers are saturated. This
   // should cause USER_VISIBLE tasks to yield.
-  test::CreateTaskRunner(TaskPriority::USER_BLOCKING,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_BLOCKING},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    EXPECT_FALSE(

@@ -18,6 +18,9 @@ import org.chromium.net.ThreadStatsUid;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UploadDataSink;
 import org.chromium.net.UrlResponseInfo;
+import org.chromium.net.impl.JavaUrlRequestUtils.CheckedRunnable;
+import org.chromium.net.impl.JavaUrlRequestUtils.DirectPreventingExecutor;
+import org.chromium.net.impl.JavaUrlRequestUtils.State;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,29 +106,6 @@ final class JavaUrlRequest extends UrlRequestBase {
     private String mPendingRedirectUrl;
     private HttpURLConnection mCurrentUrlConnection; // Only accessed on mExecutor.
     private OutputStreamDataSink mOutputStreamDataSink; // Only accessed on mExecutor.
-
-    /**
-     *             /- AWAITING_FOLLOW_REDIRECT <-  REDIRECT_RECEIVED <-\     /- READING <--\
-     *             |                                                   |     |             |
-     *             \                                                   /     \             /
-     * NOT_STARTED --->                   STARTED                       ----> AWAITING_READ --->
-     * COMPLETE
-     */
-    @IntDef({State.NOT_STARTED, State.STARTED, State.REDIRECT_RECEIVED,
-            State.AWAITING_FOLLOW_REDIRECT, State.AWAITING_READ, State.READING, State.ERROR,
-            State.COMPLETE, State.CANCELLED})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface State {
-        int NOT_STARTED = 0;
-        int STARTED = 1;
-        int REDIRECT_RECEIVED = 2;
-        int AWAITING_FOLLOW_REDIRECT = 3;
-        int AWAITING_READ = 4;
-        int READING = 5;
-        int ERROR = 6;
-        int COMPLETE = 7;
-        int CANCELLED = 8;
-    }
 
     // Executor that runs one task at a time on an underlying Executor.
     // NOTE: Do not use to wrap user supplied Executor as lock is held while underlying execute()
@@ -780,8 +760,6 @@ final class JavaUrlRequest extends UrlRequestBase {
         };
     }
 
-    private interface CheckedRunnable { void run() throws Exception; }
-
     @Override
     public void read(final ByteBuffer buffer) {
         Preconditions.checkDirect(buffer);
@@ -1033,55 +1011,5 @@ final class JavaUrlRequest extends UrlRequestBase {
                 }
             }
         });
-    }
-
-    /**
-     * Executor that detects and throws if its mDelegate runs a submitted runnable inline.
-     */
-    static final class DirectPreventingExecutor implements Executor {
-        private final Executor mDelegate;
-
-        DirectPreventingExecutor(Executor delegate) {
-            this.mDelegate = delegate;
-        }
-
-        @Override
-        public void execute(Runnable command) {
-            Thread currentThread = Thread.currentThread();
-            InlineCheckingRunnable runnable = new InlineCheckingRunnable(command, currentThread);
-            mDelegate.execute(runnable);
-            if (runnable.mExecutedInline != null) {
-                throw runnable.mExecutedInline;
-            } else {
-                // It's possible that this method is being called on an executor, and the runnable
-                // that
-                // was just queued will run on this thread after the current runnable returns. By
-                // nulling out the mCallingThread field, the InlineCheckingRunnable's current thread
-                // comparison will not fire.
-                runnable.mCallingThread = null;
-            }
-        }
-
-        private static final class InlineCheckingRunnable implements Runnable {
-            private final Runnable mCommand;
-            private Thread mCallingThread;
-            private InlineExecutionProhibitedException mExecutedInline;
-
-            private InlineCheckingRunnable(Runnable command, Thread callingThread) {
-                this.mCommand = command;
-                this.mCallingThread = callingThread;
-            }
-
-            @Override
-            public void run() {
-                if (Thread.currentThread() == mCallingThread) {
-                    // Can't throw directly from here, since the delegate executor could catch this
-                    // exception.
-                    mExecutedInline = new InlineExecutionProhibitedException();
-                    return;
-                }
-                mCommand.run();
-            }
-        }
     }
 }

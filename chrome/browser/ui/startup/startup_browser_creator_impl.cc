@@ -69,7 +69,7 @@
 #include "ui/base/buildflags.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/webui/welcome/nux_helper.h"
+#include "chrome/browser/ui/webui/welcome/helpers.h"
 #endif  // !defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
@@ -605,7 +605,7 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
         IncompatibleApplicationsUpdater::HasCachedApplications();
   }
 
-  nux::JoinOnboardingGroup(profile_);
+  welcome::JoinOnboardingGroup(profile_);
 #endif
 
   // Presentation of promotional and/or educational tabs may be controlled via
@@ -630,8 +630,8 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
 
   bool onboarding_enabled = true;
 #if !defined(OS_CHROMEOS)
-  onboarding_enabled = nux::IsNuxOnboardingEnabled(profile_) &&
-                       nux::DoesOnboardingHaveModulesToShow(profile_);
+  onboarding_enabled = welcome::IsOnboardingEnabled(profile_) &&
+                       welcome::DoesOnboardingHaveModulesToShow(profile_);
 #endif  // !defined(OS_CHROMEOS)
 
   StartupTabs tabs =

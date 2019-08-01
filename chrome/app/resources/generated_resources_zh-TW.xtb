@@ -203,7 +203,6 @@
 <translation id="1289513325360489062">無法存取這個網站的資料</translation>
 <translation id="1293264513303784526">USB-C 裝置 (左側連接埠)</translation>
 <translation id="1293556467332435079">檔案</translation>
-<translation id="1296497012903089238">憑證類型</translation>
 <translation id="1297175357211070620">目的地</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> 需要 Google 驗證你的裝置身分，以判定是否能針對受保護的內容提供更完善的播放體驗。</translation>
 <translation id="1300806585489372370">如要變更這項設定，請先<ph name="BEGIN_LINK" />啟用 ID<ph name="END_LINK" /></translation>
@@ -1705,7 +1704,6 @@
 <translation id="3543597750097719865">使用 SHA-512 的 X9.62 ECDSA 簽章</translation>
 <translation id="3544879808695557954">使用者名稱 (選填)</translation>
 <translation id="354602065659584722">有害軟體已移除</translation>
-<translation id="3547495624659668105">PRL 版本</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3550915441744863158">Chrome 會自動更新，隨時讓你使用最新版本</translation>
 <translation id="3551320343578183772">關閉分頁</translation>
@@ -1998,7 +1996,6 @@
 <translation id="3937734102568271121">一律翻譯<ph name="LANGUAGE" /></translation>
 <translation id="3938128855950761626">來自供應商 <ph name="VENDOR_ID" /> 的裝置</translation>
 <translation id="3940233957883229251">啟用自動重複</translation>
-<translation id="3941357410013254652">頻道 ID</translation>
 <translation id="3941565636838060942">如要隱藏這個程式的存取權，你必須使用控制台中的「<ph name="CONTROL_PANEL_APPLET_NAME" />」解除安裝此程式。
 
   是否要開啟「<ph name="CONTROL_PANEL_APPLET_NAME" />」？</translation>
@@ -3426,7 +3423,6 @@
 <translation id="6129691635767514872">系統已將所選資料從 Chrome 和其他同步的裝置中移除。你的 Google 帳戶仍可能保留了其他類型的瀏覽記錄，例如其他 Google 服務中的搜尋和活動記錄 (可前往 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 查詢)。</translation>
 <translation id="6129938384427316298">Netscape 憑證評論</translation>
 <translation id="6129953537138746214">空格</translation>
-<translation id="6135622770221372891">頻道 ID</translation>
 <translation id="6136114942382973861">關閉下載內容列</translation>
 <translation id="6137767437444130246">使用者憑證</translation>
 <translation id="6138680304137685902">使用 SHA-384 的 X9.62 ECDSA 簽章</translation>

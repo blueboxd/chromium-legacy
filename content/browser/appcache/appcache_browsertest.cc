@@ -8,7 +8,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
 #include "content/public/browser/navigation_entry.h"
@@ -28,7 +27,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
@@ -37,15 +35,11 @@ namespace content {
 // test the AppCache code in that mode.
 class AppCacheNetworkServiceBrowserTest : public ContentBrowserTest {
  public:
-  AppCacheNetworkServiceBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        network::features::kNetworkService);
-  }
+  AppCacheNetworkServiceBrowserTest() {}
 
   ~AppCacheNetworkServiceBrowserTest() override = default;
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheNetworkServiceBrowserTest);
 };

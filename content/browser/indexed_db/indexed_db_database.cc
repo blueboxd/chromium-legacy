@@ -1813,6 +1813,7 @@ void IndexedDBDatabase::OpenCursor(
     bool key_only,
     blink::mojom::IDBTaskType task_type,
     blink::mojom::IDBDatabase::OpenCursorCallback callback,
+    const url::Origin& origin,
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host) {
   DCHECK(transaction);
   IDB_TRACE1("IndexedDBDatabase::OpenCursor", "txn.id", transaction->id());
@@ -1832,11 +1833,12 @@ void IndexedDBDatabase::OpenCursor(
   params->callback = std::move(callback);
   transaction->ScheduleTask(
       BindWeakOperation(&IndexedDBDatabase::OpenCursorOperation, AsWeakPtr(),
-                        std::move(params), std::move(dispatcher_host)));
+                        std::move(params), origin, std::move(dispatcher_host)));
 }
 
 Status IndexedDBDatabase::OpenCursorOperation(
     std::unique_ptr<OpenCursorOperationParams> params,
+    const url::Origin& origin,
     base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
     IndexedDBTransaction* transaction) {
   IDB_TRACE1("IndexedDBDatabase::OpenCursorOperation", "txn.id",
@@ -1921,7 +1923,7 @@ Status IndexedDBDatabase::OpenCursorOperation(
   std::move(params->callback)
       .Run(blink::mojom::IDBDatabaseOpenCursorResult::NewValue(
           blink::mojom::IDBDatabaseOpenCursorValue::New(
-              dispatcher_host->CreateCursorBinding(std::move(cursor)),
+              dispatcher_host->CreateCursorBinding(origin, std::move(cursor)),
               cursor_ptr->key(), cursor_ptr->primary_key(),
               std::move(mojo_value))));
   return s;

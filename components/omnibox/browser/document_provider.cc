@@ -281,8 +281,9 @@ int BoostOwned(const int score,
 // static
 DocumentProvider* DocumentProvider::Create(
     AutocompleteProviderClient* client,
-    AutocompleteProviderListener* listener) {
-  return new DocumentProvider(client, listener);
+    AutocompleteProviderListener* listener,
+    size_t cache_size) {
+  return new DocumentProvider(client, listener, cache_size);
 }
 
 // static
@@ -379,14 +380,16 @@ void DocumentProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  // We currently only provide asynchronous matches.
+  Stop(false, false);
+
+  input_ = input;
+
+  // Return cached suggestions synchronously.
+  CopyCachedMatchesToMatches();
+
   if (!input.want_asynchronous_matches()) {
     return;
   }
-
-  Stop(true, false);
-
-  input_ = input;
 
   // Create a request for suggestions, routing completion to
   base::BindOnce(&DocumentProvider::OnDocumentSuggestionsLoaderAvailable,
@@ -456,13 +459,16 @@ void DocumentProvider::ResetSession() {
 }
 
 DocumentProvider::DocumentProvider(AutocompleteProviderClient* client,
-                                   AutocompleteProviderListener* listener)
+                                   AutocompleteProviderListener* listener,
+                                   size_t cache_size)
     : AutocompleteProvider(AutocompleteProvider::TYPE_DOCUMENT),
       field_trial_triggered_(false),
       field_trial_triggered_in_session_(false),
       backoff_for_session_(false),
       client_(client),
-      listener_(listener) {}
+      listener_(listener),
+      cache_size_(cache_size),
+      matches_cache_(MatchesCache::NO_AUTO_EVICT) {}
 
 DocumentProvider::~DocumentProvider() {}
 
@@ -491,7 +497,13 @@ bool DocumentProvider::UpdateResults(const std::string& json_data) {
   if (!response)
     return false;
 
-  return ParseDocumentSearchResults(*response, &matches_);
+  matches_ = ParseDocumentSearchResults(*response);
+  for (auto it = matches_.rbegin(); it != matches_.rend(); ++it)
+    matches_cache_.Put(it->stripped_destination_url, *it);
+  CopyCachedMatchesToMatches(matches_.size());
+  matches_cache_.ShrinkToSize(cache_size_);
+
+  return !matches_.empty();
 }
 
 void DocumentProvider::OnDocumentSuggestionsLoaderAvailable(
@@ -544,12 +556,13 @@ base::string16 GetProductDescriptionString(const std::string& mimetype) {
   return l10n_util::GetStringUTF16(IDS_DRIVE_SUGGESTION_GENERAL);
 }
 
-bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
-                                                  ACMatches* matches) {
+ACMatches DocumentProvider::ParseDocumentSearchResults(
+    const base::Value& root_val) {
+  ACMatches matches;
   const base::DictionaryValue* root_dict = nullptr;
   const base::ListValue* results_list = nullptr;
   if (!root_val.GetAsDictionary(&root_dict)) {
-    return false;
+    return matches;
   }
 
   // The server may ask the client to back off, in which case we back off for
@@ -557,12 +570,12 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   // TODO(skare): Respect retryDelay if provided, ideally by calling via gRPC.
   if (ResponseContainsBackoffSignal(root_dict)) {
     backoff_for_session_ = true;
-    return false;
+    return matches;
   }
 
   // Otherwise parse the results.
   if (!root_dict->GetList("results", &results_list)) {
-    return false;
+    return matches;
   }
   size_t num_results = results_list->GetSize();
   UMA_HISTOGRAM_COUNTS_1M("Omnibox.DocumentSuggest.ResultCount", num_results);
@@ -597,17 +610,15 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   bool in_counterfactual_group = base::GetFieldTrialParamByFeatureAsBool(
       omnibox::kDocumentProvider, "DocumentProviderCounterfactualArm", false);
 
-  // Clear the previous results now that new results are available.
-  matches->clear();
   // Ensure server's suggestions are added with monotonically decreasing scores.
   int previous_score = INT_MAX;
   for (size_t i = 0; i < num_results; i++) {
-    if (matches->size() >= provider_max_matches_) {
+    if (matches.size() >= provider_max_matches_) {
       break;
     }
     const base::DictionaryValue* result = nullptr;
     if (!results_list->GetDictionary(i, &result)) {
-      return false;
+      return matches;
     }
     base::string16 title;
     base::string16 url;
@@ -686,12 +697,25 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     if (snippet)
       match.RecordAdditionalInfo("snippet", *snippet);
     if (!in_counterfactual_group) {
-      matches->push_back(match);
+      matches.push_back(match);
     }
     field_trial_triggered_ = true;
     field_trial_triggered_in_session_ = true;
   }
-  return true;
+  return matches;
+}
+
+void DocumentProvider::CopyCachedMatchesToMatches(
+    size_t skip_n_most_recent_matches) {
+  std::for_each(std::next(matches_cache_.begin(), skip_n_most_recent_matches),
+                matches_cache_.end(), [this](const auto& cache_key_match_pair) {
+                  auto match = cache_key_match_pair.second;
+                  match.relevance = 0;
+                  match.contents_class =
+                      DocumentProvider::Classify(match.contents, input_.text());
+                  match.RecordAdditionalInfo("from cache", "true");
+                  matches_.push_back(match);
+                });
 }
 
 // static

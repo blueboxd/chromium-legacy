@@ -8,11 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/sync_utils.h"
-#include "components/autofill/core/browser/ui/payments/save_card_bubble_controller.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -101,12 +101,6 @@ class SaveCardBubbleControllerImpl
   void HideBubble();
   void ReshowBubble();
 
-  // Returns true if Omnibox save credit card icon should be visible.
-  bool IsIconVisible() const;
-
-  // Returns nullptr if no bubble is currently shown.
-  SaveCardBubbleView* save_card_bubble_view() const;
-
   // SaveCardBubbleController:
   base::string16 GetWindowTitle() const override;
   base::string16 GetExplanatoryMessage() const override;
@@ -115,6 +109,7 @@ class SaveCardBubbleControllerImpl
   const AccountInfo& GetAccountInfo() const override;
   Profile* GetProfile() const override;
   const CreditCard& GetCard() const override;
+  SaveCardBubbleView* GetSaveCardBubbleView() const override;
   bool ShouldRequestNameFromUser() const override;
   bool ShouldRequestExpirationDateFromUser() const override;
 
@@ -139,6 +134,7 @@ class SaveCardBubbleControllerImpl
   void OnBubbleClosed() override;
   void OnAnimationEnded() override;
   const LegalMessageLines& GetLegalMessageLines() const override;
+  bool IsIconVisible() const override;
   bool IsUploadSave() const override;
   BubbleType GetBubbleType() const override;
   AutofillSyncSigninState GetSyncState() const override;
@@ -178,9 +174,6 @@ class SaveCardBubbleControllerImpl
   void SetEventObserverForTesting(ObserverForTest* observer) {
     observer_for_testing_ = observer;
   }
-
-  // The web_contents associated with this controller.
-  content::WebContents* web_contents_;
 
   // Should outlive this object.
   PersonalDataManager* personal_data_manager_;

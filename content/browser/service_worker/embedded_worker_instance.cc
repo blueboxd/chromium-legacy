@@ -38,7 +38,6 @@
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -986,16 +985,14 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo default_header_client;
   bool bypass_redirect_checks = false;
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // See if the default factory needs to be tweaked by the embedder.
-    GetContentClient()->browser()->WillCreateURLLoaderFactory(
-        rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
-        false /* is_navigation */, false /* is_download */, origin,
-        &default_factory_receiver, &default_header_client,
-        &bypass_redirect_checks);
-    devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
-        rph, routing_id, &default_factory_receiver);
-  }
+  // See if the default factory needs to be tweaked by the embedder.
+  GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
+      false /* is_navigation */, false /* is_download */, origin,
+      &default_factory_receiver, &default_header_client,
+      &bypass_redirect_checks);
+  devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
+      rph, routing_id, &default_factory_receiver);
 
   // TODO(yhirano): Support COEP.
   if (GetNetworkFactoryCallbackForTest().is_null()) {

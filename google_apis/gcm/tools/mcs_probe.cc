@@ -22,7 +22,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_executor.h"
@@ -447,7 +446,7 @@ int MCSProbeMain(int argc, char* argv[]) {
 
   mojo::core::Init();
 
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("MCSProbe");
 
   const base::CommandLine& command_line =

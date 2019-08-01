@@ -1043,6 +1043,7 @@ if (!is_ios) {
       "//testing/buildbot/filters:blink_web_tests_filter",
       "//third_party/blink/public:blink_devtools_frontend_resources_files",
       "//third_party/blink/public/mojom:mojom_platform_js_data_deps",
+      "//third_party/blink/renderer/core/html:js_files_for_form_controls_web_tests",
       "//third_party/blink/renderer/core/script:js_files_for_web_tests",
       "//third_party/mesa_headers",
       "//tools/imagediff",

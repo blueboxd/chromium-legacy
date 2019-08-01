@@ -6,7 +6,6 @@
 
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "components/autofill/core/browser/ui/payments/save_card_bubble_controller.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 

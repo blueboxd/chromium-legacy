@@ -13,14 +13,14 @@
 #include "chrome/browser/autofill/accessory_controller.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-namespace autofill {
-class AutofillPopupController;
-struct Suggestion;
-}
-
 namespace content {
 class WebContents;
 }
+
+namespace password_manager {
+class PasswordManagerDriver;
+struct CredentialPair;
+}  // namespace password_manager
 
 class ManualFillingController;
 
@@ -47,11 +47,10 @@ class TouchToFillController
   // Otherwise it returns false.
   static bool AllowedForWebContents(content::WebContents* web_contents);
 
-  // Instructs the controller to show the provided |suggestions| to the user.
-  // Invokes AcceptSuggestion() on popup_controller once the user made a
-  // selection.
-  void Show(base::span<const autofill::Suggestion> suggestions,
-            base::WeakPtr<autofill::AutofillPopupController> popup_controller);
+  // Instructs the controller to show the provided |credentials| to the user.
+  // Invokes FillSuggestion() on |driver| once the user made a selection.
+  void Show(base::span<const password_manager::CredentialPair> credentials,
+            base::WeakPtr<password_manager::PasswordManagerDriver> driver);
 
   // AccessoryController:
   void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
@@ -75,8 +74,11 @@ class TouchToFillController
   // The tab for which this class is scoped.
   content::WebContents* web_contents_ = nullptr;
 
-  // Popup controller passed from the latest invocation of Show().
-  base::WeakPtr<autofill::AutofillPopupController> popup_controller_;
+  // Credentials passed from the latest invocation of Show().
+  std::vector<password_manager::CredentialPair> credentials_;
+
+  // Driver passed from the latest invocation of Show().
+  base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
 
   // The manual filling controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;

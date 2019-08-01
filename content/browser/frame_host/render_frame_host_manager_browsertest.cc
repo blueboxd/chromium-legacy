@@ -5507,8 +5507,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
 // Verify that when an OOPIF with an unload handler navigates cross-process,
 // its unload handler is able to send a postMessage to the parent frame.
 // See https://crbug.com/857274.
+#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
+#define MAYBE_PostMessageToParentWhenSubframeNavigates \
+  DISABLED_PostMessageToParentWhenSubframeNavigates
+#else
+#define MAYBE_PostMessageToParentWhenSubframeNavigates \
+  PostMessageToParentWhenSubframeNavigates
+#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
-                       PostMessageToParentWhenSubframeNavigates) {
+                       MAYBE_PostMessageToParentWhenSubframeNavigates) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

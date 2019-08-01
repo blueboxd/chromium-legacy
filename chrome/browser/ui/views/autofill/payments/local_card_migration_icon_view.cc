@@ -7,7 +7,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -22,14 +21,12 @@ namespace autofill {
 
 LocalCardMigrationIconView::LocalCardMigrationIconView(
     CommandUpdater* command_updater,
-    Browser* browser,
     PageActionIconView::Delegate* delegate,
     const gfx::FontList& font_list)
     : PageActionIconView(command_updater,
                          IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE,
                          delegate,
-                         font_list),
-      browser_(browser) {
+                         font_list) {
   DCHECK(delegate);
   SetID(VIEW_ID_MIGRATE_LOCAL_CREDIT_CARD_BUTTON);
   SetUpForInOutAnimation();
@@ -131,9 +128,6 @@ base::string16 LocalCardMigrationIconView::GetTextForTooltipAndAccessibleName()
 }
 
 ManageMigrationUiController* LocalCardMigrationIconView::GetController() const {
-  if (!browser_)
-    return nullptr;
-
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return nullptr;

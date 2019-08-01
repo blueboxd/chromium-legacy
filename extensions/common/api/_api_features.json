@@ -305,16 +305,7 @@
   "management.installReplacementWebApp": {
     "dependencies": ["manifest:replacement_web_app"],
     "channel": "stable",
-    "extension_types": ["extension"],
-    "whitelist": [
-      "E7E2461CE072DF036CF9592740196159E2D7C089",  // https://crbug.com/968407
-      "A74A4D44C7CFCD8844830E6140C8D763E12DD8F3",  // https://crbug.com/968407
-      "312745D9BF916161191143F6490085EEA0434997",  // https://crbug.com/968407
-      "53041A2FA309EECED01FFC751E7399186E860B2C",  // https://crbug.com/968407
-      "A07A5B743CD82A1C2579DB77D353C98A23201EEF",  // https://crbug.com/968407
-      "2D22CDB6583FD0A13758AEBE8B15E45208B4E9A7",  // https://crbug.com/968407
-      "0F42756099D914A026DADFA182871C015735DD95"   // https://crbug.com/968407
-    ]
+    "extension_types": ["extension"]
   },
   "management.uninstallSelf": {
     "dependencies": [],

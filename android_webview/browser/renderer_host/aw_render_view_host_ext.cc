@@ -134,10 +134,10 @@ void AwRenderViewHostExt::SetJsOnlineProperty(bool network_up) {
 
 void AwRenderViewHostExt::SmoothScroll(int target_x,
                                        int target_y,
-                                       uint64_t duration_ms) {
+                                       base::TimeDelta duration) {
   web_contents()->GetMainFrame()->Send(
       new AwViewMsg_SmoothScroll(web_contents()->GetMainFrame()->GetRoutingID(),
-                                 target_x, target_y, duration_ms));
+                                 target_x, target_y, duration));
 }
 
 void AwRenderViewHostExt::RenderViewHostChanged(

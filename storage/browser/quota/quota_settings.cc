@@ -138,9 +138,9 @@ void GetNominalDynamicSettings(const base::FilePath& partition_path,
                                bool is_incognito,
                                QuotaDiskInfoHelper* disk_info_helper,
                                OptionalQuotaSettingsCallback callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CalculateNominalDynamicSettings, partition_path,
                      is_incognito, base::Unretained(disk_info_helper)),

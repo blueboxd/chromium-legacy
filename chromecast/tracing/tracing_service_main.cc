@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/strings/string_split.h"
@@ -402,7 +401,7 @@ int main(int argc, char** argv) {
 
   LOG(INFO) << "Starting system tracing service...";
 
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
   chromecast::tracing::TracingService service;
 
   if (!service.Init())

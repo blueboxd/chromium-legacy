@@ -165,7 +165,15 @@ def _OnStaleMd5(lint_path,
         src_dir = _NewTempSubdir('SRC_ROOT')
         src_dirs.append(src_dir)
         cmd.extend(['--sources', _RebasePath(src_dir)])
-      os.symlink(os.path.abspath(src), PathInDir(src_dir, src))
+      # In cases where the build dir is outside of the src dir, this can
+      # result in trying to symlink a file to itself for this file:
+      # gen/components/version_info/android/java/org/chromium/
+      #   components/version_info/VersionConstants.java
+      src = os.path.abspath(src)
+      dst = PathInDir(src_dir, src)
+      if src == dst:
+        continue
+      os.symlink(src, dst)
 
     if srcjars:
       srcjar_paths = build_utils.ParseGnList(srcjars)

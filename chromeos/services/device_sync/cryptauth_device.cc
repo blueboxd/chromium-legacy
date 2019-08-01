@@ -164,7 +164,7 @@ bool CryptAuthDevice::operator==(const CryptAuthDevice& other) const {
       (!better_together_device_metadata &&
        !other.better_together_device_metadata) ||
       (better_together_device_metadata.has_value() &&
-       better_together_device_metadata.has_value() &&
+       other.better_together_device_metadata.has_value() &&
        better_together_device_metadata->SerializeAsString() ==
            other.better_together_device_metadata->SerializeAsString());
 

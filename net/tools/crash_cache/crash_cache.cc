@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -328,7 +327,7 @@ int LoadOperations(const base::FilePath& path, RankCrashes action,
 
 // Main function on the child process.
 int SlaveCode(const base::FilePath& path, RankCrashes action) {
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
 
   base::FilePath full_path;
   if (!CreateTargetFolder(path, action, &full_path)) {
@@ -338,7 +337,7 @@ int SlaveCode(const base::FilePath& path, RankCrashes action) {
 
   base::Thread cache_thread("CacheThread");
   if (!cache_thread.StartWithOptions(
-          base::Thread::Options(base::MessagePumpType::IO, 0)))
+          base::Thread::Options(base::MessagePump::Type::IO, 0)))
     return GENERIC;
 
   if (action <= disk_cache::INSERT_ONE_3)

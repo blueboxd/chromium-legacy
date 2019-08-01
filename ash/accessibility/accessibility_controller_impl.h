@@ -102,12 +102,24 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   void SetHighContrastEnabled(bool enabled);
   bool high_contrast_enabled() const { return high_contrast_enabled_; }
+  // Returns true if the high contrast is being controlled by a policy which
+  // enforces turning it on or its not being controlled by any type of policy
+  // and false otherwise.
+  bool GetTrayVisiblityOfHighContrastSetting();
 
   void SetLargeCursorEnabled(bool enabled);
   bool large_cursor_enabled() const { return large_cursor_enabled_; }
+  // Returns true if the large cursor is being controlled by a policy which
+  // enforces turning it on or its not being controlled by any type of policy
+  // and false otherwise.
+  bool GetTrayVisiblityOfLargeCursorSetting();
 
   void SetMonoAudioEnabled(bool enabled);
   bool mono_audio_enabled() const { return mono_audio_enabled_; }
+  // Returns true if the mono audio is being controlled by a policy which
+  // enforces turning it on or its not being controlled by any type of policy
+  // and false otherwise.
+  bool GetTrayVisiblityOfMonoAudioSetting();
 
   void SetSpokenFeedbackEnabled(bool enabled,
                                 AccessibilityNotificationVisibility notify);
@@ -195,6 +207,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   base::string16 GetBatteryDescription() const override;
   void SetVirtualKeyboardVisible(bool is_visible) override;
   void NotifyAccessibilityStatusChanged() override;
+  bool IsAccessibilityFeatureVisibleInTrayMenu(
+      const std::string& path) override;
 
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;

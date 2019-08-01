@@ -42,6 +42,12 @@ void BrowserAccessibilityStateImpl::
                         mode.has_mode(ui::AXMode::kScreenReader));
 }
 
+void BrowserAccessibilityStateImpl::UpdateUniqueUserHistograms() {
+  ui::AXMode mode = GetAccessibilityMode();
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.Android.ScreenReader.EveryReport",
+                        mode.has_mode(ui::AXMode::kScreenReader));
+}
+
 // static
 void JNI_BrowserAccessibilityState_OnAnimatorDurationScaleChanged(JNIEnv* env) {
   // We need to call into gfx::Animation and WebContentsImpl on the UI thread,

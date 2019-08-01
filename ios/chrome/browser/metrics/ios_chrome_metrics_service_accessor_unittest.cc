@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
+#include "build/branding_buildflags.h"
 
 #include "base/macros.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -26,7 +27,7 @@ class IOSChromeMetricsServiceAccessorTest : public PlatformTest {
 };
 
 TEST_F(IOSChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const char* pref = metrics::prefs::kMetricsReportingEnabled;
   GetLocalState()->SetDefaultPrefValue(pref, base::Value(false));
 
@@ -40,7 +41,7 @@ TEST_F(IOSChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
   EXPECT_FALSE(
       IOSChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 #else
-  // Metrics Reporting is never enabled when GOOGLE_CHROME_BUILD is undefined.
+  // Metrics Reporting is never enabled when GOOGLE_CHROME_BRANDING is not set.
   EXPECT_FALSE(
       IOSChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 #endif

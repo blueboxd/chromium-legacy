@@ -99,7 +99,7 @@ class BASE_EXPORT MessageLoop {
 
   // Normally, it is not necessary to instantiate a MessageLoop.  Instead, it
   // is typical to make use of the current thread's MessageLoop instance.
-  explicit MessageLoop(MessagePumpType type = MessagePumpType::DEFAULT);
+  explicit MessageLoop(MessagePumpType type = MessagePump::Type::DEFAULT);
   // Creates a MessageLoop with the supplied MessagePump, which must be
   // non-null.
   explicit MessageLoop(std::unique_ptr<MessagePump> custom_pump);
@@ -231,7 +231,7 @@ class BASE_EXPORT MessageLoop {
 //
 class BASE_EXPORT MessageLoopForUI : public MessageLoop {
  public:
-  explicit MessageLoopForUI(MessagePumpType type = MessagePumpType::UI);
+  explicit MessageLoopForUI(MessagePumpType type = MessagePump::Type::UI);
 
 #if defined(OS_IOS)
   // On iOS, the main message loop cannot be Run().  Instead call Attach(),

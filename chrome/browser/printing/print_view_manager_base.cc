@@ -334,6 +334,12 @@ void PrintViewManagerBase::OnDidPrintDocument(
                 params.physical_offsets);
 }
 
+void PrintViewManagerBase::OnGetDefaultPrintSettings(
+    content::RenderFrameHost* render_frame_host,
+    IPC::Message* reply_msg) {
+  NOTREACHED() << "should be handled by printing::PrintingMessageFilter";
+}
+
 void PrintViewManagerBase::OnPrintingFailed(int cookie) {
   PrintManager::OnPrintingFailed(cookie);
 
@@ -347,6 +353,13 @@ void PrintViewManagerBase::OnPrintingFailed(int cookie) {
       chrome::NOTIFICATION_PRINT_JOB_RELEASED,
       content::Source<content::WebContents>(web_contents()),
       content::NotificationService::NoDetails());
+}
+
+void PrintViewManagerBase::OnScriptedPrint(
+    content::RenderFrameHost* render_frame_host,
+    const PrintHostMsg_ScriptedPrint_Params& params,
+    IPC::Message* reply_msg) {
+  NOTREACHED() << "should be handled by printing:: PrintingMessageFilter";
 }
 
 void PrintViewManagerBase::OnShowInvalidPrinterSettingsError() {
@@ -401,15 +414,6 @@ bool PrintViewManagerBase::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManagerBase, message,
-                                   render_frame_host)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintDocument, OnDidPrintDocument)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  if (handled)
-    return true;
-
-  handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintViewManagerBase, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
                         OnShowInvalidPrinterSettingsError)

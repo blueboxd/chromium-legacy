@@ -166,13 +166,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           gl.canvas.addEventListener("touchmove", onTouchMove);
         }
 
-        // In order for an inline session to be used we must set the GL layer's
-        // compositionDisabled option to "true", which indicates that WebGL
-        // commands will draw to the canvas like normal.
         session.updateRenderState({
-          baseLayer: new XRWebGLLayer(session, gl, {
-              compositionDisabled: session.mode == 'inline'
-            })
+          baseLayer: new XRWebGLLayer(session, gl)
         });
 
         if (session.mode === 'inline')

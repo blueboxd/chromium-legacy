@@ -121,8 +121,8 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
   // This can occur if the GalleryWatchManager attempts to watch the same path
   // again before recieving the callback. It's benign.
   if (base::Contains(watchers_, path)) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(callback, false));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(callback, false));
     return;
   }
 
@@ -135,8 +135,8 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
   if (success)
     watchers_[path] = std::move(watcher);
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback, success));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(callback, success));
 }
 
 void GalleryWatchManager::FileWatchManager::RemoveFileWatch(
@@ -159,8 +159,8 @@ void GalleryWatchManager::FileWatchManager::OnFilePathChanged(
 
   if (error)
     RemoveFileWatch(path);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback_, path, error));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(callback_, path, error));
 }
 
 GalleryWatchManager::WatchOwner::WatchOwner(BrowserContext* browser_context,
@@ -188,8 +188,9 @@ GalleryWatchManager::NotificationInfo::~NotificationInfo() {
 
 GalleryWatchManager::GalleryWatchManager()
     : storage_monitor_observed_(false),
-      watch_manager_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {
+      watch_manager_task_runner_(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::BEST_EFFORT})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   watch_manager_.reset(new FileWatchManager(base::Bind(
       &GalleryWatchManager::OnFilePathChanged, weak_factory_.GetWeakPtr())));
@@ -432,7 +433,7 @@ void GalleryWatchManager::OnFilePathChanged(const base::FilePath& path,
           notification_info->second.last_notify_time +
           base::TimeDelta::FromSeconds(kMinNotificationDelayInSeconds) -
           base::Time::Now();
-      base::PostDelayedTaskWithTraits(
+      base::PostDelayedTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&GalleryWatchManager::OnFilePathChanged,
                          weak_factory_.GetWeakPtr(), path, error),

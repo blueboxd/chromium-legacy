@@ -340,6 +340,7 @@ source_set("eg_tests") {
     ":settings",
     "//base",
     "//base/test:test_support",
+    "//build:branding_buildflags",
     "//components/autofill/core/common",
     "//components/browser_sync",
     "//components/browsing_data/core",

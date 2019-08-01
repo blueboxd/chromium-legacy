@@ -65,6 +65,11 @@ CastComponent::CastComponent(
                      kBindingsFailureExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR));
 
+  application_controller_ = std::make_unique<ApplicationControllerImpl>(
+      frame(), agent_manager_->ConnectToAgentService<
+                   chromium::cast::ApplicationControllerReceiver>(
+                   CastRunner::kAgentComponentUrl));
+
   InitializeCastPlatformBindings();
 }
 

@@ -10,10 +10,9 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/welcome/bookmark_handler.h"
-#include "chrome/browser/ui/webui/welcome/constants.h"
 #include "chrome/browser/ui/webui/welcome/google_apps_handler.h"
+#include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/browser/ui/webui/welcome/ntp_background_handler.h"
-#include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/browser/ui/webui/welcome/set_as_default_handler.h"
 #include "chrome/browser/ui/webui/welcome/welcome_handler.h"
 #include "chrome/common/pref_names.h"
@@ -183,22 +182,22 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   // Add the shared bookmark handler for onboarding modules.
   web_ui->AddMessageHandler(
-      std::make_unique<nux::BookmarkHandler>(profile->GetPrefs()));
+      std::make_unique<welcome::BookmarkHandler>(profile->GetPrefs()));
 
   // Add google apps bookmarking onboarding module.
-  web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>());
+  web_ui->AddMessageHandler(std::make_unique<welcome::GoogleAppsHandler>());
 
   // Add NTP custom background onboarding module.
-  web_ui->AddMessageHandler(std::make_unique<nux::NtpBackgroundHandler>());
+  web_ui->AddMessageHandler(std::make_unique<welcome::NtpBackgroundHandler>());
 
   // Add set-as-default onboarding module.
-  web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
+  web_ui->AddMessageHandler(std::make_unique<welcome::SetAsDefaultHandler>());
 
   html_source->AddString(
       "newUserModules",
-      nux::GetNuxOnboardingModules(profile).FindKey("new-user")->GetString());
+      welcome::GetOnboardingModules(profile).FindKey("new-user")->GetString());
   html_source->AddString("returningUserModules",
-                         nux::GetNuxOnboardingModules(profile)
+                         welcome::GetOnboardingModules(profile)
                              .FindKey("returning-user")
                              ->GetString());
   html_source->AddBoolean(
@@ -218,8 +217,8 @@ WelcomeUI::~WelcomeUI() {}
 void WelcomeUI::CreateBackgroundFetcher(
     size_t background_index,
     const content::WebUIDataSource::GotDataCallback& callback) {
-  background_fetcher_ =
-      std::make_unique<nux::NtpBackgroundFetcher>(background_index, callback);
+  background_fetcher_ = std::make_unique<welcome::NtpBackgroundFetcher>(
+      background_index, callback);
 }
 
 void WelcomeUI::StorePageSeen(Profile* profile) {

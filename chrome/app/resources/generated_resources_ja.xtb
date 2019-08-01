@@ -203,7 +203,6 @@
 <translation id="1289513325360489062">このサイトのデータにアクセスできません</translation>
 <translation id="1293264513303784526">USB-C デバイス（左側面のポート）</translation>
 <translation id="1293556467332435079">ファイル</translation>
-<translation id="1296497012903089238">証明書の種類</translation>
 <translation id="1297175357211070620">送信先</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> では、保護されたコンテンツを高度な方法で再生できるかどうかを判定するために、Google によるデバイス識別子の確認が求められています。</translation>
 <translation id="1300806585489372370">この設定を変更するには、最初に<ph name="BEGIN_LINK" />識別子の使用を有効<ph name="END_LINK" />にします</translation>
@@ -1706,7 +1705,6 @@
 <translation id="3543597750097719865">X9.62 ECDSA 署名（SHA-512）</translation>
 <translation id="3544879808695557954">ユーザー名（任意）</translation>
 <translation id="354602065659584722">有害なソフトウェアが削除されました</translation>
-<translation id="3547495624659668105">PRL バージョン</translation>
 <translation id="3547954654003013442">プロキシ設定</translation>
 <translation id="3550915441744863158">Chrome は自動更新されるため、常に最新版をご利用になれます</translation>
 <translation id="3551320343578183772">タブを閉じる</translation>
@@ -1999,7 +1997,6 @@
 <translation id="3937734102568271121"><ph name="LANGUAGE" />を常に翻訳</translation>
 <translation id="3938128855950761626">ベンダー <ph name="VENDOR_ID" /> のデバイス</translation>
 <translation id="3940233957883229251">自動リピートを有効にする</translation>
-<translation id="3941357410013254652">チャンネル ID</translation>
 <translation id="3941565636838060942">このプログラムへのアクセスを非表示にするには、コントロール パネルで 
 <ph name="CONTROL_PANEL_APPLET_NAME" /> を使用してプログラムをアンインストールする必要があります。
 
@@ -3428,7 +3425,6 @@
 <translation id="6129691635767514872">選択したデータが Chrome から削除され、同期されたデバイスからも削除されました。他の Google サービスでの検索や操作など、Google アカウントの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="6129938384427316298">Netscape 証明書コメント</translation>
 <translation id="6129953537138746214">Space</translation>
-<translation id="6135622770221372891">チャンネル ID</translation>
 <translation id="6136114942382973861">ダウンロード バーを閉じる</translation>
 <translation id="6137767437444130246">ユーザー証明書</translation>
 <translation id="6138680304137685902">X9.62 ECDSA 署名（SHA-384）</translation>

@@ -530,4 +530,12 @@ void ScriptProcessorNode::Trace(Visitor* visitor) {
   AudioNode::Trace(visitor);
 }
 
+void ScriptProcessorNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+}
+
+void ScriptProcessorNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

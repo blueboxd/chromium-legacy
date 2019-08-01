@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const SwitchAccessCommand = chrome.accessibilityPrivate.SwitchAccessCommand;
 /**
  * Class to run and get details about user commands.
  */
@@ -18,40 +19,50 @@ class Commands {
 
     /**
      * A map from command name to the function binding for the command.
-     * @private {!Map<!SAConstants.Command, !function(): void>}
+     * @private {!Map<!SwitchAccessCommand, !function(): void>}
      */
     this.commandMap_ = this.buildCommandMap_();
+
+    this.init_();
+  }
+
+  /**
+   * Starts listening for Switch Access command events.
+   * @private
+   */
+  init_() {
+    chrome.accessibilityPrivate.onSwitchAccessCommand.addListener(
+        this.runCommand_.bind(this));
   }
 
   /**
    * Run the function binding for the specified command.
-   * @param {!SAConstants.Command} command
+   * @param {!SwitchAccessCommand} command
+   * @private
    */
-  runCommand(command) {
+  runCommand_(command) {
     this.commandMap_.get(command)();
+    this.switchAccess_.performedUserAction();
   }
 
   /**
    * Build a map from command name to the function binding for the command.
-   * @return {!Map<!SAConstants.Command, !function(): void>}
+   * @return {!Map<!SwitchAccessCommand, !function(): void>}
+   * @private
    */
   buildCommandMap_() {
     return new Map([
       [
-        SAConstants.Command.MENU,
+        SwitchAccessCommand.SELECT,
         this.switchAccess_.enterMenu.bind(this.switchAccess_)
       ],
       [
-        SAConstants.Command.NEXT,
+        SwitchAccessCommand.NEXT,
         this.switchAccess_.moveForward.bind(this.switchAccess_)
       ],
       [
-        SAConstants.Command.PREVIOUS,
+        SwitchAccessCommand.PREVIOUS,
         this.switchAccess_.moveBackward.bind(this.switchAccess_)
-      ],
-      [
-        SAConstants.Command.SELECT,
-        this.switchAccess_.selectCurrentNode.bind(this.switchAccess_)
       ]
     ]);
   }

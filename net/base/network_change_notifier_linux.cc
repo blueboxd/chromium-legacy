@@ -87,8 +87,8 @@ void NetworkChangeNotifierLinux::BlockingThreadObjects::OnLinkChanged() {
 NetworkChangeNotifierLinux::NetworkChangeNotifierLinux(
     const std::unordered_set<std::string>& ignored_interfaces)
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsLinux()),
-      blocking_thread_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+      blocking_thread_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock()})),
       blocking_thread_objects_(
           new BlockingThreadObjects(ignored_interfaces),
           // Ensure |blocking_thread_objects_| lives on

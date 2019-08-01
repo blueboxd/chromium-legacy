@@ -8,14 +8,13 @@
     Exposed(Window Serial,DedicatedWorker Serial),
     SecureContext
 ] interface SerialPort {
+    [CallWith=ScriptState, RaisesException]
     readonly attribute ReadableStream readable;
+    [CallWith=ScriptState, RaisesException]
     readonly attribute WritableStream writable;
 
     [CallWith=ScriptState, MeasureAs=SerialPortOpen]
     Promise<void> open(SerialOptions options);
-
-    [CallWith=ScriptState, RaisesException]
-    void clearReadError();
 
     [MeasureAs=SerialPortClose]
     void close();

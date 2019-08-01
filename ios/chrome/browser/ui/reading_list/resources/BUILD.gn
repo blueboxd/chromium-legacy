@@ -25,7 +25,6 @@ imageset("reading_list_empty_state") {
 imageset("reading_list_empty_state_new") {
   sources = [
     "reading_list_empty_state_new.imageset/Contents.json",
-    "reading_list_empty_state_new.imageset/reading_list_empty_state_new.png",
     "reading_list_empty_state_new.imageset/reading_list_empty_state_new@2x.png",
     "reading_list_empty_state_new.imageset/reading_list_empty_state_new@3x.png",
   ]

@@ -7,7 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 
-namespace nux {
+namespace welcome {
 
 base::ListValue BookmarkItemsToListValue(const BookmarkItem items[],
                                          size_t count) {
@@ -41,4 +41,4 @@ base::ListValue BookmarkItemsToListValue(
   return list_value;
 }
 
-}  // namespace nux
+}  // namespace welcome

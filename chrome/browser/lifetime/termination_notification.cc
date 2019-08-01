@@ -72,9 +72,8 @@ void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
     if (chrome::IsAttemptingShutdown()) {
       // If running the Chrome OS build, but we're not on the device, act
       // as if we received signal from SessionManager.
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(&chrome::ExitIgnoreUnloadHandlers));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&chrome::ExitIgnoreUnloadHandlers));
     }
   }
 #endif

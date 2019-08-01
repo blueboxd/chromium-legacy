@@ -91,8 +91,9 @@ void MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile(
   // To avoid calling |snapshot_file_details| methods and passing ownership of
   // |snapshot_file_details| in the same_line.
   SnapshotFileDetails* snapshot_file_details_ptr = snapshot_file_details.get();
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&WriteDataChunkIntoSnapshotFileOnFileThread,
                  snapshot_file_details_ptr->snapshot_file_path(), data),
       base::Bind(&MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile,
@@ -122,15 +123,13 @@ void MTPReadFileWorker::OnDidWriteIntoSnapshotFile(
   DCHECK(snapshot_file_details.get());
 
   if (snapshot_file_details->error_occurred()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(snapshot_file_details->error_callback(),
-                       base::File::FILE_ERROR_FAILED));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(snapshot_file_details->error_callback(),
+                                  base::File::FILE_ERROR_FAILED));
     return;
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(snapshot_file_details->success_callback(),
-                     snapshot_file_details->file_info(),
-                     snapshot_file_details->snapshot_file_path()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(snapshot_file_details->success_callback(),
+                                snapshot_file_details->file_info(),
+                                snapshot_file_details->snapshot_file_path()));
 }

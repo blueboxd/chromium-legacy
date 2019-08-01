@@ -377,13 +377,14 @@ std::string SearchBox::FixupAndValidateUrl(const std::string& url) const {
   return internal::FixupAndValidateUrl(url);
 }
 
-void SearchBox::SetCustomBackgroundURLWithAttributions(
-    const GURL& background_url,
-    const std::string& attribution_line_1,
-    const std::string& attribution_line_2,
-    const GURL& action_url) {
-  embedded_search_service_->SetCustomBackgroundURLWithAttributions(
-      background_url, attribution_line_1, attribution_line_2, action_url);
+void SearchBox::SetCustomBackgroundInfo(const GURL& background_url,
+                                        const std::string& attribution_line_1,
+                                        const std::string& attribution_line_2,
+                                        const GURL& action_url,
+                                        const std::string& collection_id) {
+  embedded_search_service_->SetCustomBackgroundInfo(
+      background_url, attribution_line_1, attribution_line_2, action_url,
+      collection_id);
 }
 
 void SearchBox::SelectLocalBackgroundImage() {

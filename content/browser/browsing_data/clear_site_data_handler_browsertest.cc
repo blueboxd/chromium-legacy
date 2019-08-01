@@ -50,7 +50,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/quota/quota_settings.h"
@@ -433,7 +432,6 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpMockCertVerifier(int32_t default_result) {
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     network::mojom::NetworkServiceTestPtr network_service_test;
     GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
                                         &network_service_test);

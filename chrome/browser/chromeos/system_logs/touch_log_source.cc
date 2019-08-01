@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/task/post_task.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -35,7 +36,8 @@ const char kTouchpadEventLogDataKey[] = "hack-33025-touchpad_activity";
 const char kTouchscreenEventLogDataKey[] = "hack-33025-touchscreen_activity";
 
 // Directory for temp touch event logs.
-const char kTouchEventLogDir[] = "/home/chronos/user/log";
+constexpr char kTouchEventLogDir[] = "/home/chronos/user/log";
+constexpr char kNotLoggedInTouchEventLogDir[] = "/var/log/chrome";
 
 // Prefixes of touch event logs.
 const char kTouchpadGestureLogPrefix[] = "touchpad_activity_";
@@ -137,7 +139,6 @@ void OnEventLogCollected(
     system_logs::SysLogsSourceCallback callback,
     const std::vector<base::FilePath>& log_paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   system_logs::SystemLogsResponse* response_ptr = response.get();
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -157,12 +158,16 @@ void OnStatusLogCollected(
   (*response)[kDeviceStatusLogDataKey] = log;
 
   // Collect touch event logs.
-  const base::FilePath kBaseLogPath(kTouchEventLogDir);
+  // The user-specific log directory will not exist if we are not logged in
+  // yet, so choose the location based on that.
+  base::FilePath base_log_path(chromeos::LoginState::Get()->IsUserLoggedIn()
+                                   ? kTouchEventLogDir
+                                   : kNotLoggedInTouchEventLogDir);
   ui::InputController* input_controller =
       ui::OzonePlatform::GetInstance()->GetInputController();
   input_controller->GetTouchEventLog(
-      kBaseLogPath, base::BindOnce(&OnEventLogCollected, std::move(response),
-                                   std::move(callback)));
+      base_log_path, base::BindOnce(&OnEventLogCollected, std::move(response),
+                                    std::move(callback)));
 }
 
 // Collect touch HUD debug logs. This needs to be done on the UI thread.

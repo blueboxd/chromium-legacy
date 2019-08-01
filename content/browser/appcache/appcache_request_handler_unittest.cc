@@ -71,8 +71,7 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
   static void SetUpTestCase() {
     thread_bundle_ = std::make_unique<TestBrowserThreadBundle>(
         TestBrowserThreadBundle::REAL_IO_THREAD);
-    io_task_runner_ =
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+    io_task_runner_ = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
   }
 
   static void TearDownTestCase() {

@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
@@ -21,6 +21,7 @@
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_entry.h"
@@ -33,7 +34,6 @@
 #include "url/origin.h"
 
 namespace content {
-struct CommitNavigationParams;
 
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
  public:
@@ -183,12 +183,12 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       PreviewsState previews_state,
       base::TimeTicks navigation_start,
       base::TimeTicks input_start);
-  CommitNavigationParams ConstructCommitNavigationParams(
+  mojom::CommitNavigationParamsPtr ConstructCommitNavigationParams(
       const FrameNavigationEntry& frame_entry,
       const GURL& original_url,
       const base::Optional<url::Origin>& origin_to_commit,
       const std::string& original_method,
-      const std::map<std::string, bool>& subframe_unique_names,
+      const base::flat_map<std::string, bool>& subframe_unique_names,
       bool intended_as_new_entry,
       int pending_offset_to_send,
       int current_offset_to_send,
@@ -250,7 +250,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // same-process PageStates for the whole subtree, so that the renderer process
   // only needs to ask the browser process to handle the cross-process cases.
   // See https://crbug.com/639842.
-  std::map<std::string, bool> GetSubframeUniqueNames(
+  base::flat_map<std::string, bool> GetSubframeUniqueNames(
       FrameTreeNode* frame_tree_node) const;
 
   // Removes any subframe FrameNavigationEntries that match the unique name of

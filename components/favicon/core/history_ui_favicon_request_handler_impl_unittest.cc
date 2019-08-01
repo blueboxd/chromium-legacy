@@ -11,7 +11,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/features.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
@@ -45,11 +44,6 @@ const char kGroupingHistogramName[] =
 const int kDefaultDesiredSizeInPixel = 16;
 // TODO(victorvianna): Add unit tests specific for mobile.
 const SkColor kTestColor = SK_ColorRED;
-
-// Custom matcher for FaviconServerFetcherParams.
-MATCHER_P(FetcherParamsPageUrlEq, url, "") {
-  return arg->page_url() == GURL(url);
-}
 
 SkBitmap CreateTestSkBitmap(int desired_size_in_pixel) {
   SkBitmap bitmap;
@@ -156,7 +150,7 @@ class MockLargeIconServiceWithFake : public LargeIconService {
   ~MockLargeIconServiceWithFake() override = default;
 
   MOCK_METHOD5(GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache,
-               void(std::unique_ptr<FaviconServerFetcherParams> params,
+               void(const GURL& page_url,
                     bool may_page_url_be_private,
                     bool should_trim_page_url_path,
                     const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -320,7 +314,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
       .Times(2);
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-                  FetcherParamsPageUrlEq(kDummyPageUrl), _,
+                  GURL(kDummyPageUrl), _,
                   /*should_trim_url_path=*/false, _, _));
   favicon_base::FaviconRawBitmapResult result;
   history_ui_favicon_request_handler_.GetRawFaviconForPageURL(
@@ -348,7 +342,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
       .Times(2);
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-                  FetcherParamsPageUrlEq(kDummyPageUrl), _,
+                  GURL(kDummyPageUrl), _,
                   /*should_trim_url_path=*/true, _, _));
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconRawBitmapResult result;
@@ -428,7 +422,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
       .Times(2);
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-                  FetcherParamsPageUrlEq(kDummyPageUrl), _,
+                  GURL(kDummyPageUrl), _,
                   /*should_trim_url_path=*/false, _, _));
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconImageResult result;
@@ -454,7 +448,7 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
       .Times(2);
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-                  FetcherParamsPageUrlEq(kDummyPageUrl), _,
+                  GURL(kDummyPageUrl), _,
                   /*should_trim_url_path=*/true, _, _));
   EXPECT_CALL(synced_favicon_getter_, Run(_)).Times(0);
   favicon_base::FaviconImageResult result;

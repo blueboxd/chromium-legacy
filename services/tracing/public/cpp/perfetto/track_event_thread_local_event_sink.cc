@@ -320,6 +320,23 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     }
   }
 
+  if (!trace_event->thread_instruction_count().is_null()) {
+    // Thread instruction counts are never user-provided, but COMPLETE events
+    // may get reordered, so we can still observe counts that are lower. Emit
+    // those as absolute counts, since we don't support negative deltas.
+    if (last_thread_instruction_count_.ToInternalValue() >
+        trace_event->thread_instruction_count().ToInternalValue()) {
+      track_event->set_thread_instruction_count_absolute(
+          trace_event->thread_instruction_count().ToInternalValue());
+    } else {
+      track_event->set_thread_instruction_count_delta(
+          (trace_event->thread_instruction_count() -
+           last_thread_instruction_count_)
+              .ToInternalValue());
+      last_thread_instruction_count_ = trace_event->thread_instruction_count();
+    }
+  }
+
   // TODO(eseckler): Split comma-separated category strings.
   track_event->add_category_iids(interned_category.id);
 
@@ -576,13 +593,29 @@ void TrackEventThreadLocalEventSink::EmitThreadDescriptor(
     last_thread_time_ = ThreadNow();
   } else {
     // Thread timestamp is never user-provided.
-    DCHECK(trace_event->thread_timestamp() <= ThreadNow());
+    DCHECK_LE(trace_event->thread_timestamp(), ThreadNow());
     last_thread_time_ = trace_event->thread_timestamp();
   }
   thread_descriptor->set_reference_timestamp_us(
       last_timestamp_.since_origin().InMicroseconds());
   thread_descriptor->set_reference_thread_time_us(
       last_thread_time_.since_origin().InMicroseconds());
+
+  if (base::trace_event::ThreadInstructionCount::IsSupported()) {
+    if (!trace_event || trace_event->thread_instruction_count().is_null()) {
+      last_thread_instruction_count_ =
+          base::trace_event::ThreadInstructionCount::Now();
+    } else {
+      // Thread instruction count is never user-provided.
+      DCHECK_LE(
+          trace_event->thread_instruction_count().ToInternalValue(),
+          base::trace_event::ThreadInstructionCount::Now().ToInternalValue());
+      last_thread_instruction_count_ = trace_event->thread_instruction_count();
+    }
+    thread_descriptor->set_reference_thread_instruction_count(
+        last_thread_instruction_count_.ToInternalValue());
+  }
+
   // TODO(eseckler): Fill in remaining fields in ThreadDescriptor.
 }
 

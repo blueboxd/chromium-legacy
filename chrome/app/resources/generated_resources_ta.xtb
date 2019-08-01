@@ -203,7 +203,6 @@
 <translation id="1289513325360489062">இந்தத் தளத்தின் தரவை அணுக இயலவில்லை</translation>
 <translation id="1293264513303784526">USB-C சாதனம் (இடது போர்ட்)</translation>
 <translation id="1293556467332435079">கோப்புகள்</translation>
-<translation id="1296497012903089238">சான்றிதழ் வகை</translation>
 <translation id="1297175357211070620">இலக்கு</translation>
 <translation id="1300415640239881824">பாதுகாக்கப்பட்ட உள்ளடக்கத்தின் மேம்பட்ட பிளேபேக்கின் தகுதிநிலையைத் தீர்மானிக்க, உங்கள் சாதனத்தின் அடையாளத்தை Google சரிபார்க்க வேண்டுமென <ph name="DOMAIN" /> விரும்புகிறது.</translation>
 <translation id="1300806585489372370">இந்த அமைப்பை மாற்ற, முதலில் <ph name="BEGIN_LINK" />அடையாளங்காட்டிகளை இயக்கவும்<ph name="END_LINK" /></translation>
@@ -1706,7 +1705,6 @@
 <translation id="3543597750097719865">SHA-512 உடனான X9.62 ECDSA கையொப்பம்</translation>
 <translation id="3544879808695557954">பயனர்பெயர் (விரும்பினால்)</translation>
 <translation id="354602065659584722">தீங்கிழைக்கும் மென்பொருள் அகற்றப்பட்டது</translation>
-<translation id="3547495624659668105">PRL பதிப்பு</translation>
 <translation id="3547954654003013442">ப்ராக்ஸி அமைப்புகள்</translation>
 <translation id="3550915441744863158">Chrome தானாகவே புதுப்பித்துக்கொள்வதால், எப்போதுமே புதிய பதிப்பைப் பெறுவீர்கள்.</translation>
 <translation id="3551320343578183772">தாவலை மூடுக</translation>
@@ -1999,7 +1997,6 @@
 <translation id="3937734102568271121">எப்போதும் <ph name="LANGUAGE" /> இல் இருப்பதை மொழிபெயர்</translation>
 <translation id="3938128855950761626"><ph name="VENDOR_ID" /> உற்பத்தியாளரின் சாதனங்கள்</translation>
 <translation id="3940233957883229251">தன்னியக்க மீள்செயலை இயக்கு</translation>
-<translation id="3941357410013254652">சேனல் ஐடி</translation>
 <translation id="3941565636838060942">இந்த நிரலுக்கான அணுகலை மறைக்க, 
   கண்ட்ரோல் பேனலில் உள்ள <ph name="CONTROL_PANEL_APPLET_NAME" /> என்பதைப் பயன்படுத்தி இதை நிறுவல் நீக்க வேண்டும்.
 
@@ -3429,7 +3426,6 @@
 <translation id="6129691635767514872">தேர்ந்தெடுத்த தரவு, Chrome மற்றும் ஒத்திசைக்கப்பட்ட சாதனங்களிலிருந்து அகற்றப்பட்டது. உங்கள் Google கணக்கு <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> எனும் தளத்தில் பிற Google சேவைகளிலிருந்து தேடல்கள், செயல்பாடு போன்ற உலாவல் வரலாறு தொடர்பான பிற தகவல்களைக் கொண்டிருக்கலாம்.</translation>
 <translation id="6129938384427316298">Netscape சான்றிதழ் கருத்து</translation>
 <translation id="6129953537138746214">இடைவெளி</translation>
-<translation id="6135622770221372891">சேனல் ஐடிகள்</translation>
 <translation id="6136114942382973861">பதிவிறக்கங்கள் பட்டியை மூடு</translation>
 <translation id="6137767437444130246">பயனர் சான்றிதழ்</translation>
 <translation id="6138680304137685902">SHA-384 உடனான X9.62 ECDSA கையொப்பம்</translation>

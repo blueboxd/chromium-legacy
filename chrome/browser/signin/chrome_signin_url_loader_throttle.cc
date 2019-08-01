@@ -16,8 +16,7 @@ class URLLoaderThrottle::ThrottleRequestAdapter : public ChromeRequestAdapter {
                          const net::HttpRequestHeaders& original_headers,
                          net::HttpRequestHeaders* modified_headers,
                          std::vector<std::string>* headers_to_remove)
-      : ChromeRequestAdapter(nullptr),
-        throttle_(throttle),
+      : throttle_(throttle),
         original_headers_(original_headers),
         modified_headers_(modified_headers),
         headers_to_remove_(headers_to_remove) {}
@@ -79,7 +78,7 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
  public:
   ThrottleResponseAdapter(URLLoaderThrottle* throttle,
                           net::HttpResponseHeaders* headers)
-      : ResponseAdapter(nullptr), throttle_(throttle), headers_(headers) {}
+      : throttle_(throttle), headers_(headers) {}
 
   ~ThrottleResponseAdapter() override = default;
 

@@ -23,6 +23,8 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -134,15 +136,17 @@ public class DownloadManagerBridge {
      */
     @CalledByNative
     public static void removeCompletedDownload(String downloadGuid, boolean externallyRemoved) {
-        long downloadId = removeDownloadIdMapping(downloadGuid);
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            long downloadId = removeDownloadIdMapping(downloadGuid);
 
-        // Let Android DownloadManager to remove download only if the user removed the file in
-        // Chrome. If the user renamed or moved the file, Chrome should keep it intact.
-        if (downloadId != INVALID_SYSTEM_DOWNLOAD_ID && !externallyRemoved) {
-            DownloadManager manager =
-                    (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
-            manager.remove(downloadId);
-        }
+            // Let Android DownloadManager to remove download only if the user removed the file in
+            // Chrome. If the user renamed or moved the file, Chrome should keep it intact.
+            if (downloadId != INVALID_SYSTEM_DOWNLOAD_ID && !externallyRemoved) {
+                DownloadManager manager =
+                        (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                manager.remove(downloadId);
+            }
+        });
     }
 
     /**

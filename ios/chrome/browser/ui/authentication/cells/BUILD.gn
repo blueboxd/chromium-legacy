@@ -24,6 +24,7 @@ source_set("cells") {
   ]
   deps = [
     "//base",
+    "//build:branding_buildflags",
     "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

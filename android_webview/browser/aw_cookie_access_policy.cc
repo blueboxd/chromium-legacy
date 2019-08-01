@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
@@ -21,7 +20,6 @@
 
 using base::AutoLock;
 using content::BrowserThread;
-using content::ResourceRequestInfo;
 using content::WebSocketHandshakeRequestInfo;
 
 namespace android_webview {
@@ -71,24 +69,7 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
 bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
     const net::URLRequest& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  int child_id = 0;
-  int render_frame_id = 0;
-  int frame_tree_node_id = content::RenderFrameHost::kNoFrameTreeNodeId;
-  ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
-  if (info) {
-    child_id = info->GetChildID();
-    render_frame_id = info->GetRenderFrameID();
-    frame_tree_node_id = info->GetFrameTreeNodeId();
-  } else {
-    WebSocketHandshakeRequestInfo* websocket_info =
-        WebSocketHandshakeRequestInfo::ForRequest(&request);
-    if (!websocket_info)
-      return false;
-    child_id = websocket_info->GetChildId();
-    render_frame_id = websocket_info->GetRenderFrameId();
-  }
-  return GetShouldAcceptThirdPartyCookies(child_id, render_frame_id,
-                                          frame_tree_node_id);
+  return false;
 }
 
 bool AwCookieAccessPolicy::AllowCookies(const net::URLRequest& request) {

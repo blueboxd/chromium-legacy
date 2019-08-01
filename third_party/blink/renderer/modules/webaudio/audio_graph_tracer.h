@@ -13,6 +13,9 @@
 
 namespace blink {
 
+class AudioListener;
+class AudioNode;
+class AudioParam;
 class BaseAudioContext;
 class Document;
 class InspectorWebAudioAgent;
@@ -34,10 +37,17 @@ class MODULES_EXPORT AudioGraphTracer final
 
   void SetInspectorAgent(InspectorWebAudioAgent*);
 
-  // Graph events: notifies an associated inspector agent about object
-  // lifecycle of BaseAudioContext.
+  // Graph lifecycle events: notifies an associated inspector agent about
+  // the object lifecycle of BaseAudioContext, AudioListener, AudioNode, and
+  // AudioParam.
   void DidCreateBaseAudioContext(BaseAudioContext*);
   void WillDestroyBaseAudioContext(BaseAudioContext*);
+  void DidCreateAudioListener(AudioListener*) {}
+  void WillDestroyAudioListener(AudioListener*) {}
+  void DidCreateAudioNode(AudioNode*) {}
+  void WillDestroyAudioNode(AudioNode*) {}
+  void DidCreateAudioParam(AudioParam*) {}
+  void WillDestroyAudioParam(AudioParam*) {}
 
   // Notify an associated inspector agent when a BaseAudioContext is changed.
   void DidChangeBaseAudioContext(BaseAudioContext*);

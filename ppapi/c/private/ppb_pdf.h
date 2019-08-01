@@ -63,6 +63,8 @@ struct PP_PrivateAccessibilityPageInfo {
   struct PP_Rect bounds;
   uint32_t text_run_count;
   uint32_t char_count;
+  uint32_t link_count;
+  uint32_t image_count;
 };
 
 struct PP_PrivateAccessibilityTextRunInfo {
@@ -75,6 +77,41 @@ struct PP_PrivateAccessibilityTextRunInfo {
 struct PP_PrivateAccessibilityCharInfo {
   uint32_t unicode_character;
   double char_width;
+};
+
+// This holds the link information provided by the PDF and will be used in
+// accessibility to provide the link information.
+struct PP_PrivateAccessibilityLinkInfo {
+  // URL of the link.
+  const char* url;
+  uint32_t url_length;
+  // Index of the link in the page. This will be used to identify the link on
+  // which action has to be performed in the page.
+  uint32_t index_in_page;
+  // Link can either be part of the page text or not. If the link is part of the
+  // page text, then |text_run_index| denotes the text run which contains the
+  // start_index of the link and the |text_run_count| equals the number of text
+  // runs the link spans in the page text. If the link is not part of the page
+  // text then |text_run_count| should be 0 and the |text_run_index| should
+  // contain the nearest char index to the bounding rectangle of the link.
+  uint32_t text_run_index;
+  uint32_t text_run_count;
+  // Bounding box of the link.
+  struct PP_FloatRect bounds;
+};
+
+// This holds the image information provided by the PDF and will be used in
+// accessibility to provide the image information.
+struct PP_PrivateAccessibilityImageInfo {
+  // Alternate text for the image provided by PDF.
+  const char* alt_text;
+  uint32_t alt_text_length;
+  // We anchor the image to a char index, this denotes the text run before
+  // which the image should be inserted in the accessibility tree. The text run
+  // at this index should contain the anchor char index.
+  uint32_t text_run_index;
+  // Bounding box of the image.
+  struct PP_FloatRect bounds;
 };
 
 struct PPB_PDF {
@@ -159,7 +196,9 @@ struct PPB_PDF {
       PP_Instance instance,
       struct PP_PrivateAccessibilityPageInfo* page_info,
       struct PP_PrivateAccessibilityTextRunInfo text_runs[],
-      struct PP_PrivateAccessibilityCharInfo chars[]);
+      struct PP_PrivateAccessibilityCharInfo chars[],
+      struct PP_PrivateAccessibilityLinkInfo links[],
+      struct PP_PrivateAccessibilityImageInfo images[]);
 
   // Sends information about the PDF's URL and the embedder's URL.
   void (*SetCrashData)(PP_Instance instance,

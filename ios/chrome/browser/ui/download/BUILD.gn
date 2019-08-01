@@ -104,6 +104,7 @@ source_set("unit_tests") {
 }
 
 source_set("eg_tests") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -128,6 +129,7 @@ source_set("eg_tests") {
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing:embedded_test_server_support",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public",
@@ -145,10 +147,17 @@ source_set("eg2_tests") {
   ]
   testonly = true
 
-  sources = []
+  sources = [
+    "pass_kit_egtest.mm",
+  ]
 
   deps = [
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/download:pass_kit_mime_type",
+    "//ios/chrome/browser/download:test_support",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/public/test:element_selector",
     "//net:test_support",
     "//ui/base",

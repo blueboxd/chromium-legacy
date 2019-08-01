@@ -283,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest, ForceWasActivated_Yes) {
   const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
 
   NavigateParams params(browser(), kTestPageUrl, ui::PAGE_TRANSITION_LINK);
-  params.was_activated = content::WasActivatedOption::kYes;
+  params.was_activated = content::mojom::WasActivatedOption::kYes;
   ui_test_utils::NavigateToURL(&params);
 
   EXPECT_TRUE(AttemptPlay(GetWebContents()));
@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
   const GURL kTestPageUrl = embedded_test_server()->GetURL(kTestPagePath);
 
   NavigateParams params(browser(), kRedirectPageUrl, ui::PAGE_TRANSITION_LINK);
-  params.was_activated = content::WasActivatedOption::kYes;
+  params.was_activated = content::mojom::WasActivatedOption::kYes;
   ui_test_utils::NavigateToURL(&params);
 
   EXPECT_TRUE(NavigateInRenderer(GetWebContents(), kTestPageUrl));
@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
       embedded_test_server()->GetURL("foo.example.com", kTestPagePath);
 
   NavigateParams params(browser(), kRedirectPageUrl, ui::PAGE_TRANSITION_LINK);
-  params.was_activated = content::WasActivatedOption::kYes;
+  params.was_activated = content::mojom::WasActivatedOption::kYes;
   ui_test_utils::NavigateToURL(&params);
 
   EXPECT_TRUE(NavigateInRenderer(GetWebContents(), kTestPageUrl));

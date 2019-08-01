@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">不再显示</translation>
 <translation id="1692118695553449118">同步功能已开启</translation>
 <translation id="169515064810179024">禁止网站使用动态传感器</translation>
-<translation id="1697480839793160072">电话</translation>
-<translation id="1698058317516161971">电子邮件</translation>
 <translation id="1717218214683051432">动态传感器</translation>
 <translation id="1718835860248848330">过去一小时</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - 更新时间：<ph name="TIME_SINCE_UPDATE" /></translation>
@@ -239,7 +237,6 @@
 <translation id="2707726405694321444">刷新网页</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="271033894570825754">新建</translation>
-<translation id="2714850608275780394">正在等待接收验证码</translation>
 <translation id="2728754400939377704">按网站排序</translation>
 <translation id="2744248271121720757">点按某个字词可立即开始搜索或查看相关操作</translation>
 <translation id="2760989362628427051">在设备开启深色主题背景或省电模式时启用深色主题背景</translation>
@@ -306,7 +303,6 @@
 <translation id="3236059992281584593">还剩 1 分钟</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">为此页添加书签</translation>
-<translation id="3254626532848657899">移至底部</translation>
 <translation id="3259831549858767975">缩小网页上的所有内容</translation>
 <translation id="3269093882174072735">加载图片</translation>
 <translation id="3269956123044984603">要访问您在其他设备上的标签页，请在 Android 帐号设置部分开启“自动同步数据”。</translation>
@@ -507,7 +503,6 @@
 
 要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
-<translation id="4816465935029283692">数据类型</translation>
 <translation id="4824958205181053313">取消同步？</translation>
 <translation id="4837753911714442426">打开选项以打印网页</translation>
 <translation id="4842092870884894799">目前显示的是密码生成弹出式窗口</translation>
@@ -791,7 +786,6 @@
 <translation id="6767294960381293877">要与之分享标签页的设备的列表已半屏打开。</translation>
 <translation id="6782111308708962316">阻止第三方网站保存和读取 Cookie 数据</translation>
 <translation id="6790428901817661496">播放</translation>
-<translation id="679325081238418596">获取您在所有设备上保存的书签、历史记录、密码和其他设置</translation>
 <translation id="6803423358608456383">已半屏打开“已打开的标签页”工作表</translation>
 <translation id="6811034713472274749">页面已可供查看</translation>
 <translation id="6818926723028410516">选择内容</translation>
@@ -825,8 +819,6 @@
 <translation id="7022756207310403729">在浏览器中打开</translation>
 <translation id="702463548815491781">建议在开启 TalkBack 或“开关控制”时使用</translation>
 <translation id="7029809446516969842">密码</translation>
-<translation id="7031882061095297553">同步到</translation>
-<translation id="7034608350006174882">Google Pay 中存储的银行卡和地址信息</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7055152154916055070">已禁止重定向：</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
@@ -1092,7 +1084,6 @@
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8993760627012879038">在无痕模式下打开新标签页</translation>
 <translation id="8998729206196772491">您正要登录由 <ph name="MANAGED_DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐号永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
-<translation id="9005637476204108703">点按此处可管理您的帐号</translation>
 <translation id="9019902583201351841">由您父母管理</translation>
 <translation id="9040142327097499898">允许显示通知。但此设备的位置信息功能已关闭。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 个视频}other{# 个视频}}</translation>
@@ -1114,7 +1105,6 @@
 <translation id="9155898266292537608">您也可以通过快速点按某个字词进行搜索</translation>
 <translation id="9169594135889675189">向组中添加新标签页</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
-<translation id="9190112541605496997">点按“管理帐号”按钮可管理您的帐号</translation>
 <translation id="9204836675896933765">还剩 1 个文件</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">图片</translation>

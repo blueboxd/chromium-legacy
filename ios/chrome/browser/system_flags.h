@@ -25,6 +25,7 @@ enum WhatsNewPromoStatus {
   WHATS_NEW_DEFAULT = 0,         // Not forced to enable a promo.
   WHATS_NEW_TEST_COMMAND_TIP,    // Test Tip that runs a command.
   WHATS_NEW_MOVE_TO_DOCK_TIP,    // Force enable Move To Dock Tip promo.
+  WHATS_NEW_REVIEW_UPDATED_TOS,  // Force enable Review Updated ToS promo.
   WHATS_NEW_PROMO_STATUS_COUNT,  // Count of Whats New Promo Statuses.
 };
 

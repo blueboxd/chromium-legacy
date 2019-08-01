@@ -13,6 +13,9 @@
 #include "base/callback.h"
 #endif
 
+struct PrintHostMsg_DidPrintDocument_Params;
+struct PrintHostMsg_ScriptedPrint_Params;
+
 namespace printing {
 
 class PrintManager : public content::WebContentsObserver {
@@ -36,9 +39,21 @@ class PrintManager : public content::WebContentsObserver {
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
 
+  // IPC handling support
+  struct FrameDispatchHelper;
+
   // IPC handlers
   virtual void OnDidGetPrintedPagesCount(int cookie, int number_pages);
+  virtual void OnDidPrintDocument(
+      content::RenderFrameHost* render_frame_host,
+      const PrintHostMsg_DidPrintDocument_Params& params) = 0;
+  virtual void OnGetDefaultPrintSettings(
+      content::RenderFrameHost* render_frame_host,
+      IPC::Message* reply_msg) = 0;
   virtual void OnPrintingFailed(int cookie);
+  virtual void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
+                               const PrintHostMsg_ScriptedPrint_Params& params,
+                               IPC::Message* reply_msg) = 0;
 
   int number_pages_ = 0;  // Number of pages to print in the print job.
   int cookie_ = 0;        // The current document cookie.

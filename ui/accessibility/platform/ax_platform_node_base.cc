@@ -404,13 +404,6 @@ bool AXPlatformNodeBase::IsTextOnlyObject() const {
          GetData().role == ax::mojom::Role::kInlineTextBox;
 }
 
-// TODO(crbug.com/865101) Remove this once the autofill state works.
-bool AXPlatformNodeBase::IsFocusedInputWithSuggestions() const {
-  return HasInputSuggestions() && IsPlainTextField() &&
-         delegate_->GetFocus() ==
-             const_cast<AXPlatformNodeBase*>(this)->GetNativeViewAccessible();
-}
-
 bool AXPlatformNodeBase::IsPlainTextField() const {
   // We need to check both the role and editable state, because some ARIA text
   // fields may in fact not be editable, whilst some editable fields might not
@@ -805,10 +798,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   AddAttributeToList(ax::mojom::StringAttribute::kAutoComplete, "autocomplete",
                      attributes);
   if (!HasStringAttribute(ax::mojom::StringAttribute::kAutoComplete) &&
-      IsFocusedInputWithSuggestions()) {
-    // TODO(crbug.com/865101) Use
-    // GetData().HasState(ax::mojom::State::kAutofillAvailable) instead of
-    // IsFocusedInputWithSuggestions()
+      GetData().HasState(ax::mojom::State::kAutofillAvailable)) {
     AddAttributeToList("autocomplete", "list", attributes);
   }
 
@@ -886,13 +876,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
         AddAttributeToList("haspopup", "dialog", attributes);
         break;
     }
-  } else if (IsFocusedInputWithSuggestions()) {
-    // TODO(crbug.com/865101) Use
-    // GetData().HasState(ax::mojom::State::kAutofillAvailable) instead of
-    // IsFocusedInputWithSuggestions()
-    // TODO(crbug.com/865101) Remove this comment:
-    // Note: suggestions are special-cased here because there is no way
-    // for the browser to know when a suggestion popup is available.
+  } else if (GetData().HasState(ax::mojom::State::kAutofillAvailable)) {
     AddAttributeToList("haspopup", "menu", attributes);
   }
 

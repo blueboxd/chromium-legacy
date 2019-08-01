@@ -96,11 +96,11 @@ void IndexedDBDispatcherHost::AddDatabaseBinding(
 
 blink::mojom::IDBCursorAssociatedPtrInfo
 IndexedDBDispatcherHost::CreateCursorBinding(
+    const url::Origin& origin,
     std::unique_ptr<IndexedDBCursor> cursor) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const auto& context = bindings_.dispatch_context();
-  auto cursor_impl = std::make_unique<CursorImpl>(
-      std::move(cursor), context.origin, this, IDBTaskRunner());
+  auto cursor_impl = std::make_unique<CursorImpl>(std::move(cursor), origin,
+                                                  this, IDBTaskRunner());
   auto* cursor_impl_ptr = cursor_impl.get();
   blink::mojom::IDBCursorAssociatedPtrInfo ptr_info;
   mojo::BindingId binding_id = cursor_bindings_.AddBinding(

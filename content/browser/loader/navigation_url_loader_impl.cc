@@ -32,7 +32,6 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
-#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
@@ -374,7 +373,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
              base::Time ui_post_time,
              std::string accept_langs) {
     DCHECK_CURRENTLY_ON(GetLoaderRequestControllerThreadID());
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     DCHECK(!started_);
     ui_to_io_time_ += (base::Time::Now() - ui_post_time);
     global_request_id_ = MakeGlobalRequestID();
@@ -433,7 +431,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Requests to WebUI scheme won't get redirected to/from other schemes
     // or be intercepted, so we just let it go here.
     if (factory_for_webui.is_valid()) {
-      DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
               std::move(factory_for_webui)),
@@ -578,7 +575,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Set-up an interceptor for AppCache if non-null |appcache_handle_core|
     // is given.
     if (appcache_handle_core) {
-      DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
       std::unique_ptr<NavigationLoaderInterceptor> appcache_interceptor =
           AppCacheRequestHandler::InitializeForMainResourceNetworkService(
               *resource_request_, appcache_handle_core->host()->GetWeakPtr());
@@ -623,8 +619,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // if the redirected URL's scheme and the previous URL scheme don't match in
     // their use or disuse of the network service loader.
     if (!default_loader_used_ ||
-        (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         url_chain_.size() > 1 &&
+        (url_chain_.size() > 1 &&
          IsURLHandledByNetworkService(url_chain_[url_chain_.size() - 1]) !=
              IsURLHandledByNetworkService(url_chain_[url_chain_.size() - 2]))) {
       url_loader_.reset();
@@ -1050,8 +1045,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const network::ResourceResponseHead& head) override {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        !bypass_redirect_checks_ &&
+    if (!bypass_redirect_checks_ &&
         !IsRedirectSafe(url_, redirect_info.new_url, browser_context_,
                         resource_context_)) {
       // Call CancelWithError instead of OnComplete so that if there is an
@@ -1609,7 +1603,6 @@ void NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
   DCHECK(!BrowserThread::IsThreadInitialized(
              GetLoaderRequestControllerThreadID()) ||
          BrowserThread::CurrentlyOn(GetLoaderRequestControllerThreadID()));
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   g_loader_factory_interceptor.Get() = interceptor;
 }
 
@@ -1641,8 +1634,7 @@ GlobalRequestID NavigationURLLoaderImpl::MakeGlobalRequestID() {
 
 // static
 bool NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled() {
-  return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-         base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI);
+  return base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI);
 }
 
 // static

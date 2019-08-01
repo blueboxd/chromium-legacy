@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+    <script src="../../../../resources/testharness.js"></script>
+    <script src="../../../../resources/testharnessreport.js"></script>
+    <!--Comment the line below when testing locally in the browser -->
+    <script src="file:///gen/third_party/blink/renderer/core/html/forms/resources/color_picker.js"></script>
+    <!--Uncomment the line below when testing locally in the browser -->
+    <!-- <script src="../../../../../renderer/core/html/forms/resources/color_picker.js"></script> -->
+<body>
+<script>
+/*
+ * The included color_picker.js file contains the JS code that powers the color picker popup
+ * for <input type='color' />. This test validates the functionality of the ChannelValueContainer
+ * class defined in that file.
+ */
+
+'use strict';
+
+let hexValueContainer = new ChannelValueContainer(ColorChannel.HEX, new Color('#7effc9'));
+let rValueContainer = new ChannelValueContainer(ColorChannel.R, new Color('#7effc9'));
+let gValueContainer = new ChannelValueContainer(ColorChannel.G, new Color('#7effc9'));
+let bValueContainer = new ChannelValueContainer(ColorChannel.B, new Color('#7effc9'));
+
+function setContainerValue(valueContainer, value) {
+  valueContainer.value = value;
+  valueContainer.onValueChange_();
+  assert_equals(valueContainer.value, value);
+}
+
+function resetContainerValues(...valueContainers) {
+  valueContainers.forEach((valueContainer) => {
+    switch(valueContainer.colorChannel_) {
+      case ColorChannel.HEX:
+        setContainerValue(valueContainer, '#7effc9');
+        break;
+      case ColorChannel.R:
+        setContainerValue(valueContainer, '126');
+        break;
+      case ColorChannel.G:
+        setContainerValue(valueContainer, '255');
+        break;
+      case ColorChannel.B:
+        setContainerValue(valueContainer, '201');
+        break;
+    }
+  });
+}
+
+test(() => {
+  assert_equals(hexValueContainer.channelValue_, '7effc9');
+  assert_equals(rValueContainer.channelValue_, 126);
+  assert_equals(gValueContainer.channelValue_, 255);
+  assert_equals(bValueContainer.channelValue_, 201);
+}, 'initial values');
+
+test(() => {
+  resetContainerValues(hexValueContainer);
+  setContainerValue(hexValueContainer, '#123456');
+  assert_equals(hexValueContainer.channelValue_, '123456');
+}, 'hexValueContainer onValueChange_ valid change');
+
+test(() => {
+  resetContainerValues(hexValueContainer);
+  setContainerValue(hexValueContainer, '4287f5');
+  assert_equals(hexValueContainer.channelValue_, '7effc9');
+}, 'hexValueContainer onValueChange_ hex value without \'#\'');
+
+test(() => {
+  resetContainerValues(hexValueContainer);
+  setContainerValue(hexValueContainer, '#ff');
+  assert_equals(hexValueContainer.channelValue_, '0000ff');
+}, 'hexValueContainer onValueChange_ partial hex value');
+
+test(() => {
+  resetContainerValues(hexValueContainer);
+  setContainerValue(hexValueContainer, '#ABCDEF');
+  assert_equals(hexValueContainer.channelValue_, 'abcdef');
+}, 'hexValueContainer onValueChange_ upper case hex value');
+
+test(() => {
+  resetContainerValues(hexValueContainer);
+  setContainerValue(hexValueContainer, '#PQR');
+  assert_equals(hexValueContainer.channelValue_, '7effc9');
+}, 'hexValueContainer onValueChange_ invalid hex characters');
+
+test(() => {
+  resetContainerValues(hexValueContainer);
+  setContainerValue(hexValueContainer, '');
+  assert_equals(hexValueContainer.channelValue_, '7effc9');
+}, 'hexValueContainer onValueChange_ empty value');
+
+test(() => {
+  resetContainerValues(hexValueContainer);
+  setContainerValue(hexValueContainer, '#');
+  assert_equals(hexValueContainer.channelValue_, '7effc9');
+}, 'hexValueContainer onValueChange_ only \'#\'');
+
+test(() => {
+  resetContainerValues(rValueContainer, gValueContainer, bValueContainer);
+  setContainerValue(rValueContainer, '18');
+  assert_equals(rValueContainer.channelValue_, 18);
+  setContainerValue(gValueContainer, '52');
+  assert_equals(gValueContainer.channelValue_, 52);
+  setContainerValue(bValueContainer, '86');
+  assert_equals(bValueContainer.channelValue_, 86);
+}, 'rgbValueContainers onValueChange_ valid change');
+
+test(() => {
+  resetContainerValues(rValueContainer, gValueContainer, bValueContainer);
+  setContainerValue(rValueContainer, '018');
+  assert_equals(rValueContainer.channelValue_, 18);
+  setContainerValue(gValueContainer, '005');
+  assert_equals(gValueContainer.channelValue_, 5);
+  setContainerValue(bValueContainer, '00');
+  assert_equals(bValueContainer.channelValue_, 0);
+}, 'rgbValueContainers onValueChange_ leading zero values');
+
+test(() => {
+  resetContainerValues(rValueContainer, gValueContainer, bValueContainer);
+  setContainerValue(rValueContainer, '-1');
+  assert_equals(rValueContainer.channelValue_, 126);
+  setContainerValue(gValueContainer, '-255');
+  assert_equals(gValueContainer.channelValue_, 255);
+  setContainerValue(bValueContainer, '-0');
+  assert_equals(bValueContainer.channelValue_, 201);
+}, 'rgbValueContainers onValueChange_ negative values');
+
+test(() => {
+  resetContainerValues(rValueContainer, gValueContainer, bValueContainer);
+  setContainerValue(rValueContainer, 'ABC');
+  assert_equals(rValueContainer.channelValue_, 126);
+  setContainerValue(gValueContainer, '$%1');
+  assert_equals(gValueContainer.channelValue_, 255);
+  setContainerValue(bValueContainer, '10T');
+  assert_equals(bValueContainer.channelValue_, 201);
+}, 'rgbValueContainers onValueChange_ non number values');
+
+test(() => {
+  resetContainerValues(rValueContainer, gValueContainer, bValueContainer);
+  setContainerValue(rValueContainer, '1.0');
+  assert_equals(rValueContainer.channelValue_, 126);
+  setContainerValue(gValueContainer, '2.99');
+  assert_equals(gValueContainer.channelValue_, 255);
+  setContainerValue(bValueContainer, '0.5');
+  assert_equals(bValueContainer.channelValue_, 201);
+}, 'rgbValueContainers onValueChange_ decimal values');
+
+test(() => {
+  resetContainerValues(rValueContainer, gValueContainer, bValueContainer);
+  setContainerValue(rValueContainer, '');
+  assert_equals(rValueContainer.channelValue_, 126);
+  setContainerValue(gValueContainer, '');
+  assert_equals(gValueContainer.channelValue_, 255);
+  setContainerValue(bValueContainer, '');
+  assert_equals(bValueContainer.channelValue_, 201);
+}, 'rgbValueContainers onValueChange_ empty values');
+</script>
+</body>
+</html>

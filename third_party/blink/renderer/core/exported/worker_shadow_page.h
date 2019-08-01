@@ -53,8 +53,7 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   WorkerShadowPage(
       Client* client,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      PrivacyPreferences preferences,
-      const base::UnguessableToken& appcache_host_id);
+      PrivacyPreferences preferences);
   ~WorkerShadowPage() override;
 
   // Initializes this instance and calls Client::OnShadowPageInitialized() when
@@ -93,7 +92,6 @@ class CORE_EXPORT WorkerShadowPage : public WebLocalFrameClient {
   WebView* web_view_;
   Persistent<WebLocalFrameImpl> main_frame_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
-  const base::UnguessableToken appcache_host_id_;
 
   // TODO(crbug.com/862854): Update the values when the browser process changes
   // the preferences.

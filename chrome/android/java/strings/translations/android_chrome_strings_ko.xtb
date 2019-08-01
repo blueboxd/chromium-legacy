@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">다시 표시하지 않음</translation>
 <translation id="1692118695553449118">동기화 사용 중</translation>
 <translation id="169515064810179024">사이트에서 움직임 감지 센서에 액세스하지 못하도록 차단</translation>
-<translation id="1697480839793160072">전화</translation>
-<translation id="1698058317516161971">이메일</translation>
 <translation id="1717218214683051432">움직임 감지 센서</translation>
 <translation id="1718835860248848330">지난 1시간</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" />: <ph name="TIME_SINCE_UPDATE" />에 업데이트됨</translation>
@@ -239,7 +237,6 @@
 <translation id="2707726405694321444">페이지 새로고침</translation>
 <translation id="2709516037105925701">자동 완성</translation>
 <translation id="271033894570825754">새 파일</translation>
-<translation id="2714850608275780394">코드를 기다리는 중</translation>
 <translation id="2728754400939377704">사이트별 정렬</translation>
 <translation id="2744248271121720757">단어를 탭하여 즉시 검색하거나 관련 작업을 확인하세요</translation>
 <translation id="2760989362628427051">기기의 어두운 테마 또는 절전 모드가 켜지면 어두운 테마를 사용 설정합니다.</translation>
@@ -306,7 +303,6 @@
 <translation id="3236059992281584593">1분 남음</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">현재 페이지를 북마크에 추가</translation>
-<translation id="3254626532848657899">맨 아래로 이동</translation>
 <translation id="3259831549858767975">페이지의 모든 항목 축소</translation>
 <translation id="3269093882174072735">이미지 로드</translation>
 <translation id="3269956123044984603">다른 기기에서 탭을 가져오려면 Android 계정 설정에서 '데이터 자동 동기화'를 사용 설정하세요.</translation>
@@ -507,7 +503,6 @@
 
 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />하세요.</translation>
 <translation id="4807098396393229769">카드 명의</translation>
-<translation id="4816465935029283692">데이터 유형</translation>
 <translation id="4824958205181053313">동기화를 취소하시겠습니까?</translation>
 <translation id="4837753911714442426">옵션을 열어 페이지 인쇄</translation>
 <translation id="4842092870884894799">비밀번호 생성 팝업 표시</translation>
@@ -791,7 +786,6 @@
 <translation id="6767294960381293877">탭을 공유할 기기 목록이 절반 높이로 열렸습니다.</translation>
 <translation id="6782111308708962316">타사 웹사이트에서 쿠키 데이터를 저장하거나 읽을 수 없도록 방지</translation>
 <translation id="6790428901817661496">재생</translation>
-<translation id="679325081238418596">모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 동기화합니다.</translation>
 <translation id="6803423358608456383">탭이 절반 높이로 열림</translation>
 <translation id="6811034713472274749">페이지를 볼 수 있음</translation>
 <translation id="6818926723028410516">항목 선택</translation>
@@ -825,8 +819,6 @@
 <translation id="7022756207310403729">브라우저에서 열기</translation>
 <translation id="702463548815491781">음성 안내 지원 또는 스위치 제어를 사용 중일 때 권장됩니다.</translation>
 <translation id="7029809446516969842">비밀번호</translation>
-<translation id="7031882061095297553">동기화 가능 계정</translation>
-<translation id="7034608350006174882">Google Pay에 사용되는 카드 및 주소</translation>
 <translation id="7053983685419859001">차단</translation>
 <translation id="7055152154916055070">다음 주소로의 리디렉션이 차단됨:</translation>
 <translation id="7062545763355031412">동의 및 계정 전환</translation>
@@ -1092,7 +1084,6 @@
 <translation id="8986494364107987395">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 전송합니다.</translation>
 <translation id="8993760627012879038">시크릿 모드로 새 탭 열기</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
-<translation id="9005637476204108703">계정을 관리하려면 여기를 탭하세요.</translation>
 <translation id="9019902583201351841">부모님이 관리합니다.</translation>
 <translation id="9040142327097499898">알림이 허용되었습니다. 이 기기에서 위치가 사용 중지되었습니다.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{동영상 #개}other{동영상 #개}}</translation>
@@ -1114,7 +1105,6 @@
 <translation id="9155898266292537608">단어를 살짝 탭하여 검색할 수도 있습니다</translation>
 <translation id="9169594135889675189">그룹에 새 탭 추가</translation>
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
-<translation id="9190112541605496997">계정을 관리하려면 '계정 관리' 버튼을 탭하세요.</translation>
 <translation id="9204836675896933765">파일 1개가 남았습니다.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">이미지</translation>

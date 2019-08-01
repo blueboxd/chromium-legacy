@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/welcome/set_as_default_handler.h"
 
-namespace nux {
+namespace welcome {
 
 SetAsDefaultHandler::SetAsDefaultHandler()
     : settings::DefaultBrowserHandler() {}
@@ -15,4 +15,4 @@ void SetAsDefaultHandler::RecordSetAsDefaultUMA() {
   // TODO(hcarmona): Add UMA tracking.
 }
 
-}  // namespace nux
+}  // namespace welcome

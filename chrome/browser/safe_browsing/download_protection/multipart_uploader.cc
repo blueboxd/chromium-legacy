@@ -113,11 +113,10 @@ void MultipartUploadRequest::RetryOrFinish(
     std::move(callback_).Run(net::OK, net::HTTP_OK, *response_body.get());
   } else {
     if (retry_count_ < kMaxRetryAttempts) {
-      base::PostDelayedTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(&MultipartUploadRequest::SendRequest,
-                         weak_factory_.GetWeakPtr()),
-          current_backoff_);
+      base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                            base::BindOnce(&MultipartUploadRequest::SendRequest,
+                                           weak_factory_.GetWeakPtr()),
+                            current_backoff_);
       current_backoff_ *= kBackoffFactor;
       retry_count_++;
     } else {

@@ -79,6 +79,7 @@
 #include "ppapi/shared_impl/file_ref_create_info.h"
 #include "ppapi/shared_impl/media_stream_audio_track_shared.h"
 #include "ppapi/shared_impl/media_stream_video_track_shared.h"
+#include "ppapi/shared_impl/pdf_accessibility_shared.h"
 #include "ppapi/shared_impl/ppapi_nacl_plugin_args.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
@@ -273,6 +274,22 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityPageInfo)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
   IPC_STRUCT_TRAITS_MEMBER(text_run_count)
   IPC_STRUCT_TRAITS_MEMBER(char_count)
+  IPC_STRUCT_TRAITS_MEMBER(link_count)
+  IPC_STRUCT_TRAITS_MEMBER(image_count)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityLinkInfo)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(index_in_page)
+  IPC_STRUCT_TRAITS_MEMBER(text_run_index)
+  IPC_STRUCT_TRAITS_MEMBER(text_run_count)
+  IPC_STRUCT_TRAITS_MEMBER(bounds)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityImageInfo)
+  IPC_STRUCT_TRAITS_MEMBER(alt_text)
+  IPC_STRUCT_TRAITS_MEMBER(text_run_index)
+  IPC_STRUCT_TRAITS_MEMBER(bounds)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_URLComponent_Dev)
@@ -2363,11 +2380,13 @@ IPC_MESSAGE_CONTROL1(
     PP_PrivateAccessibilityDocInfo /* doc_info */)
 
 // Send information about one page for accessibility support.
-IPC_MESSAGE_CONTROL3(
+IPC_MESSAGE_CONTROL5(
     PpapiHostMsg_PDF_SetAccessibilityPageInfo,
     PP_PrivateAccessibilityPageInfo /* page_info */,
     std::vector<PP_PrivateAccessibilityTextRunInfo> /* text_runs */,
-    std::vector<PP_PrivateAccessibilityCharInfo> /* chars */)
+    std::vector<PP_PrivateAccessibilityCharInfo> /* chars */,
+    std::vector<ppapi::PdfAccessibilityLinkInfo> /* links */,
+    std::vector<ppapi::PdfAccessibilityImageInfo> /* images */)
 
 // Send information about the selection coordinates.
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_PDF_SelectionChanged,

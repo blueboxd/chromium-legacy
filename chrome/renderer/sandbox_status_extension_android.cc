@@ -113,8 +113,8 @@ void SandboxStatusExtension::GetSandboxStatus(gin::Arguments* args) {
   auto global_callback =
       std::make_unique<v8::Global<v8::Function>>(args->isolate(), callback);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::Bind(&SandboxStatusExtension::ReadSandboxStatus, this),
       base::Bind(&SandboxStatusExtension::RunCallback, this,
                  base::Passed(&global_callback)));

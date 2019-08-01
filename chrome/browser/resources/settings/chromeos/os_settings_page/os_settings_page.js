@@ -36,6 +36,16 @@ Polymer({
     androidAppsInfo: Object,
 
     /**
+     * Whether the user is in guest mode.
+     * @private{boolean}
+     */
+    isGuestMode_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('isGuest'),
+      readOnly: true,
+    },
+
+    /**
      * Dictionary defining page visibility.
      * @type {!PageVisibility}
      */
@@ -159,12 +169,10 @@ Polymer({
       settings.getSearchManager().search(query, assert(this.$$('#basicPage'))),
     ];
 
-    if (this.pageVisibility.advancedSettings !== false) {
-      whenSearchDone.push(
-          this.$$('#advancedPageTemplate').get().then(function(advancedPage) {
-            return settings.getSearchManager().search(query, advancedPage);
-          }));
-    }
+    whenSearchDone.push(
+        this.$$('#advancedPageTemplate').get().then(function(advancedPage) {
+          return settings.getSearchManager().search(query, advancedPage);
+        }));
 
     return Promise.all(whenSearchDone).then(function(requests) {
       // Combine the SearchRequests results to a single SearchResult object.
@@ -197,18 +205,6 @@ Polymer({
    */
   androidAppsInfoUpdate_: function(info) {
     this.androidAppsInfo = info;
-  },
-
-  /**
-   * Returns true in case Android apps settings needs to be created. It is not
-   * created in case ARC++ is not allowed for the current profile.
-   * @return {boolean}
-   * @private
-   */
-  shouldCreateAndroidAppsSection_: function() {
-    const visibility = /** @type {boolean|undefined} */ (
-        this.get('pageVisibility.androidApps'));
-    return this.showAndroidApps && this.showPage_(visibility);
   },
 
   /**

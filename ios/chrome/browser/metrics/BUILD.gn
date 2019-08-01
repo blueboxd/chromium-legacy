@@ -133,6 +133,7 @@ source_set("unit_tests") {
     ":metrics",
     "//base",
     "//base/test:test_support",
+    "//build:branding_buildflags",
     "//components/metrics",
     "//components/metrics:test_support",
     "//components/network_time:network_time",

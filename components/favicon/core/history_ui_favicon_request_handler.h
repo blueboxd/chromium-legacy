@@ -44,6 +44,7 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
   // is enabled. If a non-empty |icon_url_for_uma| (optional) is passed, it will
   // be used to record UMA about the grouping of requests to the favicon server.
   // |request_platform| specifies whether the caller is mobile or desktop code.
+  // TODO(victorvianna): Remove platform parameter since it's no longer needed.
   virtual void GetRawFaviconForPageURL(
       const GURL& page_url,
       int desired_size_in_pixel,

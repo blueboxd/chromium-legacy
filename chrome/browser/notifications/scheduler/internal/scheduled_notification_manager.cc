@@ -227,10 +227,10 @@ class ScheduledNotificationManagerImpl : public ScheduledNotificationManager {
   void OnIconEncoded(SchedulerClientType type,
                      std::string guid,
                      std::string encoded_data) {
-    auto icon_entry = std::make_unique<IconEntry>();
+    IconEntry icon_entry;
     auto icon_uuid = base::GenerateGUID();
-    icon_entry->uuid = icon_uuid;
-    icon_entry->data = std::move(encoded_data);
+    icon_entry.uuid = icon_uuid;
+    icon_entry.data = std::move(encoded_data);
     icon_store_->Add(
         std::move(icon_entry),
         base::BindOnce(&ScheduledNotificationManagerImpl::OnIconAdded,

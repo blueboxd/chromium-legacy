@@ -114,8 +114,11 @@ void InitializeMetadataEvent(TraceEvent* trace_event,
     return;
 
   TraceArguments args(arg_name, value);
-  trace_event->Reset(thread_id, TimeTicks(), ThreadTicks(),
-                     ThreadInstructionCount(), TRACE_EVENT_PHASE_METADATA,
+  base::TimeTicks now = TRACE_TIME_TICKS_NOW();
+  ThreadTicks thread_now = ThreadNow();
+  ThreadInstructionCount thread_instruction_count = ThreadInstructionNow();
+  trace_event->Reset(thread_id, now, thread_now, thread_instruction_count,
+                     TRACE_EVENT_PHASE_METADATA,
                      CategoryRegistry::kCategoryMetadata->state_ptr(),
                      metadata_name,
                      trace_event_internal::kGlobalScope,  // scope

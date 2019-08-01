@@ -1247,12 +1247,10 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   if (provider_)
     provider_->DeclareUsedResourcesFromChild(child_id, resource_set);
 
-  gfx::Rect damage_rect;
-  gfx::Rect full_damage;
   RenderPass* last_pass = frame.render_pass_list.back().get();
-  full_damage = last_pass->output_rect;
-  damage_rect =
-      DamageRectForSurface(surface, *last_pass, last_pass->output_rect);
+  gfx::Rect full_damage = last_pass->output_rect;
+  gfx::Rect damage_rect =
+      DamageRectForSurface(surface, *last_pass, full_damage);
   damage_rect = cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
       root_pass_transform, damage_rect);
 
@@ -1318,6 +1316,12 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   }
 
   if (!damage_rect.IsEmpty()) {
+    // If there is a damage on the surface, boundaries of mirror layers should
+    // also be marked as damaged so they can reflect the changes in the
+    // sub-surfaces of this surface.
+    damage_rect.Union(cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+        root_pass_transform, frame.metadata.mirror_rect));
+
     // The following call can cause one or more copy requests to be added to the
     // Surface. Therefore, no code before this point should have assumed
     // anything about the presence or absence of copy requests after this point.

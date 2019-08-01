@@ -30,6 +30,9 @@ class EmptyPredictor : public InputPredictor {
   bool GeneratePrediction(base::TimeTicks predict_time,
                           InputData* result) const override;
 
+  // Returns kTimeInterval for testing.
+  base::TimeDelta TimeInterval() const override;
+
  private:
   // store the last_input_ point for testing
   base::Optional<InputData> last_input_;

@@ -13,7 +13,7 @@ namespace base {
 class ListValue;
 }  // namespace base
 
-namespace nux {
+namespace welcome {
 
 struct BookmarkItem {
   const int id;
@@ -29,6 +29,6 @@ base::ListValue BookmarkItemsToListValue(const BookmarkItem items[],
 base::ListValue BookmarkItemsToListValue(
     const std::vector<BookmarkItem>& items);
 
-}  // namespace nux
+}  // namespace welcome
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_BOOKMARK_ITEM_H_

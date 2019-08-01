@@ -34,7 +34,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
-#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 
 using FillingSource = ManualFillingController::FillingSource;
 #endif
@@ -125,12 +124,6 @@ void AutofillPopupControllerImpl::Show(
 
   if (just_created) {
 #if defined(OS_ANDROID)
-    if (popup_type == PopupType::kPasswords &&
-        TouchToFillController::AllowedForWebContents(web_contents_)) {
-      TouchToFillController::GetOrCreate(web_contents_)
-          ->Show(suggestions, GetWeakPtr());
-    }
-
     ManualFillingController::GetOrCreate(web_contents_)
         ->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                    !suggestions.empty());
@@ -331,8 +324,6 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
   // Accepting a suggestion should hide all suggestions. To prevent them from
   // coming up in Multi-Window mode, mark the source as unavailable.
   mf_controller->UpdateSourceAvailability(FillingSource::AUTOFILL,
-                                          /*has_suggestions=*/false);
-  mf_controller->UpdateSourceAvailability(FillingSource::TOUCH_TO_FILL,
                                           /*has_suggestions=*/false);
   mf_controller->Hide();
 #endif
@@ -582,10 +573,6 @@ void AutofillPopupControllerImpl::HideViewAndDie() {
   // switch between text input fields.
   ManualFillingController::GetOrCreate(web_contents_)
       ->UpdateSourceAvailability(FillingSource::AUTOFILL,
-                                 /*has_suggestions=*/false);
-
-  ManualFillingController::GetOrCreate(web_contents_)
-      ->UpdateSourceAvailability(FillingSource::TOUCH_TO_FILL,
                                  /*has_suggestions=*/false);
 #endif
 

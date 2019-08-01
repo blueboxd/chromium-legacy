@@ -1,6 +1,5 @@
 # tags: [ android linux lion mac mountainlion win win7 win8 ]
 # tags: [ debug ]
-# tags: [ skia-renderer no-skia-renderer ]
 # tags: [ amd-0x6779 nvidia qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 ]
 # tags: [ asan no-asan ]
 # results: [ Failure RetryOnFailure Skip ]
@@ -45,6 +44,3 @@ crbug.com/880078 [ android ] ContextLost_WorkerRAFAfterGPUCrash_OOPD [ Failure ]
 # The Nexus 6 times out on these tests while waiting for the JS to complete
 crbug.com/611906 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostFromLoseContextExtension [ Failure ]
 crbug.com/611906 [ android qualcomm-adreno-(tm)-420 ] ContextLost_WebGLContextLostFromQuantity [ Failure ]
-
-# Consistent Failure in SkiaRenderer
-crbug.com/984110 [ linux skia-renderer ] ContextLost_WebGL2Blocked [ Skip ]

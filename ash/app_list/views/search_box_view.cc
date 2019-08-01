@@ -549,7 +549,7 @@ void SearchBoxView::SetAutocompleteText(
   // The controller was null briefly, so it was unaware of a highlight change.
   // As a result, we need to manually declare the range to allow for proper
   // selection behavior.
-  search_box()->SelectRange(highlight_range_);
+  search_box()->SetSelectedRange(highlight_range_);
 
   // Send an event to alert ChromeVox that an autocomplete has occurred.
   // The |kValueChanged| type lets ChromeVox know that it should scan
@@ -670,10 +670,6 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     if (!selection_controller->MoveSelection(key_event))
       return true;
 
-    // Tells ChromeVox to read this result
-    selection_controller->selected_result()->NotifyAccessibilityEvent(
-        ax::mojom::Event::kSelection, true);
-
     // Fill text on result change.
     SearchResultBaseView* selected_result_view =
         selection_controller->selected_result();
@@ -776,7 +772,7 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
 void SearchBoxView::HintTextChanged() {
   const app_list::SearchBoxModel* search_box_model =
       search_model_->search_box();
-  search_box()->set_placeholder_text(search_box_model->hint_text());
+  search_box()->SetPlaceholderText(search_box_model->hint_text());
   search_box()->SetAccessibleName(search_box_model->accessible_name());
   SchedulePaint();
 }

@@ -7,6 +7,7 @@
 
 #include <iosfwd>
 
+#include "chrome/browser/web_applications/components/install_manager.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -81,6 +82,9 @@ struct ExternalInstallOptions {
 
 std::ostream& operator<<(std::ostream& out,
                          const ExternalInstallOptions& install_options);
+
+InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
+    const ExternalInstallOptions& install_options);
 
 }  // namespace web_app
 

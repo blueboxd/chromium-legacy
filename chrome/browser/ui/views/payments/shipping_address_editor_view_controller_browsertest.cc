@@ -623,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   DCHECK(textfield);
   EXPECT_TRUE(textfield->GetText().empty());
   // Field is not invalid because there is nothing in it.
-  EXPECT_FALSE(textfield->invalid());
+  EXPECT_FALSE(textfield->GetInvalid());
   EXPECT_TRUE(textfield->HasFocus());
 }
 
@@ -648,7 +648,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
           EditorViewController::GetInputFieldViewId(autofill::NAME_FULL)));
   DCHECK(textfield);
   EXPECT_FALSE(textfield->GetText().empty());
-  EXPECT_FALSE(textfield->invalid());
+  EXPECT_FALSE(textfield->GetInvalid());
   EXPECT_FALSE(textfield->HasFocus());
 
   // Since we can't easily tell which field is after name, let's just make sure

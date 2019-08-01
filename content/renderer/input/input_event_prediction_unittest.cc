@@ -108,6 +108,12 @@ TEST_F(InputEventPredictionTest, PredictorType) {
 
   ConfigureFieldTrialAndInitialize(
       features::kResamplingInputEvents,
+      ui::input_prediction::kScrollPredictorNameKalmanTimeFiltered);
+  EXPECT_EQ(event_predictor_->selected_predictor_type_,
+            PredictorType::kScrollPredictorTypeKalmanTimeFiltered);
+
+  ConfigureFieldTrialAndInitialize(
+      features::kResamplingInputEvents,
       ui::input_prediction::kScrollPredictorNameLsq);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             PredictorType::kScrollPredictorTypeLsq);
@@ -394,6 +400,41 @@ TEST_F(InputEventPredictionTest, NoResampleWhenExceedMaxResampleTime) {
     // First predicted event time stamp is 8ms from original event timestamp.
     EXPECT_EQ(coalesced_event.PredictedEvent(0).TimeStamp(),
               event_time + base::TimeDelta::FromMilliseconds(8));
+  }
+}
+
+// Test that when dt between events is 6ms, first predicted point is 6ms ahead.
+TEST_F(InputEventPredictionTest, PredictedEventsTimeIntervalEqualRealEvents) {
+  ConfigureFieldTrialAndInitialize(
+      features::kResamplingInputEvents,
+      ui::input_prediction::kScrollPredictorNameKalmanTimeFiltered);
+
+  base::TimeTicks event_time = ui::EventTimeForNow();
+  // Send 3 mouse move each has 6ms interval to get kalman predictor ready.
+  WebMouseEvent mouse_move = SyntheticWebMouseEventBuilder::Build(
+      WebInputEvent::kMouseMove, 10, 10, 0);
+  mouse_move.SetTimeStamp(event_time);
+  HandleEvents(mouse_move);
+  mouse_move =
+      SyntheticWebMouseEventBuilder::Build(WebInputEvent::kMouseMove, 11, 9, 0);
+  mouse_move.SetTimeStamp(event_time += base::TimeDelta::FromMilliseconds(6));
+  HandleEvents(mouse_move);
+  mouse_move =
+      SyntheticWebMouseEventBuilder::Build(WebInputEvent::kMouseMove, 12, 8, 0);
+  mouse_move.SetTimeStamp(event_time += base::TimeDelta::FromMilliseconds(6));
+  HandleEvents(mouse_move);
+
+  {
+    mouse_move = SyntheticWebMouseEventBuilder::Build(WebInputEvent::kMouseMove,
+                                                      13, 7, 0);
+    mouse_move.SetTimeStamp(event_time += base::TimeDelta::FromMilliseconds(6));
+    blink::WebCoalescedInputEvent coalesced_event(mouse_move);
+    event_predictor_->HandleEvents(coalesced_event, event_time);
+
+    EXPECT_EQ(coalesced_event.PredictedEventSize(), 4u);
+    // First predicted event time stamp is 6ms from original event timestamp.
+    EXPECT_EQ(coalesced_event.PredictedEvent(0).TimeStamp(),
+              event_time + base::TimeDelta::FromMilliseconds(6));
   }
 }
 

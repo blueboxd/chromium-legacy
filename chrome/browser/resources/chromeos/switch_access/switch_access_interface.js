@@ -28,41 +28,6 @@ class SwitchAccessInterface {
   selectCurrentNode() {}
 
   /**
-   * Open the options page in a new tab.
-   */
-  showOptionsPage() {}
-
-  /**
-   * Return a list of the names of all user commands.
-   * @return {!Array<!SAConstants.Command>}
-   */
-  getCommands() {}
-
-  /**
-   * Checks if the given string is a valid Switch Access command.
-   * @param {string} command
-   * @return {boolean}
-   */
-  hasCommand(command) {}
-
-  /**
-   * Forwards keycodes received from keyPress events to |callback|.
-   * @param {function(number)} callback
-   */
-  listenForKeycodes(callback) {}
-
-  /**
-   * Stops forwarding keycodes.
-   */
-  stopListeningForKeycodes() {}
-
-  /**
-   * Run the function binding for the specified command.
-   * @param {!SAConstants.Command} command
-   */
-  runCommand(command) {}
-
-  /**
    * Perform actions as the result of actions by the user. Currently, restarts
    * auto-scan if it is enabled.
    */
@@ -108,15 +73,6 @@ class SwitchAccessInterface {
    * @return {number|null}
    */
   getNumberPreferenceIfDefined(key) {}
-
-  /**
-   * Returns true if |keyCode| is already used to run a command from the
-   * keyboard.
-   *
-   * @param {number} keyCode
-   * @return {boolean}
-   */
-  keyCodeIsUsed(keyCode) {}
 
   /**
    * Sets up the connection between the menuPanel and the menuManager.

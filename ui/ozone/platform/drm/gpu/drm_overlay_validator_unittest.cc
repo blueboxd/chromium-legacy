@@ -5,11 +5,12 @@
 #include "ui/ozone/platform/drm/gpu/drm_overlay_validator.h"
 
 #include <drm_fourcc.h>
+
 #include <memory>
 #include <utility>
 
 #include "base/files/platform_file.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
@@ -86,7 +87,8 @@ class DrmOverlayValidatorTest : public testing::Test {
 
   void InitializeDrmState(const std::vector<CrtcState>& crtc_states);
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   scoped_refptr<ui::MockDrmDevice> drm_;
   ui::MockGbmDevice* gbm_ = nullptr;
   std::unique_ptr<ui::ScreenManager> screen_manager_;
@@ -109,7 +111,6 @@ void DrmOverlayValidatorTest::SetUp() {
   on_swap_buffers_count_ = 0;
   last_swap_buffers_result_ = gfx::SwapResult::SWAP_FAILED;
 
-  message_loop_.reset(new base::MessageLoopForUI);
   auto gbm = std::make_unique<ui::MockGbmDevice>();
   gbm_ = gbm.get();
   drm_ = new ui::MockDrmDevice(std::move(gbm));
@@ -143,6 +144,7 @@ void DrmOverlayValidatorTest::SetUp() {
   ui::OverlayCheck_Params primary_candidate;
   primary_candidate.buffer_size = primary_rect_.size();
   primary_candidate.display_rect = primary_rect_;
+  primary_candidate.is_opaque = true;
   primary_candidate.format = gfx::BufferFormat::BGRX_8888;
   overlay_params_.push_back(primary_candidate);
   AddPlane(primary_candidate);
@@ -151,6 +153,7 @@ void DrmOverlayValidatorTest::SetUp() {
   overlay_candidate.buffer_size = overlay_rect_.size();
   overlay_candidate.display_rect = overlay_rect_;
   overlay_candidate.plane_z_order = 1;
+  primary_candidate.is_opaque = true;
   overlay_candidate.format = gfx::BufferFormat::BGRX_8888;
   overlay_params_.push_back(overlay_candidate);
   AddPlane(overlay_candidate);
@@ -224,14 +227,13 @@ void DrmOverlayValidatorTest::AddPlane(const ui::OverlayCheck_Params& params) {
       ui::GetFourCCFormatFromBufferFormat(params.format), params.buffer_size);
   plane_list_.push_back(ui::DrmOverlayPlane(
       std::move(drm_framebuffer), params.plane_z_order, params.transform,
-      params.display_rect, params.crop_rect, true, nullptr));
+      params.display_rect, params.crop_rect, !params.is_opaque, nullptr));
 }
 
 void DrmOverlayValidatorTest::TearDown() {
   std::unique_ptr<ui::DrmWindow> window =
       screen_manager_->RemoveWindow(kDefaultWidgetHandle);
   window->Shutdown();
-  message_loop_.reset();
 }
 
 TEST_F(DrmOverlayValidatorTest, WindowWithNoController) {
@@ -302,6 +304,7 @@ TEST_F(DrmOverlayValidatorTest, OverlayFormat_YUV) {
   overlay_params_.back().buffer_size = overlay_rect_.size();
   overlay_params_.back().display_rect = overlay_rect_;
   overlay_params_.back().crop_rect = crop_rect;
+  overlay_params_.back().is_opaque = false;
   overlay_params_.back().format = gfx::BufferFormat::UYVY_422;
   plane_list_.pop_back();
   AddPlane(overlay_params_.back());

@@ -59,7 +59,7 @@ class AwRenderFrameExt : public content::RenderFrameObserver {
 
   void OnSetBackgroundColor(SkColor c);
 
-  void OnSmoothScroll(int target_x, int target_y, uint64_t duration_ms);
+  void OnSmoothScroll(int target_x, int target_y, base::TimeDelta duration);
 
   void OnSetWillSuppressErrorPage(bool suppress);
 

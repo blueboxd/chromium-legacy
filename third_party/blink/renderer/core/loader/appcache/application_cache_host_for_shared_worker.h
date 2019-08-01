@@ -12,7 +12,7 @@ namespace blink {
 class ApplicationCacheHostForSharedWorker final : public ApplicationCacheHost {
  public:
   ApplicationCacheHostForSharedWorker(
-      DocumentLoader* document_loader,
+      const base::UnguessableToken& appcache_host_id,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplicationCacheHostForSharedWorker() override;
 

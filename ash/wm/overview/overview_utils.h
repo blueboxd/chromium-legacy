@@ -76,6 +76,9 @@ bool IsSlidingOutOverviewFromShelf();
 // Maximize the window if it is snapped without animation.
 void MaximizeIfSnapped(aura::Window* window);
 
+// Check if kNewOverviewLayout is enabled for tablet mode.
+bool ShouldUseTabletModeGridLayout();
+
 }  // namespace ash
 
 #endif  // ASH_WM_OVERVIEW_OVERVIEW_UTILS_H_

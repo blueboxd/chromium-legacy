@@ -425,7 +425,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
             blink::mojom::Referrer::New(referrer.url, referrer.policy),
             navigate_type, PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(),
             base::TimeTicks::Now());
-    CommitNavigationParams commit_params =
+    mojom::CommitNavigationParamsPtr commit_params =
         entry->ConstructCommitNavigationParams(
             *frame_entry, common_params->url, frame_entry->committed_origin(),
             common_params->method,
@@ -435,11 +435,11 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
             controller->GetIndexOfEntry(entry),
             controller->GetLastCommittedEntryIndex(),
             controller->GetEntryCount());
-    commit_params.post_content_type = post_content_type;
+    commit_params->post_content_type = post_content_type;
 
     std::unique_ptr<NavigationRequest> navigation_request =
         NavigationRequest::CreateBrowserInitiated(
-            frame_tree_node, std::move(common_params), commit_params,
+            frame_tree_node, std::move(common_params), std::move(commit_params),
             !entry->is_renderer_initiated(), entry->extra_headers(),
             *frame_entry, entry, request_body,
             nullptr /* navigation_ui_data */);
@@ -2931,17 +2931,19 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
           blink::mojom::Referrer::New(referrer.url, referrer.policy),
           mojom::NavigationType::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
           base::TimeTicks::Now(), base::TimeTicks::Now());
-  CommitNavigationParams commit_params = entry.ConstructCommitNavigationParams(
-      *frame_entry, common_params->url, frame_entry->committed_origin(),
-      common_params->method, entry.GetSubframeUniqueNames(frame_tree_node),
-      controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
-      static_cast<NavigationControllerImpl&>(controller())
-          .GetIndexOfEntry(&entry),
-      controller().GetLastCommittedEntryIndex(), controller().GetEntryCount());
+  mojom::CommitNavigationParamsPtr commit_params =
+      entry.ConstructCommitNavigationParams(
+          *frame_entry, common_params->url, frame_entry->committed_origin(),
+          common_params->method, entry.GetSubframeUniqueNames(frame_tree_node),
+          controller().GetPendingEntryIndex() == -1 /* intended_as_new_entry */,
+          static_cast<NavigationControllerImpl&>(controller())
+              .GetIndexOfEntry(&entry),
+          controller().GetLastCommittedEntryIndex(),
+          controller().GetEntryCount());
 
   std::unique_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateBrowserInitiated(
-          frame_tree_node, std::move(common_params), commit_params,
+          frame_tree_node, std::move(common_params), std::move(commit_params),
           !entry.is_renderer_initiated(), entry.extra_headers(), *frame_entry,
           &entry, nullptr /* request_body */, nullptr /* navigation_ui_data */);
   manager->DidCreateNavigationRequest(navigation_request.get());

@@ -299,20 +299,25 @@ void BufferingMixerSource::WritePcm(scoped_refptr<DecoderBufferBase> data) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   RenderingDelay delay;
+  bool queued;
   {
     auto locked = locked_members_.Lock();
+    old_buffers_to_be_freed_.swap(locked->buffers_to_be_freed_);
     if (locked->state_ == State::kUninitialized ||
         locked->queued_frames_ + locked->fader_.buffered_frames() >=
             max_queued_frames_) {
       DCHECK(!locked->pending_data_);
       locked->pending_data_ = std::move(data);
-      return;
+      queued = false;
+    } else {
+      delay = QueueData(std::move(data));
+      queued = true;
     }
-    old_buffers_to_be_freed_.swap(locked->buffers_to_be_freed_);
-    delay = QueueData(std::move(data));
   }
   old_buffers_to_be_freed_.clear();
-  delegate_->OnWritePcmCompletion(delay);
+  if (queued) {
+    delegate_->OnWritePcmCompletion(delay);
+  }
 }
 
 BufferingMixerSource::RenderingDelay BufferingMixerSource::QueueData(

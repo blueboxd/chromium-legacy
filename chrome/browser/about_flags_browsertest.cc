@@ -11,6 +11,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/flags_ui/flags_state.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/base/window_open_disposition.h"
@@ -102,6 +103,11 @@ bool IsDropdownEnabled(content::WebContents* contents,
 // line (provided in SetUpCommandLine) and once without.
 class AboutFlagsBrowserTest : public InProcessBrowserTest,
                               public testing::WithParamInterface<bool> {
+ public:
+  AboutFlagsBrowserTest() {
+    feature_list_.InitWithFeatures({flags_ui::kUnexpireFlagsM77}, {});
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(kSwitchName, GetInitialCommandLine());
   }
@@ -121,6 +127,8 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
     return has_initial_command_line() ? kSanitizedInputAndCommandLine
                                       : kSanitizedInput;
   }
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(,

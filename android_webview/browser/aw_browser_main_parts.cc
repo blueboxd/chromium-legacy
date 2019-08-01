@@ -28,8 +28,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
+#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/heap_profiling/supervisor.h"
@@ -76,7 +76,7 @@ int AwBrowserMainParts::PreEarlyInitialization() {
   DCHECK(!main_task_executor_.get());
   if (!base::MessageLoopCurrent::IsSet()) {
     main_task_executor_ = std::make_unique<base::SingleThreadTaskExecutor>(
-        base::MessagePumpType::UI);
+        base::MessagePump::Type::UI);
   }
 
   browser_process_ = std::make_unique<AwBrowserProcess>(

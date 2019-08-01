@@ -389,4 +389,20 @@ void AudioWorkletNode::Trace(blink::Visitor* visitor) {
   AudioNode::Trace(visitor);
 }
 
+void AudioWorkletNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+  for (const auto& param_name : parameter_map_->GetHashMap().Keys()) {
+    GraphTracer().DidCreateAudioParam(
+        parameter_map_->GetHashMap().at(param_name));
+  }
+}
+
+void AudioWorkletNode::ReportWillBeDestroyed() {
+  for (const auto& param_name : parameter_map_->GetHashMap().Keys()) {
+    GraphTracer().WillDestroyAudioParam(
+        parameter_map_->GetHashMap().at(param_name));
+  }
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

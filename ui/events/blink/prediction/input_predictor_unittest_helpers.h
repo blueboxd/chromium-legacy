@@ -12,6 +12,9 @@
 
 namespace ui {
 
+constexpr base::TimeDelta kExpectedDefaultTimeInterval =
+    base::TimeDelta::FromMilliseconds(8);
+
 // Base class for predictor unit tests
 class InputPredictorTest : public testing::Test {
  public:

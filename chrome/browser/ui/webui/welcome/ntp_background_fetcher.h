@@ -16,7 +16,7 @@ namespace network {
 class SimpleURLLoader;
 }
 
-namespace nux {
+namespace welcome {
 
 class NtpBackgroundFetcher {
  public:
@@ -35,6 +35,6 @@ class NtpBackgroundFetcher {
   DISALLOW_COPY_AND_ASSIGN(NtpBackgroundFetcher);
 };
 
-}  // namespace nux
+}  // namespace welcome
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_NTP_BACKGROUND_FETCHER_H_

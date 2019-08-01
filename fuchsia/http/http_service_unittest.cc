@@ -203,7 +203,8 @@ void CheckResponseBuffer(const oldhttp::URLResponse& response,
 
 void CheckResponseHeaders(const oldhttp::URLResponse& response,
                           ResponseHeaders* expected_headers) {
-  for (auto& header : response.headers.get()) {
+  ASSERT_TRUE(response.headers.has_value());
+  for (auto& header : response.headers.value()) {
     const std::string header_name = header.name.data();
     const std::string header_value = header.value.data();
     auto iter = std::find_if(expected_headers->begin(), expected_headers->end(),

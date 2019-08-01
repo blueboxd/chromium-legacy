@@ -95,6 +95,7 @@
 #include "components/sync_device_info/device_count_metrics_provider.h"
 #include "components/ukm/ukm_service.h"
 #include "components/version_info/version_info.h"
+#include "content/browser/accessibility/accessibility_metrics_provider.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
@@ -759,6 +760,9 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       SigninStatusMetricsProvider::CreateInstance(
           std::make_unique<ChromeSigninStatusMetricsProviderDelegate>()));
+  // ChromeOS uses ChromeOSMetricsProvider for accessibility metrics provider.
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<AccessibilityMetricsProvider>());
 #endif  // !defined(OS_CHROMEOS)
 
   metrics_service_->RegisterMetricsProvider(

@@ -56,7 +56,6 @@
 namespace blink {
 
 class ConsoleMessageStorage;
-class FetchClientSettingsObjectSnapshot;
 class InspectorTaskRunner;
 class InstalledScriptsManager;
 class WorkerBackingThread;
@@ -119,7 +118,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // thread. Called on the main thread after Start().
   void FetchAndRunClassicScript(
       const KURL& script_url,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+          outside_settings_object_data,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id);
 
@@ -127,7 +127,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // thread. Called on the main thread after Start().
   void FetchAndRunModuleScript(
       const KURL& script_url,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+          outside_settings_object_data,
       WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       network::mojom::CredentialsMode);
 

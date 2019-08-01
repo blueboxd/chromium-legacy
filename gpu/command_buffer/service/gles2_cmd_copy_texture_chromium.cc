@@ -305,10 +305,11 @@ ShaderId GetFragmentShaderId(bool premultiply_alpha,
 
 const char* kShaderPrecisionPreamble =
     "#ifdef GL_ES\n"
-    "precision mediump float;\n"
     "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+    "precision highp float;\n"
     "#define TexCoordPrecision highp\n"
     "#else\n"
+    "precision mediump float;\n"
     "#define TexCoordPrecision mediump\n"
     "#endif\n"
     "#else\n"

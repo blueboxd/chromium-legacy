@@ -126,6 +126,9 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
   if (!always_visible_ && root_controller->GetWindowForFullscreenMode() &&
       !wm::IsActiveWindow(panel_window_)) {
     bounds.set_height(0);
+    panel_window_->SetBounds(bounds);
+    UpdateWorkAreaForPanelHeight();
+    return;
   }
 
   // Make sure the accessibility panel is always below the Docked Magnifier

@@ -15,7 +15,7 @@
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/media_route.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
+#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 
 namespace cast_channel {
@@ -139,6 +139,10 @@ class ActivityRecord {
   virtual void ClosePresentationConnections(
       blink::mojom::PresentationConnectionCloseReason close_reason) = 0;
   virtual void TerminatePresentationConnections() = 0;
+
+  virtual void CreateMediaController(
+      mojom::MediaControllerRequest media_controller,
+      mojom::MediaStatusObserverPtr observer) = 0;
 
  protected:
   CastSession* GetSession() const;

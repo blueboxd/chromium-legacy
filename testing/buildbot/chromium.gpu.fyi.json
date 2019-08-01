@@ -4609,6 +4609,52 @@
     "isolated_scripts": [
       {
         "args": [
+          "pixel",
+          "--show-stdout",
+          "--browser=android-webview-instrumentation",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--dont-restore-color-profile-after-test",
+          "--os-type",
+          "android",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "android_webview_pixel_skia_gold_test",
+        "precommit_args": [
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
+        ],
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
+        }
+      },
+      {
+        "args": [
           "--gtest-benchmark-name=angle_perftests",
           "-v",
           "--one-frame-only",
@@ -8124,11 +8170,9 @@
           "--test-launcher-jobs=1",
           "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
           "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
-          "--use-gl=any",
           "--use-vulkan=native",
           "--enable-oop-rasterization",
           "--enable-gpu-rasterization",
-          "--enable-raster-to-sk-image",
           "--force-gpu-rasterization",
           "--disable-software-compositing-fallback",
           "--disable-vulkan-fallback-to-gl-for-testing",
@@ -8880,11 +8924,9 @@
           "--test-launcher-jobs=1",
           "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
           "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
-          "--use-gl=any",
           "--use-vulkan=native",
           "--enable-oop-rasterization",
           "--enable-gpu-rasterization",
-          "--enable-raster-to-sk-image",
           "--force-gpu-rasterization",
           "--disable-software-compositing-fallback",
           "--disable-vulkan-fallback-to-gl-for-testing",

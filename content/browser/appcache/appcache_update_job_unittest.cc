@@ -679,15 +679,14 @@ class AppCacheUpdateJobTest : public testing::Test,
     // TODO(http://crbug.com/824840): Enable NavigationLoaderOnUI for these
     // tests.
     feature_list_.InitAndDisableFeature(features::kNavigationLoaderOnUI);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&IOThread::Init, base::Unretained(io_thread_.get())));
 
     loader_factory_getter_ = base::MakeRefCounted<URLLoaderFactoryGetter>();
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&AppCacheUpdateJobTest::InitializeFactory,
-                       base::Unretained(this)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&AppCacheUpdateJobTest::InitializeFactory,
+                                  base::Unretained(this)));
   }
 
   ~AppCacheUpdateJobTest() override {
@@ -695,7 +694,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     // The TestBrowserThreadBundle dtor guarantees that all posted tasks are
     // executed before the IO thread shuts down. It is safe to use the
     // Unretained pointer here.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&IOThread::CleanUp, base::Unretained(io_thread_.get())));
   }
@@ -714,8 +713,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   void RunTestOnIOThread(Method method) {
     base::RunLoop run_loop;
     test_completed_cb_ = run_loop.QuitClosure();
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(method, base::Unretained(this)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(method, base::Unretained(this)));
     run_loop.Run();
   }
 

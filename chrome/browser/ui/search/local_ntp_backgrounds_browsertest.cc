@@ -66,9 +66,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
   // Check that a URL with attributions can be set.
   EXPECT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
-                                     "setBackgroundURLWithAttributions('https:/"
+                                     "setBackgroundInfo('https:/"
                                      "/www.test.com/', 'attr1', 'attr2', "
-                                     "'https://www.attribution.com/')"));
+                                     "'https://www.attribution.com/', '')"));
   observer.WaitForThemeInfoUpdated("https://www.test.com/", "attr1", "attr2",
                                    "https://www.attribution.com/");
 
@@ -94,9 +94,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest, AttributionSetAndReset) {
       GURL("https://www.test.com/"));
   EXPECT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
-                                     "setBackgroundURLWithAttributions('https:/"
+                                     "setBackgroundInfo('https:/"
                                      "/www.test.com/', 'attr1', 'attr2', "
-                                     "'https://www.attribution.com/')"));
+                                     "'https://www.attribution.com/', '')"));
   observer.WaitForThemeInfoUpdated("https://www.test.com/", "attr1", "attr2",
                                    "https://www.attribution.com/");
 
@@ -284,9 +284,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
       GURL("https://www.test.com/"));
   ASSERT_TRUE(content::ExecuteScript(active_tab,
                                      "window.chrome.embeddedSearch.newTabPage."
-                                     "setBackgroundURLWithAttributions('https:/"
+                                     "setBackgroundInfo('https:/"
                                      "/www.test.com/', 'attr1', 'attr2', "
-                                     "'https://www.attribution.com/')"));
+                                     "'https://www.attribution.com/', '')"));
   observer.WaitForThemeInfoUpdated("https://www.test.com/", "attr1", "attr2",
                                    "https://www.attribution.com/");
 

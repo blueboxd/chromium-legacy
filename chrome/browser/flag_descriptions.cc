@@ -1873,6 +1873,12 @@ const char kTabHoverCardImagesName[] = "Tab Hover Card Images";
 const char kTabHoverCardImagesDescription[] =
     "Shows a preview image in tab hover cards, if tab hover cards are enabled.";
 
+const char kTabOutlinesInLowContrastThemesName[] =
+    "Tab Outlines in Low Contrast Themes";
+const char kTabOutlinesInLowContrastThemesDescription[] =
+    "Expands the range of situations in which tab outline strokes are "
+    "displayed, improving accessiblity in dark and incognito mode.";
+
 const char kTabsInCbdName[] = "Enable tabs for the Clear Browsing Data dialog.";
 const char kTabsInCbdDescription[] =
     "Enables a basic and an advanced tab for the Clear Browsing Data dialog.";
@@ -1967,6 +1973,11 @@ const char kTrySupportedChannelLayoutsDescription[] =
     "default hardware layout are available. Turning this on will allow the OS "
     "to do stereo to surround expansion if supported. May expose third party "
     "driver bugs, use with caution.";
+
+const char kUnexpireFlagsM77Name[] = "Temporarily unexpire M77 flags.";
+const char kUnexpireFlagsM77Description[] =
+    "Temporarily unexpire flags that are expired as of M77. These flags will "
+    "be removed soon.";
 
 const char kUnifiedConsentName[] = "Unified Consent";
 const char kUnifiedConsentDescription[] =
@@ -3197,6 +3208,12 @@ const char kEnableGoogleAssistantStereoInputName[] =
 const char kEnableGoogleAssistantStereoInputDescription[] =
     "Enable an experimental feature that uses stereo audio input for hotword "
     "and voice to text detection in Google Assistant.";
+
+const char kEnableHeuristicStylusPalmRejectionName[] =
+    "Enable Heuristic for Stylus/Palm Rejection.";
+const char kEnableHeuristicStylusPalmRejectionDescription[] =
+    "Enable additional heuristic palm rejection logic when interacting with "
+    "stylus usage. Not intended for all devices.";
 
 const char kEnableHomeLauncherName[] = "Enable home launcher";
 const char kEnableHomeLauncherDescription[] =

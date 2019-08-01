@@ -71,17 +71,6 @@ AtomicString AtomicString::FromUTF8(const char* chars) {
   return AtomicString(AtomicStringTable::Instance().AddUTF8(chars, nullptr));
 }
 
-AtomicString AtomicString::DeprecatedLower() const {
-  // Note: This is a hot function in the Dromaeo benchmark.
-  StringImpl* impl = this->Impl();
-  if (UNLIKELY(!impl))
-    return *this;
-  scoped_refptr<StringImpl> new_impl = CaseMap::FastToLowerInvariant(impl);
-  if (LIKELY(new_impl == impl))
-    return *this;
-  return AtomicString(String(std::move(new_impl)));
-}
-
 AtomicString AtomicString::LowerASCII() const {
   StringImpl* impl = this->Impl();
   if (UNLIKELY(!impl))

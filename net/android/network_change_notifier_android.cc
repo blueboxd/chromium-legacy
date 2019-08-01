@@ -202,8 +202,8 @@ NetworkChangeNotifierAndroid::NetworkChangeNotifierAndroid(
     NetworkChangeNotifierDelegateAndroid* delegate)
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsAndroid()),
       delegate_(delegate),
-      blocking_thread_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+      blocking_thread_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock()})),
       blocking_thread_objects_(
           new BlockingThreadObjects(),
           // Ensure |blocking_thread_objects_| lives on

@@ -54,7 +54,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
-#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -742,10 +741,10 @@ BuildProtocolBlockedCookies(const net::CookieStatusList& net_list) {
   std::unique_ptr<Array<Network::BlockedCookieWithReason>> protocol_list =
       std::make_unique<Array<Network::BlockedCookieWithReason>>();
 
-  bool samesite_by_default_enabled = base::FeatureList::IsEnabled(
-      net::features::kSameSiteByDefaultCookies);
-  bool must_be_secure_enabled = base::FeatureList::IsEnabled(
-      net::features::kCookiesWithoutSameSiteMustBeSecure);
+  bool samesite_by_default_enabled =
+      net::cookie_util::IsSameSiteByDefaultCookiesEnabled();
+  bool must_be_secure_enabled =
+      net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled();
 
   for (const net::CookieWithStatus& cookie : net_list) {
     // These CookieInclusionStatus values will be passed to us from network
@@ -1582,7 +1581,8 @@ void NetworkHandler::NavigationRequestWillBeSent(
     headers_dict->setString(net::HttpRequestHeaders::kReferer, referrer.spec());
 
   std::unique_ptr<Network::Response> redirect_response;
-  const CommitNavigationParams& commit_params = nav_request.commit_params();
+  const mojom::CommitNavigationParams& commit_params =
+      nav_request.commit_params();
   if (!commit_params.redirect_response.empty()) {
     redirect_response = BuildResponse(commit_params.redirects.back(),
                                       commit_params.redirect_response.back());

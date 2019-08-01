@@ -271,7 +271,10 @@ source_set("tests") {
   }
 
   if (is_win) {
-    sources += [ "generic_sensor/platform_sensor_provider_winrt_unittest.cc" ]
+    sources += [
+      "generic_sensor/platform_sensor_provider_winrt_unittest.cc",
+      "generic_sensor/platform_sensor_reader_winrt_unittests.cc",
+    ]
 
     # Needed for "generic_sensor/platform_sensor_and_provider_unittest_win.cc"
     libs = [

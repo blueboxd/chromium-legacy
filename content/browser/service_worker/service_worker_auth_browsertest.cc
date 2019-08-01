@@ -18,7 +18,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -159,9 +158,6 @@ class ServiceWorkerBasicAuthTest : public ContentBrowserTest {
 // worker, when the service worker calls fetch() for the main resource.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasicAuthTest,
                        BasicAuthPromptFetchMainResourceMainFrame) {
-  // The test should run only when Network Service is enabled.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
   // Load a page that installs the service worker.
   EXPECT_TRUE(NavigateToURL(
       shell(), ssl_server_.GetURL("/workers/service_worker_setup.html")));
@@ -180,9 +176,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasicAuthTest,
 // subframe.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasicAuthTest,
                        BasicAuthPromptFetchMainResourceSubframe) {
-  // The test should run only when Network Service is enabled.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
   // Load a page that installs the service worker.
   EXPECT_TRUE(NavigateToURL(
       shell(), ssl_server_.GetURL("/workers/service_worker_setup.html")));
@@ -199,9 +192,6 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasicAuthTest,
 // worker, when the service worker calls fetch() for a subresource.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasicAuthTest,
                        BasicAuthPromptFetchSubResource) {
-  // The test should run only when Network Service is enabled.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
   // Load a page that installs the service worker.
   EXPECT_TRUE(NavigateToURL(
       shell(), ssl_server_.GetURL("/workers/service_worker_setup.html")));

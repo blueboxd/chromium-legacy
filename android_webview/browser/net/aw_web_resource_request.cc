@@ -4,7 +4,7 @@
 
 #include "android_webview/browser/net/aw_web_resource_request.h"
 
-#include "content/public/browser/resource_request_info.h"
+#include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -32,23 +32,6 @@ void ConvertRequestHeadersToVectors(const net::HttpRequestHeaders& headers,
 }
 
 }  // namespace
-
-AwWebResourceRequest::AwWebResourceRequest(const net::URLRequest& request)
-    : url(request.url().spec()), method(request.method()) {
-  content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(&request);
-  is_main_frame =
-      info && info->GetResourceType() == content::ResourceType::kMainFrame;
-  has_user_gesture = info && info->HasUserGesture();
-  is_renderer_initiated =
-      info && ui::PageTransitionIsWebTriggerable(info->GetPageTransition());
-
-  net::HttpRequestHeaders headers;
-  if (!request.GetFullRequestHeaders(&headers))
-    headers = request.extra_request_headers();
-
-  ConvertRequestHeadersToVectors(headers, &header_names, &header_values);
-}
 
 AwWebResourceRequest::AwWebResourceRequest(
     const network::ResourceRequest& request)

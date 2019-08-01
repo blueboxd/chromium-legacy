@@ -2184,7 +2184,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   if (Node().IsTableCell()) {
     // If we have a fixed block-size we are in the "layout" phase.
     builder.SetTableCellChildLayoutPhase(
-        ConstraintSpace().IsFixedSizeBlock()
+        ConstraintSpace().IsFixedBlockSize()
             ? NGTableCellChildLayoutPhase::kLayout
             : NGTableCellChildLayoutPhase::kMeasure);
 

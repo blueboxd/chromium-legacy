@@ -21,7 +21,6 @@
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
@@ -182,11 +181,8 @@ AppCacheJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
 
   // We don't fallback for responses that we delivered.
   if (job_.get()) {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      DCHECK(!job_->IsDeliveringNetworkResponse());
-      return nullptr;
-    } else if (job_->IsDeliveringAppCacheResponse() ||
-               job_->IsDeliveringErrorResponse()) {
+    if (job_->IsDeliveringAppCacheResponse() ||
+        job_->IsDeliveringErrorResponse()) {
       return nullptr;
     }
   }

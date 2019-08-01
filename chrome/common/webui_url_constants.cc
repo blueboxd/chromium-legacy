@@ -406,6 +406,7 @@ const char kSmartLockSettingsSubPage[] = "multidevice/features/smartLock";
 const char kSmbSharesSubPage[] = "smbShares";
 const char kStorageSubPage[] = "storage";
 const char kStylusSubPage[] = "stylus";
+const char kSwitchAccessSubPage[] = "manageAccessibility/switchAccess";
 // Tether is a child of the 'networks' route.
 const char kTetherSettingsSubPage[] = "networks?type=Tether";
 const char kVPNSettingsSubPage[] = "networks?type=VPN";
@@ -445,6 +446,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kSmbSharesSubPage,
       kStorageSubPage,
       kStylusSubPage,
+      kSwitchAccessSubPage,
       // sync is both an OS and browser sub page, but prefer the OS version
       kSyncSetupSubPage,
       kVPNSettingsSubPage,

@@ -24,6 +24,8 @@
  */
 
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
@@ -577,7 +579,7 @@ unsigned AudioHandler::NumberOfOutputChannels() const {
 // ----------------------------------------------------------------
 
 AudioNode::AudioNode(BaseAudioContext& context)
-    : InspectorHelperMixin(context.Uuid()),
+    : InspectorHelperMixin(context.GraphTracer(), context.Uuid()),
       context_(context),
       deferred_task_handler_(&context.GetDeferredTaskHandler()),
       handler_(nullptr) {}
@@ -621,11 +623,22 @@ void AudioNode::Dispose() {
           std::move(handler_));
     }
   }
+
+  // Notify the inspector that this node is going away. The actual clean up
+  // will be done in the subclass implementation.
+  ReportWillBeDestroyed();
 }
 
 void AudioNode::SetHandler(scoped_refptr<AudioHandler> handler) {
   DCHECK(handler);
   handler_ = std::move(handler);
+
+  // Unless the node is an AudioDestinationNode, notify the inspector that the
+  // construction is completed. The actual report will be done in the subclass
+  // implementation. (A destination node is owned by the context and will be
+  // reported by it.)
+  if (handler_->GetNodeType() != AudioHandler::NodeType::kNodeTypeDestination)
+    ReportDidCreate();
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: %16p: %2d: AudioNode::AudioNode %16p\n", context(),
@@ -645,6 +658,7 @@ void AudioNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(connected_nodes_);
   visitor->Trace(connected_params_);
+  InspectorHelperMixin::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 

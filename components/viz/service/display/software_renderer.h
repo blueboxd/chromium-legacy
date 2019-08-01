@@ -89,7 +89,6 @@ class VIZ_SERVICE_EXPORT SoftwareRenderer : public DirectRenderer {
   gfx::Rect GetBackdropBoundingBoxForRenderPassQuad(
       const RenderPassDrawQuad* quad,
       const cc::FilterOperations* backdrop_filters,
-      const cc::FilterOperations* regular_filters,
       base::Optional<gfx::RRectF> backdrop_filter_bounds_input,
       gfx::Transform contents_device_transform,
       gfx::Transform* backdrop_filter_bounds_transform,

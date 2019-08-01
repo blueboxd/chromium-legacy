@@ -124,6 +124,7 @@ void ConditionEventListener::Invoke(ExecutionContext*, Event* event) {
   if (event->type() == "repeatn" &&
       ToRepeatEvent(event)->Repeat() != condition_->Repeat())
     return;
+  animation_->IntervalIsDirty();
   animation_->AddInstanceTime(condition_->GetBeginOrEnd(),
                               animation_->Elapsed() + condition_->Offset());
 }

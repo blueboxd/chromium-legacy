@@ -19,6 +19,9 @@
   'android': [
   ],
 
+  'fuchsia': [
+  ],
+
   # https://crbug.com/330263
   'linux': [
   ],

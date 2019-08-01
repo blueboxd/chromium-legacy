@@ -242,18 +242,29 @@ class ExportDelegate {
       };
       batchExports.push(exportData);
     }
+    const variationInfo =
+        await cr.sendWithPromise('requestVariationInfo', true);
+    const pathInfo = await cr.sendWithPromise('requestPathInfo');
+    const loadTimeDataKeys = ['cl', 'command_line', 'executable_path',
+        'language', 'official', 'os_type', 'profile_path', 'useragent',
+        'version', 'version_bitsize', 'version_modifier'];
+    const versionDetails = Object.fromEntries(
+        loadTimeDataKeys.map(key => [key, window.loadTimeData.getValue(key)]));
+
     const now = new Date();
     const fileName = `omnibox_batch_${ExportDelegate.getTimeStamp(now)}.json`;
     // If this data format changes, please roll schemaVersion.
     const batchData = {
       schemaKind: 'Omnibox Batch Export',
-      schemaVersion: 2,
+      schemaVersion: 3,
       dateCreated: now.toISOString(),
       author: '',
       description: '',
       authorTool: 'chrome://omnibox',
       batchName,
-      versionDetails: window.loadTimeData.data_,
+      versionDetails,
+      variationInfo,
+      pathInfo,
       appVersion: navigator.appVersion,
       batchExports
     };
@@ -330,7 +341,7 @@ class ExportDelegate {
     a.click();
   }
 
-  /** 
+  /**
     * @param {Date=} date
     * @return {string} A sortable timestamp string for use in filenames.
     */

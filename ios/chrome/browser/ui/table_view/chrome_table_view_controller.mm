@@ -155,6 +155,8 @@ const CGFloat kTableViewSeparatorInsetWithIcon = 56;
   self.emptyView = [[TableViewEmptyView alloc] initWithFrame:self.view.bounds
                                                      message:message
                                                        image:image];
+  self.emptyView.tintColor =
+      [UIColor colorNamed:@"placeholder_image_tint_color"];
 }
 
 - (void)addEmptyTableViewWithAttributedMessage:
@@ -163,6 +165,8 @@ const CGFloat kTableViewSeparatorInsetWithIcon = 56;
   self.emptyView = [[TableViewEmptyView alloc] initWithFrame:self.view.bounds
                                            attributedMessage:attributedMessage
                                                        image:image];
+  self.emptyView.tintColor =
+      [UIColor colorNamed:@"placeholder_image_tint_color"];
 }
 
 - (void)updateEmptyTableViewMessageAccessibilityLabel:(NSString*)newLabel {

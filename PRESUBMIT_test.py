@@ -968,6 +968,15 @@ class IncludeGuardTest(unittest.TestCase):
           'struct SomeFileFoo;',
           '#endif  // REQUIRED_RPCNDR_H_',
         ]),
+        # Not having proper include guard in *_message_generator.h
+        # for old IPC messages is allowed.
+        MockAffectedFile('content/common/content_message_generator.h', [
+          '#undef CONTENT_COMMON_FOO_MESSAGES_H_',
+          '#include "content/common/foo_messages.h"',
+          '#ifndef CONTENT_COMMON_FOO_MESSAGES_H_',
+          '#error "Failed to include content/common/foo_messages.h"',
+          '#endif',
+        ]),
       ]
     msgs = PRESUBMIT._CheckForIncludeGuards(
         mock_input_api, mock_output_api)

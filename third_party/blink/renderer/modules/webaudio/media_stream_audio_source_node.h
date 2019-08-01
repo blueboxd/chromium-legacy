@@ -105,6 +105,10 @@ class MediaStreamAudioSourceNode final
 
   bool HasPendingActivity() const final;
 
+  // InspectorHelperMixin
+  void ReportDidCreate() final;
+  void ReportWillBeDestroyed() final;
+
  private:
   MediaStreamAudioSourceHandler& GetMediaStreamAudioSourceHandler() const;
 

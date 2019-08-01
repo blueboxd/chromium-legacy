@@ -16,7 +16,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/was_activated_option.h"
+#include "content/public/common/was_activated_option.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/page_transition_types.h"
@@ -276,8 +276,8 @@ struct NavigateParams {
   // outside of the page and pass it to the page as if it happened on a prior
   // page. For example, if the assistant opens a page we should treat the
   // user's interaction with the assistant as a previous user activation.
-  content::WasActivatedOption was_activated =
-      content::WasActivatedOption::kUnknown;
+  content::mojom::WasActivatedOption was_activated =
+      content::mojom::WasActivatedOption::kUnknown;
 
   // If this navigation was initiated from a link that specified the
   // hrefTranslate attribute, this contains the attribute's value (a BCP47

@@ -180,7 +180,7 @@ bool SpatialNavigationController::HandleEnterKeyboardEvent(
                                           nullptr));
       // We need enter to activate links, etc. The click should be after the
       // focus in case the site transfers focus upon clicking.
-      interest_element->DispatchSimulatedClick(event);
+      interest_element->DispatchSimulatedClick(event, kSendMouseUpDownEvents);
     }
   }
 

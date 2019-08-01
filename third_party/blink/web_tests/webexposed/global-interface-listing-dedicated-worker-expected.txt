@@ -1202,7 +1202,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter readable
 [Worker]     getter writable
-[Worker]     method clearReadError
 [Worker]     method close
 [Worker]     method constructor
 [Worker]     method open

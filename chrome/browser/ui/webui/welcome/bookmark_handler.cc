@@ -10,7 +10,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 
-namespace nux {
+namespace welcome {
 
 BookmarkHandler::BookmarkHandler(PrefService* prefs) : prefs_(prefs) {}
 
@@ -46,4 +46,4 @@ void BookmarkHandler::HandleIsBookmarkBarShown(const base::ListValue* args) {
       base::Value(prefs_->GetBoolean(bookmarks::prefs::kShowBookmarkBar)));
 }
 
-}  // namespace nux
+}  // namespace welcome

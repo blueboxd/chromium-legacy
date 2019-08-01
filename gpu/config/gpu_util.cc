@@ -405,6 +405,10 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
     else if (use_gl == gl::kGLImplementationDisabledName)
       return ComputeGpuFeatureInfoWithNoGpu();
   }
+  if (gpu_preferences.use_vulkan ==
+      gpu::VulkanImplementationName::kSwiftshader) {
+    use_swift_shader = true;
+  }
 
   GpuFeatureInfo gpu_feature_info;
   std::set<int> blacklisted_features;

@@ -124,6 +124,7 @@ base::scoped_nsprotocol<id<MTLTexture>> API_AVAILABLE(macos(10.11))
                        IOSurfaceRef io_surface,
                        const gfx::Size& size,
                        viz::ResourceFormat format) {
+  TRACE_EVENT0("gpu", "SharedImageBackingFactoryIOSurface::CreateMetalTexture");
   base::scoped_nsprotocol<id<MTLTexture>> mtl_texture;
   MTLPixelFormat mtl_pixel_format;
   switch (format) {
@@ -415,6 +416,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
     return true;
   }
   void Destroy() final {
+    TRACE_EVENT0("gpu", "SharedImageBackingFactoryIOSurface::Destroy");
     DCHECK(io_surface_);
 
     if (legacy_texture_) {
@@ -492,6 +494,7 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
 
  private:
   gles2::Texture* GenGLTexture() {
+    TRACE_EVENT0("gpu", "SharedImageBackingFactoryIOSurface::GenGLTexture");
     GLFormatInfo gl_info = GetGLFormatInfo(format());
     DCHECK(gl_info.supported);
 
@@ -615,6 +618,7 @@ SharedImageBackingFactoryIOSurface::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     bool is_thread_safe) {
+  TRACE_EVENT0("gpu", "SharedImageBackingFactoryIOSurface::CreateSharedImage");
   DCHECK(!is_thread_safe);
   // Check the format is supported and for simplicity always require it to be
   // supported for GL.

@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -30,7 +29,6 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -333,7 +331,6 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   ~ServiceWorkerNavigationLoaderTest() override = default;
 
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
     // Create an active service worker.
@@ -479,8 +476,6 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   bool did_call_fallback_callback_ = false;
   bool reset_subresource_loader_params_ = false;
   base::OnceClosure quit_closure_for_fallback_callback_;
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {

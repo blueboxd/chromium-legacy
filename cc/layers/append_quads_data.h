@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 
@@ -44,6 +45,10 @@ class CC_EXPORT AppendQuadsData {
   // active CompositorFrames so that this CompositorFrame can
   // activate.
   std::vector<viz::SurfaceId> activation_dependencies;
+
+  // If the layer is a MirrorLayer, this will represent its visible boundaries
+  // in target space.
+  gfx::Rect mirror_rect;
 };
 
 }  // namespace cc

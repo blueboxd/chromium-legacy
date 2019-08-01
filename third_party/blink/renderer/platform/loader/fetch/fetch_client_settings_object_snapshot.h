@@ -22,6 +22,8 @@ namespace blink {
 //     threads (e.g., AtomicString)
 //   - Non-simple members need explicit copying (e.g., String::IsolatedCopy,
 //     KURL::Copy) rather than the copy constructor or the assignment operator.
+//   - This struct cannot contain any garbage-collected object because this
+//     data can be constructed on a thread which runs without Oilpan.
 struct CrossThreadFetchClientSettingsObjectData {
   USING_FAST_MALLOC(CrossThreadFetchClientSettingsObjectData);
 

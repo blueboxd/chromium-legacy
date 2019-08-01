@@ -4011,7 +4011,7 @@ bool Document::CheckCompletedInternal() {
 
     // Send the source ID of the document to the browser.
     if (frame_->Client()->GetRemoteNavigationAssociatedInterfaces()) {
-      mojom::blink::UkmSourceIdFrameHostAssociatedPtr ukm_binding;
+      mojo::AssociatedRemote<mojom::blink::UkmSourceIdFrameHost> ukm_binding;
       frame_->Client()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
           &ukm_binding);
       DCHECK(ukm_binding.is_bound());

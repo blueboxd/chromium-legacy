@@ -180,4 +180,12 @@ ChannelMergerNode* ChannelMergerNode::Create(
   return node;
 }
 
+void ChannelMergerNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+}
+
+void ChannelMergerNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

@@ -52,7 +52,7 @@ class BlobBuilderFromStreamTestWithDelayedLimits
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     context_ = std::make_unique<BlobStorageContext>(
         data_dir_.GetPath(),
-        base::CreateTaskRunnerWithTraits({base::MayBlock()}));
+        base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()}));
 
     limits_.max_ipc_memory_size = kTestBlobStorageMaxBytesDataItemSize;
     limits_.max_shared_memory_size = kTestBlobStorageMaxBytesDataItemSize;

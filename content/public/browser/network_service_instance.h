@@ -50,12 +50,6 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkService();
 CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
     service_manager::Connector* connector);
 
-// When network service is disabled, returns the in-process NetworkService
-// pointer which is used to ease transition to network service.
-// Must only be called on the IO thread.  Must not be called if the network
-// service is enabled.
-CONTENT_EXPORT network::NetworkService* GetNetworkServiceImpl();
-
 // Only on ChromeOS since it's only used there.
 #if defined(OS_CHROMEOS)
 // Returns the global NetworkChangeNotifier instance.

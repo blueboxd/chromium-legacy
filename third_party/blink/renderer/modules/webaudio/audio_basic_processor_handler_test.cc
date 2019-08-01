@@ -47,6 +47,8 @@ class MockProcessorNode final : public AudioNode {
   MockProcessorNode(BaseAudioContext& context) : AudioNode(context) {
     SetHandler(MockProcessorHandler::Create(*this, 48000));
   }
+  void ReportDidCreate() final {}
+  void ReportWillBeDestroyed() final {}
 };
 
 TEST(AudioBasicProcessorHandlerTest, ProcessorFinalization) {

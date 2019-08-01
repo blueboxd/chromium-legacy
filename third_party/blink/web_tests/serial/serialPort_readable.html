@@ -13,28 +13,17 @@ serial_test(async (t, fake) => {
   assert_equals(port.readable, null);
 
   await port.open({ baudrate: 9600 });
-  assert_true(port.readable instanceof ReadableStream);
+  const readable = port.readable;
+  assert_true(readable instanceof ReadableStream);
 
   port.close();
   assert_equals(port.readable, null);
-}, 'open() and close() set and unset SerialPort.readable');
 
-serial_test(async (t, fake) => {
-  const { port, fakePort } = await getFakeSerialPort(fake);
-
-  assert_equals(port.readable, null);
-
-  await port.open({ baudrate: 9600 });
-  assert_true(port.readable instanceof ReadableStream);
-
-  const reader = port.readable.getReader();
-  port.close();
-
+  const reader = readable.getReader();
   const { value, done } = await reader.read();
   assert_true(done);
   assert_equals(value, undefined);
-  assert_equals(port.readable, null);
-}, 'SerialPort.readable closes on port close');
+}, 'SerialPort.readable is set by open() and closes on port close');
 
 serial_test(async (t, fake) => {
   const { port, fakePort } = await getFakeSerialPort(fake);
@@ -81,16 +70,17 @@ serial_test(async (t, fake) => {
   fakePort.write(data);
   fakePort.simulateParityError();
 
-  let reader = port.readable.getReader();
+  let readable = port.readable;
+  let reader = readable.getReader();
   let { value, done } = await reader.read();
   assert_false(done);
   compareArrays(data, value);
 
   await promise_rejects(t, 'NetworkError', reader.read());
-  assert_equals(port.readable, null);
+  assert_not_equals(port.readable, readable);
 
-  port.clearReadError();
-  assert_true(port.readable instanceof ReadableStream);
+  readable = port.readable;
+  assert_true(readable instanceof ReadableStream);
   reader = port.readable.getReader();
 
   await fakePort.waitForErrorCleared();
@@ -101,10 +91,11 @@ serial_test(async (t, fake) => {
   compareArrays(data, value);
 
   port.close();
+  assert_equals(port.readable, null);
+
   ({ value, done } = await reader.read());
   assert_true(done);
   assert_equals(undefined, value);
-}, 'Parity error closes readable, can be cleared and more data received');
+}, 'Parity error closes readable and replaces it with a new stream');
 
 </script>
-

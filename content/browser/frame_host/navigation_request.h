@@ -133,7 +133,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   static std::unique_ptr<NavigationRequest> CreateBrowserInitiated(
       FrameTreeNode* frame_tree_node,
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       bool browser_initiated,
       const std::string& extra_headers,
       const FrameNavigationEntry& frame_entry,
@@ -187,7 +187,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return begin_params_.get();
   }
 
-  const CommitNavigationParams& commit_params() const { return commit_params_; }
+  const mojom::CommitNavigationParams& commit_params() const {
+    return *commit_params_;
+  }
 
   // Updates the navigation start time.
   void set_navigation_start_time(const base::TimeTicks& time) {
@@ -231,7 +233,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     associated_site_instance_type_ = type;
   }
 
-  void set_was_discarded() { commit_params_.was_discarded = true; }
+  void set_was_discarded() { commit_params_->was_discarded = true; }
 
   NavigationHandleImpl* navigation_handle() const {
     return navigation_handle_.get();
@@ -493,7 +495,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     mojom::CommonNavigationParamsPtr common_params,
                     mojom::BeginNavigationParamsPtr begin_params,
-                    const CommitNavigationParams& commit_params,
+                    mojom::CommitNavigationParamsPtr commit_params,
                     bool browser_initiated,
                     bool from_begin_navigation,
                     bool is_for_commit,
@@ -801,7 +803,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // be set in CreatedNavigationRequest.
   mojom::CommonNavigationParamsPtr common_params_;
   mojom::BeginNavigationParamsPtr begin_params_;
-  CommitNavigationParams commit_params_;
+  mojom::CommitNavigationParamsPtr commit_params_;
   const bool browser_initiated_;
 
   // Stores the NavigationUIData for this navigation until the NavigationHandle

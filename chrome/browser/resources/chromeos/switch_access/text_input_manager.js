@@ -110,6 +110,36 @@ class TextInputManager {
   }
 
   /**
+   * Cuts currently selected text using a keyboard shortcut via synthetic keys.
+   * If there's no selected text, doesn't do anything.
+   * @public
+   */
+  cut() {
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.X, {ctrl: true});
+  }
+
+  /**
+   * Copies currently selected text using a keyboard shortcut via synthetic
+   * keys. If there's no selected text, doesn't do anything.
+   * @public
+   */
+  copy() {
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.C, {ctrl: true});
+  }
+
+  /**
+   * Pastes text from the clipboard using a keyboard shortcut via synthetic
+   * keys. If there's nothing in the clipboard, doesn't do anything.
+   * @public
+   */
+  paste() {
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.V, {ctrl: true});
+  }
+
+  /**
    * Draws a dashed focus ring around the active text input, so the user can
    * easily reference where they are typing.
    * @private

@@ -6,7 +6,7 @@
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_RETURNED_RESOURCE_MOJOM_TRAITS_H_
 
 #include "components/viz/common/resources/returned_resource.h"
-#include "gpu/ipc/common/sync_token_struct_traits.h"
+#include "gpu/ipc/common/sync_token_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/returned_resource.mojom-shared.h"
 
 namespace mojo {

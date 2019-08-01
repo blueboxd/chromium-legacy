@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//ui/base/mojom/clipboard.typemap",
   "//ui/base/mojom/clipboard_blink.typemap",
   "//ui/base/mojom/cursor.typemap",
   "//ui/base/mojom/ui_base_types.typemap",

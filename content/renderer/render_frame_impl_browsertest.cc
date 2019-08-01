@@ -455,7 +455,7 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   GetMainRenderFrame()->SetHostZoomLevel(common_params->url, kMinZoomLevel);
   GetMainRenderFrame()->Navigate(common_params.Clone(),
-                                 CommitNavigationParams());
+                                 CreateCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
   EXPECT_DOUBLE_EQ(kMinZoomLevel, view_->GetWebView()->ZoomLevel());
 
@@ -465,7 +465,7 @@ TEST_F(RenderFrameImplTest, ZoomLimit) {
   common_params->url = GURL("data:text/html,max_zoomlimit_test");
   GetMainRenderFrame()->SetHostZoomLevel(common_params->url, kMaxZoomLevel);
   GetMainRenderFrame()->Navigate(common_params.Clone(),
-                                 CommitNavigationParams());
+                                 CreateCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
   EXPECT_DOUBLE_EQ(kMaxZoomLevel, view_->GetWebView()->ZoomLevel());
 }

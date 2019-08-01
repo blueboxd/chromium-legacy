@@ -54,11 +54,10 @@ void EngineFileRequestsImpl::SandboxFindFirstFile(
     const base::FilePath& file_name,
     SandboxFindFirstFileCallback result_callback) {
   // Execute the request off of the Mojo thread to unblock it for other calls.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&EngineFileRequestsImpl::FindFirstFile,
-                     base::Unretained(this), file_name,
-                     std::move(result_callback)));
+  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                 base::BindOnce(&EngineFileRequestsImpl::FindFirstFile,
+                                base::Unretained(this), file_name,
+                                std::move(result_callback)));
 }
 
 void EngineFileRequestsImpl::FindFirstFile(
@@ -93,11 +92,10 @@ void EngineFileRequestsImpl::FindFirstFile(
 void EngineFileRequestsImpl::SandboxFindNextFile(
     mojom::FindHandlePtr handle_ptr,
     SandboxFindNextFileCallback result_callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&EngineFileRequestsImpl::FindNextFile,
-                     base::Unretained(this), std::move(handle_ptr),
-                     std::move(result_callback)));
+  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                 base::BindOnce(&EngineFileRequestsImpl::FindNextFile,
+                                base::Unretained(this), std::move(handle_ptr),
+                                std::move(result_callback)));
 }
 
 void EngineFileRequestsImpl::FindNextFile(
@@ -126,8 +124,8 @@ void EngineFileRequestsImpl::FindNextFile(
 void EngineFileRequestsImpl::SandboxFindClose(
     mojom::FindHandlePtr handle_ptr,
     SandboxFindCloseCallback result_callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&EngineFileRequestsImpl::FindClose, base::Unretained(this),
                      std::move(handle_ptr), std::move(result_callback)));
 }
@@ -154,8 +152,8 @@ void EngineFileRequestsImpl::SandboxOpenReadOnlyFile(
     const base::FilePath& file_name,
     uint32_t dwFlagsAndAttribute,
     SandboxOpenReadOnlyFileCallback result_callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&EngineFileRequestsImpl::OpenReadOnlyFile,
                      base::Unretained(this), file_name, dwFlagsAndAttribute,
                      std::move(result_callback)));

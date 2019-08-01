@@ -269,10 +269,9 @@ void UwEEngineCleanerWrapper::Start(const std::vector<UwSId>& pup_ids,
                         base::SequencedTaskRunnerHandle::Get()));
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&UwEEngineCleanerWrapper::TryRemovePUPExtensions,
-                     base::Unretained(this), pup_ids));
+  PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+           base::BindOnce(&UwEEngineCleanerWrapper::TryRemovePUPExtensions,
+                          base::Unretained(this), pup_ids));
 
   cleaner_->Start(pup_ids,
                   base::BindOnce(&UwEEngineCleanerWrapper::OnDoneUwSCleanup,

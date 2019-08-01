@@ -624,9 +624,6 @@ void Navigate(NavigateParams* params) {
         contents_to_navigate_or_insert = prerender_params.replaced_contents;
     }
 
-    if (user_initiated)
-      contents_to_navigate_or_insert->NavigatedByUser();
-
     if (!swapped_in_prerender) {
       // Try to handle non-navigational URLs that popup dialogs and such, these
       // should not actually navigate.

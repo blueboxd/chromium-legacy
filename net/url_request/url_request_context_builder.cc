@@ -482,8 +482,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     // user-visible. Block shutdown to ensure it does get persisted to disk,
     // since it contains security-relevant information.
     scoped_refptr<base::SequencedTaskRunner> task_runner(
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
 
     context->set_transport_security_persister(
@@ -654,8 +655,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (file_enabled_) {
     job_factory->SetProtocolHandler(
         url::kFileScheme,
-        std::make_unique<FileProtocolHandler>(base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+        std::make_unique<FileProtocolHandler>(base::CreateTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::USER_BLOCKING,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
   }
 #endif  // !BUILDFLAG(DISABLE_FILE_SUPPORT)

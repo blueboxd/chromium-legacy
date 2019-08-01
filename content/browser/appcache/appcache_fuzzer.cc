@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "content/browser/appcache/appcache_fuzzer.pb.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -21,7 +20,6 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -38,7 +36,6 @@ struct Env {
                        base::test::ScopedTaskEnvironment::MainThreadType::IO)) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     mojo::core::Init();
-    feature_list.InitWithFeatures({network::features::kNetworkService}, {});
     test_content_client = std::make_unique<TestContentClient>();
     test_content_browser_client = std::make_unique<TestContentBrowserClient>();
     SetContentClient(test_content_client.get());
@@ -58,7 +55,7 @@ struct Env {
     appcache_service->set_url_loader_factory_getter(
         loader_factory_getter.get());
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
         {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
         base::BindOnce(&ChromeAppCacheService::InitializeOnLoaderThread,
@@ -70,7 +67,6 @@ struct Env {
   }
 
   TestBrowserThreadBundle thread_bundle;
-  base::test::ScopedFeatureList feature_list;
   scoped_refptr<ChromeAppCacheService> appcache_service;
   std::unique_ptr<TestContentClient> test_content_client;
   std::unique_ptr<TestContentBrowserClient> test_content_browser_client;

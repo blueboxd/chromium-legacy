@@ -53,6 +53,11 @@ using ::testing::ReturnArg;
 namespace ntp_tiles {
 namespace {
 
+const int kTestDipForServerRequests = 24;
+const favicon_base::IconType kTestIconTypeForServerRequests =
+    favicon_base::IconType::kTouchIcon;
+const char kTestGoogleServerClientParam[] = "test_chrome";
+
 ACTION(FailFetch) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(*arg2), gfx::Image(),
@@ -351,7 +356,9 @@ TEST_F(IconCacherTestMostLikely, Cached) {
   PreloadIcon(page_url, icon_url, favicon_base::IconType::kTouchIcon, 128, 128);
 
   favicon::LargeIconServiceImpl large_icon_service(
-      &favicon_service_, std::move(fetcher_for_large_icon_service_));
+      &favicon_service_, std::move(fetcher_for_large_icon_service_),
+      kTestDipForServerRequests, kTestIconTypeForServerRequests,
+      kTestGoogleServerClientParam);
   IconCacherImpl cacher(&favicon_service_, &large_icon_service,
                         std::move(fetcher_for_icon_cacher_));
 
@@ -380,7 +387,9 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchSucceeded) {
   }
 
   favicon::LargeIconServiceImpl large_icon_service(
-      &favicon_service_, std::move(fetcher_for_large_icon_service_));
+      &favicon_service_, std::move(fetcher_for_large_icon_service_),
+      kTestDipForServerRequests, kTestIconTypeForServerRequests,
+      kTestGoogleServerClientParam);
   IconCacherImpl cacher(&favicon_service_, &large_icon_service,
                         std::move(fetcher_for_icon_cacher_));
 
@@ -410,7 +419,9 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchFailed) {
   }
 
   favicon::LargeIconServiceImpl large_icon_service(
-      &favicon_service_, std::move(fetcher_for_large_icon_service_));
+      &favicon_service_, std::move(fetcher_for_large_icon_service_),
+      kTestDipForServerRequests, kTestIconTypeForServerRequests,
+      kTestGoogleServerClientParam);
   IconCacherImpl cacher(&favicon_service_, &large_icon_service,
                         std::move(fetcher_for_icon_cacher_));
 
@@ -431,7 +442,9 @@ TEST_F(IconCacherTestMostLikely, HandlesEmptyCallbacksNicely) {
       .WillOnce(PassFetch(128, 128));
 
   favicon::LargeIconServiceImpl large_icon_service(
-      &favicon_service_, std::move(fetcher_for_large_icon_service_));
+      &favicon_service_, std::move(fetcher_for_large_icon_service_),
+      kTestDipForServerRequests, kTestIconTypeForServerRequests,
+      kTestGoogleServerClientParam);
   IconCacherImpl cacher(&favicon_service_, &large_icon_service,
                         std::move(fetcher_for_icon_cacher_));
 
@@ -469,7 +482,9 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchPerformedOnlyOnce) {
   }
 
   favicon::LargeIconServiceImpl large_icon_service(
-      &favicon_service_, std::move(fetcher_for_large_icon_service_));
+      &favicon_service_, std::move(fetcher_for_large_icon_service_),
+      kTestDipForServerRequests, kTestIconTypeForServerRequests,
+      kTestGoogleServerClientParam);
   IconCacherImpl cacher(&favicon_service_, &large_icon_service,
                         std::move(fetcher_for_icon_cacher_));
 

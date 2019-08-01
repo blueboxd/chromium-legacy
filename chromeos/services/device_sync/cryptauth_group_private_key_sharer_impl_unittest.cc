@@ -135,7 +135,7 @@ class DeviceSyncCryptAuthGroupPrivateKeySharerImplTest
     sharer_->ShareGroupPrivateKey(
         GetRequestContext(), group_key, id_to_encrypting_key_map,
         base::BindOnce(&DeviceSyncCryptAuthGroupPrivateKeySharerImplTest::
-                           OnGetFeatureStatusesComplete,
+                           OnShareGroupPrivateKeyComplete,
                        base::Unretained(this)));
   }
 
@@ -261,7 +261,7 @@ class DeviceSyncCryptAuthGroupPrivateKeySharerImplTest
     share_group_private_key_failure_callback_ = error_callback;
   }
 
-  void OnGetFeatureStatusesComplete(
+  void OnShareGroupPrivateKeyComplete(
       const CryptAuthDeviceSyncResult::ResultCode& device_sync_result_code) {
     device_sync_result_code_ = device_sync_result_code;
   }

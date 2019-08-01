@@ -299,7 +299,7 @@ aura::Window* AshTestHelper::CurrentContext() {
   return root_window;
 }
 
-display::Display AshTestHelper::GetSecondaryDisplay() {
+display::Display AshTestHelper::GetSecondaryDisplay() const {
   return Shell::Get()->display_manager()->GetSecondaryDisplay();
 }
 

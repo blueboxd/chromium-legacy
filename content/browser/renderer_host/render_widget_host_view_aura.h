@@ -459,8 +459,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   class WindowAncestorObserver;
   friend class WindowAncestorObserver;
-  friend void VerifyStaleContentOnFrameEviction(
-      RenderWidgetHostView* render_widget_host_view);
 
   // Allocate a new FrameSinkId if this object is the platform view of a
   // RenderWidgetHostViewGuest. This FrameSinkId will not be actually used in

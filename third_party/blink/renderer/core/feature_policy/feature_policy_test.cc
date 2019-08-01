@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 
 #include <map>
+#include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -145,6 +146,15 @@ TEST_F(FeaturePolicyParserTest, ParseInvalidPolicy) {
                                &messages, test_feature_name_map);
     EXPECT_LT(0UL, messages.size()) << "Should fail to parse " << policy_string;
   }
+}
+
+TEST_F(FeaturePolicyParserTest, ParseTooLongPolicy) {
+  Vector<String> messages;
+  auto policy_string = "geolocation http://" + std::string(1 << 17, 'a');
+  FeaturePolicyParser::Parse(policy_string.c_str(), origin_a_.get(),
+                             origin_b_.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, messages.size())
+      << "Should fail to parse string with size " << policy_string.size();
 }
 
 TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectly) {

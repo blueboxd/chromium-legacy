@@ -204,10 +204,12 @@ void PDF::SetAccessibilityPageInfo(
     const InstanceHandle& instance,
     PP_PrivateAccessibilityPageInfo* page_info,
     PP_PrivateAccessibilityTextRunInfo text_runs[],
-    PP_PrivateAccessibilityCharInfo chars[]) {
+    PP_PrivateAccessibilityCharInfo chars[],
+    PP_PrivateAccessibilityLinkInfo links[],
+    PP_PrivateAccessibilityImageInfo images[]) {
   if (has_interface<PPB_PDF>()) {
     get_interface<PPB_PDF>()->SetAccessibilityPageInfo(
-        instance.pp_instance(), page_info, text_runs, chars);
+        instance.pp_instance(), page_info, text_runs, chars, links, images);
   }
 }
 

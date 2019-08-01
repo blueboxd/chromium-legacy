@@ -16,7 +16,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
-namespace nux {
+namespace welcome {
 
 NtpBackgroundFetcher::NtpBackgroundFetcher(
     size_t index,
@@ -80,4 +80,4 @@ void NtpBackgroundFetcher::OnFetchCompleted(
   }
 }
 
-}  // namespace nux
+}  // namespace welcome

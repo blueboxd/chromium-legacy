@@ -685,7 +685,6 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
                                                     screenshot_path),
           kNotificationImageIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->SetSystemPriority();
 
   NotificationDisplayService::GetForProfile(GetProfile())
       ->Display(NotificationHandler::Type::TRANSIENT, *notification,

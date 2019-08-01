@@ -49,8 +49,8 @@ void ZipFileCreator::Start(service_manager::Connector* connector) {
 
   // Note this class owns itself (it self-deletes when finished in ReportDone),
   // so it is safe to use base::Unretained(this).
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::Bind(&OpenFileHandleAsync, dest_file_),
       base::Bind(&ZipFileCreator::CreateZipFile, base::Unretained(this),
                  base::Unretained(connector)));
@@ -70,8 +70,9 @@ void ZipFileCreator::CreateZipFile(service_manager::Connector* connector,
   }
 
   if (!directory_task_runner_) {
-    directory_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+    directory_task_runner_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_BLOCKING,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
 

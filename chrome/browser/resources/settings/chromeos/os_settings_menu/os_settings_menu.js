@@ -19,10 +19,14 @@ Polymer({
     },
 
     /**
-     * Dictionary defining page visibility.
-     * @type {!PageVisibility}
+     * Whether the user is in guest mode.
+     * @private{boolean}
      */
-    pageVisibility: Object,
+    isGuestMode_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('isGuest'),
+      readOnly: true,
+    },
   },
 
   /** @param {!settings.Route} newRoute */

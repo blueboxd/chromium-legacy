@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -251,6 +252,14 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
   }
 }
 
+void ChromeOSMetricsProvider::ProvideAccessibilityMetrics() {
+  PrefService* pref = g_browser_process->local_state();
+  bool is_spoken_feedback_enabled =
+      pref->GetBoolean(ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSpokenFeedback.EveryReport",
+                        is_spoken_feedback_enabled);
+}
+
 void ChromeOSMetricsProvider::ProvideStabilityMetrics(
     metrics::SystemProfileProto* system_profile_proto) {
   metrics::SystemProfileProto::Stability* stability_proto =
@@ -286,6 +295,7 @@ void ChromeOSMetricsProvider::ProvideStabilityMetrics(
 
 void ChromeOSMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
+  ProvideAccessibilityMetrics();
   ProvideStabilityMetrics(uma_proto->mutable_system_profile());
   std::vector<SampledProfile> sampled_profiles;
   if (profile_provider_->GetSampledProfiles(&sampled_profiles)) {

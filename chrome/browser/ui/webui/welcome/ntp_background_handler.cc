@@ -21,7 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace nux {
+namespace welcome {
 
 enum class NtpBackgrounds {
   kArt = 0,
@@ -134,46 +134,48 @@ void NtpBackgroundHandler::HandleSetBackground(const base::ListValue* args) {
 
   switch (backgroundIndex) {
     case static_cast<int>(NtpBackgrounds::kArt):
-      instant_service->SetCustomBackgroundURLWithAttributions(
+      instant_service->SetCustomBackgroundInfo(
           onboardingNtpBackgrounds[backgroundIndex], "Universe Cosmic Vacum",
           "Philipp Rietz — Walli",
-          GURL("https://walli.shanga.co/image/view/?id=370"));
+          GURL("https://walli.shanga.co/image/view/?id=370"), "");
       break;
     case static_cast<int>(NtpBackgrounds::kCityscape):
-      instant_service->SetCustomBackgroundURLWithAttributions(
+      instant_service->SetCustomBackgroundInfo(
           onboardingNtpBackgrounds[backgroundIndex],
           l10n_util::GetStringFUTF8(
               IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
               base::UTF8ToUTF16("Ev Tchebotarev")),
           "",
           GURL("https://500px.com/photo/135751035/"
-               "soulseek-by-%E5%B0%A4%E9%87%91%E5%B0%BC-ev-tchebotarev"));
+               "soulseek-by-%E5%B0%A4%E9%87%91%E5%B0%BC-ev-tchebotarev"),
+          "");
       break;
     case static_cast<int>(NtpBackgrounds::kEarth):
-      instant_service->SetCustomBackgroundURLWithAttributions(
+      instant_service->SetCustomBackgroundInfo(
           onboardingNtpBackgrounds[backgroundIndex],
           l10n_util::GetStringFUTF8(
               IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
               base::UTF8ToUTF16("NASA Image Library")),
-          "", GURL("https://www.google.com/sky/"));
+          "", GURL("https://www.google.com/sky/"), "");
       break;
     case static_cast<int>(NtpBackgrounds::kGeometricShapes):
-      instant_service->SetCustomBackgroundURLWithAttributions(
+      instant_service->SetCustomBackgroundInfo(
           onboardingNtpBackgrounds[backgroundIndex], "Tessellation 15",
           "Justin Prno — Walli",
-          GURL("https://walli.shanga.co/image/view/?id=1375"));
+          GURL("https://walli.shanga.co/image/view/?id=1375"), "");
       break;
     case static_cast<int>(NtpBackgrounds::kLandscape):
-      instant_service->SetCustomBackgroundURLWithAttributions(
+      instant_service->SetCustomBackgroundInfo(
           onboardingNtpBackgrounds[backgroundIndex],
           l10n_util::GetStringFUTF8(
               IDS_ONBOARDING_WELCOME_NTP_BACKGROUND_PHOTO_BY_LABEL,
               base::UTF8ToUTF16("Giulio Rosso Chioso")),
           "",
           GURL("https://500px.com/photo/41149196/"
-               "le-piscine-sunset-by-giulio-rosso-chioso"));
+               "le-piscine-sunset-by-giulio-rosso-chioso"),
+          "");
       break;
   }
 }
 
-}  // namespace nux
+}  // namespace welcome

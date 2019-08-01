@@ -159,7 +159,6 @@ blink_core_sources("css") {
     "css_resolution_units.h",
     "css_rule.cc",
     "css_rule.h",
-    "css_rule_list.cc",
     "css_rule_list.h",
     "css_segmented_font_face.cc",
     "css_segmented_font_face.h",

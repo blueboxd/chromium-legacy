@@ -90,9 +90,9 @@ class TestNetworkInterceptor::Impl {
   }
 
   Response* FindResponse(const std::string& method, const std::string& url) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(&TestNetworkInterceptor::LogRequest,
-                                            interceptor_, method, url));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&TestNetworkInterceptor::LogRequest,
+                                  interceptor_, method, url));
     auto it = response_map_.find(StripFragment(url));
     return it == response_map_.end() ? nullptr : it->second.get();
   }
@@ -177,7 +177,7 @@ TestNetworkInterceptor::~TestNetworkInterceptor() {
 
 void TestNetworkInterceptor::InsertResponse(std::string url,
                                             Response response) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::InsertResponse, base::Unretained(impl_.get()),
                      std::move(url), std::move(response)));

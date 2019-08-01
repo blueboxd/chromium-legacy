@@ -83,6 +83,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -109,6 +110,14 @@ public class DownloadUtils {
 
     private static final int[] BYTES_STRINGS = {
             R.string.download_ui_kb, R.string.download_ui_mb, R.string.download_ui_gb};
+
+    // Set will be more expensive to initialize, so use an ArrayList here.
+    private static final List<String> MIME_TYPES_TO_OPEN =
+            new ArrayList<String>(Arrays.asList(OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME,
+                    "application/pdf", "application/x-x509-ca-cert", "application/x-x509-user-cert",
+                    "application/x-x509-server-cert", "application/x-pkcs12",
+                    "application/application/x-pem-file", "application/pkix-cert",
+                    "application/x-wifi-config"));
 
     private static final String TAG = "download";
 
@@ -634,6 +643,30 @@ public class DownloadUtils {
     public static String remapGenericMimeType(String mimeType, String url, String filename) {
         if (TextUtils.isEmpty(mimeType)) mimeType = UNKNOWN_MIME_TYPE;
         return ChromeDownloadDelegate.remapGenericMimeType(mimeType, url, filename);
+    }
+
+    /**
+     * Returns true if the download is for OMA download description file.
+     *
+     * @param mimeType The mime type of the download.
+     * @return true if the downloaded is OMA download description, or false otherwise.
+     */
+    public static boolean isOMADownloadDescription(String mimeType) {
+        return OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(mimeType);
+    }
+
+    /**
+     * Determines if the download should be immediately opened after
+     * downloading.
+     *
+     * @param mimeType The mime type of the download.
+     * @param hasUserGesture Whether the download is associated with an user gesture.
+     * @return true if the downloaded content should be opened, or false otherwise.
+     */
+    @VisibleForTesting
+    @CalledByNative
+    public static boolean shouldAutoOpenDownload(String mimeType, boolean hasUserGesture) {
+        return hasUserGesture && MIME_TYPES_TO_OPEN.contains(mimeType);
     }
 
     /**

@@ -91,18 +91,18 @@ void DownloadUrlSBClient::CheckDone(SBThreatType threat_type) {
   UpdateDownloadCheckStats(total_type_);
   if (threat_type != SB_THREAT_TYPE_SAFE) {
     UpdateDownloadCheckStats(dangerous_type_);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&DownloadUrlSBClient::ReportMalware, this, threat_type));
   } else {
     // Identify download referrer chain, which will be used in
     // ClientDownloadRequest.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&DownloadUrlSBClient::IdentifyReferrerChain, this));
   }
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(callback_, result));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(callback_, result));
 }
 
 void DownloadUrlSBClient::ReportMalware(SBThreatType threat_type) {

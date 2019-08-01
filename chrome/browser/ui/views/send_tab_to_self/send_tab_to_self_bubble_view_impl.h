@@ -68,7 +68,7 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
   void Show(DisplayReason reason);
 
   // Called by tests.
-  const std::vector<std::unique_ptr<SendTabToSelfBubbleDeviceButton>>&
+  const std::vector<SendTabToSelfBubbleDeviceButton*>&
   GetDeviceButtonsForTest();
 
  private:
@@ -99,7 +99,7 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
   base::string16 bubble_title_;
 
   // Contains references to device buttons in the order they appear.
-  std::vector<std::unique_ptr<SendTabToSelfBubbleDeviceButton>> device_buttons_;
+  std::vector<SendTabToSelfBubbleDeviceButton*> device_buttons_;
 
   // ScrollView containing the list of device buttons.
   views::ScrollView* scroll_view_ = nullptr;

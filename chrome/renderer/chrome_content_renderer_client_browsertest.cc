@@ -168,8 +168,8 @@ class ChromeContentRendererClientBrowserTest :
 
     EXPECT_EQ(request.relative_url, GetParam().expected_url)
         << "URL is wrong for test " << GetParam().name;
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             message_runner_->QuitClosure());
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   message_runner_->QuitClosure());
   }
 
   void WaitForYouTubeRequest() {

@@ -693,7 +693,7 @@ Animation::AnimationPlayState Animation::CalculatePlayState() const {
     return kPaused;
   if (internal_play_state_ == kIdle)
     return kIdle;
-  if (NeedsCompositorTimeSync())
+  if (current_time_pending_ || (!start_time_ && playback_rate_ != 0))
     return kPending;
   if (Limited())
     return kFinished;

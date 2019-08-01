@@ -207,9 +207,6 @@ ParseScheduledUpdate(const base::Value& value) {
       }
 
       // Validated by schema validation at higher layers.
-      // TODO(crbug.com/924762): Currently |day_of_month| is restricted to 28 to
-      // make month rollover calculations easier. Fix it to be smart enough to
-      // handle all 31 days and month and year rollovers.
       result.day_of_month = day_of_month.value();
       break;
     }
@@ -270,7 +267,8 @@ std::unique_ptr<icu::Calendar> ConvertUtcToTzIcuTime(base::Time cur_time,
 // |os_and_policies_update_checker_| will be destroyed as part of this object,
 // so it's safe to use "this" with any callbacks.
 DeviceScheduledUpdateChecker::DeviceScheduledUpdateChecker(
-    chromeos::CrosSettings* cros_settings)
+    chromeos::CrosSettings* cros_settings,
+    chromeos::NetworkStateHandler* network_state_handler)
     : cros_settings_(cros_settings),
       cros_settings_observer_(cros_settings_->AddSettingsObserver(
           chromeos::kDeviceScheduledUpdateCheck,
@@ -284,6 +282,7 @@ DeviceScheduledUpdateChecker::DeviceScheduledUpdateChecker(
           update_checker_internal::kMaxStartUpdateCheckTimerRetryIterations,
           update_checker_internal::kStartUpdateCheckTimerRetryTime),
       os_and_policies_update_checker_(
+          network_state_handler,
           base::BindRepeating(&DeviceScheduledUpdateChecker::GetTicksSinceBoot,
                               base::Unretained(this))) {
   chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
@@ -309,8 +308,7 @@ void DeviceScheduledUpdateChecker::OnUpdateCheckTimerExpired() {
 
   // Following things needs to be done on every update check event. These will
   // be done serially to make state management easier -
-  // - Check for download any updates.
-  // - TODO(crbug.com/924762)  Refresh policies.
+  // - Download updates and refresh policies.
   // - Calculate and start the next update check timer.
   //
   // |os_and_policies_update_checker_| will be destroyed as part of this object,

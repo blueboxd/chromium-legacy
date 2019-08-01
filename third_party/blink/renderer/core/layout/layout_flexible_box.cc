@@ -822,11 +822,11 @@ bool LayoutFlexibleBox::CanAvoidLayoutForNGChild(const LayoutBox& child) const {
 
   const NGConstraintSpace& old_space =
       cached_layout_result->GetConstraintSpaceForCaching();
-  if (old_space.IsFixedSizeInline() != child.HasOverrideLogicalWidth())
+  if (old_space.IsFixedInlineSize() != child.HasOverrideLogicalWidth())
     return false;
-  if (old_space.IsFixedSizeBlock() != child.HasOverrideLogicalHeight())
+  if (old_space.IsFixedBlockSize() != child.HasOverrideLogicalHeight())
     return false;
-  if (old_space.FixedSizeBlockIsDefinite() !=
+  if (!old_space.IsFixedBlockSizeIndefinite() !=
       UseOverrideLogicalHeightForPerentageResolution(child))
     return false;
   if (child.HasOverrideLogicalWidth() &&

@@ -150,7 +150,8 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // the play state (running/paused) requires synchronization with the
   // compositor.
   bool NeedsCompositorTimeSync() const {
-    return current_time_pending_ || (!start_time_ && playback_rate_ != 0);
+    // TODO(crbug.com/958433): Eliminate need for pending play state.
+    return internal_play_state_ == kPending;
   }
 
   AnimationPlayState GetPlayState() const;

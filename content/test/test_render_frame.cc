@@ -262,9 +262,9 @@ void TestRenderFrame::SetHTMLOverrideForNextNavigation(
 
 void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
                                mojom::CommonNavigationParamsPtr common_params,
-                               const CommitNavigationParams& commit_params) {
+                               mojom::CommitNavigationParamsPtr commit_params) {
   if (!IsPerNavigationMojoInterfaceEnabled()) {
-    CommitNavigation(std::move(common_params), commit_params, head,
+    CommitNavigation(std::move(common_params), std::move(commit_params), head,
                      mojo::ScopedDataPipeConsumerHandle(),
                      network::mojom::URLLoaderClientEndpointsPtr(),
                      std::make_unique<blink::URLLoaderFactoryBundleInfo>(),
@@ -277,7 +277,7 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
     BindNavigationClient(
         mojo::MakeRequestAssociatedWithDedicatedPipe(&mock_navigation_client_));
     CommitPerNavigationMojoInterfaceNavigation(
-        std::move(common_params), commit_params, head,
+        std::move(common_params), std::move(commit_params), head,
         mojo::ScopedDataPipeConsumerHandle(),
         network::mojom::URLLoaderClientEndpointsPtr(),
         std::make_unique<blink::URLLoaderFactoryBundleInfo>(), base::nullopt,
@@ -291,25 +291,25 @@ void TestRenderFrame::Navigate(const network::ResourceResponseHead& head,
 }
 
 void TestRenderFrame::Navigate(mojom::CommonNavigationParamsPtr common_params,
-                               const CommitNavigationParams& commit_params) {
+                               mojom::CommitNavigationParamsPtr commit_params) {
   Navigate(network::ResourceResponseHead(), std::move(common_params),
-           commit_params);
+           std::move(commit_params));
 }
 
 void TestRenderFrame::NavigateWithError(
     mojom::CommonNavigationParamsPtr common_params,
-    const CommitNavigationParams& commit_params,
+    mojom::CommitNavigationParamsPtr commit_params,
     int error_code,
     const base::Optional<std::string>& error_page_content) {
   if (!IsPerNavigationMojoInterfaceEnabled()) {
-    CommitFailedNavigation(std::move(common_params), commit_params,
+    CommitFailedNavigation(std::move(common_params), std::move(commit_params),
                            false /* has_stale_copy_in_cache */, error_code,
                            error_page_content, nullptr, base::DoNothing());
   } else {
     BindNavigationClient(
         mojo::MakeRequestAssociatedWithDedicatedPipe(&mock_navigation_client_));
     mock_navigation_client_->CommitFailedNavigation(
-        std::move(common_params), commit_params,
+        std::move(common_params), std::move(commit_params),
         false /* has_stale_copy_in_cache */, error_code, error_page_content,
         nullptr,
         base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,

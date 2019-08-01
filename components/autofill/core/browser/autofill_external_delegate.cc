@@ -154,18 +154,9 @@ bool AutofillExternalDelegate::HasActiveScreenReader() const {
 
 void AutofillExternalDelegate::OnAutofillAvailabilityEvent(
     bool has_suggestions) {
-#if defined(OS_CHROMEOS)
-  // If the platform is ChromeOS, then the (un)availability of suggestions must
-  // be communicated via Blink because ChromeOS uses accessibility objects that
-  // live on both sides of the renderer-browser divide.
+  // Availability of suggestions should be communicated to Blink because
+  // accessibility objects live in both the renderer and browser processes.
   driver_->RendererShouldSetSuggestionAvailability(has_suggestions);
-#else
-  // On non-ChromeOS platforms, a static bool in AXPlatformNode is (un)set to
-  // communicate suggestions' (un)availability. This works because
-  // AXPlatformNodes reside on only the browser side.
-  has_suggestions ? ui::AXPlatformNode::OnInputSuggestionsAvailable()
-                  : ui::AXPlatformNode::OnInputSuggestionsUnavailable();
-#endif  // defined(OS_CHROMEOS)
 }
 
 void AutofillExternalDelegate::SetCurrentDataListValues(

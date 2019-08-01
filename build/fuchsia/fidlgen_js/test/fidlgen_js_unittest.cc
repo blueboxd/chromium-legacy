@@ -288,11 +288,11 @@ class TestolaImpl : public fidljstest::Testola {
     for (uint64_t i = 0; i < fidljstest::ARRRR_SIZE; ++i) {
       sat.arrrr[i] = static_cast<int32_t>(i * 5) - 10;
     }
-    sat.nullable_vector_of_string0 = nullptr;
+    sat.nullable_vector_of_string0.reset();
     std::vector<std::string> vector_of_str;
     vector_of_str.push_back("passed_str0");
     vector_of_str.push_back("passed_str1");
-    sat.nullable_vector_of_string1.reset(std::move(vector_of_str));
+    sat.nullable_vector_of_string1 = std::move(vector_of_str);
     std::vector<fidljstest::Blorp> vector_of_blorp;
     vector_of_blorp.push_back(fidljstest::Blorp::GAMMA);
     vector_of_blorp.push_back(fidljstest::Blorp::BETA);
@@ -352,9 +352,9 @@ class TestolaImpl : public fidljstest::Testola {
 
     ASSERT_EQ(nullable.size(), 5u);
     EXPECT_EQ(nullable[0], "str3");
-    EXPECT_TRUE(nullable[1].is_null());
-    EXPECT_TRUE(nullable[2].is_null());
-    EXPECT_TRUE(nullable[3].is_null());
+    EXPECT_FALSE(nullable[1].has_value());
+    EXPECT_FALSE(nullable[2].has_value());
+    EXPECT_FALSE(nullable[3].has_value());
     EXPECT_EQ(nullable[4], "str4");
 
     ASSERT_EQ(max_strlen.size(), 1u);

@@ -26,7 +26,6 @@ namespace content {
 
 class ApplyConstraintsProcessor;
 class WebMediaStreamDeviceObserver;
-class PeerConnectionDependencyFactory;
 
 // UserMediaClientImpl handles requests coming from the Blink MediaDevices
 // object. This includes getUserMedia and enumerateDevices. It must be created,
@@ -37,9 +36,8 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   // TODO(guidou): Make all constructors private and replace with Create methods
   // that return a std::unique_ptr. This class is intended for instantiation on
   // the free store. https://crbug.com/764293
-  // |render_frame| and |dependency_factory| must outlive this instance.
+  // |render_frame| must outlive this instance.
   UserMediaClientImpl(RenderFrameImpl* render_frame,
-                      PeerConnectionDependencyFactory* dependency_factory,
                       std::unique_ptr<blink::WebMediaStreamDeviceObserver>
                           media_stream_device_observer,
                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);

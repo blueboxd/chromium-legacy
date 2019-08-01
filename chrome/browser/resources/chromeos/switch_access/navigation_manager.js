@@ -246,6 +246,29 @@ class NavigationManager {
   }
 
   /**
+   * Simulates a single key stroke with the given key code
+   * and keyboard modifiers (whether or not CTRL, ALT, SEARCH,
+   * SHIFT are being held).
+   *
+   * @param {number} keyCode
+   * @param {!chrome.accessibilityPrivate.SyntheticKeyboardModifiers} modifiers
+   * @public
+   */
+  simulateKeyPress(keyCode, modifiers) {
+    chrome.accessibilityPrivate.sendSyntheticKeyEvent({
+      type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
+      keyCode: keyCode,
+      modifiers: modifiers
+    });
+
+    chrome.accessibilityPrivate.sendSyntheticKeyEvent({
+      type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYUP,
+      keyCode: keyCode,
+      modifiers: modifiers
+    });
+  }
+
+  /**
    * Moves the text caret to the beginning of the current node.
    * @public
    */
@@ -335,6 +358,30 @@ class NavigationManager {
    */
   selectionStarted() {
     return this.textNavigationManager_.isSelStartIndexSet();
+  }
+
+  /**
+   * Cuts selected text.
+   * @public
+   */
+  cut() {
+    this.textInputManager_.cut();
+  }
+
+  /**
+   * Copies selected text.
+   * @public
+   */
+  copy() {
+    this.textInputManager_.copy();
+  }
+
+  /**
+   * Pastes selected text.
+   * @public
+   */
+  paste() {
+    this.textInputManager_.paste();
   }
 
   /**

@@ -31,15 +31,15 @@ class NoBestEffortTasksDuringStartupTest : public InProcessBrowserTest {
     auto barrier = base::BarrierClosure(2, run_loop.QuitClosure());
 
     // Thread pool task.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+    base::PostTask(
+        FROM_HERE, {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
         base::BindLambdaForTesting([&]() {
           EXPECT_TRUE(AfterStartupTaskUtils::IsBrowserStartupComplete());
           barrier.Run();
         }));
 
     // UI thread task.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindLambdaForTesting([&]() {

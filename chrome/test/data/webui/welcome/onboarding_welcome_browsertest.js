@@ -6,11 +6,9 @@
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
-GEN('#include "chrome/browser/ui/webui/welcome/nux_helper.h"');
+GEN('#include "chrome/browser/ui/webui/welcome/helpers.h"');
 
-/**
- * Test fixture for Polymer onboarding welcome elements.
- */
+/** Test fixture for Polymer onboarding welcome elements. */
 const OnboardingWelcomeBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
@@ -26,7 +24,7 @@ const OnboardingWelcomeBrowserTest = class extends PolymerTest {
 
   /** @override */
   get featureList() {
-    return {enabled: ['nux::kNuxOnboardingForceEnabled']};
+    return {enabled: ['welcome::kOnboardingForceEnabled']};
   }
 };
 

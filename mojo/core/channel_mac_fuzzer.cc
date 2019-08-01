@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/mach_logging.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "mojo/core/channel.h"
@@ -31,7 +30,7 @@ class ChannelMacFuzzer {
   }
 
  private:
-  base::SingleThreadTaskExecutor io_task_executor_{base::MessagePumpType::IO};
+  base::SingleThreadTaskExecutor io_task_executor_{base::MessagePump::Type::IO};
 };
 
 class FakeChannelDelegate : public mojo::core::Channel::Delegate {

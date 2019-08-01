@@ -50,6 +50,8 @@ constexpr char kKrb5ConfEnvName[] = "KRB5_CONFIG";
 bool g_force_create_network_service_directly = false;
 network::mojom::NetworkServicePtr* g_network_service_ptr = nullptr;
 network::NetworkConnectionTracker* g_network_connection_tracker;
+bool g_network_service_is_responding = false;
+base::Time g_last_network_service_crash;
 
 std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
   static base::NoDestructor<
@@ -90,8 +92,6 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
 
 void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
   if (GetLocalNetworkService()) {
-    // GetNetworkServiceImpl() was already called and created the object, so
-    // just bind it.
     GetLocalNetworkService()->Bind(std::move(request));
     return;
   }
@@ -115,6 +115,7 @@ void OnNetworkServiceCrash() {
   DCHECK(g_network_service_ptr);
   DCHECK(g_network_service_ptr->is_bound());
   DCHECK(g_network_service_ptr->encountered_error());
+  g_last_network_service_crash = base::Time::Now();
   GetCrashHandlersList().Notify();
 }
 
@@ -156,8 +157,7 @@ net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
 
 network::mojom::NetworkService* GetNetworkService() {
   service_manager::Connector* connector = nullptr;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      GetSystemConnector() &&  // null in unit tests.
+  if (GetSystemConnector() &&  // null in unit tests.
       !g_force_create_network_service_directly) {
     connector = GetSystemConnector();
   }
@@ -166,16 +166,6 @@ network::mojom::NetworkService* GetNetworkService() {
 
 CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
     service_manager::Connector* connector) {
-  const bool is_network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
-  // The DCHECK for thread is only done without network service enabled. This is
-  // because the connector and the pre-existing |g_network_service_ptr| are
-  // bound to the right thread in the network service case, and this allows
-  // Android to instantiate the NetworkService before UI thread is promoted to
-  // BrowserThread::UI.
-  if (!is_network_service_enabled)
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   if (!g_network_service_ptr)
     g_network_service_ptr = new network::mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
@@ -190,7 +180,7 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
       auto request = mojo::MakeRequest(g_network_service_ptr);
       auto leaked_pipe = request.PassMessagePipe().release();
     } else {
-      if (is_network_service_enabled && connector) {
+      if (connector) {
         connector->BindInterface(mojom::kNetworkServiceName,
                                  g_network_service_ptr);
         g_network_service_ptr->set_connection_error_handler(
@@ -208,30 +198,31 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
       // might make requests to NetworkService that depend on initialization.
       (*g_network_service_ptr)
           ->SetClient(std::move(client_ptr), CreateNetworkServiceParams());
+      g_network_service_is_responding = false;
+      g_network_service_ptr->QueryVersion(base::BindRepeating(
+          [](uint32_t) { g_network_service_is_responding = true; }));
 
       delete g_client;  // In case we're recreating the network service.
       g_client = new NetworkServiceClient(std::move(client_request));
 
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();
-      if (is_network_service_enabled) {
-        if (command_line->HasSwitch(network::switches::kLogNetLog)) {
-          base::FilePath log_path =
-              command_line->GetSwitchValuePath(network::switches::kLogNetLog);
+      if (command_line->HasSwitch(network::switches::kLogNetLog)) {
+        base::FilePath log_path =
+            command_line->GetSwitchValuePath(network::switches::kLogNetLog);
 
-          base::DictionaryValue client_constants =
-              GetContentClient()->GetNetLogConstants();
+        base::DictionaryValue client_constants =
+            GetContentClient()->GetNetLogConstants();
 
-          base::File file(log_path, base::File::FLAG_CREATE_ALWAYS |
-                                        base::File::FLAG_WRITE);
-          if (!file.IsValid()) {
-            LOG(ERROR) << "Failed opening NetLog: " << log_path.value();
-          } else {
-            (*g_network_service_ptr)
-                ->StartNetLog(std::move(file),
-                              GetNetCaptureModeFromCommandLine(*command_line),
-                              std::move(client_constants));
-          }
+        base::File file(
+            log_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+        if (!file.IsValid()) {
+          LOG(ERROR) << "Failed opening NetLog: " << log_path.value();
+        } else {
+          (*g_network_service_ptr)
+              ->StartNetLog(std::move(file),
+                            GetNetCaptureModeFromCommandLine(*command_line),
+                            std::move(client_constants));
         }
       }
 
@@ -269,21 +260,7 @@ RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!handler.is_null());
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return GetCrashHandlersList().Add(std::move(handler));
-
-  return nullptr;
-}
-
-network::NetworkService* GetNetworkServiceImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  if (!GetLocalNetworkService()) {
-    GetLocalNetworkService() =
-        std::make_unique<network::NetworkService>(nullptr, nullptr);
-  }
-
-  return GetLocalNetworkService().get();
+  return GetCrashHandlersList().Add(std::move(handler));
 }
 
 #if defined(OS_CHROMEOS)
@@ -359,6 +336,25 @@ void ForceCreateNetworkServiceDirectlyForTesting() {
 void ResetNetworkServiceForTesting() {
   delete g_network_service_ptr;
   g_network_service_ptr = nullptr;
+}
+
+NetworkServiceAvailability GetNetworkServiceAvailability() {
+  if (!g_network_service_ptr)
+    return NetworkServiceAvailability::NOT_CREATED;
+  else if (!g_network_service_ptr->is_bound())
+    return NetworkServiceAvailability::NOT_BOUND;
+  else if (g_network_service_ptr->encountered_error())
+    return NetworkServiceAvailability::ENCOUNTERED_ERROR;
+  else if (!g_network_service_is_responding)
+    return NetworkServiceAvailability::NOT_RESPONDING;
+  else
+    return NetworkServiceAvailability::AVAILABLE;
+}
+
+base::TimeDelta GetTimeSinceLastNetworkServiceCrash() {
+  if (g_last_network_service_crash.is_null())
+    return base::TimeDelta();
+  return base::Time::Now() - g_last_network_service_crash;
 }
 
 }  // namespace content

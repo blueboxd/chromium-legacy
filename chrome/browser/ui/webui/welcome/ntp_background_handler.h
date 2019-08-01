@@ -7,7 +7,7 @@
 
 #include "content/public/browser/web_ui_message_handler.h"
 
-namespace nux {
+namespace welcome {
 
 class NtpBackgroundHandler : public content::WebUIMessageHandler {
  public:
@@ -26,6 +26,6 @@ class NtpBackgroundHandler : public content::WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(NtpBackgroundHandler);
 };
 
-}  // namespace nux
+}  // namespace welcome
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_NTP_BACKGROUND_HANDLER_H_

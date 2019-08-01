@@ -15,6 +15,7 @@ source_set("material_components") {
   ]
   deps = [
     "//base",
+    "//build:branding_buildflags",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/common/colors",
     "//ios/third_party/material_components_ios",

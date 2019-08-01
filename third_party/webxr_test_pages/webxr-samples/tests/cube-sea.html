@@ -320,7 +320,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         initGL();
 
         let webglLayer = new XRWebGLLayer(session, gl, {
-          compositionDisabled: session.mode == 'inline',
           framebufferScaleFactor: appSettings.framebufferScale,
           antialias: appSettings.antialias});
         session.updateRenderState({ baseLayer: webglLayer });

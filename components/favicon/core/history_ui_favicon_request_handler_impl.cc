@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/features.h"
 #include "components/favicon/core/large_icon_service.h"
@@ -171,12 +170,8 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
     base::RepeatingCallback<void(const favicon_base::FaviconRawBitmapResult&)>
         repeating_response_callback =
             base::AdaptCallbackForRepeating(std::move(response_callback));
-    std::unique_ptr<FaviconServerFetcherParams> server_parameters =
-        platform == FaviconRequestPlatform::kMobile
-            ? FaviconServerFetcherParams::CreateForMobile(page_url)
-            : FaviconServerFetcherParams::CreateForDesktop(page_url);
     RequestFromGoogleServer(
-        page_url, std::move(server_parameters),
+        page_url,
         /*empty_response_callback=*/
         base::BindOnce(repeating_response_callback,
                        favicon_base::FaviconRawBitmapResult()),
@@ -233,7 +228,7 @@ void HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable(
     // We use CreateForDesktop because GetFaviconImageForPageURL is only called
     // by desktop.
     RequestFromGoogleServer(
-        page_url, FaviconServerFetcherParams::CreateForDesktop(page_url),
+        page_url,
         /*empty_response_callback=*/
         base::BindOnce(repeating_response_callback,
                        favicon_base::FaviconImageResult()),
@@ -267,7 +262,6 @@ void HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable(
 
 void HistoryUiFaviconRequestHandlerImpl::RequestFromGoogleServer(
     const GURL& page_url,
-    std::unique_ptr<FaviconServerFetcherParams> server_parameters,
     base::OnceClosure empty_response_callback,
     base::OnceClosure local_lookup_callback,
     HistoryUiFaviconRequestOrigin origin_for_uma,
@@ -317,7 +311,7 @@ void HistoryUiFaviconRequestHandlerImpl::RequestFromGoogleServer(
       /* default_value= */ false);
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-          std::move(server_parameters),
+          page_url,
           /*may_page_url_be_private=*/true, should_trim_url_path,
           traffic_annotation,
           base::BindOnce(

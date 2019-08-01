@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_test_helper.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -69,6 +70,12 @@ class TextPaintTimingDetectorTest
     return GetPaintTimingDetector().GetTextPaintTimingDetector();
   }
 
+  TextPaintTimingDetector* GetChildFrameTextPaintTimingDetector() {
+    return GetChildFrameView()
+        .GetPaintTimingDetector()
+        .GetTextPaintTimingDetector();
+  }
+
   base::Optional<LargestTextPaintManager>& GetLargestTextPaintManager() {
     return GetTextPaintTimingDetector()
         ->records_manager_.GetLargestTextPaintManager();
@@ -107,10 +114,18 @@ class TextPaintTimingDetectorTest
   }
 
   void InvokeCallback() {
-    TextPaintTimingDetector* detector =
-        GetPaintTimingDetector().GetTextPaintTimingDetector();
-    detector->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
-                             test_task_runner_->NowTicks());
+    DCHECK_GT(mock_callback_manager_->CountCallbacks(), 0u);
+    InvokeSwapTimeCallback(mock_callback_manager_);
+  }
+
+  void ChildFrameSwapTimeCallBack() {
+    DCHECK_GT(child_frame_mock_callback_manager_->CountCallbacks(), 0u);
+    InvokeSwapTimeCallback(child_frame_mock_callback_manager_);
+  }
+
+  void InvokeSwapTimeCallback(
+      MockPaintTimingCallbackManager* callback_manager) {
+    callback_manager->InvokeSwapTimeCallback(test_task_runner_->NowTicks());
   }
 
   base::TimeTicks LargestPaintStoredResult() {
@@ -121,6 +136,10 @@ class TextPaintTimingDetectorTest
     frame_test_helpers::LoadHTMLString(
         web_view_helper_.GetWebView()->MainFrameImpl(), content,
         KURL("http://test.com"));
+    mock_callback_manager_ =
+        MakeGarbageCollected<MockPaintTimingCallbackManager>();
+    GetTextPaintTimingDetector()->ResetCallbackManagerForTesting(
+        mock_callback_manager_);
     UpdateAllLifecyclePhases();
   }
 
@@ -128,6 +147,10 @@ class TextPaintTimingDetectorTest
     GetChildDocument()->SetBaseURLOverride(KURL("http://test.com"));
     GetChildDocument()->body()->SetInnerHTMLFromString(content,
                                                        ASSERT_NO_EXCEPTION);
+    child_frame_mock_callback_manager_ =
+        MakeGarbageCollected<MockPaintTimingCallbackManager>();
+    GetChildFrameTextPaintTimingDetector()->ResetCallbackManagerForTesting(
+        child_frame_mock_callback_manager_);
     UpdateAllLifecyclePhases();
   }
 
@@ -139,27 +162,14 @@ class TextPaintTimingDetectorTest
   // This only triggers ReportSwapTime in main frame.
   void UpdateAllLifecyclePhasesAndSimulateSwapTime() {
     UpdateAllLifecyclePhases();
-    TextPaintTimingDetector* detector =
-        GetPaintTimingDetector().GetTextPaintTimingDetector();
-    if (detector &&
-        !detector->records_manager_.texts_queued_for_paint_time_.empty()) {
-      detector->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
-                               test_task_runner_->NowTicks());
-    }
+    while (mock_callback_manager_->CountCallbacks() > 0)
+      InvokeCallback();
   }
 
   size_t CountPendingSwapTime(LocalFrameView& frame_view) {
     TextPaintTimingDetector* detector =
         frame_view.GetPaintTimingDetector().GetTextPaintTimingDetector();
     return detector->records_manager_.texts_queued_for_paint_time_.size();
-  }
-
-  void ChildFrameSwapTimeCallBack() {
-    GetChildFrameView()
-        .GetPaintTimingDetector()
-        .GetTextPaintTimingDetector()
-        ->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
-                         test_task_runner_->NowTicks());
   }
 
   Element* AppendFontBlockToBody(String content) {
@@ -227,6 +237,8 @@ class TextPaintTimingDetectorTest
 
   frame_test_helpers::WebViewHelper web_view_helper_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
+  Persistent<MockPaintTimingCallbackManager> mock_callback_manager_;
+  Persistent<MockPaintTimingCallbackManager> child_frame_mock_callback_manager_;
 };
 
 TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_NoText) {

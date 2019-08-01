@@ -21,7 +21,7 @@ constexpr uint32_t NavigationBodyLoader::kMaxNumConsumedBytesInTask;
 // static
 void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     const mojom::CommonNavigationParams& common_params,
-    const CommitNavigationParams& commit_params,
+    const mojom::CommitNavigationParams& commit_params,
     int request_id,
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,

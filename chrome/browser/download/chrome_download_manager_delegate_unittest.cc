@@ -180,9 +180,8 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   }
 
 #if defined(OS_ANDROID)
-  void OnDownloadCanceled(
-      download::DownloadItem* download,
-      DownloadController::DownloadCancelReason reason) override {}
+  void OnDownloadCanceled(download::DownloadItem* download,
+                          bool has_no_external_storage) override {}
 #endif
 
   MOCK_METHOD5(

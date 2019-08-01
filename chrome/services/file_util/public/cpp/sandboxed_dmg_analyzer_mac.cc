@@ -30,9 +30,9 @@ SandboxedDMGAnalyzer::SandboxedDMGAnalyzer(
 void SandboxedDMGAnalyzer::Start() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&SandboxedDMGAnalyzer::PrepareFileToAnalyze, this));
 }
@@ -62,16 +62,16 @@ void SandboxedDMGAnalyzer::PrepareFileToAnalyze() {
     return;
   }
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&SandboxedDMGAnalyzer::AnalyzeFile,
-                                          this, std::move(file)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&SandboxedDMGAnalyzer::AnalyzeFile, this,
+                                std::move(file)));
 }
 
 void SandboxedDMGAnalyzer::ReportFileFailure() {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!analyzer_ptr_);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(callback_, safe_browsing::ArchiveAnalyzerResults()));
 }

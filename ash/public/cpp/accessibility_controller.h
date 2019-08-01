@@ -99,6 +99,12 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   // managed outside of this accessibility controller.
   virtual void NotifyAccessibilityStatusChanged() = 0;
 
+  // Returns true if the |path| pref is being controlled by a policy which
+  // enforces turning it on or its not being controlled by any type of policy
+  // and false otherwise.
+  virtual bool IsAccessibilityFeatureVisibleInTrayMenu(
+      const std::string& path) = 0;
+
  protected:
   AccessibilityController();
   virtual ~AccessibilityController();

@@ -163,10 +163,15 @@
   return self.parentViewController.view;
 }
 
-#pragma mark - ActivityServicePositioner
+#pragma mark - SnackbarCommands
 
 - (void)showSnackbarMessage:(MDCSnackbarMessage*)message {
   _latestSnackbarMessage = [message.text copy];
+}
+
+- (void)showSnackbarMessage:(MDCSnackbarMessage*)message
+               bottomOffset:(CGFloat)offset {
+  // NO-OP.
 }
 
 @end

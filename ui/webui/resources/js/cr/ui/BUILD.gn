@@ -265,8 +265,6 @@ js_library("tree") {
   ]
 }
 
-if (!optimize_webui) {
-  js_modulizer("modulize") {
-    input_files = [ "focus_outline_manager.js" ]
-  }
+js_modulizer("modulize") {
+  input_files = [ "focus_outline_manager.js" ]
 }

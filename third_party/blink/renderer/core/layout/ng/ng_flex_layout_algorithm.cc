@@ -300,12 +300,12 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         available_size.inline_size = content_box_size_.inline_size;
         available_size.block_size = flex_item.flexed_content_size +
                                     flex_item.main_axis_border_and_padding;
-        space_builder.SetIsFixedSizeBlock(true);
+        space_builder.SetIsFixedBlockSize(true);
       } else {
         available_size.inline_size = flex_item.flexed_content_size +
                                      flex_item.main_axis_border_and_padding;
         available_size.block_size = content_box_size_.block_size;
-        space_builder.SetIsFixedSizeInline(true);
+        space_builder.SetIsFixedInlineSize(true);
       }
       space_builder.SetAvailableSize(available_size);
       space_builder.SetPercentageResolutionSize(content_box_size_);
@@ -383,8 +383,8 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
           available_size.Transpose();
         space_builder.SetAvailableSize(available_size);
         space_builder.SetPercentageResolutionSize(content_box_size_);
-        space_builder.SetIsFixedSizeInline(true);
-        space_builder.SetIsFixedSizeBlock(true);
+        space_builder.SetIsFixedInlineSize(true);
+        space_builder.SetIsFixedBlockSize(true);
         NGConstraintSpace child_space = space_builder.ToConstraintSpace();
         flex_item.layout_result = flex_item.ng_input_node.Layout(
             child_space, /* break_token */ nullptr);

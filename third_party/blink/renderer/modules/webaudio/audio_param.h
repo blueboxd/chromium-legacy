@@ -258,6 +258,7 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 // AudioParam class represents web-exposed AudioParam interface.
 class AudioParam final : public ScriptWrappable, public InspectorHelperMixin {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(AudioParam);
 
  public:
   static AudioParam* Create(
@@ -322,6 +323,11 @@ class AudioParam final : public ScriptWrappable, public InspectorHelperMixin {
                                   ExceptionState&);
   AudioParam* cancelScheduledValues(double start_time, ExceptionState&);
   AudioParam* cancelAndHoldAtTime(double start_time, ExceptionState&);
+
+  // InspectorHelperMixin: an AudioParam is always owned by an AudioNode so
+  // its notification is done by the parent AudioNode.
+  void ReportDidCreate() final {}
+  void ReportWillBeDestroyed() final {}
 
  private:
   void WarnIfOutsideRange(const String& param_methd, float value);

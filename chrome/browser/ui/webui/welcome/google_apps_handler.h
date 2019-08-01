@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/webui/welcome/bookmark_item.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-namespace nux {
+namespace welcome {
 
 extern const char* kGoogleAppsInteractionHistogram;
 
@@ -43,6 +43,6 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(GoogleAppsHandler);
 };
 
-}  // namespace nux
+}  // namespace welcome
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_GOOGLE_APPS_HANDLER_H_

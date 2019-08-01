@@ -163,14 +163,14 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Failure) {
 // Tests that opening a new tab will hide the save card bubble.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, NewTabHidesDialog) {
   ShowUi("Local");
-  EXPECT_NE(nullptr, controller()->save_card_bubble_view());
+  EXPECT_NE(nullptr, controller()->GetSaveCardBubbleView());
   // Open a new tab page in the foreground.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(nullptr, controller()->save_card_bubble_view());
+  EXPECT_EQ(nullptr, controller()->GetSaveCardBubbleView());
 }
 
 }  // namespace autofill

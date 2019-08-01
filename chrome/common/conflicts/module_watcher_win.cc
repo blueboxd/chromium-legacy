@@ -165,9 +165,9 @@ void ModuleWatcher::Initialize(OnModuleEventCallback callback) {
 
   // The enumeration of modules is done on a background task to make sure it
   // doesn't slow down startup.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ModuleWatcher::EnumerateAlreadyLoadedModules,
                      base::SequencedTaskRunnerHandle::Get(),

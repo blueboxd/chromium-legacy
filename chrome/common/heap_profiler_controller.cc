@@ -57,7 +57,7 @@ void HeapProfilerController::Start() {
 void HeapProfilerController::ScheduleNextSnapshot(
     scoped_refptr<StoppedFlag> stopped) {
   base::PostDelayedTask(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
+      FROM_HERE, {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&HeapProfilerController::TakeSnapshot, std::move(stopped)),
       RandomInterval(kHeapCollectionInterval));
 }

@@ -143,6 +143,7 @@ source_set("app_internal") {
     ":mode",
     ":tests_hook",
     "//base",
+    "//build:branding_buildflags",
     "//components/bookmarks/browser",
     "//components/browser_sync",
     "//components/browsing_data/core",

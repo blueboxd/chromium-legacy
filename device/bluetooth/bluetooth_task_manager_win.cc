@@ -268,8 +268,8 @@ void BluetoothTaskManagerWin::RemoveObserver(Observer* observer) {
 
 void BluetoothTaskManagerWin::Initialize() {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
-  InitializeWithBluetoothTaskRunner(base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+  InitializeWithBluetoothTaskRunner(base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 }
 

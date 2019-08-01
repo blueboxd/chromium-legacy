@@ -73,7 +73,7 @@ class CORE_EXPORT NGConstraintSpace final {
  public:
   enum ConstraintSpaceFlags {
     kOrthogonalWritingModeRoot = 1 << 0,
-    kFixedSizeBlockIsDefinite = 1 << 1,
+    kIsFixedBlockSizeIndefinite = 1 << 1,
     kIntermediateLayout = 1 << 2,
     kSeparateLeadingFragmentainerMargins = 1 << 3,
     kNewFormattingContext = 1 << 4,
@@ -306,13 +306,13 @@ class CORE_EXPORT NGConstraintSpace final {
   //
   // If these flags are true, the AvailableSize() is interpreted as the fixed
   // border-box size of this box in the respective dimension.
-  bool IsFixedSizeInline() const { return bitfields_.is_fixed_size_inline; }
+  bool IsFixedInlineSize() const { return bitfields_.is_fixed_inline_size; }
 
-  bool IsFixedSizeBlock() const { return bitfields_.is_fixed_size_block; }
+  bool IsFixedBlockSize() const { return bitfields_.is_fixed_block_size; }
 
-  // Whether a fixed block size should be considered definite.
-  bool FixedSizeBlockIsDefinite() const {
-    return HasFlag(kFixedSizeBlockIsDefinite);
+  // Whether a fixed block-size should be considered indefinite.
+  bool IsFixedBlockSizeIndefinite() const {
+    return HasFlag(kIsFixedBlockSizeIndefinite);
   }
 
   // Whether an auto inline-size should be interpreted as shrink-to-fit
@@ -596,12 +596,12 @@ class CORE_EXPORT NGConstraintSpace final {
           writing_mode(static_cast<unsigned>(writing_mode)),
           direction(static_cast<unsigned>(TextDirection::kLtr)),
           is_shrink_to_fit(false),
-          is_fixed_size_inline(false),
-          is_fixed_size_block(false),
+          is_fixed_inline_size(false),
+          is_fixed_block_size(false),
           is_in_restricted_block_size_table_cell(false),
           table_cell_child_layout_phase(static_cast<unsigned>(
               NGTableCellChildLayoutPhase::kNotTableCellChild)),
-          flags(kFixedSizeBlockIsDefinite),
+          flags(),
           percentage_inline_storage(kSameAsAvailable),
           percentage_block_storage(kSameAsAvailable),
           replaced_percentage_block_storage(kSameAsAvailable) {}
@@ -614,8 +614,8 @@ class CORE_EXPORT NGConstraintSpace final {
 
     bool AreSizeConstraintsEqual(const Bitfields& other) const {
       return is_shrink_to_fit == other.is_shrink_to_fit &&
-             is_fixed_size_inline == other.is_fixed_size_inline &&
-             is_fixed_size_block == other.is_fixed_size_block &&
+             is_fixed_inline_size == other.is_fixed_inline_size &&
+             is_fixed_block_size == other.is_fixed_block_size &&
              is_in_restricted_block_size_table_cell ==
                  other.is_in_restricted_block_size_table_cell &&
              table_cell_child_layout_phase ==
@@ -629,8 +629,8 @@ class CORE_EXPORT NGConstraintSpace final {
 
     // Size constraints.
     unsigned is_shrink_to_fit : 1;
-    unsigned is_fixed_size_inline : 1;
-    unsigned is_fixed_size_block : 1;
+    unsigned is_fixed_inline_size : 1;
+    unsigned is_fixed_block_size : 1;
     unsigned is_in_restricted_block_size_table_cell : 1;
     unsigned table_cell_child_layout_phase : 2;  // NGTableCellChildLayoutPhase
 

@@ -190,8 +190,7 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyRequestAdapter
                       const net::HttpRequestHeaders& original_headers,
                       net::HttpRequestHeaders* modified_headers,
                       std::vector<std::string>* removed_headers)
-      : ChromeRequestAdapter(nullptr),
-        in_progress_request_(in_progress_request),
+      : in_progress_request_(in_progress_request),
         original_headers_(original_headers),
         modified_headers_(modified_headers),
         removed_headers_(removed_headers) {
@@ -257,9 +256,7 @@ class ProxyingURLLoaderFactory::InProgressRequest::ProxyResponseAdapter
  public:
   ProxyResponseAdapter(InProgressRequest* in_progress_request,
                        net::HttpResponseHeaders* headers)
-      : ResponseAdapter(nullptr),
-        in_progress_request_(in_progress_request),
-        headers_(headers) {
+      : in_progress_request_(in_progress_request), headers_(headers) {
     DCHECK(in_progress_request_);
     DCHECK(headers_);
   }

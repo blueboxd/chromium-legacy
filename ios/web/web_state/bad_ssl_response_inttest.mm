@@ -191,8 +191,7 @@ TEST_P(BadSslResponseTest, ReadFromSessionCertificateStorage) {
 // Tests navigation to a page with self signed SSL cert and allowing the load
 // via WebClient. Subsequent navigation should not call AllowCertificateError
 // but always allow the load.
-// TODO(crbug.com/973635): fix and reenable this test.
-TEST_P(BadSslResponseTest, DISABLED_RememberCertDecision) {
+TEST_P(BadSslResponseTest, RememberCertDecision) {
   // Allow the load via WebClient.
   web_client()->SetAllowCertificateErrors(true);
   GURL url(https_server_.GetURL("/echo"));

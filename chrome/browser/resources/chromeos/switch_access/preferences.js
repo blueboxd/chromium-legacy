@@ -8,8 +8,10 @@
 class SwitchAccessPreferences {
   /**
    * @param {!SwitchAccessInterface} switchAccess
+   * @param {function()} onReady A callback that is called after the
+   *     initial preferences are loaded.
    */
-  constructor(switchAccess) {
+  constructor(switchAccess, onReady) {
     /**
      * SwitchAccess reference.
      * @private {!SwitchAccessInterface}
@@ -18,63 +20,52 @@ class SwitchAccessPreferences {
 
     /**
      * User preferences, initially set to the default preference values.
-     * @private
+     * @private {!Map<SAConstants.Preference,
+     *                chrome.settingsPrivate.PrefObject>}
      */
-    this.preferences_ = Object.assign({}, SAConstants.DEFAULT_PREFERENCES);
+    this.preferences_ = new Map();
 
-    this.init_();
+    this.init_(onReady);
   }
 
   /**
-   * Store any changes from |chrome.storage.sync| to |this.preferences_|, if
-   * |this.preferences_| is not already set to that value.
-   *
-   * @param {!Object} storageChanges
-   * @param {string} areaName
+   * Updates the cached preferences.
+   * @param {!Array<chrome.settingsPrivate.PrefObject>} preferences
+   * @param {function()=} opt_onUpdate Optional callback, called after the
+   *     cached preferences have been updated.
    * @private
    */
-  handleStorageChange_(storageChanges, areaName) {
+  updateFromSettings_(preferences, opt_onUpdate) {
     let updatedPreferences = {};
-    for (const name of Object.keys(storageChanges)) {
-      if (this.preferences_[name] !== storageChanges[name].newValue) {
-        this.preferences_[name] = storageChanges[name].newValue;
-        updatedPreferences[name] = storageChanges[name].newValue;
+    for (const pref of preferences) {
+      // Ignore preferences that are not used by Switch Access.
+      if (!Object.values(SAConstants.Preference).includes(pref.key))
+        continue;
+
+      const key = /** @type {SAConstants.Preference} */ (pref.key);
+      const oldPrefObject = this.preferences_.get(key);
+      if (!oldPrefObject || oldPrefObject.value !== pref.value) {
+        this.preferences_.set(key, pref);
+        updatedPreferences[key] = pref.value;
       }
     }
     if (Object.keys(updatedPreferences).length > 0)
       this.switchAccess_.onPreferencesChanged(updatedPreferences);
+
+    if (opt_onUpdate)
+      opt_onUpdate();
   }
 
   /**
+   * @param {function()} onReady Callback that is called once preference
+   *     cache has been successfully initialized.
    * @private
    */
-  init_() {
-    this.loadPreferences_();
-    chrome.storage.onChanged.addListener(this.handleStorageChange_.bind(this));
-  }
-
-  /**
-   * Asynchronously load the current preferences from |chrome.storage.sync| and
-   * store them in |this.preferences_|, if |this.preferences_| is not already
-   * set to that value.
-   *
-   * @private
-   */
-  loadPreferences_() {
-    const defaultKeys = Object.values(SAConstants.Preference);
-    chrome.storage.sync.get(defaultKeys, (loadedPreferences) => {
-      let updatedPreferences = {};
-
-      for (const name of Object.keys(loadedPreferences)) {
-        if (this.preferences_[name] !== loadedPreferences[name]) {
-          this.preferences_[name] = loadedPreferences[name];
-          updatedPreferences[name] = loadedPreferences[name];
-        }
-      }
-
-      if (Object.keys(updatedPreferences).length > 0)
-        this.switchAccess_.onPreferencesChanged(updatedPreferences);
-    });
+  init_(onReady) {
+    chrome.settingsPrivate.onPrefsChanged.addListener(
+        this.updateFromSettings_.bind(this));
+    chrome.settingsPrivate.getAllPrefs(
+        (prefs) => this.updateFromSettings_(prefs, onReady));
   }
 
   /**
@@ -85,9 +76,7 @@ class SwitchAccessPreferences {
    * @param {boolean|number} value
    */
   setPreference(name, value) {
-    let preference = {};
-    preference[name] = value;
-    chrome.storage.sync.set(preference);
+    chrome.settingsPrivate.setPref(name, value);
   }
 
   /**
@@ -98,9 +87,9 @@ class SwitchAccessPreferences {
    * @return {boolean}
    */
   getBooleanPreference(name) {
-    const value = this.preferences_[name];
-    if (typeof value === 'boolean')
-      return value;
+    const pref = this.preferences_.get(name);
+    if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN)
+      return /** @type {boolean} */ (pref.value);
     else
       throw new TypeError('No value of boolean type named \'' + name + '\'');
   }
@@ -127,25 +116,10 @@ class SwitchAccessPreferences {
    * @return {number|null}
    */
   getNumberPreferenceIfDefined(name) {
-    const value = this.preferences_[name];
-    if (typeof value === 'number')
-      return value;
+    const pref = this.preferences_.get(name);
+    if (pref && pref.type === chrome.settingsPrivate.PrefType.NUMBER)
+      return /** @type {number} */ (pref.value);
     return null;
-  }
-
-  /**
-   * Returns true if |keyCode| is already used to run a command from the
-   * keyboard.
-   *
-   * @param {number} keyCode
-   * @return {boolean}
-   */
-  keyCodeIsUsed(keyCode) {
-    for (const command of this.switchAccess_.getCommands()) {
-      if (keyCode === this.preferences_[command])
-        return true;
-    }
-    return false;
   }
 }
 

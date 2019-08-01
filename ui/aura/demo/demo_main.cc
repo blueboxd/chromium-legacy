@@ -9,7 +9,6 @@
 #include "base/i18n/icu_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
@@ -145,7 +144,8 @@ int DemoMain() {
 #endif
 
   // Create the task executor here before creating the root window.
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("demo");
   ui::InitializeInputMethodForTesting();
 

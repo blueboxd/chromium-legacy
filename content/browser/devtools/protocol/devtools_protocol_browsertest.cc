@@ -53,7 +53,6 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -2302,13 +2301,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownloadHeadless) {
   DownloadTestFlushObserver flush_observer(DownloadManagerForShell(shell()));
   flush_observer.WaitForFlush();
   EXPECT_TRUE(EnsureNoPendingDownloads());
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // The download manager will intercept the download navigation and drop it
-    // since we have set the delegate to null.
-    EXPECT_EQ(nullptr, download);
-  } else {
-    EXPECT_EQ(download::DownloadItem::CANCELLED, download->GetState());
-  }
+  // The download manager will intercept the download navigation and drop it
+  // since we have set the delegate to null.
+  EXPECT_EQ(nullptr, download);
 }
 
 // Check that download logic is reset when creating a new target.

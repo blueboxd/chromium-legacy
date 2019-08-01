@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "build/branding_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -217,11 +218,11 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 - (void)activateColdMode {
   DCHECK_EQ(_mode, SigninPromoViewModeColdState);
   UIImage* logo = nil;
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   logo = [UIImage imageNamed:@"signin_promo_logo_chrome_color"];
 #else
   logo = [UIImage imageNamed:@"signin_promo_logo_chromium_color"];
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   DCHECK(logo);
   _imageView.image = logo;
   [_primaryButton

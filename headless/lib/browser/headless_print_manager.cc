@@ -21,22 +21,6 @@
 
 namespace headless {
 
-struct HeadlessPrintManager::FrameDispatchHelper {
-  HeadlessPrintManager* manager;
-  content::RenderFrameHost* render_frame_host;
-
-  bool Send(IPC::Message* msg) { return render_frame_host->Send(msg); }
-
-  void OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
-    manager->OnGetDefaultPrintSettings(reply_msg);
-  }
-
-  void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& scripted_params,
-                       IPC::Message* reply_msg) {
-    manager->OnScriptedPrint(scripted_params, reply_msg);
-  }
-};
-
 HeadlessPrintSettings::HeadlessPrintSettings()
     : prefer_css_page_size(false),
       landscape(false),
@@ -226,34 +210,34 @@ bool HeadlessPrintManager::OnMessageReceived(
     return true;
   }
 
-  FrameDispatchHelper helper = {this, render_frame_host};
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(HeadlessPrintManager, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ShowInvalidPrinterSettingsError,
                         OnShowInvalidPrinterSettingsError)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintDocument, OnDidPrintDocument)
-    IPC_MESSAGE_FORWARD_DELAY_REPLY(
-        PrintHostMsg_GetDefaultPrintSettings, &helper,
-        FrameDispatchHelper::OnGetDefaultPrintSettings)
-    IPC_MESSAGE_FORWARD_DELAY_REPLY(PrintHostMsg_ScriptedPrint, &helper,
-                                    FrameDispatchHelper::OnScriptedPrint)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled || PrintManager::OnMessageReceived(message, render_frame_host);
 }
 
-void HeadlessPrintManager::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
+void HeadlessPrintManager::OnGetDefaultPrintSettings(
+    content::RenderFrameHost* render_frame_host,
+    IPC::Message* reply_msg) {
   PrintHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg,
                                                          print_params_->params);
+  // Intentionally using |printing_rfh_| instead of |render_frame_host|
+  // parameter.
   printing_rfh_->Send(reply_msg);
 }
 
 void HeadlessPrintManager::OnScriptedPrint(
+    content::RenderFrameHost* render_frame_host,
     const PrintHostMsg_ScriptedPrint_Params& params,
     IPC::Message* reply_msg) {
   PageRangeStatus status =
       PageRangeTextToPages(page_ranges_text_, ignore_invalid_page_ranges_,
                            params.expected_pages_count, &print_params_->pages);
+  // Intentionally using |printing_rfh_| instead of |render_frame_host|
+  // parameter.
   switch (status) {
     case SYNTAX_ERROR:
       printing_rfh_->Send(reply_msg);
@@ -282,6 +266,7 @@ void HeadlessPrintManager::OnPrintingFailed(int cookie) {
 }
 
 void HeadlessPrintManager::OnDidPrintDocument(
+    content::RenderFrameHost* render_frame_host,
     const PrintHostMsg_DidPrintDocument_Params& params) {
   auto& content = params.content;
   if (!content.metafile_data_region.IsValid()) {

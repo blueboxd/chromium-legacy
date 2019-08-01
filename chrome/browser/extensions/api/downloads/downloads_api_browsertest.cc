@@ -4165,7 +4165,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // This test is very flaky on Win XP and Aura. http://crbug.com/248438
 // Also flaky on Linux. http://crbug.com/700382
-// Also flaky on Mac ASAN with PlzNavigate.
+// Also flaky on Mac ASAN.
 // Test download interruption while extensions determining filename. Should not
 // re-dispatch onDeterminingFilename.
 IN_PROC_BROWSER_TEST_F(

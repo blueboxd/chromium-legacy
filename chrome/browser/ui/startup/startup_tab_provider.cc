@@ -28,10 +28,6 @@
 #include "chrome/browser/shell_integration.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/ui/webui/welcome/nux_helper.h"
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-
 namespace {
 
 // Attempts to find an existing, non-empty tabbed browser for this profile.

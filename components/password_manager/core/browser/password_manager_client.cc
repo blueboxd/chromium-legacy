@@ -32,6 +32,8 @@ bool PasswordManagerClient::OnCredentialManagerUsed() {
   return true;
 }
 
+void PasswordManagerClient::ShowTouchToFill(PasswordManagerDriver* driver) {}
+
 void PasswordManagerClient::GeneratePassword() {}
 
 void PasswordManagerClient::PasswordWasAutofilled(

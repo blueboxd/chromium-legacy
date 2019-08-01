@@ -312,10 +312,8 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // DidResolveRegistration callbacks
   void DidResolveRegistrationImpl(
-      blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
-      CacheStorageSchedulerId id);
+      blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info);
   void ResolveRegistrationDidCreateKeepAlive(
-      CacheStorageSchedulerId id,
       std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive);
 
   // GetRegistrations callbacks
@@ -415,7 +413,7 @@ class CONTENT_EXPORT BackgroundSyncManager
                                   blink::ServiceWorkerStatusCode status);
   void DidReceiveDelaysForSuspendedRegistrations(base::OnceClosure callback);
 
-  base::OnceClosure MakeEmptyCompletion(CacheStorageSchedulerId id);
+  base::OnceClosure MakeEmptyCompletion();
 
   blink::ServiceWorkerStatusCode CanEmulateSyncEvent(
       scoped_refptr<ServiceWorkerVersion> active_version);

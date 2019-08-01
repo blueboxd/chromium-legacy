@@ -757,9 +757,9 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
       .SetTextDirection(node.Style().Direction())
       .SetPercentageResolutionSize(
           container_content_size_in_candidate_writing_mode)
-      .SetIsFixedSizeInline(true);
+      .SetIsFixedInlineSize(true);
   if (block_estimate)
-    builder.SetIsFixedSizeBlock(true);
+    builder.SetIsFixedBlockSize(true);
   NGConstraintSpace space = builder.ToConstraintSpace();
 
   return node.Layout(space);

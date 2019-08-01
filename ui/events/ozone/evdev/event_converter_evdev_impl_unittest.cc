@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_file.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -128,8 +128,8 @@ class EventConverterEvdevImplTest : public testing::Test {
     dispatched_events_.push_back(std::move(cloned_event));
   }
 
-  base::MessageLoopForUI ui_loop_;
-
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<ui::FakeCursorDelegateEvdev> cursor_;
   std::unique_ptr<ui::DeviceManager> device_manager_;
   std::unique_ptr<ui::EventFactoryEvdev> event_factory_;

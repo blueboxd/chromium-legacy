@@ -18,7 +18,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/features.h"
 
 namespace content {
 namespace protocol {
@@ -99,12 +98,6 @@ void FetchHandler::Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
                           Maybe<bool> handleAuth,
                           std::unique_ptr<EnableCallback> callback) {
   if (!interceptor_) {
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      callback->sendFailure(
-          Response::Error("Fetch domain is only supported with "
-                          "--enable-features=NetworkService"));
-      return;
-    }
     interceptor_ =
         std::make_unique<DevToolsURLLoaderInterceptor>(base::BindRepeating(
             &FetchHandler::RequestIntercepted, weak_factory_.GetWeakPtr()));

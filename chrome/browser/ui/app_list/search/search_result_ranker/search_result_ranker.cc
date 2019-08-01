@@ -16,10 +16,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
@@ -126,9 +129,15 @@ float ReRange(const float score, const float min, const float max) {
 }  // namespace
 
 SearchResultRanker::SearchResultRanker(Profile* profile,
+                                       history::HistoryService* history_service,
                                        service_manager::Connector* connector)
-    : config_converter_(connector), profile_(profile) {
+    : config_converter_(connector),
+      history_service_observer_(this),
+      profile_(profile),
+      weak_factory_(this) {
   DCHECK(profile);
+  DCHECK(history_service);
+  history_service_observer_.Add(history_service);
   if (auto* notifier =
           file_manager::file_tasks::FileTasksNotifier::GetForProfile(
               profile_)) {
@@ -326,6 +335,45 @@ void SearchResultRanker::OnFilesOpened(
   for (const auto& file_open : file_opens)
     UMA_HISTOGRAM_ENUMERATION(kLogFileOpenType,
                               GetTypeFromFileTaskNotifier(file_open.open_type));
+}
+
+void SearchResultRanker::OnURLsDeleted(
+    history::HistoryService* history_service,
+    const history::DeletionInfo& deletion_info) {
+  if (!query_based_mixed_types_ranker_)
+    return;
+
+  if (deletion_info.IsAllHistory()) {
+    // TODO(931149): We clear the whole model because we expect most targets to
+    // be URLs. In future, consider parsing the targets and only deleting URLs.
+    query_based_mixed_types_ranker_->GetTargetData()->clear();
+  } else {
+    for (const auto& row : deletion_info.deleted_rows()) {
+      // In order to perform URL normalization, NormalizeId requires any omnibox
+      // item type as argument. Pass kOmniboxGeneric here as we don't know the
+      // specific type.
+      query_based_mixed_types_ranker_->RemoveTarget(
+          NormalizeId(row.url().spec(), RankingItemType::kOmniboxGeneric));
+    }
+  }
+
+  // Force a save to disk. It is possible to get many calls to OnURLsDeleted in
+  // quick succession, eg. when all history is cleared from a different device.
+  // So delay the save slightly and only perform one save for all updates during
+  // that delay.
+  if (!query_mixed_ranker_save_queued_) {
+    query_mixed_ranker_save_queued_ = true;
+    base::PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&SearchResultRanker::SaveQueryMixedRankerAfterDelete,
+                       weak_factory_.GetWeakPtr()),
+        TimeDelta::FromSeconds(3));
+  }
+}
+
+void SearchResultRanker::SaveQueryMixedRankerAfterDelete() {
+  query_based_mixed_types_ranker_->SaveToDisk();
+  query_mixed_ranker_save_queued_ = false;
 }
 
 }  // namespace app_list

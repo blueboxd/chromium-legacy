@@ -37,11 +37,9 @@ class SerialPort final : public ScriptWrappable,
   ~SerialPort() override;
 
   // Web-exposed functions
-  ReadableStream* readable() const { return readable_; }
-  WritableStream* writable() const { return writable_; }
-
   ScriptPromise open(ScriptState*, const SerialOptions* options);
-  void clearReadError(ScriptState*, ExceptionState&);
+  ReadableStream* readable(ScriptState*, ExceptionState&);
+  WritableStream* writable(ScriptState*, ExceptionState&);
   void close();
 
   const base::UnguessableToken& token() const { return info_->token; }

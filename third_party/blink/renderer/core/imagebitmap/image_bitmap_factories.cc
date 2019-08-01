@@ -313,24 +313,27 @@ void ImageBitmapFactories::ImageBitmapLoader::DidFail(FileErrorCode) {
 
 void ImageBitmapFactories::ImageBitmapLoader::ScheduleAsyncImageBitmapDecoding(
     DOMArrayBuffer* array_buffer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       Thread::Current()->GetTaskRunner();
   worker_pool::PostTask(
       FROM_HERE,
       CrossThreadBindOnce(
           &ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread,
-          WrapCrossThreadPersistent(this), std::move(task_runner),
+          WrapCrossThreadWeakPersistent(this), std::move(task_runner),
           WrapCrossThreadPersistent(array_buffer), options_->premultiplyAlpha(),
-          options_->colorSpaceConversion()));
+          options_->colorSpaceConversion(), IsMainThread()));
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     DOMArrayBuffer* array_buffer,
     const String& premultiply_alpha_option,
-    const String& color_space_conversion_option) {
-  DCHECK(!IsMainThread());
-
+    const String& color_space_conversion_option,
+    bool scheduled_from_main_thread) {
+#if DCHECK_IS_ON()
+  DCHECK(!sequence_checker_.CalledOnValidSequence());
+#endif  // DCHECK_IS_ON()
   ImageDecoder::AlphaOption alpha_op = ImageDecoder::kAlphaPremultiplied;
   if (premultiply_alpha_option == "none")
     alpha_op = ImageDecoder::kAlphaNotPremultiplied;
@@ -338,9 +341,21 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
   if (color_space_conversion_option == "none")
     ignore_color_space = true;
   const bool data_complete = true;
+  // As array buffer can be created from a worker thread, and that thread can be
+  // destroyed, there would be the possibility of a race condition here when
+  // creating the SkData without copy (just referencing it). To fix this issue
+  // we will be making it with copy if we don't come from the main thread, to
+  // ensure that the data will be safe in the current thread where the decoding
+  // is taking place.
+  // todo(crbug/989675) Evaluate if there is another way to fix this without
+  // copying the array.
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-      SegmentReader::CreateFromSkData(SkData::MakeWithoutCopy(
-          array_buffer->Data(), array_buffer->ByteLength())),
+      SegmentReader::CreateFromSkData(
+          scheduled_from_main_thread
+              ? SkData::MakeWithoutCopy(array_buffer->Data(),
+                                        array_buffer->ByteLength())
+              : SkData::MakeWithCopy(array_buffer->Data(),
+                                     array_buffer->ByteLength())),
       data_complete, alpha_op, ImageDecoder::kDefaultBitDepth,
       ignore_color_space ? ColorBehavior::Ignore() : ColorBehavior::Tag());
   sk_sp<SkImage> frame;
@@ -351,11 +366,13 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
       *task_runner, FROM_HERE,
       CrossThreadBindOnce(&ImageBitmapFactories::ImageBitmapLoader::
                               ResolvePromiseOnOriginalThread,
-                          WrapCrossThreadPersistent(this), std::move(frame)));
+                          WrapCrossThreadWeakPersistent(this),
+                          std::move(frame)));
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
     sk_sp<SkImage> frame) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!frame) {
     RejectPromise(kUndecodableImageBitmapRejectionReason);
     return;

@@ -1064,7 +1064,7 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
 #else
 #define MAYBE_TimeQueryStarted TimeQueryStarted
 #endif
-TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryStarted) {
+TEST_F(SSLErrorHandlerDateInvalidTest, MAYBE_TimeQueryStarted) {
   base::HistogramTester histograms;
   base::Time network_time;
   base::TimeDelta uncertainty;
@@ -1102,7 +1102,7 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryStarted) {
 #else
 #define MAYBE_NoTimeQueries NoTimeQueries
 #endif
-TEST_F(SSLErrorHandlerDateInvalidTest, NoTimeQueries) {
+TEST_F(SSLErrorHandlerDateInvalidTest, MAYBE_NoTimeQueries) {
   base::HistogramTester histograms;
   base::Time network_time;
   base::TimeDelta uncertainty;

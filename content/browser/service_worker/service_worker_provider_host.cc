@@ -43,7 +43,6 @@
 #include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/base/url_util.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
@@ -819,13 +818,9 @@ bool ServiceWorkerProviderHost::IsControllerDecided() const {
       return false;
     case blink::mojom::ServiceWorkerClientType::kDedicatedWorker:
     case blink::mojom::ServiceWorkerClientType::kSharedWorker:
-      // NetworkService (PlzWorker):
-      if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-        // When PlzWorker is enabled, the controller will be sent when the
-        // response is committed to the renderer.
-        return false;
-      }
-      return true;
+      // When PlzWorker is enabled, the controller will be sent when the
+      // response is committed to the renderer.
+      return false;
     case blink::mojom::ServiceWorkerClientType::kAll:
       NOTREACHED();
   }

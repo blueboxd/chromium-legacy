@@ -898,7 +898,13 @@ html[dir=rtl] .menu-option {
 .menu-panel {
   height: 100%;
   left: 0;
+  /* Pad the content by 5px top/left. This will prevent the focus outline on
+   * tiles from being cut off by overflow-y. */
+  margin-inline-start: -5px;
+  margin-top: -5px;
   overflow-y: auto;
+  padding-inline-start: 5px;
+  padding-top: 5px;
   position: absolute;
   top: 0;
   visibility: hidden;
@@ -1564,13 +1570,16 @@ input:checked + .toggle .highlight {
 #colors-menu {
   --check-mark-size: 20px;
   --check-mark-top: 2px;
+  --custom-color-border: rgb(var(--GG300-rgb));
+  --custom-color-dark: rgb(var(--GG100-rgb));
+  --custom-color-light: white;
   --tile-size: 64px;
   --tile-margin: 25px;
 }
 
 #colors-menu .bg-sel-tile-bg {
   background-color: unset;
-  border-radius: calc(var(--tile-size)/2);
+  border-radius: 50%;
   box-sizing: border-box;
   height: var(--tile-size);
   margin-bottom: var(--tile-margin);
@@ -1708,17 +1717,54 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
   }
 }
 
+#colors-theme-uninstall {
+  height: fit-content;
+  margin-inline-end: 16px;
+}
+
 #color-picker-container.visible {
   display: inline-block;
 }
 
 #color-picker-container {
   display: none;
+  vertical-align: top;
 }
 
-#colors-theme-uninstall {
-  height: fit-content;
-  margin-inline-end: 16px;
+#color-picker-tile {
+  background-color: var(--custom-color-dark);
+  border: 1px solid var(--custom-color-border);
+  border-radius: 50%;
+  box-sizing: border-box;
+  opacity: 1;
+}
+
+#color-picker-icon {
+  -webkit-mask-image: url(icons/colorize.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100%;
+  background-color: rgb(var(--GG700-rgb));
+  display: inline-block;
+  height: 20px;
+  /* Position the icon in the middle with offset of half its size. */
+  left: calc(50% - 10px);
+  position: absolute;
+  /* Position the icon in the middle with offset of half its size. */
+  top: calc(50% - 10px);
+  width: 20px;
+}
+
+#color-picker-icon.white {
+  background-color: white;
+}
+
+#left-semicircle {
+  background-color: var(--custom-color-light);
+  border-bottom-left-radius: var(--tile-size);
+  border-top-left-radius: var(--tile-size);
+  display: inline-block;
+  height: 100%;
+  width: 50%;
 }
 
 #refresh-daily-wrapper {

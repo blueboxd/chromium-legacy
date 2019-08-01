@@ -143,8 +143,9 @@ void StartupData::CreateProfilePrefServiceInternal() {
   }
 
   scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN,
+           base::MayBlock()});
 
   policy::ChromeBrowserPolicyConnector* browser_policy_connector =
       chrome_feature_list_creator_->browser_policy_connector();

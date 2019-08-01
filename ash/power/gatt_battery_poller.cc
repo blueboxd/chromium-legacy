@@ -76,7 +76,7 @@ void GattBatteryPoller::OnBatteryPercentageFetched(
   if (battery_percentage) {
     device::BluetoothDevice* device = adapter_->GetDevice(device_address_);
     if (device)
-      device->set_battery_percentage(*battery_percentage);
+      device->SetBatteryPercentage(*battery_percentage);
   }
 
   ScheduleNextAttempt(battery_percentage.has_value());
@@ -100,7 +100,7 @@ void GattBatteryPoller::ScheduleNextAttempt(bool was_last_attempt_successful) {
     StartNextAttemptTimer();
   } else {
     // Reset battery field after exceeding the retry count.
-    device->set_battery_percentage(base::nullopt);
+    device->SetBatteryPercentage(base::nullopt);
   }
 }
 

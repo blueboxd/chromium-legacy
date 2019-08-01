@@ -30,8 +30,8 @@ grit("resources") {
     "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
-    "//chrome/common/media_router/mojo:media_controller_js",
-    "//chrome/common/media_router/mojo:media_router_js",
+    "//chrome/common/media_router/mojom:media_controller_js",
+    "//chrome/common/media_router/mojom:media_router_js",
     "//services/network/public/mojom:mojom_js",
     "//url/mojom:url_mojom_gurl_js",
     "//url/mojom:url_mojom_origin_js",

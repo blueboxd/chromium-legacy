@@ -423,7 +423,7 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//chrome/common:mojo_bindings",
     "//chrome/common:offline_page_auto_fetcher_mojom",
     "//chrome/common:page_load_metrics_mojom",
-    "//chrome/common/media_router/mojo:media_router",
+    "//chrome/common/media_router/mojom:media_router",
     "//chrome/test/data:web_ui_test_bindings",
     "//components/autofill/content/common/mojom",
     "//components/contextual_search/content/common/mojom",

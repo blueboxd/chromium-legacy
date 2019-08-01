@@ -1166,7 +1166,7 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
   EXPECT_STR_EQ("abcdefghij", textfield_->GetText());
 
   // Test the delete and backspace keys.
-  textfield_->SelectRange(gfx::Range(5));
+  textfield_->SetSelectedRange(gfx::Range(5));
   for (size_t i = 0; i < 3; i++)
     SendKeyEvent(ui::VKEY_BACK);
   EXPECT_STR_EQ("abfghij", textfield_->GetText());
@@ -1239,7 +1239,7 @@ TEST_F(TextfieldTest, DeletionWithSelection) {
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
     textfield_->SetText(ASCIIToUTF16("one two three"));
-    textfield_->SelectRange(gfx::Range(2, 6));
+    textfield_->SetSelectedRange(gfx::Range(2, 6));
     // Make selection as - on|e tw|o three.
     SendWordEvent(cases[i].key, cases[i].shift);
     // Verify state is on|o three.
@@ -1264,7 +1264,7 @@ TEST_F(TextfieldTest, DeletionWithEditCommands) {
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing cases[%" PRIuS "]", i));
     textfield_->SetText(ASCIIToUTF16("one two three"));
-    textfield_->SelectRange(gfx::Range(4));
+    textfield_->SetSelectedRange(gfx::Range(4));
     test_api_->ExecuteTextEditCommand(cases[i].command);
     EXPECT_STR_EQ(cases[i].expected, textfield_->GetText());
   }
@@ -1624,7 +1624,7 @@ TEST_F(TextfieldTest, SelectionOnRightClick) {
   textfield_->SetText(ASCIIToUTF16("hello world"));
 
   // Verify right clicking within the selection does not alter the selection.
-  textfield_->SelectRange(gfx::Range(1, 5));
+  textfield_->SetSelectedRange(gfx::Range(1, 5));
   EXPECT_STR_EQ("ello", textfield_->GetSelectedText());
   const int cursor_y = GetCursorYForTesting();
   MoveMouseTo(gfx::Point(GetCursorPositionX(3), cursor_y));
@@ -1776,7 +1776,7 @@ TEST_F(TextfieldTest, DragAndDrop_InitiateDrag) {
   base::string16 string;
   ui::OSExchangeData data;
   const gfx::Range kStringRange(6, 12);
-  textfield_->SelectRange(kStringRange);
+  textfield_->SetSelectedRange(kStringRange);
   const gfx::Point kStringPoint(GetCursorPositionX(9), GetCursorYForTesting());
   textfield_->WriteDragDataForView(nullptr, kStringPoint, &data);
   EXPECT_TRUE(data.GetString(&string));
@@ -1791,7 +1791,7 @@ TEST_F(TextfieldTest, DragAndDrop_InitiateDrag) {
   textfield_->ClearSelection();
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
             textfield_->GetDragOperationsForView(nullptr, kStringPoint));
-  textfield_->SelectRange(kStringRange);
+  textfield_->SetSelectedRange(kStringRange);
   // Ensure that password textfields do not support drag operations.
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
@@ -1825,7 +1825,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheRight) {
   std::set<ui::ClipboardFormatType> format_types;
 
   // Start dragging "ello".
-  textfield_->SelectRange(gfx::Range(1, 5));
+  textfield_->SetSelectedRange(gfx::Range(1, 5));
   gfx::Point point(GetCursorPositionX(3), cursor_y);
   MoveMouseTo(point);
   PressLeftMouseButton();
@@ -1876,7 +1876,7 @@ TEST_F(TextfieldTest, DragAndDrop_ToTheLeft) {
   std::set<ui::ClipboardFormatType> format_types;
 
   // Start dragging " worl".
-  textfield_->SelectRange(gfx::Range(5, 10));
+  textfield_->SetSelectedRange(gfx::Range(5, 10));
   gfx::Point point(GetCursorPositionX(7), cursor_y);
   MoveMouseTo(point);
   PressLeftMouseButton();
@@ -1921,7 +1921,7 @@ TEST_F(TextfieldTest, DragAndDrop_Canceled) {
   const int cursor_y = GetCursorYForTesting();
 
   // Start dragging "worl".
-  textfield_->SelectRange(gfx::Range(6, 10));
+  textfield_->SetSelectedRange(gfx::Range(6, 10));
   gfx::Point point(GetCursorPositionX(8), cursor_y);
   MoveMouseTo(point);
   PressLeftMouseButton();
@@ -2241,7 +2241,7 @@ TEST_F(TextfieldTest, RedoWithCtrlY) {
 TEST_F(TextfieldTest, Yank) {
   InitTextfields(2);
   textfield_->SetText(ASCIIToUTF16("abcdef"));
-  textfield_->SelectRange(gfx::Range(2, 4));
+  textfield_->SetSelectedRange(gfx::Range(2, 4));
 
   // Press Ctrl+Y to yank.
   SendKeyPress(ui::VKEY_Y, ui::EF_CONTROL_DOWN);
@@ -2285,12 +2285,12 @@ TEST_F(TextfieldTest, Yank) {
 
   // Verify deletion in a password textfield does not modify the kill buffer.
   textfield2->SetText(ASCIIToUTF16("hello"));
-  textfield2->SelectRange(gfx::Range(0));
+  textfield2->SetSelectedRange(gfx::Range(0));
   SendKeyPress(ui::VKEY_K, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(textfield2->GetText().empty());
 
   textfield_->RequestFocus();
-  textfield_->SelectRange(gfx::Range(0));
+  textfield_->SetSelectedRange(gfx::Range(0));
   SendKeyPress(ui::VKEY_Y, ui::EF_CONTROL_DOWN);
   EXPECT_STR_EQ("efabefeef", textfield_->GetText());
 }
@@ -2333,7 +2333,7 @@ TEST_F(TextfieldTest, CutCopyPaste) {
 
   // Ensure [Shift]+[Delete] is a no-op in case there is no selection.
   textfield_->SetText(ASCIIToUTF16("123"));
-  textfield_->SelectRange(gfx::Range(0));
+  textfield_->SetSelectedRange(gfx::Range(0));
   SendAlternateCut();
   EXPECT_STR_EQ("", GetClipboardText(ui::ClipboardType::kCopyPaste));
   EXPECT_STR_EQ("123", textfield_->GetText());
@@ -2829,9 +2829,9 @@ TEST_F(TextfieldTest, KeepInitiallySelectedWord) {
 
   textfield_->SetText(ASCIIToUTF16("abc def ghi"));
 
-  textfield_->SelectRange(gfx::Range(5, 5));
+  textfield_->SetSelectedRange(gfx::Range(5, 5));
   const gfx::Rect middle_cursor = GetCursorBounds();
-  textfield_->SelectRange(gfx::Range(0, 0));
+  textfield_->SetSelectedRange(gfx::Range(0, 0));
   const gfx::Point beginning = GetCursorBounds().origin();
 
   // Double click, but do not release the left button.
@@ -2947,7 +2947,7 @@ TEST_F(TextfieldTest, SelectionClipboard) {
   // contents into the middle of the selection, and move the cursor to the end
   // of the pasted content.
   SetClipboardText(ui::ClipboardType::kCopyPaste, "foo");
-  textfield_->SelectRange(gfx::Range(2, 6));
+  textfield_->SetSelectedRange(gfx::Range(2, 6));
   textfield_->OnMousePressed(middle);
   EXPECT_STR_EQ("0123foo01230123", textfield_->GetText());
   EXPECT_EQ(gfx::Range(7, 7), textfield_->GetSelectedRange());
@@ -2981,7 +2981,7 @@ TEST_F(TextfieldTest, SelectionClipboard) {
 
   // Selecting a range of text without any user interaction should not change
   // the clipboard content.
-  textfield_->SelectRange(gfx::Range(0, 3));
+  textfield_->SetSelectedRange(gfx::Range(0, 3));
   EXPECT_STR_EQ("ab ", textfield_->GetSelectedText());
   EXPECT_STR_EQ("ab cd ef", GetClipboardText(ui::ClipboardType::kSelection));
   EXPECT_EQ(ui::ClipboardType::kMaxValue, GetAndResetCopiedToClipboard());
@@ -3039,7 +3039,7 @@ TEST_F(TextfieldTest, TestLongPressInitiatesDragDrop) {
   textfield_->SetText(ASCIIToUTF16("Hello string world"));
 
   // Ensure the textfield will provide selected text for drag data.
-  textfield_->SelectRange(gfx::Range(6, 12));
+  textfield_->SetSelectedRange(gfx::Range(6, 12));
   const gfx::Point kStringPoint(GetCursorPositionX(9), GetCursorYForTesting());
 
   // Enable touch-drag-drop to make long press effective.
@@ -3089,7 +3089,7 @@ TEST_F(TextfieldTest, CursorBlinkRestartsOnInsertOrReplace) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("abc"));
   EXPECT_TRUE(test_api_->IsCursorBlinkTimerRunning());
-  textfield_->SelectRange(gfx::Range(1, 2));
+  textfield_->SetSelectedRange(gfx::Range(1, 2));
   EXPECT_FALSE(test_api_->IsCursorBlinkTimerRunning());
   textfield_->InsertOrReplaceText(base::ASCIIToUTF16("foo"));
   EXPECT_TRUE(test_api_->IsCursorBlinkTimerRunning());

@@ -17,7 +17,7 @@ NavigationClient::~NavigationClient() {}
 
 void NavigationClient::CommitNavigation(
     mojom::CommonNavigationParamsPtr common_params,
-    const CommitNavigationParams& commit_params,
+    mojom::CommitNavigationParamsPtr commit_params,
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -36,7 +36,7 @@ void NavigationClient::CommitNavigation(
   // unexpectedly abort the ongoing navigation. Remove when the races are fixed.
   ResetDisconnectionHandler();
   render_frame_->CommitPerNavigationMojoInterfaceNavigation(
-      std::move(common_params), commit_params, response_head,
+      std::move(common_params), std::move(commit_params), response_head,
       std::move(response_body), std::move(url_loader_client_endpoints),
       std::move(subresource_loaders), std::move(subresource_overrides),
       std::move(controller_service_worker_info), std::move(provider_info),
@@ -46,7 +46,7 @@ void NavigationClient::CommitNavigation(
 
 void NavigationClient::CommitFailedNavigation(
     mojom::CommonNavigationParamsPtr common_params,
-    const CommitNavigationParams& commit_params,
+    mojom::CommitNavigationParamsPtr commit_params,
     bool has_stale_copy_in_cache,
     int error_code,
     const base::Optional<std::string>& error_page_content,
@@ -54,9 +54,9 @@ void NavigationClient::CommitFailedNavigation(
     CommitFailedNavigationCallback callback) {
   ResetDisconnectionHandler();
   render_frame_->CommitFailedPerNavigationMojoInterfaceNavigation(
-      std::move(common_params), commit_params, has_stale_copy_in_cache,
-      error_code, error_page_content, std::move(subresource_loaders),
-      std::move(callback));
+      std::move(common_params), std::move(commit_params),
+      has_stale_copy_in_cache, error_code, error_page_content,
+      std::move(subresource_loaders), std::move(callback));
 }
 
 void NavigationClient::Bind(mojom::NavigationClientAssociatedRequest request) {

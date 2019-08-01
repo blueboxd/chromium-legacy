@@ -196,7 +196,8 @@ void WorkerThread::EvaluateClassicScript(
 
 void WorkerThread::FetchAndRunClassicScript(
     const KURL& script_url,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+        outside_settings_object_data,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
@@ -205,14 +206,15 @@ void WorkerThread::FetchAndRunClassicScript(
       CrossThreadBindOnce(
           &WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
-          WTF::Passed(outside_settings_object.CopyData()),
+          WTF::Passed(std::move(outside_settings_object_data)),
           WrapCrossThreadPersistent(outside_resource_timing_notifier),
           stack_id));
 }
 
 void WorkerThread::FetchAndRunModuleScript(
     const KURL& script_url,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+        outside_settings_object_data,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
@@ -221,7 +223,7 @@ void WorkerThread::FetchAndRunModuleScript(
       CrossThreadBindOnce(
           &WorkerThread::FetchAndRunModuleScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
-          WTF::Passed(outside_settings_object.CopyData()),
+          WTF::Passed(std::move(outside_settings_object_data)),
           WrapCrossThreadPersistent(outside_resource_timing_notifier),
           credentials_mode));
 }

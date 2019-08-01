@@ -8,20 +8,11 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
-#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
-#include "third_party/blink/renderer/core/layout/layout_text.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -44,6 +35,7 @@ TextPaintTimingDetector::TextPaintTimingDetector(
     LocalFrameView* frame_view,
     PaintTimingDetector* paint_timing_detector)
     : records_manager_(frame_view, paint_timing_detector),
+      callback_manager_(MakeGarbageCollected<PaintTimingCallbackManagerImpl>()),
       frame_view_(frame_view) {}
 
 void LargestTextPaintManager::PopulateTraceValue(
@@ -145,7 +137,7 @@ void TextPaintTimingDetector::RegisterNotifySwapTime(
   LocalFrame& frame = frame_view_->GetFrame();
   if (!frame.GetPage())
     return;
-  frame.GetPage()->GetChromeClient().NotifySwapTime(frame, std::move(callback));
+  callback_manager_->RegisterCallback(frame, std::move(callback));
   awaiting_swap_promise_ = true;
 }
 
@@ -230,6 +222,7 @@ void TextPaintTimingDetector::StopRecordingLargestTextPaint() {
 void TextPaintTimingDetector::Trace(blink::Visitor* visitor) {
   visitor->Trace(records_manager_);
   visitor->Trace(frame_view_);
+  visitor->Trace(callback_manager_);
 }
 
 LargestTextPaintManager::LargestTextPaintManager(

@@ -7,12 +7,14 @@
 
 #include <stdint.h>
 
+#include "base/base_export.h"
+
 namespace base {
 namespace trace_event {
 
 // Represents the number of instructions that were retired between two samples
 // of a thread's performance counters.
-class ThreadInstructionDelta {
+class BASE_EXPORT ThreadInstructionDelta {
  public:
   constexpr ThreadInstructionDelta() : delta_(0) {}
   explicit constexpr ThreadInstructionDelta(int64_t delta) : delta_(delta) {}
@@ -25,7 +27,7 @@ class ThreadInstructionDelta {
 
 // Uses the system's performance counters in order to measure the number of
 // instructions that have been retired on the current thread.
-class ThreadInstructionCount {
+class BASE_EXPORT ThreadInstructionCount {
  public:
   // Returns true if the platform supports hardware retired instruction
   // counters.

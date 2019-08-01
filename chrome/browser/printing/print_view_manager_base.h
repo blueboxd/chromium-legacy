@@ -22,14 +22,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "printing/buildflags/buildflags.h"
 
-struct PrintHostMsg_DidPrintDocument_Params;
-
 namespace base {
 class RefCountedMemory;
-}
-
-namespace content {
-class RenderFrameHost;
 }
 
 namespace printing {
@@ -107,12 +101,19 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Cancels the print job.
   void NavigationStopped() override;
 
-  // IPC Message handlers.
+  // printing::PrintManager:
   void OnDidGetPrintedPagesCount(int cookie, int number_pages) override;
+  void OnDidPrintDocument(
+      content::RenderFrameHost* render_frame_host,
+      const PrintHostMsg_DidPrintDocument_Params& params) override;
+  void OnGetDefaultPrintSettings(content::RenderFrameHost* render_frame_host,
+                                 IPC::Message* reply_msg) override;
   void OnPrintingFailed(int cookie) override;
+  void OnScriptedPrint(content::RenderFrameHost* render_frame_host,
+                       const PrintHostMsg_ScriptedPrint_Params& params,
+                       IPC::Message* reply_msg) override;
+
   void OnShowInvalidPrinterSettingsError();
-  void OnDidPrintDocument(content::RenderFrameHost* render_frame_host,
-                          const PrintHostMsg_DidPrintDocument_Params& params);
 
   // IPC message handlers for service.
   void OnComposePdfDone(const gfx::Size& page_size,

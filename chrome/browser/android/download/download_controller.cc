@@ -167,10 +167,6 @@ void OnRequestFileAccessResult(
     return;
   }
 
-  if (!granted) {
-    DownloadController::RecordDownloadCancelReason(
-        DownloadController::CANCEL_REASON_NO_STORAGE_PERMISSION);
-  }
   std::move(cb).Run(granted);
 }
 
@@ -225,13 +221,6 @@ void DownloadControllerBase::SetDownloadControllerBase(
     DownloadControllerBase* download_controller) {
   base::AutoLock lock(g_download_controller_lock_.Get());
   DownloadControllerBase::download_controller_ = download_controller;
-}
-
-// static
-void DownloadController::RecordDownloadCancelReason(
-    DownloadCancelReason reason) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "MobileDownload.CancelReason", reason, CANCEL_REASON_MAX);
 }
 
 // static
@@ -429,14 +418,10 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
 
       // Call onDownloadCompleted
       Java_DownloadController_onDownloadCompleted(env, j_item);
-      DownloadController::RecordDownloadCancelReason(
-             DownloadController::CANCEL_REASON_NOT_CANCELED);
       break;
     case DownloadItem::CANCELLED:
       strong_validators_map_.erase(item->GetGuid());
       Java_DownloadController_onDownloadCancelled(env, j_item);
-      DownloadController::RecordDownloadCancelReason(
-          DownloadController::CANCEL_REASON_OTHER_NATIVE_RESONS);
       break;
     case DownloadItem::INTERRUPTED:
       if (item->IsDone())

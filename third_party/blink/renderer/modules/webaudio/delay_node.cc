@@ -128,4 +128,14 @@ void DelayNode::Trace(blink::Visitor* visitor) {
   AudioNode::Trace(visitor);
 }
 
+void DelayNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+  GraphTracer().DidCreateAudioParam(delay_time_);
+}
+
+void DelayNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioParam(delay_time_);
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

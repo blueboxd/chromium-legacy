@@ -18,6 +18,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/default_clock.h"
+#include "build/build_config.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
@@ -444,7 +445,13 @@ MATCHER_P(IsCallbackError, error_code, "") {
   return false;
 }
 
-TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
+// See https://crbug.com/989723 for more context, this test seems to flake.
+#if defined(OS_WIN) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
+#define MAYBE_PutWithInvalidBlob DISABLED_PutWithInvalidBlob
+#else
+#define MAYBE_PutWithInvalidBlob PutWithInvalidBlob
+#endif
+TEST_F(IndexedDBDispatcherHostTest, MAYBE_PutWithInvalidBlob) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
   const int64_t kObjectStoreId = 10;

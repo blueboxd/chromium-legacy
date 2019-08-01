@@ -148,21 +148,21 @@
         </div>
       </a>
       <a id="multidevice" href="/multidevice"
-          hidden="[[!pageVisibility.multidevice]]">
+          hidden="[[isGuestMode_]]">
         <div class="item">
           <iron-icon icon="settings:multidevice-better-together-suite">
           </iron-icon>
           $i18n{multidevicePageTitle}
         </div>
       </a>
-      <a id="people" href="/people" hidden="[[!pageVisibility.people]]">
+      <a id="people" href="/people" hidden="[[isGuestMode_]]">
         <div class="item">
           <iron-icon icon="cr:person"></iron-icon>
           $i18n{peoplePageTitle}
         </div>
       </a>
       <a id="personalization" href="/personalization"
-          hidden="[[!pageVisibility.personalization]]">
+          hidden="[[isGuestMode_]]">
         <div class="item">
           <iron-icon icon="settings:palette"></iron-icon>
           $i18n{personalizationPageTitle}
@@ -205,14 +205,12 @@
         </div>
       </a>
       <cr-button id="advancedButton" aria-active-attribute="aria-expanded"
-          on-click="onAdvancedButtonToggle_"
-          hidden="[[!pageVisibility.advancedSettings]]">
+          on-click="onAdvancedButtonToggle_">
         <span>$i18n{advancedPageTitle}</span>
         <iron-icon icon="[[arrowState_(advancedOpened)]]">
         </iron-icon>
       </cr-button>
-      <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]"
-          hidden="[[!pageVisibility.advancedSettings]]">
+      <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]">
         <iron-selector id="subMenu" selectable="a" attr-for-selected="href"
             role="navigation" on-click="onLinkClick_">
           <a href="/dateTime">
@@ -233,7 +231,7 @@
               $i18n{osLanguagesPageTitle}
             </div>
           </a>
-          <a href="/files">
+          <a href="/files" hidden="[[isGuestMode_]]">
             <div class="item">
               <iron-icon icon="cr:file-download"></iron-icon>
               $i18n{filesPageTitle}
@@ -251,7 +249,7 @@
               $i18n{a11yPageTitle}
             </div>
           </a>
-          <a id="reset" href="/reset" hidden="[[!pageVisibility.reset]]">
+          <a id="reset" href="/reset" hidden="[[isGuestMode_]]">
             <div class="item">
               <iron-icon icon="settings:restore"></iron-icon>
               $i18n{resetPageTitle}

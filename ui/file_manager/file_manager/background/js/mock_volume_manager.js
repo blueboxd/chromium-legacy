@@ -190,11 +190,11 @@ class MockVolumeManager {
     return volumeInfo;
   }
 
-  mountArchive(fileUrl, successCallback, errorCallback) {
+  async mountArchive(fileUrl) {
     throw new Error('Not implemented');
   }
 
-  unmount(volumeInfo, successCallback, errorCallback) {
+  async unmount(volumeInfo) {
     throw new Error('Not implemented');
   }
 

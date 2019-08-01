@@ -1303,11 +1303,33 @@ bool TabStrip::ShouldDrawStrokes() const {
   // enough contrast, fall back to a stroke.  Always compute the contrast ratio
   // against the active frame color, to avoid toggling the stroke on and off as
   // the window activation state changes.
-  return color_utils::GetContrastRatio(
-             GetTabBackgroundColor(TAB_ACTIVE,
-                                   BrowserNonClientFrameView::kActive),
-             controller_->GetFrameColor(BrowserNonClientFrameView::kActive)) <
-         1.3;
+  constexpr float kMinimumContrastRatioForOutlines = 1.3f;
+  const SkColor background_color =
+      GetTabBackgroundColor(TAB_ACTIVE, BrowserNonClientFrameView::kActive);
+  const SkColor frame_color =
+      controller_->GetFrameColor(BrowserNonClientFrameView::kActive);
+  const float contrast_ratio =
+      color_utils::GetContrastRatio(background_color, frame_color);
+  if (contrast_ratio < kMinimumContrastRatioForOutlines)
+    return true;
+
+  // Don't want to have to run a full feature query every time this function is
+  // called.
+  static const bool tab_outlines_in_low_contrast =
+      base::FeatureList::IsEnabled(features::kTabOutlinesInLowContrastThemes);
+  if (tab_outlines_in_low_contrast) {
+    constexpr float kMinimumAbsoluteContrastForOutlines = 0.2f;
+    const float background_luminance =
+        color_utils::GetRelativeLuminance(background_color);
+    const float frame_luminance =
+        color_utils::GetRelativeLuminance(frame_color);
+    const float contrast_difference =
+        std::fabs(background_luminance - frame_luminance);
+    if (contrast_difference < kMinimumAbsoluteContrastForOutlines)
+      return true;
+  }
+
+  return false;
 }
 
 void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {

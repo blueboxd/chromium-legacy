@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+    <script src="../../../../resources/testharness.js"></script>
+    <script src="../../../../resources/testharnessreport.js"></script>
+    <!--Comment the line below when testing locally in the browser -->
+    <script src="file:///gen/third_party/blink/renderer/core/html/forms/resources/color_picker.js"></script>
+    <!--Uncomment the line below when testing locally in the browser -->
+    <!-- <script src="../../../../../renderer/core/html/forms/resources/color_picker.js"></script> -->
+<body>
+<script>
+/*
+ * The included color_picker.js file contains the JS code that powers the color picker popup
+ * for <input type='color' />. This test validates the functionality of the Color class defined
+ * in that file.
+ */
+
+'use strict';
+
+testEquals();
+testHexToRGB();
+testRGBToHex()
+testHexValueGetter();
+testRGBValueGetters();
+testAsHex();
+testAsRGB();
+
+function testEquals() {
+  test(() => {
+    assert_true(new Color('#000000').equals(new Color(ColorFormat.HEX, '000000')));
+  }, 'new Color(\'#000000\').equals(new Color(ColorFormat.HEX, \'000000\'))');
+
+  test(() => {
+    assert_true(new Color('rgb(255,255,255)').equals(new Color(ColorFormat.RGB, 255, 255, 255)));
+  }, 'new Color(\'rgb(255,255,255)\').equals(new Color(ColorFormat.RGB, 255, 255, 255))');
+
+  test(() => {
+    assert_true(new Color('#caebca').equals(new Color(ColorFormat.RGB, 202, 235, 202)));
+  }, 'new Color(\'#caebca\').equals(new Color(ColorFormat.RGB, 202, 235, 202))');
+
+  test(() => {
+    assert_true(new Color(ColorFormat.RGB, 46, 224, 255).equals(new Color('#2ee0ff')));
+  }, 'new Color(\'new Color(\'rgb(46,224,255)\').equals(new Color(\'#2ee0ff\')))');
+}
+
+function testHexToRGB() {
+  test(() => {
+    assert_equals(JSON.stringify([0, 0, 0]), JSON.stringify(Color.hexToRGB('000000')));
+  }, 'Color.hexToRGB(\'000000\')');
+
+  test(() => {
+    assert_equals(JSON.stringify([255, 255, 255]), JSON.stringify(Color.hexToRGB('ffffff')));
+  }, 'Color.hexToRGB(\'ffffff\')');
+
+  test(() => {
+    assert_equals(JSON.stringify([255, 0, 0]), JSON.stringify(Color.hexToRGB('ff0000')));
+  }, 'Color.hexToRGB(\'ff0000\')');
+
+  test(() => {
+    assert_equals(JSON.stringify([0, 255, 0]), JSON.stringify(Color.hexToRGB('00ff00')));
+  }, 'Color.hexToRGB(\'00ff00\')');
+
+  test(() => {
+    assert_equals(JSON.stringify([0, 0, 255]), JSON.stringify(Color.hexToRGB('0000ff')));
+  }, 'Color.hexToRGB(\'0000ff\')');
+
+  test(() => {
+    assert_equals(JSON.stringify([66, 135, 245]), JSON.stringify(Color.hexToRGB('4287f5')));
+  }, 'Color.hexToRGB(\'4287f5\')');
+
+  test(() => {
+    assert_equals(JSON.stringify([31, 128, 105]), JSON.stringify(Color.hexToRGB('1f8069')));
+  }, 'Color.hexToRGB(\'1f8069\')');
+
+  test(() => {
+    assert_equals(JSON.stringify([188, 131, 212]), JSON.stringify(Color.hexToRGB('bc83d4')));
+  }, 'Color.hexToRGB(\'bc83d4\')');
+}
+
+function testRGBToHex() {
+  test(() => {
+    assert_equals('000000', Color.rgbToHex(0, 0, 0));
+  }, 'Color.rgbToHex(0, 0, 0)');
+
+  test(() => {
+    assert_equals('ffffff', Color.rgbToHex(255, 255, 255));
+  }, 'Color.rgbToHex(255, 255, 255)');
+
+  test(() => {
+    assert_equals('ff0000', Color.rgbToHex(255, 0, 0));
+  }, 'Color.rgbToHex(255, 0, 0)');
+
+  test(() => {
+    assert_equals('00ff00', Color.rgbToHex(0, 255, 0));
+  }, 'Color.rgbToHex(0, 255, 0)');
+
+  test(() => {
+    assert_equals('0000ff', Color.rgbToHex(0, 0, 255));
+  }, 'Color.rgbToHex(0, 0, 255)');
+
+  test(() => {
+    assert_equals('4287f5', Color.rgbToHex(66, 135, 245));
+  }, 'Color.rgbToHex(66, 135, 245)');
+
+  test(() => {
+    assert_equals('b3a86f', Color.rgbToHex(179, 168, 111));
+  }, 'Color.rgbToHex(179, 168, 111)');
+
+  test(() => {
+    assert_equals('eae1ed', Color.rgbToHex(234, 225, 237));
+  }, 'Color.rgbToHex(234, 225, 237)');
+
+  test(() => {
+    assert_equals('f7024c', Color.rgbToHex(247, 2, 76));
+  }, 'Color.rgbToHex(247, 2, 76)');
+
+  test(() => {
+    assert_equals('a9f5c0', Color.rgbToHex(169, 245, 192));
+  }, 'Color.rgbToHex(169, 245, 192)');
+}
+
+function testHexValueGetter() {
+  test(() => {
+    assert_equals('1f8069', new Color('#1f8069').hexValue);
+  }, 'new Color(\'#1f8069\').hexValue');
+
+  test(() => {
+    assert_equals('f7024c', new Color(ColorFormat.HEX, 'f7024c').hexValue);
+  }, 'new Color(ColorFormat.HEX, \'f7024c\').hexValue');
+
+  test(() => {
+    assert_equals('f4368b', new Color('rgb(244,54,139)').hexValue);
+  }, 'new Color(\'rgb(244,54,139)\').hexValue');
+
+  test(() => {
+    assert_equals('17679c', new Color(ColorFormat.RGB, 23, 103, 156).hexValue);
+  }, 'new Color(ColorFormat.RGB, 23, 103, 156).hexValue');
+}
+
+function testRGBValueGetters() {
+  test(() => {
+    assert_equals(227, new Color('#e34faa').rValue);
+  }, 'new Color(\'#e34faa\').rValue');
+
+  test(() => {
+    assert_equals(79, new Color('#e34faa').gValue);
+  }, 'new Color(\'#e34faa\').gValue');
+
+  test(() => {
+    assert_equals(170, new Color('#e34faa').bValue);
+  }, 'new Color(\'#e34faa\').bValue');
+
+  test(() => {
+    assert_equals(246, new Color(ColorFormat.HEX, 'f6ff00').rValue);
+  }, 'new Color(ColorFormat.HEX, \'f6ff00\').rValue');
+
+  test(() => {
+    assert_equals(255, new Color(ColorFormat.HEX, 'f6ff00').gValue);
+  }, 'new Color(ColorFormat.HEX, \'f6ff00\').gValue');
+
+  test(() => {
+    assert_equals(0, new Color(ColorFormat.HEX, 'f6ff00').bValue);
+  }, 'new Color(ColorFormat.HEX, \'f6ff00\').bValue');
+
+  test(() => {
+    assert_equals(189, new Color('rgb(189,97,36)').rValue);
+  }, 'new Color(\'rgb(189,97,36)\').rValue');
+
+  test(() => {
+    assert_equals(97, new Color('rgb(189,97,36)').gValue);
+  }, 'new Color(\'rgb(189,97,36)\').gValue');
+
+  test(() => {
+    assert_equals(36, new Color('rgb(189,97,36)').bValue);
+  }, 'new Color(\'rgb(189,97,36)\').bValue');
+
+  test(() => {
+    assert_equals(65, new Color(ColorFormat.RGB, 65, 84, 72).rValue);
+  }, 'new Color(ColorFormat.RGB, 65, 84, 72).rValue');
+
+  test(() => {
+    assert_equals(84, new Color(ColorFormat.RGB, 65, 84, 72).gValue);
+  }, 'new Color(ColorFormat.RGB, 65, 84, 72).gValue');
+
+  test(() => {
+    assert_equals(72, new Color(ColorFormat.RGB, 65, 84, 72).bValue);
+  }, 'new Color(ColorFormat.RGB, 65, 84, 72).bValue');
+}
+
+function testAsHex() {
+  test(() => {
+    assert_equals('#796de3', new Color('#796de3').asHex());
+  }, 'new Color(\'#796de3\').asHex()');
+
+  test(() => {
+    assert_equals('#12b87b', new Color(ColorFormat.HEX, '12b87b').asHex());
+  }, 'new Color(ColorFormat.HEX, \'12b87b\').asHex()');
+
+  test(() => {
+    assert_equals('#f09eb1', new Color('rgb(240,158,177)').asHex());
+  }, 'new Color(\'rgb(240,158,177)\').asHex()');
+
+  test(() => {
+    assert_equals('#6e1026', new Color(ColorFormat.RGB, 110, 16, 38).asHex());
+  }, 'new Color(ColorFormat.RGB, 110, 16, 38).asHex()');
+}
+
+function testAsRGB() {
+  test(() => {
+    assert_equals('rgb(0,255,242)', new Color('#00fff2').asRGB());
+  }, 'new Color(\'#00fff2\').asRGB()');
+
+  test(() => {
+    assert_equals('rgb(166,166,166)', new Color(ColorFormat.HEX, 'a6a6a6').asRGB());
+  }, 'new Color(ColorFormat.HEX, \'a6a6a6\').asRGB()');
+
+  test(() => {
+    assert_equals('rgb(222,186,9)', new Color('rgb(222,186,9)').asRGB());
+  }, 'new Color(\'rgb(222,186,9)\').asRGB()');
+
+  test(() => {
+    assert_equals('rgb(15,117,15)', new Color(ColorFormat.RGB, 15, 117, 15).asRGB());
+  }, 'new Color(ColorFormat.RGB, 15, 117, 15).asRGB()');
+}
+
+</script>
+</body>
+</html>

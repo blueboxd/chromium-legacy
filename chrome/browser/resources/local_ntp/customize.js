@@ -108,7 +108,10 @@ customize.IDS = {
   BACKGROUNDS_UPLOAD: 'backgrounds-upload',
   BACKGROUNDS_UPLOAD_ICON: 'backgrounds-upload-icon',
   CANCEL: 'bg-sel-footer-cancel',
+  COLOR_PICKER: 'color-picker',
+  COLOR_PICKER_TILE: 'color-picker-tile',
   COLOR_PICKER_CONTAINER: 'color-picker-container',
+  COLOR_PICKER_ICON: 'color-picker-icon',
   COLORS_BUTTON: 'colors-button',
   COLORS_DEFAULT_ICON: 'colors-default-icon',
   COLORS_THEME: 'colors-theme',
@@ -135,6 +138,8 @@ customize.IDS = {
   LINK_ICON: 'link-icon',
   MENU: 'bg-sel-menu',
   OPTIONS_TITLE: 'edit-bg-title',
+  REFRESH_DAILY_WRAPPER: 'refresh-daily-wrapper',
+  REFRESH_TOGGLE: 'refresh-daily-toggle',
   RESTORE_DEFAULT: 'edit-bg-restore-default',
   RESTORE_DEFAULT_TEXT: 'edit-bg-restore-default-text',
   SHORTCUTS_BUTTON: 'shortcuts-button',
@@ -233,6 +238,12 @@ customize.showErrorNotification = null;
  * @type {?Function}
  */
 customize.hideCustomLinkNotification = null;
+
+/**
+ * Id of the currently open collection.
+ * @type {string}
+ */
+customize.currentCollectionId = '';
 
 /**
  * The currently active Background submenu. This can be the collections page or
@@ -497,12 +508,14 @@ customize.closeCollectionDialog = function(menu) {
  * @param {string} url The url of the selected background.
  */
 customize.setBackground = function(
-    url, attributionLine1, attributionLine2, attributionActionUrl) {
+    url, attributionLine1, attributionLine2, attributionActionUrl,
+    collection_id) {
   if (!configData.richerPicker) {
     customize.closeCollectionDialog($(customize.IDS.MENU));
   }
-  window.chrome.embeddedSearch.newTabPage.setBackgroundURLWithAttributions(
-      url, attributionLine1, attributionLine2, attributionActionUrl);
+  window.chrome.embeddedSearch.newTabPage.setBackgroundInfo(
+      url, attributionLine1, attributionLine2, attributionActionUrl,
+      collection_id);
 };
 
 /**
@@ -624,14 +637,13 @@ customize.richerPicker_getNextTile = function(deltaX, deltaY, current) {
   const container = customize.richerPicker_selectedSubmenu.menu;
 
   const tiles = Array.from(
-      container.getElementsByClassName(customize.CLASSES.COLLECTION_TILE));
-  const curIndex = tiles.indexOf(current);
+      container.getElementsByClassName(customize.CLASSES.COLLECTION_TILE_BG));
+  let nextIndex = tiles.indexOf(current.parentElement);
   if (deltaX != 0) {
-    return tiles[curIndex + deltaX];
+    nextIndex += deltaX;
   } else if (deltaY != 0) {
-    let nextIndex = tiles.indexOf(current);
-    const startingTop = current.getBoundingClientRect().top;
-    const startingLeft = current.getBoundingClientRect().left;
+    const startingTop = current.parentElement.getBoundingClientRect().top;
+    const startingLeft = current.parentElement.getBoundingClientRect().left;
 
     // Search until a tile in a different row and the same column is found.
     while (tiles[nextIndex] &&
@@ -639,7 +651,9 @@ customize.richerPicker_getNextTile = function(deltaX, deltaY, current) {
             tiles[nextIndex].getBoundingClientRect().left != startingLeft)) {
       nextIndex += deltaY;
     }
-    return tiles[nextIndex];
+  }
+  if (tiles[nextIndex]) {
+    return tiles[nextIndex].children[0];
   }
   return null;
 };
@@ -905,6 +919,9 @@ customize.richerPicker_removeSelectedState = function(option) {
  * @param {!Element} tile The tile that was selected.
  */
 customize.richerPicker_previewImage = function(tile) {
+  if (!configData.richerPicker) {
+    return;
+  }
   // Set preview images at 720p by replacing the params in the url.
   const background = $(customize.IDS.CUSTOM_BG);
   const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
@@ -933,6 +950,9 @@ customize.richerPicker_previewImage = function(tile) {
  * Remove a preview image of a custom backgrounds.
  */
 customize.richerPicker_unpreviewImage = function() {
+  if (!configData.richerPicker) {
+    return;
+  }
   const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
   if (!preview.dataset || !preview.dataset.hasPreview) {
     return;
@@ -974,10 +994,16 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
     attr1: tile.dataset.attributionLine1,
     attr2: tile.dataset.attributionLine2,
     attrUrl: tile.dataset.attributionActionUrl,
+    collectionId: '',
   };
   customize.richerPicker_applySelectedState(tile);
   customize.richerPicker_maybeToggleDone();
-  customize.richerPicker_previewImage(tile);
+
+  // Don't apply a preview for a preselected image, as it's already the
+  // page background.
+  if (customize.preselectedOptions.backgroundsMenuTile !== tile) {
+    customize.richerPicker_previewImage(tile);
+  }
 };
 
 /**
@@ -1015,6 +1041,26 @@ customize.richerPicker_toggleShortcutHide = function(areHidden) {
 
   customize.selectedOptions.shortcutsAreHidden = areHidden;
   customize.richerPicker_maybeToggleDone();
+};
+
+/**
+ * Handles the "refresh daily" toggle.
+ * @param {boolean} toggledOn True if the toggle has been enabled.
+ */
+customize.richerPicker_toggleRefreshDaily = function(toggledOn) {
+  $(customize.IDS.MENU_DONE).disabled = !toggledOn;
+  if (!toggledOn) {
+    return;
+  }
+
+  customize.selectedOptions.backgroundData = {
+    id: '',
+    url: '',
+    attr1: '',
+    attr2: '',
+    attrUrl: '',
+    collectionId: customize.currentCollectionId,
+  };
 };
 
 /**
@@ -1120,7 +1166,8 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
           event.currentTarget.dataset.url,
           event.currentTarget.dataset.attributionLine1,
           event.currentTarget.dataset.attributionLine2,
-          event.currentTarget.dataset.attributionActionUrl);
+          event.currentTarget.dataset.attributionActionUrl,
+          /*collection_id=*/ '');
     }
   };
 
@@ -1139,7 +1186,6 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
     dataset.attributionActionUrl = collImg[i].attributionActionUrl;
     dataset.url = collImg[i].imageUrl;
     dataset.tileIndex = i;
-
 
     let tileId = 'img_tile_' + i;
     if (configData.richerPicker) {
@@ -1190,6 +1236,8 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
   } else {
     $(customize.IDS.TILES).focus();
   }
+  customize.currentCollectionId = collImg[0].collectionId;
+  $(customize.IDS.REFRESH_DAILY_WRAPPER).hidden = false;
 };
 
 /**
@@ -1354,6 +1402,10 @@ customize.richerPicker_preselectShortcutOptions = function() {
  * background.
  */
 customize.richerPicker_preselectBackgroundOption = function() {
+  if (!configData.richerPicker) {
+    return;
+  }
+
   customize.preselectedOptions.backgroundsMenuTile = null;
 
   const themeInfo = ntpApiHandle.themeBackgroundInfo;
@@ -1384,6 +1436,7 @@ customize.richerPicker_resetCustomizationMenu = function() {
   customize.richerPicker_resetSelectedOptions();
   customize.richerPicker_resetImageMenu();
   customize.richerPicker_hideOpenSubmenu();
+  customize.resetColorsMenu();
 };
 
 /**
@@ -1420,7 +1473,8 @@ customize.richerPicker_applyCustomization = function() {
         customize.selectedOptions.backgroundData.url,
         customize.selectedOptions.backgroundData.attr1,
         customize.selectedOptions.backgroundData.attr2,
-        customize.selectedOptions.backgroundData.attrUrl);
+        customize.selectedOptions.backgroundData.attrUrl,
+        customize.selectedOptions.backgroundData.collectionId);
   }
   if (customize.richerPicker_isShortcutOptionSelected()) {
     customize.richerPicker_setShortcutOptions();
@@ -1832,7 +1886,8 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
           customize.selectedOptions.background.dataset.url,
           customize.selectedOptions.background.dataset.attributionLine1,
           customize.selectedOptions.background.dataset.attributionLine2,
-          customize.selectedOptions.background.dataset.attributionActionUrl);
+          customize.selectedOptions.background.dataset.attributionActionUrl,
+          '');
     }
   };
   $(customize.IDS.DONE).onclick = doneInteraction;
@@ -1977,6 +2032,23 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     event.stopPropagation();
   };
 
+  const refreshToggle = $(customize.IDS.REFRESH_TOGGLE);
+  refreshToggle.onchange = function(event) {
+    customize.richerPicker_toggleRefreshDaily(refreshToggle.checked);
+  };
+  refreshToggle.onkeydown = function(event) {
+    if (event.keyCode === customize.KEYCODES.ENTER ||
+        event.keyCode === customize.KEYCODES.SPACE) {
+      refreshToggle.onchange(event);
+    }
+  };
+  refreshToggle.onclick = function(event) {
+    // Enter and space fire the 'onclick' event (which will remove special
+    // keyboard navigation styling) unless propagation is stopped.
+    event.stopPropagation();
+  };
+
+
   const richerPickerOpenShortcuts = function() {
     customize.richerPicker_showSubmenu(
         $(customize.IDS.SHORTCUTS_BUTTON), $(customize.IDS.SHORTCUTS_MENU));
@@ -2071,6 +2143,26 @@ customize.defaultThemeTileInteraction = function(event) {
 };
 
 /**
+ * Called when a new color is picked with color picker. Applies the color, and
+ * the selected style on the tile.
+ * @param {Event} event The event attributes for the interaction.
+ */
+customize.colorPickerTileInteraction = function(event) {
+  const hex = event.target.value;
+  const r = parseInt(hex.substring(1, 3), 16);
+  const g = parseInt(hex.substring(3, 5), 16);
+  const b = parseInt(hex.substring(5, 7), 16);
+  // If the picker is preselected and the user picks a new color, we need to
+  // treat the picker as a new selection and not a preselection.
+  if (customize.preselectedOptions.colorsMenuTile ===
+      $(customize.IDS.COLOR_PICKER_TILE)) {
+    customize.preselectedOptions.colorsMenuTile = null;
+  }
+  customize.updateColorsMenuTileSelection($(customize.IDS.COLOR_PICKER_TILE));
+  ntpApiHandle.applyAutogeneratedTheme(0, [r, g, b, 255]);
+};
+
+/**
  * Loads Colors menu elements.
  */
 customize.loadColorsMenu = function() {
@@ -2103,11 +2195,27 @@ customize.loadColorsMenu = function() {
   $(customize.IDS.COLORS_DEFAULT_ICON).onkeydown =
       customize.tileOnKeyDownInteraction;
 
+  // On arrow keys focus the first element.
   $(customize.IDS.COLORS_MENU).onkeydown = function(event) {
     if (customize.arrowKeys.includes(event.keyCode)) {
-      $(customize.IDS.COLORS_DEFAULT_ICON).focus();
+      if (configData.chromeColorsCustomColorPicker) {
+        $(customize.IDS.COLOR_PICKER_TILE).focus();
+      } else {
+        $(customize.IDS.COLORS_DEFAULT_ICON).focus();
+      }
     }
   };
+
+  // Configure custom color picker.
+  if (configData.chromeColorsCustomColorPicker) {
+    $(customize.IDS.COLOR_PICKER_TILE).onclick = function(event) {
+      $(customize.IDS.COLOR_PICKER).click();
+    };
+    $(customize.IDS.COLOR_PICKER_TILE).onkeydown =
+        customize.tileOnKeyDownInteraction;
+    $(customize.IDS.COLOR_PICKER).onchange =
+        customize.colorPickerTileInteraction;
+  }
 
   customize.colorsMenuOnThemeChange();
 
@@ -2145,7 +2253,8 @@ customize.colorsMenuPreselectTile = function() {
   let tile;
   if (themeInfo.usingDefaultTheme) {
     tile = $(customize.IDS.COLORS_DEFAULT_ICON);
-  } else if (themeInfo.colorId) {
+  } else if (themeInfo.colorId && themeInfo.colorId > 0) {
+    // Color from predefined set is selected.
     const tiles = Array.from(
         $(customize.IDS.COLORS_MENU)
             .getElementsByClassName(customize.CLASSES.COLLECTION_TILE));
@@ -2155,6 +2264,25 @@ customize.colorsMenuPreselectTile = function() {
         break;
       }
     }
+  } else if (
+      configData.chromeColorsCustomColorPicker && themeInfo.colorDark &&
+      themeInfo.colorLight) {
+    // Custom color is selected.
+    tile = $(customize.IDS.COLOR_PICKER_TILE);
+
+    // Update color picker tile colors.
+    $(customize.IDS.COLOR_PICKER).value = colorArrayToHex(themeInfo.colorDark);
+    $(customize.IDS.COLORS_MENU)
+        .style.setProperty(
+            '--custom-color-border', colorArrayToHex(themeInfo.colorDark));
+    $(customize.IDS.COLORS_MENU)
+        .style.setProperty(
+            '--custom-color-dark', colorArrayToHex(themeInfo.colorDark));
+    $(customize.IDS.COLORS_MENU)
+        .style.setProperty(
+            '--custom-color-light', colorArrayToHex(themeInfo.colorLight));
+    $(customize.IDS.COLOR_PICKER_ICON)
+        .classList.toggle('white', themeInfo.isNtpBackgroundDark);
   }
 
   if (tile && tile !== customize.selectedOptions.color) {
@@ -2204,3 +2332,39 @@ customize.confirmColor = function() {
 customize.cancelColor = function() {
   ntpApiHandle.revertThemeChanges();
 };
+
+/**
+ * Reset Colors Menu elements to the default state, specifically the color
+ * picker.
+ */
+customize.resetColorsMenu = function() {
+  $(customize.IDS.COLOR_PICKER).value = null;
+  $(customize.IDS.COLORS_MENU).style.setProperty('--custom-color-border', '');
+  $(customize.IDS.COLORS_MENU).style.setProperty('--custom-color-dark', '');
+  $(customize.IDS.COLORS_MENU).style.setProperty('--custom-color-light', '');
+  $(customize.IDS.COLOR_PICKER_ICON).classList.toggle('white', false);
+};
+
+/**
+ * Converts an RGBA component into hex format.
+ * @param {number} c RGBA component.
+ * @return {string} RGBA component in hex format.
+ */
+function rgbComponentToHex(c) {
+  const hex = c.toString(16);
+  return hex.length == 1 ? '0' + hex : hex;
+}
+
+/**
+ * Converts an Array of color components into hex format "#000000".
+ * @param {Array<number>} color Array of RGBA color components.
+ * @return {string} color in hex format.
+ */
+function colorArrayToHex(color) {
+  if (!color || color.length != 4) {
+    return '';
+  }
+
+  return '#' + rgbComponentToHex(color[0]) + rgbComponentToHex(color[1]) +
+      rgbComponentToHex(color[2]);
+}

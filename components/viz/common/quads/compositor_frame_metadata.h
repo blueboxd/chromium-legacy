@@ -17,6 +17,7 @@
 #include "components/viz/common/surfaces/surface_range.h"
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/latency/latency_info.h"
@@ -143,6 +144,12 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   base::TimeTicks local_surface_id_allocation_time;
 
   base::Optional<base::TimeDelta> preferred_frame_interval;
+
+  // Union of visible rects of MirrorLayers in the frame, used to force damage
+  // on the surface.
+  // TODO(crbug/987725): This is a workaround and should be removed when proper
+  // damage calculation is implemented in SurfaceAggregator.
+  gfx::Rect mirror_rect;
 
 #if defined(OS_ANDROID)
   float max_page_scale_factor = 0.f;

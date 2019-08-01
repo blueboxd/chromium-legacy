@@ -60,13 +60,19 @@ class NtpBackgroundService : public KeyedService {
   void AddObserver(NtpBackgroundServiceObserver* observer);
   void RemoveObserver(NtpBackgroundServiceObserver* observer);
 
-  // Check that url is contained in collection_images.
+  // Check that |url| is contained in collection_images.
   bool IsValidBackdropUrl(const GURL& url) const;
 
+  // Check that |collection_id| is one of the fetched collections.
+  bool IsValidBackdropCollection(const std::string& collection_id) const;
+
   void AddValidBackdropUrlForTesting(const GURL& url);
+  void AddValidBackdropCollectionForTesting(const std::string& collection_id);
 
   void AddValidBackdropUrlWithThumbnailForTesting(const GURL& url,
                                                   const GURL& thumbnail_url);
+
+  void SetNextCollectionImageForTesting(const CollectionImage& image);
 
   // Returns thumbnail url for the given image url if its valid. Otherwise,
   // returns empty url.

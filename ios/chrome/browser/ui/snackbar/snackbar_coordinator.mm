@@ -32,7 +32,13 @@
       [NamedGuide guideWithName:kSecondaryToolbarGuide
                            view:self.baseViewController.view];
   CGRect bottomToolbarFrame = bottomToolbarGuide.constrainedView.frame;
-  [MDCSnackbarManager setBottomOffset:bottomToolbarFrame.size.height];
+  [self showSnackbarMessage:message
+               bottomOffset:bottomToolbarFrame.size.height];
+}
+
+- (void)showSnackbarMessage:(MDCSnackbarMessage*)message
+               bottomOffset:(CGFloat)offset {
+  [MDCSnackbarManager setBottomOffset:offset];
   [MDCSnackbarManager showMessage:message];
 }
 

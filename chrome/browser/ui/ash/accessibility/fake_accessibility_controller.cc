@@ -60,3 +60,8 @@ base::string16 FakeAccessibilityController::GetBatteryDescription() const {
 void FakeAccessibilityController::SetVirtualKeyboardVisible(bool is_visible) {}
 
 void FakeAccessibilityController::NotifyAccessibilityStatusChanged() {}
+
+bool FakeAccessibilityController::IsAccessibilityFeatureVisibleInTrayMenu(
+    const std::string& path) {
+  return true;
+}

@@ -178,17 +178,19 @@ static const int nonUserInitiatedPointPadding = 11;
 static const float minScaleDifference = 0.01f;
 static const float doubleTapZoomContentDefaultMargin = 5;
 static const float doubleTapZoomContentMinimumMargin = 2;
-static const double doubleTapZoomAnimationDurationInSeconds = 0.25;
+static constexpr base::TimeDelta kDoubleTapZoomAnimationDuration =
+    base::TimeDelta::FromMilliseconds(250);
 static const float doubleTapZoomAlreadyLegibleRatio = 1.2f;
 
-static const double findInPageAnimationDurationInSeconds = 0;
+static constexpr base::TimeDelta kFindInPageAnimationDuration;
 
 // Constants for viewport anchoring on resize.
 static const float viewportAnchorCoordX = 0.5f;
 static const float viewportAnchorCoordY = 0;
 
 // Constants for zooming in on a focused text field.
-static const double scrollAndScaleAnimationDurationInSeconds = 0.2;
+static constexpr base::TimeDelta kScrollAndScaleAnimationDuration =
+    base::TimeDelta::FromMicroseconds(200);
 static const int minReadableCaretHeight = 16;
 static const int minReadableCaretHeightForTextArea = 13;
 static const float minScaleChangeToTriggerZoom = 1.5f;
@@ -615,7 +617,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
 bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
                                           bool use_anchor,
                                           float new_scale,
-                                          double duration_in_seconds) {
+                                          base::TimeDelta duration) {
   // PageScaleFactor is a property of the main frame only, and only exists when
   // compositing.
   DCHECK(MainFrameImpl());
@@ -626,7 +628,7 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
   if (!use_anchor) {
     clamped_point =
         visual_viewport.ClampDocumentOffsetAtScale(target_position, new_scale);
-    if (!duration_in_seconds) {
+    if (duration.is_zero()) {
       SetPageScaleFactor(new_scale);
 
       LocalFrameView* view = MainFrameImpl()->GetFrameView();
@@ -649,7 +651,7 @@ bool WebViewImpl::StartPageScaleAnimation(const IntPoint& target_position,
   } else {
     AsWidget().client->StartPageScaleAnimation(
         static_cast<gfx::Vector2d>(target_position), use_anchor, new_scale,
-        duration_in_seconds);
+        duration);
   }
   return true;
 }
@@ -1040,11 +1042,11 @@ void WebViewImpl::AnimateDoubleTapZoom(const gfx::Point& point_in_root_frame,
     IntPoint target_position =
         MainFrameImpl()->GetFrameView()->RootFrameToDocument(
             IntPoint(point_in_root_frame.x(), point_in_root_frame.y()));
-    is_animating = StartPageScaleAnimation(
-        target_position, true, scale, doubleTapZoomAnimationDurationInSeconds);
+    is_animating = StartPageScaleAnimation(target_position, true, scale,
+                                           kDoubleTapZoomAnimationDuration);
   } else {
-    is_animating = StartPageScaleAnimation(
-        scroll, false, scale, doubleTapZoomAnimationDurationInSeconds);
+    is_animating = StartPageScaleAnimation(scroll, false, scale,
+                                           kDoubleTapZoomAnimationDuration);
   }
 
   // TODO(dglazkov): The only reason why we're using isAnimating and not just
@@ -1078,8 +1080,7 @@ void WebViewImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
       gfx::Point(rect_in_root_frame.x, rect_in_root_frame.y), block_bounds,
       nonUserInitiatedPointPadding, MinimumPageScaleFactor(), scale, scroll);
 
-  StartPageScaleAnimation(scroll, false, scale,
-                          findInPageAnimationDurationInSeconds);
+  StartPageScaleAnimation(scroll, false, scale, kFindInPageAnimationDuration);
 }
 
 #if !defined(OS_MACOSX)
@@ -2191,16 +2192,15 @@ void WebViewImpl::ZoomAndScrollToFocusedEditableElementRect(
       zoom_into_legible_scale, scale, scroll, need_animation);
   if (need_animation) {
     StartPageScaleAnimation(scroll, false, scale,
-                            scrollAndScaleAnimationDurationInSeconds);
+                            kScrollAndScaleAnimationDuration);
   }
 }
 
 void WebViewImpl::SmoothScroll(int target_x,
                                int target_y,
-                               uint64_t duration_ms) {
+                               base::TimeDelta duration) {
   IntPoint target_position(target_x, target_y);
-  StartPageScaleAnimation(target_position, false, PageScaleFactor(),
-                          (double)duration_ms / 1000);
+  StartPageScaleAnimation(target_position, false, PageScaleFactor(), duration);
 }
 
 void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(

@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/input/input_handler.mojom.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
@@ -21,7 +22,6 @@ class WebHistoryItem;
 namespace content {
 
 class MockFrameHost;
-struct CommitNavigationParams;
 
 // A test class to use in RenderViewTests.
 class TestRenderFrame : public RenderFrameImpl {
@@ -41,11 +41,11 @@ class TestRenderFrame : public RenderFrameImpl {
 
   void Navigate(const network::ResourceResponseHead& head,
                 mojom::CommonNavigationParamsPtr common_params,
-                const CommitNavigationParams& commit_params);
+                mojom::CommitNavigationParamsPtr commit_params);
   void Navigate(mojom::CommonNavigationParamsPtr common_params,
-                const CommitNavigationParams& commit_params);
+                mojom::CommitNavigationParamsPtr commit_params);
   void NavigateWithError(mojom::CommonNavigationParamsPtr common_params,
-                         const CommitNavigationParams& request_params,
+                         mojom::CommitNavigationParamsPtr request_params,
                          int error_code,
                          const base::Optional<std::string>& error_page_content);
   void SwapOut(int proxy_routing_id,

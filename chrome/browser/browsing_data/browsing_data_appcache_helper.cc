@@ -60,9 +60,8 @@ void OnAppCacheInfoFetchComplete(
   if (base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)) {
     std::move(callback).Run(std::move(result));
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(std::move(callback), std::move(result)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(std::move(callback), std::move(result)));
   }
 }
 
@@ -79,7 +78,7 @@ void BrowsingDataAppCacheHelper::StartFetching(FetchCallback callback) {
   if (base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)) {
     StartFetchingOnLoaderThread(std::move(callback));
   } else {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&BrowsingDataAppCacheHelper::StartFetchingOnLoaderThread,
                        this, std::move(callback)));
@@ -91,7 +90,7 @@ void BrowsingDataAppCacheHelper::DeleteAppCaches(const url::Origin& origin) {
   if (base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)) {
     DeleteAppCachesOnLoaderThread(origin);
   } else {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &BrowsingDataAppCacheHelper::DeleteAppCachesOnLoaderThread, this,
@@ -156,8 +155,8 @@ void CannedBrowsingDataAppCacheHelper::StartFetching(FetchCallback callback) {
   for (const auto& origin : pending_origins_)
     result.emplace_back(origin, 0, base::Time());
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), result));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), result));
 }
 
 void CannedBrowsingDataAppCacheHelper::DeleteAppCaches(

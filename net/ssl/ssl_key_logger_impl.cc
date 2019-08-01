@@ -42,8 +42,9 @@ class SSLKeyLoggerImpl::Core
     // waiting to flush these to disk, but some buggy antiviruses point this at
     // a pipe and hang, so we avoid blocking shutdown. If writing to a real
     // file, writes should complete quickly enough that this does not matter.
-    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+    task_runner_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   }
 
   void OpenFile(const base::FilePath& path) {

@@ -24,7 +24,7 @@
 #include "chrome/browser/media/router/media_router_base.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/common/media_router/issue.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
+#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -117,10 +117,12 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   // Creates a binding between |this| and |request|.
   void BindToMojoRequest(mojo::InterfaceRequest<mojom::MediaRouter> request);
 
-  // Returns the ID of the provider associated with the presentation ID, or
-  // nullopt if not found.
+  // Methods for obtaining a pointer to the provider associated with the given
+  // object. They return a nullopt when such a provider is not found.
   virtual base::Optional<MediaRouteProviderId> GetProviderIdForPresentation(
       const std::string& presentation_id);
+  base::Optional<MediaRouteProviderId> GetProviderIdForRoute(
+      const MediaRoute::Id& route_id);
 
   content::BrowserContext* context() const { return context_; }
 
@@ -401,10 +403,8 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   // routes do not appear in |routes|.
   void RemoveInvalidRouteControllers(const std::vector<MediaRoute>& routes);
 
-  // Methods for obtaining a pointer to the provider associated with the given
-  // object. They return a nullopt when such a provider is not found.
-  base::Optional<MediaRouteProviderId> GetProviderIdForRoute(
-      const MediaRoute::Id& route_id);
+  // Method for obtaining a pointer to the provider associated with the given
+  // object. Returns a nullopt when such a provider is not found.
   base::Optional<MediaRouteProviderId> GetProviderIdForSink(
       const MediaSink::Id& sink_id);
 

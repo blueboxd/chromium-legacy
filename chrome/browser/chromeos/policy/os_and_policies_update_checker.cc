@@ -10,6 +10,8 @@
 #include "chrome/browser/chromeos/policy/task_executor_with_retries.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/network/network_handler.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/policy/core/common/policy_service.h"
 
 namespace policy {
@@ -22,22 +24,66 @@ constexpr char kUpdateCheckTaskExecutorTag[] = "UpdateCheckTaskExecutor";
 }  // namespace
 
 OsAndPoliciesUpdateChecker::OsAndPoliciesUpdateChecker(
+    chromeos::NetworkStateHandler* network_state_handler,
     TaskExecutorWithRetries::GetTicksSinceBootFn get_ticks_since_boot_fn)
-    : update_check_task_executor_(
+    : network_state_handler_(network_state_handler),
+      update_check_task_executor_(
           kUpdateCheckTaskExecutorTag,
           std::move(get_ticks_since_boot_fn),
           update_checker_internal::
               kMaxOsAndPoliciesUpdateCheckerRetryIterations,
           update_checker_internal::kOsAndPoliciesUpdateCheckerRetryTime) {}
 
-OsAndPoliciesUpdateChecker::~OsAndPoliciesUpdateChecker() = default;
+OsAndPoliciesUpdateChecker::~OsAndPoliciesUpdateChecker() {
+  // Called to remove any observers.
+  ResetState();
+}
 
 void OsAndPoliciesUpdateChecker::Start(UpdateCheckCompletionCallback cb) {
   // Override any previous calls by resetting state.
   ResetState();
+
   // Must be set before starting the task runner, as callbacks may be called
   // synchronously.
   update_check_completion_cb_ = std::move(cb);
+
+  // If there is no network then wait for a network connection before starting
+  // an update check. If then network isn't found for a maximum time then report
+  // failure. It's safe to use |this| because |wait_for_network_timer_| is a
+  // member of this object.
+  if (!network_state_handler_->DefaultNetwork()) {
+    LOGIN_LOG(EVENT) << "Unable to start update check: no network";
+    wait_for_network_timer_.Start(
+        FROM_HERE, update_checker_internal::kWaitForNetworkTimeout,
+        base::BindOnce(&OsAndPoliciesUpdateChecker::OnUpdateCheckFailure,
+                       base::Unretained(this)));
+    network_state_handler_->AddObserver(this, FROM_HERE);
+    return;
+  }
+
+  ScheduleUpdateCheck();
+}
+
+void OsAndPoliciesUpdateChecker::Stop() {
+  ResetState();
+}
+
+void OsAndPoliciesUpdateChecker::DefaultNetworkChanged(
+    const chromeos::NetworkState* network) {
+  // If a network is found, it's okay to start an update check. Stop observing
+  // for more network changes, any network flakiness will now be handled by
+  // timeouts and retries.
+  // If no network is found, continue observing for network changes.
+  if (network) {
+    wait_for_network_timer_.Stop();
+    // At this point, there is guaranteed to be an observer. This should always
+    // remove it.
+    MaybeRemoveNetworkStateHandlerObserver();
+    ScheduleUpdateCheck();
+  }
+}
+
+void OsAndPoliciesUpdateChecker::ScheduleUpdateCheck() {
   // Safe to use "this" as |update_check_task_executor_| is a member of this
   // class.
   update_check_task_executor_.Start(
@@ -45,10 +91,6 @@ void OsAndPoliciesUpdateChecker::Start(UpdateCheckCompletionCallback cb) {
                           base::Unretained(this)),
       base::BindOnce(&OsAndPoliciesUpdateChecker::OnUpdateCheckFailure,
                      base::Unretained(this)));
-}
-
-void OsAndPoliciesUpdateChecker::Stop() {
-  ResetState();
 }
 
 void OsAndPoliciesUpdateChecker::OnUpdateCheckFailure() {
@@ -72,12 +114,12 @@ void OsAndPoliciesUpdateChecker::StartUpdateCheck() {
 
   // This could be a retry, reset observer state as adding observers is not
   // idempotent.
-  chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(
-      this);
+  MaybeRemoveUpdateEngineClientObserver();
 
   // Register observer to keep track of different stages of the update check.
   chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(
       this);
+
   chromeos::DBusThreadManager::Get()
       ->GetUpdateEngineClient()
       ->RequestUpdateCheck(
@@ -170,10 +212,24 @@ void OsAndPoliciesUpdateChecker::OnRefreshPoliciesCompletion(
 
 void OsAndPoliciesUpdateChecker::ResetState() {
   weak_factory_.InvalidateWeakPtrs();
-  chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(
-      this);
+  MaybeRemoveUpdateEngineClientObserver();
+  MaybeRemoveNetworkStateHandlerObserver();
   update_check_task_executor_.Stop();
   ignore_idle_status_ = true;
+  wait_for_network_timer_.Stop();
+}
+
+void OsAndPoliciesUpdateChecker::MaybeRemoveUpdateEngineClientObserver() {
+  if (chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->HasObserver(
+          this)) {
+    chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(
+        this);
+  }
+}
+
+void OsAndPoliciesUpdateChecker::MaybeRemoveNetworkStateHandlerObserver() {
+  if (network_state_handler_->HasObserver(this))
+    network_state_handler_->RemoveObserver(this, FROM_HERE);
 }
 
 }  // namespace policy

@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -37,7 +38,8 @@ NSMutableDictionary* GetMessageAttributes() {
   NSMutableDictionary* attributes = [NSMutableDictionary dictionary];
   UIFont* font = GetMessageFont();
   attributes[NSFontAttributeName] = font;
-  attributes[NSForegroundColorAttributeName] = [UIColor grayColor];
+  attributes[NSForegroundColorAttributeName] =
+      [UIColor colorNamed:kTextSecondaryColor];
   NSMutableParagraphStyle* paragraph_style =
       [[NSMutableParagraphStyle alloc] init];
   paragraph_style.lineBreakMode = NSLineBreakByWordWrapping;

@@ -104,20 +104,6 @@ GURL AppendUrlSeparator(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
-// This function checks the CORS origin access lists on the IO thread only when
-// NetworkService is disabled. If NetworkService is enabled, callers can access
-// the lists directly on the main thread.
-bool AskIfSharedCorsOriginAccessListNotAllowOnIO(
-    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
-    const url::Origin origin,
-    const GURL url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  return shared_cors_origin_access_list->GetOriginAccessList().CheckAccessState(
-             origin, url) !=
-         network::cors::OriginAccessList::AccessState::kAllowed;
-}
-
 net::Error ConvertMojoResultToNetError(MojoResult result) {
   switch (result) {
     case MOJO_RESULT_OK:
@@ -798,31 +784,15 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     // NetworkService is enabled, or on the IO thread if it is disabled.
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // If NetworkService is enabled, |mode| should be kNoCors for the case of
-      // |shared_cors_origin_access_list_| being nullptr, and the previous check
-      // should not return kAskAccessList.
-      // Only internal call sites, such as ExtensionDownloader, is permitted.
-      DCHECK(shared_cors_origin_access_list_);
-      cors_flag =
-          shared_cors_origin_access_list_->GetOriginAccessList()
-              .CheckAccessState(*request.request_initiator, request.url) !=
-          network::cors::OriginAccessList::AccessState::kAllowed;
-    } else {
-      // TODO(toyoshim): Remove this thread-hop code once the NetworkService is
-      // fully enabled, and if other IO thread users do not need cors enabled
-      // requests. At this moment, ResourceDownloader is the only users on the
-      // IO thread, and it always makes "no-cors" requests.
-      base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&AskIfSharedCorsOriginAccessListNotAllowOnIO,
-                         base::RetainedRef(shared_cors_origin_access_list_),
-                         *request.request_initiator, request.url),
-          base::BindOnce(&FileURLLoaderFactory::CreateLoaderAndStartInternal,
-                         this->AsWeakPtr(), request, std::move(loader),
-                         std::move(client)));
-      return;
-    }
+    // |mode| should be kNoCors for the case of
+    // |shared_cors_origin_access_list_| being nullptr, and the previous check
+    // should not return kAskAccessList.
+    // Only internal call sites, such as ExtensionDownloader, is permitted.
+    DCHECK(shared_cors_origin_access_list_);
+    cors_flag =
+        shared_cors_origin_access_list_->GetOriginAccessList().CheckAccessState(
+            *request.request_initiator, request.url) !=
+        network::cors::OriginAccessList::AccessState::kAllowed;
   }
 
   CreateLoaderAndStartInternal(request, std::move(loader), std::move(client),

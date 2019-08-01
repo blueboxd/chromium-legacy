@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//content/common/frame.typemap",
   "//content/common/frame_messages.typemap",
   "//content/common/input/synchronous_compositor.typemap",
   "//content/common/native_types.typemap",

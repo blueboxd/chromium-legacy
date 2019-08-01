@@ -90,9 +90,9 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
 
   return builder.SetAvailableSize(available_size)
       .SetPercentageResolutionSize(percentage_size)
-      .SetIsFixedSizeInline(fixed_inline)
-      .SetIsFixedSizeBlock(fixed_block)
-      .SetFixedSizeBlockIsDefinite(fixed_block_is_definite)
+      .SetIsFixedInlineSize(fixed_inline)
+      .SetIsFixedBlockSize(fixed_block)
+      .SetIsFixedBlockSizeIndefinite(!fixed_block_is_definite)
       .SetIsShrinkToFit(
           style.LogicalWidth().IsAuto() &&
           block.SizesLogicalWidthToFitContent(style.LogicalWidth()))

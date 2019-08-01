@@ -230,6 +230,15 @@ void BluetoothAdapter::NotifyDevicePairedChanged(BluetoothDevice* device,
 }
 #endif
 
+#if defined(OS_CHROMEOS)
+void BluetoothAdapter::NotifyDeviceBatteryChanged(BluetoothDevice* device) {
+  DCHECK_EQ(device->GetAdapter(), this);
+  for (auto& observer : observers_) {
+    observer.DeviceBatteryChanged(this, device, device->battery_percentage());
+  }
+}
+#endif
+
 void BluetoothAdapter::NotifyGattServiceAdded(
     BluetoothRemoteGattService* service) {
   DCHECK_EQ(service->GetDevice()->GetAdapter(), this);

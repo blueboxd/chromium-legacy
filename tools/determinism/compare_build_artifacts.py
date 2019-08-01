@@ -381,8 +381,9 @@ def main():
   target = {
       'darwin': 'mac', 'linux2': 'linux', 'win32': 'win'
   }.get(sys.platform, sys.platform)
-  parser.add_option('-t', '--target-platform', help='The target platform.',
-                    default=target, choices=('android', 'mac', 'linux', 'win'))
+  parser.add_option(
+      '-t', '--target-platform', help='The target platform.',
+      default=target, choices=('android', 'fuchsia', 'mac', 'linux', 'win'))
   options, _ = parser.parse_args()
 
   if not options.first_build_dir:

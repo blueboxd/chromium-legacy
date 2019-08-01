@@ -203,7 +203,6 @@
 <translation id="1289513325360489062">Не мають доступу до даних цього сайту</translation>
 <translation id="1293264513303784526">Пристрій із портом USB типу C (ліворуч)</translation>
 <translation id="1293556467332435079">Файли</translation>
-<translation id="1296497012903089238">Тип сертифіката</translation>
 <translation id="1297175357211070620">Місце призначення</translation>
 <translation id="1300415640239881824">Сайт <ph name="DOMAIN" /> хоче, щоб система Google підтвердила ідентифікаційні дані вашого пристрою. Це допоможе визначити, чи він підтримує розширені можливості відтворення захищеного вмісту.</translation>
 <translation id="1300806585489372370">Щоб змінити це налаштування, спершу <ph name="BEGIN_LINK" />ввімкніть ідентифікатори<ph name="END_LINK" /></translation>
@@ -1706,7 +1705,6 @@
 <translation id="3543597750097719865">Алгоритм ECDSA X9.62 з підписом SHA-512</translation>
 <translation id="3544879808695557954">Ім’я користувача (необов’язково)</translation>
 <translation id="354602065659584722">Зловмисне програмне забезпечення вилучено</translation>
-<translation id="3547495624659668105">Версія PRL</translation>
 <translation id="3547954654003013442">Налаштування проксі-сервера</translation>
 <translation id="3550915441744863158">Chrome оновлюється автоматично, тому ви завжди маєте найновішу версію</translation>
 <translation id="3551320343578183772">Закрити вкладку</translation>
@@ -1999,7 +1997,6 @@
 <translation id="3937734102568271121">Завжди перекладати з такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="3938128855950761626">Пристрої від постачальника <ph name="VENDOR_ID" /></translation>
 <translation id="3940233957883229251">Увімкнути автоповтор</translation>
-<translation id="3941357410013254652">Ідентифікатор каналу</translation>
 <translation id="3941565636838060942">Щоб сховати доступ до цієї програми, потрібно видалити її за допомогою міні-додатка
   <ph name="CONTROL_PANEL_APPLET_NAME" /> на панелі керування.
 
@@ -3428,7 +3425,6 @@
 <translation id="6129691635767514872">Вибрані дані видалено з Chrome і синхронізованих пристроїв. Історія веб-перегляду, а також ваші дії в інших сервісах Google можуть також зберігатися у вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6129938384427316298">Коментар сертифіката Netscape</translation>
 <translation id="6129953537138746214">Пробіл</translation>
-<translation id="6135622770221372891">Ідентифікатори каналу</translation>
 <translation id="6136114942382973861">Закрити панель завантажень</translation>
 <translation id="6137767437444130246">Сертифікат користувача</translation>
 <translation id="6138680304137685902">Алгоритм ECDSA X9.62 з підписом SHA-384</translation>

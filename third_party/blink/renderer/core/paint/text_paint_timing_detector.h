@@ -11,11 +11,10 @@
 
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/text_element_timing.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -219,8 +218,13 @@ class CORE_EXPORT TextPaintTimingDetector final
   void ReportSwapTime(WebWidgetClient::SwapResult result,
                       base::TimeTicks timestamp);
   void RegisterNotifySwapTime(ReportTimeCallback callback);
+  void ResetCallbackManagerForTesting(PaintTimingCallbackManager* manager) {
+    callback_manager_ = manager;
+  }
 
   TextRecordsManager records_manager_;
+
+  Member<PaintTimingCallbackManager> callback_manager_;
 
   // Make sure that at most one swap promise is ongoing.
   bool awaiting_swap_promise_ = false;

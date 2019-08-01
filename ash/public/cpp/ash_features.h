@@ -49,6 +49,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenMediaControls;
 // TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
 ASH_PUBLIC_EXPORT extern const base::Feature kHideArcMediaNotifications;
 
+// Enables the redesigned managed device info UI in the system tray.
+ASH_PUBLIC_EXPORT extern const base::Feature kManagedDeviceUIRedesign;
+
 // Enables the media session notification. If this is enabled, we will show
 // a notification that shows the currently playing media with controls.
 // TODO(beccahughes): Remove after launch. (https://crbug.com/897836)
@@ -58,8 +61,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kMediaSessionNotification;
 // TODO(crbug.com/952461): Remove this when the feature is fully launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kMultiDisplayOverviewAndSplitView;
 
-// Enables the redesigned managed device info UI in the system tray.
-ASH_PUBLIC_EXPORT extern const base::Feature kManagedDeviceUIRedesign;
+// Enables new layout for overview mode.
+// TODO(sammiequon): Cleanup this flag when feature is fully launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewLayout;
 
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;

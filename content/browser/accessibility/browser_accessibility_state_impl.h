@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "components/metrics/metrics_provider.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_mode_observer.h"
@@ -64,6 +65,11 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   // AXModeObserver
   void OnAXModeAdded(ui::AXMode mode) override;
+
+  // Fire frequent metrics signals to ensure users keeping browser open multiple
+  // days are counted each day, not only at launch. This is necessary, because
+  // UMA only aggregates uniques on a daily basis,
+  void UpdateUniqueUserHistograms();
 
   // Accessibility objects can have the "hot tracked" state set when
   // the mouse is hovering over them, but this makes tests flaky because

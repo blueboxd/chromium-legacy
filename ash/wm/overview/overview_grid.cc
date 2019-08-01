@@ -236,6 +236,18 @@ gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
   }
 }
 
+gfx::Insets GetGridInsets(const gfx::Rect& grid_bounds) {
+  const int horizontal_inset =
+      gfx::ToFlooredInt(std::min(kOverviewInsetRatio * grid_bounds.width(),
+                                 kOverviewInsetRatio * grid_bounds.height()));
+  const int vertical_inset =
+      horizontal_inset +
+      kOverviewVerticalInset * (grid_bounds.height() - 2 * horizontal_inset);
+
+  return gfx::Insets(std::max(0, vertical_inset - kWindowMargin),
+                     std::max(0, horizontal_inset - kWindowMargin));
+}
+
 // Returns the desks widget bounds in root, given the screen bounds of the
 // overview grid.
 gfx::Rect GetDesksWidgetBounds(aura::Window* root,
@@ -403,7 +415,14 @@ void OverviewGrid::PositionWindows(
 
   DCHECK_NE(transition, OverviewSession::OverviewTransition::kExit);
 
-  std::vector<gfx::RectF> rects = GetWindowRects(ignored_items);
+  std::vector<gfx::RectF> rects =
+      ShouldUseTabletModeGridLayout()
+          ? GetWindowRectsForTabletModeLayout(ignored_items)
+          : GetWindowRects(ignored_items);
+
+  // TODO(dantonvu): Performance-wise, windows offscreen should not be
+  // animated. If we're in entering overview process, not all window items in
+  // the grid might need animation even if the grid needs animation.
   if (transition == OverviewSession::OverviewTransition::kEnter) {
     CalculateWindowListAnimationStates(/*selected_item=*/nullptr, transition,
                                        rects);
@@ -443,7 +462,7 @@ void OverviewGrid::PositionWindows(
           !has_non_cover_animating) {
         has_non_cover_animating |=
             !CanCoverAvailableWorkspace(window_item->GetWindow());
-        animate_count++;
+        ++animate_count;
       }
     }
     animation_types[i] =
@@ -1261,14 +1280,7 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
   gfx::Rect total_bounds = GetGridEffectiveBounds();
 
   // Windows occupy vertically centered area with additional vertical insets.
-  int horizontal_inset =
-      gfx::ToFlooredInt(std::min(kOverviewInsetRatio * total_bounds.width(),
-                                 kOverviewInsetRatio * total_bounds.height()));
-  int vertical_inset =
-      horizontal_inset +
-      kOverviewVerticalInset * (total_bounds.height() - 2 * horizontal_inset);
-  total_bounds.Inset(std::max(0, horizontal_inset - kWindowMargin),
-                     std::max(0, vertical_inset - kWindowMargin));
+  total_bounds.Inset(GetGridInsets(total_bounds));
   std::vector<gfx::RectF> rects;
 
   // Keep track of the lowest coordinate.
@@ -1365,6 +1377,49 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRects(
   gfx::Vector2dF offset(0, (total_bounds.bottom() - max_bottom) / 2.f);
   for (size_t i = 0; i < rects.size(); ++i)
     rects[i] += offset;
+  return rects;
+}
+
+std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
+    const base::flat_set<OverviewItem*>& ignored_items) {
+  gfx::Rect total_bounds = GetGridEffectiveBounds();
+  // Windows occupy vertically centered area with additional vertical insets.
+  total_bounds.Inset(GetGridInsets(total_bounds));
+
+  // TODO(dantonvu): Width calculation should maintain the aspect ratio of the
+  // window.
+  // When the dragged item becomes an |ignored_item|, move the other windows
+  // accordingly. |window_position| matches the positions of the windows'
+  // indexes from |window_list_|. However, if a window turns out to be an
+  // ignored item, |window_position| remains where the item was as to then
+  // reposition the other window's bounds in place of that item.
+  // Currently, this function does not work well if overview grid bounds change
+  // eg: during SplitView, since the windows remain the same size and end up
+  // overlapping with smaller grid bounds.
+
+  // For tablet overview mode, windows are being limited to fit six per screen -
+  // 2 rows of 3. Additional windows are placed offscreen. This is more
+  // efficient performance-wise since windows out of screen would not need
+  // animation compared to having every window in overview mode needing
+  // animation.
+  // Since the number of rows is limited, windows are laid out column-wise so
+  // that the most recently used windows are displayed first.
+  const int width = total_bounds.width() / 3;
+  const int height = total_bounds.height() / 2;
+  size_t window_position = 0u;
+  std::vector<gfx::RectF> rects;
+
+  for (const auto& window : window_list_) {
+    if (window->animating_to_close() || ignored_items.contains(window.get())) {
+      rects.push_back(gfx::RectF());
+      continue;
+    }
+    const int x = width * (window_position / 2) + total_bounds.x();
+    const int y = height * (window_position % 2) + total_bounds.y();
+    const gfx::RectF bounds(x, y, width, height);
+    rects.push_back(bounds);
+    ++window_position;
+  }
   return rects;
 }
 

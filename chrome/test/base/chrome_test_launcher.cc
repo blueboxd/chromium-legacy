@@ -200,14 +200,12 @@ int LaunchChromeTests(size_t parallel_jobs,
 
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
 
-#if !defined(OS_ANDROID)
   // Initialize sampling profiler for tests that relaunching a browser. This
   // mimics the behavior in standalone Chrome, where this is done in
   // chrome/app/chrome_main.cc, which does not get called by tests.
   std::unique_ptr<MainThreadStackSamplingProfiler> sampling_profiler;
   if (command_line.HasSwitch(content::kLaunchAsBrowser))
     sampling_profiler = std::make_unique<MainThreadStackSamplingProfiler>();
-#endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   ChromeCrashReporterClient::Create();

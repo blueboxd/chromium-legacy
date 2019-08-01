@@ -451,27 +451,25 @@ Histogram descriptions should clearly state when the histogram is emitted
 
 ### Owners
 
-Histograms need to have owners, who are the current experts on the metric. The
-owners are the contact points for any questions or maintenance tasks. It's a
-best practice to list multiple owners, so that there's no single point of
-failure for such communication.
+Histograms need owners, who are the experts on the metric and the points of
+contact for any questions or maintenance tasks, such as extending a histogram's
+expiry or deprecating the metric.
 
-Being an owner means you are responsible for answering questions about the
-metric, handling the maintenance if there are functional changes, and
-deprecating the metric if it outlives its usefulness. If you are using a metric
-heavily and understand it intimately, feel free to add yourself as an owner.
-@chromium.org email addresses are preferred.
+Histograms must have a primary owner and may have secondary owners. A primary
+owner is an individual, e.g. <owner>lucy@chromium.org</owner>, who is
+ultimately responsible for maintaining the metric. Secondary owners may be
+other individuals, team mailing lists, e.g. <owner>my-team@google.com</owner>,
+or paths to OWNERS files, e.g. <owner>src/directory/OWNERS</owner>.
 
-If an appropriate mailing list is available, it's a good idea to include the
-mailing list as a secondary owner. However, it's always a best practice to list
-an individual as the primary owner. Listing an individual owner makes it clearer
-who is ultimately most responsible for maintaining the metric, which makes it
-less likely that such maintenance tasks will slip through the cracks.
+It's a best practice to list multiple owners, so that there's no single point
+of failure for histogram-related questions and maintenance tasks. If you are
+using a metric heavily and understand it intimately, feel free to add yourself
+as an owner. For individuals, @chromium.org email addresses are preferred.
 
-Notably, owners are asked to evaluate whether histograms have outlived their
-usefulness. When a histogram is nearing expiry, a robot will file a reminder bug
-in Monorail. It's important that somebody familiar with the histogram notices
-and triages such bugs!
+Notably, owners are asked to determine whether histograms have outlived their
+usefulness. When a histogram is nearing expiry, a robot will file a reminder
+bug in Monorail. It's important that somebody familiar with the histogram
+notices and triages such bugs!
 
 ### Cleaning Up Histogram Entries
 
@@ -546,3 +544,15 @@ Please talk with the metrics team if there are more than a thousand possible
 different values that you could emit.
 
 For more information, see [sparse_histograms.h](https://cs.chromium.org/chromium/src/base/metrics/sparse_histogram.h).
+
+# Team Documentation
+
+This section contains useful information for folks on Chrome Metrics.
+
+## Processing histograms.xml
+
+When working with histograms.xml, verify whether you require fully expanded
+OWNERS files. Many scripts in this directory process histograms.xml, and
+sometimes OWNERS file paths are expanded and other times they are not. OWNERS
+paths are expanded when scripts make use of merge_xml's function MergeFiles;
+otherwise, they are not.

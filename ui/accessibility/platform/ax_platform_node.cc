@@ -25,9 +25,6 @@ base::LazyInstance<AXPlatformNode::NativeWindowHandlerCallback>::Leaky
 AXMode AXPlatformNode::ax_mode_;
 
 // static
-bool AXPlatformNode::has_input_suggestions_ = false;
-
-// static
 gfx::NativeViewAccessible AXPlatformNode::popup_focus_override_ = nullptr;
 
 // static
@@ -94,22 +91,6 @@ void AXPlatformNode::NotifyAddAXModeFlags(AXMode mode_flags) {
       "ax_mode", base::debug::CrashKeySize::Size64);
   if (ax_mode_crash_key)
     base::debug::SetCrashKeyString(ax_mode_crash_key, new_ax_mode.ToString());
-}
-
-// static
-void AXPlatformNode::OnInputSuggestionsAvailable() {
-  has_input_suggestions_ = true;
-}
-
-// static
-void AXPlatformNode::OnInputSuggestionsUnavailable() {
-  has_input_suggestions_ = false;
-}
-
-// static
-// TODO(crbug.com/865101) Remove this once the autofill state works.
-bool AXPlatformNode::HasInputSuggestions() {
-  return has_input_suggestions_;
 }
 
 // static

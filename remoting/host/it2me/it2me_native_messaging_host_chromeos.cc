@@ -25,8 +25,9 @@ CreateIt2MeNativeMessagingHostForChromeOS(
   std::unique_ptr<ChromotingHostContext> context =
       ChromotingHostContext::CreateForChromeOS(
           io_runnner, ui_runnner,
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+          base::CreateSingleThreadTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               base::TaskPriority::BEST_EFFORT}));
   std::unique_ptr<PolicyWatcher> policy_watcher =
       PolicyWatcher::CreateWithPolicyService(policy_service);
   std::unique_ptr<extensions::NativeMessageHost> host(

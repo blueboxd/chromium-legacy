@@ -20,7 +20,7 @@
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
+#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
@@ -251,6 +251,10 @@ void MirroringActivityRecord::OnInternalMessage(
 
   channel_to_service_->Send(std::move(ptr));
 }
+
+void MirroringActivityRecord::CreateMediaController(
+    mojom::MediaControllerRequest media_controller,
+    mojom::MediaStatusObserverPtr observer) {}
 
 void MirroringActivityRecord::StopMirroring() {
   // Running the callback will cause this object to be deleted.

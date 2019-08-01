@@ -95,8 +95,9 @@ scoped_refptr<SandboxChildProcess> SetupSandboxedChildProcess() {
 // Execute |closure| on a different sequence since it could block and we don't
 // want to block on the Mojo thread.
 void InvokeOnOtherSequence(base::OnceClosure closure) {
-  base::PostTaskWithTraits(FROM_HERE, {base::WithBaseSyncPrimitives()},
-                           std::move(closure));
+  base::PostTask(FROM_HERE,
+                 {base::ThreadPool(), base::WithBaseSyncPrimitives()},
+                 std::move(closure));
 }
 
 }  // namespace

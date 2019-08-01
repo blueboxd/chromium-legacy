@@ -1590,12 +1590,6 @@ class MockOverscrollController {
   // Waits until the mock receives a consumed GestureScrollUpdate.
   virtual void WaitForConsumedScroll() = 0;
 };
-
-// Tests that a |render_widget_host_view| stores a stale content when its frame
-// gets evicted. |render_widget_host_view| has to be a RenderWidgetHostViewAura.
-void VerifyStaleContentOnFrameEviction(
-    RenderWidgetHostView* render_widget_host_view);
-
 #endif  // defined(USE_AURA)
 
 // This class filters for FrameHostMsg_ContextMenu messages coming in

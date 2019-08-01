@@ -62,30 +62,21 @@ void IconProtoDbStore::LoadIcons(const std::vector<std::string>& keys,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void IconProtoDbStore::Add(std::unique_ptr<IconEntry> entry,
-                           UpdateCallback callback) {
-  auto entries_to_save = std::make_unique<KeyEntryVector>();
-  // TODO(xingliu): See if proto database can use
-  // std::vector<std::unique_ptr<T>> to avoid copy T into std::pair. Currently
-  // some code uses the copy constructor that force T to be copyable.
-  auto key = entry->uuid;
-  entries_to_save->emplace_back(
-      std::make_pair(std::move(key), std::move(*entry.release())));
-  db_->UpdateEntries(std::move(entries_to_save),
-                     std::make_unique<KeyVector>() /*keys_to_delete*/,
-                     std::move(callback));
+void IconProtoDbStore::Add(IconEntry entry, UpdateCallback callback) {
+  std::vector<IconEntry> input;
+  input.emplace_back(std::move(entry));
+  AddIcons(std::move(input), std::move(callback));
 }
 
-void IconProtoDbStore::AddIcons(std::vector<std::unique_ptr<IconEntry>> entries,
+void IconProtoDbStore::AddIcons(std::vector<IconEntry> entries,
                                 UpdateCallback callback) {
   auto entries_to_save = std::make_unique<KeyEntryVector>();
   for (size_t i = 0; i < entries.size(); i++) {
-    auto entry = std::move(entries[i]);
-    auto key = entry->uuid;
-    entries_to_save->emplace_back(std::move(key), std::move(*entry.release()));
+    auto key = entries[i].uuid;
+    entries_to_save->emplace_back(std::move(key), std::move(entries[i]));
   }
   db_->UpdateEntries(std::move(entries_to_save),
-                     std::make_unique<KeyVector>() /*keys_to_delete*/,
+                     std::make_unique<KeyVector>() /*entries_to_delete*/,
                      std::move(callback));
 }
 
@@ -105,6 +96,7 @@ void IconProtoDbStore::DeleteIcons(const std::vector<std::string>& keys,
   db_->UpdateEntries(std::make_unique<KeyEntryVector>() /*keys_to_save*/,
                      std::move(keys_to_delete), std::move(callback));
 }
+
 void IconProtoDbStore::OnDbInitialized(
     InitCallback callback,
     leveldb_proto::Enums::InitStatus status) {

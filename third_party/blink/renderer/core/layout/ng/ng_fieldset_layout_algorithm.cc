@@ -217,7 +217,7 @@ NGFieldsetLayoutAlgorithm::CreateConstraintSpaceForFieldsetContent(
   builder.SetAvailableSize(padding_box_size);
   builder.SetPercentageResolutionSize(
       ConstraintSpace().PercentageResolutionSize());
-  builder.SetIsFixedSizeBlock(padding_box_size.block_size != kIndefiniteSize);
+  builder.SetIsFixedBlockSize(padding_box_size.block_size != kIndefiniteSize);
   return builder.ToConstraintSpace();
 }
 

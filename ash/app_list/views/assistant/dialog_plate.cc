@@ -315,7 +315,7 @@ void DialogPlate::InitKeyboardLayoutContainer() {
 
   auto textfield_hint =
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_HINT);
-  textfield_->set_placeholder_text(textfield_hint);
+  textfield_->SetPlaceholderText(textfield_hint);
   textfield_->SetAccessibleName(textfield_hint);
   textfield_->set_placeholder_text_color(ash::kTextColorSecondary);
   textfield_->SetTextColor(ash::kTextColorPrimary);

@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/common/was_activated_option.h"
+#include "content/public/common/was_activated_option.mojom.h"
 
 namespace content {
 
@@ -26,7 +26,7 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
       started_from_context_menu(false),
       navigation_ui_data(nullptr),
       from_download_cross_origin_redirect(false),
-      was_activated(WasActivatedOption::kUnknown),
+      was_activated(mojom::WasActivatedOption::kUnknown),
       reload_type(ReloadType::NONE) {}
 
 NavigationController::LoadURLParams::~LoadURLParams() {

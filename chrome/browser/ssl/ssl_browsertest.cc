@@ -3312,8 +3312,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   // SetUpOnMainThread adds this hostname to the resolver so that it's not
   // blocked (browser_test_base.cc has a resolver that blocks all non-local
   // hostnames by default to ensure tests don't hit the network). This is
-  // critical to do because for PlzNavigate the request would otherwise get
-  // cancelled in the browser before the renderer sees it.
+  // critical to do because the request would otherwise get cancelled in the
+  // browser before the renderer sees it.
 
   std::string top_frame_path = GetTopFramePath(
       *embedded_test_server(), https_server_, https_server_expired_);

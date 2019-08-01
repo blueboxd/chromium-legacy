@@ -92,9 +92,9 @@ std::string ReadStringFromCommandLineOrStdin(const std::string& switch_name,
 }
 
 void WaitForEnterKey(base::OnceClosure on_done) {
-  base::PostTaskWithTraitsAndReply(FROM_HERE, {base::MayBlock()},
-                                   base::BindOnce([]() { getchar(); }),
-                                   std::move(on_done));
+  base::PostTaskAndReply(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                         base::BindOnce([]() { getchar(); }),
+                         std::move(on_done));
 }
 
 }  // namespace test

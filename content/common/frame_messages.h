@@ -47,7 +47,6 @@
 #include "content/public/common/screen_info.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/three_d_api_types.h"
-#include "content/public/common/was_activated_option.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -145,8 +144,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
                           blink::UserActivationUpdateType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
                           blink::WebMediaPlayerAction::Type::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(content::WasActivatedOption,
-                          content::WasActivatedOption::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScrollDirection,
                               blink::kFirstScrollDirection,
                               blink::kLastScrollDirection)
@@ -475,43 +472,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::PrefetchedSignedExchangeInfo)
   IPC_STRUCT_TRAITS_MEMBER(inner_url)
   IPC_STRUCT_TRAITS_MEMBER(inner_response)
   IPC_STRUCT_TRAITS_MEMBER(loader_factory_handle)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::NavigationTiming)
-  IPC_STRUCT_TRAITS_MEMBER(redirect_start)
-  IPC_STRUCT_TRAITS_MEMBER(redirect_end)
-  IPC_STRUCT_TRAITS_MEMBER(fetch_start)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::CommitNavigationParams)
-  IPC_STRUCT_TRAITS_MEMBER(origin_to_commit)
-  IPC_STRUCT_TRAITS_MEMBER(is_overriding_user_agent)
-  IPC_STRUCT_TRAITS_MEMBER(redirects)
-  IPC_STRUCT_TRAITS_MEMBER(redirect_response)
-  IPC_STRUCT_TRAITS_MEMBER(redirect_infos)
-  IPC_STRUCT_TRAITS_MEMBER(post_content_type)
-  IPC_STRUCT_TRAITS_MEMBER(original_url)
-  IPC_STRUCT_TRAITS_MEMBER(original_method)
-  IPC_STRUCT_TRAITS_MEMBER(can_load_local_resources)
-  IPC_STRUCT_TRAITS_MEMBER(page_state)
-  IPC_STRUCT_TRAITS_MEMBER(nav_entry_id)
-  IPC_STRUCT_TRAITS_MEMBER(subframe_unique_names)
-  IPC_STRUCT_TRAITS_MEMBER(intended_as_new_entry)
-  IPC_STRUCT_TRAITS_MEMBER(pending_history_list_offset)
-  IPC_STRUCT_TRAITS_MEMBER(current_history_list_offset)
-  IPC_STRUCT_TRAITS_MEMBER(current_history_list_length)
-  IPC_STRUCT_TRAITS_MEMBER(was_discarded)
-  IPC_STRUCT_TRAITS_MEMBER(is_view_source)
-  IPC_STRUCT_TRAITS_MEMBER(should_clear_history_list)
-  IPC_STRUCT_TRAITS_MEMBER(navigation_timing)
-  IPC_STRUCT_TRAITS_MEMBER(appcache_host_id)
-  IPC_STRUCT_TRAITS_MEMBER(was_activated)
-  IPC_STRUCT_TRAITS_MEMBER(navigation_token)
-  IPC_STRUCT_TRAITS_MEMBER(prefetched_signed_exchanges)
-#if defined(OS_ANDROID)
-  IPC_STRUCT_TRAITS_MEMBER(data_url_as_string)
-#endif
-  IPC_STRUCT_TRAITS_MEMBER(is_browser_initiated)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::ParsedFeaturePolicyDeclaration)

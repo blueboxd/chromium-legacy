@@ -271,7 +271,6 @@ jumbo_source_set("browser_sources") {
     "renderer_preferences_util.h",
     "replaced_navigation_entry_data.h",
     "resource_context.h",
-    "resource_request_info.h",
     "restore_type.h",
     "sandbox_type.h",
     "save_page_type.h",

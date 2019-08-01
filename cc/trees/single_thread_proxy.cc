@@ -299,7 +299,7 @@ void SingleThreadProxy::StopDeferringCommits(
     return;
   defer_commits_ = false;
   commits_restart_time_ = base::TimeTicks();
-  UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger", trigger);
+  UMA_HISTOGRAM_ENUMERATION("PaintHolding.CommitTrigger2", trigger);
   TRACE_EVENT_ASYNC_END0("cc", "SingleThreadProxy::SetDeferCommits", this);
 }
 
@@ -815,7 +815,11 @@ void SingleThreadProxy::BeginMainFrame(
 
   // Check now if we should stop deferring commits
   if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
-    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
+    // Only record a reason of kTimeout if the timeout was set, otherwise
+    // record kNotDeferred, indicating that a timeout was never set.
+    StopDeferringCommits(commits_restart_time_.is_null()
+                             ? PaintHoldingCommitTrigger::kNotDeferred
+                             : PaintHoldingCommitTrigger::kTimeout);
   }
 
   // At this point the main frame may have deferred commits to avoid committing

@@ -1188,8 +1188,9 @@ void AwContents::SmoothScroll(JNIEnv* env,
     scale *= browser_view_renderer_.dip_scale();
 
   DCHECK_GE(duration_ms, 0);
-  render_view_host_ext_->SmoothScroll(target_x / scale, target_y / scale,
-                                      duration_ms);
+  render_view_host_ext_->SmoothScroll(
+      target_x / scale, target_y / scale,
+      base::TimeDelta::FromMilliseconds(duration_ms));
 }
 
 void AwContents::OnWebLayoutPageScaleFactorChanged(float page_scale_factor) {

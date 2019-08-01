@@ -48,8 +48,8 @@ void AVScanningFileValidator::StartPostWriteValidation(
 
 #if defined(OS_WIN)
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+      base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock(),
+                                    base::TaskPriority::USER_VISIBLE})
           .get(),
       FROM_HERE, base::Bind(&ScanFile, dest_platform_path), result_callback);
 #else

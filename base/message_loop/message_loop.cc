@@ -168,7 +168,7 @@ void MessageLoop::SetTaskRunner(
 
 MessageLoopForUI::MessageLoopForUI(MessagePumpType type) : MessageLoop(type) {
 #if defined(OS_ANDROID)
-  DCHECK(type == MessagePumpType::UI || type == MessagePumpType::JAVA);
+  DCHECK(type == MessagePumpType::UI || type == MessagePump::Type::JAVA);
 #else
   DCHECK_EQ(type, MessagePumpType::UI);
 #endif

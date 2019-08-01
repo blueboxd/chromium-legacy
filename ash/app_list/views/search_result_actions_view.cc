@@ -79,6 +79,7 @@ class SearchResultImageButton : public views::ImageButton {
   SearchResultActionsView* parent_;
   const bool visible_on_hover_;
   bool to_be_activate_by_long_press_ = false;
+  bool selected_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultImageButton);
 };
@@ -180,17 +181,23 @@ SearchResultImageButton::CreateInkDropHighlight() const {
 }
 
 void SearchResultImageButton::UpdateOnStateChanged() {
-  if (!visible_on_hover_)
-    return;
-
   // Show button if the associated result row is hovered or selected, or one
   // of the action buttons is selected.
-  SetVisible(parent_->IsSearchResultHoveredOrSelected() ||
-             parent()->Contains(GetFocusManager()->GetFocusedView()));
+  if (visible_on_hover_) {
+    SetVisible(parent_->IsSearchResultHoveredOrSelected() ||
+               parent()->Contains(GetFocusManager()->GetFocusedView()));
+  }
+
+  const bool selected = parent_->GetSelectedAction() == tag();
+  if (selected_ != selected) {
+    selected_ = selected;
+    if (selected)
+      NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  }
 }
 
 void SearchResultImageButton::OnPaintBackground(gfx::Canvas* canvas) {
-  if (HasFocus()) {
+  if (HasFocus() || parent_->GetSelectedAction() == tag()) {
     cc::PaintFlags circle_flags;
     circle_flags.setAntiAlias(true);
     circle_flags.setColor(kButtonHoverColor);
@@ -227,15 +234,20 @@ SearchResultActionsView::SearchResultActionsView(
 SearchResultActionsView::~SearchResultActionsView() {}
 
 void SearchResultActionsView::SetActions(const SearchResult::Actions& actions) {
+  if (selected_action_.has_value()) {
+    selected_action_.reset();
+    delegate_->OnSearchResultActionsUnSelected();
+  }
   buttons_.clear();
   RemoveAllChildViews(true);
-  for (const auto& action : actions)
-    CreateImageButton(action);
+
+  for (size_t i = 0; i < actions.size(); ++i)
+    CreateImageButton(actions[i], i);
   PreferredSizeChanged();
 }
 
 bool SearchResultActionsView::IsValidActionIndex(size_t action_index) const {
-  return action_index < children().size();
+  return action_index < GetActionCount();
 }
 
 bool SearchResultActionsView::IsSearchResultHoveredOrSelected() const {
@@ -255,11 +267,69 @@ const char* SearchResultActionsView::GetClassName() const {
   return "SearchResultActionsView";
 }
 
+bool SearchResultActionsView::SelectInitialAction(bool reverse_tab_order) {
+  if (GetActionCount() == 0)
+    return false;
+
+  if (reverse_tab_order) {
+    selected_action_ = GetActionCount() - 1;
+  } else {
+    selected_action_.reset();
+  }
+  UpdateButtonsOnStateChanged();
+  return selected_action_.has_value();
+}
+
+bool SearchResultActionsView::SelectNextAction(bool reverse_tab_order) {
+  if (GetActionCount() == 0)
+    return false;
+
+  // For reverse tab order, consider moving to non-selected state.
+  if (reverse_tab_order) {
+    if (!selected_action_.has_value())
+      return false;
+
+    if (selected_action_.value() == 0) {
+      ClearSelectedAction();
+      return true;
+    }
+  }
+
+  const int next_index =
+      selected_action_.value_or(-1) + (reverse_tab_order ? -1 : 1);
+  if (!IsValidActionIndex(next_index))
+    return false;
+
+  selected_action_ = next_index;
+  UpdateButtonsOnStateChanged();
+  return true;
+}
+
+void SearchResultActionsView::ClearSelectedAction() {
+  selected_action_.reset();
+  delegate_->OnSearchResultActionsUnSelected();
+  UpdateButtonsOnStateChanged();
+}
+
+int SearchResultActionsView::GetSelectedAction() const {
+  return selected_action_.value_or(-1);
+}
+
+bool SearchResultActionsView::HasSelectedAction() const {
+  return selected_action_.has_value();
+}
+
 void SearchResultActionsView::CreateImageButton(
-    const SearchResult::Action& action) {
+    const SearchResult::Action& action,
+    int action_index) {
   SearchResultImageButton* button = new SearchResultImageButton(this, action);
+  button->set_tag(action_index);
   AddChildView(button);
   buttons_.emplace_back(button);
+}
+
+size_t SearchResultActionsView::GetActionCount() const {
+  return buttons_.size();
 }
 
 void SearchResultActionsView::ChildVisibilityChanged(views::View* child) {
@@ -271,9 +341,9 @@ void SearchResultActionsView::ButtonPressed(views::Button* sender,
   if (!delegate_)
     return;
 
-  const int index = GetIndexOf(sender);
-  DCHECK_NE(-1, index);
-  delegate_->OnSearchResultActionActivated(index, event.flags());
+  DCHECK_GE(sender->tag(), 0);
+  DCHECK_LT(sender->tag(), static_cast<int>(GetActionCount()));
+  delegate_->OnSearchResultActionActivated(sender->tag(), event.flags());
 }
 
 }  // namespace app_list

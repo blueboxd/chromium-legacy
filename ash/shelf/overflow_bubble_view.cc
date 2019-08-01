@@ -26,6 +26,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_painted_layer_delegates.h"
+#include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -48,6 +49,10 @@ int GetUnit() {
 // Decides whether the current first visible shelf icon of the overflow shelf
 // should be hidden or fully shown when gesture scroll ends.
 int GetGestureDragTheshold() {
+  return ShelfConstants::button_size() / 2;
+}
+
+int GetBubbleCornerRadius() {
   return ShelfConstants::button_size() / 2;
 }
 
@@ -156,7 +161,8 @@ OverflowBubbleView::ScrollArrowView::CreateInkDropRipple() const {
 
 class OverflowBubbleView::OverflowShelfContainerView : public views::View {
  public:
-  explicit OverflowShelfContainerView(ShelfView* shelf_view);
+  OverflowShelfContainerView(ShelfView* shelf_view,
+                             OverflowBubbleView* bubble_view);
   ~OverflowShelfContainerView() override = default;
 
   void Initialize();
@@ -164,22 +170,47 @@ class OverflowBubbleView::OverflowShelfContainerView : public views::View {
   // Translate |shelf_view_| by |offset|.
   void TranslateShelfView(const gfx::Vector2dF& offset);
 
+  // Update the shelf icons' opacity.
+  void UpdateShelfIconsOpacity();
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void Layout() override;
   const char* GetClassName() const override;
 
+  int first_visible_index() const { return first_visible_index_; }
+  int last_visible_index() const { return last_visible_index_; }
+
  private:
+  // Update the opacity of shelf icons on both edges based on the drag offset.
+  void UpdateOpacityOfEdgeIcons(int offset_distance);
+
+  // Set all of shelf icons within the bounds of the shelf container view to be
+  // fully opaque.
+  void ShowShelfIconsWithinBounds();
+
   // Owned by views hierarchy.
   ShelfView* shelf_view_;
+
+  // Parent view. Not owned.
+  OverflowBubbleView* bubble_view_;
+
+  // The index of the leftmost/rightmost shelf icon within the bounds of
+  // |shelf_container_view_|. Different from the |first_visible_index_| or
+  // |last_visible_index_| in ShelfView which specifies the range of shelf icons
+  // belonging to the shelf view, the two attributes in OverflowBubbleView
+  // indicate the shelf icons not hidden by the parent view.
+  int first_visible_index_ = -1;
+  int last_visible_index_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowShelfContainerView);
 };
 
 OverflowBubbleView::OverflowShelfContainerView::OverflowShelfContainerView(
-    ShelfView* shelf_view)
-    : shelf_view_(shelf_view) {}
+    ShelfView* shelf_view,
+    OverflowBubbleView* bubble_view)
+    : shelf_view_(shelf_view), bubble_view_(bubble_view) {}
 
 void OverflowBubbleView::OverflowShelfContainerView::Initialize() {
   SetPaintToLayer();
@@ -218,6 +249,79 @@ void OverflowBubbleView::OverflowShelfContainerView::TranslateShelfView(
   shelf_view_->SetTransform(transform_matrix);
 }
 
+void OverflowBubbleView::OverflowShelfContainerView::UpdateShelfIconsOpacity() {
+  gfx::Vector2dF scroll_offset = bubble_view_->scroll_offset();
+  LayoutStrategy layout_strategy = bubble_view_->layout_strategy();
+
+  int updated_first_visible_index = shelf_view_->first_visible_index();
+  if (layout_strategy == NOT_SHOW_ARROW_BUTTONS) {
+    first_visible_index_ = updated_first_visible_index;
+    last_visible_index_ = shelf_view_->last_visible_index();
+    return;
+  }
+
+  const bool is_horizontal_aligned =
+      shelf_view_->shelf()->IsHorizontalAlignment();
+
+  const int scroll_distance =
+      is_horizontal_aligned ? scroll_offset.x() : scroll_offset.y();
+  updated_first_visible_index += scroll_distance / GetUnit();
+  if (layout_strategy == SHOW_LEFT_ARROW_BUTTON ||
+      layout_strategy == SHOW_BUTTONS) {
+    updated_first_visible_index++;
+  }
+
+  const int offset = (is_horizontal_aligned ? bubble_view_->bounds().width()
+                                            : bubble_view_->bounds().height()) -
+                     2 * GetUnit();
+  int updated_last_visible_index =
+      updated_first_visible_index + offset / GetUnit();
+  if (layout_strategy == SHOW_BUTTONS)
+    updated_last_visible_index--;
+
+  if (updated_first_visible_index != first_visible_index_ ||
+      updated_last_visible_index != last_visible_index_) {
+    first_visible_index_ = updated_first_visible_index;
+    last_visible_index_ = updated_last_visible_index;
+    ShowShelfIconsWithinBounds();
+  }
+
+  UpdateOpacityOfEdgeIcons(scroll_distance);
+}
+
+void OverflowBubbleView::OverflowShelfContainerView::UpdateOpacityOfEdgeIcons(
+    int offset_distance) {
+  const int remainder = offset_distance % GetUnit();
+  const int complement = GetUnit() - remainder;
+
+  views::ViewModel* shelf_view_model = shelf_view_->view_model();
+
+  // Calculate the opacity of the leftmost visible shelf icon.
+  views::View* leftmost_view = shelf_view_model->view_at(first_visible_index_);
+  leftmost_view->layer()->SetOpacity(
+      remainder >= kFadingZone ? 0 : (1.0f - remainder / (float)kFadingZone));
+
+  // Instead of the shelf icon denoted by |last_visible_index_|, we should
+  // update the opacity of the icon right after if any. Because
+  // |last_visible_index_| is calculated with flooring.
+  if (last_visible_index_ + 1 < shelf_view_model->view_size()) {
+    views::View* rightmost_view =
+        shelf_view_model->view_at(last_visible_index_ + 1);
+    rightmost_view->layer()->SetOpacity(complement >= kFadingZone
+                                            ? 0.f
+                                            : (kFadingZone - complement) /
+                                                  (float)(kFadingZone));
+  }
+}
+
+void OverflowBubbleView::OverflowShelfContainerView::
+    ShowShelfIconsWithinBounds() {
+  for (int i = first_visible_index_; i <= last_visible_index_; i++) {
+    views::View* shelf_icon = shelf_view_->view_model()->view_at(i);
+    shelf_icon->layer()->SetOpacity(1);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OverflowBubbleView
 
@@ -241,6 +345,8 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
+  layer()->SetRoundedCornerRadius(
+      gfx::RoundedCornersF(GetBubbleCornerRadius()));
 
   // Initialize the left arrow button.
   left_arrow_ = new ScrollArrowView(ScrollArrowView::LEFT,
@@ -253,7 +359,7 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
   AddChildView(right_arrow_);
 
   // Initialize the shelf container view.
-  shelf_container_view_ = new OverflowShelfContainerView(shelf_view);
+  shelf_container_view_ = new OverflowShelfContainerView(shelf_view, this);
   shelf_container_view_->Initialize();
   AddChildView(shelf_container_view_);
 
@@ -323,6 +429,14 @@ int OverflowBubbleView::ScrollByYOffset(float y_offset, bool animating) {
   return diff;
 }
 
+int OverflowBubbleView::GetFirstVisibleIndexForTest() const {
+  return shelf_container_view_->first_visible_index();
+}
+
+int OverflowBubbleView::GetLastVisibleIndexForTest() const {
+  return shelf_container_view_->last_visible_index();
+}
+
 int OverflowBubbleView::CalculateScrollUpperBound() const {
   const bool is_horizontal = shelf_->IsHorizontalAlignment();
 
@@ -349,7 +463,7 @@ float OverflowBubbleView::CalculateLayoutStrategyAfterScroll(float scroll) {
   const float scroll_upper_bound =
       static_cast<float>(CalculateScrollUpperBound());
   scroll = std::min(scroll_upper_bound, std::max(0.f, old_scroll + scroll));
-  if (layout_strategy_ != NOT_SHOW_ARROW_BUTTON) {
+  if (layout_strategy_ != NOT_SHOW_ARROW_BUTTONS) {
     if (scroll <= 0.f)
       layout_strategy_ = SHOW_RIGHT_ARROW_BUTTON;
     else if (scroll >= scroll_upper_bound)
@@ -362,7 +476,7 @@ float OverflowBubbleView::CalculateLayoutStrategyAfterScroll(float scroll) {
 
 void OverflowBubbleView::AdjustToEnsureIconsFullyVisible(
     gfx::Rect* bubble_bounds) const {
-  if (layout_strategy_ == NOT_SHOW_ARROW_BUTTON)
+  if (layout_strategy_ == NOT_SHOW_ARROW_BUTTONS)
     return;
 
   int width = shelf_->IsHorizontalAlignment() ? bubble_bounds->width()
@@ -416,7 +530,7 @@ gfx::Size OverflowBubbleView::CalculatePreferredSize() const {
 
   if (preferred_length <= available_length) {
     // Enough space to accommodate all of shelf buttons. So hide arrow buttons.
-    layout_strategy_ = NOT_SHOW_ARROW_BUTTON;
+    layout_strategy_ = NOT_SHOW_ARROW_BUTTONS;
   } else if (scroll_length == 0) {
     // No invisible shelf buttons at the left side. So hide the left button.
     layout_strategy_ = SHOW_RIGHT_ARROW_BUTTON;
@@ -453,14 +567,21 @@ void OverflowBubbleView::Layout() {
   // The bounds of |left_arrow_| and |right_arrow_| in the parent coordinates.
   gfx::Rect left_arrow_bounds, right_arrow_bounds;
 
+  // Widen the shelf container view a little bit to ensure enough space for
+  // the fading out zone.
+  const int fading_zone_inset =
+      std::max(0, kFadingZone - GetDistanceToArrowButton() - kEndPadding);
+
   // Calculates the bounds of the left arrow button. If the left arrow button
   // should not show, |left_arrow_bounds| should be empty.
   if (layout_strategy_ == SHOW_LEFT_ARROW_BUTTON ||
       layout_strategy_ == SHOW_BUTTONS) {
     left_arrow_bounds = gfx::Rect(shelf_button_size);
     left_arrow_bounds.ClampToCenteredSize(arrow_button_size);
-    shelf_container_bounds.Inset(
-        ShelfConstants::button_size() + GetDistanceToArrowButton(), 0, 0, 0);
+    shelf_container_bounds.Inset(ShelfConstants::button_size() +
+                                     GetDistanceToArrowButton() -
+                                     fading_zone_inset,
+                                 0, 0, 0);
   }
 
   if (layout_strategy_ == SHOW_RIGHT_ARROW_BUTTON ||
@@ -469,7 +590,8 @@ void OverflowBubbleView::Layout() {
     right_arrow_bounds =
         gfx::Rect(shelf_container_bounds.top_right(), shelf_button_size);
     right_arrow_bounds.ClampToCenteredSize(arrow_button_size);
-    shelf_container_bounds.Inset(0, 0, GetDistanceToArrowButton(), 0);
+    shelf_container_bounds.Inset(
+        0, 0, GetDistanceToArrowButton() - fading_zone_inset, 0);
   }
 
   shelf_container_bounds.Inset(kEndPadding, 0, kEndPadding, 0);
@@ -505,6 +627,7 @@ void OverflowBubbleView::Layout() {
   }
 
   shelf_container_view_->TranslateShelfView(scroll_offset_ + translate_vector);
+  shelf_container_view_->UpdateShelfIconsOpacity();
 }
 
 void OverflowBubbleView::ChildPreferredSizeChanged(views::View* child) {

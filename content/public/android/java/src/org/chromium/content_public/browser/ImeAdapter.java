@@ -93,4 +93,11 @@ public interface ImeAdapter {
      */
     @VisibleForTesting
     void setComposingTextForTest(final CharSequence text, final int newCursorPosition);
+
+    /**
+     * Call this when we get result from ResultReceiver passed in calling showSoftInput().
+     * @param resultCode The result of showSoftInput() as defined in InputMethodManager.
+     */
+    @VisibleForTesting
+    void onShowKeyboardReceiveResult(int resultCode);
 }

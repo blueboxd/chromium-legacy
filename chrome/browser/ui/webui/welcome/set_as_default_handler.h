@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 
-namespace nux {
+namespace welcome {
 
 class SetAsDefaultHandler : public settings::DefaultBrowserHandler {
  public:
@@ -21,6 +21,6 @@ class SetAsDefaultHandler : public settings::DefaultBrowserHandler {
   DISALLOW_COPY_AND_ASSIGN(SetAsDefaultHandler);
 };
 
-}  // namespace nux
+}  // namespace welcome
 
 #endif  // CHROME_BROWSER_UI_WEBUI_WELCOME_SET_AS_DEFAULT_HANDLER_H_

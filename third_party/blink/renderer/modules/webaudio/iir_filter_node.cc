@@ -268,4 +268,12 @@ void IIRFilterNode::getFrequencyResponse(
       mag_response.View()->Data(), phase_response.View()->Data());
 }
 
+void IIRFilterNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+}
+
+void IIRFilterNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

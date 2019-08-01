@@ -105,7 +105,7 @@ class AshTestHelper {
     return test_views_delegate_.get();
   }
 
-  display::Display GetSecondaryDisplay();
+  display::Display GetSecondaryDisplay() const;
 
   TestSessionControllerClient* test_session_controller_client() {
     return session_controller_client_.get();

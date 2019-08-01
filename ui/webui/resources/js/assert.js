@@ -14,6 +14,7 @@
  *     to force a cast to Boolean.
  * @param {string=} opt_message A message to show on failure.
  * @return {T} A non-null |condition|.
+ * @closurePrimitive {asserts.truthy}
  */
 /* #export */ function assert(condition, opt_message) {
   if (!condition) {
@@ -56,6 +57,7 @@
  * unexpected input.
  *
  * @param {string=} opt_message A message to show when this is hit.
+ * @closurePrimitive {asserts.fail}
  */
 /* #export */ function assertNotReached(opt_message) {
   assert(false, opt_message || 'Unreachable code hit');

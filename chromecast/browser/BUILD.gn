@@ -407,21 +407,6 @@ cast_source_set("browser") {
   }
 }
 
-cast_source_set("network_context_manager") {
-  sources = [
-    "network_context_manager.cc",
-    "network_context_manager.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/variations/net",
-    "//content/public/browser",
-    "//net",
-    "//services/network:network_service",
-  ]
-}
-
 # Lightweight target for Cast interfaces that wrap //content/public/browser.
 # This target should only include interfaces which are required for unit tests.
 cast_source_set("public") {
@@ -511,16 +496,13 @@ cast_source_set("unittests") {
     "application_media_info_manager_unittest.cc",
     "bluetooth/cast_bluetooth_chooser_unittest.cc",
     "cast_media_blocker_unittest.cc",
-    "cast_network_delegate_unittest.cc",
     "cast_session_id_map_unittest.cc",
     "devtools/cast_devtools_manager_delegate_unittest.cc",
     "lru_renderer_cache_test.cc",
-    "network_context_manager_unittest.cc",
   ]
 
   deps = [
     ":browser",
-    ":network_context_manager",
     "//base",
     "//chromecast/base",
     "//content/public/browser",

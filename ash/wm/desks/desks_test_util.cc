@@ -4,7 +4,9 @@
 
 #include "ash/wm/desks/desks_test_util.h"
 
+#include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -43,6 +45,17 @@ void ActivateDesk(const Desk* desk) {
                                        DesksSwitchSource::kMiniViewButton);
   waiter.Wait();
   ASSERT_TRUE(desk->is_active());
+}
+
+void RemoveDesk(const Desk* desk) {
+  auto* controller = DesksController::Get();
+  const bool in_overview =
+      Shell::Get()->overview_controller()->InOverviewSession();
+  const bool should_wait = controller->active_desk() == desk && !in_overview;
+  DeskSwitchAnimationWaiter waiter;
+  controller->RemoveDesk(desk, DesksCreationRemovalSource::kButton);
+  if (should_wait)
+    waiter.Wait();
 }
 
 }  // namespace ash

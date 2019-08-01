@@ -38,7 +38,6 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/http/http_response_headers.h"
@@ -433,72 +432,13 @@ void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
 
 }  // namespace
 
-ChromeRequestAdapter::ChromeRequestAdapter(net::URLRequest* request)
-    : RequestAdapter(request) {}
+ChromeRequestAdapter::ChromeRequestAdapter() : RequestAdapter(nullptr) {}
 
 ChromeRequestAdapter::~ChromeRequestAdapter() = default;
 
-content::WebContents::Getter ChromeRequestAdapter::GetWebContentsGetter()
-    const {
-  auto* info = content::ResourceRequestInfo::ForRequest(request_);
-  return info->GetWebContentsGetterForRequest();
-}
-
-content::ResourceType ChromeRequestAdapter::GetResourceType() const {
-  auto* info = content::ResourceRequestInfo::ForRequest(request_);
-  return info->GetResourceType();
-}
-
-GURL ChromeRequestAdapter::GetReferrerOrigin() const {
-  return GURL(request_->referrer()).GetOrigin();
-}
-
-void ChromeRequestAdapter::SetDestructionCallback(base::OnceClosure closure) {
-  if (request_->GetUserData(kRequestDestructionObserverUserDataKey))
-    return;
-
-  request_->SetUserData(
-      kRequestDestructionObserverUserDataKey,
-      std::make_unique<RequestDestructionObserverUserData>(std::move(closure)));
-}
-
-ResponseAdapter::ResponseAdapter(net::URLRequest* request)
-    : request_(request) {}
+ResponseAdapter::ResponseAdapter() = default;
 
 ResponseAdapter::~ResponseAdapter() = default;
-
-content::WebContents::Getter ResponseAdapter::GetWebContentsGetter() const {
-  auto* info = content::ResourceRequestInfo::ForRequest(request_);
-  return info->GetWebContentsGetterForRequest();
-}
-
-bool ResponseAdapter::IsMainFrame() const {
-  auto* info = content::ResourceRequestInfo::ForRequest(request_);
-  return info && (info->GetResourceType() == content::ResourceType::kMainFrame);
-}
-
-GURL ResponseAdapter::GetOrigin() const {
-  return request_->url().GetOrigin();
-}
-
-const net::HttpResponseHeaders* ResponseAdapter::GetHeaders() const {
-  return request_->response_headers();
-}
-
-void ResponseAdapter::RemoveHeader(const std::string& name) {
-  request_->response_headers()->RemoveHeader(name);
-}
-
-base::SupportsUserData::Data* ResponseAdapter::GetUserData(
-    const void* key) const {
-  return request_->GetUserData(key);
-}
-
-void ResponseAdapter::SetUserData(
-    const void* key,
-    std::unique_ptr<base::SupportsUserData::Data> data) {
-  request_->SetUserData(key, std::move(data));
-}
 
 void SetDiceAccountReconcilorBlockDelayForTesting(int delay_ms) {
   g_dice_account_reconcilor_blocked_delay_ms = delay_ms;

@@ -291,4 +291,12 @@ void AnalyserNode::getByteTimeDomainData(NotShared<DOMUint8Array> array) {
   GetAnalyserHandler().GetByteTimeDomainData(array.View());
 }
 
+void AnalyserNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+}
+
+void AnalyserNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

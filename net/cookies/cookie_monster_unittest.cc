@@ -525,7 +525,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
   // of cookies to create. Cookies are created in the order they appear in
   // cookie_entries. The value of cookie_entries[x].num_cookies specifies how
   // many cookies of that type to create consecutively, while if
-  // cookie_entries[x].is_secure is |true|, those cookies will be marke as
+  // cookie_entries[x].is_secure is |true|, those cookies will be marked as
   // Secure.
   void TestSecureCookieEviction(base::span<const CookiesEntry> cookie_entries,
                                 size_t expected_secure_cookies,
@@ -3231,7 +3231,7 @@ TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
   EXPECT_EQ(1U, delete_callback.result());
 }
 
-TEST_F(CookieMonsterTest, NoSmuggling) {
+TEST_F(CookieMonsterTest, RejectCreatedSameSiteCookieOnSet) {
   GURL url("http://www.example.com");
   std::string cookie_line = "foo=bar; SameSite=Lax";
 
@@ -3244,18 +3244,67 @@ TEST_F(CookieMonsterTest, NoSmuggling) {
   env_cross_site.set_same_site_cookie_context(
       CookieOptions::SameSiteCookieContext::CROSS_SITE);
 
-  // Cookie can be created successfully, since environment permits it.
+  CanonicalCookie::CookieInclusionStatus status;
+  // Cookie can be created successfully; SameSite is not checked on Creation.
   auto cookie = CanonicalCookie::Create(url, cookie_line, base::Time::Now(),
-                                        env_same_site);
+                                        env_same_site, &status);
   ASSERT_TRUE(cookie != nullptr);
+  ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
 
-  // ... but the environment is re-checked on set, so if it's different, this
-  // may be rejected then.
+  // ... but the environment is checked on set, so this may be rejected then.
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
   cm.SetCanonicalCookieAsync(std::move(cookie), "http", env_cross_site,
                              callback.MakeCallback());
   callback.WaitUntilDone();
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
+            callback.result());
+}
+
+TEST_F(CookieMonsterTest, RejectCreatedSecureCookieOnSet) {
+  GURL http_url("http://www.example.com");
+  std::string cookie_line = "foo=bar; Secure";
+
+  CookieMonster cm(nullptr, nullptr);
+  CanonicalCookie::CookieInclusionStatus status;
+  // Cookie can be created successfully from an any url. Secure is not checked
+  // on Create.
+  auto cookie = CanonicalCookie::Create(
+      http_url, cookie_line, base::Time::Now(), CookieOptions(), &status);
+
+  ASSERT_TRUE(cookie != nullptr);
+  ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
+
+  // Cookie is rejected when attempting to set from a non-secure scheme.
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
+  cm.SetCanonicalCookieAsync(std::move(cookie), "http", CookieOptions(),
+                             callback.MakeCallback());
+  callback.WaitUntilDone();
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
+            callback.result());
+}
+
+TEST_F(CookieMonsterTest, RejectCreatedHttpOnlyCookieOnSet) {
+  GURL url("http://www.example.com");
+  std::string cookie_line = "foo=bar; HttpOnly";
+
+  CookieMonster cm(nullptr, nullptr);
+  CanonicalCookie::CookieInclusionStatus status;
+  // Cookie can be created successfully; HttpOnly is not checked on Create.
+  auto cookie = CanonicalCookie::Create(url, cookie_line, base::Time::Now(),
+                                        CookieOptions(), &status);
+
+  ASSERT_TRUE(cookie != nullptr);
+  ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE, status);
+
+  // Cookie is rejected when attempting to set with a CookieOptions that does
+  // not allow httponly.
+  CookieOptions options_no_httponly;
+  options_no_httponly.set_exclude_httponly();  // Default, but make it explicit.
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
+  cm.SetCanonicalCookieAsync(std::move(cookie), "http", options_no_httponly,
+                             callback.MakeCallback());
+  callback.WaitUntilDone();
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY,
             callback.result());
 }
 

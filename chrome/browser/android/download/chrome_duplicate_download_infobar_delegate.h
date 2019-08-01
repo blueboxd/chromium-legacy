@@ -40,18 +40,6 @@ class ChromeDuplicateDownloadInfoBarDelegate
       const base::FilePath& file_path,
       const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback);
 
-  // UMA histogram enum for duplicate infobar. Keep this in sync with
-  // MobileDownloadDuplcaiteInfobar in histograms.xml. This should be
-  // append only.
-  enum DuplicateInfobarType {
-    INFOBAR_SHOWN = 0,
-    INFOBAR_DOWNLOAD_CANCELED,
-    INFOBAR_NO_DOWNLOAD_DIR,
-    INFOBAR_CREATE_NEW_FILE,
-    INFOBAR_MAX
-  };
-  void RecordDuplicateInfobarType(DuplicateInfobarType type);
-
   // DownloadOverwriteInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   bool Accept() override;

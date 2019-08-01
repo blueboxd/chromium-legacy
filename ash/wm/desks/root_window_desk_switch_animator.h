@@ -17,6 +17,7 @@ class Window;
 
 namespace ui {
 class LayerTreeOwner;
+class Layer;
 }  // namespace ui
 
 namespace viz {
@@ -129,7 +130,8 @@ class Desk;
 //     be visible again.
 //
 // This cooperative interaction between the animators and their owner
-// (DesksController) is needed for the following reasons:
+// (DesksController::AbstractDeskSwitchAnimation) is needed for the following
+// reasons:
 // 1- The new desk is only activated after all starting desk screenshots on all
 //    roots have been taken and placed on top of everything (between phase (1)
 //    and (2)), so that the effects of desk activation (windows hiding and
@@ -138,6 +140,20 @@ class Desk;
 //    root windows are ready (between phase (2) and (3)). This is needed to
 //    synchronize the animations on all displays together (otherwise the
 //    animations will lag behind each other).
+//
+// When this animator is used to implement the remove-active-desk animation
+// (which also involves switching desks; from the to-be-removed desk to another
+// desk), `for_remove` is set to true in the constructor. The animation is
+// slightly tweaked to do the following:
+// - Instead of taking a screenshot of the starting desk, we replace it by a
+//   black solid color layer, to indicate the desk is being removed.
+// - The layer tree of the active-desk container is recreated, and the old
+//   layers are detached and animated vertically by
+//   `kRemovedDeskWindowYTranslation`.
+// - That old layer tree is then translated back down by the same amount while
+//   the desks screenshots are animating horizontally.
+// This gives the effect that the removed desk windows are jumping from their
+// desk to the target desk.
 class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
  public:
   class Delegate {
@@ -162,7 +178,8 @@ class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
   RootWindowDeskSwitchAnimator(aura::Window* root,
                                const Desk* ending_desk,
                                Delegate* delegate,
-                               bool move_left);
+                               bool move_left,
+                               bool for_remove);
 
   ~RootWindowDeskSwitchAnimator() override;
 
@@ -174,7 +191,7 @@ class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
   }
   bool animation_finished() const { return animation_finished_; }
 
-  // Begins pahse (1) of the animation by taking a screenshot of the starting
+  // Begins phase (1) of the animation by taking a screenshot of the starting
   // desk content. Delegate::OnStartingDeskScreenshotTaken() will be called once
   // the screenshot is taken and placed on top of everything on the screen.
   void TakeStartingDeskScreenshot();
@@ -195,6 +212,15 @@ class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
   void OnImplicitAnimationsCompleted() override;
 
  private:
+  // Completes the first phase of the animation using the given |layer| as the
+  // screenshot layer of the starting desk. This layer will be parented to the
+  // animation layer, which will be setup with its initial transform according
+  // to |move_left|. If |for_remove_| is true, the detached old layer tree of
+  // the soon-to-be-removed-desk's windows will be translated up vertically to
+  // simulate a jump from the removed desk to the target desk.
+  // |Delegate::OnStartingDeskScreenshotTaken()| will be called at the end.
+  void CompleteAnimationPhase1WithLayer(std::unique_ptr<ui::Layer> layer);
+
   void OnStartingDeskScreenshotTaken(
       std::unique_ptr<viz::CopyOutputResult> copy_result);
   void OnEndingDeskScreenshotTaken(
@@ -203,10 +229,19 @@ class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
   // The root window that this animator is associated with.
   aura::Window* const root_window_;
 
+  // The active desk at the start of the animation.
+  const Desk* const starting_desk_;
+
   // The desk to activate and animate to with this animator.
   const Desk* const ending_desk_;
 
   Delegate* const delegate_;
+
+  // The owner of the layer tree of the old detached layers of the removed
+  // desk's windows. This is only valid if |for_remove_| is true. This layer
+  // tree is animated to simulate that the windows are jumping from the removed
+  // desk to the target desk.
+  std::unique_ptr<ui::LayerTreeOwner> old_windows_layer_tree_owner_;
 
   // The owner of the layer tree that contains the parent "animation layer" and
   // both its child starting and ending desks "screenshot layers".
@@ -225,6 +260,9 @@ class RootWindowDeskSwitchAnimator : public ui::ImplicitAnimationObserver {
   // True when the animation layer should be translated towards the left, which
   // means the starting desk is on the left of the ending desk.
   const bool move_left_;
+
+  // True if this animator is handling the remove-active-desk animation.
+  const bool for_remove_;
 
   // True when phase (1) finishes.
   bool starting_desk_screenshot_taken_ = false;

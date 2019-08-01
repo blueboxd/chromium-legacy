@@ -19,7 +19,7 @@
             on-click="navigateToChangePicture_">
         </cr-link-row>
         <cr-link-row class="hr" id="wallpaperButton"
-            hidden="[[!pageVisibility.setWallpaper]]"
+            hidden="[[!showWallpaperRow_]]"
             on-click="openWallpaperManager_" label="$i18n{setWallpaper}"
             sub-label="$i18n{openWallpaperApp}"
             disabled="[[isWallpaperPolicyControlled_]]" external>

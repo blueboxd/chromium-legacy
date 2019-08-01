@@ -32,7 +32,7 @@ class CONTENT_EXPORT NavigationState {
 
   static std::unique_ptr<NavigationState> CreateBrowserInitiated(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       base::TimeTicks time_commit_requested,
       mojom::FrameNavigationControl::CommitNavigationCallback callback,
       mojom::NavigationClient::CommitNavigationCallback
@@ -54,7 +54,9 @@ class CONTENT_EXPORT NavigationState {
   const mojom::CommonNavigationParams& common_params() const {
     return *common_params_;
   }
-  const CommitNavigationParams& commit_params() const { return commit_params_; }
+  const mojom::CommitNavigationParams& commit_params() const {
+    return *commit_params_;
+  }
   bool request_committed() const { return request_committed_; }
   bool uses_per_navigation_mojo_interface() const {
     return navigation_client_.get();
@@ -95,7 +97,7 @@ class CONTENT_EXPORT NavigationState {
  private:
   NavigationState(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       base::TimeTicks time_commit_requested,
       bool is_content_initiated,
       content::mojom::FrameNavigationControl::CommitNavigationCallback callback,
@@ -131,7 +133,7 @@ class CONTENT_EXPORT NavigationState {
   // swaps because FrameLoader::loadWithNavigationAction treats loads before a
   // FrameLoader has committedFirstRealDocumentLoad as a replacement. (Added for
   // http://crbug.com/178380).
-  const CommitNavigationParams commit_params_;
+  mojom::CommitNavigationParamsPtr commit_params_;
 
   // Time when RenderFrameImpl::CommitNavigation() is called.
   base::TimeTicks time_commit_requested_;

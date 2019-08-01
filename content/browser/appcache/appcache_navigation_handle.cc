@@ -25,10 +25,9 @@ AppCacheNavigationHandle::AppCacheNavigationHandle(
   if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
     core_->Initialize();
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&AppCacheNavigationHandleCore::Initialize,
-                       base::Unretained(core_.get())));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&AppCacheNavigationHandleCore::Initialize,
+                                  base::Unretained(core_.get())));
   }
 }
 
@@ -45,10 +44,9 @@ void AppCacheNavigationHandle::SetProcessId(int process_id) {
   if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
     core_->SetProcessId(process_id);
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&AppCacheNavigationHandleCore::SetProcessId,
-                       base::Unretained(core_.get()), process_id));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&AppCacheNavigationHandleCore::SetProcessId,
+                                  base::Unretained(core_.get()), process_id));
   }
 }
 

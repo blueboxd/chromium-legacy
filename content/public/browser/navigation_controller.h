@@ -24,6 +24,7 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/was_activated_option.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/page_transition_types.h"
@@ -38,7 +39,6 @@ class RefCountedString;
 
 namespace content {
 
-enum class WasActivatedOption;
 class BrowserContext;
 class NavigationEntry;
 class WebContents;
@@ -223,7 +223,7 @@ class NavigationController {
 
     // Set to |kYes| if the navigation should propagate user activation. This
     // is used by embedders where the activation has occurred outside the page.
-    WasActivatedOption was_activated;
+    mojom::WasActivatedOption was_activated;
 
     // If this navigation was initiated from a link that specified the
     // hrefTranslate attribute, this contains the attribute's value (a BCP47

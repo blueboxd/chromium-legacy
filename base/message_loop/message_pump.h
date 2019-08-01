@@ -19,6 +19,9 @@ class TimeTicks;
 
 class BASE_EXPORT MessagePump {
  public:
+  // DEPRECATED: Use MessagePumpType instead.
+  using Type = MessagePumpType;
+
   using MessagePumpFactory = std::unique_ptr<MessagePump>();
   // Uses the given base::MessagePumpFactory to override the default MessagePump
   // implementation for 'Type::UI'. May only be called once.

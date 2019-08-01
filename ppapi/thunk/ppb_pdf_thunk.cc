@@ -171,15 +171,17 @@ void SetAccessibilityDocInfo(
   enter.functions()->SetAccessibilityDocInfo(doc_info);
 }
 
-void SetAccessibilityPageInfo(
-    PP_Instance instance,
-    PP_PrivateAccessibilityPageInfo* page_info,
-    PP_PrivateAccessibilityTextRunInfo text_runs[],
-    PP_PrivateAccessibilityCharInfo chars[]) {
+void SetAccessibilityPageInfo(PP_Instance instance,
+                              PP_PrivateAccessibilityPageInfo* page_info,
+                              PP_PrivateAccessibilityTextRunInfo text_runs[],
+                              PP_PrivateAccessibilityCharInfo chars[],
+                              PP_PrivateAccessibilityLinkInfo links[],
+                              PP_PrivateAccessibilityImageInfo images[]) {
   EnterInstanceAPI<PPB_PDF_API> enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SetAccessibilityPageInfo(page_info, text_runs, chars);
+  enter.functions()->SetAccessibilityPageInfo(page_info, text_runs, chars,
+                                              links, images);
 }
 
 void SetCrashData(PP_Instance instance,

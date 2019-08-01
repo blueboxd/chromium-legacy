@@ -95,8 +95,6 @@
 <translation id="1672586136351118594">Don‘t show again</translation>
 <translation id="1692118695553449118">Sync is on</translation>
 <translation id="169515064810179024">Block sites from accessing motion sensors</translation>
-<translation id="1697480839793160072">Telephones</translation>
-<translation id="1698058317516161971">Emails</translation>
 <translation id="1717218214683051432">Motion sensors</translation>
 <translation id="1718835860248848330">Last hour</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Updated <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -239,7 +237,6 @@
 <translation id="2707726405694321444">Refresh page</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
 <translation id="271033894570825754">New</translation>
-<translation id="2714850608275780394">Waiting for code</translation>
 <translation id="2728754400939377704">Sort by site</translation>
 <translation id="2744248271121720757">Tap a word to search instantly or see related actions</translation>
 <translation id="2760989362628427051">Turn on dark theme when your device's dark theme or Battery Saver is on</translation>
@@ -306,7 +303,6 @@
 <translation id="3236059992281584593">1 min left</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Bookmark this page</translation>
-<translation id="3254626532848657899">Move to bottom</translation>
 <translation id="3259831549858767975">Make everything on the page smaller</translation>
 <translation id="3269093882174072735">Load image</translation>
 <translation id="3269956123044984603">To get your tabs from your other devices, turn on “Auto-sync data” in Android account settings.</translation>
@@ -507,7 +503,6 @@ Your Google Account may have other forms of browsing history such as searches an
 
 To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Name on card</translation>
-<translation id="4816465935029283692">Data types</translation>
 <translation id="4824958205181053313">Cancel sync?</translation>
 <translation id="4837753911714442426">Open options to print page</translation>
 <translation id="4842092870884894799">Showing password generation pop-up</translation>
@@ -791,7 +786,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6767294960381293877">List of devices to share a tab with, opened at half height.</translation>
 <translation id="6782111308708962316">Prevent third-party websites from saving and reading cookie data</translation>
 <translation id="6790428901817661496">Play</translation>
-<translation id="679325081238418596">Get your bookmarks, history, passwords and other settings on all your devices</translation>
 <translation id="6803423358608456383">Opened tabs at half height</translation>
 <translation id="6811034713472274749">Page is ready to view</translation>
 <translation id="6818926723028410516">Select items</translation>
@@ -825,8 +819,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7022756207310403729">Open in browser</translation>
 <translation id="702463548815491781">Recommended when TalkBack or Switch Access are on</translation>
 <translation id="7029809446516969842">Passwords</translation>
-<translation id="7031882061095297553">Sync to</translation>
-<translation id="7034608350006174882">Cards and addresses using Google Pay</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="7055152154916055070">Redirect blocked:</translation>
 <translation id="7062545763355031412">Accept and switch accounts</translation>
@@ -1092,7 +1084,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="8993760627012879038">Open a new tab in Incognito mode</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.</translation>
-<translation id="9005637476204108703">Tap here to manage your accounts</translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
 <translation id="9040142327097499898">Notifications are allowed. Location is off for this device.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Videos}}</translation>
@@ -1114,7 +1105,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="9155898266292537608">You can also search with a quick tap on a word</translation>
 <translation id="9169594135889675189">Add new tab to group</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
-<translation id="9190112541605496997">Tap the 'Manage account' button to manage your accounts</translation>
 <translation id="9204836675896933765">1 file left</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Images</translation>

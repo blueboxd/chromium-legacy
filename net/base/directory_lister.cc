@@ -80,10 +80,10 @@ DirectoryLister::~DirectoryLister() {
 }
 
 void DirectoryLister::Start() {
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&Core::Start, core_));
+  base::PostTask(FROM_HERE,
+                 {base::ThreadPool(), base::MayBlock(),
+                  base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                 base::BindOnce(&Core::Start, core_));
 }
 
 void DirectoryLister::Cancel() {

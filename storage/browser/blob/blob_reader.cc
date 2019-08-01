@@ -71,8 +71,9 @@ int ConvertBlobErrorToNetError(BlobStatus reason) {
 BlobReader::FileStreamReaderProvider::~FileStreamReaderProvider() = default;
 
 BlobReader::BlobReader(const BlobDataHandle* blob_handle)
-    : file_task_runner_(base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+    : file_task_runner_(
+          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                  base::TaskPriority::USER_VISIBLE})),
       net_error_(net::OK),
       weak_factory_(this) {
   if (blob_handle) {

@@ -203,7 +203,6 @@
 <translation id="1289513325360489062">ഈ സൈറ്റിൻ്റെ ഡാറ്റ ആക്‌സസ് ചെയ്യാനാവില്ല</translation>
 <translation id="1293264513303784526">USB-C ഉപകരണം (ഇടത് പോർട്ട്)</translation>
 <translation id="1293556467332435079">ഫയലുകള്‍</translation>
-<translation id="1296497012903089238">സർട്ടിഫിക്കറ്റ് തരം</translation>
 <translation id="1297175357211070620">ഉദ്ദിഷ്ടസ്ഥാനം</translation>
 <translation id="1300415640239881824">പരിരക്ഷിത ഉള്ളടക്കത്തിന്റെ മെച്ചപ്പെടുത്തിയ പ്ലേബാക്കിനുള്ള യോഗ്യത നിർണ്ണയിക്കുന്നതിന്, നിങ്ങളുടെ ഉപകരണത്തിന്റെ ഐഡന്റിറ്റി Google പരിശോധിച്ചുറപ്പിക്കണമെന്ന് <ph name="DOMAIN" /> ആവശ്യപ്പെടുന്നു.</translation>
 <translation id="1300806585489372370">ഈ ക്രമീകരണം മാറ്റാൻ, ആദ്യം <ph name="BEGIN_LINK" />ഐഡന്‍റിഫയര്‍ ഓണാക്കുക<ph name="END_LINK" /></translation>
@@ -1703,7 +1702,6 @@
 <translation id="3543597750097719865">SHA-512 ഉള്ള X9.62 ECDSA സിഗ്നേച്ചർ</translation>
 <translation id="3544879808695557954">ഉപയോക്തൃനാമം (ഓപ്‌ഷണൽ)</translation>
 <translation id="354602065659584722">ദോഷകരമായ സോഫ്‌റ്റ്‌വയർ നീക്കംചെയ്‌തു</translation>
-<translation id="3547495624659668105">PRL പതിപ്പ്</translation>
 <translation id="3547954654003013442">പ്രോക്‌സി ക്രമീകരണം</translation>
 <translation id="3550915441744863158">സ്വയമേവ Chrome  അപ്‌ഡേറ്റ് ചെയ്യുന്നതിനാൽ നിങ്ങളുടേത് എപ്പോഴും പുതുമയുള്ള പതിപ്പായിരിക്കും.</translation>
 <translation id="3551320343578183772">ടാബ് അടയ്‌ക്കുക</translation>
@@ -1996,7 +1994,6 @@
 <translation id="3937734102568271121"><ph name="LANGUAGE" /> എല്ലായ്പ്പോഴും വിവര്‍ത്തനം ചെയ്യുക</translation>
 <translation id="3938128855950761626"><ph name="VENDOR_ID" /> എന്ന വെൻഡറിൽ നിന്നുള്ള ഉപകരണങ്ങൾ</translation>
 <translation id="3940233957883229251">സ്വയമേവയുള്ള ആവർത്തനം പ്രവർത്തനക്ഷമമാക്കുക</translation>
-<translation id="3941357410013254652">ചാനൽ ID</translation>
 <translation id="3941565636838060942">ഈ പ്രോഗ്രാമിലേക്കുള്ള ആക്‌സസ് മറയ്‌ക്കാൻ, നിയന്ത്രണ പാനലിൽ <ph name="CONTROL_PANEL_APPLET_NAME" />   ഉപയോഗിച്ച് നിങ്ങളിത് അൺഇൻസ്‌റ്റാൾ ചെയ്യേണ്ടതാണ്.
 
   <ph name="CONTROL_PANEL_APPLET_NAME" />, ആരംഭിക്കാൻ താൽപ്പര്യമുണ്ടോ?</translation>
@@ -3426,7 +3423,6 @@
 <translation id="6129691635767514872">തിരഞ്ഞെടുത്ത ഡാറ്റയെ Chrome-ൽ നിന്നും സമന്വയിപ്പിച്ച ഉപകരണങ്ങളിൽ നിന്നും നീക്കം ചെയ്‌തു. നിങ്ങളുടെ Google അക്കൗണ്ടിന്, <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> എന്നതിൽ, മറ്റ് Google സേവനങ്ങളിൽ നിന്നുള്ള തിരയലുകളും ആക്‌റ്റിവിറ്റിയും എന്നിങ്ങനെ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>
 <translation id="6129938384427316298">നെറ്റ്‌സ്‌കേപ്പ് സര്‍‌ട്ടിഫിക്കറ്റ് അഭിപ്രായം</translation>
 <translation id="6129953537138746214">സ്പെയ്സ്</translation>
-<translation id="6135622770221372891">ചാനൽ ID-കൾ</translation>
 <translation id="6136114942382973861">ഡൗണ്‍ലോഡ് വിവരങ്ങളുടെ ബാര്‍ അടയ്‌ക്കുക</translation>
 <translation id="6137767437444130246">ഉപയോക്തൃ സർട്ടിഫിക്കറ്റ്</translation>
 <translation id="6138680304137685902">SHA-384 ഉള്ള X9.62 ECDSA സിഗ്നേച്ചർ</translation>

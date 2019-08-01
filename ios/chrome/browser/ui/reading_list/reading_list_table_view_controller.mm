@@ -898,10 +898,10 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 
 // Called when the table is empty.
 - (void)tableIsEmpty {
-  [self
-      addEmptyTableViewWithAttributedMessage:GetReadingListEmptyMessage()
-                                       image:[UIImage
-                                                 imageNamed:kEmptyStateImage]];
+  UIImage* emptyImage = [[UIImage imageNamed:kEmptyStateImage]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  [self addEmptyTableViewWithAttributedMessage:GetReadingListEmptyMessage()
+                                         image:emptyImage];
   [self updateEmptyTableViewMessageAccessibilityLabel:
             GetReadingListEmptyMessageA11yLabel()];
   self.tableView.alwaysBounceVertical = NO;

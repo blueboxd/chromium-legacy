@@ -305,7 +305,14 @@ ResultCode PolicyBase::SetLowBox(const wchar_t* sid) {
 }
 
 ResultCode PolicyBase::SetProcessMitigations(MitigationFlags flags) {
-  if (app_container_profile_ || !CanSetProcessMitigationsPreStartup(flags))
+  // Prior to Win10 RS5 CreateProcess fails when AppContainer and mitigation
+  // flags are enabled. Return an error on downlevel platforms if trying to
+  // set new mitigations.
+  if (app_container_profile_ &&
+      base::win::GetVersion() < base::win::Version::WIN10_RS5) {
+    return SBOX_ERROR_BAD_PARAMS;
+  }
+  if (!CanSetProcessMitigationsPreStartup(flags))
     return SBOX_ERROR_BAD_PARAMS;
   mitigations_ = flags;
   return SBOX_ALL_OK;
@@ -626,12 +633,19 @@ ResultCode PolicyBase::AddAppContainerProfile(const wchar_t* package_name,
   }
   if (!app_container_profile_)
     return SBOX_ERROR_CREATE_APPCONTAINER_PROFILE;
+
   // A bug exists in CreateProcess where enabling an AppContainer profile and
   // passing a set of mitigation flags will generate ERROR_INVALID_PARAMETER.
   // Apply best efforts here and convert set mitigations to delayed mitigations.
+  // This bug looks to have been fixed in Win10 RS5, so exit early if possible.
+  if (base::win::GetVersion() >= base::win::Version::WIN10_RS5)
+    return SBOX_ALL_OK;
+
   delayed_mitigations_ =
       mitigations_ & GetAllowedPostStartupProcessMitigations();
-  DCHECK(delayed_mitigations_ == (mitigations_ & ~MITIGATION_SEHOP));
+  DCHECK(delayed_mitigations_ ==
+         (mitigations_ & ~(MITIGATION_SEHOP |
+                           MITIGATION_RESTRICT_INDIRECT_BRANCH_PREDICTION)));
   mitigations_ = 0;
   return SBOX_ALL_OK;
 }

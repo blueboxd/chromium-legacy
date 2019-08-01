@@ -388,31 +388,16 @@ class FilteredVolumeManager extends cr.EventTarget {
     return volumeInfo;
   }
 
-  /**
-   * Requests to mount the archive file.
-   * @param {string} fileUrl The path to the archive file to be mounted.
-   * @param {function(VolumeInfo)} successCallback Called with the VolumeInfo
-   *     instance.
-   * @param {function(VolumeManagerCommon.VolumeError)} errorCallback Called
-   *     when an error occurs.
-   */
-  mountArchive(fileUrl, successCallback, errorCallback) {
-    this.ensureInitialized(() => {
-      this.volumeManager_.mountArchive(fileUrl, successCallback, errorCallback);
-    });
+  /** @override */
+  async mountArchive(fileUrl) {
+    await this.initialized_;
+    return this.volumeManager_.mountArchive(fileUrl);
   }
 
-  /**
-   * Requests unmount the specified volume.
-   * @param {!VolumeInfo} volumeInfo Volume to be unmounted.
-   * @param {function()} successCallback Called on success.
-   * @param {function(VolumeManagerCommon.VolumeError)} errorCallback Called
-   *     when an error occurs.
-   */
-  unmount(volumeInfo, successCallback, errorCallback) {
-    this.ensureInitialized(() => {
-      this.volumeManager_.unmount(volumeInfo, successCallback, errorCallback);
-    });
+  /** @override */
+  async unmount(volumeInfo) {
+    await this.initialized_;
+    return this.volumeManager_.unmount(volumeInfo);
   }
 
   /**

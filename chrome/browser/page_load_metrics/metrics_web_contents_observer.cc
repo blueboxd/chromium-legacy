@@ -477,9 +477,8 @@ void MetricsWebContentsObserver::HandleFailedNavigationForTrackedLoad(
   const net::Error error = navigation_handle->GetNetErrorCode();
 
   // net::OK: This case occurs when the NavigationHandle finishes and reports
-  // !HasCommitted(), but reports no net::Error. This should not occur
-  // pre-PlzNavigate, but afterwards it should represent the navigation stopped
-  // by the user before it was ready to commit.
+  // !HasCommitted(), but reports no net::Error. This represents the navigation
+  // being stopped by the user before it was ready to commit.
   // net::ERR_ABORTED: An aborted provisional load has error net::ERR_ABORTED.
   const bool is_aborted_provisional_load =
       error == net::OK || error == net::ERR_ABORTED;

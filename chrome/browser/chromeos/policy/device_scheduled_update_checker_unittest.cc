@@ -26,11 +26,16 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/common/policy_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace policy {
 
@@ -199,15 +204,23 @@ bool AdvanceTimeAndSetDayOfMonth(int day_of_month, icu::Calendar* time) {
   return true;
 }
 
+std::string CreateConnectedWifiConfigurationJsonString(
+    const std::string& guid) {
+  return base::StringPrintf(R"({ "GUID": "%s", "Type": "%s", "State": "%s" })",
+                            guid.data(), shill::kTypeWifi, shill::kStateOnline);
+}
+
 }  // namespace
 
 class DeviceScheduledUpdateCheckerForTest
     : public DeviceScheduledUpdateChecker {
  public:
-  DeviceScheduledUpdateCheckerForTest(chromeos::CrosSettings* cros_settings,
-                                      const base::Clock* clock,
-                                      const base::TickClock* tick_clock)
-      : DeviceScheduledUpdateChecker(cros_settings),
+  DeviceScheduledUpdateCheckerForTest(
+      chromeos::CrosSettings* cros_settings,
+      chromeos::NetworkStateHandler* network_state_handler,
+      const base::Clock* clock,
+      const base::TickClock* tick_clock)
+      : DeviceScheduledUpdateChecker(cros_settings, network_state_handler),
         clock_(clock),
         tick_clock_(tick_clock) {
     // Set time zone so that tests are deterministic across different
@@ -300,9 +313,14 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     chromeos::FakePowerManagerClient::Get()->set_tick_clock(
         scoped_task_environment_.GetMockTickClock());
 
+    network_state_test_helper_ =
+        std::make_unique<chromeos::NetworkStateTestHelper>(
+            true /* use_default_devices_and_services */);
+
     device_scheduled_update_checker_ =
         std::make_unique<DeviceScheduledUpdateCheckerForTest>(
             chromeos::CrosSettings::Get(),
+            network_state_test_helper_->network_state_handler(),
             scoped_task_environment_.GetMockClock(),
             scoped_task_environment_.GetMockTickClock());
   }
@@ -310,6 +328,8 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
   ~DeviceScheduledUpdateCheckerTest() override {
     device_scheduled_update_checker_.reset();
     chromeos::PowerManagerClient::Shutdown();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetUpdateEngineClient(
+        nullptr);
   }
 
  protected:
@@ -563,6 +583,7 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
       device_scheduled_update_checker_;
   chromeos::ScopedTestingCrosSettings cros_settings_;
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
+  std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
 
  private:
   chromeos::ScopedStubInstallAttributes test_install_attributes_{
@@ -1028,6 +1049,101 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
 TEST_F(DeviceScheduledUpdateCheckerTest,
        CheckRecalculationOnBackwardTimezoneChange) {
   EXPECT_TRUE(CheckRecalculationOnTimezoneChange(kPSTTimeZoneID));
+}
+
+// Check if no network is present for more than |kWaitForNetworkTimeout|, an
+// update check fails. When the network comes back again, the next update check
+// succeeds.
+TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkTimeoutScenario) {
+  // Go offline to cause update check failures.
+  network_state_test_helper_->ClearServices();
+
+  // Create and set daily policy starting from one hour from now.
+  base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
+  auto policy_and_next_update_check_time = CreatePolicy(
+      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+  cros_settings_.device_settings()->Set(
+      chromeos::kDeviceScheduledUpdateCheck,
+      std::move(policy_and_next_update_check_time.first));
+
+  // Fast forward to right before the expected update and then check if an
+  // update check is not scheduled.
+  const base::TimeDelta small_delay = base::TimeDelta::FromMilliseconds(1);
+  int expected_update_checks = 0;
+  int expected_update_check_requests = 0;
+  int expected_update_check_completions = 0;
+  device_scheduled_update_checker_->GetUpdateCheckCompletions();
+  scoped_task_environment_.FastForwardBy(delay_from_now - small_delay);
+  EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
+                         expected_update_check_completions));
+
+  // Fast forward to the expected update check time + |kMaxNetworkTimeout|. Due
+  // to no network being connected but no update check requests or completions
+  // should happens.
+  expected_update_checks += 1;
+  scoped_task_environment_.FastForwardBy(
+      small_delay + update_checker_internal::kWaitForNetworkTimeout);
+
+  // Go online again. This time the next scheduled update check should complete.
+  network_state_test_helper_->ConfigureService(
+      CreateConnectedWifiConfigurationJsonString("fake-wifi-network"));
+  expected_update_checks += 1;
+  expected_update_check_requests += 1;
+  expected_update_check_completions += 1;
+  scoped_task_environment_.FastForwardBy(
+      base::TimeDelta::FromDays(1) -
+      update_checker_internal::kWaitForNetworkTimeout);
+  // Simulate update check succeeding.
+  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
+                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
+                         expected_update_check_completions));
+}
+
+// Check if no network is present for < than |kWaitForNetworkTimeout|, and then
+// there is a valid network present, update check will succeed.
+TEST_F(DeviceScheduledUpdateCheckerTest, CheckNoNetworkDelayScenario) {
+  // Go offline to cause update check failures.
+  network_state_test_helper_->ClearServices();
+
+  // Create and set daily policy starting from one hour from now.
+  base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
+  auto policy_and_next_update_check_time = CreatePolicy(
+      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+  cros_settings_.device_settings()->Set(
+      chromeos::kDeviceScheduledUpdateCheck,
+      std::move(policy_and_next_update_check_time.first));
+
+  // Fast forward to right before the expected update and then check if an
+  // update check is not scheduled.
+  const base::TimeDelta small_delay = base::TimeDelta::FromMilliseconds(1);
+  int expected_update_checks = 0;
+  int expected_update_check_requests = 0;
+  int expected_update_check_completions = 0;
+  device_scheduled_update_checker_->GetUpdateCheckCompletions();
+  scoped_task_environment_.FastForwardBy(delay_from_now - small_delay);
+  EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
+                         expected_update_check_completions));
+
+  // Fast forward to the expected update check time + |kMaxNetworkTimeout| -
+  // |small_delay|. Due to no network being connected no update check requests
+  // or completions should happen.
+  const base::TimeDelta network_not_present_delay =
+      update_checker_internal::kWaitForNetworkTimeout - small_delay;
+  expected_update_checks += 1;
+  scoped_task_environment_.FastForwardBy(small_delay +
+                                         network_not_present_delay);
+
+  // Go online again. The existing update check should complete.
+  network_state_test_helper_->ConfigureService(
+      CreateConnectedWifiConfigurationJsonString("fake-wifi-network"));
+  expected_update_check_requests += 1;
+  expected_update_check_completions += 1;
+  // Simulate update check succeeding.
+  NotifyUpdateCheckStatus(chromeos::UpdateEngineClient::UpdateStatusOperation::
+                              UPDATE_STATUS_UPDATED_NEED_REBOOT);
+  EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
+                         expected_update_check_completions));
 }
 
 }  // namespace policy

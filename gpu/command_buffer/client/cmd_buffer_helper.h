@@ -102,10 +102,19 @@ class GPU_EXPORT CommandBufferHelper {
   //   shutdown.
   int32_t InsertToken();
 
-  // Returns true if the token has passed.
+  // Returns true if the token has passed.  This combines RefreshCachedToken
+  // and HasCachedTokenPassed.  Don't call this function if you have to call
+  // it repeatedly, and instead use those alternative functions.
   // Parameters:
   //   the value of the token to check whether it has passed
   bool HasTokenPassed(int32_t token);
+
+  // Returns true if the token has passed, but doesn't take a lock and check
+  // for what the latest token state is.
+  bool HasCachedTokenPassed(int32_t token);
+
+  // Update the state of the latest passed token.
+  void RefreshCachedToken();
 
   // Waits until the token of a particular value has passed through the command
   // stream (i.e. commands inserted before that token have been executed).

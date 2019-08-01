@@ -269,16 +269,6 @@ void ContentPasswordManagerDriver::SameDocumentNavigation(
   LogSiteIsolationMetricsForSubmittedForm(render_frame_host_);
 }
 
-void ContentPasswordManagerDriver::ShowPasswordSuggestions(
-    base::i18n::TextDirection text_direction,
-    const base::string16& typed_username,
-    int options,
-    const gfx::RectF& bounds) {
-  GetPasswordAutofillManager()->OnShowPasswordSuggestions(
-      text_direction, typed_username, options,
-      TransformToRootCoordinates(render_frame_host_, bounds));
-}
-
 void ContentPasswordManagerDriver::RecordSavePasswordProgress(
     const std::string& log) {
   client_->GetLogManager()->LogTextMessage(log);
@@ -294,6 +284,20 @@ void ContentPasswordManagerDriver::UserModifiedNonPasswordField(
     const base::string16& value) {
   GetPasswordManager()->OnUserModifiedNonPasswordField(this, renderer_id,
                                                        value);
+}
+
+void ContentPasswordManagerDriver::ShowPasswordSuggestions(
+    base::i18n::TextDirection text_direction,
+    const base::string16& typed_username,
+    int options,
+    const gfx::RectF& bounds) {
+  GetPasswordAutofillManager()->OnShowPasswordSuggestions(
+      text_direction, typed_username, options,
+      TransformToRootCoordinates(render_frame_host_, bounds));
+}
+
+void ContentPasswordManagerDriver::ShowTouchToFill() {
+  client_->ShowTouchToFill(this);
 }
 
 void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(

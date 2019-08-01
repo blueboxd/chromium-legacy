@@ -46,7 +46,7 @@ void TextfieldExample::CreateExampleView(View* container) {
   name->set_controller(this);
   auto password = std::make_unique<Textfield>();
   password->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  password->set_placeholder_text(ASCIIToUTF16("password"));
+  password->SetPlaceholderText(ASCIIToUTF16("password"));
   password->set_controller(this);
   auto disabled = std::make_unique<Textfield>();
   disabled->SetEnabled(false);

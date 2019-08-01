@@ -21,7 +21,6 @@ class CookieSettings;
 
 namespace net {
 class HttpResponseHeaders;
-class URLRequest;
 }
 
 class GURL;
@@ -38,17 +37,19 @@ extern const void* const kManageAccountsHeaderReceivedUserDataKey;
 
 class ChromeRequestAdapter : public RequestAdapter {
  public:
-  explicit ChromeRequestAdapter(net::URLRequest* request);
+  ChromeRequestAdapter();
   ~ChromeRequestAdapter() override;
 
-  virtual content::WebContents::Getter GetWebContentsGetter() const;
-  virtual content::ResourceType GetResourceType() const;
-  virtual GURL GetReferrerOrigin() const;
+  virtual content::WebContents::Getter GetWebContentsGetter() const = 0;
+
+  virtual content::ResourceType GetResourceType() const = 0;
+
+  virtual GURL GetReferrerOrigin() const = 0;
 
   // Associate a callback with this request which will be executed when the
   // request is complete (including any redirects). If a callback was already
   // registered this function does nothing.
-  virtual void SetDestructionCallback(base::OnceClosure closure);
+  virtual void SetDestructionCallback(base::OnceClosure closure) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeRequestAdapter);
@@ -56,22 +57,21 @@ class ChromeRequestAdapter : public RequestAdapter {
 
 class ResponseAdapter {
  public:
-  explicit ResponseAdapter(net::URLRequest* request);
+  ResponseAdapter();
   virtual ~ResponseAdapter();
 
-  virtual content::WebContents::Getter GetWebContentsGetter() const;
-  virtual bool IsMainFrame() const;
-  virtual GURL GetOrigin() const;
-  virtual const net::HttpResponseHeaders* GetHeaders() const;
-  virtual void RemoveHeader(const std::string& name);
+  virtual content::WebContents::Getter GetWebContentsGetter() const = 0;
+  virtual bool IsMainFrame() const = 0;
+  virtual GURL GetOrigin() const = 0;
+  virtual const net::HttpResponseHeaders* GetHeaders() const = 0;
+  virtual void RemoveHeader(const std::string& name) = 0;
 
-  virtual base::SupportsUserData::Data* GetUserData(const void* key) const;
-  virtual void SetUserData(const void* key,
-                           std::unique_ptr<base::SupportsUserData::Data> data);
+  virtual base::SupportsUserData::Data* GetUserData(const void* key) const = 0;
+  virtual void SetUserData(
+      const void* key,
+      std::unique_ptr<base::SupportsUserData::Data> data) = 0;
 
  private:
-  net::URLRequest* const request_;
-
   DISALLOW_COPY_AND_ASSIGN(ResponseAdapter);
 };
 

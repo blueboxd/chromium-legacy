@@ -885,7 +885,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolled) {
   WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
-  web_view->SmoothScroll(0, 200, 0);
+  web_view->SmoothScroll(0, 200, base::TimeDelta());
   UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
@@ -926,7 +926,7 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
   WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
-  web_view->SmoothScroll(0, 200, 0);
+  web_view->SmoothScroll(0, 200, base::TimeDelta());
   UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
@@ -1020,7 +1020,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventScrolled) {
   WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
-  web_view->SmoothScroll(0, 200, 0);
+  web_view->SmoothScroll(0, 200, base::TimeDelta());
   UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
@@ -1057,7 +1057,7 @@ TEST_F(WebPluginContainerTest, MouseEventScrolled) {
   WebViewImpl* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   EnablePlugins(web_view, WebSize(300, 300));
-  web_view->SmoothScroll(0, 200, 0);
+  web_view->SmoothScroll(0, 200, base::TimeDelta());
   UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
@@ -1096,7 +1096,7 @@ TEST_F(WebPluginContainerTest, MouseEventZoomed) {
   web_view->GetSettings()->SetPluginsEnabled(true);
   web_view->MainFrameWidget()->Resize(WebSize(300, 300));
   web_view->SetPageScaleFactor(2);
-  web_view->SmoothScroll(0, 300, 0);
+  web_view->SmoothScroll(0, 300, base::TimeDelta());
   UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
@@ -1137,7 +1137,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventZoomed) {
   web_view->GetSettings()->SetPluginsEnabled(true);
   web_view->MainFrameWidget()->Resize(WebSize(300, 300));
   web_view->SetPageScaleFactor(2);
-  web_view->SmoothScroll(0, 300, 0);
+  web_view->SmoothScroll(0, 300, base::TimeDelta());
   UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
@@ -1179,7 +1179,7 @@ TEST_F(WebPluginContainerTest, TouchEventZoomed) {
   web_view->GetSettings()->SetPluginsEnabled(true);
   web_view->MainFrameWidget()->Resize(WebSize(300, 300));
   web_view->SetPageScaleFactor(2);
-  web_view->SmoothScroll(0, 300, 0);
+  web_view->SmoothScroll(0, 300, base::TimeDelta());
   UpdateAllLifecyclePhases(web_view);
   RunPendingTasks();
 
@@ -1362,7 +1362,8 @@ TEST_F(WebPluginContainerTest, ClippedRectsForShiftedIframedElement) {
   for (auto& root_document_scroll_to : root_document_scrolls_to) {
     for (auto& iframe_scroll_to : iframe_scrolls_to) {
       web_view->SmoothScroll(root_document_scroll_to.Width(),
-                             root_document_scroll_to.Height(), 0);
+                             root_document_scroll_to.Height(),
+                             base::TimeDelta());
       iframe->SetScrollOffset(iframe_scroll_to);
       UpdateAllLifecyclePhases(web_view);
       RunPendingTasks();

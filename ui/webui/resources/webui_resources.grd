@@ -82,28 +82,26 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_IMAGES_THROBBER_SMALL"
                file="images/throbber_small.svg" type="BINDATA"
                compress="gzip" />
-
-      <if expr="not optimize_webui">
-        <include name="IDR_WEBUI_JS_ASSERT_M_JS"
-                 file="${root_gen_dir}/ui/webui/resources/js/assert.m.js"
-                 use_base_dir="false" type="BINDATA" compress="gzip" />
-        <include name="IDR_WEBUI_JS_CR_UI_FOCUS_OUTLINE_MANAGER_M_JS"
-                 file="${root_gen_dir}/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js"
-                 use_base_dir="false" type="BINDATA" compress="gzip" />
-        <include name="IDR_WEBUI_JS_LOAD_TIME_DATA_M_JS"
-                 file="${root_gen_dir}/ui/webui/resources/js/load_time_data.m.js"
-                 use_base_dir="false" type="BINDATA" />
-        <include name="IDR_WEBUI_JS_PARSE_HTML_SUBSET_M_JS"
-                 file="${root_gen_dir}/ui/webui/resources/js/parse_html_subset.m.js"
-                 use_base_dir="false" type="BINDATA" compress="gzip" />
-        <include name="IDR_WEBUI_JS_PROMISE_RESOLVER_M_JS"
-                 file="${root_gen_dir}/ui/webui/resources/js/promise_resolver.m.js"
-                 use_base_dir="false" type="BINDATA" compress="gzip" />
-        <include name="IDR_WEBUI_JS_UTIL_M_JS"
-                 file="${root_gen_dir}/ui/webui/resources/js/util.m.js"
-                 use_base_dir="false" type="BINDATA" compress="gzip"
-                 preprocess="true"/>
-      </if>
+      <!-- Web UI shared JS module resources. -->
+      <include name="IDR_WEBUI_JS_ASSERT_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/assert.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_UI_FOCUS_OUTLINE_MANAGER_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/ui/focus_outline_manager.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_LOAD_TIME_DATA_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/load_time_data.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_PARSE_HTML_SUBSET_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/parse_html_subset.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_PROMISE_RESOLVER_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/promise_resolver.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_UTIL_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/util.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip"
+               preprocess="true" />
 
       <if expr="not is_android">
         <part file="cr_components/cr_components_images.grdp" />
@@ -111,9 +109,7 @@ without changes to the corresponding grd file. -->
       </if>
 
       <if expr="not is_android and not is_ios">
-        <if expr="not optimize_webui">
-          <part file="cr_polymer_resources_v3.grdp" />
-        </if>
+        <part file="cr_polymer_resources_v3.grdp" />
       </if>
     </includes>
     <structures>
@@ -295,10 +291,8 @@ without changes to the corresponding grd file. -->
 
       <structure name="IDR_WEBUI_JS_CR"
                  file="js/cr.js" type="chrome_html" compress="gzip" />
-      <if expr="not optimize_webui">
-        <structure name="IDR_WEBUI_JS_CR_M_JS"
-                   file="js/cr.m.js" type="chrome_html" compress="gzip" />
-      </if>
+      <structure name="IDR_WEBUI_JS_CR_M_JS"
+                 file="js/cr.m.js" type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_EVENT_TARGET"
                  file="js/cr/event_target.js" type="chrome_html"
                  compress="gzip" />
@@ -435,9 +429,7 @@ without changes to the corresponding grd file. -->
         <part file="cr_elements_resources.grdp" />
         <part file="cr_polymer_resources.grdp" />
         <part file="polymer_resources.grdp" />
-        <if expr="not optimize_webui">
-          <part file="polymer_resources_v3.grdp" />
-        </if>
+        <part file="polymer_resources_v3.grdp" />
       </if>
     </structures>
   </release>

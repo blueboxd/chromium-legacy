@@ -93,10 +93,10 @@ class PollingProxyConfigService::Core
     last_poll_time_ = base::TimeTicks::Now();
     poll_task_outstanding_ = true;
     poll_task_queued_ = false;
-    base::PostTaskWithTraits(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(&Core::PollAsync, this, get_config_func_));
+    base::PostTask(FROM_HERE,
+                   {base::ThreadPool(), base::MayBlock(),
+                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                   base::BindOnce(&Core::PollAsync, this, get_config_func_));
   }
 
  private:

@@ -13,6 +13,7 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/session/test_pref_service_provider.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_base.h"
@@ -22,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "ui/message_center/message_center.h"
 
 using message_center::MessageCenter;
@@ -188,6 +190,124 @@ TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
   EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
+}
+
+TEST_F(AccessibilityControllerTest, LargeCursorTrayMenuVisibility) {
+  // Check that when the pref isn't being controlled by any policy will be
+  // visible in the accessibility tray menu despite its value.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  // Check when the value is true and not being controlled by any policy.
+  controller->SetLargeCursorEnabled(true);
+  EXPECT_TRUE(controller->large_cursor_enabled());
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityLargeCursorEnabled));
+  EXPECT_TRUE(controller->GetTrayVisiblityOfLargeCursorSetting());
+  // Check when the value is false and not being controlled by any policy.
+  controller->SetLargeCursorEnabled(false);
+  EXPECT_FALSE(controller->large_cursor_enabled());
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityLargeCursorEnabled));
+  EXPECT_TRUE(controller->GetTrayVisiblityOfLargeCursorSetting());
+
+  // Check that when the pref is managed and being forced on then it will be
+  // visible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityLargeCursorEnabled,
+      std::make_unique<base::Value>(true));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityLargeCursorEnabled));
+  EXPECT_TRUE(controller->large_cursor_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfLargeCursorSetting());
+  // Check that when the pref is managed and only being forced off then it will
+  // be invisible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityLargeCursorEnabled,
+      std::make_unique<base::Value>(false));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityLargeCursorEnabled));
+  EXPECT_FALSE(controller->large_cursor_enabled());
+  EXPECT_FALSE(controller->GetTrayVisiblityOfLargeCursorSetting());
+}
+
+TEST_F(AccessibilityControllerTest, HighContrastTrayMenuVisibility) {
+  // Check that when the pref isn't being controlled by any policy will be
+  // visible in the accessibility tray menu despite its value.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  // Check when the value is true and not being controlled by any policy.
+  controller->SetHighContrastEnabled(true);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_TRUE(controller->high_contrast_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfHighContrastSetting());
+  // Check when the value is false and not being controlled by any policy.
+  controller->SetHighContrastEnabled(false);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_FALSE(controller->high_contrast_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfHighContrastSetting());
+
+  // Check that when the pref is managed and being forced on then it will be
+  // visible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityHighContrastEnabled,
+      std::make_unique<base::Value>(true));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_TRUE(controller->GetTrayVisiblityOfHighContrastSetting());
+  // Check that when the pref is managed and only being forced off then it will
+  // be invisible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityHighContrastEnabled,
+      std::make_unique<base::Value>(false));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_FALSE(controller->high_contrast_enabled());
+  EXPECT_FALSE(controller->GetTrayVisiblityOfHighContrastSetting());
+}
+
+TEST_F(AccessibilityControllerTest, MonoAudioTrayMenuVisibility) {
+  // Check that when the pref isn't being controlled by any policy will be
+  // visible in the accessibility tray menu despite its value.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  // Check when the value is true and not being controlled by any policy.
+  controller->SetMonoAudioEnabled(true);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_TRUE(controller->mono_audio_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfMonoAudioSetting());
+  // Check when the value is false and not being controlled by any policy.
+  controller->SetMonoAudioEnabled(false);
+  EXPECT_FALSE(
+      prefs->IsManagedPreference(prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_FALSE(controller->mono_audio_enabled());
+  EXPECT_TRUE(controller->GetTrayVisiblityOfMonoAudioSetting());
+
+  // Check that when the pref is managed and being forced on then it will be
+  // visible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityMonoAudioEnabled,
+      std::make_unique<base::Value>(true));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_TRUE(controller->GetTrayVisiblityOfMonoAudioSetting());
+  // Check that when the pref is managed and only being forced off then it will
+  // be invisible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      prefs::kAccessibilityMonoAudioEnabled,
+      std::make_unique<base::Value>(false));
+  EXPECT_TRUE(
+      prefs->IsManagedPreference(prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_FALSE(controller->mono_audio_enabled());
+  EXPECT_FALSE(controller->GetTrayVisiblityOfMonoAudioSetting());
 }
 
 TEST_F(AccessibilityControllerTest, DisableLargeCursorResetsSize) {

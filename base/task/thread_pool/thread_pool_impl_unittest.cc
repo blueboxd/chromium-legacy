@@ -1030,27 +1030,29 @@ TEST_P(ThreadPoolImplTest, WorkerThreadObserver) {
 
 #if defined(OS_WIN)
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::BEST_EFFORT}, SingleThreadTaskRunnerThreadMode::SHARED));
-  task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::BEST_EFFORT, MayBlock()},
+      {ThreadPool(), TaskPriority::BEST_EFFORT},
       SingleThreadTaskRunnerThreadMode::SHARED));
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::USER_BLOCKING}, SingleThreadTaskRunnerThreadMode::SHARED));
+      {ThreadPool(), TaskPriority::BEST_EFFORT, MayBlock()},
+      SingleThreadTaskRunnerThreadMode::SHARED));
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::USER_BLOCKING, MayBlock()},
+      {ThreadPool(), TaskPriority::USER_BLOCKING},
+      SingleThreadTaskRunnerThreadMode::SHARED));
+  task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
+      {ThreadPool(), TaskPriority::USER_BLOCKING, MayBlock()},
       SingleThreadTaskRunnerThreadMode::SHARED));
 
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::BEST_EFFORT},
+      {ThreadPool(), TaskPriority::BEST_EFFORT},
       SingleThreadTaskRunnerThreadMode::DEDICATED));
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::BEST_EFFORT, MayBlock()},
+      {ThreadPool(), TaskPriority::BEST_EFFORT, MayBlock()},
       SingleThreadTaskRunnerThreadMode::DEDICATED));
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::USER_BLOCKING},
+      {ThreadPool(), TaskPriority::USER_BLOCKING},
       SingleThreadTaskRunnerThreadMode::DEDICATED));
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::USER_BLOCKING, MayBlock()},
+      {ThreadPool(), TaskPriority::USER_BLOCKING, MayBlock()},
       SingleThreadTaskRunnerThreadMode::DEDICATED));
 #endif
 
@@ -1164,7 +1166,7 @@ std::vector<std::unique_ptr<TaskRunnerAndEvents>> CreateTaskRunnersAndEvents(
   // Its task is expected to run after the USER_BLOCKING task runner's task.
   task_runners_and_events.push_back(std::make_unique<TaskRunnerAndEvents>(
       thread_pool->CreateUpdateableSequencedTaskRunner(
-          TaskTraits({ThreadPool(), TaskPriority::BEST_EFFORT, thread_policy})),
+          {ThreadPool(), TaskPriority::BEST_EFFORT, thread_policy}),
       TaskPriority::USER_VISIBLE, &task_runners_and_events.back()->task_ran));
 
   // -----

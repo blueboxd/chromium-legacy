@@ -11,7 +11,7 @@
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
+#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_handler.h"
 #include "url/origin.h"
@@ -264,8 +264,8 @@ void CastMediaRouteProvider::CreateMediaRouteController(
     mojom::MediaControllerRequest media_controller,
     mojom::MediaStatusObserverPtr observer,
     CreateMediaRouteControllerCallback callback) {
-  NOTIMPLEMENTED();
-  std::move(callback).Run(false);
+  std::move(callback).Run(activity_manager_->CreateMediaController(
+      route_id, std::move(media_controller), std::move(observer)));
 }
 
 void CastMediaRouteProvider::OnSinkQueryUpdated(

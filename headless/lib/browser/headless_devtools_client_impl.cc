@@ -86,8 +86,8 @@ void HeadlessDevToolsClientImpl::AttachToExternalHost(
 }
 
 void HeadlessDevToolsClientImpl::InitBrowserMainThread() {
-  browser_main_thread_ = base::CreateSingleThreadTaskRunnerWithTraits(
-      {content::BrowserThread::UI});
+  browser_main_thread_ =
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
 }
 
 void HeadlessDevToolsClientImpl::ChannelClosed() {

@@ -48,7 +48,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         <p>
           This sample demonstrates using a 'stage' frame of reference to provide
           room scale tracking. If stage bounds are provided by the XRDevice, they
-          will be represented as a green ground plane.
+          will be represented as a red ground plane.
           <a class="back" href="./index.html">Back</a>
         </p>
       </summary>
@@ -61,6 +61,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {FallbackHelper} from './js/cottontail/src/util/fallback-helper.js';
       import {SkyboxNode} from './js/cottontail/src/nodes/skybox.js';
       import {BoundsRenderer} from './js/cottontail/src/nodes/bounds-renderer.js';
+      import {vec3} from './js/cottontail/src/math/gl-matrix.js';
 
       // If requested, initialize the WebXR polyfill
       if (QueryArgs.getBool('allowPolyfill', false)) {
@@ -127,6 +128,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         renderer = new Renderer(gl);
         scene.setRenderer(renderer);
+
+        // Loads a generic controller mesh.
+        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
       }
 
       function updateBoundsRenderer(refSpace) {
@@ -147,9 +151,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         initGL();
 
         session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl, {
-              compositionDisabled: session.mode == 'inline'
-            })
+            baseLayer: new XRWebGLLayer(session, gl)
         });
 
         // Attempt to get a 'bounded' reference space, which will align the
@@ -224,6 +226,57 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         event.session.ended = true;
       }
 
+      function updateInputSources(session, frame, refSpace) {
+        let inputSources = session.inputSources;
+
+        for (let inputSource of inputSources) {
+          // If we have a grip matrix use it to render a mesh showing the
+          // position of the controller.
+          // Based on https://github.com/immersive-web/webxr/blob/master/input-explainer.md#placing-renderable-models
+          if (inputSource.gripSpace) {
+            let pose = frame.getPose(inputSource.gripSpace, refSpace);
+            if (pose) {
+              scene.inputRenderer.addController(pose.transform.matrix);
+            }
+          }
+
+          // We may not get a pose back in cases where the input source has lost
+          // tracking or does not know where it is relative to the given frame
+          // of reference.
+          // Based on https://github.com/immersive-web/webxr/blob/master/input-explainer.md#targeting-ray-pose
+          let pose = frame.getPose(inputSource.targetRaySpace, refSpace);
+          if (pose) {
+            let targetRay = new XRRay(pose.transform);
+            if (inputSource.targetRayMode == 'tracked-pointer') {
+              // If we have a pointer matrix and the pointer origin is the users
+              // hand (as opposed to their head or the screen) use it to render
+              // a ray coming out of the input device to indicate the pointer
+              // direction.
+              scene.inputRenderer.addLaserPointer(targetRay);
+            }
+
+            // If we have a pointer matrix we can also use it to render a cursor
+            // for both handheld and gaze-based input sources.
+
+            // Statically render the cursor 2 meters down the ray since we're
+            // not calculating any intersections in this sample.
+            let cursorDistance = 2.0;
+            let cursorPos = vec3.fromValues(
+                targetRay.origin.x,
+                targetRay.origin.y,
+                targetRay.origin.z
+                );
+            vec3.add(cursorPos, cursorPos, [
+                targetRay.direction.x * cursorDistance,
+                targetRay.direction.y * cursorDistance,
+                targetRay.direction.z * cursorDistance,
+                ]);
+
+            scene.inputRenderer.addCursor(cursorPos);
+          }
+        }
+      }
+
       function onXRFrame(t, frame) {
         let session = frame.session;
         let pose = frame.getViewerPose(refSpaces[session.mode]);
@@ -231,6 +284,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.startFrame();
 
         session.requestAnimationFrame(onXRFrame);
+
+        updateInputSources(session, frame, refSpaces[session.mode]);
 
         // Every XR frame uses basically the same render loop, so for the sake
         // of keeping the sample code focused on the interesting bits most

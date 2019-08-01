@@ -137,8 +137,9 @@ void SiteDataSizeCollector::OnCookiesModelInfoLoaded(
   }
   base::FilePath cookie_file_path = default_storage_partition_path_
       .Append(chrome::kCookieFilename);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetFileSizeBlocking, cookie_file_path),
       base::BindOnce(&SiteDataSizeCollector::OnStorageSizeFetched,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -212,8 +213,9 @@ void SiteDataSizeCollector::OnFlashLSOInfoLoaded(
   }
   base::FilePath pepper_data_dir_path = default_storage_partition_path_
       .Append(content::kPepperDataDirname);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&base::ComputeDirectorySize, pepper_data_dir_path),
       base::BindOnce(&SiteDataSizeCollector::OnStorageSizeFetched,
                      weak_ptr_factory_.GetWeakPtr()));

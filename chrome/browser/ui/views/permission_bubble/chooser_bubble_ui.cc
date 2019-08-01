@@ -10,11 +10,14 @@
 #include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
+#include "chrome/browser/ui/views/permission_bubble/front_eliding_title_label.h"
 #include "components/bubble/bubble_controller.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view_observer.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/window/dialog_client_view.h"
 
 using bubble_anchor_util::AnchorConfiguration;
@@ -41,6 +44,9 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
       std::unique_ptr<ChooserController> chooser_controller);
   ~ChooserBubbleUiViewDelegate() override;
 
+  // views::View:
+  void AddedToWidget() override;
+
   // views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
 
@@ -52,11 +58,6 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;
-
-  // views::DialogDelegateView:
-  views::View* GetContentsView() override;
-  views::Widget* GetWidget() override;
-  const views::Widget* GetWidget() const override;
 
   // views::TableViewObserver:
   void OnSelectionChanged() override;
@@ -94,13 +95,21 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   // | Get help                         |
   // ------------------------------------
 
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   device_chooser_content_view_ =
       new DeviceChooserContentView(this, std::move(chooser_controller));
+  AddChildView(device_chooser_content_view_);
+
   UpdateAnchor(browser);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER_UI);
 }
 
 ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {}
+
+void ChooserBubbleUiViewDelegate::AddedToWidget() {
+  GetBubbleFrameView()->SetTitleView(
+      ConstructFrontElidingTitleLabel(GetWindowTitle()));
+}
 
 base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
   return device_chooser_content_view_->GetWindowTitle();
@@ -142,18 +151,6 @@ bool ChooserBubbleUiViewDelegate::Cancel() {
 bool ChooserBubbleUiViewDelegate::Close() {
   device_chooser_content_view_->Close();
   return true;
-}
-
-views::View* ChooserBubbleUiViewDelegate::GetContentsView() {
-  return device_chooser_content_view_;
-}
-
-views::Widget* ChooserBubbleUiViewDelegate::GetWidget() {
-  return device_chooser_content_view_->GetWidget();
-}
-
-const views::Widget* ChooserBubbleUiViewDelegate::GetWidget() const {
-  return device_chooser_content_view_->GetWidget();
 }
 
 void ChooserBubbleUiViewDelegate::OnSelectionChanged() {

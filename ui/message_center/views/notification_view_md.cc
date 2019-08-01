@@ -765,7 +765,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
     if (placeholder) {
       inline_reply_->textfield()->SetProperty(kTextfieldIndexKey,
                                               static_cast<int>(i));
-      inline_reply_->textfield()->set_placeholder_text(
+      inline_reply_->textfield()->SetPlaceholderText(
           placeholder->empty()
               ? l10n_util::GetStringUTF16(
                     IDS_MESSAGE_CENTER_NOTIFICATION_INLINE_REPLY_PLACEHOLDER)

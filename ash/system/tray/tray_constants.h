@@ -145,7 +145,7 @@ constexpr SkColor kUnifiedMenuButtonColorDisabled =
     SkColorSetA(kUnifiedMenuButtonColor, 0xa);
 constexpr SkColor kUnifiedFeaturePodHoverColor =
     SkColorSetRGB(0xff, 0xff, 0xff);
-constexpr SkColor kUnifiedRecordingIconColor = gfx::kGoogleRedDark600;
+constexpr SkColor kUnifiedRecordingIconColor = gfx::kGoogleRed300;
 
 constexpr gfx::Insets kUnifiedMenuItemPadding(0, 16, 16, 16);
 constexpr gfx::Insets kUnifiedSystemInfoViewPadding(4, 16, 16, 16);

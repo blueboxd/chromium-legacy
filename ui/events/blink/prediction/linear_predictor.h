@@ -42,6 +42,9 @@ class LinearPredictor : public InputPredictor {
   bool GeneratePrediction(base::TimeTicks predict_time,
                           InputData* result) const override;
 
+  // Return the average time delta in the event queue.
+  base::TimeDelta TimeInterval() const override;
+
   // Return the number of events needed to compute a prediction
   size_t NumberOfEventsNeeded();
 

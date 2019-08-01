@@ -101,7 +101,7 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
       folder_name_visible_(true),
       is_tablet_mode_(false) {
   folder_name_view_->set_placeholder_text_color(kFolderTitleHintTextColor);
-  folder_name_view_->set_placeholder_text(folder_name_placeholder_text_);
+  folder_name_view_->SetPlaceholderText(folder_name_placeholder_text_);
   folder_name_view_->SetBorder(views::NullBorder());
 
   // Make folder name font size 14px.
@@ -265,8 +265,8 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
   if (new_contents.length() >
       AppListConfig::instance().max_folder_name_chars()) {
     folder_name_view_->SetText(previous_folder_name_.value());
-    sender->SelectRange(gfx::Range(previous_cursor_position_.value(),
-                                   previous_cursor_position_.value()));
+    sender->SetSelectedRange(gfx::Range(previous_cursor_position_.value(),
+                                        previous_cursor_position_.value()));
   } else {
     previous_folder_name_ = new_contents;
     delegate_->SetItemName(folder_item_, base::UTF16ToUTF8(new_contents));

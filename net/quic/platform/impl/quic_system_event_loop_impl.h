@@ -5,7 +5,6 @@
 #ifndef NET_QUIC_PLATFORM_IMPL_QUIC_SYSTEM_EVENT_LOOP_IMPL_H_
 #define NET_QUIC_PLATFORM_IMPL_QUIC_SYSTEM_EVENT_LOOP_IMPL_H_
 
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
@@ -21,7 +20,7 @@ class QuicSystemEventLoopImpl {
   }
 
  private:
-  base::SingleThreadTaskExecutor io_task_executor_{base::MessagePumpType::IO};
+  base::SingleThreadTaskExecutor io_task_executor_{base::MessagePump::Type::IO};
 };
 
 #endif  // NET_QUIC_PLATFORM_IMPL_QUIC_SYSTEM_EVENT_LOOP_IMPL_H_

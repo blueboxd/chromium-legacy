@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_test_helper.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -22,6 +23,28 @@ class LargestContentfulPaintCalculatorTest : public RenderingTest {
     simulated_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
     EnableCompositing();
     RenderingTest::SetUp();
+
+    mock_text_callback_manager_ =
+        MakeGarbageCollected<MockPaintTimingCallbackManager>();
+    GetTextPaintTimingDetector()->ResetCallbackManagerForTesting(
+        mock_text_callback_manager_);
+    mock_image_callback_manager_ =
+        MakeGarbageCollected<MockPaintTimingCallbackManager>();
+    GetImagePaintTimingDetector()->ResetCallbackManagerForTesting(
+        mock_image_callback_manager_);
+  }
+
+  ImagePaintTimingDetector* GetImagePaintTimingDetector() {
+    return GetFrame()
+        .View()
+        ->GetPaintTimingDetector()
+        .GetImagePaintTimingDetector();
+  }
+  TextPaintTimingDetector* GetTextPaintTimingDetector() {
+    return GetFrame()
+        .View()
+        ->GetPaintTimingDetector()
+        .GetTextPaintTimingDetector();
   }
 
   void SetImage(const char* id, int width, int height) {
@@ -60,22 +83,13 @@ class LargestContentfulPaintCalculatorTest : public RenderingTest {
   }
 
   void SimulateImageSwapPromise() {
-    auto* image_detector = GetFrame()
-                               .View()
-                               ->GetPaintTimingDetector()
-                               .GetImagePaintTimingDetector();
-    image_detector->ReportSwapTime(image_detector->last_registered_frame_index_,
-                                   WebWidgetClient::SwapResult::kDidSwap,
-                                   simulated_clock_.NowTicks());
+    mock_image_callback_manager_->InvokeSwapTimeCallback(
+        simulated_clock_.NowTicks());
   }
 
   void SimulateTextSwapPromise() {
-    auto* text_detector = GetFrame()
-                              .View()
-                              ->GetPaintTimingDetector()
-                              .GetTextPaintTimingDetector();
-    text_detector->ReportSwapTime(WebWidgetClient::SwapResult::kDidSwap,
-                                  simulated_clock_.NowTicks());
+    mock_text_callback_manager_->InvokeSwapTimeCallback(
+        simulated_clock_.NowTicks());
   }
 
  private:
@@ -87,6 +101,8 @@ class LargestContentfulPaintCalculatorTest : public RenderingTest {
   }
 
   base::SimpleTestTickClock simulated_clock_;
+  Persistent<MockPaintTimingCallbackManager> mock_text_callback_manager_;
+  Persistent<MockPaintTimingCallbackManager> mock_image_callback_manager_;
 };
 
 TEST_F(LargestContentfulPaintCalculatorTest, SingleImage) {

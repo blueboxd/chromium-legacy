@@ -289,7 +289,7 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
       SelectAll(true);
       saved_selection_for_focus_change_ = gfx::Range();
     } else {
-      SelectRange(state->selection);
+      SetSelectedRange(state->selection);
       saved_selection_for_focus_change_ =
           state->saved_selection_for_focus_change;
     }
@@ -310,10 +310,10 @@ void OmniboxViewViews::InstallPlaceholderText() {
   const TemplateURL* const default_provider =
       model()->client()->GetTemplateURLService()->GetDefaultSearchProvider();
   if (default_provider) {
-    set_placeholder_text(l10n_util::GetStringFUTF16(
+    SetPlaceholderText(l10n_util::GetStringFUTF16(
         IDS_OMNIBOX_PLACEHOLDER_TEXT, default_provider->short_name()));
   } else {
-    set_placeholder_text(base::string16());
+    SetPlaceholderText(base::string16());
   }
 }
 
@@ -583,17 +583,17 @@ void OmniboxViewViews::SetTextAndSelectedRange(const base::string16& text,
 
   SetText(text);
   // Select all the text to prioritize showing unselected text.
-  SelectRange(gfx::Range(range.start(), 0));
+  SetSelectedRange(gfx::Range(range.start(), 0));
   // Scroll selection right, to ensure |kPadRight| chars of selected text are
   // shown.
-  SelectRange(gfx::Range(range.start(),
-                         std::min(range.end() + kPadRight, range.start())));
+  SetSelectedRange(gfx::Range(
+      range.start(), std::min(range.end() + kPadRight, range.start())));
   // Scroll selection left, to ensure |kPadLeft| chars of unselected text are
   // shown.
-  SelectRange(
+  SetSelectedRange(
       gfx::Range(range.start(), range.end() - std::min(kPadLeft, range.end())));
   // Select the specified selection.
-  SelectRange(range);
+  SetSelectedRange(range);
 }
 
 base::string16 OmniboxViewViews::GetSelectedText() const {
@@ -740,7 +740,7 @@ void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,
 }
 
 void OmniboxViewViews::SetCaretPos(size_t caret_pos) {
-  SelectRange(gfx::Range(caret_pos, caret_pos));
+  SetSelectedRange(gfx::Range(caret_pos, caret_pos));
 }
 
 bool OmniboxViewViews::IsSelectAll() const {
@@ -803,7 +803,7 @@ void OmniboxViewViews::OnInlineAutocompleteTextCleared() {
 void OmniboxViewViews::OnRevertTemporaryText(const base::string16& display_text,
                                              const AutocompleteMatch& match) {
   SetAccessibilityLabel(display_text, match);
-  SelectRange(saved_temporary_selection_);
+  SetSelectedRange(saved_temporary_selection_);
   // We got here because the user hit the Escape key. We explicitly don't call
   // TextChanged(), since OmniboxPopupModel::ResetToDefaultMatch() has already
   // been called by now, and it would've called TextChanged() if it was
@@ -891,7 +891,7 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
     OffsetDoubleClickWord(offset);
   }
 
-  SelectRange(gfx::Range(start, end));
+  SetSelectedRange(gfx::Range(start, end));
   return true;
 }
 
@@ -1249,7 +1249,7 @@ bool OmniboxViewViews::HandleAccessibleAction(
   } else if (action_data.action == ax::mojom::Action::kReplaceSelectedText) {
     model()->SetInputInProgress(true);
     if (saved_selection_for_focus_change_.IsValid()) {
-      SelectRange(saved_selection_for_focus_change_);
+      SetSelectedRange(saved_selection_for_focus_change_);
       saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
     }
     InsertOrReplaceText(base::UTF8ToUTF16(action_data.value));
@@ -1281,7 +1281,7 @@ void OmniboxViewViews::OnFocus() {
 
   // Restore the selection we saved in OnBlur() if it's still valid.
   if (saved_selection_for_focus_change_.IsValid()) {
-    SelectRange(saved_selection_for_focus_change_);
+    SetSelectedRange(saved_selection_for_focus_change_);
     saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
   }
 
@@ -1363,7 +1363,7 @@ void OmniboxViewViews::OnBlur() {
   model()->OnKillFocus();
 
   // Deselect the text. Ensures the cursor is an I-beam.
-  SelectRange(gfx::Range(0));
+  SetSelectedRange(gfx::Range(0));
 
   // When deselected, elide and reset scroll position. After eliding, the old
   // scroll offset is meaningless (since the string is guaranteed to fit within
@@ -1659,7 +1659,7 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
           // to the beginning of the full unelided URL.
           size_t start, end;
           GetSelectionBounds(&start, &end);
-          SelectRange(gfx::Range(start, 0));
+          SetSelectedRange(gfx::Range(start, 0));
         } else {
           // After uneliding, move the caret to the beginning of the full
           // unelided URL.

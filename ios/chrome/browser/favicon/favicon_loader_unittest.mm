@@ -38,8 +38,13 @@ enum FaviconUrlType { TEST_PAGE_URL, TEST_ICON_URL };
 class FakeLargeIconService : public favicon::LargeIconServiceImpl {
  public:
   FakeLargeIconService()
-      : favicon::LargeIconServiceImpl(/*favicon_service=*/nullptr,
-                                      /*image_fetcher=*/nullptr) {}
+      : favicon::LargeIconServiceImpl(
+            /*favicon_service=*/nullptr,
+            /*image_fetcher=*/nullptr,
+            /*desired_size_in_dip_for_server_requests=*/0,
+            /*icon_type_for_server_requests=*/
+            favicon_base::IconType::kTouchIcon,
+            /*google_server_client_param=*/"test_chrome") {}
 
   // Returns LargeIconResult with valid bitmap if |page_url| is
   // |kTestFaviconURL|, or LargeIconResult with fallback style.

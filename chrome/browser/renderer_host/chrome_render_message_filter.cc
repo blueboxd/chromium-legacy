@@ -140,7 +140,7 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
 void ChromeRenderMessageFilter::OnDnsPrefetch(
     const network_hints::LookupRequest& request) {
   if (preconnect_manager_initialized_) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&predictors::PreconnectManager::StartPreresolveHosts,
                        preconnect_manager_, request.hostname_list));
@@ -167,7 +167,7 @@ void ChromeRenderMessageFilter::OnPreconnect(int render_frame_id,
 
   // TODO(mmenke):  Think about enabling cross-site preconnects, though that
   // will result in at least some cross-site information leakage.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&StartPreconnect, preconnect_manager_, render_process_id_,
                      render_frame_id, url, allow_credentials));
@@ -180,7 +180,7 @@ void ChromeRenderMessageFilter::OnAllowDatabase(
     bool* allowed) {
   *allowed =
       cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&TabSpecificContentSettings::WebDatabaseAccessed,
                      render_process_id_, render_frame_id, origin_url,
@@ -195,11 +195,10 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_frame_id,
   *allowed =
       cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
   // Record access to DOM storage for potential display in UI.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&TabSpecificContentSettings::DOMStorageAccessed,
-                     render_process_id_, render_frame_id, origin_url, local,
-                     !*allowed));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&TabSpecificContentSettings::DOMStorageAccessed,
+                                render_process_id_, render_frame_id, origin_url,
+                                local, !*allowed));
 }
 
 void ChromeRenderMessageFilter::OnRequestFileSystemAccessSync(
@@ -263,7 +262,7 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccess(
       ->IsGuest(render_process_id_);
   if (is_web_view_guest) {
     // Record access to file system for potential display in UI.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&ChromeRenderMessageFilter::FileSystemAccessedOnUIThread,
                        render_process_id_, render_frame_id, origin_url, allowed,
@@ -273,11 +272,10 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccess(
 #endif
   callback.Run(allowed);
   // Record access to file system for potential display in UI.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&TabSpecificContentSettings::FileSystemAccessed,
-                     render_process_id_, render_frame_id, origin_url,
-                     !allowed));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&TabSpecificContentSettings::FileSystemAccessed,
+                                render_process_id_, render_frame_id, origin_url,
+                                !allowed));
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -323,11 +321,10 @@ void ChromeRenderMessageFilter::OnAllowIndexedDB(int render_frame_id,
                                                  bool* allowed) {
   *allowed =
       cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&TabSpecificContentSettings::IndexedDBAccessed,
-                     render_process_id_, render_frame_id, origin_url,
-                     !*allowed));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&TabSpecificContentSettings::IndexedDBAccessed,
+                                render_process_id_, render_frame_id, origin_url,
+                                !*allowed));
 }
 
 void ChromeRenderMessageFilter::OnAllowCacheStorage(int render_frame_id,
@@ -336,7 +333,7 @@ void ChromeRenderMessageFilter::OnAllowCacheStorage(int render_frame_id,
                                                     bool* allowed) {
   *allowed =
       cookie_settings_->IsCookieAccessAllowed(origin_url, top_origin_url);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&TabSpecificContentSettings::CacheStorageAccessed,
                      render_process_id_, render_frame_id, origin_url,

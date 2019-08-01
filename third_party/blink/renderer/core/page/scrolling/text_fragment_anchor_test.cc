@@ -1010,8 +1010,8 @@ TEST_F(TextFragmentAnchorTest, DisabledInSamePageNavigation) {
   EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
 }
 
-// Make sure matching is case sensitive.
-TEST_F(TextFragmentAnchorTest, CaseSensitive) {
+// Ensure matching is case insensitive.
+TEST_F(TextFragmentAnchorTest, CaseInsensitive) {
   SimRequest request("https://example.com/test.html#targetText=Test",
                      "text/html");
   LoadURL("https://example.com/test.html#targetText=Test");
@@ -1031,8 +1031,13 @@ TEST_F(TextFragmentAnchorTest, CaseSensitive) {
   Compositor().BeginFrame();
   RunAsyncMatchingTasks();
 
-  EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
-  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
+  Element& p = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 }
 
 // Test that the fragment anchor stays centered in view throughout loading.
@@ -1210,6 +1215,69 @@ TEST_F(TextFragmentAnchorTest, IdFragmentWithDoubleHash) {
   EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)))
       << "Should have scrolled <div> into view but didn't, scroll offset: "
       << LayoutViewport()->GetScrollOffset().ToString();
+}
+
+// Test matching a space to &nbsp character.
+TEST_F(TextFragmentAnchorTest, SpaceMatchesNbsp) {
+  SimRequest request("https://example.com/test.html#targetText=test%20page",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=test%20page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test&nbsp;page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Test matching text with a CSS text transform.
+TEST_F(TextFragmentAnchorTest, CSSTextTransform) {
+  SimRequest request("https://example.com/test.html#targetText=test%20page",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=test%20page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+        text-transform: uppercase;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 }
 
 }  // namespace

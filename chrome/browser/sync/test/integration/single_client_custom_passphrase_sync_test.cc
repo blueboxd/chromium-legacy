@@ -375,7 +375,9 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
   EXPECT_TRUE(WaitForEncryptedServerBookmarks(
       {{"Should be encrypted", GURL("https://google.com/encrypted")}},
       {KeyDerivationParams::CreateForPbkdf2(), "hunter2"}));
-  EXPECT_EQ(observer.GetCommitCountForDatatype(syncer::BOOKMARKS), 1);
+  // Initial bookmarks sync would actually create and commit the permanent
+  // bookmark folders. Therefore, should be 2 commits by now.
+  EXPECT_EQ(observer.GetCommitCountForDatatype(syncer::BOOKMARKS), 2);
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseDoNotUseScryptSyncTest,

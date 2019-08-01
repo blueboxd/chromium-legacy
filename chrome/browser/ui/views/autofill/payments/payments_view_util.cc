@@ -120,7 +120,7 @@ gfx::Size TitleWithIconAndSeparatorView::GetMinimumSize() const {
 
 std::unique_ptr<views::Textfield> CreateCvcTextfield() {
   auto textfield = std::make_unique<views::Textfield>();
-  textfield->set_placeholder_text(
+  textfield->SetPlaceholderText(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
   textfield->SetDefaultWidthInChars(8);
   textfield->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);

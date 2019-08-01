@@ -169,4 +169,12 @@ String WaveShaperNode::oversample() const {
   }
 }
 
+void WaveShaperNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+}
+
+void WaveShaperNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioNode(this);
+}
+
 }  // namespace blink

@@ -6,8 +6,8 @@
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_COPY_OUTPUT_RESULT_MOJOM_TRAITS_H_
 
 #include "components/viz/common/frame_sinks/copy_output_result.h"
-#include "gpu/ipc/common/mailbox_struct_traits.h"
-#include "gpu/ipc/common/sync_token_struct_traits.h"
+#include "gpu/ipc/common/mailbox_mojom_traits.h"
+#include "gpu/ipc/common/sync_token_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/copy_output_result.mojom-shared.h"
 #include "services/viz/public/mojom/compositing/texture_releaser.mojom.h"
 #include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"

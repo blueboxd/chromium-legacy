@@ -14,7 +14,6 @@
 
 namespace favicon {
 
-class FaviconServerFetcherParams;
 class FaviconService;
 class LargeIconService;
 
@@ -103,7 +102,6 @@ class HistoryUiFaviconRequestHandlerImpl
   // of success and an |empty_response_callback| in case of failure.
   void RequestFromGoogleServer(
       const GURL& page_url,
-      std::unique_ptr<FaviconServerFetcherParams> server_parameters,
       base::OnceClosure empty_response_callback,
       base::OnceClosure local_lookup_callback,
       HistoryUiFaviconRequestOrigin origin_for_uma,

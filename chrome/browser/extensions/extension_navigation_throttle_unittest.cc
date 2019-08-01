@@ -86,9 +86,9 @@ class ExtensionNavigationThrottleUnitTest
     GURL http_url("https://example.com");
     test_handle.set_url(http_url);
 
-    // TODO(nick): https://crbug.com/695421 Once PlzNavigate is enabled 100%, it
-    // should be possible to support return values other than PROCEED and CANCEL
-    // from ExtensionNavigationThrottle::WillRedirectRequest.
+    // TODO(nick): https://crbug.com/695421 It should be possible to support
+    // return values other than PROCEED and CANCEL from
+    // ExtensionNavigationThrottle::WillRedirectRequest.
     NavigationThrottle::ThrottleAction expected_will_redirect_result =
         (expected_will_start_result == NavigationThrottle::PROCEED)
             ? NavigationThrottle::PROCEED

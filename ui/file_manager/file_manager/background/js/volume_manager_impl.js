@@ -142,9 +142,9 @@ class VolumeManagerImpl extends cr.EventTarget {
     try {
       // Create VolumeInfo for each volume.
       await Promise.all(volumeMetadataList.map(async (volumeMetadata) => {
-        console.warn(`Initializing volume: ${volumeMetadata.volumeId}`);
+        console.warn(`Initializing volume '${volumeMetadata.volumeId}'`);
         const volumeInfo = await this.addVolumeMetadata_(volumeMetadata);
-        console.warn(`Initialized volume: ${volumeInfo.volumeId}`);
+        console.warn(`Initialized volume '${volumeInfo.volumeId}'`);
       }));
 
       console.warn(`Initialized all ${volumeMetadataList.length} volumes`);
@@ -187,7 +187,8 @@ class VolumeManagerImpl extends cr.EventTarget {
             break;
           }
 
-          console.error(`Cannot mount volume: ${event.status}`);
+          console.error(`Cannot mount '${event.volumeMetadata.sourcePath}': ${
+              event.status}`);
           this.finishRequest_(requestKey, event.status);
           break;
 
@@ -202,7 +203,7 @@ class VolumeManagerImpl extends cr.EventTarget {
               null;
 
           if (event.status === 'success' && !requested && volumeInfo) {
-            console.warn(`Unmounted volume without request: ${volumeId}`);
+            console.warn(`Unmounted '${volumeId}' without request`);
             this.dispatchEvent(
                 new CustomEvent('externally-unmounted', {detail: volumeInfo}));
           }
@@ -212,7 +213,6 @@ class VolumeManagerImpl extends cr.EventTarget {
             this.volumeInfoList.remove(event.volumeMetadata.volumeId);
           }
 
-          console.warn(`Unmounted volume: ${volumeId}`);
           break;
       }
     } finally {
@@ -234,19 +234,24 @@ class VolumeManagerImpl extends cr.EventTarget {
   }
 
   /** @override */
-  mountArchive(fileUrl, successCallback, errorCallback) {
-    chrome.fileManagerPrivate.addMount(fileUrl, sourcePath => {
-      console.info(`Mount request: url=${fileUrl}; sourcePath=${sourcePath}`);
-      const requestKey = this.makeRequestKey_('mount', sourcePath);
-      this.startRequest_(requestKey, successCallback, errorCallback);
+  async mountArchive(fileUrl) {
+    const path = await new Promise(resolve => {
+      chrome.fileManagerPrivate.addMount(fileUrl, resolve);
     });
+    console.warn(`Mounting '${path}'`);
+    const key = this.makeRequestKey_('mount', path);
+    const volumeInfo = await this.startRequest_(key);
+    console.warn(`Mounted '${path}' as '${volumeInfo.volumeId}'`);
+    return volumeInfo;
   }
 
   /** @override */
-  unmount(volumeInfo, successCallback, errorCallback) {
+  async unmount(volumeInfo) {
+    console.warn(`Unmounting '${volumeInfo.volumeId}'`);
     chrome.fileManagerPrivate.removeMount(volumeInfo.volumeId);
-    const requestKey = this.makeRequestKey_('unmount', volumeInfo.volumeId);
-    this.startRequest_(requestKey, successCallback, errorCallback);
+    const key = this.makeRequestKey_('unmount', volumeInfo.volumeId);
+    await this.startRequest_(key);
+    console.warn(`Unmounted '${volumeInfo.volumeId}'`);
   }
 
   /** @override */
@@ -442,26 +447,26 @@ class VolumeManagerImpl extends cr.EventTarget {
 
   /**
    * @param {string} key Key produced by |makeRequestKey_|.
-   * @param {function(VolumeInfo)} successCallback To be called when the request
-   *     finishes successfully.
-   * @param {function(VolumeManagerCommon.VolumeError)} errorCallback To be
-   *     called when the request fails.
+   * @return {!Promise<!VolumeInfo>} Fulfilled on success, otherwise rejected
+   *     with a VolumeManagerCommon.VolumeError.
    * @private
    */
-  startRequest_(key, successCallback, errorCallback) {
-    if (key in this.requests_) {
-      const request = this.requests_[key];
-      request.successCallbacks.push(successCallback);
-      request.errorCallbacks.push(errorCallback);
-    } else {
-      this.requests_[key] = {
-        successCallbacks: [successCallback],
-        errorCallbacks: [errorCallback],
+  startRequest_(key) {
+    return new Promise((successCallback, errorCallback) => {
+      if (key in this.requests_) {
+        const request = this.requests_[key];
+        request.successCallbacks.push(successCallback);
+        request.errorCallbacks.push(errorCallback);
+      } else {
+        this.requests_[key] = {
+          successCallbacks: [successCallback],
+          errorCallbacks: [errorCallback],
 
-        timeout: setTimeout(
-            this.onTimeout_.bind(this, key), volumeManagerUtil.TIMEOUT)
-      };
-    }
+          timeout: setTimeout(
+              this.onTimeout_.bind(this, key), volumeManagerUtil.TIMEOUT)
+        };
+      }
+    });
   }
 
   /**

@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "base/message_loop/message_pump_type.h"
 #include "base/strings/string_piece.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/time/clock.h"
@@ -67,7 +66,7 @@ class DataReductionProxySettingsTestBase : public testing::Test {
                                          base::StringPiece group_name);
 
  protected:
-  base::SingleThreadTaskExecutor io_task_executor_{base::MessagePumpType::IO};
+  base::SingleThreadTaskExecutor io_task_executor_{base::MessagePump::Type::IO};
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<DataReductionProxySettings> settings_;
   base::Time last_update_time_;

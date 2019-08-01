@@ -560,7 +560,7 @@ TEST_F(PooledSingleThreadTaskRunnerManagerJoinTest,
 TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, COMSTAInitialized) {
   scoped_refptr<SingleThreadTaskRunner> com_task_runner =
       single_thread_task_runner_manager_->CreateCOMSTATaskRunner(
-          {TaskShutdownBehavior::BLOCK_SHUTDOWN}, GetParam());
+          {ThreadPool(), TaskShutdownBehavior::BLOCK_SHUTDOWN}, GetParam());
 
   com_task_runner->PostTask(FROM_HERE, BindOnce(&win::AssertComApartmentType,
                                                 win::ComApartmentType::STA));
@@ -571,11 +571,11 @@ TEST_P(PooledSingleThreadTaskRunnerManagerCommonTest, COMSTAInitialized) {
 TEST_F(PooledSingleThreadTaskRunnerManagerTest, COMSTASameThreadUsed) {
   scoped_refptr<SingleThreadTaskRunner> task_runner_1 =
       single_thread_task_runner_manager_->CreateCOMSTATaskRunner(
-          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          {ThreadPool(), TaskShutdownBehavior::BLOCK_SHUTDOWN},
           SingleThreadTaskRunnerThreadMode::SHARED);
   scoped_refptr<SingleThreadTaskRunner> task_runner_2 =
       single_thread_task_runner_manager_->CreateCOMSTATaskRunner(
-          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          {ThreadPool(), TaskShutdownBehavior::BLOCK_SHUTDOWN},
           SingleThreadTaskRunnerThreadMode::SHARED);
 
   PlatformThreadRef thread_ref_1;
@@ -640,7 +640,7 @@ class PooledSingleThreadTaskRunnerManagerTestWin
 TEST_F(PooledSingleThreadTaskRunnerManagerTestWin, PumpsMessages) {
   scoped_refptr<SingleThreadTaskRunner> com_task_runner =
       single_thread_task_runner_manager_->CreateCOMSTATaskRunner(
-          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          {ThreadPool(), TaskShutdownBehavior::BLOCK_SHUTDOWN},
           SingleThreadTaskRunnerThreadMode::DEDICATED);
   HWND hwnd = nullptr;
   // HWNDs process messages on the thread that created them, so we have to

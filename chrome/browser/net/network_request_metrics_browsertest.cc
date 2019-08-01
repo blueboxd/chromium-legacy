@@ -356,8 +356,8 @@ class NetworkRequestMetricsBrowserTest
 };
 
 // Testing before headers / during body is most interesting in the frame case,
-// as it checks the before and after commit case, which with browser-side
-// navigations / PlzNavigate, follow very different paths.
+// as it checks the before and after commit case, which follow very different
+// paths.
 IN_PROC_BROWSER_TEST_P(NetworkRequestMetricsBrowserTest,
                        NetErrorBeforeHeaders) {
   TestNavigationObserver navigation_observer(active_web_contents(), 1);

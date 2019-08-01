@@ -50,7 +50,7 @@ class CONTENT_EXPORT NavigationBodyLoader
   // redirects and response, and also creates a body loader if needed.
   static void FillNavigationParamsResponseAndBodyLoader(
       const mojom::CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params,
+      const mojom::CommitNavigationParams& commit_params,
       int request_id,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,

@@ -154,37 +154,35 @@
       },
     },
 
-    # Temporarily disabled due to timeouts causing invalid test results.
-    # TODO(jmadill): Re-enable once timeout is resolved. http://crbug.com/987623
-    # 'android_webview_gpu_telemetry_tests': {
-    #   'pixel_skia': {
-    #     'name': 'android_webview_pixel_skia_gold_test',
-    #     'args': [
-    #       '--dont-restore-color-profile-after-test',
-    #       '--os-type',
-    #       '${os_type}',
-    #       '--build-revision',
-    #       '${got_revision}',
-    #       '--test-machine-name',
-    #       '${buildername}',
-    #     ],
-    #     'precommit_args': [
-    #       # Gerrit issue ID
-    #       '--review-patch-issue',
-    #       '${patch_issue}',
-    #       # Patch set number
-    #       '--review-patch-set',
-    #       '${patch_set}',
-    #       # Buildbucket ID
-    #       '--buildbucket-build-id',
-    #       '${buildbucket_build_id}',
-    #     ],
-    #     'swarming': {
-    #       'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
-    #     },
-    #     'telemetry_test_name': 'pixel',
-    #   },
-    # },
+    'android_webview_gpu_telemetry_tests': {
+      'pixel_skia': {
+        'name': 'android_webview_pixel_skia_gold_test',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--os-type',
+          '${os_type}',
+          '--build-revision',
+          '${got_revision}',
+          '--test-machine-name',
+          '${buildername}',
+        ],
+        'precommit_args': [
+          # Gerrit issue ID
+          '--review-patch-issue',
+          '${patch_issue}',
+          # Patch set number
+          '--review-patch-set',
+          '${patch_set}',
+          # Buildbucket ID
+          '--buildbucket-build-id',
+          '${buildbucket_build_id}',
+        ],
+        'swarming': {
+          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+        },
+        'telemetry_test_name': 'pixel',
+      },
+    },
 
     'aura_gtests': {
       'aura_unittests': {},
@@ -394,7 +392,6 @@
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
-          'shards': 2,
         },
       },
       'telemetry_unittests': {
@@ -406,7 +403,7 @@
         ],
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
-          'shards': 12,
+          'shards': 10,
         },
       },
     },
@@ -2737,6 +2734,7 @@
       'blink_platform_unittests': {},
       'cast_runner_browsertests': {},
       'cast_runner_integration_tests': {},
+      'cast_runner_unittests': {},
       'content_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
@@ -3497,11 +3495,30 @@
           '--test-launcher-jobs=1',
           '--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter',
           '--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization',
-          '--use-gl=any',
           '--use-vulkan=native',
           '--enable-oop-rasterization',
           '--enable-gpu-rasterization',
-          '--enable-raster-to-sk-image',
+          '--force-gpu-rasterization',
+          '--disable-software-compositing-fallback',
+          '--disable-vulkan-fallback-to-gl-for-testing',
+          '--disable-headless-mode',
+        ],
+        'linux_args': [ '--no-xvfb' ],
+        'test': 'content_browsertests',
+      },
+    },
+
+    'gpu_fyi_vulkan_swiftshader_gtests': {
+      'vulkan_swiftshader_content_browsertests': {
+        'args': [
+          '--enable-gpu',
+          '--test-launcher-bot-mode',
+          '--test-launcher-jobs=1',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter',
+          '--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization',
+          '--use-vulkan=swiftshader',
+          '--enable-oop-rasterization',
+          '--enable-gpu-rasterization',
           '--force-gpu-rasterization',
           '--disable-software-compositing-fallback',
           '--disable-vulkan-fallback-to-gl-for-testing',
@@ -4513,7 +4530,7 @@
         'args': [
           '--enable-features=VizDisplayCompositor,UseSkiaRenderer',
           '--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter',
-	],
+        ],
         'swarming': {
           'shards': 1,
         },
@@ -4577,7 +4594,7 @@
         },
         'results_handler': 'layout tests',
       },
-   },
+    },
 
     'system_webview_shell_instrumentation_tests': {
       'system_webview_shell_layout_test_apk': {},
@@ -5509,6 +5526,7 @@
     ],
 
     'linux_viz_gtests': [
+      'gpu_fyi_vulkan_swiftshader_gtests',
       'skia_renderer_fyi_gtests',
     ],
 

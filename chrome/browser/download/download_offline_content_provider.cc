@@ -23,6 +23,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/download_manager_bridge.h"
+#include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/download/download_utils.h"
 #endif
 
@@ -505,8 +506,19 @@ void DownloadOfflineContentProvider::AddCompletedDownloadDone(
     DownloadItem* item,
     int64_t system_download_id,
     bool can_resolve) {
-  if (can_resolve && item->HasUserGesture())
+#if defined(OS_ANDROID)
+  if (!can_resolve)
+    return;
+
+  if (DownloadUtils::IsOmaDownloadDescription(item->GetMimeType())) {
+    DownloadManagerService::GetInstance()->HandleOMADownload(
+        item, system_download_id);
+    return;
+  }
+
+  if (DownloadUtils::ShouldAutoOpenDownload(item))
     item->OpenDownload();
+#endif
 }
 
 DownloadItem* DownloadOfflineContentProvider::GetDownload(

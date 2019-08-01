@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_default.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
@@ -168,7 +167,7 @@ class SequenceManagerWithMessagePumpPerfTestDelegate
  public:
   SequenceManagerWithMessagePumpPerfTestDelegate(
       const char* name,
-      MessagePumpType type,
+      MessagePump::Type type,
       bool randomised_sampling_enabled = false)
       : name_(name) {
     auto settings =
@@ -584,20 +583,20 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
       case PerfTestType::kUseSequenceManagerWithMessagePump:
         return std::make_unique<SequenceManagerWithMessagePumpPerfTestDelegate>(
             " SequenceManager with MessagePumpDefault ",
-            MessagePumpType::DEFAULT);
+            MessagePump::Type::DEFAULT);
 
       case PerfTestType::kUseSequenceManagerWithUIMessagePump:
         return std::make_unique<SequenceManagerWithMessagePumpPerfTestDelegate>(
-            " SequenceManager with MessagePumpForUI ", MessagePumpType::UI);
+            " SequenceManager with MessagePumpForUI ", MessagePump::Type::UI);
 
       case PerfTestType::kUseSequenceManagerWithIOMessagePump:
         return std::make_unique<SequenceManagerWithMessagePumpPerfTestDelegate>(
-            " SequenceManager with MessagePumpForIO ", MessagePumpType::IO);
+            " SequenceManager with MessagePumpForIO ", MessagePump::Type::IO);
 
       case PerfTestType::kUseSequenceManagerWithMessagePumpAndRandomSampling:
         return std::make_unique<SequenceManagerWithMessagePumpPerfTestDelegate>(
             " SequenceManager with MessagePumpDefault and random sampling ",
-            MessagePumpType::DEFAULT, true);
+            MessagePump::Type::DEFAULT, true);
 
       case PerfTestType::kUseSingleThreadInThreadPool:
         return std::make_unique<SingleThreadInThreadPoolPerfTestDelegate>();

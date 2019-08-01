@@ -14,7 +14,6 @@
 #if defined(OS_WIN)
 #include "base/strings/utf_string_conversions.h"
 #endif
-#include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
 #include "ui/gl/gl_surface.h"
 
@@ -29,7 +28,8 @@ extern "C" {
 int main(int argc, char *argv[]) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
 
   base::CommandLine::StringVector args =
       base::CommandLine::ForCurrentProcess()->GetArgs();

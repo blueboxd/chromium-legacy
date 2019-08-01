@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"
@@ -54,6 +55,19 @@ class ModuleInspectorTest : public testing::Test {
       : test_browser_thread_bundle_(
             base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
+  std::unique_ptr<ModuleInspector> CreateModuleInspector() {
+    auto module_inspector =
+        std::make_unique<ModuleInspector>(base::BindRepeating(
+            &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+
+    // Set up the test remote UtilWin implementation.
+    mojo::PendingRemote<chrome::mojom::UtilWin> remote;
+    util_win_impl_.emplace(remote.InitWithNewPipeAndPassReceiver());
+    module_inspector->SetRemoteUtilWinForTesting(std::move(remote));
+
+    return module_inspector;
+  }
+
   // Callback for ModuleInspector.
   void OnModuleInspected(const ModuleInfoKey& module_key,
                          ModuleInspectionResult inspection_result) {
@@ -79,6 +93,9 @@ class ModuleInspectorTest : public testing::Test {
   // Must be before the ModuleInspector.
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
+  // Holds a working UtilWin service implementation.
+  base::Optional<UtilWinImpl> util_win_impl_;
+
  private:
   std::vector<ModuleInspectionResult> inspected_modules_;
 
@@ -88,16 +105,14 @@ class ModuleInspectorTest : public testing::Test {
 }  // namespace
 
 TEST_F(ModuleInspectorTest, OneModule) {
-  ModuleInspector module_inspector(base::BindRepeating(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  auto module_inspector = CreateModuleInspector();
 
-  module_inspector.AddModule({GetKernel32DllFilePath(), 0, 0});
+  module_inspector->AddModule({GetKernel32DllFilePath(), 0, 0});
 
   RunUntilIdle();
 
   ASSERT_EQ(1u, inspected_modules().size());
 }
-
 TEST_F(ModuleInspectorTest, MultipleModules) {
   ModuleInfoKey kTestCases[] = {
       {base::FilePath(), 0, 0}, {base::FilePath(), 0, 0},
@@ -105,11 +120,10 @@ TEST_F(ModuleInspectorTest, MultipleModules) {
       {base::FilePath(), 0, 0},
   };
 
-  ModuleInspector module_inspector(base::BindRepeating(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  auto module_inspector = CreateModuleInspector();
 
   for (const auto& module : kTestCases)
-    module_inspector.AddModule(module);
+    module_inspector->AddModule(module);
 
   RunUntilIdle();
 
@@ -126,11 +140,10 @@ TEST_F(ModuleInspectorTest, DisableBackgroundInspection) {
       {base::FilePath(), 0, 0},
   };
 
-  ModuleInspector module_inspector(base::BindRepeating(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  auto module_inspector = CreateModuleInspector();
 
   for (const auto& module : kTestCases)
-    module_inspector.AddModule(module);
+    module_inspector->AddModule(module);
 
   RunUntilIdle();
 
@@ -139,33 +152,9 @@ TEST_F(ModuleInspectorTest, DisableBackgroundInspection) {
 
   // Increasing inspection priority will start the background inspection
   // process.
-  module_inspector.IncreaseInspectionPriority();
+  module_inspector->IncreaseInspectionPriority();
   RunUntilIdle();
 
-  EXPECT_EQ(2u, inspected_modules().size());
-}
-
-TEST_F(ModuleInspectorTest, OOPInspectModule) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      ModuleInspector::kWinOOPInspectModuleFeature);
-
-  ModuleInfoKey kTestCases[] = {
-      {base::FilePath(), 0, 0},
-      {base::FilePath(), 0, 0},
-  };
-
-  ModuleInspector module_inspector(base::BindRepeating(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
-
-  mojo::PendingRemote<chrome::mojom::UtilWin> remote;
-  UtilWinImpl util_win_impl(remote.InitWithNewPipeAndPassReceiver());
-  module_inspector.SetRemoteUtilWinForTesting(std::move(remote));
-
-  for (const auto& module : kTestCases)
-    module_inspector.AddModule(module);
-
-  RunUntilIdle();
   EXPECT_EQ(2u, inspected_modules().size());
 }
 
@@ -188,10 +177,9 @@ TEST_F(ModuleInspectorTest, InspectionResultsCache) {
   ASSERT_TRUE(
       CreateInspectionResultsCacheWithEntry(module_key, inspection_result));
 
-  ModuleInspector module_inspector(base::BindRepeating(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  auto module_inspector = CreateModuleInspector();
 
-  module_inspector.AddModule(module_key);
+  module_inspector->AddModule(module_key);
 
   RunUntilIdle();
 
@@ -215,17 +203,16 @@ TEST_F(ModuleInspectorTest, InspectionResultsCache_OnModuleDatabaseIdle) {
   base::ScopedPathOverride scoped_user_data_dir_override(
       chrome::DIR_USER_DATA, scoped_temp_dir.GetPath());
 
-  ModuleInspector module_inspector(base::BindRepeating(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  auto module_inspector = CreateModuleInspector();
 
   ModuleInfoKey module_key(GetKernel32DllFilePath(), 0, 0);
-  module_inspector.AddModule(module_key);
+  module_inspector->AddModule(module_key);
 
   RunUntilIdle();
 
   ASSERT_EQ(1u, inspected_modules().size());
 
-  module_inspector.OnModuleDatabaseIdle();
+  module_inspector->OnModuleDatabaseIdle();
   RunUntilIdle();
 
   // If the cache was written to disk, it should contain the one entry for
@@ -254,11 +241,10 @@ TEST_F(ModuleInspectorTest, InspectionResultsCache_TimerExpired) {
   base::ScopedPathOverride scoped_user_data_dir_override(
       chrome::DIR_USER_DATA, scoped_temp_dir.GetPath());
 
-  ModuleInspector module_inspector(base::BindRepeating(
-      &ModuleInspectorTest::OnModuleInspected, base::Unretained(this)));
+  auto module_inspector = CreateModuleInspector();
 
   ModuleInfoKey module_key(GetKernel32DllFilePath(), 0, 0);
-  module_inspector.AddModule(module_key);
+  module_inspector->AddModule(module_key);
 
   RunUntilIdle();
 

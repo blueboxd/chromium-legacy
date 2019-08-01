@@ -35,51 +35,25 @@
 #define PAGE_START(x) ((x)&PAGE_MASK)
 #define PAGE_END(x) PAGE_START((x) + (PAGE_SIZE - 1))
 
+extern "C" {
+// <android/dlext.h> does not declare android_dlopen_ext() if __ANDROID_API__
+// is smaller than 21, so declare it here as a weak function. This will allow
+// detecting its availability at runtime. For API level 21 or higher, the
+// attribute is ignored due to the previous declaration.
+void* android_dlopen_ext(const char*, int, const android_dlextinfo*)
+    __attribute__((weak_import));
+
+// This function is exported by the dynamic linker but never declared in any
+// official header for some architecture/version combinations.
+int dl_iterate_phdr(int (*cb)(dl_phdr_info* info, size_t size, void* data),
+                    void* data) __attribute__((weak_import));
+}  // extern "C"
+
 namespace chromium_android_linker {
 namespace {
 
 // Record of the Java VM passed to JNI_OnLoad().
 static JavaVM* s_java_vm = nullptr;
-
-// Convenience wrapper around dlsym() on the main executable. Returns
-// the address of the requested symbol, or nullptr if not found. Status
-// is available from dlerror().
-void* Dlsym(const char* symbol_name) {
-  static void* handle = nullptr;
-
-  if (!handle)
-    handle = dlopen(nullptr, RTLD_NOW);
-
-  void* result = dlsym(handle, symbol_name);
-  return result;
-}
-
-// dl_iterate_phdr() wrapper, accessed via dlsym lookup. Done this way.
-// so that this code compiles for Android versions that are too early to
-// offer it. Checks in LibraryLoader.java should ensure that we
-// never reach here at runtime on Android versions that are too old to
-// supply dl_iterate_phdr; that is, earlier than Android M. Returns
-// false if no dl_iterate_phdr() is available, otherwise true with the
-// return value from dl_iterate_phdr() in |status|.
-bool DlIteratePhdr(int (*callback)(dl_phdr_info*, size_t, void*),
-                   void* data,
-                   int* status) {
-  using DlIteratePhdrCallback = int (*)(dl_phdr_info*, size_t, void*);
-  using DlIteratePhdrFunctionPtr = int (*)(DlIteratePhdrCallback, void*);
-  static DlIteratePhdrFunctionPtr function_ptr = nullptr;
-
-  if (!function_ptr) {
-    function_ptr =
-        reinterpret_cast<DlIteratePhdrFunctionPtr>(Dlsym("dl_iterate_phdr"));
-    if (!function_ptr) {
-      LOG_ERROR("dlsym: dl_iterate_phdr: %s", dlerror());
-      return false;
-    }
-  }
-
-  *status = (*function_ptr)(callback, data);
-  return true;
-}
 
 // Convenience struct wrapper around android_dlextinfo.
 struct AndroidDlextinfo {
@@ -97,24 +71,16 @@ struct AndroidDlextinfo {
   android_dlextinfo extinfo;
 };
 
-// android_dlopen_ext() wrapper, accessed via dlsym lookup. Returns false
-// if no android_dlopen_ext() is available, otherwise true with the return
-// value from android_dlopen_ext() in |status|.
+// android_dlopen_ext() wrapper.
+// Returns false if no android_dlopen_ext() is available, otherwise true with
+// the return value from android_dlopen_ext() in |status|.
 bool AndroidDlopenExt(const char* filename,
                       int flag,
                       const AndroidDlextinfo* dlextinfo,
                       void** status) {
-  using DlopenExtFunctionPtr =
-      void* (*)(const char*, int, const android_dlextinfo*);
-  static DlopenExtFunctionPtr function_ptr = nullptr;
-
-  if (!function_ptr) {
-    function_ptr =
-        reinterpret_cast<DlopenExtFunctionPtr>(Dlsym("android_dlopen_ext"));
-    if (!function_ptr) {
-      LOG_ERROR("dlsym: android_dlopen_ext: %s", dlerror());
-      return false;
-    }
+  if (!android_dlopen_ext) {
+    LOG_ERROR("android_dlopen_ext is not found");
+    return false;
   }
 
   android_dlextinfo ext = dlextinfo->extinfo;
@@ -124,7 +90,7 @@ bool AndroidDlopenExt(const char* filename,
       static_cast<long long>(ext.flags), ext.reserved_addr,
       static_cast<int>(ext.reserved_size), ext.relro_fd);
 
-  *status = (*function_ptr)(filename, flag, &ext);
+  *status = android_dlopen_ext(filename, flag, &ext);
   return true;
 }
 
@@ -272,11 +238,11 @@ bool GetLibraryLoadSize(void* addr, size_t* load_size, size_t* min_vaddr) {
 
   // Find the real load size and min vaddr for the library loaded at |addr|.
   CallbackData callback_data(addr);
-  int status = 0;
-  if (!DlIteratePhdr(&FindLoadedLibrarySize, &callback_data, &status)) {
-    LOG_ERROR("No dl_iterate_phdr function found");
+  if (!dl_iterate_phdr) {
+    LOG_ERROR("No dl_iterate_phdr() found");
     return false;
   }
+  int status = dl_iterate_phdr(&FindLoadedLibrarySize, &callback_data);
   if (!status) {
     LOG_ERROR("Failed to find library at address %p", addr);
     return false;

@@ -434,7 +434,7 @@ CredentialProviderSigninDialogWinIntegrationDesktopVerificationTest::
 
 IN_PROC_BROWSER_TEST_F(
     CredentialProviderSigninDialogWinIntegrationDesktopVerificationTest,
-    DialogFailsToLoadOnIncorrectDesktop) {
+    DISABLED_DialogFailsToLoadOnIncorrectDesktop) {
   // Normally the GCPW signin dialog should only run on "winlogon" desktops. If
   // we are just running the test, we should not be under this desktop and the
   // dialog should fail to load.

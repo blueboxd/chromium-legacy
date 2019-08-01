@@ -579,7 +579,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Aborts all the previous prepare writes in a reliable write session.
   virtual void AbortWrite(const base::Closure& callback,
                           const AbortWriteErrorCallback& error_callback) = 0;
-#endif
 
   // Set the remaining battery of the device to show in the UI. This value must
   // be between 0 and 100, inclusive.
@@ -587,13 +586,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // ash::GattBatteryPoller and used only by Chrome OS. In the future, when
   // there is a unified Mojo service, this logic will be moved to
   // BluetoothDeviceInfo.
-  void set_battery_percentage(base::Optional<uint8_t> battery_percentage) {
-    if (battery_percentage) {
-      DCHECK(battery_percentage.value() >= 0 &&
-             battery_percentage.value() <= 100);
-    }
-    battery_percentage_ = battery_percentage;
-  }
+  void SetBatteryPercentage(base::Optional<uint8_t> battery_percentage);
 
   // Returns the remaining battery for the device.
   // TODO(https://crbug.com/973237): Battery percentage is populated by
@@ -603,6 +596,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   const base::Optional<uint8_t>& battery_percentage() const {
     return battery_percentage_;
   }
+#endif
 
  protected:
   // BluetoothGattConnection is a friend to call Add/RemoveGattConnection.
@@ -737,13 +731,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // a device type for display when |name_| is empty.
   base::string16 GetAddressWithLocalizedDeviceTypeName() const;
 
+#if defined(OS_CHROMEOS)
   // Remaining battery level of the device.
-  // TODO(https://crbug.com/973237): This field is populated by
-  // ash::GattBatteryPoller and used only by Chrome OS. This field is different
-  // from others because it is not filled by the platform. In the future, when
-  // there is a unified Mojo service, this field will be moved to
-  // BluetoothDeviceInfo.
+  // TODO(https://crbug.com/973237): This field is different from others because
+  // it is not filled by the platform. In the future, when there is a unified
+  // Mojo service, this field will be moved to BluetoothDeviceInfo.
   base::Optional<uint8_t> battery_percentage_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDevice);
 };

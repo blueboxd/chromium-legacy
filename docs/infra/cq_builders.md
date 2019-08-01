@@ -296,6 +296,10 @@ These builders are run on some percentage of builds. Their results are ignored
 by CQ. These are often used to test new configurations before they are added
 as required builders.
 
+* [chromeos-kevin-experimental-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-kevin-experimental-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-kevin-experimental-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-kevin-experimental-rel))
+
+  * Experimental percentage: 5
+
 * [ios-device](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/ios-device) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/ios-device)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+ios-device))
 
   https://crbug.com/739556; make this non-experimental ASAP.

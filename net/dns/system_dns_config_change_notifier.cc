@@ -185,9 +185,9 @@ class SystemDnsConfigChangeNotifier::Core {
 };
 
 SystemDnsConfigChangeNotifier::SystemDnsConfigChangeNotifier()
-    : SystemDnsConfigChangeNotifier(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
-          DnsConfigService::CreateSystemService()) {}
+    : SystemDnsConfigChangeNotifier(base::CreateSequencedTaskRunner(
+                                        {base::ThreadPool(), base::MayBlock()}),
+                                    DnsConfigService::CreateSystemService()) {}
 
 SystemDnsConfigChangeNotifier::SystemDnsConfigChangeNotifier(
     scoped_refptr<base::SequencedTaskRunner> task_runner,

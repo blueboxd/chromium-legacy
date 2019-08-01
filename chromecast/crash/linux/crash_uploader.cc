@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -42,7 +41,7 @@ int main(int argc, char** argv) {
   setpriority(PRIO_PROCESS, 0, 19);
 
   // Create the main task executor.
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
 
   std::unique_ptr<chromecast::CastSysInfo> sys_info =
       chromecast::CreateSysInfo();

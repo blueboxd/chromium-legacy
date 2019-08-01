@@ -1739,10 +1739,17 @@ TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFill) {
   // This changes once fill data is simulated. |random_element| continue  to
   // have no fill data, though.
   SimulateOnFillPasswordForm(fill_data_);
+
+  EXPECT_CALL(fake_driver_, ShowTouchToFill);
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(username_element_));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(fake_driver_, ShowTouchToFill);
   EXPECT_TRUE(
       password_autofill_agent_->TryToShowTouchToFill(password_element_));
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(password_autofill_agent_->TryToShowTouchToFill(random_element));
 }
 

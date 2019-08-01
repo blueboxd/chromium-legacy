@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "base/time/time.h"

@@ -443,7 +443,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   blink::mojom::RendererPreferences* GetMutableRendererPrefs() override;
   void Close() override;
   void SystemDragEnded(RenderWidgetHost* source_rwh) override;
-  void NavigatedByUser() override;
   void SetClosedByUserGesture(bool value) override;
   bool GetClosedByUserGesture() override;
   int GetMinimumZoomPercent() override;

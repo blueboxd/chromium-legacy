@@ -1,0 +1,284 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/media/router/providers/cast/cast_media_controller.h"
+
+#include "base/json/json_reader.h"
+#include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/mock_activity_record.h"
+#include "chrome/browser/media/router/test/media_router_mojo_test.h"
+#include "chrome/common/media_router/media_route.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using base::Value;
+using testing::_;
+using testing::Invoke;
+using testing::WithArg;
+
+namespace media_router {
+
+namespace {
+
+constexpr char kSessionId[] = "sessionId123";
+constexpr int kMediaSessionId = 12345678;
+
+// Verifies that the session ID is |kSessionId|.
+void VerifySessionId(const Value& v2_message_body) {
+  const Value* sessionId = v2_message_body.FindKey("sessionId");
+  ASSERT_TRUE(sessionId);
+  ASSERT_TRUE(sessionId->is_string());
+  EXPECT_EQ(kSessionId, sessionId->GetString());
+}
+
+// Verifies that the media session ID is |kMediaSessionId|.
+void VerifySessionAndMediaSessionIds(const Value& v2_message_body) {
+  VerifySessionId(v2_message_body);
+  const Value* mediaSessionId = v2_message_body.FindKey("mediaSessionId");
+  ASSERT_TRUE(mediaSessionId);
+  ASSERT_TRUE(mediaSessionId->is_int());
+  EXPECT_EQ(kMediaSessionId, mediaSessionId->GetInt());
+}
+
+Value GetPlayerStateValue(const MediaStatus& status) {
+  switch (status.play_state) {
+    case MediaStatus::PlayState::PLAYING:
+      return Value("PLAYING");
+    case MediaStatus::PlayState::PAUSED:
+      return Value("PAUSED");
+    case MediaStatus::PlayState::BUFFERING:
+      return Value("BUFFERING");
+  }
+}
+
+Value GetSupportedMediaCommandsValue(const MediaStatus& status) {
+  int commands = 0;
+  // |can_set_volume| and |can_mute| are not used, because the receiver volume
+  // is used instead.
+  if (status.can_play_pause)
+    commands |= 1;
+  if (status.can_seek)
+    commands |= 2;
+  return Value(commands);
+}
+
+MediaStatus CreateSampleMediaStatus() {
+  MediaStatus status;
+  status.title = "media title";
+  status.can_play_pause = true;
+  status.can_mute = true;
+  status.can_set_volume = false;
+  status.can_seek = false;
+  status.is_muted = false;
+  status.volume = 0.7;
+  status.play_state = MediaStatus::PlayState::BUFFERING;
+  status.duration = base::TimeDelta::FromSeconds(30);
+  status.current_time = base::TimeDelta::FromSeconds(12);
+  return status;
+}
+
+std::unique_ptr<CastSession> CreateSampleSession() {
+  MediaSinkInternal sink(MediaSink("sinkId123", "name", SinkIconType::CAST),
+                         CastSinkExtraData());
+  base::Optional<Value> receiver_status = base::JSONReader::Read(R"({
+    "applications": [{
+      "appId": "ABCD1234",
+      "displayName": "My App",
+      "sessionId": "sessionId123",
+      "transportId": "transportId123",
+      "namespaces": [{"name": "urn:x-cast:com.example"}]
+    }],
+    "volume": {
+      "controlType": "attenuation",
+      "level": 0.8,
+      "muted": false,
+      "stepInterval": 0.1
+    }
+  })");
+  return CastSession::From(sink, receiver_status.value());
+}
+
+}  // namespace
+
+class CastMediaControllerTest : public testing::Test {
+ public:
+  CastMediaControllerTest() : activity_(MediaRoute(), "appId123") {}
+  ~CastMediaControllerTest() override = default;
+
+  void SetUp() override {
+    testing::Test::SetUp();
+
+    mojom::MediaStatusObserverPtr mojo_status_observer;
+    status_observer_ = std::make_unique<MockMediaStatusObserver>(
+        mojo::MakeRequest(&mojo_status_observer));
+    controller_ = std::make_unique<CastMediaController>(
+        &activity_, mojo::MakeRequest(&mojo_controller_),
+        std::move(mojo_status_observer));
+  }
+
+  void TearDown() override {
+    VerifyAndClearExpectations();
+    testing::Test::TearDown();
+  }
+
+  void VerifyAndClearExpectations() {
+    base::RunLoop().RunUntilIdle();
+    testing::Mock::VerifyAndClearExpectations(&activity_);
+    testing::Mock::VerifyAndClearExpectations(status_observer_.get());
+  }
+
+  void SetSessionAndMediaStatus() {
+    controller_->SetSession(*CreateSampleSession());
+    SetMediaStatus(CreateSampleMediaStatus());
+  }
+
+  void SetMediaStatus(const MediaStatus& status) {
+    Value status_value(Value::Type::DICTIONARY);
+    status_value.SetKey("mediaSessionId", Value(kMediaSessionId));
+    status_value.SetKey("media", Value(Value::Type::DICTIONARY));
+    status_value.SetPath("media.metadata", Value(Value::Type::DICTIONARY));
+    status_value.SetPath("media.metadata.title", Value(status.title));
+    status_value.SetPath("media.duration", Value(status.duration.InSecondsF()));
+    status_value.SetPath("currentTime",
+                         Value(status.current_time.InSecondsF()));
+    status_value.SetPath("playerState", GetPlayerStateValue(status));
+    status_value.SetPath("supportedMediaCommands",
+                         GetSupportedMediaCommandsValue(status));
+    status_value.SetPath("volume", Value(Value::Type::DICTIONARY));
+    status_value.SetPath("volume.level", Value(status.volume));
+    status_value.SetPath("volume.muted", Value(status.is_muted));
+
+    Value status_list(Value::Type::DICTIONARY);
+    status_list.SetKey("status", Value(Value::Type::LIST));
+    status_list.FindKey("status")->GetList().push_back(std::move(status_value));
+    controller_->SetMediaStatus(std::move(status_list));
+  }
+
+ protected:
+  content::TestBrowserThreadBundle test_thread_bundle_;
+  MockActivityRecord activity_;
+  std::unique_ptr<CastMediaController> controller_;
+  mojom::MediaControllerPtr mojo_controller_;
+  std::unique_ptr<MockMediaStatusObserver> status_observer_;
+};
+
+TEST_F(CastMediaControllerTest, SendPlayRequest) {
+  SetSessionAndMediaStatus();
+  EXPECT_CALL(activity_, SendMediaRequestToReceiver(_))
+      .WillOnce([](const CastInternalMessage& cast_message) {
+        EXPECT_EQ("PLAY", cast_message.v2_message_type());
+        VerifySessionAndMediaSessionIds(cast_message.v2_message_body());
+        return 0;
+      });
+  mojo_controller_->Play();
+}
+
+TEST_F(CastMediaControllerTest, SendPauseRequest) {
+  SetSessionAndMediaStatus();
+  EXPECT_CALL(activity_, SendMediaRequestToReceiver(_))
+      .WillOnce([](const CastInternalMessage& cast_message) {
+        EXPECT_EQ("PAUSE", cast_message.v2_message_type());
+        VerifySessionAndMediaSessionIds(cast_message.v2_message_body());
+        return 0;
+      });
+  mojo_controller_->Pause();
+}
+
+TEST_F(CastMediaControllerTest, SendMuteRequests) {
+  SetSessionAndMediaStatus();
+  EXPECT_CALL(activity_, SendSetVolumeRequestToReceiver(_, _))
+      .WillOnce(WithArg<0>([](const CastInternalMessage& cast_message) {
+        EXPECT_EQ("SET_VOLUME", cast_message.v2_message_type());
+        EXPECT_TRUE(
+            cast_message.v2_message_body().FindPath("volume.muted")->GetBool());
+        VerifySessionId(cast_message.v2_message_body());
+        return 0;
+      }));
+  mojo_controller_->SetMute(true);
+  VerifyAndClearExpectations();
+
+  EXPECT_CALL(activity_, SendSetVolumeRequestToReceiver(_, _))
+      .WillOnce(WithArg<0>([](const CastInternalMessage& cast_message) {
+        EXPECT_EQ("SET_VOLUME", cast_message.v2_message_type());
+        EXPECT_FALSE(
+            cast_message.v2_message_body().FindPath("volume.muted")->GetBool());
+        VerifySessionId(cast_message.v2_message_body());
+        return 0;
+      }));
+  mojo_controller_->SetMute(false);
+}
+
+TEST_F(CastMediaControllerTest, SendVolumeRequest) {
+  SetSessionAndMediaStatus();
+  EXPECT_CALL(activity_, SendSetVolumeRequestToReceiver(_, _))
+      .WillOnce(WithArg<0>([&](const CastInternalMessage& cast_message) {
+        EXPECT_EQ("SET_VOLUME", cast_message.v2_message_type());
+        EXPECT_FLOAT_EQ(0.314, cast_message.v2_message_body()
+                                   .FindPath("volume.level")
+                                   ->GetDouble());
+        VerifySessionId(cast_message.v2_message_body());
+        return 0;
+      }));
+  mojo_controller_->SetVolume(0.314);
+}
+
+TEST_F(CastMediaControllerTest, SendSeekRequest) {
+  SetSessionAndMediaStatus();
+  EXPECT_CALL(activity_, SendMediaRequestToReceiver(_))
+      .WillOnce([&](const CastInternalMessage& cast_message) {
+        EXPECT_EQ("SEEK", cast_message.v2_message_type());
+        EXPECT_DOUBLE_EQ(
+            12.34,
+            cast_message.v2_message_body().FindKey("currentTime")->GetDouble());
+        VerifySessionId(cast_message.v2_message_body());
+        return 0;
+      });
+  mojo_controller_->Seek(base::TimeDelta::FromSecondsD(12.34));
+}
+
+TEST_F(CastMediaControllerTest, UpdateMediaStatus) {
+  const MediaStatus expected_status = CreateSampleMediaStatus();
+
+  EXPECT_CALL(*status_observer_, OnMediaStatusUpdated(_))
+      .WillOnce([&](const MediaStatus& status) {
+        EXPECT_EQ(expected_status.title, status.title);
+        EXPECT_EQ(expected_status.can_play_pause, status.can_play_pause);
+        EXPECT_EQ(expected_status.play_state, status.play_state);
+        EXPECT_EQ(expected_status.duration, status.duration);
+        EXPECT_EQ(expected_status.current_time, status.current_time);
+      });
+  SetMediaStatus(expected_status);
+  VerifyAndClearExpectations();
+}
+
+TEST_F(CastMediaControllerTest, UpdateVolumeStatus) {
+  auto session = CreateSampleSession();
+  const float session_volume =
+      session->value().FindPath("receiver.volume.level")->GetDouble();
+  const bool session_muted =
+      session->value().FindPath("receiver.volume.muted")->GetBool();
+  EXPECT_CALL(*status_observer_, OnMediaStatusUpdated(_))
+      .WillOnce([&](const MediaStatus& status) {
+        EXPECT_FLOAT_EQ(session_volume, status.volume);
+        EXPECT_EQ(session_muted, status.is_muted);
+      });
+  controller_->SetSession(*session);
+  VerifyAndClearExpectations();
+
+  // The volume info is set in SetSession() rather than SetMediaStatus(), so the
+  // volume info in the latter should be ignored.
+  EXPECT_CALL(*status_observer_, OnMediaStatusUpdated(_))
+      .WillOnce([&](const MediaStatus& status) {
+        EXPECT_FLOAT_EQ(session_volume, status.volume);
+        EXPECT_EQ(session_muted, status.is_muted);
+      });
+  MediaStatus updated_status = CreateSampleMediaStatus();
+  updated_status.volume = 0.3;
+  updated_status.is_muted = true;
+  SetMediaStatus(updated_status);
+  VerifyAndClearExpectations();
+}
+
+}  // namespace media_router

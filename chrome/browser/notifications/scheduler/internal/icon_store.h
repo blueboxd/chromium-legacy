@@ -50,11 +50,10 @@ class IconStore {
                          LoadIconsCallback callback) = 0;
 
   // Adds one icon to storage.
-  virtual void Add(std::unique_ptr<IconEntry> entry,
-                   UpdateCallback callback) = 0;
+  virtual void Add(IconEntry entry, UpdateCallback callback) = 0;
 
   // Adds multiple icons to storage.
-  virtual void AddIcons(std::vector<std::unique_ptr<IconEntry>> entries,
+  virtual void AddIcons(std::vector<IconEntry> entries,
                         UpdateCallback callback) = 0;
 
   // Deletes an icon.
@@ -84,8 +83,8 @@ class IconProtoDbStore : public IconStore {
   void Load(const std::string& key, LoadIconCallback callback) override;
   void LoadIcons(const std::vector<std::string>& keys,
                  LoadIconsCallback callback) override;
-  void Add(std::unique_ptr<IconEntry> entry, UpdateCallback callback) override;
-  void AddIcons(std::vector<std::unique_ptr<IconEntry>> entries,
+  void Add(IconEntry entry, UpdateCallback callback) override;
+  void AddIcons(std::vector<IconEntry> entries,
                 UpdateCallback callback) override;
   void Delete(const std::string& key, UpdateCallback callback) override;
   void DeleteIcons(const std::vector<std::string>& keys,

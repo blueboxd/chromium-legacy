@@ -12,7 +12,6 @@ js_type_check("closure_compile") {
 
 js_library("os_settings_menu") {
   deps = [
-    "../..:page_visibility",
     "../..:route",
     "//third_party/polymer/v1_0/components-chromium/iron-collapse:iron-collapse-extracted",
     "//third_party/polymer/v1_0/components-chromium/paper-ripple:paper-ripple-extracted",

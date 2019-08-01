@@ -20,8 +20,6 @@
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
-#include "content/browser/loader/resource_request_info_impl.h"
-#include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -35,7 +33,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/request_priority.h"
@@ -43,7 +40,6 @@
 #include "net/log/net_log.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/throttling/throttling_controller.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -294,7 +290,6 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id);
@@ -677,25 +672,16 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   // Create the network factory.
   scoped_refptr<network::SharedURLLoaderFactory> factory;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // In the network service case, create the factory on the UI thread.
-    network::mojom::URLLoaderFactoryPtr network_factory;
-    auto factory_request = mojo::MakeRequest(&network_factory);
+  network::mojom::URLLoaderFactoryPtr network_factory;
+  auto factory_request = mojo::MakeRequest(&network_factory);
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
-                       frame_tree_node_id, std::move(context_wrapper),
-                       mojo::MakeRequest(&network_factory)));
-    factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-        std::move(network_factory));
-  } else {
-    // In the non-network-service case, use |url_loader_factory_getter|. Unlike
-    // the network service case, we don't need to go to the UI thread to tell
-    // the embedder about the factory since the request will go to
-    // ResourceDispatcherHost which talks to the embedder then.
-    factory = url_loader_factory_getter->GetNetworkFactory();
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
+                     frame_tree_node_id, std::move(context_wrapper),
+                     mojo::MakeRequest(&network_factory)));
+  factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+      std::move(network_factory));
 
   preload_handle_ = blink::mojom::FetchEventPreloadHandle::New();
 

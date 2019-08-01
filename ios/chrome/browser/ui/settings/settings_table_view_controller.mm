@@ -224,7 +224,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   BOOL _settingsHasBeenDismissed;
 }
 
-@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, readonly, weak) id<ApplicationCommands, BrowserCommands>
+    dispatcher;
 
 // The SigninInteractionCoordinator that presents Sign In UI for the
 // Settings page.
@@ -245,7 +246,8 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 #pragma mark Initialization
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+                          dispatcher:(id<ApplicationCommands, BrowserCommands>)
+                                         dispatcher {
   DCHECK(!browserState->IsOffTheRecord());
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain

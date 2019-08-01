@@ -97,7 +97,7 @@ void DocumentProviderTest::SetUp() {
   default_template_url_ = turl_model->Add(std::make_unique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(default_template_url_);
 
-  provider_ = DocumentProvider::Create(client_.get(), this);
+  provider_ = DocumentProvider::Create(client_.get(), this, 4);
 }
 
 void DocumentProviderTest::OnProviderUpdate(bool updated_matches) {
@@ -259,8 +259,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*response, &matches);
+  ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 2u);
 
   EXPECT_EQ(matches[0].contents, base::ASCIIToUTF16("Document 1"));
@@ -320,8 +319,7 @@ TEST_F(DocumentProviderTest, ProductDescriptionStringsAndAccessibleLabels) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*response, &matches);
+  ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
   // match.destination_url is used as the match's temporary text in the Omnibox.
@@ -376,8 +374,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*response, &matches);
+  ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
   // Server is suggesting relevances of [1234, 1234, 1234]
@@ -432,8 +429,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*response, &matches);
+  ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
   // Server is suggesting relevances of [1233, 1234, 1233, 1000, 1000]
@@ -490,8 +486,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*response, &matches);
+  ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
   // Server is suggesting relevances of [1, 1, 1]
@@ -540,8 +535,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithBackoff) {
   ASSERT_TRUE(backoff_response);
   ASSERT_TRUE(backoff_response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*backoff_response, &matches);
+  ACMatches matches = provider_->ParseDocumentSearchResults(*backoff_response);
   ASSERT_TRUE(provider_->backoff_for_session_);
 }
 
@@ -574,7 +568,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithIneligibleFlag) {
       kMismatchedMessageJSON, base::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(bad_response);
   ASSERT_TRUE(bad_response->is_dict());
-  provider_->ParseDocumentSearchResults(*bad_response, &matches);
+  matches = provider_->ParseDocumentSearchResults(*bad_response);
   ASSERT_FALSE(provider_->backoff_for_session_);
 
   // Now parse a response that does trigger backoff.
@@ -582,7 +576,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithIneligibleFlag) {
       kIneligibleJSONResponse, base::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(backoff_response);
   ASSERT_TRUE(backoff_response->is_dict());
-  provider_->ParseDocumentSearchResults(*backoff_response, &matches);
+  matches = provider_->ParseDocumentSearchResults(*backoff_response);
   ASSERT_TRUE(provider_->backoff_for_session_);
 }
 
@@ -700,8 +694,7 @@ TEST_F(DocumentProviderTest, Scoring) {
                                                     parameters);
     base::Optional<base::Value> response = base::JSONReader::Read(response_str);
     provider_->input_.UpdateText(base::UTF8ToUTF16(input_text), 0, {});
-    ACMatches matches;
-    provider_->ParseDocumentSearchResults(*response, &matches);
+    ACMatches matches = provider_->ParseDocumentSearchResults(*response);
 
     EXPECT_EQ(matches.size(), expected_scores.size())
         << "invocation " << invocation;
@@ -788,4 +781,104 @@ TEST_F(DocumentProviderTest, Scoring) {
             "snippet": {"snippet": "bow bow"}}
         ]})",
       "rain bow", {669, 669, 793});
+}
+
+TEST_F(DocumentProviderTest, Caching) {
+  auto MakeTestResponse = [](const std::vector<std::string>& doc_ids) {
+    std::string results = "";
+    for (auto doc_id : doc_ids)
+      results += base::StringPrintf(
+          R"({
+              "title": "Document %s",
+              "score": 1150,
+              "url": "https://drive.google.com/open?id=%s",
+              "originalUrl": "https://drive.google.com/open?id=%s",
+            },)",
+          doc_id.c_str(), doc_id.c_str(), doc_id.c_str());
+    return base::StringPrintf(R"({"results": [%s]})", results.c_str());
+  };
+
+  auto GetTestProviderMatches = [this](const std::string& input_text,
+                                       const std::string& response_str) {
+    provider_->input_.UpdateText(base::UTF8ToUTF16(input_text), 0, {});
+    provider_->UpdateResults(response_str);
+    return provider_->matches_;
+  };
+
+  // Partially fill the cache as setup for following tests.
+  auto matches = GetTestProviderMatches("", MakeTestResponse({"0", "1", "2"}));
+  EXPECT_EQ(matches.size(), size_t(3));
+  EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 0"));
+  EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 1"));
+  EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 2"));
+
+  // Cache should remove duplicates.
+  matches = GetTestProviderMatches("", MakeTestResponse({"1", "2", "3"}));
+  EXPECT_EQ(matches.size(), size_t(4));
+  EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 1"));
+  EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 2"));
+  EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 3"));
+  EXPECT_EQ(matches[3].contents, base::UTF8ToUTF16("Document 0"));
+
+  // Cache size (4) should not restrict number of matches from the current
+  // response.
+  matches = GetTestProviderMatches("", MakeTestResponse({"3", "4", "5"}));
+  EXPECT_EQ(matches.size(), size_t(6));
+  EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 3"));
+  EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 4"));
+  EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 5"));
+  EXPECT_EQ(matches[3].contents, base::UTF8ToUTF16("Document 1"));
+  EXPECT_EQ(matches[4].contents, base::UTF8ToUTF16("Document 2"));
+  EXPECT_EQ(matches[5].contents, base::UTF8ToUTF16("Document 0"));
+
+  // Cache size (4) should restrict number of cached matches appended.
+  matches = GetTestProviderMatches("", MakeTestResponse({"0", "4", "6"}));
+  EXPECT_EQ(matches.size(), size_t(6));
+  EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 0"));
+  EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 4"));
+  EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 6"));
+  EXPECT_EQ(matches[3].contents, base::UTF8ToUTF16("Document 3"));
+  EXPECT_EQ(matches[4].contents, base::UTF8ToUTF16("Document 5"));
+  EXPECT_EQ(matches[5].contents, base::UTF8ToUTF16("Document 1"));
+
+  // Cached results should update match |additional_info|, |relevance|, and
+  // |contents_class|.
+  matches = GetTestProviderMatches("doc", MakeTestResponse({"5", "4", "7"}));
+  EXPECT_EQ(matches.size(), size_t(6));
+  EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 5"));
+  EXPECT_EQ(matches[0].GetAdditionalInfo("from cache"), "");
+  EXPECT_EQ(matches[0].relevance, 1150);
+  EXPECT_THAT(matches[0].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{3, 0}));
+  EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 4"));
+  EXPECT_EQ(matches[1].GetAdditionalInfo("from cache"), "");
+  EXPECT_EQ(matches[1].relevance, 1149);
+  EXPECT_THAT(matches[1].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{3, 0}));
+  EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 7"));
+  EXPECT_EQ(matches[2].GetAdditionalInfo("from cache"), "");
+  EXPECT_EQ(matches[2].relevance, 1148);
+  EXPECT_THAT(matches[2].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{3, 0}));
+  EXPECT_EQ(matches[3].contents, base::UTF8ToUTF16("Document 0"));
+  EXPECT_EQ(matches[3].GetAdditionalInfo("from cache"), "true");
+  EXPECT_EQ(matches[3].relevance, 0);
+  EXPECT_THAT(matches[3].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{3, 0}));
+  EXPECT_EQ(matches[4].contents, base::UTF8ToUTF16("Document 6"));
+  EXPECT_EQ(matches[4].GetAdditionalInfo("from cache"), "true");
+  EXPECT_EQ(matches[4].relevance, 0);
+  EXPECT_THAT(matches[4].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{3, 0}));
+  EXPECT_EQ(matches[5].contents, base::UTF8ToUTF16("Document 3"));
+  EXPECT_EQ(matches[5].GetAdditionalInfo("from cache"), "true");
+  EXPECT_EQ(matches[5].relevance, 0);
+  EXPECT_THAT(matches[5].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{3, 0}));
 }

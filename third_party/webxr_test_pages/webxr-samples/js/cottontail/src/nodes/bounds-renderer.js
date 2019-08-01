@@ -62,7 +62,7 @@ class BoundsMaterial extends Material {
     precision mediump float;
     varying vec3 v_pos;
     vec4 fragment_main() {
-      return vec4(0.0, 1.0, 0.0, (1.0 - v_pos.y) * 0.5);
+      return vec4(1.0, 0.0, 0.0, (1.0 - v_pos.y) * 0.5);
     }`;
   }
 }

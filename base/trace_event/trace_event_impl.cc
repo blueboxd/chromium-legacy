@@ -214,6 +214,12 @@ void TraceEvent::AppendAsJSON(
     StringAppendF(out, ",\"tts\":%" PRId64, thread_time_int64);
   }
 
+  // Output ticount if thread_instruction_count is valid.
+  if (!thread_instruction_count_.is_null()) {
+    int64_t thread_instructions = thread_instruction_count_.ToInternalValue();
+    StringAppendF(out, ",\"ticount\":%" PRId64, thread_instructions);
+  }
+
   // Output async tts marker field if flag is set.
   if (flags_ & TRACE_EVENT_FLAG_ASYNC_TTS) {
     StringAppendF(out, ", \"use_async_tts\":1");

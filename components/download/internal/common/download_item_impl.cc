@@ -2034,14 +2034,6 @@ void DownloadItemImpl::InterruptWithPartialState(
     job_->Cancel(false);
 
   if (IsCancellation(reason)) {
-    if (IsDangerous()) {
-      RecordDangerousDownloadDiscard(
-          reason == DOWNLOAD_INTERRUPT_REASON_USER_CANCELED
-              ? DOWNLOAD_DISCARD_DUE_TO_USER_ACTION
-              : DOWNLOAD_DISCARD_DUE_TO_SHUTDOWN,
-          GetDangerType(), GetTargetFilePath());
-    }
-
     RecordDownloadCountWithSource(CANCELLED_COUNT, download_source_);
     if (job_ && job_->IsParallelizable()) {
       RecordParallelizableDownloadCount(CANCELLED_COUNT,

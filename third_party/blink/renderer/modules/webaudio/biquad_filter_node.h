@@ -108,6 +108,10 @@ class BiquadFilterNode final : public AudioNode {
                             NotShared<DOMFloat32Array> phase_response,
                             ExceptionState&);
 
+  // InspectorHelperMixin
+  void ReportDidCreate() final;
+  void ReportWillBeDestroyed() final;
+
  private:
   BiquadProcessor* GetBiquadProcessor() const;
   bool setType(unsigned);  // Returns true on success.

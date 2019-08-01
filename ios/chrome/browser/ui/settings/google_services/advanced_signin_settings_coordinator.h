@@ -10,6 +10,7 @@
 
 @class AdvancedSigninSettingsCoordinator;
 @protocol ApplicationCommands;
+@protocol BrowserCommands;
 
 // The accessibility identifier for the navigation "Confirm" button.
 extern NSString* const kSyncSettingsConfirmButtonId;
@@ -37,7 +38,7 @@ extern NSString* const kSyncSettingsCancelButtonId;
 @property(nonatomic, weak) id<AdvancedSigninSettingsCoordinatorDelegate>
     delegate;
 // Global dispatcher.
-@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
 // Aborts the sign-in flow, and calls the delegate. Aborting the Advanced
 // sync settings doesn't sign out the user. The sync is left unsetup and doesn't

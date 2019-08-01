@@ -43,7 +43,9 @@ class PPB_PDF_API {
   virtual void SetAccessibilityPageInfo(
       PP_PrivateAccessibilityPageInfo* page_info,
       PP_PrivateAccessibilityTextRunInfo text_runs[],
-      PP_PrivateAccessibilityCharInfo chars[]) = 0;
+      PP_PrivateAccessibilityCharInfo chars[],
+      PP_PrivateAccessibilityLinkInfo links[],
+      PP_PrivateAccessibilityImageInfo images[]) = 0;
   virtual void SetCrashData(const char* pdf_url, const char* top_level_url) = 0;
   virtual void SelectionChanged(const PP_FloatPoint& left,
                                 int32_t left_height,

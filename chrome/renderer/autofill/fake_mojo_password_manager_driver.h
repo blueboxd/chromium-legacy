@@ -13,6 +13,7 @@
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 class FakeMojoPasswordManagerDriver
     : public autofill::mojom::PasswordManagerDriver {
@@ -26,6 +27,10 @@ class FakeMojoPasswordManagerDriver
 
   // Flushes all pending messages from the associated binding.
   void Flush();
+
+  // mojom::PasswordManagerDriver:
+  // TODO(crbug.com/948062): Migrate the other methods to GMock as well.
+  MOCK_METHOD0(ShowTouchToFill, void());
 
   bool called_show_pw_suggestions() const {
     return called_show_pw_suggestions_;

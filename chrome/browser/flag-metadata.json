@@ -76,11 +76,6 @@
     "expiry_milestone": 74
   },
   {
-    "name": "allow-starting-service-manager-only",
-    "owners": [ "hanxi", "hnakashima" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "allow-sxg-certs-without-extension",
     "owners": [ "//content/browser/web_package/OWNERS" ],
     // Used by developers for testing signed exchange loading using normal
@@ -197,11 +192,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "ash-notification-stacking-bar-redesign",
-    "owners": [ "tengs" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "ash-swap-side-volume-buttons-for-orientation",
     "owners": [ "minch" ],
     "expiry_milestone": 78
@@ -239,11 +229,6 @@
   {
     "name": "autofill-cache-query-responses",
     "owners": [ "rogerm" ],
-    "expiry_milestone": 72
-  },
-  {
-    "name": "autofill-dynamic-forms",
-    "owners": [ "sebsg" ],
     "expiry_milestone": 72
   },
   {
@@ -474,11 +459,6 @@
     "name": "compositor-threaded-scrollbar-scrolling",
     "owners": [ "arakeri@microsoft.com" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "contextual-search",
-    "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 74
   },
   {
     "name": "contextual-search-longpress-resolve",
@@ -994,11 +974,6 @@
     "expiry_milestone": 86
   },
   {
-    "name": "enable-bloated-renderer-detection",
-    "owners": [ "ulan" ],
-    "expiry_milestone": 75
-  },
-  {
     "name": "enable-bulk-printers",
     "owners": [ "skau" ],
     "expiry_milestone": 76
@@ -1225,6 +1200,12 @@
     // way to turn off graphics features.
     "expiry_milestone": -1
   },
+  { "name": "enable-heuristic-stylus-palm-rejection",
+    "owners": ["robsc", "napper"],
+  // We add a heuristic that changes the way fingers are handled. We should
+  // always let users switch it off if needed. However, for now, during
+  // experiments, we set milestone deep into future.
+   "expiry_milestone": 90},
   {
     "name": "enable-history-favicons-google-server-query",
     "owners": ["victorvianna", "jkrcal"],
@@ -1269,11 +1250,6 @@
     "name": "enable-implicit-root-scroller",
     "owners": [ "bokan", "input-dev" ],
     "expiry_milestone": 75
-  },
-  {
-    "name": "enable-improved-geolanguage-data",
-    "owners": [ "frechette", "chrome-language@google.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "enable-incognito-window-counter",
@@ -1869,11 +1845,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-webassembly",
-    "owners": [ "titzer", "wasm-team@google.com" ],
-    "expiry_milestone": 72
-  },
-  {
     "name": "enable-webassembly-baseline",
     "owners": [ "clemensh", "wasm-team@google.com" ],
     "expiry_milestone": 83
@@ -2375,11 +2346,6 @@
     "expiry_milestone":  80
   },
   {
-    "name": "network-service",
-    "owners": [ "network-service-dev" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "network-service-in-process",
     "owners": [ "network-service-dev" ],
     "expiry_milestone": 76
@@ -2747,16 +2713,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "passwords-keyboard-accessory",
-    "owners": [ "fhorschig" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "passwords-migrate-linux-to-login-db",
-    "owners": [ "cfroussios" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "pdf-annotations",
     "owners": [ "dstockwell@google.com" ],
     "expiry_milestone": 76
@@ -2810,11 +2766,6 @@
     "name": "reduced-referrer-granularity",
     "owners": [ "jochen", "mkwst" ],
     "expiry_milestone": 78
-  },
-  {
-    "name": "remove-ntp-fakebox",
-    "owners": [ "kristipark", "ramyan" ],
-    "expiry_milestone": 76
   },
   {
     "name": "rewrite-leveldb-on-deletion",
@@ -3018,6 +2969,16 @@
     "expiry_milestone": 82
   },
   {
+    "name": "tab-outlines-in-low-contrast-themes",
+    "owners": [ "dfried" ],
+    "expiry_milestone":  79
+  },
+  {
+    "name": "temporary-unexpire-flags-m77",
+    "owners": [ "ellyjones", "flags-dev" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "terminal-system-app",
     "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/guest_os/OWNERS" ],
     "expiry_milestone": 82
@@ -3197,11 +3158,6 @@
     "name": "username-first-flow",
     "owners": [ "dvadym" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "views-cast-dialog",
-    "owners": [ "//chrome/browser/media/router/OWNERS" ],
-    "expiry_milestone": 76
   },
   {
     "name": "wake-on-wifi-packet",

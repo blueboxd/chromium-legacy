@@ -455,7 +455,7 @@ class CONTENT_EXPORT RenderWidget
   void StartPageScaleAnimation(const gfx::Vector2d& destination,
                                bool use_anchor,
                                float new_page_scale,
-                               double duration_sec) override;
+                               base::TimeDelta duration) override;
   void ForceRecalculateRasterScales() override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;

@@ -2637,6 +2637,21 @@
             ]
         }
     ],
+    "InspectionResultsCache": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InspectionResultsCache"
+                    ]
+                }
+            ]
+        }
+    ],
     "InstanceID": [
         {
             "platforms": [
@@ -5369,6 +5384,21 @@
             ]
         }
     ],
+    "TabToGTSAnimation": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabToGTSAnimation"
+                    ]
+                }
+            ]
+        }
+    ],
     "ThirdPartyModulesBlocking": [
         {
             "platforms": [
@@ -6527,21 +6557,6 @@
                     },
                     "enable_features": [
                         "WebRtcHybridAgc"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WinOOPInspectModule": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WinOOPInspectModule"
                     ]
                 }
             ]

@@ -65,7 +65,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -1169,12 +1168,10 @@ class WebContentsSplitCacheBrowserTestEnabled
     std::vector<base::Feature> enabled_features;
     enabled_features.push_back(net::features::kSplitCacheByNetworkIsolationKey);
 
-    // When the test parameter is true and network service is available, we
-    // test the split cache with PlzDedicatedWorker enabled, which itself
-    // requires OffMainThreadWorkerScriptFetch to be enabled.  We cannot
-    // enable PlzDedicatedWorker without also enabling NetworkService.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        GetParam()) {
+    // When the test parameter is true, we test the split cache with
+    // PlzDedicatedWorker enabled, which itself requires
+    // OffMainThreadWorkerScriptFetch to be enabled.
+    if (GetParam()) {
       enabled_features.push_back(blink::features::kPlzDedicatedWorker);
       enabled_features.push_back(
           blink::features::kOffMainThreadDedicatedWorkerScriptFetch);
@@ -1200,13 +1197,6 @@ class WebContentsSplitCacheBrowserTestDisabled
 };
 
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -1271,13 +1261,6 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
                        SplitCache) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -1352,13 +1335,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
                        SplitCacheDedicatedWorkers) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
@@ -1393,13 +1369,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
                        NavigationResources) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Navigate for the first time, and it's not cached.
   EXPECT_FALSE(
       NavigationResourceCached(GenURL("a.com", "/title1.html"), GURL(), false));
@@ -1433,13 +1402,6 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
                        SubframeNavigationResources) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Navigate for the first time, and it's not cached.
   NavigationResourceCached(
       GenURL("a.com", "/navigation_controller/page_with_iframe.html"),
@@ -1471,13 +1433,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
                        SplitCacheDedicatedWorkers) {
-  // This test will fail if there is no network service, as we fill the
-  // network isolation key in network::URLLoader only when there is network
-  // service. If split cache is enabled but the network isolation key is
-  // empty, then resources won't be cached.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
@@ -3203,10 +3158,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
   EXPECT_FALSE(frame_pauser.was_successful());
   // Note: the pausing only works for the non-network service path because of
   // http://crbug.com/791049.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
-  else
-    waiter.Wait(net::LOAD_STATE_WAITING_FOR_DELEGATE, paused_host);
+  waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
 
   load_resource(a_frame, "/a_img");
   a_response->WaitForRequest();
@@ -3228,13 +3180,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
   a_response->Send(kPartialResponse);
   waiter.Wait(net::LOAD_STATE_READING_RESPONSE, a_host);
   a_response->Done();
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Now the only request in flight should be the delayed frame.
-    waiter.Wait(net::LOAD_STATE_WAITING_FOR_DELEGATE, paused_host);
-    frame_pauser.ResumeNavigation();
-    waiter.Wait(net::LOAD_STATE_IDLE, base::string16());
-  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyPreferencesChanged) {

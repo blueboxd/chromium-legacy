@@ -75,6 +75,8 @@ void CastActivityRecord::SetOrUpdateSession(const CastSession& session,
       client.second->SendMessageToClient(
           CreateUpdateSessionMessage(session, client.first, sink, hash_token));
   }
+  if (media_controller_)
+    media_controller_->SetSession(session);
 }
 
 cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
@@ -185,6 +187,8 @@ void CastActivityRecord::SendMediaStatusToClients(
     base::Optional<int> request_id) {
   for (auto& client : connected_clients())
     client.second->SendMediaStatusToClient(media_status, request_id);
+  if (media_controller_)
+    media_controller_->SetMediaStatus(media_status);
 }
 
 void CastActivityRecord::ClosePresentationConnections(
@@ -196,6 +200,25 @@ void CastActivityRecord::ClosePresentationConnections(
 void CastActivityRecord::TerminatePresentationConnections() {
   for (auto& client : connected_clients_)
     client.second->TerminateConnection();
+}
+
+void CastActivityRecord::CreateMediaController(
+    mojom::MediaControllerRequest media_controller,
+    mojom::MediaStatusObserverPtr observer) {
+  media_controller_ = std::make_unique<CastMediaController>(
+      this, std::move(media_controller), std::move(observer));
+
+  if (session_id_) {
+    CastSession* session = GetSession();
+    if (session) {
+      media_controller_->SetSession(*session);
+      base::Value status_request(base::Value::Type::DICTIONARY);
+      status_request.SetKey("type", base::Value("MEDIA_GET_STATUS"));
+      message_handler_->SendMediaRequest(GetCastChannelId(), status_request,
+                                         media_controller_->sender_id(),
+                                         session->transport_id());
+    }
+  }
 }
 
 void CastActivityRecord::OnAppMessage(
@@ -225,7 +248,7 @@ int CastActivityRecord::GetCastChannelId() {
   if (!sink) {
     // TODO(crbug.com/905002): Add UMA metrics for this and other error
     // conditions.
-    LOG(ERROR) << "Sink not found for route: " << route_;
+    DLOG(ERROR) << "Sink not found for route: " << route_;
     return -1;
   }
   return sink->cast_data().cast_channel_id;

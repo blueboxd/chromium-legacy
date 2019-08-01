@@ -141,7 +141,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void FocusDocumentView(WebFrame*) override;
   void SetInitialFocus(bool reverse) override;
   void ClearFocusedElement() override;
-  void SmoothScroll(int target_x, int target_y, uint64_t duration_ms) override;
+  void SmoothScroll(int target_x,
+                    int target_y,
+                    base::TimeDelta duration) override;
   void AdvanceFocus(bool reverse) override;
   void AdvanceFocusAcrossFrames(WebFocusType,
                                 WebRemoteFrame* from,
@@ -259,7 +261,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   bool StartPageScaleAnimation(const IntPoint& target_position,
                                bool use_anchor,
                                float new_scale,
-                               double duration_in_seconds);
+                               base::TimeDelta duration);
 
   // Handles context menu events orignated via the the keyboard. These
   // include the VK_APPS virtual key and the Shift+F10 combine. Code is

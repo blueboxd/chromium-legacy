@@ -37,6 +37,7 @@
 #include "content/common/frame_delete_intention.h"
 #include "content/common/host_zoom.mojom.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/common/widget.mojom.h"
@@ -172,7 +173,6 @@ struct CSPViolationParams;
 struct CustomContextMenuContext;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
-struct CommitNavigationParams;
 struct ScreenInfo;
 
 class CONTENT_EXPORT RenderFrameImpl
@@ -560,8 +560,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // mojom::FrameNavigationControl implementation:
   void CommitNavigation(
-      const mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -583,7 +583,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // the one from NavigationClient mojo interface.
   void CommitPerNavigationMojoInterfaceNavigation(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -602,7 +602,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void CommitFailedNavigation(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,
@@ -615,7 +615,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // the one from NavigationClient mojo interface.
   void CommitFailedPerNavigationMojoInterfaceNavigation(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,
@@ -626,7 +626,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void CommitSameDocumentNavigation(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       CommitSameDocumentNavigationCallback callback) override;
   void HandleRendererDebugURL(const GURL& url) override;
   void UpdateSubresourceLoaderFactories(
@@ -1251,7 +1251,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Does preparation for the navigation to |url|.
   void PrepareRenderViewForNavigation(
       const GURL& url,
-      const CommitNavigationParams& commit_params);
+      const mojom::CommitNavigationParams& commit_params);
 
   // Sends a FrameHostMsg_BeginNavigation to the browser
   void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info,
@@ -1269,7 +1269,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Commit navigation with |navigation_params| prepared.
   void CommitNavigationWithParams(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
@@ -1286,11 +1286,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // in the renderer, but browser was not aware yet at the moment of issuing
   // a CommitNavigation call.
   bool ShouldIgnoreCommitNavigation(
-      const CommitNavigationParams& commit_params);
+      const mojom::CommitNavigationParams& commit_params);
 
   // Decodes a data url for navigation commit.
   void DecodeDataURL(const mojom::CommonNavigationParams& common_params,
-                     const CommitNavigationParams& commit_params,
+                     const mojom::CommitNavigationParams& commit_params,
                      std::string* mime_type,
                      std::string* charset,
                      std::string* data,
@@ -1397,8 +1397,9 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebLocalFrameClient::AppCacheType GetAppCacheType() override;
 
   // Updates the state of this frame when asked to commit a navigation.
-  void PrepareFrameForCommit(const GURL& url,
-                             const CommitNavigationParams& commit_params);
+  void PrepareFrameForCommit(
+      const GURL& url,
+      const mojom::CommitNavigationParams& commit_params);
 
   // Updates the state when asked to commit a history navigation.  Sets
   // |item_for_history_navigation| and |load_type| to the appropriate values for
@@ -1426,7 +1427,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // so that it can be performed in cross-document fashion.
   blink::mojom::CommitResult PrepareForHistoryNavigationCommit(
       const mojom::CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params,
+      const mojom::CommitNavigationParams& commit_params,
       blink::WebHistoryItem* item_for_history_navigation,
       blink::WebFrameLoadType* load_type);
 
@@ -1445,7 +1446,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // Commit*PerNavigationMojoInterfaceNavigation functions.
   void CommitNavigationInternal(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       const network::ResourceResponseHead& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -1465,7 +1466,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void CommitFailedNavigationInternal(
       mojom::CommonNavigationParamsPtr common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,
@@ -1562,7 +1563,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // is never used after the initial navigation.
   // TODO(creis): Expand this to include any corresponding same-process
   // PageStates for the whole subtree in https://crbug.com/639842.
-  std::map<std::string, bool> history_subframe_unique_names_;
+  base::flat_map<std::string, bool> history_subframe_unique_names_;
 
   // Stores the current history item for this frame, so that updates to it can
   // be reported to the browser process via SendUpdateState.

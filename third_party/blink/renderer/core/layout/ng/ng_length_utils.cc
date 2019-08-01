@@ -409,7 +409,7 @@ LayoutUnit ComputeInlineSizeForFragment(
     NGLayoutInputNode node,
     const NGBoxStrut& border_padding,
     const MinMaxSize* override_minmax_for_test) {
-  if (space.IsFixedSizeInline() || space.IsAnonymous())
+  if (space.IsFixedInlineSize() || space.IsAnonymous())
     return space.AvailableSize().inline_size;
 
   const ComputedStyle& style = node.Style();
@@ -533,7 +533,7 @@ LayoutUnit ComputeBlockSizeForFragment(
   if (node.IsTableCell() && content_size != kIndefiniteSize)
     return content_size;
 
-  if (constraint_space.IsFixedSizeBlock())
+  if (constraint_space.IsFixedBlockSize())
     return constraint_space.AvailableSize().block_size;
 
   if (constraint_space.IsAnonymous())
@@ -1102,7 +1102,7 @@ LogicalSize AdjustChildPercentageSizeForQuirksAndFlex(
     LayoutUnit parent_percentage_block_size) {
   // Flex items may have a fixed block-size, but children shouldn't resolve
   // their percentages against this.
-  if (space.IsFixedSizeBlock() && !space.FixedSizeBlockIsDefinite()) {
+  if (space.IsFixedBlockSize() && space.IsFixedBlockSizeIndefinite()) {
     DCHECK(node.IsFlexItem());
     child_percentage_size.block_size = kIndefiniteSize;
     return child_percentage_size;
@@ -1131,7 +1131,7 @@ LogicalSize CalculateChildPercentageSize(
   LogicalSize child_percentage_size = child_available_size;
 
   bool is_table_cell_in_measure_phase =
-      node.IsTableCell() && !space.IsFixedSizeBlock();
+      node.IsTableCell() && !space.IsFixedBlockSize();
 
   // Table cells which are measuring their content, force their children to
   // have an indefinite percentage resolution size.
@@ -1166,7 +1166,7 @@ LogicalSize CalculateReplacedChildPercentageSize(
                                    !node.Style().LogicalMinHeight().IsAuto();
 
   bool is_table_cell_in_layout_phase =
-      node.IsTableCell() && space.IsFixedSizeBlock();
+      node.IsTableCell() && space.IsFixedBlockSize();
 
   // Table cells in the "layout" phase have a fixed block-size. However
   // replaced children should resolve their percentages against the size given

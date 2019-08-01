@@ -29,7 +29,6 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -142,15 +141,12 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
 #if defined(OS_ANDROID)
 #define MAYBE_TimeAndURL DISABLED_TimeAndURL
 #else
-#define MAYBE_TimeAndURL TimeAndURL
+// https://crbug.com/911171: this test depends on the timing of the cache,
+// which changes if it's running out-of-process.
+#define MAYBE_TimeAndURL DISABLED_TimeAndURL
 #endif
 IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
                        MAYBE_TimeAndURL) {
-  // https://crbug.com/911171: this test depends on the timing of the cache,
-  // which changes if it's running out-of-process.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Create some entries.
   std::set<GURL> urls = {
       embedded_test_server()->GetURL("foo.com", "/title1.html"),

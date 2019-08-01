@@ -40,6 +40,20 @@ void CompareSize(const pp::Size& expected_size, const pp::Size& given_size) {
 
 }  // namespace
 
+TEST(CoordinateTest, AdjustBottomGapForRightSidePage) {
+  pp::Rect bottom_gap(0, 10, 500, 100);
+  AdjustBottomGapForRightSidePage(250, &bottom_gap);
+  CompareRect({250, 10, 250, 100}, bottom_gap);
+
+  bottom_gap.SetRect(15, 20, 700, 100);
+  AdjustBottomGapForRightSidePage(365, &bottom_gap);
+  CompareRect({365, 20, 350, 100}, bottom_gap);
+
+  bottom_gap.SetRect(100, 40, 951, 200);
+  AdjustBottomGapForRightSidePage(450, &bottom_gap);
+  CompareRect({450, 40, 475, 200}, bottom_gap);
+}
+
 TEST(CoordinateTest, ExpandDocumentSize) {
   pp::Size doc_size(100, 400);
 

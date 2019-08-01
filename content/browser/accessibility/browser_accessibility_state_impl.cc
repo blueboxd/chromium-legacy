@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
@@ -195,6 +196,7 @@ void BrowserAccessibilityStateImpl::
     UpdatePlatformSpecificHistogramsOnUIThread() {}
 void BrowserAccessibilityStateImpl::
     UpdatePlatformSpecificHistogramsOnOtherThread() {}
+void BrowserAccessibilityStateImpl::UpdateUniqueUserHistograms() {}
 #endif
 
 void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {

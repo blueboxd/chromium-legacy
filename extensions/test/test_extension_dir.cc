@@ -47,20 +47,12 @@ void TestExtensionDir::WriteFile(const base::FilePath::StringType& filename,
 }
 
 base::FilePath TestExtensionDir::Pack() {
-  return PackWithPem(base::StringPiece());
-}
-
-base::FilePath TestExtensionDir::PackWithPem(base::StringPiece pem) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   ExtensionCreator creator;
   base::FilePath crx_path =
       crx_dir_.GetPath().Append(FILE_PATH_LITERAL("ext.crx"));
   base::FilePath pem_path =
       crx_dir_.GetPath().Append(FILE_PATH_LITERAL("ext.pem"));
-
-  if (!pem.empty())
-    base::WriteFile(pem_path, pem.data(), pem.size());
-
   base::FilePath pem_in_path, pem_out_path;
   if (base::PathExists(pem_path))
     pem_in_path = pem_path;

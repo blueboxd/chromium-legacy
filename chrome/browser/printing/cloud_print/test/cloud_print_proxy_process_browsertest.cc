@@ -186,7 +186,7 @@ using SetExpectationsCallback =
 // determine the failure.
 int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::PlatformThread::SetName("Main Thread");
-  base::SingleThreadTaskExecutor executor(base::MessagePumpType::UI);
+  base::SingleThreadTaskExecutor executor(base::MessagePump::Type::UI);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   content::RegisterPathProvider();
 

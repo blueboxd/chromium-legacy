@@ -15,9 +15,9 @@ public_headers = [
   "//components/content_settings/core/common/content_settings_pattern.h",
 ]
 sources = [
-  "//components/content_settings/core/common/content_settings_struct_traits.cc",
+  "//components/content_settings/core/common/content_settings_mojom_traits.cc",
 ]
-traits_headers = [ "//components/content_settings/core/common/content_settings_struct_traits.h" ]
+traits_headers = [ "//components/content_settings/core/common/content_settings_mojom_traits.h" ]
 type_mappings = [
   "content_settings.mojom.PatternParts=::ContentSettingsPattern::PatternParts",
   "content_settings.mojom.ContentSettingsPattern=::ContentSettingsPattern",

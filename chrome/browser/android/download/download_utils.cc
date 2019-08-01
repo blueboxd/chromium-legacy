@@ -31,6 +31,9 @@ namespace {
 int kDefaultAutoResumptionSizeLimit = 10 * 1024 * 1024;  // 10 MB
 const char kAutoResumptionSizeLimitParamName[] = "AutoResumptionSizeLimit";
 
+// Mime type for OMA download descriptor.
+const char kOmaDownloadDescriptorMimeType[] = "application/vnd.oma.dd+xml";
+
 }  // namespace
 
 static ScopedJavaLocalRef<jstring> JNI_DownloadUtils_GetFailStateMessage(
@@ -104,4 +107,18 @@ std::string DownloadUtils::RemapGenericMimeType(const std::string& mime_type,
       ConvertUTF8ToJavaString(env, url.spec()),
       ConvertUTF8ToJavaString(env, file_name));
   return ConvertJavaStringToUTF8(env, j_remapped_mime_type);
+}
+
+// static
+bool DownloadUtils::ShouldAutoOpenDownload(download::DownloadItem* item) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_DownloadUtils_shouldAutoOpenDownload(
+      env, ConvertUTF8ToJavaString(env, item->GetMimeType()),
+      item->HasUserGesture());
+}
+
+// static
+bool DownloadUtils::IsOmaDownloadDescription(const std::string& mime_type) {
+  return base::EqualsCaseInsensitiveASCII(mime_type,
+                                          kOmaDownloadDescriptorMimeType);
 }

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
-
   /**
    * Decorates elements as an instance of a class.
    * @param {string|!Element} source The way to find the element(s) to decorate.
@@ -11,6 +10,7 @@ cr.define('cr.ui', function() {
    *     elements to decorate.
    * @param {!Function} constr The constructor to decorate with. The constr
    *     needs to have a {@code decorate} function.
+   * @closurePrimitive {asserts.matchesReturn}
    */
   function decorate(source, constr) {
     let elements;

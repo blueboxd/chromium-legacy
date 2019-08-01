@@ -153,12 +153,12 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     // browser-initiated navigations, this is some time after navigation start,
     // which means that developers who used this value as a way to track the
     // start of a navigation were misusing this timestamp and getting the wrong
-    // value - they should be using navigationStart intead. Additionally,
-    // once plznavigate ships, provisional loads will not be processed by the
-    // render process for browser-initiated navigations, so reporting the time a
-    // provisional load was processed in the render process will no longer make
-    // sense. Thus, we now report the time for navigationStart, which is a value
-    // more consistent with what developers currently use start_load_time for.
+    // value - they should be using navigationStart instead. Provisional loads
+    // will not be processed by the render process for browser-initiated
+    // navigations, so reporting the time a provisional load was processed in
+    // the render process will no longer make sense. Thus, we now report the
+    // time for navigationStart, which is a value more consistent with what
+    // developers currently use start_load_time for.
     double start_load_time = web_performance.NavigationStart();
     // TODO(bmcquade): Remove this. 'commit' time is a concept internal to
     // chrome that shouldn't be exposed to the web platform.

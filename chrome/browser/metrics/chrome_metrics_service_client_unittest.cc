@@ -189,7 +189,8 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
 
 #if !defined(OS_CHROMEOS)
   // ChromeSigninStatusMetricsProvider (for non ChromeOS).
-  expected_providers++;
+  // AccessibilityMetricsProvider
+  expected_providers += 2;
 #endif  // !defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

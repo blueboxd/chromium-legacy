@@ -34,8 +34,7 @@ class ChromeService::IOThreadContext : public service_manager::Service {
  public:
   IOThreadContext() {
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::UI});
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
 
     registry_.AddInterface(base::BindRepeating(
         &startup_metric_utils::StartupMetricHostImpl::Create));
@@ -62,7 +61,7 @@ class ChromeService::IOThreadContext : public service_manager::Service {
     // on the IO thread. Post a task instead. As long as this task is posted
     // before any code attempts to connect to the chrome service, there's no
     // race.
-    base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+    base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
         ->PostTask(FROM_HERE,
                    base::BindOnce(&IOThreadContext::BindConnectorOnIOThread,
                                   base::Unretained(this),

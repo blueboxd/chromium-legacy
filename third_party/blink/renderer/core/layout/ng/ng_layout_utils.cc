@@ -82,8 +82,8 @@ bool SizeMayChange(const NGBlockNode& node,
   if (node.IsQuirkyAndFillsViewport())
     return true;
 
-  DCHECK_EQ(new_space.IsFixedSizeInline(), old_space.IsFixedSizeInline());
-  DCHECK_EQ(new_space.IsFixedSizeBlock(), old_space.IsFixedSizeBlock());
+  DCHECK_EQ(new_space.IsFixedInlineSize(), old_space.IsFixedInlineSize());
+  DCHECK_EQ(new_space.IsFixedBlockSize(), old_space.IsFixedBlockSize());
   DCHECK_EQ(new_space.IsShrinkToFit(), old_space.IsShrinkToFit());
   DCHECK_EQ(new_space.TableCellChildLayoutPhase(),
             old_space.TableCellChildLayoutPhase());
@@ -100,7 +100,7 @@ bool SizeMayChange(const NGBlockNode& node,
   // a dimension, we can skip checking properties in that dimension and just
   // look for available size changes, since that's how a "fixed" constraint
   // space works.
-  if (new_space.IsFixedSizeInline()) {
+  if (new_space.IsFixedInlineSize()) {
     if (new_space.AvailableSize().inline_size !=
         old_space.AvailableSize().inline_size)
       return true;
@@ -117,7 +117,7 @@ bool SizeMayChange(const NGBlockNode& node,
       return true;
   }
 
-  if (new_space.IsFixedSizeBlock()) {
+  if (new_space.IsFixedBlockSize()) {
     if (new_space.AvailableSize().block_size !=
         old_space.AvailableSize().block_size)
       return true;
@@ -220,12 +220,12 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     // We miss the cache if the %-resolution block-size changes from indefinite
     // to definite (or visa-versa).
     bool is_new_initial_block_size_indefinite =
-        new_space.IsFixedSizeBlock() ? !new_space.FixedSizeBlockIsDefinite()
+        new_space.IsFixedBlockSize() ? new_space.IsFixedBlockSizeIndefinite()
                                      : is_initial_block_size_indefinite;
 
     bool is_old_initial_block_size_indefinite =
-        old_space.IsFixedSizeBlock()
-            ? !old_space.FixedSizeBlockIsDefinite()
+        old_space.IsFixedBlockSize()
+            ? old_space.IsFixedBlockSizeIndefinite()
             : layout_result.IsInitialBlockSizeIndefinite();
 
     if (is_old_initial_block_size_indefinite !=
@@ -236,7 +236,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     // are in the "measure" or "layout" phase.
     // Instead of trying to capture that logic here, we always miss the cache.
     if (node.IsTableCell() &&
-        new_space.IsFixedSizeBlock() != old_space.IsFixedSizeBlock())
+        new_space.IsFixedBlockSize() != old_space.IsFixedBlockSize())
       return NGLayoutCacheStatus::kNeedsLayout;
 
     // If our initial block-size is definite, we know that if we change our

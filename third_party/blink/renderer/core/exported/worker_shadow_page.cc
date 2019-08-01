@@ -27,27 +27,20 @@ mojo::ScopedMessagePipeHandle CreateStubDocumentInterfaceBrokerHandle() {
 WorkerShadowPage::WorkerShadowPage(
     Client* client,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-    PrivacyPreferences preferences,
-    const base::UnguessableToken& appcache_host_id)
+    PrivacyPreferences preferences)
     : client_(client),
       web_view_(WebViewImpl::Create(nullptr,
                                     /*is_hidden=*/false,
                                     /*compositing_enabled=*/false,
                                     nullptr)),
-      main_frame_(WebLocalFrameImpl::CreateMainFrame(
-          web_view_,
-          this,
-          nullptr /* interface_registry */,
-          CreateStubDocumentInterfaceBrokerHandle(),
-          nullptr /* opener */,
-          g_empty_atom,
-          WebSandboxFlags::kNone,
-          FeaturePolicy::FeatureState())),
       loader_factory_(std::move(loader_factory)),
-      appcache_host_id_(appcache_host_id),
       preferences_(std::move(preferences)) {
   DCHECK(IsMainThread());
 
+  main_frame_ = WebLocalFrameImpl::CreateMainFrame(
+      web_view_, this, nullptr /* interface_registry */,
+      CreateStubDocumentInterfaceBrokerHandle(), nullptr /* opener */,
+      g_empty_atom, WebSandboxFlags::kNone, FeaturePolicy::FeatureState());
   main_frame_->SetDevToolsAgentImpl(
       WebDevToolsAgentImpl::CreateForWorker(main_frame_, client_));
 }
@@ -70,7 +63,6 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
   std::unique_ptr<WebNavigationParams> params =
       WebNavigationParams::CreateWithHTMLBuffer(
           SharedBuffer::Create(content.c_str(), content.length()), script_url);
-  params->appcache_host_id = appcache_host_id_;
   main_frame_->GetFrame()->Loader().CommitNavigation(std::move(params),
                                                      nullptr /* extra_data */);
 }

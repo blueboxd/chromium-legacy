@@ -87,6 +87,14 @@
 #include "base/win/windows_types.h"
 #endif
 
+namespace ABI {
+namespace Windows {
+namespace Foundation {
+struct DateTime;
+}  // namespace Foundation
+}  // namespace Windows
+}  // namespace ABI
+
 namespace base {
 
 class PlatformThreadHandle;
@@ -126,7 +134,10 @@ class BASE_EXPORT TimeDelta {
   static constexpr TimeDelta FromNanosecondsD(double ns);
 #if defined(OS_WIN)
   static TimeDelta FromQPCValue(LONGLONG qpc_value);
+  // TODO(crbug.com/989694): Avoid base::TimeDelta factory functions
+  // based on absolute time
   static TimeDelta FromFileTime(FILETIME ft);
+  static TimeDelta FromWinrtDateTime(ABI::Windows::Foundation::DateTime dt);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   static TimeDelta FromTimeSpec(const timespec& ts);
 #endif
@@ -187,6 +198,9 @@ class BASE_EXPORT TimeDelta {
 #endif
 #if defined(OS_FUCHSIA)
   zx_duration_t ToZxDuration() const;
+#endif
+#if defined(OS_WIN)
+  ABI::Windows::Foundation::DateTime ToWinrtDateTime() const;
 #endif
 
   // Returns the time delta in some unit. The InXYZF versions return a floating

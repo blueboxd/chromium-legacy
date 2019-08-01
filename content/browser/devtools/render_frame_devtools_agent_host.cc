@@ -57,7 +57,6 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
@@ -221,17 +220,6 @@ void RenderFrameDevToolsAgentHost::UpdateRawHeadersAccess(
       old_process_origins.insert(frame_host->GetLastCommittedOrigin());
     else if (process_host == new_rph)
       new_process_origins.insert(frame_host->GetLastCommittedOrigin());
-  }
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    if (old_rph && old_process_origins.empty()) {
-      ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
-          old_rph->GetID());
-    }
-    if (new_rph && !new_process_origins.empty()) {
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
-          new_rph->GetID());
-    }
-    return;
   }
   if (old_rph) {
     GetNetworkService()->SetRawHeadersAccess(

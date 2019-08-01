@@ -5637,5 +5637,87 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, TransformedRoundedSurfaceQuad) {
             aggregated_first_pass_sqs->rounded_corner_bounds);
 }
 
+// Verifies that when a child surface has a damage, the mirror-rect of the
+// parent surface is also included in the total damage.
+TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRectWithMirrorRect) {
+  // Add a callback for when the surface is damaged.
+  MockAggregatedDamageCallback aggregated_damage_callback;
+  root_sink_->SetAggregatedDamageCallbackForTesting(
+      aggregated_damage_callback.GetCallback());
+
+  const gfx::Rect surface_rect(SurfaceSize());
+
+  // The child surface consists of a single render pass containing a single
+  // solid color draw quad.
+  std::vector<Quad> child_quads = {
+      Quad::SolidColorQuad(SK_ColorGREEN, surface_rect)};
+  std::vector<Pass> child_passes = {Pass(child_quads, SurfaceSize())};
+
+  CompositorFrame child_frame = MakeEmptyCompositorFrame();
+  AddPasses(&child_frame.render_pass_list, child_passes,
+            &child_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                     std::move(child_frame));
+
+  // The root surface consists of a single render pass containing a surface draw
+  // quad referencing the child surface. It also has an area marked as
+  // mirror-rect.
+  std::vector<Quad> root_quads = {Quad::SurfaceQuad(
+      SurfaceRange(base::nullopt, child_surface_id), SK_ColorWHITE,
+      surface_rect, /*stretch_content_to_fill_bounds=*/false,
+      /*ignores_input_event=*/false)};
+  std::vector<Pass> root_passes = {Pass(root_quads, SurfaceSize())};
+
+  CompositorFrame root_frame = MakeEmptyCompositorFrame();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+  root_frame.metadata.mirror_rect = gfx::Rect(10, 10, 10, 10);
+
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+
+  // Damage rect for the first aggregation would contain entire root surface.
+  EXPECT_CALL(aggregated_damage_callback,
+              OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
+                                 surface_rect, next_display_time()));
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+  testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
+
+  // For the second aggregation we only damage the child surface at
+  // (20,50 10x10). The aggregated damage rect should be union of that and the
+  // root's mirror-rect; i.e. (10,10 20x50).
+  CompositorFrame child_frame_2 = MakeEmptyCompositorFrame();
+  AddPasses(&child_frame_2.render_pass_list, child_passes,
+            &child_frame_2.metadata.referenced_surfaces);
+
+  child_frame_2.render_pass_list.back()->damage_rect.SetRect(20, 50, 10, 10);
+
+  child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                     std::move(child_frame_2));
+
+  EXPECT_CALL(
+      aggregated_damage_callback,
+      OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
+                         gfx::Rect(10, 10, 20, 50), next_display_time()));
+  CompositorFrame aggregated_frame_2 = AggregateFrame(root_surface_id);
+  testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
+
+  // For the third aggregation nothing is damaged, so no new frame is sent. The
+  // mirror-rect should be ignored and aggregated damage rect should be empty,
+  // which means OnAggregatedDamage() callback should not be called.
+  CompositorFrame aggregated_frame_3 = AggregateFrame(root_surface_id);
+  testing::Mock::VerifyAndClearExpectations(&aggregated_damage_callback);
+}
+
 }  // namespace
 }  // namespace viz

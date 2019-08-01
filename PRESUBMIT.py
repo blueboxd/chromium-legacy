@@ -4077,8 +4077,11 @@ def _CheckForIncludeGuards(input_api, output_api):
     # We only check header files under the control of the Chromium
     # project. That is, those outside third_party apart from
     # third_party/blink.
+    # We also exclude *_message_generator.h headers as they use
+    # include guards in a special, non-typical way.
     file_with_path = input_api.os_path.normpath(f.LocalPath())
     return (file_with_path.endswith('.h') and
+            not file_with_path.endswith('_message_generator.h') and
             (not file_with_path.startswith('third_party') or
              file_with_path.startswith(
                input_api.os_path.join('third_party', 'blink'))))

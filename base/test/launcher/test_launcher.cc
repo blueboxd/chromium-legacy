@@ -268,7 +268,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
                                       const LaunchOptions& options,
                                       int flags,
                                       TimeDelta timeout,
-                                      ProcessLifetimeObserver* observer,
+                                      TestLauncherDelegate* delegate,
                                       bool* was_timeout) {
   TimeTicks start_time(TimeTicks::Now());
 
@@ -410,8 +410,8 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   }
 
   if (!did_exit) {
-    if (observer)
-      observer->OnTimedOut(command_line);
+    if (delegate)
+      delegate->OnTestTimedOut(command_line);
 
     *was_timeout = true;
     exit_code = -1;  // Set a non-zero exit code to signal a failure.
@@ -454,14 +454,28 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   return exit_code;
 }
 
-void DoLaunchChildTestProcess(
+struct ChildProcessResults {
+  // Total time for DoLaunchChildTest Process to execute.
+  TimeDelta elapsed_time;
+  // If stdio is redirected, pass output file content.
+  std::string output_file_contents;
+  // True if child process timed out.
+  bool was_timeout = false;
+  // Exit code of child process.
+  int exit_code;
+};
+
+// This launches the child test process, waits for it to complete,
+// and returns child process results.
+ChildProcessResults DoLaunchChildTestProcess(
     const CommandLine& command_line,
     TimeDelta timeout,
     const TestLauncher::LaunchOptions& test_launch_options,
     bool redirect_stdio,
-    SingleThreadTaskRunner* task_runner,
-    std::unique_ptr<ProcessLifetimeObserver> observer) {
+    TestLauncherDelegate* delegate) {
   TimeTicks start_time = TimeTicks::Now();
+
+  ChildProcessResults result;
 
   ScopedFILE output_file;
   FilePath output_filename;
@@ -512,34 +526,26 @@ void DoLaunchChildTestProcess(
 
 #endif  // !defined(OS_WIN)
 
-  bool was_timeout = false;
-  int exit_code = LaunchChildTestProcessWithOptions(
-      command_line, options, test_launch_options.flags, timeout, observer.get(),
-      &was_timeout);
+  result.exit_code = LaunchChildTestProcessWithOptions(
+      command_line, options, test_launch_options.flags, timeout, delegate,
+      &result.was_timeout);
 
-  std::string output_file_contents;
   if (redirect_stdio) {
     fflush(output_file.get());
     output_file.reset();
     // Reading the file can sometimes fail when the process was killed midflight
     // (e.g. on test suite timeout): https://crbug.com/826408. Attempt to read
     // the output file anyways, but do not crash on failure in this case.
-    CHECK(ReadFileToString(output_filename, &output_file_contents) ||
-          exit_code != 0);
+    CHECK(ReadFileToString(output_filename, &result.output_file_contents) ||
+          result.exit_code != 0);
 
     if (!DeleteFile(output_filename, false)) {
       // This needs to be non-fatal at least for Windows.
       LOG(WARNING) << "Failed to delete " << output_filename.AsUTF8Unsafe();
     }
   }
-
-  // Invoke OnCompleted on the thread it was originating from, not on a worker
-  // pool thread.
-  task_runner->PostTask(
-      FROM_HERE,
-      BindOnce(&ProcessLifetimeObserver::OnCompleted, std::move(observer),
-               exit_code, TimeTicks::Now() - start_time, was_timeout,
-               output_file_contents));
+  result.elapsed_time = TimeTicks::Now() - start_time;
+  return result;
 }
 
 std::vector<std::string> ExtractTestsFromFilter(const std::string& filter,
@@ -554,6 +560,122 @@ std::vector<std::string> ExtractTestsFromFilter(const std::string& filter,
         SplitString(filter, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   }
   return tests;
+}
+
+// A test runner object to run tests across a number of sequence runners,
+// and control running pre tests in sequence.
+class TestRunner {
+ public:
+  explicit TestRunner(TestLauncher* launcher,
+                      size_t runner_count = 1u,
+                      size_t batch_size = 1u)
+      : launcher_(launcher),
+        runner_count_(runner_count),
+        batch_size_(batch_size),
+        weak_ptr_factory_(this) {}
+
+  // Sets |test_names| to be run, with |batch_size| tests per process.
+  // Posts LaunchNextTask |runner_count| number of times, each with a separate
+  // task runner.
+  void Run(const std::vector<std::string>& test_names);
+
+ private:
+  // Called to check if the next batch has to run on the same
+  // sequence task runner and using the same temporary directory.
+  bool ShouldReuseStateFromLastBatch(
+      const std::vector<std::string>& test_names) {
+    return test_names.size() == 1u &&
+           test_names.front().find(kPreTestPrefix) != std::string::npos;
+  }
+
+  // Launch next child process on |task_runner|,
+  // and clear |temp_dir| from previous process.
+  void LaunchNextTask(scoped_refptr<TaskRunner> task_runner, FilePath temp_dir);
+
+  // Forward |temp_dir| and Launch next task on main thread.
+  // The method is called on |task_runner|.
+  void ClearAndLaunchNext(scoped_refptr<TaskRunner> main_thread_runner,
+                          scoped_refptr<TaskRunner> task_runner,
+                          const FilePath& temp_dir) {
+    main_thread_runner->PostTask(
+        FROM_HERE,
+        BindOnce(&TestRunner::LaunchNextTask, weak_ptr_factory_.GetWeakPtr(),
+                 task_runner, temp_dir));
+  }
+
+  ThreadChecker thread_checker_;
+
+  std::vector<std::string> tests_to_run_;
+  TestLauncher* const launcher_;
+  std::vector<scoped_refptr<TaskRunner>> task_runners_;
+  // Number of sequenced task runners to use.
+  const size_t runner_count_;
+  // Number of TaskRunners that have finished.
+  size_t runners_done_ = 0;
+  // Number of tests per process, 0 is special case for all tests.
+  const size_t batch_size_;
+  RunLoop run_loop_;
+
+  base::WeakPtrFactory<TestRunner> weak_ptr_factory_;
+};
+
+void TestRunner::Run(const std::vector<std::string>& test_names) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // No sequence runners, fail immediately.
+  CHECK_GT(runner_count_, 0u);
+  tests_to_run_ = test_names;
+  // Reverse test order to avoid coping the whole vector when removing tests.
+  std::reverse(tests_to_run_.begin(), tests_to_run_.end());
+  runners_done_ = 0;
+  task_runners_.clear();
+  for (size_t i = 0; i < runner_count_; i++) {
+    task_runners_.push_back(CreateSequencedTaskRunnerWithTraits(
+        {MayBlock(), TaskShutdownBehavior::BLOCK_SHUTDOWN}));
+    ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        BindOnce(&TestRunner::LaunchNextTask, weak_ptr_factory_.GetWeakPtr(),
+                 task_runners_.back(), FilePath()));
+  }
+  run_loop_.Run();
+}
+
+void TestRunner::LaunchNextTask(scoped_refptr<TaskRunner> task_runner,
+                                FilePath temp_dir) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // delete previous temporary directory
+  if (!temp_dir.empty() && !DeleteFile(temp_dir, true)) {
+    // This needs to be non-fatal at least for Windows.
+    LOG(WARNING) << "Failed to delete " << temp_dir.AsUTF8Unsafe();
+  }
+
+  // No more tests to run, finish sequence.
+  if (tests_to_run_.empty()) {
+    runners_done_++;
+    // All sequence runners are done, quit the loop.
+    if (runners_done_ == runner_count_)
+      run_loop_.QuitWhenIdle();
+    return;
+  }
+
+  CreateNewTempDirectory(FilePath::StringType(), &temp_dir);
+  bool post_to_current_runner = true;
+  size_t batch_size = (batch_size_ == 0) ? tests_to_run_.size() : batch_size_;
+
+  while (post_to_current_runner && !tests_to_run_.empty()) {
+    batch_size = std::min(batch_size, tests_to_run_.size());
+    std::vector<std::string> batch(tests_to_run_.rbegin(),
+                                   tests_to_run_.rbegin() + batch_size);
+    tests_to_run_.erase(tests_to_run_.end() - batch_size, tests_to_run_.end());
+    task_runner->PostTask(
+        FROM_HERE,
+        BindOnce(&TestLauncher::LaunchChildGTestProcess, Unretained(launcher_),
+                 ThreadTaskRunnerHandle::Get(), batch, temp_dir));
+    post_to_current_runner = ShouldReuseStateFromLastBatch(batch);
+  }
+  task_runner->PostTask(
+      FROM_HERE,
+      BindOnce(&TestRunner::ClearAndLaunchNext, Unretained(this),
+               ThreadTaskRunnerHandle::Get(), task_runner, temp_dir));
 }
 
 }  // namespace
@@ -740,23 +862,44 @@ bool TestLauncher::Run(CommandLine* command_line) {
 }
 
 void TestLauncher::LaunchChildGTestProcess(
-    const CommandLine& command_line,
-    const std::string& wrapper,
-    TimeDelta timeout,
-    const LaunchOptions& options,
-    std::unique_ptr<ProcessLifetimeObserver> observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+    scoped_refptr<TaskRunner> task_runner,
+    const std::vector<std::string>& test_names,
+    const FilePath& temp_dir) {
+  FilePath result_file;
+  CommandLine cmd_line =
+      launcher_delegate_->GetCommandLine(test_names, temp_dir, &result_file);
 
   // Record the exact command line used to launch the child.
   CommandLine new_command_line(
-      PrepareCommandLineForGTest(command_line, wrapper));
+      PrepareCommandLineForGTest(cmd_line, launcher_delegate_->GetWrapper()));
+  LaunchOptions options;
+  options.flags = launcher_delegate_->GetLaunchOptions();
 
-  PostTask(
+  ChildProcessResults process_results = DoLaunchChildTestProcess(
+      new_command_line, launcher_delegate_->GetTimeout() * test_names.size(),
+      options, redirect_stdio_, launcher_delegate_);
+
+  // Invoke ProcessTestResults on the original thread, not
+  // on a worker pool thread.
+  task_runner->PostTask(
       FROM_HERE,
-      {ThreadPool(), MayBlock(), TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      BindOnce(&DoLaunchChildTestProcess, new_command_line, timeout, options,
-               redirect_stdio_, RetainedRef(ThreadTaskRunnerHandle::Get()),
-               std::move(observer)));
+      BindOnce(&TestLauncher::ProcessTestResults, Unretained(this), test_names,
+               result_file, process_results.output_file_contents,
+               process_results.elapsed_time, process_results.exit_code,
+               process_results.was_timeout));
+}
+
+void TestLauncher::ProcessTestResults(
+    const std::vector<std::string>& test_names,
+    const base::FilePath& result_file,
+    const std::string& output,
+    const base::TimeDelta& elapsed_time,
+    int exit_code,
+    bool was_timeout) {
+  std::vector<TestResult> test_results = launcher_delegate_->ProcessTestResults(
+      test_names, result_file, output, elapsed_time, exit_code, was_timeout);
+  for (const auto& result : test_results)
+    OnTestFinished(result);
 }
 
 void TestLauncher::OnTestFinished(const TestResult& original_result) {
@@ -859,8 +1002,6 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
 
     exit(1);
   }
-  if (test_finished_count_ == test_started_count_)
-    RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
 // Helper used to parse test filter files. Syntax is documented in
@@ -1385,10 +1526,11 @@ void TestLauncher::RunTests() {
 
   broken_threshold_ = std::max(static_cast<size_t>(20), test_found_count / 10);
 
-  test_started_count_ = launcher_delegate_->RunTests(this, test_names);
+  test_started_count_ = test_names.size();
 
-  if (test_started_count_ > 0)
-    RunLoop().Run();
+  TestRunner test_runner(this, parallel_jobs_,
+                         launcher_delegate_->GetBatchSize());
+  test_runner.Run(test_names);
 }
 
 bool TestLauncher::RunRetryTests() {
@@ -1403,9 +1545,7 @@ bool TestLauncher::RunRetryTests() {
     }
     tests_to_retry_.clear();
 
-    size_t retry_started_count =
-        launcher_delegate_->RetryTests(this, test_names);
-
+    size_t retry_started_count = test_names.size();
     test_started_count_ += retry_started_count;
 
     // Only invoke RunLoop if there are any tasks to run.
@@ -1416,8 +1556,8 @@ bool TestLauncher::RunRetryTests() {
             retry_started_count > 1 ? "s" : "", retry_count);
     fflush(stdout);
 
-    RunLoop().Run();
-
+    TestRunner test_runner(this);
+    test_runner.Run(test_names);
     retry_count++;
   }
   return tests_to_retry_.empty();

@@ -34,7 +34,8 @@ class TextNavigationManager {
    * @public
    */
   jumpToBeginning() {
-    this.simulateKeyPress_(SAConstants.KeyCode.HOME, {ctrl: true});
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.HOME, {ctrl: true});
   }
 
   /**
@@ -43,7 +44,8 @@ class TextNavigationManager {
    * @public
    */
   jumpToEnd() {
-    this.simulateKeyPress_(SAConstants.KeyCode.END, {ctrl: true});
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.END, {ctrl: true});
   }
 
   /**
@@ -53,7 +55,8 @@ class TextNavigationManager {
    * @public
    */
   moveBackwardOneChar() {
-    this.simulateKeyPress_(SAConstants.KeyCode.LEFT_ARROW, {});
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.LEFT_ARROW, {});
   }
 
   /**
@@ -64,7 +67,8 @@ class TextNavigationManager {
    * @public
    */
   moveBackwardOneWord() {
-    this.simulateKeyPress_(SAConstants.KeyCode.LEFT_ARROW, {ctrl: true});
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.LEFT_ARROW, {ctrl: true});
   }
 
   /**
@@ -74,7 +78,8 @@ class TextNavigationManager {
    * @public
    */
   moveForwardOneChar() {
-    this.simulateKeyPress_(SAConstants.KeyCode.RIGHT_ARROW, {});
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.RIGHT_ARROW, {});
   }
 
   /**
@@ -85,7 +90,8 @@ class TextNavigationManager {
    * @public
    */
   moveForwardOneWord() {
-    this.simulateKeyPress_(SAConstants.KeyCode.RIGHT_ARROW, {ctrl: true});
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.RIGHT_ARROW, {ctrl: true});
   }
 
   /**
@@ -95,7 +101,7 @@ class TextNavigationManager {
    * @public
    */
   moveUpOneLine() {
-    this.simulateKeyPress_(SAConstants.KeyCode.UP_ARROW, {});
+    this.navigationManager_.simulateKeyPress(SAConstants.KeyCode.UP_ARROW, {});
   }
 
   /**
@@ -105,31 +111,10 @@ class TextNavigationManager {
    * @public
    */
   moveDownOneLine() {
-    this.simulateKeyPress_(SAConstants.KeyCode.DOWN_ARROW, {});
+    this.navigationManager_.simulateKeyPress(
+        SAConstants.KeyCode.DOWN_ARROW, {});
   }
 
-  /**
-   * Simulates a single key stroke with the given key code
-   * and keyboard modifiers (whether or not CTRL, ALT, SEARCH,
-   * SHIFT are being held).
-   *
-   * @param {number} keyCode
-   * @param {!chrome.accessibilityPrivate.SyntheticKeyboardModifiers} modifiers
-   * @private
-   */
-  simulateKeyPress_(keyCode, modifiers) {
-    chrome.accessibilityPrivate.sendSyntheticKeyEvent({
-      type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
-      keyCode: keyCode,
-      modifiers: modifiers
-    });
-
-    chrome.accessibilityPrivate.sendSyntheticKeyEvent({
-      type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYUP,
-      keyCode: keyCode,
-      modifiers: modifiers
-    });
-  }
 
   /**
    * TODO(rosalindag): Work on text selection functionality below.

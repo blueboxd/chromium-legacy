@@ -20,7 +20,7 @@ class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // ApplicationCacheHost:
-  void DetachFromDocumentLoader() override;
+  void Detach() override;
   bool Update() override;
   bool SwapCache() override;
   void SetApplicationCache(ApplicationCache*) override;
@@ -32,6 +32,7 @@ class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
   void SetSubresourceFactory(
       network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override;
 
+  void WillStartLoading(ResourceRequest&) override;
   void WillStartLoadingMainResource(DocumentLoader* loader,
                                     const KURL& url,
                                     const String& method) override;
@@ -84,9 +85,13 @@ class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
                         int error_status,
                         const String& error_message);
 
+  bool IsApplicationCacheEnabled();
+
   WeakMember<ApplicationCache> dom_application_cache_ = nullptr;
 
   Member<LocalFrame> local_frame_;
+  Member<DocumentLoader> document_loader_;
+
   bool is_get_method_ = false;
   bool was_select_cache_called_ = false;
   IsNewMasterEntry is_new_master_entry_ = MAYBE_NEW_ENTRY;

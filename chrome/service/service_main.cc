@@ -4,7 +4,6 @@
 
 #include "base/base_switches.h"
 #include "base/debug/debugger.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "build/build_config.h"
@@ -26,9 +25,10 @@ int CloudPrintServiceProcessMain(
   // The service process needs to be able to process WM_QUIT messages from the
   // Cloud Print Service UI on Windows.
   base::SingleThreadTaskExecutor main_task_executor(
-      base::MessagePumpType::UI_WITH_WM_QUIT_SUPPORT);
+      base::MessagePump::Type::UI_WITH_WM_QUIT_SUPPORT);
 #else
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
 #endif
 
   if (parameters.command_line.HasSwitch(switches::kWaitForDebugger)) {

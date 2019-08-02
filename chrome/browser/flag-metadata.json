@@ -929,11 +929,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-autofill-import-non-focusable-credit-card-forms",
-    "owners": [ "hozhng@google.com", "jiahuiguo@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-autofill-local-card-migration-uses-strike-system-v2",
     "owners": [ "annelim@google.com", "jsaul@google.com" , "jiahuiguo@google.com"],
     "expiry_milestone": 76
@@ -1512,7 +1507,7 @@
   {
     "name": "enable-query-in-omnibox",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "enable-quic",
@@ -2503,12 +2498,12 @@
   {
     "name": "omnibox-experimental-keyword-mode",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "omnibox-group-suggestions-by-search-vs-url",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 78
   },
   {
     "name": "omnibox-material-design-weather-icons",
@@ -2528,11 +2523,11 @@
   {
     "name": "omnibox-pedal-suggestions",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 80
   },
   {
     "name": "omnibox-reverse-answers",
-    "owners": [ "chrome-omnibox-team@google.com" ],
+    "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
   },
   {
@@ -2542,8 +2537,8 @@
   },
   {
     "name": "omnibox-rich-entity-suggestions",
-    "owners": [ "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
   },
   {
     "name": "omnibox-search-engine-logo",
@@ -2573,27 +2568,27 @@
   {
     "name": "omnibox-ui-cues-for-search-history-matches",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 78
   },
   {
     "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref",
-    "owners": [ "chrome-omnibox-team@google.com" ],
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-hide-steady-state-url-scheme",
-    "owners": [ "chrome-omnibox-team@google.com" ],
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-hide-steady-state-url-trivial-subdomains",
-    "owners": [ "chrome-omnibox-team@google.com" ],
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-max-autocomplete-matches",
-    "owners": [ "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
   },
   {
     "name": "omnibox-ui-one-click-unelide",
@@ -2602,33 +2597,33 @@
   },
   {
     "name": "omnibox-ui-show-placeholder-when-caret-showing",
-    "owners": [ "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-show-suggestion-favicons",
-    "owners": [ "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-swap-title-and-url",
-    "owners": [ "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-vertical-margin",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 76
   },
   {
     "name": "omnibox-ui-vertical-margin-limit-to-non-touch-only",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 76
   },
   {
     "name": "omnibox-wrap-popup-position",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 78
   },
   {
     "name": "omnibox-zero-suggestions-on-ntp",

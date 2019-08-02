@@ -276,19 +276,6 @@ bool CreditCardSaveManager::IsCreditCardUploadEnabled() {
       personal_data_manager_->GetSyncSigninState(), client_->GetLogManager());
 }
 
-bool CreditCardSaveManager::IsUploadEnabledForNetwork(
-    const std::string& network) {
-  if (network == kEloCard &&
-      base::FeatureList::IsEnabled(features::kAutofillUpstreamDisallowElo)) {
-    return false;
-  } else if (network == kJCBCard &&
-             base::FeatureList::IsEnabled(
-                 features::kAutofillUpstreamDisallowJcb)) {
-    return false;
-  }
-  return true;
-}
-
 void CreditCardSaveManager::OnDidUploadCard(
     AutofillClient::PaymentsRpcResult result,
     const std::string& server_id) {

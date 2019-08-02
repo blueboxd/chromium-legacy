@@ -87,7 +87,7 @@ class SafeBrowsingClientImpl
       const OnResultCallback& callback) {
     auto safe_browsing_client = base::WrapRefCounted(
         new SafeBrowsingClientImpl(extension_ids, callback));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SafeBrowsingClientImpl::StartCheck,
                        safe_browsing_client, g_database_manager.Get().get(),

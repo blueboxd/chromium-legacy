@@ -29,7 +29,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "ash/public/cpp/tablet_mode.h"
 #endif
 
 using content::BrowserContext;
@@ -175,8 +175,7 @@ int ExtensionDialog::GetDialogButtons() const {
 bool ExtensionDialog::CanResize() const {
 #if defined(OS_CHROMEOS)
   // Prevent dialog resize mouse cursor in tablet mode, crbug.com/453634.
-  const auto* client = TabletModeClient::Get();
-  if (client && client->tablet_mode_enabled())
+  if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
     return false;
 #endif
   // Can resize only if minimum contents size set.

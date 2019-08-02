@@ -124,7 +124,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   widget.Show();
 
   View* content = new View;
@@ -171,7 +171,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForScrollEvents) {
       CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
   View* content = new View;
@@ -253,7 +253,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
   View* content = new View;
@@ -363,7 +363,7 @@ TEST_F(ViewTargeterTest, TargetContentsAndRootView) {
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
   View* content = new View;
@@ -445,7 +445,7 @@ TEST_F(ViewTargeterTest, GestureEventCoordinateConversion) {
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
   View* content = new View;
@@ -540,7 +540,7 @@ TEST_F(ViewTargeterTest, DoesIntersectRect) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 650, 650);
-  widget.Init(params);
+  widget.Init(std::move(params));
 
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
@@ -594,7 +594,7 @@ TEST_F(ViewTargeterTest, HitTestCallsOnView) {
   // The coordinates in this test are in the coordinate space of the root view.
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* root_view = widget->GetRootView();
   root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));
 

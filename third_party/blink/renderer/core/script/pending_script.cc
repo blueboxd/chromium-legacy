@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
-#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/script/ignore_destructive_write_count_incrementer.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
@@ -154,20 +153,6 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
   }
 
   Script* script = GetSource(document_url);
-
-  if (script && !IsExternal()) {
-    AtomicString nonce = element_->GetNonceForElement();
-    if (!element_->AllowInlineScriptForCSP(nonce, StartingPosition().line_,
-                                           script->InlineSourceTextForCSP())) {
-      // Consider as if:
-      //
-      // <spec step="2">If the script's script is null, ...</spec>
-      //
-      // retrospectively, if the CSP check fails, which is considered as load
-      // failure.
-      script = nullptr;
-    }
-  }
 
   const bool was_canceled = WasCanceled();
   const bool is_external = IsExternal();

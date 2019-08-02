@@ -62,7 +62,7 @@ class AXTreeSourceAuraTest : public ChromeViewsTestBase {
     widget_ = new Widget();
     Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     init_params.context = GetContext();
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
 
     content_ = new View();
     widget_->SetContentsView(content_);

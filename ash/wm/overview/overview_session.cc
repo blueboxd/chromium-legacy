@@ -261,7 +261,7 @@ void OverviewSession::Init(const WindowList& windows,
   params.name = "OverviewModeFocusedWidget";
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
       kShellWindowId_StatusContainer);
-  overview_focus_widget_->Init(params);
+  overview_focus_widget_->Init(std::move(params));
 
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 
@@ -1025,11 +1025,11 @@ void OverviewSession::UpdateNoWindowsWidget() {
     params.message_id = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
     params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
         desks_util::GetActiveDeskContainerId());
+    params.hide_in_mini_view = true;
     no_windows_widget_ = std::make_unique<RoundedLabelWidget>();
-    no_windows_widget_->Init(params);
+    no_windows_widget_->Init(std::move(params));
 
     aura::Window* widget_window = no_windows_widget_->GetNativeWindow();
-    widget_window->SetProperty(kHideInDeskMiniViewKey, true);
     widget_window->parent()->StackChildAtBottom(widget_window);
     ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_NO_RECENTS_FADE,
                                              widget_window);

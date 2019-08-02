@@ -216,7 +216,7 @@ StickyKeysOverlay::StickyKeysOverlay()
   params.parent = Shell::GetContainer(Shell::GetRootWindowForNewWindows(),
                                       kShellWindowId_OverlayContainer);
   overlay_widget_.reset(new views::Widget);
-  overlay_widget_->Init(params);
+  overlay_widget_->Init(std::move(params));
   overlay_widget_->SetVisibilityChangedAnimationsEnabled(false);
   overlay_widget_->SetContentsView(overlay_view_.get());
   overlay_widget_->GetNativeView()->SetName("StickyKeysOverlay");

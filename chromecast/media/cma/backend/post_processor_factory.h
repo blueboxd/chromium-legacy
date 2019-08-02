@@ -38,7 +38,7 @@ class PostProcessorFactory {
   // Creates an instance of AudioPostProcessor2 or a wrapped AudioPostProcessor.
   // By default, will attempt to find the library in
   // /system/chrome/lib/processors/|library_name|. Will fall back to
-  // searching for /oem_cast_shlibs/processors/|library_name|, and finally
+  // searching for /oem_cast_shlib/processors/|library_name|, and finally
   // searching for |library_name| in LD_LIBRARY_PATH.
   std::unique_ptr<AudioPostProcessor2> CreatePostProcessor(
       const std::string& library_name,

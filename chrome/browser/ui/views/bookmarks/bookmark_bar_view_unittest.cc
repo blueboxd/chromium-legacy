@@ -128,11 +128,10 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
  private:
   static std::unique_ptr<KeyedService> CreateTemplateURLService(
       content::BrowserContext* profile) {
-    return base::WrapUnique(
-        new TemplateURLService(static_cast<Profile*>(profile)->GetPrefs(),
-                               base::WrapUnique(new SearchTermsData), NULL,
-                               std::unique_ptr<TemplateURLServiceClient>(),
-                               NULL, NULL, base::Closure()));
+    return std::make_unique<TemplateURLService>(
+        static_cast<Profile*>(profile)->GetPrefs(),
+        std::make_unique<SearchTermsData>(), nullptr, nullptr, nullptr,
+        base::Closure());
   }
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewTest);
@@ -391,7 +390,7 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   params.native_widget = CreateNativeWidget(
       NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA, &params, &widget);
 #endif
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.Show();
   widget.GetRootView()->AddChildView(bookmark_bar_view_.get());
 

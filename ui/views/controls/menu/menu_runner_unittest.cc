@@ -78,7 +78,7 @@ class MenuRunnerTest : public ViewsTestBase {
     owner_ = std::make_unique<Widget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    owner_->Init(params);
+    owner_->Init(std::move(params));
     owner_->Show();
   }
 
@@ -384,7 +384,7 @@ class MenuRunnerWidgetTest : public MenuRunnerTest {
     MenuRunnerTest::SetUp();
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->Show();
     widget_->SetSize(gfx::Size(300, 300));
 

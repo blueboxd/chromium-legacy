@@ -25,7 +25,7 @@ namespace ui {
 // underlying platform windowing system (i.e. X11/Win/OSX).
 class PlatformWindow : public PropertyHandler {
  public:
-  virtual ~PlatformWindow() {}
+  ~PlatformWindow() override = default;
 
   virtual void Show() = 0;
   virtual void Hide() = 0;

@@ -19,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,7 +36,8 @@ namespace {
 // Print the command line help.
 void PrintHelp() {
   std::cout << "top_domain_generator <input-file>"
-            << " <template-file> <output-file> [--v=1]" << std::endl;
+            << " <template-file> <output-file> [--for_testing] [--v=1]"
+            << std::endl;
 }
 
 void CheckName(const std::string& name) {
@@ -73,7 +75,7 @@ int main(int argc, char* argv[]) {
   }
 
   base::FilePath input_path =
-      base::MakeAbsoluteFilePath(base::FilePath::FromUTF8Unsafe(argv[1]));
+      base::MakeAbsoluteFilePath(base::FilePath::FromUTF8Unsafe(args[0]));
   if (!base::PathExists(input_path)) {
     LOG(ERROR) << "Input path doesn't exist: " << input_path;
     return 1;
@@ -84,6 +86,8 @@ int main(int argc, char* argv[]) {
     LOG(ERROR) << "Could not read input file: " << input_path;
     return 1;
   }
+
+  const bool for_testing = command_line.HasSwitch("for_testing");
 
   std::vector<std::string> lines = base::SplitString(
       input_text, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -114,13 +118,20 @@ int main(int argc, char* argv[]) {
     entry->skeleton = skeleton;
     entry->top_domain = tokens[1];
 
+    // If testing, only mark the first 5 sites as "top 500".
+    if (for_testing) {
+      entry->is_top_500 = entries.size() < 1;
+    } else {
+      entry->is_top_500 = entries.size() < 500;
+    }
+
     CheckName(entry->skeleton);
     CheckName(entry->top_domain);
 
     entries.push_back(std::move(entry));
   }
 
-  base::FilePath template_path = base::FilePath::FromUTF8Unsafe(argv[2]);
+  base::FilePath template_path = base::FilePath::FromUTF8Unsafe(args[1]);
   if (!base::PathExists(template_path)) {
     LOG(ERROR) << "Template file doesn't exist: " << template_path;
     return 1;
@@ -140,7 +151,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  base::FilePath output_path = base::FilePath::FromUTF8Unsafe(argv[3]);
+  base::FilePath output_path = base::FilePath::FromUTF8Unsafe(args[2]);
   if (base::WriteFile(output_path, output.c_str(),
                       static_cast<uint32_t>(output.size())) <= 0) {
     LOG(ERROR) << "Failed to write output: " << output_path;

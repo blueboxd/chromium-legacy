@@ -176,7 +176,7 @@ views::Widget* SubtleNotificationView::CreatePopupWidget(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = parent_view;
   params.accept_events = false;
-  popup->Init(params);
+  popup->Init(std::move(params));
   popup->SetContentsView(view);
   // We set layout manager to nullptr to prevent the widget from sizing its
   // contents to the same size as itself. This prevents the widget contents from

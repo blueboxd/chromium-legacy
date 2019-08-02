@@ -46,7 +46,7 @@ void ThreatDetailsRedirectsCollector::StartHistoryCollection(
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ThreatDetailsRedirectsCollector::StartGetRedirects, this,
                      urls));
@@ -112,7 +112,7 @@ void ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo(
 
 void ThreatDetailsRedirectsCollector::AllDone() {
   DVLOG(1) << "AllDone";
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, callback_);
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, callback_);
   callback_.Reset();
 }
 

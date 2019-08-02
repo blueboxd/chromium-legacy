@@ -32,7 +32,6 @@ class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
   void SetSubresourceFactory(
       network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override;
 
-  void WillStartLoading(ResourceRequest&) override;
   void WillStartLoadingMainResource(DocumentLoader* loader,
                                     const KURL& url,
                                     const String& method) override;

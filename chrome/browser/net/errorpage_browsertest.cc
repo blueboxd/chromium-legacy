@@ -385,7 +385,7 @@ class DNSErrorPageTest : public ErrorPageTest {
 
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    UIThreadSearchTermsData search_terms_data(browser()->profile());
+    UIThreadSearchTermsData search_terms_data;
     search_term_url_ = GURL(search_terms_data.GoogleBaseURLValue());
   }
 

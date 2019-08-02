@@ -89,8 +89,8 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
                          card.ShouldUpdateExpiration(AutofillClock::Now()));
   if (should_unmask_card_) {
     payments_client_->Prepare();
-    request_->billing_customer_number = GetBillingCustomerId(
-        personal_data_manager_, /*should_log_validity=*/true);
+    request_->billing_customer_number =
+        GetBillingCustomerId(personal_data_manager_);
   }
 
   request_->fido_assertion_info = std::move(fido_assertion_info);

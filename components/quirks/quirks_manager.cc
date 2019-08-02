@@ -62,7 +62,8 @@ QuirksManager::QuirksManager(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : waiting_for_login_(true),
       delegate_(std::move(delegate)),
-      task_runner_(base::CreateTaskRunnerWithTraits({base::MayBlock()})),
+      task_runner_(
+          base::CreateTaskRunner({base::ThreadPool(), base::MayBlock()})),
       local_state_(local_state),
       url_loader_factory_(std::move(url_loader_factory)),
       weak_ptr_factory_(this) {}

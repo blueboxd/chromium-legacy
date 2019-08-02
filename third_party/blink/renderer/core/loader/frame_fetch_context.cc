@@ -435,12 +435,6 @@ void FrameFetchContext::PrepareRequest(
     MasterDocumentLoader()->GetServiceWorkerNetworkProvider()->WillSendRequest(
         webreq);
   }
-
-  // If it's not for redirect, hook up ApplicationCache here too.
-  if (!for_redirect && GetDocumentLoader() && !GetDocumentLoader()->Archive() &&
-      request.Url().IsValid()) {
-    GetDocumentLoader()->GetApplicationCacheHost()->WillStartLoading(request);
-  }
 }
 
 void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {

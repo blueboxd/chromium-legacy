@@ -10,7 +10,6 @@
 #include "chrome/common/constants.mojom.h"
 #include "chrome/services/file_util/public/cpp/manifest.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
-#include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
@@ -24,10 +23,6 @@
 #include "chromeos/services/ime/public/cpp/manifest.h"
 #include "chromeos/services/network_config/public/cpp/manifest.h"
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "components/spellcheck/common/spellcheck_panel.mojom.h"
 #endif
 
 #if defined(OS_WIN)
@@ -84,10 +79,6 @@ const service_manager::Manifest& GetChromeManifest() {
                 .Build())
         .ExposeCapability("renderer",
                           service_manager::Manifest::InterfaceList<
-#if defined(OS_MACOSX)
-                              spellcheck::mojom::SpellCheckPanelHost,
-#endif
-                              spellcheck::mojom::SpellCheckHost,
                               startup_metric_utils::mojom::StartupMetricHost>())
         .RequireCapability(chrome::mojom::kRendererServiceName, "browser")
         .Build()

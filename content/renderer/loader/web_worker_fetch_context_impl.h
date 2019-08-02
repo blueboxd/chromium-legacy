@@ -109,7 +109,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void DidDisplayContentWithCertificateErrors() override;
   void DidRunInsecureContent(const blink::WebSecurityOrigin&,
                              const blink::WebURL& insecure_url) override;
-  void SetApplicationCacheHostID(const base::UnguessableToken& id) override;
   void SetSubresourceFilterBuilder(
       std::unique_ptr<blink::WebDocumentSubresourceFilter::Builder>) override;
   std::unique_ptr<blink::WebDocumentSubresourceFilter> TakeSubresourceFilter()
@@ -134,7 +133,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void set_top_frame_origin(const blink::WebSecurityOrigin& top_frame_origin);
   // Sets whether the worker context is a secure context.
   // https://w3c.github.io/webappsec-secure-contexts/
-  void set_is_secure_context(bool flag);
   void set_origin_url(const GURL& origin_url);
   void set_client_id(const std::string& client_id);
 
@@ -266,7 +264,6 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   scoped_refptr<FrameRequestBlocker> frame_request_blocker_;
   GURL site_for_cookies_;
   base::Optional<url::Origin> top_frame_origin_;
-  bool is_secure_context_ = false;
   GURL origin_url_;
   base::UnguessableToken appcache_host_id_;
 

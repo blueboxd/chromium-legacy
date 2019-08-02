@@ -68,10 +68,8 @@ public class CookieManagerStartupTest {
     }
 
     private void startChromiumWithClient(TestAwContentsClient contentsClient) throws Exception {
-        // The activity must be launched in order for proper webview statics to be setup.
-        mActivityTestRule.launchActivity();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> AwBrowserProcess.start());
-
+        mActivityTestRule.createAwBrowserContext();
+        mActivityTestRule.startBrowserProcess();
         mContentsClient = contentsClient;
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);

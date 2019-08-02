@@ -57,7 +57,6 @@ class DnsConfigChangeManager;
 class HttpAuthCacheCopier;
 class NetworkContext;
 class NetworkUsageAccumulator;
-class URLRequestContextBuilderMojo;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     : public service_manager::Service,
@@ -75,22 +74,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // been invoked, so OSCrypt::SetConfig() does not need to be called before
   // encrypted storage can be used.
   void set_os_crypt_is_configured();
-
-  // Can be used to seed a NetworkContext with a consumer-configured
-  // URLRequestContextBuilder, which |params| will then be applied to. The
-  // results URLRequestContext will be written to |url_request_context|, which
-  // is owned by the NetworkContext, and can be further modified before first
-  // use. The returned NetworkContext must be destroyed before the
-  // NetworkService.
-  //
-  // This method is intended to ease the transition to an out-of-process
-  // NetworkService, and will be removed once that ships. It should only be
-  // called if the network service is disabled.
-  std::unique_ptr<mojom::NetworkContext> CreateNetworkContextWithBuilder(
-      mojom::NetworkContextRequest request,
-      mojom::NetworkContextParamsPtr params,
-      std::unique_ptr<URLRequestContextBuilderMojo> builder,
-      net::URLRequestContext** url_request_context);
 
   // Allows late binding if the mojo request wasn't specified in the
   // constructor.

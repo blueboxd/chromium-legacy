@@ -21,11 +21,12 @@ using base::TimeTicks;
 namespace views {
 
 namespace {
-ui::EventType NotifyActionToMouseEventType(Button::NotifyAction notify_action) {
+ui::EventType NotifyActionToMouseEventType(
+    ButtonController::NotifyAction notify_action) {
   switch (notify_action) {
-    case Button::NOTIFY_ON_PRESS:
+    case ButtonController::NOTIFY_ON_PRESS:
       return ui::ET_MOUSE_PRESSED;
-    case Button::NOTIFY_ON_RELEASE:
+    case ButtonController::NOTIFY_ON_RELEASE:
       return ui::ET_MOUSE_RELEASED;
   }
 }
@@ -80,8 +81,7 @@ MenuButtonController::MenuButtonController(
     : ButtonController(button, std::move(delegate)), listener_(listener) {
   // Triggers on button press by default, unless drag-and-drop is enabled, see
   // MenuButtonController::IsTriggerableEventType.
-  // TODO(cyan): Move NotifyAction into ButtonController.
-  button->set_notify_action(Button::NOTIFY_ON_PRESS);
+  set_notify_action(ButtonController::NOTIFY_ON_PRESS);
 }
 
 MenuButtonController::~MenuButtonController() = default;
@@ -289,7 +289,7 @@ bool MenuButtonController::IsTriggerableEventType(const ui::Event& event) {
     ui::EventType active_on =
         delegate()->GetDragOperations(mouse_event->location()) ==
                 ui::DragDropTypes::DRAG_NONE
-            ? NotifyActionToMouseEventType(button()->notify_action())
+            ? NotifyActionToMouseEventType(notify_action())
             : ui::ET_MOUSE_RELEASED;
     return event.type() == active_on;
   }

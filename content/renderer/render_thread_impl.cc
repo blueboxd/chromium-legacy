@@ -1142,9 +1142,9 @@ RenderThreadImpl::CreateVideoFrameCompositorTaskRunner() {
     // be the same thread on which the rendering context was initialized. This
     // is why this must be a SingleThreadTaskRunner instead of a
     // SequencedTaskRunner.
-    video_frame_compositor_task_runner_ =
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+    video_frame_compositor_task_runner_ = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE});
   }
 
   return video_frame_compositor_task_runner_;
@@ -1479,6 +1479,10 @@ void RenderThreadImpl::OnAssociatedInterfaceRequest(
 scoped_refptr<base::SingleThreadTaskRunner>
 RenderThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
+}
+
+void RenderThreadImpl::OnBindReceiver(mojo::GenericPendingReceiver receiver) {
+  GetContentClient()->renderer()->BindReceiverOnMainThread(std::move(receiver));
 }
 
 bool RenderThreadImpl::IsGpuRasterizationForced() {
@@ -2021,6 +2025,12 @@ void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
   RenderViewImpl::Create(compositor_deps, std::move(params),
                          RenderWidget::ShowCallback(),
                          GetWebMainThreadScheduler()->DefaultTaskRunner());
+}
+
+void RenderThreadImpl::DestroyView(int32_t view_id) {
+  RenderViewImpl* view = RenderViewImpl::FromRoutingID(view_id);
+  DCHECK(view);
+  view->Destroy();
 }
 
 void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {

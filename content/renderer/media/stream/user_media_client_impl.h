@@ -69,16 +69,16 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
  private:
   class Request {
    public:
-    explicit Request(std::unique_ptr<UserMediaRequest> request);
+    explicit Request(std::unique_ptr<UserMediaRequestInfo> request);
     explicit Request(const blink::WebApplyConstraintsRequest& request);
     explicit Request(const blink::WebMediaStreamTrack& request);
     Request(Request&& other);
     Request& operator=(Request&& other);
     ~Request();
 
-    std::unique_ptr<UserMediaRequest> MoveUserMediaRequest();
+    std::unique_ptr<UserMediaRequestInfo> MoveUserMediaRequest();
 
-    UserMediaRequest* user_media_request() const {
+    UserMediaRequestInfo* user_media_request() const {
       return user_media_request_.get();
     }
     const blink::WebApplyConstraintsRequest& apply_constraints_request() const {
@@ -95,7 +95,7 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
     bool IsStopTrack() const { return !web_track_to_stop_.IsNull(); }
 
    private:
-    std::unique_ptr<UserMediaRequest> user_media_request_;
+    std::unique_ptr<UserMediaRequestInfo> user_media_request_;
     blink::WebApplyConstraintsRequest apply_constraints_request_;
     blink::WebMediaStreamTrack web_track_to_stop_;
   };

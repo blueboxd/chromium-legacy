@@ -134,8 +134,8 @@ void AndroidStreamReaderURLLoader::Start() {
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(
           &OpenInputStreamOnWorkerThread, base::ThreadTaskRunnerHandle::Get(),
           // This is intentional - the loader could be deleted while the
@@ -186,8 +186,8 @@ void AndroidStreamReaderURLLoader::OnInputStreamOpened(
   input_stream_reader_wrapper_ = base::MakeRefCounted<InputStreamReaderWrapper>(
       std::move(input_stream), std::move(input_stream_reader));
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(&InputStreamReaderWrapper::Seek,
                      input_stream_reader_wrapper_, byte_range_),
       base::BindOnce(&AndroidStreamReaderURLLoader::OnReaderSeekCompleted,
@@ -332,8 +332,8 @@ void AndroidStreamReaderURLLoader::ReadMore() {
   }
 
   // TODO(timvolodine): consider using a sequenced task runner.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce(
           &InputStreamReaderWrapper::ReadRawData, input_stream_reader_wrapper_,
           base::RetainedRef(buffer.get()), base::checked_cast<int>(num_bytes)),

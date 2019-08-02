@@ -4,6 +4,7 @@
 
 #include "components/sync/base/sync_prefs.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"
@@ -604,12 +605,18 @@ bool SyncPrefs::IsLocalSyncEnabled() const {
   return local_sync_enabled_;
 }
 
-base::Optional<UserDemographics> SyncPrefs::GetUserDemographics(
-    base::Time now) {
+UserDemographicsResult SyncPrefs::GetUserDemographics(base::Time now) {
   // Verify that the now time is available. There are situations where the now
   // time cannot be provided.
-  if (now.is_null())
-    return base::nullopt;
+  if (now.is_null()) {
+    return UserDemographicsResult::ForStatus(
+        UserDemographicsStatus::kCannotGetTime);
+  }
+
+  // Get user demographics. Only one error status code should be used to
+  // represent the case where demographics are invalid, see doc of
+  // UserDemographicsStatus in components/sync/base/user_demographics.h for more
+  // details.
 
   // Get the pref that contains the demographic info.
   const base::DictionaryValue* demographics =
@@ -618,26 +625,32 @@ base::Optional<UserDemographics> SyncPrefs::GetUserDemographics(
 
   // Get the user's birth year.
   base::Optional<int> birth_year = GetUserBirthYear(demographics);
-  if (!birth_year.has_value())
-    return base::nullopt;
+  if (!birth_year.has_value()) {
+    return UserDemographicsResult::ForStatus(
+        UserDemographicsStatus::kIneligibleDemographicsData);
+  }
 
   // Get the user's gender.
   base::Optional<metrics::UserDemographicsProto_Gender> gender =
       GetUserGender(demographics);
-  if (!gender.has_value())
-    return base::nullopt;
+  if (!gender.has_value()) {
+    return UserDemographicsResult::ForStatus(
+        UserDemographicsStatus::kIneligibleDemographicsData);
+  }
 
   // Get the offset and do one last check that demographics are allowed.
   int offset = GetBirthYearOffset(pref_service_);
-  if (!CanProvideDemographics(now, *birth_year, offset))
-    return base::nullopt;
+  if (!CanProvideDemographics(now, *birth_year, offset)) {
+    return UserDemographicsResult::ForStatus(
+        UserDemographicsStatus::kIneligibleDemographicsData);
+  }
 
   // Set gender and offset birth year in demographics.
   UserDemographics user_demographics;
   user_demographics.gender = *gender;
   user_demographics.birth_year = *birth_year + offset;
 
-  return user_demographics;
+  return UserDemographicsResult::ForValue(std::move(user_demographics));
 }
 
 void MigrateSessionsToProxyTabsPrefs(PrefService* pref_service) {

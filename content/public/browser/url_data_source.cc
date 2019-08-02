@@ -45,7 +45,7 @@ void URLDataSource::GetSourceForURL(
     BrowserContext* browser_context,
     const GURL& url,
     base::OnceCallback<void(URLDataSource*)> callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&GetSourceForURLHelper,
                      browser_context->GetResourceContext(), url),
@@ -54,7 +54,7 @@ void URLDataSource::GetSourceForURL(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 URLDataSource::TaskRunnerForRequestPath(const std::string& path) {
-  return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+  return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
 }
 
 bool URLDataSource::ShouldReplaceExistingSource() {

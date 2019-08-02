@@ -538,7 +538,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsReparentWebContents) {
       browser()->tab_strip_model()->GetActiveWebContents();
   CheckWebContentsDoesNotHaveAppPrefs(current_tab);
 
-  Browser* app_browser = ReparentWebContentsIntoAppBrowser(current_tab, app_);
+  Browser* app_browser =
+      ReparentWebContentsIntoAppBrowser(current_tab, app_->id());
   ASSERT_NE(browser(), app_browser);
 
   CheckWebContentsHasAppPrefs(
@@ -1346,7 +1347,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
             kNotPresent);
 
-  Browser* app_browser = ReparentWebContentsIntoAppBrowser(tab_contents, app_);
+  Browser* app_browser =
+      ReparentWebContentsIntoAppBrowser(tab_contents, app_->id());
 
   ASSERT_NE(app_browser, browser());
   ASSERT_EQ(GetMixedContentAppURL(), app_browser->tab_strip_model()
@@ -1392,7 +1394,7 @@ IN_PROC_BROWSER_TEST_P(
   CheckMixedContentFailedToLoad(browser());
 
   app_browser_ = ReparentWebContentsIntoAppBrowser(
-      browser()->tab_strip_model()->GetActiveWebContents(), app_);
+      browser()->tab_strip_model()->GetActiveWebContents(), app_->id());
   CheckMixedContentFailedToLoad(app_browser_);
 
   content::RenderFrameHost* main_frame =

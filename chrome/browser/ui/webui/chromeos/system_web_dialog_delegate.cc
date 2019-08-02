@@ -162,8 +162,9 @@ void SystemWebDialogDelegate::ShowSystemDialogForBrowserContext(
   if (!parent && GetDialogModalType() == ui::MODAL_TYPE_NONE)
     extra_params.z_order = ui::ZOrderLevel::kFloatingWindow;
   AdjustWidgetInitParams(&extra_params);
-  dialog_window_ = chrome::ShowWebDialogWithParams(parent, browser_context,
-                                                   this, &extra_params);
+  dialog_window_ = chrome::ShowWebDialogWithParams(
+      parent, browser_context, this,
+      base::make_optional<views::Widget::InitParams>(std::move(extra_params)));
 }
 
 void SystemWebDialogDelegate::ShowSystemDialog(gfx::NativeWindow parent) {

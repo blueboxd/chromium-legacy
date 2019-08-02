@@ -37,10 +37,6 @@ namespace download {
 class InProgressDownloadManager;
 }
 
-namespace policy {
-class BrowserPolicyConnectorBase;
-}
-
 namespace visitedlink {
 class VisitedLinkMaster;
 }
@@ -73,9 +69,6 @@ class AwBrowserContext : public content::BrowserContext,
 
   // Get the list of authentication schemes to support.
   static std::vector<std::string> GetAuthSchemes();
-
-  // Maps to BrowserMainParts::PreMainMessageLoopRun.
-  void PreMainMessageLoopRun();
 
   // These methods map to Add methods in visitedlink::VisitedLinkMaster.
   void AddVisitedURLs(const std::vector<GURL>& urls);
@@ -115,6 +108,8 @@ class AwBrowserContext : public content::BrowserContext,
       bool in_memory,
       const base::FilePath& relative_partition_path);
 
+  base::android::ScopedJavaLocalRef<jobject> GetJavaBrowserContext();
+
  private:
   void CreateUserPrefService();
   void MigrateLocalStatePrefs();
@@ -131,11 +126,12 @@ class AwBrowserContext : public content::BrowserContext,
   std::unique_ptr<content::ResourceContext> resource_context_;
 
   std::unique_ptr<PrefService> user_pref_service_;
-  std::unique_ptr<policy::BrowserPolicyConnectorBase> browser_policy_connector_;
   std::unique_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
   std::unique_ptr<content::PermissionControllerDelegate> permission_manager_;
 
   SimpleFactoryKey simple_factory_key_;
+
+  base::android::ScopedJavaGlobalRef<jobject> obj_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserContext);
 };

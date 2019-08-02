@@ -118,7 +118,7 @@ class ClientControlledStateTest : public AshTestBase {
     params.delegate = widget_delegate_;
 
     widget_ = std::make_unique<views::Widget>();
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     WindowState* window_state = WindowState::Get(window());
     window_state->set_allow_set_bounds_direct(true);
     auto delegate = std::make_unique<TestClientControlledStateDelegate>();

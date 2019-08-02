@@ -60,7 +60,7 @@ void EventRouterForwarder::HandleEvent(
     bool use_profile_to_restrict_events,
     const GURL& event_url) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&EventRouterForwarder::HandleEvent, this, extension_id,
                        histogram_value, event_name, std::move(event_args),

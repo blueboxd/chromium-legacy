@@ -189,12 +189,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
     route_to_root_for_devtools_ = route;
   }
 
-  // Makes the appropriate RenderWidgetHosts ignore touch acks for events
-  // rooted at |root_view| that are pending acks. This is used when we replace
-  // the view of a RenderWidgetHost with a new view and should be called before
-  // destroying the old view.
-  void IgnoreUnackedTouchEvents(RenderWidgetHostViewBase* root_view);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserSideFlingBrowserTest,
                            InertialGSUBubblingStopsWhenParentCannotScroll);

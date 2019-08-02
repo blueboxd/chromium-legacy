@@ -217,11 +217,8 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
           },
           loop.QuitClosure(), &received_info)),
       mojo::MakeRequest(&navigation_client_));
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
   navigation_client_->CommitNavigation(
-      std::move(common_params), CreateCommitNavigationParams(),
+      CreateCommonNavigationParams(), CreateCommitNavigationParams(),
       network::ResourceResponseHead(), mojo::ScopedDataPipeConsumerHandle(),
       nullptr, nullptr, base::nullopt, nullptr, std::move(info),
       mojo::NullRemote(), base::UnguessableToken::Create(),

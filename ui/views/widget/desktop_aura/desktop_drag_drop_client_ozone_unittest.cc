@@ -196,7 +196,7 @@ class DesktopDragDropClientOzoneTest : public ViewsTestBase {
     Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(100, 100);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->Show();
 
     // Creates FakeDragDropDelegate and set it for |window|.

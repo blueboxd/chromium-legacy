@@ -1358,11 +1358,11 @@ TEST_F(CorePageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
   NavigateAndCommit(GURL(kDefaultTestUrl2));
 
   EXPECT_THAT(
-      histogram_tester().GetAllSamples(internal::kHistogramFirstInputDelay),
+      histogram_tester().GetAllSamples(internal::kHistogramFirstInputDelay4),
       testing::ElementsAre(base::Bucket(5, 1)));
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(internal::kHistogramFirstInputTimestamp),
-      testing::ElementsAre(base::Bucket(4780, 1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  internal::kHistogramFirstInputTimestamp4),
+              testing::ElementsAre(base::Bucket(4780, 1)));
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, LongestInputDelayAndTimestamp) {

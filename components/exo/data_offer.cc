@@ -74,8 +74,9 @@ void WriteFileDescriptorOnWorkerThread(
 
 void WriteFileDescriptor(base::ScopedFD fd,
                          scoped_refptr<base::RefCountedMemory> memory) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&WriteFileDescriptorOnWorkerThread, std::move(fd),
                      std::move(memory)));
 }
@@ -157,8 +158,9 @@ void SendAsPNGOnWorkerThread(base::ScopedFD fd, const SkBitmap sk_bitmap) {
 void ReadPNGFromClipboard(base::ScopedFD fd) {
   const SkBitmap sk_bitmap = ui::Clipboard::GetForCurrentThread()->ReadImage(
       ui::ClipboardType::kCopyPaste);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&SendAsPNGOnWorkerThread, std::move(fd),
                      std::move(sk_bitmap)));
 }

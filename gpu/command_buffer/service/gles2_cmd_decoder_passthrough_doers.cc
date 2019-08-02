@@ -526,7 +526,8 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
   if (service_id != 0) {
     // Create a new texture object to track this texture
     if (!resources_->texture_object_map.GetServiceID(texture,
-                                                     &texture_passthrough)) {
+                                                     &texture_passthrough) ||
+        texture_passthrough == nullptr) {
       texture_passthrough = new TexturePassthrough(service_id, target);
       resources_->texture_object_map.SetIDMapping(texture, texture_passthrough);
     } else {
@@ -4667,8 +4668,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
   if (contents_texture_id) {
     scoped_refptr<TexturePassthrough> passthrough_texture;
     if (!resources_->texture_object_map.GetServiceID(contents_texture_id,
-                                                     &passthrough_texture) &&
-        passthrough_texture) {
+                                                     &passthrough_texture) ||
+        passthrough_texture == nullptr) {
       InsertError(GL_INVALID_VALUE, "unknown texture");
       return error::kNoError;
     }
@@ -4710,8 +4711,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerInUseQueryCHROMIUM(
     if (texture_id) {
       scoped_refptr<TexturePassthrough> passthrough_texture;
       if (!resources_->texture_object_map.GetServiceID(texture_id,
-                                                       &passthrough_texture) &&
-          passthrough_texture) {
+                                                       &passthrough_texture) ||
+          passthrough_texture == nullptr) {
         InsertError(GL_INVALID_VALUE, "unknown texture");
         return error::kNoError;
       }
@@ -4769,7 +4770,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
 
     scoped_refptr<TexturePassthrough> passthrough_texture;
     if (!resources_->texture_object_map.GetServiceID(texture_id,
-                                                     &passthrough_texture)) {
+                                                     &passthrough_texture) ||
+        passthrough_texture == nullptr) {
       InsertError(GL_INVALID_VALUE, "unknown texture");
       return error::kNoError;
     }

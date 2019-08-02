@@ -684,6 +684,10 @@ void InputRouterImpl::WaitForInputProcessed(base::OnceClosure callback) {
   client_->GetWidgetInputHandler()->WaitForInputProcessed(std::move(callback));
 }
 
+void InputRouterImpl::FlushTouchEventQueue() {
+  touch_event_queue_.FlushQueue();
+}
+
 void InputRouterImpl::ForceSetTouchActionAuto() {
   touch_action_filter_.AppendToGestureSequenceForDebugging("F");
   touch_action_filter_.OnSetTouchAction(cc::kTouchActionAuto);

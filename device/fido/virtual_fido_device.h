@@ -157,7 +157,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     bool InjectRegistration(base::span<const uint8_t> credential_id,
                             const std::string& relying_party_id);
 
-    // InjectResidentKey adds a resident credential with the specified values.
+    // Adds a resident credential with the specified values.
+    // Returns false if there already exists a resident credential for the same
+    // (RP ID, user ID) pair, or for the same credential ID. Otherwise returns
+    // true.
+    bool InjectResidentKey(base::span<const uint8_t> credential_id,
+                           device::PublicKeyCredentialRpEntity rp,
+                           device::PublicKeyCredentialUserEntity user,
+                           int32_t signature_counter,
+                           std::unique_ptr<crypto::ECPrivateKey> private_key);
+
+    // Adds a resident credential with the specified values, creating a new
+    // private key.
     // Returns false if there already exists a resident credential for the same
     // (RP ID, user ID) pair, or for the same credential ID. Otherwise returns
     // true.

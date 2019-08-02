@@ -10,7 +10,6 @@
 namespace app_mode {
 
 const char kAppShimBootstrapNameFragment[] = "apps";
-const char kMojoChannelMacSignalFile[] = "apps_use_mojo_channel_mac";
 
 const char kRunningChromeVersionSymlinkName[] = "RunningChromeVersion";
 

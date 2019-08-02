@@ -12,12 +12,12 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_list_launch_recorder.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "content/public/browser/system_connector.h"
 #include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
 
@@ -73,11 +72,8 @@ SearchController::SearchController(AppListModelUpdater* model_updater,
     : mixer_(std::make_unique<Mixer>(model_updater)),
       list_controller_(list_controller) {
   std::unique_ptr<SearchResultRanker> ranker =
-      std::make_unique<SearchResultRanker>(
-          profile,
-          HistoryServiceFactory::GetForProfile(
-              profile, ServiceAccessType::EXPLICIT_ACCESS),
-          content::GetSystemConnector());
+      std::make_unique<SearchResultRanker>(profile,
+                                           content::GetSystemConnector());
   ranker->InitializeRankers();
   mixer_->SetNonAppSearchResultRanker(std::move(ranker));
 }
@@ -119,10 +115,8 @@ void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
 
   // Launching apps can take some time. It looks nicer to dismiss the app list.
   // Do not close app list for home launcher.
-  if (!TabletModeClient::Get() ||
-      !TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (!ash::TabletMode::Get() || !ash::TabletMode::Get()->InTabletMode())
     list_controller_->DismissView();
-  }
 }
 
 void SearchController::InvokeResultAction(ChromeSearchResult* result,

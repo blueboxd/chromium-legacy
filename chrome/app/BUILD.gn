@@ -571,7 +571,6 @@ source_set("builtin_service_manifests") {
     "//chrome/services/file_util/public/cpp:manifest",
     "//components/services/quarantine",
     "//components/services/quarantine/public/cpp:manifest",
-    "//components/spellcheck/common:interfaces",
     "//components/startup_metric_utils/common:interfaces",
     "//device/vr/buildflags",
     "//extensions/buildflags",
@@ -637,7 +636,6 @@ source_set("chrome_renderer_manifest") {
     "//base",
     "//chrome/common:mojo_bindings",
     "//components/safe_browsing/common:interfaces",
-    "//components/spellcheck/common:interfaces",
     "//services/service_manager/public/cpp",
   ]
 }

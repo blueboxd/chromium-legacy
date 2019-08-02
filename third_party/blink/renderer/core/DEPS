@@ -117,4 +117,7 @@ specific_include_rules = {
     "html_media_element_test.cc": [
         "+base/test/gtest_util.h",
     ],
+    "element_test.cc": [
+        "+third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+    ]
 }

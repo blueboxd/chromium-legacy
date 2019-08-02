@@ -120,11 +120,6 @@ class CreditCardSaveManager {
   // are satisfied.
   virtual bool IsCreditCardUploadEnabled();
 
-  // Returns true if the given |network| is allowed for upload to Google
-  // Payments, false otherwise. Mainly used for blacklisting upload of certain
-  // networks.
-  bool IsUploadEnabledForNetwork(const std::string& network);
-
   // For testing.
   void SetAppLocale(std::string app_locale) { app_locale_ = app_locale; }
 

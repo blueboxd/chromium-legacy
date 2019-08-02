@@ -6214,7 +6214,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;
     params->widget_params = mojom::CreateFrameWidgetParams::New();
     params->widget_params->routing_id = IPC::mojom::kRoutingIdNone;
-    params->widget_params->hidden = true;
     params->replication_state.name = "name";
     params->replication_state.unique_name = "name";
     params->devtools_frame_token = base::UnguessableToken::Create();
@@ -6286,7 +6285,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
     params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;
     params->widget_params = mojom::CreateFrameWidgetParams::New();
     params->widget_params->routing_id = widget_routing_id;
-    params->widget_params->hidden = true;
     params->replication_state.name = "name";
     params->replication_state.unique_name = "name";
     params->devtools_frame_token = base::UnguessableToken::Create();

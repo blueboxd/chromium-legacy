@@ -1,0 +1,79 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_CHROMEOS_CERTIFICATE_PROVIDER_SECURITY_TOKEN_PIN_DIALOG_HOST_H_
+#define CHROME_BROWSER_CHROMEOS_CERTIFICATE_PROVIDER_SECURITY_TOKEN_PIN_DIALOG_HOST_H_
+
+#include <string>
+
+#include "base/callback_forward.h"
+
+namespace chromeos {
+
+// The interface that allows showing a PIN dialog requested by a certificate
+// provider extension (see the chrome.certificateProvider API).
+//
+// Only one dialog is supported at a time by a single host instance.
+class SecurityTokenPinDialogHost {
+ public:
+  // Type of the information requested from the user.
+  enum class SecurityTokenPinCodeType {
+    kPin,
+    kPuk,
+  };
+
+  // Error to be displayed in the dialog.
+  enum class SecurityTokenPinErrorLabel {
+    kNone,
+    kUnknown,
+    kInvalidPin,
+    kInvalidPuk,
+    kMaxAttemptsExceeded,
+  };
+
+  using SecurityTokenPinEnteredCallback =
+      base::OnceCallback<void(const std::string& user_input)>;
+  using SecurityTokenPinDialogClosedCallback = base::OnceClosure;
+
+  // Note that this does NOT execute the callback.
+  virtual ~SecurityTokenPinDialogHost() = default;
+
+  // Shows the PIN dialog, or updates the existing one if it's already shown.
+  //
+  // Note that the caller is still responsible for closing the opened dialog, by
+  // calling ClosePinDialog(), after the |callback| got executed with a
+  // non-empty |user_input|.
+  //
+  // Note also that when the existing dialog is updated, its old callbacks will
+  // NOT be called at all.
+  //
+  // |caller_extension_name| - name of the extension that requested this dialog.
+  // |code_type| - type of the code requested from the user.
+  // |enable_user_input| - when false, the UI will disable the controls that
+  //     allow user to enter the PIN/PUK. MUST be |false| when |attempts_left|
+  //     is zero.
+  // |error_label| - optionally, specifies the error that the UI should display
+  //     (note that a non-empty error does NOT disable the user input per se).
+  // |attempts_left| - when non-negative, the UI should indicate this number to
+  //     the user; otherwise must be equal to -1.
+  // |pin_entered_callback| - will be called when the user submits the input.
+  // |pin_dialog_closed_callback| - will be called when the dialog is closed
+  //     (either by the user or programmatically).
+  virtual void ShowSecurityTokenPinDialog(
+      const std::string& caller_extension_name,
+      SecurityTokenPinCodeType code_type,
+      bool enable_user_input,
+      SecurityTokenPinErrorLabel error_label,
+      int attempts_left,
+      SecurityTokenPinEnteredCallback pin_entered_callback,
+      SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback) = 0;
+
+  // Closes the currently shown PIN dialog, if there's any. This will
+  // immediately trigger |pin_dialog_closed_callback|.
+  virtual void CloseSecurityTokenPinDialog() = 0;
+};
+
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_CERTIFICATE_PROVIDER_SECURITY_TOKEN_PIN_DIALOG_HOST_H_

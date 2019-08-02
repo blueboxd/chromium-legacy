@@ -55,7 +55,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
   static std::unique_ptr<ServiceWorkerNavigationHandleCore>
   CreateNavigationHandleCore(ServiceWorkerContextWrapper* context_wrapper) {
     std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core;
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             [](ServiceWorkerContextWrapper* wrapper) {
@@ -79,15 +79,12 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         CreateNavigationHandleCore(helper_->context_wrapper());
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host;
     GURL gurl(url);
-    auto common_params = mojom::CommonNavigationParams::New();
-    common_params->referrer = blink::mojom::Referrer::New();
-    common_params->navigation_start = base::TimeTicks::Now();
     auto begin_params = mojom::BeginNavigationParams::New();
     begin_params->request_context_type =
         blink::mojom::RequestContextType::HYPERLINK;
     url::Origin origin = url::Origin::Create(gurl);
     NavigationRequestInfo request_info(
-        std::move(common_params), std::move(begin_params), gurl,
+        CreateCommonNavigationParams(), std::move(begin_params), gurl,
         net::NetworkIsolationKey(origin, origin), true /* is_main_frame */,
         false /* parent_is_main_frame */, true /* are_ancestors_secure */,
         -1 /* frame_tree_node_id */, false /* is_for_guests_only */,

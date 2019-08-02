@@ -7,9 +7,12 @@ package org.chromium.chrome.browser.touchless.dialog;
 import android.view.View;
 
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ListItemType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.concurrent.ExecutionException;
@@ -57,14 +60,15 @@ public class TouchlessDialogTestUtils {
         });
     }
 
-    private static PropertyModel[] generateItems(
+    private static ModelList generateItems(
             String[] itemTitles, View.OnClickListener[] itemListeners) {
-        PropertyModel[] items = new PropertyModel[itemTitles.length];
-        for (int i = 0; i < items.length; i++) {
-            items[i] = new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                               .with(DialogListItemProperties.TEXT, itemTitles[i])
-                               .with(DialogListItemProperties.CLICK_LISTENER, itemListeners[i])
-                               .build();
+        ModelList items = new ModelList();
+        for (int i = 0; i < itemTitles.length; i++) {
+            items.add(new ListItem(ListItemType.DEFAULT,
+                    new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
+                            .with(DialogListItemProperties.TEXT, itemTitles[i])
+                            .with(DialogListItemProperties.CLICK_LISTENER, itemListeners[i])
+                            .build()));
         }
         return items;
     }

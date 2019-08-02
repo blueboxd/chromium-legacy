@@ -51,7 +51,7 @@ source_set("identity_chooser_ui") {
     "resources:identity_chooser_add_account",
     "//base",
     "//base:i18n",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/colors",

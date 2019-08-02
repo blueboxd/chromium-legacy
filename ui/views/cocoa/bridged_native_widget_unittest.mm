@@ -304,7 +304,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   using NativeWidgetMac::GetNSWindowHost;
 
   // internal::NativeWidgetPrivate:
-  void InitNativeWidget(const Widget::InitParams& params) override {
+  void InitNativeWidget(Widget::InitParams params) override {
     ownership_ = params.ownership;
 
     base::scoped_nsobject<NativeWidgetMacNSWindow> window(
@@ -377,23 +377,16 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
 
     ui::MaterialDesignController::Initialize();
 
-    init_params_.native_widget = native_widget_mac_;
-
-    // Use a frameless window, otherwise Widget will try to center the window
-    // before the tests covering the Init() flow are ready to do that.
-    init_params_.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-
-    // To control the lifetime without an actual window that must be closed,
-    // tests in this file need to use WIDGET_OWNS_NATIVE_WIDGET.
-    init_params_.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-
-    // Opacity defaults to "infer" which is usually updated by ViewsDelegate.
-    init_params_.opacity = Widget::InitParams::OPAQUE_WINDOW;
-
-    init_params_.bounds = gfx::Rect(100, 100, 100, 100);
+    Widget::InitParams init_params;
+    init_params.native_widget = native_widget_mac_;
+    init_params.type = type_;
+    init_params.ownership = ownership_;
+    init_params.opacity = opacity_;
+    init_params.bounds = bounds_;
+    init_params.shadow_type = shadow_type_;
 
     if (native_widget_mac_)
-      native_widget_mac_->GetWidget()->Init(init_params_);
+      native_widget_mac_->GetWidget()->Init(std::move(init_params));
   }
 
   void TearDown() override {
@@ -414,8 +407,19 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
   std::unique_ptr<Widget> widget_;
   MockNativeWidgetMac* native_widget_mac_;  // Weak. Owned by |widget_|.
 
-  // Make the InitParams available to tests to cover initialization codepaths.
-  Widget::InitParams init_params_;
+  // Use a frameless window, otherwise Widget will try to center the window
+  // before the tests covering the Init() flow are ready to do that.
+  Widget::InitParams::Type type_ = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  // To control the lifetime without an actual window that must be closed,
+  // tests in this file need to use WIDGET_OWNS_NATIVE_WIDGET.
+  Widget::InitParams::Ownership ownership_ =
+      Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  // Opacity defaults to "infer" which is usually updated by ViewsDelegate.
+  Widget::InitParams::WindowOpacity opacity_ =
+      Widget::InitParams::OPAQUE_WINDOW;
+  gfx::Rect bounds_ = gfx::Rect(100, 100, 100, 100);
+  Widget::InitParams::ShadowType shadow_type_ =
+      Widget::InitParams::SHADOW_TYPE_DEFAULT;
 
  private:
   TestViewsDelegate test_views_delegate_;
@@ -544,7 +548,7 @@ Textfield* BridgedNativeWidgetTest::InstallTextField(
   textfield->set_controller(this);
   view_->RemoveAllChildViews(true);
   view_->AddChildView(textfield);
-  textfield->SetBoundsRect(init_params_.bounds);
+  textfield->SetBoundsRect(bounds_);
 
   // Request focus so the InputMethod can dispatch events to the RootView, and
   // have them delivered to the textfield. Note that focusing a textfield
@@ -863,11 +867,17 @@ class BridgedNativeWidgetInitTest : public BridgedNativeWidgetTestBase {
   void CreateNewWidgetToInit() {
     widget_.reset(new Widget);
     native_widget_mac_ = new MockNativeWidgetMac(widget_.get());
-    init_params_.native_widget = native_widget_mac_;
   }
 
   void PerformInit() {
-    widget_->Init(init_params_);
+    Widget::InitParams init_params;
+    init_params.native_widget = native_widget_mac_;
+    init_params.type = type_;
+    init_params.ownership = ownership_;
+    init_params.opacity = opacity_;
+    init_params.bounds = bounds_;
+    init_params.shadow_type = shadow_type_;
+    widget_->Init(std::move(init_params));
   }
 
  private:
@@ -890,9 +900,9 @@ TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
 // Tests the shadow type given in InitParams.
 TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
   // Verify Widget::InitParam defaults and arguments added from SetUp().
-  EXPECT_EQ(Widget::InitParams::TYPE_WINDOW_FRAMELESS, init_params_.type);
-  EXPECT_EQ(Widget::InitParams::OPAQUE_WINDOW, init_params_.opacity);
-  EXPECT_EQ(Widget::InitParams::SHADOW_TYPE_DEFAULT, init_params_.shadow_type);
+  EXPECT_EQ(Widget::InitParams::TYPE_WINDOW_FRAMELESS, type_);
+  EXPECT_EQ(Widget::InitParams::OPAQUE_WINDOW, opacity_);
+  EXPECT_EQ(Widget::InitParams::SHADOW_TYPE_DEFAULT, shadow_type_);
 
   CreateNewWidgetToInit();
   EXPECT_FALSE(
@@ -905,7 +915,7 @@ TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
       [bridge_window() hasShadow]);  // SHADOW_TYPE_DEFAULT means a shadow.
 
   CreateNewWidgetToInit();
-  init_params_.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
+  shadow_type_ = Widget::InitParams::SHADOW_TYPE_NONE;
   PerformInit();
   EXPECT_FALSE([bridge_window() hasShadow]);  // Preserves lack of shadow.
 
@@ -915,7 +925,7 @@ TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
   EXPECT_FALSE(
       [bridge_window() hasShadow]);  // SHADOW_TYPE_NONE removes shadow.
 
-  init_params_.shadow_type = Widget::InitParams::SHADOW_TYPE_DEFAULT;
+  shadow_type_ = Widget::InitParams::SHADOW_TYPE_DEFAULT;
   CreateNewWidgetToInit();
   PerformInit();
   EXPECT_TRUE([bridge_window() hasShadow]);  // Preserves shadow.

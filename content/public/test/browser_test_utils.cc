@@ -473,14 +473,14 @@ class TestNavigationManagerThrottle : public NavigationThrottle {
  private:
   // NavigationThrottle:
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             on_will_start_request_closure_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   on_will_start_request_closure_);
     return NavigationThrottle::DEFER;
   }
 
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             on_will_process_response_closure_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   on_will_process_response_closure_);
     return NavigationThrottle::DEFER;
   }
 
@@ -2597,7 +2597,7 @@ void MainThreadFrameObserver::Quit() {
 bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
   if (msg.type() == WidgetHostMsg_WaitForNextFrameForTests_ACK::ID &&
       msg.routing_id() == routing_id_) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&MainThreadFrameObserver::Quit, base::Unretained(this)));
   }
@@ -2973,11 +2973,10 @@ blink::mojom::FileSystemManagerPtr GetFileSystemManager(
   FileSystemManagerImpl* file_system = static_cast<RenderProcessHostImpl*>(rph)
                                            ->GetFileSystemManagerForTesting();
   blink::mojom::FileSystemManagerPtr file_system_manager_ptr;
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&FileSystemManagerImpl::BindRequest,
-                     base::Unretained(file_system),
-                     mojo::MakeRequest(&file_system_manager_ptr)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&FileSystemManagerImpl::BindRequest,
+                                base::Unretained(file_system),
+                                mojo::MakeRequest(&file_system_manager_ptr)));
   return file_system_manager_ptr;
 }
 }  // namespace
@@ -3096,7 +3095,7 @@ bool ContextMenuFilter::OnMessageReceived(const IPC::Message& message) {
     FrameHostMsg_ContextMenu::Param params;
     FrameHostMsg_ContextMenu::Read(&message, &params);
     content::ContextMenuParams menu_params = std::get<0>(params);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ContextMenuFilter::OnContextMenu, this, menu_params));
   }
@@ -3314,14 +3313,14 @@ void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
                       1.f / visual_properties.screen_info.device_scale_factor));
   }
   // Track each rect updates.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &SynchronizeVisualPropertiesMessageFilter::OnUpdatedFrameRectOnUI,
           this, screen_space_rect_in_dip));
 
   // Track each surface id update.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &SynchronizeVisualPropertiesMessageFilter::OnUpdatedSurfaceIdOnUI,
@@ -3340,7 +3339,7 @@ void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
 
   // We can't nest on the IO thread. So tests will wait on the UI thread, so
   // post there to exit the nesting.
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&SynchronizeVisualPropertiesMessageFilter::
                                     OnUpdatedFrameSinkIdOnUI,

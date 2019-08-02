@@ -195,8 +195,8 @@ SearchEnginesHandler::CreateDictionaryForEngine(int index, bool is_default) {
       "keyword",
       table_model->GetText(index, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN));
   Profile* profile = Profile::FromWebUI(web_ui());
-  dict->SetString("url", template_url->url_ref().DisplayURL(
-                             UIThreadSearchTermsData(profile)));
+  dict->SetString(
+      "url", template_url->url_ref().DisplayURL(UIThreadSearchTermsData()));
   dict->SetBoolean("urlLocked", template_url->prepopulate_id() > 0);
   GURL icon_url = template_url->favicon_url();
   if (icon_url.is_valid())

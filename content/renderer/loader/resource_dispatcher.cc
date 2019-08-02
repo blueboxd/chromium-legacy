@@ -450,7 +450,7 @@ void ResourceDispatcher::StartSync(
   // pointers to |sync_load_response| and |event| as this stack frame will
   // survive until the request is complete.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({});
+      base::CreateSingleThreadTaskRunner({base::ThreadPool()});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,

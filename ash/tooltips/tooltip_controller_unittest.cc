@@ -44,7 +44,7 @@ views::Widget* CreateNewWidgetWithBoundsOn(int display,
       Shell::Get()->GetContainer(Shell::GetAllRootWindows().at(display),
                                  desks_util::GetActiveDeskContainerId());
   params.bounds = bounds;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   return widget;
 }

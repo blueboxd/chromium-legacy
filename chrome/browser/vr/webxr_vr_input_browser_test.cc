@@ -214,9 +214,13 @@ void WebXrControllerInputMock::OnFrameSubmitted(
   std::move(callback).Run();
 }
 
+// TODO(crbug.com/986637) - Enable for OpenXR
 // Ensure that when an input source's handedness changes, an input source change
 // event is fired and a new input source is created.
-WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestInputHandednessChange) {
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
+                                    WebXrVrWmrBrowserTest,
+                                    WebXrVrBrowserTestBase,
+                                    TestInputHandednessChange) {
   WebXrControllerInputMock my_mock;
   unsigned int controller_index =
       my_mock.CreateAndConnectMinimalGamepad(t->GetPrimaryAxisType());
@@ -254,12 +258,16 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestInputHandednessChange) {
   t->EndTest();
 }
 
+// TODO(crbug.com/986637) - Enable for OpenXR
 // Test that inputsourceschange events contain only the expected added/removed
 // input sources when a mock controller is connected/disconnected.
 // Also validates that if an input source changes substantially we get an event
 // containing both the removal of the old one and the additon of the new one,
 // rather than two events.
-WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestInputSourcesChange) {
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
+                                    WebXrVrWmrBrowserTest,
+                                    WebXrVrBrowserTestBase,
+                                    TestInputSourcesChange) {
   WebXrControllerInputMock my_mock;
 
   // TODO(crbug.com/963676): Figure out if the race is a product or test bug.
@@ -424,10 +432,14 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadIncompleteData) {
   EndTest();
 }
 
+// TODO(crbug.com/986637) - Enable for OpenXR
 // Ensure that if a Gamepad has the minimum required number of axes/buttons to
 // be considered an xr-standard Gamepad, that it is exposed as such, and that
 // we can check the state of it's priamry axes/button.
-WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestGamepadMinimumData) {
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
+                                    WebXrVrWmrBrowserTest,
+                                    WebXrVrBrowserTestBase,
+                                    TestGamepadMinimumData) {
   WebXrControllerInputMock my_mock;
 
   unsigned int controller_index =
@@ -467,10 +479,14 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestGamepadMinimumData) {
   t->EndTest();
 }
 
+// TODO(crbug.com/986637) - Enable for OpenXR
 // Ensure that if a Gamepad has all of the required and optional buttons as
 // specified by the xr-standard mapping, that those buttons are plumbed up
 // in their required places.
-WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestGamepadCompleteData) {
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
+                                    WebXrVrWmrBrowserTest,
+                                    WebXrVrBrowserTestBase,
+                                    TestGamepadCompleteData) {
   WebXrControllerInputMock my_mock;
 
   // Create a controller that supports all reserved buttons.
@@ -682,10 +698,14 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadOptionalData) {
   EndTest();
 }
 
+// TODO(crbug.com/986637) - Enable for OpenXR
 // Test that controller input is registered via WebXR's input method.
 // Equivalent to
 // WebXrVrInputTest#testControllerClicksRegisteredOnDaydream_WebXr.
-WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestControllerInputRegistered) {
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
+                                    WebXrVrWmrBrowserTest,
+                                    WebXrVrBrowserTestBase,
+                                    TestControllerInputRegistered) {
   WebXrControllerInputMock my_mock;
 
   unsigned int controller_index =
@@ -768,9 +788,13 @@ std::string TransformToColMajorString(const gfx::Transform& t) {
   return array_string;
 }
 
+// TODO(crbug.com/986637) - Enable for OpenXR
 // Test that changes in controller position are properly plumbed through to
 // WebXR.
-WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestControllerPositionTracking) {
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
+                                    WebXrVrWmrBrowserTest,
+                                    WebXrVrBrowserTestBase,
+                                    TestControllerPositionTracking) {
   WebXrControllerInputMock my_mock;
 
   auto controller_data = my_mock.CreateValidController(

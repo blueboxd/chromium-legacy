@@ -48,7 +48,7 @@ class ImageViewTest : public ViewsTestBase,
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(200, 200);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_.Init(params);
+    widget_.Init(std::move(params));
     View* container = new View();
     // Make sure children can take up exactly as much space as they require.
     BoxLayout::Orientation orientation =

@@ -156,7 +156,7 @@ class BorderView : public NativeViewHost {
         Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
         params.parent = details.parent->GetWidget()->GetNativeView();
         params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-        widget_->Init(params);
+        widget_->Init(std::move(params));
         widget_->SetFocusTraversableParentView(this);
         widget_->SetContentsView(child_);
       }

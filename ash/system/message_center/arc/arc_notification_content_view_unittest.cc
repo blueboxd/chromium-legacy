@@ -175,7 +175,7 @@ class ArcNotificationContentViewTest : public AshTestBase {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.context = Shell::GetPrimaryRootWindow();
     auto wrapper_widget = std::make_unique<views::Widget>();
-    wrapper_widget->Init(params);
+    wrapper_widget->Init(std::move(params));
     wrapper_widget->SetContentsView(notification_view.get());
     wrapper_widget->SetSize(notification_view->GetPreferredSize());
 

@@ -41,6 +41,8 @@ constexpr char XrBrowserTestBase::kVrConfigPathEnvVar[];
 constexpr char XrBrowserTestBase::kVrConfigPathVal[];
 constexpr char XrBrowserTestBase::kVrLogPathEnvVar[];
 constexpr char XrBrowserTestBase::kVrLogPathVal[];
+constexpr char XrBrowserTestBase::kOpenXrConfigPathEnvVar[];
+constexpr char XrBrowserTestBase::kOpenXrConfigPathVal[];
 constexpr char XrBrowserTestBase::kTestFileDir[];
 constexpr char XrBrowserTestBase::kSwitchIgnoreRuntimeRequirements[];
 const std::vector<std::string> XrBrowserTestBase::kRequiredTestSwitches{
@@ -135,6 +137,16 @@ void XrBrowserTestBase::SetUp() {
       env_->SetVar(kVrLogPathEnvVar, MakeExecutableRelative(kVrLogPathVal)))
       << "Failed to set OpenVR log location environment variable";
 
+  // Set the environment variable to use the mock OpenXR client.
+  // If the kOpenXrConfigPathEnvVar environment variable is set, the OpenXR
+  // loader will look for the OpenXR runtime specified in that json file. The
+  // json file contains the path to the runtime, relative to the json file
+  // itself. Otherwise, the OpenXR loader loads the active OpenXR runtime
+  // installed on the system, which is specified by a registry key.
+  ASSERT_TRUE(env_->SetVar(kOpenXrConfigPathEnvVar,
+                           MakeExecutableRelative(kOpenXrConfigPathVal)))
+      << "Failed to set OpenXR JSON location environment variable";
+
   // Set any command line flags that subclasses have set, e.g. enabling WebVR
   // and OpenVR support.
   for (const auto& switch_string : append_switches_) {
@@ -164,6 +176,7 @@ device::XrAxisType XrBrowserTestBase::GetPrimaryAxisType() const {
     case XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR:
       return device::XrAxisType::kTrackpad;
     case XrBrowserTestBase::RuntimeType::RUNTIME_WMR:
+    case XrBrowserTestBase::RuntimeType::RUNTIME_OPENXR:
       return device::XrAxisType::kJoystick;
     case XrBrowserTestBase::RuntimeType::RUNTIME_NONE:
       return device::XrAxisType::kNone;
@@ -177,6 +190,7 @@ device::XrAxisType XrBrowserTestBase::GetSecondaryAxisType() const {
     case XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR:
       return device::XrAxisType::kJoystick;
     case XrBrowserTestBase::RuntimeType::RUNTIME_WMR:
+    case XrBrowserTestBase::RuntimeType::RUNTIME_OPENXR:
       return device::XrAxisType::kTrackpad;
     case XrBrowserTestBase::RuntimeType::RUNTIME_NONE:
       return device::XrAxisType::kNone;

@@ -76,7 +76,7 @@ void JNI_AwContentsStatics_ClearClientCertPreferences(
     JNIEnv* env,
     const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&NotifyClientCertificatesChanged),
       base::BindOnce(&ClientCertificatesCleared,

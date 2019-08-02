@@ -140,7 +140,7 @@ class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   GURL google_base_url() const {
-    return GURL(UIThreadSearchTermsData(profile_.get()).GoogleBaseURLValue());
+    return GURL(UIThreadSearchTermsData().GoogleBaseURLValue());
   }
 
   bool callback_called() const {

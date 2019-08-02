@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/ash/screen_orientation_delegate_chromeos.h"
 
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/shell.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -59,8 +59,7 @@ void ScreenOrientationDelegateChromeos::Lock(
 }
 
 bool ScreenOrientationDelegateChromeos::ScreenOrientationProviderSupported() {
-  return TabletModeClient::Get() &&
-         TabletModeClient::Get()->tablet_mode_enabled();
+  return ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode();
 }
 
 void ScreenOrientationDelegateChromeos::Unlock(

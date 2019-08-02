@@ -35,7 +35,7 @@ class PhotoControllerImpl;
 class ScreenOrientationDelegateChromeos;
 class SessionControllerClientImpl;
 class SystemTrayClient;
-class TabletModeClient;
+class TabletModePageBehavior;
 class VpnListForwarder;
 class WallpaperControllerClient;
 
@@ -84,7 +84,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
       screen_orientation_delegate_;
   std::unique_ptr<SessionControllerClientImpl> session_controller_client_;
   std::unique_ptr<SystemTrayClient> system_tray_client_;
-  std::unique_ptr<TabletModeClient> tablet_mode_client_;
+  std::unique_ptr<TabletModePageBehavior> tablet_mode_page_behavior_;
   std::unique_ptr<VpnListForwarder> vpn_list_forwarder_;
   std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_;
   // TODO(stevenjb): Move NetworkPortalNotificationController to c/b/ui/ash and

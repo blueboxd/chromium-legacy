@@ -158,11 +158,6 @@ extern const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[];
 extern const char kEnableAutofillImportDynamicFormsName[];
 extern const char kEnableAutofillImportDynamicFormsDescription[];
 
-// Title and description for the flag to control the credit card import from
-// accordion forms.
-extern const char kEnableAutofillImportNonFocusableCreditCardFormsName[];
-extern const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[];
-
 // Title and description for the flag to enable the clipboard provider to
 // suggest searchihng for copied imagse
 extern const char kEnableClipboardProviderImageSuggestionsName[];

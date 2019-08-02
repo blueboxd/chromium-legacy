@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
+#include <utility>
+
 #include "base/logging.h"
 
 using content::WebContents;
@@ -119,6 +121,11 @@ void TabStripModelObserver::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {}
+
+void TabStripModelObserver::OnTabGroupVisualDataChanged(
+    TabStripModel* tab_strip_model,
+    TabGroupId group,
+    const TabGroupVisualData* visual_data) {}
 
 void TabStripModelObserver::TabChangedAt(WebContents* contents,
                                          int index,

@@ -84,6 +84,26 @@ TEST(FramePriorityTest, VoteReceiptsWork) {
   ExpectEntangled(voter.receipts_[0], consumer.votes_[0]);
   ExpectEntangled(voter.receipts_[1], consumer.votes_[1]);
 
+  // Change a vote, but making no change.
+  ExpectEntangled(voter.receipts_[0], consumer.votes_[0]);
+  EXPECT_EQ(kDummyFrame1, consumer.votes_[0].vote().frame_node());
+  EXPECT_EQ(base::TaskPriority::LOWEST, consumer.votes_[0].vote().priority());
+  EXPECT_EQ(test::DummyVoter::kReason, consumer.votes_[0].vote().reason());
+  voter.receipts_[0].ChangeVote(base::TaskPriority::LOWEST,
+                                test::DummyVoter::kReason);
+  ExpectEntangled(voter.receipts_[0], consumer.votes_[0]);
+  EXPECT_EQ(kDummyFrame1, consumer.votes_[0].vote().frame_node());
+  EXPECT_EQ(base::TaskPriority::LOWEST, consumer.votes_[0].vote().priority());
+  EXPECT_EQ(test::DummyVoter::kReason, consumer.votes_[0].vote().reason());
+
+  // Change the vote and expect the change to propagate.
+  static const char kReason[] = "another reason";
+  voter.receipts_[0].ChangeVote(base::TaskPriority::HIGHEST, kReason);
+  ExpectEntangled(voter.receipts_[0], consumer.votes_[0]);
+  EXPECT_EQ(kDummyFrame1, consumer.votes_[0].vote().frame_node());
+  EXPECT_EQ(base::TaskPriority::HIGHEST, consumer.votes_[0].vote().priority());
+  EXPECT_EQ(kReason, consumer.votes_[0].vote().reason());
+
   // Cancel a vote.
   voter.receipts_[0].Reset();
   EXPECT_EQ(2u, voter.receipts_.size());

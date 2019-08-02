@@ -81,7 +81,7 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   params.shadow_elevation = ::wm::kShadowElevationActiveWindow;
   params.parent = root_window->GetChildById(kShellWindowId_ShelfContainer);
   phantom_widget->set_focus_on_creation(false);
-  phantom_widget->Init(params);
+  phantom_widget->Init(std::move(params));
   phantom_widget->SetVisibilityChangedAnimationsEnabled(false);
   aura::Window* phantom_widget_window = phantom_widget->GetNativeWindow();
   phantom_widget_window->set_id(kShellWindowId_PhantomWindow);

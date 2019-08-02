@@ -14,7 +14,7 @@ namespace content {
 
 TestServiceManagerContext::TestServiceManagerContext() {
   context_.reset(new ServiceManagerContext(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
   auto* system_connection = ServiceManagerConnection::GetForProcess();
   system_connection->Start();
 }

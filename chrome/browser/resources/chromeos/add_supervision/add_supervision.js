@@ -33,7 +33,8 @@ function isAllowedRequest(requestDetails) {
 }
 
 let server = null;
-const proxy = addSupervision.mojom.AddSupervisionHandler.getProxy();
+const addSupervisionHandler =
+    addSupervision.mojom.AddSupervisionHandler.getRemote();
 
 Polymer({
   is: 'add-supervision-ui',
@@ -62,7 +63,7 @@ Polymer({
       this.offlineContentDiv.hidden = false;
     });
 
-    proxy.getOAuthToken().then((result) => {
+    addSupervisionHandler.getOAuthToken().then((result) => {
       const webviewUrl = loadTimeData.getString('webviewUrl');
       const eventOriginFilter = loadTimeData.getString('eventOriginFilter');
       const webview =

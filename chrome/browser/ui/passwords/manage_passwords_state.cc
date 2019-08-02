@@ -147,7 +147,8 @@ void ManagePasswordsState::OnPasswordAutofilled(
         password_form_map,
     const GURL& origin,
     const std::vector<const autofill::PasswordForm*>* federated_matches) {
-  DCHECK(!password_form_map.empty());
+  DCHECK(!password_form_map.empty() ||
+         (federated_matches && !federated_matches->empty()));
   ClearData();
   local_credentials_forms_ = DeepCopyNonPSLMapToVector(password_form_map);
   if (federated_matches)

@@ -119,8 +119,6 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   virtual void DidRunInsecureContent(const WebSecurityOrigin&,
                                      const WebURL& insecure_url) {}
 
-  virtual void SetApplicationCacheHostID(const base::UnguessableToken& id) {}
-
   // Sets the builder object of WebDocumentSubresourceFilter on the main thread
   // which will be used in TakeSubresourceFilter() to create a
   // WebDocumentSubresourceFilter on the worker thread.

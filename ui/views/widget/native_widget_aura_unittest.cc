@@ -35,7 +35,7 @@ NativeWidgetAura* Init(aura::Window* parent, Widget* widget) {
   Widget::InitParams params(Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = parent;
-  widget->Init(params);
+  widget->Init(std::move(params));
   return static_cast<NativeWidgetAura*>(widget->native_widget());
 }
 
@@ -145,7 +145,7 @@ TEST_F(NativeWidgetAuraTest, CreateMinimized) {
   params.show_state = ui::SHOW_STATE_MINIMIZED;
   params.bounds.SetRect(0, 0, 1024, 800);
   std::unique_ptr<Widget> widget(new Widget());
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
 
   EXPECT_TRUE(widget->IsMinimized());
@@ -194,7 +194,7 @@ TEST_F(NativeWidgetAuraTest, ToggleState) {
   params.show_state = ui::SHOW_STATE_NORMAL;
   params.bounds.SetRect(0, 0, 1024, 800);
   Widget widget;
-  widget.Init(params);
+  widget.Init(std::move(params));
   std::unique_ptr<TestWindowObserver> observer(
       new TestWindowObserver(widget.GetNativeWindow()));
   widget.Show();
@@ -294,7 +294,7 @@ TEST_F(NativeWidgetAuraTest, ShowMaximizedDoesntBounceAround) {
   params.context = root_window();
   params.show_state = ui::SHOW_STATE_MAXIMIZED;
   params.bounds = gfx::Rect(10, 10, 100, 200);
-  widget->Init(params);
+  widget->Init(std::move(params));
   EXPECT_FALSE(widget->did_size_change_more_than_once());
   widget->CloseNow();
 }
@@ -350,7 +350,7 @@ TEST_F(NativeWidgetAuraTest, TestPropertiesWhenAddedToLayout) {
   params.delegate = new PropertyTestWidgetDelegate(widget.get());
   params.parent = nullptr;
   params.context = root_window();
-  widget->Init(params);
+  widget->Init(std::move(params));
   EXPECT_TRUE(layout_manager->added());
   widget->CloseNow();
 }
@@ -362,7 +362,7 @@ TEST_F(NativeWidgetAuraTest, GetClientAreaScreenBounds) {
   params.context = root_window();
   params.bounds.SetRect(10, 20, 300, 400);
   std::unique_ptr<Widget> widget(new Widget());
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // For Aura, client area bounds match window bounds.
   gfx::Rect client_bounds = widget->GetClientAreaBoundsInScreen();
@@ -420,7 +420,7 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = root_window();
   params.bounds = gfx::Rect(0, 0, 100, 200);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetContentsView(view);
   widget->Show();
 
@@ -462,7 +462,7 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   parent_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   parent_params.context = root_window();
-  parent->Init(parent_params);
+  parent->Init(std::move(parent_params));
   parent->SetContentsView(parent_root);
   parent->SetBounds(gfx::Rect(0, 0, 400, 400));
   parent->Show();
@@ -471,7 +471,7 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
   child_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.parent = parent->GetNativeWindow();
-  child->Init(child_params);
+  child->Init(std::move(child_params));
   child->SetBounds(gfx::Rect(0, 0, 200, 200));
   child->Show();
 
@@ -525,7 +525,7 @@ TEST_F(NativeWidgetAuraTest,
   Widget::InitParams parent_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   parent_params.context = root_window();
-  parent.Init(parent_params);
+  parent.Init(std::move(parent_params));
   parent.SetContentsView(parent_root_view);
   parent.SetBounds(gfx::Rect(0, 0, 400, 400));
   parent.Show();
@@ -534,7 +534,7 @@ TEST_F(NativeWidgetAuraTest,
   Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.parent = parent.GetNativeWindow();
-  child.Init(child_params);
+  child.Init(std::move(child_params));
   child.SetBounds(gfx::Rect(0, 0, 200, 200));
   child.Show();
 
@@ -571,7 +571,7 @@ TEST_F(NativeWidgetAuraTest, FlashFrame) {
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.context = root_window();
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
+  widget->Init(std::move(params));
   aura::Window* window = widget->GetNativeWindow();
   EXPECT_FALSE(window->GetProperty(aura::client::kDrawAttentionKey));
   widget->FlashFrame(true);
@@ -657,7 +657,7 @@ TEST_F(NativeWidgetAuraTest, VisibilityOfChildBubbleWindow) {
   Widget::InitParams parent_params(Widget::InitParams::TYPE_WINDOW);
   parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   parent_params.context = root_window();
-  parent.Init(parent_params);
+  parent.Init(std::move(parent_params));
   parent.SetBounds(gfx::Rect(0, 0, 480, 320));
 
   // Add a child bubble window to the above parent window and show it.
@@ -665,7 +665,7 @@ TEST_F(NativeWidgetAuraTest, VisibilityOfChildBubbleWindow) {
   Widget::InitParams child_params(Widget::InitParams::TYPE_BUBBLE);
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.parent = parent.GetNativeWindow();
-  child.Init(child_params);
+  child.Init(std::move(child_params));
   child.SetBounds(gfx::Rect(0, 0, 200, 200));
   child.Show();
 

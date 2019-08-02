@@ -14,7 +14,7 @@
 #include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/google/core/browser/google_url_tracker.h"
+#include "components/google/core/common/google_util.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
@@ -364,8 +364,8 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
     TabStripModel* tab_strip = browser()->tab_strip_model();
     content::WebContents* active_contents = tab_strip->GetActiveWebContents();
     ASSERT_TRUE(active_contents);
-    EXPECT_EQ(signin::GetChromeSyncURLForDice(
-                  kMainEmail, GoogleURLTracker::kDefaultGoogleHomepage),
+    EXPECT_EQ(signin::GetChromeSyncURLForDice(kMainEmail,
+                                              google_util::kGoogleHomepageURL),
               active_contents->GetVisibleURL());
     tab_strip->CloseWebContentsAt(
         tab_strip->GetIndexOfWebContents(active_contents),
@@ -397,9 +397,9 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTab) {
   content::WebContents* active_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(active_contents);
-  EXPECT_EQ(signin::GetChromeSyncURLForDice(
-                "", GoogleURLTracker::kDefaultGoogleHomepage),
-            active_contents->GetVisibleURL());
+  EXPECT_EQ(
+      signin::GetChromeSyncURLForDice("", google_util::kGoogleHomepageURL),
+      active_contents->GetVisibleURL());
 }
 
 TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithNoTabWithExisting) {
@@ -452,9 +452,9 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncForNewAccountWithOneTab) {
   content::WebContents* active_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(active_contents);
-  EXPECT_EQ(signin::GetChromeSyncURLForDice(
-                "", GoogleURLTracker::kDefaultGoogleHomepage),
-            active_contents->GetVisibleURL());
+  EXPECT_EQ(
+      signin::GetChromeSyncURLForDice("", google_util::kGoogleHomepageURL),
+      active_contents->GetVisibleURL());
 }
 
 TEST_F(DiceSigninUiUtilTest, GetAccountsForDicePromos) {

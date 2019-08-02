@@ -101,18 +101,6 @@ const char* const kCustodianInfoPrefs[] = {
     prefs::kSupervisedUserSecondCustodianProfileURL,
 };
 
-void SetupRestrictedCrosSettingForChildUser(
-    std::map<std::string, base::Value>* restricted_prefs) {
-#if defined(OS_CHROMEOS)
-  (*restricted_prefs)[std::string(chromeos::kAccountsPrefAllowGuest)] =
-      base::Value(false);
-  (*restricted_prefs)[std::string(
-      chromeos::kAccountsPrefShowUserNamesOnSignIn)] = base::Value(false);
-  (*restricted_prefs)[std::string(chromeos::kAccountsPrefAllowNewUser)] =
-      base::Value(false);
-#endif  // OS_CHROMEOS
-}
-
 void CreateURLAccessRequest(const GURL& url,
                             PermissionRequestCreator* creator,
                             SupervisedUserService::SuccessCallback callback) {
@@ -186,25 +174,6 @@ void SupervisedUserService::Init() {
                  weak_ptr_factory_.GetWeakPtr()));
 
   SetActive(ProfileIsSupervised());
-  SetupRestrictedCrosSettingForChildUser(&child_user_restricted_cros_settings_);
-}
-
-// TODO(crbug/945934) Move the following 2 methods to
-// SupervisedUserCrosSettingProvider.
-bool SupervisedUserService::IsRestrictedCrosSettingForChildUser(
-    const std::string& pref_name) const {
-  if (!profile_->IsChild())
-    return false;
-  return base::Contains(child_user_restricted_cros_settings_, pref_name);
-}
-
-const base::Value*
-SupervisedUserService::GetRestrictedCrosSettingValueForChildUser(
-    const std::string& pref_name) const {
-  auto value = child_user_restricted_cros_settings_.find(pref_name);
-  if (value == child_user_restricted_cros_settings_.end())
-    return nullptr;
-  return &(value->second);
 }
 
 void SupervisedUserService::SetDelegate(Delegate* delegate) {

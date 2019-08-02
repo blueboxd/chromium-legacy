@@ -66,7 +66,7 @@ void MaterialDesignController::Initialize() {
   if (!touch && (switch_value != switches::kTopChromeTouchUiDisabled) &&
       features::IsAutomaticUiAdjustmentsForTouchEnabled()) {
 #if defined(OS_CHROMEOS)
-    // TabletModeClient's default state is in non-tablet mode.
+    // TabletModePageBehavior's default state is in non-tablet mode.
     automatic_touch_ui_ = true;
 #elif defined(OS_WIN)
     if (base::win::GetVersion() >= base::win::Version::WIN10) {

@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -41,6 +42,11 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
     const std::vector<std::string>& hosts,
     HintsFetchedCallback hints_fetched_callback) {
   SEQUENCE_CHECKER(sequence_checker_);
+
+  if (content::GetNetworkConnectionTracker()->IsOffline()) {
+    std::move(hints_fetched_callback).Run(base::nullopt);
+    return false;
+  }
 
   if (url_loader_)
     return false;

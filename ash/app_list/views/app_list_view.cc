@@ -579,7 +579,7 @@ void AppListView::InitWidget(gfx::NativeView parent) {
   params.layer_type = ui::LAYER_NOT_DRAWN;
 
   views::Widget* widget = new views::Widget;
-  widget->Init(params);
+  widget->Init(std::move(params));
   DCHECK_EQ(widget, GetWidget());
   widget->GetNativeWindow()->SetEventTargeter(
       std::make_unique<AppListEventTargeter>());
@@ -604,7 +604,7 @@ void AppListView::InitChildWidget() {
   search_box_widget_params.delegate = search_box_view_;
 
   views::Widget* search_box_widget = new views::Widget;
-  search_box_widget->Init(search_box_widget_params);
+  search_box_widget->Init(std::move(search_box_widget_params));
   DCHECK_EQ(search_box_widget, search_box_view_->GetWidget());
 
   // Assign an accessibility role to the native window of |search_box_widget|,

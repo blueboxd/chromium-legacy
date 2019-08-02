@@ -145,8 +145,8 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
     auto data = GetResource(resource_id, request.url.host());
 
     std::string* read_mime_type = new std::string;
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&net::GetMimeTypeFromFile, filename,
                        base::Unretained(read_mime_type)),
         base::BindOnce(&ResourceBundleFileLoader::OnMimeTypeRead,

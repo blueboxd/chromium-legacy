@@ -296,9 +296,6 @@ extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[];
 extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[];
 extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[];
 
-extern const char kEnableAutofillImportNonFocusableCreditCardFormsName[];
-extern const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[];
-
 extern const char kEnableAutofillImportDynamicFormsName[];
 extern const char kEnableAutofillImportDynamicFormsDescription[];
 
@@ -2194,9 +2191,6 @@ extern const char kPdfAnnotationsDescription[];
 
 extern const char kPdfFormSaveName[];
 extern const char kPdfFormSaveDescription[];
-
-extern const char kPdfIsolationName[];
-extern const char kPdfIsolationDescription[];
 
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 

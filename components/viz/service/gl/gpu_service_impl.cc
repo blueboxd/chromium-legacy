@@ -589,8 +589,8 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
   // We can continue on shutdown here because we're not writing any critical
   // state in this task.
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunnerWithTraits(
-          {base::TaskPriority::USER_VISIBLE,
+      base::CreateCOMSTATaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::BindOnce([]() {

@@ -281,7 +281,7 @@ ReflectedXSSDisposition ParseXSSProtectionHeader(const String& header,
   HeaderFieldTokenizer tokenizer(header);
 
   StringView toggle;
-  if (!tokenizer.ConsumeToken(Mode::kNormal, toggle)) {
+  if (!tokenizer.ConsumeToken(ParsedContentType::Mode::kNormal, toggle)) {
     if (tokenizer.IsConsumed())
       return kReflectedXSSUnset;
   }
@@ -314,7 +314,7 @@ ReflectedXSSDisposition ParseXSSProtectionHeader(const String& header,
     // At start of next directive.
     StringView token;
     unsigned token_start = tokenizer.Index();
-    if (!tokenizer.ConsumeToken(Mode::kNormal, token)) {
+    if (!tokenizer.ConsumeToken(ParsedContentType::Mode::kNormal, token)) {
       failure_reason = failure_reason_invalid_directive;
       failure_position = token_start;
       return kReflectedXSSInvalid;
@@ -333,7 +333,8 @@ ReflectedXSSDisposition ParseXSSProtectionHeader(const String& header,
       }
       String value;
       unsigned value_start = tokenizer.Index();
-      if (!tokenizer.ConsumeTokenOrQuotedString(Mode::kNormal, value) ||
+      if (!tokenizer.ConsumeTokenOrQuotedString(
+              ParsedContentType::Mode::kNormal, value) ||
           !EqualIgnoringASCIICase(value, "block")) {
         failure_reason = failure_reason_invalid_mode;
         failure_position = value_start;
@@ -356,7 +357,8 @@ ReflectedXSSDisposition ParseXSSProtectionHeader(const String& header,
       failure_position = tokenizer.Index();
       String value;
       // Relaxed mode - unquoted URLs contain colons and such.
-      if (!tokenizer.ConsumeTokenOrQuotedString(Mode::kRelaxed, value)) {
+      if (!tokenizer.ConsumeTokenOrQuotedString(
+              ParsedContentType::Mode::kRelaxed, value)) {
         failure_reason = failure_reason_invalid_report;
         return kReflectedXSSInvalid;
       }
@@ -677,7 +679,7 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
     HeaderFieldTokenizer tokenizer(headerValue);
     while (!tokenizer.IsConsumed()) {
       StringView name;
-      if (!tokenizer.ConsumeToken(Mode::kNormal, name)) {
+      if (!tokenizer.ConsumeToken(ParsedContentType::Mode::kNormal, name)) {
         break;
       }
 
@@ -685,13 +687,15 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
 
       while (tokenizer.Consume(';')) {
         StringView parameter_name;
-        if (!tokenizer.ConsumeToken(Mode::kNormal, parameter_name)) {
+        if (!tokenizer.ConsumeToken(ParsedContentType::Mode::kNormal,
+                                    parameter_name)) {
           break;
         }
 
         String value = "";
         if (tokenizer.Consume('=')) {
-          tokenizer.ConsumeTokenOrQuotedString(Mode::kNormal, value);
+          tokenizer.ConsumeTokenOrQuotedString(ParsedContentType::Mode::kNormal,
+                                               value);
           tokenizer.ConsumeBeforeAnyCharMatch({',', ';'});
         }
         header.SetParameter(parameter_name, value);

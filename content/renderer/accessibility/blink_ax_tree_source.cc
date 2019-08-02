@@ -1042,6 +1042,16 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       if (FindExactlyOneInnerImageInMaxDepthTwo(src, &inner_image))
         AddImageAnnotations(inner_image, dst);
     }
+
+    WebNode node = src.GetNode();
+    if (!node.IsNull() && node.IsElementNode()) {
+      WebElement element = node.To<WebElement>();
+      if (element.HasHTMLTagName("input") && element.HasAttribute("type")) {
+        TruncateAndAddStringAttribute(dst,
+                                      ax::mojom::StringAttribute::kInputType,
+                                      element.GetAttribute("type").Utf8());
+      }
+    }
   }
 
   // The majority of the rest of this code computes attributes needed for
@@ -1210,6 +1220,11 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject& src,
                                             AXContentNodeData* dst) const {
   if (!base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels))
     return;
+
+  // Reject ignored objects
+  if (src.AccessibilityIsIgnored()) {
+    return;
+  }
 
   // Reject images that are explicitly empty, or that have a name already.
   //

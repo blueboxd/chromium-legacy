@@ -15,9 +15,6 @@
 #include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/net/aw_cookie_store_wrapper.h"
 #include "android_webview/browser/net/aw_http_user_agent_settings.h"
-#include "android_webview/browser/net/aw_network_delegate.h"
-#include "android_webview/browser/net/aw_request_interceptor.h"
-#include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/common/aw_content_client.h"
@@ -83,98 +80,6 @@ bool g_created_url_request_context_builder = false;
 // On apps targeting API level O or later, check cleartext is enforced.
 bool g_check_cleartext_permitted = false;
 
-
-const char kProxyServerSwitch[] = "proxy-server";
-const char kProxyBypassListSwitch[] = "proxy-bypass-list";
-
-std::string GetCmdlineOverridesForHostResolver() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return command_line.GetSwitchValueASCII(
-      network::switches::kHostResolverRules);
-}
-
-void ApplyCmdlineOverridesToNetworkSessionParams(
-    net::HttpNetworkSession::Params* params) {
-  int value;
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
-    base::StringToInt(command_line.GetSwitchValueASCII(
-        switches::kTestingFixedHttpPort), &value);
-    params->testing_fixed_http_port = value;
-  }
-  if (command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
-    base::StringToInt(command_line.GetSwitchValueASCII(
-        switches::kTestingFixedHttpsPort), &value);
-    params->testing_fixed_https_port = value;
-  }
-  if (command_line.HasSwitch(switches::kIgnoreCertificateErrors)) {
-    params->ignore_certificate_errors = true;
-  }
-}
-
-std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  std::unique_ptr<AwURLRequestJobFactory> aw_job_factory(
-      new AwURLRequestJobFactory);
-  // Note that the registered schemes must also be specified in
-  // AwContentBrowserClient::IsHandledURL.
-  bool set_protocol = aw_job_factory->SetProtocolHandler(
-      url::kFileScheme,
-      std::make_unique<net::FileProtocolHandler>(
-          base::CreateTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
-  DCHECK(set_protocol);
-  set_protocol = aw_job_factory->SetProtocolHandler(
-      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
-  DCHECK(set_protocol);
-  set_protocol = aw_job_factory->SetProtocolHandler(
-      url::kBlobScheme,
-      base::WrapUnique((*protocol_handlers)[url::kBlobScheme].release()));
-  DCHECK(set_protocol);
-  set_protocol = aw_job_factory->SetProtocolHandler(
-      url::kFileSystemScheme,
-      base::WrapUnique((*protocol_handlers)[url::kFileSystemScheme].release()));
-  DCHECK(set_protocol);
-  set_protocol = aw_job_factory->SetProtocolHandler(
-      content::kChromeUIScheme,
-      base::WrapUnique(
-          (*protocol_handlers)[content::kChromeUIScheme].release()));
-  DCHECK(set_protocol);
-  protocol_handlers->clear();
-
-  // Note that even though the content:// scheme handler is created here,
-  // it cannot be used by child processes until access to it is granted via
-  // ChildProcessSecurityPolicy::GrantRequestScheme(). This is done in
-  // AwContentBrowserClient.
-  request_interceptors.push_back(CreateAndroidContentRequestInterceptor());
-  request_interceptors.push_back(CreateAndroidAssetFileRequestInterceptor());
-  // The AwRequestInterceptor must come after the content and asset file job
-  // factories. This for WebViewClassic compatibility where it was not
-  // possible to intercept resource loads to resolvable content:// and
-  // file:// URIs.
-  // This logical dependency is also the reason why the Content
-  // URLRequestInterceptor has to be added as an interceptor rather than as a
-  // ProtocolHandler.
-  request_interceptors.push_back(std::make_unique<AwRequestInterceptor>());
-
-  // The chain of responsibility will execute the handlers in reverse to the
-  // order in which the elements of the chain are created.
-  std::unique_ptr<net::URLRequestJobFactory> job_factory(
-      std::move(aw_job_factory));
-  for (auto i = request_interceptors.rbegin(); i != request_interceptors.rend();
-       ++i) {
-    job_factory.reset(new net::URLRequestInterceptingJobFactory(
-        std::move(job_factory), std::move(*i)));
-  }
-  request_interceptors.clear();
-
-  return job_factory;
-}
-
 }  // namespace
 
 AwURLRequestContextGetter::AwURLRequestContextGetter(
@@ -191,7 +96,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
   auth_server_allowlist_.Init(
       prefs::kAuthServerWhitelist, user_pref_service,
@@ -256,91 +161,8 @@ AwURLRequestContextGetter::~AwURLRequestContextGetter() {
 }
 
 void AwURLRequestContextGetter::InitializeURLRequestContext() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!url_request_context_);
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-
-  net::URLRequestContextBuilder builder;
-
-  builder.set_network_delegate(std::make_unique<AwNetworkDelegate>());
-#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  builder.set_ftp_enabled(false);  // Android WebView does not support ftp yet.
-#endif
-  DCHECK(proxy_config_service_.get());
-
-  // Android provides a local HTTP proxy that handles all the proxying.
-  // Create the proxy without a resolver since we rely on this local HTTP proxy.
-  // TODO(sgurun) is this behavior guaranteed through SDK?
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(kProxyServerSwitch)) {
-    std::string proxy = command_line.GetSwitchValueASCII(kProxyServerSwitch);
-    net::ProxyConfig proxy_config;
-    proxy_config.proxy_rules().ParseFromString(proxy);
-    if (command_line.HasSwitch(kProxyBypassListSwitch)) {
-      std::string bypass_list =
-          command_line.GetSwitchValueASCII(kProxyBypassListSwitch);
-      proxy_config.proxy_rules().bypass_rules.ParseFromString(bypass_list);
-    }
-
-    builder.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateFixed(net::ProxyConfigWithAnnotation(
-            proxy_config, NO_TRAFFIC_ANNOTATION_YET)));
-  } else {
-    builder.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateWithoutProxyResolver(
-            std::move(proxy_config_service_), net_log_));
-  }
-  builder.set_net_log(net_log_);
-  builder.SetCookieStore(std::make_unique<AwCookieStoreWrapper>());
-
-  net::URLRequestContextBuilder::HttpCacheParams cache_params;
-  cache_params.type =
-      net::URLRequestContextBuilder::HttpCacheParams::DISK_SIMPLE;
-  cache_params.max_size = GetHttpCacheSize();
-  cache_params.path = cache_path_;
-  builder.EnableHttpCache(cache_params);
-
-  net::HttpNetworkSession::Params network_session_params;
-  ApplyCmdlineOverridesToNetworkSessionParams(&network_session_params);
-  builder.set_http_network_session_params(network_session_params);
-
-  // Quic is only supported when network service is enabled.
-  builder.SetSpdyAndQuicEnabled(true, false);
-
-  builder.SetHttpAuthHandlerFactory(CreateAuthHandlerFactory());
-  builder.set_host_mapping_rules(GetCmdlineOverridesForHostResolver());
-
-  // Context copy allowed because NetworkService is confirmed disabled.
-  builder.set_allow_copy();
-
-  builder.set_enable_brotli(base::FeatureList::IsEnabled(
-      android_webview::features::kWebViewBrotliSupport));
-
-  url_request_context_ = builder.Build();
-
-  // For Android WebView, do not enforce policies that are not consistent with
-  // the underlying OS validator.
-  // This means not enforcing the Legacy Symantec PKI policies outlined in
-  // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
-  // or disabling SHA-1 for locally-installed trust anchors.
-  net::CertVerifier::Config config;
-  config.enable_sha1_local_anchors = true;
-  config.disable_symantec_enforcement = true;
-  url_request_context_->cert_verifier()->SetConfig(config);
-
-#if DCHECK_IS_ON()
-  g_created_url_request_context_builder = true;
-#endif
-  url_request_context_->set_check_cleartext_permitted(
-    g_check_cleartext_permitted);
-
-  job_factory_ =
-      CreateJobFactory(&protocol_handlers_, std::move(request_interceptors_));
-  url_request_context_->set_job_factory(job_factory_.get());
-  url_request_context_->set_http_user_agent_settings(
-      http_user_agent_settings_.get());
+  // network service is enabled by default, this code path is never executed.
+  NOTREACHED();
 }
 
 // static
@@ -361,7 +183,7 @@ net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 AwURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+  return base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 }
 
 void AwURLRequestContextGetter::SetHandlersAndInterceptors(

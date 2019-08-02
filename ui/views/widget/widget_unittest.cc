@@ -183,7 +183,7 @@ TEST_F(WidgetTest, GetName) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "MyWidget";
-  widget.Init(params);
+  widget.Init(std::move(params));
 
   EXPECT_EQ("MyWidget", widget.native_widget_private()->GetName());
   EXPECT_EQ("MyWidget", widget.GetName());
@@ -353,7 +353,7 @@ TEST_F(WidgetOwnershipTest, Ownership_WidgetOwnsPlatformNativeWidget) {
   params.native_widget = CreatePlatformNativeWidgetImpl(
       params, widget.get(), kStubCapture, &state.native_widget_deleted);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Now delete the Widget, which should delete the NativeWidget.
   widget.reset();
@@ -374,7 +374,7 @@ TEST_F(WidgetOwnershipTest, Ownership_WidgetOwnsViewsNativeWidget) {
   params.native_widget = CreatePlatformNativeWidgetImpl(
       params, widget.get(), kStubCapture, &state.native_widget_deleted);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Now delete the Widget, which should delete the NativeWidget.
   widget.reset();
@@ -400,7 +400,7 @@ TEST_F(WidgetOwnershipTest,
   params.native_widget = CreatePlatformNativeWidgetImpl(
       params, widget.get(), kStubCapture, &state.native_widget_deleted);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Now close the toplevel, which deletes the view hierarchy.
   toplevel->CloseNow();
@@ -428,7 +428,7 @@ TEST_F(WidgetOwnershipTest, Ownership_PlatformNativeWidgetOwnsWidget) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget = CreatePlatformNativeWidgetImpl(
       params, widget, kStubCapture, &state.native_widget_deleted);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Now destroy the native widget.
   widget->CloseNow();
@@ -448,7 +448,7 @@ TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget) {
   params.parent = toplevel->GetNativeView();
   params.native_widget = CreatePlatformNativeWidgetImpl(
       params, widget, kStubCapture, &state.native_widget_deleted);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Now destroy the native widget. This is achieved by closing the toplevel.
   toplevel->CloseNow();
@@ -471,7 +471,7 @@ TEST_F(WidgetOwnershipTest,
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.native_widget = CreatePlatformNativeWidgetImpl(
       params, widget, kStubCapture, &state.native_widget_deleted);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Now simulate a destroy of the platform native widget from the OS:
   SimulateNativeDestroy(widget);
@@ -493,7 +493,7 @@ TEST_F(WidgetOwnershipTest,
   params.parent = toplevel->GetNativeView();
   params.native_widget = CreatePlatformNativeWidgetImpl(
       params, widget, kStubCapture, &state.native_widget_deleted);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Destroy the widget (achieved by closing the toplevel).
   toplevel->CloseNow();
@@ -519,7 +519,7 @@ TEST_F(WidgetOwnershipTest,
   params.parent = toplevel->GetNativeView();
   params.native_widget = CreatePlatformNativeWidgetImpl(
       params, widget, kStubCapture, &state.native_widget_deleted);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Destroy the widget.
   widget->Close();
@@ -546,7 +546,7 @@ TEST_F(WidgetOwnershipTest,
       params, widget.get(), kStubCapture, &state.native_widget_deleted);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.delegate = delegate_view;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetContentsView(delegate_view);
 
   // Now delete the Widget. There should be no crash or use-after-free.
@@ -566,7 +566,7 @@ TEST_P(WidgetWithDestroyedNativeViewTest, Test) {
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.Show();
 
   widget.native_widget_private()->CloseNow();
@@ -878,7 +878,7 @@ TEST_F(WidgetObserverTest, WidgetBoundsChangedNative) {
 
   // Init causes a bounds change, even while not showing. Note some platforms
   // cause a bounds change even when the bounds are empty. Mac does not.
-  widget->Init(params);
+  widget->Init(std::move(params));
   EXPECT_TRUE(widget_bounds_changed());
   reset();
 
@@ -959,7 +959,7 @@ class DesktopWidgetObserverTest : public WidgetObserverTest {
 TEST_F(DesktopWidgetObserverTest, OnWidgetMovedWhenOriginChangesNative) {
   MoveTrackingTestDesktopWidgetDelegate delegate;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  delegate.InitWidget(params);
+  delegate.InitWidget(std::move(params));
   Widget* widget = delegate.GetWidget();
   widget->Show();
   widget->SetBounds(gfx::Rect(100, 100, 300, 200));
@@ -1288,7 +1288,7 @@ TEST_F(DesktopWidgetTest, DISABLED_FocusChangesOnBubble) {
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   widget.SetContentsView(contents_view);
   widget.Show();
   widget.Activate();
@@ -1341,7 +1341,7 @@ TEST_F(DesktopWidgetTest, TestViewWidthAfterMinimizingWidget) {
   gfx::Rect initial_bounds(0, 0, 300, 400);
   init_params.bounds = initial_bounds;
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   NonClientView* non_client_view = widget.non_client_view();
   NonClientFrameView* frame_view = new MinimumSizeFrameView(&widget);
   non_client_view->SetFrameView(frame_view);
@@ -1414,7 +1414,7 @@ class DesktopAuraTestValidPaintWidget : public Widget, public WidgetObserver {
 void DesktopAuraTestValidPaintWidget::InitForTest(InitParams init_params) {
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
   init_params.ownership = InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  Init(init_params);
+  Init(std::move(init_params));
 
   View* contents_view = new View;
   contents_view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -1460,7 +1460,7 @@ TEST_F(DesktopWidgetTest, TestWindowVisibilityAfterHide) {
   gfx::Rect initial_bounds(0, 0, 300, 400);
   init_params.bounds = initial_bounds;
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   NonClientView* non_client_view = widget.non_client_view();
   NonClientFrameView* frame_view = new MinimumSizeFrameView(&widget);
   non_client_view->SetFrameView(frame_view);
@@ -2004,7 +2004,7 @@ TEST_F(DesktopWidgetTest, WidgetDestroyedItselfDoesNotCrash) {
   TestDesktopWidgetDelegate delegate(new TestNativeWidgetDestroyedWidget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  delegate.InitWidget(params);
+  delegate.InitWidget(std::move(params));
   delegate.GetWidget()->Show();
   delegate.GetWidget()->CloseNow();
 }
@@ -2081,7 +2081,7 @@ class WidgetWindowTitleTest : public DesktopWidgetTest {
       init_params.native_widget = CreatePlatformNativeWidgetImpl(
           init_params, widget.get(), kStubCapture, nullptr);
     }
-    widget->Init(init_params);
+    widget->Init(std::move(init_params));
 
     internal::NativeWidgetPrivate* native_widget =
         widget->native_widget_private();
@@ -2123,7 +2123,7 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
   Widget* widget = new Widget;
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   widget->SetContentsView(new CloseWidgetView(ui::ET_MOUSE_PRESSED));
 
@@ -2148,7 +2148,7 @@ TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
   Widget* widget = new Widget;
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   widget->SetContentsView(new CloseWidgetView(ui::ET_GESTURE_TAP_DOWN));
 
@@ -2182,12 +2182,11 @@ class GetNativeThemeFromDestructorView : public WidgetDelegateView {
 // crash. |is_first_run| is true if this is the first call. A return value of
 // true indicates this should be run again with a value of false.
 // First run uses DesktopNativeWidgetAura (if possible). Second run doesn't.
-bool RunGetNativeThemeFromDestructor(const Widget::InitParams& in_params,
+bool RunGetNativeThemeFromDestructor(Widget::InitParams params,
                                      bool is_first_run) {
   bool needs_second_run = false;
   // Destroyed by CloseNow() below.
   WidgetTest::WidgetAutoclosePtr widget(new Widget);
-  Widget::InitParams params(in_params);
   // Deletes itself when the Widget is destroyed.
   params.delegate = new GetNativeThemeFromDestructorView;
   if (!is_first_run) {
@@ -2195,15 +2194,15 @@ bool RunGetNativeThemeFromDestructor(const Widget::InitParams& in_params,
         params, widget.get(), kStubCapture, nullptr);
     needs_second_run = true;
   }
-  widget->Init(params);
+  widget->Init(std::move(params));
   return needs_second_run;
 }
 
 // See description of RunGetNativeThemeFromDestructor() for details.
 TEST_F(DesktopWidgetTest, GetNativeThemeFromDestructor) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  if (RunGetNativeThemeFromDestructor(params, true))
-    RunGetNativeThemeFromDestructor(params, false);
+  if (RunGetNativeThemeFromDestructor(std::move(params), true))
+    RunGetNativeThemeFromDestructor(std::move(params), false);
 }
 
 // Used by HideCloseDestroy. Allows setting a boolean when the widget is
@@ -2277,7 +2276,7 @@ TEST_F(DesktopWidgetTest, CloseDestroys) {
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_MENU);
   params.opacity = Widget::InitParams::OPAQUE_WINDOW;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   widget->Hide();
   widget->Close();
@@ -2298,7 +2297,7 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 250, 250);
-  widget->Init(params);
+  widget->Init(std::move(params));
   AnimationEndObserver animation_observer;
   WidgetBoundsObserver widget_observer;
   gfx::Rect bounds(100, 100, 50, 50);
@@ -2375,14 +2374,14 @@ TEST_F(WidgetTest, NoCrashOnWidgetDelete) {
   std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
+  widget->Init(std::move(params));
 }
 
 TEST_F(WidgetTest, NoCrashOnResizeConstraintsWindowTitleOnPopup) {
   std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->OnSizeConstraintsChanged();
 }
 
@@ -2393,7 +2392,7 @@ TEST_F(WidgetTest, NoCrashOnWidgetDeleteWithPendingEvents) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
 
   ui::test::EventGenerator generator(GetContext(), widget->GetNativeWindow());
@@ -3239,7 +3238,7 @@ class WidgetChildDestructionTest : public DesktopWidgetTest {
       params.native_widget = CreatePlatformNativeWidgetImpl(
           params, top_level, kStubCapture, nullptr);
     }
-    top_level->Init(params);
+    top_level->Init(std::move(params));
     top_level->GetRootView()->AddChildView(
         new DestroyedTrackingView("parent", &destroyed));
     top_level->Show();
@@ -3252,7 +3251,7 @@ class WidgetChildDestructionTest : public DesktopWidgetTest {
       child_params.native_widget = CreatePlatformNativeWidgetImpl(
           child_params, child, kStubCapture, nullptr);
     }
-    child->Init(child_params);
+    child->Init(std::move(child_params));
     child->GetRootView()->AddChildView(
         new DestroyedTrackingView("child", &destroyed));
     child->Show();
@@ -3299,7 +3298,7 @@ TEST_F(WidgetTest, FullscreenStatePropagated) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
 
   Widget top_level_widget;
-  top_level_widget.Init(init_params);
+  top_level_widget.Init(std::move(init_params));
   top_level_widget.SetFullscreen(true);
   EXPECT_EQ(top_level_widget.IsVisible(),
             IsNativeWindowVisible(top_level_widget.GetNativeWindow()));
@@ -3316,7 +3315,7 @@ TEST_F(DesktopWidgetTest, FullscreenStatePropagated_DesktopWidget) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   Widget top_level_widget;
 
-  top_level_widget.Init(init_params);
+  top_level_widget.Init(std::move(init_params));
   top_level_widget.SetFullscreen(true);
   EXPECT_EQ(top_level_widget.IsVisible(),
             IsNativeWindowVisible(top_level_widget.GetNativeWindow()));
@@ -3406,7 +3405,7 @@ TEST_F(DesktopWidgetTest, IsActiveFromDestroy) {
   Widget::InitParams parent_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  parent_widget.Init(parent_params);
+  parent_widget.Init(std::move(parent_params));
   parent_widget.Show();
 
   Widget child_widget;
@@ -3414,7 +3413,7 @@ TEST_F(DesktopWidgetTest, IsActiveFromDestroy) {
       CreateParams(Widget::InitParams::TYPE_POPUP);
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.context = parent_widget.GetNativeWindow();
-  child_widget.Init(child_params);
+  child_widget.Init(std::move(child_params));
   child_widget.AddObserver(&observer);
   child_widget.Show();
 
@@ -3595,7 +3594,7 @@ TEST_F(DesktopWidgetTest,
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.SetBounds(gfx::Rect(0, 0, 200, 200));
   widget.Show();
   ::SetCursorPos(500, 500);
@@ -3667,7 +3666,7 @@ TEST_F(DesktopWidgetTest, DISABLED_DestroyInSysCommandNCLButtonDownOnCaption) {
   Widget::InitParams params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.SetBounds(gfx::Rect(0, 0, 200, 200));
   widget.Show();
   ::SetCursorPos(500, 500);
@@ -3885,7 +3884,7 @@ TEST_P(WidgetInvalidateLayoutTest, InvalidateLayout) {
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.SetBounds(gfx::Rect(0, 0, 600, 600));
   LayoutCountingView* view =
       widget.widget_delegate()->GetContentsView()->AddChildView(
@@ -4105,7 +4104,7 @@ TEST_F(DesktopWidgetTest, WindowModalOwnerDestroyedEnabledTest) {
   gfx::Rect initial_bounds(0, 0, 500, 500);
   init_params.bounds = initial_bounds;
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  top_level_widget.Init(init_params);
+  top_level_widget.Init(std::move(init_params));
   top_level_widget.Show();
 
   // Create the owner modal dialog.
@@ -4123,7 +4122,7 @@ TEST_F(DesktopWidgetTest, WindowModalOwnerDestroyedEnabledTest) {
   init_params.native_widget =
       new test::TestPlatformNativeWidget<DesktopNativeWidgetAura>(
           &owner_dialog_widget, false, nullptr);
-  owner_dialog_widget.Init(init_params);
+  owner_dialog_widget.Init(std::move(init_params));
 
   HWND owner_hwnd = HWNDForWidget(&owner_dialog_widget);
 
@@ -4144,7 +4143,7 @@ TEST_F(DesktopWidgetTest, WindowModalOwnerDestroyedEnabledTest) {
   init_params.native_widget =
       new test::TestPlatformNativeWidget<DesktopNativeWidgetAura>(
           &owned_dialog_widget, false, nullptr);
-  owned_dialog_widget.Init(init_params);
+  owned_dialog_widget.Init(std::move(init_params));
 
   HWND owned_hwnd = HWNDForWidget(&owned_dialog_widget);
 
@@ -4181,7 +4180,7 @@ void InitializeWidgetForOpacity(
   init_params.show_state = ui::SHOW_STATE_NORMAL;
   init_params.bounds = gfx::Rect(0, 0, 500, 500);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
 }
 
 class CompositingWidgetTest : public DesktopWidgetTest {

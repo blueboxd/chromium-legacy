@@ -8,6 +8,8 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
+#include "net/http/http_response_headers.h"
+
 // A container object for any navigation information that is only available
 // during pre-commit delegate callbacks, and thus must be held until the
 // navigation commits and the information can be used.
@@ -21,6 +23,9 @@
 @property(nonatomic, assign) WKNavigationType navigationType;
 // HTTP request method for the load.
 @property(nonatomic, copy) NSString* HTTPMethod;
+// HTTP headers.
+@property(nonatomic, assign) scoped_refptr<net::HttpResponseHeaders>
+    HTTPHeaders;
 // Whether the pending navigation has been directly cancelled before the
 // navigation is committed.
 // Cancelled navigations should be simply discarded without handling any

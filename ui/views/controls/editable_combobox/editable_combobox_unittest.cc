@@ -185,7 +185,7 @@ void EditableComboboxTest::InitWidget() {
   parent_of_combobox_->SetBoundsRect(gfx::Rect(0, 0, 500, 40));
   combobox_->SetBoundsRect(gfx::Rect(0, 0, 500, 40));
 
-  widget_->Init(params);
+  widget_->Init(std::move(params));
   View* container = new View();
   widget_->SetContentsView(container);
   container->AddChildView(parent_of_combobox_);

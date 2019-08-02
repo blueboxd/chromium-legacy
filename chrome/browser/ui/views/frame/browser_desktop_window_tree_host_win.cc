@@ -76,7 +76,7 @@ bool BrowserDesktopWindowTreeHostWin::UsesNativeSystemMenu() const {
 
 void BrowserDesktopWindowTreeHostWin::Init(
     const views::Widget::InitParams& params) {
-  DesktopWindowTreeHostWin::Init(params);
+  DesktopWindowTreeHostWin::Init(std::move(params));
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;  // VirtualDesktopManager isn't support pre Win-10.
 

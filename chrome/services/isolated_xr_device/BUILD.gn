@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//device/vr/buildflags/buildflags.gni")
+
 source_set("lib") {
   sources = [
     "xr_device_service.cc",
@@ -13,6 +15,10 @@ source_set("lib") {
     "xr_test_hook_wrapper.cc",
     "xr_test_hook_wrapper.h",
   ]
+
+  if (enable_openxr) {
+    configs += [ "//third_party/openxr:config" ]
+  }
 
   deps = [
     "//base",

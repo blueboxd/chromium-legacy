@@ -33,7 +33,7 @@ std::unique_ptr<Widget> CreateDragWidget(aura::Window* root_window) {
       root_window->GetChildById(kShellWindowId_DragImageAndTooltipContainer);
   if (!params.parent)
     params.context = root_window;  // Happens in tests.
-  drag_widget->Init(params);
+  drag_widget->Init(std::move(params));
   drag_widget->SetOpacity(1.f);
   return drag_widget;
 }

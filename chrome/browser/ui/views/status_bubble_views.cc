@@ -690,15 +690,16 @@ void StatusBubbleViews::InitPopup() {
     params.parent = frame->GetNativeView();
     params.context = frame->GetNativeWindow();
     params.name = "StatusBubble";
-    popup_->Init(params);
+#if defined(OS_CHROMEOS)
+    params.init_properties_container.SetProperty(ash::kHideInOverviewKey, true);
+    params.init_properties_container.SetProperty(ash::kHideInDeskMiniViewKey,
+                                                 true);
+#endif  // defined(OS_CHROMEOS)
+    popup_->Init(std::move(params));
     // We do our own animation and don't want any from the system.
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0.f);
     popup_->SetContentsView(view_);
-#if defined(OS_CHROMEOS)
-    popup_->GetNativeWindow()->SetProperty(ash::kHideInOverviewKey, true);
-    popup_->GetNativeWindow()->SetProperty(ash::kHideInDeskMiniViewKey, true);
-#endif
     RepositionPopup();
   }
 }

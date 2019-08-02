@@ -70,10 +70,6 @@ class StubEmbeddedFrameSinkClient
 
   void Close() { binding_.Close(); }
 
-  const viz::SurfaceInfo& last_surface_info() const {
-    return last_surface_info_;
-  }
-
   const viz::LocalSurfaceId& last_received_local_surface_id() const {
     return last_received_local_surface_id_;
   }
@@ -82,9 +78,6 @@ class StubEmbeddedFrameSinkClient
 
  private:
   // blink::mojom::EmbeddedFrameSinkClient:
-  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
-    last_surface_info_ = surface_info;
-  }
   void BindSurfaceEmbedder(
       blink::mojom::SurfaceEmbedderRequest request) override {
     surface_embedder_binding_.Bind(std::move(request));
@@ -97,7 +90,6 @@ class StubEmbeddedFrameSinkClient
 
   mojo::Binding<blink::mojom::SurfaceEmbedder> surface_embedder_binding_;
   mojo::Binding<blink::mojom::EmbeddedFrameSinkClient> binding_;
-  viz::SurfaceInfo last_surface_info_;
   viz::LocalSurfaceId last_received_local_surface_id_;
   bool connection_error_ = false;
 

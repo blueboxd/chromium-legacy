@@ -64,7 +64,7 @@ views::Widget* CreateWidget(aura::Window* root) {
   params.parent = root;
 #endif
   params.bounds = gfx::Rect(0, 0, 200, 100);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   return widget;
 }

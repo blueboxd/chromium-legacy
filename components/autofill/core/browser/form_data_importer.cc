@@ -155,21 +155,6 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
   if (!imported_credit_card)
     return;
 
-  // Check if the imported card is from a network that is currently disallowed,
-  // often due to Google Payments not accepting a certain card network. If so,
-  // don't offer to upload the card. We can fall back to local save as long as
-  // it's a new card instead of an existing local card.
-  if (!credit_card_save_manager_->IsUploadEnabledForNetwork(
-          imported_credit_card->network())) {
-    is_credit_card_upstream_enabled = false;
-    AutofillMetrics::LogUploadDisallowedForNetworkMetric(
-        imported_credit_card->network());
-    if (imported_credit_card_record_type_ ==
-        ImportedCreditCardRecordType::LOCAL_CARD) {
-      return;
-    }
-  }
-
   // We have a card to save; decide what type of save flow to display.
   if (is_credit_card_upstream_enabled) {
     // Attempt to offer upload save. Because we pass
@@ -502,14 +487,6 @@ CreditCard FormDataImporter::ExtractCreditCardFromForm(
     // information into the field, then skip it.
     if (!field->IsFieldFillable() || value.empty())
       continue;
-    // If the field is non-focusable (hidden) after the user entered information
-    // into it, then skip it, unless the experiment to import non-focusable
-    // forms is enabled.
-    if (!field->is_focusable &&
-        !base::FeatureList::IsEnabled(
-            features::kAutofillImportNonFocusableCreditCardForms)) {
-      continue;
-    }
 
     AutofillType field_type = field->Type();
     // Field was not identified as a credit card field.

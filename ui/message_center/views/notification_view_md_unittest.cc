@@ -321,7 +321,7 @@ void NotificationViewMDTest::UpdateNotificationViews(
     views::Widget::InitParams init_params(
         CreateParams(views::Widget::InitParams::TYPE_POPUP));
     widget_ = new views::Widget();
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
     widget_->SetContentsView(notification_view_.get());
     widget_->SetSize(notification_view_->GetPreferredSize());
     widget_->Show();

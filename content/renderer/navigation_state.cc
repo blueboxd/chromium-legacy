@@ -38,11 +38,8 @@ std::unique_ptr<NavigationState> NavigationState::CreateBrowserInitiated(
 
 // static
 std::unique_ptr<NavigationState> NavigationState::CreateContentInitiated() {
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
   return base::WrapUnique(new NavigationState(
-      std::move(common_params), CreateCommitNavigationParams(),
+      CreateCommonNavigationParams(), CreateCommitNavigationParams(),
       base::TimeTicks(), true,
       content::mojom::FrameNavigationControl::CommitNavigationCallback(),
       content::mojom::NavigationClient::CommitNavigationCallback(), nullptr,

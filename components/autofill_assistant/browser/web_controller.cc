@@ -590,7 +590,7 @@ void WebController::ElementPositionGetter::OnGetBoxModelForStableCheck(
   }
 
   --remaining_rounds_;
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &WebController::ElementPositionGetter::GetAndWaitBoxModelStable,
@@ -608,7 +608,7 @@ void WebController::ElementPositionGetter::OnScrollIntoView(
   }
 
   --remaining_rounds_;
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &WebController::ElementPositionGetter::GetAndWaitBoxModelStable,
@@ -1734,7 +1734,7 @@ void WebController::DispatchKeyboardTextDownEvent(
   }
 
   if (delay && delay_in_millisecond > 0) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&WebController::DispatchKeyboardTextDownEvent,
                        weak_ptr_factory_.GetWeakPtr(), codepoints, index,
@@ -2105,7 +2105,7 @@ void WebController::OnWaitForDocumentToBecomeInteractive(
     return;
   }
 
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&WebController::WaitForDocumentToBecomeInteractive,
                      weak_ptr_factory_.GetWeakPtr(), --remaining_rounds,

@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -174,9 +173,9 @@ class SyncPrefs : public CryptoSyncPrefs,
   // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
 
-  // Gets user demographics. Returns an empty optional if not all demographics
-  // are available.
-  base::Optional<UserDemographics> GetUserDemographics(base::Time now);
+  // Gets user demographics. Returns an error status with an empty value when
+  // demographics cannot be provided.
+  UserDemographicsResult GetUserDemographics(base::Time now);
 
  private:
   static void RegisterTypeSelectedPref(user_prefs::PrefRegistrySyncable* prefs,

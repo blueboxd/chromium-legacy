@@ -633,3 +633,23 @@ class ChromeDriver(object):
   def RemoveVirtualAuthenticator(self, authenticatorId):
     params = {'authenticatorId': authenticatorId}
     return self.ExecuteCommand(Command.REMOVE_VIRTUAL_AUTHENTICATOR, params)
+
+  def AddCredential(self, authenticatorId=None, credentialId=None,
+                    isResidentCredential=None, rpId=None, privateKey=None,
+                    userHandle=None, signCount=None):
+    options = {}
+    if authenticatorId is not None:
+      options['authenticatorId'] = authenticatorId
+    if credentialId is not None:
+      options['credentialId'] = credentialId
+    if isResidentCredential is not None:
+      options['isResidentCredential'] = isResidentCredential
+    if rpId is not None:
+      options['rpId'] = rpId
+    if privateKey is not None:
+      options['privateKey'] = privateKey
+    if userHandle is not None:
+      options['userHandle'] = userHandle
+    if signCount is not None:
+      options['signCount'] = signCount
+    return self.ExecuteCommand(Command.ADD_CREDENTIAL, options)

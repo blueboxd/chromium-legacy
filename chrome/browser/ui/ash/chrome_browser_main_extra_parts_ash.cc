@@ -41,7 +41,7 @@
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
@@ -109,12 +109,7 @@ class ChromeLauncherControllerInitializer
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh()
     : notification_observer_(std::make_unique<NotificationObserver>()) {}
 
-ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
-  // Views code observes TabletModeClient and may not be destroyed until
-  // ash::Shell is, so destroy |tablet_mode_client_| after ash::Shell.
-  // Also extensions need to remove observers after PostMainMessageLoopRun().
-  tablet_mode_client_.reset();
-}
+ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() = default;
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   // NetworkConnect handles the network connection state machine for the UI.
@@ -146,11 +141,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   session_controller_client_->Init();
 
   system_tray_client_ = std::make_unique<SystemTrayClient>();
-
-  // Makes mojo request to TabletModeController in ash.
-  tablet_mode_client_ = std::make_unique<TabletModeClient>();
-  tablet_mode_client_->Init();
-
+  tablet_mode_page_behavior_ = std::make_unique<TabletModePageBehavior>();
   vpn_list_forwarder_ = std::make_unique<VpnListForwarder>();
 
   wallpaper_controller_client_ = std::make_unique<WallpaperControllerClient>();

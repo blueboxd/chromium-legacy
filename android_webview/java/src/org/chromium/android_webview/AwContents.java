@@ -65,6 +65,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeUnchecked;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.autofill.AutofillProvider;
@@ -368,7 +369,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     private long mNativeAwContents;
-    private final AwBrowserContext mBrowserContext;
+    private AwBrowserContext mBrowserContext;
     private ViewGroup mContainerView;
     private AwFunctor mDrawFunctor;
     private final Context mContext;
@@ -657,6 +658,16 @@ public class AwContents implements SmartClipProvider {
                 mContentsClient.getCallbackHelper().postOnLoadResource(url);
             }
 
+            if (awWebResourceResponse != null) {
+                String mimeType = awWebResourceResponse.getMimeType();
+                if (mimeType == null) {
+                    AwHistogramRecorder.recordMimeType(
+                            AwHistogramRecorder.MimeType.NULL_FROM_SHOULD_INTERCEPT_REQUEST);
+                } else {
+                    AwHistogramRecorder.recordMimeType(
+                            AwHistogramRecorder.MimeType.NONNULL_FROM_SHOULD_INTERCEPT_REQUEST);
+                }
+            }
             if (awWebResourceResponse != null && awWebResourceResponse.getData() == null) {
                 // In this case the intercepted URLRequest job will simulate an empty response
                 // which doesn't trigger the onReceivedError callback. For WebViewClassic
@@ -876,6 +887,7 @@ public class AwContents implements SmartClipProvider {
             InternalAccessDelegate internalAccessAdapter,
             NativeDrawFunctorFactory nativeDrawFunctorFactory, AwContentsClient contentsClient,
             AwSettings settings, DependencyFactory dependencyFactory) {
+        assert browserContext != null;
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwContents.constructor")) {
             mRendererPriority = RendererPriority.HIGH;
             mSettings = settings;
@@ -933,7 +945,7 @@ public class AwContents implements SmartClipProvider {
             setOverScrollMode(mContainerView.getOverScrollMode());
             setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
 
-            setNewAwContents(nativeInit(mBrowserContext));
+            setNewAwContents(nativeInit(mBrowserContext.getNativePointer()));
 
             onContainerViewChanged();
         }
@@ -1241,11 +1253,9 @@ public class AwContents implements SmartClipProvider {
 
         mNativeAwContents = newAwContentsPtr;
         updateNativeAwGLFunctor();
-        // TODO(joth): when the native and java counterparts of AwBrowserContext are hooked up to
-        // each other, we should update |mBrowserContext| according to the newly received native
-        // WebContent's browser context.
 
         mWebContents = nativeGetWebContents(mNativeAwContents);
+        mBrowserContext = nativeGetBrowserContext(mNativeAwContents);
 
         mWindowAndroid = getWindowAndroid(mContext);
         mViewAndroidDelegate =
@@ -3916,7 +3926,7 @@ public class AwContents implements SmartClipProvider {
     //  Native methods
     //--------------------------------------------------------------------------------------------
 
-    private static native long nativeInit(AwBrowserContext browserContext);
+    private static native long nativeInit(long browserContextPointer);
     private static native void nativeDestroy(long nativeAwContents);
     private static native boolean nativeHasRequiredHardwareExtensions();
     private static native void nativeSetAwDrawSWFunctionTable(long functionTablePointer);
@@ -3934,6 +3944,7 @@ public class AwContents implements SmartClipProvider {
             InterceptNavigationDelegate navigationInterceptionDelegate,
             AutofillProvider autofillProvider);
     private native WebContents nativeGetWebContents(long nativeAwContents);
+    private native AwBrowserContext nativeGetBrowserContext(long nativeAwContents);
     private native void nativeSetCompositorFrameConsumer(
             long nativeAwContents, long nativeCompositorFrameConsumer);
 

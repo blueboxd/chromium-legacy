@@ -159,6 +159,10 @@ class ChromePromptChannelProtobuf : public ChromePromptChannel {
     kRequestInvalidSize = 4,
     kRequestContentInvalid = 5,
     kRequestUnknown = 6,
+    kRequestUnknownField = 7,
+    kUndisplayableFilePath = 8,
+    kUndisplayableRegistryKey = 9,
+    kUndisplayableExtension = 9,
   };
 
   static int32_t GetErrorCodeInt(ErrorCategory category,

@@ -113,7 +113,7 @@ class FrameSizeButtonTest : public AshTestBase {
     params.delegate = delegate;
     params.bounds = gfx::Rect(10, 10, 100, 100);
     params.context = CurrentContext();
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
 
     return widget;

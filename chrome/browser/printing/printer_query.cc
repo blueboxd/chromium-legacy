@@ -57,7 +57,7 @@ void PrinterQuery::PostSettingsDoneToIO(base::OnceClosure callback,
                                         const PrintSettings& new_settings,
                                         PrintingContext::Result result) {
   // |this| is owned by |callback|, so |base::Unretained()| is safe.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&PrinterQuery::GetSettingsDone, base::Unretained(this),
                      std::move(callback), new_settings, result));
@@ -161,8 +161,8 @@ void PrinterQuery::StopWorker() {
 
 bool PrinterQuery::PostTask(const base::Location& from_here,
                             base::OnceClosure task) {
-  return base::PostTaskWithTraits(from_here, {content::BrowserThread::IO},
-                                  std::move(task));
+  return base::PostTask(from_here, {content::BrowserThread::IO},
+                        std::move(task));
 }
 
 bool PrinterQuery::is_valid() const {

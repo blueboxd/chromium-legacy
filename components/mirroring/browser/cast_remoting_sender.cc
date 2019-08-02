@@ -135,7 +135,7 @@ void CastRemotingSender::FindAndBind(
   // CastRemotingSender lives entirely on the IO thread, so trampoline if
   // necessary.
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &CastRemotingSender::FindAndBind, rtp_stream_id, std::move(pipe),

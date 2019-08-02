@@ -32,6 +32,10 @@ struct PageInsetSizes {
 // drawn left page and the empty space to the right of the page.
 void AdjustBottomGapForRightSidePage(int page_x, pp::Rect* bottom_gap);
 
+// Given |doc_width|, horizontally center |rect| within the document.
+// |doc_width| must be greater than or equal to |rect|.
+void CenterRectHorizontally(int doc_width, pp::Rect* rect);
+
 // Given |rect_size|, sets the width of |doc_size| to the max of |rect_size|'s
 // width and |doc_size|'s width. Also adds the height of |rect_size| to
 // |doc_size|'s height.

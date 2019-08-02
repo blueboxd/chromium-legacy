@@ -613,6 +613,8 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
       return 0xFFFBFCC5;
     case CSSValueID::kInfotext:
       return 0xFF000000;
+    case CSSValueID::kLinktext:
+      return 0xFF0000EE;
     case CSSValueID::kMenu:
       return 0xFFC0C0C0;
     case CSSValueID::kMenutext:
@@ -631,6 +633,8 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
       return 0xFFC0C0C0;
     case CSSValueID::kThreedshadow:
       return 0xFF888888;
+    case CSSValueID::kVisitedtext:
+      return 0xFF551A8B;
     case CSSValueID::kWindow:
       return 0xFFFFFFFF;
     case CSSValueID::kWindowframe:

@@ -110,7 +110,6 @@ authoritative source of the expiry set for a given milestone.
 * enable-native-google-assistant
 * enable-reopen-tab-in-product-help
 * enable-safe-browsing-ap-download-verdicts
-* enable-vaapi-jpeg-image-decode-acceleration
 * enable-webrtc-hw-vp9-encoding
 * enable-webrtc-pipewire-capturer
 * enable-zero-state-suggestions

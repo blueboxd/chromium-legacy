@@ -258,6 +258,10 @@ bool CSSParser::ParseSystemColor(Color& color, const String& color_string) {
   if (!StyleColor::IsSystemColor(id))
     return false;
 
+  if (!RuntimeEnabledFeatures::LinkSystemColorsEnabled() &&
+      (id == CSSValueID::kLinktext || id == CSSValueID::kVisitedtext)) {
+    return false;
+  }
   color = LayoutTheme::GetTheme().SystemColor(id);
   return true;
 }

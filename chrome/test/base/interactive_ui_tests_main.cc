@@ -55,7 +55,7 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 #elif defined(USE_OZONE) && defined(OS_LINUX)
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
-    ui::OzonePlatform::EnsureInstance()->InitializeForUI(std::move(params));
+    ui::OzonePlatform::InitializeForUI(params);
 #elif defined(OS_LINUX)
     ui_controls::InstallUIControlsAura(
         views::test::CreateUIControlsDesktopAura());

@@ -128,7 +128,7 @@ void MessagePopupView::Show() {
     params.native_widget = new views::DesktopNativeWidgetAura(widget);
 #endif
 
-  widget->Init(params);
+  widget->Init(std::move(params));
 
 #if defined(OS_CHROMEOS)
   // On Chrome OS, this widget is shown in the shelf container. It means this

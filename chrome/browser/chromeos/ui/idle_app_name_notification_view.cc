@@ -71,7 +71,7 @@ void CreateAndShowWidget(views::WidgetDelegateView* delegate,
   ash_util::SetupWidgetInitParamsForContainer(
       &params, ash::kShellWindowId_SettingBubbleContainer);
   views::Widget* widget = new views::Widget;
-  widget->Init(params);
+  widget->Init(std::move(params));
   gfx::NativeView native_view = widget->GetNativeView();
   native_view->SetName("KioskIdleAppNameNotification");
 

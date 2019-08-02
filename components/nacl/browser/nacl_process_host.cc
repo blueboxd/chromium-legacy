@@ -272,15 +272,17 @@ NaClProcessHost::~NaClProcessHost() {
     // handles.
     base::File file(IPC::PlatformFileForTransitToFile(
         prefetched_resource_files_[i].file));
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
         base::BindOnce(&CloseFile, std::move(file)));
   }
 #endif
   // Open files need to be closed on the blocking pool.
   if (nexe_file_.IsValid()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
         base::BindOnce(&CloseFile, std::move(nexe_file_)));
   }
 
@@ -809,11 +811,12 @@ bool NaClProcessHost::StartNaClExecution() {
       // We have to reopen the file in the browser process; we don't want a
       // compromised renderer to pass an arbitrary fd that could get loaded
       // into the plugin process.
-      base::PostTaskWithTraitsAndReplyWithResult(
+      base::PostTaskAndReplyWithResult(
           FROM_HERE,
           // USER_BLOCKING because it is on the critical path of displaying the
           // official virtual keyboard on Chrome OS. https://crbug.com/976542
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_BLOCKING},
           base::BindOnce(OpenNaClReadExecImpl, file_path,
                          true /* is_executable */),
           base::BindOnce(&NaClProcessHost::StartNaClFileResolved,
@@ -834,8 +837,9 @@ void NaClProcessHost::StartNaClFileResolved(
   if (checked_nexe_file.IsValid()) {
     // Release the file received from the renderer. This has to be done on a
     // thread where IO is permitted, though.
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
         base::BindOnce(&CloseFile, std::move(nexe_file_)));
     params.nexe_file_path_metadata = file_path;
     params.nexe_file =
@@ -1045,11 +1049,11 @@ void NaClProcessHost::OnResolveFileToken(uint64_t file_token_lo,
   }
 
   // Open the file.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
       // USER_BLOCKING because it is on the critical path of displaying the
       // official virtual keyboard on Chrome OS. https://crbug.com/976542
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
       base::Bind(&NaClProcessHost::FileResolved, weak_factory_.GetWeakPtr(),
                  file_token_lo, file_token_hi, file_path));

@@ -47,6 +47,7 @@ if (is_chromeos) {
       "policy.mojom",
       "power.mojom",
       "print.mojom",
+      "print_common.mojom",
       "print_spooler.mojom",
       "process.mojom",
       "property.mojom",

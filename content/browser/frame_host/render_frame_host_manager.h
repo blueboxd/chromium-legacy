@@ -289,8 +289,8 @@ class CONTENT_EXPORT RenderFrameHostManager
                        SiteInstance* source_site_instance);
 
   // Creates and initializes a RenderFrameHost.
-  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(SiteInstance* instance,
-                                                         bool hidden);
+  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(
+      SiteInstance* instance);
 
   // Helper method to create and initialize a RenderFrameProxyHost.
   void CreateRenderFrameProxy(SiteInstance* instance);
@@ -711,7 +711,6 @@ class CONTENT_EXPORT RenderFrameHostManager
       int32_t view_routing_id,
       int32_t frame_routing_id,
       int32_t widget_routing_id,
-      bool hidden,
       bool renderer_initiated_creation);
 
   // Create and initialize a speculative RenderFrameHost for an ongoing

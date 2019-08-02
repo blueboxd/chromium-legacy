@@ -92,7 +92,7 @@ class CastDialogViewTest : public ChromeViewsTestBase {
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     anchor_widget_ = std::make_unique<views::Widget>();
-    anchor_widget_->Init(params);
+    anchor_widget_->Init(std::move(params));
     anchor_widget_->Show();
   }
 

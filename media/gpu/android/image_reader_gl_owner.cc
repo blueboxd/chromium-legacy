@@ -44,29 +44,6 @@ bool IsSurfaceControl(TextureOwner::Mode mode) {
 }
 }  // namespace
 
-// FrameAvailableEvent_ImageReader is a RefCounted wrapper for a WaitableEvent
-// (it's not possible to put one in RefCountedData). This lets us safely signal
-// an event on any thread.
-struct FrameAvailableEvent_ImageReader
-    : public base::RefCountedThreadSafe<FrameAvailableEvent_ImageReader> {
-  FrameAvailableEvent_ImageReader()
-      : event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-              base::WaitableEvent::InitialState::NOT_SIGNALED) {}
-  void Signal() { event.Signal(); }
-  base::WaitableEvent event;
-
-  // This callback function will be called when there is a new image available
-  // for in the image reader's queue.
-  static void CallbackSignal(void* context, AImageReader* reader) {
-    (reinterpret_cast<FrameAvailableEvent_ImageReader*>(context))->Signal();
-  }
-
- private:
-  friend class RefCountedThreadSafe<FrameAvailableEvent_ImageReader>;
-
-  ~FrameAvailableEvent_ImageReader() = default;
-};
-
 class ImageReaderGLOwner::ScopedHardwareBufferImpl
     : public base::android::ScopedHardwareBufferFenceSync {
  public:
@@ -105,8 +82,7 @@ ImageReaderGLOwner::ImageReaderGLOwner(
                    std::move(texture)),
       loader_(base::android::AndroidImageReader::GetInstance()),
       context_(gl::GLContext::GetCurrent()),
-      surface_(gl::GLSurface::GetCurrent()),
-      frame_available_event_(new FrameAvailableEvent_ImageReader()) {
+      surface_(gl::GLSurface::GetCurrent()) {
   DCHECK(context_);
   DCHECK(surface_);
 
@@ -152,9 +128,11 @@ ImageReaderGLOwner::ImageReaderGLOwner(
 
   // Create a new Image Listner.
   listener_ = std::make_unique<AImageReader_ImageListener>();
-  listener_->context = reinterpret_cast<void*>(frame_available_event_.get());
-  listener_->onImageAvailable =
-      &FrameAvailableEvent_ImageReader::CallbackSignal;
+
+  // Passing |this| is safe here since we stop listening to new images in the
+  // destructor and set the ImageListener to null.
+  listener_->context = reinterpret_cast<void*>(this);
+  listener_->onImageAvailable = &ImageReaderGLOwner::OnFrameAvailable;
 
   // Set the onImageAvailable listener of this image reader.
   if (loader_.AImageReader_setImageListener(image_reader_, listener_.get()) !=
@@ -201,6 +179,11 @@ void ImageReaderGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
   // |image_reader_|.
   image_refs_.clear();
   current_image_ref_.reset();
+}
+
+void ImageReaderGLOwner::SetFrameAvailableCallback(
+    const base::RepeatingClosure& frame_available_cb) {
+  frame_available_cb_ = std::move(frame_available_cb);
 }
 
 gl::ScopedJavaSurface ImageReaderGLOwner::CreateJavaSurface() const {
@@ -382,55 +365,14 @@ gl::GLSurface* ImageReaderGLOwner::GetSurface() const {
   return surface_.get();
 }
 
-void ImageReaderGLOwner::SetReleaseTimeToNow() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  release_time_ = base::TimeTicks::Now();
-}
+// This callback function will be called when there is a new image available
+// for in the image reader's queue.
+void ImageReaderGLOwner::OnFrameAvailable(void* context, AImageReader* reader) {
+  ImageReaderGLOwner* image_reader_ptr =
+      reinterpret_cast<ImageReaderGLOwner*>(context);
 
-void ImageReaderGLOwner::IgnorePendingRelease() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  release_time_ = base::TimeTicks();
-}
-
-bool ImageReaderGLOwner::IsExpectingFrameAvailable() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return !release_time_.is_null();
-}
-
-void ImageReaderGLOwner::WaitForFrameAvailable() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!release_time_.is_null());
-
-  // 5msec covers >99.9% of cases, so just wait for up to that much before
-  // giving up. If an error occurs, we might not ever get a notification.
-  const base::TimeDelta max_wait = base::TimeDelta::FromMilliseconds(5);
-  const base::TimeTicks call_time = base::TimeTicks::Now();
-  const base::TimeDelta elapsed = call_time - release_time_;
-  const base::TimeDelta remaining = max_wait - elapsed;
-  release_time_ = base::TimeTicks();
-  bool timed_out = false;
-
-  if (remaining <= base::TimeDelta()) {
-    if (!frame_available_event_->event.IsSignaled()) {
-      DVLOG(1) << "Deferred WaitForFrameAvailable() timed out, elapsed: "
-               << elapsed.InMillisecondsF() << "ms";
-      timed_out = true;
-    }
-  } else {
-    DCHECK_LE(remaining, max_wait);
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "Media.CodecImage.ImageReaderGLOwner.WaitTimeForFrame");
-    if (!frame_available_event_->event.TimedWait(remaining)) {
-      DVLOG(1) << "WaitForFrameAvailable() timed out, elapsed: "
-               << elapsed.InMillisecondsF()
-               << "ms, additionally waited: " << remaining.InMillisecondsF()
-               << "ms, total: " << (elapsed + remaining).InMillisecondsF()
-               << "ms";
-      timed_out = true;
-    }
-  }
-  UMA_HISTOGRAM_BOOLEAN("Media.CodecImage.ImageReaderGLOwner.FrameTimedOut",
-                        timed_out);
+  // It is safe to run this callback on any thread.
+  image_reader_ptr->frame_available_cb_.Run();
 }
 
 ImageReaderGLOwner::ImageRef::ImageRef() = default;

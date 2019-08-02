@@ -156,8 +156,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
       (net::HttpRequestHeaders()), manager.get());
   throttle->DetachFromCurrentSequence();
 
-  auto task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits());
+  auto task_runner = base::CreateSequencedTaskRunner({base::ThreadPool()});
   task_runner->DeleteSoon(FROM_HERE, throttle.release());
 }
 

@@ -101,8 +101,8 @@ class WebDataServiceTest : public testing::Test {
     // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
     // not single-threaded; it's also possible the various uses of this below
     // should each use their own sequences instead of sharing this one.
-    auto db_task_runner =
-        base::CreateSingleThreadTaskRunnerWithTraits({base::MayBlock()});
+    auto db_task_runner = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::MayBlock()});
     wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                    db_task_runner);
     wdbs_->AddTable(std::make_unique<AutofillTable>());

@@ -17,6 +17,12 @@ void AdjustBottomGapForRightSidePage(int page_x, pp::Rect* bottom_gap) {
   bottom_gap->set_width(bottom_gap->width() / 2);
 }
 
+void CenterRectHorizontally(int doc_width, pp::Rect* rect) {
+  DCHECK_GE(doc_width, rect->width());
+
+  rect->set_x((doc_width - rect->width()) / 2);
+}
+
 void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size) {
   int width_diff = std::max(0, rect_size.width() - doc_size->width());
   doc_size->Enlarge(width_diff, rect_size.height());

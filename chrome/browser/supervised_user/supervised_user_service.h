@@ -101,14 +101,6 @@ class SupervisedUserService : public KeyedService,
     return whitelists_;
   }
 
-  // Returns true if the preference value is pre-defined and is controlled by
-  // neither the supervised user nor the supervised user's custodians.
-  bool IsRestrictedCrosSettingForChildUser(const std::string& name) const;
-
-  // Returns the value of the restricted preference.
-  const base::Value* GetRestrictedCrosSettingValueForChildUser(
-      const std::string& name) const;
-
   // Whether the user can request to get access to blocked URLs or to new
   // extensions.
   bool AccessRequestsEnabled();
@@ -343,9 +335,6 @@ class SupervisedUserService : public KeyedService,
   // Stores a map from extension_id -> approved version by the custodian.
   // It is only relevant for SU-initiated installs.
   std::map<std::string, base::Version> approved_extensions_map_;
-
-  // Stores the restricted preference values for child users.
-  std::map<std::string, base::Value> child_user_restricted_cros_settings_;
 
   enum class BlacklistLoadState {
     NOT_LOADED,

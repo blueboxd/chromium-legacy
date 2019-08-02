@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/file_path.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -351,6 +352,14 @@ bool FindAndConsumeAndGetSkipped(re2::StringPiece* input,
                                       base::size(args));
 }
 
+// The following MAC addresses will not be anonymized as they are not specific
+// to a device but have general meanings.
+const char* const kNonAnonymizedMacAddresses[] = {
+    "00:00:00:00:00:00",  // ARP failure result MAC.
+    "ff:ff:ff:ff:ff:ff",  // Broadcast MAC.
+};
+constexpr size_t kNumNonAnonymizedMacs = base::size(kNonAnonymizedMacAddresses);
+
 }  // namespace
 
 AnonymizerTool::AnonymizerTool(const char* const* first_party_extension_ids)
@@ -359,6 +368,9 @@ AnonymizerTool::AnonymizerTool(const char* const* first_party_extension_ids)
       custom_patterns_without_context_(
           base::size(kCustomPatternsWithoutContext)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  // Identity-map these, so we don't mangle them.
+  for (const char* mac : kNonAnonymizedMacAddresses)
+    mac_addresses_[mac] = mac;
 }
 
 AnonymizerTool::~AnonymizerTool() {
@@ -371,6 +383,7 @@ std::string AnonymizerTool::Anonymize(const std::string& input) {
       << "This is an expensive operation. Do not execute this on the UI "
          "thread.";
   std::string anonymized = AnonymizeMACAddresses(input);
+  anonymized = AnonymizeAndroidAppStoragePaths(std::move(anonymized));
   anonymized = AnonymizeCustomPatterns(std::move(anonymized));
   return anonymized;
 }
@@ -417,10 +430,9 @@ std::string AnonymizerTool::AnonymizeMACAddresses(const std::string& input) {
     if (replacement_mac.empty()) {
       // If not found, build up a replacement MAC address by generating a new
       // NIC part.
-      int mac_id = mac_addresses_.size();
-      replacement_mac = base::StringPrintf(
-          "%s:%02x:%02x:%02x", oui_string.c_str(), (mac_id & 0x00ff0000) >> 16,
-          (mac_id & 0x0000ff00) >> 8, (mac_id & 0x000000ff));
+      int mac_id = mac_addresses_.size() - kNumNonAnonymizedMacs;
+      replacement_mac = base::StringPrintf("[MAC OUI=%s IFACE=%d]",
+                                           oui_string.c_str(), mac_id);
       mac_addresses_[mac] = replacement_mac;
     }
 
@@ -430,6 +442,62 @@ std::string AnonymizerTool::AnonymizeMACAddresses(const std::string& input) {
 
   text.AppendToString(&result);
   return result;
+}
+
+std::string AnonymizerTool::AnonymizeAndroidAppStoragePaths(
+    const std::string& input) {
+  // We only use this on Chrome OS and there's differences in the API for
+  // FilePath on Windows which prevents this from compiling, so only enable this
+  // code for Chrome OS.
+#if defined(OS_CHROMEOS)
+  std::string result;
+  result.reserve(input.size());
+
+  // This is for anonymizing 'android_app_storage' output. When the path starts
+  // either /home/root/<hash>/data/data/<package_name>/ or
+  // /home/root/<hash>/data/user_de/<number>/<package_name>/, this function will
+  // anonymize path components following <package_name>/.
+  RE2* path_re = GetRegExp(
+      "(?m)(\\t/home/root/[\\da-f]+/android-data/data/"
+      "(data|user_de/\\d+)/[^/\\n]+)("
+      "/[^\\n]+)");
+
+  // Keep consuming, building up a result string as we go.
+  re2::StringPiece text(input);
+  re2::StringPiece skipped, path_prefix, ignored, app_specific;
+  while (FindAndConsumeAndGetSkipped(&text, *path_re, &skipped, &path_prefix,
+                                     &ignored, &app_specific)) {
+    // We can record these parts as-is.
+    skipped.AppendToString(&result);
+    path_prefix.AppendToString(&result);
+
+    // |app_specific| has to be anonymized. First, convert it into components,
+    // and then anonymize each component as follows:
+    // - If the component has a non-ASCII character, change it to '*'.
+    // - Otherwise, remove all the characters in the component but the first
+    //   one.
+    // - If the original component has 2 or more bytes, add '_'.
+    const base::FilePath path(app_specific.as_string());
+    std::vector<std::string> components;
+    path.GetComponents(&components);
+    DCHECK(!components.empty());
+
+    auto it = components.begin() + 1;  // ignore the leading slash
+    for (; it != components.end(); ++it) {
+      const auto& component = *it;
+      DCHECK(!component.empty());
+      result += '/';
+      result += (base::IsStringASCII(component) ? component[0] : '*');
+      if (component.length() > 1)
+        result += '_';
+    }
+  }
+
+  text.AppendToString(&result);
+  return result;
+#else
+  return input;
+#endif  //  defined(OS_CHROMEOS)
 }
 
 std::string AnonymizerTool::AnonymizeCustomPatterns(std::string input) {

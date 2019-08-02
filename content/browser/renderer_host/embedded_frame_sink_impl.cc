@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "components/viz/common/features.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -26,10 +25,7 @@ EmbeddedFrameSinkImpl::EmbeddedFrameSinkImpl(
       frame_sink_id_(frame_sink_id) {
   client_.set_connection_error_handler(std::move(destroy_callback));
   host_frame_sink_manager_->RegisterFrameSinkId(
-      frame_sink_id_, this,
-      features::IsSurfaceSynchronizationEnabled()
-          ? viz::ReportFirstSurfaceActivation::kNo
-          : viz::ReportFirstSurfaceActivation::kYes);
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
                                                    "EmbeddedFrameSinkImpl");
 }
@@ -70,13 +66,7 @@ void EmbeddedFrameSinkImpl::ConnectToEmbedder(
 }
 
 void EmbeddedFrameSinkImpl::OnFirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {
-  DCHECK_EQ(surface_info.id().frame_sink_id(), frame_sink_id_);
-
-  local_surface_id_ = surface_info.id().local_surface_id();
-  if (client_)
-    client_->OnFirstSurfaceActivation(surface_info);
-}
+    const viz::SurfaceInfo& surface_info) {}
 
 void EmbeddedFrameSinkImpl::OnFrameTokenChanged(uint32_t frame_token) {
   // TODO(yiyix, fsamuel): To complete plumbing of frame tokens for offscreen

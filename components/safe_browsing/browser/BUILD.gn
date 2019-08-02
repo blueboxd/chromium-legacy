@@ -13,8 +13,6 @@ jumbo_source_set("browser") {
     "mojo_safe_browsing_impl.h",
     "safe_browsing_url_checker_impl.cc",
     "safe_browsing_url_checker_impl.h",
-    "safe_browsing_url_request_context_getter.cc",
-    "safe_browsing_url_request_context_getter.h",
     "threat_details.cc",
     "threat_details.h",
     "threat_details_cache.cc",

@@ -490,15 +490,14 @@ bool CanLaunchViaEvent(const extensions::Extension* extension) {
   return feature && feature->IsAvailableToExtension(extension).is_available();
 }
 
-Browser* ReparentWebContentsIntoAppBrowser(
-    content::WebContents* contents,
-    const extensions::Extension* extension) {
+Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
+                                           const std::string& app_id) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   // Incognito tabs reparent correctly, but remain incognito without any
   // indication to the user, so disallow it.
   DCHECK(!profile->IsOffTheRecord());
   Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      web_app::GenerateApplicationNameFromAppId(extension->id()),
+      web_app::GenerateApplicationNameFromAppId(app_id),
       true /* trusted_source */, gfx::Rect(), profile,
       true /* user_gesture */));
   return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);
@@ -523,5 +522,5 @@ Browser* ReparentSecureActiveTabIntoPwaWindow(Browser* browser) {
   if (!extension)
     return nullptr;
   return ReparentWebContentsIntoAppBrowser(
-      browser->tab_strip_model()->GetActiveWebContents(), extension);
+      browser->tab_strip_model()->GetActiveWebContents(), extension->id());
 }

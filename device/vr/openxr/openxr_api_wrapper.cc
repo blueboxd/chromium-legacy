@@ -10,7 +10,9 @@
 #include <array>
 
 #include "base/logging.h"
+#include "device/vr/openxr/openxr_gamepad_helper.h"
 #include "device/vr/openxr/openxr_util.h"
+#include "device/vr/test/test_hook.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
 
@@ -129,6 +131,17 @@ bool OpenXrApiWrapper::Initialize() {
   }
 
   DCHECK(IsInitialized());
+
+  if (test_hook_) {
+    // Allow our mock implementation of OpenXR to be controlled by tests.
+    // The mock implementation of xrCreateInstance returns a pointer to the
+    // service test hook (g_test_helper) as the instance.
+    service_test_hook_ = reinterpret_cast<ServiceTestHook*>(instance_);
+    service_test_hook_->SetTestHook(test_hook_);
+
+    test_hook_->AttachCurrentThread();
+  }
+
   return true;
 }
 
@@ -137,12 +150,15 @@ bool OpenXrApiWrapper::IsInitialized() const {
 }
 
 void OpenXrApiWrapper::Uninitialize() {
-  // Destroying an instance in OpenXR also destroys all child objects of that
+  // Destroying an instance in OpenXr also destroys all child objects of that
   // instance (including the session, swapchain, and spaces objects),
   // so they don't need to be manually destroyed.
   if (HasInstance()) {
     xrDestroyInstance(instance_);
   }
+
+  if (test_hook_)
+    test_hook_->DetachCurrentThread();
 
   Reset();
 }
@@ -198,7 +214,7 @@ XrResult OpenXrApiWrapper::InitializeSystem() {
   RETURN_IF_XR_FAILED(xrEnumerateViewConfigurationViews(
       instance_, system, kSupportedViewConfiguration, 0, &view_count, nullptr));
 
-  // It would be an error for an OpenXR runtime to return anything other than 2
+  // It would be an error for an OpenXr runtime to return anything other than 2
   // views to an app that only requested
   // XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO.
   DCHECK(view_count == kNumViews);
@@ -251,7 +267,8 @@ XrResult OpenXrApiWrapper::PickEnvironmentBlendMode(XrSystemId system) {
 // this OpenXrApiWrapper object on failure to clean up any intermediate
 // objects that may have been created before the failure.
 XrResult OpenXrApiWrapper::StartSession(
-    const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device) {
+    const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
+    std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper) {
   DCHECK(d3d_device.Get());
   DCHECK(IsInitialized());
 
@@ -262,6 +279,7 @@ XrResult OpenXrApiWrapper::StartSession(
   RETURN_IF_XR_FAILED(
       CreateSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, &local_space_));
   RETURN_IF_XR_FAILED(CreateSpace(XR_REFERENCE_SPACE_TYPE_VIEW, &view_space_));
+  RETURN_IF_XR_FAILED(CreateGamepadHelper(gamepad_helper));
   RETURN_IF_XR_FAILED(BeginSession());
 
   // Since the objects in these arrays are used on every frame,
@@ -275,6 +293,7 @@ XrResult OpenXrApiWrapper::StartSession(
   DCHECK(HasColorSwapChain());
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_VIEW));
+  DCHECK(gamepad_helper);
 
   return xr_result;
 }
@@ -355,6 +374,17 @@ XrResult OpenXrApiWrapper::CreateSpace(XrReferenceSpaceType type,
   return xrCreateReferenceSpace(session_, &space_create_info, space);
 }
 
+XrResult OpenXrApiWrapper::CreateGamepadHelper(
+    std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper) {
+  DCHECK(HasSession());
+  DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
+
+  XrResult xr_result = OpenXrGamepadHelper::GetOpenXrGamepadHelper(
+      instance_, session_, local_space_, gamepad_helper);
+
+  return xr_result;
+}
+
 XrResult OpenXrApiWrapper::BeginSession() {
   DCHECK(HasSession());
 
@@ -388,7 +418,7 @@ XrResult OpenXrApiWrapper::BeginFrame(
   wait_info.timeout = XR_INFINITE_DURATION;
 
   RETURN_IF_XR_FAILED(xrWaitSwapchainImage(color_swapchain_, &wait_info));
-  RETURN_IF_XR_FAILED(UpdateProjectionLayers());
+  RETURN_IF_XR_FAILED(UpdateProjectionLayers(frame_state.predictedDisplayTime));
 
   *texture = color_swapchain_images_[color_swapchain_image_index].texture;
   frame_state_ = frame_state;
@@ -430,13 +460,14 @@ XrResult OpenXrApiWrapper::EndFrame() {
   return xr_result;
 }
 
-XrResult OpenXrApiWrapper::UpdateProjectionLayers() {
+XrResult OpenXrApiWrapper::UpdateProjectionLayers(
+    XrTime predicted_display_time) {
   XrResult xr_result;
 
   XrViewState view_state = {XR_TYPE_VIEW_STATE};
 
   XrViewLocateInfo view_locate_info = {XR_TYPE_VIEW_LOCATE_INFO};
-  view_locate_info.displayTime = frame_state_.predictedDisplayTime;
+  view_locate_info.displayTime = predicted_display_time;
   view_locate_info.space = local_space_;
 
   uint32_t view_count = 0;
@@ -491,6 +522,9 @@ XrResult OpenXrApiWrapper::GetHeadPose(gfx::Quaternion* orientation,
   RETURN_IF_XR_FAILED(xrLocateSpace(
       view_space_, local_space_, frame_state_.predictedDisplayTime, &relation));
 
+  DCHECK(relation.relationFlags & XR_SPACE_RELATION_ORIENTATION_VALID_BIT);
+  DCHECK(relation.relationFlags & XR_SPACE_RELATION_POSITION_VALID_BIT);
+
   orientation->set_x(relation.pose.orientation.x);
   orientation->set_y(relation.pose.orientation.y);
   orientation->set_z(relation.pose.orientation.z);
@@ -542,6 +576,18 @@ uint32_t OpenXrApiWrapper::GetRecommendedSwapchainSampleCount() const {
 
   return std::min_element(start, end, compareSwapchainCounts)
       ->recommendedSwapchainSampleCount;
+}
+
+VRTestHook* OpenXrApiWrapper::test_hook_ = nullptr;
+ServiceTestHook* OpenXrApiWrapper::service_test_hook_ = nullptr;
+void OpenXrApiWrapper::SetTestHook(VRTestHook* hook) {
+  // This may be called from any thread - tests are responsible for
+  // maintaining thread safety, typically by not changing the test hook
+  // while presenting.
+  test_hook_ = hook;
+  if (service_test_hook_) {
+    service_test_hook_->SetTestHook(test_hook_);
+  }
 }
 
 }  // namespace device

@@ -91,7 +91,9 @@ void AutofillUiTest::SetUpOnMainThread() {
 
 void AutofillUiTest::TearDownOnMainThread() {
   // Make sure to close any showing popups prior to tearing down the UI.
-  GetAutofillManager()->client()->HideAutofillPopup();
+  AutofillManager* autofill_manager = GetAutofillManager();
+  if (autofill_manager)
+    autofill_manager->client()->HideAutofillPopup();
   test::ReenableSystemServices();
 }
 
@@ -222,9 +224,15 @@ content::RenderViewHost* AutofillUiTest::GetRenderViewHost() {
 }
 
 AutofillManager* AutofillUiTest::GetAutofillManager() {
-  return ContentAutofillDriverFactory::FromWebContents(GetWebContents())
-      ->DriverForFrame(current_main_rfh_)
-      ->autofill_manager();
+  ContentAutofillDriver* driver =
+      ContentAutofillDriverFactory::FromWebContents(GetWebContents())
+          ->DriverForFrame(current_main_rfh_);
+  // ContentAutofillDriver will be null if the current RenderFrameHost
+  // is not owned by the current WebContents. This state appears to occur
+  // when there is a web page popup during teardown
+  if (!driver)
+    return nullptr;
+  return driver->autofill_manager();
 }
 
 void AutofillUiTest::RenderFrameHostChanged(
@@ -233,7 +241,9 @@ void AutofillUiTest::RenderFrameHostChanged(
   if (current_main_rfh_ != old_frame)
     return;
   current_main_rfh_ = new_frame;
-  GetAutofillManager()->SetTestDelegate(test_delegate());
+  AutofillManager* autofill_manager = GetAutofillManager();
+  if (autofill_manager)
+    autofill_manager->SetTestDelegate(test_delegate());
 }
 
 }  // namespace autofill

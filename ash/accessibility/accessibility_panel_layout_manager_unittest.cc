@@ -40,7 +40,7 @@ std::unique_ptr<views::Widget> CreateChromeVoxPanel() {
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.bounds = gfx::Rect(0, 0, root_window->bounds().width(),
                             root_window->bounds().height());
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 

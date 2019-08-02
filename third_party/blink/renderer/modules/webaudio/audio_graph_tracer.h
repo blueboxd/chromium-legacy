@@ -49,7 +49,24 @@ class MODULES_EXPORT AudioGraphTracer final
   void DidCreateAudioParam(AudioParam*) {}
   void WillDestroyAudioParam(AudioParam*) {}
 
-  // Notify an associated inspector agent when a BaseAudioContext is changed.
+  // Graph connection events: notifies an associated inspector agent about
+  // when a connection between graph objects happens.
+  void DidConnectNodes(AudioNode* source_node,
+                       AudioNode* destination_node,
+                       unsigned source_output_index = 0,
+                       unsigned destination_input_index = 0) {}
+  void DidDisconnectNodes(AudioNode* source_node,
+                          AudioNode* destination_node = nullptr,
+                          unsigned source_output_index = 0,
+                          unsigned destination_input_index = 0) {}
+  void DidConnectNodeParam(AudioNode* source_node,
+                           AudioParam* destination_param,
+                           unsigned source_output_index = 0) {}
+  void DidDisconnectNodeParam(AudioNode* source_node,
+                              AudioParam* destination_param,
+                              unsigned source_output_index = 0) {}
+
+  // Notifies an associated inspector agent when a BaseAudioContext is changed.
   void DidChangeBaseAudioContext(BaseAudioContext*);
 
   BaseAudioContext* GetContextById(const String contextId);

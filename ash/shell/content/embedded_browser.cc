@@ -51,7 +51,7 @@ EmbeddedBrowser::EmbeddedBrowser(content::BrowserContext* context,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = bounds;
   params.delegate = new BrowserWidgetDelegateView(context, url);
-  widget_->Init(params);
+  widget_->Init(std::move(params));
   WindowState::Get(widget_->GetNativeWindow())->SetWindowPositionManaged(true);
   widget_->Show();
 }

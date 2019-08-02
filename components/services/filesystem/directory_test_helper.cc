@@ -44,8 +44,8 @@ class DirectoryTestHelper::BlockingState {
 };
 
 DirectoryTestHelper::DirectoryTestHelper()
-    : blocking_state_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})) {}
+    : blocking_state_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock()})) {}
 
 DirectoryTestHelper::~DirectoryTestHelper() = default;
 

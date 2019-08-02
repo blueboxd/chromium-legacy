@@ -462,14 +462,6 @@ bool UnitTestLauncherDelegate::GetTests(std::vector<TestIdentifier>* output) {
   return platform_delegate_->GetTests(output);
 }
 
-bool UnitTestLauncherDelegate::WillRunTest(const std::string& test_case_name,
-                                           const std::string& test_name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // There is no additional logic to disable specific tests.
-  return true;
-}
-
 std::vector<TestResult> UnitTestLauncherDelegate::ProcessTestResults(
     const std::vector<std::string>& test_names,
     const base::FilePath& output_file,

@@ -13,6 +13,24 @@
 #include "chrome/test/chromedriver/chrome/web_view.h"
 #include "chrome/test/chromedriver/session.h"
 
+namespace {
+
+// Creates a base::DictionaryValue by cloning the parameters specified by
+// |mapping| from |params|.
+base::DictionaryValue MapParams(
+    const base::flat_map<const char*, const char*>& mapping,
+    const base::Value& params) {
+  base::DictionaryValue options;
+  for (const std::pair<const char*, const char*>& pair : mapping) {
+    const base::Value* value = params.FindKey(pair.second);
+    if (value)
+      options.SetPath(pair.first, value->Clone());
+  }
+  return options;
+}
+
+}  // namespace
+
 Status ExecuteWebAuthnCommand(const WebAuthnCommand& command,
                               Session* session,
                               const base::DictionaryValue& params,
@@ -36,32 +54,43 @@ Status ExecuteWebAuthnCommand(const WebAuthnCommand& command,
 Status ExecuteAddVirtualAuthenticator(WebView* web_view,
                                       const base::Value& params,
                                       std::unique_ptr<base::Value>* value) {
-  base::DictionaryValue options;
-  const base::flat_map<const char*, const char*> mapping = {
-      {"options.protocol", "protocol"},
-      {"options.transport", "transport"},
-      {"options.hasResidentKey", "hasResidentKey"},
-      {"options.hasUserVerification", "hasUserVerification"},
-      {"options.automaticPresenceSimulation", "isUserVerified"},
-  };
-  for (const std::pair<const char*, const char*>& pair : mapping) {
-    const base::Value* value = params.FindKey(pair.second);
-    if (value)
-      options.SetPath(pair.first, value->Clone());
-  }
-
-  return web_view->SendCommandAndGetResult("WebAuthn.addVirtualAuthenticator",
-                                           options, value);
+  return web_view->SendCommandAndGetResult(
+      "WebAuthn.addVirtualAuthenticator",
+      MapParams(
+          {
+              {"options.protocol", "protocol"},
+              {"options.transport", "transport"},
+              {"options.hasResidentKey", "hasResidentKey"},
+              {"options.hasUserVerification", "hasUserVerification"},
+              {"options.automaticPresenceSimulation", "isUserVerified"},
+          },
+          params),
+      value);
 }
 
 Status ExecuteRemoveVirtualAuthenticator(WebView* web_view,
                                          const base::Value& params,
                                          std::unique_ptr<base::Value>* value) {
-  base::DictionaryValue options;
-  const base::Value* authenticatorId = params.FindKey("authenticatorId");
-  if (authenticatorId)
-    options.SetKey("authenticatorId", authenticatorId->Clone());
-
   return web_view->SendCommandAndGetResult(
-      "WebAuthn.removeVirtualAuthenticator", options, value);
+      "WebAuthn.removeVirtualAuthenticator",
+      MapParams({{"authenticatorId", "authenticatorId"}}, params), value);
+}
+
+Status ExecuteAddCredential(WebView* web_view,
+                            const base::Value& params,
+                            std::unique_ptr<base::Value>* value) {
+  return web_view->SendCommandAndGetResult(
+      "WebAuthn.addCredential",
+      MapParams(
+          {
+              {"authenticatorId", "authenticatorId"},
+              {"credential.credentialId", "credentialId"},
+              {"credential.isResidentCredential", "isResidentCredential"},
+              {"credential.rpId", "rpId"},
+              {"credential.privateKey", "privateKey"},
+              {"credential.userHandle", "userHandle"},
+              {"credential.signCount", "signCount"},
+          },
+          params),
+      value);
 }

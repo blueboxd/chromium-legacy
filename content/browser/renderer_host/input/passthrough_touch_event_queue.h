@@ -50,6 +50,12 @@ class CONTENT_EXPORT PassthroughTouchEventQueueClient {
 // model of the renderer it is possible that an ack for a touchend can
 // be sent before the corresponding ack for the touchstart. This class
 // corrects that state.
+//
+// This class also performs filtering over the sequence of touch-events to, for
+// example, avoid sending events to the renderer that would have no effect. By
+// default, we always forward touchstart and touchend but, if there are no
+// handlers, touchmoves are filtered out of the sequence. The filtering logic
+// is implemented in |FilterBeforeForwarding|.
 class CONTENT_EXPORT PassthroughTouchEventQueue {
  public:
   struct CONTENT_EXPORT Config {
@@ -114,14 +120,15 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
 
   void StopTimeoutMonitor();
 
+  // Empties the queue of touch events. This may result in any number of gesture
+  // events being sent to the renderer.
+  void FlushQueue();
+
  protected:
   void SendTouchCancelEventForTouchEvent(
       const TouchEventWithLatencyInfo& event_to_cancel);
   void UpdateTouchConsumerStates(const blink::WebTouchEvent& event,
                                  InputEventAckState ack_result);
-  // Empties the queue of touch events. This may result in any number of gesture
-  // events being sent to the renderer.
-  void FlushQueue();
 
  private:
   friend class InputRouterImplTestBase;
@@ -129,13 +136,13 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchScrollStartedUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
-                           TouchStartWithoutPageHandlersFiltered);
+                           TouchStartWithoutPageHandlersUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchStartWithPageHandlersUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveFilteredAfterTimeout);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
-                           TouchMoveWithoutPageHandlersFiltered);
+                           TouchMoveWithoutPageHandlersUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            StationaryTouchMoveFiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
@@ -145,7 +152,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveWithNonTouchMoveUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
-                           TouchMoveWithoutSequenceHandlerFiltered);
+                           TouchMoveWithoutSequenceHandlerUnfiltered);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
                            TouchMoveWithoutPageHandlersUnfilteredWithSkipFlag);
   FRIEND_TEST_ALL_PREFIXES(PassthroughTouchEventQueueTest,
@@ -219,7 +226,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   // this is a stricter condition than an empty |touch_consumer_states_|, as it
   // also prevents forwarding of touchstart events for new pointers in the
   // current sequence. This is only used when the event is synthetically
-  // cancelled after a touch timeout.
+  // cancelled after a touch timeout or before a portal activation.
   bool drop_remaining_touches_in_sequence_;
 
   // Optional handler for timed-out touch event acks.

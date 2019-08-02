@@ -33,8 +33,8 @@ ExtensionCacheImpl::ExtensionCacheImpl(
           delegate->GetCacheDir(),
           delegate->GetMaximumCacheSize(),
           delegate->GetMaximumCacheAge(),
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), task_priority,
+          base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(), task_priority,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}))),
       weak_ptr_factory_(this) {
   notification_registrar_.Add(

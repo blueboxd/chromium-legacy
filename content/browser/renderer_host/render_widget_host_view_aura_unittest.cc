@@ -1477,13 +1477,14 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
       ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
 
-  // The touch events should get forwarded from the view, but they should not
-  // reach the renderer.
+  // The touch events should get forwarded from the view but only the discrete
+  // events should make it all the way to the renderer.
   view_->OnTouchEvent(&press);
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
-  EXPECT_EQ(0U, events.size());
+  EXPECT_EQ(1U, events.size());
+  EXPECT_EQ("TouchStart", GetMessageNames(events));
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(ui::MotionEvent::Action::DOWN, pointer_state().GetAction());
 
@@ -1498,7 +1499,8 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->OnTouchEvent(&release);
   base::RunLoop().RunUntilIdle();
   events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(0U, events.size());
+  EXPECT_EQ(1U, events.size());
+  EXPECT_EQ("TouchEnd", GetMessageNames(events));
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(0U, pointer_state().GetPointerCount());
 
@@ -1562,7 +1564,8 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(0U, pointer_state().GetPointerCount());
   events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(0U, events.size());
+  EXPECT_EQ(1U, events.size());
+  EXPECT_EQ("TouchEnd", GetMessageNames(events));
 }
 
 // The DOM KeyCode map for Fuchsia maps all DomCodes to 0.  This means that

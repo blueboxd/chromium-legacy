@@ -34,6 +34,7 @@
 #include "pdf/pdfium/pdfium_document.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_read.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
+#include "pdf/pdfium/pdfium_permissions.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
 #include "pdf/url_loader_wrapper_impl.h"
 #include "ppapi/cpp/instance.h"
@@ -109,13 +110,6 @@ constexpr bool kViewerImplementedPanning = false;
 #else
 constexpr bool kViewerImplementedPanning = true;
 #endif
-
-// See Table 3.20 in
-// http://www.adobe.com/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
-constexpr uint32_t kPDFPermissionPrintLowQualityMask = 1 << 2;
-constexpr uint32_t kPDFPermissionPrintHighQualityMask = 1 << 11;
-constexpr uint32_t kPDFPermissionCopyMask = 1 << 4;
-constexpr uint32_t kPDFPermissionCopyAccessibleMask = 1 << 9;
 
 constexpr int32_t kLoadingTextVerticalOffset = 50;
 
@@ -1998,35 +1992,10 @@ std::string PDFiumEngine::GetLinkAtPosition(const pp::Point& point) {
 }
 
 bool PDFiumEngine::HasPermission(DocumentPermission permission) const {
-  // PDF 1.7 spec, section 3.5.2 says: "If the revision number is 2 or greater,
-  // the operations to which user access can be controlled are as follows: ..."
-  //
-  // Thus for revision numbers less than 2, permissions are ignored and this
-  // always returns true.
-  if (permissions_handler_revision_ < 2)
+  // No |permissions_| means no restrictions.
+  if (!permissions_)
     return true;
-
-  // Handle high quality printing permission separately for security handler
-  // revision 3+. See table 3.20 in the PDF 1.7 spec.
-  if (permission == PERMISSION_PRINT_HIGH_QUALITY &&
-      permissions_handler_revision_ >= 3) {
-    return (permissions_ & kPDFPermissionPrintLowQualityMask) != 0 &&
-           (permissions_ & kPDFPermissionPrintHighQualityMask) != 0;
-  }
-
-  switch (permission) {
-    case PERMISSION_COPY:
-      return (permissions_ & kPDFPermissionCopyMask) != 0;
-    case PERMISSION_COPY_ACCESSIBLE:
-      return (permissions_ & kPDFPermissionCopyAccessibleMask) != 0;
-    case PERMISSION_PRINT_LOW_QUALITY:
-    case PERMISSION_PRINT_HIGH_QUALITY:
-      // With security handler revision 2 rules, check the same bit for high
-      // and low quality. See table 3.20 in the PDF 1.7 spec.
-      return (permissions_ & kPDFPermissionPrintLowQualityMask) != 0;
-    default:
-      return true;
-  }
+  return permissions_->HasPermission(permission);
 }
 
 void PDFiumEngine::SelectAll() {
@@ -2396,8 +2365,7 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
   if (FPDFDoc_GetPageMode(doc()) == PAGEMODE_USEOUTLINES)
     client_->DocumentHasUnsupportedFeature("Bookmarks");
 
-  permissions_ = FPDF_GetDocPermissions(doc());
-  permissions_handler_revision_ = FPDF_GetSecurityHandlerRevision(doc());
+  permissions_ = std::make_unique<PDFiumPermissions>(doc());
 
   LoadBody();
 
@@ -2421,6 +2389,15 @@ void PDFiumEngine::AppendPageRectToPages(const pp::Rect& page_rect,
         FPDFAvail_IsPageAvail(fpdf_availability(), page_index, nullptr);
     pages_.push_back(
         std::make_unique<PDFiumPage>(this, page_index, page_rect, available));
+  }
+}
+
+void PDFiumEngine::LoadPagesInSingleView(std::vector<pp::Rect> page_rects,
+                                         bool reload) {
+  for (size_t i = 0; i < page_rects.size(); ++i) {
+    draw_utils::CenterRectHorizontally(layout_.size().width(), &page_rects[i]);
+    InsetPage(i, page_rects.size(), /*multiplier=*/1, &page_rects[i]);
+    AppendPageRectToPages(page_rects[i], i, reload);
   }
 }
 
@@ -2469,12 +2446,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     layout_.AppendPageRect(size);
   }
 
-  for (size_t i = 0; i < new_page_count; ++i) {
-    // Center pages relative to the entire document.
-    page_rects[i].set_x((layout_.size().width() - page_rects[i].width()) / 2);
-    InsetPage(i, new_page_count, /*multiplier=*/1, &page_rects[i]);
-    AppendPageRectToPages(page_rects[i], i, reload);
-  }
+  LoadPagesInSingleView(std::move(page_rects), reload);
 
   // Remove pages that do not exist anymore.
   if (pages_.size() > new_page_count) {
@@ -2811,23 +2783,25 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
     // If in two-up view, only need to draw the left empty space for left pages
     // since the gap between the left and right page will be drawn by the left
     // page.
-    pp::Rect left =
-        draw_utils::GetLeftFillRect(page_rect, inset_sizes, kBottomSeparator);
-    left = GetScreenRect(left).Intersect(dirty_in_screen);
+    pp::Rect left_in_screen = GetScreenRect(
+        draw_utils::GetLeftFillRect(page_rect, inset_sizes, kBottomSeparator));
+    left_in_screen = left_in_screen.Intersect(dirty_in_screen);
 
-    FPDFBitmap_FillRect(bitmap, left.x() - dirty_in_screen.x(),
-                        left.y() - dirty_in_screen.y(), left.width(),
-                        left.height(), client_->GetBackgroundColor());
+    FPDFBitmap_FillRect(bitmap, left_in_screen.x() - dirty_in_screen.x(),
+                        left_in_screen.y() - dirty_in_screen.y(),
+                        left_in_screen.width(), left_in_screen.height(),
+                        client_->GetBackgroundColor());
   }
 
   if (page_rect.right() < layout_.size().width()) {
-    pp::Rect right = draw_utils::GetRightFillRect(
-        page_rect, inset_sizes, layout_.size().width(), kBottomSeparator);
-    right = GetScreenRect(right).Intersect(dirty_in_screen);
+    pp::Rect right_in_screen = GetScreenRect(draw_utils::GetRightFillRect(
+        page_rect, inset_sizes, layout_.size().width(), kBottomSeparator));
+    right_in_screen = right_in_screen.Intersect(dirty_in_screen);
 
-    FPDFBitmap_FillRect(bitmap, right.x() - dirty_in_screen.x(),
-                        right.y() - dirty_in_screen.y(), right.width(),
-                        right.height(), client_->GetBackgroundColor());
+    FPDFBitmap_FillRect(bitmap, right_in_screen.x() - dirty_in_screen.x(),
+                        right_in_screen.y() - dirty_in_screen.y(),
+                        right_in_screen.width(), right_in_screen.height(),
+                        client_->GetBackgroundColor());
   }
 
   pp::Rect bottom_in_screen;

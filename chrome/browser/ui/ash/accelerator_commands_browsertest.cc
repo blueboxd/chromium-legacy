@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   views::Widget misc_widget;
   widget = &misc_widget;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   window = widget->GetNativeWindow();
 

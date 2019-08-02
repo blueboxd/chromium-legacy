@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <cmath>
 
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "base/bind.h"
@@ -14,7 +15,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/system_display/display_info_provider.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "content/public/browser/system_connector.h"
 #include "extensions/common/api/system_display.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -605,7 +605,7 @@ void DisplayInfoProviderChromeOS::SetMirrorMode(
 void DisplayInfoProviderChromeOS::StartObserving() {
   DisplayInfoProvider::StartObserving();
 
-  TabletModeClient* client = TabletModeClient::Get();
+  ash::TabletMode* client = ash::TabletMode::Get();
   if (client)
     client->AddObserver(this);
 }
@@ -613,12 +613,16 @@ void DisplayInfoProviderChromeOS::StartObserving() {
 void DisplayInfoProviderChromeOS::StopObserving() {
   DisplayInfoProvider::StopObserving();
 
-  TabletModeClient* client = TabletModeClient::Get();
+  ash::TabletMode* client = ash::TabletMode::Get();
   if (client)
     client->RemoveObserver(this);
 }
 
-void DisplayInfoProviderChromeOS::OnTabletModeToggled(bool enabled) {
+void DisplayInfoProviderChromeOS::OnTabletModeStarted() {
+  DispatchOnDisplayChangedEvent();
+}
+
+void DisplayInfoProviderChromeOS::OnTabletModeEnded() {
   DispatchOnDisplayChangedEvent();
 }
 

@@ -368,8 +368,7 @@ GURL PermissionManager::GetCanonicalOrigin(ContentSettingsType permission,
       GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
     if (requesting_origin.GetOrigin() ==
         GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin()) {
-      return GURL(UIThreadSearchTermsData(profile_).GoogleBaseURLValue())
-          .GetOrigin();
+      return GURL(UIThreadSearchTermsData().GoogleBaseURLValue()).GetOrigin();
     } else {
       return requesting_origin;
     }

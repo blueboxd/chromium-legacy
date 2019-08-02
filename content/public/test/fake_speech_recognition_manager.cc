@@ -95,9 +95,8 @@ void FakeSpeechRecognitionManager::StartSession(int session_id) {
             base::Unretained(this)));
   }
   if (!recognition_started_closure_.is_null()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&RunCallback, recognition_started_closure_));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&RunCallback, recognition_started_closure_));
   }
 }
 

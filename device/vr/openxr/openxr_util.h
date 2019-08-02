@@ -22,6 +22,22 @@ namespace device {
       return xr_result;             \
   } while (false)
 
+// If xrstate variable is not active, early return XR error code
+// XR_STATE_UNAVAILABLE because its value won't be valid.
+#define RETURN_IF_XR_STATE_IS_NOT_ACTIVE(xrstate) \
+  do {                                            \
+    if (!xrstate.isActive)                        \
+      return XR_STATE_UNAVAILABLE;                \
+  } while (false)
+
+#define RETURN_IF_FALSE(condition, error_code, msg) \
+  do {                                              \
+    if (!(condition)) {                             \
+      LOG(ERROR) << __FUNCTION__ << ": " << msg;    \
+      return error_code;                            \
+    }                                               \
+  } while (false)
+
 // Returns the identity pose, where the position is {0, 0, 0} and the
 // orientation is {0, 0, 0, 1}.
 XrPosef PoseIdentity();

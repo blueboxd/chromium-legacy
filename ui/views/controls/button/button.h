@@ -60,12 +60,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     STATE_COUNT,
   };
 
-  // An enum describing the events on which a button should notify its listener.
-  enum NotifyAction {
-    NOTIFY_ON_PRESS,
-    NOTIFY_ON_RELEASE,
-  };
-
   // An enum describing the events on which a button should be clicked for a
   // given key event.
   enum KeyClickAction {
@@ -132,13 +126,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void set_animate_on_state_change(bool value) {
     animate_on_state_change_ = value;
   }
-
-  // Sets the event on which the button should notify its listener.
-  void set_notify_action(NotifyAction notify_action) {
-    notify_action_ = notify_action;
-  }
-
-  NotifyAction notify_action() const { return notify_action_; }
 
   void set_hide_ink_drop_when_showing_context_menu(
       bool hide_ink_drop_when_showing_context_menu) {
@@ -351,9 +338,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   // See description above setter.
   bool request_focus_on_press_ = false;
-
-  // The event on which the button should notify its listener.
-  NotifyAction notify_action_ = NOTIFY_ON_RELEASE;
 
   // True when a button click should trigger an animation action on
   // ink_drop_delegate().

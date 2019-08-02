@@ -70,42 +70,6 @@
 // </if>
 
 /**
- * Parses query parameters from Location.
- * @param {Location} location The URL to generate the CSS url for.
- * @return {Object} Dictionary containing name value pairs for URL
- */
-/* #export */ function parseQueryParams(location) {
-  const params = {};
-  const query = unescape(location.search.substring(1));
-  const vars = query.split('&');
-  for (let i = 0; i < vars.length; i++) {
-    const pair = vars[i].split('=');
-    params[pair[0]] = pair[1];
-  }
-  return params;
-}
-
-/**
- * Creates a new URL by appending or replacing the given query key and value.
- * Not supporting URL with username and password.
- * @param {Location} location The original URL.
- * @param {string} key The query parameter name.
- * @param {string} value The query parameter value.
- * @return {string} The constructed new URL.
- */
-/* #export */ function setQueryParam(location, key, value) {
-  const query = parseQueryParams(location);
-  query[encodeURIComponent(key)] = encodeURIComponent(value);
-
-  let newQuery = '';
-  for (const q in query) {
-    newQuery += (newQuery ? '&' : '?') + q + '=' + query[q];
-  }
-
-  return location.origin + location.pathname + newQuery + location.hash;
-}
-
-/**
  * @param {Node} el A node to search for ancestors with |className|.
  * @param {string} className A class to search for.
  * @return {Element} A node with class of |className| or null if none is found.

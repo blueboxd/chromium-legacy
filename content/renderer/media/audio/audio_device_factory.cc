@@ -195,8 +195,8 @@ media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
 
   // There's one process wide instance that lives on the render thread.
   static base::NoDestructor<AudioRendererSinkCacheImpl> cache(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       base::BindRepeating(&AudioDeviceFactory::NewAudioRendererSink,
                           blink::WebAudioDeviceSourceType::kNone),

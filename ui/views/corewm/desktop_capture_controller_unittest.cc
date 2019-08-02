@@ -61,7 +61,7 @@ views::Widget* CreateWidget() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.native_widget = new DesktopNativeWidgetAura(widget);
   params.bounds = gfx::Rect(0, 0, 200, 100);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   return widget;
 }
@@ -107,7 +107,7 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
   params.bounds = gfx::Rect(50, 50, 650, 650);
   params.native_widget = test::CreatePlatformNativeWidgetImpl(
       params, widget1.get(), test::kStubCapture, nullptr);
-  widget1->Init(params);
+  widget1->Init(std::move(params));
   internal::RootView* root1 =
       static_cast<internal::RootView*>(widget1->GetRootView());
 
@@ -129,7 +129,7 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
   params.bounds = gfx::Rect(50, 50, 650, 650);
   params.native_widget = test::CreatePlatformNativeWidgetImpl(
       params, widget2.get(), test::kStubCapture, nullptr);
-  widget2->Init(params);
+  widget2->Init(std::move(params));
 
   internal::RootView* root2 =
       static_cast<internal::RootView*>(widget2->GetRootView());

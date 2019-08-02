@@ -119,8 +119,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @MediumTest
     @Feature({"Browser"})
-    @RetryOnFailure
-    @DisabledTest(message = "https://crbug.com/959265")
     public void testCopyImageLinkCopiesLinkURL() throws Throwable {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
         ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
@@ -415,8 +413,6 @@ public class ContextMenuTest implements CustomMainActivityStart {
     @Test
     @SmallTest
     @Feature({"Browser", "ContextMenu"})
-    @RetryOnFailure
-    @DisabledTest(message = "https://crbug.com/959265")
     public void testContextMenuRetrievesImageLinkOptions()
             throws TimeoutException, InterruptedException {
         Tab tab = mDownloadTestRule.getActivity().getActivityTab();
@@ -464,7 +460,18 @@ public class ContextMenuTest implements CustomMainActivityStart {
             }
         }
 
-        Assert.assertThat(actualItems, Matchers.containsInAnyOrder(expectedItems));
+        Assert.assertThat("Populated menu items were:" + getMenuTitles(menu), actualItems,
+                Matchers.containsInAnyOrder(expectedItems));
+    }
+
+    private String getMenuTitles(ContextMenu menu) {
+        StringBuilder items = new StringBuilder();
+        for (int i = 0; i < menu.size(); i++) {
+            if (menu.getItem(i).isVisible()) {
+                items.append("\n").append(menu.getItem(i).getTitle());
+            }
+        }
+        return items.toString();
     }
 
     /**

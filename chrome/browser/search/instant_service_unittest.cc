@@ -43,8 +43,25 @@ base::DictionaryValue GetBackgroundInfoAsDict(const GURL& background_url) {
   background_info.SetKey("attribution_action_url", base::Value(std::string()));
   background_info.SetKey("collection_id", base::Value(std::string()));
   background_info.SetKey("resume_token", base::Value(std::string()));
-
+  background_info.SetKey("refresh_timestamp", base::Value(0));
   return background_info;
+}
+
+base::Time GetReferenceTime() {
+  base::Time::Exploded exploded_reference_time;
+  exploded_reference_time.year = 2019;
+  exploded_reference_time.month = 1;
+  exploded_reference_time.day_of_month = 1;
+  exploded_reference_time.day_of_week = 1;
+  exploded_reference_time.hour = 0;
+  exploded_reference_time.minute = 0;
+  exploded_reference_time.second = 0;
+  exploded_reference_time.millisecond = 0;
+
+  base::Time out_time;
+  EXPECT_TRUE(
+      base::Time::FromLocalExploded(exploded_reference_time, &out_time));
+  return out_time;
 }
 
 class MockInstantService : public InstantService {
@@ -709,5 +726,50 @@ TEST_F(InstantServiceTest, CollectionIdTakePriorityOverBackgroundURL) {
   ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
   EXPECT_EQ(kValidId, theme_info->collection_id);
   EXPECT_EQ("https://www.test.com/", theme_info->custom_background_url);
+  EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
+}
+
+TEST_F(InstantServiceTest, RefreshesBackgroundAfter24Hours) {
+  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
+  const std::string kValidId("art");
+  const GURL kImageUrl1("https://www.test.com/1/");
+  const GURL kImageUrl2("https://www.test.com/2/");
+
+  instant_service_->SetClockForTesting(clock_);
+  clock_->SetNow(GetReferenceTime());
+
+  // A valid id should update the pref/background.
+  CollectionImage image;
+  image.collection_id = kValidId;
+  image.image_url = kImageUrl1;
+  instant_service_->SetNextCollectionImageForTesting(image);
+
+  instant_service_->AddValidBackdropCollectionForTesting(kValidId);
+  instant_service_->SetCustomBackgroundInfo(GURL(), "", "", GURL(), kValidId);
+  thread_bundle()->RunUntilIdle();
+
+  ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
+  EXPECT_EQ(kValidId, theme_info->collection_id);
+  EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
+
+  CollectionImage image2;
+  image2.collection_id = kValidId;
+  image2.image_url = kImageUrl2;
+  instant_service_->SetNextCollectionImageForTesting(image2);
+
+  // Should not refresh background.
+  theme_info = instant_service_->GetInitializedThemeInfo();
+  thread_bundle()->RunUntilIdle();
+  EXPECT_EQ(kValidId, theme_info->collection_id);
+  EXPECT_EQ(kImageUrl1, theme_info->custom_background_url);
+  EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
+
+  clock_->Advance(base::TimeDelta::FromHours(25));
+
+  // Should refresh background after >24 hours.
+  theme_info = instant_service_->GetInitializedThemeInfo();
+  thread_bundle()->RunUntilIdle();
+  EXPECT_EQ(kValidId, theme_info->collection_id);
+  EXPECT_EQ(kImageUrl2, theme_info->custom_background_url);
   EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
 }

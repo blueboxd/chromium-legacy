@@ -40,7 +40,7 @@ void ActionRunner::Run(Callback run_complete) {
 
   run_complete_ = std::move(run_complete);
 
-  base::CreateSequencedTaskRunnerWithTraits(kTaskTraits)
+  base::CreateSequencedTaskRunner(kTaskTraits)
       ->PostTask(
           FROM_HERE,
           base::BindOnce(&ActionRunner::RunOnTaskRunner, base::Unretained(this),

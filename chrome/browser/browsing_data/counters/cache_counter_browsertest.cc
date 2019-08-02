@@ -174,8 +174,8 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, AfterDoom) {
   EXPECT_EQ(0u, GetResult());
 }
 
-// TODO(crbug.com/985131): Test is flaky in Linux component builds.
-#if defined(OS_LINUX) && defined(COMPONENT_BUILD)
+// TODO(crbug.com/985131): Test is flaky in Linux, Win and ChromeOS.
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_PrefChanged DISABLED_PrefChanged
 #else
 #define MAYBE_PrefChanged PrefChanged

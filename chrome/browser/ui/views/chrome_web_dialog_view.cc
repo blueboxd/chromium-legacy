@@ -26,10 +26,10 @@
 namespace chrome {
 namespace {
 
-gfx::NativeWindow ShowWebDialogWidget(const views::Widget::InitParams& params,
+gfx::NativeWindow ShowWebDialogWidget(views::Widget::InitParams params,
                                       views::WebDialogView* view) {
   views::Widget* widget = new views::Widget;
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Observer is needed for ChromeVox extension to send messages between content
   // and background scripts.
@@ -46,19 +46,19 @@ gfx::NativeWindow ShowWebDialogWidget(const views::Widget::InitParams& params,
 gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate) {
-  return ShowWebDialogWithParams(parent, context, delegate, nullptr);
+  return ShowWebDialogWithParams(parent, context, delegate, base::nullopt);
 }
 
 gfx::NativeWindow ShowWebDialogWithParams(
     gfx::NativeView parent,
     content::BrowserContext* context,
     ui::WebDialogDelegate* delegate,
-    const views::Widget::InitParams* extra_params) {
+    base::Optional<views::Widget::InitParams> extra_params) {
   views::WebDialogView* view = new views::WebDialogView(
       context, delegate, std::make_unique<ChromeWebContentsHandler>());
   views::Widget::InitParams params;
   if (extra_params)
-    params = *extra_params;
+    params = std::move(*extra_params);
   params.delegate = view;
   params.parent = parent;
 #if defined(OS_CHROMEOS)
@@ -67,7 +67,7 @@ gfx::NativeWindow ShowWebDialogWithParams(
     ash_util::SetupWidgetInitParamsForContainer(&params, container_id);
   }
 #endif
-  gfx::NativeWindow window = ShowWebDialogWidget(params, view);
+  gfx::NativeWindow window = ShowWebDialogWidget(std::move(params), view);
 #if defined(OS_CHROMEOS)
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(

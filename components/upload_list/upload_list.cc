@@ -17,7 +17,7 @@ namespace {
 // USER_VISIBLE because loading uploads blocks chrome://crashes,
 // chrome://webrtc-logs and the feedback UI. See https://crbug.com/972526.
 constexpr base::TaskTraits kLoadingTaskTraits = {
-    base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+    base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
 
 }  // namespace
@@ -63,7 +63,7 @@ UploadList::~UploadList() = default;
 void UploadList::Load(base::OnceClosure callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   load_callback_ = std::move(callback);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, kLoadingTaskTraits,
       base::Bind(&UploadList::LoadUploadList, this),
       base::Bind(&UploadList::OnLoadComplete, this));
@@ -74,7 +74,7 @@ void UploadList::Clear(const base::Time& begin,
                        base::OnceClosure callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   clear_callback_ = std::move(callback);
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, kLoadingTaskTraits,
       base::BindOnce(&UploadList::ClearUploadList, this, begin, end),
       base::BindOnce(&UploadList::OnClearComplete, this));
@@ -86,7 +86,7 @@ void UploadList::CancelLoadCallback() {
 
 void UploadList::RequestSingleUploadAsync(const std::string& local_id) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, kLoadingTaskTraits,
       base::BindOnce(&UploadList::RequestSingleUpload, this, local_id));
 }

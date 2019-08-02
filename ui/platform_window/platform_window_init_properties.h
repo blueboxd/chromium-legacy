@@ -57,7 +57,7 @@ struct PlatformWindowInitProperties {
   fuchsia::ui::views::ViewToken view_token;
 #endif
 
-  bool activatable = false;
+  bool activatable = true;
   bool force_show_in_taskbar;
   bool keep_on_top = false;
   bool visible_on_all_workspaces = false;

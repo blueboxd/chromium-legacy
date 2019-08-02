@@ -462,7 +462,7 @@ void MultiWindowResizeController::ShowNow() {
       kShellWindowId_AlwaysOnTopContainer);
   ResizeView* view = new ResizeView(this, windows_.direction);
   resize_widget_->set_focus_on_creation(false);
-  resize_widget_->Init(params);
+  resize_widget_->Init(std::move(params));
   ::wm::SetWindowVisibilityAnimationType(
       resize_widget_->GetNativeWindow(),
       ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);

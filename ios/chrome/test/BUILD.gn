@@ -67,6 +67,7 @@ source_set("test_support") {
 }
 
 source_set("eg_test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -74,10 +75,29 @@ source_set("eg_test_support") {
     "scoped_eg_synchronization_disabler.mm",
   ]
   deps = [
-    ":test_support",
-    "//base:base",
+    "//base",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
   ]
+}
+
+source_set("eg_test_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "scoped_eg_synchronization_disabler.h",
+    "scoped_eg_synchronization_disabler.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+  ]
+  libs = [ "XCTest.framework" ]
 }
 
 source_set("block_cleanup_test") {
@@ -226,6 +246,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/omnibox/popup:unit_tests",
     "//ios/chrome/browser/ui/open_in:unit_tests",
     "//ios/chrome/browser/ui/overlays:unit_tests",
+    "//ios/chrome/browser/ui/overlays/web_content_area/app_launcher:unit_tests",
     "//ios/chrome/browser/ui/overlays/web_content_area/http_auth_dialogs:unit_tests",
     "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs:unit_tests",
     "//ios/chrome/browser/ui/payments:unit_tests",

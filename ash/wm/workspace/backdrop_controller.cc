@@ -322,7 +322,7 @@ void BackdropController::EnsureBackdropWidget() {
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   DCHECK_NE(kShellWindowId_Invalid, container_->id());
   params.parent = container_;
-  backdrop_->Init(params);
+  backdrop_->Init(std::move(params));
   backdrop_window_ = backdrop_->GetNativeWindow();
   backdrop_window_->SetProperty(kHideInOverviewKey, true);
   // The backdrop window in always on top container can be reparented without

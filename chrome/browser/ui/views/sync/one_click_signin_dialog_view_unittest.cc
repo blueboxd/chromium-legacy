@@ -34,7 +34,7 @@ class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
     anchor_widget_ = new views::Widget;
     views::Widget::InitParams widget_params =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-    anchor_widget_->Init(widget_params);
+    anchor_widget_->Init(std::move(widget_params));
     anchor_widget_->Show();
   }
 

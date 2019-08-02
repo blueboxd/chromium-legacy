@@ -413,7 +413,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
   params.delegate = new ShellWindowDelegateView(this);
   params.wm_class_class = "chromium-content_shell";
   params.wm_class_name = params.wm_class_class;
-  window_widget_->Init(params);
+  window_widget_->Init(std::move(params));
 #endif
 
   content_size_ = gfx::Size(width, height);

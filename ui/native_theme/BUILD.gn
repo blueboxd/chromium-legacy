@@ -84,6 +84,8 @@ if (is_win) {
       "//ui/display",
       "//ui/gfx",
     ]
+
+    libs = [ "uxtheme.lib" ]
   }
 } else {
   jumbo_source_set("native_theme_browser") {

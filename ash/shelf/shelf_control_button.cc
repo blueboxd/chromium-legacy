@@ -61,7 +61,8 @@ const char* ShelfControlButton::GetClassName() const {
 }
 
 gfx::Size ShelfControlButton::CalculatePreferredSize() const {
-  return gfx::Size(kShelfControlSize, kShelfControlSize);
+  return gfx::Size(ShelfConstants::control_size(),
+                   ShelfConstants::control_size());
 }
 
 void ShelfControlButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {

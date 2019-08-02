@@ -221,11 +221,11 @@ const base::Feature kUploadZippedSystemLogs{"UploadZippedSystemLogs",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-// Enable chrome://terminal in Chrome OS or Linux.
+// Enable chrome://terminal.  Terminal System App will only run on
+// OS_CHROMEOS, but this flag must be defined for all platforms since
+// it is required for SystemWebApp tests.
 const base::Feature kTerminalSystemApp{"TerminalSystemApp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Enable using tab sharing infobars for desktop capture.
 const base::Feature kDesktopCaptureTabSharingInfobar{

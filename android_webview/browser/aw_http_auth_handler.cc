@@ -38,7 +38,7 @@ AwHttpAuthHandler::AwHttpAuthHandler(const net::AuthChallengeInfo& auth_info,
   http_auth_handler_.Reset(Java_AwHttpAuthHandler_create(
       env, reinterpret_cast<intptr_t>(this), first_auth_attempt));
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&AwHttpAuthHandler::Start, weak_factory_.GetWeakPtr()));
 }

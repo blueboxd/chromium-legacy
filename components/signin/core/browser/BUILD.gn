@@ -69,7 +69,7 @@ static_library("browser") {
   ]
   deps = [
     "//base:i18n",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/metrics",
     "//components/os_crypt",
     "//components/signin/public/identity_manager",

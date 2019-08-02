@@ -106,7 +106,7 @@ Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
                                   ? Widget::InitParams::ACTIVATABLE_YES
                                   : Widget::InitParams::ACTIVATABLE_NO;
   bubble->OnBeforeBubbleWidgetInit(&bubble_params, bubble_widget);
-  bubble_widget->Init(bubble_params);
+  bubble_widget->Init(std::move(bubble_params));
 #if !defined(OS_MACOSX)
   // On Mac, having a parent window creates a permanent stacking order, so
   // there's no need to do this. Also, calling StackAbove() on Mac shows the

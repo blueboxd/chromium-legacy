@@ -52,6 +52,7 @@ class MockInputRouter : public InputRouter {
   void ForceSetTouchActionAuto() override {}
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void WaitForInputProcessed(base::OnceClosure callback) override {}
+  void FlushTouchEventQueue() override {}
 
   bool sent_mouse_event_;
   bool sent_wheel_event_;

@@ -144,11 +144,11 @@ TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
   params.parent = GetWidget()->GetNativeView();
 
   std::unique_ptr<Widget> widget1(new Widget);
-  widget1->Init(params);
+  widget1->Init(std::move(params));
   widget1->Show();
 
   std::unique_ptr<Widget> widget2(new Widget);
-  widget2->Init(params);
+  widget2->Init(std::move(params));
   widget2->Show();
 
   widget_listener.ClearFocusChanges();
@@ -468,7 +468,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
     Widget::InitParams params;
     params.delegate = this;
     params.bounds = gfx::Rect(0, 0, 100, 100);
-    widget->Init(params);
+    widget->Init(std::move(params));
 
     tracked_focus_manager_ =
         static_cast<FocusManagerDtorTracked*>(GetFocusManager());
@@ -877,7 +877,7 @@ TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
   Widget child_widget;
   delegate = std::make_unique<AdvanceFocusWidgetDelegate>(&child_widget);
   params.delegate = delegate.get();
-  child_widget.Init(params);
+  child_widget.Init(std::move(params));
   View* view1 = new View;
   view1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   view1->SetBounds(0, 0, 20, 20);
@@ -1098,7 +1098,7 @@ TEST_F(DesktopWidgetFocusManagerTest, AnchoredDialogInDesktopNativeWidgetAura) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 1024, 768);
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.Show();
   widget.Activate();
 

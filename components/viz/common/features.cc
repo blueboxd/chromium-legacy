@@ -14,9 +14,6 @@
 
 namespace features {
 
-const base::Feature kEnableSurfaceSynchronization{
-    "SurfaceSynchronization", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables running the display compositor as part of the viz service in the GPU
 // process. This is also referred to as out-of-process display compositor
 // (OOP-D).
@@ -46,8 +43,8 @@ const base::Feature kRecordSkPicture{"RecordSkPicture",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsSurfaceSynchronizationEnabled() {
-  return IsVizDisplayCompositorEnabled() ||
-         base::FeatureList::IsEnabled(kEnableSurfaceSynchronization);
+  // TODO(crbug.com/985009): Delete function after all callers are removed.
+  return true;
 }
 
 bool IsVizDisplayCompositorEnabled() {

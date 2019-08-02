@@ -22,7 +22,6 @@
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/google/google_logo_service_factory.h"
-#include "ios/chrome/browser/google/google_url_tracker_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
@@ -85,7 +84,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ios::BookmarkUndoServiceFactory::GetInstance();
   ios::CookieSettingsFactory::GetInstance();
   ios::FaviconServiceFactory::GetInstance();
-  ios::GoogleURLTrackerFactory::GetInstance();
   ios::HistoryServiceFactory::GetInstance();
   ios::InMemoryURLIndexFactory::GetInstance();
   ios::ShortcutsBackendFactory::GetInstance();

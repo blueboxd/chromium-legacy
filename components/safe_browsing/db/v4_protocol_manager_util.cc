@@ -16,6 +16,7 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/ip_address.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "url/url_util.h"
 

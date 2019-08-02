@@ -42,6 +42,9 @@ if (closure_compile) {
     if (enable_extensions) {
       deps += [ "extensions:closure_compile" ]
     }
+    if (enable_webui_tab_strip) {
+      deps += [ "tab_strip:closure_compile" ]
+    }
     if (is_android) {
       deps += [
         "explore_sites_internals:closure_compile",
@@ -310,6 +313,10 @@ if (enable_webui_tab_strip) {
   grit("tab_strip_resources") {
     source = "tab_strip/tab_strip_resources.grd"
     defines = chrome_grit_defines
+    deps = [
+      "tab_strip:tab_strip_modules",
+    ]
+    source_is_generated = true
     outputs = [
       "grit/tab_strip_resources.h",
       "grit/tab_strip_resources_map.cc",
@@ -317,5 +324,9 @@ if (enable_webui_tab_strip) {
       "tab_strip_resources.pak",
     ]
     output_dir = "$root_gen_dir/chrome"
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
   }
 }

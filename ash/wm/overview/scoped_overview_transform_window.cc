@@ -383,20 +383,19 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
 
 void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
                                                          bool update_clip) {
-  // Minimized windows have their corners rounded in CaptionContainerView.
-  if (IsMinimized())
-    return;
-
+  // Hide the corners if minimized, CaptionContainerView will handle showing the
+  // rounded corners on the UI.
+  const bool show_corners = show && !IsMinimized();
   // Add the mask which gives the overview item rounded corners, and add the
   // shadow around the window.
   ui::Layer* layer = window_->layer();
   const float scale = layer->transform().Scale2d().x();
-  const gfx::RoundedCornersF radii(show ? kOverviewWindowRoundingDp / scale
-                                        : 0.0f);
+  const gfx::RoundedCornersF radii(
+      show_corners ? kOverviewWindowRoundingDp / scale : 0.0f);
   layer->SetRoundedCornerRadius(radii);
   layer->SetIsFastRoundedCorner(true);
 
-  if (!update_clip || layer->GetAnimator()->is_animating())
+  if (!update_clip || layer->GetAnimator()->is_animating() || IsMinimized())
     return;
 
   const int top_inset = GetTopInset();

@@ -1039,7 +1039,7 @@ void TryChromeDialog::OnContextInitialized() {
   params.name = "TryChromeDialog";
   popup_ = new views::Widget;
   popup_->AddObserver(this);
-  popup_->Init(params);
+  popup_->Init(std::move(params));
 
   auto contents_view = std::make_unique<ClickableView>();
   contents_view->SetBackground(

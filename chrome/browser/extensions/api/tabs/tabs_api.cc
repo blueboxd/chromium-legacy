@@ -592,6 +592,14 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     bool set_self_as_opener = create_data->set_self_as_opener &&  // present?
                               *create_data->set_self_as_opener;  // set to true?
     if (set_self_as_opener) {
+      if (is_from_service_worker()) {
+        // TODO(crbug.com/984350): Add test for this.
+        return RespondNow(
+            Error("Cannot specify setSelfAsOpener Service Worker extension."));
+      }
+      // TODO(crbug.com/984350): Add tests for checking opener SiteInstance
+      // behavior from a SW based extension's extension frame (e.g. from popup).
+      // See ExtensionApiTest.WindowsCreate* tests for details.
       navigate_params.opener = render_frame_host();
       navigate_params.source_site_instance =
           render_frame_host()->GetSiteInstance();

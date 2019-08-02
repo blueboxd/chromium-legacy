@@ -49,9 +49,9 @@ bool CanBookmarkAppReparentTab(Profile* profile,
 }
 
 void BookmarkAppReparentTab(content::WebContents* contents,
-                            const Extension* extension) {
+                            const std::string& app_id) {
   // Reparent the tab into an app window immediately when opening as a window.
-  ReparentWebContentsIntoAppBrowser(contents, extension);
+  ReparentWebContentsIntoAppBrowser(contents, app_id);
 }
 
 bool CanBookmarkAppRevealAppShim() {

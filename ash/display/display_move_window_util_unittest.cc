@@ -54,7 +54,7 @@ views::Widget* CreateTestWidgetWithParent(views::Widget::InitParams::Type type,
   params.bounds = bounds;
   params.child = child;
   views::Widget* widget = new views::Widget;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   return widget;
 }

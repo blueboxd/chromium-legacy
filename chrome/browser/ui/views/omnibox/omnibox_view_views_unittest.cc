@@ -303,7 +303,7 @@ void OmniboxViewViewsTest::SetUp() {
       CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 400, 80);
-  widget_->Init(params);
+  widget_->Init(std::move(params));
   widget_->Show();
 
 #if defined(OS_CHROMEOS)
@@ -1161,7 +1161,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
       CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 100, 100);
-  other_widget->Init(params);
+  other_widget->Init(std::move(params));
   other_widget->Show();
   ExpectFullUrlDisplayed();
 

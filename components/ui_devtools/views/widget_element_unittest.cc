@@ -29,7 +29,7 @@ class WidgetElementTest : public views::ViewsTestBase {
     views::Widget::InitParams params =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params.name = kWidgetName;
-    widget_->Init(params);
+    widget_->Init(std::move(params));
 
     delegate_.reset(new testing::NiceMock<MockUIElementDelegate>);
     element_.reset(new WidgetElement(widget_, delegate_.get(), nullptr));

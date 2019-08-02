@@ -717,7 +717,7 @@ void DockedMagnifierControllerImpl::CreateMagnifierViewport() {
   params.parent =
       GetViewportParentContainerForRoot(current_source_root_window_);
   params.name = kDockedMagnifierViewportWindowName;
-  viewport_widget_->Init(params);
+  viewport_widget_->Init(std::move(params));
   viewport_widget_->Show();
   viewport_widget_->AddObserver(this);
 

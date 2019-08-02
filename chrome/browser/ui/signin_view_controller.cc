@@ -179,11 +179,10 @@ void SigninViewController::ShowDiceSigninTab(
     signin_metrics::PromoAction promo_action,
     const std::string& email_hint,
     const GURL& redirect_url) {
-  Profile* profile = browser->profile();
-
 #if DCHECK_IS_ON()
   if (!signin::DiceMethodGreaterOrEqual(
-          AccountConsistencyModeManager::GetMethodForProfile(profile),
+          AccountConsistencyModeManager::GetMethodForProfile(
+              browser->profile()),
           signin::AccountConsistencyMethod::kDiceMigration)) {
     // Developers often fall into the trap of not configuring the OAuth client
     // ID and client secret and then attempt to sign in to Chromium, which
@@ -214,7 +213,7 @@ void SigninViewController::ShowDiceSigninTab(
   // because the set of valid URLs is not specified.
   std::string continue_url =
       (redirect_url.is_empty() || !redirect_url.SchemeIsHTTPOrHTTPS())
-          ? UIThreadSearchTermsData(profile).GoogleBaseURLValue()
+          ? UIThreadSearchTermsData().GoogleBaseURLValue()
           : redirect_url.spec();
 
   GURL signin_url =

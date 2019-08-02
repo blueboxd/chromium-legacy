@@ -3445,14 +3445,6 @@ if (enable_java_templates) {
   #     base module (optional).
   #   base_module_target: Base module target of the bundle this module will be
   #     added to (optional). Can only be specified for non-base modules.
-  #   native_switches: Forwarded switches to decide how to assign native
-  #     libraries and placeholders (optional). Its members are:
-  #     * is_64_bit_browser
-  #     * include_32_bit_webview
-  #   loadable_modules_if_32_bit: Native libraries to use if the binary ABI is
-  #     32-bit (optional).
-  #   loadable_modules_if_64_bit: Native libraries to use if the binary ABI is
-  #     64-bit (optional).
   template("android_app_bundle_module") {
     _is_base_module = defined(invoker.is_base_module) && invoker.is_base_module
 
@@ -3504,10 +3496,12 @@ if (enable_java_templates) {
                                "jni_registration_header",
                                "jni_sources_blacklist",
                                "load_library_from_apk",
+                               "loadable_modules",
+                               "locale_config_java_packages",
                                "manifest_package",
                                "max_sdk_version",
-                               "locale_config_java_packages",
                                "min_sdk_version",
+                               "native_lib_placeholders",
                                "native_lib_version_arg",
                                "native_lib_version_rule",
                                "negative_main_dex_globs",
@@ -3523,7 +3517,9 @@ if (enable_java_templates) {
                                "resource_blacklist_regex",
                                "resource_ids_provider_dep",
                                "resources_config_path",
+                               "secondary_abi_loadable_modules",
                                "secondary_abi_shared_libraries",
+                               "secondary_native_lib_placeholders",
                                "shared_libraries",
                                "shared_resources",
                                "shared_resources_whitelist_locales",
@@ -3542,63 +3538,6 @@ if (enable_java_templates) {
                                "version_name",
                                "write_asset_list",
                              ])
-
-      # Specify native libraries and placeholders.
-      if (defined(invoker.native_switches)) {
-        _native_switches = invoker.native_switches
-
-        assert(invoker.loadable_modules_if_32_bit != [])
-        assert(!_native_switches.is_64_bit_browser ||
-               invoker.loadable_modules_if_64_bit != [])
-
-        # Decision logic: Assign decision variables:
-        #   loadable_modules_to_use: Either |loadable_modules_if_64_bit| or
-        #     |loadable_modules_if_32_bit|.
-        #   native_is_primary: Whether |loadable_modules_to_use| should be
-        #     assigned as primary ABI or secondary ABI.
-        #   native_need_placeholder: Whether a placeholder is needed for the
-        #     complementary ABI to the library.
-        if (_native_switches.is_64_bit_browser) {
-          _loadable_modules_to_use = invoker.loadable_modules_if_64_bit
-          _native_is_primary =
-              !build_apk_secondary_abi || android_64bit_target_cpu
-          _native_need_placeholder =
-              build_apk_secondary_abi && _native_switches.include_32_bit_webview
-        } else {
-          if (defined(invoker.loadable_modules_if_64_bit)) {
-            not_needed(invoker, [ "loadable_modules_if_64_bit" ])
-          }
-          _loadable_modules_to_use = invoker.loadable_modules_if_32_bit
-          _native_is_primary =
-              !build_apk_secondary_abi || !android_64bit_target_cpu
-          _native_need_placeholder =
-              build_apk_secondary_abi && android_64bit_target_cpu
-        }
-
-        # Realization logic: Assign libraries and placeholders.
-        if (_native_is_primary) {
-          loadable_modules = _loadable_modules_to_use
-          if (_native_need_placeholder) {
-            secondary_native_lib_placeholders = [ "libdummy.so" ]
-          }
-        } else {
-          secondary_abi_loadable_modules = _loadable_modules_to_use
-          if (_native_need_placeholder) {
-            native_lib_placeholders = [ "libdummy.so" ]
-          }
-        }
-      } else {
-        assert(!defined(invoker.loadable_modules_if_32_bit))
-        assert(!defined(invoker.loadable_modules_if_64_bit))
-        forward_variables_from(invoker,
-                               [
-                                 "loadable_modules",
-                                 "native_lib_placeholders",
-                                 "secondary_abi_loadable_modules",
-                                 "secondary_native_lib_placeholders",
-                               ])
-      }
-
       is_bundle_module = true
       generate_buildconfig_java = _is_base_module
       no_build_hooks = !_is_base_module

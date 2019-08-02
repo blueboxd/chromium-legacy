@@ -32,9 +32,9 @@ static const base::FilePath::CharType kTranslationCacheDirectoryName[] =
 static const int kTranslationCacheInitializationDelayMs = 20;
 
 void CloseBaseFile(base::File file) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(base::DoNothing::Once<base::File>(), std::move(file)));
 }
@@ -200,8 +200,8 @@ void PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir,
     if (!file.IsValid())
       PLOG(ERROR) << "Temp file open failed: " << file.error_details();
   }
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(cb, std::move(file)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(cb, std::move(file)));
 }
 
 void PnaclHost::CreateTemporaryFile(TempFileCallback cb) {
@@ -228,7 +228,7 @@ void PnaclHost::GetNexeFd(int render_process_id,
   }
   if (cache_state_ != CacheReady) {
     // If the backend hasn't yet initialized, try the request again later.
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PnaclHost::GetNexeFd, base::Unretained(this),
                        render_process_id, render_view_id, pp_instance,
@@ -372,8 +372,9 @@ void PnaclHost::CheckCacheQueryReady(
   pt->got_nexe_fd = false;
   FileProxy* proxy(new FileProxy(std::move(file), this));
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&FileProxy::Write, base::Unretained(proxy),
                  pt->nexe_read_buffer),
       base::Bind(&FileProxy::WriteDone, base::Owned(proxy), entry->first));
@@ -446,8 +447,9 @@ void PnaclHost::TranslationFinished(int render_process_id,
     entry->second.nexe_fd = NULL;
     entry->second.got_nexe_fd = false;
 
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::Bind(&PnaclHost::CopyFileToBuffer, Passed(&file)),
         base::Bind(&PnaclHost::StoreTranslatedNexe, base::Unretained(this),
                    id));
@@ -575,7 +577,7 @@ void PnaclHost::RendererClosing(int render_process_id) {
         RequeryMatchingTranslations(key);
     }
   }
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PnaclHost::DeInitIfSafe, base::Unretained(this)));
 }
@@ -591,7 +593,7 @@ void PnaclHost::ClearTranslationCacheEntriesBetween(
   }
   if (cache_state_ == CacheInitializing) {
     // If the backend hasn't yet initialized, try the request again later.
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PnaclHost::ClearTranslationCacheEntriesBetween,
                        base::Unretained(this), initial_time, end_time,
@@ -614,12 +616,12 @@ void PnaclHost::ClearTranslationCacheEntriesBetween(
 
 void PnaclHost::OnEntriesDoomed(base::OnceClosure callback, int net_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO}, std::move(callback));
+  base::PostTask(FROM_HERE, {BrowserThread::IO}, std::move(callback));
   pending_backend_operations_--;
   // When clearing the cache, the UI is blocked on all the cache-clearing
   // operations, and freeing the backend actually blocks the IO thread. So
   // instead of calling DeInitIfSafe directly, post it for later.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PnaclHost::DeInitIfSafe, base::Unretained(this)));
 }

@@ -684,10 +684,18 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, SwitchBrowserWindow) {
   owned_requests_.clear();
 }
 
+// crbug.com/989858
+#if defined(OS_WIN)
+#define MAYBE_ActiveTabClosedAfterRendererCrashesWithPendingPermissionRequest \
+  DISABLED_ActiveTabClosedAfterRendererCrashesWithPendingPermissionRequest
+#else
+#define MAYBE_ActiveTabClosedAfterRendererCrashesWithPendingPermissionRequest \
+  ActiveTabClosedAfterRendererCrashesWithPendingPermissionRequest
+#endif
 // Regression test for https://crbug.com/933321.
 IN_PROC_BROWSER_TEST_F(
     PermissionDialogTest,
-    ActiveTabClosedAfterRendererCrashesWithPendingPermissionRequest) {
+    MAYBE_ActiveTabClosedAfterRendererCrashesWithPendingPermissionRequest) {
   ShowUi("geolocation");
   ASSERT_TRUE(VerifyUi());
 

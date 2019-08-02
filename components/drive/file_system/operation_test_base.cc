@@ -62,7 +62,7 @@ OperationTestBase::~OperationTestBase() = default;
 
 void OperationTestBase::SetUp() {
   blocking_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
 
   pref_service_ = std::make_unique<TestingPrefServiceSimple>();
   test_util::RegisterDrivePrefs(pref_service_->registry());

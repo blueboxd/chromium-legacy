@@ -45,20 +45,11 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/arc_app_info_links_panel.h"
 #endif
 
-#if BUILDFLAG(ENABLE_APP_LIST)
-#include "ui/aura/window.h"
-#endif
-
 namespace {
 
 // The color of the separator used inside the dialog - should match the app
 // list's app_list::kDialogSeparatorColor
 constexpr SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
-
-#if BUILDFLAG(ENABLE_APP_LIST)
-// The elevation used for dialog shadow effect.
-constexpr int kDialogShadowElevation = 24;
-#endif
 
 }  // namespace
 
@@ -71,20 +62,16 @@ bool CanShowAppInfoDialog() {
 }
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-void ShowAppInfoInAppList(const gfx::Rect& app_info_bounds,
+void ShowAppInfoInAppList(gfx::NativeWindow parent,
+                          const gfx::Rect& app_info_bounds,
                           Profile* profile,
                           const extensions::Extension* app) {
   views::DialogDelegate* dialog = CreateAppListContainerForView(
       std::make_unique<AppInfoDialog>(profile, app));
-  views::Widget* dialog_widget = new views::Widget();
-  views::Widget::InitParams params =
-      views::DialogDelegate::GetDialogWidgetInitParams(dialog, nullptr, nullptr,
-                                                       app_info_bounds);
-  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DEFAULT;
-  params.shadow_elevation = kDialogShadowElevation;
-  dialog_widget->Init(params);
-  // The title is not shown on the dialog, but it is used for overview mode.
-  dialog_widget->GetNativeWindow()->SetTitle(base::UTF8ToUTF16(app->name()));
+
+  views::Widget* dialog_widget =
+      constrained_window::CreateBrowserModalDialogViews(dialog, parent);
+  dialog_widget->SetBounds(app_info_bounds);
   dialog_widget->Show();
 }
 #endif

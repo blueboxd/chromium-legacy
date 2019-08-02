@@ -159,7 +159,9 @@ SendResult SendMessage(mach_port_t remote_port, const MachMessage& proto) {
 
   base::ScopedMachMsgDestroy scoped_message(result.message.header);
 
-  result.kr = mach_msg_send(result.message.header);
+  result.kr = mach_msg(result.message.header, MACH_SEND_MSG | MACH_SEND_TIMEOUT,
+                       result.message.header->msgh_size, 0, MACH_PORT_NULL,
+                       /*timeout=*/0, MACH_PORT_NULL);
 
   if (result.kr == KERN_SUCCESS) {
     scoped_message.Disarm();

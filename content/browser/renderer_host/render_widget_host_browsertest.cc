@@ -92,7 +92,8 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
 
  private:
   EventTypeVector dispatched_events_;
-  blink::WebInputEvent::Type acked_touch_event_type_;
+  blink::WebInputEvent::Type acked_touch_event_type_ =
+      blink::WebInputEvent::Type::kUndefined;
 };
 
 class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
@@ -137,6 +138,11 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
     router_->RouteMouseEvent(view_, &event, ui::LatencyInfo());
   }
 
+  void WaitForAckWith(blink::WebInputEvent::Type type) {
+    InputMsgWatcher watcher(host(), type);
+    watcher.GetAckStateWaitIfNecessary();
+  }
+
   RenderWidgetHostImpl* host() { return host_; }
 
  private:
@@ -145,7 +151,7 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
   RenderWidgetHostInputEventRouter* router_;
 
   base::TimeTicks last_simulated_event_time_;
-  base::TimeDelta simulated_event_time_delta_;
+  const base::TimeDelta simulated_event_time_delta_;
 };
 
 // Synthetic mouse events not allowed on Android.
@@ -211,8 +217,6 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
                        TouchEmulator) {
-  // All touches will be immediately acked instead of sending them to the
-  // renderer since the test page does not have a touch handler.
   host()->GetTouchEmulator()->Enable(
       TouchEmulator::Mode::kEmulatingTouchFromMouse,
       ui::GestureProviderConfigType::GENERIC_MOBILE);
@@ -220,6 +224,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
   TestInputEventObserver observer;
   host()->AddInputEventObserver(&observer);
 
+  // Simulate a mouse move without any pressed buttons. This should not
+  // generate any touch events.
   SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseMove, 10, 10, 0, false);
   TestInputEventObserver::EventTypeVector dispatched_events =
       observer.GetAndResetDispatchedEventTypes();
@@ -227,6 +233,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
 
   // Mouse press becomes touch start which in turn becomes tap.
   SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseDown, 10, 10, 0, true);
+  WaitForAckWith(blink::WebInputEvent::kTouchStart);
   EXPECT_EQ(blink::WebInputEvent::kTouchStart,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
@@ -300,6 +307,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
 
   // Another mouse down continues scroll.
   SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseDown, 10, 80, 0, true);
+  WaitForAckWith(blink::WebInputEvent::kTouchStart);
   EXPECT_EQ(blink::WebInputEvent::kTouchStart,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();
@@ -359,6 +367,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
 
   // Another touch.
   SimulateRoutedMouseEvent(blink::WebInputEvent::kMouseDown, 10, 10, 0, true);
+  WaitForAckWith(blink::WebInputEvent::kTouchStart);
   EXPECT_EQ(blink::WebInputEvent::kTouchStart,
             observer.acked_touch_event_type());
   dispatched_events = observer.GetAndResetDispatchedEventTypes();

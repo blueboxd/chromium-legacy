@@ -1423,12 +1423,15 @@ send_tab_to_self::SendTabToSelfBubbleView* BrowserView::ShowSendTabToSelfBubble(
   send_tab_to_self::SendTabToSelfBubbleViewImpl* bubble =
       new send_tab_to_self::SendTabToSelfBubbleViewImpl(
           GetLocationBarView(), gfx::Point(), web_contents, controller);
-  PageActionIconView* icon_view =
-      GetLocationBarView()->send_tab_to_self_icon_view();
-  if (icon_view)
-    bubble->SetHighlightedButton(icon_view);
   views::BubbleDialogDelegateView::CreateBubble(bubble);
   bubble->Show(send_tab_to_self::SendTabToSelfBubbleViewImpl::USER_GESTURE);
+
+  PageActionIconView* icon_view =
+      toolbar_button_provider()
+          ->GetOmniboxPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kSendTabToSelf);
+  if (icon_view)
+    bubble->SetHighlightedButton(icon_view);
 
   return bubble;
 }

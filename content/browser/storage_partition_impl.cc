@@ -25,7 +25,6 @@
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
-#include "components/variations/net/variations_http_headers.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"

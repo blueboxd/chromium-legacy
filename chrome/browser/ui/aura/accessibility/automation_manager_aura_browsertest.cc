@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.bounds = {0, 0, 200, 200};
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   widget->Activate();
 

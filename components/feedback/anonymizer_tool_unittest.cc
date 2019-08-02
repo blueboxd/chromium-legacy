@@ -19,6 +19,10 @@ class AnonymizerToolTest : public testing::Test {
     return anonymizer_.AnonymizeMACAddresses(input);
   }
 
+  std::string AnonymizeAndroidAppStoragePaths(const std::string& input) {
+    return anonymizer_.AnonymizeAndroidAppStoragePaths(input);
+  }
+
   std::string AnonymizeCustomPatterns(const std::string& input) {
     return anonymizer_.AnonymizeCustomPatterns(input);
   }
@@ -46,7 +50,8 @@ TEST_F(AnonymizerToolTest, Anonymize) {
   EXPECT_EQ("foo\nbar\n", anonymizer_.Anonymize("foo\nbar\n"));
 
   // Make sure MAC address anonymization is invoked.
-  EXPECT_EQ("02:46:8a:00:00:01", anonymizer_.Anonymize("02:46:8a:ce:13:57"));
+  EXPECT_EQ("[MAC OUI=02:46:8a IFACE=1]",
+            anonymizer_.Anonymize("02:46:8a:ce:13:57"));
 
   // Make sure custom pattern anonymization is invoked.
   EXPECT_EQ("Cell ID: '1'", AnonymizeCustomPatterns("Cell ID: 'A1B2'"));
@@ -72,21 +77,24 @@ TEST_F(AnonymizerToolTest, AnonymizeMACAddresses) {
   EXPECT_EQ("", AnonymizeMACAddresses(""));
   EXPECT_EQ("foo\nbar\n", AnonymizeMACAddresses("foo\nbar\n"));
   EXPECT_EQ("11:22:33:44:55", AnonymizeMACAddresses("11:22:33:44:55"));
-  EXPECT_EQ("aa:bb:cc:00:00:01", AnonymizeMACAddresses("aa:bb:cc:dd:ee:ff"));
+  EXPECT_EQ("[MAC OUI=aa:bb:cc IFACE=1]",
+            AnonymizeMACAddresses("aa:bb:cc:dd:ee:ff"));
+  EXPECT_EQ("00:00:00:00:00:00", AnonymizeMACAddresses("00:00:00:00:00:00"));
+  EXPECT_EQ("ff:ff:ff:ff:ff:ff", AnonymizeMACAddresses("ff:ff:ff:ff:ff:ff"));
   EXPECT_EQ(
-      "BSSID: aa:bb:cc:00:00:01 in the middle\n"
-      "bb:cc:dd:00:00:02 start of line\n"
-      "end of line aa:bb:cc:00:00:01\n"
+      "BSSID: [MAC OUI=aa:bb:cc IFACE=1] in the middle\n"
+      "[MAC OUI=bb:cc:dd IFACE=2] start of line\n"
+      "end of line [MAC OUI=aa:bb:cc IFACE=1]\n"
       "no match across lines aa:bb:cc:\n"
       "dd:ee:ff two on the same line:\n"
-      "x bb:cc:dd:00:00:02 cc:dd:ee:00:00:03 x\n",
+      "x [MAC OUI=bb:cc:dd IFACE=2] [MAC OUI=cc:dd:ee IFACE=3] x\n",
       AnonymizeMACAddresses("BSSID: aa:bb:cc:dd:ee:ff in the middle\n"
                             "bb:cc:dd:ee:ff:00 start of line\n"
                             "end of line aa:bb:cc:dd:ee:ff\n"
                             "no match across lines aa:bb:cc:\n"
                             "dd:ee:ff two on the same line:\n"
                             "x bb:cc:dd:ee:ff:00 cc:dd:ee:ff:00:11 x\n"));
-  EXPECT_EQ("Remember bb:cc:dd:00:00:02?",
+  EXPECT_EQ("Remember [MAC OUI=bb:cc:dd IFACE=2]?",
             AnonymizeMACAddresses("Remember bB:Cc:DD:ee:ff:00?"));
 }
 
@@ -216,149 +224,157 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
   // of pairs, and then convert that to two strings which become the input and
   // output of the anonymizer.
   std::pair<std::string, std::string> data[] = {
-      {"aaaaaaaa [SSID=123aaaaaa]aaaaa",  // SSID.
-       "aaaaaaaa [SSID=1]aaaaa"},
-      {"aaaaaaaahttp://tets.comaaaaaaa",  // URL.
-       "aaaaaaaa<URL: 1>"},
-      {"aaaaaemail@example.comaaa",  // Email address.
-       "<email: 1>"},
-      {"example@@1234",  // No PII, it is not invalid email address.
-       "example@@1234"},
-      {"255.255.155.2",  // IP address.
-       "<IPv4: 1>"},
-      {"255.255.155.255",  // IP address.
-       "<IPv4: 2>"},
-      {"127.0.0.1",  // IPv4 loopback.
-       "<127.0.0.0/8: 3>"},
-      {"127.255.0.1",  // IPv4 loopback.
-       "<127.0.0.0/8: 4>"},
-      {"0.0.0.0",  // Any IPv4.
-       "<0.0.0.0/8: 5>"},
-      {"0.255.255.255",  // Any IPv4.
-       "<0.0.0.0/8: 6>"},
-      {"10.10.10.100",  // IPv4 private class A.
-       "<10.0.0.0/8: 7>"},
-      {"10.10.10.100",  // Intentional duplicate.
-       "<10.0.0.0/8: 7>"},
-      {"10.10.10.101",  // IPv4 private class A.
-       "<10.0.0.0/8: 8>"},
-      {"10.255.255.255",  // IPv4 private class A.
-       "<10.0.0.0/8: 9>"},
-      {"172.16.0.0",  // IPv4 private class B.
-       "<172.16.0.0/12: 10>"},
-      {"172.31.255.255",  // IPv4 private class B.
-       "<172.16.0.0/12: 11>"},
-      {"172.11.5.5",  // IP address.
-       "<IPv4: 12>"},
-      {"172.111.5.5",  // IP address.
-       "<IPv4: 13>"},
-      {"192.168.0.0",  // IPv4 private class C.
-       "<192.168.0.0/16: 14>"},
-      {"192.168.255.255",  // IPv4 private class C.
-       "<192.168.0.0/16: 15>"},
-      {"192.169.2.120",  // IP address.
-       "<IPv4: 16>"},
-      {"169.254.0.1",  // Link local.
-       "<169.254.0.0/16: 17>"},
-      {"169.200.0.1",  // IP address.
-       "<IPv4: 18>"},
-      {"fe80::",  // Link local.
-       "<fe80::/10: 1>"},
-      {"fe80::ffff",  // Link local.
-       "<fe80::/10: 2>"},
-      {"febf:ffff::ffff",  // Link local.
-       "<fe80::/10: 3>"},
-      {"fecc::1111",  // IP address.
-       "<IPv6: 4>"},
-      {"224.0.0.24",  // Multicast.
-       "<224.0.0.0/4: 19>"},
-      {"240.0.0.0",  // IP address.
-       "<IPv4: 20>"},
-      {"255.255.255.255",  // Broadcast.
-       "255.255.255.255"},
-      {"100.115.92.92",  // ChromeOS.
-       "100.115.92.92"},
-      {"100.115.91.92",  // IP address.
-       "<IPv4: 23>"},
-      {"1.1.1.1",  // DNS
-       "1.1.1.1"},
-      {"8.8.8.8",  // DNS
-       "8.8.8.8"},
-      {"8.8.4.4",  // DNS
-       "8.8.4.4"},
-      {"8.8.8.4",  // IP address.
-       "<IPv4: 27>"},
-      {"255.255.259.255",  // Not an IP address.
-       "255.255.259.255"},
-      {"255.300.255.255",  // Not an IP address.
-       "255.300.255.255"},
-      {"aaaa123.123.45.4aaa",  // IP address.
-       "aaaa<IPv4: 28>aaa"},
-      {"11:11;11::11",  // IP address.
-       "11:11;<IPv6: 5>"},
-      {"11::11",  // IP address.
-       "<IPv6: 5>"},
-      {"11:11:abcdef:0:0:0:0:0",  // No PII.
-       "11:11:abcdef:0:0:0:0:0"},
-      {"::",  // Unspecified.
-       "::"},
-      {"::1",  // Local host.
-       "::1"},
-      {"Instance::Set",  // Ignore match, no PII.
-       "Instance::Set"},
-      {"Instant::ff",  // Ignore match, no PII.
-       "Instant::ff"},
-      {"net::ERR_CONN_TIMEOUT",  // Ignore match, no PII.
-       "net::ERR_CONN_TIMEOUT"},
-      {"ff01::1",  // All nodes address (interface local).
-       "ff01::1"},
-      {"ff01::2",  // All routers (interface local).
-       "ff01::2"},
-      {"ff01::3",  // Multicast (interface local).
-       "<ff01::/16: 13>"},
-      {"ff02::1",  // All nodes address (link local).
-       "ff02::1"},
-      {"ff02::2",  // All routers (link local).
-       "ff02::2"},
-      {"ff02::3",  // Multicast (link local).
-       "<ff02::/16: 16>"},
-      {"ff02::fb",  // mDNSv6 (link local).
-       "<ff02::/16: 17>"},
-      {"ff08::fb",  // mDNSv6.
-       "<IPv6: 18>"},
-      {"ff0f::101",  // All NTP servers.
-       "<IPv6: 19>"},
-      {"::ffff:cb0c:10ea",  // IPv4-mapped IPV6 (IP address).
-       "<IPv6: 20>"},
-      {"::ffff:a0a:a0a",  // IPv4-mapped IPV6 (private class A).
-       "<M 10.0.0.0/8: 21>"},
-      {"::ffff:a0a:a0a",  // Intentional duplicate.
-       "<M 10.0.0.0/8: 21>"},
-      {"::ffff:ac1e:1e1e",  // IPv4-mapped IPV6 (private class B).
-       "<M 172.16.0.0/12: 22>"},
-      {"::ffff:c0a8:640a",  // IPv4-mapped IPV6 (private class C).
-       "<M 192.168.0.0/16: 23>"},
-      {"::ffff:6473:5c01",  // IPv4-mapped IPV6 (Chrome).
-       "<M 100.115.92.1: 24>"},
-      {"64:ff9b::a0a:a0a",  // IPv4-translated 6to4 IPV6 (private class A).
-       "<T 10.0.0.0/8: 25>"},
-      {"64:ff9b::6473:5c01",  // IPv4-translated 6to4 IPV6 (Chrome).
-       "<T 100.115.92.1: 26>"},
-      {"::0101:ffff:c0a8:640a",  // IP address.
-       "<IPv6: 27>"},
-      {"aa:aa:aa:aa:aa:aa",  // MAC address (BSSID).
-       "aa:aa:aa:00:00:01"},
-      {"chrome://resources/foo",  // Secure chrome resource, whitelisted.
-       "chrome://resources/foo"},
-      {"chrome://settings/crisper.js",  // Whitelisted settings URLs.
-       "chrome://settings/crisper.js"},
-      // Whitelisted first party extension.
-      {"chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js",
-       "chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js"},
-      {"chrome://resources/f?user=bar",  // Potentially PII in parameter.
-       "<URL: 2>"},
-      {"chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js?bar=x",
-       "<URL: 3>"},  // Potentially PII in parameter.
+    {"aaaaaaaa [SSID=123aaaaaa]aaaaa",  // SSID.
+     "aaaaaaaa [SSID=1]aaaaa"},
+    {"aaaaaaaahttp://tets.comaaaaaaa",  // URL.
+     "aaaaaaaa<URL: 1>"},
+    {"aaaaaemail@example.comaaa",  // Email address.
+     "<email: 1>"},
+    {"example@@1234",  // No PII, it is not invalid email address.
+     "example@@1234"},
+    {"255.255.155.2",  // IP address.
+     "<IPv4: 1>"},
+    {"255.255.155.255",  // IP address.
+     "<IPv4: 2>"},
+    {"127.0.0.1",  // IPv4 loopback.
+     "<127.0.0.0/8: 3>"},
+    {"127.255.0.1",  // IPv4 loopback.
+     "<127.0.0.0/8: 4>"},
+    {"0.0.0.0",  // Any IPv4.
+     "<0.0.0.0/8: 5>"},
+    {"0.255.255.255",  // Any IPv4.
+     "<0.0.0.0/8: 6>"},
+    {"10.10.10.100",  // IPv4 private class A.
+     "<10.0.0.0/8: 7>"},
+    {"10.10.10.100",  // Intentional duplicate.
+     "<10.0.0.0/8: 7>"},
+    {"10.10.10.101",  // IPv4 private class A.
+     "<10.0.0.0/8: 8>"},
+    {"10.255.255.255",  // IPv4 private class A.
+     "<10.0.0.0/8: 9>"},
+    {"172.16.0.0",  // IPv4 private class B.
+     "<172.16.0.0/12: 10>"},
+    {"172.31.255.255",  // IPv4 private class B.
+     "<172.16.0.0/12: 11>"},
+    {"172.11.5.5",  // IP address.
+     "<IPv4: 12>"},
+    {"172.111.5.5",  // IP address.
+     "<IPv4: 13>"},
+    {"192.168.0.0",  // IPv4 private class C.
+     "<192.168.0.0/16: 14>"},
+    {"192.168.255.255",  // IPv4 private class C.
+     "<192.168.0.0/16: 15>"},
+    {"192.169.2.120",  // IP address.
+     "<IPv4: 16>"},
+    {"169.254.0.1",  // Link local.
+     "<169.254.0.0/16: 17>"},
+    {"169.200.0.1",  // IP address.
+     "<IPv4: 18>"},
+    {"fe80::",  // Link local.
+     "<fe80::/10: 1>"},
+    {"fe80::ffff",  // Link local.
+     "<fe80::/10: 2>"},
+    {"febf:ffff::ffff",  // Link local.
+     "<fe80::/10: 3>"},
+    {"fecc::1111",  // IP address.
+     "<IPv6: 4>"},
+    {"224.0.0.24",  // Multicast.
+     "<224.0.0.0/4: 19>"},
+    {"240.0.0.0",  // IP address.
+     "<IPv4: 20>"},
+    {"255.255.255.255",  // Broadcast.
+     "255.255.255.255"},
+    {"100.115.92.92",  // ChromeOS.
+     "100.115.92.92"},
+    {"100.115.91.92",  // IP address.
+     "<IPv4: 23>"},
+    {"1.1.1.1",  // DNS
+     "1.1.1.1"},
+    {"8.8.8.8",  // DNS
+     "8.8.8.8"},
+    {"8.8.4.4",  // DNS
+     "8.8.4.4"},
+    {"8.8.8.4",  // IP address.
+     "<IPv4: 27>"},
+    {"255.255.259.255",  // Not an IP address.
+     "255.255.259.255"},
+    {"255.300.255.255",  // Not an IP address.
+     "255.300.255.255"},
+    {"aaaa123.123.45.4aaa",  // IP address.
+     "aaaa<IPv4: 28>aaa"},
+    {"11:11;11::11",  // IP address.
+     "11:11;<IPv6: 5>"},
+    {"11::11",  // IP address.
+     "<IPv6: 5>"},
+    {"11:11:abcdef:0:0:0:0:0",  // No PII.
+     "11:11:abcdef:0:0:0:0:0"},
+    {"::",  // Unspecified.
+     "::"},
+    {"::1",  // Local host.
+     "::1"},
+    {"Instance::Set",  // Ignore match, no PII.
+     "Instance::Set"},
+    {"Instant::ff",  // Ignore match, no PII.
+     "Instant::ff"},
+    {"net::ERR_CONN_TIMEOUT",  // Ignore match, no PII.
+     "net::ERR_CONN_TIMEOUT"},
+    {"ff01::1",  // All nodes address (interface local).
+     "ff01::1"},
+    {"ff01::2",  // All routers (interface local).
+     "ff01::2"},
+    {"ff01::3",  // Multicast (interface local).
+     "<ff01::/16: 13>"},
+    {"ff02::1",  // All nodes address (link local).
+     "ff02::1"},
+    {"ff02::2",  // All routers (link local).
+     "ff02::2"},
+    {"ff02::3",  // Multicast (link local).
+     "<ff02::/16: 16>"},
+    {"ff02::fb",  // mDNSv6 (link local).
+     "<ff02::/16: 17>"},
+    {"ff08::fb",  // mDNSv6.
+     "<IPv6: 18>"},
+    {"ff0f::101",  // All NTP servers.
+     "<IPv6: 19>"},
+    {"::ffff:cb0c:10ea",  // IPv4-mapped IPV6 (IP address).
+     "<IPv6: 20>"},
+    {"::ffff:a0a:a0a",  // IPv4-mapped IPV6 (private class A).
+     "<M 10.0.0.0/8: 21>"},
+    {"::ffff:a0a:a0a",  // Intentional duplicate.
+     "<M 10.0.0.0/8: 21>"},
+    {"::ffff:ac1e:1e1e",  // IPv4-mapped IPV6 (private class B).
+     "<M 172.16.0.0/12: 22>"},
+    {"::ffff:c0a8:640a",  // IPv4-mapped IPV6 (private class C).
+     "<M 192.168.0.0/16: 23>"},
+    {"::ffff:6473:5c01",  // IPv4-mapped IPV6 (Chrome).
+     "<M 100.115.92.1: 24>"},
+    {"64:ff9b::a0a:a0a",  // IPv4-translated 6to4 IPV6 (private class A).
+     "<T 10.0.0.0/8: 25>"},
+    {"64:ff9b::6473:5c01",  // IPv4-translated 6to4 IPV6 (Chrome).
+     "<T 100.115.92.1: 26>"},
+    {"::0101:ffff:c0a8:640a",  // IP address.
+     "<IPv6: 27>"},
+    {"aa:aa:aa:aa:aa:aa",  // MAC address (BSSID).
+     "[MAC OUI=aa:aa:aa IFACE=1]"},
+    {"chrome://resources/foo",  // Secure chrome resource, whitelisted.
+     "chrome://resources/foo"},
+    {"chrome://settings/crisper.js",  // Whitelisted settings URLs.
+     "chrome://settings/crisper.js"},
+    // Whitelisted first party extension.
+    {"chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js",
+     "chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js"},
+    {"chrome://resources/f?user=bar",  // Potentially PII in parameter.
+     "<URL: 2>"},
+    {"chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js?bar=x",
+     "<URL: 3>"},         // Potentially PII in parameter.
+#if defined(OS_CHROMEOS)  // We only anonymize Android paths on Chrome OS.
+    // Allowed android storage path.
+    {"112K\t/home/root/deadbeef1234/android-data/data/system_de",
+     "112K\t/home/root/deadbeef1234/android-data/data/system_de"},
+    // Anonymized app-specific storage path.
+    {"8.0K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2/de",
+     "8.0K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2/d_"},
+#endif  // defined(OS_CHROMEOS)
   };
   std::string anon_input;
   std::string anon_output;
@@ -368,5 +384,54 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
   }
   EXPECT_EQ(anon_output, anonymizer_.Anonymize(anon_input));
 }
+
+#if defined(OS_CHROMEOS)  // We only anonymize Android paths on Chrome OS.
+TEST_F(AnonymizerToolTest, AnonymizeAndroidAppStoragePaths) {
+  EXPECT_EQ("", AnonymizeAndroidAppStoragePaths(""));
+  EXPECT_EQ("foo\nbar\n", AnonymizeAndroidAppStoragePaths("foo\nbar\n"));
+
+  constexpr char kDuOutput[] =
+      "112K\t/home/root/deadbeef1234/android-data/data/system_de\n"
+      // /data/data will be modified by the anonymizer.
+      "8.0K\t/home/root/deadbeef1234/android-data/data/data/pack.age1/a\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/data/pack.age1/bc\n"
+      "24K\t/home/root/deadbeef1234/android-data/data/data/pack.age1\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2/de\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2/de/"
+      "\xe3\x81\x82\n"
+      "8.1K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2/de/"
+      "\xe3\x81\x82\xe3\x81\x83\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2/ef\n"
+      "24K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2\n"
+      // /data/app won't.
+      "8.0K\t/home/root/deadbeef1234/android-data/data/app/pack.age1/a\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/app/pack.age1/bc\n"
+      "24K\t/home/root/deadbeef1234/android-data/data/app/pack.age1\n"
+      // /data/user_de will.
+      "8.0K\t/home/root/deadbeef1234/android-data/data/user_de/0/pack.age1/a\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/user_de/0/pack.age1/bc\n"
+      "24K\t/home/root/deadbeef1234/android-data/data/user_de/0/pack.age1\n"
+      "78M\t/home/root/deadbeef1234/android-data/data/data\n";
+  constexpr char kDuOutputRedacted[] =
+      "112K\t/home/root/deadbeef1234/android-data/data/system_de\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/data/pack.age1/a\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/data/pack.age1/b_\n"
+      "24K\t/home/root/deadbeef1234/android-data/data/data/pack.age1\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2/d_\n"
+      // The non-ASCII directory names will become '*_'.
+      "8.0K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2/d_/*_\n"
+      "8.1K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2/d_/*_\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2/e_\n"
+      "24K\t/home/root/deadbeef1234/android-data/data/data/pa.ckage2\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/app/pack.age1/a\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/app/pack.age1/bc\n"
+      "24K\t/home/root/deadbeef1234/android-data/data/app/pack.age1\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/user_de/0/pack.age1/a\n"
+      "8.0K\t/home/root/deadbeef1234/android-data/data/user_de/0/pack.age1/b_\n"
+      "24K\t/home/root/deadbeef1234/android-data/data/user_de/0/pack.age1\n"
+      "78M\t/home/root/deadbeef1234/android-data/data/data\n";
+  EXPECT_EQ(kDuOutputRedacted, AnonymizeAndroidAppStoragePaths(kDuOutput));
+}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace feedback

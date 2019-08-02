@@ -135,6 +135,15 @@ ChromeContentVerifierDelegate::ChromeContentVerifierDelegate(
 ChromeContentVerifierDelegate::~ChromeContentVerifierDelegate() {
 }
 
+bool ChromeContentVerifierDelegate::ShouldBeChecked(
+    const Extension& extension) {
+  // All policy-based extensions should have some checks.
+  return ShouldBeVerified(extension);
+  // TODO(crbug.com/958794): After all preparations enable content checking for
+  // all policy-based extension (even for self-hosted ones):
+  // || Manifest::IsPolicyLocation(extension.location());
+}
+
 bool ChromeContentVerifierDelegate::ShouldBeVerified(
     const Extension& extension) {
   return GetVerifyMode(extension) != NONE;

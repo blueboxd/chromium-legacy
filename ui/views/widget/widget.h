@@ -214,8 +214,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // Initialization for other |type| types.
     explicit InitParams(Type type);
 
-    InitParams(const InitParams& other);
+    InitParams(InitParams&& other);
     ~InitParams();
+
+    InitParams& operator=(InitParams&& rhs) = default;
 
     // Returns the activatablity based on |activatable|, but also handles the
     // case where |activatable| is |ACTIVATABLE_DEFAULT|.
@@ -332,6 +334,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     // If set, mouse events will be sent to the widget even if inactive.
     bool wants_mouse_events_when_inactive = false;
+
+    // Contains any properties with which the native widget should be
+    // initialized prior to adding it to the window hierarchy. All the
+    // properties in |init_properties_container| will be moved to the native
+    // widget.
+    ui::PropertyHandler init_properties_container;
   };
 
   // Represents a lock held on the widget's ShouldPaintAsActive() state. As
@@ -414,7 +422,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns true if the specified type requires a NonClientView.
   static bool RequiresNonClientView(InitParams::Type type);
 
-  void Init(const InitParams& params);
+  // Initializes the widget, and in turn, the native widget. |params| should be
+  // moved to Init() by the caller.
+  void Init(InitParams params);
 
   // Returns the gfx::NativeView associated with this Widget.
   gfx::NativeView GetNativeView() const;

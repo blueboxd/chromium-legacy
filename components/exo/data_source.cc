@@ -215,9 +215,9 @@ void DataSource::ReadData(const std::string& mime_type,
   PCHECK(base::CreatePipe(&read_fd, &write_fd));
   delegate_->OnSend(mime_type, std::move(write_fd));
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ReadDataOnWorkerThread, std::move(read_fd)),
       base::BindOnce(&DataSource::OnDataRead,

@@ -51,7 +51,8 @@ void UpdateAPICount(blink::WebUserMediaRequest::MediaType media_type) {
 
 }  // namespace
 
-UserMediaClientImpl::Request::Request(std::unique_ptr<UserMediaRequest> request)
+UserMediaClientImpl::Request::Request(
+    std::unique_ptr<UserMediaRequestInfo> request)
     : user_media_request_(std::move(request)) {
   DCHECK(user_media_request_);
   DCHECK(apply_constraints_request_.IsNull());
@@ -95,7 +96,7 @@ UserMediaClientImpl::Request& UserMediaClientImpl::Request::operator=(
     Request&& other) = default;
 UserMediaClientImpl::Request::~Request() = default;
 
-std::unique_ptr<UserMediaRequest>
+std::unique_ptr<UserMediaRequestInfo>
 UserMediaClientImpl::Request::MoveUserMediaRequest() {
   return std::move(user_media_request_);
 }
@@ -171,8 +172,9 @@ void UserMediaClientImpl::RequestUserMedia(
       web_request.OwnerDocument().IsNull()
           ? nullptr
           : web_request.OwnerDocument().GetFrame());
-  std::unique_ptr<UserMediaRequest> request_info =
-      std::make_unique<UserMediaRequest>(request_id, web_request, user_gesture);
+  std::unique_ptr<UserMediaRequestInfo> request_info =
+      std::make_unique<UserMediaRequestInfo>(request_id, web_request,
+                                             user_gesture);
   pending_request_infos_.push_back(Request(std::move(request_info)));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
@@ -252,7 +254,7 @@ void UserMediaClientImpl::CancelUserMediaRequest(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   {
     // TODO(guidou): Remove this conditional logging. https://crbug.com/764293
-    UserMediaRequest* request = user_media_processor_->CurrentRequest();
+    UserMediaRequestInfo* request = user_media_processor_->CurrentRequest();
     if (request && request->web_request == web_request) {
       blink::WebRtcLogMessage(base::StringPrintf(
           "UMCI::CancelUserMediaRequest. request_id=%d", request->request_id));

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 
+#include <string>
 #include <utility>
 
 #include "base/base_paths.h"
@@ -11,11 +12,13 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
-#include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -275,130 +278,115 @@ ChromeNativeFileSystemPermissionContext::Grants::Grants(Grants&&) = default;
 ChromeNativeFileSystemPermissionContext::Grants&
 ChromeNativeFileSystemPermissionContext::Grants::operator=(Grants&&) = default;
 
-class ChromeNativeFileSystemPermissionContext::PermissionGrantImpl
-    : public content::NativeFileSystemPermissionGrant {
- public:
-  // In the current implementation permission grants are scoped to the frame
-  // they are requested in. Within a frame we only want to have one grant pe
-  // path. The Key struct contains these fields. Keys are comparable so they can
-  // be used with sorted containers like std::map and std::set.
-  // TODO(https://crbug.com/984769): Eliminate process_id and frame_id and
-  // replace usage of this struct with just a file path when grants stop being
-  // scoped to a frame.
-  struct Key {
-    base::FilePath path;
-    int process_id = 0;
-    int frame_id = 0;
+bool ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::Key::
+operator==(const Key& rhs) const {
+  return std::tie(process_id, frame_id, path) ==
+         std::tie(rhs.process_id, rhs.frame_id, rhs.path);
+}
+bool ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::Key::
+operator<(const Key& rhs) const {
+  return std::tie(process_id, frame_id, path) <
+         std::tie(rhs.process_id, rhs.frame_id, rhs.path);
+}
 
-    bool operator==(const Key& rhs) const {
-      return std::tie(process_id, frame_id, path) ==
-             std::tie(rhs.process_id, rhs.frame_id, rhs.path);
-    }
-    bool operator<(const Key& rhs) const {
-      return std::tie(process_id, frame_id, path) <
-             std::tie(rhs.process_id, rhs.frame_id, rhs.path);
-    }
-  };
+ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
+    WritePermissionGrantImpl(
+        scoped_refptr<ChromeNativeFileSystemPermissionContext> context,
+        ContentSettingsType content_settings_guard_type,
+        const url::Origin& origin,
+        const Key& key,
+        bool is_directory)
+    : context_(std::move(context)),
+      write_guard_content_setting_type_(content_settings_guard_type),
+      origin_(origin),
+      key_(key),
+      is_directory_(is_directory) {}
 
-  PermissionGrantImpl(
-      scoped_refptr<ChromeNativeFileSystemPermissionContext> context,
-      const url::Origin& origin,
-      const Key& key,
-      bool is_directory)
-      : context_(std::move(context)),
-        origin_(origin),
-        key_(key),
-        is_directory_(is_directory) {}
+blink::mojom::PermissionStatus
+ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::GetStatus() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return status_;
+}
 
-  const url::Origin& origin() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return origin_;
-  }
-
-  bool is_directory() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return is_directory_;
-  }
-
-  const base::FilePath& path() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return key_.path;
-  }
-
-  const Key& key() const { return key_; }
-
-  PermissionStatus GetStatus() override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return status_;
-  }
-
-  void SetStatus(PermissionStatus status) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (status_ == status)
-      return;
-    status_ = status;
-    NotifyPermissionStatusChanged();
-  }
-
-  void RequestPermission(int process_id,
-                         int frame_id,
-                         base::OnceClosure callback) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (GetStatus() != PermissionStatus::ASK) {
-      std::move(callback).Run();
-      return;
-    }
-
-    auto result_callback = BindResultCallbackToCurrentSequence(
-        base::BindOnce(&PermissionGrantImpl::OnPermissionRequestComplete, this,
-                       std::move(callback)));
-
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&ShowWritePermissionPromptOnUIThread, process_id,
-                       frame_id, origin_, path(), is_directory_,
-                       std::move(result_callback)));
-  }
-
- protected:
-  ~PermissionGrantImpl() override { context_->PermissionGrantDestroyed(this); }
-
- private:
-  void OnPermissionRequestComplete(base::OnceClosure callback,
-                                   PermissionAction result) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    switch (result) {
-      case PermissionAction::GRANTED:
-        SetStatus(PermissionStatus::GRANTED);
-        break;
-      case PermissionAction::DENIED:
-        SetStatus(PermissionStatus::DENIED);
-        break;
-      case PermissionAction::DISMISSED:
-      case PermissionAction::IGNORED:
-        break;
-      case PermissionAction::REVOKED:
-      case PermissionAction::NUM:
-        NOTREACHED();
-        break;
-    }
-
+void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
+    RequestPermission(int process_id,
+                      int frame_id,
+                      base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Check if a permission request has already been processed previously. This
+  // check is done first because we don't want to reset the status of a write
+  // permission if it has already been granted.
+  if (GetStatus() != PermissionStatus::ASK) {
     std::move(callback).Run();
+    return;
   }
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  // Check if |write_guard_content_setting_type_| is blocked by the user and
+  // update the status if it is.
+  if (!CanRequestPermission()) {
+    SetStatus(PermissionStatus::DENIED);
+    std::move(callback).Run();
+    return;
+  }
 
-  scoped_refptr<ChromeNativeFileSystemPermissionContext> const context_;
-  const url::Origin origin_;
-  const Key key_;
-  const bool is_directory_;
+  auto result_callback = BindResultCallbackToCurrentSequence(
+      base::BindOnce(&WritePermissionGrantImpl::OnPermissionRequestComplete,
+                     this, std::move(callback)));
 
-  // This member should only be updated via SetStatus(), to make sure observers
-  // are properly notified about any change in status.
-  PermissionStatus status_ = PermissionStatus::ASK;
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&ShowWritePermissionPromptOnUIThread, process_id, frame_id,
+                     origin_, path(), is_directory_,
+                     std::move(result_callback)));
+}
 
-  DISALLOW_COPY_AND_ASSIGN(PermissionGrantImpl);
-};
+bool ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
+    CanRequestPermission() {
+  HostContentSettingsMap* content_settings = context_->content_settings();
+  ContentSetting content_setting = content_settings->GetContentSetting(
+      origin_.GetURL(), origin_.GetURL(), write_guard_content_setting_type_,
+      /*provider_id=*/std::string());
+  DCHECK(content_setting == CONTENT_SETTING_ASK ||
+         content_setting == CONTENT_SETTING_BLOCK);
+  return content_setting == CONTENT_SETTING_ASK;
+}
+
+void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
+    SetStatus(PermissionStatus status) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (status_ == status)
+    return;
+  status_ = status;
+  NotifyPermissionStatusChanged();
+}
+
+ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
+    ~WritePermissionGrantImpl() {
+  context_->PermissionGrantDestroyed(this);
+}
+
+void ChromeNativeFileSystemPermissionContext::WritePermissionGrantImpl::
+    OnPermissionRequestComplete(base::OnceClosure callback,
+                                PermissionAction result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  switch (result) {
+    case PermissionAction::GRANTED:
+      SetStatus(PermissionStatus::GRANTED);
+      break;
+    case PermissionAction::DENIED:
+      SetStatus(PermissionStatus::DENIED);
+      break;
+    case PermissionAction::DISMISSED:
+    case PermissionAction::IGNORED:
+      break;
+    case PermissionAction::REVOKED:
+    case PermissionAction::NUM:
+      NOTREACHED();
+      break;
+  }
+
+  std::move(callback).Run();
+}
 
 struct ChromeNativeFileSystemPermissionContext::OriginState {
   // Raw pointers, owned collectively by all the handles that reference this
@@ -406,7 +394,7 @@ struct ChromeNativeFileSystemPermissionContext::OriginState {
   // PermissionGrantDestroyed().
   // TODO(mek): Lifetime of grants might change depending on the outcome of
   // the discussions surrounding lifetime of non-persistent permissions.
-  std::map<PermissionGrantImpl::Key, PermissionGrantImpl*> grants;
+  std::map<WritePermissionGrantImpl::Key, WritePermissionGrantImpl*> grants;
 
   // Read permissions are keyed off of the tab they are associated with.
   // TODO(https://crbug.com/984769): This will change when permissions are no
@@ -417,8 +405,11 @@ struct ChromeNativeFileSystemPermissionContext::OriginState {
 };
 
 ChromeNativeFileSystemPermissionContext::
-    ChromeNativeFileSystemPermissionContext(content::BrowserContext*) {
+    ChromeNativeFileSystemPermissionContext(content::BrowserContext* context) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  auto* profile = Profile::FromBrowserContext(context);
+  content_settings_ = base::WrapRefCounted(
+      HostContentSettingsMapFactory::GetForProfile(profile));
 }
 
 scoped_refptr<content::NativeFileSystemPermissionGrant>
@@ -445,6 +436,11 @@ ChromeNativeFileSystemPermissionContext::GetReadPermissionGrant(
   return existing_grant;
 }
 
+bool ChromeNativeFileSystemPermissionContext::CanRequestWritePermission(
+    WritePermissionGrantImpl* grant) {
+  return grant->CanRequestPermission();
+}
+
 scoped_refptr<content::NativeFileSystemPermissionGrant>
 ChromeNativeFileSystemPermissionContext::GetWritePermissionGrant(
     const url::Origin& origin,
@@ -461,17 +457,30 @@ ChromeNativeFileSystemPermissionContext::GetWritePermissionGrant(
   // this newly returned grant should also be writable.
   // TODO(https://crbug.com/984769): Process ID and frame ID should not be used
   // to identify grants.
-  PermissionGrantImpl::Key grant_key{path, process_id, frame_id};
+  WritePermissionGrantImpl::Key grant_key{path, process_id, frame_id};
   auto*& existing_grant = origin_state.grants[grant_key];
   if (existing_grant) {
-    if (user_action == UserAction::kSave)
-      existing_grant->SetStatus(PermissionGrantImpl::PermissionStatus::GRANTED);
+    if (existing_grant->CanRequestPermission() &&
+        user_action == UserAction::kSave) {
+      existing_grant->SetStatus(
+          WritePermissionGrantImpl::PermissionStatus::GRANTED);
+    }
     return existing_grant;
   }
-  auto result = base::MakeRefCounted<PermissionGrantImpl>(
-      this, origin, grant_key, is_directory);
-  if (user_action == UserAction::kSave)
-    result->SetStatus(PermissionGrantImpl::PermissionStatus::GRANTED);
+
+  // If a grant does not exist for |origin|, create one, compute the permission
+  // status, and store a reference to it in |origin_state| by assigning
+  // |existing_grant|.
+  auto result = base::MakeRefCounted<WritePermissionGrantImpl>(
+      this, CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD, origin,
+      grant_key, is_directory);
+  if (result->CanRequestPermission()) {
+    if (user_action == UserAction::kSave) {
+      result->SetStatus(WritePermissionGrantImpl::PermissionStatus::GRANTED);
+    }
+  } else {
+    result->SetStatus(WritePermissionGrantImpl::PermissionStatus::DENIED);
+  }
   existing_grant = result.get();
   return result;
 }
@@ -541,7 +550,7 @@ ChromeNativeFileSystemPermissionContext::GetPermissionGrants(
       continue;
     }
     if (entry.second->GetStatus() ==
-        PermissionGrantImpl::PermissionStatus::GRANTED) {
+        WritePermissionGrantImpl::PermissionStatus::GRANTED) {
       if (entry.second->is_directory()) {
         grants.directory_write_grants.push_back(entry.second->path());
       } else {
@@ -614,7 +623,7 @@ void ChromeNativeFileSystemPermissionContext::RevokeWriteGrants(
   // first grant to remove (if any), and all other grants to remove are
   // immediately after it.
   auto grant_it = origin_state.grants.lower_bound(
-      PermissionGrantImpl::Key{base::FilePath(), process_id, frame_id});
+      WritePermissionGrantImpl::Key{base::FilePath(), process_id, frame_id});
   while (grant_it != origin_state.grants.end() &&
          grant_it->first.process_id == process_id &&
          grant_it->first.frame_id == frame_id) {
@@ -655,7 +664,7 @@ ChromeNativeFileSystemPermissionContext::
     ~ChromeNativeFileSystemPermissionContext() = default;
 
 void ChromeNativeFileSystemPermissionContext::PermissionGrantDestroyed(
-    PermissionGrantImpl* grant) {
+    WritePermissionGrantImpl* grant) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = origins_.find(grant->origin());
   DCHECK(it != origins_.end());

@@ -37,9 +37,11 @@ public class DownloadBackgroundTask extends NativeBackgroundTask {
         int optimalBatteryPercentage = taskParameters.getExtras().getInt(
                 DownloadTaskScheduler.EXTRA_OPTIMAL_BATTERY_PERCENTAGE);
         mCurrentTaskType = taskParameters.getExtras().getInt(DownloadTaskScheduler.EXTRA_TASK_TYPE);
-        // Return value from FeatureUtilities.shouldStartServiceManagerOnly() could change during
-        // native initialization, store it first.
-        mStartsServiceManagerOnly = FeatureUtilities.isServiceManagerForBackgroundPrefetchEnabled();
+        // The feature value could change during native initialization, store it first.
+        mStartsServiceManagerOnly =
+                (mCurrentTaskType == DownloadTaskType.DOWNLOAD_AUTO_RESUMPTION_TASK)
+                ? FeatureUtilities.isServiceManagerForDownloadResumptionEnabled()
+                : FeatureUtilities.isServiceManagerForBackgroundPrefetchEnabled();
         // Reschedule if minimum battery level is not satisfied.
         if (!requiresCharging
                 && BatteryStatusListenerAndroid.getBatteryPercentage() < optimalBatteryPercentage) {

@@ -151,6 +151,33 @@ suite('CrostiniPageTests', function() {
           });
     });
 
+    test('ExportImportButtonsGetDisabledOnOperationStatus', function() {
+      assertTrue(!!subpage.$$('#crostini-export-import'));
+      subpage.$$('#crostini-export-import').click();
+      return flushAsync()
+          .then(() => {
+            subpage = crostiniPage.$$('settings-crostini-export-import');
+            assertFalse(subpage.$$('#export cr-button').disabled);
+            assertFalse(subpage.$$('#import cr-button').disabled);
+            cr.webUIListenerCallback(
+                'crostini-export-import-operation-status-changed', true);
+            return flushAsync();
+          })
+          .then(() => {
+            subpage = crostiniPage.$$('settings-crostini-export-import');
+            assertTrue(subpage.$$('#export cr-button').disabled);
+            assertTrue(subpage.$$('#import cr-button').disabled);
+            cr.webUIListenerCallback(
+                'crostini-export-import-operation-status-changed', false);
+            return flushAsync();
+          })
+          .then(() => {
+            subpage = crostiniPage.$$('settings-crostini-export-import');
+            assertFalse(subpage.$$('#export cr-button').disabled);
+            assertFalse(subpage.$$('#import cr-button').disabled);
+          });
+    });
+
     test('Remove', function() {
       assertTrue(!!subpage.$$('#remove cr-button'));
       subpage.$$('#remove cr-button').click();

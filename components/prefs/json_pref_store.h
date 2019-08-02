@@ -67,8 +67,9 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   JsonPrefStore(const base::FilePath& pref_filename,
                 std::unique_ptr<PrefFilter> pref_filter = nullptr,
                 scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-                    base::CreateSequencedTaskRunnerWithTraits(
-                        {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+                    base::CreateSequencedTaskRunner(
+                        {base::ThreadPool(), base::MayBlock(),
+                         base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
 
   // PrefStore overrides:

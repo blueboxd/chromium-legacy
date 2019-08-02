@@ -29,7 +29,7 @@ std::unique_ptr<views::Widget> CreatePopupWidget(gfx::NativeView parent_view,
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = parent_view;
-  popup->Init(params);
+  popup->Init(std::move(params));
   popup->SetContentsView(view);
 
   return popup;

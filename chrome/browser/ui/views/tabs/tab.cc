@@ -685,8 +685,7 @@ void Tab::SetGroup(base::Optional<TabGroupId> group) {
   if (group_ == group)
     return;
   group_ = group;
-  UpdateForegroundColors();
-  SchedulePaint();
+  GroupColorChanged();
 }
 
 base::Optional<SkColor> Tab::GetGroupColor() const {
@@ -694,6 +693,11 @@ base::Optional<SkColor> Tab::GetGroupColor() const {
              ? base::make_optional(
                    controller_->GetVisualDataForGroup(group_.value())->color())
              : base::nullopt;
+}
+
+void Tab::GroupColorChanged() {
+  UpdateForegroundColors();
+  SchedulePaint();
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {

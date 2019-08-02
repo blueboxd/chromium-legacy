@@ -563,6 +563,7 @@ source_set("unit_tests") {
     "base/sync_prefs_unittest.cc",
     "base/system_encryptor_unittest.cc",
     "base/unique_position_unittest.cc",
+    "base/user_demographics_unittest.cc",
     "base/weak_handle_unittest.cc",
     "driver/about_sync_util_unittest.cc",
     "driver/async_directory_type_controller_unittest.cc",

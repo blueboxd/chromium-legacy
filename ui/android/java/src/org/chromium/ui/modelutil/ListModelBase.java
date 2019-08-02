@@ -169,4 +169,9 @@ public class ListModelBase<T, P> extends ListObservableImpl<P> implements Simple
         }
         notifyItemMoved(curIndex, newIndex);
     }
+
+    /** Clear all items from the list. */
+    public void clear() {
+        if (size() > 0) removeRange(0, size());
+    }
 }

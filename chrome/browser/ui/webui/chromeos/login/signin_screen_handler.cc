@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "ash/public/cpp/login_constants.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "base/bind.h"
@@ -64,7 +65,6 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
@@ -266,9 +266,9 @@ SigninScreenHandler::SigninScreenHandler(
           base::Bind(&SigninScreenHandler::OnAllowedInputMethodsChanged,
                      base::Unretained(this)));
 
-  TabletModeClient* tablet_mode_client = TabletModeClient::Get();
-  tablet_mode_client->AddObserver(this);
-  OnTabletModeToggled(tablet_mode_client->tablet_mode_enabled());
+  ash::TabletMode* tablet_mode = ash::TabletMode::Get();
+  tablet_mode->AddObserver(this);
+  OnTabletModeToggled(tablet_mode->InTabletMode());
 
   WallpaperControllerClient::Get()->AddObserver(this);
 }
@@ -276,7 +276,9 @@ SigninScreenHandler::SigninScreenHandler(
 SigninScreenHandler::~SigninScreenHandler() {
   if (auto* wallpaper_controller_client = WallpaperControllerClient::Get())
     wallpaper_controller_client->RemoveObserver(this);
-  TabletModeClient::Get()->RemoveObserver(this);
+  // Ash maybe released before us.
+  if (ash::TabletMode::Get())
+    ash::TabletMode::Get()->RemoveObserver(this);
   OobeUI* oobe_ui = GetOobeUI();
   if (oobe_ui && oobe_ui_observer_added_)
     oobe_ui->RemoveObserver(this);
@@ -1016,6 +1018,14 @@ void SigninScreenHandler::SuspendDone(const base::TimeDelta& sleep_duration) {
   }
 }
 
+void SigninScreenHandler::OnTabletModeStarted() {
+  OnTabletModeToggled(true);
+}
+
+void SigninScreenHandler::OnTabletModeEnded() {
+  OnTabletModeToggled(false);
+}
+
 void SigninScreenHandler::OnTabletModeToggled(bool enabled) {
   CallJS("login.AccountPickerScreen.setTabletModeState", enabled);
 }
@@ -1367,7 +1377,7 @@ void SigninScreenHandler::SendPublicSessionKeyboardLayouts(
 
 void SigninScreenHandler::HandleGetTabletModeState() {
   CallJS("login.AccountPickerScreen.setTabletModeState",
-         TabletModeClient::Get()->tablet_mode_enabled());
+         ash::TabletMode::Get()->InTabletMode());
 }
 
 void SigninScreenHandler::HandleGetDemoModeState() {

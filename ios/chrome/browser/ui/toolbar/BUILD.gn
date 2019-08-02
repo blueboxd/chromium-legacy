@@ -25,7 +25,7 @@ source_set("toolbar") {
     ":toolbar_ui",
     "//base",
     "//components/bookmarks/browser",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autocomplete",

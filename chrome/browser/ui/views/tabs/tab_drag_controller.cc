@@ -49,9 +49,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"               // nogncheck
 #include "ash/public/cpp/window_state_type.h"               // nogncheck
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #endif
 
@@ -118,7 +118,7 @@ gfx::Rect GetDraggedBrowserBoundsInTabletMode(aura::Window* window) {
 void StoreCurrentDraggedBrowserBoundsInTabletMode(
     aura::Window* window,
     const gfx::Rect& bounds_in_screen) {
-  if (TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (ash::TabletMode::Get()->InTabletMode()) {
     // The bounds that is stored in ash::kRestoreBoundsOverrideKey will be used
     // by DragDetails to calculate the window bounds during dragging in tablet
     // mode.
@@ -1845,7 +1845,7 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
   }
 
 #if defined(OS_CHROMEOS)
-  if (TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (ash::TabletMode::Get()->InTabletMode()) {
     new_bounds = GetDraggedBrowserBoundsInTabletMode(
         source->AsView()->GetWidget()->GetNativeWindow());
   }
@@ -1885,7 +1885,7 @@ gfx::Rect TabDragController::CalculateNonMaximizedDraggedBrowserBounds(
     const gfx::Point& point_in_screen) {
   gfx::Rect bounds = widget->GetWindowBoundsInScreen();
 #if defined(OS_CHROMEOS)
-  if (TabletModeClient::Get()->tablet_mode_enabled())
+  if (ash::TabletMode::Get()->InTabletMode())
     bounds = GetDraggedBrowserBoundsInTabletMode(widget->GetNativeWindow());
 #endif
 

@@ -144,6 +144,7 @@ blink_core_sources("frame") {
     "remote_frame_owner.h",
     "remote_frame_view.cc",
     "remote_frame_view.h",
+    "report.cc",
     "report.h",
     "report_body.h",
     "reporting_context.cc",

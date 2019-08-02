@@ -11,6 +11,10 @@
 class TabController;
 class TabGroupVisualData;
 
+namespace views {
+class Label;
+}
+
 // View for tab group headers in the tab strip, which are tab-shaped markers of
 // group boundaries. There is one header for each group, which is included in
 // the tab strip flow and positioned left of the leftmost tab in the group.
@@ -18,11 +22,15 @@ class TabGroupHeader : public views::View {
  public:
   TabGroupHeader(TabController* controller, TabGroupId group);
 
- private:
-  const TabGroupVisualData* GetGroupVisualData();
+  // Updates our visual state according to the TabGroupVisualData for our group.
+  void VisualsChanged();
 
+ private:
   TabController* const controller_;
   const TabGroupId group_;
+
+  views::View* title_chip_;
+  views::Label* title_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGroupHeader);
 };

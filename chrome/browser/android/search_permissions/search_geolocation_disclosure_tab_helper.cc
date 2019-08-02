@@ -202,8 +202,7 @@ bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForNavigation(
   const TemplateURL* template_url =
       template_url_service->GetDefaultSearchProvider();
   return template_url &&
-         template_url->HasGoogleBaseURLs(
-             UIThreadSearchTermsData(GetProfile())) &&
+         template_url->HasGoogleBaseURLs(UIThreadSearchTermsData()) &&
          template_url_service->IsSearchResultsPageFromDefaultSearchProvider(
              gurl);
 }

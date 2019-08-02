@@ -57,7 +57,7 @@ class TabbedPaneTest : public ViewsTestBase {
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->SetContentsView(tabbed_pane_.get());
   }
 
@@ -239,7 +239,7 @@ TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
   // Testing accessibility information requires the View to have a Widget.
   Widget* widget = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->GetContentsView()->AddChildView(tabbed_pane_.get());
   widget->Show();
 

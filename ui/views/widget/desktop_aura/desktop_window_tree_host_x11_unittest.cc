@@ -128,7 +128,7 @@ std::unique_ptr<Widget> CreateWidget(WidgetDelegate* delegate) {
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.remove_standard_frame = true;
   params.bounds = gfx::Rect(100, 100, 100, 100);
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 
@@ -362,7 +362,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
   Widget widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.Show();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
 
@@ -421,7 +421,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ChildWindowDestructionDuringTearDown) {
   Widget::InitParams parent_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  parent_widget.Init(parent_params);
+  parent_widget.Init(std::move(parent_params));
   parent_widget.Show();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
 
@@ -430,7 +430,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ChildWindowDestructionDuringTearDown) {
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.parent = parent_widget.GetNativeWindow();
-  child_widget.Init(child_params);
+  child_widget.Init(std::move(child_params));
   child_widget.Show();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
 
@@ -466,7 +466,7 @@ TEST_F(DesktopWindowTreeHostX11Test, SetBoundsWithMinMax) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(200, 100);
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.Show();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
 
@@ -539,14 +539,14 @@ TEST_F(DesktopWindowTreeHostX11HighDPITest,
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(0, 0, 50, 50);
-  first.Init(params);
+  first.Init(std::move(params));
   first.Show();
 
   Widget second;
   params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = gfx::Rect(50, 50, 50, 50);
-  second.Init(params);
+  second.Init(std::move(params));
   second.Show();
 
   ui::X11EventSource::GetInstance()->DispatchXEvents();

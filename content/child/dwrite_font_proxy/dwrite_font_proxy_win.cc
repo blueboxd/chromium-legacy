@@ -360,8 +360,9 @@ bool DWriteFontCollectionProxy::CreateFamily(UINT32 family_index) {
 void DWriteFontCollectionProxy::SetProxy(
     blink::mojom::DWriteFontProxyPtrInfo proxy) {
   font_proxy_ = blink::mojom::ThreadSafeDWriteFontProxyPtr::Create(
-      std::move(proxy), base::CreateSequencedTaskRunnerWithTraits(
-                            {base::WithBaseSyncPrimitives()}));
+      std::move(proxy),
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::WithBaseSyncPrimitives()}));
 }
 
 blink::mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {

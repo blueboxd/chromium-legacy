@@ -180,13 +180,13 @@ class WebViewPlugin : public blink::WebPlugin,
                        const gfx::Point&) override;
     void DidChangeCursor(const blink::WebCursorInfo& cursor) override;
     void ScheduleAnimation() override;
-    std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()
-        override;
 
     // WebLocalFrameClient methods:
     void BindToFrame(blink::WebNavigationControl* frame) override;
     void DidClearWindowObject() override;
     void FrameDetached(DetachType) override;
+    std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()
+        override;
 
    private:
     WebViewPlugin* plugin_;

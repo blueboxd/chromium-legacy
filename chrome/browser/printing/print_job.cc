@@ -219,8 +219,8 @@ bool PrintJob::FlushJob(base::TimeDelta timeout) {
 
   base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
   quit_closure_ = loop.QuitClosure();
-  base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                                  loop.QuitClosure(), timeout);
+  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                        loop.QuitClosure(), timeout);
 
   loop.Run();
 
@@ -451,8 +451,8 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
     }
     case JobEventDetails::DOC_DONE: {
       // This will call Stop() and broadcast a JOB_DONE message.
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               base::BindOnce(&PrintJob::OnDocumentDone, this));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&PrintJob::OnDocumentDone, this));
       break;
     }
 #if defined(OS_WIN)
@@ -508,7 +508,7 @@ void PrintJob::ControlledWorkerShutdown() {
   // Delay shutdown until the worker terminates.  We want this code path
   // to wait on the thread to quit before continuing.
   if (worker_->IsRunning()) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&PrintJob::ControlledWorkerShutdown, this),
         base::TimeDelta::FromMilliseconds(100));
@@ -518,9 +518,9 @@ void PrintJob::ControlledWorkerShutdown() {
 
   // Now make sure the thread object is cleaned up. Do this on a worker
   // thread because it may block.
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::MayBlock(), base::WithBaseSyncPrimitives(),
+      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
        base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&PrintJobWorker::Stop, base::Unretained(worker_.get())),
@@ -533,8 +533,8 @@ void PrintJob::ControlledWorkerShutdown() {
 
 bool PrintJob::PostTask(const base::Location& from_here,
                         base::OnceClosure task) {
-  return base::PostTaskWithTraits(from_here, {content::BrowserThread::UI},
-                                  std::move(task));
+  return base::PostTask(from_here, {content::BrowserThread::UI},
+                        std::move(task));
 }
 
 void PrintJob::HoldUntilStopIsCalled() {

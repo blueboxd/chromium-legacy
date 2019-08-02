@@ -55,6 +55,9 @@ PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorInfoText
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
+Testing system colorLinkText
+PASS computedStyleText.fill is computedStyleDiv.color
+FAIL computedStyleText.stroke should be rgb(0, 0, 0). Was rgb(0, 0, 238).
 Testing system colorMenu
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
@@ -79,6 +82,9 @@ PASS computedStyleText.stroke is computedStyleDiv.color
 Testing system colorThreeDShadow
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color
+Testing system colorVisitedText
+PASS computedStyleText.fill is computedStyleDiv.color
+FAIL computedStyleText.stroke should be rgb(0, 0, 0). Was rgb(85, 26, 139).
 Testing system colorWindow
 PASS computedStyleText.fill is computedStyleDiv.color
 PASS computedStyleText.stroke is computedStyleDiv.color

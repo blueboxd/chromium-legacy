@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/chrome_cleaner/ipc/chrome_prompt_ipc.h"
+#include "chrome/chrome_cleaner/ipc/mojo_chrome_prompt_ipc.h"
 
 #include <memory>
 #include <tuple>
@@ -308,8 +308,8 @@ MULTIPROCESS_TEST_MAIN(ChromePromptIPCClientMain) {
       }),
       on_done_run_loop.QuitClosure());
 
-  ChromePromptIPC* chrome_prompt_ipc =
-      new ChromePromptIPC(child_process->mojo_pipe_token(), mojo_task_runner);
+  ChromePromptIPC* chrome_prompt_ipc = new MojoChromePromptIPC(
+      child_process->mojo_pipe_token(), mojo_task_runner);
   chrome_prompt_ipc->Initialize(&error_handler);
 
   if (child_process->expected_parent_disconnected() ==

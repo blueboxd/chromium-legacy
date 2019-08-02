@@ -71,7 +71,7 @@ class LockLayoutManagerTest : public AshTestBase {
     if (use_delegate)
       params.delegate = new LoginTestWidgetDelegate(widget);
     params.context = CurrentContext();
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     aura::Window* window = widget->GetNativeView();
     return window;
@@ -110,8 +110,8 @@ TEST_F(LockLayoutManagerTest, NorwmalWindowBoundsArePreserved) {
       views::Widget::InitParams::TYPE_WINDOW);
   const gfx::Rect bounds = gfx::Rect(10, 10, 300, 300);
   widget_params.bounds = bounds;
-  std::unique_ptr<aura::Window> window(
-      CreateTestLoginWindow(widget_params, false /* use_delegate */));
+  std::unique_ptr<aura::Window> window(CreateTestLoginWindow(
+      std::move(widget_params), false /* use_delegate */));
   EXPECT_EQ(bounds.ToString(), window->GetBoundsInScreen().ToString());
 
   gfx::Rect work_area =
@@ -138,12 +138,12 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
   // Maximized TYPE_WINDOW_FRAMELESS windows needs a delegate defined otherwise
   // it won't get initial SetBounds event.
   std::unique_ptr<aura::Window> maximized_window(
-      CreateTestLoginWindow(widget_params, true /* use_delegate */));
+      CreateTestLoginWindow(std::move(widget_params), true /* use_delegate */));
 
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
   widget_params.delegate = NULL;
-  std::unique_ptr<aura::Window> fullscreen_window(
-      CreateTestLoginWindow(widget_params, false /* use_delegate */));
+  std::unique_ptr<aura::Window> fullscreen_window(CreateTestLoginWindow(
+      std::move(widget_params), false /* use_delegate */));
 
   EXPECT_EQ(screen_bounds.ToString(),
             maximized_window->GetBoundsInScreen().ToString());
@@ -190,8 +190,8 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanel) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  std::unique_ptr<aura::Window> window(
-      CreateTestLoginWindow(widget_params, false /* use_delegate */));
+  std::unique_ptr<aura::Window> window(CreateTestLoginWindow(
+      std::move(widget_params), false /* use_delegate */));
 
   display::Display primary_display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -222,8 +222,8 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  std::unique_ptr<aura::Window> window(
-      CreateTestLoginWindow(widget_params, false /* use_delegate */));
+  std::unique_ptr<aura::Window> window(CreateTestLoginWindow(
+      std::move(widget_params), false /* use_delegate */));
 
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
 
@@ -292,8 +292,8 @@ TEST_F(LockLayoutManagerTest, MultipleMonitors) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  std::unique_ptr<aura::Window> window(
-      CreateTestLoginWindow(widget_params, false /* use_delegate */));
+  std::unique_ptr<aura::Window> window(CreateTestLoginWindow(
+      std::move(widget_params), false /* use_delegate */));
   window->SetProperty(aura::client::kResizeBehaviorKey,
                       aura::client::kResizeBehaviorCanMaximize);
 
@@ -350,8 +350,8 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanelWithMultipleMonitors) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  std::unique_ptr<aura::Window> window(
-      CreateTestLoginWindow(widget_params, false /* use_delegate */));
+  std::unique_ptr<aura::Window> window(CreateTestLoginWindow(
+      std::move(widget_params), false /* use_delegate */));
   window->SetProperty(aura::client::kResizeBehaviorKey,
                       aura::client::kResizeBehaviorCanMaximize);
 

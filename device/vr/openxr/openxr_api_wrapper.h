@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "device/vr/vr_export.h"
 #include "third_party/openxr/include/openxr/openxr.h"
 #include "third_party/openxr/include/openxr/openxr_platform.h"
 
@@ -21,6 +22,10 @@ class Point3F;
 }  // namespace gfx
 
 namespace device {
+
+class OpenXrGamepadHelper;
+class VRTestHook;
+class ServiceTestHook;
 
 class OpenXrApiWrapper {
  public:
@@ -32,7 +37,10 @@ class OpenXrApiWrapper {
   static bool IsHardwareAvailable();
   static bool IsApiAvailable();
 
-  XrResult StartSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device);
+  static VRTestHook* GetTestHook();
+
+  XrResult StartSession(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d_device,
+                        std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 
   XrResult BeginFrame(Microsoft::WRL::ComPtr<ID3D11Texture2D>* texture);
   XrResult EndFrame();
@@ -41,6 +49,8 @@ class OpenXrApiWrapper {
                        gfx::Point3F* position) const;
 
   XrTime GetPredictedDisplayTime() const;
+
+  static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
 
   void GetViewSize(uint32_t* width, uint32_t* height) const;
   XrResult GetLuid(LUID* luid) const;
@@ -59,9 +69,11 @@ class OpenXrApiWrapper {
   XrResult CreateSwapchain();
   XrResult CreateSpace(XrReferenceSpaceType type, XrSpace* space);
   XrResult CreateViewSpace();
+  XrResult CreateGamepadHelper(
+      std::unique_ptr<OpenXrGamepadHelper>* gamepad_helper);
 
   XrResult BeginSession();
-  XrResult UpdateProjectionLayers();
+  XrResult UpdateProjectionLayers(XrTime predicted_display_time);
 
   bool HasInstance() const;
   bool HasSystem() const;
@@ -72,6 +84,10 @@ class OpenXrApiWrapper {
   bool HasFrameState() const;
 
   uint32_t GetRecommendedSwapchainSampleCount() const;
+
+  // Testing objects
+  static VRTestHook* test_hook_;
+  static ServiceTestHook* service_test_hook_;
 
   // OpenXR objects
 

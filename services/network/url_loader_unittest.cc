@@ -120,7 +120,6 @@ static ResourceRequest CreateResourceRequest(const char* method,
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator is set
   request.is_main_frame = true;
-  request.allow_download = true;
   return request;
 }
 

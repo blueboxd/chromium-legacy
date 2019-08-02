@@ -91,8 +91,8 @@ ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
 
 void ArcCrashCollectorBridge::DumpCrash(const std::string& type,
                                         mojo::ScopedHandle pipe) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::WithBaseSyncPrimitives()},
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::WithBaseSyncPrimitives()},
       base::BindOnce(&RunCrashReporter, type, device_, board_, cpu_abi_,
                      mojo::UnwrapPlatformHandle(std::move(pipe)).TakeFD()));
 }

@@ -1328,7 +1328,7 @@ void InterceptionJob::OnReceiveResponse(
   auto request_info = BuildRequestInfo(&head);
   const network::ResourceRequest& request = create_loader_params_->request;
   request_info->is_download =
-      request_info->is_navigation && request.allow_download &&
+      request_info->is_navigation &&
       (is_download_ || download_utils::IsDownload(
                            request.url, head.headers.get(), head.mime_type));
   NotifyClient(std::move(request_info));

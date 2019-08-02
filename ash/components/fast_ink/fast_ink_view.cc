@@ -296,7 +296,7 @@ FastInkView::FastInkView(aura::Window* container,
   params.layer_type = ui::LAYER_SOLID_COLOR;
 
   gfx::Rect screen_bounds = container->GetRootWindow()->GetBoundsInScreen();
-  widget_->Init(params);
+  widget_->Init(std::move(params));
   widget_->Show();
   widget_->SetContentsView(this);
   widget_->SetBounds(screen_bounds);

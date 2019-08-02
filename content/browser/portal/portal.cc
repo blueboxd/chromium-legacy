@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer_type_converters.h"
@@ -199,6 +200,16 @@ void Portal::Navigate(const GURL& url, blink::mojom::ReferrerPtr referrer) {
       download_policy, "GET", nullptr, "", nullptr, false);
 }
 
+namespace {
+void FlushTouchEventQueues(RenderWidgetHostImpl* host) {
+  host->input_router()->FlushTouchEventQueue();
+  std::unique_ptr<RenderWidgetHostIterator> child_widgets =
+      host->GetEmbeddedRenderWidgetHosts();
+  while (RenderWidgetHost* child_widget = child_widgets->GetNextHost())
+    FlushTouchEventQueues(static_cast<RenderWidgetHostImpl*>(child_widget));
+}
+}  // namespace
+
 void Portal::Activate(blink::TransferableMessage data,
                       ActivateCallback callback) {
   WebContentsImpl* outer_contents = static_cast<WebContentsImpl*>(
@@ -246,8 +257,8 @@ void Portal::Activate(blink::TransferableMessage data,
         outer_contents_main_frame_view);
 
     outer_contents_main_frame_view->CancelActiveTouches();
-    outer_contents->GetInputEventRouter()->IgnoreUnackedTouchEvents(
-        outer_contents_main_frame_view);
+    FlushTouchEventQueues(outer_contents_main_frame_view->host());
+
     outer_contents_main_frame_view->Destroy();
   }
 

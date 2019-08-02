@@ -457,7 +457,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 
     params.bounds = gfx::Rect(100, 100, 100, 100);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     input_method_->SetDelegate(
         test::WidgetTest::GetInputMethodDelegateForWidget(widget_));
     View* container = new View();
@@ -3388,7 +3388,7 @@ TEST_F(TextfieldTest, TextfieldInitialization) {
   Widget::InitParams params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = gfx::Rect(100, 100, 100, 100);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetContentsView(container);
   container->AddChildView(new_textfield);
 

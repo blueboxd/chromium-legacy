@@ -209,7 +209,7 @@ std::vector<blink::VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
 
 }  // namespace
 
-UserMediaRequest::UserMediaRequest(
+UserMediaRequestInfo::UserMediaRequestInfo(
     int request_id,
     const blink::WebUserMediaRequest& web_request,
     bool is_processing_user_gesture)
@@ -231,7 +231,7 @@ class UserMediaProcessor::RequestInfo
     GENERATED,
   };
 
-  explicit RequestInfo(std::unique_ptr<UserMediaRequest> request);
+  explicit RequestInfo(std::unique_ptr<UserMediaRequestInfo> request);
 
   void StartAudioTrack(const blink::WebMediaStreamTrack& track,
                        bool is_pending);
@@ -247,7 +247,7 @@ class UserMediaProcessor::RequestInfo
                             MediaStreamRequestResult result,
                             const blink::WebString& result_name);
 
-  UserMediaRequest* request() { return request_.get(); }
+  UserMediaRequestInfo* request() { return request_.get(); }
   int request_id() const { return request_->request_id; }
 
   State state() const { return state_; }
@@ -328,7 +328,7 @@ class UserMediaProcessor::RequestInfo
   // that |this| might be deleted when the function returns.
   void CheckAllTracksStarted();
 
-  std::unique_ptr<UserMediaRequest> request_;
+  std::unique_ptr<UserMediaRequestInfo> request_;
   State state_ = State::NOT_SENT_FOR_GENERATION;
   blink::AudioCaptureSettings audio_capture_settings_;
   bool is_audio_content_capture_ = false;
@@ -352,7 +352,7 @@ class UserMediaProcessor::RequestInfo
 // TODO(guidou): Initialize request_result_name_ as a null blink::WebString.
 // https://crbug.com/764293
 UserMediaProcessor::RequestInfo::RequestInfo(
-    std::unique_ptr<UserMediaRequest> request)
+    std::unique_ptr<UserMediaRequestInfo> request)
     : request_(std::move(request)),
       security_origin_(url::Origin(request_->web_request.GetSecurityOrigin())),
       request_result_name_("") {}
@@ -464,12 +464,12 @@ UserMediaProcessor::~UserMediaProcessor() {
   StopAllProcessing();
 }
 
-UserMediaRequest* UserMediaProcessor::CurrentRequest() {
+UserMediaRequestInfo* UserMediaProcessor::CurrentRequest() {
   return current_request_info_ ? current_request_info_->request() : nullptr;
 }
 
 void UserMediaProcessor::ProcessRequest(
-    std::unique_ptr<UserMediaRequest> request,
+    std::unique_ptr<UserMediaRequestInfo> request,
     base::OnceClosure callback) {
   DCHECK(!request_completed_cb_);
   DCHECK(!current_request_info_);

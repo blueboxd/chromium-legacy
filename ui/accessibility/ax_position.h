@@ -1777,7 +1777,7 @@ class AXPosition {
 
   // Returns the length of the text that is present inside the anchor node,
   // including any text found in descendant text nodes.
-  int MaxTextOffset() const {
+  virtual int MaxTextOffset() const {
     if (IsNullPosition())
       return INVALID_INDEX;
     return static_cast<int>(GetText().length());

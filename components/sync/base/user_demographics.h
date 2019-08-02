@@ -43,6 +43,67 @@ struct UserDemographics {
       metrics::UserDemographicsProto::Gender_MIN;
 };
 
+// Represents the status of providing user demographics that is logged to UMA.
+// Entries of the enum should not be renumbered and numeric values should never
+// be reused. Please keep in sync with "UserDemographicsStatus" in
+// src/tools/metrics/histograms/enums.xml.  There should only be one entry
+// representing demographic data that is ineligible to be provided. A finer
+// grained division of kIneligibleDemographicsData (e.g., INVALID_BIRTH_YEAR)
+// might help inferring categories of demographics that should not be exposed to
+// protect privacy.
+enum class UserDemographicsStatus {
+  // Could get user demographics.
+  kSuccess = 0,
+  // Sync is not enabled.
+  kSyncNotEnabled = 1,
+  // Demographics are ineligible to be provided either because some of them
+  // don't
+  // exist (missing data) or some of them are not eligible to be provided.
+  kIneligibleDemographicsData = 2,
+  // Could not get the time needed to compute the user's age.
+  kCannotGetTime = 3,
+  // There is more than one Profile for the Chrome browser. This entry is used
+  // by the metrics::DemographicMetricsProvider client.
+  kMoreThanOneProfile = 4,
+  // There is no sync service available for the loaded Profile. This entry is
+  // used by the metrics::DemographicMetricsProvider client.
+  kNoSyncService = 5,
+  // Upper boundary of the enum that is needed for the histogram.
+  kMaxValue = kNoSyncService
+};
+
+// Container and handler for data related to the retrieval of user demographics.
+class UserDemographicsResult {
+ public:
+  // Builds a UserDemographicsResult that contains user demographics and has a
+  // UserDemographicsStatus::kSuccess status.
+  static UserDemographicsResult ForValue(UserDemographics value);
+
+  // Build a UserDemographicsResult that does not have user demographics (only
+  // default values) and has a status other than
+  // UserDemographicsStatus::kSuccess.
+  static UserDemographicsResult ForStatus(UserDemographicsStatus status);
+
+  // Determines whether demographics could be successfully retrieved.
+  bool IsSuccess() const;
+
+  // Gets the status of the result.
+  UserDemographicsStatus status() const;
+
+  // Gets the value of the result which will contain data when status() is
+  // UserDemographicsStatus::kSuccess.
+  const UserDemographics& value() const;
+
+ private:
+  UserDemographicsResult(UserDemographics value, UserDemographicsStatus status);
+
+  UserDemographics value_;
+  UserDemographicsStatus status_ = UserDemographicsStatus::kMaxValue;
+};
+
+// Log user demographic status in the histogram.
+void LogUserDemographicsStatus(UserDemographicsStatus status);
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_BASE_USER_DEMOGRAPHICS_H_

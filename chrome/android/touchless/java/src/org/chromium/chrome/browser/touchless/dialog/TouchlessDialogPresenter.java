@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.touchless.dialog;
 import android.app.Dialog;
 import android.graphics.drawable.Drawable;
 import android.support.v4.view.ViewCompat;
-import android.util.Pair;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,8 +30,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.widget.ChromeImageView;
 
-import java.util.ArrayList;
-
 /** A modal dialog presenter that is specific to touchless dialogs. */
 public class TouchlessDialogPresenter extends Presenter {
     /** An activity to attach dialogs to. */
@@ -43,8 +40,8 @@ public class TouchlessDialogPresenter extends Presenter {
     private Dialog mDialog;
 
     /** The model change processor for the currently shown dialog. */
-    private PropertyModelChangeProcessor<PropertyModel, Pair<ViewGroup, ModelListAdapter>,
-            PropertyKey> mModelChangeProcessor;
+    private PropertyModelChangeProcessor<PropertyModel, ViewGroup, PropertyKey>
+            mModelChangeProcessor;
 
     public TouchlessDialogPresenter(
             ChromeActivity activity, TouchlessModelCoordinator modelCoordinator) {
@@ -92,15 +89,18 @@ public class TouchlessDialogPresenter extends Presenter {
         });
         ViewGroup dialogView = (ViewGroup) LayoutInflater.from(mDialog.getContext())
                 .inflate(R.layout.touchless_dialog_view, null);
-        ModelListAdapter adapter = new ModelListAdapter();
-        adapter.registerType(ListItemType.DEFAULT,
-                () -> LayoutInflater.from(mActivity).inflate(R.layout.dialog_list_item, null),
-                TouchlessDialogPresenter::bindListItem);
-        ListView dialogOptions = dialogView.findViewById(R.id.touchless_dialog_option_list);
-        dialogOptions.setAdapter(adapter);
-        dialogOptions.setItemsCanFocus(true);
+        if (model.get(TouchlessDialogProperties.LIST_MODELS) != null) {
+            ModelListAdapter adapter =
+                    new ModelListAdapter(model.get(TouchlessDialogProperties.LIST_MODELS));
+            adapter.registerType(ListItemType.DEFAULT,
+                    () -> LayoutInflater.from(mActivity).inflate(R.layout.dialog_list_item, null),
+                    TouchlessDialogPresenter::bindListItem);
+            ListView dialogOptions = dialogView.findViewById(R.id.touchless_dialog_option_list);
+            dialogOptions.setAdapter(adapter);
+            dialogOptions.setItemsCanFocus(true);
+        }
         mModelChangeProcessor = PropertyModelChangeProcessor.create(
-                model, Pair.create(dialogView, adapter), TouchlessDialogPresenter::bind);
+                model, dialogView, TouchlessDialogPresenter::bind);
         mDialog.setContentView(dialogView);
 
         // If the modal dialog is not specified to be fullscreen, wrap content and place at the
@@ -143,10 +143,7 @@ public class TouchlessDialogPresenter extends Presenter {
      * @param view The view to apply the model to.
      * @param propertyKey The property that changed.
      */
-    private static void bind(
-            PropertyModel model, Pair<ViewGroup, ModelListAdapter> view, PropertyKey propertyKey) {
-        ViewGroup dialogView = view.first;
-        ModelListAdapter optionsAdapter = view.second;
+    private static void bind(PropertyModel model, ViewGroup view, PropertyKey propertyKey) {
         assert !model.get(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY);
         assert propertyKey != ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY;
         // TODO(mdjones): If the default buttons are used assert no list items and convert the
@@ -154,38 +151,31 @@ public class TouchlessDialogPresenter extends Presenter {
         if (TouchlessDialogProperties.IS_FULLSCREEN == propertyKey) {
             // TODO(mdjones): Implement fullscreen/non-fullscreen modes.
         } else if (ModalDialogProperties.TITLE_ICON == propertyKey) {
-            ChromeImageView imageView = dialogView.findViewById(R.id.touchless_dialog_icon);
+            ChromeImageView imageView = view.findViewById(R.id.touchless_dialog_icon);
             imageView.setImageDrawable(model.get(ModalDialogProperties.TITLE_ICON));
             imageView.setVisibility(View.VISIBLE);
         } else if (ModalDialogProperties.TITLE == propertyKey) {
-            TextView textView = dialogView.findViewById(R.id.touchless_dialog_title);
+            TextView textView = view.findViewById(R.id.touchless_dialog_title);
             textView.setText(model.get(ModalDialogProperties.TITLE));
             textView.setVisibility(View.VISIBLE);
         } else if (ModalDialogProperties.MESSAGE == propertyKey) {
-            TextView textView = dialogView.findViewById(R.id.touchless_dialog_description);
+            TextView textView = view.findViewById(R.id.touchless_dialog_description);
             textView.setText(model.get(ModalDialogProperties.MESSAGE));
             textView.setVisibility(View.VISIBLE);
         } else if (ModalDialogProperties.CUSTOM_VIEW == propertyKey) {
-            ViewGroup customGroup = dialogView.findViewById(R.id.custom);
+            ViewGroup customGroup = view.findViewById(R.id.custom);
             customGroup.addView(model.get(ModalDialogProperties.CUSTOM_VIEW));
             customGroup.setVisibility(View.VISIBLE);
-        } else if (TouchlessDialogProperties.LIST_MODELS == propertyKey) {
-            PropertyModel[] models = model.get(TouchlessDialogProperties.LIST_MODELS);
-            ArrayList<Pair<Integer, PropertyModel>> modelPairs = new ArrayList<>();
-            for (int i = 0; i < models.length; i++) {
-                modelPairs.add(Pair.create(0, models[i]));
-            }
-            optionsAdapter.updateModels(modelPairs);
         } else if (TouchlessDialogProperties.FORCE_SINGLE_LINE_TITLE == propertyKey) {
-            TextView textView = dialogView.findViewById(R.id.touchless_dialog_title);
+            TextView textView = view.findViewById(R.id.touchless_dialog_title);
             textView.setMaxLines(model.get(TouchlessDialogProperties.FORCE_SINGLE_LINE_TITLE)
                             ? 1
                             : Integer.MAX_VALUE);
         } else if (TouchlessDialogProperties.TITLE_DIRECTION == propertyKey) {
-            TextView textView = dialogView.findViewById(R.id.touchless_dialog_title);
+            TextView textView = view.findViewById(R.id.touchless_dialog_title);
             textView.setTextDirection(model.get(TouchlessDialogProperties.TITLE_DIRECTION));
         } else if (TouchlessDialogProperties.TITLE_ELLIPSIZE == propertyKey) {
-            TextView textView = dialogView.findViewById(R.id.touchless_dialog_title);
+            TextView textView = view.findViewById(R.id.touchless_dialog_title);
             textView.setEllipsize(model.get(TouchlessDialogProperties.TITLE_ELLIPSIZE));
         }
     }

@@ -121,9 +121,6 @@ class TouchEventAckQueue {
 
   void UpdateQueueAfterTargetDestroyed(RenderWidgetHostViewBase* target_view);
 
-  std::vector<AckData> GetQueueEntriesForRootView(
-      RenderWidgetHostViewBase* root_view) const;
-
   size_t length_for_testing() { return ack_queue_.size(); }
 
  private:
@@ -235,17 +232,6 @@ void TouchEventAckQueue::UpdateQueueAfterTargetDestroyed(
   ProcessAckedTouchEvents();
 }
 
-std::vector<TouchEventAckQueue::AckData>
-TouchEventAckQueue::GetQueueEntriesForRootView(
-    RenderWidgetHostViewBase* root_view) const {
-  std::vector<TouchEventAckQueue::AckData> acks;
-  for (const auto& data : ack_queue_) {
-    if (data.root_view == root_view)
-      acks.push_back(data);
-  }
-  return acks;
-}
-
 RenderWidgetHostInputEventRouter::TouchscreenPinchState::TouchscreenPinchState()
     : state_(PinchState::NONE) {}
 
@@ -347,22 +333,6 @@ size_t RenderWidgetHostInputEventRouter::TouchEventAckQueueLengthForTesting()
 
 size_t RenderWidgetHostInputEventRouter::RegisteredViewCountForTesting() const {
   return owner_map_.size();
-}
-
-void RenderWidgetHostInputEventRouter::IgnoreUnackedTouchEvents(
-    RenderWidgetHostViewBase* root_view) {
-  DCHECK(!root_view->IsRenderWidgetHostViewChildFrame());
-  std::vector<TouchEventAckQueue::AckData> acks =
-      touch_event_ack_queue_->GetQueueEntriesForRootView(root_view);
-  std::map<RenderWidgetHostViewBase*, std::unordered_set<uint32_t>>
-      events_for_target;
-  for (auto& ack : acks) {
-    events_for_target[ack.target_view].insert(
-        ack.touch_event.event.unique_touch_event_id);
-  }
-  for (auto& pair : events_for_target) {
-    pair.first->host()->IgnoreTouchEventAcks(pair.second);
-  }
 }
 
 void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(

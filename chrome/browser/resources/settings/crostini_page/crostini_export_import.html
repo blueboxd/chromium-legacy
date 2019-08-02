@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="crostini_browser_proxy.html">
 <link rel="import" href="crostini_import_confirmation_dialog.html">
 <link rel="import" href="../i18n_setup.html">
@@ -15,18 +16,18 @@
         <div id="exportCrostiniLabel" class="start secondary">
           $i18n{crostiniExportLabel}
         </div>
-        <cr-button on-click="onExportClick_"
-          aria-labelledby="exportCrostiniLabel">
-           $i18n{crostiniExport}
+        <cr-button on-click="onExportClick_" disabled="[[!enableButtons_]]"
+            aria-labelledby="exportCrostiniLabel">
+          $i18n{crostiniExport}
         </cr-button>
       </div>
       <div id="import" class="list-item">
         <div id="importCrostiniLabel" class="start secondary">
           $i18n{crostiniImportLabel}
         </div>
-        <cr-button on-click="onImportClick_"
-          aria-labelledby="importCrostiniLabel">
-           $i18n{crostiniImport}
+        <cr-button on-click="onImportClick_" disabled="[[!enableButtons_]]"
+            aria-labelledby="importCrostiniLabel">
+          $i18n{crostiniImport}
         </cr-button>
       </div>
     </div>

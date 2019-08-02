@@ -223,10 +223,9 @@ void ExtensionSpecialStoragePolicy::NotifyGranted(
     const GURL& origin,
     int change_flags) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyGranted, this,
-                       origin, change_flags));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyGranted,
+                                  this, origin, change_flags));
     return;
   }
   SpecialStoragePolicy::NotifyGranted(origin, change_flags);
@@ -236,10 +235,9 @@ void ExtensionSpecialStoragePolicy::NotifyRevoked(
     const GURL& origin,
     int change_flags) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyRevoked, this,
-                       origin, change_flags));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyRevoked,
+                                  this, origin, change_flags));
     return;
   }
   SpecialStoragePolicy::NotifyRevoked(origin, change_flags);
@@ -247,7 +245,7 @@ void ExtensionSpecialStoragePolicy::NotifyRevoked(
 
 void ExtensionSpecialStoragePolicy::NotifyCleared() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ExtensionSpecialStoragePolicy::NotifyCleared, this));
     return;

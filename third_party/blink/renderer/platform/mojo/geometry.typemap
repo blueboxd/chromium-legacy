@@ -14,7 +14,7 @@ public_headers = [
   "//third_party/blink/public/platform/web_size.h",
 ]
 traits_headers = [
-  "//third_party/blink/renderer/platform/mojo/geometry_struct_traits.h",
+  "//third_party/blink/renderer/platform/mojo/geometry_mojom_traits.h",
   "//ui/gfx/geometry/mojom/geometry_mojom_traits.h",
 ]
 
@@ -24,7 +24,7 @@ deps = [
 ]
 
 public_deps = [
-  "//third_party/blink/renderer/platform/mojo:geometry_struct_traits",
+  "//third_party/blink/renderer/platform/mojo:geometry_mojom_traits",
 ]
 
 # TODO(zqzhang): ideally, gfx.mojom.Size should be mapped into ::blink::IntSize.

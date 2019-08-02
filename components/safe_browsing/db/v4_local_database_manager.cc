@@ -264,8 +264,8 @@ V4LocalDatabaseManager::V4LocalDatabaseManager(
       list_infos_(GetListInfos()),
       task_runner_(task_runner_for_tests
                        ? task_runner_for_tests
-                       : base::CreateSequencedTaskRunnerWithTraits(
-                             {base::MayBlock(),
+                       : base::CreateSequencedTaskRunner(
+                             {base::ThreadPool(), base::MayBlock(),
                               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK(!base_path_.empty());
   DCHECK(!list_infos_.empty());
@@ -603,7 +603,7 @@ void V4LocalDatabaseManager::DatabaseUpdated() {
     v4_database_->RecordFileSizeHistograms();
     UpdateListClientStates(GetStoreStateMap());
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished, this));
@@ -808,14 +808,13 @@ void V4LocalDatabaseManager::ScheduleFullHashCheck(
         full_hash_infos.emplace_back(entry.first, list_id, next);
       }
     }
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&V4LocalDatabaseManager::OnFullHashResponse,
-                       weak_factory_.GetWeakPtr(), std::move(check),
-                       full_hash_infos));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&V4LocalDatabaseManager::OnFullHashResponse,
+                                  weak_factory_.GetWeakPtr(), std::move(check),
+                                  full_hash_infos));
   } else {
     // Post on the IO thread to enforce async behavior.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&V4LocalDatabaseManager::PerformFullHashCheck,
                        weak_factory_.GetWeakPtr(), std::move(check)));

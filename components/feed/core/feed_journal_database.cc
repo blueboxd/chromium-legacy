@@ -42,8 +42,9 @@ FeedJournalDatabase::FeedJournalDatabase(
     : FeedJournalDatabase(proto_database_provider->GetDB<JournalStorageProto>(
           leveldb_proto::ProtoDbType::FEED_JOURNAL_DATABASE,
           database_folder.AppendASCII(kJournalDatabaseFolder),
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
 FeedJournalDatabase::FeedJournalDatabase(

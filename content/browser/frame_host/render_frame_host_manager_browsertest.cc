@@ -2660,14 +2660,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file));
   file = file.AppendASCII("bar");
 
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+
   // Navigate to url and get it to reference a file in its PageState.
   GURL url1(embedded_test_server()->GetURL("/file_input.html"));
   NavigateToURL(shell(), url1);
-  int process_id =
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID();
+  int process_id = wc->GetMainFrame()->GetProcess()->GetID();
   std::unique_ptr<FileChooserDelegate> delegate(
       new FileChooserDelegate(file, run_loop.QuitClosure()));
-  shell()->web_contents()->SetDelegate(delegate.get());
+  wc->SetDelegate(delegate.get());
   EXPECT_TRUE(
       ExecuteScript(shell(), "document.getElementById('fileinput').click();"));
   run_loop.Run();
@@ -2675,23 +2676,20 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       process_id, file));
 
   // Disable the swap out timer so we wait for the UpdateState message.
-  static_cast<WebContentsImpl*>(shell()->web_contents())
-      ->GetMainFrame()
-      ->DisableSwapOutTimerForTesting();
+  wc->GetMainFrame()->DisableSwapOutTimerForTesting();
 
   // Navigate to a different process without access to the file, and wait for
   // the old process to exit.
   RenderProcessHostWatcher exit_observer(
-      shell()->web_contents()->GetMainFrame()->GetProcess(),
+      wc->GetMainFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   NavigateToURL(shell(), GetCrossSiteURL("/title1.html"));
   exit_observer.Wait();
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(), file));
+      wc->GetMainFrame()->GetProcess()->GetID(), file));
 
   // Ensure that the file ended up in the PageState of the previous entry.
-  NavigationEntry* prev_entry =
-      shell()->web_contents()->GetController().GetEntryAtIndex(0);
+  NavigationEntry* prev_entry = wc->GetController().GetEntryAtIndex(0);
   EXPECT_EQ(url1, prev_entry->GetURL());
   const std::vector<base::FilePath>& files =
       prev_entry->GetPageState().GetReferencedFiles();
@@ -2699,15 +2697,103 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_EQ(file, files.at(0));
 
   // Go back, ending up in a different RenderProcessHost than before.
-  TestNavigationObserver back_nav_load_observer(shell()->web_contents());
-  shell()->web_contents()->GetController().GoBack();
+  TestNavigationObserver back_nav_load_observer(wc);
+  wc->GetController().GoBack();
   back_nav_load_observer.Wait();
-  EXPECT_NE(process_id,
-            shell()->web_contents()->GetMainFrame()->GetProcess()->GetID());
+  EXPECT_NE(process_id, wc->GetMainFrame()->GetProcess()->GetID());
 
   // Ensure that the file access still exists in the new process ID.
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
-      shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(), file));
+      wc->GetMainFrame()->GetProcess()->GetID(), file));
+
+  // Navigate to a same site page to trigger a PageState update and ensure the
+  // renderer is not killed.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+}
+
+// Same as RenderFrameHostManagerTest.RestoreFileAccessForHistoryNavigation, but
+// replace the cross-origin navigation by a crash, followed by a reload.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       RestoreFileAccessForHistoryNavigationAfterCrash) {
+  StartServer();
+  base::RunLoop run_loop;
+  base::FilePath file;
+  EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file));
+  file = file.AppendASCII("bar");
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to url and get it to reference a file in its PageState.
+  GURL url1(embedded_test_server()->GetURL("/file_input.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  int process_id = wc->GetMainFrame()->GetProcess()->GetID();
+  std::unique_ptr<FileChooserDelegate> delegate(
+      new FileChooserDelegate(file, run_loop.QuitClosure()));
+  wc->SetDelegate(delegate.get());
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      process_id, file));
+  EXPECT_TRUE(
+      ExecuteScript(shell(), "document.getElementById('fileinput').click();"));
+  run_loop.Run();
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      process_id, file));
+
+  // The PageState hasn't been updated yet. It requires a navigation.
+  {
+    NavigationEntry* prev_entry = wc->GetController().GetEntryAtIndex(0);
+    EXPECT_EQ(url1, prev_entry->GetURL());
+    const std::vector<base::FilePath>& files =
+        prev_entry->GetPageState().GetReferencedFiles();
+    ASSERT_EQ(0U, files.size());
+  }
+
+  // Same-document navigation
+  EXPECT_TRUE(ExecJs(shell(), "history.pushState({},'title','#foo')"));
+
+  // The PageState has been updated, it now contains the file.
+  {
+    NavigationEntry* prev_entry = wc->GetController().GetEntryAtIndex(0);
+    EXPECT_EQ(url1, prev_entry->GetURL());
+    const std::vector<base::FilePath>& files =
+        prev_entry->GetPageState().GetReferencedFiles();
+    ASSERT_EQ(1U, files.size());
+    EXPECT_EQ(file, files.at(0));
+  }
+
+  // Crash.
+  {
+    RenderProcessHost* process = wc->GetMainFrame()->GetProcess();
+    RenderProcessHostWatcher crash_observer(
+        process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    process->Shutdown(0);
+    crash_observer.Wait();
+  }
+
+  // The renderer process is still allowed to read the file, even if it is
+  // crashed.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      wc->GetMainFrame()->GetProcess()->GetID(), file));
+
+  // Reload
+  wc->GetController().Reload(ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(wc));
+
+  // After recovering from the crash, the renderer process is allowed to read
+  // the file.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      wc->GetMainFrame()->GetProcess()->GetID(), file));
+
+  // Same-document history back navigation.
+  {
+    TestNavigationObserver back_nav_load_observer(wc);
+    wc->GetController().GoBack();
+    back_nav_load_observer.Wait();
+  }
+
+  // Ensure that the file access still exists in the new process ID.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      wc->GetMainFrame()->GetProcess()->GetID(), file));
 
   // Navigate to a same site page to trigger a PageState update and ensure the
   // renderer is not killed.

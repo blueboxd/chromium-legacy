@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/bindings/connector.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
-#include "third_party/blink/public/common/messaging/transferable_message_struct_traits.h"
+#include "third_party/blink/public/common/messaging/transferable_message_mojom_traits.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 
 namespace chromecast {

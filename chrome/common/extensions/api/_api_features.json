@@ -814,7 +814,8 @@
   },
   "windows": [{
     "dependencies": ["api:tabs"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   }, {
     "channel": "stable",
     "contexts": ["webui"],

@@ -29,8 +29,8 @@ DevtoolsClient::DevtoolsClient(
       renderer_crashed_(false),
       next_message_id_(0),
       weak_ptr_factory_(this) {
-  browser_main_thread_ = base::CreateSingleThreadTaskRunnerWithTraits(
-      {content::BrowserThread::UI});
+  browser_main_thread_ =
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
   agent_host_->AttachClient(this);
 }
 

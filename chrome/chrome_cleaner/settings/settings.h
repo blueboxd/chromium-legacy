@@ -77,6 +77,10 @@ class Settings {
 
   virtual bool has_parent_pipe_handle() const;
 
+  virtual bool prompt_using_mojo() const;
+
+  virtual bool switches_valid_for_ipc() const;
+
   // Returns the execution mode sent by Chrome if valid, or kNone if
   // kExecutionModeSwitch is not present or the corresponding value is invalid.
   virtual ExecutionMode execution_mode() const;
@@ -178,6 +182,12 @@ class Settings {
   // Mojo related settings.
   std::string chrome_mojo_pipe_token_;
   bool has_parent_pipe_handle_ = false;
+  bool prompt_using_mojo_ = false;
+
+  // Proto related settings.
+  bool prompt_using_proto_ = false;
+  HANDLE prompt_response_read_handle_ = INVALID_HANDLE_VALUE;
+  HANDLE prompt_request_write_handle_ = INVALID_HANDLE_VALUE;
 
   // Engine selection settings.
   Engine::Name engine_ = Engine::UNKNOWN;

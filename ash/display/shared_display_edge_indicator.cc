@@ -53,7 +53,7 @@ views::Widget* CreateWidget(const gfx::Rect& bounds,
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   widget->set_focus_on_creation(false);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetVisibilityChangedAnimationsEnabled(false);
   widget->GetNativeWindow()->SetName("SharedEdgeIndicator");
   widget->SetContentsView(contents_view);

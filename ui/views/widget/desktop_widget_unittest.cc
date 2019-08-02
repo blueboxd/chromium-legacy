@@ -20,7 +20,7 @@ TEST_F(DesktopScreenPositionClientTest, PositionDialog) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(10, 11, 200, 200);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  parent_widget.Init(params);
+  parent_widget.Init(std::move(params));
 
   // Owned by |dialog|.
   DialogDelegateView* dialog_delegate_view = new DialogDelegateView;
@@ -57,7 +57,7 @@ TEST_F(DesktopScreenPositionClientTest, PositionControlWithNonRootParent) {
       origin + work_area.OffsetFromOrigin(),
       gfx::Size(700, work_area.height() - origin.y() - work_area.y()));
   params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget1.Init(params1);
+  widget1.Init(std::move(params1));
 
   Widget::InitParams params2 =
     CreateParams(Widget::InitParams::TYPE_WINDOW);
@@ -67,7 +67,7 @@ TEST_F(DesktopScreenPositionClientTest, PositionControlWithNonRootParent) {
   params2.child = true;
   params2.native_widget = test::CreatePlatformNativeWidgetImpl(
       params2, &widget2, test::kStubCapture, nullptr);
-  widget2.Init(params2);
+  widget2.Init(std::move(params2));
 
   Widget::InitParams params3 =
       CreateParams(Widget::InitParams::TYPE_CONTROL);
@@ -77,7 +77,7 @@ TEST_F(DesktopScreenPositionClientTest, PositionControlWithNonRootParent) {
   params3.bounds = gfx::Rect(origin, gfx::Size(500, work_area.height() - 200));
   params3.native_widget = test::CreatePlatformNativeWidgetImpl(
       params3, &widget3, test::kStubCapture, nullptr);
-  widget3.Init(params3);
+  widget3.Init(std::move(params3));
 
   // The origin of the 3rd window should be the sum of all parent origins.
   gfx::Point expected_origin(origin.x() * 3 + work_area.x(),
@@ -106,7 +106,7 @@ TEST_F(DesktopScreenPositionClientTest, InitialBoundsConstrainedToDesktop) {
   params.bounds = gfx::Rect(
       origin, gfx::Size(work_area.width() / 2, work_area.height() / 2));
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(params);
+  widget.Init(std::move(params));
 
   // The bounds of the window should be fully on the primary display.
   gfx::Point expected_origin(work_area.right() - work_area.width() / 2,
@@ -138,7 +138,7 @@ TEST_F(DesktopScreenPositionClientTest, InitialBoundsConstrainedToParent) {
   params1.bounds = gfx::Rect(
       origin, gfx::Size(work_area.width() / 2, work_area.height() / 2));
   params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget1.Init(params1);
+  widget1.Init(std::move(params1));
 
   gfx::Rect widget_bounds(widget1.GetWindowBoundsInScreen());
 
@@ -151,7 +151,7 @@ TEST_F(DesktopScreenPositionClientTest, InitialBoundsConstrainedToParent) {
   params2.child = true;
   params2.native_widget = test::CreatePlatformNativeWidgetImpl(
       params2, &widget2, test::kStubCapture, nullptr);
-  widget2.Init(params2);
+  widget2.Init(std::move(params2));
 
   // The bounds of the child window should be fully in the parent.
   gfx::Point expected_origin(

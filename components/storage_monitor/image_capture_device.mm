@@ -220,9 +220,9 @@ base::FilePath PathForCameraItem(ICCameraItem* item) {
   // Shared result value from file-copy closure to tell-listener closure.
   // This is worth blocking shutdown, as otherwise a file that has been
   // downloaded will be incorrectly named.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::Bind(&storage_monitor::RenameFile, savedPath, saveAsPath),
       base::Bind(&storage_monitor::ReturnRenameResultToListener, listener_,

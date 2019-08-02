@@ -33,7 +33,7 @@ source_set("reading_list") {
     "//components/dom_distiller/ios",
     "//components/favicon/core",
     "//components/favicon/ios",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/pref_registry",

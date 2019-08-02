@@ -63,12 +63,12 @@ class NativeFileSystemManagerImplTest : public testing::Test {
   }
 
  protected:
-  const url::Origin kTestOrigin =
-      url::Origin::Create(GURL("https://example.com"));
+  const GURL kTestURL = GURL("https://example.com/test");
+  const url::Origin kTestOrigin = url::Origin::Create(kTestURL);
   const int kProcessId = 1;
   const int kFrameId = 2;
   const NativeFileSystemManagerImpl::BindingContext kBindingContext = {
-      kTestOrigin, kProcessId, kFrameId};
+      kTestOrigin, kTestURL, kProcessId, kFrameId};
 
   base::test::ScopedFeatureList scoped_feature_list_;
   TestBrowserThreadBundle scoped_task_environment_;
@@ -189,7 +189,7 @@ TEST_F(NativeFileSystemManagerImplTest,
 
 TEST_F(NativeFileSystemManagerImplTest,
        FileWriterSwapDeletedOnConnectionClose) {
-  auto test_url = file_system_context_->CreateCrackedFileSystemURL(
+  auto test_file_url = file_system_context_->CreateCrackedFileSystemURL(
       kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
       base::FilePath::FromUTF8Unsafe("test"));
 
@@ -197,15 +197,16 @@ TEST_F(NativeFileSystemManagerImplTest,
       kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
       base::FilePath::FromUTF8Unsafe("test.crswap"));
 
-  ASSERT_EQ(base::File::FILE_OK, AsyncFileTestHelper::CreateFile(
-                                     file_system_context_.get(), test_url));
+  ASSERT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::CreateFile(file_system_context_.get(),
+                                            test_file_url));
 
   ASSERT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::CreateFile(file_system_context_.get(),
                                             test_swap_url));
 
   auto writer_ptr =
-      manager_->CreateFileWriter(kBindingContext, test_url, test_swap_url,
+      manager_->CreateFileWriter(kBindingContext, test_file_url, test_swap_url,
                                  NativeFileSystemManagerImpl::SharedHandleState(
                                      allow_grant_, allow_grant_, {}));
 
@@ -225,7 +226,7 @@ TEST_F(NativeFileSystemManagerImplTest,
 
 TEST_F(NativeFileSystemManagerImplTest,
        FileWriterCloseAllowedToCompleteOnDestruct) {
-  auto test_url = file_system_context_->CreateCrackedFileSystemURL(
+  auto test_file_url = file_system_context_->CreateCrackedFileSystemURL(
       kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
       base::FilePath::FromUTF8Unsafe("test"));
 
@@ -238,13 +239,13 @@ TEST_F(NativeFileSystemManagerImplTest,
                                                     test_swap_url, "foo", 3));
 
   auto writer_ptr =
-      manager_->CreateFileWriter(kBindingContext, test_url, test_swap_url,
+      manager_->CreateFileWriter(kBindingContext, test_file_url, test_swap_url,
                                  NativeFileSystemManagerImpl::SharedHandleState(
                                      allow_grant_, allow_grant_, {}));
 
   ASSERT_TRUE(writer_ptr.is_bound());
   ASSERT_FALSE(
-      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_url,
+      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_file_url,
                                       AsyncFileTestHelper::kDontCheckSize));
   writer_ptr->Close(base::DoNothing());
 
@@ -255,8 +256,8 @@ TEST_F(NativeFileSystemManagerImplTest,
   ASSERT_FALSE(
       AsyncFileTestHelper::FileExists(file_system_context_.get(), test_swap_url,
                                       AsyncFileTestHelper::kDontCheckSize));
-  ASSERT_TRUE(
-      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_url, 3));
+  ASSERT_TRUE(AsyncFileTestHelper::FileExists(file_system_context_.get(),
+                                              test_file_url, 3));
 }
 
 }  // namespace content

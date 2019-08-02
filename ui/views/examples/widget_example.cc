@@ -102,7 +102,7 @@ void WidgetExample::ShowWidget(View* sender, Widget::InitParams params) {
                             gfx::Size(300, 200));
 
   Widget* widget = new Widget();
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // If the Widget has no contents by default, add a view with a 'Close' button.
   if (!widget->GetContentsView()) {

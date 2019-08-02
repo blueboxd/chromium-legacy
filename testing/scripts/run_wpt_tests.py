@@ -81,6 +81,8 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             self.options.old_json_output_file_path,
             '--new-json-output-dir', self.options.new_json_output_dir,
             '--new-json-output-filename', self.options.new_json_output_filename,
+            '--additional-expectations',
+            '../../third_party/blink/web_tests/WPTOverrideExpectations',
         ])
 
 

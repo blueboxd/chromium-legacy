@@ -24,6 +24,7 @@
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/supported_types.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
@@ -252,7 +253,6 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual uint64_t VisitedLinkHash(const char* canonical_url, size_t length);
   virtual bool IsLinkVisited(uint64_t link_hash);
   virtual blink::WebPrescientNetworking* GetPrescientNetworking();
-  virtual bool IsPrerenderingFrame(const RenderFrame* render_frame);
 
   // Returns true if the given Pepper plugin is external (requiring special
   // startup steps).
@@ -433,6 +433,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual base::Optional<::media::AudioRendererAlgorithmParameters>
   GetAudioRendererAlgorithmParameters(
       ::media::AudioParameters audio_parameters);
+
+  // Handles a request from the browser to bind a receiver on the renderer
+  // processes's main thread.
+  virtual void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver);
 };
 
 }  // namespace content

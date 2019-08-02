@@ -82,6 +82,8 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
     // Handles overscroll history navigation.
     private NavigationHandler mNavigationHandler;
 
+    private NavigationHandler.ActionDelegate mActionDelegate;
+
     public static SwipeRefreshHandler from(Tab tab) {
         SwipeRefreshHandler handler = get(tab);
         if (handler == null) {
@@ -172,6 +174,7 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
         if (mNavigationHandler != null) {
             mNavigationHandler.destroy();
             mNavigationHandler = null;
+            mActionDelegate = null;
         }
         setEnabled(false);
     }
@@ -219,7 +222,7 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
             return mSwipeRefreshLayout.start();
         } else if (type == OverscrollAction.HISTORY_NAVIGATION) {
             if (mNavigationHandler != null) {
-                boolean navigable = navigateForward ? mTab.canGoForward() : mTab.canGoBack();
+                boolean navigable = mActionDelegate.canNavigate(navigateForward);
                 boolean showGlow = navigateForward && !mTab.canGoForward();
                 mNavigationHandler.onDown(); // Simulates the initial onDown event.
                 if (navigable) {
@@ -237,8 +240,8 @@ public class SwipeRefreshHandler extends TabWebContentsUserData
     private void updateNavigationHandler() {
         if (mNavigationDelegate.isNavigationEnabled(mContainerView)) {
             if (mNavigationHandler == null) {
-                mNavigationHandler = new NavigationHandler(mContainerView,
-                        mNavigationDelegate.createActionDelegate(),
+                mActionDelegate = mNavigationDelegate.createActionDelegate();
+                mNavigationHandler = new NavigationHandler(mContainerView, mActionDelegate,
                         NavigationGlowFactory.forRenderedPage(
                                 mContainerView, mTab.getWebContents()));
             }

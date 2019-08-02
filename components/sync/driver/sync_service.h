@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/base/model_type.h"
@@ -351,11 +350,10 @@ class SyncService : public KeyedService {
   // USER DEMOGRAPHICS
   //////////////////////////////////////////////////////////////////////////////
 
-  // Gets user synced demographics. See documentation of function
-  // SyncPrefs::GetUserDemographicss for more details. You need to provide an
-  // accurate |now| time that represents the user's current time.
-  virtual base::Optional<UserDemographics> GetUserDemographics(
-      base::Time now) = 0;
+  // Gets user synced demographics. Returns an error status with an empty value
+  // when demographics cannot be provided. You need to provide an accurate |now|
+  // time that represents the user's current time.
+  virtual UserDemographicsResult GetUserDemographics(base::Time now) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // OBSERVERS

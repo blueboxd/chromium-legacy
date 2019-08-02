@@ -97,9 +97,9 @@ scoped_refptr<base::TaskRunner> CreateBackgroundTaskRunner() {
   if (g_task_runner_for_testing)
     return scoped_refptr<base::TaskRunner>(g_task_runner_for_testing);
 
-  return base::CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  return base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                 base::TaskPriority::BEST_EFFORT,
+                                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 }  // namespace

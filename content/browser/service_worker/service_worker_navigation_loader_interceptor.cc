@@ -41,13 +41,12 @@ void LoaderCallbackWrapperOnIO(
         handle_core->interceptor()->MaybeCreateSubresourceLoaderParams();
   }
 
-  PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper,
-          interceptor_on_ui, std::move(provider_info),
-          std::move(subresource_loader_params), std::move(loader_callback),
-          std::move(handler)));
+  PostTask(FROM_HERE, {BrowserThread::UI},
+           base::BindOnce(
+               &ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper,
+               interceptor_on_ui, std::move(provider_info),
+               std::move(subresource_loader_params), std::move(loader_callback),
+               std::move(handler)));
 }
 
 void FallbackCallbackWrapperOnIO(
@@ -55,7 +54,7 @@ void FallbackCallbackWrapperOnIO(
     NavigationLoaderInterceptor::FallbackCallback fallback_callback,
     bool reset_subresource_loader_params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  PostTaskWithTraits(
+  PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ServiceWorkerNavigationLoaderInterceptor::FallbackCallbackWrapper,
@@ -198,7 +197,7 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
 
   // Start the inner interceptor on the IO thread. It will call back to
   // LoaderCallbackWrapper() on the UI thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MaybeCreateLoaderOnIO, GetWeakPtr(), handle_->core(),
                      params_, tentative_resource_request, browser_context,
@@ -269,11 +268,10 @@ void ServiceWorkerNavigationLoaderInterceptor::RequestHandlerWrapper(
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(InvokeRequestHandlerOnIO, std::move(handler_on_io),
-                     resource_request, std::move(request),
-                     client.PassInterface()));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(InvokeRequestHandlerOnIO,
+                                std::move(handler_on_io), resource_request,
+                                std::move(request), client.PassInterface()));
 }
 
 }  // namespace content

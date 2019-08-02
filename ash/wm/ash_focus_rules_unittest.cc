@@ -72,7 +72,7 @@ class LockScreenSessionControllerClient : public TestSessionControllerClient {
     params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                                         kShellWindowId_LockScreenContainer);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    lock_screen_widget_->Init(params);
+    lock_screen_widget_->Init(std::move(params));
     lock_screen_widget_->SetContentsView(lock_view);
     lock_screen_widget_->Show();
     lock_screen_widget_->GetNativeView()->SetName("LockView");

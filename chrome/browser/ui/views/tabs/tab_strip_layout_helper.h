@@ -36,6 +36,10 @@ class TabStripLayoutHelper {
                        base::RepeatingClosure on_animation_progressed);
   ~TabStripLayoutHelper();
 
+  // Returns a vector of all tabs in the strip, including both closing tabs
+  // and tabs still in the model.
+  std::vector<Tab*> GetTabs();
+
   // Returns whether any animations for tabs or group headers are in progress.
   bool IsAnimating() const;
 
@@ -50,6 +54,7 @@ class TabStripLayoutHelper {
   // Inserts a new tab at |index|, without animation. |tab_removed_callback|
   // will be invoked if the tab is removed at the end of a remove animation.
   void InsertTabAtNoAnimation(int model_index,
+                              Tab* tab,
                               base::OnceClosure tab_removed_callback,
                               TabAnimationState::TabActiveness active,
                               TabAnimationState::TabPinnedness pinned);
@@ -57,14 +62,18 @@ class TabStripLayoutHelper {
   // Inserts a new tab at |index|, with animation. |tab_removed_callback| will
   // be invoked if the tab is removed at the end of a remove animation.
   void InsertTabAt(int model_index,
+                   Tab* tab,
                    base::OnceClosure tab_removed_callback,
                    TabAnimationState::TabActiveness active,
                    TabAnimationState::TabPinnedness pinned);
 
-  // Removes the tab at |index|. TODO(958173): This should invoke the associated
-  // |tab_removed_callback| but currently does not, as it would duplicate
-  // TabStrip::RemoveTabDelegate::AnimationEnded.
-  void RemoveTabAt(int model_index);
+  // Marks the tab at |model_index| as closing. Invoked when the remove
+  // animation begins and the tab is removed from the model.
+  void CloseTabAt(int model_index);
+
+  // Invoked when |tab| has been destroyed by TabStrip (i.e. the remove
+  // animation has completed).
+  void OnTabDestroyed(Tab* tab);
 
   // Moves the tab at |prev_index| with group |group_at_prev_index| to
   // |new_index|. Also updates the group header's location if necessary.
@@ -90,9 +99,11 @@ class TabStripLayoutHelper {
   // Finishes all in-progress animations.
   void CompleteAnimations();
 
-  // TODO(958173): Temporary method. Like CompleteAnimations, but does not call
-  // any associated |tab_removed_callback| or |header_removed_callback|. See
-  // comment on TabStripAnimator::CompleteAnimationsWithoutDestroyingTabs.
+  // TODO(958173): Temporary method that completes running animations
+  // without invoking the callback to destroy removed tabs. Use to hand
+  // off animation (and removed tab destruction) responsibilities from
+  // this animator to elsewhere without teleporting tabs or destroying
+  // the same tab more than once.
   void CompleteAnimationsWithoutDestroyingTabs();
 
   // Generates and sets the ideal bounds for the views in |tabs| and

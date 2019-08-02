@@ -23,7 +23,7 @@ namespace {
 const char kV1SoCreateFunction[] = "AudioPostProcessorShlib_Create";
 const char kV2SoCreateFunction[] = "AudioPostProcessor2Shlib_Create";
 const char kPreferredLibraryPath[] = "/system/chrome/lib/processors";
-const char kPreferredOemLibraryPath[] = "/oem_cast_shlibs/processors";
+const char kPreferredOemLibraryPath[] = "/oem_cast_shlib/processors";
 
 base::FilePath FindLibrary(const std::string& library_name) {
   base::FilePath relative_path(library_name);

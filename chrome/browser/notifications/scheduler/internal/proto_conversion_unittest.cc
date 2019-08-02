@@ -154,6 +154,10 @@ TEST(ProtoConversionTest, ImpressionProtoConversion) {
   first_impression.impression_mapping[UserFeedback::kClick] =
       ImpressionResult::kNeutral;
   TestClientStateConversion(&client_state);
+
+  // Verify custom data.
+  first_impression.custom_data = {{"url", "https://www.example.com"}};
+  TestClientStateConversion(&client_state);
 }
 
 // Verifies multiple impressions are serialized correctly.

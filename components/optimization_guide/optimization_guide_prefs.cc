@@ -33,6 +33,13 @@ const char kHintsFetcherTopHostBlacklist[] =
 const char kHintsFetcherTopHostBlacklistState[] =
     "optimization_guide.hintsfetcher.top_host_blacklist_state";
 
+// A string pref that stores the version of the Optimization Hints component
+// that is currently being processed. This pref is cleared once processing
+// completes. It is used for detecting a potential crash loop on processing a
+// version of hints.
+const char kPendingHintsProcessingVersion[] =
+    "optimization_guide.pending_hints_processing_version";
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kHintLoadedCounts, PrefRegistry::LOSSY_PREF);
   registry->RegisterInt64Pref(
@@ -45,6 +52,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       kHintsFetcherTopHostBlacklistState,
       static_cast<int>(HintsFetcherTopHostBlacklistState::kNotInitialized),
       PrefRegistry::LOSSY_PREF);
+  registry->RegisterStringPref(kPendingHintsProcessingVersion, "",
+                               PrefRegistry::LOSSY_PREF);
 }
 
 }  // namespace prefs

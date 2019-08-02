@@ -14,7 +14,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/search/search_suggest/search_suggest_data.h"
-#include "components/google/core/browser/google_url_tracker.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "net/http/http_request_headers.h"
@@ -46,22 +45,6 @@ const char kMinimalValidResponseWithSuggestions[] =
     "<div></div>", "script": "<script></script>","impression_cap_expire_time_ms"
     : 1, "request_freeze_time_ms": 2,"max_impressions": 3}}})json";
 
-// Required to instantiate a GoogleUrlTracker in UNIT_TEST_MODE.
-class GoogleURLTrackerClientStub : public GoogleURLTrackerClient {
- public:
-  GoogleURLTrackerClientStub() {}
-  ~GoogleURLTrackerClientStub() override {}
-
-  bool IsBackgroundNetworkingEnabled() override { return true; }
-  PrefService* GetPrefs() override { return nullptr; }
-  network::SharedURLLoaderFactory* GetURLLoaderFactory() override {
-    return nullptr;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerClientStub);
-};
-
 }  // namespace
 
 ACTION_P(Quit, run_loop) {
@@ -76,23 +59,15 @@ class SearchSuggestLoaderImplTest : public testing::Test {
 
   explicit SearchSuggestLoaderImplTest(bool account_consistency_mirror_required)
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        google_url_tracker_(
-            std::make_unique<GoogleURLTrackerClientStub>(),
-            GoogleURLTracker::ALWAYS_DOT_COM_MODE,
-            network::TestNetworkConnectionTracker::GetInstance()),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
-
-  ~SearchSuggestLoaderImplTest() override {
-    static_cast<KeyedService&>(google_url_tracker_).Shutdown();
-  }
 
   void SetUp() override {
     testing::Test::SetUp();
 
     search_suggest_loader_ = std::make_unique<SearchSuggestLoaderImpl>(
-        test_shared_loader_factory_, &google_url_tracker_, kApplicationLocale);
+        test_shared_loader_factory_, kApplicationLocale);
   }
 
   void SetUpResponseWithData(const std::string& response) {
@@ -129,7 +104,6 @@ class SearchSuggestLoaderImplTest : public testing::Test {
 
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
 
-  GoogleURLTracker google_url_tracker_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 

@@ -67,7 +67,7 @@ TEST_F(NonClientViewTest, OnlyLayoutChildViewsOnce) {
   params.delegate = new TestWidgetDelegate;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   views::Widget widget;
-  widget.Init(params);
+  widget.Init(std::move(params));
 
   NonClientView* non_client_view = widget.non_client_view();
 

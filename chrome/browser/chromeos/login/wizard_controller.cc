@@ -14,6 +14,7 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -88,7 +89,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
@@ -189,7 +189,7 @@ const chromeos::StaticOobeScreenId kResumableScreens[] = {
 // Checks if device is in tablet mode, and that HID-detection screen is not
 // disabled by flag.
 bool CanShowHIDDetectionScreen() {
-  return !TabletModeClient::Get()->tablet_mode_enabled() &&
+  return !ash::TabletMode::Get()->InTabletMode() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              chromeos::switches::kDisableHIDDetectionOnOOBE) &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(

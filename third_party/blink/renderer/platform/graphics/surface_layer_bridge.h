@@ -21,10 +21,6 @@ class SolidColorLayer;
 class SurfaceLayer;
 }  // namespace cc
 
-namespace viz {
-class SurfaceInfo;
-}  // namespace viz
-
 namespace blink {
 
 class WebLayerTreeView;
@@ -45,7 +41,6 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   void CreateSolidColorLayer();
 
   // Implementation of blink::mojom::blink::EmbeddedFrameSinkClient
-  void OnFirstSurfaceActivation(const viz::SurfaceInfo&) override;
   void BindSurfaceEmbedder(
       mojom::blink::SurfaceEmbedderRequest request) override;
 
@@ -78,7 +73,6 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   mojo::Binding<blink::mojom::blink::EmbeddedFrameSinkClient> binding_;
   mojo::Binding<blink::mojom::blink::SurfaceEmbedder> surface_embedder_binding_;
 
-  const bool enable_surface_synchronization_;
   const viz::FrameSinkId frame_sink_id_;
   viz::SurfaceId current_surface_id_;
   const viz::FrameSinkId parent_frame_sink_id_;

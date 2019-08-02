@@ -11,7 +11,6 @@
 #include "base/optional.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader_impl.h"
@@ -40,7 +39,6 @@ SearchSuggestServiceFactory::SearchSuggestServiceFactory()
           "SearchSuggestService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(CookieSettingsFactory::GetInstance());
-  DependsOn(GoogleURLTrackerFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
 }
 
@@ -51,14 +49,11 @@ KeyedService* SearchSuggestServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  GoogleURLTracker* google_url_tracker =
-      GoogleURLTrackerFactory::GetForProfile(profile);
   auto url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
   return new SearchSuggestService(
       profile, identity_manager,
       std::make_unique<SearchSuggestLoaderImpl>(
-          url_loader_factory, google_url_tracker,
-          g_browser_process->GetApplicationLocale()));
+          url_loader_factory, g_browser_process->GetApplicationLocale()));
 }

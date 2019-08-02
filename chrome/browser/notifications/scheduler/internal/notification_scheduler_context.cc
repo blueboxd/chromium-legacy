@@ -8,14 +8,12 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/public/display_agent.h"
-#include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client_registrar.h"
 
@@ -23,7 +21,7 @@ namespace notifications {
 
 NotificationSchedulerContext::NotificationSchedulerContext(
     std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
-    std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
+    std::unique_ptr<BackgroundTaskCoordinator> background_task_coordinator,
     std::unique_ptr<ImpressionHistoryTracker> impression_tracker,
     std::unique_ptr<ScheduledNotificationManager> notification_manager,
     std::unique_ptr<DisplayAgent> display_agent,
@@ -35,12 +33,7 @@ NotificationSchedulerContext::NotificationSchedulerContext(
       display_agent_(std::move(display_agent)),
       display_decider_(std::move(display_decider)),
       config_(std::move(config)),
-      background_task_coordinator_(std::make_unique<BackgroundTaskCoordinator>(
-          std::move(background_task),
-          config_.get(),
-          base::BindRepeating(&BackgroundTaskCoordinator::DefaultTimeRandomizer,
-                              config_->background_task_random_time_window),
-          base::DefaultClock::GetInstance())) {}
+      background_task_coordinator_(std::move(background_task_coordinator)) {}
 
 NotificationSchedulerContext::~NotificationSchedulerContext() = default;
 

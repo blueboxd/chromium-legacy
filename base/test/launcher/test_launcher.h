@@ -49,11 +49,6 @@ class TestLauncherDelegate {
   // must put the result in |output| and return true on success.
   virtual bool GetTests(std::vector<TestIdentifier>* output) = 0;
 
-  // Called before a test is considered for running. This method must return
-  // true if either the delegate or the TestLauncher will run the test.
-  virtual bool WillRunTest(const std::string& test_case_name,
-                           const std::string& test_name) = 0;
-
   // Invoked after a child process finishes, reporting the process |exit_code|,
   // child process |elapsed_time|, whether or not the process was terminated as
   // a result of a timeout, and the output of the child (stdout and stderr

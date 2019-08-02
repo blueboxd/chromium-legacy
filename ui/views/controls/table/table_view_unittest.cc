@@ -283,7 +283,7 @@ class TableViewTest : public ViewsTestBase {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
     params.delegate = GetWidgetDelegate(widget_.get());
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->GetContentsView()->AddChildView(std::move(scroll_view));
     widget_->Show();
   }

@@ -96,7 +96,7 @@ class CastToolbarButtonTest : public ChromeViewsTestBase {
     views::Widget::InitParams params =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->SetContentsView(button_.get());
 
     ui::NativeTheme* native_theme = button_->GetNativeTheme();

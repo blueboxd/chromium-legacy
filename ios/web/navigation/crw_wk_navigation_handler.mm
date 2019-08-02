@@ -194,7 +194,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
-  [self updatePendingNavigationInfoFromNavigationAction:action];
+  [self createPendingNavigationInfoFromNavigationAction:action];
 
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
       action.targetFrame.mainFrame &&
@@ -448,15 +448,12 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if ([WKResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
     headers = net::CreateHeadersFromNSHTTPURLResponse(
         static_cast<NSHTTPURLResponse*>(WKResponse.response));
-    // TODO(crbug.com/551677): remove |OnHttpResponseHeadersReceived| and attach
-    // headers to web::NavigationContext.
-    self.webStateImpl->OnHttpResponseHeadersReceived(headers.get(),
-                                                     responseURL);
   }
 
   // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
-  [self updatePendingNavigationInfoFromNavigationResponse:WKResponse];
+  [self updatePendingNavigationInfoFromNavigationResponse:WKResponse
+                                              HTTPHeaders:headers];
 
   BOOL shouldRenderResponse = [self shouldRenderResponse:WKResponse];
   if (!shouldRenderResponse) {
@@ -757,14 +754,13 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   if (self.pendingNavigationInfo.MIMEType)
     context->SetMimeType(self.pendingNavigationInfo.MIMEType);
+  if (self.pendingNavigationInfo.HTTPHeaders)
+    context->SetResponseHeaders(self.pendingNavigationInfo.HTTPHeaders);
 
   // Don't show webview for placeholder navigation to avoid covering the native
   // content, which may have already been shown.
   if (!IsPlaceholderUrl(webViewURL))
     [self.delegate navigationHandlerDisplayWebView:self];
-
-  // Update HTTP response headers.
-  self.webStateImpl->UpdateHttpResponseHeaders(webViewURL);
 
   if (@available(iOS 11.3, *)) {
     // On iOS 11.3 didReceiveServerRedirectForProvisionalNavigation: is not
@@ -810,7 +806,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       //    crbug.com/676129)
       context->SetHasCommitted(true);
     }
-    context->SetResponseHeaders(self.webStateImpl->GetHttpResponseHeaders());
     self.webStateImpl->SetContentsMimeType(
         base::SysNSStringToUTF8(context->GetMimeType()));
   }
@@ -1180,7 +1175,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 // Some pieces of navigation information are only known in
 // |decidePolicyForNavigationAction|, but must be in a pending state until
 // |didgo/Navigation| where it becames current.
-- (void)updatePendingNavigationInfoFromNavigationAction:
+- (void)createPendingNavigationInfoFromNavigationAction:
     (WKNavigationAction*)action {
   if (action.targetFrame.mainFrame) {
     self.pendingNavigationInfo = [[CRWPendingNavigationInfo alloc] init];
@@ -1191,6 +1186,26 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     self.pendingNavigationInfo.hasUserGesture =
         web::GetNavigationActionInitiationType(action) ==
         web::NavigationActionInitiationType::kUserInitiated;
+  }
+}
+
+// Extracts navigation info from WKNavigationResponse and sets it as a pending.
+// Some pieces of navigation information are only known in
+// |decidePolicyForNavigationResponse|, but must be in a pending state until
+// |didCommitNavigation| where it becames current.
+- (void)
+    updatePendingNavigationInfoFromNavigationResponse:
+        (WKNavigationResponse*)response
+                                          HTTPHeaders:
+                                              (const scoped_refptr<
+                                                  net::HttpResponseHeaders>&)
+                                                  headers {
+  if (response.isForMainFrame) {
+    if (!self.pendingNavigationInfo) {
+      self.pendingNavigationInfo = [[CRWPendingNavigationInfo alloc] init];
+    }
+    self.pendingNavigationInfo.MIMEType = response.response.MIMEType;
+    self.pendingNavigationInfo.HTTPHeaders = headers;
   }
 }
 
@@ -1331,20 +1346,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
            ->UserInteractionRegisteredSinceWebViewCreated();
   BOOL noNavigationItems = !(self.navigationManagerImpl->GetItemCount());
   return rendererInitiatedWithoutInteraction || noNavigationItems;
-}
-
-// Extracts navigation info from WKNavigationResponse and sets it as a pending.
-// Some pieces of navigation information are only known in
-// |decidePolicyForNavigationResponse|, but must be in a pending state until
-// |didCommitNavigation| where it becames current.
-- (void)updatePendingNavigationInfoFromNavigationResponse:
-    (WKNavigationResponse*)response {
-  if (response.isForMainFrame) {
-    if (!self.pendingNavigationInfo) {
-      self.pendingNavigationInfo = [[CRWPendingNavigationInfo alloc] init];
-    }
-    self.pendingNavigationInfo.MIMEType = response.response.MIMEType;
-  }
 }
 
 // Returns YES if response should be rendered in WKWebView.

@@ -491,7 +491,7 @@ views::WebDialogView* ShowCredentialProviderSigninDialog(
   // This widget will automatically delete itself and its WebDialogView when the
   // dialog window is closed.
   views::Widget* widget = new views::Widget;
-  widget->Init(init_params);
+  widget->Init(std::move(init_params));
   widget->Show();
 
   return web_view;

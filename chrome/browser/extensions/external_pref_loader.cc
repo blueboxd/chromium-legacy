@@ -268,9 +268,9 @@ void ExternalPrefLoader::LoadOnFileThread() {
   if (!prefs->empty())
     CHECK(!base_path_.empty());
 
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(&ExternalPrefLoader::LoadFinished,
-                                          this, std::move(prefs)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&ExternalPrefLoader::LoadFinished, this,
+                                std::move(prefs)));
 }
 
 void ExternalPrefLoader::ReadExternalExtensionPrefFile(

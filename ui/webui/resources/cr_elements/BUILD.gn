@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
 
 group("closure_compile") {
   deps = [
@@ -54,5 +55,52 @@ js_library("cr_scrollable_behavior") {
 js_library("cr_container_shadow_behavior") {
   deps = [
     "//ui/webui/resources/js:assert",
+  ]
+}
+
+# Targets for auto-generating Polymer 3 JS Modules.
+
+polymer_modulizer("shared_vars_css") {
+  js_file = "shared_vars_css.m.js"
+  html_file = "shared_vars_css.html"
+  html_type = "custom-style"
+}
+
+polymer_modulizer("shared_style_css") {
+  js_file = "shared_style_css.m.js"
+  html_file = "shared_style_css.html"
+  html_type = "style-module"
+}
+
+polymer_modulizer("hidden_style_css") {
+  js_file = "hidden_style_css.m.js"
+  html_file = "hidden_style_css.html"
+  html_type = "style-module"
+}
+
+polymer_modulizer("md_select_css") {
+  js_file = "md_select_css.m.js"
+  html_file = "md_select_css.html"
+  html_type = "style-module"
+}
+
+polymer_modulizer("icons") {
+  js_file = "icons.m.js"
+  html_file = "icons.html"
+  html_type = "iron-iconset"
+}
+
+group("polymer3_elements") {
+  deps = [
+    ":hidden_style_css_module",
+    ":icons_module",
+    ":md_select_css_module",
+    ":shared_style_css_module",
+    ":shared_vars_css_module",
+    "cr_button:cr_button_module",
+    "cr_checkbox:cr_checkbox_module",
+    "cr_toast:cr_toast_module",
+    "cr_toggle:cr_toggle_module",
+    "cr_view_manager:cr_view_manager_module",
   ]
 }

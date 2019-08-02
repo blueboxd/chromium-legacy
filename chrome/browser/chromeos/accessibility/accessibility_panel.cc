@@ -67,7 +67,7 @@ AccessibilityPanel::AccessibilityPanel(content::BrowserContext* browser_context,
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.name = widget_name;
   params.shadow_elevation = wm::kShadowElevationInactiveWindow;
-  widget_->Init(params);
+  widget_->Init(std::move(params));
 }
 
 AccessibilityPanel::~AccessibilityPanel() = default;

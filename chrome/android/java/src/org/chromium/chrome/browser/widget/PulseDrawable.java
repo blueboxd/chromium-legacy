@@ -62,6 +62,45 @@ public class PulseDrawable extends Drawable implements Animatable {
     }
 
     /**
+     * Interface for calculating the max and min bounds in a pulsing circle.
+     */
+    public interface Bounds {
+        /**
+         * Calculates the maximum radius of a pulsing circle.
+         * @param bounds the bounds of the canvas.
+         * @return floating point maximum radius.
+         */
+        float getMaxRadiusPx(Rect bounds);
+
+        /**
+         * @param bounds the bounds of the canvas.
+         * @return floating point minimum radius.
+         */
+        float getMinRadiusPx(Rect bounds);
+    }
+
+    private static Painter createCirclePainter(Bounds boundsFn) {
+        return new PulseDrawable.Painter() {
+            @Override
+            public void modifyDrawable(PulseDrawable drawable, float interpolation) {
+                drawable.invalidateSelf();
+            }
+
+            @Override
+            public void draw(
+                    PulseDrawable drawable, Paint paint, Canvas canvas, float interpolation) {
+                Rect bounds = drawable.getBounds();
+
+                float minRadiusPx = boundsFn.getMinRadiusPx(bounds);
+                float maxRadiusPx = boundsFn.getMaxRadiusPx(bounds);
+                float radius = MathUtils.interpolate(minRadiusPx, maxRadiusPx, interpolation);
+
+                canvas.drawCircle(bounds.exactCenterX(), bounds.exactCenterY(), radius, paint);
+            }
+        };
+    }
+
+    /**
      * Creates a {@link PulseDrawable} that will fill the bounds with a pulsing color.
      * @param context The {@link Context} under which the drawable is created.
      * @return A new {@link PulseDrawable} instance.
@@ -92,25 +131,28 @@ public class PulseDrawable extends Drawable implements Animatable {
         final int startingPulseRadiusPx =
                 context.getResources().getDimensionPixelSize(R.dimen.iph_pulse_baseline_radius);
 
-        PulseDrawable.Painter painter = new PulseDrawable.Painter() {
+        return createCustomCircle(context, new Bounds() {
             @Override
-            public void modifyDrawable(PulseDrawable drawable, float interpolation) {
-                drawable.invalidateSelf();
+            public float getMaxRadiusPx(Rect bounds) {
+                return Math.min(startingPulseRadiusPx * 1.2f,
+                        Math.min(bounds.width(), bounds.height()) / 2.f);
             }
-
             @Override
-            public void draw(
-                    PulseDrawable drawable, Paint paint, Canvas canvas, float interpolation) {
-                Rect bounds = drawable.getBounds();
-                float maxAvailRadiusPx = Math.min(bounds.width(), bounds.height()) / 2.f;
-
-                float minRadiusPx = Math.min(startingPulseRadiusPx, maxAvailRadiusPx);
-                float maxRadiusPx = Math.min(startingPulseRadiusPx * 1.2f, maxAvailRadiusPx);
-                float radius = MathUtils.interpolate(minRadiusPx, maxRadiusPx, interpolation);
-
-                canvas.drawCircle(bounds.exactCenterX(), bounds.exactCenterY(), radius, paint);
+            public float getMinRadiusPx(Rect bounds) {
+                return Math.min(
+                        startingPulseRadiusPx, Math.min(bounds.width(), bounds.height()) / 2.f);
             }
-        };
+        });
+    }
+
+    /**
+     * Creates a {@link PulseDrawable} that will draw a pulsing circle as large as possible inside
+     * the bounds.
+     * @param context The {@link Context} under which the drawable is created.
+     * @return A new {@link PulseDrawable} instance.
+     */
+    public static PulseDrawable createCustomCircle(Context context, Bounds boundsfn) {
+        Painter painter = createCirclePainter(boundsfn);
 
         PulseDrawable drawable = new PulseDrawable(
                 context, PathInterpolatorCompat.create(.8f, 0.f, .6f, 1.f), painter);

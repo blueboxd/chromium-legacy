@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -1288,12 +1287,12 @@ TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncEnabled) {
   prefs()->SetInteger(prefs::kSyncDemographicsBirthYearOffset,
                       birth_year_offset);
 
-  base::Optional<UserDemographics> user_demographics =
+  UserDemographicsResult user_demographics_result =
       service()->GetUserDemographics(GetNowTime());
-  ASSERT_TRUE(user_demographics.has_value());
+  ASSERT_TRUE(user_demographics_result.IsSuccess());
   EXPECT_EQ(user_demographics_birth_year + birth_year_offset,
-            user_demographics->birth_year);
-  EXPECT_EQ(user_demographics_gender, user_demographics->gender);
+            user_demographics_result.value().birth_year);
+  EXPECT_EQ(user_demographics_gender, user_demographics_result.value().gender);
 }
 
 // Test whether sync service does not provide user demographics when sync is
@@ -1317,7 +1316,7 @@ TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncTurnedOff) {
   ASSERT_TRUE(HasGenderDemographic(prefs()));
 
   // Verify that we don't get demographics when sync is off.
-  EXPECT_FALSE(service()->GetUserDemographics(GetNowTime()).has_value());
+  EXPECT_FALSE(service()->GetUserDemographics(GetNowTime()).IsSuccess());
 }
 
 // Test whether sync service does not provide user demographics and does not
@@ -1357,9 +1356,9 @@ TEST_F(ProfileSyncServiceTest, GetUserDemographics_SyncTemporarilyDisabled) {
 
   // Verify that sync service does not provide demographics when it is
   // temporarily disabled.
-  base::Optional<UserDemographics> user_demographics =
+  UserDemographicsResult user_demographics_result =
       service()->GetUserDemographics(GetNowTime());
-  EXPECT_FALSE(user_demographics.has_value());
+  EXPECT_FALSE(user_demographics_result.IsSuccess());
 
   // Verify that demographic prefs are not cleared.
   EXPECT_TRUE(HasBirthYearDemographic(prefs()));
@@ -1404,9 +1403,9 @@ TEST_F(ProfileSyncServiceTest,
   ASSERT_EQ(SyncService::DISABLE_REASON_NONE, service()->GetDisableReasons());
 
   // Verify that sync service does not provide demographics when sync is paused.
-  base::Optional<UserDemographics> user_demographics =
+  UserDemographicsResult user_demographics_result =
       service()->GetUserDemographics(GetNowTime());
-  EXPECT_FALSE(user_demographics.has_value());
+  EXPECT_FALSE(user_demographics_result.IsSuccess());
 
   // Verify that demographic prefs are not cleared.
   EXPECT_TRUE(HasBirthYearDemographic(prefs()));
@@ -1451,9 +1450,9 @@ TEST_F(ProfileSyncServiceTest,
   ASSERT_EQ(SyncService::DISABLE_REASON_PAUSED, service()->GetDisableReasons());
 
   // Verify that sync service does not provide demographics when sync is paused.
-  base::Optional<UserDemographics> user_demographics =
+  UserDemographicsResult user_demographics_result =
       service()->GetUserDemographics(GetNowTime());
-  EXPECT_FALSE(user_demographics.has_value());
+  EXPECT_FALSE(user_demographics_result.IsSuccess());
 
   // Verify that demographic prefs are not cleared.
   EXPECT_TRUE(HasBirthYearDemographic(prefs()));

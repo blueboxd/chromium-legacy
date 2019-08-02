@@ -22,10 +22,6 @@
 
 using content::BrowserThread;
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace safe_browsing {
 
 namespace {

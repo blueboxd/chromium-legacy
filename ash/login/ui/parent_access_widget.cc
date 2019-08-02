@@ -49,7 +49,7 @@ ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
   }
 
   widget_ = std::make_unique<views::Widget>();
-  widget_->Init(widget_params);
+  widget_->Init(std::move(widget_params));
   widget_->Show();
 }
 

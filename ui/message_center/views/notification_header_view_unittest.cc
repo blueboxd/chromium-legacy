@@ -32,7 +32,7 @@ class NotificationHeaderViewTest : public views::ViewsTestBase {
         CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(200, 200);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_.Init(params);
+    widget_.Init(std::move(params));
     views::View* container = new views::View();
     widget_.SetContentsView(container);
 

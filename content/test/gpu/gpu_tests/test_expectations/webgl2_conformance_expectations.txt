@@ -787,8 +787,10 @@ crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-rgb16f-
 crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-rgb9_e5-rgb-half_float.html [ Failure ]
 crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-srgb8-rgb-unsigned_byte.html [ Failure ]
 crbug.com/967410 [ android opengles ] conformance2/textures/video/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ Failure ]
+crbug.com/967410 [ android opengles ] conformance2/textures/misc/npot-video-sizing.html [ Failure ]
 crbug.com/angleproject/3685 [ android opengles ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
 crbug.com/angleproject/3686 [ android opengles ] deqp/functional/gles3/multisample.html [ Failure ]
+crbug.com/angleproject/3753 [ android opengles ] conformance/textures/misc/texture-upload-size.html [ Failure ]
 
 # Conflicting expectations to test that the
 # "Expectations have no collisions" unittest works.

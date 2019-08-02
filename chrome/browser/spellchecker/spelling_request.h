@@ -8,7 +8,6 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"
 #include "components/spellcheck/browser/spelling_service_client.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 class SpellingRequest;
 
@@ -23,7 +22,7 @@ class SpellingRequest {
 
   SpellingRequest(SpellingServiceClient* client,
                   const base::string16& text,
-                  const service_manager::Identity& renderer_identity,
+                  int render_process_id,
                   int document_tag,
                   RequestTextCheckCallback callback,
                   DestructionCallback destruction_callback);
@@ -37,8 +36,7 @@ class SpellingRequest {
 
  private:
   // Request server-side checking for |text_|.
-  void RequestRemoteCheck(SpellingServiceClient* client,
-                          const service_manager::Identity& renderer_identity);
+  void RequestRemoteCheck(SpellingServiceClient* client, int render_process_id);
 
   // Request a check for |text_| from local spell checker.
   void RequestLocalCheck(int document_tag);

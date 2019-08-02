@@ -23,11 +23,12 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class Value;
-}
+}  // namespace base
 
 namespace chromeos {
 
 class DeviceSettingsService;
+class SupervisedUserCrosSettingsProvider;
 
 // This class manages per-device/global settings.
 class CrosSettings {
@@ -121,6 +122,11 @@ class CrosSettings {
   // Returns the provider that handles settings with the |path| or prefix.
   CrosSettingsProvider* GetProvider(const std::string& path) const;
 
+  const SupervisedUserCrosSettingsProvider*
+  supervised_user_cros_settings_provider() const {
+    return supervised_user_cros_settings_provider_;
+  }
+
  private:
   friend class CrosSettingsTest;
 
@@ -129,6 +135,9 @@ class CrosSettings {
 
   // List of ChromeOS system settings providers.
   std::vector<std::unique_ptr<CrosSettingsProvider>> providers_;
+
+  // Owner unique pointer in |providers_|.
+  SupervisedUserCrosSettingsProvider* supervised_user_cros_settings_provider_;
 
   // A map from settings names to a list of observers. Observers get fired in
   // the order they are added.

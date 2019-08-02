@@ -43,13 +43,6 @@ constexpr mach_msg_id_t kBootstrapMsgId = 'apps';
 // of the full profile directory path.
 extern const char kAppShimBootstrapNameFragment[];
 
-// TODO(rsesek): Delete this after ensuring the file has been cleaned up.
-// The name of a file placed in the profile directory to indicate that app
-// shims should connect over Mach IPC rather than a UNIX domain socket. If
-// a file named this does not exist, app shims will fall back to the UNIX
-// domain socket.
-extern const char kMojoChannelMacSignalFile[];
-
 // A symlink used to store the version string of the currently running Chrome.
 // The shim will read this to determine which version of the framework to load.
 extern const char kRunningChromeVersionSymlinkName[];

@@ -800,7 +800,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     FrameTreeNode* frame_tree_node,
     int32_t routing_id,
     int32_t widget_routing_id,
-    bool hidden,
     bool renderer_initiated_creation)
     : render_view_host_(std::move(render_view_host)),
       delegate_(delegate),
@@ -895,7 +894,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
                                                       widget_routing_id));
       owned_render_widget_host_ = RenderWidgetHostFactory::Create(
           frame_tree_->render_widget_delegate(), GetProcess(),
-          widget_routing_id, std::move(widget), hidden);
+          widget_routing_id, std::move(widget), /*hidden=*/true);
       owned_render_widget_host_->set_owned_by_render_frame_host(true);
     }
 
@@ -1814,12 +1813,10 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   if (GetLocalRenderWidgetHost()) {
     params->widget_params->routing_id =
         GetLocalRenderWidgetHost()->GetRoutingID();
-    params->widget_params->hidden = GetLocalRenderWidgetHost()->is_hidden();
   } else {
     // MSG_ROUTING_NONE will prevent a new RenderWidget from being created in
     // the renderer process.
     params->widget_params->routing_id = MSG_ROUTING_NONE;
-    params->widget_params->hidden = true;
   }
 
   GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));
@@ -1834,7 +1831,8 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
     DCHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
     RenderWidgetHostView* rwhv =
         RenderWidgetHostViewChildFrame::Create(owned_render_widget_host_.get());
-    rwhv->Hide();
+    // The child frame should be created hidden.
+    DCHECK(!rwhv->IsShowing());
   }
 
   if (previous_routing_id != MSG_ROUTING_NONE) {
@@ -4298,8 +4296,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
               static_cast<StoragePartitionImpl*>(
                   frame->GetProcess()->GetStoragePartition()),
               NativeFileSystemManagerImpl::BindingContext(
-                  frame->GetLastCommittedOrigin(), frame->GetProcess()->GetID(),
-                  frame->GetRoutingID()),
+                  frame->GetLastCommittedOrigin(), frame->GetLastCommittedURL(),
+                  frame->GetProcess()->GetID(), frame->GetRoutingID()),
               std::move(request));
         },
         base::Unretained(this)));

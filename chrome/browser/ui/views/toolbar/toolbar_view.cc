@@ -108,11 +108,13 @@ namespace {
 
 // Gets the display mode for a given browser.
 ToolbarView::DisplayMode GetDisplayMode(Browser* browser) {
-  if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
-    return ToolbarView::DisplayMode::NORMAL;
-
+  // Checked in this order because even tabbed PWAs use the CUSTOM_TAB
+  // display mode.
   if (web_app::AppBrowserController::IsForWebAppBrowser(browser))
     return ToolbarView::DisplayMode::CUSTOM_TAB;
+
+  if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
+    return ToolbarView::DisplayMode::NORMAL;
 
   return ToolbarView::DisplayMode::LOCATION;
 }
@@ -784,7 +786,21 @@ ui::NativeTheme* ToolbarView::GetViewNativeTheme() {
 
 // ToolbarButtonProvider:
 BrowserActionsContainer* ToolbarView::GetBrowserActionsContainer() {
+  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   return browser_actions_;
+}
+
+ToolbarActionView* ToolbarView::GetToolbarActionViewForId(
+    const std::string& id) {
+  if (extensions_container_)
+    return extensions_container_->GetViewForId(id);
+  return GetBrowserActionsContainer()->GetViewForId(id);
+}
+
+views::View* ToolbarView::GetDefaultExtensionDialogAnchorView() {
+  if (extensions_container_)
+    return extensions_container_;
+  return GetAppMenuButton();
 }
 
 OmniboxPageActionIconContainerView*

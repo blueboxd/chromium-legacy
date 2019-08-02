@@ -61,7 +61,7 @@ class OzonePlatformScenic
     : public OzonePlatform,
       public base::MessageLoopCurrent::DestructionObserver {
  public:
-  OzonePlatformScenic() {}
+  OzonePlatformScenic() = default;
   ~OzonePlatformScenic() override = default;
 
   // OzonePlatform implementation.

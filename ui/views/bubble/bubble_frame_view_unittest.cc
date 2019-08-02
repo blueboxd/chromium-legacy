@@ -97,7 +97,7 @@ class TestBubbleFrameView : public BubbleFrameView {
         test_base->CreateParams(Widget::InitParams::TYPE_BUBBLE);
     params.delegate = widget_delegate_.get();
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_->Init(params);
+    widget_->Init(std::move(params));
   }
   ~TestBubbleFrameView() override = default;
 
@@ -911,7 +911,7 @@ class TestAnchor {
  public:
   explicit TestAnchor(Widget::InitParams params) {
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_.Init(params);
+    widget_.Init(std::move(params));
     widget_.Show();
   }
 

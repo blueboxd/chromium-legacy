@@ -42,7 +42,7 @@ class AXVirtualViewTest : public ViewsTestBase {
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     button_ = new TestButton;
     button_->SetSize(gfx::Size(20, 20));
     widget_->GetContentsView()->AddChildView(button_);

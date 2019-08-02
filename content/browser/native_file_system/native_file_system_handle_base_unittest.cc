@@ -64,8 +64,8 @@ class NativeFileSystemHandleBaseTest : public testing::Test {
   }
 
  protected:
-  const url::Origin kTestOrigin =
-      url::Origin::Create(GURL("https://example.com"));
+  const GURL kTestURL = GURL("https://example.com/test");
+  const url::Origin kTestOrigin = url::Origin::Create(kTestURL);
   base::test::ScopedFeatureList scoped_feature_list_;
   TestBrowserThreadBundle scoped_task_environment_;
 
@@ -93,7 +93,7 @@ TEST_F(NativeFileSystemHandleBaseTest, GetReadPermissionStatus) {
                                    base::FilePath::FromUTF8Unsafe("/test"));
   TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
-                                        kTestOrigin, /*process_id=*/1,
+                                        kTestOrigin, kTestURL, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
                                     url, handle_state_);
 
@@ -113,7 +113,7 @@ TEST_F(NativeFileSystemHandleBaseTest,
                                    base::FilePath::FromUTF8Unsafe("/test"));
   TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
-                                        kTestOrigin, /*process_id=*/1,
+                                        kTestOrigin, kTestURL, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
                                     url, handle_state_);
 
@@ -133,7 +133,7 @@ TEST_F(NativeFileSystemHandleBaseTest,
                                    base::FilePath::FromUTF8Unsafe("/test"));
   TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
-                                        kTestOrigin, /*process_id=*/1,
+                                        kTestOrigin, kTestURL, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
                                     url, handle_state_);
 
@@ -150,7 +150,7 @@ TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission_AlreadyGranted) {
                                    base::FilePath::FromUTF8Unsafe("/test"));
   TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
-                                        kTestOrigin, /*process_id=*/1,
+                                        kTestOrigin, kTestURL, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
                                     url, handle_state_);
 
@@ -176,10 +176,11 @@ TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission) {
   auto url =
       FileSystemURL::CreateForTest(kTestOrigin, storage::kFileSystemTypeTest,
                                    base::FilePath::FromUTF8Unsafe("/test"));
-  TestNativeFileSystemHandle handle(manager_.get(),
-                                    NativeFileSystemManagerImpl::BindingContext(
-                                        kTestOrigin, kProcessId, kFrameId),
-                                    url, handle_state_);
+  TestNativeFileSystemHandle handle(
+      manager_.get(),
+      NativeFileSystemManagerImpl::BindingContext(kTestOrigin, kTestURL,
+                                                  kProcessId, kFrameId),
+      url, handle_state_);
 
   EXPECT_CALL(*read_grant_, GetStatus())
       .WillRepeatedly(testing::Return(PermissionStatus::GRANTED));

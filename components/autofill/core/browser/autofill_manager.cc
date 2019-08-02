@@ -552,8 +552,9 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
   // so that we can safely pass the address to the first callback regardless of
   // the (undefined) order in which the callback parameters are computed.
   FormStructure* raw_form = form_structure.get();
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&AutofillManager::DeterminePossibleFieldTypesForUpload,
                      copied_profiles, copied_credit_cards, app_locale_,
                      raw_form),

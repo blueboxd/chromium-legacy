@@ -75,9 +75,6 @@ using UkmDeveloperEngagementType = ukm::builders::Autofill_DeveloperEngagement;
 const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
 const base::Time kMuchLaterTime = base::Time::FromDoubleT(5000);
 
-const char kEloCardNumber[] = "5067111111111112";
-const char kJcbCardNumber[] = "3528111111111110";
-
 std::string NextYear() {
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
@@ -688,8 +685,6 @@ TEST_F(CreditCardSaveManagerTest, LocalCreditCard_ExpirationDateMissing) {
 
 // Tests metrics for supporting unfocused card form.
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_WithNonFocusableField) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillImportNonFocusableCreditCardForms);
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
   // Create, fill and submit an address form in order to establish a recent
@@ -733,51 +728,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_WithNonFocusableField) {
       AutofillMetrics::UPLOAD_OFFERED_FROM_NON_FOCUSABLE_FIELD);
 }
 
-// Tests upload card save will still work as usual when supporting unfocused
-// card form experiment is off.
-TEST_F(CreditCardSaveManagerTest,
-       UploadCreditCard_WithNonFocusableField_ExpOff) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillImportNonFocusableCreditCardForms);
-  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
-
-  // Create, fill and submit an address form in order to establish a recent
-  // profile which can be selected for the upload request.
-  FormData address_form;
-  test::CreateTestAddressFormData(&address_form);
-  FormsSeen(std::vector<FormData>(1, address_form));
-  ExpectUniqueFillableFormParsedUkm();
-
-  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
-  FormSubmitted(address_form);
-
-  // Set up our credit card form data with non_focusable form field.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form,
-                               CreditCardFormOptions()
-                                   .with_split_names(true)
-                                   .with_is_from_non_focusable_form(true));
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
-  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
-  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
-  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[5].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  FormSubmitted(credit_card_form);
-  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
-}
-
 // Tests local card save will still work as usual when supporting unfocused card
 // form feature is already on.
 TEST_F(CreditCardSaveManagerTest, LocalCreditCard_WithNonFocusableField) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillImportNonFocusableCreditCardForms);
   credit_card_save_manager_->SetCreditCardUploadEnabled(false);
 
   // Create, fill and submit an address form in order to establish a recent
@@ -810,47 +763,6 @@ TEST_F(CreditCardSaveManagerTest, LocalCreditCard_WithNonFocusableField) {
 
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
-  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
-}
-
-// Tests local card save will still work as usual when supporting unfocused card
-// form experiment is off.
-TEST_F(CreditCardSaveManagerTest,
-       LocalCreditCard_WithNonFocusableField_ExpOff) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillImportNonFocusableCreditCardForms);
-  credit_card_save_manager_->SetCreditCardUploadEnabled(false);
-
-  // Create, fill and submit an address form in order to establish a recent
-  // profile which can be selected for the upload request.
-  FormData address_form;
-  test::CreateTestAddressFormData(&address_form);
-  FormsSeen(std::vector<FormData>(1, address_form));
-  ExpectUniqueFillableFormParsedUkm();
-
-  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
-  FormSubmitted(address_form);
-
-  // Set up our credit card form data with non_focusable form field.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form,
-                               CreditCardFormOptions()
-                                   .with_split_names(true)
-                                   .with_is_from_non_focusable_form(true));
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo");
-  credit_card_form.fields[1].value = ASCIIToUTF16("Master");
-  credit_card_form.fields[2].value = ASCIIToUTF16("4111111111111111");
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextMonth());
-  credit_card_form.fields[4].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[5].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  FormSubmitted(credit_card_form);
-  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
   EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
 }
 
@@ -4240,165 +4152,6 @@ TEST_F(CreditCardSaveManagerTest,
   FormSubmitted(credit_card_form);
   EXPECT_EQ(payments::PaymentsClient::UploadCardSource::UPSTREAM_CHECKOUT_FLOW,
             payments_client_->upload_card_source_in_request());
-}
-
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_EloDisallowed) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillUpstreamDisallowElo);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
-  credit_card_form.fields[1].value = ASCIIToUTF16(kEloCardNumber);
-  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  // With Elo disallowed, local save should be offered and upload save should
-  // not.
-  FormSubmitted(credit_card_form);
-  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
-  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
-
-  // Verify that the correct histogram entry was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CreditCardUploadDisallowedForNetwork",
-      AutofillMetrics::DISALLOWED_ELO, 1);
-}
-
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_EloAllowed) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillUpstreamDisallowElo);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
-  credit_card_form.fields[1].value = ASCIIToUTF16(kEloCardNumber);
-  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  // With the feature flag off, the Elo card should be allowed to be uploaded as
-  // normal.
-  FormSubmitted(credit_card_form);
-  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
-  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-
-  // Verify that no histogram entry was logged.
-  histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCardUploadDisallowedForNetwork", 0);
-}
-
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_JcbDisallowed) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillUpstreamDisallowJcb);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
-  credit_card_form.fields[1].value = ASCIIToUTF16(kJcbCardNumber);
-  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  // With JCB disallowed, local save should be offered and upload save should
-  // not.
-  FormSubmitted(credit_card_form);
-  EXPECT_TRUE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
-  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
-
-  // Verify that the correct histogram entry was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CreditCardUploadDisallowedForNetwork",
-      AutofillMetrics::DISALLOWED_JCB, 1);
-}
-
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_JcbAllowed) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillUpstreamDisallowJcb);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
-  credit_card_form.fields[1].value = ASCIIToUTF16(kJcbCardNumber);
-  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  // With the feature flag off, the JCB card should be allowed to be uploaded as
-  // normal.
-  FormSubmitted(credit_card_form);
-  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
-  EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-
-  // Verify that no histogram entry was logged.
-  histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCardUploadDisallowedForNetwork", 0);
-}
-
-// We can't tell what network a card is until *after* FormDataImporter imports
-// it, making it possible to deny upload save for a pre-existing local card.
-// This test ensures that we do not offer local save (again) for the card that
-// FormDataImporter imported.
-TEST_F(CreditCardSaveManagerTest, UploadCreditCard_DisallowedLocalCard) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillUpstreamDisallowElo);
-
-  // Add a local credit card that will match what we will enter below.
-  CreditCard local_card;
-  test::SetCreditCardInfo(&local_card, "Flo Master", kEloCardNumber,
-                          NextMonth().c_str(), NextYear().c_str(), "1");
-  local_card.set_record_type(CreditCard::LOCAL_CARD);
-  personal_data_.AddCreditCard(local_card);
-
-  // Set up our credit card form data.
-  FormData credit_card_form;
-  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
-  FormsSeen(std::vector<FormData>(1, credit_card_form));
-
-  // Edit the data, and submit.
-  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
-  credit_card_form.fields[1].value = ASCIIToUTF16(kEloCardNumber);
-  credit_card_form.fields[2].value = ASCIIToUTF16(NextMonth());
-  credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
-  credit_card_form.fields[4].value = ASCIIToUTF16("123");
-
-  base::HistogramTester histogram_tester;
-
-  // The card is disallowed, but because it is already a local card, local save
-  // should not be offered again.
-  FormSubmitted(credit_card_form);
-  EXPECT_FALSE(autofill_client_.ConfirmSaveCardLocallyWasCalled());
-  EXPECT_FALSE(credit_card_save_manager_->CreditCardWasUploaded());
-
-  // Verify that the correct histogram entry was logged.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.CreditCardUploadDisallowedForNetwork",
-      AutofillMetrics::DISALLOWED_ELO, 1);
 }
 
 // Tests that a card with some strikes (but not max strikes) should still show

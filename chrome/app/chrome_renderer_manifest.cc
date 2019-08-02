@@ -9,7 +9,6 @@
 #include "chrome/common/constants.mojom.h"
 #include "chrome/common/media/webrtc_logging.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "components/spellcheck/common/spellcheck.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 const service_manager::Manifest& GetChromeRendererManifest() {
@@ -19,8 +18,7 @@ const service_manager::Manifest& GetChromeRendererManifest() {
           .ExposeCapability("browser",
                             service_manager::Manifest::InterfaceList<
                                 chrome::mojom::WebRtcLoggingAgent,
-                                safe_browsing::mojom::PhishingModelSetter,
-                                spellcheck::mojom::SpellChecker>())
+                                safe_browsing::mojom::PhishingModelSetter>())
           .RequireCapability(chrome::mojom::kServiceName, "renderer")
           .Build()};
   return *manifest;

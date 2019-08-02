@@ -6,12 +6,9 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/chromeos/crostini/crostini_export_import.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
@@ -67,6 +64,11 @@ void CrostiniHandler::RegisterMessages() {
       base::BindRepeating(
           &CrostiniHandler::HandleCrostiniInstallerStatusRequest,
           weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "requestCrostiniExportImportOperationStatus",
+      base::BindRepeating(
+          &CrostiniHandler::HandleCrostiniExportImportOperationStatusRequest,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniHandler::OnJavascriptAllowed() {
@@ -75,6 +77,7 @@ void CrostiniHandler::OnJavascriptAllowed() {
   if (chromeos::CrosUsbDetector::Get()) {
     chromeos::CrosUsbDetector::Get()->AddUsbDeviceObserver(this);
   }
+  crostini::CrostiniExportImport::GetForProfile(profile_)->AddObserver(this);
 }
 
 void CrostiniHandler::OnJavascriptDisallowed() {
@@ -86,6 +89,7 @@ void CrostiniHandler::OnJavascriptDisallowed() {
   if (chromeos::CrosUsbDetector::Get()) {
     chromeos::CrosUsbDetector::Get()->RemoveUsbDeviceObserver(this);
   }
+  crostini::CrostiniExportImport::GetForProfile(profile_)->RemoveObserver(this);
 }
 
 void CrostiniHandler::HandleRequestCrostiniInstallerView(
@@ -225,6 +229,15 @@ void CrostiniHandler::HandleCrostiniInstallerStatusRequest(
   OnCrostiniInstallerViewStatusChanged(status);
 }
 
+void CrostiniHandler::HandleCrostiniExportImportOperationStatusRequest(
+    const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(0U, args->GetSize());
+  bool in_progress = crostini::CrostiniExportImport::GetForProfile(profile_)
+                         ->GetExportImportOperationStatus();
+  OnCrostiniExportImportOperationStatusChanged(in_progress);
+}
+
 void CrostiniHandler::OnCrostiniInstallerViewStatusChanged(bool status) {
   // It's technically possible for this to be called before Javascript is
   // enabled, in which case we must not call FireWebUIListener
@@ -232,6 +245,13 @@ void CrostiniHandler::OnCrostiniInstallerViewStatusChanged(bool status) {
     // Other side listens with cr.addWebUIListener
     FireWebUIListener("crostini-installer-status-changed", base::Value(status));
   }
+}
+
+void CrostiniHandler::OnCrostiniExportImportOperationStatusChanged(
+    bool in_progress) {
+  // Other side listens with cr.addWebUIListener
+  FireWebUIListener("crostini-export-import-operation-status-changed",
+                    base::Value(in_progress));
 }
 
 }  // namespace settings

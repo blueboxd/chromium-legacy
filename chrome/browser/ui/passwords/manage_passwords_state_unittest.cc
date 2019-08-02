@@ -450,6 +450,19 @@ TEST_F(ManagePasswordsStateTest, PasswordAutofillWithSavedFederations) {
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
 }
 
+TEST_F(ManagePasswordsStateTest, PasswordAutofillWithOnlyFederations) {
+  std::map<base::string16, const autofill::PasswordForm*> password_form_map;
+  const GURL origin(kTestOrigin);
+  std::vector<const autofill::PasswordForm*> federated;
+  federated.push_back(&test_local_federated_form());
+  passwords_data().OnPasswordAutofilled(password_form_map, origin, &federated);
+
+  EXPECT_THAT(passwords_data().GetCurrentForms(),
+              ElementsAre(Pointee(test_local_federated_form())));
+
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, passwords_data().state());
+}
+
 TEST_F(ManagePasswordsStateTest, ActiveOnMixedPSLAndNonPSLMatched) {
   std::map<base::string16, const autofill::PasswordForm*> password_form_map;
   password_form_map[test_local_form().username_value] = &test_local_form();

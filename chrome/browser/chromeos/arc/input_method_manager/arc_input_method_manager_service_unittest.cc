@@ -11,6 +11,8 @@
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -21,7 +23,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/test_input_method_manager_bridge.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
@@ -35,6 +36,7 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
 #include "ui/base/ime/mock_input_method.h"
+#include "ui/views/widget/widget.h"
 
 namespace arc {
 namespace {
@@ -184,7 +186,7 @@ class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
   TestingProfile* profile() { return profile_.get(); }
 
   void ToggleTabletMode(bool enabled) {
-    tablet_mode_client_->OnTabletModeToggled(enabled);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(enabled);
   }
 
   void SetUp() override {
@@ -194,7 +196,10 @@ class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
     chromeos::input_method::InputMethodManager::Initialize(
         input_method_manager_);
     profile_ = std::make_unique<TestingProfile>();
-    tablet_mode_client_ = std::make_unique<TabletModeClient>();
+
+    // Create a test widget so that enabling tablet mode does not show app list
+    // whose search box could mess with the tests.
+    widget_ = CreateTestWidget();
 
     chrome_keyboard_controller_client_test_helper_ =
         ChromeKeyboardControllerClientTestHelper::InitializeForAsh();
@@ -215,17 +220,14 @@ class ArcInputMethodManagerServiceTest : public ChromeAshTestBase {
     chromeos::input_method::InputMethodManager::Shutdown();
     ui::IMEBridge::Shutdown();
     ChromeAshTestBase::TearDown();
-    // To match ChromeBrowserMainExtraPartsAsh, shut down the TabletModeClient
-    // after Shell.
-    tablet_mode_client_.reset();
   }
 
  private:
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<TabletModeClient> tablet_mode_client_;
   std::unique_ptr<ChromeKeyboardControllerClientTestHelper>
       chrome_keyboard_controller_client_test_helper_;
+  std::unique_ptr<views::Widget> widget_;
   TestInputMethodManager* input_method_manager_ = nullptr;
   TestInputMethodManagerBridge* test_bridge_ = nullptr;  // Owned by |service_|
   ArcInputMethodManagerService* service_ = nullptr;

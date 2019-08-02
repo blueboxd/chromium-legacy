@@ -14,9 +14,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ListItemType;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
-
-import java.util.ArrayList;
 
 /**
  * An infobar that presents the user with several buttons.
@@ -80,9 +81,9 @@ public class ConfirmInfoBar extends InfoBar {
     public PropertyModel createModel() {
         PropertyModel model = super.createModel();
 
-        ArrayList<PropertyModel> options = new ArrayList<>();
+        ModelList options = new ModelList();
         if (!TextUtils.isEmpty(mPrimaryButtonText)) {
-            options.add(
+            options.add(new ListItem(ListItemType.DEFAULT,
                     new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
                             .with(DialogListItemProperties.TEXT, mPrimaryButtonText)
                             .with(DialogListItemProperties.CLICK_LISTENER,
@@ -90,11 +91,11 @@ public class ConfirmInfoBar extends InfoBar {
                             .with(DialogListItemProperties.ICON,
                                     ApiCompatibilityUtils.getDrawable(getContext().getResources(),
                                             R.drawable.ic_check_circle))
-                            .build());
+                            .build()));
         }
 
         if (!TextUtils.isEmpty(mSecondaryButtonText)) {
-            options.add(
+            options.add(new ListItem(ListItemType.DEFAULT,
                     new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
                             .with(DialogListItemProperties.TEXT, mSecondaryButtonText)
                             .with(DialogListItemProperties.CLICK_LISTENER,
@@ -102,12 +103,10 @@ public class ConfirmInfoBar extends InfoBar {
                             .with(DialogListItemProperties.ICON,
                                     ApiCompatibilityUtils.getDrawable(getContext().getResources(),
                                             R.drawable.ic_cancel_circle))
-                            .build());
+                            .build()));
         }
 
-        PropertyModel[] optionModels = new PropertyModel[options.size()];
-        options.toArray(optionModels);
-        model.set(TouchlessDialogProperties.LIST_MODELS, optionModels);
+        model.set(TouchlessDialogProperties.LIST_MODELS, options);
 
         return model;
     }

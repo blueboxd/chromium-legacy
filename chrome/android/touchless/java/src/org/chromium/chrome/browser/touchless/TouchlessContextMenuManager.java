@@ -17,12 +17,13 @@ import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ActionNames;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ListItemType;
 import org.chromium.chrome.touchless.R;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
-
-import java.util.ArrayList;
 
 /**
  * Handles context menu creation for native pages on touchless devices. Utilizes functionality in
@@ -90,7 +91,7 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
             return;
         }
 
-        ArrayList<PropertyModel> menuItems = new ArrayList<>();
+        ModelList menuItems = new ModelList();
         for (@ContextMenuItemId int itemId = 0; itemId < ContextMenuItemId.NUM_ENTRIES; itemId++) {
             if (!shouldShowItem(itemId, delegate)) continue;
 
@@ -98,13 +99,11 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
             // itemId of this item is maintained.
             PropertyModel menuItem =
                     buildMenuItem(itemId, new TouchlessItemClickListener(delegate, itemId));
-            menuItems.add(menuItem);
+            menuItems.add(new ListItem(ListItemType.DEFAULT, menuItem));
         }
         if (menuItems.size() == 0) return;
 
-        PropertyModel[] menuItemsArray = new PropertyModel[menuItems.size()];
-        menuItemsArray = menuItems.toArray(menuItemsArray);
-        mTouchlessMenuModel = buildMenuModel(delegate.getContextMenuTitle(), menuItemsArray);
+        mTouchlessMenuModel = buildMenuModel(delegate.getContextMenuTitle(), menuItems);
         mModalDialogManager = modalDialogManager;
         mModalDialogManager.showDialog(mTouchlessMenuModel, ModalDialogManager.ModalDialogType.APP);
 
@@ -187,7 +186,7 @@ public class TouchlessContextMenuManager extends ContextMenuManager {
     }
 
     /** Builds PropertyModel for context menu from list of PropertyModels for individual items. */
-    private PropertyModel buildMenuModel(String title, PropertyModel[] menuItems) {
+    private PropertyModel buildMenuModel(String title, ModelList menuItems) {
         PropertyModel.Builder builder =
                 new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS);
         ActionNames names = new ActionNames();

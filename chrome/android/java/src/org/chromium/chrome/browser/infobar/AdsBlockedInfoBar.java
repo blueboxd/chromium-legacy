@@ -19,13 +19,14 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ListItemType;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.widget.ButtonCompat;
-
-import java.util.ArrayList;
 
 /**
  * This infobar appears when ads are being blocked on the page. This occurs after proceeding through
@@ -138,17 +139,18 @@ public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChange
         model.set(ModalDialogProperties.TITLE, res.getString(R.string.blocked_ads_prompt_title));
         model.set(ModalDialogProperties.MESSAGE, res.getString(R.string.intrusive_ads_information));
 
-        ArrayList<PropertyModel> options = new ArrayList<>();
-        options.add(new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                            .with(DialogListItemProperties.TEXT, res.getString(R.string.learn_more))
-                            .with(DialogListItemProperties.CLICK_LISTENER, (v) -> onLinkClicked())
-                            .with(DialogListItemProperties.ICON,
-                                    ApiCompatibilityUtils.getDrawable(
-                                            res, R.drawable.ic_info_outline_grey))
-                            .build());
+        ModelList listItems = new ModelList();
+        listItems.add(new ListItem(ListItemType.DEFAULT,
+                new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
+                        .with(DialogListItemProperties.TEXT, res.getString(R.string.learn_more))
+                        .with(DialogListItemProperties.CLICK_LISTENER, (v) -> onLinkClicked())
+                        .with(DialogListItemProperties.ICON,
+                                ApiCompatibilityUtils.getDrawable(
+                                        res, R.drawable.ic_info_outline_grey))
+                        .build()));
         // TODO(973601): We should have a better string for "always allow"; at least one that is
         //               specific to this feature.
-        options.add(
+        listItems.add(new ListItem(ListItemType.DEFAULT,
                 new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
                         .with(DialogListItemProperties.TEXT,
                                 res.getString(R.string.always_allow_redirects))
@@ -159,11 +161,9 @@ public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChange
                                 })
                         .with(DialogListItemProperties.ICON,
                                 ApiCompatibilityUtils.getDrawable(res, R.drawable.ic_check_circle))
-                        .build());
+                        .build()));
 
-        PropertyModel[] optionModels = new PropertyModel[options.size()];
-        options.toArray(optionModels);
-        model.set(TouchlessDialogProperties.LIST_MODELS, optionModels);
+        model.set(TouchlessDialogProperties.LIST_MODELS, listItems);
 
         // The alt action matches cancel but with a different name.
         model.get(TouchlessDialogProperties.ACTION_NAMES).alt = R.string.ok;

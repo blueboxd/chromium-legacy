@@ -415,7 +415,19 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   TextPosition position =
       is_in_document_write ? TextPosition() : script_start_position;
 
-  // 13.
+  // <spec step="13">If the script element does not have a src content
+  // attribute, and the Should element's inline behavior be blocked by Content
+  // Security Policy? algorithm returns "Blocked" when executed upon the script
+  // element, "script", and source text, then return. The script is not
+  // executed. [CSP]</spec>
+  if (!element_->HasSourceAttribute() &&
+      !element_->AllowInlineScriptForCSP(element_->GetNonceForElement(),
+                                         position.line_,
+                                         element_->TextFromChildren())) {
+    return false;
+  }
+
+  // 14.
   if (!IsScriptForEventSupported())
     return false;
 

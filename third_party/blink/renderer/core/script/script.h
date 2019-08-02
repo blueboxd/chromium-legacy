@@ -35,9 +35,6 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
   virtual void RunScript(LocalFrame*, const SecurityOrigin*) = 0;
   virtual void RunScriptOnWorker(WorkerGlobalScope&) = 0;
 
-  // For CSP check for inline scripts.
-  virtual String InlineSourceTextForCSP() const = 0;
-
   const ScriptFetchOptions& FetchOptions() const { return fetch_options_; }
   const KURL& BaseURL() const { return base_url_; }
 

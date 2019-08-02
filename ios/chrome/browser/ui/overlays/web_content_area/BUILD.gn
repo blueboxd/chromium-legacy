@@ -15,6 +15,7 @@ source_set("web_content_area") {
   deps = [
     "//base",
     "//ios/chrome/browser/ui/overlays:coordinators",
+    "//ios/chrome/browser/ui/overlays/web_content_area/app_launcher",
     "//ios/chrome/browser/ui/overlays/web_content_area/http_auth_dialogs",
     "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs:alerts",
     "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs:confirmations",

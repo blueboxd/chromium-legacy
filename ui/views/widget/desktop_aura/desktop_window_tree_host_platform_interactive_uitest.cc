@@ -161,7 +161,7 @@ class DesktopWindowTreeHostPlatformTest : public ViewsInteractiveUITestBase {
     toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     toplevel_params.bounds = bounds;
     toplevel_params.remove_standard_frame = true;
-    toplevel->Init(toplevel_params);
+    toplevel->Init(std::move(toplevel_params));
     return toplevel;
   }
 

@@ -60,13 +60,6 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
   }
 
   config.bounds = properties.bounds;
-
-#if defined(OS_CHROMEOS)
-  config.activatable = !UseTestConfigForPlatformWindows();
-#else
-  config.activatable = properties.activatable;
-#endif
-
   config.force_show_in_taskbar = properties.force_show_in_taskbar;
   config.keep_on_top = properties.keep_on_top;
   config.visible_on_all_workspaces = properties.visible_on_all_workspaces;
@@ -75,6 +68,12 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
   config.wm_class_name = properties.wm_class_name;
   config.wm_class_class = properties.wm_class_class;
   config.wm_role_name = properties.wm_role_name;
+
+  // TODO(nickdiego): {Use,Enable}TestConfigForPlatformWindows are used by test
+  // infra to disable platform windows activation. Figure out another way to do
+  // this in case Widget::InitParams::activation is needed in the future.
+  config.activatable =
+      properties.activatable && !UseTestConfigForPlatformWindows();
 
   return config;
 }

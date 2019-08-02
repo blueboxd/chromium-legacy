@@ -23,8 +23,7 @@ namespace safe_browsing {
 
 SafeBrowsingDatabaseManager::SafeBrowsingDatabaseManager()
     : base::RefCountedDeleteOnSequence<SafeBrowsingDatabaseManager>(
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::IO})),
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
       enabled_(false) {}
 
 SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {

@@ -106,7 +106,9 @@ class NET_EXPORT CertPathBuilder {
   // were attempted.
   struct NET_EXPORT Result {
     Result();
+    Result(Result&&);
     ~Result();
+    Result& operator=(Result&&);
 
     // Returns true if there was a valid path.
     bool HasValidPath() const;
@@ -117,9 +119,6 @@ class NET_EXPORT CertPathBuilder {
 
     // Returns the best CertPathBuilderResultPath or nullptr if there was none.
     const CertPathBuilderResultPath* GetBestPathPossiblyInvalid() const;
-
-    // Resets to the initial value.
-    void Clear();
 
     // List of paths that were attempted and the result for each.
     std::vector<std::unique_ptr<CertPathBuilderResultPath>> paths;

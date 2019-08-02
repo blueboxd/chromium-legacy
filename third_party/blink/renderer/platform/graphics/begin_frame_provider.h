@@ -51,9 +51,6 @@ class PLATFORM_EXPORT BeginFrameProvider
   }
 
   // viz::mojom::blink::EmbeddedFrameSinkClient implementation.
-  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) final {
-    NOTIMPLEMENTED();
-  }
   void BindSurfaceEmbedder(
       mojom::blink::SurfaceEmbedderRequest request) override {
     NOTIMPLEMENTED();

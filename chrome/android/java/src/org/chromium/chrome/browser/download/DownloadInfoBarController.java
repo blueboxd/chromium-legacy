@@ -303,6 +303,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     }
 
     /** Associates a notification ID with the tracked download for future usage. */
+    // TODO(shaktisahu): Find an alternative way after moving to offline content provider.
     public void onNotificationShown(ContentId id, int notificationId) {
         mNotificationIds.put(id, notificationId);
     }
@@ -383,6 +384,10 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         }
         if (LegacyHelpers.isLegacyDownload(offlineItem.id)
                 && TextUtils.isEmpty(offlineItem.filePath)) {
+            return false;
+        }
+
+        if (DownloadUtils.shouldAutoOpenDownload(offlineItem.mimeType, true)) {
             return false;
         }
 

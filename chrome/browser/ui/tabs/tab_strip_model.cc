@@ -291,6 +291,10 @@ class TabStripModel::GroupData {
       : visual_data_(std::move(visual_data)) {}
 
   const TabGroupVisualData& visual_data() const { return visual_data_; }
+  void SetVisualData(TabGroupVisualData visual_data) {
+    visual_data_ = std::move(visual_data);
+  }
+
   bool empty() const { return tab_count_ == 0; }
 
   void TabAdded() { ++tab_count_; }
@@ -300,7 +304,7 @@ class TabStripModel::GroupData {
   }
 
  private:
-  const TabGroupVisualData visual_data_;
+  TabGroupVisualData visual_data_;
   int tab_count_ = 0;
 };
 
@@ -801,6 +805,21 @@ const TabGroupVisualData* TabStripModel::GetVisualDataForGroup(
     TabGroupId group) const {
   DCHECK(base::Contains(group_data_, group));
   return &group_data_.at(group).visual_data();
+}
+
+void TabStripModel::SetVisualDataForGroup(TabGroupId group,
+                                          TabGroupVisualData data) {
+  DCHECK(!reentrancy_guard_);
+  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+
+  DCHECK(base::Contains(group_data_, group));
+  auto data_it = group_data_.find(group);
+  data_it->second.SetVisualData(data);
+
+  for (auto& observer : observers_) {
+    observer.OnTabGroupVisualDataChanged(this, group,
+                                         &data_it->second.visual_data());
+  }
 }
 
 base::Optional<TabGroupId> TabStripModel::GetTabGroupForTab(int index) const {
@@ -1779,7 +1798,10 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
       contents_data_.cbegin(), contents_data_.cend(),
       [new_group](const auto& datum) { return datum->group() == new_group; }));
 
-  group_data_.emplace(new_group, GroupData(TabGroupVisualData()));
+  // Create initial visual data and save the iterator so we can notify observer
+  // later.
+  const auto data_it =
+      group_data_.emplace(new_group, GroupData(TabGroupVisualData())).first;
 
   // Find a destination for the first tab that's not inside another group. We
   // will stack the rest of the tabs up to its right.
@@ -1800,6 +1822,12 @@ void TabStripModel::AddToNewGroupImpl(const std::vector<int>& indices,
     new_indices = SetTabsPinned(new_indices, true);
 
   MoveTabsIntoGroup(new_indices, destination_index, new_group);
+
+  // Notify observers about the initial visual data.
+  for (auto& observer : observers_) {
+    observer.OnTabGroupVisualDataChanged(this, new_group,
+                                         &data_it->second.visual_data());
+  }
 }
 
 void TabStripModel::AddToExistingGroupImpl(const std::vector<int>& indices,

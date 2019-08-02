@@ -4,6 +4,7 @@
 
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,6 +18,7 @@
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_processing_util.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -33,13 +35,20 @@ constexpr char kManualConfigComponentVersion[] = "0.0.0";
 std::unique_ptr<optimization_guide::HintUpdateData> ProcessHintsComponent(
     const optimization_guide::HintsComponentInfo& info,
     std::unique_ptr<optimization_guide::HintUpdateData> update_data) {
-  // TODO(crbug/969558): Add the result here and record the histogram.
+  optimization_guide::ProcessHintsComponentResult out_result;
   std::unique_ptr<optimization_guide::proto::Configuration> config =
-      optimization_guide::ProcessHintsComponent(info, /*out_result=*/nullptr);
-  if (!config)
+      optimization_guide::ProcessHintsComponent(info, &out_result);
+  if (!config) {
+    optimization_guide::RecordProcessHintsComponentResult(out_result);
     return nullptr;
+  }
 
-  optimization_guide::ProcessHints(config->mutable_hints(), update_data.get());
+  bool did_process_hints = optimization_guide::ProcessHints(
+      config->mutable_hints(), update_data.get());
+  optimization_guide::RecordProcessHintsComponentResult(
+      did_process_hints
+          ? optimization_guide::ProcessHintsComponentResult::kSuccess
+          : optimization_guide::ProcessHintsComponentResult::kProcessedNoHints);
 
   return update_data;
 }
@@ -47,6 +56,38 @@ std::unique_ptr<optimization_guide::HintUpdateData> ProcessHintsComponent(
 void MaybeRunUpdateClosure(base::OnceClosure update_closure) {
   if (update_closure)
     std::move(update_closure).Run();
+}
+
+// Returns whether the particular component version can be processed, and if it
+// can be, locks the semaphore (in the form of a pref) to signal that the
+// processing of this particular version has started.
+bool CanProcessComponentVersion(PrefService* pref_service,
+                                const base::Version& version) {
+  DCHECK(version.IsValid());
+
+  const std::string previous_attempted_version_string = pref_service->GetString(
+      optimization_guide::prefs::kPendingHintsProcessingVersion);
+  if (!previous_attempted_version_string.empty()) {
+    const base::Version previous_attempted_version =
+        base::Version(previous_attempted_version_string);
+    if (!previous_attempted_version.IsValid()) {
+      DLOG(ERROR) << "Bad contents in hints processing pref";
+      // Clear pref for fresh start next time.
+      pref_service->ClearPref(
+          optimization_guide::prefs::kPendingHintsProcessingVersion);
+      return false;
+    }
+    if (previous_attempted_version.CompareTo(version) == 0) {
+      // Previously attempted same version without completion.
+      return false;
+    }
+  }
+
+  // Write config version to pref.
+  pref_service->SetString(
+      optimization_guide::prefs::kPendingHintsProcessingVersion,
+      version.GetString());
+  return true;
 }
 
 }  // namespace
@@ -98,12 +139,20 @@ void OptimizationGuideHintsManager::OnHintsComponentAvailable(
   std::unique_ptr<optimization_guide::HintUpdateData> update_data =
       hint_cache_->MaybeCreateUpdateDataForComponentHints(info.version);
   if (!update_data) {
+    optimization_guide::RecordProcessHintsComponentResult(
+        optimization_guide::ProcessHintsComponentResult::
+            kSkippedProcessingHints);
     MaybeRunUpdateClosure(std::move(next_update_closure_));
     return;
   }
 
-  // TODO(sophiechang): Check if we are mid-crash loop for processing this hint
-  // version.
+  if (!CanProcessComponentVersion(pref_service_, info.version)) {
+    optimization_guide::RecordProcessHintsComponentResult(
+        optimization_guide::ProcessHintsComponentResult::
+            kFailedFinishProcessing);
+    MaybeRunUpdateClosure(std::move(next_update_closure_));
+    return;
+  }
 
   // Processes the hints from the newly available component on a background
   // thread, providing a HintUpdateData for component update from the hint
@@ -148,6 +197,10 @@ void OptimizationGuideHintsManager::UpdateComponentHints(
     base::OnceClosure update_closure,
     std::unique_ptr<optimization_guide::HintUpdateData> hint_update_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // If we get here, the hints have been processed correctly.
+  pref_service_->ClearPref(
+      optimization_guide::prefs::kPendingHintsProcessingVersion);
 
   if (hint_update_data) {
     hint_cache_->UpdateComponentHints(

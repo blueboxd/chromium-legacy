@@ -466,6 +466,10 @@ below:
       <message name="IDS_AX_ROLE_SWITCH" desc="Accessibility role description for switch">
         switch
       </message>
+      <!-- https://w3c.github.io/html-aam/#el-input-tel -->
+      <message name="IDS_AX_ROLE_TELEPHONE" desc="Accessibility role description for telephone number input">
+        telephone
+      </message>
       <message name="IDS_AX_ROLE_WEB_AREA" desc="Accessibility role description for web area">
         HTML content
       </message>

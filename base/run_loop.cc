@@ -124,8 +124,11 @@ RunLoop::RunLoop(Type type)
 }
 
 RunLoop::~RunLoop() {
-  // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
-  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // ~RunLoop() must happen-after the RunLoop is done running but it doesn't
+  // have to be on |sequence_checker_| (it usually is but sometimes it can be a
+  // member of a RefCountedThreadSafe object and be destroyed on another thread
+  // after being quit).
+  DCHECK(!running_);
 }
 
 void RunLoop::Run() {

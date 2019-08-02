@@ -79,12 +79,6 @@ void AppShimHostManager::InitOnBackgroundThread() {
       std::make_unique<apps::MachBootstrapAcceptor>(name_fragment, this);
   mach_acceptor_->Start();
 
-  // TODO(rsesek): Delete this after a little while, to ensure everything
-  // is cleaned up.
-  base::FilePath mojo_channel_mac_signal_file =
-      user_data_dir.Append(app_mode::kMojoChannelMacSignalFile);
-  base::DeleteFile(mojo_channel_mac_signal_file, false);
-
   // Create a symlink containing the current version string. This allows the
   // shim to load the same framework version as the currently running Chrome
   // process.

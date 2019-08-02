@@ -165,6 +165,11 @@ class TabStrip : public views::AccessiblePaneView,
                       base::Optional<TabGroupId> old_group,
                       base::Optional<TabGroupId> new_group);
 
+  // Updates the group's tabs and header when its associated TabGroupVisualData
+  // changes. This should be called when the result of
+  // |TabStripController::GetVisualDataForGroup(group)| changes.
+  void GroupVisualsChanged(TabGroupId group);
+
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab
   // (for example, if currently the strip has the last tab selected, and
@@ -282,7 +287,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // views::AccessiblePaneView:
   void Layout() override;
-  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
@@ -299,11 +303,6 @@ class TabStrip : public views::AccessiblePaneView,
   void HandleDragExited() override;
 
  private:
-  using Tabs = std::vector<Tab*>;
-  using TabsClosingMap = std::map<int, Tabs>;
-  using FindClosingTabResult =
-      std::pair<TabsClosingMap::iterator, Tabs::iterator>;
-
   class RemoveTabDelegate;
   class TabDragContextImpl;
 
@@ -404,8 +403,7 @@ class TabStrip : public views::AccessiblePaneView,
   // the actual last tab unless the strip is in the overflow node_data.
   const Tab* GetLastVisibleTab() const;
 
-  // Adds the tab at |index| to |tabs_closing_map_| and removes the tab from
-  // |tabs_|.
+  // Removes the tab at |index| from |tabs_|.
   void RemoveTabFromViewModel(int index);
 
   // Cleans up the Tab from the TabStrip. This is called from the tab animation
@@ -416,17 +414,9 @@ class TabStrip : public views::AccessiblePaneView,
   // from the tab animation code and is not a general-purpose method.
   void OnGroupCloseAnimationCompleted(TabGroupId group);
 
-  // Adjusts the indices of all tabs in |tabs_closing_map_| whose index is
-  // >= |index| to have a new index of |index + delta|.
-  void UpdateTabsClosingMap(int index, int delta);
-
   // Invoked from StoppedDraggingTabs to cleanup |tab|. If |tab| is known
   // |is_first_tab| is set to true.
   void StoppedDraggingTab(Tab* tab, bool* is_first_tab);
-
-  // Finds |tab| in the |tab_closing_map_| and returns a pair of iterators
-  // indicating precisely where it is.
-  FindClosingTabResult FindClosingTab(const Tab* tab);
 
   // Invoked when a mouse event occurs over |source|. Potentially switches the
   // |stacked_layout_|.
@@ -564,12 +554,9 @@ class TabStrip : public views::AccessiblePaneView,
   // There is a one-to-one mapping between each of the tabs in the
   // TabStripController (TabStripModel) and |tabs_|. Because we animate tab
   // removal there exists a period of time where a tab is displayed but not in
-  // the model. When this occurs the tab is removed from |tabs_| and placed in
-  // |tabs_closing_map_|. When the animation completes the tab is removed from
-  // |tabs_closing_map_|. The painting code ensures both sets of tabs are
-  // painted, and the event handling code ensures only tabs in |tabs_| are used.
+  // the model. When this occurs the tab is removed from |tabs_|, but remains
+  // in |layout_helper_| until the remove animation completes.
   views::ViewModelT<Tab> tabs_;
-  TabsClosingMap tabs_closing_map_;
 
   // Map associating each group to its TabGroupHeader instance.
   std::map<TabGroupId, std::unique_ptr<TabGroupHeader>> group_headers_;
@@ -639,10 +626,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Number of mouse moves.
   int mouse_move_count_ = 0;
-
-  // Accumulatated offsets from thumb wheel. Used to throttle horizontal
-  // scroll from thumb wheel.
-  int accumulated_horizontal_scroll_ = 0;
 
   // Timer used when a tab is closed and we need to relayout. Only used when a
   // tab close comes from a touch device.

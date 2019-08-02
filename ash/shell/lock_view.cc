@@ -96,7 +96,7 @@ void CreateLockScreen() {
   params.delegate = lock_view;
   params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                                       kShellWindowId_LockScreenContainer);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   widget->GetNativeView()->SetName("LockView");
   widget->GetNativeView()->Focus();

@@ -5,6 +5,7 @@
 #include "device/vr/openxr/openxr_render_loop.h"
 
 #include "device/vr/openxr/openxr_api_wrapper.h"
+#include "device/vr/openxr/openxr_gamepad_helper.h"
 
 namespace device {
 
@@ -19,16 +20,15 @@ void OpenXrRenderLoop::GetViewSize(uint32_t* width, uint32_t* height) const {
 }
 
 mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
+  frame_data->frame_id = next_frame_id_;
 
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
   if (XR_FAILED(openxr_->BeginFrame(&texture))) {
-    return nullptr;
+    return frame_data;
   }
 
   texture_helper_.SetBackbuffer(texture.Get());
-
-  mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
-  frame_data->frame_id = next_frame_id_;
 
   frame_data->time_delta =
       base::TimeDelta::FromNanoseconds(openxr_->GetPredictedDisplayTime());
@@ -45,11 +45,12 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
 }
 
 mojom::XRGamepadDataPtr OpenXrRenderLoop::GetNextGamepadData() {
-  return nullptr;
+  return gamepad_helper_->GetGamepadData(openxr_->GetPredictedDisplayTime());
 }
 
 bool OpenXrRenderLoop::StartRuntime() {
   DCHECK(!openxr_);
+  DCHECK(!gamepad_helper_);
 
   // The new wrapper object is stored in a temporary variable instead of
   // openxr_ so that the local unique_ptr cleans up the object if starting
@@ -64,7 +65,8 @@ bool OpenXrRenderLoop::StartRuntime() {
   if (XR_FAILED(openxr->GetLuid(&luid)) ||
       !texture_helper_.SetAdapterLUID(luid) ||
       !texture_helper_.EnsureInitialized() ||
-      XR_FAILED(openxr->StartSession(texture_helper_.GetDevice()))) {
+      XR_FAILED(openxr->StartSession(texture_helper_.GetDevice(),
+                                     &gamepad_helper_))) {
     texture_helper_.Reset();
     return false;
   }
@@ -78,12 +80,15 @@ bool OpenXrRenderLoop::StartRuntime() {
   texture_helper_.SetDefaultSize(gfx::Size(width, height));
 
   DCHECK(openxr_);
+  DCHECK(gamepad_helper_);
+
   return true;
 }
 
 void OpenXrRenderLoop::StopRuntime() {
   openxr_ = nullptr;
   texture_helper_.Reset();
+  gamepad_helper_.reset();
 }
 
 void OpenXrRenderLoop::OnSessionStart() {

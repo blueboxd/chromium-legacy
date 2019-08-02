@@ -25,8 +25,8 @@ void BindInProcessFilePatcher(
 
 mojo::PendingRemote<mojom::FilePatcher> LaunchInProcessFilePatcher() {
   mojo::PendingRemote<mojom::FilePatcher> remote;
-  base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::WithBaseSyncPrimitives()})
+  base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&BindInProcessFilePatcher,
                                 remote.InitWithNewPipeAndPassReceiver()));

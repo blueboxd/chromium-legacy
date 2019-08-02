@@ -47,7 +47,7 @@ class SafetyTipPageInfoBubbleViewTest : public testing::Test {
     views::Widget::InitParams parent_params;
     parent_params.context = views_helper_.GetContext();
     parent_window_ = new views::Widget();
-    parent_window_->Init(parent_params);
+    parent_window_->Init(std::move(parent_params));
 
     content::WebContents* web_contents = web_contents_helper_.web_contents();
     TabSpecificContentSettings::CreateForWebContents(web_contents);

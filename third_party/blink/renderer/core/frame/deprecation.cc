@@ -812,7 +812,7 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   DeprecationReportBody* body = MakeGarbageCollected<DeprecationReportBody>(
       info.id, removal_date, info.message);
   Report* report = MakeGarbageCollected<Report>(
-      "deprecation", document->Url().GetString(), body);
+      ReportType::kDeprecation, document->Url().GetString(), body);
 
   // Send the deprecation report to the Reporting API and any
   // ReportingObservers.

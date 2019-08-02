@@ -150,8 +150,13 @@ void AwFeatureListCreator::SetUpFieldTrials() {
       &ignored_safe_seed_manager);
 }
 
-void AwFeatureListCreator::CreateFeatureListAndFieldTrials() {
+void AwFeatureListCreator::CreateLocalState() {
+  browser_policy_connector_ = std::make_unique<AwBrowserPolicyConnector>();
   local_state_ = CreatePrefService();
+}
+
+void AwFeatureListCreator::CreateFeatureListAndFieldTrials() {
+  CreateLocalState();
   AwMetricsServiceClient::GetInstance()->Initialize(local_state_.get());
   SetUpFieldTrials();
 }

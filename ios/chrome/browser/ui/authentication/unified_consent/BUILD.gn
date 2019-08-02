@@ -35,7 +35,7 @@ source_set("unified_consent_ui") {
     "resources:identity_picker_view_arrow_down",
     "resources:unified_consent_header",
     "//base",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/authentication:authentication_constants",

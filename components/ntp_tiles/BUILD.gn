@@ -55,7 +55,7 @@ static_library("ntp_tiles") {
   deps = [
     "//components/favicon/core",
     "//components/favicon_base",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/image_fetcher/core",
     "//components/pref_registry",
     "//components/prefs",

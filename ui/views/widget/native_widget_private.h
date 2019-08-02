@@ -78,7 +78,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   static gfx::Rect ConstrainBoundsToDisplayWorkArea(const gfx::Rect& bounds);
 
   // Initializes the NativeWidget.
-  virtual void InitNativeWidget(const Widget::InitParams& params) = 0;
+  virtual void InitNativeWidget(Widget::InitParams params) = 0;
 
   // Called at the end of Widget::Init(), after Widget has completed
   // initialization.

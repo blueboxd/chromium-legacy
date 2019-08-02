@@ -279,13 +279,23 @@ CollectedCookiesViews::~CollectedCookiesViews() {
 void CollectedCookiesViews::CreateAndShowForWebContents(
     content::WebContents* web_contents) {
   CollectedCookiesViews* instance = FromWebContents(web_contents);
-  if (instance) {
-    web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)
-        ->FocusTopmostDialog();
+  if (!instance) {
+    CreateForWebContents(web_contents);
     return;
   }
 
-  CreateForWebContents(web_contents);
+  // On rare occasions, |instance| may have started, but not finished,
+  // closing. In this case, the modal dialog manager will have removed the
+  // dialog from its list of tracked dialogs, and therefore might not have any
+  // active dialog. This should be rare enough that it's not worth trying to
+  // re-open the dialog. See https://crbug.com/989888
+  if (instance->GetWidget()->IsClosed())
+    return;
+
+  auto* dialog_manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
+  CHECK(dialog_manager->IsDialogActive());
+  dialog_manager->FocusTopmostDialog();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

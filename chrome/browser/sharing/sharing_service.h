@@ -98,6 +98,14 @@ class SharingService : public KeyedService,
   // Returns the current state of SharingService.
   virtual State GetState() const;
 
+  // For testing
+  void RegisterDeviceInTesting(
+      std::string device_name,
+      int capabilities,
+      SharingDeviceRegistration::RegistrationCallback callback);
+
+  SharingSyncPreference* GetSyncPreferences() const;
+
  private:
   // Overrides for syncer::SyncServiceObserver.
   void OnSyncShutdown(syncer::SyncService* sync) override;
@@ -107,6 +115,7 @@ class SharingService : public KeyedService,
   void OnAckReceived(const std::string& message_id) override;
 
   void RegisterDevice();
+
   void UnregisterDevice();
   void OnDeviceRegistered(SharingDeviceRegistrationResult result);
   void OnDeviceUnregistered(SharingDeviceRegistrationResult result);
@@ -122,6 +131,10 @@ class SharingService : public KeyedService,
   // in transitioning state.
   bool IsSyncDisabled() const;
 
+  // Returns |local_device_name_for_tests_| if set, otherwise returns the actual
+  // device name from |local_device_info_provider_|.
+  base::Optional<std::string> GetDeviceName() const;
+
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;
@@ -134,6 +147,7 @@ class SharingService : public KeyedService,
   PingMessageHandler ping_message_handler_;
   net::BackoffEntry backoff_entry_;
   State state_;
+  base::Optional<std::string> local_device_name_for_tests_;
 
   // Map of random GUID to SendMessageCallback.
   std::map<std::string, SendMessageCallback> send_message_callbacks_;

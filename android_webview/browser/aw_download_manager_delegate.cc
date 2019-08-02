@@ -84,11 +84,10 @@ bool AwDownloadManagerDelegate::InterceptDownloadIfApplicable(
     // use default user agent if nothing is provided
     aw_user_agent = user_agent.empty() ? GetUserAgent() : user_agent;
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&DownloadStartingOnUIThread, web_contents, url,
-                     aw_user_agent, content_disposition, mime_type,
-                     content_length));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&DownloadStartingOnUIThread, web_contents, url,
+                                aw_user_agent, content_disposition, mime_type,
+                                content_length));
   return true;
 }
 

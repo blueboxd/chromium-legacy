@@ -134,10 +134,9 @@ void NaClHostMessageFilter::OnLaunchNaCl(
         ppapi::PpapiPermissions(perms));
     return;
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuation, this,
-                     launch_params, reply_msg));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuation,
+                                this, launch_params, reply_msg));
 }
 
 void NaClHostMessageFilter::LaunchNaClContinuation(
@@ -181,9 +180,9 @@ void NaClHostMessageFilter::LaunchNaClContinuation(
 
   // Process a list of resource file URLs in
   // |launch_params.resource_files_to_prefetch|.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&NaClHostMessageFilter::BatchOpenResourceFiles, this,
                      safe_launch_params, reply_msg, permissions));
@@ -219,7 +218,7 @@ void NaClHostMessageFilter::BatchOpenResourceFiles(
       break;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
                      this, launch_params, reply_msg, prefetched_resource_files,

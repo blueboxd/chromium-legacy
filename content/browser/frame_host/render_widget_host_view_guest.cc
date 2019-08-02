@@ -148,13 +148,9 @@ void RenderWidgetHostViewGuest::Show() {
   // The two sizes may fall out of sync if we switch RenderWidgetHostViews,
   // resize, and then switch page, as is the case with interstitial pages.
   // NOTE: |guest_| is NULL in unit tests.
-  if (guest_) {
+  if (guest_)
     SetSize(guest_->web_contents()->GetViewBounds().size());
-    // Since we were last shown, our renderer may have had a different surface
-    // set (e.g. showing an interstitial), so we resend our current surface to
-    // the renderer.
-    SendSurfaceInfoToEmbedder();
-  }
+
   host()->WasShown(base::nullopt /* record_tab_switch_time_request */);
 }
 
@@ -329,7 +325,6 @@ void RenderWidgetHostViewGuest::OnDidUpdateVisualPropertiesComplete(
 
 void RenderWidgetHostViewGuest::OnAttached() {
   RegisterFrameSinkId();
-  SendSurfaceInfoToEmbedder();
 }
 
 RenderWidgetHostViewBase* RenderWidgetHostViewGuest::GetRootView() {

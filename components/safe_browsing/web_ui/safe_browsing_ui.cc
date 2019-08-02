@@ -168,10 +168,9 @@ void WebUIInfoSingleton::LogMessage(const std::string& message) {
   base::Time timestamp = base::Time::Now();
   log_messages_.push_back(std::make_pair(timestamp, message));
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&WebUIInfoSingleton::NotifyLogMessageListeners, timestamp,
-                     message));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&WebUIInfoSingleton::NotifyLogMessageListeners,
+                                timestamp, message));
 }
 
 void WebUIInfoSingleton::ClearLogMessages() {

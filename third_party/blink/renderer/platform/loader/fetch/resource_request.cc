@@ -64,7 +64,6 @@ ResourceRequest::ResourceRequest(const KURL& url)
       priority_(ResourceLoadPriority::kUnresolved),
       intra_priority_value_(0),
       requestor_id_(0),
-      plugin_child_id_(-1),
       previews_state_(WebURLRequest::kPreviewsUnspecified),
       request_context_(mojom::RequestContextType::UNSPECIFIED),
       mode_(network::mojom::RequestMode::kNoCors),

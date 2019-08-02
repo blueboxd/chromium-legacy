@@ -22,6 +22,8 @@ import org.chromium.chrome.browser.widget.AlertDialogEditText;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** A touchless variation of the {@link AddToHomescreenDialog}. */
@@ -30,6 +32,7 @@ public class TouchlessAddToHomescreenDialog extends AddToHomescreenDialog {
     private Delegate mDelegate;
     private ModalDialogManager mDialogManager;
     private PropertyModel mModel;
+    private PropertyModel mAddToHomescreenOption;
 
     public TouchlessAddToHomescreenDialog(
             Activity activity, ModalDialogManager dialogManager, Delegate delegate) {
@@ -77,44 +80,24 @@ public class TouchlessAddToHomescreenDialog extends AddToHomescreenDialog {
         model.set(TouchlessDialogProperties.CANCEL_ACTION,
                 (v) -> mDialogManager.dismissDialog(model, DialogDismissalCause.UNKNOWN));
 
-        model.set(TouchlessDialogProperties.LIST_MODELS,
-                new PropertyModel[] {buildListItemModel("")});
+        mAddToHomescreenOption = new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
+                                         .with(DialogListItemProperties.TEXT,
+                                                 res.getString(org.chromium.chrome.R.string.add))
+                                         .with(DialogListItemProperties.ICON,
+                                                 ApiCompatibilityUtils.getDrawable(res,
+                                                         org.chromium.chrome.R.drawable.ic_add))
+                                         .with(DialogListItemProperties.MULTI_CLICKABLE, false)
+                                         .with(DialogListItemProperties.CLICK_LISTENER, null)
+                                         .build();
+        ModelList modelList = new ModelList();
+        modelList.add(new ListItem(
+                TouchlessDialogProperties.ListItemType.DEFAULT, mAddToHomescreenOption));
+        model.set(TouchlessDialogProperties.LIST_MODELS, modelList);
 
         model.set(ModalDialogProperties.CUSTOM_VIEW,
                 mActivity.getLayoutInflater().inflate(R.layout.touchless_add_to_apps, null));
 
         return model;
-    }
-
-    /**
-     * Build the list item that adds the app or site to the home screen.
-     * @param title The title of the app or site.
-     * @return The list item for the dialog model.
-     */
-    private PropertyModel buildListItemModel(final String title) {
-        Resources res = mActivity.getResources();
-        return new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                .with(DialogListItemProperties.TEXT,
-                        res.getString(org.chromium.chrome.R.string.add))
-                .with(DialogListItemProperties.ICON,
-                        ApiCompatibilityUtils.getDrawable(
-                                res, org.chromium.chrome.R.drawable.ic_add))
-                .with(DialogListItemProperties.MULTI_CLICKABLE, false)
-                .with(DialogListItemProperties.CLICK_LISTENER,
-                        (v) -> {
-                            ViewGroup group =
-                                    (ViewGroup) mModel.get(ModalDialogProperties.CUSTOM_VIEW);
-                            String customTitle =
-                                    ((AlertDialogEditText) group.findViewById(R.id.app_title))
-                                            .getText()
-                                            .toString();
-                            if (TextUtils.isEmpty(customTitle)) customTitle = title;
-
-                            if (TextUtils.isEmpty(customTitle)) return;
-                            mDelegate.addToHomescreen(customTitle);
-                            mDialogManager.dismissDialog(mModel, DialogDismissalCause.UNKNOWN);
-                        })
-                .build();
     }
 
     /**
@@ -139,8 +122,16 @@ public class TouchlessAddToHomescreenDialog extends AddToHomescreenDialog {
     @Override
     public void onUserTitleAvailable(String title, String url, boolean isWebapp) {
         updateModelCustomView(null, title, url);
-        mModel.set(TouchlessDialogProperties.LIST_MODELS,
-                new PropertyModel[] {buildListItemModel(title)});
+        mAddToHomescreenOption.set(DialogListItemProperties.CLICK_LISTENER, (v) -> {
+            ViewGroup group = (ViewGroup) mModel.get(ModalDialogProperties.CUSTOM_VIEW);
+            String customTitle =
+                    ((AlertDialogEditText) group.findViewById(R.id.app_title)).getText().toString();
+            if (TextUtils.isEmpty(customTitle)) customTitle = title;
+
+            if (TextUtils.isEmpty(customTitle)) return;
+            mDelegate.addToHomescreen(customTitle);
+            mDialogManager.dismissDialog(mModel, DialogDismissalCause.UNKNOWN);
+        });
     }
 
     @Override

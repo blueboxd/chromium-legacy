@@ -122,7 +122,7 @@ class OverlayAgentTest : public views::ViewsTestBase {
 #if defined(USE_AURA)
     params.parent = GetContext();
 #endif
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->Show();
   }
 

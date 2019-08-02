@@ -39,7 +39,7 @@ TouchObserverHud::TouchObserverHud(aura::Window* initial_root,
   params.parent =
       Shell::GetContainer(root_window_, kShellWindowId_OverlayContainer);
   params.name = widget_name;
-  widget_->Init(params);
+  widget_->Init(std::move(params));
   widget_->SetContentsView(content);
   widget_->StackAtTop();
   widget_->Show();

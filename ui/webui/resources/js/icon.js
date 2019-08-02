@@ -129,19 +129,26 @@ cr.define('cr.icon', function() {
    * @return {string} -webkit-image-set for the favicon.
    */
   function getFavicon(url, isSyncedUrlForHistoryUi, remoteIconUrlForUma = '') {
-    const isIconUrl = FAVICON_URL_REGEX.test(url);
-    // Note: Literal strings used below must match those in the description of
+    // Note: URL param keys used below must match those in the description of
     // chrome://favicon2 format in components/favicon_base/favicon_url_parser.h.
-    let path = 'chrome://favicon2/?size=16&scale_factor=SCALEFACTORx' +
-        (isIconUrl ? '&icon_url=' : '&page_url=') + encodeURIComponent(url);
-    if (!isIconUrl) {
-      path += '&allow_google_server_fallback=' +
-          (isSyncedUrlForHistoryUi ? '1' : '0');
+    const faviconUrl = new URL('chrome://favicon2/');
+    faviconUrl.searchParams.set('size', '16');
+    faviconUrl.searchParams.set('scale_factor', 'SCALEFACTORx');
+
+    if (FAVICON_URL_REGEX.test(url)) {
+      faviconUrl.searchParams.set('icon_url', url);
+    } else {
+      faviconUrl.searchParams.set('page_url', url);
+      // TODO(dbeam): use the presence of 'allow_google_server_fallback' to
+      // indicate true, otherwise false.
+      const fallback = isSyncedUrlForHistoryUi ? '1' : '0';
+      faviconUrl.searchParams.set('allow_google_server_fallback', fallback);
       if (isSyncedUrlForHistoryUi) {
-        path += '&icon_url=' + encodeURIComponent(remoteIconUrlForUma);
+        faviconUrl.searchParams.set('icon_url', remoteIconUrlForUma);
       }
     }
-    return getImageSet(path);
+
+    return getImageSet(faviconUrl.toString());
   }
 
   return {

@@ -34,7 +34,7 @@ class ChooserDialogViewTest : public ChromeViewsTestBase {
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(10, 11, 200, 200);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    parent_widget_.Init(params);
+    parent_widget_.Init(std::move(params));
 
     widget_ = views::DialogDelegate::CreateDialogWidget(
         dialog_, GetContext(), parent_widget_.GetNativeView());

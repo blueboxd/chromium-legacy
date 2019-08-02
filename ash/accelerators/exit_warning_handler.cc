@@ -154,7 +154,7 @@ void ExitWarningHandler::Show() {
   params.parent =
       root_window->GetChildById(kShellWindowId_SettingBubbleContainer);
   widget_ = std::make_unique<views::Widget>();
-  widget_->Init(params);
+  widget_->Init(std::move(params));
   widget_->Show();
 
   delegate->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);

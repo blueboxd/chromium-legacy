@@ -23,14 +23,11 @@ class SpellCheckHostChromeImplWinBrowserTest : public InProcessBrowserTest {
     content::BrowserContext* context = browser()->profile();
     renderer_.reset(new content::MockRenderProcessHost(context));
 
-    service_manager::BindSourceInfo source_info;
-    source_info.identity = renderer_->GetChildIdentity();
-
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
 
-    SpellCheckHostChromeImpl::Create(mojo::MakeRequest(&spell_check_host_),
-                                     source_info);
+    SpellCheckHostChromeImpl::Create(renderer_->GetID(),
+                                     mojo::MakeRequest(&spell_check_host_));
   }
 
   void TearDownOnMainThread() override { renderer_.reset(); }

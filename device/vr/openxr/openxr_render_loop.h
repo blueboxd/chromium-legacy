@@ -14,6 +14,7 @@
 namespace device {
 
 class OpenXrApiWrapper;
+class OpenXrGamepadHelper;
 
 class OpenXrRenderLoop : public XRCompositorCommon {
  public:
@@ -33,6 +34,7 @@ class OpenXrRenderLoop : public XRCompositorCommon {
   bool SubmitCompositedFrame() override;
 
   std::unique_ptr<OpenXrApiWrapper> openxr_;
+  std::unique_ptr<OpenXrGamepadHelper> gamepad_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenXrRenderLoop);
 };

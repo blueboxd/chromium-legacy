@@ -75,7 +75,7 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
       return DispatchMessage(message);
     }
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {thread},
         base::BindOnce(base::IgnoreResult(&Internal::DispatchMessage), this,
                        message));
@@ -146,7 +146,7 @@ bool BrowserMessageFilter::Send(IPC::Message* message) {
   }
 
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(base::IgnoreResult(&BrowserMessageFilter::Send), this,
                        message));

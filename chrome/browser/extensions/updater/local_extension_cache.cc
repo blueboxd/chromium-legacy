@@ -277,10 +277,9 @@ void LocalExtensionCache::BackendCheckCacheStatus(
     }
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&LocalExtensionCache::OnCacheStatusChecked, local_cache,
-                     exists, callback));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&LocalExtensionCache::OnCacheStatusChecked,
+                                local_cache, exists, callback));
 }
 
 void LocalExtensionCache::OnCacheStatusChecked(bool ready,
@@ -293,7 +292,7 @@ void LocalExtensionCache::OnCacheStatusChecked(bool ready,
   if (ready) {
     CheckCacheContents(callback);
   } else {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&LocalExtensionCache::CheckCacheStatus,
                        weak_ptr_factory_.GetWeakPtr(), callback),
@@ -316,7 +315,7 @@ void LocalExtensionCache::BackendCheckCacheContents(
     const base::Closure& callback) {
   std::unique_ptr<CacheMap> cache_content(new CacheMap);
   BackendCheckCacheContentsInternal(cache_dir, cache_content.get());
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&LocalExtensionCache::OnCacheContentsChecked, local_cache,
                      std::move(cache_content), callback));
@@ -528,7 +527,7 @@ void LocalExtensionCache::BackendInstallCacheEntry(
     }
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&LocalExtensionCache::OnCacheEntryInstalled, local_cache,
                      id,

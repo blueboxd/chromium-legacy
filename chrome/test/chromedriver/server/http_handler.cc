@@ -756,6 +756,15 @@ HttpHandler::HttpHandler(
                   &ExecuteWebAuthnCommand,
                   base::BindRepeating(&ExecuteRemoveVirtualAuthenticator)))),
 
+      CommandMapping(
+          kPost,
+          "session/:sessionId/webauthn/authenticator/:authenticatorId/"
+          "credential",
+          WrapToCommand(
+              "AddCredential",
+              base::BindRepeating(&ExecuteWebAuthnCommand,
+                                  base::BindRepeating(&ExecuteAddCredential)))),
+
       //
       // Non-standard extension commands
       //

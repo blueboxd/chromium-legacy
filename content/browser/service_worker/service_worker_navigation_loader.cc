@@ -102,6 +102,9 @@ ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() {
 
 void ServiceWorkerNavigationLoader::DetachedFromRequest() {
   is_detached_ = true;
+  // Clear |fallback_callback_| since it's no longer safe to invoke it because
+  // the bound object has been destroyed.
+  fallback_callback_.Reset();
   DeleteIfNeeded();
 }
 
@@ -283,8 +286,10 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     // page, but the risk is that the user will be stuck if there's a persistent
     // failure.
     provider_host_->NotifyControllerLost();
-    std::move(fallback_callback_)
-        .Run(true /* reset_subresource_loader_params */);
+    if (fallback_callback_) {
+      std::move(fallback_callback_)
+          .Run(true /* reset_subresource_loader_params */);
+    }
     return;
   }
 
@@ -294,8 +299,10 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     RecordTimingMetrics(false);
     // TODO(falken): Propagate the timing info to the renderer somehow, or else
     // Navigation Timing etc APIs won't know about service worker.
-    std::move(fallback_callback_)
-        .Run(false /* reset_subresource_loader_params */);
+    if (fallback_callback_) {
+      std::move(fallback_callback_)
+          .Run(false /* reset_subresource_loader_params */);
+    }
     return;
   }
 

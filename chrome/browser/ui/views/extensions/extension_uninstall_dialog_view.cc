@@ -45,12 +45,11 @@ ToolbarActionView* GetExtensionAnchorView(const std::string& extension_id,
   if (!browser_view)
     return nullptr;
   DCHECK(browser_view->toolbar_button_provider());
-  BrowserActionsContainer* const browser_actions_container =
-      browser_view->toolbar_button_provider()->GetBrowserActionsContainer();
-  if (!browser_actions_container)
-    return nullptr;
+  // TODO(pbos): Pop out extensions so that they can become visible before
+  // showing the uninstall dialog.
   ToolbarActionView* const reference_view =
-      browser_actions_container->GetViewForId(extension_id);
+      browser_view->toolbar_button_provider()->GetToolbarActionViewForId(
+          extension_id);
   return reference_view && reference_view->GetVisible() ? reference_view
                                                         : nullptr;
 }

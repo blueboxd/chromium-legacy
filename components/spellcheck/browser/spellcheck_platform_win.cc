@@ -451,7 +451,8 @@ std::unique_ptr<WindowsSpellChecker>& GetWindowsSpellChecker() {
   static base::NoDestructor<std::unique_ptr<WindowsSpellChecker>>
       win_spell_checker(std::make_unique<WindowsSpellChecker>(
           base::ThreadTaskRunnerHandle::Get(),
-          base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})));
+          base::CreateCOMSTATaskRunner(
+              {base::ThreadPool(), base::MayBlock()})));
   return *win_spell_checker;
 }
 }  // anonymous namespace

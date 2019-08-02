@@ -52,8 +52,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int32_t routing_id,
-                      int32_t widget_routing_id,
-                      int flags);
+                      int32_t widget_routing_id);
   ~TestRenderFrameHost() override;
 
   // RenderFrameHostImpl overrides (same values, but in Test*/Mock* types)

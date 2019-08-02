@@ -13,10 +13,10 @@ import android.widget.BaseAdapter;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.R;
+import org.chromium.ui.modelutil.ListObservable.ListObserver;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Adapter for providing data and views to a ListView.
@@ -24,10 +24,8 @@ import java.util.List;
  * To use, register a {@link PropertyModelChangeProcessor.ViewBinder} and {@link ViewBuilder}
  * for each view type in the list using
  * {@link #registerType(int, ViewBuilder, PropertyModelChangeProcessor.ViewBinder)}.
- * Then call {@link #updateModels(List)} to provide a list of items (represented by PropertyModels)
- * to display in the list. If the items in the list change (e.g. items are added, removed, or
- * change order), call #updateModels again with the new list of items. NOTE: There are plans to
- * change the API surface to work with a PropertyObservable instead.
+ * The constructor takes a {@link ListObservable} list in the form of a {@link ModelList}. Any
+ * changes that occur in the list will be automatically updated in the view.
  *
  * When creating a new view, ModelListAdapter will bind all set properties. When reusing/rebinding
  * a view, in addition to binding all properties set on the new model, properties that were
@@ -38,32 +36,36 @@ import java.util.List;
  * Additionally, ModelListAdapter will hook up a {@link PropertyModelChangeProcessor} when binding
  * views to ensure that changes to the PropertyModel for that list item are bound to the view.
  */
-public class ModelListAdapter extends BaseAdapter {
-    /**
-     * An interface to provide a means to build specific view types.
-     * @param <T> The type of view that the implementor will build.
-     */
-    public interface ViewBuilder<T extends View> {
-        /**
-         * @return A new view to show in the list.
-         */
-        T buildView();
-    }
+public class ModelListAdapter extends BaseAdapter implements MVCListAdapter {
+    private final ModelList mModelList;
+    private final SparseArray<Pair<ViewBuilder, ViewBinder>> mViewBuilderMap = new SparseArray<>();
+    private final ListObserver<Void> mListObserver;
 
-    private final List<Pair<Integer, PropertyModel>> mModelList = new ArrayList<>();
-    private final SparseArray<Pair<ViewBuilder, PropertyModelChangeProcessor.ViewBinder>>
-            mViewBuilderMap = new SparseArray<>();
+    public ModelListAdapter(ModelList data) {
+        mModelList = data;
+        mListObserver = new ListObserver<Void>() {
+            @Override
+            public void onItemRangeInserted(ListObservable source, int index, int count) {
+                notifyDataSetChanged();
+            }
 
-    /**
-     * Update the visible models (list items).
-     * @param models A list of {@link PropertyModel}s to display. The Integer property in the pair
-     *         indicates the view type, while the PropertyModel contains the properties for the item
-     *         to display.
-     */
-    public void updateModels(List<Pair<Integer, PropertyModel>> models) {
-        mModelList.clear();
-        mModelList.addAll(models);
-        notifyDataSetChanged();
+            @Override
+            public void onItemRangeRemoved(ListObservable source, int index, int count) {
+                notifyDataSetChanged();
+            }
+
+            @Override
+            public void onItemRangeChanged(
+                    ListObservable<Void> source, int index, int count, @Nullable Void payload) {
+                notifyDataSetChanged();
+            }
+
+            @Override
+            public void onItemMoved(ListObservable source, int curIndex, int newIndex) {
+                notifyDataSetChanged();
+            }
+        };
+        mModelList.addObserver(mListObserver);
     }
 
     @Override
@@ -81,22 +83,16 @@ public class ModelListAdapter extends BaseAdapter {
         return position;
     }
 
-    /**
-     * Register a new view type that this adapter knows how to show.
-     * @param typeId The ID of the view type. This should not match any other view type registered
-     *               in this adapter.
-     * @param builder A mechanism for building new views of the specified type.
-     * @param binder A means of binding a model to the provided view.
-     */
-    public <T extends View> void registerType(int typeId, ViewBuilder<T> builder,
-            PropertyModelChangeProcessor.ViewBinder<PropertyModel, T, PropertyKey> binder) {
+    @Override
+    public <T extends View> void registerType(
+            int typeId, ViewBuilder<T> builder, ViewBinder<PropertyModel, T, PropertyKey> binder) {
         assert mViewBuilderMap.get(typeId) == null;
         mViewBuilderMap.put(typeId, new Pair<>(builder, binder));
     }
 
     @Override
     public int getItemViewType(int position) {
-        return mModelList.get(position).first;
+        return mModelList.get(position).type;
     }
 
     @Override
@@ -118,7 +114,7 @@ public class ModelListAdapter extends BaseAdapter {
         PropertyModel oldModel = null;
         if (convertView == null || convertView.getTag(R.id.view_type) == null
                 || (int) convertView.getTag(R.id.view_type) != getItemViewType(position)) {
-            int modelTypeId = mModelList.get(position).first;
+            int modelTypeId = mModelList.get(position).type;
             convertView = mViewBuilderMap.get(modelTypeId).first.buildView();
 
             // Since the view type returned by getView is not guaranteed to return a view of that
@@ -130,9 +126,9 @@ public class ModelListAdapter extends BaseAdapter {
             oldModel = (PropertyModel) convertView.getTag(R.id.view_model);
         }
 
-        PropertyModel model = mModelList.get(position).second;
+        PropertyModel model = mModelList.get(position).model;
         PropertyModelChangeProcessor.ViewBinder binder =
-                mViewBuilderMap.get(mModelList.get(position).first).second;
+                mViewBuilderMap.get(mModelList.get(position).type).second;
 
         // 3. Attach a PropertyModelChangeProcessor and PropertyModel to the view (for #1/2 above
         //    when re-using a view).

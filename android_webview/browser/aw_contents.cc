@@ -225,7 +225,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
     : content::WebContentsObserver(web_contents.get()),
       browser_view_renderer_(
           this,
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})),
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI})),
       web_contents_(std::move(web_contents)) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
@@ -372,6 +372,15 @@ base::android::ScopedJavaLocalRef<jobject> AwContents::GetWebContents(
   return web_contents_->GetJavaWebContents();
 }
 
+base::android::ScopedJavaLocalRef<jobject> AwContents::GetBrowserContext(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  if (!web_contents_)
+    return base::android::ScopedJavaLocalRef<jobject>();
+  return AwBrowserContext::FromWebContents(web_contents_.get())
+      ->GetJavaBrowserContext();
+}
+
 void AwContents::SetCompositorFrameConsumer(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -399,12 +408,11 @@ void AwContents::Destroy(JNIEnv* env) {
   delete this;
 }
 
-static jlong JNI_AwContents_Init(JNIEnv* env,
-                                 const JavaParamRef<jobject>& browser_context) {
-  // TODO(joth): Use |browser_context| to get the native BrowserContext, rather
-  // than hard-code the default instance lookup here.
+static jlong JNI_AwContents_Init(JNIEnv* env, jlong browser_context_pointer) {
+  AwBrowserContext* browser_context =
+      reinterpret_cast<AwBrowserContext*>(browser_context_pointer);
   std::unique_ptr<WebContents> web_contents(content::WebContents::Create(
-      content::WebContents::CreateParams(AwBrowserContext::GetDefault())));
+      content::WebContents::CreateParams(browser_context)));
   // Return an 'uninitialized' instance; most work is deferred until the
   // subsequent SetJavaPeers() call.
   return reinterpret_cast<intptr_t>(new AwContents(std::move(web_contents)));
@@ -550,7 +558,7 @@ void ShowGeolocationPromptHelper(const JavaObjectWeakGlobalRef& java_ref,
                                  const GURL& origin) {
   JNIEnv* env = AttachCurrentThread();
   if (java_ref.get(env).obj()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ShowGeolocationPromptHelperTask, java_ref, origin));
   }

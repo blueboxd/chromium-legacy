@@ -182,7 +182,6 @@ void RenderFrameHostManager::Init(SiteInstance* site_instance,
   DCHECK(site_instance);
   SetRenderFrameHost(CreateRenderFrameHost(site_instance, view_routing_id,
                                            frame_routing_id, widget_routing_id,
-                                           delegate_->IsHidden(),
                                            renderer_initiated_creation));
 
   // Notify the delegate of the creation of the current RenderFrameHost.
@@ -330,17 +329,11 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
   if (!speculative_render_frame_host_) {
     // There's no speculative RenderFrameHost so it must be that the current
     // renderer process completed a navigation.
-
-    // We should only hear this from our current renderer.
+    // TODO(danakj): Make this a CHECK and stop handling it. Then make it a
+    // DCHECK when we're sure.
     DCHECK_EQ(render_frame_host_.get(), render_frame_host);
-
-    // If the current RenderFrameHost has a pending WebUI it must be committed.
-    // Note: When one tries to move same-site commit logic into RenderFrameHost
-    // itself, mind that the focus setting logic inside CommitPending also needs
-    // to be moved there.
-    if (render_frame_host_->pending_web_ui())
-      CommitPendingWebUI();
-    return;
+    if (render_frame_host != render_frame_host_.get())
+      return;
   }
 
   if (render_frame_host == speculative_render_frame_host_.get()) {
@@ -350,29 +343,37 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     // below.
     CommitPending(std::move(speculative_render_frame_host_));
     frame_tree_node_->ResetNavigationRequest(false, true);
-  } else if (render_frame_host == render_frame_host_.get()) {
-    // A same-process navigation committed while a simultaneous cross-process
-    // navigation is still ongoing.
+    return;
+  }
 
-    // If the current RenderFrameHost has a pending WebUI it must be committed.
-    if (render_frame_host_->pending_web_ui())
-      CommitPendingWebUI();
+  // A same-process navigation committed. A cross-process navigation may also
+  // be ongoing.
 
-    // A navigation in the original process has taken place.  This should
-    // cancel the ongoing cross-process navigation if the commit is
-    // cross-document and has a user gesture (since the user might have clicked
-    // on a new link while waiting for a slow navigation), but it should not
-    // cancel it for same-document navigations (which might happen as
-    // bookkeeping) or when there is no user gesture (which might abusively try
-    // to prevent the user from leaving).  See https://crbug.com/825677 and
-    // https://crbug.com/75195 for examples.
-    if (!is_same_document_navigation && was_caused_by_user_gesture) {
-      frame_tree_node_->ResetNavigationRequest(false, true);
-      CleanUpNavigation();
-    }
-  } else {
-    // No one else should be sending us DidNavigate in this state.
-    NOTREACHED();
+  // If the current RenderFrameHost has a pending WebUI it must be committed.
+  if (render_frame_host_->pending_web_ui())
+    CommitPendingWebUI();
+
+  // A navigation in the original process has taken place, while a
+  // cross-process navigation is ongoing.  This should cancel the ongoing
+  // cross-process navigation if the commit is cross-document and has a user
+  // gesture (since the user might have clicked on a new link while waiting for
+  // a slow navigation), but it should not cancel it for same-document
+  // navigations (which might happen as bookkeeping) or when there is no user
+  // gesture (which might abusively try to prevent the user from leaving).
+  // See https://crbug.com/825677 and https://crbug.com/75195 for examples.
+  if (speculative_render_frame_host_ && !is_same_document_navigation &&
+      was_caused_by_user_gesture) {
+    frame_tree_node_->ResetNavigationRequest(false, true);
+    CleanUpNavigation();
+  }
+
+  if (render_frame_host_->is_local_root() && render_frame_host_->GetView()) {
+    // RenderFrames are created with a hidden RenderWidgetHost. When
+    // navigation finishes, we show it if the delegate is shown. CommitPending()
+    // takes care of this in the cross-process case, as well as other cases
+    // where a RenderFrameHost is swapped in.
+    if (!delegate_->IsHidden())
+      render_frame_host_->GetView()->Show();
   }
 }
 
@@ -782,7 +783,6 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     notify_webui_of_rf_creation = true;
 
     if (navigation_rfh == render_frame_host_.get()) {
-      EnsureRenderFrameHostVisibilityConsistent();
       EnsureRenderFrameHostPageFocusConsistent();
       // TODO(nasko): This is a very ugly hack. The Chrome extensions process
       // manager still uses NotificationService and expects to see a
@@ -1314,8 +1314,6 @@ void RenderFrameHostManager::InitializeRenderFrameIfNecessary(
 
   if (render_frame_host != render_frame_host_.get())
     return;
-
-  EnsureRenderFrameHostVisibilityConsistent();
 
   // TODO(jam): uncomment this when the method is shared. Not adding the call
   // now to make merge to 63 easier.
@@ -1910,7 +1908,6 @@ RenderFrameHostManager::CreateRenderFrameHost(
     int32_t view_routing_id,
     int32_t frame_routing_id,
     int32_t widget_routing_id,
-    bool hidden,
     bool renderer_initiated_creation) {
   if (frame_routing_id == MSG_ROUTING_NONE)
     frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
@@ -1921,7 +1918,7 @@ RenderFrameHostManager::CreateRenderFrameHost(
   if (frame_tree_node_->IsMainFrame()) {
     render_view_host = frame_tree->CreateRenderViewHost(
         site_instance, view_routing_id, frame_routing_id, widget_routing_id,
-        false, hidden);
+        false);
     // TODO(avi): It's a bit bizarre that this logic lives here instead of in
     // CreateRenderFrame(). It turns out that FrameTree::CreateRenderViewHost
     // doesn't /always/ create a new RenderViewHost. It first tries to find an
@@ -1944,7 +1941,7 @@ RenderFrameHostManager::CreateRenderFrameHost(
 
   return RenderFrameHostFactory::Create(
       site_instance, render_view_host, frame_tree->render_frame_delegate(),
-      frame_tree, frame_tree_node_, frame_routing_id, widget_routing_id, hidden,
+      frame_tree, frame_tree_node_, frame_routing_id, widget_routing_id,
       renderer_initiated_creation);
 }
 
@@ -1963,8 +1960,7 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
 
   CreateProxiesForNewRenderFrameHost(old_instance, new_instance);
 
-  speculative_render_frame_host_ =
-      CreateRenderFrame(new_instance, delegate_->IsHidden());
+  speculative_render_frame_host_ = CreateRenderFrame(new_instance);
 
   // If RenderViewHost was created along with the speculative RenderFrameHost,
   // ensure that RenderViewCreated is fired for it.  It is important to do this
@@ -1980,8 +1976,7 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
 }
 
 std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
-    SiteInstance* instance,
-    bool hidden) {
+    SiteInstance* instance) {
   CHECK(instance);
 
   // We are creating a pending or speculative RFH here. We should never create
@@ -2001,7 +1996,7 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
 
   std::unique_ptr<RenderFrameHostImpl> new_render_frame_host =
       CreateRenderFrameHost(instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-                            widget_routing_id, hidden, false);
+                            widget_routing_id, false);
   DCHECK_EQ(new_render_frame_host->GetSiteInstance(), instance);
 
   // Prevent the process from exiting while we're trying to navigate in it.
@@ -2018,12 +2013,9 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     if (!render_view_host->GetWidget()->GetView())
       delegate_->CreateRenderWidgetHostViewForRenderManager(render_view_host);
 
-    // Don't show the main frame's view until we get a DidNavigate from it.
-    // Only the RenderViewHost for the top-level RenderFrameHost has a
-    // RenderWidgetHostView; RenderWidgetHosts for out-of-process iframes
-    // will be created later and hidden.
-    if (render_view_host->GetWidget()->GetView())
-      render_view_host->GetWidget()->GetView()->Hide();
+    // And since we are reusing the RenderViewHost make sure it is hidden, like
+    // a new RenderViewHost would be, until navigation commits.
+    render_view_host->GetWidget()->GetView()->Hide();
   } else {
     DCHECK(render_view_host->IsRenderViewLive());
   }
@@ -2063,7 +2055,7 @@ void RenderFrameHostManager::CreateRenderFrameProxy(SiteInstance* instance) {
     scoped_refptr<RenderViewHostImpl> render_view_host =
         frame_tree_node_->frame_tree()->CreateRenderViewHost(
             instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-            true, true);
+            /*swapped_out=*/true);
 
     proxy = CreateRenderFrameProxyHost(instance, std::move(render_view_host));
   }
@@ -2339,6 +2331,18 @@ bool RenderFrameHostManager::ReinitializeRenderFrame(
   }
 
   DCHECK(render_frame_host->IsRenderFrameLive());
+
+  // The RenderWidgetHostView goes away with the render process. Initializing a
+  // RenderFrame means we'll be creating (or reusing, https://crbug.com/419087)
+  // a RenderWidgetHostView. The new RenderWidgetHostView should take its
+  // visibility from the RenderWidgetHostImpl, but this call exists to handle
+  // cases where it did not during a same-process navigation.
+  // TODO(danakj): We now hide the widget unconditionally (treating main frame
+  // and child frames alike) and show in DidFinishNavigation() always, so this
+  // should be able to go away. Try to remove this.
+  if (render_frame_host == render_frame_host_.get())
+    EnsureRenderFrameHostVisibilityConsistent();
+
   return true;
 }
 
@@ -2551,29 +2555,11 @@ void RenderFrameHostManager::CommitPending(
   if (proxy_to_parent)
     proxy_to_parent->SetChildRWHView(new_view, old_size ? &*old_size : nullptr);
 
-  if (new_view) {
-    if (!delegate_->IsHidden()) {
-      // Show the new RenderWidgetHost if the new frame is a local root and not
-      // hidden or crashed. If the frame is not a local root this is redundant
-      // as the ancestor RenderWidgetHost would already be shown.
-      // TODO(danakj): Is this only really needed for a main frame, because the
-      // RenderWidget is not being newly recreated for the new frame due to
-      // https://crbug.com/419087 ? Would sub frames be marked correctly as
-      // shown from creation of their RenderWidgetHost?
+  if (render_frame_host_->is_local_root() && new_view) {
+    // RenderFrames are created with a hidden RenderWidgetHost. When navigation
+    // finishes, we show it if the delegate is shown.
+    if (!delegate_->IsHidden())
       new_view->Show();
-    } else {
-      // The Browser side RWHI is initialized as hidden, but the RenderWidget is
-      // not if it is going to be visible after navigation commit. We are
-      // bringing their visibility state into alignment here either by showing
-      // the RWHI or hiding the RenderWidget. See https://crbug/936858 for more
-      // details.
-      // TODO(jonross): This is not needed once https://crbug/419087 is
-      // resolved.
-      RenderWidgetHostImpl::From(new_view->GetRenderWidgetHost())
-          ->SetHiddenOnCommit();
-      // TODO(ejoe): This can be removed if the RenderWidget can be always
-      // created as hidden by default.
-    }
   }
 
   // The process will no longer try to exit, so we can decrement the count.

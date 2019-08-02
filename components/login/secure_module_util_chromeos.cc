@@ -38,8 +38,9 @@ void GetSecureModuleUsed(GetSecureModuleUsedCallback callback) {
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetSecureModuleInfoFromFilesAndCacheIt),
       std::move(callback));
 }

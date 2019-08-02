@@ -59,8 +59,23 @@ VoteConsumer* VoteReceipt::GetConsumer() const {
   return vote_->consumer();
 }
 
+VoterId VoteReceipt::GetVoterId() const {
+  return vote_->voter_id();
+}
+
 const Vote& VoteReceipt::GetVote() const {
   return vote_->vote();
+}
+
+void VoteReceipt::ChangeVote(base::TaskPriority priority, const char* reason) {
+  DCHECK(vote_);
+
+  // Do nothing if the vote hasn't actually changed.
+  const auto& vote = vote_->vote();
+  if (vote.priority() == priority && vote.reason() == reason)
+    return;
+
+  *this = vote_->ChangeVote(std::move(*this), priority, reason);
 }
 
 void VoteReceipt::Reset() {
@@ -150,6 +165,13 @@ VoteReceipt AcceptedVote::IssueReceipt() {
   return VoteReceipt(this);
 }
 
+void AcceptedVote::UpdateVote(const Vote& vote) {
+  DCHECK_EQ(vote_.frame_node(), vote.frame_node());
+  DCHECK(vote_.priority() != vote.priority() ||
+         vote_.reason() != vote.reason());
+  vote_ = vote;
+}
+
 void AcceptedVote::SetReceipt(VoteReceipt* receipt) {
   // A receipt can only be set on a vote once in its lifetime.
   DCHECK(!receipt_);
@@ -171,6 +193,31 @@ void AcceptedVote::MoveReceipt(VoteReceipt* old_receipt,
   // The receipt should already be associated with this vote (its calling for
   // the move).
   DCHECK(receipt_->HasVote(this));
+}
+
+VoteReceipt AcceptedVote::ChangeVote(VoteReceipt receipt,
+                                     base::TaskPriority priority,
+                                     const char* reason) {
+  DCHECK_EQ(receipt_, &receipt);
+  DCHECK(!invalidated_);
+  DCHECK(vote_.priority() != priority || vote_.reason() != reason);
+
+  // Explicitly save a copy of |vote_| as the consumer might overwrite it
+  // directly.
+  Vote old_vote = vote_;
+
+  // Notify the consumer of the new vote.
+  Vote new_vote = Vote(old_vote.frame_node(), priority, reason);
+  receipt = consumer_->ChangeVote(std::move(receipt), this, new_vote);
+
+  // Ensure that the returned receipt refers to a vote with the expected
+  // properties.
+  const Vote& returned_vote = receipt.GetVote();
+  DCHECK_EQ(new_vote.frame_node(), returned_vote.frame_node());
+  DCHECK_EQ(new_vote.priority(), returned_vote.priority());
+  DCHECK_EQ(new_vote.reason(), returned_vote.reason());
+
+  return receipt;
 }
 
 void AcceptedVote::InvalidateVote(VoteReceipt* receipt) {
@@ -276,6 +323,26 @@ void VotingChannelFactory::OnVotingChannelDestroyed() {
 
 VoteConsumer::VoteConsumer() = default;
 VoteConsumer::~VoteConsumer() = default;
+
+/////////////////////////////////////////////////////////////////////
+// VoteConsumerDefaultImpl
+
+VoteConsumerDefaultImpl::VoteConsumerDefaultImpl() = default;
+VoteConsumerDefaultImpl::~VoteConsumerDefaultImpl() = default;
+
+VoteReceipt VoteConsumerDefaultImpl::ChangeVote(VoteReceipt receipt,
+                                                AcceptedVote* old_vote,
+                                                const Vote& new_vote) {
+  // The receipt and vote should be entangled, and the vote should be valid.
+  DCHECK(receipt.HasVote(old_vote));
+  DCHECK(old_vote->IsValid());
+
+  // Tear down the old vote before submitting a new one in order to prevent
+  // the voter from having 2 simultaneous votes for the same frame.
+  auto voter_id = receipt.GetVoterId();
+  receipt.Reset();
+  return SubmitVote(voter_id, new_vote);
+}
 
 }  // namespace frame_priority
 }  // namespace performance_manager

@@ -66,7 +66,7 @@ void OnConnected(
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(std::move(callback), result, local_addr, peer_addr,
                      std::move(receive_stream), std::move(send_stream)));
@@ -378,13 +378,12 @@ int CastSocketImpl::DoTcpConnect() {
   VLOG_WITH_CONNECTION(1) << "DoTcpConnect";
   SetConnectState(ConnectionState::TCP_CONNECT_COMPLETE);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(ConnectOnUIThread, network_context_getter_,
-                     net::AddressList(open_params_.ip_endpoint),
-                     mojo::MakeRequest(&tcp_socket_),
-                     base::BindOnce(&CastSocketImpl::OnConnect,
-                                    weak_factory_.GetWeakPtr())));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(ConnectOnUIThread, network_context_getter_,
+                                net::AddressList(open_params_.ip_endpoint),
+                                mojo::MakeRequest(&tcp_socket_),
+                                base::BindOnce(&CastSocketImpl::OnConnect,
+                                               weak_factory_.GetWeakPtr())));
 
   return net::ERR_IO_PENDING;
 }

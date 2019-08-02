@@ -247,7 +247,7 @@ void ShowExamplesWindow(base::OnceClosure on_close,
     params.delegate =
         new ExamplesWindowContents(std::move(on_close), std::move(examples));
     params.context = window_context;
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
   }
 }

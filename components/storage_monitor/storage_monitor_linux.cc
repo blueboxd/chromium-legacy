@@ -245,8 +245,9 @@ StorageMonitor::EjectStatus EjectPathOnBlockingTaskRunner(
 StorageMonitorLinux::StorageMonitorLinux(const base::FilePath& path)
     : mtab_path_(path),
       get_device_info_callback_(base::Bind(&GetDeviceInfo)),
-      mtab_watcher_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {}
+      mtab_watcher_task_runner_(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::BEST_EFFORT})) {}
 
 StorageMonitorLinux::~StorageMonitorLinux() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -326,8 +327,9 @@ void StorageMonitorLinux::EjectDevice(
 
   receiver()->ProcessDetach(device_id);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&EjectPathOnBlockingTaskRunner, path, device), callback);
 }
 
@@ -399,8 +401,8 @@ void StorageMonitorLinux::UpdateMtab(const MountPointDeviceMap& new_mtab) {
 
   // Check new mtab entries against existing ones.
   scoped_refptr<base::SequencedTaskRunner> mounting_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
   for (auto new_iter = new_mtab.begin(); new_iter != new_mtab.end();
        ++new_iter) {
     const base::FilePath& mount_point = new_iter->first;

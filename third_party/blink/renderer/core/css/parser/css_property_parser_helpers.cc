@@ -824,7 +824,13 @@ CSSValue* ConsumeColor(CSSParserTokenRange& range,
   if (StyleColor::IsColorKeyword(id)) {
     if (!isValueAllowedInMode(id, css_parser_mode))
       return nullptr;
-    return ConsumeIdent(range);
+    CSSIdentifierValue* color = ConsumeIdent(range);
+    if (!RuntimeEnabledFeatures::LinkSystemColorsEnabled() &&
+        (color->GetValueID() == CSSValueID::kLinktext ||
+         color->GetValueID() == CSSValueID::kVisitedtext)) {
+      return nullptr;
+    }
+    return color;
   }
   RGBA32 color = Color::kTransparent;
   if (!ParseHexColor(range, color, accept_quirky_colors) &&

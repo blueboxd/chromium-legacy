@@ -101,9 +101,9 @@ void ServiceWorkerRegisterJob::Start() {
                     ? base::TaskTraits(BrowserThread::IO)
                     : base::TaskTraits(BrowserThread::IO,
                                        base::TaskPriority::BEST_EFFORT);
-  base::PostTaskWithTraits(FROM_HERE, std::move(traits),
-                           base::BindOnce(&ServiceWorkerRegisterJob::StartImpl,
-                                          weak_factory_.GetWeakPtr()));
+  base::PostTask(FROM_HERE, std::move(traits),
+                 base::BindOnce(&ServiceWorkerRegisterJob::StartImpl,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerRegisterJob::StartImpl() {

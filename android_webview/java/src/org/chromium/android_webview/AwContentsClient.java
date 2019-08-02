@@ -25,6 +25,7 @@ import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.security.Principal;

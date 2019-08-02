@@ -217,9 +217,7 @@ FrameReplicationState ReconstructReplicationStateForTesting(
 // with navigation_start set to Now() plus the given offset.
 mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
     TimeDelta navigation_start_offset) {
-  mojom::CommonNavigationParamsPtr params =
-      mojom::CommonNavigationParams::New();
-  params->referrer = blink::mojom::Referrer::New();
+  auto params = CreateCommonNavigationParams();
   params->url = GURL("data:text/html,<div>Page</div>");
   params->navigation_start = base::TimeTicks::Now() + navigation_start_offset;
   params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
@@ -435,17 +433,6 @@ class RenderViewImplTest : public RenderViewTest {
            webview->MainFrame()->VisibleContentRect().width;
   }
 
-  // Closes a view created during the test, i.e. not the |view()|. Checks that
-  // the main frame is detached and deleted, and makes sure the view does not
-  // leak.
-  void CloseRenderWidget(RenderWidget* widget) {
-    WidgetMsg_Close msg(widget->routing_id());
-    widget->OnMessageReceived(msg);
-
-    // WidgetMsg_Close posts a task to do the actual closing. Let that run.
-    base::RunLoop().RunUntilIdle();
-  }
-
  private:
   std::unique_ptr<MockKeyboard> mock_keyboard_;
 };
@@ -633,9 +620,7 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
 
 TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   // An http url will trigger a resource load so cannot be used here.
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->url = GURL("data:text/html,<div>Page</div>");
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->transition = ui::PAGE_TRANSITION_TYPED;
@@ -680,9 +665,7 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 
 #if defined(OS_ANDROID)
 TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->url = GURL("data:text/html,");
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->transition = ui::PAGE_TRANSITION_TYPED;
@@ -872,9 +855,6 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       ->BeginNavigation(std::move(popup_navigation_info));
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_OpenURL::ID));
-
-  RenderWidget* render_widget = new_view->GetWidget();
-  CloseRenderWidget(render_widget);
 }
 
 class AlwaysForkingRenderViewTest : public RenderViewImplTest {
@@ -1066,7 +1046,6 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
 
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = view()->GetRoutingID();
-  widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_document_interface_broker_content),
@@ -1080,9 +1059,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   EXPECT_TRUE(provisional_frame);
 
   // Navigate to other page, which triggers the swap in.
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->url = GURL("data:text/html,<div>Page</div>");
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->transition = ui::PAGE_TRANSITION_TYPED;
@@ -1141,7 +1118,6 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
 
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = MSG_ROUTING_NONE;
-  widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_document_interface_broker_content),
@@ -1496,9 +1472,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->url = GURL("data:text/html,test data");
   frame()->Navigate(std::move(common_params), CreateCommitNavigationParams());
@@ -1878,9 +1852,7 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   LoadHTML("hello <iframe srcdoc='fail' name='frame'></iframe>");
 
   // Navigate the frame only.
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->url = GURL("data:text/html,world");
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->transition = ui::PAGE_TRANSITION_TYPED;
@@ -1994,9 +1966,7 @@ class RendererErrorPageTest : public RenderViewImplTest {
 #endif
 
 TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->url = GURL("http://example.com/suppress");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
@@ -2018,9 +1988,7 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
 #endif
 
 TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->url = GURL("http://example.com/dont-suppress");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
@@ -2047,9 +2015,7 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
 TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->url = GURL("data:text/html,test data");
 
@@ -2221,9 +2187,7 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
 
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->url = GURL(url_string);
   common_params->navigation_type =
       mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
@@ -2252,9 +2216,7 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   render_thread_->sink().ClearMessages();
 
   // Go back.
-  auto common_params_back = mojom::CommonNavigationParams::New();
-  common_params_back->referrer = blink::mojom::Referrer::New();
-  common_params_back->navigation_start = base::TimeTicks::Now();
+  auto common_params_back = CreateCommonNavigationParams();
   common_params_back->url =
       GURL("data:text/html;charset=utf-8,<div id=pagename>Page B</div>");
   common_params_back->transition = ui::PAGE_TRANSITION_FORWARD_BACK;
@@ -2270,9 +2232,7 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
             navigation_state->common_params().navigation_start);
 
   // Go forward.
-  auto common_params_forward = mojom::CommonNavigationParams::New();
-  common_params_forward->referrer = blink::mojom::Referrer::New();
-  common_params_forward->navigation_start = base::TimeTicks::Now();
+  auto common_params_forward = CreateCommonNavigationParams();
   common_params_forward->url =
       GURL("data:text/html;charset=utf-8,<div id=pagename>Page C</div>");
   common_params_forward->transition = ui::PAGE_TRANSITION_FORWARD_BACK;
@@ -2362,10 +2322,7 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
   auto commit_params = CreateCommitNavigationParams();
   commit_params->current_history_list_offset = 1;
   commit_params->current_history_list_length = 2;
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
-  frame()->Navigate(std::move(common_params), std::move(commit_params));
+  frame()->Navigate(CreateCommonNavigationParams(), std::move(commit_params));
 
   // The current history list in RenderView is updated.
   EXPECT_EQ(1, view()->HistoryBackListCount());
@@ -2386,10 +2343,7 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnHistoryNavigation) {
   commit_params->current_history_list_length = 25;
   commit_params->pending_history_list_offset = 12;
   commit_params->nav_entry_id = 777;
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
-  frame()->Navigate(std::move(common_params), std::move(commit_params));
+  frame()->Navigate(CreateCommonNavigationParams(), std::move(commit_params));
 
   // The current history list in RenderView is updated.
   EXPECT_EQ(12, view()->HistoryBackListCount());
@@ -2409,10 +2363,7 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnShouldClearHistoryList) {
   commit_params->current_history_list_offset = 12;
   commit_params->current_history_list_length = 25;
   commit_params->should_clear_history_list = true;
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
-  frame()->Navigate(std::move(common_params), std::move(commit_params));
+  frame()->Navigate(CreateCommonNavigationParams(), std::move(commit_params));
 
   // The current history list in RenderView is updated.
   EXPECT_EQ(0, view()->HistoryBackListCount());

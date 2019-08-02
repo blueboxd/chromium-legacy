@@ -69,7 +69,7 @@ class OzonePlatformCast : public OzonePlatform {
               "allow-dummy-software-rendering");
       if (allow_dummy_software_rendering) {
         LOG(INFO) << "Using dummy SurfaceFactoryCast";
-        surface_factory_.reset(new SurfaceFactoryCast());
+        surface_factory_ = std::make_unique<SurfaceFactoryCast>();
         return surface_factory_.get();
       }
 
@@ -96,8 +96,7 @@ class OzonePlatformCast : public OzonePlatform {
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
-    return base::WrapUnique<PlatformWindow>(
-        new PlatformWindowCast(delegate, properties.bounds));
+    return std::make_unique<PlatformWindowCast>(delegate, properties.bounds);
   }
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
@@ -117,8 +116,8 @@ class OzonePlatformCast : public OzonePlatform {
 
   void InitializeUI(const InitParams& params) override {
     device_manager_ = CreateDeviceManager();
-    overlay_manager_.reset(new OverlayManagerCast());
-    cursor_factory_.reset(new CursorFactoryOzone());
+    overlay_manager_ = std::make_unique<OverlayManagerCast>();
+    cursor_factory_ = std::make_unique<CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
     // Enable dummy software rendering support if GPU process disabled
@@ -134,15 +133,16 @@ class OzonePlatformCast : public OzonePlatform {
         std::make_unique<StubKeyboardLayoutEngine>());
     ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
         ->SetCurrentLayoutByName("us");
-    event_factory_ozone_.reset(new EventFactoryEvdev(
+    event_factory_ozone_ = std::make_unique<EventFactoryEvdev>(
         nullptr, device_manager_.get(),
-        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
+        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
 
     if (enable_dummy_software_rendering)
-      surface_factory_.reset(new SurfaceFactoryCast());
+      surface_factory_ = std::make_unique<SurfaceFactoryCast>();
   }
   void InitializeGPU(const InitParams& params) override {
-    surface_factory_.reset(new SurfaceFactoryCast(std::move(egl_platform_)));
+    surface_factory_ =
+        std::make_unique<SurfaceFactoryCast>(std::move(egl_platform_));
   }
 
  private:

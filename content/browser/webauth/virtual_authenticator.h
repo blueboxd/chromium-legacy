@@ -43,10 +43,19 @@ class CONTENT_EXPORT VirtualAuthenticator
 
   // Register a new credential. Returns true if the registration was successful,
   // false otherwise.
-  bool AddRegistration(std::vector<uint8_t> key_handle,
-                       const std::vector<uint8_t>& rp_id_hash,
-                       const std::vector<uint8_t>& private_key,
-                       int32_t counter);
+  bool AddRegistration(
+      std::vector<uint8_t> key_handle,
+      base::span<const uint8_t, device::kRpIdHashLength> rp_id_hash,
+      const std::vector<uint8_t>& private_key,
+      int32_t counter);
+
+  // Register a new resident credential. Returns true if the registration was
+  // successful, false otherwise.
+  bool AddResidentRegistration(std::vector<uint8_t> key_handle,
+                               std::string rp_id,
+                               const std::vector<uint8_t>& private_key,
+                               int32_t counter,
+                               std::vector<uint8_t> user_handle);
 
   // Removes all the credentials.
   void ClearRegistrations();
@@ -60,6 +69,8 @@ class CONTENT_EXPORT VirtualAuthenticator
   void set_user_verified(bool is_user_verified) {
     is_user_verified_ = is_user_verified;
   }
+
+  bool has_resident_key() const { return has_resident_key_; }
 
   ::device::FidoTransportProtocol transport() const {
     return state_->transport;

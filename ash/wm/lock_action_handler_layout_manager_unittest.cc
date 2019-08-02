@@ -91,9 +91,9 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
     views::Widget::InitParams widget_params(
         views::Widget::InitParams::TYPE_WINDOW);
     widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
-    lock_window_ =
-        CreateTestingWindow(widget_params, kShellWindowId_LockScreenContainer,
-                            std::make_unique<TestWindowDelegate>());
+    lock_window_ = CreateTestingWindow(std::move(widget_params),
+                                       kShellWindowId_LockScreenContainer,
+                                       std::make_unique<TestWindowDelegate>());
   }
 
   void TearDown() override {
@@ -112,7 +112,7 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
       window_delegate->set_widget(widget);
       params.delegate = window_delegate.release();
     }
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     return base::WrapUnique<aura::Window>(widget->GetNativeView());
   }
@@ -202,7 +202,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, PreserveNormalWindowBounds) {
   // Note: default window delegate (used when no widget delegate is set) does
   // not allow the window to be maximized.
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       nullptr /* window_delegate */);
   EXPECT_EQ(bounds.ToString(), window->GetBoundsInScreen().ToString());
 
@@ -229,7 +229,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MaximizedWindowBounds) {
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       std::make_unique<TestWindowDelegate>());
 
   // Verify that the window bounds are equal to work area for the bottom shelf
@@ -253,7 +253,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, FullscreenWindowBounds) {
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       std::make_unique<TestWindowDelegate>());
 
   // Verify that the window bounds are equal to work area for the bottom shelf
@@ -274,7 +274,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MaximizeResizableWindow) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       std::make_unique<TestWindowDelegate>());
 
   gfx::Rect target_bounds =
@@ -296,7 +296,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, KeyboardBounds) {
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       std::make_unique<TestWindowDelegate>());
   ASSERT_EQ(initial_bounds.ToString(), window->GetBoundsInScreen().ToString());
 
@@ -339,7 +339,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, AddingWindowInActiveState) {
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       nullptr /* window_delegate */);
 
   EXPECT_TRUE(window->IsVisible());
@@ -353,7 +353,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, AddingWindowInLaunchingState) {
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       nullptr /* window_delegate */);
 
   EXPECT_TRUE(window->IsVisible());
@@ -367,7 +367,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, AddingWindowInNonActiveState) {
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       nullptr /* window_delegate */);
 
   // The window should not be visible if the note action is not in active state.
@@ -399,7 +399,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, FocusWindowWhileInNonActiveState) {
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       nullptr /* window_delegate */);
 
   EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
@@ -421,7 +421,7 @@ TEST_F(LockActionHandlerLayoutManagerTest,
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       nullptr /* window_delegate */);
 
   EXPECT_EQ(GetContainer(kShellWindowId_LockActionHandlerContainer),
@@ -444,7 +444,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MultipleMonitors) {
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
   std::unique_ptr<aura::Window> window = CreateTestingWindow(
-      widget_params, kShellWindowId_LockActionHandlerContainer,
+      std::move(widget_params), kShellWindowId_LockActionHandlerContainer,
       std::make_unique<TestWindowDelegate>());
 
   gfx::Rect target_bounds =

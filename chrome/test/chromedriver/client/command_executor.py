@@ -173,6 +173,9 @@ class Command(object):
   REMOVE_VIRTUAL_AUTHENTICATOR = (
       _Method.DELETE,
       '/session/:sessionId/webauthn/authenticator/:authenticatorId')
+  ADD_CREDENTIAL = (
+      _Method.POST,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId/credential')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')

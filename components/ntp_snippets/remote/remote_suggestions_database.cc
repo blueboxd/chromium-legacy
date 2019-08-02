@@ -31,8 +31,9 @@ RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
     : RemoteSuggestionsDatabase(
           proto_database_provider,
           database_dir,
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
 RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(

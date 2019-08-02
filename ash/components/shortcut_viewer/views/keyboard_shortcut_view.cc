@@ -158,7 +158,7 @@ views::Widget* KeyboardShortcutView::Toggle(aura::Window* context) {
     // based on CalculatePreferredSize().
     views::Widget* widget = new views::Widget;
     params.context = context;
-    widget->Init(params);
+    widget->Init(std::move(params));
 
     // Set frame view Active and Inactive colors, both are SK_ColorWHITE.
     aura::Window* window = g_ksv_view->GetWidget()->GetNativeWindow();

@@ -667,12 +667,12 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
   const bool initially_starting_session =
       !audio_encode_thread_ && !video_encode_thread_;
   if (initially_starting_session) {
-    audio_encode_thread_ = base::CreateSingleThreadTaskRunnerWithTraits(
-        {base::TaskPriority::USER_BLOCKING,
+    audio_encode_thread_ = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-    video_encode_thread_ = base::CreateSingleThreadTaskRunnerWithTraits(
-        {base::TaskPriority::USER_BLOCKING,
+    video_encode_thread_ = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   }

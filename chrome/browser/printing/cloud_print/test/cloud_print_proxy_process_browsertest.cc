@@ -288,7 +288,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   void TearDown() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> IOTaskRunner() {
-    return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+    return base::CreateSingleThreadTaskRunner({BrowserThread::IO});
   }
   base::Process Launch(const std::string& name);
   void WaitForConnect(mojo::IsolatedConnection* mojo_connection);
@@ -438,8 +438,9 @@ void CloudPrintProxyPolicyStartupTest::WaitForConnect(
   EXPECT_TRUE(base::ThreadTaskRunnerHandle::Get().get());
 
   mojo::MessagePipe pipe;
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ConnectAsync, std::move(pipe.handle1),
                      GetServiceProcessServerName(), mojo_connection));
   ServiceProcessControl::GetInstance()->SetMojoHandle(
@@ -478,7 +479,7 @@ base::CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
 TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
   mojo::core::Init();
   mojo::core::ScopedIPCSupport ipc_support(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
 
   base::Process process =

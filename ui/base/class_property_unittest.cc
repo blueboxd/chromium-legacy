@@ -157,6 +157,40 @@ TEST(PropertyTest, OwnedProperty) {
   EXPECT_EQ(p3, TestProperty::last_deleted());
 }
 
+TEST(PropertyTest, AcquireAllPropertiesFrom) {
+  // Set some properties on src, including an owned property.
+  std::unique_ptr<PropertyHandler> src = std::make_unique<PropertyHandler>();
+  void* last_deleted = TestProperty::last_deleted();
+  EXPECT_FALSE(src->GetProperty(kOwnedKey));
+  TestProperty* p1 = new TestProperty();
+  src->SetProperty(kOwnedKey, p1);
+  src->SetProperty(kIntKey, INT_MAX);
+
+  // dest will take ownership of the owned property. Existing properties with
+  // similar keys will be overwritten. Existing properties with different keys
+  // will remain unchanged.
+  std::unique_ptr<PropertyHandler> dest = std::make_unique<PropertyHandler>();
+  dest->SetProperty(kIntKey, INT_MIN);
+  dest->SetProperty(kStringKey, kTestStringValue);
+
+  dest->AcquireAllPropertiesFrom(std::move(*src));
+  EXPECT_EQ(p1, dest->GetProperty(kOwnedKey));     // Ownership taken.
+  EXPECT_EQ(INT_MAX, dest->GetProperty(kIntKey));  // Overwritten.
+  // Remains unchanged.
+  EXPECT_EQ(std::string(kTestStringValue), dest->GetProperty(kStringKey));
+
+  // src no longer has properties.
+  EXPECT_TRUE(src->GetAllPropertyKeys().empty());
+  EXPECT_FALSE(src->GetProperty(kOwnedKey));
+  EXPECT_EQ(kDefaultIntValue, src->GetProperty(kIntKey));
+  // Destroy src. Owned property remains alive.
+  src.reset();
+  EXPECT_EQ(last_deleted, TestProperty::last_deleted());
+  // Destroy dest, now the owned property is deleted.
+  dest.reset();
+  EXPECT_EQ(p1, TestProperty::last_deleted());
+}
+
 TEST(PropertyTest, AssignableProperty) {
   PropertyHandler h;
 

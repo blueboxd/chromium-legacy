@@ -18,6 +18,7 @@
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,6 +49,18 @@ class HintsFetcherTest : public testing::Test {
   }
 
   bool hints_fetched() { return hints_fetched_; }
+
+  void SetConnectionOffline() {
+    network_tracker_ = network::TestNetworkConnectionTracker::GetInstance();
+    network_tracker_->SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_NONE);
+  }
+
+  void SetConnectionOnline() {
+    network_tracker_ = network::TestNetworkConnectionTracker::GetInstance();
+    network_tracker_->SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_4G);
+  }
 
  protected:
   bool FetchHints(const std::vector<std::string>& hosts) {
@@ -90,6 +103,7 @@ class HintsFetcherTest : public testing::Test {
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
+  network::TestNetworkConnectionTracker* network_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherTest);
 };
@@ -133,6 +147,19 @@ TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_FALSE(hints_fetched());
+}
+
+TEST_F(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
+  SetConnectionOffline();
+  std::string response_content;
+  EXPECT_FALSE(FetchHints(std::vector<std::string>()));
+  EXPECT_FALSE(hints_fetched());
+
+  SetConnectionOnline();
+  EXPECT_TRUE(FetchHints(std::vector<std::string>()));
+  VerifyHasPendingFetchRequests();
+  EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
+  EXPECT_TRUE(hints_fetched());
 }
 
 }  // namespace optimization_guide

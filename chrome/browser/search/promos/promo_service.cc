@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/values.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/common/google_util.h"
 #include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
@@ -80,17 +79,15 @@ bool JsonToPromoData(const base::Value& value,
 }  // namespace
 
 PromoService::PromoService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    GoogleURLTracker* google_url_tracker)
-    : url_loader_factory_(url_loader_factory),
-      google_url_tracker_(google_url_tracker) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(url_loader_factory) {}
 
 PromoService::~PromoService() = default;
 
 GURL PromoService::GetGoogleBaseUrl() const {
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
   if (!google_base_url.is_valid()) {
-    google_base_url = google_url_tracker_->google_url();
+    google_base_url = GURL(google_util::kGoogleHomepageURL);
   }
 
   return google_base_url;

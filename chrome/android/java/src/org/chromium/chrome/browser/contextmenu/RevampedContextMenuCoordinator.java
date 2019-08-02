@@ -19,12 +19,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.widget.ContextMenuDialog;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -80,7 +81,10 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
 
         mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(activity, params);
 
-        ModelListAdapter adapter = new ModelListAdapter() {
+        // The Integer here specifies the {@link ListItemType}.
+        ModelList listItems = getItemList(activity, items, params);
+
+        ModelListAdapter adapter = new ModelListAdapter(listItems) {
             @Override
             public boolean areAllItemsEnabled() {
                 return false;
@@ -96,8 +100,8 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
             public long getItemId(int position) {
                 if (getItemViewType(position) == ListItemType.CONTEXT_MENU_ITEM
                         || getItemViewType(position) == ListItemType.CONTEXT_MENU_SHARE_ITEM) {
-                    return ((Pair<Integer, PropertyModel>) getItem(position))
-                            .second.get(RevampedContextMenuItemProperties.MENU_ID);
+                    return ((ListItem) getItem(position))
+                            .model.get(RevampedContextMenuItemProperties.MENU_ID);
                 }
                 return INVALID_ITEM_ID;
             }
@@ -129,10 +133,6 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
                 RevampedContextMenuShareItemViewBinder::bind);
         // clang-format on
 
-        // The Integer here specifies the {@link ListItemType}.
-        List<Pair<Integer, PropertyModel>> itemList = getItemList(activity, items, params);
-
-        adapter.updateModels(itemList);
         mListView.setOnItemClickListener((p, v, pos, id) -> {
             assert id != INVALID_ITEM_ID;
 
@@ -166,17 +166,17 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     }
 
     @VisibleForTesting
-    List<Pair<Integer, PropertyModel>> getItemList(Activity activity,
-            List<Pair<Integer, List<ContextMenuItem>>> items, ContextMenuParams params) {
-        List<Pair<Integer, PropertyModel>> itemList = new ArrayList<>();
+    ModelList getItemList(Activity activity, List<Pair<Integer, List<ContextMenuItem>>> items,
+            ContextMenuParams params) {
+        ModelList itemList = new ModelList();
 
         // TODO(sinansahin): We should be able to remove this conversion once we can get the items
         // in the desired format.
-        itemList.add(new Pair<>(ListItemType.HEADER, mHeaderCoordinator.getModel()));
+        itemList.add(new ListItem(ListItemType.HEADER, mHeaderCoordinator.getModel()));
 
         for (Pair<Integer, List<ContextMenuItem>> group : items) {
             // Add a divider
-            itemList.add(new Pair<>(ListItemType.DIVIDER, new PropertyModel()));
+            itemList.add(new ListItem(ListItemType.DIVIDER, new PropertyModel()));
 
             for (ContextMenuItem item : group.second) {
                 PropertyModel itemModel;
@@ -197,7 +197,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
                                     .with(RevampedContextMenuShareItemProperties.CLICK_LISTENER,
                                             getShareItemClickListener(activity, shareItem, params))
                                     .build();
-                    itemList.add(new Pair<>(ListItemType.CONTEXT_MENU_SHARE_ITEM, itemModel));
+                    itemList.add(new ListItem(ListItemType.CONTEXT_MENU_SHARE_ITEM, itemModel));
                 } else {
                     itemModel =
                             new PropertyModel.Builder(RevampedContextMenuItemProperties.ALL_KEYS)
@@ -206,7 +206,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
                                     .with(RevampedContextMenuItemProperties.TEXT,
                                             item.getTitle(activity))
                                     .build();
-                    itemList.add(new Pair<>(ListItemType.CONTEXT_MENU_ITEM, itemModel));
+                    itemList.add(new ListItem(ListItemType.CONTEXT_MENU_ITEM, itemModel));
                 }
             }
         }

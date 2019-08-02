@@ -1074,13 +1074,20 @@ namespace test {
 
 }  // namespace
 
-TEST(IDNSpoofCheckerTest, IDNToUnicode) {
-  IDNSpoofChecker::HuffmanTrieParams trie_params{
-      test::kTopDomainsHuffmanTree, sizeof(test::kTopDomainsHuffmanTree),
-      test::kTopDomainsTrie, test::kTopDomainsTrieBits,
-      test::kTopDomainsRootPosition};
-  IDNSpoofChecker::SetTrieParamsForTesting(trie_params);
+class IDNSpoofCheckerTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    IDNSpoofChecker::HuffmanTrieParams trie_params{
+        test::kTopDomainsHuffmanTree, sizeof(test::kTopDomainsHuffmanTree),
+        test::kTopDomainsTrie, test::kTopDomainsTrieBits,
+        test::kTopDomainsRootPosition};
+    IDNSpoofChecker::SetTrieParamsForTesting(trie_params);
+  }
 
+  void TearDown() override { IDNSpoofChecker::RestoreTrieParamsForTesting(); }
+};
+
+TEST_F(IDNSpoofCheckerTest, IDNToUnicode) {
   for (size_t i = 0; i < base::size(kIdnCases); i++) {
     base::string16 output(IDNToUnicode(kIdnCases[i].input));
     base::string16 expected(kIdnCases[i].unicode_allowed
@@ -1089,12 +1096,44 @@ TEST(IDNSpoofCheckerTest, IDNToUnicode) {
     EXPECT_EQ(expected, output)
         << "input # " << i << ": \"" << kIdnCases[i].input << "\"";
   }
-  IDNSpoofChecker::RestoreTrieParamsForTesting();
+}
+
+TEST_F(IDNSpoofCheckerTest, LookupSkeletonInTopDomains) {
+  {
+    TopDomainEntry entry =
+        IDNSpoofChecker().LookupSkeletonInTopDomains("d4OOO.corn");
+    EXPECT_EQ("d4000.com", entry.domain);
+    EXPECT_TRUE(entry.is_top_500);
+  }
+  {
+    TopDomainEntry entry =
+        IDNSpoofChecker().LookupSkeletonInTopDomains("digklrno68.corn");
+    EXPECT_EQ("digklmo68.com", entry.domain);
+    EXPECT_FALSE(entry.is_top_500);
+  }
+}
+
+// Same test as LookupSkeletonInTopDomains but using the real top domain list.
+TEST(IDNSpoofCheckerNoFixtureTest, LookupSkeletonInTopDomains) {
+  {
+    TopDomainEntry entry =
+        IDNSpoofChecker().LookupSkeletonInTopDomains("google.corn");
+    EXPECT_EQ("google.com", entry.domain);
+    EXPECT_TRUE(entry.is_top_500);
+  }
+  {
+    // This is data dependent, must be updated when the top domain list
+    // is updated.
+    TopDomainEntry entry =
+        IDNSpoofChecker().LookupSkeletonInTopDomains("google.sk");
+    EXPECT_EQ("google.sk", entry.domain);
+    EXPECT_FALSE(entry.is_top_500);
+  }
 }
 
 // Check the unsafe version of IDNToUnicode. Even though the input domain
 // matches a top domain, it should still be converted to unicode.
-TEST(IDNSpoofCheckerTest, UnsafeIDNToUnicodeWithDetails) {
+TEST(IDNSpoofCheckerNoFixtureTest, UnsafeIDNToUnicodeWithDetails) {
   const struct TestCase {
     // The IDNA/Punycode version of the domain (plain ASCII).
     const char* const punycode;
@@ -1104,25 +1143,30 @@ TEST(IDNSpoofCheckerTest, UnsafeIDNToUnicodeWithDetails) {
     const bool expected_has_idn;
     // The top domain that |punycode| matched to, if any.
     const char* const expected_matching_domain;
+    // If true, the matching top domain is expected to be in top 500.
+    const bool expected_is_top_500;
   } kTestCases[] = {
       {// An ASCII, top domain.
        "google.com", L"google.com", false,
        // Since it's not unicode, we won't attempt to match it to a top domain.
-       ""},
+       "",
+       // ...And since we don't match it to a top domain, we don't know if it's
+       // a top 500 domain.
+       false},
       {// An ASCII domain that's not a top domain.
-       "not-top-domain.com", L"not-top-domain.com", false, ""},
+       "not-top-domain.com", L"not-top-domain.com", false, "", false},
       {// A unicode domain that's valid according to all of the rules in IDN
        // spoof checker except that it matches a top domain. Should be
        // converted to punycode.
-       "xn--googl-fsa.com", L"googlé.com", true, "google.com"},
+       "xn--googl-fsa.com", L"googlé.com", true, "google.com", true},
       {// A unicode domain that's not valid according to the rules in IDN spoof
        // checker (mixed script) and it matches a top domain. Should be
        // converted to punycode.
-       "xn--80ak6aa92e.com", L"аррӏе.com", true, "apple.com"},
+       "xn--80ak6aa92e.com", L"аррӏе.com", true, "apple.com", true},
       {// A unicode domain that's not valid according to the rules in IDN spoof
        // checker (mixed script) but it doesn't match a top domain.
-       "xn--o-o-oai-26a223aia177a7ab7649d.com", L"ɴoτ-τoρ-ďoᛖaiɴ.com", true,
-       ""},
+       "xn--o-o-oai-26a223aia177a7ab7649d.com", L"ɴoτ-τoρ-ďoᛖaiɴ.com", true, "",
+       false},
   };
 
   for (const TestCase& test_case : kTestCases) {
@@ -1130,13 +1174,16 @@ TEST(IDNSpoofCheckerTest, UnsafeIDNToUnicodeWithDetails) {
         UnsafeIDNToUnicodeWithDetails(test_case.punycode);
     EXPECT_EQ(base::WideToUTF16(test_case.expected_unicode), result.result);
     EXPECT_EQ(test_case.expected_has_idn, result.has_idn_component);
-    EXPECT_EQ(test_case.expected_matching_domain, result.matching_top_domain);
+    EXPECT_EQ(test_case.expected_matching_domain,
+              result.matching_top_domain.domain);
+    EXPECT_EQ(test_case.expected_is_top_500,
+              result.matching_top_domain.is_top_500);
   }
 }
 
 // Checks that skeletons are properly generated for domains with blocked
 // characters after using UnsafeIDNToUnicodeWithDetails.
-TEST(IDNSpoofCheckerTest, Skeletons) {
+TEST(IDNSpoofCheckerNoFixtureTest, Skeletons) {
   // All of these should produce the same skeleton. Not all of these are
   // explicitly mapped in idn_spoof_checker.cc, ICU already handles some.
   const GURL kTestCases[] = {

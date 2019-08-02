@@ -46,8 +46,7 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
 #if defined(OS_WIN) || defined(OS_FUCHSIA)
     kHandle,
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-    kMachPort,
-    kMachSend = kMachPort,
+    kMachSend,
     kMachReceive,
 #endif
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -162,17 +161,6 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
   }
   mach_port_t ReleaseMachReceiveRight() WARN_UNUSED_RESULT {
     return TakeMachReceiveRight().release();
-  }
-
-  // The following Mach port methods are deprecated. Use the ones above
-  // instead.
-  bool is_mach_port() const { return type_ == Type::kMachPort; }
-  const base::mac::ScopedMachSendRight& GetMachPort() const {
-    return GetMachSendRight();
-  }
-  base::mac::ScopedMachSendRight TakeMachPort() { return TakeMachSendRight(); }
-  mach_port_t ReleaseMachPort() WARN_UNUSED_RESULT {
-    return ReleaseMachSendRight();
   }
 #elif defined(OS_POSIX)
   bool is_valid() const { return is_valid_fd(); }

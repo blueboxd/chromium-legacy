@@ -76,7 +76,7 @@ class BackgroundTaskCoordinatorTest : public testing::Test {
     auto background_task =
         std::make_unique<test::MockNotificationBackgroundTaskScheduler>();
     background_task_ = background_task.get();
-    coordinator_ = std::make_unique<BackgroundTaskCoordinator>(
+    coordinator_ = BackgroundTaskCoordinator::Create(
         std::move(background_task), &config_,
         base::BindRepeating(&NoopTimeRandomizer, base::TimeDelta()), &clock_);
   }

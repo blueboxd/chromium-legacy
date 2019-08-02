@@ -52,7 +52,7 @@ class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
     views::Widget::InitParams params =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    anchor_widget->Init(params);
+    anchor_widget->Init(std::move(params));
     anchor_widget->Show();
     return anchor_widget;
   }

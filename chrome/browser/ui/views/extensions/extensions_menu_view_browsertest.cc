@@ -58,14 +58,8 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
   }
 
   static std::vector<ExtensionsMenuButton*> GetExtensionMenuButtons() {
-    std::vector<ExtensionsMenuButton*> buttons;
-    for (auto* view : ExtensionsMenuView::GetExtensionsMenuViewForTesting()
-                          ->extension_menu_button_container_for_testing()
-                          ->children()) {
-      if (view->GetClassName() == ExtensionsMenuButton::kClassName)
-        buttons.push_back(static_cast<ExtensionsMenuButton*>(view));
-    }
-    return buttons;
+    return ExtensionsMenuView::GetExtensionsMenuViewForTesting()
+        ->extension_menu_buttons_for_testing();
   }
 
   std::vector<ToolbarActionView*> GetToolbarActionViews() const {

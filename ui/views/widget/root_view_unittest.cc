@@ -46,7 +46,7 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   widget.Show();
 
   bool got_key_event = false;
@@ -117,7 +117,7 @@ TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   widget.Show();
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
@@ -185,7 +185,7 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
       CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(100, 100);
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
 
@@ -259,7 +259,7 @@ TEST_F(RootViewTest, ContextMenuFromLongPressOnDisabledView) {
       CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(100, 100);
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
 
@@ -411,7 +411,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseExitDispatch) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
   View* content = new View;
@@ -450,7 +450,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseEnterDispatch) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
   View* content = new View;
@@ -490,7 +490,7 @@ TEST_F(RootViewTest, RemoveViewOnMouseEnterDispatch) {
   Widget widget;
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
   View* content = new View;
@@ -530,7 +530,7 @@ TEST_F(RootViewTest, ClearMouseMoveHandlerOnMouseExitDispatch) {
   Widget widget;
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
   View* content = new View;
@@ -567,7 +567,7 @@ TEST_F(RootViewTest,
   Widget widget;
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
   View* content = new View;
@@ -605,7 +605,7 @@ TEST_F(RootViewTest, ClearMouseMoveHandlerOnMouseEnterDispatch) {
   Widget widget;
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
   View* content = new View;
@@ -663,7 +663,7 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatch) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(init_params);
+  widget->Init(std::move(init_params));
   widget->SetBounds(gfx::Rect(10, 10, 500, 500));
   WidgetDeletionObserver widget_deletion_observer(widget);
 
@@ -701,7 +701,7 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatchFromChild) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(init_params);
+  widget->Init(std::move(init_params));
   widget->SetBounds(gfx::Rect(10, 10, 500, 500));
   WidgetDeletionObserver widget_deletion_observer(widget);
 

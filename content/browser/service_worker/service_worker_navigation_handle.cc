@@ -47,7 +47,7 @@ void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
   // We may have failed to pre-create the provider host.
   if (!provider_info_)
     return;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &ServiceWorkerNavigationHandleCore::OnBeginNavigationCommit,
@@ -57,7 +57,7 @@ void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
 
 void ServiceWorkerNavigationHandle::OnBeginWorkerCommit() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ServiceWorkerNavigationHandleCore::OnBeginWorkerCommit,
                      base::Unretained(core_)));

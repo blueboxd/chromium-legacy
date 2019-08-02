@@ -90,3 +90,9 @@
 -MSE_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
 -MSE_ExternalClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
 -File/MediaTest.VideoBearSilentMp4/0
+
+# crbug.com/990116: vulkan_content_browsertests experience flaky failures for
+# these tests.
+-MediaSourceTest.Playback_VideoAudio_WebM
+-WebRtcDataBrowserTest.CallWithSctpDataAndMedia
+-WebRtcDataBrowserTest.CallWithDataAndMedia

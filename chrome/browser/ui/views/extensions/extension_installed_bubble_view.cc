@@ -83,7 +83,7 @@ views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
         // visible, and will fall back on the default case on showing the
         // installed dialog anchored to the general extensions toolbar button.
         reference_view =
-            browser_view->toolbar()->extensions_container()->GetViewForId(
+            browser_view->toolbar_button_provider()->GetToolbarActionViewForId(
                 controller->extension()->id());
       } else {
         BrowserActionsContainer* container =
@@ -107,12 +107,8 @@ views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
 
   // Default case.
   if (!reference_view || !reference_view->GetVisible()) {
-    if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-      return browser_view->toolbar()
-          ->extensions_container()
-          ->extensions_button();
-    }
-    return browser_view->toolbar_button_provider()->GetAppMenuButton();
+    return browser_view->toolbar_button_provider()
+        ->GetDefaultExtensionDialogAnchorView();
   }
   return reference_view;
 }

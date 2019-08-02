@@ -39,6 +39,7 @@
 namespace chrome_pdf {
 
 class PDFiumDocument;
+class PDFiumPermissions;
 
 namespace draw_utils {
 class ShadowMatrix;
@@ -237,6 +238,10 @@ class PDFiumEngine : public PDFEngine,
   void AppendPageRectToPages(const pp::Rect& page_rect,
                              size_t page_index,
                              bool reload);
+
+  // Formats the pages of |page_rects| for single-view and appends them to
+  // |pages_|.
+  void LoadPagesInSingleView(std::vector<pp::Rect> page_rects, bool reload);
 
   // Loads information about the pages in the document and calculate the
   // document size.
@@ -608,11 +613,7 @@ class PDFiumEngine : public PDFEngine,
   // Where to resume searching. (0-based)
   base::Optional<size_t> resume_find_index_;
 
-  // Permissions bitfield.
-  unsigned long permissions_ = 0;
-
-  // Permissions security handler revision number. -1 for unknown.
-  int permissions_handler_revision_ = -1;
+  std::unique_ptr<PDFiumPermissions> permissions_;
 
   pp::Size default_page_size_;
 

@@ -22,6 +22,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.ScalableTimeout;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
@@ -30,6 +31,8 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
+import org.chromium.chrome.browser.touchless.TouchlessDelegate;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -143,7 +146,7 @@ public class WebApkIntegrationTest {
 
         mActivityTestRule.startActivityCompletely(intent);
 
-        WebApkActivity lastActivity = (WebApkActivity) mActivityTestRule.getActivity();
+        WebApkActivity lastActivity = mActivityTestRule.getActivity();
         Assert.assertEquals(pwaRocksUrl, lastActivity.getWebappInfo().uri().toString());
     }
 
@@ -157,7 +160,7 @@ public class WebApkIntegrationTest {
     public void testLaunchAndNavigateOffOrigin() throws Exception {
         startWebApkActivity("org.chromium.webapk.test", getUrlForHost("pwa.rocks"));
         waitUntilSplashscreenHides();
-        WebApkActivity webApkActivity = (WebApkActivity) mActivityTestRule.getActivity();
+        WebApkActivity webApkActivity = mActivityTestRule.getActivity();
         WebappActivityTestRule.assertToolbarShowState(webApkActivity, false);
 
         // We navigate outside origin and expect CCT toolbar to show on top of WebApkActivity.
@@ -281,15 +284,18 @@ public class WebApkIntegrationTest {
         startWebApkActivity("org.chromium.webapk.test", getUrlForHost("pwa.rocks"));
         waitUntilSplashscreenHides();
 
+        Class<? extends ChromeActivity> mainClass = FeatureUtilities.isNoTouchModeEnabled()
+                ? TouchlessDelegate.getNoTouchActivityClass()
+                : ChromeTabbedActivity.class;
+
         // Move WebAPK to the background by launching Chrome.
-        Intent intent =
-                new Intent(InstrumentationRegistry.getTargetContext(), ChromeTabbedActivity.class);
+        Intent intent = new Intent(InstrumentationRegistry.getTargetContext(), mainClass);
         intent.setFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
         InstrumentationRegistry.getTargetContext().startActivity(intent);
-        ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class);
+        ChromeActivityTestRule.waitFor(mainClass);
 
-        WebApkActivity webApkActivity = (WebApkActivity) mActivityTestRule.getActivity();
+        WebApkActivity webApkActivity = mActivityTestRule.getActivity();
         TabWebContentsDelegateAndroid tabDelegate =
                 webApkActivity.getActivityTab().getTabWebContentsDelegateAndroid();
         tabDelegate.activateContents();

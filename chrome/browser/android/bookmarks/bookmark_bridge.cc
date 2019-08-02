@@ -638,7 +638,14 @@ void BookmarkBridge::DeleteBookmark(
   long bookmark_id = JavaBookmarkIdGetId(env, j_bookmark_id_obj);
   int type = JavaBookmarkIdGetType(env, j_bookmark_id_obj);
   const BookmarkNode* node = GetNodeByID(bookmark_id, type);
-  DCHECK(IsEditable(node));
+
+  // TODO(twellington): Switch back to a DCHECK after debugging
+  // why this is called with an uneditable node.
+  // See https://crbug.com/981172.
+  if (!IsEditable(node)) {
+    NOTREACHED();
+    return;
+  }
 
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     partner_bookmarks_shim_->RemoveBookmark(node);

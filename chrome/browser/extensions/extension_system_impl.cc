@@ -476,7 +476,7 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
   notifications_disabled =
       !notifier_state_tracker->IsNotifierEnabled(notifier_id);
 
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&InfoMap::AddExtension, info_map(),
                      base::RetainedRef(extension), install_time,
@@ -487,9 +487,9 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(
     const std::string& extension_id,
     const UnloadedExtensionReason reason) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&InfoMap::RemoveExtension, info_map(),
-                                          extension_id, reason));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&InfoMap::RemoveExtension, info_map(),
+                                extension_id, reason));
 }
 
 }  // namespace extensions

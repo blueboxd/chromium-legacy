@@ -61,8 +61,7 @@ TestRenderFrameHost::TestRenderFrameHost(
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
     int32_t routing_id,
-    int32_t widget_routing_id,
-    int flags)
+    int32_t widget_routing_id)
     : RenderFrameHostImpl(site_instance,
                           std::move(render_view_host),
                           delegate,
@@ -70,8 +69,7 @@ TestRenderFrameHost::TestRenderFrameHost(
                           frame_tree_node,
                           routing_id,
                           widget_routing_id,
-                          flags,
-                          false),
+                          /*renderer_initiated_creation=*/false),
       child_creation_observer_(delegate ? delegate->GetAsWebContents()
                                         : nullptr),
       simulate_history_list_was_cleared_(false),

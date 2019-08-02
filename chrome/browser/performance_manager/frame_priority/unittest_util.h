@@ -23,25 +23,33 @@ class DummyVoteConsumer : public VoteConsumer {
 
   // VoteConsumer implementation:
   VoteReceipt SubmitVote(VoterId voter_id, const Vote& vote) override;
+  VoteReceipt ChangeVote(VoteReceipt receipt,
+                         AcceptedVote* old_vote,
+                         const Vote& new_vote) override;
   void VoteInvalidated(AcceptedVote* vote) override;
 
   // Checks that the vote at position |index| is valid, and has the
-  // corresponding |voter|, |frame_node| and |priority|.
+  // corresponding |voter|, |frame_node| and |priority|. If |reason| is non-null
+  // then it will be validated as well.
   void ExpectValidVote(size_t index,
                        VoterId voter_id,
                        const FrameNode* frame_node,
-                       base::TaskPriority priority);
+                       base::TaskPriority priority,
+                       const char* reason = nullptr);
 
   VotingChannelFactory voting_channel_factory_;
   std::vector<AcceptedVote> votes_;
   size_t valid_vote_count_ = 0;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DummyVoteConsumer);
 };
 
 // A dummy voter that allows emitting votes and tracking their receipts.
 class DummyVoter {
  public:
+  static const char kReason[];
+
   DummyVoter();
   ~DummyVoter();
 
@@ -50,7 +58,8 @@ class DummyVoter {
   // Causes the voter to emit a vote for the given |frame_node| and with the
   // given |priority|. The receipt is pushed back onto |receipts_|.
   void EmitVote(const FrameNode* frame_node,
-                base::TaskPriority priority = base::TaskPriority::LOWEST);
+                base::TaskPriority priority = base::TaskPriority::LOWEST,
+                const char* reason = kReason);
 
   VotingChannel voting_channel_;
   std::vector<VoteReceipt> receipts_;

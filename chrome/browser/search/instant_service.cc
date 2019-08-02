@@ -67,6 +67,7 @@ const char kNtpCustomBackgroundAttributionActionURL[] =
     "attribution_action_url";
 const char kNtpCustomBackgroundCollectionId[] = "collection_id";
 const char kNtpCustomBackgroundResumeToken[] = "resume_token";
+const char kNtpCustomBackgroundRefreshTimestamp[] = "refresh_timestamp";
 
 const char kCustomBackgroundsUmaClientName[] = "NtpCustomBackgrounds";
 
@@ -76,7 +77,8 @@ base::DictionaryValue GetBackgroundInfoAsDict(
     const std::string& attribution_line_2,
     const GURL& action_url,
     const base::Optional<std::string>& collection_id,
-    const base::Optional<std::string>& resume_token) {
+    const base::Optional<std::string>& resume_token,
+    const base::Optional<int> refresh_timestamp) {
   base::DictionaryValue background_info;
   background_info.SetKey(kNtpCustomBackgroundURL,
                          base::Value(background_url.spec()));
@@ -90,6 +92,8 @@ base::DictionaryValue GetBackgroundInfoAsDict(
                          base::Value(collection_id.value_or("")));
   background_info.SetKey(kNtpCustomBackgroundResumeToken,
                          base::Value(resume_token.value_or("")));
+  background_info.SetKey(kNtpCustomBackgroundRefreshTimestamp,
+                         base::Value(refresh_timestamp.value_or(0)));
 
   return background_info;
 }
@@ -112,6 +116,8 @@ base::DictionaryValue GetBackgroundInfoWithColor(
       *background_info->FindKey(kNtpCustomBackgroundCollectionId));
   auto resume_token = const_cast<base::Value&&>(
       *background_info->FindKey(kNtpCustomBackgroundResumeToken));
+  auto refresh_timestamp = const_cast<base::Value&&>(
+      *background_info->FindKey(kNtpCustomBackgroundRefreshTimestamp));
 
   new_background_info.SetKey(kNtpCustomBackgroundURL, url.Clone());
   new_background_info.SetKey(kNtpCustomBackgroundAttributionLine1,
@@ -126,6 +132,8 @@ base::DictionaryValue GetBackgroundInfoWithColor(
                              collection_id.Clone());
   new_background_info.SetKey(kNtpCustomBackgroundResumeToken,
                              resume_token.Clone());
+  new_background_info.SetKey(kNtpCustomBackgroundRefreshTimestamp,
+                             refresh_timestamp.Clone());
   return new_background_info;
 }
 
@@ -143,6 +151,8 @@ base::Value NtpCustomBackgroundDefaults() {
                   base::Value(base::Value::Type::STRING));
   defaults.SetKey(kNtpCustomBackgroundResumeToken,
                   base::Value(base::Value::Type::STRING));
+  defaults.SetKey(kNtpCustomBackgroundRefreshTimestamp,
+                  base::Value(base::Value::Type::INTEGER));
   return defaults;
 }
 
@@ -171,7 +181,8 @@ InstantService::InstantService(Profile* profile)
       theme_observer_(this),
       background_service_observer_(this),
       native_theme_(ui::NativeTheme::GetInstanceForNativeUi()),
-      background_updated_timestamp_(base::TimeTicks::Now()) {
+      background_updated_timestamp_(base::TimeTicks::Now()),
+      clock_(base::DefaultClock::GetInstance()) {
   // The initialization below depends on a typical set of browser threads. Skip
   // it if we are running in a unit test without the full suite.
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI))
@@ -462,7 +473,7 @@ void InstantService::SetCustomBackgroundInfo(
 
     base::DictionaryValue background_info = GetBackgroundInfoAsDict(
         background_url, attribution_line_1, attribution_line_2, action_url,
-        base::nullopt, base::nullopt);
+        base::nullopt, base::nullopt, base::nullopt);
     pref_service_->Set(prefs::kNtpCustomBackgroundDict, background_info);
   } else {
     pref_service_->ClearPref(prefs::kNtpCustomBackgroundDict);
@@ -491,6 +502,8 @@ void InstantService::SelectLocalBackgroundImage(const base::FilePath& path) {
 }
 
 ThemeBackgroundInfo* InstantService::GetInitializedThemeInfo() {
+  RefreshBackgroundIfNeeded();
+
   if (!theme_info_)
     BuildThemeInfo();
   return theme_info_.get();
@@ -529,10 +542,12 @@ void InstantService::OnNextCollectionImageAvailable() {
     attribution2 = image.attribution[1];
 
   std::string resume_token = background_service_->next_image_resume_token();
+  int64_t timestamp = (clock_->Now() + base::TimeDelta::FromDays(1)).ToTimeT();
 
   base::DictionaryValue background_info = GetBackgroundInfoAsDict(
       image.image_url, attribution1, attribution2, image.attribution_action_url,
-      image.collection_id, resume_token);
+      image.collection_id, resume_token, timestamp);
+
   pref_service_->Set(prefs::kNtpCustomBackgroundDict, background_info);
 }
 
@@ -967,7 +982,28 @@ void InstantService::UpdateCustomBackgroundPrefsWithColor(
   }
 }
 
+void InstantService::RefreshBackgroundIfNeeded() {
+  const base::DictionaryValue* background_info =
+      profile_->GetPrefs()->GetDictionary(prefs::kNtpCustomBackgroundDict);
+  int64_t refresh_timestamp =
+      background_info->FindKey(kNtpCustomBackgroundRefreshTimestamp)->GetInt();
+  if (refresh_timestamp == 0)
+    return;
+
+  if (clock_->Now().ToTimeT() > refresh_timestamp) {
+    std::string collection_id =
+        background_info->FindKey(kNtpCustomBackgroundCollectionId)->GetString();
+    std::string resume_token =
+        background_info->FindKey(kNtpCustomBackgroundResumeToken)->GetString();
+    background_service_->FetchNextCollectionImage(collection_id, resume_token);
+  }
+}
+
 void InstantService::SetImageFetcherForTesting(
     image_fetcher::ImageFetcher* image_fetcher) {
   image_fetcher_ = base::WrapUnique(image_fetcher);
+}
+
+void InstantService::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }

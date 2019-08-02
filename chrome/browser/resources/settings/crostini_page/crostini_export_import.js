@@ -11,12 +11,33 @@
 Polymer({
   is: 'settings-crostini-export-import',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /** @private */
     showImportConfirmationDialog_: {
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Whether the export import buttons should be enabled. Initially false
+     * until status has been confirmed.
+     * @private {boolean}
+     */
+    enableButtons_: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
+  attached: function() {
+    this.addWebUIListener(
+        'crostini-export-import-operation-status-changed', inProgress => {
+          this.enableButtons_ = !inProgress;
+        });
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .requestCrostiniExportImportOperationStatus();
   },
 
   /** @private */

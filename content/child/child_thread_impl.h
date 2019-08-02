@@ -21,6 +21,7 @@
 #include "components/tracing/common/background_tracing_agent.mojom.h"
 #include "components/variations/child_process_field_trial_syncer.h"
 #include "content/common/associated_interfaces.mojom.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc.mojom.h"
@@ -30,6 +31,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/mojom/associated_interfaces/associated_interfaces.mojom.h"
 
@@ -95,6 +97,7 @@ class CONTENT_EXPORT ChildThreadImpl
   void RecordComputedAction(const std::string& action) override;
   ServiceManagerConnection* GetServiceManagerConnection() override;
   service_manager::Connector* GetConnector() override;
+  void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
   void SetFieldTrialGroup(const std::string& trial_name,
                           const std::string& group_name) override;
@@ -135,9 +138,12 @@ class CONTENT_EXPORT ChildThreadImpl
   void GetBackgroundTracingAgentProvider(
       mojo::PendingReceiver<tracing::mojom::BackgroundTracingAgentProvider>
           receiver);
+
   virtual void RunService(
       const std::string& service_name,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver);
+
+  virtual void OnBindReceiver(mojo::GenericPendingReceiver receiver);
 
  protected:
   friend class ChildProcess;
@@ -244,6 +250,9 @@ class CONTENT_EXPORT ChildThreadImpl
       channel_connected_factory_;
 
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
+
+  // An interface to the browser's process host object.
+  mojo::Remote<mojom::ChildProcessHost> child_process_host_;
 
   base::WeakPtrFactory<ChildThreadImpl> weak_factory_{this};
 

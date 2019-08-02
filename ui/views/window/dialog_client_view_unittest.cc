@@ -44,7 +44,7 @@ class DialogClientViewTest : public test::WidgetTest,
     widget_ = new views::Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.delegate = this;
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     EXPECT_EQ(this, GetContentsView());
   }
 

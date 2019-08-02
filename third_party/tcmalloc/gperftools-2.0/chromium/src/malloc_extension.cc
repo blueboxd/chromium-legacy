@@ -42,6 +42,7 @@
 #include <sys/types.h>
 #endif
 #include <string>
+#include "base/allocator/buildflags.h"
 #include "base/dynamic_annotations.h"
 #include "base/sysinfo.h"    // for FillProcSelfMaps
 #ifndef NO_HEAP_CHECK
@@ -51,7 +52,7 @@
 #include "gperftools/malloc_extension_c.h"
 #include "maybe_threads.h"
 
-#ifdef USE_TCMALLOC
+#if BUILDFLAG(USE_TCMALLOC)
 // Note that malloc_extension can be used without tcmalloc if gperftools'
 // heap-profiler is enabled without the tcmalloc memory allocator.
 #include "thread_cache.h"
@@ -228,7 +229,7 @@ void MallocExtension::Register(MallocExtension* implementation) {
 
 unsigned int MallocExtension::GetBytesAllocatedOnCurrentThread() {
   // This function is added in Chromium for profiling.
-#ifdef USE_TCMALLOC
+#if BUILDFLAG(USE_TCMALLOC)
   // Note that malloc_extension can be used without tcmalloc if gperftools'
   // heap-profiler is enabled without the tcmalloc memory allocator.
   return tcmalloc::ThreadCache::GetBytesAllocatedOnCurrentThread();

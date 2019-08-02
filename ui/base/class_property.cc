@@ -9,10 +9,18 @@
 
 namespace ui {
 
-PropertyHandler::PropertyHandler() {}
+PropertyHandler::PropertyHandler() = default;
+
+PropertyHandler::PropertyHandler(PropertyHandler&& other) = default;
 
 PropertyHandler::~PropertyHandler() {
   ClearProperties();
+}
+
+void PropertyHandler::AcquireAllPropertiesFrom(PropertyHandler&& other) {
+  for (auto& prop_pair : other.prop_map_)
+    prop_map_[std::move(prop_pair.first)] = std::move(prop_pair.second);
+  other.prop_map_.clear();
 }
 
 int64_t PropertyHandler::SetPropertyInternal(const void* key,

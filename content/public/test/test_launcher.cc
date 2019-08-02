@@ -69,12 +69,6 @@ namespace {
 // that span browser restarts.
 const char kPreTestPrefix[] = "PRE_";
 
-// Manual tests only run when --run-manual is specified. This allows writing
-// tests that don't run automatically but are still in the same test binary.
-// This is useful so that a team that wants to run a few tests doesn't have to
-// add a new binary that must be compiled on all builds.
-const char kManualTestPrefix[] = "MANUAL_";
-
 TestLauncherDelegate* g_launcher_delegate = nullptr;
 #if !defined(OS_ANDROID)
 // ContentMain is not run on Android in the test process, and is run via
@@ -132,8 +126,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 
   // base::TestLauncherDelegate:
   bool GetTests(std::vector<base::TestIdentifier>* output) override;
-  bool WillRunTest(const std::string& test_case_name,
-                   const std::string& test_name) override;
+
   base::CommandLine GetCommandLine(const std::vector<std::string>& test_names,
                                    const base::FilePath& temp_dir,
                                    base::FilePath* output_file) override;
@@ -180,17 +173,6 @@ bool WrapperTestLauncherDelegate::GetTests(
 
 bool IsPreTestName(const std::string& test_name) {
   return test_name.find(kPreTestPrefix) != std::string::npos;
-}
-
-bool WrapperTestLauncherDelegate::WillRunTest(const std::string& test_case_name,
-                                              const std::string& test_name) {
-  if (base::StartsWith(test_name, kManualTestPrefix,
-                       base::CompareCase::SENSITIVE) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(kRunManualTestsFlag)) {
-    return false;
-  }
-
-  return true;
 }
 
 size_t WrapperTestLauncherDelegate::GetBatchSize() {
@@ -325,9 +307,6 @@ std::vector<base::TestResult> WrapperTestLauncherDelegate::ProcessTestResults(
 const char kHelpFlag[]   = "help";
 
 const char kLaunchAsBrowser[] = "as-browser";
-
-// See kManualTestPrefix above.
-const char kRunManualTestsFlag[] = "run-manual";
 
 const char kSingleProcessTestsFlag[]   = "single_process";
 

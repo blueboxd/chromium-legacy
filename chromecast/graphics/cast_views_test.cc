@@ -31,7 +31,7 @@ TEST_F(CastViewsTest, ProgressBar) {
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.bounds = bounds;
   std::unique_ptr<views::Widget> widget(new views::Widget);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetOpacity(0.6);
   widget->SetContentsView(progress_bar);
   window_manager->SetWindowId(widget->GetNativeView(),

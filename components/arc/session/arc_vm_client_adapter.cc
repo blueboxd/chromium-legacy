@@ -107,8 +107,8 @@ class ArcVmClientAdapter : public ArcClientAdapter {
     VLOG(1) << "Concierge service started for arcvm.";
 
     // TODO(cmtm): Export host-side /data to the VM, and remove the call.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&base::SysInfo::AmountOfFreeDiskSpace,
                        base::FilePath(kHomeDirectory)),
         base::BindOnce(&ArcVmClientAdapter::CreateDiskImageAfterSizeCheck,

@@ -153,14 +153,14 @@ TEST_F(EventRouterForwarderTest, BroadcastRendererIO) {
                                              kEventName, profile1_, url));
   EXPECT_CALL(*event_router, CallEventRouter(profile2_, "", kHistogramValue,
                                              kEventName, profile2_, url));
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&BroadcastEventToRenderers,
-                                          base::Unretained(event_router.get()),
-                                          kHistogramValue, kEventName, url));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&BroadcastEventToRenderers,
+                                base::Unretained(event_router.get()),
+                                kHistogramValue, kEventName, url));
 
   // Wait for IO thread's message loop to be processed
   scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}).get()));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get()));
   ASSERT_TRUE(helper->Run());
 
   base::RunLoop().RunUntilIdle();

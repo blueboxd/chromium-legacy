@@ -1292,6 +1292,39 @@ TEST_F(DesksTest, NextActivatable) {
   EXPECT_EQ(nullptr, window_util::GetActiveWindow());
 }
 
+TEST_F(DesksTest, NoMiniViewsUpdateOnOverviewEnter) {
+  auto* controller = DesksController::Get();
+  NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  auto* desk_1 = controller->desks()[0].get();
+  auto* desk_2 = controller->desks()[1].get();
+
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  wm::ActivateWindow(win1.get());
+  EXPECT_EQ(win1.get(), window_util::GetActiveWindow());
+
+  TestDeskObserver desk_1_observer;
+  TestDeskObserver desk_2_observer;
+  desk_1->AddObserver(&desk_1_observer);
+  desk_2->AddObserver(&desk_2_observer);
+  EXPECT_EQ(0, desk_1_observer.notify_counts());
+  EXPECT_EQ(0, desk_2_observer.notify_counts());
+
+  // The widgets created by overview mode, whose windows are added to the active
+  // desk's container, should never result in mini_views updates since they're
+  // not mirrored there at all.
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  EXPECT_EQ(0, desk_1_observer.notify_counts());
+  EXPECT_EQ(0, desk_2_observer.notify_counts());
+
+  desk_1->RemoveObserver(&desk_1_observer);
+  desk_2->RemoveObserver(&desk_2_observer);
+}
+
 class TabletModeDesksTest : public DesksTest {
  public:
   TabletModeDesksTest() = default;

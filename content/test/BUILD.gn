@@ -339,7 +339,6 @@ jumbo_static_library("test_support") {
 
   public_deps = [
     "//components/download/public/common:test_support",
-    "//components/variations:test_support",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",

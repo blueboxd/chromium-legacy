@@ -37,7 +37,7 @@ std::unique_ptr<views::Widget> CreateWidget(aura::Window* context) {
   params.delegate = new views::WidgetDelegateView();
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = context;
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 

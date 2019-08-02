@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -68,7 +69,10 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
         listModel.set(SuggestionListProperties.EMBEDDER, listEmbedder);
         listModel.set(SuggestionListProperties.VISIBLE, false);
 
-        ViewProvider<SuggestionListViewHolder> viewProvider = createViewProvider(context);
+        ModelList listItems = new ModelList();
+        listModel.set(SuggestionListProperties.SUGGESTION_MODELS, listItems);
+        ViewProvider<SuggestionListViewHolder> viewProvider =
+                createViewProvider(context, listItems);
         viewProvider.whenLoaded((holder) -> { mListView = holder.listView; });
         LazyConstructionPropertyMcp.create(listModel, SuggestionListProperties.VISIBLE,
                 viewProvider, SuggestionListViewBinder::bind);
@@ -83,7 +87,8 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
         mMediator = null;
     }
 
-    private ViewProvider<SuggestionListViewHolder> createViewProvider(Context context) {
+    private ViewProvider<SuggestionListViewHolder> createViewProvider(
+            Context context, ModelList modelList) {
         return new ViewProvider<SuggestionListViewHolder>() {
             private List<Callback<SuggestionListViewHolder>> mCallbacks = new ArrayList<>();
             private SuggestionListViewHolder mHolder;
@@ -101,7 +106,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                 // Start with visibility GONE to ensure that show() is called.
                 // http://crbug.com/517438
                 list.setVisibility(View.GONE);
-                ModelListAdapter adapter = new ModelListAdapter();
+                ModelListAdapter adapter = new ModelListAdapter(modelList);
                 list.setAdapter(adapter);
                 list.setClipToPadding(false);
 
@@ -131,7 +136,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                         EntitySuggestionViewBinder::bind);
                 // clang-format on
 
-                mHolder = new SuggestionListViewHolder(container, list, adapter);
+                mHolder = new SuggestionListViewHolder(container, list);
 
                 for (int i = 0; i < mCallbacks.size(); i++) {
                     mCallbacks.get(i).onResult(mHolder);

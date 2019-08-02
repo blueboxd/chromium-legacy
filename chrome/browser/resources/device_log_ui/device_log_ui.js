@@ -124,9 +124,9 @@ const DeviceLogUI = (function() {
    * Sets refresh rate if the interval is found in the url.
    */
   const setRefresh = function() {
-    const interval = parseQueryParams(window.location)['refresh'];
-    if (interval && interval != '') {
-      setInterval(requestLog, parseInt(interval) * 1000);
+    const interval = new URL(window.location).searchParams.get('refresh');
+    if (interval) {
+      setInterval(requestLog, parseInt(interval, 10) * 1000);
     }
   };
 

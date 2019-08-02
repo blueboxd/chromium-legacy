@@ -188,26 +188,57 @@ base::TimeDelta BackgroundTaskCoordinator::DefaultTimeRandomizer(
   return base::RandDouble() * time_window;
 }
 
-BackgroundTaskCoordinator::BackgroundTaskCoordinator(
+class BackgroundTaskCoordinatorImpl : public BackgroundTaskCoordinator {
+ public:
+  BackgroundTaskCoordinatorImpl(
+      std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
+      const SchedulerConfig* config,
+      TimeRandomizer time_randomizer,
+      base::Clock* clock)
+      : background_task_(std::move(background_task)),
+        config_(config),
+        time_randomizer_(time_randomizer),
+        clock_(clock) {}
+
+  ~BackgroundTaskCoordinatorImpl() override = default;
+
+ private:
+  // BackgroundTaskCoordinator implementation.
+  void ScheduleBackgroundTask(Notifications notifications,
+                              ClientStates client_states,
+                              SchedulerTaskTime task_start_time) override {
+    auto helper = std::make_unique<BackgroundTaskCoordinatorHelper>(
+        background_task_.get(), config_, time_randomizer_, clock_);
+    helper->ScheduleBackgroundTask(std::move(notifications),
+                                   std::move(client_states), task_start_time);
+  }
+
+  // The class that actually schedules platform background task.
+  std::unique_ptr<NotificationBackgroundTaskScheduler> background_task_;
+
+  // System configuration.
+  const SchedulerConfig* config_;
+
+  // Randomize the time to show the notification, to avoid large number of users
+  // to perform actions at the same time.
+  TimeRandomizer time_randomizer_;
+
+  // Clock to query the current timestamp.
+  base::Clock* clock_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundTaskCoordinatorImpl);
+};
+
+// static
+std::unique_ptr<BackgroundTaskCoordinator> BackgroundTaskCoordinator::Create(
     std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
     const SchedulerConfig* config,
     TimeRandomizer time_randomizer,
-    base::Clock* clock)
-    : background_task_(std::move(background_task)),
-      config_(config),
-      time_randomizer_(time_randomizer),
-      clock_(clock) {}
+    base::Clock* clock) {
+  return std::make_unique<BackgroundTaskCoordinatorImpl>(
+      std::move(background_task), config, time_randomizer, clock);
+}
 
 BackgroundTaskCoordinator::~BackgroundTaskCoordinator() = default;
-
-void BackgroundTaskCoordinator::ScheduleBackgroundTask(
-    Notifications notifications,
-    ClientStates client_states,
-    SchedulerTaskTime task_start_time) {
-  auto helper = std::make_unique<BackgroundTaskCoordinatorHelper>(
-      background_task_.get(), config_, time_randomizer_, clock_);
-  helper->ScheduleBackgroundTask(std::move(notifications),
-                                 std::move(client_states), task_start_time);
-}
 
 }  // namespace notifications

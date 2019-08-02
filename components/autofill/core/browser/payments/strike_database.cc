@@ -30,8 +30,8 @@ StrikeDatabase::StrikeDatabase(
   auto strike_database_path =
       profile_path.Append(FILE_PATH_LITERAL("AutofillStrikeDatabase"));
 
-  auto database_task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+  auto database_task_runner = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   db_ = db_provider->GetDB<StrikeData>(

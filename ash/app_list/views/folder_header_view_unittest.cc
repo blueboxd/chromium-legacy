@@ -70,7 +70,7 @@ class FolderHeaderViewTest : public views::ViewsTestBase {
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 650, 650);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->Show();
 
     folder_header_view_ = std::make_unique<FolderHeaderView>(delegate_.get());

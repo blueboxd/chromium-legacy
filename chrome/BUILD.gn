@@ -466,6 +466,7 @@ if (is_win) {
       "/DELAYLOAD:user32.dll",
       "/DELAYLOAD:userenv.dll",
       "/DELAYLOAD:usp10.dll",
+      "/DELAYLOAD:uxtheme.dll",
       "/DELAYLOAD:wer.dll",
       "/DELAYLOAD:wevtapi.dll",
       "/DELAYLOAD:winhttp.dll",

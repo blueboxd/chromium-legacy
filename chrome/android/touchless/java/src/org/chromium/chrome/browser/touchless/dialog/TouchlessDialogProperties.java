@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.ReadableBooleanPropertyKey;
@@ -93,7 +94,7 @@ public class TouchlessDialogProperties {
      * The list of options to be displayed in the dialog. These models should be using the
      * {@link DialogListItemProperties} properties.
      */
-    public static final WritableObjectPropertyKey<PropertyModel[]> LIST_MODELS =
+    public static final WritableObjectPropertyKey<ModelList> LIST_MODELS =
             new WritableObjectPropertyKey<>();
 
     /** The names for the Actions. */

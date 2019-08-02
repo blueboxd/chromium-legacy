@@ -73,8 +73,8 @@ void TranslateVideoDeviceId(
             std::move(origin), source_id, std::move(callback));
       },
       salt, std::move(origin), source_id, std::move(callback));
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           std::move(callback_on_io_thread));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 std::move(callback_on_io_thread));
 }
 
 void TriggerCameraIntent(content::BrowserContext* context,

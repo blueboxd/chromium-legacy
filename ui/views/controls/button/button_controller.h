@@ -19,7 +19,20 @@ class VIEWS_EXPORT ButtonController {
                    std::unique_ptr<ButtonControllerDelegate> delegate);
   virtual ~ButtonController();
 
+  // An enum describing the events on which a button should notify its listener.
+  enum NotifyAction {
+    NOTIFY_ON_PRESS,
+    NOTIFY_ON_RELEASE,
+  };
+
   Button* button() { return button_; }
+
+  // Sets the event on which the button's listener should be notified.
+  void set_notify_action(NotifyAction notify_action) {
+    notify_action_ = notify_action;
+  }
+
+  NotifyAction notify_action() const { return notify_action_; }
 
   // Methods that parallel View::On<Event> handlers:
   virtual bool OnMousePressed(const ui::MouseEvent& event);
@@ -48,6 +61,9 @@ class VIEWS_EXPORT ButtonController {
 
   // TODO(cyan): Remove |button_| and access everything via the delegate.
   std::unique_ptr<ButtonControllerDelegate> button_controller_delegate_;
+
+  // The event on which the button's listener should be notified.
+  NotifyAction notify_action_ = NOTIFY_ON_RELEASE;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonController);
 };

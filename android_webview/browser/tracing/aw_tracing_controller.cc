@@ -45,15 +45,14 @@ class AwTraceDataEndpoint
 
   void ReceiveTraceFinalContents(
       std::unique_ptr<const base::DictionaryValue> metadata) override {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(std::move(completed_callback_), std::move(metadata)));
   }
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(received_chunk_callback_, std::move(chunk)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(received_chunk_callback_, std::move(chunk)));
   }
 
   explicit AwTraceDataEndpoint(ReceivedChunkCallback received_chunk_callback,

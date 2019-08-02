@@ -343,7 +343,7 @@ void InProcessUtilityThreadHelper::JoinAllUtilityThreads() {
 }
 
 void InProcessUtilityThreadHelper::CheckHasRunningChildProcess() {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &InProcessUtilityThreadHelper::CheckHasRunningChildProcessOnIO,

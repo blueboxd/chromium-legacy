@@ -186,7 +186,7 @@ struct NewTabURLDetails {
 
     GURL search_provider_url(template_url->new_tab_url_ref().ReplaceSearchTerms(
         TemplateURLRef::SearchTermsArgs(base::string16()),
-        UIThreadSearchTermsData(profile)));
+        UIThreadSearchTermsData()));
 
     if (!search_provider_url.is_valid())
       return NewTabURLDetails(local_url, NEW_TAB_URL_NOT_SET);

@@ -67,8 +67,8 @@ class TestExternalPrefLoader : public ExternalPrefLoader {
         load_callback_(std::move(load_callback)) {}
 
   void LoadOnFileThread() override {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             std::move(load_callback_));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   std::move(load_callback_));
   }
 
  private:

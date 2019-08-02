@@ -6,7 +6,7 @@ mojom = "//components/spellcheck/common/spellcheck.mojom"
 
 public_headers = [ "//components/spellcheck/common/spellcheck_result.h" ]
 
-traits_headers = [ "//components/spellcheck/common/spellcheck_struct_traits.h" ]
+traits_headers = [ "//components/spellcheck/common/spellcheck_mojom_traits.h" ]
 
 deps = [
   "//components/spellcheck:buildflags",
@@ -17,8 +17,8 @@ public_deps = [
 ]
 
 sources = [
-  "spellcheck_struct_traits.cc",
-  "spellcheck_struct_traits.h",
+  "spellcheck_mojom_traits.cc",
+  "spellcheck_mojom_traits.h",
 ]
 
 type_mappings = [

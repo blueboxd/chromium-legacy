@@ -1715,11 +1715,6 @@ TEST_P(FeatureInfoTest, InitializeEXT_texture_norm16) {
       info_->validators()->texture_internal_format_storage.IsValid(GL_R16_EXT));
 }
 
-TEST_P(FeatureInfoTest, InitializeCHROMIUM_ycbcr_422_imageTrue) {
-  SetupInitExpectations("GL_APPLE_ycbcr_422");
-  EXPECT_TRUE(info_->feature_flags().chromium_image_ycbcr_422);
-}
-
 TEST_P(FeatureInfoTest, InitializeCHROMIUM_unpremultiply_and_dither_copy) {
   SetupInitExpectations("");
   switch (GetParam()) {

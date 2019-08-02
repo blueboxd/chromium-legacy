@@ -52,7 +52,7 @@ class KEYED_SERVICE_EXPORT RefcountedKeyedService
   // If you need your service to be deleted on a specific sequence (for example,
   // you're converting a service that used content::DeleteOnThread<IO>), then
   // use this constructor with a reference to the SequencedTaskRunner (e.g., you
-  // can get it from base::CreateSequencedTaskRunnerWithTraits).
+  // can get it from base::CreateSequencedTaskRunner).
   explicit RefcountedKeyedService(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 

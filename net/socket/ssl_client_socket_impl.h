@@ -184,9 +184,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   void OnPrivateKeyComplete(Error error, const std::vector<uint8_t>& signature);
 
-  // Called from the BoringSSL info callback. (See |SSL_CTX_set_info_callback|.)
-  void InfoCallback(int type, int value);
-
   // Called whenever BoringSSL processes a protocol message.
   void MessageCallback(int is_write,
                        int content_type,

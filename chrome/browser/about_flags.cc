@@ -2503,13 +2503,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll | kExpireM77,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillDoNotUploadSaveUnsupportedCards)},
-    {"enable-autofill-import-non-focusable-credit-card-forms",
-     flag_descriptions::kEnableAutofillImportNonFocusableCreditCardFormsName,
-     flag_descriptions::
-         kEnableAutofillImportNonFocusableCreditCardFormsDescription,
-     kOsAll | kExpireM77,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillImportNonFocusableCreditCardForms)},
     {"enable-autofill-import-dynamic-forms",
      flag_descriptions::kEnableAutofillImportDynamicFormsName,
      flag_descriptions::kEnableAutofillImportDynamicFormsDescription,
@@ -3104,12 +3097,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome_pdf::features::kSaveEditedPDFForm)},
 #endif  // BUILDFLAG(ENABLE_PDF)
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-    {"pdf-isolation", flag_descriptions::kPdfIsolationName,
-     flag_descriptions::kPdfIsolationDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kPdfIsolation)},
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
-
 #if BUILDFLAG(ENABLE_PRINTING)
     {"use-pdf-compositor-service-for-print",
      flag_descriptions::kUsePdfCompositorServiceName,
@@ -3502,8 +3489,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"enable-vaapi-jpeg-image-decode-acceleration",
      flag_descriptions::kVaapiJpegImageDecodeAccelerationName,
-     flag_descriptions::kVaapiJpegImageDecodeAccelerationDescription,
-     kOsCrOS | kExpireM77,
+     flag_descriptions::kVaapiJpegImageDecodeAccelerationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kVaapiJpegImageDecodeAcceleration)},
 
     {"enable-vaapi-webp-image-decode-acceleration",

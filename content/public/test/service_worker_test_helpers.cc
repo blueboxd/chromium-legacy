@@ -67,9 +67,8 @@ class StoppedObserver : public base::RefCountedThreadSafe<StoppedObserver> {
 
   void OnStopped() {
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&StoppedObserver::OnStopped, this));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(&StoppedObserver::OnStopped, this));
       return;
     }
     std::move(completion_callback_ui_).Run();
@@ -100,10 +99,9 @@ void StopServiceWorkerForScope(ServiceWorkerContext* context,
                                const GURL& scope,
                                base::OnceClosure completion_callback_ui) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&StopServiceWorkerForScope, context, scope,
-                       std::move(completion_callback_ui)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&StopServiceWorkerForScope, context, scope,
+                                  std::move(completion_callback_ui)));
     return;
   }
   auto* context_wrapper = static_cast<ServiceWorkerContextWrapper*>(context);

@@ -28,7 +28,6 @@ extern const base::Feature kAutofillDownstreamUseGooglePayBrandingOniOS;
 extern const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser;
 extern const base::Feature kAutofillEnableToolbarStatusChip;
 extern const base::Feature kAutofillImportDynamicForms;
-extern const base::Feature kAutofillImportNonFocusableCreditCardForms;
 extern const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2;
 extern const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
@@ -39,8 +38,6 @@ extern const base::Feature kAutofillUpstream;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
 extern const base::Feature kAutofillUpstreamAlwaysRequestCardholderName;
 extern const base::Feature kAutofillUpstreamBlankCardholderNameField;
-extern const base::Feature kAutofillUpstreamDisallowElo;
-extern const base::Feature kAutofillUpstreamDisallowJcb;
 extern const base::Feature kAutofillUpstreamEditableCardholderName;
 extern const base::Feature kAutofillUpstreamEditableExpirationDate;
 

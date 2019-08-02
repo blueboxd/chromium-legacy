@@ -15,7 +15,7 @@ static_library("rlz") {
 
   deps = [
     "//base",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//net",
     "//rlz:rlz_lib",
     "//services/network/public/cpp:cpp",

@@ -16,6 +16,7 @@ class Button;
 class ImageView;
 }  // namespace views
 
+class ExtensionsMenuButton;
 class ExtensionsContainer;
 
 // This bubble view displays a list of user extensions.
@@ -62,8 +63,8 @@ class ExtensionsMenuView : public views::ButtonListener,
   void OnToolbarModelInitialized() override;
   void OnToolbarPinnedActionsChanged() override;
 
-  views::View* extension_menu_button_container_for_testing() {
-    return extension_menu_button_container_for_testing_;
+  std::vector<ExtensionsMenuButton*> extension_menu_buttons_for_testing() {
+    return extension_menu_buttons_;
   }
   views::Button* manage_extensions_button_for_testing() {
     return manage_extensions_button_for_testing_;
@@ -78,8 +79,8 @@ class ExtensionsMenuView : public views::ButtonListener,
   ToolbarActionsModel* const model_;
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
       model_observer_;
+  std::vector<ExtensionsMenuButton*> extension_menu_buttons_;
 
-  views::View* extension_menu_button_container_for_testing_ = nullptr;
   views::Button* manage_extensions_button_for_testing_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuView);

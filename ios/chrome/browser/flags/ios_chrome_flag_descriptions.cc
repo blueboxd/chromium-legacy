@@ -194,13 +194,6 @@ const char kEnableAutofillImportDynamicFormsDescription[] =
     "If enabled, offers credit card save for dynamic forms from the page after "
     "information has been entered into them.";
 
-const char kEnableAutofillImportNonFocusableCreditCardFormsName[] =
-    "Allow credit card import from forms that disappear after entry";
-const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[] =
-    "If enabled, offers credit card save for forms that are hidden from the "
-    "page after information has been entered into them, including "
-    "accordion-style checkout flows.";
-
 const char kEnableClipboardProviderImageSuggestionsName[] =
     "Enable copied image provider";
 const char kEnableClipboardProviderImageSuggestionsDescription[] =

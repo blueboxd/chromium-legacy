@@ -479,7 +479,7 @@ URLLoaderInterceptor::URLLoaderInterceptor(
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     if (use_runloop_) {
       base::RunLoop run_loop;
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&URLLoaderInterceptor::IOState::Initialize, io_thread_,
                          std::move(completion_status_callback),
@@ -488,12 +488,11 @@ URLLoaderInterceptor::URLLoaderInterceptor(
     } else {
       base::OnceClosure wrapped_callback = base::BindOnce(
           [](base::OnceClosure callback) {
-            base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                     std::move(callback));
+            base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
           },
           std::move(ready_callback));
 
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&URLLoaderInterceptor::IOState::Initialize, io_thread_,
                          std::move(completion_status_callback),
@@ -527,16 +526,14 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
 
   if (use_runloop_) {
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown, io_thread_,
-                       run_loop.QuitClosure()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
+                                  io_thread_, run_loop.QuitClosure()));
     run_loop.Run();
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown, io_thread_,
-                       base::OnceClosure()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
+                                  io_thread_, base::OnceClosure()));
   }
 }
 
@@ -611,7 +608,7 @@ void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
     int process_id,
     network::mojom::URLLoaderFactoryPtrInfo original_factory) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,

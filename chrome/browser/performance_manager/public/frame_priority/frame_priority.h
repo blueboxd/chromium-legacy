@@ -16,8 +16,8 @@
 //     (by a VoteConsumer) and tracking (via VoteReceipt). This is a final
 //     concrete class.
 // (3) VoteReceipt - Counterpart to an AcceptedVote. Issued to a voter when a
-//     vote is accepted, and used to allow that voter to withdraw / cancel their
-//     vote. This is a final concrete class.
+//     vote is accepted, and used to allow that voter to change / withdraw /
+//     cancel their vote. This is a final concrete class.
 // (4) VoteConsumer - Destination for Votes (making them AcceptedVotes) and
 //     issuer of VoteReceipts. This is an interface.
 // (5) VotingChannel - A mechanism by which a voter can submit votes to
@@ -128,10 +128,19 @@ class VoteReceipt final {
   // HasVote returns true.
   VoteConsumer* GetConsumer() const;
 
+  // Returns the voter ID associated with this receipt. Can only be called if
+  // HasVote returns true.
+  VoterId GetVoterId() const;
+
   // Returns the vote corresponding to this receipt. Can only be called if
   // HasVote returns true.
   const Vote& GetVote() const;
 
+  // Changes the upstream vote associated with this vote receipt. Can only be
+  // called if HasVote returns true.
+  void ChangeVote(base::TaskPriority priority, const char* reason);
+
+  // Rests the vote receipt, canceling the upstream vote.
   void Reset();
 
  protected:
@@ -192,6 +201,9 @@ class AcceptedVote final {
   VoterId voter_id() const { return voter_id_; }
   const Vote& vote() const { return vote_; }
 
+  // Allows an accepted vote to be updated in place.
+  void UpdateVote(const Vote& vote);
+
  protected:
   // VoteReceipt and AcceptedVote are tightly intertwined, and maintain
   // back-pointers to each other as one or the other is moved. The friendship
@@ -204,6 +216,12 @@ class AcceptedVote final {
 
   // Allows a VoteReceipt to update its backpointer.
   void MoveReceipt(VoteReceipt* old_receipt, VoteReceipt* new_receipt);
+
+  // Allows a VoteReceipt to change this vote. The vote receipt gives up its
+  // receipt only to be returned a new one.
+  VoteReceipt ChangeVote(VoteReceipt receipt,
+                         base::TaskPriority priority,
+                         const char* reason);
 
   // Allows a VoteReceipt to invalidate this vote.
   void InvalidateVote(VoteReceipt* receipt);
@@ -325,6 +343,24 @@ class VoteConsumer {
   // Used by a VotingChannel to submit votes to this consumer.
   virtual VoteReceipt SubmitVote(VoterId voter_id, const Vote& vote) = 0;
 
+  // Used by an AcceptedVote to notify a consumer that a previously issued vote
+  // has been changed. Both the |new_vote| and the |receipt| are provided to the
+  // consumer, as it may be necessary for the consumer to create an entirely
+  // new vote and issue a new receipt for it (although ideally it does not do so
+  // for the sake of efficiency). Alternatively, the consumer can choose to
+  // update the |old_vote| in-place, using the data from |new_vote|. This is
+  // kept protected as it is part of a private contract between an AcceptedVote
+  // and a VoteConsumer. A naive implementation of this would be the following:
+  //
+  //   // Tear down the old vote before submitting a new one in order to prevent
+  //   // the voter from having 2 simultaneous votes for the same frame.
+  //   auto voter_id = receipt.GetVoterId();
+  //   receipt.Reset();
+  //   return SubmitVote(voter_id, new_vote);
+  virtual VoteReceipt ChangeVote(VoteReceipt receipt,
+                                 AcceptedVote* old_vote,
+                                 const Vote& new_vote) = 0;
+
   // Used by a AcceptedVote to notify a consumer that a previously issued
   // receipt has been destroyed, and the vote is now invalidated. This is kept
   // protected as it is part of a private contract between an AcceptedVote and a
@@ -333,6 +369,26 @@ class VoteConsumer {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VoteConsumer);
+};
+
+// Provides a default implementation of VoteConsumer that implements a naive
+// (less efficient) version of "ChangeVote".
+class VoteConsumerDefaultImpl : public VoteConsumer {
+ public:
+  VoteConsumerDefaultImpl();
+  ~VoteConsumerDefaultImpl() override;
+
+  // VoteConsumer implementation left to the derived class:
+  VoteReceipt SubmitVote(VoterId voter_id, const Vote& vote) override = 0;
+  void VoteInvalidated(AcceptedVote* vote) override = 0;
+
+  // VoteConsumer implementation provided by this class:
+  VoteReceipt ChangeVote(VoteReceipt receipt,
+                         AcceptedVote* existing_vote,
+                         const Vote& new_vote) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VoteConsumerDefaultImpl);
 };
 
 }  // namespace frame_priority

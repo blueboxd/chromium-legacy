@@ -63,8 +63,8 @@ void GpuServiceFactory::RunService(
     task_runner = task_runner_;
 #else
     // TODO(crbug.com/786169): Check whether this needs to be single threaded.
-    task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-        {base::TaskPriority::USER_BLOCKING});
+    task_runner = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING});
 #endif  // defined(OS_WIN)
 
     using FactoryCallback =

@@ -122,6 +122,27 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, UninstallApp) {
   EXPECT_TRUE(client->GetAppListWindow());
 }
 
+IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowAppInfo) {
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  const extensions::Extension* app = InstallPlatformApp("minimal");
+
+  // Bring up the app list.
+  EXPECT_FALSE(client->GetAppListWindow());
+  client->ShowAppList();
+  EXPECT_TRUE(client->GetAppListWindow());
+  EXPECT_TRUE(wm::GetTransientChildren(client->GetAppListWindow()).empty());
+
+  // Open the app info dialog.
+  base::RunLoop run_loop;
+  client->DoShowAppInfoFlow(profile(), app->id());
+  run_loop.RunUntilIdle();
+  EXPECT_FALSE(wm::GetTransientChildren(client->GetAppListWindow()).empty());
+
+  // The app list should not be dismissed when the dialog is shown.
+  EXPECT_TRUE(client->app_list_visible());
+  EXPECT_TRUE(client->GetAppListWindow());
+}
+
 // Test the CreateNewWindow function of the controller delegate.
 IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, CreateNewWindow) {
   AppListClientImpl* client = AppListClientImpl::GetInstance();

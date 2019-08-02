@@ -6,6 +6,7 @@
 
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -15,9 +16,11 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
 
 const char ExtensionsMenuButton::kClassName[] = "ExtensionsMenuButton";
@@ -25,6 +28,15 @@ const char ExtensionsMenuButton::kClassName[] = "ExtensionsMenuButton";
 namespace {
 
 constexpr int EXTENSION_CONTEXT_MENU = 13;
+constexpr int EXTENSION_PINNING = 14;
+
+constexpr int kSecondaryIconSizeDp = 16;
+
+void SetSecondaryButtonHighlightPath(views::Button* button) {
+  auto highlight_path = std::make_unique<SkPath>();
+  highlight_path->addOval(gfx::RectToSkRect(gfx::Rect(button->size())));
+  button->SetProperty(views::kHighlightPathKey, highlight_path.release());
+}
 
 }  // namespace
 
@@ -39,7 +51,11 @@ ExtensionsMenuButton::ExtensionsMenuButton(
                   true,
                   true),
       browser_(browser),
-      controller_(std::move(controller)) {
+      controller_(std::move(controller)),
+      model_(ToolbarActionsModel::Get(browser_->profile())) {
+  // Set so the extension button receives enter/exit on children to retain hover
+  // status when hovering child views.
+  set_notify_enter_exit_on_child(true);
   ConfigureSecondaryView();
   set_auto_compute_tooltip(false);
   controller_->SetDelegate(this);
@@ -47,6 +63,42 @@ ExtensionsMenuButton::ExtensionsMenuButton(
 }
 
 ExtensionsMenuButton::~ExtensionsMenuButton() = default;
+
+void ExtensionsMenuButton::UpdatePinButton() {
+  pin_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IsPinned() ? IDS_EXTENSIONS_MENU_UNPIN_BUTTON_TOOLTIP
+                 : IDS_EXTENSIONS_MENU_PIN_BUTTON_TOOLTIP));
+  SkColor unpinned_icon_color =
+      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+          ? gfx::kGoogleGrey500
+          : gfx::kChromeIconGrey;
+  SkColor icon_color = IsPinned()
+                           ? GetNativeTheme()->GetSystemColor(
+                                 ui::NativeTheme::kColorId_ProminentButtonColor)
+                           : unpinned_icon_color;
+  views::SetImageFromVectorIcon(
+      pin_button_, IsPinned() ? views::kUnpinIcon : views::kPinIcon,
+      kSecondaryIconSizeDp, icon_color);
+  pin_button_->SetVisible(IsPinned() || IsMouseHovered() || IsMenuRunning());
+}
+
+void ExtensionsMenuButton::OnMouseEntered(const ui::MouseEvent& event) {
+  UpdatePinButton();
+  // The layout manager does not get notified of visibility changes and the pin
+  // buttons has not be laid out before if it was invisible.
+  pin_button_->InvalidateLayout();
+  views::Button::OnMouseEntered(event);
+}
+
+void ExtensionsMenuButton::OnMouseExited(const ui::MouseEvent& event) {
+  UpdatePinButton();
+  views::Button::OnMouseExited(event);
+}
+
+void ExtensionsMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  UpdatePinButton();
+  HoverButton::OnBoundsChanged(previous_bounds);
+}
 
 const char* ExtensionsMenuButton::GetClassName() const {
   return kClassName;
@@ -56,6 +108,9 @@ void ExtensionsMenuButton::ButtonPressed(Button* sender,
                                          const ui::Event& event) {
   if (sender->GetID() == EXTENSION_CONTEXT_MENU) {
     RunExtensionContextMenu(ui::MENU_SOURCE_MOUSE);
+    return;
+  } else if (sender->GetID() == EXTENSION_PINNING) {
+    model_->SetActionVisibility(controller_->GetId(), !IsPinned());
     return;
   }
   DCHECK_EQ(this, sender);
@@ -123,6 +178,10 @@ void ExtensionsMenuButton::OnMenuClosed() {
   menu_runner_.reset();
   controller_->OnContextMenuClosed();
   menu_adapter_.reset();
+  // OnMouseExited is triggered when the context menu is opened. Since we don't
+  // hide the pin button OnMouseExited if the context menu is open we must
+  // update its state to hide it when the context menu is closed.
+  UpdatePinButton();
 }
 
 void ExtensionsMenuButton::ConfigureSecondaryView() {
@@ -136,6 +195,16 @@ void ExtensionsMenuButton::ConfigureSecondaryView() {
           ? gfx::kGoogleGrey500
           : gfx::kChromeIconGrey;
 
+  auto pin_button = views::CreateVectorImageButton(this);
+  pin_button->SetID(EXTENSION_PINNING);
+  pin_button->set_ink_drop_base_color(icon_color);
+  pin_button->SizeToPreferredSize();
+
+  pin_button_ = pin_button.get();
+  SetSecondaryButtonHighlightPath(pin_button_);
+  UpdatePinButton();
+  container->AddChildView(std::move(pin_button));
+
   auto context_menu_button =
       std::make_unique<views::MenuButton>(base::string16(), this);
   context_menu_button->SetID(EXTENSION_CONTEXT_MENU);
@@ -144,7 +213,9 @@ void ExtensionsMenuButton::ConfigureSecondaryView() {
 
   context_menu_button->SetImage(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kBrowserToolsIcon, 16, icon_color));
+      gfx::CreateVectorIcon(kBrowserToolsIcon, kSecondaryIconSizeDp,
+                            icon_color));
+
   context_menu_button->set_ink_drop_base_color(icon_color);
   context_menu_button->SetBorder(
       views::CreateEmptyBorder(views::LayoutProvider::Get()->GetInsetsMetric(
@@ -153,12 +224,15 @@ void ExtensionsMenuButton::ConfigureSecondaryView() {
 
   context_menu_button->SetInkDropMode(InkDropMode::ON);
   context_menu_button->set_has_ink_drop_action_on_click(true);
-  auto highlight_path = std::make_unique<SkPath>();
-  highlight_path->addOval(
-      gfx::RectToSkRect(gfx::Rect(context_menu_button->size())));
-  context_menu_button->SetProperty(views::kHighlightPathKey,
-                                   highlight_path.release());
 
   context_menu_button_ = context_menu_button.get();
+  SetSecondaryButtonHighlightPath(context_menu_button_);
   container->AddChildView(std::move(context_menu_button));
+}
+
+bool ExtensionsMenuButton::IsPinned() {
+  // |model_| can be null in unit tests.
+  if (!model_)
+    return false;
+  return model_->IsActionPinned(controller_->GetId());
 }

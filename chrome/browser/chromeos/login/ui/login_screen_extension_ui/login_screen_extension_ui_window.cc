@@ -40,7 +40,7 @@ LoginScreenExtensionUiWindow::LoginScreenExtensionUiWindow(
   params.delegate = dialog_view_;
   ash_util::SetupWidgetInitParamsForContainer(
       &params, ash::kShellWindowId_LockScreenContainer);
-  dialog_widget_->Init(params);
+  dialog_widget_->Init(std::move(params));
   dialog_widget_->set_movement_disabled(true);
   dialog_delegate_->set_native_window(dialog_widget_->GetNativeWindow());
   dialog_widget_->Show();

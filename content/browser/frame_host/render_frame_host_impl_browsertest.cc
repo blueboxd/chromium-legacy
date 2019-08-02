@@ -130,6 +130,16 @@ class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
 // interactive_ui_tests so these bits need to move there.
 // See https://crbug.com/491535
 class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
+ public:
+  // Return an URL for loading a local test file.
+  GURL GetFileURL(const base::FilePath::CharType* file_path) {
+    base::FilePath path;
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &path));
+    path = path.Append(GetTestDataFilePath());
+    path = path.Append(file_path);
+    return GURL(FILE_PATH_LITERAL("file:") + path.value());
+  }
+
  protected:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -2402,13 +2412,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 // an object element in the middle of its failing navigation.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        NoCrashOnRemoveObjectElementWithInvalidData) {
-  base::FilePath test_data_dir;
-  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-  base::FilePath file_repro_path =
-      test_data_dir.Append(GetTestDataFilePath())
-          .Append(FILE_PATH_LITERAL(
-              "remove_object_element_with_invalid_data.html"));
-  GURL url(file_repro_path.value());
+  GURL url = GetFileURL(
+      FILE_PATH_LITERAL("remove_object_element_with_invalid_data.html"));
 
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),
@@ -2710,6 +2715,68 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ("a.com", child_sd_a_sd->current_frame_host()
                          ->ComputeSiteForCookiesForNavigation(b_url)
                          .host());
+}
+
+// Make sure a local file and its subresources can be reloaded after a crash. In
+// particular, after https://crbug.com/981339, a different RenderFrameHost will
+// be used for reloading the file. File access must be correctly granted.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, FileReloadAfterCrash) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1. Navigate a local file with an iframe.
+  GURL main_frame_url = GetFileURL(FILE_PATH_LITERAL("page_with_iframe.html"));
+  GURL subframe_url = GetFileURL(FILE_PATH_LITERAL("title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  // 2. Crash.
+  RenderProcessHost* process = wc->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(0);
+  crash_observer.Wait();
+
+  // 3. Reload.
+  wc->GetController().Reload(ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(wc));
+
+  // Check the document is correctly reloaded.
+  RenderFrameHostImpl* main_document = wc->GetMainFrame();
+  ASSERT_EQ(1u, main_document->child_count());
+  RenderFrameHostImpl* sub_document =
+      main_document->child_at(0)->current_frame_host();
+  EXPECT_EQ(main_frame_url, main_document->GetLastCommittedURL());
+  EXPECT_EQ(subframe_url, sub_document->GetLastCommittedURL());
+  EXPECT_EQ("\n  \n  This page has an iframe. Yay for iframes!\n  \n\n",
+            EvalJs(main_document, "document.body.textContent"));
+  EXPECT_EQ("This page has no title.\n\n",
+            EvalJs(sub_document, "document.body.textContent"));
+}
+
+// Make sure a webui can be reloaded after a crash.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, WebUiReloadAfterCrash) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1. Navigate a local file with an iframe.
+  GURL main_frame_url(std::string(kChromeUIScheme) + "://" +
+                      std::string(kChromeUIGpuHost));
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  // 2. Crash.
+  RenderProcessHost* process = wc->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(0);
+  crash_observer.Wait();
+
+  // 3. Reload.
+  wc->GetController().Reload(ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(wc));
+
+  // Check the document is correctly reloaded.
+  RenderFrameHostImpl* main_document = wc->GetMainFrame();
+  EXPECT_EQ(main_frame_url, main_document->GetLastCommittedURL());
+  EXPECT_EQ("Graphics Feature Status",
+            EvalJs(main_document, "document.querySelector('h3').textContent"));
 }
 
 }  // namespace content

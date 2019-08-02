@@ -6,9 +6,10 @@ package org.chromium.android_webview;
 
 import android.os.Trace;
 
+// TODO(changwan): remove this file once downstream change lands.
 /**
  * An alternative to @{TraceEvent} that allows us to trace events before native
- * initialization for WebView.
+ * initialization.
  *
  * Note that TraceEvent / EarlyTraceEvent cannot be used before native initialization since
  * it directly purges to the kernel debug message but that method does not allow tracing events

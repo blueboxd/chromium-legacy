@@ -147,7 +147,7 @@ class TabStripTest : public ChromeViewsTestBase,
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     init_params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
     widget_->SetContentsView(parent);
   }
 
@@ -973,52 +973,6 @@ TEST_P(TabStripTest, EventsOnClosingTab) {
   EXPECT_EQ(first_tab, tab_strip_->GetEventHandlerForPoint(tab_center));
   tab_strip_->CloseTab(first_tab, CLOSE_TAB_FROM_MOUSE);
   EXPECT_EQ(first_tab, tab_strip_->GetEventHandlerForPoint(tab_center));
-}
-
-// Switch selected tabs on horizontal scroll events.
-TEST_P(TabStripTest, HorizontalScroll) {
-  tab_strip_->SetBounds(0, 0, 200, 20);
-
-  for (int i = 0; i < 3; i++)
-    controller_->AddTab(i, true /* is_active */);
-
-  Tab* tab = tab_strip_->tab_at(0);
-  gfx::Point tab_center = tab->bounds().CenterPoint();
-
-  for (int i = 0; i < tab_strip_->tab_count(); ++i) {
-    ui::MouseWheelEvent wheel_event(
-        gfx::Vector2d(ui::MouseWheelEvent::kWheelDelta, 0), tab_center,
-        tab_center, ui::EventTimeForNow(), 0, 0);
-    tab_strip_->OnMouseWheel(wheel_event);
-    EXPECT_EQ(i, controller_->GetActiveIndex());
-  }
-
-  controller_->SelectTab(0, dummy_event_);
-  for (int i = tab_strip_->tab_count() - 1; i >= 0; --i) {
-    ui::MouseWheelEvent wheel_event(
-        gfx::Vector2d(-ui::MouseWheelEvent::kWheelDelta, 0), tab_center,
-        tab_center, ui::EventTimeForNow(), 0, 0);
-    tab_strip_->OnMouseWheel(wheel_event);
-    EXPECT_EQ(i, controller_->GetActiveIndex());
-  }
-
-  // When offset is smaller than kWheelDelta, we don't scroll immediately.
-  // We wait offset until accumulated offset gets bigger than kWheelDelta.
-  const int small_offset = ui::MouseWheelEvent::kWheelDelta / 3;
-  int next_accumulated_offset = small_offset;
-  while (next_accumulated_offset < ui::MouseWheelEvent::kWheelDelta) {
-    ui::MouseWheelEvent wheel_event(gfx::Vector2d(small_offset, 0), tab_center,
-                                    tab_center, ui::EventTimeForNow(), 0, 0);
-    tab_strip_->OnMouseWheel(wheel_event);
-
-    EXPECT_EQ(0, controller_->GetActiveIndex());
-    next_accumulated_offset += small_offset;
-  }
-
-  ui::MouseWheelEvent wheel_event(gfx::Vector2d(small_offset, 0), tab_center,
-                                  tab_center, ui::EventTimeForNow(), 0, 0);
-  tab_strip_->OnMouseWheel(wheel_event);
-  EXPECT_EQ(1, controller_->GetActiveIndex());
 }
 
 TEST_P(TabStripTest, AnimationOnTabAdd) {

@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/token.h"
@@ -325,8 +326,16 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() {
 void MockRenderProcessHost::BindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  if (binder_overrides_.count(interface_name) > 0)
-    binder_overrides_[interface_name].Run(std::move(interface_pipe));
+  auto it = binder_overrides_.find(interface_name);
+  if (it != binder_overrides_.end())
+    it->second.Run(std::move(interface_pipe));
+}
+
+void MockRenderProcessHost::BindReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  auto it = binder_overrides_.find(*receiver.interface_name());
+  if (it != binder_overrides_.end())
+    it->second.Run(receiver.PassPipe());
 }
 
 const service_manager::Identity& MockRenderProcessHost::GetChildIdentity() {

@@ -118,17 +118,11 @@ class WebURLRequest {
 
   class ExtraData {
    public:
-    void set_is_preprerendering(bool is_prerendering) {
-      is_prerendering_ = is_prerendering;
-    }
     void set_render_frame_id(int render_frame_id) {
       render_frame_id_ = render_frame_id;
     }
     void set_is_main_frame(bool is_main_frame) {
       is_main_frame_ = is_main_frame;
-    }
-    void set_allow_download(bool allow_download) {
-      allow_download_ = allow_download;
     }
     ui::PageTransition transition_type() const { return transition_type_; }
     void set_transition_type(ui::PageTransition transition_type) {
@@ -148,9 +142,6 @@ class WebURLRequest {
         bool originated_from_service_worker) {
       originated_from_service_worker_ = originated_from_service_worker;
     }
-    void set_initiated_in_secure_context(bool secure) {
-      initiated_in_secure_context_ = secure;
-    }
 
     // Determines whether SameSite cookies will be attached to the request
     // even when the request looks cross-site.
@@ -162,14 +153,11 @@ class WebURLRequest {
     virtual ~ExtraData() = default;
 
    protected:
-    bool is_prerendering_ = false;
     int render_frame_id_ = MSG_ROUTING_NONE;
     bool is_main_frame_ = false;
-    bool allow_download_ = true;
     ui::PageTransition transition_type_ = ui::PAGE_TRANSITION_LINK;
     bool is_for_no_state_prefetch_ = false;
     bool originated_from_service_worker_ = false;
-    bool initiated_in_secure_context_ = false;
     bool attach_same_site_cookies_ = false;
   };
 
@@ -255,17 +243,6 @@ class WebURLRequest {
   // requestor.
   BLINK_PLATFORM_EXPORT int RequestorID() const;
   BLINK_PLATFORM_EXPORT void SetRequestorID(int);
-
-  // The unique child id (not PID) of the process from which this request
-  // originated. In the case of out-of-process plugins, this allows to link back
-  // the request to the plugin process (as it is processed through a render view
-  // process).
-  BLINK_PLATFORM_EXPORT int GetPluginChildID() const;
-  BLINK_PLATFORM_EXPORT void SetPluginChildID(int);
-
-  // Allows the request to be matched up with its app cache host.
-  BLINK_PLATFORM_EXPORT const base::UnguessableToken& AppCacheHostID() const;
-  BLINK_PLATFORM_EXPORT void SetAppCacheHostID(const base::UnguessableToken&);
 
   // If true, the client expects to receive the raw response pipe. Similar to
   // UseStreamOnResponse but the stream will be a mojo DataPipe rather than a

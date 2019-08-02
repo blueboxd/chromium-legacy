@@ -146,7 +146,7 @@ void CloudPolicyManager::CreateComponentCloudPolicyService(
   // ComponentCloudPolicyService's |backend_task_runner| and |cache| must live
   // on the same task runner.
   const auto task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   std::unique_ptr<ResourceCache> resource_cache(new ResourceCache(
       policy_cache_path, task_runner, /* max_cache_size */ base::nullopt));
   component_policy_service_.reset(new ComponentCloudPolicyService(

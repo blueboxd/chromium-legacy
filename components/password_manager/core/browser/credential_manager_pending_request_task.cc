@@ -196,6 +196,20 @@ void CredentialManagerPendingRequestTask::ProcessForms(
     else
       get_result = metrics_util::CredentialManagerGetResult::kNoneFirstRun;
 
+    if (!local_results.empty()) {
+      std::map<base::string16, const autofill::PasswordForm*>
+          non_federated_matches;
+      std::vector<const autofill::PasswordForm*> federated_matches;
+      for (const auto& result : local_results) {
+        if (result->IsFederatedCredential()) {
+          federated_matches.emplace_back(result.get());
+        } else {
+          non_federated_matches.emplace(result->username_value, result.get());
+        }
+      }
+      delegate_->client()->PasswordWasAutofilled(non_federated_matches, origin_,
+                                                 &federated_matches);
+    }
     if (can_use_autosignin) {
       // The user had credentials, but either chose not to share them with the
       // site, or was prevented from doing so by lack of zero-click (or the
@@ -204,7 +218,6 @@ void CredentialManagerPendingRequestTask::ProcessForms(
       delegate_->client()->NotifyUserCouldBeAutoSignedIn(
           std::move(local_results[0]));
     }
-
     LogCredentialManagerGetResult(get_result, mediation_);
     delegate_->SendCredential(send_callback_, CredentialInfo());
     return;

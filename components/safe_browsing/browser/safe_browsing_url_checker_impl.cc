@@ -180,8 +180,8 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
   resource.callback =
       base::Bind(&SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete,
                  weak_factory_.GetWeakPtr());
-  resource.callback_thread = base::CreateSingleThreadTaskRunnerWithTraits(
-      {content::BrowserThread::IO});
+  resource.callback_thread =
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
   resource.web_contents_getter = web_contents_getter_;
   resource.threat_source = database_manager_->GetThreatSource();
 
@@ -254,7 +254,7 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       TRACE_EVENT_ASYNC_BEGIN1("safe_browsing", "CheckUrl", this, "url",
                                url.spec());
 
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(&SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult,
                          weak_factory_.GetWeakPtr(), url, threat_type,

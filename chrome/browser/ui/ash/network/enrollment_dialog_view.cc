@@ -114,7 +114,7 @@ void EnrollmentDialogView::ShowDialog(const std::string& network_name,
   ash_util::SetupWidgetInitParamsForContainer(
       &params, ash_util::GetSystemModalDialogContainerId());
   views::Widget* widget = new views::Widget;  // Owned by native widget.
-  widget->Init(params);
+  widget->Init(std::move(params));
   dialog_view->InitDialog();
   widget->Show();
 }

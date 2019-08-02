@@ -40,7 +40,9 @@ class AwBrowserProcess {
   static AwBrowserProcess* GetInstance();
 
   PrefService* local_state();
+  AwBrowserPolicyConnector* browser_policy_connector();
 
+  void CreateBrowserPolicyConnector();
   void CreateLocalState();
   void InitSafeBrowsing();
 
@@ -82,6 +84,8 @@ class AwBrowserProcess {
   AwFeatureListCreator* aw_feature_list_creator_;
 
   std::unique_ptr<PrefService> local_state_;
+
+  std::unique_ptr<AwBrowserPolicyConnector> browser_policy_connector_;
 
   // Accessed on both UI and IO threads.
   scoped_refptr<AwSafeBrowsingUIManager> safe_browsing_ui_manager_;

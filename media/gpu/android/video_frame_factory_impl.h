@@ -12,11 +12,11 @@
 #include "base/single_thread_task_runner.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/android/codec_buffer_wait_coordinator.h"
 #include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/maybe_render_early_manager.h"
 #include "media/gpu/android/shared_image_video_provider.h"
-#include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/android/video_frame_factory.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gl/gl_bindings.h"
@@ -58,6 +58,12 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       OnceOutputCb output_cb) override;
   void RunAfterPendingVideoFrames(base::OnceClosure closure) override;
 
+  // This should be only used for testing.
+  void SetCodecBufferWaitCorrdinatorForTesting(
+      scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator) {
+    codec_buffer_wait_coordinator_ = std::move(codec_buffer_wait_coordinator);
+  }
+
  private:
   // ImageReadyCB that will construct a VideoFrame, and forward it to
   // |output_cb| if construction succeeds.  This is static for two reasons.
@@ -77,7 +83,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       gfx::Size coded_size,
       gfx::Size natural_size,
       std::unique_ptr<CodecOutputBuffer> output_buffer,
-      scoped_refptr<TextureOwner> texture_owner,
+      scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       VideoPixelFormat pixel_format,
       OverlayMode overlay_mode,
@@ -90,8 +96,8 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   std::unique_ptr<SharedImageVideoProvider> image_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
 
-  // The texture owner that video frames should use, or nullptr.
-  scoped_refptr<TextureOwner> texture_owner_;
+  // The CodecBufferWaitCoordintor that video frames should use, or nullptr.
+  scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator_;
 
   OverlayMode overlay_mode_ = OverlayMode::kDontRequestPromotionHints;
 

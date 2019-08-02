@@ -191,7 +191,7 @@ class NativeDesktopMediaListTest : public ChromeViewsTestBase {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.native_widget = new views::DesktopNativeWidgetAura(widget.get());
     params.bounds = gfx::Rect(0, 0, 20, 20);
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     return widget;
   }

@@ -4311,6 +4311,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_MENU_CONTEXT_MENU_TOOLTIP" desc="Title of the context menu for individual extensions in the Extensions Menu">
         More actions
       </message>
+      <message name="IDS_EXTENSIONS_MENU_PIN_BUTTON_TOOLTIP" desc="The tooltip for the pinning button for individual extensions in the Extensions Menu">
+        Pin extension
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_UNPIN_BUTTON_TOOLTIP" desc="The tooltip for the pinning button for individual extensions in the Extensions Menu">
+        Unpin extension
+      </message>
       <message name="IDS_EXTENSIONS_MENU_ACCESSING_SITE_DATA" desc="Header for section of extensions that are able to access the current site's data">
         Accessing this site's data
       </message>

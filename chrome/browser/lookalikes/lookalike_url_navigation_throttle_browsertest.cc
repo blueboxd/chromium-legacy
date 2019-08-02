@@ -448,6 +448,24 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kTopSite);
 }
 
+// Similar to Idn_TopDomain_Match but the domain is not in top 500. Should not
+// show an interstitial, but should still record metrics.
+IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
+                       Idn_TopDomain_Match_Not500) {
+  const GURL kNavigatedUrl = GetURL("googlé.sk");
+  // Even if the navigated site has a low engagement score, it should be
+  // considered for lookalike suggestions.
+  SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
+
+  base::HistogramTester histograms;
+  TestInterstitialNotShown(browser(), kNavigatedUrl);
+  histograms.ExpectTotalCount(LookalikeUrlNavigationThrottle::kHistogramName,
+                              1);
+  histograms.ExpectBucketCount(LookalikeUrlNavigationThrottle::kHistogramName,
+                               NavigationSuggestionEvent::kMatchTopSite, 1);
+  CheckUkm({kNavigatedUrl}, "MatchType", MatchType::kTopSite);
+}
+
 // Same as Idn_TopDomain_Match, but this time the domain contains characters
 // from different scripts, failing the checks in IDN spoof checker before
 // reaching the top domain check. In this case, the end result is the same, but

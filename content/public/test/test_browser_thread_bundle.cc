@@ -137,7 +137,7 @@ void TestBrowserThreadBundle::RunIOThreadUntilIdle() {
   base::WaitableEvent io_thread_idle(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           [](base::WaitableEvent* io_thread_idle) {

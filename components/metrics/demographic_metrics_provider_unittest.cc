@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/optional.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -50,22 +50,21 @@ class TestProfileClient : public DemographicMetricsProvider::ProfileClient {
 };
 
 // Make arbitrary user demographics to provide.
-base::Optional<syncer::UserDemographics> GetDemographics() {
-  base::Optional<syncer::UserDemographics> user_demographics =
-      syncer::UserDemographics();
-  user_demographics->birth_year = 1983;
-  user_demographics->gender = UserDemographicsProto::GENDER_FEMALE;
-  return user_demographics;
+syncer::UserDemographicsResult GetDemographics() {
+  syncer::UserDemographics user_demographics;
+  user_demographics.birth_year = 1983;
+  user_demographics.gender = UserDemographicsProto::GENDER_FEMALE;
+  return syncer::UserDemographicsResult::ForValue(std::move(user_demographics));
 }
 
 std::unique_ptr<TestProfileClient> MakeTestProfileClient(
-    const base::Optional<syncer::UserDemographics>& user_demographics,
+    const syncer::UserDemographicsResult& user_demographics_result,
     int number_of_profiles,
     bool has_sync_service) {
   std::unique_ptr<syncer::TestSyncService> sync_service = nullptr;
   if (has_sync_service) {
     sync_service = std::make_unique<syncer::TestSyncService>();
-    sync_service->SetUserDemographics(user_demographics);
+    sync_service->SetUserDemographics(user_demographics_result);
   }
   return std::make_unique<TestProfileClient>(std::move(sync_service),
                                              number_of_profiles);
@@ -77,6 +76,8 @@ TEST(DemographicMetricsProviderTest, ProvideCurrentSessionData_FeatureEnabled) {
   local_feature.InitAndEnableFeature(
       DemographicMetricsProvider::kDemographicMetricsReporting);
 
+  base::HistogramTester histogram;
+
   // Run demographics provider.
   DemographicMetricsProvider provider(
       MakeTestProfileClient(GetDemographics(), /*number_of_profiles=*/1,
@@ -85,16 +86,23 @@ TEST(DemographicMetricsProviderTest, ProvideCurrentSessionData_FeatureEnabled) {
   provider.ProvideCurrentSessionData(&uma_proto);
 
   // Verify provided demographics.
-  EXPECT_EQ(GetDemographics()->birth_year,
+  EXPECT_EQ(GetDemographics().value().birth_year,
             uma_proto.user_demographics().birth_year());
-  EXPECT_EQ(GetDemographics()->gender, uma_proto.user_demographics().gender());
+  EXPECT_EQ(GetDemographics().value().gender,
+            uma_proto.user_demographics().gender());
+
+  // Verify histograms.
+  histogram.ExpectUniqueSample("UMA.UserDemographics.Status",
+                               syncer::UserDemographicsStatus::kSuccess, 1);
 }
 
 TEST(DemographicMetricsProviderTest, ProvideCurrentSessionData_NoSyncService) {
   // Enable demographics reporting feature.
   base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndDisableFeature(
+  local_feature.InitAndEnableFeature(
       DemographicMetricsProvider::kDemographicMetricsReporting);
+
+  base::HistogramTester histogram;
 
   // Run demographics provider.
   DemographicMetricsProvider provider(
@@ -107,6 +115,11 @@ TEST(DemographicMetricsProviderTest, ProvideCurrentSessionData_NoSyncService) {
   // Expect the proto fields to be not set and left to default.
   EXPECT_FALSE(uma_proto.user_demographics().has_birth_year());
   EXPECT_FALSE(uma_proto.user_demographics().has_gender());
+
+  // Verify histograms.
+  histogram.ExpectUniqueSample("UMA.UserDemographics.Status",
+                               syncer::UserDemographicsStatus::kNoSyncService,
+                               1);
 }
 
 TEST(DemographicMetricsProviderTest,
@@ -115,6 +128,8 @@ TEST(DemographicMetricsProviderTest,
   base::test::ScopedFeatureList local_feature;
   local_feature.InitAndDisableFeature(
       DemographicMetricsProvider::kDemographicMetricsReporting);
+
+  base::HistogramTester histogram;
 
   // Run demographics provider.
   DemographicMetricsProvider provider(
@@ -126,6 +141,9 @@ TEST(DemographicMetricsProviderTest,
   // Expect that the UMA proto is untouched.
   EXPECT_FALSE(uma_proto.user_demographics().has_birth_year());
   EXPECT_FALSE(uma_proto.user_demographics().has_gender());
+
+  // Verify that there are no histograms for user demographics.
+  histogram.ExpectTotalCount("UMA.UserDemographics.Status", 0);
 }
 
 TEST(DemographicMetricsProviderTest,
@@ -134,6 +152,8 @@ TEST(DemographicMetricsProviderTest,
   base::test::ScopedFeatureList local_feature;
   local_feature.InitAndEnableFeature(
       DemographicMetricsProvider::kDemographicMetricsReporting);
+
+  base::HistogramTester histogram;
 
   // Run demographics provider with not exactly one Profile on disk.
   DemographicMetricsProvider provider(
@@ -145,6 +165,11 @@ TEST(DemographicMetricsProviderTest,
   // Expect that the UMA proto is untouched.
   EXPECT_FALSE(uma_proto.user_demographics().has_birth_year());
   EXPECT_FALSE(uma_proto.user_demographics().has_gender());
+
+  // Verify histograms.
+  histogram.ExpectUniqueSample(
+      "UMA.UserDemographics.Status",
+      syncer::UserDemographicsStatus::kMoreThanOneProfile, 1);
 }
 
 TEST(DemographicMetricsProviderTest,
@@ -154,17 +179,27 @@ TEST(DemographicMetricsProviderTest,
   local_feature.InitAndEnableFeature(
       DemographicMetricsProvider::kDemographicMetricsReporting);
 
+  base::HistogramTester histogram;
+
   // Run demographics provider with a ProfileClient that does not provide
-  // demographics.
-  DemographicMetricsProvider provider(
-      MakeTestProfileClient(base::nullopt, /*number_of_profiles=*/1,
-                            /*has_sync_service=*/true));
+  // demographics because of some error.
+  DemographicMetricsProvider provider(MakeTestProfileClient(
+      syncer::UserDemographicsResult::ForStatus(
+          syncer::UserDemographicsStatus::kIneligibleDemographicsData),
+      /*number_of_profiles=*/1,
+      /*has_sync_service=*/true));
   ChromeUserMetricsExtension uma_proto;
   provider.ProvideCurrentSessionData(&uma_proto);
 
   // Expect that the UMA proto is untouched.
   EXPECT_FALSE(uma_proto.user_demographics().has_birth_year());
   EXPECT_FALSE(uma_proto.user_demographics().has_gender());
+
+  // Verify that there are no histograms for user demographics. We expect
+  // histograms to be logged by the sync libraries.
+  histogram.ExpectUniqueSample(
+      "UMA.UserDemographics.Status",
+      syncer::UserDemographicsStatus::kIneligibleDemographicsData, 1);
 }
 
 }  // namespace

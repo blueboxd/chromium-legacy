@@ -904,7 +904,6 @@ TEST_F(PolicyServiceTest, GroupPoliciesMerging) {
   merged.AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected_chrome.Set(key::kExtensionInstallForcelist, merged.DeepCopy());
   expected_chrome.Set(key::kExtensionInstallBlacklist, std::move(merged));
-  entry_list_3.SetIgnoredByPolicyAtomicGroup();
   expected_chrome.Set(key::kExtensionInstallWhitelist, std::move(entry_list_3));
 
   provider0_.UpdatePolicy(std::move(policy_bundle1));

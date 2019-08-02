@@ -34,7 +34,7 @@ public class TouchlessDelegate {
         return null;
     }
 
-    public static Class<?> getNoTouchActivityClass() {
+    public static Class<? extends ChromeActivity> getNoTouchActivityClass() {
         return null;
     }
 

@@ -49,7 +49,7 @@ std::unique_ptr<views::Widget> CreateWidget() {
   params.parent = Shell::GetContainer(Shell::Get()->GetPrimaryRootWindow(),
                                       kShellWindowId_OverlayContainer);
   widget->set_focus_on_creation(false);
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 

@@ -123,10 +123,10 @@ HttpBridge::HttpBridge(
       http_post_completed_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                            base::WaitableEvent::InitialState::NOT_SIGNALED),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
-      network_task_runner_(
-          g_io_capable_task_runner_for_tests.Get()
-              ? g_io_capable_task_runner_for_tests.Get()
-              : base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+      network_task_runner_(g_io_capable_task_runner_for_tests.Get()
+                               ? g_io_capable_task_runner_for_tests.Get()
+                               : base::CreateSequencedTaskRunner(
+                                     {base::ThreadPool(), base::MayBlock()})),
       network_time_update_callback_(network_time_update_callback) {}
 
 HttpBridge::~HttpBridge() {}

@@ -134,6 +134,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
@@ -188,6 +189,8 @@
 #include "media/media_buildflags.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -1273,6 +1276,49 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
   DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
 };
 
+// A RenderProcessHostImpl's IO thread implementation of the
+// |mojom::ChildProcessHost| interface. This exists to allow the process host
+// to bind incoming receivers on the IO-thread without a main-thread hop if
+// necessary. Also owns the RPHI's |mojom::ChildProcess| remote.
+class RenderProcessHostImpl::IOThreadHostImpl
+    : public mojom::ChildProcessHostBootstrap,
+      public mojom::ChildProcessHost {
+ public:
+  IOThreadHostImpl(base::WeakPtr<RenderProcessHostImpl> weak_host,
+                   mojo::PendingReceiver<mojom::ChildProcessHostBootstrap>
+                       bootstrap_receiver)
+      : weak_host_(std::move(weak_host)),
+        bootstrap_receiver_(this, std::move(bootstrap_receiver)) {}
+  ~IOThreadHostImpl() override = default;
+
+ private:
+  // mojom::ChildProcessHostBootstrap implementation:
+  void BindProcessHost(
+      mojo::PendingReceiver<mojom::ChildProcessHost> receiver) override {
+    receiver_.Bind(std::move(receiver));
+  }
+
+  // mojom::ChildProcessHost implementation:
+  void BindHostReceiver(mojo::GenericPendingReceiver receiver) override {
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&IOThreadHostImpl::BindHostReceiverOnUIThread,
+                                  weak_host_, std::move(receiver)));
+  }
+
+  static void BindHostReceiverOnUIThread(
+      base::WeakPtr<RenderProcessHostImpl> weak_host,
+      mojo::GenericPendingReceiver receiver) {
+    if (weak_host)
+      weak_host->OnBindHostReceiver(std::move(receiver));
+  }
+
+  const base::WeakPtr<RenderProcessHostImpl> weak_host_;
+  mojo::Receiver<mojom::ChildProcessHostBootstrap> bootstrap_receiver_;
+  mojo::Receiver<mojom::ChildProcessHost> receiver_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(IOThreadHostImpl);
+};
+
 void RenderProcessHostImpl::ConnectionFilterController::DisableFilter() {
   base::AutoLock lock(lock_);
   if (filter_)
@@ -1464,8 +1510,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       channel_connected_(false),
       sent_render_process_ready_(false),
       renderer_host_binding_(this),
-      instance_weak_factory_(
-          new base::WeakPtrFactory<RenderProcessHostImpl>(this)),
+      instance_weak_factory_(base::in_place, this),
       frame_sink_provider_(id_),
       shutdown_exit_code_(-1) {
   widget_helper_ = new RenderWidgetHelper();
@@ -1762,6 +1807,12 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   content::BindInterface(
       this,
       mojom::ChildProcessRequest(child_process_.BindNewPipeAndPassReceiver()));
+
+  mojo::PendingRemote<mojom::ChildProcessHostBootstrap> bootstrap_remote;
+  io_thread_host_impl_.emplace(
+      io_task_runner, instance_weak_factory_->GetWeakPtr(),
+      bootstrap_remote.InitWithNewPipeAndPassReceiver());
+  child_process_->Initialize(std::move(bootstrap_remote));
 
   ResetChannelProxy();
 
@@ -2268,6 +2319,11 @@ void RenderProcessHostImpl::BindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   child_connection_->BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void RenderProcessHostImpl::BindReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  child_process_->BindReceiver(std::move(receiver));
 }
 
 const service_manager::Identity& RenderProcessHostImpl::GetChildIdentity() {
@@ -3409,8 +3465,7 @@ void RenderProcessHostImpl::Cleanup() {
   // reused in between now and when the Delete task runs.
   UnregisterHost(GetID());
 
-  instance_weak_factory_ =
-      std::make_unique<base::WeakPtrFactory<RenderProcessHostImpl>>(this);
+  instance_weak_factory_.emplace(this);
 }
 
 void RenderProcessHostImpl::PopulateTerminationInfoRendererFields(
@@ -4534,6 +4589,12 @@ void RenderProcessHostImpl::GetBrowserHistogram(
 void RenderProcessHostImpl::SetBrowserPluginMessageFilterSubFilterForTesting(
     scoped_refptr<BrowserMessageFilter> message_filter) const {
   bp_message_filter_->SetSubFilterForTesting(std::move(message_filter));
+}
+
+void RenderProcessHostImpl::OnBindHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  GetContentClient()->browser()->BindHostReceiverForRenderer(
+      this, std::move(receiver));
 }
 
 }  // namespace content

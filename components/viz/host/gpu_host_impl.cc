@@ -272,6 +272,7 @@ mojom::GpuService* GpuHostImpl::gpu_service() {
 }
 
 #if defined(USE_OZONE)
+
 void GpuHostImpl::InitOzone() {
   // Ozone needs to send the primary DRM device to GPU service as early as
   // possible to ensure the latter always has a valid device.
@@ -280,9 +281,8 @@ void GpuHostImpl::InitOzone() {
   // The Ozone/Wayland requires mojo communication to be established to be
   // functional with a separate gpu process. Thus, using the PlatformProperties,
   // check if there is such a requirement.
-  if (features::IsOzoneDrmMojo() || ui::OzonePlatform::EnsureInstance()
-                                        ->GetPlatformProperties()
-                                        .requires_mojo) {
+  if (features::IsOzoneDrmMojo() ||
+      ui::OzonePlatform::GetInstance()->GetPlatformProperties().requires_mojo) {
     // TODO(rjkroege): Remove the legacy IPC code paths when no longer
     // necessary. https://crbug.com/806092
     auto interface_binder = base::BindRepeating(&GpuHostImpl::BindInterface,

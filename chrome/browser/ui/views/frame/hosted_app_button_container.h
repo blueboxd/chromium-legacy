@@ -114,6 +114,8 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
 
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
+  ToolbarActionView* GetToolbarActionViewForId(const std::string& id) override;
+  views::View* GetDefaultExtensionDialogAnchorView() override;
   OmniboxPageActionIconContainerView* GetOmniboxPageActionIconContainerView()
       override;
   AppMenuButton* GetAppMenuButton() override;

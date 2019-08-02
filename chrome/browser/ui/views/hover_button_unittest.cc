@@ -75,7 +75,7 @@ class HoverButtonTest : public ChromeViewsTestBase {
         CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(100, 100, 200, 200);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
   }
 
  private:

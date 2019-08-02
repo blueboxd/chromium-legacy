@@ -136,7 +136,7 @@ void MenuHost::InitMenuHost(Widget* parent,
   // revert this change once http://crbug.com/125248 is fixed.
   params.force_software_compositing = true;
 #endif
-  Init(params);
+  Init(std::move(params));
 
 #if !defined(OS_MACOSX)
   pre_dispatch_handler_ =

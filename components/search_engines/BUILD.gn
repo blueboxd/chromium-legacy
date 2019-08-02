@@ -49,7 +49,7 @@ static_library("search_engines") {
   public_deps = [
     ":search_engine_type",
     "//base",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/keyed_service/core",
     "//components/prefs",
     "//components/sync",
@@ -144,7 +144,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/country_codes",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
     "//components/sync:test_support",

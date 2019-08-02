@@ -203,7 +203,7 @@ TEST_F(ZAuraSurfaceTest,
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = CurrentContext();
   params.bounds = gfx::Rect(0, 0, 100, 100);
-  lock_widget->Init(params);
+  lock_widget->Init(std::move(params));
   ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                            ash::kShellWindowId_LockScreenContainer)
       ->AddChild(lock_widget->GetNativeView());

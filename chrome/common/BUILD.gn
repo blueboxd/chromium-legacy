@@ -139,7 +139,7 @@ static_library("common") {
     "google_url_loader_throttle.h",
     "heap_profiler_controller.cc",
     "heap_profiler_controller.h",
-    "instant_struct_traits.h",
+    "instant_mojom_traits.h",
     "logging_chrome.cc",
     "logging_chrome.h",
     "mac/app_shim_launch.h",

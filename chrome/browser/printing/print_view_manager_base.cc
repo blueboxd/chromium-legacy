@@ -79,7 +79,7 @@ void OnPrintSettingsDoneWrapper(PrintSettingsCallback settings_callback,
                                 std::unique_ptr<PrinterQuery> query) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(std::move(settings_callback), std::move(query)));
 }
@@ -143,7 +143,7 @@ void PrintViewManagerBase::PrintForPrintPreview(
                      weak_ptr_factory_.GetWeakPtr(), print_data,
                      job_settings.FindIntKey(kSettingPreviewPageCount).value(),
                      std::move(callback));
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(CreateQueryWithSettings, std::move(job_settings),
                      rfh->GetProcess()->GetID(), rfh->GetRoutingID(), queue_,
@@ -184,17 +184,16 @@ void PrintViewManagerBase::OnPrintSettingsDone(
   if (printer_query->last_status() == PrintingContext::CANCEL) {
     queue_->QueuePrinterQuery(std::move(printer_query));
 #if defined(OS_WIN)
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&PrintViewManagerBase::SystemDialogCancelled,
-                       weak_ptr_factory_.GetWeakPtr()));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&PrintViewManagerBase::SystemDialogCancelled,
+                                  weak_ptr_factory_.GetWeakPtr()));
 #endif
     std::move(callback).Run(base::Value());
     return;
   }
 
   if (!printer_query->cookie() || !printer_query->settings().dpi()) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&PrinterQuery::StopWorker, std::move(printer_query)));
     std::move(callback).Run(base::Value("Update settings failed"));
@@ -205,11 +204,10 @@ void PrintViewManagerBase::OnPrintSettingsDone(
   // OnDidGetPrintedPagesCount().
   int cookie = printer_query->cookie();
   queue_->QueuePrinterQuery(std::move(printer_query));
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&PrintViewManagerBase::StartLocalPrintJob,
-                     weak_ptr_factory_.GetWeakPtr(), print_data, page_count,
-                     cookie, std::move(callback)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&PrintViewManagerBase::StartLocalPrintJob,
+                                weak_ptr_factory_.GetWeakPtr(), print_data,
+                                page_count, cookie, std::move(callback)));
 }
 
 void PrintViewManagerBase::StartLocalPrintJob(
@@ -704,7 +702,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
   std::unique_ptr<PrinterQuery> printer_query = queue_->PopPrinterQuery(cookie);
   if (!printer_query)
     return;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&PrinterQuery::StopWorker, std::move(printer_query)));
 }

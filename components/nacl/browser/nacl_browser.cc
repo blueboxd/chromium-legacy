@@ -105,8 +105,7 @@ void WriteCache(const base::FilePath& filename, const base::Pickle* pickle) {
 
 void RemoveCache(const base::FilePath& filename, base::OnceClosure callback) {
   base::DeleteFile(filename, false);
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           std::move(callback));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO}, std::move(callback));
 }
 
 void LogCacheQuery(nacl::NaClBrowser::ValidationCacheStatus status) {
@@ -284,8 +283,8 @@ void NaClBrowser::EnsureIrtAvailable() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (IsOk() && irt_state_ == NaClResourceUninitialized) {
     irt_state_ = NaClResourceRequested;
-    auto task_runner = base::CreateTaskRunnerWithTraits(
-        {base::MayBlock(), kUserBlocking,
+    auto task_runner = base::CreateTaskRunner(
+        {base::ThreadPool(), base::MayBlock(), kUserBlocking,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
     std::unique_ptr<base::FileProxy> file_proxy(
         new base::FileProxy(task_runner.get()));
@@ -321,8 +320,8 @@ void NaClBrowser::SetProcessGdbDebugStubPort(int process_id, int port) {
   gdb_debug_stub_port_map_[process_id] = port;
   if (port != kGdbDebugStubPortUnknown &&
       !debug_stub_port_listener_.is_null()) {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(debug_stub_port_listener_, port));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(debug_stub_port_listener_, port));
   }
 }
 
@@ -378,8 +377,10 @@ void NaClBrowser::EnsureValidationCacheAvailable() {
       // We can get away not giving this a sequence ID because this is the first
       // task and further file access will not occur until after we get a
       // response.
-      base::PostTaskWithTraitsAndReply(
-          FROM_HERE, {base::MayBlock(), kUserBlocking},
+      base::PostTaskAndReply(
+          FROM_HERE,
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT},
           base::BindOnce(ReadCache, validation_cache_file_path_, data),
           base::BindOnce(&NaClBrowser::OnValidationCacheLoaded,
                          base::Unretained(this), base::Owned(data)));
@@ -530,8 +531,8 @@ void NaClBrowser::ClearValidationCache(base::OnceClosure callback) {
 
   if (validation_cache_file_path_.empty()) {
     // Can't figure out what file to remove, but don't drop the callback.
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             std::move(callback));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   std::move(callback));
   } else {
     // Delegate the removal of the cache from the filesystem to another thread
     // to avoid blocking the IO thread.

@@ -1075,6 +1075,7 @@ if (!is_android) {
       "../browser/sessions/tab_restore_service_browsertest.cc",
       "../browser/sessions/tab_restore_service_load_waiter.cc",
       "../browser/sessions/tab_restore_service_load_waiter.h",
+      "../browser/sharing/click_to_call/click_to_call_browsertest.cc",
       "../browser/signin/consistency_cookie_browsertest.cc",
       "../browser/site_isolation/chrome_site_per_process_browsertest.cc",
       "../browser/site_isolation/site_details_browsertest.cc",
@@ -1232,6 +1233,7 @@ if (!is_android) {
       "../browser/ui/views/webauthn/authenticator_dialog_view_browsertest.cc",
       "../browser/ui/views/webauthn/authenticator_qr_code_test.cc",
       "../browser/ui/views/webview_accessibility_browsertest.cc",
+      "../browser/ui/web_applications/app_browser_controller_browsertest.cc",
       "../browser/ui/web_applications/bookmark_app_browsertest.cc",
       "../browser/ui/web_applications/web_app_badging_browsertest.cc",
       "../browser/ui/web_applications/web_app_file_handling_browsertest.cc",
@@ -1421,7 +1423,7 @@ if (!is_android) {
           [ "../browser/ssl/captive_portal_blocking_page_browsertest.cc" ]
     }
 
-    if (!is_android) {
+    if (!is_android && !is_chromeos) {
       sources += [
         "../browser/external_protocol/external_protocol_handler_browsertest.cc",
       ]
@@ -1938,7 +1940,7 @@ if (!is_android) {
         "../browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher_browsertest.cc",
         "../browser/chromeos/arc/auth/arc_auth_service_browsertest.cc",
         "../browser/chromeos/arc/auth/arc_robot_auth_code_fetcher_browsertest.cc",
-        "../browser/chromeos/arc/enterprise/arc_cert_store_bridge_browsertest.cc",
+        "../browser/chromeos/arc/enterprise/cert_store/arc_cert_store_bridge_browsertest.cc",
         "../browser/chromeos/arc/intent_helper/arc_settings_service_browsertest.cc",
         "../browser/chromeos/arc/user_session/arc_user_session_service_browsertest.cc",
         "../browser/chromeos/attestation/attestation_policy_browsertest.cc",
@@ -2860,7 +2862,6 @@ test("unit_tests") {
     "../browser/google/google_search_domain_mixing_metrics_emitter_factory_unittest.cc",
     "../browser/google/google_search_domain_mixing_metrics_emitter_unittest.cc",
     "../browser/google/google_update_settings_unittest.cc",
-    "../browser/google/google_url_tracker_factory_unittest.cc",
     "../browser/history/android/android_cache_database_unittest.cc",
     "../browser/history/android/android_history_provider_service_unittest.cc",
     "../browser/history/android/android_provider_backend_unittest.cc",
@@ -2978,6 +2979,7 @@ test("unit_tests") {
     "../browser/performance_manager/decorators/frozen_frame_aggregator_unittest.cc",
     "../browser/performance_manager/decorators/page_almost_idle_decorator_unittest.cc",
     "../browser/performance_manager/frame_priority/frame_priority_unittest.cc",
+    "../browser/performance_manager/frame_priority/override_vote_aggregator_unittest.cc",
     "../browser/performance_manager/frame_priority/unittest_util.cc",
     "../browser/performance_manager/frame_priority/unittest_util.h",
     "../browser/performance_manager/graph/frame_node_impl_unittest.cc",
@@ -3991,6 +3993,7 @@ test("unit_tests") {
       "../browser/metrics/perf/perf_events_collector_unittest.cc",
       "../browser/metrics/perf/process_type_collector_unittest.cc",
       "../browser/metrics/perf/profile_provider_chromeos_unittest.cc",
+      "../browser/metrics/perf/windowed_incognito_observer_unittest.cc",
       "../browser/notifications/chrome_ash_message_center_client_unittest.cc",
       "../browser/signin/signin_error_notifier_ash_unittest.cc",
       "../browser/speech/tts_chromeos_unittest.cc",
@@ -4013,7 +4016,6 @@ test("unit_tests") {
       "../browser/ui/ash/network/network_state_notifier_unittest.cc",
       "../browser/ui/ash/network/tether_notification_presenter_unittest.cc",
       "../browser/ui/ash/session_controller_client_impl_unittest.cc",
-      "../browser/ui/ash/tablet_mode_client_unittest.cc",
       "../browser/ui/ash/wallpaper_controller_client_unittest.cc",
       "../browser/ui/window_sizer/window_sizer_ash_unittest.cc",
     ]

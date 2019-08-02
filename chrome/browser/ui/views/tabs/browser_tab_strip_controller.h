@@ -95,6 +95,10 @@ class BrowserTabStripController : public TabStripController,
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
+  void OnTabGroupVisualDataChanged(
+      TabStripModel* tab_strip_model,
+      TabGroupId group,
+      const TabGroupVisualData* visual_data) override;
   void TabChangedAt(content::WebContents* contents,
                     int model_index,
                     TabChangeType change_type) override;

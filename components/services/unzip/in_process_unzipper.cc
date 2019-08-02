@@ -24,8 +24,8 @@ void BindInProcessUnzipper(mojo::PendingReceiver<mojom::Unzipper> receiver) {
 
 mojo::PendingRemote<mojom::Unzipper> LaunchInProcessUnzipper() {
   mojo::PendingRemote<mojom::Unzipper> remote;
-  base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::WithBaseSyncPrimitives()})
+  base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives()})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&BindInProcessUnzipper,
                                 remote.InitWithNewPipeAndPassReceiver()));

@@ -872,6 +872,9 @@
       // Enabled by features::kLegacyWindowsDWriteFontFallback;
     },
     {
+      name: "LinkSystemColors"
+    },
+    {
       name: "LongTaskV2",
     },
     {

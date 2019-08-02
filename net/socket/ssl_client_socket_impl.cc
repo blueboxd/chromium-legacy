@@ -27,6 +27,7 @@
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/openssl_util.h"
 #include "net/base/features.h"
@@ -69,8 +70,10 @@ namespace net {
 
 namespace {
 
+#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
 constexpr base::FeatureParam<std::string> kPostQuantumGroup{
     &features::kPostQuantumCECPQ2, "group", ""};
+#endif
 
 // This constant can be any non-negative/non-zero value (eg: it does not
 // overlap with any value of the net::Error range, including net::OK).
@@ -316,7 +319,6 @@ class SSLClientSocketImpl::SSLContext {
     // Deduplicate all certificates minted from the SSL_CTX in memory.
     SSL_CTX_set0_buffer_pool(ssl_ctx_.get(), x509_util::GetBufferPool());
 
-    SSL_CTX_set_info_callback(ssl_ctx_.get(), InfoCallback);
     SSL_CTX_set_msg_callback(ssl_ctx_.get(), MessageCallback);
 
 #if !defined(NET_DISABLE_BROTLI)
@@ -325,6 +327,9 @@ class SSLClientSocketImpl::SSLContext {
         nullptr /* compression not supported */, DecompressBrotliCert);
 #endif
 
+#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
+    // CECPQ2b is only optimised for x86-64 and aarch64, and is too slow on
+    // other CPUs to even experiment with.
     const std::string post_quantum_group = kPostQuantumGroup.Get();
     if (!post_quantum_group.empty()) {
       bool send_signal = false;
@@ -346,6 +351,7 @@ class SSLClientSocketImpl::SSLContext {
         SSL_CTX_enable_pq_experiment_signal(ssl_ctx_.get());
       }
     }
+#endif
   }
 
   static int ClientCertRequestCallback(SSL* ssl, void* arg) {
@@ -381,11 +387,6 @@ class SSLClientSocketImpl::SSLContext {
 
   static void KeyLogCallback(const SSL* ssl, const char* line) {
     GetInstance()->ssl_key_logger_->WriteLine(line);
-  }
-
-  static void InfoCallback(const SSL* ssl, int type, int value) {
-    SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    socket->InfoCallback(type, value);
   }
 
   static void MessageCallback(int is_write,
@@ -1766,13 +1767,6 @@ void SSLClientSocketImpl::OnPrivateKeyComplete(
   // During a renegotiation, either Read or Write calls may be blocked on an
   // asynchronous private key operation.
   RetryAllOperations();
-}
-
-void SSLClientSocketImpl::InfoCallback(int type, int value) {
-  if (type == SSL_CB_HANDSHAKE_START && completed_connect_) {
-    UMA_HISTOGRAM_BOOLEAN("Net.SSLSecureRenegotiation",
-                          SSL_get_secure_renegotiation_support(ssl_.get()));
-  }
 }
 
 void SSLClientSocketImpl::MessageCallback(int is_write,

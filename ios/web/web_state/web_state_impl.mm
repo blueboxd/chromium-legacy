@@ -339,42 +339,6 @@ WebInterstitial* WebStateImpl::GetWebInterstitial() const {
   return interstitial_;
 }
 
-net::HttpResponseHeaders* WebStateImpl::GetHttpResponseHeaders() const {
-  return http_response_headers_.get();
-}
-
-void WebStateImpl::OnHttpResponseHeadersReceived(
-    net::HttpResponseHeaders* response_headers,
-    const GURL& resource_url) {
-  // Store the headers in a map until the page finishes loading, as we do not
-  // know which URL corresponds to the main page yet.
-  // Remove the hash (if any) as it is sometimes altered by in-page navigations.
-  // TODO(crbug/551677): Simplify all this logic once UIWebView is no longer
-  // supported.
-  const GURL& url = GURLByRemovingRefFromGURL(resource_url);
-  response_headers_map_[url] = response_headers;
-}
-
-void WebStateImpl::UpdateHttpResponseHeaders(const GURL& url) {
-  // Reset the state.
-  http_response_headers_ = NULL;
-  mime_type_.clear();
-
-  // Discard all the response headers except the ones for |main_page_url|.
-  auto it = response_headers_map_.find(GURLByRemovingRefFromGURL(url));
-  if (it != response_headers_map_.end())
-    http_response_headers_ = it->second;
-  response_headers_map_.clear();
-
-  if (!http_response_headers_.get())
-    return;
-
-  // MIME type.
-  std::string mime_type;
-  http_response_headers_->GetMimeType(&mime_type);
-  mime_type_ = mime_type;
-}
-
 void WebStateImpl::ShowWebInterstitial(WebInterstitialImpl* interstitial) {
   DCHECK(Configured());
   interstitial_ = interstitial;

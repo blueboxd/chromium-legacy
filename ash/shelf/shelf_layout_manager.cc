@@ -1198,11 +1198,11 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       available_bounds.right() - (hidden_at_start ? 0 : shelf_size));
   if (horizontal) {
     target_bounds->shelf_bounds.set_y(baseline + translate);
-    target_bounds->nav_bounds_in_shelf.set_y(kShelfButtonSpacing);
+    target_bounds->nav_bounds_in_shelf.set_y(ShelfConstants::button_spacing());
     target_bounds->status_bounds_in_shelf.set_y(0);
   } else {
     target_bounds->shelf_bounds.set_x(baseline + translate);
-    target_bounds->nav_bounds_in_shelf.set_x(kShelfButtonSpacing);
+    target_bounds->nav_bounds_in_shelf.set_x(ShelfConstants::button_spacing());
     target_bounds->status_bounds_in_shelf.set_x(0);
   }
 }

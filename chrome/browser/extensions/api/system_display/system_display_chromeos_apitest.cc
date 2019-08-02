@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayChromeOSApiTest,
           extensions::DisplayInfoProvider::Get());
 
   // Change Tablet Mode then ensure that OnDisplayChangedEvent is triggered
-  provider->OnTabletModeToggled(true);
+  provider->OnTabletModeStarted();
 
   extensions::ResultCatcher catcher;
   EXPECT_TRUE(catcher.GetNextResult());

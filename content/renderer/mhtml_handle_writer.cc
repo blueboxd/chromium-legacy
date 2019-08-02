@@ -96,8 +96,9 @@ void MHTMLProducerHandleWriter::WriteContentsImpl(
   mhtml_contents_ = std::move(mhtml_contents);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   task_runner->PostTask(
       FROM_HERE, base::BindOnce(&MHTMLProducerHandleWriter::BeginWatchingHandle,

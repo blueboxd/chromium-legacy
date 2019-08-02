@@ -78,7 +78,7 @@ source_set("ntp_internal") {
     "//base:i18n",
     "//components/favicon/core",
     "//components/favicon_base",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/metrics",

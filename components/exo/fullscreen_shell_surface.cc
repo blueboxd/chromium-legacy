@@ -212,7 +212,7 @@ void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
   params.bounds = gfx::Rect(params.parent->bounds().size());
 
   widget_ = new views::Widget();
-  widget_->Init(params);
+  widget_->Init(std::move(params));
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("FullscreenShellSurface");

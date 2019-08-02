@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "ui/base/models/list_selection_model.h"
 
+class TabGroupVisualData;
 class TabStripModel;
 
 namespace content {
@@ -257,6 +258,15 @@ class TabStripModelObserver {
   virtual void OnTabStripModelChanged(TabStripModel* tab_strip_model,
                                       const TabStripModelChange& change,
                                       const TabStripSelectionChange& selection);
+
+  // Called when the TabGroupVisualData associated with a group changes. |group|
+  // identifies which group changed. |visual_data| is a pointer to the new
+  // TabGroupVisualData and is valid until either the data associated with
+  // |group| changes again or |group| is destroyed.
+  virtual void OnTabGroupVisualDataChanged(
+      TabStripModel* tab_strip_model,
+      TabGroupId group,
+      const TabGroupVisualData* visual_data);
 
   // The specified WebContents at |index| changed in some way. |contents|
   // may be an entirely different object and the old value is no longer

@@ -131,7 +131,7 @@ void ResizeAreaTest::SetUp() {
   init_params.bounds = gfx::Rect(size);
 
   widget_ = new views::Widget();
-  widget_->Init(init_params);
+  widget_->Init(std::move(init_params));
   widget_->SetContentsView(resize_area_);
   widget_->Show();
 

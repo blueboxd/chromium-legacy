@@ -1,6 +1,9 @@
 include_rules = [
   # Allow inclusion of specific components that we depend on.
   # See comment in content/DEPS for which components are allowed.
+  # *********************************** NOTE ***********************************
+  # If adding a new component dependency, email content/OWNERS first.
+  # ****************************************************************************
   "+components/discardable_memory/client",
   "+components/metrics",
   "+components/metrics:single_sample_metrics",
@@ -8,6 +11,10 @@ include_rules = [
   "+components/url_formatter",
   "+components/viz/client",
   "+components/viz/common",
+  # *********************************** NOTE ***********************************
+  # If adding a new component dependency, email content/OWNERS first.
+  # ****************************************************************************
+
   "+content/public/child",
   "+content/public/renderer",
   "+content/child",

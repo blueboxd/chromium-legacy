@@ -6,9 +6,11 @@
 
 module arc.mojom;
 
+import "components/arc/common/print_common.mojom";
+
 // Next method ID: 0
 interface PrintSpoolerHost {
-  // TODO(jschettler): Add methods to open and close print preview
+  // TODO(jschettler): Add methods to open and close Chrome print preview.
 };
 
 // Next method ID: 1

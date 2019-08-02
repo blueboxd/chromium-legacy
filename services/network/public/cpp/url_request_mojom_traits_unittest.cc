@@ -61,14 +61,11 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.referrer = GURL("https://referrer.com/");
   original.referrer_policy =
       net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
-  original.is_prerendering = false;
   original.headers.SetHeader("Accept", "text/xml");
   original.cors_exempt_headers.SetHeader("X-Requested-With", "ForTesting");
   original.load_flags = 3;
-  original.plugin_child_id = 5;
   original.resource_type = 2;
   original.priority = net::IDLE;
-  original.appcache_host_id = base::UnguessableToken::Create();
   original.should_reset_appcache = true;
   original.is_external_request = false;
   original.cors_preflight_policy =
@@ -88,10 +85,8 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.render_frame_id = 5;
   original.is_main_frame = true;
   original.transition_type = 0;
-  original.allow_download = false;
   original.report_raw_headers = true;
   original.previews_state = 0;
-  original.initiated_in_secure_context = false;
   original.upgrade_if_insecure = true;
   original.is_revalidating = false;
   original.throttling_profile_id = base::UnguessableToken::Create();

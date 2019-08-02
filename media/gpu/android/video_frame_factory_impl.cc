@@ -109,15 +109,18 @@ void VideoFrameFactoryImpl::SetSurfaceBundle(
   scoped_refptr<CodecImageGroup> image_group;
   if (!surface_bundle) {
     // Clear everything, just so we're not holding a reference.
-    texture_owner_ = nullptr;
+    codec_buffer_wait_coordinator_ = nullptr;
   } else {
     // If |surface_bundle| is using a TextureOwner, then get it.  Note that the
     // only reason we need this is for legacy mailbox support; we send it to
     // the SharedImageVideoProvider so that (eventually) it can get the service
     // id from the owner for the legacy mailbox texture.  Otherwise, this would
     // be a lot simpler.
-    texture_owner_ =
-        surface_bundle->overlay() ? nullptr : surface_bundle->texture_owner();
+    codec_buffer_wait_coordinator_ =
+        surface_bundle->overlay()
+            ? nullptr
+            : base::MakeRefCounted<CodecBufferWaitCoordinator>(
+                  surface_bundle->texture_owner());
 
     // TODO(liberato): When we enable pooling, do we need to clear the pool
     // here because the CodecImageGroup has changed?  It's unclear, since the
@@ -155,12 +158,13 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
   auto image_ready_cb = base::BindOnce(
       &VideoFrameFactoryImpl::OnImageReady, weak_factory_.GetWeakPtr(),
       std::move(output_cb), timestamp, coded_size, natural_size,
-      std::move(output_buffer), texture_owner_, std::move(promotion_hint_cb),
-      pixel_format, overlay_mode_, enable_threaded_texture_mailboxes_,
-      gpu_task_runner_);
+      std::move(output_buffer), codec_buffer_wait_coordinator_,
+      std::move(promotion_hint_cb), pixel_format, overlay_mode_,
+      enable_threaded_texture_mailboxes_, gpu_task_runner_);
 
-  image_provider_->RequestImage(std::move(image_ready_cb), spec,
-                                texture_owner_);
+  image_provider_->RequestImage(
+      std::move(image_ready_cb), spec,
+      codec_buffer_wait_coordinator_->texture_owner());
 }
 
 // static
@@ -171,7 +175,7 @@ void VideoFrameFactoryImpl::OnImageReady(
     gfx::Size coded_size,
     gfx::Size natural_size,
     std::unique_ptr<CodecOutputBuffer> output_buffer,
-    scoped_refptr<TextureOwner> texture_owner,
+    scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     VideoPixelFormat pixel_format,
     OverlayMode overlay_mode,
@@ -188,7 +192,8 @@ void VideoFrameFactoryImpl::OnImageReady(
   // used at this point.  Alternatively, we could post it, or hand it off to the
   // MaybeRenderEarlyManager to save a post.
   record.codec_image_holder->codec_image_raw()->Initialize(
-      std::move(output_buffer), texture_owner, std::move(promotion_hint_cb));
+      std::move(output_buffer), codec_buffer_wait_coordinator,
+      std::move(promotion_hint_cb));
 
   // Send the CodecImage (via holder, since we can't touch the refcount here) to
   // the MaybeRenderEarlyManager.
@@ -236,17 +241,17 @@ void VideoFrameFactoryImpl::OnImageReady(
   const bool wants_promotion_hints =
       overlay_mode == OverlayMode::kRequestPromotionHints;
 
-  // Remember that we can't access |texture_owner|, but we can check if we have
-  // one here.
+  // Remember that we can't access |codec_buffer_wait_coordinator|, but we can
+  // check if we have one here.
   bool allow_overlay = false;
   if (is_surface_control) {
-    DCHECK(texture_owner);
+    DCHECK(codec_buffer_wait_coordinator);
     allow_overlay = true;
   } else {
     // We unconditionally mark the picture as overlayable, even if
-    // |!texture_owner|, if we want to get hints.  It's required, else we won't
-    // get hints.
-    allow_overlay = !texture_owner || wants_promotion_hints;
+    // |!codec_buffer_wait_coordinator|, if we want to get hints.  It's
+    // required, else we won't get hints.
+    allow_overlay = !codec_buffer_wait_coordinator || wants_promotion_hints;
   }
 
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
@@ -254,7 +259,7 @@ void VideoFrameFactoryImpl::OnImageReady(
   frame->metadata()->SetBoolean(VideoFrameMetadata::WANTS_PROMOTION_HINT,
                                 wants_promotion_hints);
   frame->metadata()->SetBoolean(VideoFrameMetadata::TEXTURE_OWNER,
-                                !!texture_owner);
+                                !!codec_buffer_wait_coordinator);
 
   frame->SetReleaseMailboxCB(std::move(record.release_cb));
 

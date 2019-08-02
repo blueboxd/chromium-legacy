@@ -10,11 +10,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
+#include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/result_codes.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -93,7 +94,6 @@ class ChildProcessLauncherHelper :
 
   ChildProcessLauncherHelper(
       int child_process_id,
-      BrowserThread::ID client_thread_id,
       std::unique_ptr<base::CommandLine> command_line,
       std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
       const base::WeakPtr<ChildProcessLauncher>& child_process_launcher,
@@ -161,8 +161,6 @@ class ChildProcessLauncherHelper :
   void PostLaunchOnClientThread(ChildProcessLauncherHelper::Process process,
                                 int error_code);
 
-  int client_thread_id() const { return client_thread_id_; }
-
   // See ChildProcessLauncher::GetChildTerminationInfo for more info.
   ChildProcessTerminationInfo GetTerminationInfo(
       const ChildProcessLauncherHelper::Process& process,
@@ -221,7 +219,7 @@ class ChildProcessLauncherHelper :
 #endif
 
   const int child_process_id_;
-  const BrowserThread::ID client_thread_id_;
+  const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
   base::TimeTicks begin_launch_time_;
   std::unique_ptr<base::CommandLine> command_line_;
   std::unique_ptr<SandboxedProcessLauncherDelegate> delegate_;

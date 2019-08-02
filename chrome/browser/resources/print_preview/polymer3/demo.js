@@ -2,29 +2,63 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/polymer/v3_0/paper-button/paper-button.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
+import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 class HelloPolymer3Element extends PolymerElement {
   static get template() {
     return html`
-      <div>Hello Polymer3 [[time]]</div>
-      <paper-button on-click="onClick_">Update time</paper-button>
+      <style include="md-select">
+        cr-toggle {
+          display: inline-block;
+        }
+      </style>
+
+      <cr-checkbox checked="{{checkboxChecked_}}">
+        [[checkboxChecked_]]
+      </cr-checkbox>
+
+      <div>
+        <cr-toggle checked="{{toggleChecked_}}"></cr-toggle>
+        <span>[[toggleChecked_]]</span>
+      </div>
+
+      <select class="md-select">
+        <option>JS</option>
+        <option>modules</option>
+        <option>are</option>
+        <option>cool</option>
+      </select>
+
+      <div>
+        <cr-button on-click="onClick_">Show toast</cr-button>
+        <cr-toast><span>I am toasted</span></cr-toast>
+      </div>
+
+      <iron-icon icon="cr:error"></iron-icon>
     `;
   }
 
   static get properties() {
     return {
-      time: {
-        type: Number,
-        value: Date.now(),
-      },
+      /** @private */
+      toggleChecked_: Boolean,
+
+      /** @private */
+      checkboxChecked_: Boolean,
     };
   }
 
+  /** @private */
   onClick_() {
-    this.time = Date.now();
+    this.shadowRoot.querySelector('cr-toast').show(2000);
   }
 }  // class HelloPolymer3
 

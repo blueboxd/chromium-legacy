@@ -37,7 +37,7 @@ scoped_refptr<base::SingleThreadTaskRunner> InitializeAndCreateTaskRunner() {
   // ThreadPoolInstance themselves.
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("cronet");
 
-  return base::CreateSingleThreadTaskRunnerWithTraits({});
+  return base::CreateSingleThreadTaskRunner({base::ThreadPool()});
 }
 
 base::SingleThreadTaskRunner* InitTaskRunner() {

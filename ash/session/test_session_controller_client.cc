@@ -265,7 +265,7 @@ void TestSessionControllerClient::ShowMultiProfileLogin() {
   params.context = Shell::GetPrimaryRootWindow();
 
   multi_profile_login_widget_ = std::make_unique<views::Widget>();
-  multi_profile_login_widget_->Init(params);
+  multi_profile_login_widget_->Init(std::move(params));
   multi_profile_login_widget_->Show();
 }
 

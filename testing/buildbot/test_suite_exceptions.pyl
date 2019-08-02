@@ -1416,7 +1416,6 @@
       'Win7 FYI Debug (AMD)',
       # Disabled due to dbus crashes crbug.com/927465
       'Linux FYI Experimental Release (Intel HD 630)',
-      'Linux FYI Experimental Release (NVIDIA)',
       'Linux FYI Release (Intel HD 630)',
       'Linux FYI Release (NVIDIA)',
       'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
@@ -1953,7 +1952,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Ubuntu-14.04',
+              'os': 'Ubuntu-16.04',
             },
           ],
           'expiration': 36000,

@@ -431,8 +431,8 @@ URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
   // This class assumes that it is created on the same thread that
   // |pref_service_| lives on.
   ui_task_runner_ = base::SequencedTaskRunnerHandle::Get();
-  background_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::BEST_EFFORT});
+  background_task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT});
 
   pref_change_registrar_.Init(pref_service_);
   base::Closure callback = base::Bind(&URLBlacklistManager::ScheduleUpdate,

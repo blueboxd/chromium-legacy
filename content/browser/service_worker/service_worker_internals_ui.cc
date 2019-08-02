@@ -55,9 +55,9 @@ void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
                                int callback_id,
                                blink::ServiceWorkerStatusCode status) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(OperationCompleteCallback,
-                                            internals, callback_id, status));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(OperationCompleteCallback, internals,
+                                  callback_id, status));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -206,7 +206,7 @@ void DidGetStoredRegistrationsOnIOThread(
     blink::ServiceWorkerStatusCode status,
     const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(callback), context->GetAllLiveRegistrationInfo(),
                      context->GetAllLiveVersionInfo(), stored_registrations));
@@ -419,7 +419,7 @@ void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
         std::move(new_observer);
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           GetRegistrationsOnIOThread, context,
@@ -563,11 +563,10 @@ void ServiceWorkerInternalsUI::StopWorkerWithId(
     int64_t version_id,
     StatusCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ServiceWorkerInternalsUI::StopWorkerWithId,
-                       base::Unretained(this), context, version_id,
-                       std::move(callback)));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&ServiceWorkerInternalsUI::StopWorkerWithId,
+                                  base::Unretained(this), context, version_id,
+                                  std::move(callback)));
     return;
   }
 
@@ -589,7 +588,7 @@ void ServiceWorkerInternalsUI::UnregisterWithScope(
     const GURL& scope,
     ServiceWorkerInternalsUI::StatusCallback callback) const {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ServiceWorkerInternalsUI::UnregisterWithScope,
                        base::Unretained(this), context, scope,

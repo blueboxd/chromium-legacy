@@ -16,9 +16,12 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.permissions.PermissionDialogDelegate;
 import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
+import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ListItemType;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -53,29 +56,33 @@ public class TouchlessPermissionDialogModel {
                         .with(ModalDialogProperties.CONTENT_DESCRIPTION, delegate.getMessageText())
                         .build();
 
-        PropertyModel[] items = new PropertyModel[]{
+        ModelList items = new ModelList();
+        items.add(new ListItem(ListItemType.DEFAULT,
                 new PropertyModel
                         .Builder(TouchlessDialogProperties.DialogListItemProperties.ALL_KEYS)
                         .with(TouchlessDialogProperties.DialogListItemProperties.TEXT,
                                 delegate.getPrimaryButtonText())
                         .with(TouchlessDialogProperties.DialogListItemProperties.CLICK_LISTENER,
-                                (v) -> controller.onClick(model,
-                                        ModalDialogProperties.ButtonType.POSITIVE))
+                                (v)
+                                        -> controller.onClick(
+                                                model, ModalDialogProperties.ButtonType.POSITIVE))
                         .with(TouchlessDialogProperties.DialogListItemProperties.ICON,
                                 ApiCompatibilityUtils.getDrawable(
                                         resources, R.drawable.ic_check_circle))
-                        .build(),
+                        .build()));
+        items.add(new ListItem(ListItemType.DEFAULT,
                 new PropertyModel
                         .Builder(TouchlessDialogProperties.DialogListItemProperties.ALL_KEYS)
                         .with(TouchlessDialogProperties.DialogListItemProperties.TEXT,
                                 delegate.getSecondaryButtonText())
                         .with(TouchlessDialogProperties.DialogListItemProperties.CLICK_LISTENER,
-                                (v) -> controller.onClick(model,
-                                        ModalDialogProperties.ButtonType.NEGATIVE))
+                                (v)
+                                        -> controller.onClick(
+                                                model, ModalDialogProperties.ButtonType.NEGATIVE))
                         .with(TouchlessDialogProperties.DialogListItemProperties.ICON,
                                 ApiCompatibilityUtils.getDrawable(
                                         resources, R.drawable.ic_cancel_circle))
-                        .build()};
+                        .build()));
 
         model.set(TouchlessDialogProperties.LIST_MODELS, items);
         model.set(TouchlessDialogProperties.CANCEL_ACTION,
@@ -103,20 +110,20 @@ public class TouchlessPermissionDialogModel {
                                       .with(TouchlessDialogProperties.ACTION_NAMES, names)
                                       .with(TouchlessDialogProperties.ALT_ACTION, null)
                                       .build();
-        model.set(TouchlessDialogProperties.LIST_MODELS,
-                new PropertyModel[] {
-                        new PropertyModel
-                                .Builder(
-                                        TouchlessDialogProperties.DialogListItemProperties.ALL_KEYS)
-                                .with(TouchlessDialogProperties.DialogListItemProperties.TEXT,
-                                        resources, R.string.infobar_update_permissions_button_text)
-                                .with(TouchlessDialogProperties.DialogListItemProperties.ICON,
-                                        context, R.drawable.ic_check_circle)
-                                .with(TouchlessDialogProperties.DialogListItemProperties
-                                                .CLICK_LISTENER,
-                                        (v) -> controller.onClick(model,
-                                                        ModalDialogProperties.ButtonType.POSITIVE))
-                                .build()});
+        ModelList items = new ModelList();
+        items.add(new ListItem(ListItemType.DEFAULT,
+                new PropertyModel
+                        .Builder(TouchlessDialogProperties.DialogListItemProperties.ALL_KEYS)
+                        .with(TouchlessDialogProperties.DialogListItemProperties.TEXT, resources,
+                                R.string.infobar_update_permissions_button_text)
+                        .with(TouchlessDialogProperties.DialogListItemProperties.ICON, context,
+                                R.drawable.ic_check_circle)
+                        .with(TouchlessDialogProperties.DialogListItemProperties.CLICK_LISTENER,
+                                (v)
+                                        -> controller.onClick(
+                                                model, ModalDialogProperties.ButtonType.POSITIVE))
+                        .build()));
+        model.set(TouchlessDialogProperties.LIST_MODELS, items);
         return model;
     }
 }

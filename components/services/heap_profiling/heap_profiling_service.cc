@@ -33,8 +33,8 @@ HeapProfilingService::GetServiceFactory() {
         // because the thread owned by ConnectionManager::Connection is doing
         // blocking Join during dectruction.
         scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {base::TaskPriority::BEST_EFFORT,
+            base::CreateSingleThreadTaskRunner(
+                {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
                  base::WithBaseSyncPrimitives()},
                 base::SingleThreadTaskRunnerThreadMode::DEDICATED);
         task_runner->PostTask(

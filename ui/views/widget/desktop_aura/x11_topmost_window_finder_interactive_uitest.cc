@@ -103,7 +103,7 @@ class X11TopmostWindowFinderTest : public ViewsInteractiveUITestBase {
     params.native_widget = new DesktopNativeWidgetAura(toplevel.get());
     params.bounds = bounds;
     params.remove_standard_frame = true;
-    toplevel->Init(params);
+    toplevel->Init(std::move(params));
     toplevel->Show();
     return toplevel;
   }

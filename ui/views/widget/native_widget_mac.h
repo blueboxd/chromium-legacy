@@ -85,7 +85,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   }
 
   // internal::NativeWidgetPrivate:
-  void InitNativeWidget(const Widget::InitParams& params) override;
+  void InitNativeWidget(Widget::InitParams params) override;
   void OnWidgetInitDone() override;
   NonClientFrameView* CreateNonClientFrameView() override;
   bool ShouldUseNativeFrame() const override;

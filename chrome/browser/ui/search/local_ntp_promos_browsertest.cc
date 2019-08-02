@@ -37,7 +37,7 @@ using testing::IsEmpty;
 
 class MockPromoService : public PromoService {
  public:
-  MockPromoService() : PromoService(nullptr, nullptr) {}
+  MockPromoService() : PromoService(nullptr) {}
 
   void Refresh() override { PromoDataLoaded(promo_status_, promo_data_); }
 

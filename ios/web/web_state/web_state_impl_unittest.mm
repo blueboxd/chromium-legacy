@@ -208,61 +208,6 @@ TEST_P(WebStateImplTest, WebUsageEnabled) {
   EXPECT_TRUE(web_state_->GetWebController().webUsageEnabled);
 }
 
-TEST_P(WebStateImplTest, ResponseHeaders) {
-  GURL real_url("http://foo.com/bar");
-  GURL frame_url("http://frames-r-us.com/");
-  auto real_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK\r\n"
-                                        "Content-Type: text/html\r\n"
-                                        "X-Should-Be-Here: yep\r\n"
-                                        "\r\n"));
-  auto frame_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK\r\n"
-                                        "Content-Type: application/pdf\r\n"
-                                        "X-Should-Not-Be-Here: oops\r\n"
-                                        "\r\n"));
-  // Simulate a load of a page with a frame.
-  web_state_->OnHttpResponseHeadersReceived(real_headers.get(), real_url);
-  web_state_->OnHttpResponseHeadersReceived(frame_headers.get(), frame_url);
-  // Include a hash to be sure it's handled correctly.
-  web_state_->UpdateHttpResponseHeaders(
-      GURL(real_url.spec() + std::string("#baz")));
-
-  // Verify that the right header set was kept.
-  ASSERT_TRUE(web_state_->GetHttpResponseHeaders());
-  EXPECT_TRUE(
-      web_state_->GetHttpResponseHeaders()->HasHeader("X-Should-Be-Here"));
-  EXPECT_FALSE(
-      web_state_->GetHttpResponseHeaders()->HasHeader("X-Should-Not-Be-Here"));
-
-  // And that it was parsed correctly.
-  EXPECT_EQ("text/html", web_state_->GetContentsMimeType());
-}
-
-TEST_P(WebStateImplTest, ResponseHeaderClearing) {
-  GURL url("http://foo.com/");
-  auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders("HTTP/1.1 200 OK\r\n"
-                                        "Content-Type: text/html\r\n"
-                                        "\r\n"));
-  web_state_->OnHttpResponseHeadersReceived(headers.get(), url);
-
-  // There should be no headers before loading.
-  EXPECT_EQ(NULL, web_state_->GetHttpResponseHeaders());
-
-  // There should be headers and parsed values after loading.
-  web_state_->UpdateHttpResponseHeaders(url);
-  ASSERT_TRUE(web_state_->GetHttpResponseHeaders());
-  EXPECT_TRUE(web_state_->GetHttpResponseHeaders()->HasHeader("Content-Type"));
-  EXPECT_NE("", web_state_->GetContentsMimeType());
-
-  // ... but not after loading another page, nor should there be specific
-  // parsed values.
-  web_state_->UpdateHttpResponseHeaders(GURL("http://elsewhere.com/"));
-  EXPECT_EQ(NULL, web_state_->GetHttpResponseHeaders());
-  EXPECT_EQ("", web_state_->GetContentsMimeType());
-}
-
 // Tests forwarding to WebStateObserver callbacks.
 TEST_P(WebStateImplTest, ObserverTest) {
   std::unique_ptr<TestWebStateObserver> observer(

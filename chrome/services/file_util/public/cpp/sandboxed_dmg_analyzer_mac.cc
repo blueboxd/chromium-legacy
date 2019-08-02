@@ -53,9 +53,6 @@ void SandboxedDMGAnalyzer::PrepareFileToAnalyze() {
   uint64_t size = file.GetLength();
 
   bool too_big_to_unpack = base::checked_cast<uint64_t>(size) > max_size_;
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgTooBigToUnpack",
-                        too_big_to_unpack);
-
   if (too_big_to_unpack) {
     DLOG(ERROR) << "File is too big: " << file_path_.value();
     ReportFileFailure();

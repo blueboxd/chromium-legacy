@@ -38,10 +38,6 @@
 @protocol CRWWebViewNavigationProxy;
 @class UIViewController;
 
-namespace net {
-class HttpResponseHeaders;
-}
-
 namespace web {
 
 class BrowserState;
@@ -132,19 +128,6 @@ class WebStateImpl : public WebState,
   void ClearWebUI();
   // Returns true if there is a WebUI active.
   bool HasWebUI();
-
-  // Gets the HTTP response headers associated with the current page.
-  // NOTE: For a WKWebView-based WebState, these headers are generated via
-  // net::CreateHeadersFromNSHTTPURLResponse(); see comments in
-  // http_response_headers_util.h for limitations.
-  net::HttpResponseHeaders* GetHttpResponseHeaders() const;
-
-  // Called when HTTP response headers are received.
-  // |resource_url| is the URL associated with the headers.
-  // This function has no visible effects until UpdateHttpResponseHeaders() is
-  // called.
-  void OnHttpResponseHeadersReceived(net::HttpResponseHeaders* response_headers,
-                                     const GURL& resource_url);
 
   // Explicitly sets the MIME type, overwriting any MIME type that was set by
   // headers. Note that this should be called after OnNavigationCommitted, as
@@ -282,11 +265,6 @@ class WebStateImpl : public WebState,
   void OnNavigationItemsPruned(size_t pruned_item_count) override;
   void OnNavigationItemCommitted(NavigationItem* item) override;
 
-  // Updates the HTTP response headers for the main page using the headers
-  // passed to the OnHttpResponseHeadersReceived() function below.
-  // GetHttpResponseHeaders() can be used to get the headers.
-  void UpdateHttpResponseHeaders(const GURL& url);
-
   WebState* GetWebState() override;
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
   void GoToBackForwardListItem(WKBackForwardListItem* wk_item,
@@ -358,12 +336,6 @@ class WebStateImpl : public WebState,
   // code, hence the ObserverList.
   base::ObserverList<WebStatePolicyDecider, true>::Unchecked policy_deciders_;
 
-  // Map of all the HTTP response headers received, for each URL.
-  // This map is cleared after each page load, and only the headers of the main
-  // page are used.
-  std::map<GURL, scoped_refptr<net::HttpResponseHeaders> >
-      response_headers_map_;
-  scoped_refptr<net::HttpResponseHeaders> http_response_headers_;
   std::string mime_type_;
 
   // Weak pointer to the interstitial page being displayed, if any.

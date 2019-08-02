@@ -50,11 +50,10 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/supervised_user_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -83,8 +82,9 @@ bool IsRestrictedCrosSettingForChildUser(Profile* profile,
   if (!profile->IsChild())
     return false;
 
-  return SupervisedUserServiceFactory::GetForProfile(profile)
-      ->IsRestrictedCrosSettingForChildUser(pref_name);
+  return chromeos::CrosSettings::Get()
+      ->supervised_user_cros_settings_provider()
+      ->HandlesSetting(pref_name);
 }
 
 const base::Value* GetRestrictedCrosSettingValueForChildUser(
@@ -94,8 +94,9 @@ const base::Value* GetRestrictedCrosSettingValueForChildUser(
   // pre-set.
   DCHECK(IsRestrictedCrosSettingForChildUser(profile, pref_name));
 
-  return SupervisedUserServiceFactory::GetForProfile(profile)
-      ->GetRestrictedCrosSettingValueForChildUser(pref_name);
+  return chromeos::CrosSettings::Get()
+      ->supervised_user_cros_settings_provider()
+      ->Get(pref_name);
 }
 
 #endif

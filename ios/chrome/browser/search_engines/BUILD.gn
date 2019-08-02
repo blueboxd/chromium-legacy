@@ -26,7 +26,7 @@ source_set("search_engines") {
     "//base",
     "//components/country_codes",
     "//components/favicon/ios",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",

@@ -10,28 +10,50 @@
     options: {
       protocol: "ctap2",
       transport: "usb",
-      hasResidentKey: false,
+      hasResidentKey: true,
       hasUserVerification: false,
     },
   })).result.authenticatorId;
 
-  // Register a credential.
-  const credentialId = "cred-1";
-  const addCredentialResult = (await dp.WebAuthn.addCredential({
+  // Register a non-resident credential.
+  const nonResidentCredentialId = "cred-1";
+  testRunner.log(await dp.WebAuthn.addCredential({
     authenticatorId,
     credential: {
-      credentialId: btoa(credentialId),
-      rpIdHash: await session.evaluateAsync("generateRpIdHash()"),
+      credentialId: btoa(nonResidentCredentialId),
+      rpId: "devtools.test",
       privateKey: await session.evaluateAsync("generateBase64Key()"),
       signCount: 0,
+      isResidentCredential: false,
     }
   }));
-  testRunner.log(addCredentialResult);
 
-  // Authenticate with the registered credential.
+  // Authenticate with the non-resident credential.
   testRunner.log(await session.evaluateAsync(`getCredential({
     type: "public-key",
-    id: new TextEncoder().encode("${credentialId}"),
+    id: new TextEncoder().encode("${nonResidentCredentialId}"),
+    transports: ["usb", "ble", "nfc"],
+  })`));
+
+  // Register a resident credential.
+  const userHandle = "nina";
+  const residentCredentialId = "cred-2";
+  testRunner.log(await dp.WebAuthn.addCredential({
+    authenticatorId,
+    credential: {
+      credentialId: btoa(residentCredentialId),
+      rpId: "devtools.test",
+      privateKey: await session.evaluateAsync("generateBase64Key()"),
+      signCount: 0,
+      isResidentCredential: true,
+      userHandle: btoa(userHandle),
+    }
+  }));
+
+  // Authenticate with the resident credential.
+  testRunner.log(await session.evaluateAsync(`getCredential({
+    type: "public-key",
+    id: new TextEncoder().encode("${residentCredentialId}"),
     transports: ["usb", "ble", "nfc"],
   })`));
 

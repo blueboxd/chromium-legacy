@@ -5698,7 +5698,6 @@ static ResourceRequest CreateResourceRequest(const char* method,
   request.site_for_cookies = url;  // bypass third-party cookie blocking
   request.request_initiator =
       url::Origin::Create(url);  // ensure initiator is set
-  request.allow_download = true;
   return request;
 }
 

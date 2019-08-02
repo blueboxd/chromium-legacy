@@ -145,6 +145,8 @@ bool IsGoogleSearchSubdomainUrl(const GURL& url) {
 
 // Global functions -----------------------------------------------------------
 
+const char kGoogleHomepageURL[] = "https://www.google.com/";
+
 bool HasGoogleSearchQueryParam(base::StringPiece str) {
   url::Component query(0, static_cast<int>(str.length())), key, value;
   while (url::ExtractQueryKeyValue(str.data(), &query, &key, &value)) {

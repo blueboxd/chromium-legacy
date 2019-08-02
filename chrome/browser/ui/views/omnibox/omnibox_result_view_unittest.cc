@@ -66,7 +66,7 @@ class OmniboxResultViewTest : public ChromeViewsTestBase {
         CreateParams(views::Widget::InitParams::TYPE_POPUP);
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
 
     views::View* root_view = widget_->GetRootView();
     root_view->SetBoundsRect(gfx::Rect(0, 0, 500, 500));

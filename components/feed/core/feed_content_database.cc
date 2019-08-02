@@ -54,8 +54,9 @@ FeedContentDatabase::FeedContentDatabase(
     : FeedContentDatabase(proto_database_provider->GetDB<ContentStorageProto>(
           leveldb_proto::ProtoDbType::FEED_CONTENT_DATABASE,
           database_folder.AppendASCII(kContentDatabaseFolder),
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
 FeedContentDatabase::FeedContentDatabase(

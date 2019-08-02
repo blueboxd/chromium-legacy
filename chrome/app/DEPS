@@ -98,16 +98,12 @@ specific_include_rules = {
     "+components/services/pdf_compositor",
     "+components/services/quarantine",
     "+components/services/unzip/public",
-    "+components/spellcheck/common",
     "+components/startup_metric_utils/common",
     "+device/vr/buildflags",
     "+extensions/buildflags",
     "+mash/public",
     "+services/content/simple_browser",
     "+services/proxy_resolver",
-  ],
-  "chrome_renderer_manifest\.cc": [
-    "+components/spellcheck/common",
   ],
 }
 

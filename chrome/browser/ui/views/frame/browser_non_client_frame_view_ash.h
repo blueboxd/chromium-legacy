@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "ash/public/cpp/split_view.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/command_observer.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/views/frame/browser_frame_header_ash.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -40,7 +40,7 @@ class FrameCaptionButton;
 class BrowserNonClientFrameViewAsh
     : public BrowserNonClientFrameView,
       public BrowserFrameHeaderAsh::AppearanceProvider,
-      public TabletModeClientObserver,
+      public ash::TabletModeObserver,
       public TabIconViewModel,
       public CommandObserver,
       public ash::SplitViewObserver,
@@ -91,8 +91,11 @@ class BrowserNonClientFrameViewAsh
   int GetFrameHeaderImageYInset() override;
   gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override;
 
-  // TabletModeClientObserver:
-  void OnTabletModeToggled(bool enabled) override;
+  // ash::TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
+
+  void OnTabletModeToggled(bool enabled);
 
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;

@@ -24,6 +24,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
@@ -323,8 +324,20 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void DisableWebRtcEventLogOutput(int lid) = 0;
 
   // Binds interfaces exposed to the browser process from the renderer.
+  //
+  // DEPRECATED: Use |BindReceiver()| instead.
   virtual void BindInterface(const std::string& interface_name,
                              mojo::ScopedMessagePipeHandle interface_pipe) = 0;
+
+  // Asks the renderer process to bind |receiver|. |receiver| arrives in the
+  // renderer process and is carried through the following flow, stopping if any
+  // step decides to bind it:
+  //
+  //   1. IO thread, |ChildProcessImpl::BindReceiver()| (child_thread_impl.cc)
+  //   2. IO thread ,|ContentClient::BindChildProcessInterface()|
+  //   3. Main thread, |ChildThreadImpl::OnBindReceiver()| (virtual)
+  //   4. Possibly more stpes, depending on the ChildThreadImpl subclass.
+  virtual void BindReceiver(mojo::GenericPendingReceiver receiver) = 0;
 
   virtual const service_manager::Identity& GetChildIdentity() = 0;
 

@@ -26,15 +26,12 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          request_initiator == request.request_initiator &&
          referrer == request.referrer &&
          referrer_policy == request.referrer_policy &&
-         is_prerendering == request.is_prerendering &&
          headers.ToString() == request.headers.ToString() &&
          cors_exempt_headers.ToString() ==
              request.cors_exempt_headers.ToString() &&
          load_flags == request.load_flags &&
-         plugin_child_id == request.plugin_child_id &&
          resource_type == request.resource_type &&
          priority == request.priority &&
-         appcache_host_id == request.appcache_host_id &&
          should_reset_appcache == request.should_reset_appcache &&
          is_external_request == request.is_external_request &&
          cors_preflight_policy == request.cors_preflight_policy &&
@@ -56,10 +53,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          render_frame_id == request.render_frame_id &&
          is_main_frame == request.is_main_frame &&
          transition_type == request.transition_type &&
-         allow_download == request.allow_download &&
          report_raw_headers == request.report_raw_headers &&
          previews_state == request.previews_state &&
-         initiated_in_secure_context == request.initiated_in_secure_context &&
          upgrade_if_insecure == request.upgrade_if_insecure &&
          is_revalidating == request.is_revalidating &&
          should_also_use_factory_bound_origin_for_cors ==

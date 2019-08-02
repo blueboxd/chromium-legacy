@@ -483,11 +483,6 @@ DedicatedWorker::CreateWebWorkerFetchContext() {
               factory_client_.get());
     } else {
       web_worker_fetch_context = frame->Client()->CreateWorkerFetchContext();
-      web_worker_fetch_context->SetApplicationCacheHostID(
-          frame->Loader()
-              .GetDocumentLoader()
-              ->GetApplicationCacheHost()
-              ->GetHostID());
     }
     web_worker_fetch_context->SetIsOnSubframe(!frame->IsMainFrame());
     return web_worker_fetch_context;

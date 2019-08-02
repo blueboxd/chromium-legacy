@@ -78,9 +78,8 @@ public class SafeBrowsingTest {
          * sites are malicious
          */
         @Override
-        public AwBrowserContext createAwBrowserContextOnUiThread(
-                InMemorySharedPreferences prefs, Context appContext) {
-            return new MockAwBrowserContext(prefs, appContext);
+        public AwBrowserContext createAwBrowserContextOnUiThread(InMemorySharedPreferences prefs) {
+            return new MockAwBrowserContext(prefs);
         }
     };
 
@@ -201,9 +200,8 @@ public class SafeBrowsingTest {
      * A fake AwBrowserContext which loads the MockSafeBrowsingApiHandler instead of the real one.
      */
     private static class MockAwBrowserContext extends AwBrowserContext {
-        public MockAwBrowserContext(
-                SharedPreferences sharedPreferences, Context applicationContext) {
-            super(sharedPreferences, applicationContext);
+        public MockAwBrowserContext(SharedPreferences sharedPreferences) {
+            super(sharedPreferences, 0);
             SafeBrowsingApiBridge.setSafeBrowsingHandlerType(MockSafeBrowsingApiHandler.class);
         }
     }

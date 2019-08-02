@@ -101,8 +101,8 @@ WebDataServiceWrapper::WebDataServiceWrapper(
   // TODO(pkasting): http://crbug.com/740773 This should likely be sequenced,
   // not single-threaded; it's also possible the various uses of this below
   // should each use their own sequences instead of sharing this one.
-  auto db_task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  auto db_task_runner = base::CreateSingleThreadTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   profile_database_ =
       new WebDatabaseService(path, ui_task_runner, db_task_runner);

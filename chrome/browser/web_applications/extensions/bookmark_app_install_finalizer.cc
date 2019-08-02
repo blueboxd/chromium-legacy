@@ -216,8 +216,7 @@ void BookmarkAppInstallFinalizer::ReparentTab(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
   DCHECK(!profile_->IsOffTheRecord());
-  const Extension* app = GetExtensionById(profile_, app_id);
-  BookmarkAppReparentTab(web_contents, app);
+  BookmarkAppReparentTab(web_contents, app_id);
 }
 
 bool BookmarkAppInstallFinalizer::CanRevealAppShim() const {

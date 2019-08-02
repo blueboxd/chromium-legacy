@@ -107,7 +107,7 @@ class ToolbarActionViewUnitTest : public ChromeViewsTestBase {
     views::Widget::InitParams params =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
   }
 
   void TearDown() override {

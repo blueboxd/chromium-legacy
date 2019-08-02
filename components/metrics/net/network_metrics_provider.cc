@@ -300,9 +300,9 @@ NetworkMetricsProvider::GetWifiPHYLayerProtocol() const {
 
 void NetworkMetricsProvider::ProbeWifiPHYLayerProtocol() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&net::GetWifiPHYLayerProtocol),
       base::BindOnce(&NetworkMetricsProvider::OnWifiPHYLayerProtocolResult,

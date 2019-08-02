@@ -84,7 +84,7 @@ views::Widget* CreateTouchSelectionPopupWidget(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = parent;
   params.delegate = widget_delegate;
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 

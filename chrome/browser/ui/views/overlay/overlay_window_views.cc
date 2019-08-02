@@ -251,7 +251,7 @@ OverlayWindowViews::OverlayWindowViews(
   // Set WidgetDelegate for more control over |widget_|.
   params.delegate = new OverlayWindowWidgetDelegate(this);
 
-  Init(params);
+  Init(std::move(params));
   SetUpViews();
 
 #if defined(OS_CHROMEOS)

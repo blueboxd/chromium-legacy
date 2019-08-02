@@ -36,9 +36,6 @@ class CORE_EXPORT ClassicScript final : public Script {
   }
   void RunScript(LocalFrame*, const SecurityOrigin*) override;
   void RunScriptOnWorker(WorkerGlobalScope&) override;
-  String InlineSourceTextForCSP() const override {
-    return script_source_code_.Source().ToString();
-  }
 
   const ScriptSourceCode script_source_code_;
   const SanitizeScriptErrors sanitize_script_errors_;

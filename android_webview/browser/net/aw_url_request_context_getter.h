@@ -28,7 +28,6 @@ class NetLog;
 class ProxyConfigServiceAndroid;
 class ProxyConfigService;
 class URLRequestContext;
-class URLRequestJobFactory;
 }
 
 namespace android_webview {
@@ -86,7 +85,6 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   net::NetLog* net_log_;
   std::unique_ptr<net::ProxyConfigServiceAndroid> proxy_config_service_;
   net::ProxyConfigServiceAndroid* proxy_config_service_android_;
-  std::unique_ptr<net::URLRequestJobFactory> job_factory_;
   std::unique_ptr<net::HttpUserAgentSettings> http_user_agent_settings_;
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
   // http_auth_preferences_ holds the preferences for the negotiate

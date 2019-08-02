@@ -241,8 +241,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // parent was already set then it also unregisters hierarchy.
   void SetParentFrameSinkId(const viz::FrameSinkId& parent_frame_sink_id);
 
-  void SendSurfaceInfoToEmbedder();
-
   // Clears current compositor surface, if one is in use.
   void ClearCompositorSurfaceIfNecessary();
 
@@ -305,7 +303,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   viz::FrameSinkId parent_frame_sink_id_;
 
   const bool enable_viz_;
-  const bool enable_surface_synchronization_;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 

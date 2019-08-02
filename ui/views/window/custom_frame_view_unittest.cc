@@ -125,7 +125,7 @@ void CustomFrameViewTest::SetUp() {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.delegate = minimize_and_maximize_state_control_delegate_;
   params.remove_standard_frame = true;
-  widget_->Init(params);
+  widget_->Init(std::move(params));
 
   custom_frame_view_ = new CustomFrameView;
   widget_->non_client_view()->SetFrameView(custom_frame_view_);

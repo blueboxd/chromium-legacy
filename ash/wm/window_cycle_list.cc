@@ -570,7 +570,7 @@ void WindowCycleList::InitWindowCycleView() {
                     (widget_rect.height() - widget_height) / 2);
   widget_rect.set_height(widget_height);
   params.bounds = widget_rect;
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   screen_observer_.Add(display::Screen::GetScreen());
   widget->Show();

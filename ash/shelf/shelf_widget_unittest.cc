@@ -155,7 +155,7 @@ TEST_F(ShelfWidgetTest, DontReferenceShelfAfterDeletion) {
   params.bounds = gfx::Rect(0, 0, 200, 200);
   params.context = CurrentContext();
   // Widget is now owned by the parent window.
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetFullscreen(true);
 }
 
@@ -221,7 +221,7 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
                             kWindowWidth, kWindowHeight);
   params.context = CurrentContext();
   // Widget is now owned by the parent window.
-  widget->Init(params);
+  widget->Init(std::move(params));
   // Explicitly set the bounds which will allow the widget to overlap the shelf.
   widget->SetBounds(params.bounds);
   widget->Show();
@@ -302,7 +302,7 @@ TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
   params.bounds = gfx::Rect(0, 0, 200, 200);
   params.context = CurrentContext();
   // Widget is now owned by the parent window.
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
 
   aura::Window* root = shelf_widget->GetNativeWindow()->GetRootWindow();

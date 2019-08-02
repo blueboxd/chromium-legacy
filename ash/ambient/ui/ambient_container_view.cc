@@ -37,7 +37,7 @@ void CreateWidget(AmbientContainerView* view) {
   params.name = view->GetClassName();
 
   views::Widget* widget = new views::Widget;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetFullscreen(true);
 }
 

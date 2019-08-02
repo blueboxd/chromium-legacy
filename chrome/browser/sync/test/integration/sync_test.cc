@@ -47,7 +47,6 @@
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/google/core/browser/google_url_tracker.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -918,8 +917,6 @@ void SyncTest::SetupMockGaiaResponses() {
   test_url_loader_factory_.AddResponse(
       GaiaUrls::GetInstance()->get_user_info_url().spec(),
       "email=user@gmail.com\ndisplayEmail=user@gmail.com");
-  test_url_loader_factory_.AddResponse(GoogleURLTracker::kSearchDomainCheckURL,
-                                       ".google.com");
   test_url_loader_factory_.AddResponse(
       GaiaUrls::GetInstance()->oauth2_token_url().spec(),
       R"({

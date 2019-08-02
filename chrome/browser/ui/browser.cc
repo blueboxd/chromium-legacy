@@ -2630,6 +2630,10 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
   if (web_app::AppBrowserController::IsForWebAppBrowser(this))
     features |= FEATURE_TOOLBAR;
 
+  // Some types of web apps will have a tabstrip.
+  if (app_controller_ && app_controller_->HasTabStrip())
+    features |= FEATURE_TABSTRIP;
+
   return !!(features & feature);
 }
 

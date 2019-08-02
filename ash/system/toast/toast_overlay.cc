@@ -237,7 +237,7 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   params.parent = Shell::GetRootWindowForNewWindows()->GetChildById(
       show_on_lock_screen ? kShellWindowId_LockSystemModalContainer
                           : kShellWindowId_SystemModalContainer);
-  overlay_widget_->Init(params);
+  overlay_widget_->Init(std::move(params));
   overlay_widget_->SetVisibilityChangedAnimationsEnabled(true);
   overlay_widget_->SetContentsView(overlay_view_.get());
   UpdateOverlayBounds();

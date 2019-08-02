@@ -51,7 +51,6 @@
 namespace blink {
 class ApplicationCache;
 class DocumentLoader;
-class ResourceRequest;
 
 // TODO(nhiroki): Move virtual functions in this class into
 // ApplicationCacheHostForFrame after making DocumentLoader own only
@@ -121,7 +120,6 @@ class CORE_EXPORT ApplicationCacheHost
   void SetSubresourceFactory(
       network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override {}
 
-  virtual void WillStartLoading(ResourceRequest&) {}
   virtual void WillStartLoadingMainResource(DocumentLoader* loader,
                                             const KURL& url,
                                             const String& method) {}

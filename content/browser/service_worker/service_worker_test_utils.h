@@ -46,7 +46,7 @@ void ReceiveResult(BrowserThread::ID run_quit_thread,
                    Arg actual) {
   *out = actual;
   if (!quit.is_null())
-    base::PostTaskWithTraits(FROM_HERE, {run_quit_thread}, std::move(quit));
+    base::PostTask(FROM_HERE, {run_quit_thread}, std::move(quit));
 }
 
 template <typename Arg>

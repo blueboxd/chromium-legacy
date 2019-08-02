@@ -28,7 +28,7 @@ class RadioButtonTest : public ViewsTestBase {
     Widget::InitParams params =
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->Show();
 
     button_container_ = new View();

@@ -35,16 +35,28 @@ public class ViewHighlighter {
     public static void turnOnHighlight(View view, boolean circular) {
         if (view == null) return;
 
+        PulseDrawable pulseDrawable = circular ? PulseDrawable.createCircle(view.getContext())
+                                               : PulseDrawable.createHighlight(view.getContext());
+
+        attachViewAsHighlight(view, pulseDrawable);
+    }
+
+    /**
+     * Attach a custom PulseDrawable as a highlight layer over the view.
+     *
+     * Will not highlight if the view is already highlighted.
+     *
+     * @param view The view to be highlighted.
+     * @param pulseDrawable The highlight.
+     */
+    public static void attachViewAsHighlight(View view, PulseDrawable pulseDrawable) {
         boolean highlighted = view.getTag(R.id.highlight_state) != null
                 ? (boolean) view.getTag(R.id.highlight_state)
                 : false;
         if (highlighted) return;
 
-        PulseDrawable pulseDrawable = circular ? PulseDrawable.createCircle(view.getContext())
-                                               : PulseDrawable.createHighlight(view.getContext());
-
         Resources resources = view.getContext().getResources();
-        Drawable background = (Drawable) view.getBackground();
+        Drawable background = view.getBackground();
         if (background != null) {
             background = background.getConstantState().newDrawable(resources);
         }

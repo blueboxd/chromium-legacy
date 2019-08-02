@@ -438,7 +438,7 @@ void LogApiActivity(content::BrowserContext* browser_context,
       state.IsWhitelistedId(extension_id))
     return;
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&LogApiActivityOnUI, browser_context, extension_id,
                        activity_name, args.CreateDeepCopy(), type));
@@ -499,11 +499,10 @@ void LogWebRequestActivity(content::BrowserContext* browser_context,
       state.IsWhitelistedId(extension_id))
     return;
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&LogWebRequestActivityOnUI, browser_context,
-                       extension_id, url, is_incognito, api_call,
-                       std::move(details)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&LogWebRequestActivityOnUI, browser_context,
+                                  extension_id, url, is_incognito, api_call,
+                                  std::move(details)));
     return;
   }
   LogWebRequestActivityOnUI(browser_context, extension_id, url, is_incognito,

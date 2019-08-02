@@ -156,9 +156,9 @@ void FakeSyncService::GetAllNodesForDebugging(
 
 void FakeSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
-base::Optional<UserDemographics> FakeSyncService::GetUserDemographics(
-    base::Time now) {
-  return base::nullopt;
+UserDemographicsResult FakeSyncService::GetUserDemographics(base::Time now) {
+  return UserDemographicsResult::ForStatus(
+      UserDemographicsStatus::kIneligibleDemographicsData);
 }
 
 void FakeSyncService::Shutdown() {}

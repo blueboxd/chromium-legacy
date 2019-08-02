@@ -93,8 +93,8 @@ class SystemWebAppManager {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Returns the app id for the given System App |id|.
-  base::Optional<AppId> GetAppIdForSystemApp(SystemAppType id) const;
+  // Returns the app id for the given System App |type|.
+  base::Optional<AppId> GetAppIdForSystemApp(SystemAppType type) const;
 
   // Returns whether |app_id| points to an installed System App.
   bool IsSystemWebApp(const AppId& app_id) const;
@@ -103,11 +103,12 @@ class SystemWebAppManager {
     return *on_apps_synchronized_;
   }
 
- protected:
   void SetSystemAppsForTesting(
       base::flat_map<SystemAppType, SystemAppInfo> system_apps);
+
   void SetUpdatePolicyForTesting(UpdatePolicy policy);
 
+ protected:
   virtual const base::Version& CurrentVersion() const;
 
  private:

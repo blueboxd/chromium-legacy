@@ -71,7 +71,7 @@ std::unique_ptr<views::Widget> CreateMenuWidget() {
   params.layer_type = ui::LAYER_SOLID_COLOR;
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
       kShellWindowId_PowerMenuContainer);
-  menu_widget->Init(params);
+  menu_widget->Init(std::move(params));
 
   gfx::Rect widget_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();

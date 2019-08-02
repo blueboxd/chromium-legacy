@@ -154,6 +154,7 @@ int APIENTRY _tWinMain(HINSTANCE instance, HINSTANCE, wchar_t* command_line,
     HMODULE dll_module = ::LoadLibraryA(dll_name.c_str());
     if (dll_module == NULL) {
       // TODO(finnur): write the failure to the log file
+      CloseHandle(pipe);
       return -5;
     }
 

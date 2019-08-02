@@ -626,6 +626,7 @@ void MainUIWindow::AddDebugMessage(const wchar_t* format, ...) {
   text[kMaxDebugBuffSize] = L'\0';
 
   InsertLineInListView(text);
+  va_end(arg_list);
 }
 
 

@@ -87,7 +87,7 @@ GetOriginsTask::~GetOriginsTask() {}
 
 void GetOriginsTask::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&QuotaManager::GetOriginsModifiedSince, quota_manager_,
                      blink::mojom::StorageType::kTemporary,
@@ -129,9 +129,8 @@ void GetOriginsTask::OnUsageAndQuotaObtained(
 void GetOriginsTask::CheckDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (num_callbacks_received_ == num_callbacks_to_wait_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&GetOriginsTask::DoneOnUIThread, this));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&GetOriginsTask::DoneOnUIThread, this));
   } else if (num_callbacks_received_ > num_callbacks_to_wait_) {
     NOTREACHED();
   }
@@ -147,7 +146,7 @@ void RunOnUIThread(base::OnceClosure task) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     std::move(task).Run();
   } else {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, std::move(task));
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(task));
   }
 }
 
@@ -286,9 +285,8 @@ void OnUsageAndQuotaObtained(
     usage = 0;
     quota = 0;
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(std::move(ui_callback), usage, quota));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(ui_callback), usage, quota));
 }
 
 }  // namespace
@@ -316,7 +314,7 @@ void AwQuotaManagerBridge::GetUsageAndQuotaForOriginOnUiThread(
                      weak_factory_.GetWeakPtr(), callback_id, is_quota);
 
   // TODO(crbug.com/889590): Use helper for url::Origin creation from string.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &QuotaManager::GetUsageAndQuota, GetQuotaManager(),

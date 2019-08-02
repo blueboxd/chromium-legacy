@@ -44,7 +44,7 @@ class NativeWidgetTest : public ViewsTestBase {
     Widget::InitParams params = CreateParams(type);
     params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
     params.bounds = gfx::Rect(10, 10, 200, 200);
-    widget->Init(params);
+    widget->Init(std::move(params));
     return widget->native_widget_private();
   }
 

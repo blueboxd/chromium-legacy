@@ -42,7 +42,7 @@ class DataOffer final : public ui::PropertyHandler {
   };
 
   DataOffer(DataOfferDelegate* delegate, Purpose purpose);
-  ~DataOffer();
+  ~DataOffer() override;
 
   void AddObserver(DataOfferObserver* observer);
   void RemoveObserver(DataOfferObserver* observer);

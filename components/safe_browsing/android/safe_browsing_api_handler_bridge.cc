@@ -41,9 +41,8 @@ void RunCallbackOnIOThread(
     const ThreatMetadata& metadata) {
   CHECK(callback);              // Remove after fixing crbug.com/889972
   CHECK(!callback->is_null());  // Remove after fixing crbug.com/889972
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(std::move(*callback), threat_type, metadata));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(std::move(*callback), threat_type, metadata));
 }
 
 void ReportUmaResult(safe_browsing::UmaRemoteCallResult result) {
@@ -200,10 +199,9 @@ void JNI_SafeBrowsingApiBridge_OnUrlCheckDone(
            << " with status=" << result_status << " and metadata=["
            << metadata_str << "]";
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&OnUrlCheckDoneOnIOThread, callback_id, result_status,
-                     metadata_str));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&OnUrlCheckDoneOnIOThread, callback_id,
+                                result_status, metadata_str));
 }
 
 //

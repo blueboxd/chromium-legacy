@@ -225,6 +225,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # Android does not support the virtual authenticator environment.
         'ChromeDriverSecureContextTest.testAddVirtualAuthenticator',
         'ChromeDriverSecureContextTest.testRemoveVirtualAuthenticator',
+        'ChromeDriverSecureContextTest.testAddCredential',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -2078,6 +2079,42 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
         'Could not find a Virtual Authenticator matching the ID',
         self._driver.RemoveVirtualAuthenticator, response['authenticatorId'])
 
+  def testAddCredential(self):
+    # The example attestation private key from the U2F spec at
+    # https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-example
+    # PKCS.8 encoded without encryption.
+    privateKey = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg8/zMDQDYAxlU+Qhk1Dwkf0v18GZca1DMF3SaJ9HPdmShRANCAASNYX5lyVCOZLzFZzrIKmeZ2jwURmgsJYxGP//fWN/S+j5sN4tT15XEpN/7QZnt14YvI6uvAgO0uJEboFaZlOEB"
+
+    script = """
+      let done = arguments[0];
+      getCredential({
+        type: "public-key",
+        id: new TextEncoder().encode("cred-1"),
+        transports: ["usb"],
+      }).then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+
+    authenticatorId = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = False,
+        hasUserVerification = False,
+    )['authenticatorId']
+
+    # Register a credential and try authenticating with it.
+    self._driver.AddCredential(
+      authenticatorId = authenticatorId,
+      credentialId = base64.b64encode("cred-1"),
+      isResidentCredential=False,
+      rpId="chromedriver.test",
+      privateKey=privateKey,
+      signCount=1,
+    )
+
+    result = self._driver.ExecuteAsyncScript(script)
+    self.assertEquals('OK', result['status'])
 
 # Tests in the following class are expected to be moved to ChromeDriverTest
 # class when we no longer support the legacy mode.

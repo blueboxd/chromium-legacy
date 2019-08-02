@@ -93,7 +93,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     Widget::InitParams params =
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(0, 0, 200, 200);
-    textfield_widget_->Init(params);
+    textfield_widget_->Init(std::move(params));
     View* container = new View();
     textfield_widget_->SetContentsView(container);
     container->AddChildView(textfield_);
@@ -110,7 +110,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->Show();
 }
 

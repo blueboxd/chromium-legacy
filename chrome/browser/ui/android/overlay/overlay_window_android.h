@@ -8,26 +8,42 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "content/public/browser/overlay_window.h"
+#include "ui/android/window_android.h"
+#include "ui/android/window_android_observer.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 
-class OverlayWindowAndroid : public content::OverlayWindow {
+class OverlayWindowAndroid : public content::OverlayWindow,
+                             public ui::WindowAndroidObserver {
  public:
   explicit OverlayWindowAndroid(
       content::PictureInPictureWindowController* controller);
   ~OverlayWindowAndroid() override;
 
-  void OnActivityStart(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj);
-  void OnActivityDestroy(JNIEnv* env);
+  void OnActivityStart(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& jwindow_android);
+  void Destroy(JNIEnv* env);
 
+  // ui::WindowAndroidObserver implementation.
+  void OnCompositingDidCommit() override {}
+  void OnRootWindowVisibilityChanged(bool visible) override {}
+  void OnAttachCompositor() override {}
+  void OnDetachCompositor() override {}
+  void OnAnimate(base::TimeTicks frame_begin_time) override {}
+  void OnActivityStopped() override;
+  void OnActivityStarted() override {}
+  void OnCursorVisibilityChanged(bool visible) override {}
+  void OnFallbackCursorModeToggled(bool is_on) override {}
+
+  // OverlayWindow implementation.
   bool IsActive() override;
   void Close() override;
   void ShowInactive() override {}
   void Hide() override;
   bool IsVisible() override;
   bool IsAlwaysOnTop() override;
-  // Retrieves the window's current bounds, including its window.
   gfx::Rect GetBounds() override;
   void UpdateVideoSize(const gfx::Size& natural_size) override {}
   void SetPlaybackState(PlaybackState playback_state) override {}
@@ -42,6 +58,7 @@ class OverlayWindowAndroid : public content::OverlayWindow {
  private:
   // A weak reference to Java PictureInPictureActivity object.
   JavaObjectWeakGlobalRef java_ref_;
+  ui::WindowAndroid* window_android_;
 
   content::PictureInPictureWindowController* controller_;
 };

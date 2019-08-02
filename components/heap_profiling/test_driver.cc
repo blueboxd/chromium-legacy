@@ -575,10 +575,9 @@ bool TestDriver::RunTest(const Options& options) {
     if (running_on_ui_thread_) {
       has_started_ = Supervisor::GetInstance()->HasStarted();
     } else {
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(&TestDriver::GetHasStartedOnUIThread,
-                         base::Unretained(this)));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&TestDriver::GetHasStartedOnUIThread,
+                                    base::Unretained(this)));
       wait_for_ui_thread_.Wait();
     }
     if (has_started_) {
@@ -597,7 +596,7 @@ bool TestDriver::RunTest(const Options& options) {
       MakeTestAllocations();
     CollectResults(true);
   } else {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&TestDriver::CheckOrStartProfilingOnUIThreadAndSignal,
                        base::Unretained(this)));
@@ -605,7 +604,7 @@ bool TestDriver::RunTest(const Options& options) {
     if (!initialization_success_)
       return false;
     if (ShouldProfileRenderer()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(
               &TestDriver::
@@ -614,13 +613,13 @@ bool TestDriver::RunTest(const Options& options) {
       wait_for_ui_thread_.Wait();
     }
     if (ShouldProfileBrowser()) {
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               base::BindOnce(&TestDriver::MakeTestAllocations,
-                                              base::Unretained(this)));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&TestDriver::MakeTestAllocations,
+                                    base::Unretained(this)));
     }
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(&TestDriver::CollectResults,
-                                            base::Unretained(this), false));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&TestDriver::CollectResults,
+                                  base::Unretained(this), false));
     wait_for_ui_thread_.Wait();
   }
 

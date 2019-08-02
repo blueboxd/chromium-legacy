@@ -91,6 +91,8 @@ void TestPresentationPixelsImpl(WebXrVrBrowserTestBase* t,
 IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestPresentationPixels) {
   TestPresentationPixelsImpl(this, "test_webvr_pixels");
 }
+
+// TODO(crbug.com/986621) - OpenXR currently hard codes data
 WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestPresentationPixels) {
   TestPresentationPixelsImpl(t, "test_webxr_pixels");
 }

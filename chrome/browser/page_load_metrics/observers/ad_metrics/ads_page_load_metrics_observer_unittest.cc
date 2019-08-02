@@ -1019,12 +1019,20 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsWindowed) {
 
   // Navigate away and check the peak windowed cpu usage.
   NavigateFrame(kNonAdUrl, main_frame);
+
   // 10% is the maximum for the individual ad frame.
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 10, 1);
+
+  // The peak window started at 12 seconds into the page load
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowStartTime"), 12000, 1);
+
   // 13% is the maximum for all frames (including main).
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("Cpu.FullPage.PeakWindowedPercent"), 13, 1);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.FullPage.PeakWindowStartTime"), 12000, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsWindowedActivated) {
@@ -1066,12 +1074,20 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsWindowedActivated) {
 
   // Navigate away and check the peak windowed cpu usage.
   NavigateFrame(kNonAdUrl, main_frame);
+
   // 11% is the maximum before activation for the ad frame.
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 11, 1);
+
+  // The peak window started at 0 seconds into the page load
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowStartTime"), 0, 1);
+
   // 16% is the maximum for all frames (including main), ignores activation.
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("Cpu.FullPage.PeakWindowedPercent"), 16, 1);
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Cpu.FullPage.PeakWindowStartTime"), 12000, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
@@ -1286,7 +1302,11 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 0);
   histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowStartTime"), 0);
+  histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.FullPage.PeakWindowedPercent"), 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.FullPage.PeakWindowStartTime"), 0);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);
@@ -1373,7 +1393,11 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
   histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowedPercent"), 0);
   histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.AdFrames.PerFrame.PeakWindowStartTime"), 0);
+  histogram_tester().ExpectTotalCount(
       SuffixedHistogram("Cpu.FullPage.PeakWindowedPercent"), 0);
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Cpu.FullPage.PeakWindowStartTime"), 0);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::AdFrameLoad::kEntryName);

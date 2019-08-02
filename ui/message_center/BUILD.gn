@@ -129,6 +129,9 @@ jumbo_component("message_center") {
         "//ui/events",
         "//ui/views",
       ]
+      if (is_mac) {
+        libs = [ "Foundation.framework" ]
+      }
     }
   } else {
     # Notification service disabled.

@@ -45,9 +45,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
     endpoints->url_loader_client = mojo::MakeRequest(&client_ptr_);
     blink::WebNavigationParams navigation_params;
-    auto common_params = mojom::CommonNavigationParams::New();
-    common_params->referrer = blink::mojom::Referrer::New();
-    common_params->navigation_start = base::TimeTicks::Now();
+    auto common_params = CreateCommonNavigationParams();
     auto commit_params = CreateCommitNavigationParams();
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         *common_params, *commit_params, 1 /* request_id */,
@@ -313,9 +311,7 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
                                      &response.ssl_info->connection_status);
 
-  auto common_params = mojom::CommonNavigationParams::New();
-  common_params->referrer = blink::mojom::Referrer::New();
-  common_params->navigation_start = base::TimeTicks::Now();
+  auto common_params = CreateCommonNavigationParams();
   common_params->url = GURL("https://example.test");
   auto commit_params = CreateCommitNavigationParams();
 

@@ -16,6 +16,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/grid_layout.h"
@@ -78,7 +79,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
 
   SetInkDropMode(InkDropMode::ON);
 
-  set_notify_action(Button::NOTIFY_ON_RELEASE);
+  button_controller()->set_notify_action(
+      views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
 }
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,

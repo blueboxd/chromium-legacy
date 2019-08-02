@@ -84,7 +84,7 @@ std::unique_ptr<views::Widget> LoginTestBase::CreateWidgetWithContent(
                                       kShellWindowId_LockScreenContainer);
 
   auto new_widget = std::make_unique<views::Widget>();
-  new_widget->Init(params);
+  new_widget->Init(std::move(params));
   new_widget->SetContentsView(content);
   new_widget->Show();
   return new_widget;

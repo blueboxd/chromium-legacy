@@ -176,7 +176,7 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
     views::Widget::InitParams params;
     params.delegate = new TestWidgetDelegate();
     params.context = CurrentContext();
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->Show();
 
     SetWindowShowState(ui::SHOW_STATE_FULLSCREEN);
@@ -932,7 +932,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Transient) {
   transient_params.parent = top_container_widget->GetNativeView();
   transient_params.bounds = gfx::Rect(0, 100, 100, 100);
   std::unique_ptr<views::Widget> transient_widget(new views::Widget());
-  transient_widget->Init(transient_params);
+  transient_widget->Init(std::move(transient_params));
 
   EXPECT_FALSE(controller()->IsRevealed());
   AttemptReveal(MODALITY_MOUSE);
@@ -951,7 +951,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Transient) {
   non_transient_params.bounds = gfx::Rect(0, 100, 100, 100);
   std::unique_ptr<views::Widget> non_transient_widget(new views::Widget());
   non_transient_params.context = CurrentContext();
-  non_transient_widget->Init(non_transient_params);
+  non_transient_widget->Init(std::move(non_transient_params));
 
   EXPECT_FALSE(controller()->IsRevealed());
   AttemptReveal(MODALITY_MOUSE);

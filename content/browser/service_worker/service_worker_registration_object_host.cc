@@ -235,11 +235,10 @@ void ServiceWorkerRegistrationObjectHost::DelayUpdate(
     return;
   }
 
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(std::move(update_function),
-                     blink::ServiceWorkerStatusCode::kOk),
-      delay);
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::IO},
+                        base::BindOnce(std::move(update_function),
+                                       blink::ServiceWorkerStatusCode::kOk),
+                        delay);
 }
 
 void ServiceWorkerRegistrationObjectHost::Unregister(

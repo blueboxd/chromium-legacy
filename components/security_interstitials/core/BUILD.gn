@@ -38,7 +38,7 @@ static_library("core") {
   deps = [
     "//base",
     "//base:i18n",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/history/core/browser",
     "//components/metrics",
     "//components/prefs",

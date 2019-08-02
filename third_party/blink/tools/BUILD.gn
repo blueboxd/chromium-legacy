@@ -9,6 +9,8 @@ action("build_wpt_metadata") {
   args = [
     "--metadata-output-dir",
     rebase_path("$root_out_dir/wpt_expectations_metadata"),
+    "--additional-expectations",
+    "../../third_party/blink/web_tests/WPTOverrideExpectations",
   ]
   outputs = [
     "$root_out_dir/wpt_expectations_metadata/",

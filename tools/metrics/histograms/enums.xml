@@ -9787,6 +9787,7 @@ Called by update_net_error_codes.py.-->
   <int value="54" label="Screen wake lock"/>
   <int value="55" label="System wake lock"/>
   <int value="56" label="Legacy cookie access"/>
+  <int value="57" label="Native file system write guard"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -39072,6 +39073,8 @@ Called by update_use_counter_css.py.-->
   <int value="8" label="Seek forward"/>
   <int value="9" label="Skip ad"/>
   <int value="10" label="Stop"/>
+  <int value="11" label="Seek to"/>
+  <int value="12" label="Scrub to"/>
 </enum>
 
 <enum name="MediaSinkType">
@@ -59826,6 +59829,18 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Stable"/>
 </enum>
 
+<enum name="UserDemographicsStatus">
+  <int value="0" label="Success - user demographics are available for report"/>
+  <int value="1" label="Sync is not enabled"/>
+  <int value="2" label="User demographics data is ineligible"/>
+  <int value="3"
+      label="Cannot get the current time that is needed to compute user's age"/>
+  <int value="4"
+      label="There is more than one profile in the user data directory of the
+             browser"/>
+  <int value="5" label="There is no sync service available"/>
+</enum>
+
 <enum name="UserGestureRequirement">
   <int value="0" label="Required and available"/>
   <int value="1" label="Required and not available"/>
@@ -62593,6 +62608,34 @@ Full version information for the fingerprint enum values:
   <int value="75" label="setWebviewClient"/>
   <int value="76" label="showFindDialog"/>
   <int value="77" label="stopLoading"/>
+</enum>
+
+<enum name="WebViewAppProvidedMimeType">
+  <int value="0"
+      label="Null MIME type for content supplied by an app ContentProvider."/>
+  <int value="1"
+      label="Nonnull MIME type for content supplied by an app
+             ContentProvider."/>
+  <int value="2"
+      label="Could not guess MIME type for Android asset from file extension."/>
+  <int value="3"
+      label="Successfully guessed MIME type for Android asset from file
+             extension."/>
+  <int value="4" label="Could not guess MIME type due to generic Exception."/>
+  <int value="5"
+      label="Could not guess MIME type for Android asset from InputStream
+             content. This is not ideal, but we have a fallback to try to
+             guess by sniffing the InputStream."/>
+  <int value="6"
+      label="Successfully guessed MIME type for Android asset from
+             InputStream content. Although this means we've guessed a MIME
+             type, this is not ideal because we would prefer to guess from
+             the file extension only."/>
+  <int value="7" label="Could not guess MIME type due to IOException."/>
+  <int value="8"
+      label="Null MIME type from shouldInterceptRequest return value."/>
+  <int value="9"
+      label="Nonnull MIME type from shouldInterceptRequest return value."/>
 </enum>
 
 <enum name="WebViewCallbackType">

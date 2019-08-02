@@ -55,6 +55,7 @@ class ChromeContentVerifierDelegate : public ContentVerifierDelegate {
   ~ChromeContentVerifierDelegate() override;
 
   // ContentVerifierDelegate:
+  bool ShouldBeChecked(const Extension& extension) override;
   bool ShouldBeVerified(const Extension& extension) override;
   ContentVerifierKey GetPublicKey() override;
   GURL GetSignatureFetchUrl(const std::string& extension_id,

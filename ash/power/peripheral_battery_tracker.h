@@ -16,11 +16,11 @@ class BluetoothAdapter;
 
 namespace ash {
 
+class HidBatteryListener;
 class GattBatteryController;
 
 // Creates instances of classes to collect the battery status of peripheral
-// devices. Currently only tracks Bluetooth devices that support GATT.
-// TODO(https://crbug.com/785758): Add support for other protocols, like HID.
+// devices. Currently only tracks Bluetooth devices that support GATT or HID.
 class ASH_EXPORT PeripheralBatteryTracker {
  public:
   PeripheralBatteryTracker();
@@ -32,6 +32,7 @@ class ASH_EXPORT PeripheralBatteryTracker {
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
+  std::unique_ptr<HidBatteryListener> hid_battery_listener_;
   std::unique_ptr<GattBatteryController> gatt_battery_controller_;
 
   base::WeakPtrFactory<PeripheralBatteryTracker> weak_ptr_factory_{this};

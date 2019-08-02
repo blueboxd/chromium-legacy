@@ -950,8 +950,8 @@ blink::mojom::CodeCacheHost& RendererBlinkPlatformImpl::GetCodeCacheHost() {
   if (!code_cache_host_) {
     code_cache_host_ = blink::mojom::ThreadSafeCodeCacheHostPtr::Create(
         std::move(code_cache_host_info_),
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::WithBaseSyncPrimitives()}));
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::WithBaseSyncPrimitives()}));
   }
   return **code_cache_host_;
 }

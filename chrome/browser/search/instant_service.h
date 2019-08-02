@@ -206,6 +206,7 @@ class InstantService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, TestUpdateCustomBackgroundColor);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest,
                            LocalImageDoesNotUpdateCustomBackgroundColor);
+  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, RefreshesBackgroundAfter24Hours);
 
   // KeyedService:
   void Shutdown() override;
@@ -272,9 +273,14 @@ class InstantService : public KeyedService,
 
   void SetImageFetcherForTesting(image_fetcher::ImageFetcher* image_fetcher);
 
+  void SetClockForTesting(base::Clock* clock);
+
   base::TimeTicks GetBackgroundUpdatedTimestampForTesting() {
     return background_updated_timestamp_;
   }
+
+  // Requests a new background image if it hasn't been updated in >24 hours.
+  void RefreshBackgroundIfNeeded();
 
   Profile* const profile_;
 
@@ -316,6 +322,8 @@ class InstantService : public KeyedService,
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
   base::TimeTicks background_updated_timestamp_;
+
+  base::Clock* clock_;
 
   base::WeakPtrFactory<InstantService> weak_ptr_factory_{this};
 

@@ -55,6 +55,12 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
     cr.webUIListenerCallback('crostini-installer-status-changed', false);
   }
 
+  /** @override */
+  requestCrostiniExportImportOperationStatus() {
+    cr.webUIListenerCallback(
+        'crostini-export-import-operation-status-changed', false);
+  }
+
   /** override */
   exportCrostiniContainer() {
     this.methodCalled('exportCrostiniContainer');

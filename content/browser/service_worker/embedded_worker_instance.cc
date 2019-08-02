@@ -137,15 +137,15 @@ void SetupOnUIThread(int embedded_worker_id,
       factory_bundle_for_renderer;
 
   if (!process_manager) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            std::move(callback), blink::ServiceWorkerStatusCode::kErrorAbort,
-            std::move(params), std::move(process_info),
-            std::move(devtools_proxy),
-            std::move(factory_bundle_for_new_scripts),
-            std::move(factory_bundle_for_renderer), nullptr /* cache_storage */,
-            thread_hop_time, base::Time::Now()));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(std::move(callback),
+                                  blink::ServiceWorkerStatusCode::kErrorAbort,
+                                  std::move(params), std::move(process_info),
+                                  std::move(devtools_proxy),
+                                  std::move(factory_bundle_for_new_scripts),
+                                  std::move(factory_bundle_for_renderer),
+                                  nullptr /* cache_storage */, thread_hop_time,
+                                  base::Time::Now()));
     return;
   }
 
@@ -155,7 +155,7 @@ void SetupOnUIThread(int embedded_worker_id,
           embedded_worker_id, params->script_url, can_use_existing_process,
           process_info.get());
   if (status != blink::ServiceWorkerStatusCode::kOk) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(std::move(callback), status, std::move(params),
                        std::move(process_info), std::move(devtools_proxy),
@@ -245,7 +245,7 @@ void SetupOnUIThread(int embedded_worker_id,
       process_manager->browser_context(), std::move(watcher_ptr));
 
   // Continue to OnSetupCompleted on the IO thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(std::move(callback), status, std::move(params),
                      std::move(process_info), std::move(devtools_proxy),
@@ -296,8 +296,7 @@ class EmbeddedWorkerInstance::DevToolsProxy {
   DevToolsProxy(int process_id, int agent_route_id)
       : process_id_(process_id),
         agent_route_id_(agent_route_id),
-        ui_task_runner_(
-            base::CreateSequencedTaskRunnerWithTraits({BrowserThread::UI})) {}
+        ui_task_runner_(base::CreateSequencedTaskRunner({BrowserThread::UI})) {}
 
   ~DevToolsProxy() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -741,8 +740,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       devtools_attached_(false),
       network_accessed_for_script_(false),
       foreground_notified_(false),
-      ui_task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({BrowserThread::UI})) {
+      ui_task_runner_(base::CreateSequencedTaskRunner({BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context_);
 }

@@ -4970,7 +4970,8 @@
     {
       name: "marker",
       longhands: ["marker-start", "marker-mid", "marker-end"],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      svg: true,
     },
     {
       name: "offset",

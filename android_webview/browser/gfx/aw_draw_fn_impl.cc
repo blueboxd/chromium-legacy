@@ -202,7 +202,7 @@ AwDrawFnImpl::AwDrawFnImpl()
     : is_interop_mode_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWebViewEnableVulkan)),
       render_thread_manager_(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})) {
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(g_draw_fn_function_table);
 

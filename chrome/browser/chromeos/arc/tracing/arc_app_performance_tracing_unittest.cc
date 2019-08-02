@@ -39,7 +39,7 @@ views::Widget* CreateArcWindow(const std::string& window_app_id) {
   params.bounds = gfx::Rect(5, 5, 20, 20);
   params.context = nullptr;
   views::Widget* widget = new views::Widget();
-  widget->Init(params);
+  widget->Init(std::move(params));
   // Set ARC id before showing the window to be recognized in
   // ArcAppWindowLauncherController.
   exo::SetShellApplicationId(widget->GetNativeWindow(), window_app_id);

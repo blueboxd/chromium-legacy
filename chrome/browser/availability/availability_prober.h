@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AVAILABILITY_AVAILABILITY_PROBER_H_
 
 #include <stdint.h>
+
 #include <memory>
 #include <string>
 
@@ -156,6 +157,12 @@ class AvailabilityProber
   // is in the foreground (work on Android only).
   void SendNowIfInactive(bool send_only_in_foreground);
 
+  // Calls |SendNowIfInactive| immediately with |send_only_in_foreground| and
+  // repeats every |interval|. Calling this multiple times with different
+  // |interval| will change the interval to the most recently provided value.
+  // Only stops when |this| is deleted.
+  void RepeatedlyProbe(base::TimeDelta interval, bool send_only_in_foreground);
+
   // Returns the successfulness of the last probe, if there was one. If the last
   // probe status was cached and needs to be revalidated, this may activate the
   // prober.
@@ -253,6 +260,9 @@ class AvailabilityProber
 
   // If a probe is being attempted, this will be running until the TTL.
   std::unique_ptr<base::OneShotTimer> timeout_timer_;
+
+  // If we are repeatedly probing, this will be running.
+  std::unique_ptr<base::RepeatingTimer> repeating_timer_;
 
   // Caches past probe results in a mapping of one tuple to another:
   //   (network_id, url_) -> (last_probe_status, last_modification_time).

@@ -63,6 +63,7 @@ ExtensionsMenuView::ExtensionsMenuView(
 ExtensionsMenuView::~ExtensionsMenuView() {
   DCHECK_EQ(g_extensions_dialog, this);
   g_extensions_dialog = nullptr;
+  extension_menu_buttons_.clear();
 }
 
 void ExtensionsMenuView::ButtonPressed(views::Button* sender,
@@ -113,6 +114,7 @@ void ExtensionsMenuView::Repopulate() {
 
 std::unique_ptr<views::View>
 ExtensionsMenuView::CreateExtensionButtonsContainer() {
+  extension_menu_buttons_.clear();
   content::WebContents* const web_contents =
       browser_->tab_strip_model()->GetActiveWebContents();
 
@@ -139,7 +141,6 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
   }
 
   auto extension_buttons = std::make_unique<views::View>();
-  extension_menu_button_container_for_testing_ = extension_buttons.get();
   extension_buttons->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
@@ -179,9 +180,11 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
             });
 
         for (auto& controller : *controller_group) {
-          extension_buttons->AddChildView(
+          std::unique_ptr<ExtensionsMenuButton> extension_button =
               std::make_unique<ExtensionsMenuButton>(browser_,
-                                                     std::move(controller)));
+                                                     std::move(controller));
+          extension_menu_buttons_.push_back(extension_button.get());
+          extension_buttons->AddChildView(std::move(extension_button));
         }
         controller_group->clear();
       };
@@ -233,7 +236,9 @@ void ExtensionsMenuView::OnToolbarModelInitialized() {
 }
 
 void ExtensionsMenuView::OnToolbarPinnedActionsChanged() {
-  Repopulate();
+  for (auto* button : extension_menu_buttons_) {
+    button->UpdatePinButton();
+  }
 }
 
 // static

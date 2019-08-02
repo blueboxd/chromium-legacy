@@ -54,6 +54,20 @@ TEST(CoordinateTest, AdjustBottomGapForRightSidePage) {
   CompareRect({450, 40, 475, 200}, bottom_gap);
 }
 
+TEST(CoordinateTest, CenterRectHorizontally) {
+  pp::Rect page_rect(10, 20, 400, 300);
+  CenterRectHorizontally(600, &page_rect);
+  CompareRect({100, 20, 400, 300}, page_rect);
+
+  page_rect.SetRect(300, 450, 500, 700);
+  CenterRectHorizontally(800, &page_rect);
+  CompareRect({150, 450, 500, 700}, page_rect);
+
+  page_rect.SetRect(800, 100, 200, 250);
+  CenterRectHorizontally(350, &page_rect);
+  CompareRect({75, 100, 200, 250}, page_rect);
+}
+
 TEST(CoordinateTest, ExpandDocumentSize) {
   pp::Size doc_size(100, 400);
 

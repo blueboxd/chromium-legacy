@@ -20,11 +20,9 @@ class SharedURLLoaderFactory;
 namespace safe_browsing {
 class PingManager;
 class SafeBrowsingNetworkContext;
-class SafeBrowsingURLRequestContextGetter;
 }  // namespace safe_browsing
 
 namespace android_webview {
-class AwURLRequestContextGetter;
 
 class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
  public:
@@ -40,8 +38,7 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   };
 
   // Construction needs to happen on the UI thread.
-  AwSafeBrowsingUIManager(
-      AwURLRequestContextGetter* browser_url_request_context_getter);
+  AwSafeBrowsingUIManager();
 
   // Gets the correct ErrorUiType for the web contents
   int GetErrorUiType(const UnsafeResource& resource) const;
@@ -72,16 +69,8 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   // Provides phishing and malware statistics. Accessed on IO thread.
   std::unique_ptr<safe_browsing::PingManager> ping_manager_;
 
-  // The SafeBrowsingURLRequestContextGetter used to access
-  // |url_request_context_|. Accessed on UI thread.
-  // This is only valid if the network service is disabled.
-  scoped_refptr<safe_browsing::SafeBrowsingURLRequestContextGetter>
-      url_request_context_getter_;
-
-  // If the network service is disabled, this is a wrapper around
-  // |url_request_context_getter_|. Otherwise it's what owns the
-  // URLRequestContext inside the network service. This is used by
-  // SimpleURLLoader for safe browsing requests.
+  // This is what owns the URLRequestContext inside the network service. This is
+  // used by SimpleURLLoader for Safe Browsing requests.
   std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
 
   // A SharedURLLoaderFactory and its interfaceptr used on the IO thread.

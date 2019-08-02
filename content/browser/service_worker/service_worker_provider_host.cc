@@ -1241,11 +1241,11 @@ void ServiceWorkerProviderHost::GetInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(IsProviderForServiceWorker());
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(
-          &GetInterfaceImpl, interface_name, std::move(interface_pipe),
-          running_hosted_version_->script_origin(), render_process_id_));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&GetInterfaceImpl, interface_name,
+                                std::move(interface_pipe),
+                                running_hosted_version_->script_origin(),
+                                render_process_id_));
 }
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr

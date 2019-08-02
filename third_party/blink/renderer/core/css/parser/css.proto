@@ -2296,7 +2296,9 @@ message PropertyAndValue {
     INSET = 723;
     MEDIUMAQUAMARINE = 724;
     SCROLL = 725;
-    INVALID_VALUE = 726;
+    LINKTEXT = 726;
+    VISITEDTEXT = 727;
+    INVALID_VALUE = 728;
   };
 
   optional ValueId value_id = 4;

@@ -10,17 +10,13 @@ Chrome's install size smaller.
 
 ## Limitations
 
-Currently (March 2019), DFMs have the following limitations:
+DFMs have the following limitations:
 
 * **WebView:** We don't support DFMs for WebView. If your feature is used by
-  WebView you cannot put it into a DFM. See
-  [crbug/949717](https://bugs.chromium.org/p/chromium/issues/detail?id=949717)
-  for progress.
+  WebView you cannot put it into a DFM.
 * **Android K:** DFMs are based on split APKs, a feature introduced in Android
   L. Therefore, we don't support DFMs on Android K. As a workaround
-  you can add your feature to the Android K APK build. See
-  [crbug/881354](https://bugs.chromium.org/p/chromium/issues/detail?id=881354)
-  for progress.
+  you can add your feature to the Android K APK build. See below for details.
 
 ## Getting started
 
@@ -40,10 +36,11 @@ DFMs are APKs. They have a manifest and can contain Java and native code as well
 as resources. This section walks you through creating the module target in our
 build system.
 
-First, create the file `//chrome/android/features/foo/java/AndroidManifest.xml`
-and add:
+First, create the file
+`//chrome/android/features/foo/internal/java/AndroidManifest.xml` and add:
 
 ```xml
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:dist="http://schemas.android.com/apk/distribution"
     featureSplit="foo">
@@ -81,7 +78,8 @@ Next, create a descriptor configuring the Foo module. To do this, create
 ```gn
 foo_module_desc = {
   name = "foo"
-  manifest = "//chrome/android/features/foo/java/AndroidManifest.xml"
+  android_manifest =
+      "//chrome/android/features/foo/internal/java/AndroidManifest.xml"
 }
 ```
 
@@ -208,7 +206,7 @@ be defined in their own package name, distinct from the chrome package - i.e.
 ***
 
 Next, define an implementation that goes into the module in the new file
-`//chrome/android/features/foo/java/src/org/chromium/chrome/features/foo/FooImpl.java`:
+`//chrome/android/features/foo/internal/java/src/org/chromium/chrome/features/foo/FooImpl.java`:
 
 ```java
 package org.chromium.chrome.features.foo;
@@ -251,7 +249,7 @@ Then add this list to `chrome_java in //chrome/android/BUILD.gn`:
 
 ```gn
 ...
-import("modules/foo/public/foo_public_java_sources.gni")
+import("//chrome/android/features/foo/public/foo_public_java_sources.gni")
 ...
 android_library("chrome_java") {
   ...
@@ -261,8 +259,8 @@ android_library("chrome_java") {
 ```
 
 The actual implementation, however, should go into the Foo DFM. For this
-purpose, create a new file `//chrome/android/features/foo/BUILD.gn` and make a
-library with the module Java code in it:
+purpose, create a new file `//chrome/android/features/foo/internal/BUILD.gn` and
+make a library with the module Java code in it:
 
 ```gn
 import("//build/config/android/rules.gni")
@@ -292,15 +290,15 @@ Then, add this new library as a dependency of the Foo module descriptor in
 foo_module_desc = {
   ...
   java_deps = [
-    "//chrome/android/features/foo:java",
+    "//chrome/android/features/foo/internal:java",
   ]
 }
 ```
 
 Finally, tell Android that your module is now containing code. Do that by
 removing the `android:hasCode="false"` attribute from the `<application>` tag in
-`//chrome/android/features/foo/java/AndroidManifest.xml`. You should be left
-with an empty tag like so:
+`//chrome/android/features/foo/internal/java/AndroidManifest.xml`. You should be
+left with an empty tag like so:
 
 ```xml
 ...
@@ -530,8 +528,9 @@ Finally, the main library is free to utilize Foo:
 In this section we will add the required build targets to add Android resources
 to the Foo DFM.
 
-First, add a resources target to `//chrome/android/features/foo/BUILD.gn` and
-add it as a dependency on Foo's `java` target in the same file:
+First, add a resources target to
+`//chrome/android/features/foo/internal/BUILD.gn` and add it as a dependency on
+Foo's `java` target in the same file:
 
 ```gn
 ...
@@ -552,7 +551,8 @@ android_library("java") {
 To add strings follow steps
 [here](http://dev.chromium.org/developers/design-documents/ui-localization) to
 add new Java GRD file. Then create
-`//chrome/android/features/foo/java/strings/android_foo_strings.grd` as follows:
+`//chrome/android/features/foo/internal/java/strings/android_foo_strings.grd` as
+follows:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -586,7 +586,7 @@ add new Java GRD file. Then create
 ```
 
 Then, create a new GRD target and add it as a dependency on `java_resources` in
-`//chrome/android/features/foo/BUILD.gn`:
+`//chrome/android/features/foo/internal/BUILD.gn`:
 
 ```gn
 ...
@@ -610,7 +610,7 @@ android_resources("java_resources") {
 
 You can then access Foo's resources using the
 `org.chromium.chrome.features.foo.R` class. To do this change
-`//chrome/android/features/foo/java/src/org/chromium/chrome/features/foo/FooImpl.java`
+`//chrome/android/features/foo/internal/java/src/org/chromium/chrome/features/foo/FooImpl.java`
 to:
 
 ```java
@@ -645,8 +645,8 @@ for progress on making this more robust.
 
 So far, we have installed the Foo DFM as a true split (`-m foo` option on the
 install script). In production, however, we have to explicitly install the Foo
-DFM for users to get it. There are two install options: _on-demand_ and
-_deferred_.
+DFM for users to get it. There are three install options: _on-demand_,
+_deferred_ and _conditional_.
 
 
 #### On-demand install
@@ -741,6 +741,42 @@ To defer install Foo do the following:
 FooModule.installDeferred();
 ```
 
+#### Conditional install
+
+Conditional install means the DFM will be installed automatically upon first
+installing or updating Chrome if the device supports a particular feature.
+Conditional install is configured in the module's manifest. To install your
+module on all Daydream-ready devices for instance, your
+`//chrome/android/features/foo/internal/java/AndroidManifest.xml` should look
+like this:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution"
+    featureSplit="foo">
+
+    <dist:module
+      dist:instant="false"
+      dist:title="@string/foo_module_title">
+      <dist:fusing dist:include="false" />
+      <dist:delivery>
+        <dist:install-time>
+          <dist:conditions>
+            <dist:device-feature
+              dist:name="android.hardware.vr.high_performance" />
+          </dist:conditions>
+        </dist:install-time>
+        <!-- Allows on-demand or deferred install on non-Daydream-ready
+             devices. -->
+        <dist:on-demand />
+      </dist:delivery>
+    </dist:module>
+
+    <application />
+</manifest>
+```
+
 
 ### Integration test APK and Android K support
 
@@ -756,7 +792,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     ...
     if (_target_type != "android_app_bundle_module") {
       deps += [
-        "//chrome/android/features/foo:java",
+        "//chrome/android/features/foo/internal:java",
       ]
     }
   }

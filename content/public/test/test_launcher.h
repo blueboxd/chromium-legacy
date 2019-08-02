@@ -24,7 +24,6 @@ struct ContentMainParams;
 extern const char kEmptyTestName[];
 extern const char kHelpFlag[];
 extern const char kLaunchAsBrowser[];
-extern const char kRunManualTestsFlag[];
 extern const char kSingleProcessTestsFlag[];
 
 // Flag that causes only the kEmptyTestName test to be run.

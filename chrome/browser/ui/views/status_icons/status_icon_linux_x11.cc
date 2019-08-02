@@ -103,7 +103,7 @@ void StatusIconLinuxX11::OnSetDelegate() {
   // creating a compositor would only be wasteful of resources.
   params.force_software_compositing = true;
 
-  widget_->Init(params);
+  widget_->Init(std::move(params));
 
   Window window = host_->GetAcceleratedWidget();
   DCHECK(window);

@@ -38,30 +38,30 @@ TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
       .SetMainAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
-  const TabGroupVisualData* data = GetGroupVisualData();
-  const SkColor color = GetGroupVisualData()->color();
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  auto title_chip = std::make_unique<views::View>();
-  title_chip->SetBackground(views::CreateRoundedRectBackground(
-      color, provider->GetCornerRadiusMetric(views::EMPHASIS_LOW)));
-  title_chip->SetBorder(views::CreateEmptyBorder(
+  title_chip_ = AddChildView(std::make_unique<views::View>());
+  title_chip_->SetBorder(views::CreateEmptyBorder(
       provider->GetInsetsMetric(INSETS_TAB_GROUP_TITLE_CHIP)));
-  title_chip->SetLayoutManager(std::make_unique<views::FillLayout>());
-  auto* title_chip_ptr = AddChildView(std::move(title_chip));
-  title_chip_ptr->SetProperty(views::kFlexBehaviorKey,
-                              views::FlexSpecification::ForSizeRule(
-                                  views::MinimumFlexSizeRule::kScaleToZero,
-                                  views::MaximumFlexSizeRule::kPreferred));
+  title_chip_->SetLayoutManager(std::make_unique<views::FillLayout>());
+  title_chip_->SetProperty(views::kFlexBehaviorKey,
+                           views::FlexSpecification::ForSizeRule(
+                               views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kPreferred));
 
-  auto title = std::make_unique<views::Label>(data->title());
-  title->SetAutoColorReadabilityEnabled(false);
-  title->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  title->SetElideBehavior(gfx::FADE_TAIL);
-  title->SetEnabledColor(color_utils::GetColorWithMaxContrast(color));
-  title_chip_ptr->AddChildView(std::move(title));
+  title_ = title_chip_->AddChildView(std::make_unique<views::Label>());
+  title_->SetAutoColorReadabilityEnabled(false);
+  title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  title_->SetElideBehavior(gfx::FADE_TAIL);
+
+  VisualsChanged();
 }
 
-const TabGroupVisualData* TabGroupHeader::GetGroupVisualData() {
-  return controller_->GetVisualDataForGroup(group_);
+void TabGroupHeader::VisualsChanged() {
+  const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const TabGroupVisualData* data = controller_->GetVisualDataForGroup(group_);
+  title_chip_->SetBackground(views::CreateRoundedRectBackground(
+      data->color(), provider->GetCornerRadiusMetric(views::EMPHASIS_LOW)));
+  title_->SetEnabledColor(color_utils::GetColorWithMaxContrast(data->color()));
+  title_->SetText(data->title());
 }

@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VEA_ENCODER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VEA_ENCODER_H_
 
+#include "base/containers/queue.h"
 #include "base/single_thread_task_runner.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/blink/renderer/modules/mediarecorder/video_track_recorder.h"
-#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/size.h"
@@ -88,7 +88,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   Vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
 
   // Shared memory buffers for output with the VEA as FIFO.
-  Deque<std::unique_ptr<InputBuffer>> input_buffers_;
+  // TODO(crbug.com/960665): Replace with a WTF equivalent.
+  base::queue<std::unique_ptr<InputBuffer>> input_buffers_;
 
   // Tracks error status.
   bool error_notified_;
@@ -103,7 +104,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   gfx::Size vea_requested_input_coded_size_;
 
   // Frames and corresponding timestamps in encode as FIFO.
-  Deque<VideoParamsAndTimestamp> frames_in_encode_;
+  // TODO(crbug.com/960665): Replace with a WTF equivalent.
+  base::queue<VideoParamsAndTimestamp> frames_in_encode_;
 
   // Number of encoded frames produced consecutively without a keyframe.
   uint32_t num_frames_after_keyframe_;

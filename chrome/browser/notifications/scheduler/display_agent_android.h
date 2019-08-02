@@ -16,13 +16,6 @@ class DisplayAgentAndroid : public notifications::DisplayAgent {
   DisplayAgentAndroid();
   ~DisplayAgentAndroid() override;
 
- protected:
-  // Protected for testing.
-  virtual void ShowNotificationInternal(
-      JNIEnv* env,
-      const base::android::JavaRef<jobject>& notificationData,
-      const base::android::JavaRef<jobject>& systemData);
-
  private:
   void ShowNotification(
       std::unique_ptr<notifications::NotificationData> notification_data,

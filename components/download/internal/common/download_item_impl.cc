@@ -586,7 +586,9 @@ void DownloadItemImpl::Resume(bool user_resume) {
       if (auto_resume_count_ >= kMaxAutoResumeAttempts)
         return;
 
-      ResumeInterruptedDownload(ResumptionRequestSource::USER);
+      ResumeInterruptedDownload(user_resume
+                                    ? ResumptionRequestSource::USER
+                                    : ResumptionRequestSource::AUTOMATIC);
       UpdateObservers();
       return;
 

@@ -54,7 +54,7 @@ void SetIgnoreNetworkChanges(bool ignore) {
 
 // static
 void SetOnline(WebContents* web_contents, bool online) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &SetOnlineOnIOThread,

@@ -18,6 +18,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame.mojom-test-utils.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -240,6 +241,10 @@ class PortalBrowserTest : public ContentBrowserTest {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(blink::features::kPortals);
     ContentBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kValidateInputEventStream);
   }
 
   void SetUpOnMainThread() override {
@@ -859,15 +864,24 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndReactivate) {
 
   std::unique_ptr<SyntheticTapGesture> gesture =
       std::make_unique<SyntheticTapGesture>(params);
-  render_widget_host->QueueSyntheticGesture(
-      std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+
+  Portal* predecessor_portal = nullptr;
+  {
+    PortalCreatedObserver adoption_observer(portal_frame);
+    render_widget_host->QueueSyntheticGesture(
+        std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+    portal_interceptor->WaitForActivate();
+    EXPECT_EQ(portal_contents, shell()->web_contents());
+    predecessor_portal = adoption_observer.WaitUntilPortalCreated();
+  }
+
+  portal_interceptor = PortalInterceptorForTesting::From(predecessor_portal);
   portal_interceptor->WaitForActivate();
-  EXPECT_EQ(portal_contents, shell()->web_contents());
+  // Sanity check to see if the predecessor was reactivated.
+  EXPECT_EQ(web_contents_impl, shell()->web_contents());
 
   // Wait for a touch ack to be sent from the predecessor.
   input_event_ack_waiter.Wait();
-  // Sanity check to see if the predecessor was reactivated.
-  EXPECT_EQ(web_contents_impl, shell()->web_contents());
 }
 
 // TODO(crbug.com/985078): Fix on Mac.
@@ -948,6 +962,86 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchStateClearedBeforeActivation) {
       std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
   // Waits for touch to be acked. If touch state wasn't cleared before initial
   // activation, a DCHECK will be hit before the ack is sent.
+  input_event_ack_waiter.Wait();
+}
+#endif
+
+// TODO(crbug.com/985078): Fix on Mac.
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, GestureCleanedUpBeforeActivation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Create portal and wait for navigation.
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(
+        ExecJs(main_frame,
+               JsReplace("var portal = document.createElement('portal');"
+                         "portal.src = $1;"
+                         "document.body.appendChild(portal);"
+                         "document.body.addEventListener('touchstart', e => {"
+                         "  portal.activate();"
+                         "}, {once: true});",
+                         a_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+
+  // The portal should not have navigated yet, wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+  EXPECT_TRUE(ExecJs(portal_frame,
+                     "window.addEventListener('portalactivate', e => {"
+                     "  var portal = e.adoptPredecessor();"
+                     "  document.body.appendChild(portal);"
+                     "  portal.activate(); "
+                     "});"));
+  WaitForHitTestData(portal_frame);
+
+  PortalInterceptorForTesting* portal_interceptor =
+      PortalInterceptorForTesting::From(portal);
+  RenderWidgetHostImpl* render_widget_host = main_frame->GetRenderWidgetHost();
+
+  SyntheticTapGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.position = gfx::PointF(20, 20);
+  params.duration_ms = 1;
+
+  // Simulate a tap and activate the portal.
+  Portal* adopted_portal = nullptr;
+  {
+    PortalCreatedObserver adoption_observer(portal_frame);
+    std::unique_ptr<SyntheticTapGesture> gesture =
+        std::make_unique<SyntheticTapGesture>(params);
+    render_widget_host->QueueSyntheticGesture(
+        std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+    portal_interceptor->WaitForActivate();
+    EXPECT_EQ(portal_contents, shell()->web_contents());
+    adopted_portal = adoption_observer.WaitUntilPortalCreated();
+  }
+
+  // Wait for predecessor to be reactivated.
+  PortalInterceptorForTesting* adopted_portal_interceptor =
+      PortalInterceptorForTesting::From(adopted_portal);
+  adopted_portal_interceptor->WaitForActivate();
+  EXPECT_EQ(web_contents_impl, shell()->web_contents());
+
+  // Simulate another tap.
+  InputEventAckWaiter input_event_ack_waiter(
+      render_widget_host, blink::WebInputEvent::Type::kGestureTap);
+  auto gesture = std::make_unique<SyntheticTapGesture>(params);
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+  // Wait for the tap gesture ack. If the initial gesture wasn't cleaned up, the
+  // new gesture created will cause an error in the gesture validator.
   input_event_ack_waiter.Wait();
 }
 #endif

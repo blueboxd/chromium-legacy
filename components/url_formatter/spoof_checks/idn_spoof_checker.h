@@ -33,11 +33,18 @@ FORWARD_DECLARE_TEST(UrlFormatterTest, IDNToUnicode);
 
 using Skeletons = base::flat_set<std::string>;
 
+// Represents a top domain entry in the trie.
+struct TopDomainEntry {
+  // The domain name.
+  std::string domain;
+  // True if the domain is in the top 500.
+  bool is_top_500 = false;
+};
+
 // A helper class for IDN Spoof checking, used to ensure that no IDN input is
 // spoofable per Chromium's standard of spoofability. For a more thorough
 // explanation of how spoof checking works in Chromium, see
 // http://dev.chromium.org/developers/design-documents/idn-in-google-chrome .
-
 class IDNSpoofChecker {
  public:
   struct HuffmanTrieParams {
@@ -65,14 +72,18 @@ class IDNSpoofChecker {
   //   top domains.
   //   2. Look up the diacritic-free version of |hostname| in the list of
   //   top domains. Note that non-IDN hostnames will not get here.
-  std::string GetSimilarTopDomain(base::StringPiece16 hostname);
+  TopDomainEntry GetSimilarTopDomain(base::StringPiece16 hostname);
 
   // Returns skeleton strings computed from |hostname|. This function can apply
   // extra mappings to some characters to produce multiple skeletons.
   Skeletons GetSkeletons(base::StringPiece16 hostname);
 
   // Returns a top domain from the top 10K list matching the given |skeleton|.
-  std::string LookupSkeletonInTopDomains(const std::string& skeleton);
+  TopDomainEntry LookupSkeletonInTopDomains(const std::string& skeleton);
+
+  // Used for unit tests.
+  static void SetTrieParamsForTesting(const HuffmanTrieParams& trie_params);
+  static void RestoreTrieParamsForTesting();
 
  private:
   // Sets allowed characters in IDN labels and turns on USPOOF_CHAR_LIMIT.
@@ -81,10 +92,6 @@ class IDNSpoofChecker {
   // Returns true if all the Cyrillic letters in |label| belong to a set of
   // Cyrillic letters that look like ASCII Latin letters.
   bool IsMadeOfLatinAlikeCyrillic(const icu::UnicodeString& label);
-
-  // Used for unit tests.
-  static void SetTrieParamsForTesting(const HuffmanTrieParams& trie_params);
-  static void RestoreTrieParamsForTesting();
 
   USpoofChecker* checker_;
   icu::UnicodeSet deviation_characters_;
@@ -97,7 +104,6 @@ class IDNSpoofChecker {
   std::unique_ptr<icu::Transliterator> diacritic_remover_;
   std::unique_ptr<icu::Transliterator> extra_confusable_mapper_;
 
-  FRIEND_TEST_ALL_PREFIXES(IDNSpoofCheckerTest, IDNToUnicode);
   IDNSpoofChecker(const IDNSpoofChecker&) = delete;
   void operator=(const IDNSpoofChecker&) = delete;
 };

@@ -10,7 +10,6 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/common/constants.mojom.h"
-#include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,13 +22,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
-#if BUILDFLAG(HAS_SPELLCHECK_PANEL)
-#include "chrome/browser/spellchecker/spell_check_panel_host_impl.h"
-#endif
-#endif
-
 class ChromeService::IOThreadContext : public service_manager::Service {
  public:
   IOThreadContext() {
@@ -38,14 +30,6 @@ class ChromeService::IOThreadContext : public service_manager::Service {
 
     registry_.AddInterface(base::BindRepeating(
         &startup_metric_utils::StartupMetricHostImpl::Create));
-#if BUILDFLAG(ENABLE_SPELLCHECK)
-    registry_with_source_info_.AddInterface(
-        base::BindRepeating(&SpellCheckHostChromeImpl::Create), ui_task_runner);
-#if BUILDFLAG(HAS_SPELLCHECK_PANEL)
-    registry_.AddInterface(
-        base::BindRepeating(&SpellCheckPanelHostImpl::Create), ui_task_runner);
-#endif
-#endif
   }
   ~IOThreadContext() override = default;
 
@@ -87,7 +71,6 @@ class ChromeService::IOThreadContext : public service_manager::Service {
                        const std::string& name,
                        mojo::ScopedMessagePipeHandle handle) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    content::OverrideOnBindInterface(remote_info, name, &handle);
     if (!handle.is_valid())
       return;
 

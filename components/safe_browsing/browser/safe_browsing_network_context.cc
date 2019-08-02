@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/net_buildflags.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/network_context.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -25,11 +24,9 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     : public network::SharedURLLoaderFactory {
  public:
   SharedURLLoaderFactory(
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       const base::FilePath& user_data_dir,
       NetworkContextParamsFactory network_context_params_factory)
-      : request_context_getter_(request_context_getter),
-        user_data_dir_(user_data_dir),
+      : user_data_dir_(user_data_dir),
         network_context_params_factory_(
             std::move(network_context_params_factory)) {}
 
@@ -37,7 +34,6 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     url_loader_factory_.reset();
     network_context_.reset();
-    request_context_getter_ = nullptr;
   }
 
   network::mojom::NetworkContext* GetNetworkContext() {
@@ -121,7 +117,6 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
     return network_context_params;
   }
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   base::FilePath user_data_dir_;
   NetworkContextParamsFactory network_context_params_factory_;
   network::mojom::NetworkContextPtr network_context_;
@@ -131,13 +126,11 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
 };
 
 SafeBrowsingNetworkContext::SafeBrowsingNetworkContext(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     const base::FilePath& user_data_dir,
     NetworkContextParamsFactory network_context_params_factory) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   url_loader_factory_ = base::MakeRefCounted<SharedURLLoaderFactory>(
-      request_context_getter, user_data_dir,
-      std::move(network_context_params_factory));
+      user_data_dir, std::move(network_context_params_factory));
 }
 
 SafeBrowsingNetworkContext::~SafeBrowsingNetworkContext() {

@@ -83,7 +83,9 @@ bool VirtualFidoDevice::State::InjectRegistration(
 bool VirtualFidoDevice::State::InjectResidentKey(
     base::span<const uint8_t> credential_id,
     device::PublicKeyCredentialRpEntity rp,
-    device::PublicKeyCredentialUserEntity user) {
+    device::PublicKeyCredentialUserEntity user,
+    int32_t signature_counter,
+    std::unique_ptr<crypto::ECPrivateKey> private_key) {
   auto application_parameter = fido_parsing_utils::CreateSHA256Hash(rp.id);
 
   // Cannot create a duplicate credential for the same (RP ID, user ID) pair.
@@ -95,12 +97,9 @@ bool VirtualFidoDevice::State::InjectResidentKey(
     }
   }
 
-  auto private_key = crypto::ECPrivateKey::Create();
-  DCHECK(private_key);
-
   RegistrationData registration(std::move(private_key),
                                 std::move(application_parameter),
-                                0 /* signature counter */);
+                                signature_counter);
   registration.is_resident = true;
   registration.rp = std::move(rp);
   registration.user = std::move(user);
@@ -109,6 +108,17 @@ bool VirtualFidoDevice::State::InjectResidentKey(
   std::tie(std::ignore, was_inserted) = registrations.emplace(
       fido_parsing_utils::Materialize(credential_id), std::move(registration));
   return was_inserted;
+}
+
+bool VirtualFidoDevice::State::InjectResidentKey(
+    base::span<const uint8_t> credential_id,
+    device::PublicKeyCredentialRpEntity rp,
+    device::PublicKeyCredentialUserEntity user) {
+  auto private_key = crypto::ECPrivateKey::Create();
+  DCHECK(private_key);
+  return InjectResidentKey(std::move(credential_id), std::move(rp),
+                           std::move(user), /*signature_counter=*/0,
+                           std::move(private_key));
 }
 
 bool VirtualFidoDevice::State::InjectResidentKey(

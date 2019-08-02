@@ -4,6 +4,8 @@
 
 source_set("web_content_area") {
   sources = [
+    "app_launcher_alert_overlay.h",
+    "app_launcher_alert_overlay.mm",
     "http_auth_overlay.h",
     "http_auth_overlay.mm",
     "java_script_alert_overlay.h",

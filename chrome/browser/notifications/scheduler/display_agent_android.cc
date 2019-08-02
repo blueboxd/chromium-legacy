@@ -91,13 +91,6 @@ void DisplayAgentAndroid::ShowNotification(
       env, static_cast<int>(system_data->type),
       ConvertUTF8ToJavaString(env, system_data->guid));
 
-  ShowNotificationInternal(env, java_notification_data, java_system_data);
-}
-
-void DisplayAgentAndroid::ShowNotificationInternal(
-    JNIEnv* env,
-    const base::android::JavaRef<jobject>& java_notification_data,
-    const base::android::JavaRef<jobject>& java_system_data) {
   Java_DisplayAgent_showNotification(env, java_notification_data,
                                      java_system_data);
 }

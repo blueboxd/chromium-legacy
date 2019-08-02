@@ -38,7 +38,7 @@ void NativeViewHostTestBase::CreateTopLevel() {
   Widget::InitParams toplevel_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  toplevel_->Init(toplevel_params);
+  toplevel_->Init(std::move(toplevel_params));
 }
 
 void NativeViewHostTestBase::CreateTestingHost() {
@@ -54,7 +54,7 @@ Widget* NativeViewHostTestBase::CreateChildForHost(
   Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
   child_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   child_params.parent = native_parent_view;
-  child->Init(child_params);
+  child->Init(std::move(child_params));
   child->SetContentsView(contents_view);
 
   // Owned by |parent_view|.

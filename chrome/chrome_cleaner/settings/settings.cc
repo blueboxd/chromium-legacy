@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/win/win_util.h"
 #include "chrome/chrome_cleaner/buildflags.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
 #include "chrome/chrome_cleaner/settings/engine_settings.h"
@@ -287,6 +288,44 @@ const std::string& Settings::chrome_mojo_pipe_token() const {
   return chrome_mojo_pipe_token_;
 }
 
+bool Settings::prompt_using_mojo() const {
+  return prompt_using_mojo_;
+}
+
+bool Settings::switches_valid_for_ipc() const {
+  // IPC is only used in scanning mode. In other modes ignore the flags.
+  if (execution_mode() != ExecutionMode::kScanning) {
+    return true;
+  }
+
+  // Only one IPC mechanism can be used.
+  if (prompt_using_mojo_ && prompt_using_proto_) {
+    return false;
+  }
+
+  // At least one IPC mechanism has to be used.
+  if (!prompt_using_mojo_ && !prompt_using_proto_) {
+    return false;
+  }
+
+  // Mojo use requires two flags.
+  if (prompt_using_mojo_) {
+    if (chrome_mojo_pipe_token().empty() || !has_parent_pipe_handle()) {
+      return false;
+    }
+  }
+
+  // Proto use requires two flags.
+  if (prompt_using_proto_) {
+    if (prompt_response_read_handle_ == INVALID_HANDLE_VALUE ||
+        prompt_request_write_handle_ == INVALID_HANDLE_VALUE) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 bool Settings::has_parent_pipe_handle() const {
   return has_parent_pipe_handle_;
 }
@@ -362,10 +401,33 @@ void Settings::Initialize(const base::CommandLine& command_line,
       GetLogsUploadAllowed(command_line, target_binary, execution_mode_);
   logs_collection_enabled_ =
       GetLogsCollectionEnabled(command_line, target_binary, execution_mode_);
+
+  // Mojo related.
   chrome_mojo_pipe_token_ = command_line.GetSwitchValueASCII(
       chrome_cleaner::kChromeMojoPipeTokenSwitch);
   has_parent_pipe_handle_ =
       command_line.HasSwitch(mojo::PlatformChannel::kHandleSwitch);
+  if (!chrome_mojo_pipe_token_.empty() || has_parent_pipe_handle_) {
+    prompt_using_mojo_ = true;
+  }
+
+  // Proto related.
+  uint32_t handle_value;
+  if (base::StringToUint(command_line.GetSwitchValueNative(
+                             chrome_cleaner::kChromeReadHandleSwitch),
+                         &handle_value)) {
+    prompt_response_read_handle_ = base::win::Uint32ToHandle(handle_value);
+  }
+  if (base::StringToUint(command_line.GetSwitchValueNative(
+                             chrome_cleaner::kChromeWriteHandleSwitch),
+                         &handle_value)) {
+    prompt_request_write_handle_ = base::win::Uint32ToHandle(handle_value);
+  }
+
+  if (prompt_response_read_handle_ != INVALID_HANDLE_VALUE ||
+      prompt_request_write_handle_ != INVALID_HANDLE_VALUE) {
+    prompt_using_proto_ = true;
+  }
 
 #if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
   remove_report_only_uws_ = command_line.HasSwitch(kRemoveScanOnlyUwS);

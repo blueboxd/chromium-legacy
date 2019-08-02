@@ -180,7 +180,7 @@ class IconLabelBubbleViewTest : public ChromeViewsTestBase {
     views::Widget::InitParams params =
         CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
   }
 
   void Reset() {
@@ -414,7 +414,7 @@ TEST_F(IconLabelBubbleViewCrashTest,
       CreateParams(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   views::Widget widget;
-  widget.Init(params);
+  widget.Init(std::move(params));
   IconLabelBubbleView* icon_label_bubble_view =
       new TestIconLabelBubbleView(font_list);
   icon_label_bubble_view->SetLabel(base::ASCIIToUTF16("x"));

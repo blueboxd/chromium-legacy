@@ -32,7 +32,7 @@ void FocusManagerTest::SetUp() {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.delegate = this;
   params.bounds = gfx::Rect(0, 0, 1024, 768);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   InitContentView();
   widget->Show();

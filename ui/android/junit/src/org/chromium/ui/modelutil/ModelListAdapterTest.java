@@ -5,7 +5,6 @@
 package org.chromium.ui.modelutil;
 
 import android.text.TextUtils;
-import android.util.Pair;
 import android.view.View;
 
 import org.junit.Assert;
@@ -21,8 +20,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.ui.R;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -92,16 +89,13 @@ public class ModelListAdapterTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mModelListAdapter = new ModelListAdapter();
+        ModelListAdapter.ModelList testData = new ModelListAdapter.ModelList();
+        mModel = new PropertyModel(BOOLEAN_PROPERTY, FLOAT_PROPERTY, INT_PROPERTY, OBJECT_PROPERTY);
+        testData.add(new ModelListAdapter.ListItem(VIEW_TYPE_1, mModel));
+
+        mModelListAdapter = new ModelListAdapter(testData);
         mModelListAdapter.registerType(VIEW_TYPE_1, new TestViewBuilder(), new TestViewBinder());
         mModelListAdapter.registerType(VIEW_TYPE_2, new TestViewBuilder(), new TestViewBinder());
-
-        mModel = new PropertyModel(BOOLEAN_PROPERTY, FLOAT_PROPERTY, INT_PROPERTY, OBJECT_PROPERTY);
-
-        List<Pair<Integer, PropertyModel>> testData = new ArrayList<>();
-        testData.add(new Pair(VIEW_TYPE_1, mModel));
-
-        mModelListAdapter.updateModels(testData);
     }
 
     @Test

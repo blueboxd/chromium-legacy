@@ -35,35 +35,38 @@ class TopDomainPreloadDecoder : public net::extras::PreloadDecoder {
     if (!reader->Next(&is_same_skeleton))
       return false;
 
-    std::string top_domain;
+    TopDomainEntry top_domain;
+    if (!reader->Next(&top_domain.is_top_500))
+      return false;
+
     if (is_same_skeleton) {
-      top_domain = search;
+      top_domain.domain = search;
     } else {
       bool has_com_suffix = false;
       if (!reader->Next(&has_com_suffix))
         return false;
 
-      for (char c;; top_domain += c) {
+      for (char c;; top_domain.domain += c) {
         huffman_decoder().Decode(reader, &c);
         if (c == net::extras::PreloadDecoder::kEndOfTable)
           break;
       }
       if (has_com_suffix)
-        top_domain += ".com";
+        top_domain.domain += ".com";
     }
 
     if (current_search_offset == 0) {
       *out_found = true;
-      DCHECK(!top_domain.empty());
+      DCHECK(!top_domain.domain.empty());
       result_ = top_domain;
     }
     return true;
   }
 
-  std::string matching_top_domain() const { return result_; }
+  TopDomainEntry matching_top_domain() const { return result_; }
 
  private:
-  std::string result_;
+  TopDomainEntry result_;
 };
 
 void OnThreadTermination(void* regex_matcher) {
@@ -383,16 +386,17 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
   return !dangerous_pattern->find();
 }
 
-std::string IDNSpoofChecker::GetSimilarTopDomain(base::StringPiece16 hostname) {
+TopDomainEntry IDNSpoofChecker::GetSimilarTopDomain(
+    base::StringPiece16 hostname) {
   DCHECK(!hostname.empty());
   for (const std::string& skeleton : GetSkeletons(hostname)) {
     DCHECK(!skeleton.empty());
-    std::string matching_top_domain = LookupSkeletonInTopDomains(skeleton);
-    if (!matching_top_domain.empty()) {
+    TopDomainEntry matching_top_domain = LookupSkeletonInTopDomains(skeleton);
+    if (!matching_top_domain.domain.empty()) {
       return matching_top_domain;
     }
   }
-  return std::string();
+  return TopDomainEntry();
 }
 
 Skeletons IDNSpoofChecker::GetSkeletons(base::StringPiece16 hostname) {
@@ -439,7 +443,7 @@ Skeletons IDNSpoofChecker::GetSkeletons(base::StringPiece16 hostname) {
   return skeletons;
 }
 
-std::string IDNSpoofChecker::LookupSkeletonInTopDomains(
+TopDomainEntry IDNSpoofChecker::LookupSkeletonInTopDomains(
     const std::string& skeleton) {
   DCHECK(!skeleton.empty());
   // There are no other guarantees about a skeleton string such as not including
@@ -462,14 +466,14 @@ std::string IDNSpoofChecker::LookupSkeletonInTopDomains(
     bool decoded = preload_decoder.Decode(partial_skeleton, &match);
     DCHECK(decoded);
     if (!decoded)
-      return std::string();
+      return TopDomainEntry();
 
     if (match)
       return preload_decoder.matching_top_domain();
 
     labels.erase(labels.begin());
   }
-  return std::string();
+  return TopDomainEntry();
 }
 
 void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {

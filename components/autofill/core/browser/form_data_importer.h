@@ -168,9 +168,6 @@ class FormDataImporter {
                            ImportFormData_HiddenCreditCardFormAfterEntered);
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
-      ImportFormData_HiddenCreditCardFormAfterEnteredWithExpOff);
-  FRIEND_TEST_ALL_PREFIXES(
-      FormDataImporterTest,
       ImportFormData_ImportCreditCardRecordType_FullServerCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_ImportCreditCardRecordType_LocalCard);

@@ -105,8 +105,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest, MicrophonePermission) {
   EXPECT_TRUE(prompt_factory.RequestTypeSeen(
       PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
   // ...and that it showed the Google base URL, not the NTP URL.
-  const GURL google_base_url(
-      UIThreadSearchTermsData(browser()->profile()).GoogleBaseURLValue());
+  const GURL google_base_url(UIThreadSearchTermsData().GoogleBaseURLValue());
   EXPECT_TRUE(prompt_factory.RequestOriginSeen(google_base_url.GetOrigin()));
   EXPECT_FALSE(prompt_factory.RequestOriginSeen(
       GURL(chrome::kChromeUINewTabURL).GetOrigin()));

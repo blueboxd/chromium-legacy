@@ -21,8 +21,6 @@ class ScopedHardwareBufferFenceSync;
 
 namespace media {
 
-struct FrameAvailableEvent_ImageReader;
-
 // This class wraps the AImageReader usage and is used to create a GL texture
 // using the current platform GL context and returns a new ImageReaderGLOwner
 // attached to it. The surface handle of the AImageReader is attached to
@@ -33,15 +31,13 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
  public:
   gl::GLContext* GetContext() const override;
   gl::GLSurface* GetSurface() const override;
+  void SetFrameAvailableCallback(
+      const base::RepeatingClosure& frame_available_cb) override;
   gl::ScopedJavaSurface CreateJavaSurface() const override;
   void UpdateTexImage() override;
   void EnsureTexImageBound() override;
   void GetTransformMatrix(float mtx[16]) override;
   void ReleaseBackBuffers() override;
-  void SetReleaseTimeToNow() override;
-  void IgnorePendingRelease() override;
-  bool IsExpectingFrameAvailable() override;
-  void WaitForFrameAvailable() override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
 
@@ -88,6 +84,8 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   void RegisterRefOnImage(AImage* image);
   void ReleaseRefOnImage(AImage* image, base::ScopedFD fence_fd);
 
+  static void OnFrameAvailable(void* context, AImageReader* reader);
+
   // AImageReader instance
   AImageReader* image_reader_;
 
@@ -120,15 +118,15 @@ class MEDIA_GPU_EXPORT ImageReaderGLOwner : public TextureOwner {
   // The context and surface that were used to create |texture_id_|.
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
-
-  // When SetReleaseTimeToNow() was last called. i.e., when the last
-  // codec buffer was released to this surface. Or null if
-  // IgnorePendingRelease() or WaitForFrameAvailable() have been called since.
-  base::TimeTicks release_time_;
-  scoped_refptr<FrameAvailableEvent_ImageReader> frame_available_event_;
   int32_t max_images_ = 0;
 
+  // Frame available callback handling. ImageListener registered with
+  // AImageReader is notified when there is a new frame available which
+  // in turns runs the callback function.
+  base::RepeatingClosure frame_available_cb_;
+
   THREAD_CHECKER(thread_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(ImageReaderGLOwner);
 };
 

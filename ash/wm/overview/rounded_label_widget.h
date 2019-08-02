@@ -21,6 +21,8 @@ class RoundedLabelWidget : public views::Widget {
   // Params to modify the look of the label.
   struct InitParams {
     InitParams();
+    InitParams(InitParams&& other);
+
     std::string name;
     int horizontal_padding;
     int vertical_padding;
@@ -30,12 +32,13 @@ class RoundedLabelWidget : public views::Widget {
     int preferred_height;
     int message_id;
     aura::Window* parent;
+    bool hide_in_mini_view;
   };
 
   RoundedLabelWidget();
   ~RoundedLabelWidget() override;
 
-  void Init(const InitParams& params);
+  void Init(InitParams params);
 
   // Gets the preferred size of the widget centered in |bounds|.
   gfx::Rect GetBoundsCenteredIn(const gfx::Rect& bounds);

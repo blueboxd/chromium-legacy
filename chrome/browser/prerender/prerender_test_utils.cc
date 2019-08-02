@@ -168,13 +168,6 @@ TestPrerenderContents::~TestPrerenderContents() {
       << " (Expected: " << NameFromFinalStatus(expected_final_status_)
       << ", Actual: " << NameFromFinalStatus(final_status()) << ")";
 
-  // Prerendering RenderViewHosts should be hidden before the first
-  // navigation, so this should be happen for every PrerenderContents for
-  // which a RenderViewHost is created, regardless of whether or not it's
-  // used.
-  if (new_render_view_host_)
-    EXPECT_TRUE(was_hidden_);
-
   // A used PrerenderContents will only be destroyed when we swap out
   // WebContents, at the end of a navigation caused by a call to
   // NavigateToURLImpl().
@@ -210,9 +203,9 @@ void TestPrerenderContents::RenderWidgetHostVisibilityChanged(
 
   if (!became_visible) {
     was_hidden_ = true;
-  } else if (became_visible && was_hidden_) {
-    // Once hidden, a prerendered RenderViewHost should only be shown after
-    // being removed from the PrerenderContents for display.
+  } else {
+    // A prerendered RenderViewHost should only be shown after being removed
+    // from the PrerenderContents for display.
     EXPECT_FALSE(GetRenderViewHost());
     was_shown_ = true;
   }

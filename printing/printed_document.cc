@@ -94,8 +94,9 @@ void DebugDumpSettings(const base::string16& doc_name,
       job_settings, base::JSONWriter::OPTIONS_PRETTY_PRINT, &settings_str);
   scoped_refptr<base::RefCountedMemory> data =
       base::RefCountedString::TakeString(&settings_str);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&DebugDumpDataTask, doc_name, FILE_PATH_LITERAL(".json"),
                      base::RetainedRef(data)));
 }
@@ -138,8 +139,9 @@ void PrintedDocument::SetPage(int page_number,
   }
 
   if (HasDebugDumpPath()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
         base::BindOnce(&DebugDumpPageTask, name(), base::RetainedRef(page)));
   }
 }
@@ -169,8 +171,9 @@ void PrintedDocument::SetDocument(std::unique_ptr<MetafilePlayer> metafile,
   }
 
   if (HasDebugDumpPath()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+    base::PostTask(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
         base::BindOnce(&DebugDumpTask, name(), mutable_.metafile_.get()));
   }
 }
@@ -268,10 +271,11 @@ void PrintedDocument::DebugDumpData(
     const base::RefCountedMemory* data,
     const base::FilePath::StringType& extension) {
   DCHECK(HasDebugDumpPath());
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-                           base::BindOnce(&DebugDumpDataTask, name(), extension,
-                                          base::RetainedRef(data)));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      base::BindOnce(&DebugDumpDataTask, name(), extension,
+                     base::RetainedRef(data)));
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

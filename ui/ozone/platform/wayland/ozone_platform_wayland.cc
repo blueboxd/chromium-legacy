@@ -132,9 +132,10 @@ class OzonePlatformWayland : public OzonePlatform {
     // it is set at this point if none exists
     if (!LinuxInputMethodContextFactory::instance() &&
         !input_method_context_factory_) {
-      auto* factory = new WaylandInputMethodContextFactory(connection_.get());
-      input_method_context_factory_.reset(factory);
-      LinuxInputMethodContextFactory::SetInstance(factory);
+      input_method_context_factory_ =
+          std::make_unique<WaylandInputMethodContextFactory>(connection_.get());
+      LinuxInputMethodContextFactory::SetInstance(
+          input_method_context_factory_.get());
     }
 
     return std::make_unique<InputMethodAuraLinux>(delegate);

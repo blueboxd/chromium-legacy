@@ -88,8 +88,7 @@ class BrokerServicesBase final : public BrokerServices,
   std::list<std::unique_ptr<JobTracker>> tracker_list_;
 
   // Provides a fast lookup to identify sandboxed processes that belong to a
-  // job. Consult |jobless_process_handles_| for handles of processes without
-  // jobs.
+  // job.
   std::set<DWORD> child_process_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerServicesBase);

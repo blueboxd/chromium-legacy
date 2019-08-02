@@ -206,8 +206,8 @@ class NaClBrowser {
   base::circular_deque<base::Time> crash_times_;
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::USER_VISIBLE});
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };

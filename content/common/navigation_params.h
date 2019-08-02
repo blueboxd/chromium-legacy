@@ -81,6 +81,7 @@ struct CONTENT_EXPORT InitiatorCSPInfo {
   base::Optional<CSPSource> initiator_self_source;
 };
 
+CONTENT_EXPORT mojom::CommonNavigationParamsPtr CreateCommonNavigationParams();
 CONTENT_EXPORT mojom::CommitNavigationParamsPtr CreateCommitNavigationParams();
 
 }  // namespace content

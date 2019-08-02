@@ -1,6 +1,9 @@
 include_rules = [
   # Allow inclusion of specific components that we depend on.
   # See comment in content/DEPS for which components are allowed.
+  # *********************************** NOTE ***********************************
+  # If adding a new component dependency, email content/OWNERS first.
+  # ****************************************************************************
   "+components/discardable_memory/common",
   "+components/discardable_memory/public",
   "+components/discardable_memory/service",
@@ -20,7 +23,6 @@ include_rules = [
   "+components/offline_pages/buildflags/buildflags.h",
   "+components/offline_pages/core/request_header",
   "+components/payments",
-  "+components/profile_service",
   "+components/rappor/public",
   "+components/services/heap_profiling/public",
   "+components/tracing",
@@ -30,6 +32,9 @@ include_rules = [
   "+components/viz",
   "+components/cbor",
   "+components/os_crypt/os_crypt_switches.h",
+  # *********************************** NOTE ***********************************
+  # If adding a new component dependency, email content/OWNERS first.
+  # ****************************************************************************
 
   "+content/public/app",
   "+content/public/browser",

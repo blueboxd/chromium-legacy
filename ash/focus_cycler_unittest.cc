@@ -286,7 +286,7 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
   widget_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget_params.context = CurrentContext();
-  browser_widget->Init(widget_params);
+  browser_widget->Init(std::move(widget_params));
   browser_widget->Show();
 
   aura::Window* browser_window = browser_widget->GetNativeView();

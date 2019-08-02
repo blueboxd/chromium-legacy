@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+assert(!is_ios, "Optimization Guide is not available on iOS.")
+
 static_library("optimization_guide") {
   sources = [
     "bloom_filter.cc",
@@ -42,6 +44,7 @@ static_library("optimization_guide") {
     "//components/leveldb_proto",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs",
+    "//content/public/browser",
     "//google_apis",
     "//net:net",
     "//services/network/public/cpp",

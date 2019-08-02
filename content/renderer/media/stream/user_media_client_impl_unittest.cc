@@ -17,7 +17,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/stream/mock_mojo_media_stream_dispatcher_host.h"
-#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -158,8 +157,7 @@ class MockMediaStreamVideoCapturerSource
     : public blink::MockMediaStreamVideoSource {
  public:
   MockMediaStreamVideoCapturerSource(const blink::MediaStreamDevice& device,
-                                     const SourceStoppedCallback& stop_callback,
-                                     PeerConnectionDependencyFactory* factory)
+                                     const SourceStoppedCallback& stop_callback)
       : blink::MockMediaStreamVideoSource() {
     SetDevice(device);
     SetStopCallback(stop_callback);
@@ -301,7 +299,6 @@ enum RequestState {
 class UserMediaProcessorUnderTest : public UserMediaProcessor {
  public:
   UserMediaProcessorUnderTest(
-      PeerConnectionDependencyFactory* dependency_factory,
       std::unique_ptr<blink::WebMediaStreamDeviceObserver>
           media_stream_device_observer,
       blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher,
@@ -313,7 +310,6 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
                 &UserMediaProcessorUnderTest::media_devices_dispatcher,
                 base::Unretained(this)),
             blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-        factory_(dependency_factory),
         media_devices_dispatcher_(std::move(media_devices_dispatcher)),
         state_(state) {}
 
@@ -356,7 +352,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
       const blink::WebPlatformMediaStreamSource::SourceStoppedCallback&
           stop_callback) override {
     video_source_ =
-        new MockMediaStreamVideoCapturerSource(device, stop_callback, factory_);
+        new MockMediaStreamVideoCapturerSource(device, stop_callback);
     return base::WrapUnique(video_source_);
   }
 
@@ -423,7 +419,6 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
         .Run(source, blink::mojom::MediaStreamRequestResult::OK, "");
   }
 
-  PeerConnectionDependencyFactory* factory_;
   blink::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher_;
   MockMediaStreamVideoCapturerSource* video_source_ = nullptr;
   MockLocalMediaStreamAudioSource* local_audio_source_ = nullptr;
@@ -473,15 +468,13 @@ class UserMediaClientImplTest : public ::testing::Test {
 
   void SetUp() override {
     // Create our test object.
-    dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
-
     msd_observer_ = new blink::WebMediaStreamDeviceObserver(nullptr);
 
     blink::mojom::MediaDevicesDispatcherHostPtr user_media_processor_host_proxy;
     binding_user_media_processor_.Bind(
         mojo::MakeRequest(&user_media_processor_host_proxy));
     user_media_processor_ = new UserMediaProcessorUnderTest(
-        dependency_factory_.get(), base::WrapUnique(msd_observer_),
+        base::WrapUnique(msd_observer_),
         std::move(user_media_processor_host_proxy), &state_);
     blink::mojom::MediaStreamDispatcherHostPtr dispatcher_host =
         mock_dispatcher_host_.CreateInterfacePtrAndBind();
@@ -649,7 +642,6 @@ class UserMediaClientImplTest : public ::testing::Test {
   UserMediaProcessorUnderTest* user_media_processor_ =
       nullptr;  // Owned by |user_media_client_impl_|
   std::unique_ptr<UserMediaClientImplUnderTest> user_media_client_impl_;
-  std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   RequestState state_ = REQUEST_NOT_STARTED;
 };
 

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "ui/events/event_source.h"
 
@@ -72,7 +72,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
                         public VersionInfoUpdater::Delegate,
                         public CoreOobeView,
                         public ui::EventSource,
-                        public TabletModeClientObserver,
+                        public ash::TabletModeObserver,
                         public OobeConfiguration::Observer {
  public:
   explicit CoreOobeHandler(JSCallsContainer* js_calls_container);
@@ -146,8 +146,9 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void StopDemoModeDetection() override;
   void UpdateKeyboardState() override;
 
-  // TabletModeClientObserver:
-  void OnTabletModeToggled(bool enabled) override;
+  // ash::TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // OobeConfiguration::Observer:
   void OnOobeConfigurationChanged() override;

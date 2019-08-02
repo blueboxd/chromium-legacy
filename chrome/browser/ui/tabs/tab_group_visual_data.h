@@ -15,9 +15,14 @@ class TabGroupVisualData {
  public:
   // Construct a TabGroupVisualData with placeholder name and random color.
   TabGroupVisualData();
+
+  TabGroupVisualData(base::string16 title, SkColor color);
+
   TabGroupVisualData(const TabGroupVisualData& other) = default;
   TabGroupVisualData(TabGroupVisualData&& other) = default;
-  ~TabGroupVisualData() = default;
+
+  TabGroupVisualData& operator=(const TabGroupVisualData& other) = default;
+  TabGroupVisualData& operator=(TabGroupVisualData&& other) = default;
 
   base::string16 title() const { return title_; }
   SkColor color() const { return color_; }

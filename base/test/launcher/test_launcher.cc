@@ -1462,11 +1462,6 @@ void TestLauncher::RunTests() {
   for (const TestInfo& test_info : tests_) {
     std::string test_name = test_info.GetFullName();
 
-    bool will_run_test = launcher_delegate_->WillRunTest(
-        test_info.test_case_name(), test_info.test_name());
-    if (!will_run_test)
-      continue;
-
     // Count tests in the binary, before we apply filter and sharding.
     test_found_count++;
 

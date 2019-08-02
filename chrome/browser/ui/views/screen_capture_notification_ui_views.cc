@@ -207,7 +207,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
 #endif
 
   widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground)));

@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -80,8 +79,6 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
     launcher_controller_ =
         std::make_unique<ChromeLauncherController>(&profile_, model_.get());
 
-    tablet_mode_client_ = std::make_unique<TabletModeClient>();
-
     // Disable safe icon decoding to ensure ArcAppShortcutRequests returns in
     // the test environment.
     arc::IconDecodeRequest::DisableSafeDecodingForTesting();
@@ -97,11 +94,11 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
   }
 
   // Creates app window and set optional ARC application id.
-  views::Widget* CreateArcWindow(std::string& window_app_id) {
+  views::Widget* CreateArcWindow(const std::string& window_app_id) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     views::Widget* widget = new views::Widget();
     params.context = CurrentContext();
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     widget->Activate();
     exo::SetShellApplicationId(widget->GetNativeWindow(), window_app_id);
@@ -139,9 +136,6 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
   void TearDown() override {
     launcher_controller_.reset();
     ChromeAshTestBase::TearDown();
-    // To match ChromeBrowserMainExtraPartsAsh, shut down the TabletModeClient
-    // after Shell.
-    tablet_mode_client_.reset();
   }
 
   ArcAppTest& arc_test() { return arc_test_; }
@@ -158,8 +152,6 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
   std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<ash::ShelfModel> model_;
   std::unique_ptr<ChromeLauncherController> launcher_controller_;
-
-  std::unique_ptr<TabletModeClient> tablet_mode_client_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherContextMenuTest);
 };

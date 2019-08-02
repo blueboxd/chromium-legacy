@@ -498,7 +498,7 @@ TEST_F(NativeViewHostAuraTest, FocusManagerUpdatedDuringDestruction) {
   params.bounds = gfx::Rect(10, 10, 100, 100);
   params.parent = window.get();
   std::unique_ptr<Widget> child_widget = std::make_unique<Widget>();
-  child_widget->Init(params);
+  child_widget->Init(std::move(params));
 
   native_view_host->Attach(window.get());
 

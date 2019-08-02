@@ -10,6 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_store.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
@@ -89,8 +90,14 @@ KeyedService* CreateNotificationScheduleService(
       std::move(notification_store), std::move(icon_store), registered_clients,
       *config.get());
 
+  auto background_task_coordinator = BackgroundTaskCoordinator::Create(
+      std::move(background_task_scheduler), config.get(),
+      base::BindRepeating(&BackgroundTaskCoordinator::DefaultTimeRandomizer,
+                          config->background_task_random_time_window),
+      base::DefaultClock::GetInstance());
+
   auto context = std::make_unique<NotificationSchedulerContext>(
-      std::move(client_registrar), std::move(background_task_scheduler),
+      std::move(client_registrar), std::move(background_task_coordinator),
       std::move(impression_tracker), std::move(notification_manager),
       std::move(display_agent), DisplayDecider::Create(), std::move(config));
 

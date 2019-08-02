@@ -476,14 +476,8 @@ void RenderViewImpl::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(RenderThread::IsMainThread());
 
-  // RenderView used to inherit from RenderWidget. Creating a delegate
-  // interface and explicitly passing ownership of ourselves to the
-  // RenderWidget preserves the lifetime semantics. This is a stepping
-  // stone to having RenderWidget creation taken out of the RenderViewImpl
-  // constructor. See the corresponding explicit reset() of the delegate
-  // in the ~RenderWidget(). Also, I hate inheritance.
   render_widget_ = render_widget;
-  GetWidget()->set_delegate(base::WrapUnique(this));
+  GetWidget()->set_delegate(this);
   RenderThread::Get()->AddRoute(routing_id_, this);
 
 #if defined(OS_ANDROID)
@@ -493,8 +487,6 @@ void RenderViewImpl::Initialize(
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
 
-  // Pass WidgetClient(), not |this|, as the WebWidgetClient. The method may
-  // be overridden in web tests to inject a test-only WebWidgetClient.
   webview_ = WebView::Create(this, params->hidden,
                              /*compositing_enabled=*/true,
                              opener_frame ? opener_frame->View() : nullptr);
@@ -535,10 +527,10 @@ void RenderViewImpl::Initialize(
                           ->document_interface_broker_blink)),
         std::move(
             params->main_frame_interface_bundle->browser_interface_broker),
-        params->main_frame_widget_routing_id, params->hidden,
-        GetWidget()->GetWebScreenInfo(), GetWidget()->compositor_deps(),
-        opener_frame, params->devtools_main_frame_token,
-        params->replicated_frame_state, params->has_committed_real_load);
+        params->main_frame_widget_routing_id, GetWidget()->GetWebScreenInfo(),
+        GetWidget()->compositor_deps(), opener_frame,
+        params->devtools_main_frame_token, params->replicated_frame_state,
+        params->has_committed_real_load);
   } else {
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
@@ -1037,7 +1029,7 @@ RenderViewImpl* RenderViewImpl::Create(
       params->visual_properties.screen_info,
       params->visual_properties.display_mode,
       /*is_frozen=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
-      params->hidden, params->never_visible,
+      params->never_visible,
       /*widget_request=*/nullptr);
 
   if (g_create_render_view_impl) {
@@ -1053,6 +1045,12 @@ RenderViewImpl* RenderViewImpl::Create(
   render_view->Initialize(render_widget.get(), std::move(params),
                           std::move(show_callback), std::move(task_runner));
   return render_view;
+}
+
+void RenderViewImpl::Destroy() {
+  GetWidget()->PrepareForClose();
+  GetWidget()->Close();
+  delete this;
 }
 
 // static
@@ -1448,8 +1446,6 @@ WebView* RenderViewImpl::CreateView(
       opener_feature_state;
   view_params->replicated_frame_state.name = frame_name_utf8;
   view_params->devtools_main_frame_token = reply->devtools_main_frame_token;
-  // Even if the main frame has a name, the main frame's unique name is always
-  // the empty string.
   view_params->hidden = is_background_tab;
   view_params->never_visible = never_visible;
   view_params->visual_properties = visual_properties;

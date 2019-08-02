@@ -107,7 +107,7 @@ class BubbleDialogDelegateViewTest : public ViewsTestBase {
     Widget* widget = new Widget();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     return widget;
   }

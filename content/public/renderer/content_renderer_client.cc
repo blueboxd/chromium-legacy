@@ -147,11 +147,6 @@ ContentRendererClient::GetPrescientNetworking() {
   return nullptr;
 }
 
-bool ContentRendererClient::IsPrerenderingFrame(
-    const RenderFrame* render_frame) {
-  return false;
-}
-
 bool ContentRendererClient::IsExternalPepperPlugin(
     const std::string& module_name) {
   return false;
@@ -270,5 +265,8 @@ ContentRendererClient::GetAudioRendererAlgorithmParameters(
     media::AudioParameters audio_parameters) {
   return base::nullopt;
 }
+
+void ContentRendererClient::BindReceiverOnMainThread(
+    mojo::GenericPendingReceiver receiver) {}
 
 }  // namespace content

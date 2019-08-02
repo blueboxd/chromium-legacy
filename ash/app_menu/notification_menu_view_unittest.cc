@@ -106,7 +106,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     init_params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
     widget_->SetContentsView(notification_menu_view_.get());
     widget_->SetSize(notification_menu_view_->GetPreferredSize());
     widget_->Show();

@@ -19,33 +19,14 @@
 
 namespace media {
 
-// FrameAvailableEvent is a RefCounted wrapper for a WaitableEvent
-// (it's not possible to put one in RefCountedData).
-// This lets us safely signal an event on any thread.
-struct FrameAvailableEvent
-    : public base::RefCountedThreadSafe<FrameAvailableEvent> {
-  FrameAvailableEvent()
-      : event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-              base::WaitableEvent::InitialState::NOT_SIGNALED) {}
-  void Signal() { event.Signal(); }
-  base::WaitableEvent event;
-
- private:
-  friend class RefCountedThreadSafe<FrameAvailableEvent>;
-  ~FrameAvailableEvent() = default;
-};
-
 SurfaceTextureGLOwner::SurfaceTextureGLOwner(
     std::unique_ptr<gpu::gles2::AbstractTexture> texture)
     : TextureOwner(true /*binds_texture_on_update */, std::move(texture)),
       surface_texture_(gl::SurfaceTexture::Create(GetTextureId())),
       context_(gl::GLContext::GetCurrent()),
-      surface_(gl::GLSurface::GetCurrent()),
-      frame_available_event_(new FrameAvailableEvent()) {
+      surface_(gl::GLSurface::GetCurrent()) {
   DCHECK(context_);
   DCHECK(surface_);
-  surface_texture_->SetFrameAvailableCallbackOnAnyThread(base::BindRepeating(
-      &FrameAvailableEvent::Signal, frame_available_event_));
 }
 
 SurfaceTextureGLOwner::~SurfaceTextureGLOwner() {
@@ -61,6 +42,13 @@ void SurfaceTextureGLOwner::OnTextureDestroyed(gpu::gles2::AbstractTexture*) {
 
   // Make sure that the SurfaceTexture isn't using the GL objects.
   surface_texture_ = nullptr;
+}
+
+void SurfaceTextureGLOwner::SetFrameAvailableCallback(
+    const base::RepeatingClosure& frame_available_cb) {
+  // Setting the callback to be run from any thread since |frame_available_cb|
+  // is thread safe.
+  surface_texture_->SetFrameAvailableCallbackOnAnyThread(frame_available_cb);
 }
 
 gl::ScopedJavaSurface SurfaceTextureGLOwner::CreateJavaSurface() const {
@@ -102,57 +90,6 @@ gl::GLContext* SurfaceTextureGLOwner::GetContext() const {
 gl::GLSurface* SurfaceTextureGLOwner::GetSurface() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return surface_.get();
-}
-
-void SurfaceTextureGLOwner::SetReleaseTimeToNow() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  release_time_ = base::TimeTicks::Now();
-}
-
-void SurfaceTextureGLOwner::IgnorePendingRelease() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  release_time_ = base::TimeTicks();
-}
-
-bool SurfaceTextureGLOwner::IsExpectingFrameAvailable() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return !release_time_.is_null();
-}
-
-void SurfaceTextureGLOwner::WaitForFrameAvailable() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!release_time_.is_null());
-
-  // 5msec covers >99.9% of cases, so just wait for up to that much before
-  // giving up. If an error occurs, we might not ever get a notification.
-  const base::TimeDelta max_wait = base::TimeDelta::FromMilliseconds(5);
-  const base::TimeTicks call_time = base::TimeTicks::Now();
-  const base::TimeDelta elapsed = call_time - release_time_;
-  const base::TimeDelta remaining = max_wait - elapsed;
-  release_time_ = base::TimeTicks();
-  bool timed_out = false;
-
-  if (remaining <= base::TimeDelta()) {
-    if (!frame_available_event_->event.IsSignaled()) {
-      DVLOG(1) << "Deferred WaitForFrameAvailable() timed out, elapsed: "
-               << elapsed.InMillisecondsF() << "ms";
-      timed_out = true;
-    }
-  } else {
-    DCHECK_LE(remaining, max_wait);
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "Media.CodecImage.SurfaceTextureGLOwner.WaitTimeForFrame");
-    if (!frame_available_event_->event.TimedWait(remaining)) {
-      DVLOG(1) << "WaitForFrameAvailable() timed out, elapsed: "
-               << elapsed.InMillisecondsF()
-               << "ms, additionally waited: " << remaining.InMillisecondsF()
-               << "ms, total: " << (elapsed + remaining).InMillisecondsF()
-               << "ms";
-      timed_out = true;
-    }
-  }
-  UMA_HISTOGRAM_BOOLEAN("Media.CodecImage.SurfaceTextureGLOwner.FrameTimedOut",
-                        timed_out);
 }
 
 std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>

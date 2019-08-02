@@ -25,7 +25,7 @@ void CodeCacheLoaderImpl::FetchFromCodeCacheSynchronously(
       base::WaitableEvent::ResetPolicy::AUTOMATIC,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({});
+      base::CreateSingleThreadTaskRunner({base::ThreadPool()});
 
   // Also watch for terminate requests from the main thread when running on
   // worker threads.

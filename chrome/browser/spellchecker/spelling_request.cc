@@ -15,7 +15,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "content/public/browser/render_process_host.h"
 
 namespace {
 
@@ -25,13 +25,12 @@ bool CompareLocation(const SpellCheckResult& r1, const SpellCheckResult& r2) {
 
 }  // namespace
 
-SpellingRequest::SpellingRequest(
-    SpellingServiceClient* client,
-    const base::string16& text,
-    const service_manager::Identity& renderer_identity,
-    int document_tag,
-    RequestTextCheckCallback callback,
-    DestructionCallback destruction_callback)
+SpellingRequest::SpellingRequest(SpellingServiceClient* client,
+                                 const base::string16& text,
+                                 int render_process_id,
+                                 int document_tag,
+                                 RequestTextCheckCallback callback,
+                                 DestructionCallback destruction_callback)
     : remote_success_(false),
       text_(text),
       callback_(std::move(callback)),
@@ -43,7 +42,7 @@ SpellingRequest::SpellingRequest(
   completion_barrier_ =
       BarrierClosure(2, base::BindOnce(&SpellingRequest::OnCheckCompleted,
                                        weak_factory_.GetWeakPtr()));
-  RequestRemoteCheck(client, renderer_identity);
+  RequestRemoteCheck(client, render_process_id);
   RequestLocalCheck(document_tag);
 }
 
@@ -75,16 +74,15 @@ void SpellingRequest::CombineResults(
   }
 }
 
-void SpellingRequest::RequestRemoteCheck(
-    SpellingServiceClient* client,
-    const service_manager::Identity& renderer_identity) {
-  content::BrowserContext* context =
-      content::BrowserContext::GetBrowserContextForServiceInstanceGroup(
-          renderer_identity.instance_group());
+void SpellingRequest::RequestRemoteCheck(SpellingServiceClient* client,
+                                         int render_process_id) {
+  auto* host = content::RenderProcessHost::FromID(render_process_id);
+  if (!host)
+    return;
 
   // |this| may be gone at callback invocation if the owner has been removed.
   client->RequestTextCheck(
-      context, SpellingServiceClient::SPELLCHECK, text_,
+      host->GetBrowserContext(), SpellingServiceClient::SPELLCHECK, text_,
       base::BindOnce(&SpellingRequest::OnRemoteCheckCompleted,
                      weak_factory_.GetWeakPtr()));
 }

@@ -19,7 +19,15 @@ import("//chrome/android/modules/chrome_feature_modules.gni")
 #   include_32_bit_webview: (Optional) Whether to include 32 bit code for
 #     WebView.
 template("chrome_feature_module") {
+  assert(defined(invoker.module_desc))
+  assert(defined(invoker.module_name_suffix))
   _module_desc = invoker.module_desc
+  _is_monochrome_or_trichrome = defined(invoker.is_monochrome_or_trichrome) &&
+                                invoker.is_monochrome_or_trichrome
+  _is_64_bit_browser =
+      defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
+  _include_32_bit_webview =
+      defined(invoker.include_32_bit_webview) && invoker.include_32_bit_webview
 
   android_app_bundle_module(target_name) {
     forward_variables_from(invoker,
@@ -36,7 +44,10 @@ template("chrome_feature_module") {
     # TODO(tiborg): Remove module_name flag from android_app_bundle_module.
     module_name = "${_module_desc.name}${invoker.module_name_suffix}"
     target_sdk_version = android_sdk_version
-    deps = _module_desc.java_deps
+    deps = []
+    if (defined(_module_desc.java_deps)) {
+      deps += _module_desc.java_deps
+    }
 
     if (defined(_module_desc.proguard_async) && _module_desc.proguard_async) {
       enable_class_deps_output = "${_module_desc.name}_constant_pool_deps.txt"
@@ -60,14 +71,11 @@ template("chrome_feature_module") {
     }
 
     if (defined(_module_desc.native_deps) && _module_desc.native_deps != []) {
-      _is_monochrome_or_trichrome =
-          defined(invoker.is_monochrome_or_trichrome) &&
-          invoker.is_monochrome_or_trichrome
       _arch = ""
       _toolchain = ""
       _root_out_dir = root_out_dir
       if (android_64bit_target_cpu && _is_monochrome_or_trichrome) {
-        if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
+        if (_is_64_bit_browser) {
           _arch = "_64"
         } else {
           _toolchain = "($android_secondary_abi_toolchain)"
@@ -89,8 +97,8 @@ template("chrome_feature_module") {
       # for the other architecture if required.
       _loadable_modules_32_bit += [ _native_library ]
       _loadable_modules_64_bit += [ _native_library ]
-    } else if (defined(invoker.is_monochrome_or_trichrome)) {
-      not_needed(invoker, [ "is_monochrome_or_trichrome" ])
+    } else {
+      not_needed([ "_is_monochrome_or_trichrome" ])
     }
 
     if (defined(_module_desc.loadable_module_dep)) {
@@ -112,21 +120,53 @@ template("chrome_feature_module") {
       }
     }
 
+    # Specify native libraries and placeholders.
     if (_loadable_modules_32_bit != [] || _loadable_modules_64_bit != []) {
-      # TODO(tiborg): Move loadable module selection logic here.
-      native_switches = {
-        is_64_bit_browser = invoker.is_64_bit_browser
-        include_32_bit_webview = invoker.include_32_bit_webview
+      # Decision logic: Assign decision variables:
+      #   _loadable_modules_to_use: Either |_loadable_modules_64_bit| or
+      #     |_loadable_modules_32_bit|.
+      #   _native_is_primary: Whether |_loadable_modules_to_use| should be
+      #     assigned as primary ABI or secondary ABI.
+      #   _native_need_placeholder: Whether a placeholder is needed for the
+      #     complementary ABI to the library.
+      if (_is_64_bit_browser) {
+        assert(_loadable_modules_64_bit != [])
+        not_needed([ "_loadable_modules_32_bit" ])
+        _loadable_modules_to_use = _loadable_modules_64_bit
+        _native_is_primary =
+            !build_apk_secondary_abi || android_64bit_target_cpu
+        _native_need_placeholder =
+            build_apk_secondary_abi && _include_32_bit_webview
+      } else {
+        assert(_loadable_modules_32_bit != [])
+        not_needed([
+                     "_loadable_modules_64_bit",
+                     "_include_32_bit_webview",
+                   ])
+        _loadable_modules_to_use = _loadable_modules_32_bit
+        _native_is_primary =
+            !build_apk_secondary_abi || !android_64bit_target_cpu
+        _native_need_placeholder =
+            build_apk_secondary_abi && android_64bit_target_cpu
       }
-      loadable_modules_if_32_bit = _loadable_modules_32_bit
-      loadable_modules_if_64_bit = _loadable_modules_64_bit
+
+      # Realization logic: Assign libraries and placeholders.
+      if (_native_is_primary) {
+        loadable_modules = _loadable_modules_to_use
+        if (_native_need_placeholder) {
+          secondary_native_lib_placeholders = [ "libdummy.so" ]
+        }
+      } else {
+        secondary_abi_loadable_modules = _loadable_modules_to_use
+        if (_native_need_placeholder) {
+          native_lib_placeholders = [ "libdummy.so" ]
+        }
+      }
     } else {
-      if (defined(invoker.is_64_bit_browser)) {
-        not_needed(invoker, [ "is_64_bit_browser" ])
-      }
-      if (defined(invoker.include_32_bit_webview)) {
-        not_needed(invoker, [ "include_32_bit_webview" ])
-      }
+      not_needed([
+                   "_is_64_bit_browser",
+                   "_include_32_bit_webview",
+                 ])
     }
   }
 }

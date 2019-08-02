@@ -599,8 +599,10 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
   CancelKeyboardLock();
   RejectMouseLockOrUnlockIfNecessary();
 
-  if (process_->IsInitializedAndNotDead()) {
-    // Tell the RendererWidget to close.
+  if (process_->IsInitializedAndNotDead() && !owner_delegate()) {
+    // Tell the RendererWidget to close. We only want to do this if the
+    // RenderWidget is the root of the renderer object graph, which is for
+    // pepper fullscreen and popups.
     bool rv = Send(new WidgetMsg_Close(routing_id_));
     DCHECK(rv);
   }
@@ -748,10 +750,6 @@ void RenderWidgetHostImpl::WasShown(
   // SynchronizeVisualProperties is usually processed before the renderer is
   // painted.
   SynchronizeVisualProperties();
-}
-
-void RenderWidgetHostImpl::SetHiddenOnCommit() {
-  Send(new WidgetMsg_WasHidden(routing_id_));
 }
 
 #if defined(OS_ANDROID)
@@ -2686,26 +2684,13 @@ void RenderWidgetHostImpl::OnTouchEventAck(
   auto* input_event_router =
       delegate() ? delegate()->GetInputEventRouter() : nullptr;
 
-  auto it = touch_event_acks_to_ignore_.find(event.event.unique_touch_event_id);
-  if (it != touch_event_acks_to_ignore_.end()) {
-    touch_event_acks_to_ignore_.erase(it);
-    return;
-  }
-
-  // With portals, if a touch event triggers an activation, it is possible to
-  // receive a touch ack after activation. The view is destroyed on activation
-  // and any pending events in the touch ack queue have already been cleared, so
-  // we just ignore this ack.
-  if (!view_)
-    return;
-
   // At present interstitial pages might not have an input event router, so we
   // just have the view process the ack directly in that case; the view is
   // guaranteed to be a top-level view with an appropriate implementation of
   // ProcessAckedTouchEvent().
   if (input_event_router)
     input_event_router->ProcessAckedTouchEvent(event, ack_result, view_.get());
-  else
+  else if (view_)
     view_->ProcessAckedTouchEvent(event, ack_result);
 }
 
@@ -3118,12 +3103,6 @@ RenderWidgetHostImpl::CollectSurfaceIdsForEviction() {
   if (!rvh)
     return {};
   return rvh->CollectSurfaceIdsForEviction();
-}
-
-void RenderWidgetHostImpl::IgnoreTouchEventAcks(
-    const std::unordered_set<uint32_t>& acks_to_ignore) {
-  touch_event_acks_to_ignore_.insert(acks_to_ignore.begin(),
-                                     acks_to_ignore.end());
 }
 
 std::unique_ptr<RenderWidgetHostIterator>

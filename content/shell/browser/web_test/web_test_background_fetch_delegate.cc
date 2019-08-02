@@ -281,7 +281,7 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
           simple_key, std::move(clients), GetNetworkConnectionTracker(),
           base::FilePath(),
           std::make_unique<TestBlobContextGetterFactory>(browser_context_),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
           url_loader_factory);
     }
   }

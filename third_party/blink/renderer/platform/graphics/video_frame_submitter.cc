@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "media/base/video_frame.h"
@@ -30,9 +29,7 @@ VideoFrameSubmitter::VideoFrameSubmitter(
     : binding_(this),
       context_provider_callback_(context_provider_callback),
       resource_provider_(std::move(resource_provider)),
-      rotation_(media::VIDEO_ROTATION_0),
-      enable_surface_synchronization_(
-          ::features::IsSurfaceSynchronizationEnabled()) {
+      rotation_(media::VIDEO_ROTATION_0) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -532,8 +529,6 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
 void VideoFrameSubmitter::GenerateNewSurfaceId() {
   // We need a new id in the event of context loss.
   child_local_surface_id_allocator_.GenerateId();
-  if (!enable_surface_synchronization_)
-    return;
 
   surface_embedder_->SetLocalSurfaceId(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()

@@ -13,6 +13,7 @@
 #include "android_webview/browser/aw_browser_terminator.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_metrics_service_client.h"
+#include "android_webview/browser/aw_web_ui_controller_factory.h"
 #include "android_webview/browser/memory_metrics_logger.h"
 #include "android_webview/browser/net/aw_network_change_notifier_factory.h"
 #include "android_webview/common/aw_descriptors.h"
@@ -121,8 +122,9 @@ int AwBrowserMainParts::PreCreateThreads() {
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
   AwBrowserProcess::GetInstance()->PreMainMessageLoopRun();
-  AwBrowserContext* context = browser_client_->InitBrowserContext();
-  context->PreMainMessageLoopRun();
+  browser_client_->InitBrowserContext();
+  content::WebUIControllerFactory::RegisterFactory(
+      AwWebUIControllerFactory::GetInstance());
   content::RenderFrameHost::AllowInjectingJavaScript();
   metrics_logger_ = std::make_unique<MemoryMetricsLogger>();
 }

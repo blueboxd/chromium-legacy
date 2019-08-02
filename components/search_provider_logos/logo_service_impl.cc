@@ -192,8 +192,9 @@ LogoServiceImpl::LogoServiceImpl(
       image_decoder_(std::move(image_decoder)),
       is_idle_(true),
       is_cached_logo_valid_(false),
-      cache_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      cache_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       logo_cache_(new LogoCache(cache_directory_),
                   base::OnTaskRunnerDeleter(cache_task_runner_)) {
@@ -719,9 +720,9 @@ void LogoServiceImpl::OnURLLoadComplete(const network::SimpleURLLoader* source,
   bool from_http_cache = !source->ResponseInfo()->network_accessed;
 
   bool* parsing_failed = new bool(false);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(parse_logo_response_func_, std::move(response),
                      response_time, parsing_failed),

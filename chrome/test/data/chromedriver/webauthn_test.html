@@ -34,5 +34,24 @@ async function registerCredential(options = {}) {
     return {status: error.toString()};
   }
 }
+
+async function getCredential(credential, options = {}) {
+  options = Object.assign({
+    challenge: Uint8Array.from("Winter is Coming"),
+    rpId: "chromedriver.test",
+    allowCredentials: [credential],
+    userVerification: "preferred",
+  }, options);
+
+  try {
+    const attestation = await navigator.credentials.get({publicKey: options});
+    return {
+      status: "OK",
+      attestation,
+    };
+  } catch (error) {
+    return {status: error.toString()};
+  }
+}
   </script>
 </html>

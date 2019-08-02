@@ -103,8 +103,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
                                       public RenderWidgetDelegate,
                                       public RenderView {
  public:
-  ~RenderViewImpl() override;
-
   // Creates a new RenderView. Note that if the original opener has been closed,
   // |params.window_was_created_with_opener| will be true and
   // |params.opener_frame_route_id| will be MSG_ROUTING_NONE.
@@ -118,6 +116,11 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       mojom::CreateViewParamsPtr params,
       RenderWidget::ShowCallback show_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Instances of this object are created by and destroyed by the browser
+  // process. This method must be called exactly once by the IPC subsystem when
+  // the browser wishes the object to be destroyed.
+  void Destroy();
 
   // Used by web_test_support to hook into the creation of RenderViewImpls.
   static void InstallCreateHook(RenderViewImpl* (*create_render_view_impl)(
@@ -293,6 +296,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
  protected:
   RenderViewImpl(CompositorDependencies* compositor_deps,
                  const mojom::CreateViewParams& params);
+  ~RenderViewImpl() override;
 
   // Called when Page visibility is changed, to update the View/Page in blink.
   // This is separate from the IPC handlers as tests may call this and need to

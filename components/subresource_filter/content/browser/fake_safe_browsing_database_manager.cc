@@ -57,12 +57,11 @@ bool FakeSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
   checks_.insert(client);
   if (simulate_timeout_)
     return false;
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&FakeSafeBrowsingDatabaseManager::
-                         OnCheckUrlForSubresourceFilterComplete,
-                     weak_factory_.GetWeakPtr(), base::Unretained(client),
-                     url));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&FakeSafeBrowsingDatabaseManager::
+                                    OnCheckUrlForSubresourceFilterComplete,
+                                weak_factory_.GetWeakPtr(),
+                                base::Unretained(client), url));
   return false;
 }
 

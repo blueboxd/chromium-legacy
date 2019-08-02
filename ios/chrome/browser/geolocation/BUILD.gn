@@ -77,7 +77,7 @@ source_set("geolocation_internal") {
   deps = [
     ":geolocation",
     "//base",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/version_info",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/tabs",

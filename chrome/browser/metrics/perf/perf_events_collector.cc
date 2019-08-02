@@ -245,20 +245,28 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
 }  // namespace internal
 
 PerfCollector::PerfCollector()
-    : MetricCollector(kPerfCollectorName), weak_factory_(this) {
+    : MetricCollector(kPerfCollectorName),
+      windowed_incognito_monitor_(std::make_unique<WindowedIncognitoMonitor>()),
+      weak_factory_(this) {
   // Parsing processor information may be expensive. Compute asynchronously
   // in a separate thread.
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-  auto task_runner = base::SequencedTaskRunnerHandle::Get();
+  ui_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&PerfCollector::ParseCPUFrequencies, task_runner,
+      base::BindOnce(&PerfCollector::ParseCPUFrequencies, ui_task_runner_,
                      weak_factory_.GetWeakPtr()));
 }
 
-PerfCollector::~PerfCollector() {}
+PerfCollector::~PerfCollector() {
+  // Destroy WindowedIncognitoMonitor on the UI thread.
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce([](std::unique_ptr<WindowedIncognitoMonitor> ref) {},
+                     std::move(windowed_incognito_monitor_)));
+}
 
 void PerfCollector::Init() {
   CHECK(command_selector_.SetOdds(
@@ -416,7 +424,9 @@ void PerfCollector::ParseOutputProtoIfValid(
     const std::string& perf_stdout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (incognito_observer->incognito_launched()) {
+  // Check whether an incognito window had been opened during profile
+  // collection. If there was an incognito window, discard the incoming data.
+  if (incognito_observer->IncognitoLaunched()) {
     AddToUmaHistogram(CollectionAttemptStatus::INCOGNITO_LAUNCHED);
     return;
   }
@@ -454,13 +464,6 @@ bool PerfCollector::ShouldCollect() const {
     return false;
   }
 
-  // For privacy reasons, Chrome should only collect perf data if there is no
-  // incognito session active (or gets spawned during the collection).
-  if (BrowserList::IsIncognitoSessionActive()) {
-    AddToUmaHistogram(CollectionAttemptStatus::INCOGNITO_ACTIVE);
-    return false;
-  }
-
   return true;
 }
 
@@ -482,8 +485,13 @@ bool CommandSamplesCPUCycles(const std::vector<std::string>& args) {
 
 void PerfCollector::CollectProfile(
     std::unique_ptr<SampledProfile> sampled_profile) {
-  std::unique_ptr<WindowedIncognitoObserver> incognito_observer =
-      std::make_unique<WindowedIncognitoObserver>();
+  auto incognito_observer = windowed_incognito_monitor_->CreateObserver();
+  // For privacy reasons, Chrome should only collect perf data if there is no
+  // incognito session active (or gets spawned during the collection).
+  if (incognito_observer->IncognitoActive()) {
+    AddToUmaHistogram(CollectionAttemptStatus::INCOGNITO_ACTIVE);
+    return;
+  }
 
   std::vector<std::string> command =
       base::SplitString(command_selector_.Select(), kPerfCommandDelimiter,

@@ -127,7 +127,7 @@ void OpenXrDevice::RequestSession(
       base::BindOnce(&OpenXrDevice::OnRequestSessionResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
 
-  // OpenXR doesn't need to handle anything when presentation has ended, but
+  // OpenXr doesn't need to handle anything when presentation has ended, but
   // the mojo interface to call to XRCompositorCommon::RequestSession requires
   // a method and cannot take nullptr, so passing in base::DoNothing::Once()
   // for on_presentation_ended

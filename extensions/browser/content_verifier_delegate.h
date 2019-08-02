@@ -25,11 +25,18 @@ class ContentVerifierDelegate {
  public:
   virtual ~ContentVerifierDelegate() {}
 
-  // Returns whether or not resources from |extension| should be verified.
+  // Returns true if resources from |extension| should be checked for some
+  // content mismatch at all. Note that differs from ShouldBeVerified, and does
+  // not consider whether |extension| has signed hashes (verified_contents.json)
+  // or not.
+  virtual bool ShouldBeChecked(const Extension& extension) = 0;
+
+  // Returns whether or not resources from |extension| should be verified using
+  // signed hashes data (verified_contents.json). If yes, methods GetPublicKey
+  // and GetSignatureFetchUrl might be used.
   virtual bool ShouldBeVerified(const Extension& extension) = 0;
 
-  // Returns the public key to use for validating signatures via the two out
-  // parameters.
+  // Returns the public key to use for validating signatures.
   virtual ContentVerifierKey GetPublicKey() = 0;
 
   // Returns a URL that can be used to fetch the verified_contents.json

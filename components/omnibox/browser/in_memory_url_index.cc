@@ -94,8 +94,9 @@ InMemoryURLIndex::InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
       private_data_(new URLIndexPrivateData),
       restore_cache_observer_(nullptr),
       save_cache_observer_(nullptr),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
+      task_runner_(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::BEST_EFFORT})),
       shutdown_(false),
       restored_(false),
       needs_to_be_cached_(false),

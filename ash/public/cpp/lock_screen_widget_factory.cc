@@ -44,7 +44,7 @@ std::unique_ptr<views::Widget> CreateLockScreenWidget(aura::Window* parent) {
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = parent;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
   return widget;
 }

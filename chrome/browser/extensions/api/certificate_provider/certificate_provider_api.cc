@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
+#include "chrome/browser/chromeos/certificate_provider/security_token_pin_dialog_host.h"
 #include "chrome/common/extensions/api/certificate_provider.h"
 #include "chrome/common/extensions/api/certificate_provider_internal.h"
 #include "net/cert/x509_certificate.h"
@@ -24,28 +25,30 @@
 
 namespace api_cp = extensions::api::certificate_provider;
 namespace api_cpi = extensions::api::certificate_provider_internal;
+using PinCodeType =
+    chromeos::SecurityTokenPinDialogHost::SecurityTokenPinCodeType;
+using PinErrorLabel =
+    chromeos::SecurityTokenPinDialogHost::SecurityTokenPinErrorLabel;
 
 namespace {
 
-chromeos::RequestPinView::RequestPinErrorType GetErrorTypeForView(
-    api_cp::PinRequestErrorType error_type) {
+PinErrorLabel GetErrorLabelForDialog(api_cp::PinRequestErrorType error_type) {
   switch (error_type) {
     case api_cp::PinRequestErrorType::PIN_REQUEST_ERROR_TYPE_INVALID_PIN:
-      return chromeos::RequestPinView::RequestPinErrorType::INVALID_PIN;
+      return PinErrorLabel::kInvalidPin;
     case api_cp::PinRequestErrorType::PIN_REQUEST_ERROR_TYPE_INVALID_PUK:
-      return chromeos::RequestPinView::RequestPinErrorType::INVALID_PUK;
+      return PinErrorLabel::kInvalidPuk;
     case api_cp::PinRequestErrorType::
         PIN_REQUEST_ERROR_TYPE_MAX_ATTEMPTS_EXCEEDED:
-      return chromeos::RequestPinView::RequestPinErrorType::
-          MAX_ATTEMPTS_EXCEEDED;
+      return PinErrorLabel::kMaxAttemptsExceeded;
     case api_cp::PinRequestErrorType::PIN_REQUEST_ERROR_TYPE_UNKNOWN_ERROR:
-      return chromeos::RequestPinView::RequestPinErrorType::UNKNOWN_ERROR;
+      return PinErrorLabel::kUnknown;
     case api_cp::PinRequestErrorType::PIN_REQUEST_ERROR_TYPE_NONE:
-      return chromeos::RequestPinView::RequestPinErrorType::NONE;
+      return PinErrorLabel::kNone;
   }
 
   NOTREACHED();
-  return chromeos::RequestPinView::RequestPinErrorType::NONE;
+  return PinErrorLabel::kNone;
 }
 
 }  // namespace
@@ -216,11 +219,11 @@ CertificateProviderStopPinRequestFunction::Run() {
 
   // Extension provided an error, which means it intends to notify the user with
   // the error and not allow any more input.
-  chromeos::RequestPinView::RequestPinErrorType error_type =
-      GetErrorTypeForView(params->details.error_type);
+  const PinErrorLabel error_label =
+      GetErrorLabelForDialog(params->details.error_type);
   const chromeos::PinDialogManager::StopPinRequestResult stop_request_result =
       service->pin_dialog_manager()->StopPinRequestWithError(
-          extension()->id(), error_type,
+          extension()->id(), error_label,
           base::BindOnce(
               &CertificateProviderStopPinRequestFunction::OnPinRequestStopped,
               this));
@@ -238,13 +241,7 @@ CertificateProviderStopPinRequestFunction::Run() {
 }
 
 void CertificateProviderStopPinRequestFunction::OnPinRequestStopped() {
-  chromeos::CertificateProviderService* const service =
-      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
-          browser_context());
-  DCHECK(service);
-
   Respond(NoArguments());
-  service->pin_dialog_manager()->OnPinDialogClosed();
 }
 
 CertificateProviderRequestPinFunction::
@@ -274,19 +271,19 @@ ExtensionFunction::ResponseAction CertificateProviderRequestPinFunction::Run() {
       api_cp::RequestPin::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  api_cp::PinRequestType pin_request_type =
+  const api_cp::PinRequestType pin_request_type =
       params->details.request_type ==
               api_cp::PinRequestType::PIN_REQUEST_TYPE_NONE
           ? api_cp::PinRequestType::PIN_REQUEST_TYPE_PIN
           : params->details.request_type;
 
-  chromeos::RequestPinView::RequestPinErrorType error_type =
-      GetErrorTypeForView(params->details.error_type);
+  const PinErrorLabel error_label =
+      GetErrorLabelForDialog(params->details.error_type);
 
-  chromeos::RequestPinView::RequestPinCodeType code_type =
+  const PinCodeType code_type =
       (pin_request_type == api_cp::PinRequestType::PIN_REQUEST_TYPE_PIN)
-          ? chromeos::RequestPinView::RequestPinCodeType::PIN
-          : chromeos::RequestPinView::RequestPinCodeType::PUK;
+          ? PinCodeType::kPin
+          : PinCodeType::kPuk;
 
   chromeos::CertificateProviderService* const service =
       chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
@@ -303,7 +300,8 @@ ExtensionFunction::ResponseAction CertificateProviderRequestPinFunction::Run() {
   const chromeos::PinDialogManager::RequestPinResult result =
       service->pin_dialog_manager()->RequestPin(
           extension()->id(), extension()->name(),
-          params->details.sign_request_id, code_type, error_type, attempts_left,
+          params->details.sign_request_id, code_type, error_label,
+          attempts_left,
           base::BindOnce(
               &CertificateProviderRequestPinFunction::OnInputReceived, this));
   switch (result) {

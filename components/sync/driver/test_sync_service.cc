@@ -38,7 +38,9 @@ TestSyncService::TestSyncService()
     : user_settings_(this),
       preferred_data_types_(ModelTypeSet::All()),
       active_data_types_(ModelTypeSet::All()),
-      last_cycle_snapshot_(MakeDefaultCycleSnapshot()) {}
+      last_cycle_snapshot_(MakeDefaultCycleSnapshot()),
+      user_demographics_result_(UserDemographicsResult::ForStatus(
+          UserDemographicsStatus::kIneligibleDemographicsData)) {}
 
 TestSyncService::~TestSyncService() = default;
 
@@ -88,8 +90,8 @@ void TestSyncService::SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot) {
 }
 
 void TestSyncService::SetUserDemographics(
-    const base::Optional<UserDemographics>& demographics) {
-  user_demographics_ = demographics;
+    const UserDemographicsResult& user_demographics_result) {
+  user_demographics_result_ = user_demographics_result;
 }
 
 void TestSyncService::SetEmptyLastCycleSnapshot() {
@@ -273,9 +275,8 @@ void TestSyncService::GetAllNodesForDebugging(
 
 void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
-base::Optional<UserDemographics> TestSyncService::GetUserDemographics(
-    base::Time now) {
-  return user_demographics_;
+UserDemographicsResult TestSyncService::GetUserDemographics(base::Time now) {
+  return user_demographics_result_;
 }
 
 void TestSyncService::Shutdown() {}

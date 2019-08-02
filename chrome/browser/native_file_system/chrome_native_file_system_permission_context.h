@@ -6,11 +6,16 @@
 #define CHROME_BROWSER_NATIVE_FILE_SYSTEM_CHROME_NATIVE_FILE_SYSTEM_PERMISSION_CONTEXT_H_
 
 #include <map>
+#include <vector>
 
 #include "base/sequence_checker.h"
+#include "chrome/browser/permissions/permission_util.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "content/public/browser/native_file_system_permission_context.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
+
+class HostContentSettingsMap;
 
 namespace content {
 class BrowserContext;
@@ -40,6 +45,85 @@ class ChromeNativeFileSystemPermissionContext
   explicit ChromeNativeFileSystemPermissionContext(
       content::BrowserContext* context);
 
+  class WritePermissionGrantImpl
+      : public content::NativeFileSystemPermissionGrant {
+   public:
+    // In the current implementation permission grants are scoped to the frame
+    // they are requested in. Within a frame we only want to have one grant per
+    // path. The Key struct contains these fields. Keys are comparable so they
+    // can be used with sorted containers like std::map and std::set.
+    // TODO(https://crbug.com/984769): Eliminate process_id and frame_id and
+    // replace usage of this struct with just a file path when grants stop being
+    // scoped to a frame.
+    struct Key {
+      base::FilePath path;
+      int process_id = 0;
+      int frame_id = 0;
+
+      bool operator==(const Key& rhs) const;
+      bool operator<(const Key& rhs) const;
+    };
+
+    WritePermissionGrantImpl(
+        scoped_refptr<ChromeNativeFileSystemPermissionContext> context,
+        ContentSettingsType content_settings_guard_type,
+        const url::Origin& origin,
+        const Key& key,
+        bool is_directory);
+
+    // content::NativeFileSystemPermissionGrant implementation:
+    PermissionStatus GetStatus() override;
+    void RequestPermission(int process_id,
+                           int frame_id,
+                           base::OnceClosure callback) override;
+
+    const url::Origin& origin() const {
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+      return origin_;
+    }
+
+    bool is_directory() const {
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+      return is_directory_;
+    }
+
+    const base::FilePath& path() const {
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+      return key_.path;
+    }
+
+    const Key& key() const {
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+      return key_;
+    }
+
+    // Returns true if the |content_setting_guard_type_| has not been blocked.
+    bool CanRequestPermission();
+
+    void SetStatus(PermissionStatus status);
+
+   protected:
+    ~WritePermissionGrantImpl() override;
+
+   private:
+    void OnPermissionRequestComplete(base::OnceClosure callback,
+                                     PermissionAction result);
+
+    SEQUENCE_CHECKER(sequence_checker_);
+
+    scoped_refptr<ChromeNativeFileSystemPermissionContext> const context_;
+    const ContentSettingsType write_guard_content_setting_type_;
+    const url::Origin origin_;
+    const Key key_;
+    const bool is_directory_;
+
+    // This member should only be updated via SetStatus(), to make sure
+    // observers are properly notified about any change in status.
+    PermissionStatus status_ = PermissionStatus::ASK;
+
+    DISALLOW_COPY_AND_ASSIGN(WritePermissionGrantImpl);
+  };
+
   // content::NativeFileSystemPermissionContext:
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetReadPermissionGrant(const url::Origin& origin,
@@ -47,6 +131,8 @@ class ChromeNativeFileSystemPermissionContext
                          bool is_directory,
                          int process_id,
                          int frame_id) override;
+
+  bool CanRequestWritePermission(WritePermissionGrantImpl* grant);
   scoped_refptr<content::NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
@@ -111,12 +197,13 @@ class ChromeNativeFileSystemPermissionContext
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;
 
+  HostContentSettingsMap* content_settings() { return content_settings_.get(); }
+
  private:
   // Destructor is private because this class is refcounted.
   ~ChromeNativeFileSystemPermissionContext() override;
 
-  class PermissionGrantImpl;
-  void PermissionGrantDestroyed(PermissionGrantImpl* grant);
+  void PermissionGrantDestroyed(WritePermissionGrantImpl* grant);
 
   void DidConfirmSensitiveDirectoryAccess(
       const url::Origin& origin,
@@ -131,6 +218,8 @@ class ChromeNativeFileSystemPermissionContext
   // Permission state per origin.
   struct OriginState;
   std::map<url::Origin, OriginState> origins_;
+
+  scoped_refptr<HostContentSettingsMap> content_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeFileSystemPermissionContext);
 };

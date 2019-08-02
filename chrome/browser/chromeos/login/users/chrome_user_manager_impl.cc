@@ -1282,17 +1282,6 @@ bool ChromeUserManagerImpl::AreSupervisedUsersAllowed() const {
 }
 
 bool ChromeUserManagerImpl::IsGuestSessionAllowed() const {
-  const AccountId& owner_account_id = GetOwnerAccountId();
-  if (owner_account_id.is_valid()) {
-    // Some Autotest policy tests appear to wipe the user list in Local State
-    // but preserve a policy file referencing an owner: https://crbug.com/850139
-    const user_manager::User* owner_user = FindUser(owner_account_id);
-    if (owner_user &&
-        owner_user->GetType() == user_manager::UserType::USER_TYPE_CHILD) {
-      return false;
-    }
-  }
-
   // In tests CrosSettings might not be initialized.
   if (!cros_settings_)
     return false;

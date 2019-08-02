@@ -17,3 +17,6 @@ TabGroupVisualData::TabGroupVisualData() {
   static SkRandom rand;
   color_ = rand.nextU() | 0xff000000;
 }
+
+TabGroupVisualData::TabGroupVisualData(base::string16 title, SkColor color)
+    : title_(title), color_(color) {}

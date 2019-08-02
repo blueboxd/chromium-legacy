@@ -2792,9 +2792,6 @@ TEST_F(FormDataImporterTest, DontDuplicateMaskedServerCard) {
 // Tests that a credit card form that is hidden after receiving input still
 // imports the card.
 TEST_F(FormDataImporterTest, ImportFormData_HiddenCreditCardFormAfterEntered) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillImportNonFocusableCreditCardForms);
-
   FormData form;
   form.url = GURL("https://wwww.foo.com");
 
@@ -2840,48 +2837,6 @@ TEST_F(FormDataImporterTest, ImportFormData_HiddenCreditCardFormAfterEntered) {
       personal_data_manager_->GetCreditCards();
   ASSERT_EQ(1U, results.size());
   EXPECT_EQ(0, expected_card.Compare(*results[0]));
-}
-
-// Tests that a credit card form that is hidden after receiving input does not
-// import the card when the experiment is off.
-TEST_F(FormDataImporterTest,
-       ImportFormData_HiddenCreditCardFormAfterEnteredWithExpOff) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillImportNonFocusableCreditCardForms);
-
-  FormData form;
-  form.url = GURL("https://wwww.foo.com");
-
-  FormFieldData field;
-
-  test::CreateTestFormField("Name on card:", "name_on_card", "Biggie Smalls",
-                            "text", &field);
-  field.is_focusable = false;
-  form.fields.push_back(field);
-  test::CreateTestFormField("Card Number:", "card_number", "4111111111111111",
-                            "text", &field);
-  field.is_focusable = false;
-  form.fields.push_back(field);
-  test::CreateTestFormField("Email:", "email", "theprez@gmail.com", "text",
-                            &field);
-  field.is_focusable = false;
-  form.fields.push_back(field);
-  test::CreateTestFormField("Exp Month:", "exp_month", "01", "text", &field);
-  field.is_focusable = false;
-  form.fields.push_back(field);
-  test::CreateTestFormField("Exp Year:", "exp_year", "2999", "text", &field);
-  field.is_focusable = false;
-  form.fields.push_back(field);
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
-  std::unique_ptr<CreditCard> imported_credit_card;
-  // Returns false because the credit card import was failed.
-  EXPECT_FALSE(form_data_importer_->ImportFormData(
-      form_structure, /*profile_autofill_enabled=*/true,
-      /*credit_card_autofill_enabled=*/true,
-      /*should_return_local_card=*/false, &imported_credit_card));
-  ASSERT_FALSE(imported_credit_card);
 }
 
 TEST_F(FormDataImporterTest, DontDuplicateFullServerCard) {

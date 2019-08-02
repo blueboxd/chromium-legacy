@@ -477,6 +477,10 @@ const char kWebAuthnBlePairedMacAddressesPrefName[] =
     "webauthn.ble.paired_mac_addresses";
 #endif  // defined(OS_ANDROID)
 
+// Deprecated 7/2019
+const char kLastKnownGoogleURL[] = "browser.last_known_google_url";
+const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -543,6 +547,9 @@ void RegisterProfilePrefsForMigration(
                                std::string());
   registry->RegisterListPref(kWebAuthnBlePairedMacAddressesPrefName);
 #endif  // defined(OS_ANDROID)
+
+  registry->RegisterStringPref(kLastKnownGoogleURL, std::string());
+  registry->RegisterStringPref(kLastPromptedGoogleURL, std::string());
 }
 
 }  // namespace
@@ -1126,6 +1133,8 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   syncer::MigrateSyncSuppressedPref(profile_prefs);
   profile_prefs->ClearPref(kSignedInTime);
   syncer::ClearObsoleteMemoryPressurePrefs(profile_prefs);
+  profile_prefs->ClearPref(kLastKnownGoogleURL);
+  profile_prefs->ClearPref(kLastPromptedGoogleURL);
 
 #if defined(OS_ANDROID)
   // Added 7/2019.

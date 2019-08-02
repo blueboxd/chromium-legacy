@@ -140,8 +140,8 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
       env, reinterpret_cast<intptr_t>(this), j_argv, j_file_infos,
       can_use_warm_up_connection));
   AddRef();  // Balanced by OnChildProcessStarted.
-  base::PostTaskWithTraits(
-      FROM_HERE, {client_thread_id_},
+  client_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &ChildProcessLauncherHelper::set_java_peer_available_on_client_thread,
           this));

@@ -65,7 +65,7 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window,
   if (CanUseTranslucentTooltipWidget())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 

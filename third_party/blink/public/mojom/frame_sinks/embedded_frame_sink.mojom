@@ -15,11 +15,9 @@ interface SurfaceEmbedder {
   SetLocalSurfaceId(viz.mojom.LocalSurfaceId local_surface_id);
 };
 
-// Interface from browser to the embedder so it can be notified about surface
-// activations. Closing this interface will destroy the corresponding
-// CompositorFrameSink if one exists.
+// Interface from browser to the embedder. Closing this interface will destroy
+// the corresponding CompositorFrameSink if one exists.
 interface EmbeddedFrameSinkClient {
-  OnFirstSurfaceActivation(viz.mojom.SurfaceInfo surface_info);
   // Called when a CompositorFrameSink is created for this frame sink.
   // Establishes a direct connection from the embedee to the embedder.
   BindSurfaceEmbedder(SurfaceEmbedder& embedder);

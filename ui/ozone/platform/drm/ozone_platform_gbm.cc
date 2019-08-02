@@ -190,8 +190,8 @@ class OzonePlatformGbm : public OzonePlatform {
     host_thread_ = base::PlatformThread::CurrentRef();
 
     device_manager_ = CreateDeviceManager();
-    window_manager_.reset(new DrmWindowHostManager());
-    cursor_.reset(new DrmCursor(window_manager_.get()));
+    window_manager_ = std::make_unique<DrmWindowHostManager>();
+    cursor_ = std::make_unique<DrmCursor>(window_manager_.get());
 
 #if BUILDFLAG(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
@@ -201,9 +201,9 @@ class OzonePlatformGbm : public OzonePlatform {
         std::make_unique<StubKeyboardLayoutEngine>());
 #endif
 
-    event_factory_ozone_.reset(new EventFactoryEvdev(
+    event_factory_ozone_ = std::make_unique<EventFactoryEvdev>(
         cursor_.get(), device_manager_.get(),
-        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
+        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
 
     GpuThreadAdapter* adapter;
 
@@ -213,8 +213,8 @@ class OzonePlatformGbm : public OzonePlatform {
           std::make_unique<DrmDeviceConnector>(host_drm_device_);
       adapter = host_drm_device_.get();
     } else {
-      gpu_platform_support_host_.reset(
-          new DrmGpuPlatformSupportHost(cursor_.get()));
+      gpu_platform_support_host_ =
+          std::make_unique<DrmGpuPlatformSupportHost>(cursor_.get());
       adapter = gpu_platform_support_host_.get();
     }
 
@@ -227,7 +227,7 @@ class OzonePlatformGbm : public OzonePlatform {
     display_manager_ = std::make_unique<DrmDisplayHostManager>(
         adapter, device_manager_.get(), &host_properties_,
         overlay_manager_host.get(), event_factory_ozone_->input_controller());
-    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
+    cursor_factory_ozone_ = std::make_unique<BitmapCursorFactoryOzone>();
 
     if (using_mojo_) {
       host_drm_device_->ProvideManagers(display_manager_.get(),
@@ -251,9 +251,10 @@ class OzonePlatformGbm : public OzonePlatform {
 
     // NOTE: Can't start the thread here since this is called before sandbox
     // initialization in multi-process Chrome.
-    drm_thread_proxy_.reset(new DrmThreadProxy());
+    drm_thread_proxy_ = std::make_unique<DrmThreadProxy>();
 
-    surface_factory_.reset(new GbmSurfaceFactory(drm_thread_proxy_.get()));
+    surface_factory_ =
+        std::make_unique<GbmSurfaceFactory>(drm_thread_proxy_.get());
     if (!using_mojo_) {
       drm_thread_proxy_->BindThreadIntoMessagingProxy(itmp);
     }

@@ -187,7 +187,7 @@ class ShellTest : public AshTestBase {
   views::Widget* CreateTestWindow(views::Widget::InitParams params) {
     views::Widget* widget = new views::Widget;
     params.context = CurrentContext();
-    widget->Init(params);
+    widget->Init(std::move(params));
     return widget;
   }
 
@@ -198,7 +198,7 @@ class ShellTest : public AshTestBase {
     if (always_on_top)
       widget_params.z_order = ui::ZOrderLevel::kFloatingWindow;
 
-    views::Widget* widget = CreateTestWindow(widget_params);
+    views::Widget* widget = CreateTestWindow(std::move(widget_params));
     widget->Show();
 
     EXPECT_TRUE(
@@ -220,7 +220,7 @@ class ShellTest : public AshTestBase {
     // Create a LockScreen window.
     views::Widget::InitParams widget_params(
         views::Widget::InitParams::TYPE_WINDOW);
-    views::Widget* lock_widget = CreateTestWindow(widget_params);
+    views::Widget* lock_widget = CreateTestWindow(std::move(widget_params));
     Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                         kShellWindowId_LockScreenContainer)
         ->AddChild(lock_widget->GetNativeView());
@@ -274,7 +274,7 @@ TEST_F(ShellTest, CreateWindowWithPreferredSize) {
   params.delegate = new WindowWithPreferredSize;
   views::Widget widget;
   params.context = CurrentContext();
-  widget.Init(params);
+  widget.Init(std::move(params));
 
   // Widget is centered on secondary display.
   EXPECT_EQ(secondary_root, widget.GetNativeWindow()->GetRootWindow());
@@ -287,7 +287,7 @@ TEST_F(ShellTest, ChangeZOrderLevel) {
       views::Widget::InitParams::TYPE_WINDOW);
 
   // Creates a normal window.
-  views::Widget* widget = CreateTestWindow(widget_params);
+  views::Widget* widget = CreateTestWindow(std::move(widget_params));
   widget->Show();
 
   // It should be in the active desk container.
@@ -319,7 +319,7 @@ TEST_F(ShellTest, CreateModalWindow) {
       views::Widget::InitParams::TYPE_WINDOW);
 
   // Create a normal window.
-  views::Widget* widget = CreateTestWindow(widget_params);
+  views::Widget* widget = CreateTestWindow(std::move(widget_params));
   widget->Show();
 
   // It should be in the active desk container.
@@ -353,7 +353,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
       views::Widget::InitParams::TYPE_WINDOW);
 
   // Create a normal window.
-  views::Widget* widget = CreateTestWindow(widget_params);
+  views::Widget* widget = CreateTestWindow(std::move(widget_params));
   widget->Show();
   EXPECT_TRUE(widget->GetNativeView()->HasFocus());
 
@@ -363,7 +363,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   GetSessionControllerClient()->LockScreen();
   // Create a LockScreen window.
-  views::Widget* lock_widget = CreateTestWindow(widget_params);
+  views::Widget* lock_widget = CreateTestWindow(std::move(widget_params));
   Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                       kShellWindowId_LockScreenContainer)
       ->AddChild(lock_widget->GetNativeView());
@@ -466,7 +466,7 @@ TEST_F(ShellTest, ManagedWindowModeBasics) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.bounds.SetRect(11, 22, 300, 400);
-  views::Widget* widget = CreateTestWindow(widget_params);
+  views::Widget* widget = CreateTestWindow(std::move(widget_params));
   widget->Show();
   EXPECT_FALSE(widget->IsMaximized());
 
@@ -481,7 +481,7 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.bounds.SetRect(11, 22, 300, 400);
-  views::Widget* widget = CreateTestWindow(widget_params);
+  views::Widget* widget = CreateTestWindow(std::move(widget_params));
   widget->Show();
   EXPECT_FALSE(widget->IsMaximized());
 

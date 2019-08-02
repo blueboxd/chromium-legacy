@@ -507,7 +507,9 @@ bool CertPathBuilderResultPath::IsValid() const {
 }
 
 CertPathBuilder::Result::Result() = default;
+CertPathBuilder::Result::Result(Result&&) = default;
 CertPathBuilder::Result::~Result() = default;
+CertPathBuilder::Result& CertPathBuilder::Result::operator=(Result&&) = default;
 
 bool CertPathBuilder::Result::HasValidPath() const {
   return GetBestValidPath() != nullptr;
@@ -534,11 +536,6 @@ CertPathBuilder::Result::GetBestPathPossiblyInvalid() const {
   return paths[best_result_index].get();
 }
 
-void CertPathBuilder::Result::Clear() {
-  paths.clear();
-  best_result_index = 0;
-}
-
 CertPathBuilder::CertPathBuilder(
     scoped_refptr<ParsedCertificate> cert,
     TrustStore* trust_store,
@@ -560,7 +557,7 @@ CertPathBuilder::CertPathBuilder(
       initial_any_policy_inhibit_(initial_any_policy_inhibit),
       out_result_(result) {
   DCHECK(delegate);
-  result->Clear();
+  *result = Result();
   // The TrustStore also implements the CertIssuerSource interface.
   AddCertIssuerSource(trust_store);
 }

@@ -10,18 +10,78 @@
 
 namespace metrics {
 
-WindowedIncognitoObserver::WindowedIncognitoObserver()
-    : incognito_launched_(false) {
-  BrowserList::AddObserver(this);
+std::unique_ptr<WindowedIncognitoObserver>
+WindowedIncognitoMonitor::CreateObserver() {
+  base::AutoLock lock(lock_);
+  return std::make_unique<WindowedIncognitoObserver>(
+      this, num_incognito_window_opened_);
 }
 
-WindowedIncognitoObserver::~WindowedIncognitoObserver() {
+WindowedIncognitoObserver::WindowedIncognitoObserver(
+    WindowedIncognitoMonitor* monitor,
+    uint64_t num_incognito_window_opened)
+    : windowed_incognito_monitor_(monitor),
+      num_incognito_window_opened_(num_incognito_window_opened) {}
+
+bool WindowedIncognitoObserver::IncognitoLaunched() const {
+  return windowed_incognito_monitor_->IncognitoLaunched(
+      num_incognito_window_opened_);
+}
+
+bool WindowedIncognitoObserver::IncognitoActive() const {
+  return windowed_incognito_monitor_->IncognitoActive();
+}
+
+WindowedIncognitoMonitor::WindowedIncognitoMonitor()
+    : num_active_incognito_windows_(0), num_incognito_window_opened_(0) {
+  BrowserList::AddObserver(this);
+
+  // No need to acquire |lock_| because no observer has been created yet.
+  // Iterate over the BrowserList to get the current value of
+  // |num_active_incognito_windows_|.
+  for (auto* window : *BrowserList::GetInstance())
+    if (window->profile()->IsOffTheRecord())
+      num_active_incognito_windows_++;
+}
+
+WindowedIncognitoMonitor::~WindowedIncognitoMonitor() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BrowserList::RemoveObserver(this);
 }
 
-void WindowedIncognitoObserver::OnBrowserAdded(Browser* browser) {
-  if (browser->profile()->IsOffTheRecord())
-    incognito_launched_ = true;
+bool WindowedIncognitoMonitor::IncognitoActive() const {
+  base::AutoLock lock(lock_);
+  return num_active_incognito_windows_ > 0;
+}
+
+bool WindowedIncognitoMonitor::IncognitoLaunched(
+    uint64_t prev_num_incognito_opened) const {
+  base::AutoLock lock(lock_);
+  // Whether there is any incognito window opened after the observer was
+  // created.
+  return prev_num_incognito_opened < num_incognito_window_opened_;
+}
+
+void WindowedIncognitoMonitor::OnBrowserAdded(Browser* browser) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  base::AutoLock lock(lock_);
+  if (!browser->profile()->IsOffTheRecord())
+    return;
+
+  num_active_incognito_windows_++;
+  num_incognito_window_opened_++;
+}
+
+void WindowedIncognitoMonitor::OnBrowserRemoved(Browser* browser) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  base::AutoLock lock(lock_);
+  if (!browser->profile()->IsOffTheRecord())
+    return;
+
+  DCHECK(num_active_incognito_windows_ > 0);
+  num_active_incognito_windows_--;
 }
 
 }  // namespace metrics

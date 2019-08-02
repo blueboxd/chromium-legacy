@@ -25,8 +25,8 @@ namespace history {
 
 TopSitesBackend::TopSitesBackend()
     : db_(new TopSitesDatabase()),
-      db_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::USER_VISIBLE,
+      db_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()})) {
   DCHECK(db_task_runner_);
 }

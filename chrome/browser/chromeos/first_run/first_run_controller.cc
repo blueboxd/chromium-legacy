@@ -49,7 +49,7 @@ std::unique_ptr<views::Widget> CreateFirstRunWidget() {
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   ash_util::SetupWidgetInitParamsForContainer(
       &params, ash::kShellWindowId_OverlayContainer);
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 

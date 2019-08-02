@@ -18,6 +18,7 @@ namespace metrics {
 
 struct CPUIdentity;
 class PerfOutputCall;
+class WindowedIncognitoMonitor;
 class WindowedIncognitoObserver;
 
 // Enables collection of perf events profile data. perf aka "perf events" is a
@@ -86,6 +87,8 @@ class PerfCollector : public MetricCollector {
   // perf data processing code.
   std::vector<uint32_t> max_frequencies_mhz_;
 
+  std::unique_ptr<WindowedIncognitoMonitor> windowed_incognito_monitor_;
+
  private:
   // Change the values in |collection_params_| and the commands in
   // |command_selector_| for any keys that are present in |params|.
@@ -97,6 +100,9 @@ class PerfCollector : public MetricCollector {
 
   // An active call to perf/quipper, if set.
   std::unique_ptr<PerfOutputCall> perf_output_call_;
+
+  // For destroying |windowed_incognito_monitor_| on the UI thread.
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   base::WeakPtrFactory<PerfCollector> weak_factory_;
 

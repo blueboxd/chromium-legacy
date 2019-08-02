@@ -10,6 +10,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "base/allocator/buildflags.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 
@@ -111,7 +112,7 @@ size_t ProcessMetrics::GetMallocUsage() {
   return stats.size_in_use;
 #elif defined(OS_LINUX) || defined(OS_ANDROID)
   struct mallinfo minfo = mallinfo();
-#if defined(USE_TCMALLOC)
+#if BUILDFLAG(USE_TCMALLOC)
   return minfo.uordblks;
 #else
   return minfo.hblkhd + minfo.arena;

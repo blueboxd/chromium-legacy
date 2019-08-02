@@ -153,9 +153,6 @@ struct URLRequest {
   // The referrer policy to use.
   URLRequestReferrerPolicy referrer_policy;
 
-  // Whether the frame that initiated this request is used for prerendering.
-  bool is_prerendering;
-
   // Additional HTTP request headers.
   HttpRequestHeaders headers;
 
@@ -178,14 +175,6 @@ struct URLRequest {
   // net::URLRequest load flags.
   int32 load_flags;
 
-  // If this request originated from a pepper plugin running in a child
-  // process, this identifies which process it came from. Otherwise, it
-  // is zero.
-  // -1 to match ChildProcessHost::kInvalidUniqueID
-  // TODO(jam): remove this from the struct since network service shouldn't know
-  // about this.
-  int32 plugin_child_id;
-
   // What this resource load is for (main frame, sub-frame, sub-resource,
   // object).
   // Note: this is an enum of type content::ResourceType.
@@ -195,9 +184,6 @@ struct URLRequest {
 
   // The priority of this request determined by Blink.
   RequestPriority priority;
-
-  // Indicates which frame (or worker context) the request is being loaded into.
-  mojo_base.mojom.UnguessableToken? appcache_host_id;
 
   // True if corresponding AppCache group should be reset.
   bool should_reset_appcache;
@@ -289,9 +275,6 @@ struct URLRequest {
   // about this.
   int32 transition_type;
 
-  // Whether or not we should allow the URL to download.
-  bool allow_download;
-
   // Whether to intercept headers to pass back to the renderer.
   // This also enables reporting of SSLInfo in URLLoaderClient's
   // OnResponseReceived and OnComplete, as well as invocation of
@@ -304,9 +287,6 @@ struct URLRequest {
   // TODO(jam): remove this from the struct since network service shouldn't know
   // about this.
   int32 previews_state;
-
-  // Whether or not the initiator of this request is a secure context.
-  bool initiated_in_secure_context;
 
   // Whether or not this request (including redirects) should be upgraded to
   // HTTPS due to an Upgrade-Insecure-Requests requirement.

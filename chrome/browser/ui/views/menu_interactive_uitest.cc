@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, TestMouseOverShownMenu) {
   params.native_widget = CreateNativeWidget(
       NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA, &params, widget);
 #endif
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   widget->Activate();
   // SetupMenu leaves the mouse position where the first menu item will be

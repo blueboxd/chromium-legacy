@@ -383,6 +383,7 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #elif defined(OS_CHROMEOS)
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/ash_service_registry.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
@@ -407,7 +408,6 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/speech/tts_chromeos.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -636,6 +636,14 @@
 
 #if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+#include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
+#include "components/spellcheck/common/spellcheck.mojom.h"
+#if BUILDFLAG(HAS_SPELLCHECK_PANEL)
+#include "chrome/browser/spellchecker/spell_check_panel_host_impl.h"
+#endif
 #endif
 
 #if defined(BROWSER_MEDIA_CONTROLS_MENU)
@@ -1507,8 +1515,7 @@ bool ChromeContentBrowserClient::ShouldUseMobileFlingCurve() {
 #if defined(OS_ANDROID)
   return true;
 #elif defined(OS_CHROMEOS)
-  return TabletModeClient::Get() &&
-         TabletModeClient::Get()->tablet_mode_enabled();
+  return ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode();
 #else
   return false;
 #endif  // defined(OS_ANDROID)
@@ -3874,6 +3881,27 @@ void ChromeContentBrowserClient::BindInterfaceRequest(
     mojo::ScopedMessagePipeHandle* interface_pipe) {
   if (source_info.identity.name() == content::mojom::kGpuServiceName)
     gpu_binder_registry_.TryBindInterface(interface_name, interface_pipe);
+}
+
+void ChromeContentBrowserClient::BindHostReceiverForRenderer(
+    content::RenderProcessHost* render_process_host,
+    mojo::GenericPendingReceiver receiver) {
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+  if (auto host_receiver = receiver.As<spellcheck::mojom::SpellCheckHost>()) {
+    SpellCheckHostChromeImpl::Create(render_process_host->GetID(),
+                                     std::move(host_receiver));
+    return;
+  }
+
+#if BUILDFLAG(HAS_SPELLCHECK_PANEL)
+  if (auto panel_host_receiver =
+          receiver.As<spellcheck::mojom::SpellCheckPanelHost>()) {
+    SpellCheckPanelHostImpl::Create(render_process_host->GetID(),
+                                    std::move(panel_host_receiver));
+    return;
+  }
+#endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 }
 
 void ChromeContentBrowserClient::WillStartServiceManager() {

@@ -6,7 +6,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
@@ -17,8 +16,7 @@ namespace {
 constexpr int kCustomerHasNoBillingCustomerNumber = 0;
 }
 
-int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
-                             bool should_log_validity) {
+int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager) {
   DCHECK(personal_data_manager);
 
   // Get billing customer ID from the synced PaymentsCustomerData.
@@ -28,21 +26,7 @@ int64_t GetBillingCustomerId(PersonalDataManager* personal_data_manager,
     int64_t billing_customer_id = 0;
     if (base::StringToInt64(base::StringPiece(customer_data->customer_id),
                             &billing_customer_id)) {
-      if (should_log_validity) {
-        AutofillMetrics::LogPaymentsCustomerDataBillingIdStatus(
-            AutofillMetrics::BillingIdStatus::VALID);
-      }
       return billing_customer_id;
-    } else {
-      if (should_log_validity) {
-        AutofillMetrics::LogPaymentsCustomerDataBillingIdStatus(
-            AutofillMetrics::BillingIdStatus::PARSE_ERROR);
-      }
-    }
-  } else {
-    if (should_log_validity) {
-      AutofillMetrics::LogPaymentsCustomerDataBillingIdStatus(
-          AutofillMetrics::BillingIdStatus::MISSING);
     }
   }
   return kCustomerHasNoBillingCustomerNumber;

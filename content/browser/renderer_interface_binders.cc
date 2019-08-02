@@ -171,8 +171,13 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
           // RenderFrameHostImpl instead.
           NativeFileSystemManagerImpl::BindRequestFromUIThread(
               static_cast<StoragePartitionImpl*>(host->GetStoragePartition()),
-              NativeFileSystemManagerImpl::BindingContext(origin, host->GetID(),
-                                                          MSG_ROUTING_NONE),
+              NativeFileSystemManagerImpl::BindingContext(
+                  origin,
+                  // TODO(https://crbug.com/989323): Obtain and use a better URL
+                  // for workers instead of the origin as source url. This URL
+                  // will be used for SafeBrowsing checks and for the Quarantine
+                  // Service.
+                  origin.GetURL(), host->GetID(), MSG_ROUTING_NONE),
               std::move(request));
         }));
   }

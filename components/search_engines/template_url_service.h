@@ -21,7 +21,6 @@
 #include "base/observer_list.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
-#include "components/google/core/browser/google_url_tracker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/search_engines/default_search_manager.h"
@@ -113,7 +112,6 @@ class TemplateURLService : public WebDataServiceConsumer,
       std::unique_ptr<SearchTermsData> search_terms_data,
       const scoped_refptr<KeywordWebDataService>& web_data_service,
       std::unique_ptr<TemplateURLServiceClient> client,
-      GoogleURLTracker* google_url_tracker,
       rappor::RapporServiceImpl* rappor_service,
       const base::RepeatingClosure& dsp_change_callback);
   // The following is for testing.
@@ -605,14 +603,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // If necessary, generates a visit for the site http:// + t_url.keyword().
   void AddTabToSearchVisit(const TemplateURL& t_url);
 
-  // Requests the Google URL tracker to check the server if necessary.
-  void RequestGoogleURLTrackerServerCheckIfNecessary();
-
-  // Invoked when the Google base URL has changed. Updates the mapping for all
-  // TemplateURLs that have a replacement term of {google:baseURL} or
-  // {google:baseSuggestURL}.
-  void GoogleBaseURLChanged();
-
   // Adds a new TemplateURL to this model.
   //
   // If |newly_adding| is false, we assume that this TemplateURL was already
@@ -742,8 +732,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   std::unique_ptr<TemplateURLServiceClient> client_;
 
-  GoogleURLTracker* google_url_tracker_ = nullptr;
-
   // ---------- Metrics related members ---------------------------------------
   rappor::RapporServiceImpl* rappor_service_ = nullptr;
 
@@ -849,9 +837,6 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Helper class to manage the default search engine.
   DefaultSearchManager default_search_manager_;
-
-  std::unique_ptr<GoogleURLTracker::Subscription>
-      google_url_updated_subscription_;
 
   // This tracks how many Scoper handles exist. When the number of handles drops
   // to zero, a notification is made to observers if

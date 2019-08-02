@@ -111,6 +111,7 @@ class MockContentVerifierDelegate : public ContentVerifierDelegate {
   ~MockContentVerifierDelegate() override;
 
   // ContentVerifierDelegate:
+  bool ShouldBeChecked(const Extension& extension) override;
   bool ShouldBeVerified(const Extension& extension) override;
   ContentVerifierKey GetPublicKey() override;
   GURL GetSignatureFetchUrl(const ExtensionId& extension_id,

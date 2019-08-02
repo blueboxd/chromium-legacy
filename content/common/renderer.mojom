@@ -92,9 +92,6 @@ struct CreateFrameWidgetParams {
   // new RenderFrame. If the RenderFrame does not need a RenderWidget, this
   // is MSG_ROUTING_NONE and the other parameters are not read.
   int32 routing_id;
-
-  // Tells the new RenderWidget whether it is initially hidden.
-  bool hidden;
 };
 
 struct CreateFrameParams {
@@ -182,6 +179,11 @@ interface Renderer {
 
   // Tells the renderer to create a new view.
   CreateView(CreateViewParams params);
+
+  // Tells the renderer to destroy an existing view. This method must be called
+  // exactly once for each invocation of CreateView. |view_id| is synonymous
+  // with |routing_id|.
+  DestroyView(int32 view_id);
 
   // Tells the renderer to create a new RenderFrame.
   CreateFrame(CreateFrameParams params);

@@ -832,9 +832,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
     test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
                                                 GURL(kTestUrl1));
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), PageLoad::kInteractiveTiming_FirstInputDelay3Name, 50);
+        kv.second.get(), PageLoad::kInteractiveTiming_FirstInputDelay4Name, 50);
     test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(), PageLoad::kInteractiveTiming_FirstInputTimestamp3Name,
+        kv.second.get(), PageLoad::kInteractiveTiming_FirstInputTimestamp4Name,
         712);
   }
 }

@@ -300,7 +300,7 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
 void UnpackedInstaller::GetAbsolutePath() {
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&UnpackedInstaller::CheckExtensionFileAccess, this));
 }
@@ -323,16 +323,14 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
 void UnpackedInstaller::LoadWithFileAccess(int flags) {
   std::string error;
   if (!LoadExtension(Manifest::UNPACKED, flags, &error)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError, this,
-                       error));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&UnpackedInstaller::ReportExtensionLoadError,
+                                  this, error));
     return;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&UnpackedInstaller::StartInstallChecks, this));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&UnpackedInstaller::StartInstallChecks, this));
 }
 
 void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {

@@ -102,7 +102,7 @@ PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
                                  base::Unretained(this)));
   is_printing_enabled_.Init(prefs::kPrintingEnabled, profile->GetPrefs());
   is_printing_enabled_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {
@@ -269,7 +269,7 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (canceled) {
     int routing_id = reply_msg->routing_id();
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&PrintingMessageFilter::NotifySystemDialogCancelled,
                        this, routing_id));

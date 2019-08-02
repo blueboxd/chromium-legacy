@@ -439,8 +439,9 @@ class PreviewsDeciderImplTest
         std::make_unique<TestPreviewsOptimizationGuide>(
             &optimization_guide_service_,
             scoped_task_environment_.GetMainThreadTaskRunner(),
-            base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+            base::CreateSequencedTaskRunner({base::ThreadPool(),
+                                             base::MayBlock(),
+                                             base::TaskPriority::BEST_EFFORT}),
             temp_dir_.GetPath(), pref_service_.get(), db_provider_.get(),
             &optimization_guide_top_host_provider_, url_loader_factory_),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),

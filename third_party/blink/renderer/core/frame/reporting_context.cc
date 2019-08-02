@@ -90,11 +90,11 @@ void ReportingContext::CountReport(Report* report) {
   const String& type = report->type();
   WebFeature feature;
 
-  if (type == "deprecation") {
+  if (type == ReportType::kDeprecation) {
     feature = WebFeature::kDeprecationReport;
-  } else if (type == "feature-policy") {
+  } else if (type == ReportType::kFeaturePolicyViolation) {
     feature = WebFeature::kFeaturePolicyReport;
-  } else if (type == "intervention") {
+  } else if (type == ReportType::kIntervention) {
     feature = WebFeature::kInterventionReport;
   } else {
     return;
@@ -115,10 +115,9 @@ ReportingContext::GetReportingService() const {
 void ReportingContext::SendToReportingAPI(Report* report,
                                           const String& endpoint) const {
   const String& type = report->type();
-  if (!(type == "csp-violation" ||
-        type == "deprecation" ||
-        type == "feature-policy-violation" ||
-        type == "intervention")) {
+  if (!(type == ReportType::kCSPViolation || type == ReportType::kDeprecation ||
+        type == ReportType::kFeaturePolicyViolation ||
+        type == ReportType::kIntervention)) {
     return;
   }
 
@@ -133,7 +132,7 @@ void ReportingContext::SendToReportingAPI(Report* report,
     column_number = 0;
   KURL url = KURL(report->url());
 
-  if (type == "csp-violation") {
+  if (type == ReportType::kCSPViolation) {
     // Send the CSP violation report.
     const CSPViolationReportBody* body =
         static_cast<CSPViolationReportBody*>(report->body());
@@ -151,7 +150,7 @@ void ReportingContext::SendToReportingAPI(Report* report,
         body->statusCode(),
         line_number,
         column_number);
-  } else if (type == "deprecation") {
+  } else if (type == ReportType::kDeprecation) {
     // Send the deprecation report.
     const DeprecationReportBody* body =
         static_cast<DeprecationReportBody*>(report->body());
@@ -162,14 +161,14 @@ void ReportingContext::SendToReportingAPI(Report* report,
     GetReportingService()->QueueDeprecationReport(
         url, body->id(), anticipated_removal, body->message(),
         body->sourceFile(), line_number, column_number);
-  } else if (type == "feature-policy-violation") {
+  } else if (type == ReportType::kFeaturePolicyViolation) {
     // Send the feature policy violation report.
     const FeaturePolicyViolationReportBody* body =
         static_cast<FeaturePolicyViolationReportBody*>(report->body());
     GetReportingService()->QueueFeaturePolicyViolationReport(
         url, body->featureId(), body->disposition(), "Feature policy violation",
         body->sourceFile(), line_number, column_number);
-  } else if (type == "intervention") {
+  } else if (type == ReportType::kIntervention) {
     // Send the intervention report.
     const InterventionReportBody* body =
         static_cast<InterventionReportBody*>(report->body());

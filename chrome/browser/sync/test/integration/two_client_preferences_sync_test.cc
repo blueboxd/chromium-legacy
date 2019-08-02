@@ -44,9 +44,7 @@ class TwoClientPreferencesSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientPreferencesSyncTest);
 };
 
-// TODO(crbug.com/988404): Enable once not flaky anymore.
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
-                       E2E_ENABLED(DISABLED_Sanity)) {
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, E2E_ENABLED(Sanity)) {
   DisableVerifier();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // Wait until sync settles before we override the prefs below.
@@ -71,8 +69,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
                    "Sync.ModelTypeEntityChange3.PREFERENCE",
                    /*REMOTE_NON_INITIAL_UPDATE=*/4));
 
-  EXPECT_EQ(
-      1U, histogram_tester
+  EXPECT_NE(
+      0U, histogram_tester
               .GetAllSamples(
                   "Sync.NonReflectionUpdateFreshnessPossiblySkewed2.PREFERENCE")
               .size());

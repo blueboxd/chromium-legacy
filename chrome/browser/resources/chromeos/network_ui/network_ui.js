@@ -517,9 +517,10 @@ const NetworkUI = (function() {
                              .getMojoServiceProxy();
 
     /** Set the refresh rate if the interval is found in the url. */
-    const interval = parseQueryParams(window.location)['refresh'];
-    if (interval && interval != '')
+    const interval = new URL(window.location.href).searchParams.get('refresh');
+    if (interval) {
       setInterval(requestNetworks, parseInt(interval, 10) * 1000);
+    }
   };
 
   /**

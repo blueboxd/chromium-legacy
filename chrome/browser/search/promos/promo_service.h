@@ -14,7 +14,6 @@
 #include "chrome/browser/search/promos/promo_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class GoogleURLTracker;
 class GURL;
 
 namespace network {
@@ -41,9 +40,8 @@ class PromoService : public KeyedService {
     FATAL_ERROR
   };
 
-  PromoService(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      GoogleURLTracker* google_url_tracker);
+  explicit PromoService(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~PromoService() override;
 
   // KeyedService implementation.
@@ -79,8 +77,6 @@ class PromoService : public KeyedService {
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
-
-  GoogleURLTracker* google_url_tracker_;
 
   base::ObserverList<PromoServiceObserver, true>::Unchecked observers_;
 

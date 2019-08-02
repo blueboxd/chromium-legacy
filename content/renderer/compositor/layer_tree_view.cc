@@ -84,8 +84,9 @@ void LayerTreeView::Initialize(
     // The image worker thread needs to allow waiting since it makes discardable
     // shared memory allocations which need to make synchronous calls to the
     // IO thread.
-    params.image_worker_task_runner = base::CreateSequencedTaskRunnerWithTraits(
-        {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE,
+    params.image_worker_task_runner = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::WithBaseSyncPrimitives(),
+         base::TaskPriority::USER_VISIBLE,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   }
   if (!is_threaded) {

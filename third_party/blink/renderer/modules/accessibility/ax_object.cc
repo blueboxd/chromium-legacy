@@ -1178,14 +1178,28 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (!GetNode())
     return false;
 
+  // If the node is part of the user agent shadow dom, or has the explicit
+  // internal Role::kIgnored, they aren't interesting for paragraph navigation
+  // or LabelledBy/DescribedBy relationships.
+  if (RoleValue() == ax::mojom::Role::kIgnored ||
+      GetNode()->IsInUserAgentShadowRoot()) {
+    return false;
+  }
+
   // Always pass through Line Breaking objects, this is necessary to
   // detect paragraph edges, which are defined as hard-line breaks.
-  //
-  // Though if the node is part of the shadow dom, or has the explicit
-  // internal Role::kIgnored, they aren't interesting for paragraph
-  // navigation so exclude those cases.
-  return RoleValue() != ax::mojom::Role::kIgnored &&
-         !GetNode()->IsInUserAgentShadowRoot() && IsLineBreakingObject();
+  if (IsLineBreakingObject())
+    return true;
+
+  // Allow the browser side ax tree to access "visibility: hidden" nodes. This
+  // is useful for APIs that return the node referenced by aria-labeledby and
+  // aria-descibedby
+  if (GetLayoutObject() &&
+      GetLayoutObject()->Style()->Visibility() == EVisibility::kHidden) {
+    return true;
+  }
+
+  return false;
 }
 
 const AXObject* AXObject::DatetimeAncestor(int max_levels_to_check) const {
@@ -1491,8 +1505,15 @@ String AXObject::GetName(ax::mojom::NameFrom& name_from,
                          AXObject::AXObjectVector* name_objects) const {
   HeapHashSet<Member<const AXObject>> visited;
   AXRelatedObjectVector related_objects;
-  String text = TextAlternative(false, false, visited, name_from,
-                                &related_objects, nullptr);
+  // For purposes of computing a text alternative, if an ignored node is
+  // included in the tree, assume that it is the target of aria-labelledby or
+  // aria-describedby, since we can't tell yet whether that's the case. If it
+  // isn't exposed, the AT will never see the name anyways.
+  bool hidden_and_ignored_but_included_in_tree =
+      IsHiddenForTextAlternativeCalculation() &&
+      AccessibilityIsIgnoredButIncludedInTree();
+  String text = TextAlternative(false, hidden_and_ignored_but_included_in_tree,
+                                visited, name_from, &related_objects, nullptr);
 
   ax::mojom::Role role = RoleValue();
   if (!GetNode() ||
@@ -1513,8 +1534,16 @@ String AXObject::GetName(NameSources* name_sources) const {
   AXObjectSet visited;
   ax::mojom::NameFrom tmp_name_from;
   AXRelatedObjectVector tmp_related_objects;
-  String text = TextAlternative(false, false, visited, tmp_name_from,
-                                &tmp_related_objects, name_sources);
+  // For purposes of computing a text alternative, if an ignored node is
+  // included in the tree, assume that it is the target of aria-labelledby or
+  // aria-describedby, since we can't tell yet whether that's the case. If it
+  // isn't exposed, the AT will never see the name anyways.
+  bool hidden_and_ignored_but_included_in_tree =
+      IsHiddenForTextAlternativeCalculation() &&
+      AccessibilityIsIgnoredButIncludedInTree();
+  String text =
+      TextAlternative(false, hidden_and_ignored_but_included_in_tree, visited,
+                      tmp_name_from, &tmp_related_objects, name_sources);
   text = text.SimplifyWhiteSpace(IsHTMLSpace<UChar>);
   return text;
 }

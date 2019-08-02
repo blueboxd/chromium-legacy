@@ -563,11 +563,10 @@ void Controller::StartPeriodicScriptChecks() {
   if (periodic_script_check_scheduled_)
     return;
   periodic_script_check_scheduled_ = true;
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&Controller::OnPeriodicScriptCheck,
-                     weak_ptr_factory_.GetWeakPtr()),
-      settings_.periodic_script_check_interval);
+  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                        base::BindOnce(&Controller::OnPeriodicScriptCheck,
+                                       weak_ptr_factory_.GetWeakPtr()),
+                        settings_.periodic_script_check_interval);
 }
 
 void Controller::StopPeriodicScriptChecks() {
@@ -597,11 +596,10 @@ void Controller::OnPeriodicScriptCheck() {
   }
 
   script_tracker()->CheckScripts();
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&Controller::OnPeriodicScriptCheck,
-                     weak_ptr_factory_.GetWeakPtr()),
-      settings_.periodic_script_check_interval);
+  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                        base::BindOnce(&Controller::OnPeriodicScriptCheck,
+                                       weak_ptr_factory_.GetWeakPtr()),
+                        settings_.periodic_script_check_interval);
 }
 
 void Controller::OnGetScripts(const GURL& url,

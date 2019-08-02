@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/supervised_user_cros_settings_provider.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/system_settings_provider.h"
@@ -97,6 +98,11 @@ CrosSettings::CrosSettings(DeviceSettingsService* device_settings_service,
                  // This is safe since |this| is never deleted.
                  base::Unretained(this)));
 
+  auto supervised_user_cros_provider =
+      std::make_unique<SupervisedUserCrosSettingsProvider>(notify_cb);
+  supervised_user_cros_settings_provider_ = supervised_user_cros_provider.get();
+
+  AddSettingsProvider(std::move(supervised_user_cros_provider));
   AddSettingsProvider(std::make_unique<DeviceSettingsProvider>(
       notify_cb, device_settings_service, local_state));
   AddSettingsProvider(std::make_unique<SystemSettingsProvider>(notify_cb));

@@ -32,35 +32,22 @@ class BackgroundTaskCoordinator {
       std::map<SchedulerClientType, std::vector<const NotificationEntry*>>;
   using ClientStates = std::map<SchedulerClientType, const ClientState*>;
   using TimeRandomizer = base::RepeatingCallback<base::TimeDelta()>;
+
   static base::TimeDelta DefaultTimeRandomizer(
       const base::TimeDelta& time_window);
-  BackgroundTaskCoordinator(
+
+  static std::unique_ptr<BackgroundTaskCoordinator> Create(
       std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
       const SchedulerConfig* config,
       TimeRandomizer time_randomizer,
       base::Clock* clock);
+
   virtual ~BackgroundTaskCoordinator();
 
   // Schedule background task based on current notification in the storage.
   virtual void ScheduleBackgroundTask(Notifications notifications,
                                       ClientStates client_states,
-                                      SchedulerTaskTime task_start_time);
-
- private:
-  // The class that actually schedules platform background task.
-  std::unique_ptr<NotificationBackgroundTaskScheduler> background_task_;
-
-  // System configuration.
-  const SchedulerConfig* config_;
-
-  // Randomize the time to show the notification, to avoid large number of users
-  // to perform actions at the same time.
-  TimeRandomizer time_randomizer_;
-
-  // Clock to query the current timestamp.
-  base::Clock* clock_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundTaskCoordinator);
+                                      SchedulerTaskTime task_start_time) = 0;
 };
 
 }  // namespace notifications

@@ -142,7 +142,7 @@ public class ChromeContextMenuItem implements ContextMenuItem {
      * @param item #Item Item ID.
      * @return Returns the string that describes the action of the item.
      */
-    private static @StringRes int getStringID(@Item int item) {
+    private static @StringRes int getStringId(@Item int item) {
         assert STRING_IDS.length == Item.NUM_ENTRIES;
 
         if (FeatureUtilities.isTabGroupsAndroidEnabled() && item == Item.OPEN_IN_NEW_TAB) {
@@ -164,19 +164,19 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             case Item.OPEN_IN_BROWSER_ID:
                 return DefaultBrowserInfo.getTitleOpenInDefaultBrowser(false);
             case Item.SEARCH_BY_IMAGE:
-                return context.getString(getStringID(mItem),
+                return context.getString(getStringId(mItem),
                         TemplateUrlServiceFactory.get()
                                 .getDefaultSearchEngineTemplateUrl()
                                 .getShortName());
             case Item.OPEN_IN_EPHEMERAL_TAB:
             case Item.OPEN_IMAGE_IN_EPHEMERAL_TAB:
-                return SpanApplier.applySpans(context.getString(getStringID(mItem)),
+                return SpanApplier.applySpans(context.getString(getStringId(mItem)),
                         new SpanInfo("<new>", "</new>", new SuperscriptSpan(),
                                 new RelativeSizeSpan(0.75f),
                                 new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
                                         context.getResources(), R.color.default_text_color_blue))));
             default:
-                return context.getString(getStringID(mItem));
+                return context.getString(getStringId(mItem));
         }
     }
 }

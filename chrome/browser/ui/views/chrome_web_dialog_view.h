@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_CHROME_WEB_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_CHROME_WEB_DIALOG_VIEW_H_
 
+#include "base/optional.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget.h"
 
@@ -23,7 +24,7 @@ gfx::NativeWindow ShowWebDialogWithParams(
     gfx::NativeView parent,
     content::BrowserContext* context,
     ui::WebDialogDelegate* delegate,
-    const views::Widget::InitParams* extra_params);
+    base::Optional<views::Widget::InitParams> extra_params);
 
 }  // namespace chrome
 

@@ -125,6 +125,7 @@ config("blink_platform_config") {
   configs = [
     "//third_party/blink/renderer:config",
     "//third_party/blink/renderer:inside_blink",
+    "//build/config/compiler:noshadowing",
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
@@ -1211,8 +1212,8 @@ jumbo_component("platform") {
     "mhtml/shared_buffer_chunk_reader.cc",
     "mhtml/shared_buffer_chunk_reader.h",
     "mojo/big_string_mojom_traits.h",
-    "mojo/bluetooth_struct_traits.cc",
-    "mojo/bluetooth_struct_traits.h",
+    "mojo/bluetooth_mojom_traits.cc",
+    "mojo/bluetooth_mojom_traits.h",
     "mojo/canonical_cookie_mojom_traits.cc",
     "mojo/canonical_cookie_mojom_traits.h",
     "mojo/fetch_api_request_headers_mojom_traits.h",
@@ -1762,7 +1763,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "media/webaudiosourceprovider_impl_test.cc",
     "mhtml/mhtml_parser_test.cc",
     "mojo/big_string_mojom_traits_test.cc",
-    "mojo/geometry_struct_traits_test.cc",
+    "mojo/geometry_mojom_traits_test.cc",
     "mojo/interface_invalidator_test.cc",
     "mojo/kurl_security_origin_test.cc",
     "mojo/string16_mojom_traits_test.cc",

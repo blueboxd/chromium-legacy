@@ -48,7 +48,7 @@ class AXTreeSourceViewsTest : public ViewsTestBase {
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(11, 22, 333, 444);
     params.context = GetContext();
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     widget_->SetContentsView(new View());
 
     label1_ = new Label(base::ASCIIToUTF16("Label 1"));

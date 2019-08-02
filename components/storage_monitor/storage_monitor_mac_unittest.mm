@@ -60,7 +60,7 @@ class StorageMonitorMacTest : public testing::Test {
   }
 
   void UpdateDisk(StorageInfo info, StorageMonitorMac::UpdateType update_type) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&StorageMonitorMac::UpdateDisk,
                        base::Unretained(monitor_.get()), update_type,

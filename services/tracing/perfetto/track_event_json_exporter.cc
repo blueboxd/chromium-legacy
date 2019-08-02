@@ -639,15 +639,22 @@ void TrackEventJSONExporter::HandleStreamingProfilePacket(
 
 void TrackEventJSONExporter::HandleProfiledFrameSymbols(
     const perfetto::protos::ProfiledFrameSymbols& frame_symbols) {
-  auto iter =
-      unordered_state_data_[current_state_->trusted_packet_sequence_id]
-          .interned_profiled_frame_.insert(std::make_pair(
-              frame_symbols.frame_iid(), frame_symbols.function_name_id()));
+  int64_t function_name_id = 0;
+  // Chrome never has more than one function for an address, so we can just
+  // take the first one.
+  if (!frame_symbols.function_name_id().empty()) {
+    DCHECK(frame_symbols.function_name_id().size() == 1);
+    function_name_id = frame_symbols.function_name_id()[0];
+  }
+
+  auto iter = unordered_state_data_[current_state_->trusted_packet_sequence_id]
+                  .interned_profiled_frame_.insert(std::make_pair(
+                      frame_symbols.frame_iid(), function_name_id));
   auto& frame_names =
       unordered_state_data_[current_state_->trusted_packet_sequence_id]
           .interned_frame_names_;
-  DCHECK(iter.second || frame_names[iter.first->second] ==
-                            frame_names[frame_symbols.function_name_id()]);
+  DCHECK(iter.second ||
+         frame_names[iter.first->second] == frame_names[function_name_id]);
 }
 
 void TrackEventJSONExporter::HandleDebugAnnotation(

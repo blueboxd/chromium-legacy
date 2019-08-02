@@ -170,8 +170,7 @@ const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     NavigationRequestInfo* request_info,
-    int frame_tree_node_id,
-    bool allow_download) {
+    int frame_tree_node_id) {
   // TODO(scottmg): Port over stuff from RDHI::BeginNavigationRequest() here.
   auto new_request = std::make_unique<network::ResourceRequest>();
 
@@ -228,7 +227,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
 
   new_request->request_body = request_info->common_params->post_data.get();
   new_request->report_raw_headers = request_info->report_raw_headers;
-  new_request->allow_download = allow_download;
   new_request->has_user_gesture = request_info->common_params->has_user_gesture;
   new_request->enable_load_timing = true;
 
@@ -698,18 +696,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         browser_context_to_use = browser_context_;
       else
         resource_context_to_use = resource_context_;
-      // TODO(crbug.com/984460): Don't use WeakPtrs for callbacks. These
-      // WeakPtrs are to work around a case where ServiceWorkerNavigationLoader
-      // outlives the interceptor. We may want to reset fallback callback in
-      // ServiceWorkerNavigationLoader when the URLLoaderRequestController is
-      // going away.
       next_interceptor->MaybeCreateLoader(
           *resource_request_, browser_context_to_use, resource_context_to_use,
           base::BindOnce(&URLLoaderRequestController::MaybeStartLoader,
-                         weak_factory_.GetWeakPtr(), next_interceptor),
+                         base::Unretained(this), next_interceptor),
           base::BindOnce(
               &URLLoaderRequestController::FallbackToNonInterceptedRequest,
-              weak_factory_.GetWeakPtr()));
+              base::Unretained(this)));
       return;
     }
 
@@ -1393,8 +1386,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       appcache_handle ? appcache_handle->core() : nullptr;
 
   std::unique_ptr<network::ResourceRequest> new_request =
-      CreateResourceRequest(request_info.get(), frame_tree_node_id,
-                            download_policy_.IsDownloadAllowed());
+      CreateResourceRequest(request_info.get(), frame_tree_node_id);
 
   auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
   scoped_refptr<SignedExchangePrefetchMetricRecorder>

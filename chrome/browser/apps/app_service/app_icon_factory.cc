@@ -114,6 +114,52 @@ void RunCallbackWithCompressedData(
   std::move(callback).Run(apps::mojom::IconValue::New());
 }
 
+void RunCallbackWithCompressedDataFromExtension(
+    const extensions::Extension* extension,
+    extensions::ExtensionResource ext_resource,
+    int size_hint_in_dip,
+    int default_icon_resource,
+    bool is_placeholder_icon,
+    apps::IconEffects icon_effects,
+    apps::mojom::Publisher::LoadIconCallback callback) {
+  // Load some component extensions' icons from statically compiled
+  // resources (built into the Chrome binary), and other extensions'
+  // icons (whether component extensions or otherwise) from files on
+  // disk.
+  //
+  // For the kUncompressed case, RunCallbackWithUncompressedImage
+  // calls extensions::ImageLoader::LoadImageAsync, which already handles
+  // that distinction. We can't use LoadImageAsync here, because the
+  // caller has asked for compressed icons (i.e. PNG-formatted data), not
+  // uncompressed (i.e. a gfx::ImageSkia).
+  if (extension && extension->location() == extensions::Manifest::COMPONENT) {
+    int resource_id = 0;
+    const extensions::ComponentExtensionResourceManager* manager =
+        extensions::ExtensionsBrowserClient::Get()
+            ->GetComponentExtensionResourceManager();
+    if (manager &&
+        manager->IsComponentExtensionResource(
+            extension->path(), ext_resource.relative_path(), &resource_id)) {
+      base::StringPiece data =
+          ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+              resource_id);
+      RunCallbackWithCompressedData(
+          size_hint_in_dip, default_icon_resource, is_placeholder_icon,
+          icon_effects, std::move(callback),
+          std::vector<uint8_t>(data.begin(), data.end()));
+      return;
+    }
+  }
+
+  // Try and load data from the resource file.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&CompressedDataFromResource, std::move(ext_resource)),
+      base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
+                     default_icon_resource, is_placeholder_icon, icon_effects,
+                     std::move(callback)));
+}
+
 // Like RunCallbackWithCompressedData, but calls "fallback(callback)" if the
 // data is empty.
 void RunCallbackWithCompressedDataWithFallback(
@@ -260,43 +306,10 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
       }
 
       case apps::mojom::IconCompression::kCompressed: {
-        // Load some component extensions' icons from statically compiled
-        // resources (built into the Chrome binary), and other extensions'
-        // icons (whether component extensions or otherwise) from files on
-        // disk.
-        //
-        // For the kUncompressed case above, RunCallbackWithUncompressedImage
-        // calls extensions::ImageLoader::LoadImageAsync, which already handles
-        // that distinction. We can't use LoadImageAsync here, because the
-        // caller has asked for compressed icons (i.e. PNG-formatted data), not
-        // uncompressed (i.e. a gfx::ImageSkia).
-        if (extension->location() == extensions::Manifest::COMPONENT) {
-          int resource_id = 0;
-          const extensions::ComponentExtensionResourceManager* manager =
-              extensions::ExtensionsBrowserClient::Get()
-                  ->GetComponentExtensionResourceManager();
-          if (manager && manager->IsComponentExtensionResource(
-                             extension->path(), ext_resource.relative_path(),
-                             &resource_id)) {
-            base::StringPiece data =
-                ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-                    resource_id);
-            RunCallbackWithCompressedData(
-                size_hint_in_dip, default_icon_resource, is_placeholder_icon,
-                icon_effects, std::move(callback),
-                std::vector<uint8_t>(data.begin(), data.end()));
-            return;
-          }
-        }
-
-        // Try and load data from the resource file.
-        base::PostTaskWithTraitsAndReplyWithResult(
-            FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-            base::BindOnce(&CompressedDataFromResource,
-                           std::move(ext_resource)),
-            base::BindOnce(&RunCallbackWithCompressedData, size_hint_in_dip,
-                           default_icon_resource, is_placeholder_icon,
-                           icon_effects, std::move(callback)));
+        RunCallbackWithCompressedDataFromExtension(
+            extension, std::move(ext_resource), size_hint_in_dip,
+            default_icon_resource, is_placeholder_icon, icon_effects,
+            std::move(callback));
         return;
       }
     }

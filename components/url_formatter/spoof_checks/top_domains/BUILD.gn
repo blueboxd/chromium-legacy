@@ -63,8 +63,10 @@ compiled_action("generate_top_domains_test_trie") {
   outputs = [
     "$target_gen_dir/test_domains-trie-inc.cc",
   ]
-  args =
-      rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
+
+  # Passing --for_testing flag marks only the first site with is_top_500.
+  args = rebase_path(inputs, root_build_dir) +
+         rebase_path(outputs, root_build_dir) + [ "--for_testing" ]
 }
 
 executable("make_top_domain_list_for_edit_distance") {

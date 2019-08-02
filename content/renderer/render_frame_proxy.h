@@ -32,10 +32,6 @@ struct WebRect;
 struct WebScrollIntoViewParams;
 }
 
-namespace viz {
-class SurfaceInfo;
-}
-
 namespace content {
 
 class ChildFrameCompositingHelper;
@@ -235,7 +231,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDeleteProxy();
   void OnChildFrameProcessGone();
   void OnCompositorFrameSwapped(const IPC::Message& message);
-  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info);
   void OnIntrinsicSizingInfoOfChildChanged(
       blink::WebIntrinsicSizingInfo sizing_info);
   void OnUpdateOpener(int opener_routing_id);
@@ -326,8 +321,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   viz::FrameSinkId frame_sink_id_;
   std::unique_ptr<viz::ParentLocalSurfaceIdAllocator>
       parent_local_surface_id_allocator_;
-
-  bool enable_surface_synchronization_ = false;
 
   gfx::Rect last_intersection_rect_;
   gfx::Rect last_compositor_visible_rect_;

@@ -127,24 +127,3 @@ TEST_F(LocaleTemplateUrlLoaderTest, OverrideDefaultSearch) {
   ASSERT_EQ(TemplateURLPrepopulateData::google.id,
             model()->GetDefaultSearchProvider()->prepopulate_id());
 }
-
-TEST_F(LocaleTemplateUrlLoaderTest, ChangedGoogleBaseURL) {
-  test_util()->VerifyLoad();
-  auto google_keyword = base::ASCIIToUTF16("google.com");
-  ASSERT_THAT(model()->GetTemplateURLForKeyword(google_keyword),
-              testing::NotNull());
-  test_util()->SetGoogleBaseURL(GURL("http://google.de"));
-
-  // After changing the base URL, the previous google keyword will no longer
-  // match.
-  ASSERT_EQ(nullptr, model()->GetTemplateURLForKeyword(google_keyword));
-
-  ASSERT_TRUE(loader()->LoadTemplateUrls(nullptr));
-
-  auto template_urls = model()->GetTemplateURLs();
-  ASSERT_EQ(1, std::count_if(template_urls.begin(), template_urls.end(),
-                             [](TemplateURL* template_url) {
-                               return template_url->prepopulate_id() ==
-                                      TemplateURLPrepopulateData::google.id;
-                             }));
-}

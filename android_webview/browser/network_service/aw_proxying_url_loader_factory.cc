@@ -499,7 +499,7 @@ void InterceptedRequest::OnReceiveResponse(
     std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> error_info =
         AwContentsClientBridge::ExtractHttpErrorInfo(head.headers.get());
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&OnReceivedHttpErrorOnUiThread, process_id_,
                        request_.render_frame_id, AwWebResourceRequest(request_),
@@ -516,7 +516,7 @@ void InterceptedRequest::OnReceiveResponse(
       if (ParseHeader(header_string, ALLOW_ANY_REALM, &header_data)) {
         // TODO(timvolodine): consider simplifying this and above callback
         // code, crbug.com/897149.
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {content::BrowserThread::UI},
             base::BindOnce(&OnNewLoginRequestOnUiThread, process_id_,
                            request_.render_frame_id, header_data.realm,
@@ -692,7 +692,7 @@ void InterceptedRequest::SendErrorCallback(int error_code,
     return;
 
   sent_error_callback_ = true;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&OnReceivedErrorOnUiThread, process_id_,
                      request_.render_frame_id, AwWebResourceRequest(request_),

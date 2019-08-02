@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
@@ -184,6 +185,11 @@ TEST_F(OptimizationGuideHintsManagerTest,
       optimization_guide::switches::kHintsProtoOverride, encoded_config);
   CreateServiceAndHintsManager();
 
+  // The below histogram should not be recorded since hints weren't coming
+  // directly from the component.
+  histogram_tester.ExpectTotalCount("OptimizationGuide.ProcessHintsResult", 0);
+  // However, we still expect the local histogram for the hints being updated to
+  // be recorded.
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.UpdateComponentHints.Result2", true, 1);
 }
@@ -196,8 +202,10 @@ TEST_F(OptimizationGuideHintsManagerTest,
       optimization_guide::switches::kHintsProtoOverride, "this-is-not-a-proto");
   CreateServiceAndHintsManager();
 
-  // If the proto was invalid, we do not expect it to go through with the
-  // process of updating hints.
+  // The below histogram should not be recorded since hints weren't coming
+  // directly from the component.
+  histogram_tester.ExpectTotalCount("OptimizationGuide.ProcessHintsResult", 0);
+  // We also do not expect to update the component hints with bad hints either.
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.UpdateComponentHints.Result2", 0);
 }
@@ -223,6 +231,12 @@ TEST_F(OptimizationGuideHintsManagerTest,
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         optimization_guide::switches::kHintsProtoOverride, encoded_config);
     CreateServiceAndHintsManager();
+    // The below histogram should not be recorded since hints weren't coming
+    // directly from the component.
+    histogram_tester.ExpectTotalCount("OptimizationGuide.ProcessHintsResult",
+                                      0);
+    // However, we still expect the local histogram for the hints being updated
+    // to be recorded.
     histogram_tester.ExpectUniqueSample(
         "OptimizationGuide.UpdateComponentHints.Result2", true, 1);
   }
@@ -231,6 +245,10 @@ TEST_F(OptimizationGuideHintsManagerTest,
   {
     base::HistogramTester histogram_tester;
     InitializeWithDefaultConfig("3.0.0.0");
+    // The below histograms should not be recorded since component hints
+    // processing is disabled.
+    histogram_tester.ExpectTotalCount("OptimizationGuide.ProcessHintsResult",
+                                      0);
     histogram_tester.ExpectTotalCount(
         "OptimizationGuide.UpdateComponentHints.Result2", 0);
   }
@@ -259,7 +277,8 @@ TEST_F(OptimizationGuideHintsManagerTest, ParseTwoConfigVersions) {
     base::HistogramTester histogram_tester;
     InitializeWithDefaultConfig("1.0.0.0");
     histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.UpdateComponentHints.Result2", true, 1);
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
   }
 
   // Test the second time parsing the config. This should also update the hints.
@@ -267,7 +286,8 @@ TEST_F(OptimizationGuideHintsManagerTest, ParseTwoConfigVersions) {
     base::HistogramTester histogram_tester;
     InitializeWithDefaultConfig("2.0.0.0");
     histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.UpdateComponentHints.Result2", true, 1);
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
   }
 }
 
@@ -277,7 +297,8 @@ TEST_F(OptimizationGuideHintsManagerTest, ParseOlderConfigVersions) {
     base::HistogramTester histogram_tester;
     InitializeWithDefaultConfig("10.0.0.0");
     histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.UpdateComponentHints.Result2", true, 1);
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
   }
 
   // Test the second time parsing the config. This will be treated by the cache
@@ -287,8 +308,11 @@ TEST_F(OptimizationGuideHintsManagerTest, ParseOlderConfigVersions) {
     InitializeWithDefaultConfig("2.0.0.0");
     // If we have already parsed a version later than this version, we expect
     // for the hints to not be updated.
-    histogram_tester.ExpectTotalCount(
-        "OptimizationGuide.UpdateComponentHints.Result2", 0);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::
+            kSkippedProcessingHints,
+        1);
   }
 }
 
@@ -300,7 +324,8 @@ TEST_F(OptimizationGuideHintsManagerTest, ParseDuplicateConfigVersions) {
     base::HistogramTester histogram_tester;
     InitializeWithDefaultConfig(version);
     histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.UpdateComponentHints.Result2", true, 1);
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
   }
 
   // Test the second time parsing the config. This will be treated by the cache
@@ -308,10 +333,11 @@ TEST_F(OptimizationGuideHintsManagerTest, ParseDuplicateConfigVersions) {
   {
     base::HistogramTester histogram_tester;
     InitializeWithDefaultConfig(version);
-    // If we have already parsed this version, then we do not expect to update
-    // the hints.
-    histogram_tester.ExpectTotalCount(
-        "OptimizationGuide.UpdateComponentHints.Result2", 0);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::
+            kSkippedProcessingHints,
+        1);
   }
 }
 
@@ -319,5 +345,79 @@ TEST_F(OptimizationGuideHintsManagerTest, ComponentInfoDidNotContainConfig) {
   base::HistogramTester histogram_tester;
   ProcessInvalidHintsComponentInfo("1.0.0.0");
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.UpdateComponentHints.Result2", false, 1);
+      "OptimizationGuide.ProcessHintsResult",
+      optimization_guide::ProcessHintsComponentResult::kFailedReadingFile, 1);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, ProcessHintsWithExistingPref) {
+  // Write hints processing pref for version 2.0.0.
+  pref_service()->SetString(
+      optimization_guide::prefs::kPendingHintsProcessingVersion, "2.0.0");
+
+  // Verify config not processed for same version (2.0.0) and pref not cleared.
+  {
+    base::HistogramTester histogram_tester;
+    InitializeWithDefaultConfig("2.0.0");
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::
+            kFailedFinishProcessing,
+        1);
+    EXPECT_FALSE(
+        pref_service()
+            ->GetString(
+                optimization_guide::prefs::kPendingHintsProcessingVersion)
+            .empty());
+  }
+
+  // Now verify config is processed for different version and pref cleared.
+  {
+    base::HistogramTester histogram_tester;
+    InitializeWithDefaultConfig("3.0.0");
+    EXPECT_TRUE(
+        pref_service()
+            ->GetString(
+                optimization_guide::prefs::kPendingHintsProcessingVersion)
+            .empty());
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
+  }
+}
+
+TEST_F(OptimizationGuideHintsManagerTest, ProcessHintsWithInvalidPref) {
+  // Create pref file with invalid version.
+  pref_service()->SetString(
+      optimization_guide::prefs::kPendingHintsProcessingVersion, "bad-2.0.0");
+
+  // Verify config not processed for existing pref with bad value but
+  // that the pref is cleared.
+  {
+    base::HistogramTester histogram_tester;
+    InitializeWithDefaultConfig("2.0.0");
+    EXPECT_TRUE(
+        pref_service()
+            ->GetString(
+                optimization_guide::prefs::kPendingHintsProcessingVersion)
+            .empty());
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::
+            kFailedFinishProcessing,
+        1);
+  }
+
+  // Now verify config is processed with pref cleared.
+  {
+    base::HistogramTester histogram_tester;
+    InitializeWithDefaultConfig("2.0.0");
+    EXPECT_TRUE(
+        pref_service()
+            ->GetString(
+                optimization_guide::prefs::kPendingHintsProcessingVersion)
+            .empty());
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        optimization_guide::ProcessHintsComponentResult::kSuccess, 1);
+  }
 }

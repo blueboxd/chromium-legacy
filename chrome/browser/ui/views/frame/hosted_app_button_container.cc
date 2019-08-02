@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
@@ -364,7 +365,21 @@ HostedAppButtonContainer::GetWebContentsForPageActionIconView() {
 
 BrowserActionsContainer*
 HostedAppButtonContainer::GetBrowserActionsContainer() {
+  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   return browser_actions_container_;
+}
+
+ToolbarActionView* HostedAppButtonContainer::GetToolbarActionViewForId(
+    const std::string& id) {
+  // TODO(pbos): Implement this for kExtensionsToolbarMenu.
+  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+  return browser_actions_container_->GetViewForId(id);
+}
+
+views::View* HostedAppButtonContainer::GetDefaultExtensionDialogAnchorView() {
+  // TODO(pbos): Implement this for kExtensionsToolbarMenu.
+  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+  return GetAppMenuButton();
 }
 
 OmniboxPageActionIconContainerView*

@@ -167,6 +167,11 @@ enum ContentSettingsType {
   // in cookie handling are introduced.
   CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS,
 
+  // Content settings which stores whether to allow sites to ask for permission
+  // to save changes to an original file selected by the user through the Native
+  // File System API.
+  CONTENT_SETTINGS_TYPE_NATIVE_FILE_SYSTEM_WRITE_GUARD,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

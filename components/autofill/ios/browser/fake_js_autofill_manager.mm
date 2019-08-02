@@ -25,16 +25,14 @@
                          fieldIdentifier:(NSString*)fieldIdentifier
                                  inFrame:(web::WebFrame*)frame
                        completionHandler:(ProceduralBlock)completionHandler {
-  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-                             _lastClearedFormName = [formName copy];
-                             _lastClearedFieldIdentifier =
-                                 [fieldIdentifier copy];
-                             _lastClearedFrameIdentifier =
-                                 frame ? base::SysUTF8ToNSString(
-                                             frame->GetFrameId())
-                                       : nil;
-                             completionHandler();
-                           }));
+  base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
+                   _lastClearedFormName = [formName copy];
+                   _lastClearedFieldIdentifier = [fieldIdentifier copy];
+                   _lastClearedFrameIdentifier =
+                       frame ? base::SysUTF8ToNSString(frame->GetFrameId())
+                             : nil;
+                   completionHandler();
+                 }));
 }
 
 @end

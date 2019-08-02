@@ -27,7 +27,7 @@ static_library("suggestions") {
     "//url",
   ]
   deps = [
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/keyed_service/core",
     "//components/pref_registry",
     "//components/signin/public/identity_manager",

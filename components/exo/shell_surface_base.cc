@@ -889,7 +889,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
                                    : views::Widget::InitParams::ACTIVATABLE_NO;
   // Note: NativeWidget owns this widget.
   widget_ = new ShellSurfaceWidget;
-  widget_->Init(params);
+  widget_->Init(std::move(params));
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");

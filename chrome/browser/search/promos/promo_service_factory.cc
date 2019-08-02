@@ -11,7 +11,6 @@
 #include "base/optional.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
@@ -37,18 +36,14 @@ PromoServiceFactory::PromoServiceFactory()
           "PromoService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(CookieSettingsFactory::GetInstance());
-  DependsOn(GoogleURLTrackerFactory::GetInstance());
 }
 
 PromoServiceFactory::~PromoServiceFactory() = default;
 
 KeyedService* PromoServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  GoogleURLTracker* google_url_tracker =
-      GoogleURLTrackerFactory::GetForProfile(profile);
   auto url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
-  return new PromoService(url_loader_factory, google_url_tracker);
+  return new PromoService(url_loader_factory);
 }

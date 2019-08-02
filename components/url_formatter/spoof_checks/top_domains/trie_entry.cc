@@ -29,9 +29,11 @@ bool TopDomainTrieEntry::WriteEntry(
     net::huffman_trie::TrieBitBuffer* writer) const {
   if (entry_->skeleton == entry_->top_domain) {
     writer->WriteBit(1);
+    writer->WriteBit(entry_->is_top_500 ? 1 : 0);
     return true;
   }
   writer->WriteBit(0);
+  writer->WriteBit(entry_->is_top_500 ? 1 : 0);
 
   std::string top_domain = entry_->top_domain;
   // With the current top 10,000 domains, this optimization reduces the

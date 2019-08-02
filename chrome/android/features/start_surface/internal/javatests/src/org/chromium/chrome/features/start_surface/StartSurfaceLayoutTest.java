@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -191,6 +192,7 @@ public class StartSurfaceLayoutTest {
 
     /**
      * Make Chrome have {@code numTabs} or Tabs with {@code url} loaded.
+     * @param numTabs The number of tabs we expect after finishing
      * @param url The URL to load. Skip loading when null, but the thumbnail for the NTP might not
      *            be saved.
      */
@@ -209,14 +211,43 @@ public class StartSurfaceLayoutTest {
                                       .getCurrentModel()
                                       .getTabAt(i);
 
-            // TODO(wychen): missing thumbnail should not happen in web tabs, either, but checking
-            //               it makes the tests too flaky.
-            if (previousTab.isNativePage()) checkThumbnailsExist(previousTab);
+            boolean fixPendingReadbacks = mActivityTestRule.getActivity()
+                                                  .getTabContentManager()
+                                                  .getPendingReadbacksForTesting()
+                    != 0;
+
+            // When there are pending readbacks due to detached Tabs, try to fix it by switching
+            // back to that tab.
+            if (fixPendingReadbacks) {
+                int lastIndex = i;
+                // clang-format off
+                TestThreadUtils.runOnUiThreadBlocking(() ->
+                    mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
+                            lastIndex, TabSelectionType.FROM_USER)
+                );
+                // clang-format on
+            }
+            checkThumbnailsExist(previousTab);
+            if (fixPendingReadbacks) {
+                int currentIndex = i + 1;
+                // clang-format off
+                TestThreadUtils.runOnUiThreadBlocking(() ->
+                    mActivityTestRule.getActivity().getCurrentTabModel().setIndex(
+                            currentIndex, TabSelectionType.FROM_USER)
+                );
+                // clang-format on
+            }
         }
         ChromeTabUtils.waitForTabPageLoaded(mActivityTestRule.getActivity().getActivityTab(), null,
                 null, WAIT_TIMEOUT_SECONDS * 10);
         assertEquals(
                 numTabs, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+
+        // clang-format off
+        CriteriaHelper.pollUiThread(Criteria.equals(0, () ->
+            mActivityTestRule.getActivity().getTabContentManager().getPendingReadbacksForTesting()
+        ));
+        // clang-format on
     }
 
     private void testTabToGrid(String fromUrl) throws InterruptedException {

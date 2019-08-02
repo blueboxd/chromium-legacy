@@ -51,7 +51,7 @@ void AwProxyingRestrictedCookieManager::CreateAndBind(
     network::mojom::RestrictedCookieManagerRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &AwProxyingRestrictedCookieManager::CreateAndBindOnIoThread,

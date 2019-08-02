@@ -112,6 +112,7 @@ class CONTENT_EXPORT InputRouterImpl : public InputRouter,
   void SetMouseCapture(bool capture) override;
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void WaitForInputProcessed(base::OnceClosure callback) override;
+  void FlushTouchEventQueue() override;
 
   // Exposed so that tests can swap out the implementation and intercept calls.
   mojo::Receiver<mojom::WidgetInputHandlerHost>&

@@ -71,14 +71,11 @@ id<GREYMatcher> ShareMenuCollectionView() {
 
 @implementation ActivityServiceControllerTestCase
 
-- (void)testActivityServiceControllerCantPrintUnprintablePages {
-  // TODO(crbug.com/747622): re-enable this test on once earl grey can interact
-  // with the share menu.
-  EARL_GREY_TEST_DISABLED(@"Disabled until EG can use share menu.");
-
-  // TODO(crbug.com/864597): Reenable this test.
-  EARL_GREY_TEST_DISABLED(@"Test should be rewritten to use Offline Version.");
-
+// TODO(crbug.com/747622): re-enable this test on once earl grey can interact
+// with the share menu.
+// TODO(crbug.com/864597): Reenable this test. This test should be rewritten
+// to use Offline Version.
+- (void)DISABLED_testActivityServiceControllerCantPrintUnprintablePages {
   std::unique_ptr<web::DataResponseProvider> provider(
       new ErrorPageResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));
@@ -116,11 +113,9 @@ id<GREYMatcher> ShareMenuCollectionView() {
                             UIAccessibilityTraitNotEnabled)];
 }
 
-- (void)testOpenActivityServiceControllerAndCopy {
-  // TODO(crbug.com/747622): re-enable this test once earl grey can interact
-  // with the share menu.
-  EARL_GREY_TEST_DISABLED(@"Disabled until EG can use share menu.");
-
+// TODO(crbug.com/747622): re-enable this test once earl grey can interact
+// with the share menu.
+- (void)DISABLED_testOpenActivityServiceControllerAndCopy {
   // Set up mock http server.
   std::map<GURL, std::string> responses;
   GURL url = web::test::HttpServer::MakeUrl("http://potato");

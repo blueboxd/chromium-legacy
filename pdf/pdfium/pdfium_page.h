@@ -133,10 +133,6 @@ class PDFiumPage {
   // Returns a link index if the given character index is over a link, or -1
   // otherwise.
   int GetLink(int char_index, LinkTarget* target);
-  // Returns the link indices if the given rect intersects a link rect, or an
-  // empty vector otherwise.
-  std::vector<int> GetLinks(pp::Rect text_area,
-                            std::vector<LinkTarget>* targets);
   // Calculate the locations of any links on the page.
   void CalculateLinks();
   // Returns link type and fills target associated with a link. Returns

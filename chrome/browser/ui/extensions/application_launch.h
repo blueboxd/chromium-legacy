@@ -54,10 +54,11 @@ content::WebContents* OpenAppShortcutWindow(Profile* profile,
 // chrome.app.runtime.onLaunched event.
 bool CanLaunchViaEvent(const extensions::Extension* extension);
 
-// Reparents |contents| into a new app browser for |extension|.
-Browser* ReparentWebContentsIntoAppBrowser(
-    content::WebContents* contents,
-    const extensions::Extension* extension);
+// Reparents |contents| into a new app browser for |app_id|.
+// TODO(loyso): Move this util to ui/web_applications/ directory. It is
+// universal for any AppBrowserController.
+Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
+                                           const std::string& app_id);
 
 // Reparents contents to a new app browser when entering the Focus Mode.
 Browser* ReparentWebContentsForFocusMode(content::WebContents* contents);

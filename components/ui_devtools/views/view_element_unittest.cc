@@ -232,7 +232,7 @@ TEST_F(ViewElementTest, GetNodeWindowAndScreenBounds) {
   views::Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
 
   widget->GetContentsView()->AddChildView(view());

@@ -480,14 +480,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, FragmentURLNavigation) {
   WaitForURLOnServer(fragment_url);
 }
 
-// Flakily fails on mac-rel. http://crbug.com/972871
-#if defined(OS_MACOSX)
-#define MAYBE_NavigationChainForwardBack DISABLED_NavigationChainForwardBack
-#else
-#define MAYBE_NavigationChainForwardBack NavigationChainForwardBack
-#endif
+// Flakily fails on mac/linux/win. http://crbug.com/972871
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       MAYBE_NavigationChainForwardBack) {
+                       DISABLED_NavigationChainForwardBack) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(CheckInitialState(0));
 

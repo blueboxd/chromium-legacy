@@ -49,7 +49,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 
     RoundedOmniboxResultsFrame::OnBeforeWidgetInit(&params, this);
 
-    Init(params);
+    Init(std::move(params));
   }
 
   void SetPopupContentsView(OmniboxPopupContentsView* contents) {

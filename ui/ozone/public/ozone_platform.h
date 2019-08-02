@@ -72,7 +72,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
 
     // Setting this to true indicates that the platform implementation should
     // use mojo. Setting this to true requires calling |AddInterfaces|
-    // afterwards in the Viz process and providing a connector as part.
+    // afterwards in the Viz process. Note that this param is only checked in
+    // Ozone DRM. Other platforms either never use mojo or always use mojo
+    // regardless of this param.
+    // TODO(crbug.com/806092): Remove after legacy IPC-based Ozone is removed.
     bool using_mojo = false;
 
     // Setting this to true indicates the display compositor will run in the GPU

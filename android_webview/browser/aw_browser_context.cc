@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "android_webview/browser/aw_browser_policy_connector.h"
 #include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_download_manager_delegate.h"
@@ -22,6 +21,7 @@
 #include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
+#include "android_webview/native_jni/AwBrowserContext_jni.h"
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -87,6 +87,17 @@ AwBrowserContext::AwBrowserContext()
 
   BrowserContext::Initialize(this, context_storage_path_);
 
+  CreateUserPrefService();
+
+  visitedlink_master_.reset(
+      new visitedlink::VisitedLinkMaster(this, this, false));
+  visitedlink_master_->Init();
+
+  form_database_service_.reset(
+      new AwFormDatabaseService(context_storage_path_));
+
+  EnsureResourceContextInitialized(this);
+
   // This constructor is entered during the creation of ContentBrowserClient,
   // before browser threads are created. Therefore any checks to enforce
   // threading (such as BrowserThread::CurrentlyOn()) will fail here.
@@ -96,6 +107,8 @@ AwBrowserContext::~AwBrowserContext() {
   DCHECK_EQ(this, g_browser_context);
   BrowserContext::NotifyWillBeDestroyed(this);
   SimpleKeyMap::GetInstance()->Dissociate(this);
+  ShutdownStoragePartitions();
+
   g_browser_context = NULL;
 }
 
@@ -181,8 +194,6 @@ void AwBrowserContext::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void AwBrowserContext::CreateUserPrefService() {
-  browser_policy_connector_ = std::make_unique<AwBrowserPolicyConnector>();
-
   auto pref_registry = base::MakeRefCounted<user_prefs::PrefRegistrySyncable>();
 
   RegisterPrefs(pref_registry.get());
@@ -200,11 +211,13 @@ void AwBrowserContext::CreateUserPrefService() {
       /*validation_delegate=*/nullptr));
 
   policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry.get());
+  AwBrowserPolicyConnector* browser_policy_connector =
+      AwBrowserProcess::GetInstance()->browser_policy_connector();
   pref_service_factory.set_managed_prefs(
       base::MakeRefCounted<policy::ConfigurationPolicyPrefStore>(
-          browser_policy_connector_.get(),
-          browser_policy_connector_->GetPolicyService(),
-          browser_policy_connector_->GetHandlerList(),
+          browser_policy_connector,
+          browser_policy_connector->GetPolicyService(),
+          browser_policy_connector->GetHandlerList(),
           policy::POLICY_LEVEL_MANDATORY));
 
   user_pref_service_ = pref_service_factory.Create(pref_registry);
@@ -233,26 +246,6 @@ std::vector<std::string> AwBrowserContext::GetAuthSchemes() {
   std::vector<std::string> supported_schemes = {"basic", "digest", "ntlm",
                                                 "negotiate"};
   return supported_schemes;
-}
-
-void AwBrowserContext::PreMainMessageLoopRun() {
-  CreateUserPrefService();
-
-  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  visitedlink_master_.reset(
-      new visitedlink::VisitedLinkMaster(this, this, false));
-  visitedlink_master_->Init();
-
-  form_database_service_.reset(
-      new AwFormDatabaseService(context_storage_path_));
-
-  EnsureResourceContextInitialized(this);
-
-  content::WebUIControllerFactory::RegisterFactory(
-      AwWebUIControllerFactory::GetInstance());
 }
 
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
@@ -440,6 +433,20 @@ AwBrowserContext::GetNetworkContextParams(
       context_params);
 
   return context_params;
+}
+
+base::android::ScopedJavaLocalRef<jobject> JNI_AwBrowserContext_GetDefaultJava(
+    JNIEnv* env) {
+  return g_browser_context->GetJavaBrowserContext();
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+AwBrowserContext::GetJavaBrowserContext() {
+  if (!obj_) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    obj_ = Java_AwBrowserContext_create(env, reinterpret_cast<intptr_t>(this));
+  }
+  return base::android::ScopedJavaLocalRef<jobject>(obj_);
 }
 
 }  // namespace android_webview

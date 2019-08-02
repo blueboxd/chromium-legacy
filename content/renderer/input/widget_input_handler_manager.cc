@@ -469,6 +469,11 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
     bool sync_compositing) {
   DCHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
 
+  // It is possible that the input_handle has already been destroyed before this
+  // Init() call was invoked. If so, early out.
+  if (!input_handler)
+    return;
+
   // If there's no compositor thread (i.e. we're in a LayoutTest), force input
   // to go through the main thread.
   bool force_input_handling_on_main = !compositor_task_runner_;

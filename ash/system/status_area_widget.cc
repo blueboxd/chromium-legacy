@@ -35,7 +35,7 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = status_container;
-  Init(params);
+  Init(std::move(params));
   set_focus_on_creation(false);
   SetContentsView(status_area_widget_delegate_);
 }

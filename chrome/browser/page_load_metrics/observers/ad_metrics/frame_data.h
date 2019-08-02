@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_AD_METRICS_FRAME_DATA_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -141,6 +142,10 @@ class FrameData {
 
   int peak_windowed_cpu_percent() const { return peak_windowed_cpu_percent_; }
 
+  base::Optional<base::TimeTicks> peak_window_start_time() const {
+    return peak_window_start_time_;
+  }
+
   FrameTreeNodeId frame_tree_node_id() const { return frame_tree_node_id_; }
 
   OriginStatus origin_status() const { return origin_status_; }
@@ -210,20 +215,28 @@ class FrameData {
                                                  InteractiveStatus::kMaxValue) +
                                              1] = {base::TimeDelta(),
                                                    base::TimeDelta()};
+
   // Time spent by the frame in the cpu before and after activation.
   base::TimeDelta cpu_by_activation_period_
       [static_cast<size_t>(UserActivationStatus::kMaxValue) + 1] = {
           base::TimeDelta(), base::TimeDelta()};
+
   // Duration of time the page spent in the foreground before activation.
   base::TimeDelta pre_activation_foreground_duration_;
+
   // The cpu time spent in the current window.
   base::TimeDelta cpu_total_for_current_window_;
+
   // The cpu updates themselves that are still relevant for the time window.
   // Note: Since the window is 30 seconds and PageLoadMetrics updates arrive at
   // most every half second, this can never have more than 60 elements.
   base::queue<CpuUpdateData> cpu_updates_for_current_window_;
+
   // The peak windowed cpu load during the unactivated period.
   int peak_windowed_cpu_percent_ = 0;
+
+  // The time that the peak cpu usage window started at.
+  base::Optional<base::TimeTicks> peak_window_start_time_;
 
   // The depth of this FrameData's root frame.
   unsigned int root_frame_depth_ = 0;

@@ -143,11 +143,11 @@ void ImageCache::OnDependencyInitialized() {
       ImageFetcherEvent::kCacheStartupEvictionStarted);
 
   // Once all the queued requests are taken care of, run eviction.
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(OnStartupEvictionQueued),
-      base::BindOnce(&ImageCache::RunEvictionOnStartup,
-                     weak_ptr_factory_.GetWeakPtr()));
+  base::PostTaskAndReply(FROM_HERE,
+                         {base::ThreadPool(), base::TaskPriority::BEST_EFFORT},
+                         base::BindOnce(OnStartupEvictionQueued),
+                         base::BindOnce(&ImageCache::RunEvictionOnStartup,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ImageCache::SaveImageImpl(const std::string& url,

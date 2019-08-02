@@ -95,7 +95,7 @@ class ArcNotificationViewTest : public AshTestBase {
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     views::Widget* widget = new views::Widget();
-    widget->Init(init_params);
+    widget->Init(std::move(init_params));
     widget->SetContentsView(notification_view_.get());
     widget->SetSize(notification_view_->GetPreferredSize());
     widget->Show();

@@ -723,6 +723,12 @@ const char kRendererProcessLimit[]          = "renderer-process-limit";
 // that's needed to show a dialog.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 
+// Manual tests only run when --run-manual is specified. This allows writing
+// tests that don't run automatically but are still in the same test binary.
+// This is useful so that a team that wants to run a few tests doesn't have to
+// add a new binary that must be compiled on all builds.
+const char kRunManualTestsFlag[] = "run-manual";
+
 // Causes the process to run as a sandbox IPC subprocess.
 const char kSandboxIPCProcess[]             = "sandbox-ipc";
 

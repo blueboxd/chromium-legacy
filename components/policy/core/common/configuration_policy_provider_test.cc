@@ -205,7 +205,7 @@ void ConfigurationPolicyProviderTest::SetUp() {
 
   provider_.reset(test_harness_->CreateProvider(
       &schema_registry_,
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})));
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})));
   provider_->Init(&schema_registry_);
   // Some providers do a reload on init. Make sure any notifications generated
   // are fired now.

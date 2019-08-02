@@ -117,7 +117,7 @@ class PipWindowResizerTest : public AshTestBase,
     params.bounds = screen_bounds;
     params.z_order = ui::ZOrderLevel::kFloatingWindow;
     params.context = root_window;
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     return widget;
   }

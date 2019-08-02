@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
@@ -23,6 +24,7 @@ namespace settings {
 
 class CrostiniHandler : public ::settings::SettingsPageUIHandler,
                         public crostini::InstallerViewStatusObserver,
+                        public crostini::CrostiniExportImport::Observer,
                         public chromeos::CrosUsbDeviceObserver {
  public:
   explicit CrostiniHandler(Profile* profile);
@@ -56,6 +58,11 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleCrostiniInstallerStatusRequest(const base::ListValue* args);
   // Handle the CrostiniInstallerView opening/closing.
   void OnCrostiniInstallerViewStatusChanged(bool open) override;
+  // Handle a request for the CrostiniExportImport operation status.
+  void HandleCrostiniExportImportOperationStatusRequest(
+      const base::ListValue* args);
+  // CrostiniExportImport::Observer:
+  void OnCrostiniExportImportOperationStatusChanged(bool in_progress) override;
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

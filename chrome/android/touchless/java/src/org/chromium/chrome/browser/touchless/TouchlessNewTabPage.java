@@ -68,7 +68,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
         TraceEvent.begin(TAG);
 
         mModalDialogManager = activity.getModalDialogManager();
-        mTab = activity.getActivityTab();
+        mTab = nativePageHost.getActiveTab();
         Profile profile = mTab.getProfile();
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);

@@ -193,8 +193,7 @@ class ClearAllServiceWorkersHelper
   friend class base::RefCounted<ClearAllServiceWorkersHelper>;
   ~ClearAllServiceWorkersHelper() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             std::move(callback_));
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback_));
   }
 
   base::OnceClosure callback_;
@@ -360,7 +359,7 @@ void ServiceWorkerContextCore::HasMainFrameProviderHost(
     provider_host_iterator.Advance();
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&FrameListContainsMainFrameOnUI, std::move(render_frames)),
       std::move(callback));

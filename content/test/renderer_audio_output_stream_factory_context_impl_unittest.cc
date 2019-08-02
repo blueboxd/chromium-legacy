@@ -81,7 +81,7 @@ void SyncWithAllThreads() {
   // least one task will be run. 20 iterations should be enough for our code.
   for (int i = 0; i < 20; ++i) {
     base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
-    SyncWith(base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+    SyncWith(base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
     SyncWith(media::AudioManager::Get()->GetWorkerTaskRunner());
   }
 }

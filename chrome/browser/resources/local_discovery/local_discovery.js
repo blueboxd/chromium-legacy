@@ -520,8 +520,7 @@ cr.define('local_discovery', function() {
 
   function getOverlayIDFromPath() {
     if (document.location.pathname == '/register') {
-      const params = parseQueryParams(document.location);
-      return params['id'] || null;
+      return new URL(document.location).searchParams.get('id');
     }
   }
 

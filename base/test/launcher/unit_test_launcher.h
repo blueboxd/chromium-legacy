@@ -126,8 +126,6 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
  private:
   // TestLauncherDelegate:
   bool GetTests(std::vector<TestIdentifier>* output) override;
-  bool WillRunTest(const std::string& test_case_name,
-                   const std::string& test_name) override;
 
   std::vector<TestResult> ProcessTestResults(
       const std::vector<std::string>& test_names,

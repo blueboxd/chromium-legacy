@@ -482,7 +482,7 @@ public class WebappActivity extends SingleTabActivity {
         if (storage != null) {
             onDeferredStartupWithStorage(storage);
         } else {
-            onDeferredStartupWithNullStorage();
+            onDeferredStartupWithNullStorage(mDisclosureSnackbarController);
         }
     }
 
@@ -497,27 +497,9 @@ public class WebappActivity extends SingleTabActivity {
         updateStorage(storage);
     }
 
-    protected void onDeferredStartupWithNullStorage() {
-        if (!mWebappInfo.isForWebApk()) return;
-
-        // WebappDataStorage objects are cleared if a user clears Chrome's data. Recreate them
-        // for WebAPKs since we need to store metadata for updates and disclosure notifications.
-        WebappRegistry.getInstance().register(
-                mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        if (isActivityFinishingOrDestroyed()) return;
-
-                        onDeferredStartupWithStorage(storage);
-                        // Set force == true to indicate that we need to show a privacy
-                        // disclosure for the newly installed unbound WebAPKs which
-                        // have no storage yet. We can't simply default to a showing if the
-                        // storage has a default value as we don't want to show this disclosure
-                        // for pre-existing unbound WebAPKs.
-                        mDisclosureSnackbarController.maybeShowDisclosure(
-                                WebappActivity.this, storage, true /* force */);
-                    }
-                });
+    protected void onDeferredStartupWithNullStorage(
+            WebappDisclosureSnackbarController disclosureSnackbarController) {
+        // Overridden in WebApkActivity
     }
 
     @Override

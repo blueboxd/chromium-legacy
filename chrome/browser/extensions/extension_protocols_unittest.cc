@@ -131,7 +131,6 @@ network::ResourceRequest CreateResourceRequest(const std::string& method,
   request.referrer_policy = content::Referrer::GetDefaultReferrerPolicy();
   request.resource_type = static_cast<int>(resource_type);
   request.is_main_frame = resource_type == content::ResourceType::kMainFrame;
-  request.allow_download = true;
   return request;
 }
 

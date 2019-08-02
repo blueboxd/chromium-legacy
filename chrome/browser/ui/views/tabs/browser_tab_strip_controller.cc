@@ -325,8 +325,7 @@ void BrowserTabStripController::CreateNewTab() {
       browser_view_->browser()->profile());
   reopen_tab_iph->NewTabOpened();
 
-  const auto group_id = model_->GetTabGroupForTab(model_->active_index());
-  model_->delegate()->AddTabAt(GURL(), -1, true, group_id);
+  model_->delegate()->AddTabAt(GURL(), -1, true);
 
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   auto* new_tab_tracker =
@@ -516,6 +515,13 @@ void BrowserTabStripController::OnTabStripModelChanged(
 
   if (selection.selection_changed())
     tabstrip_->SetSelection(selection.new_model);
+}
+
+void BrowserTabStripController::OnTabGroupVisualDataChanged(
+    TabStripModel* tab_strip_model,
+    TabGroupId group,
+    const TabGroupVisualData* visual_data) {
+  tabstrip_->GroupVisualsChanged(group);
 }
 
 void BrowserTabStripController::TabChangedAt(WebContents* contents,

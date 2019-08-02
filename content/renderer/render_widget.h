@@ -169,9 +169,8 @@ class CONTENT_EXPORT RenderWidget
                                       CompositorDependencies*,
                                       const ScreenInfo&,
                                       blink::WebDisplayMode display_mode,
-                                      bool,
-                                      bool,
-                                      bool,
+                                      bool is_frozen,
+                                      bool never_visible,
                                       mojom::WidgetRequest widget_request);
   // Overrides the implementation of CreateForFrame() function below. Used by
   // web tests to return a partial fake of RenderWidget.
@@ -187,7 +186,6 @@ class CONTENT_EXPORT RenderWidget
       const ScreenInfo& screen_info,
       blink::WebDisplayMode display_mode,
       bool is_frozen,
-      bool hidden,
       bool never_visible,
       mojom::WidgetRequest widget_request);
 
@@ -217,22 +215,28 @@ class CONTENT_EXPORT RenderWidget
   void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget);
 
   // Sets a delegate to handle certain RenderWidget operations that need an
-  // escape to the RenderView. Also take ownership until RenderWidget lifetime
-  // has been reassociated with the RenderFrame. This is only set on Widgets
-  // that are associated with the RenderView.
-  // TODO(ajwong): Do not have RenderWidget own the delegate.
-  void set_delegate(std::unique_ptr<RenderWidgetDelegate> delegate) {
+  // escape to the RenderView.
+  void set_delegate(RenderWidgetDelegate* delegate) {
     DCHECK(!delegate_);
-    delegate_ = std::move(delegate);
+    delegate_ = delegate;
   }
 
-  RenderWidgetDelegate* delegate() const { return delegate_.get(); }
+  RenderWidgetDelegate* delegate() const { return delegate_; }
 
   // Returns the RenderWidget for the given routing ID.
   static RenderWidget* FromRoutingID(int32_t routing_id);
 
   // Closes a RenderWidget that was created by |CreateForFrame|.
   void CloseForFrame();
+
+  // RenderWidgets cannot always be synchronously destroyed, since that may
+  // happen in a re-entrancy scenario, and there may be existing references on
+  // the stack. This method shuts down further sources of input to the
+  // RenderWidget. This must be called before Close().
+  void PrepareForClose();
+
+  // Close the underlying WebWidget and stop the compositor.
+  virtual void Close();
 
   int32_t routing_id() const { return routing_id_; }
 
@@ -699,9 +703,6 @@ class CONTENT_EXPORT RenderWidget
                mojom::WidgetRequest widget_request);
   ~RenderWidget() override;
 
-  // Close the underlying WebWidget and stop the compositor.
-  virtual void Close();
-
   // Notify subclasses that we initiated the paint operation.
   virtual void DidInitiatePaint() {}
 
@@ -936,7 +937,9 @@ class CONTENT_EXPORT RenderWidget
   blink::WebWidget* webwidget_internal_;
 
   // The delegate for this object which is just a RenderViewImpl.
-  std::unique_ptr<RenderWidgetDelegate> delegate_;
+  // This member is non-null if and only if the RenderWidget is associated with
+  // a RenderViewImpl.
+  RenderWidgetDelegate* delegate_;
 
   // This is lazily constructed and must not outlive webwidget_.
   std::unique_ptr<LayerTreeView> layer_tree_view_;

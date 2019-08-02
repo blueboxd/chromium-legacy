@@ -77,12 +77,6 @@ const base::Feature kAutofillEnableToolbarStatusChip{
 const base::Feature kAutofillImportDynamicForms{
     "AutofillImportDynamicForms", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// When enabled, a credit card form that is hidden after receiving input can
-// import the card.
-const base::Feature kAutofillImportNonFocusableCreditCardForms{
-    "AutofillImportNonFocusableCreditCardForms",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether offering to migrate cards will consider data from the
 // Autofill strike database (new version).
 const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2{
@@ -147,14 +141,6 @@ const base::Feature kAutofillUpstreamAlwaysRequestCardholderName{
 const base::Feature kAutofillUpstreamBlankCardholderNameField{
     "AutofillUpstreamBlankCardholderNameField",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether ELO cards should be uploaded to Google Payments.
-const base::Feature kAutofillUpstreamDisallowElo{
-    "AutofillUpstreamDisallowElo", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether JCB cards should be uploaded to Google Payments.
-const base::Feature kAutofillUpstreamDisallowJcb{
-    "AutofillUpstreamDisallowJcb", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, Chrome Upstream can request the user to enter/confirm cardholder
 // name in the offer-to-save bubble if it was not detected or was conflicting

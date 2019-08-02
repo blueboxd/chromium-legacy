@@ -376,14 +376,14 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   PaintOp::DeserializeOptions options(nullptr, nullptr, nullptr,
                                       &scratch_buffer);
   PaintOpReader reader(data.data(), data.size(), options);
-  uint32_t image_is_yuv;
+  uint32_t image_is_yuv = 0;
   reader.Read(&image_is_yuv);
   if (!!image_is_yuv) {
-    uint32_t num_planes;
+    uint32_t num_planes = 0;
     reader.Read(&num_planes);
-    // YUV or YUVA
+    // TODO(crbug.com/910276): Allow for four planes if YUVA.
     // TODO(crbug.com/986575): consider serializing a YUVDecodeFormat.
-    if (num_planes != 3u && num_planes != 4u)
+    if (num_planes != 3u)
       return false;
     plane_images_format_ =
         num_planes == 3u ? YUVDecodeFormat::kYUV3 : YUVDecodeFormat::kYUVA4;
@@ -400,9 +400,9 @@ bool ServiceImageTransferCacheEntry::Deserialize(
     auto gr_mips = has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo;
     // Read in each plane and reconstruct pixmaps.
     for (uint32_t i = 0; i < num_planes; i++) {
-      uint32_t plane_width;
+      uint32_t plane_width = 0;
       reader.Read(&plane_width);
-      uint32_t plane_height;
+      uint32_t plane_height = 0;
       reader.Read(&plane_height);
       // Because Skia does not support YUV rasterization from software planes,
       // we require that each pixmap fits in a GPU texture. In the
@@ -412,7 +412,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       // We compute this for each plane in case a malicious renderer tries to
       // send very large U or V planes.
       fits_on_gpu_ = plane_width <= max_size && plane_height <= max_size;
-      if (!fits_on_gpu_)
+      if (!fits_on_gpu_ || plane_width == 0 || plane_height == 0)
         return false;
 
       size_t plane_bytes;

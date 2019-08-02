@@ -8,6 +8,7 @@
 class AppMenuButton;
 class BrowserActionsContainer;
 class OmniboxPageActionIconContainerView;
+class ToolbarActionView;
 
 namespace gfx {
 class Rect;
@@ -23,7 +24,16 @@ class View;
 class ToolbarButtonProvider {
  public:
   // Gets the browser actions container.
+  // TODO(pbos): Transition callers off of this function.
   virtual BrowserActionsContainer* GetBrowserActionsContainer() = 0;
+
+  // Gets the associated ToolbarActionView for this id.
+  virtual ToolbarActionView* GetToolbarActionViewForId(
+      const std::string& id) = 0;
+
+  // Gets the default view to use as an anchor for extension dialogs if the
+  // ToolbarActionView is not visible or available.
+  virtual views::View* GetDefaultExtensionDialogAnchorView() = 0;
 
   // Gets the omnibox page action icon container.
   virtual OmniboxPageActionIconContainerView*

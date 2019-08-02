@@ -52,6 +52,7 @@ js_library("cellular_setup") {
     ":mojo_interface_provider",
     ":provisioning_page",
     ":sim_detect_page",
+    "//chromeos/services/cellular_setup/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }

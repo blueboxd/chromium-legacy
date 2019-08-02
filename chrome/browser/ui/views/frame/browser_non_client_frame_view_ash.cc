@@ -13,6 +13,7 @@
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/touch_uma.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_util.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
@@ -123,9 +123,7 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
   browser_view()->browser()->command_controller()->RemoveCommandObserver(
       IDC_BACK, this);
 
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->RemoveObserver(this);
-
+  ash::TabletMode::Get()->RemoveObserver(this);
   ash::SplitViewNotifier::Get()->RemoveObserver(this);
 
   ImmersiveModeController* immersive_controller =
@@ -164,9 +162,7 @@ void BrowserNonClientFrameViewAsh::Init() {
   if (browser->profile()->IsOffTheRecord())
     window->SetProperty(ash::kBlockedForAssistantSnapshotKey, true);
 
-  // TabletModeClient may not be initialized during unit tests.
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->AddObserver(this);
+  ash::TabletMode::Get()->AddObserver(this);
 
   if (browser->is_app() && IsV1AppBackButtonEnabled()) {
     browser->command_controller()->AddCommandObserver(IDC_BACK, this);
@@ -493,7 +489,15 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ash::mojom::TabletModeClient:
+// ash::TabletModeToggleObserver:
+
+void BrowserNonClientFrameViewAsh::OnTabletModeStarted() {
+  OnTabletModeToggled(true);
+}
+
+void BrowserNonClientFrameViewAsh::OnTabletModeEnded() {
+  OnTabletModeToggled(false);
+}
 
 void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
   if (!enabled && browser_view()->immersive_mode_controller()->IsRevealed()) {
@@ -649,8 +653,8 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
   // minimize all windows when pressing the Launcher button on the shelf.
   const bool hide_caption_buttons_in_tablet_mode =
       !UsePackagedAppHeaderStyle(browser_view()->browser());
-  if (hide_caption_buttons_in_tablet_mode && TabletModeClient::Get() &&
-      TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (hide_caption_buttons_in_tablet_mode &&
+      ash::TabletMode::Get()->InTabletMode()) {
     return false;
   }
 

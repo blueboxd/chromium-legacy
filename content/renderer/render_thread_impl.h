@@ -211,6 +211,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // ChildThread implementation via ChildThreadImpl:
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
 
+  // ChildThreadImpl implementation:
+  void OnBindReceiver(mojo::GenericPendingReceiver receiver) override;
+
   // CompositorDependencies implementation.
   bool IsGpuRasterizationForced() override;
   int GetGpuRasterizationMSAASampleCount() override;
@@ -506,6 +509,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void CreateEmbedderRendererService(
       service_manager::mojom::ServiceRequest service_request) override;
   void CreateView(mojom::CreateViewParamsPtr params) override;
+  void DestroyView(int32_t view_id) override;
   void CreateFrame(mojom::CreateFrameParamsPtr params) override;
   void CreateFrameProxy(
       int32_t routing_id,

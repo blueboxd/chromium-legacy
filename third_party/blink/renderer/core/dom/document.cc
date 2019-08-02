@@ -8222,8 +8222,8 @@ void Document::ReportFeaturePolicyViolation(
           (disposition == mojom::FeaturePolicyDisposition::kReport
                ? "report"
                : "enforce"));
-  Report* report = MakeGarbageCollected<Report>("feature-policy-violation",
-                                                Url().GetString(), body);
+  Report* report = MakeGarbageCollected<Report>(
+      ReportType::kFeaturePolicyViolation, Url().GetString(), body);
 
   // Send the feature policy violation report to any ReportingObservers.
   auto* reporting_context = ReportingContext::From(this);

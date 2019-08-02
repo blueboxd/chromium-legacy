@@ -69,9 +69,7 @@ class NavigationURLLoaderTest : public testing::Test {
             std::string() /* searchable_form_encoding */,
             GURL() /* client_side_redirect_url */,
             base::nullopt /* devtools_initiator_info */);
-    auto common_params = mojom::CommonNavigationParams::New();
-    common_params->referrer = blink::mojom::Referrer::New();
-    common_params->navigation_start = base::TimeTicks::Now();
+    auto common_params = CreateCommonNavigationParams();
     common_params->url = url;
     common_params->initiator_origin = url::Origin::Create(url);
 

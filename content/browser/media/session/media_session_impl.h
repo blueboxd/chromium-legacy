@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -238,6 +239,12 @@ class MediaSessionImpl : public MediaSession,
   // Skip ad.
   CONTENT_EXPORT void SkipAd() override;
 
+  // Seek the media session to a specific time.
+  void SeekTo(base::TimeDelta seek_time) override;
+
+  // Scrub ("fast seek") the media session to a specific time.
+  void ScrubTo(base::TimeDelta seek_time) override;
+
   // Downloads the bitmap version of a MediaImage at least |minimum_size_px|
   // and closest to |desired_size_px|. If the download failed, was too small or
   // the image did not come from the media session then returns a null image.
@@ -253,12 +260,6 @@ class MediaSessionImpl : public MediaSession,
 
   // Returns whether the action should be routed to |routed_service_|.
   bool ShouldRouteAction(media_session::mojom::MediaSessionAction action) const;
-
-  // Seek the media session to a specific time.
-  void SeekTo(base::TimeDelta seek_time) override {}
-
-  // Scrub ("fast seek") the media session to a specific time.
-  void ScrubTo(base::TimeDelta seek_time) override {}
 
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
@@ -364,6 +365,11 @@ class MediaSessionImpl : public MediaSession,
   // Rebuilds |metadata_| and |images_| and notifies observers if they have
   // changed.
   void RebuildAndNotifyMetadataChanged();
+
+  // Called when a MediaSessionAction is received. The action will be forwarded
+  // to blink::MediaSession corresponding to the current routed service.
+  void DidReceiveAction(media_session::mojom::MediaSessionAction action,
+                        blink::mojom::MediaSessionActionDetailsPtr details);
 
   // A set of actions supported by |routed_service_| and the current media
   // session.

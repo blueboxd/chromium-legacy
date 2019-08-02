@@ -32,9 +32,6 @@ void ServiceWorkerNetworkProviderForServiceWorker::WillSendRequest(
     blink::WebURLRequest& request) {
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_originated_from_service_worker(true);
-  // Service workers are only available in secure contexts, so all requests
-  // are initiated in a secure context.
-  extra_data->set_initiated_in_secure_context(true);
 
   // The RenderThreadImpl or its URLLoaderThrottleProvider member may not be
   // valid in some tests.

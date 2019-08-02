@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
-#include "third_party/blink/public/common/messaging/transferable_message_struct_traits.h"
+#include "third_party/blink/public/common/messaging/transferable_message_mojom_traits.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 
 namespace cr_fuchsia {

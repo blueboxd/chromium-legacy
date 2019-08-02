@@ -145,6 +145,9 @@ MockRenderThread::GetIOTaskRunner() {
   return scoped_refptr<base::SingleThreadTaskRunner>();
 }
 
+void MockRenderThread::BindHostReceiver(mojo::GenericPendingReceiver receiver) {
+}
+
 void MockRenderThread::AddRoute(int32_t routing_id, IPC::Listener* listener) {}
 
 void MockRenderThread::RemoveRoute(int32_t routing_id) {}

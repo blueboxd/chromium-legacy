@@ -5,7 +5,6 @@
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 
 #include "android_webview/browser/aw_content_browser_client.h"
-#include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_blocking_page.h"
 #include "android_webview/common/aw_paths.h"
 #include "base/bind.h"
@@ -15,7 +14,6 @@
 #include "base/task/post_task.h"
 #include "components/safe_browsing/base_ui_manager.h"
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
-#include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/ping_manager.h"
@@ -50,8 +48,7 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
 
 }  // namespace
 
-AwSafeBrowsingUIManager::AwSafeBrowsingUIManager(
-    AwURLRequestContextGetter* browser_url_request_context_getter) {
+AwSafeBrowsingUIManager::AwSafeBrowsingUIManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // TODO(timvolodine): verify this is what we want regarding the directory.
@@ -60,15 +57,9 @@ AwSafeBrowsingUIManager::AwSafeBrowsingUIManager(
                                        &user_data_dir);
   DCHECK(result);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    url_request_context_getter_ =
-        new safe_browsing::SafeBrowsingURLRequestContextGetter(
-            browser_url_request_context_getter, user_data_dir);
-  }
-
   network_context_ =
       std::make_unique<safe_browsing::SafeBrowsingNetworkContext>(
-          url_request_context_getter_, user_data_dir,
+          user_data_dir,
           base::BindRepeating(CreateDefaultNetworkContextParams));
 }
 
@@ -100,7 +91,7 @@ scoped_refptr<network::SharedURLLoaderFactory>
 AwSafeBrowsingUIManager::GetURLLoaderFactoryOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!shared_url_loader_factory_on_io_) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&AwSafeBrowsingUIManager::CreateURLLoaderFactoryForIO,
                        this, MakeRequest(&url_loader_factory_on_io_)));

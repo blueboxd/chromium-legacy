@@ -181,10 +181,9 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
     if (!worker_id_ || !devtools_enabled_)
       return;
     while (!devtools_callbacks.empty()) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(std::move(devtools_callbacks.front()), *worker_id_,
-                         devtools_request_id_));
+      base::PostTask(FROM_HERE, {BrowserThread::UI},
+                     base::BindOnce(std::move(devtools_callbacks.front()),
+                                    *worker_id_, devtools_request_id_));
       devtools_callbacks.pop();
     }
   }
@@ -675,11 +674,10 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   network::mojom::URLLoaderFactoryPtr network_factory;
   auto factory_request = mojo::MakeRequest(&network_factory);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
-                     frame_tree_node_id, std::move(context_wrapper),
-                     mojo::MakeRequest(&network_factory)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&CreateNetworkFactoryForNavigationPreloadOnUI,
+                                frame_tree_node_id, std::move(context_wrapper),
+                                mojo::MakeRequest(&network_factory)));
   factory = base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
       std::move(network_factory));
 

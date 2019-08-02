@@ -40,8 +40,8 @@ void ActivateAffiliationBasedMatching(
   //
   // Task priority is USER_VISIBLE, because AffiliationService-related tasks
   // block obtaining credentials from PasswordStore, hence password autofill.
-  static auto backend_task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  static auto backend_task_runner = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 
   // The PasswordStore is so far the only consumer of the AffiliationService,
   // therefore the service is owned by the AffiliatedMatchHelper, which in turn

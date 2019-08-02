@@ -114,7 +114,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     // native widget which breaks this code path.
     init_params.native_widget =
         new DesktopNativeWidgetAura(top_level_handler->top_level_widget_);
-    top_level_handler->top_level_widget_->Init(init_params);
+    top_level_handler->top_level_widget_->Init(std::move(init_params));
 
     top_level_handler->top_level_widget_->SetFullscreen(full_screen);
     top_level_handler->top_level_widget_->Show();
@@ -431,11 +431,13 @@ gfx::NativeWindow DesktopNativeWidgetAura::GetNativeWindow() const {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
-void DesktopNativeWidgetAura::InitNativeWidget(
-    const Widget::InitParams& params) {
+void DesktopNativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   ownership_ = params.ownership;
   widget_type_ = params.type;
   name_ = params.name;
+
+  content_window_->AcquireAllPropertiesFrom(
+      std::move(params.init_properties_container));
 
   NativeWidgetAura::RegisterNativeWidgetForWindow(this, content_window_);
   content_window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
@@ -451,7 +453,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
     }
     host_.reset(desktop_window_tree_host_->AsWindowTreeHost());
   }
-  desktop_window_tree_host_->Init(params);
+  desktop_window_tree_host_->Init(std::move(params));
 
   host_->window()->AddChild(content_window_);
   host_->window()->SetProperty(kDesktopNativeWidgetAuraKey, this);

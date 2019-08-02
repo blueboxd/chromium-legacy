@@ -35,7 +35,7 @@ class BackgroundTracingManager {
   //
   // void Upload(const scoped_refptr<base::RefCountedString>& data,
   //             FinishedProcessingCallback done_callback) {
-  //   base::PostTaskWithTraitsAndReply(
+  //   base::PostTaskAndReply(
   //       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
   //       base::BindOnce(&DoUploadInBackground, data),
   //       std::move(done_callback));

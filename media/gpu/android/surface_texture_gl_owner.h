@@ -20,8 +20,6 @@ class ScopedHardwareBufferFenceSync;
 
 namespace media {
 
-struct FrameAvailableEvent;
-
 // This class wraps the Surface Texture usage. It is used to create a surface
 // texture attached to a new texture of the current platform GL context. The
 // surface handle of the SurfaceTexture is attached to the decoded media
@@ -32,15 +30,13 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
  public:
   gl::GLContext* GetContext() const override;
   gl::GLSurface* GetSurface() const override;
+  void SetFrameAvailableCallback(
+      const base::RepeatingClosure& frame_available_cb) override;
   gl::ScopedJavaSurface CreateJavaSurface() const override;
   void UpdateTexImage() override;
   void EnsureTexImageBound() override;
   void GetTransformMatrix(float mtx[16]) override;
   void ReleaseBackBuffers() override;
-  void SetReleaseTimeToNow() override;
-  void IgnorePendingRelease() override;
-  bool IsExpectingFrameAvailable() override;
-  void WaitForFrameAvailable() override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
 
@@ -57,11 +53,6 @@ class MEDIA_GPU_EXPORT SurfaceTextureGLOwner : public TextureOwner {
   // The context and surface that were used to create |surface_texture_|.
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
-  // When SetReleaseTimeToNow() was last called. i.e., when the last
-  // codec buffer was released to this surface. Or null if
-  // IgnorePendingRelease() or WaitForFrameAvailable() have been called since.
-  base::TimeTicks release_time_;
-  scoped_refptr<FrameAvailableEvent> frame_available_event_;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureGLOwner);

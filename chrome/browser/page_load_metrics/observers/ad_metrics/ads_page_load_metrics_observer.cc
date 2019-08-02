@@ -618,6 +618,12 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
       ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PeakWindowedPercent",
                     UMA_HISTOGRAM_PERCENTAGE, visibility,
                     ad_frame_data.peak_windowed_cpu_percent());
+      if (ad_frame_data.peak_window_start_time()) {
+        ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PeakWindowStartTime",
+                      PAGE_LOAD_HISTOGRAM, visibility,
+                      ad_frame_data.peak_window_start_time().value() -
+                          GetDelegate()->GetNavigationStart());
+      }
     }
 
     if (ad_frame_data.user_activation_status() ==
@@ -709,6 +715,12 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
     ADS_HISTOGRAM("Cpu.FullPage.PeakWindowedPercent", UMA_HISTOGRAM_PERCENTAGE,
                   visibility,
                   aggregate_frame_data_->peak_windowed_cpu_percent());
+    if (aggregate_frame_data_->peak_window_start_time()) {
+      ADS_HISTOGRAM("Cpu.FullPage.PeakWindowStartTime", PAGE_LOAD_HISTOGRAM,
+                    visibility,
+                    aggregate_frame_data_->peak_window_start_time().value() -
+                        GetDelegate()->GetNavigationStart());
+    }
   }
   if (pre_interactive_duration_.InMilliseconds() > 0) {
     ADS_HISTOGRAM("Cpu.FullPage.TotalUsage.PreInteractive", PAGE_LOAD_HISTOGRAM,

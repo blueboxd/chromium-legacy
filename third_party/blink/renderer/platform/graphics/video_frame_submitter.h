@@ -168,7 +168,6 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // size.
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
 
-  const bool enable_surface_synchronization_;
   viz::FrameTokenGenerator next_frame_token_;
 
   // Timestamps indexed by frame token for histogram purposes.

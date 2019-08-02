@@ -81,11 +81,14 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   //       .SetCrossAxisAlignment()
   //       .SetDefaultFlex(...);
   FlexLayout& SetOrientation(LayoutOrientation orientation);
-  FlexLayout& SetCollapseMargins(bool collapse_margins);
   FlexLayout& SetMainAxisAlignment(LayoutAlignment main_axis_alignment);
   FlexLayout& SetCrossAxisAlignment(LayoutAlignment cross_axis_alignment);
   FlexLayout& SetInteriorMargin(const gfx::Insets& interior_margin);
   FlexLayout& SetMinimumCrossAxisSize(int size);
+  FlexLayout& SetCollapseMargins(bool collapse_margins);
+  FlexLayout& SetIncludeHostInsetsInLayout(bool include_host_insets_in_layout);
+  FlexLayout& SetIgnoreDefaultMainAxisMargins(
+      bool ignore_default_main_axis_margins);
 
   LayoutOrientation orientation() const { return orientation_; }
   bool collapse_margins() const { return collapse_margins_; }
@@ -93,6 +96,12 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   LayoutAlignment cross_axis_alignment() const { return cross_axis_alignment_; }
   const gfx::Insets& interior_margin() const { return interior_margin_; }
   int minimum_cross_axis_size() const { return minimum_cross_axis_size_; }
+  bool include_host_insets_in_layout() const {
+    return include_host_insets_in_layout_;
+  }
+  bool ignore_default_main_axis_margins() const {
+    return ignore_default_main_axis_margins_;
+  }
 
   // Moves and uses |value| as the default value for layout property |key|.
   template <class T, class U>
@@ -134,6 +143,11 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // to the indices of child views within that order that can flex.
   // See FlexSpecification::order().
   using FlexOrderToViewIndexMap = std::map<int, std::vector<size_t>>;
+
+  // Returns the combined margins across the cross axis of the host view, for a
+  // particular child view.
+  Inset1D GetCrossAxisMargins(const FlexLayoutData& layout,
+                              size_t child_index) const;
 
   // Calculates a margin between two child views based on each's margin and any
   // internal padding present in one or both elements. Uses properties of the
@@ -221,6 +235,33 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
 
   // The minimum cross axis size for the layout.
   int minimum_cross_axis_size_ = 0;
+
+  // Whether to include host insets in the layout. Use when e.g. the host has an
+  // empty border and you want to treat that empty space as part of the interior
+  // margin of the host view.
+  //
+  // Most useful in conjunction with |collapse_margins| so child margins can
+  // overlap with the host's insets.
+  //
+  // In the future, we might consider putting this as metadata on the host's
+  // border - e.g. an EmptyBorder would be included in host insets but a thick
+  // frame would not be.
+  bool include_host_insets_in_layout_ = false;
+
+  // Whether host |interior_margin| overrides default child margins at the
+  // leading and trailing edge of the host view.
+  //
+  // Example:
+  // layout->SetIgnoreDefaultMainAxisMargins(true)
+  //        .SetCollapseMargins(true)
+  //        .SetDefault(kMarginsKey, {5, 10})
+  //        .SetInteriorMargin({5, 5});
+  //
+  // This produces a margin of 5 DIP on all edges of the host view, with 10 DIP
+  // between child views. If SetIgnoreDefaultMainAxisMargins(true) was not
+  // called, the default child margin of 10 would also apply on the leading and
+  // trailing edge of the host view.
+  bool ignore_default_main_axis_margins_ = false;
 
   // Default properties for any views that don't have them explicitly set for
   // this layout.

@@ -107,7 +107,7 @@ views::Widget* LockScreenActionBackgroundControllerImpl::CreateWidget() {
   params.delegate = contents_view_;
 
   views::Widget* widget = new views::Widget();
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetVisibilityChangedAnimationsEnabled(false);
   widget_observer_.Add(widget);
 

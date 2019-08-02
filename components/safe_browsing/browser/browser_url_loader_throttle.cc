@@ -30,7 +30,7 @@ void RunOrPostTaskIfNecessary(const base::Location& from_here,
     return;
   }
 
-  base::PostTaskWithTraits(from_here, {thread_id}, std::move(task));
+  base::PostTask(from_here, {thread_id}, std::move(task));
 }
 
 }  // namespace

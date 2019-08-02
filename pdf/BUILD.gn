@@ -107,6 +107,8 @@ if (enable_pdf) {
         "pdfium/pdfium_mem_buffer_file_write.h",
         "pdfium/pdfium_page.cc",
         "pdfium/pdfium_page.h",
+        "pdfium/pdfium_permissions.cc",
+        "pdfium/pdfium_permissions.h",
         "pdfium/pdfium_print.cc",
         "pdfium/pdfium_print.h",
         "pdfium/pdfium_range.cc",

@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
+#include "media/gpu/android/codec_buffer_wait_coordinator.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/promotion_hint_aggregator.h"
-#include "media/gpu/android/surface_texture_gl_owner.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace base {
@@ -52,7 +52,7 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   // not in use.
   void Initialize(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
-      scoped_refptr<TextureOwner> texture_owner,
+      scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
 
   void SetNowUnusedCB(NowUnusedCB now_unused_cb);
@@ -100,9 +100,13 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   bool was_tex_image_bound() const { return was_tex_image_bound_; }
 
   // Whether this image is backed by a texture owner.
-  bool is_texture_owner_backed() const { return !!texture_owner_; }
+  bool is_texture_owner_backed() const {
+    return !!codec_buffer_wait_coordinator_->texture_owner();
+  }
 
-  scoped_refptr<TextureOwner> texture_owner() const { return texture_owner_; }
+  scoped_refptr<TextureOwner> texture_owner() const {
+    return codec_buffer_wait_coordinator_->texture_owner();
+  }
 
   // Renders this image to the front buffer of its backing surface.
   // Returns true if the buffer is in the front buffer. Returns false if the
@@ -160,9 +164,9 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   // The buffer backing this image.
   std::unique_ptr<CodecOutputBuffer> output_buffer_;
 
-  // The TextureOwner that |output_buffer_| will be rendered to. Or null, if
-  // this image is backed by an overlay.
-  scoped_refptr<TextureOwner> texture_owner_;
+  // The CodecBufferWaitCoordinator that |output_buffer_| will be rendered to.
+  // Or null, if this image is backed by an overlay.
+  scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator_;
 
   // The bounds last sent to the overlay.
   gfx::Rect most_recent_bounds_;

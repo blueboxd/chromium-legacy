@@ -205,11 +205,11 @@ void ExtensionUpdater::ScheduleNextCheck() {
   const double jitter_factor = RandDouble() * 0.4 + 0.8;
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
       static_cast<int64_t>(frequency_.InMilliseconds() * jitter_factor));
-  base::PostDelayedTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::BEST_EFFORT, BrowserThread::UI},
-      base::BindOnce(&ExtensionUpdater::NextCheck,
-                     weak_ptr_factory_.GetWeakPtr()),
-      delay);
+  base::PostDelayedTask(FROM_HERE,
+                        {base::TaskPriority::BEST_EFFORT, BrowserThread::UI},
+                        base::BindOnce(&ExtensionUpdater::NextCheck,
+                                       weak_ptr_factory_.GetWeakPtr()),
+                        delay);
 }
 
 void ExtensionUpdater::NextCheck() {
@@ -223,10 +223,10 @@ void ExtensionUpdater::CheckSoon() {
   DCHECK(alive_);
   if (will_check_soon_)
     return;
-  if (base::PostTaskWithTraits(
-          FROM_HERE, {base::TaskPriority::BEST_EFFORT, BrowserThread::UI},
-          base::BindOnce(&ExtensionUpdater::DoCheckSoon,
-                         weak_ptr_factory_.GetWeakPtr()))) {
+  if (base::PostTask(FROM_HERE,
+                     {base::TaskPriority::BEST_EFFORT, BrowserThread::UI},
+                     base::BindOnce(&ExtensionUpdater::DoCheckSoon,
+                                    weak_ptr_factory_.GetWeakPtr()))) {
     will_check_soon_ = true;
   } else {
     NOTREACHED();

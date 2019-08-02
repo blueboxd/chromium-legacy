@@ -20,3 +20,17 @@ static_library("common") {
     "//components/url_formatter",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "google_util_unittest.cc",
+  ]
+
+  deps = [
+    ":common",
+    "//base",
+    "//testing/gtest",
+  ]
+}

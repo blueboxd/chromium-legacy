@@ -104,7 +104,7 @@ void BrowserFrame::InitBrowserFrame() {
     }
   }
 
-  Init(params);
+  Init(std::move(params));
 
   if (!native_browser_frame_->UsesNativeSystemMenu()) {
     DCHECK(non_client_view());

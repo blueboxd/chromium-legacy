@@ -328,7 +328,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
                       int model_index,
                       const ui::LocatedEvent& event,
                       const ui::ListSelectionModel& original_selection) {
-    Tabs tabs;
+    std::vector<Tab*> tabs;
     int x = tab->GetMirroredXInView(event.x());
     int y = event.y();
     // Build the set of selected tabs to drag and calculate the offset from the
@@ -586,7 +586,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
   }
 
   std::vector<gfx::Rect> CalculateBoundsForDraggedTabs(
-      const Tabs& tabs) override {
+      const std::vector<Tab*>& tabs) override {
     DCHECK(!tabs.empty());
 
     std::vector<gfx::Rect> bounds;
@@ -611,7 +611,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     tab_strip_->last_layout_size_ = gfx::Size();
   }
 
-  void StartedDraggingTabs(const Tabs& tabs) override {
+  void StartedDraggingTabs(const std::vector<Tab*>& tabs) override {
     // Let the controller know that the user started dragging tabs.
     tab_strip_->controller_->OnStartedDraggingTabs();
 
@@ -648,7 +648,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
     SetNewTabButtonVisible(true);
   }
 
-  void StoppedDraggingTabs(const Tabs& tabs,
+  void StoppedDraggingTabs(const std::vector<Tab*>& tabs,
                            const std::vector<int>& initial_positions,
                            bool move_only,
                            bool completed) override {
@@ -667,7 +667,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
       tab_strip_->StoppedDraggingTab(tabs[i], &is_first_tab);
   }
 
-  void LayoutDraggedTabsAt(const Tabs& tabs,
+  void LayoutDraggedTabsAt(const std::vector<Tab*>& tabs,
                            Tab* active_tab,
                            const gfx::Point& location,
                            bool initial_drag) override {
@@ -979,7 +979,6 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   Tab* tab = new Tab(this);
   AddChildViewAt(tab, view_index);
   const bool pinned = data.pinned;
-  UpdateTabsClosingMap(model_index, 1);
   tabs_.Add(tab, model_index);
   selected_tabs_.IncrementFrom(model_index);
 
@@ -1010,7 +1009,7 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
     StartInsertTabAnimation(model_index, activeness, pinnedness);
   } else {
     layout_helper_->InsertTabAtNoAnimation(
-        model_index,
+        model_index, tab,
         base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
                        base::Unretained(this), base::Unretained(tab)),
         activeness, pinnedness);
@@ -1139,7 +1138,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
                              UpdateIdealBoundsForPinnedTabs(nullptr), old_x);
   }
 
-  layout_helper_->RemoveTabAt(model_index);
+  layout_helper_->CloseTabAt(model_index);
   UpdateIdealBounds();
   AnimateToIdealBounds();
 
@@ -1245,6 +1244,12 @@ void TabStrip::ChangeTabGroup(int model_index,
   }
   UpdateIdealBounds();
   AnimateToIdealBounds();
+}
+
+void TabStrip::GroupVisualsChanged(TabGroupId group) {
+  group_headers_[group]->VisualsChanged();
+  for (int i : controller_->ListTabsInGroup(group))
+    tabs_.view_at(i)->GroupColorChanged();
 }
 
 bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
@@ -1506,7 +1511,14 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
     // If the tab is already closing, close the next tab. We do this so that the
     // user can rapidly close tabs by clicking the close button and not have
     // the animations interfere with that.
-    model_index = FindClosingTab(tab).first->first;
+    std::vector<Tab*> all_tabs = layout_helper_->GetTabs();
+    auto it = std::find(all_tabs.begin(), all_tabs.end(), tab);
+    while (it < all_tabs.end() && (*it)->closing()) {
+      it++;
+    }
+
+    model_index =
+        it != all_tabs.end() ? GetModelIndexOfTab(*it) : TabStripModel::kNoTab;
   }
 
   if (!IsValidModelIndex(model_index))
@@ -1871,45 +1883,16 @@ void TabStrip::Layout() {
   CompleteAnimationAndLayout();
 }
 
-bool TabStrip::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  // Change the selected tab on horizontal wheel scrolls.
-  // Honor wheel scrolls over the tabs themselves, but not the NTB/surrounding
-  // space.
-  if ((!event.x_offset() && !event.IsShiftDown()) || tab_count() < 2 ||
-      !FindTabHitByPoint(event.location()))
-    return false;
-
-  accumulated_horizontal_scroll_ +=
-      (event.x_offset() ? event.x_offset() : event.y_offset());
-
-  int horizontal_offset =
-      accumulated_horizontal_scroll_ / ui::MouseWheelEvent::kWheelDelta;
-  if (!horizontal_offset)
-    return true;
-
-  accumulated_horizontal_scroll_ %= ui::MouseWheelEvent::kWheelDelta;
-
-  int new_active_index =
-      (controller_->GetActiveIndex() + horizontal_offset) % tab_count();
-  if (new_active_index < 0)
-    new_active_index += tab_count();
-
-  DCHECK(IsValidModelIndex(new_active_index));
-  controller_->SelectTab(new_active_index, event);
-  return true;
-}
-
 void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // This is used to log to UMA. NO EARLY RETURNS!
   base::ElapsedTimer paint_timer;
 
-  // The view order doesn't match the paint order (tabs_ contains the tab
-  // ordering). Additionally we need to paint the tabs that are closing in
-  // |tabs_closing_map_|.
+  // The view order doesn't match the paint order (layout_helper_ contains the
+  // view ordering).
   bool is_dragging = false;
   Tab* active_tab = nullptr;
-  Tabs tabs_dragging;
-  Tabs selected_and_hovered_tabs;
+  std::vector<Tab*> tabs_dragging;
+  std::vector<Tab*> selected_and_hovered_tabs;
 
   // When background tab shapes are visible, as for hovered or selected tabs,
   // the paint order must be handled carefully to avoid Z-order errors, so
@@ -1923,18 +1906,11 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     }
   };
 
-  const auto paint_closing_tabs = [=](int index) {
-    if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
-      return;
-    for (Tab* tab : base::Reversed(tabs_closing_map_[index]))
-      paint_or_add_to_tabs(tab);
-  };
-
-  paint_closing_tabs(tab_count());
+  std::vector<Tab*> all_tabs = layout_helper_->GetTabs();
 
   int active_tab_index = -1;
-  for (int i = tab_count() - 1; i >= 0; --i) {
-    Tab* tab = tab_at(i);
+  for (int i = all_tabs.size() - 1; i >= 0; --i) {
+    Tab* tab = all_tabs[i];
     if (tab->dragging() && !stacked_layout_) {
       is_dragging = true;
       if (tab->IsActive()) {
@@ -1949,18 +1925,17 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     } else if (!stacked_layout_) {
       paint_or_add_to_tabs(tab);
     }
-    paint_closing_tabs(i);
   }
 
   // Draw from the left and then the right if we're in touch mode.
   if (stacked_layout_ && active_tab_index >= 0) {
     for (int i = 0; i < active_tab_index; ++i) {
-      Tab* tab = tab_at(i);
+      Tab* tab = all_tabs[i];
       tab->Paint(paint_info);
     }
 
-    for (int i = tab_count() - 1; i > active_tab_index; --i) {
-      Tab* tab = tab_at(i);
+    for (int i = all_tabs.size() - 1; i > active_tab_index; --i) {
+      Tab* tab = all_tabs[i];
       tab->Paint(paint_info);
     }
   }
@@ -2167,7 +2142,7 @@ void TabStrip::StartInsertTabAnimation(
     TabAnimationState::TabPinnedness pinnedness) {
   if (!bounds_animator_.IsAnimating() && !in_tab_close_) {
     layout_helper_->InsertTabAt(
-        model_index,
+        model_index, tab_at(model_index),
         base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
                        base::Unretained(this),
                        base::Unretained(tab_at(model_index))),
@@ -2176,7 +2151,7 @@ void TabStrip::StartInsertTabAnimation(
     // TODO(958173): Delete this branch once |TabStripLayoutHelper::animator_|
     // has taken over all animation responsibilities.
     layout_helper_->InsertTabAtNoAnimation(
-        model_index,
+        model_index, tab_at(model_index),
         base::BindOnce(&TabStrip::OnTabCloseAnimationCompleted,
                        base::Unretained(this),
                        base::Unretained(tab_at(model_index))),
@@ -2285,7 +2260,13 @@ bool TabStrip::TitlebarBackgroundIsTransparent() const {
 }
 
 void TabStrip::CompleteAnimationAndLayout() {
-  layout_helper_->CompleteAnimations();
+  // If |bounds_animator_| is running, it owns destroying tabs when close
+  // animations complete.  Otherwise, |layout_helper_| does.
+  if (bounds_animator_.IsAnimating()) {
+    layout_helper_->CompleteAnimationsWithoutDestroyingTabs();
+  } else {
+    layout_helper_->CompleteAnimations();
+  }
   LayoutToCurrentBounds();
 
   UpdateIdealBounds();
@@ -2327,14 +2308,8 @@ void TabStrip::SetTabVisibility() {
   // we could e.g. binary-search for the changeover point.  But since we have to
   // iterate through all the tabs to call SetVisible() anyway, it doesn't seem
   // worth it.
-  for (int i = 0; i < tab_count(); ++i) {
-    Tab* tab = tab_at(i);
+  for (Tab* tab : layout_helper_->GetTabs())
     tab->SetVisible(ShouldTabBeVisible(tab));
-  }
-  for (const auto& closing_tab : tabs_closing_map_) {
-    for (Tab* tab : closing_tab.second)
-      tab->SetVisible(ShouldTabBeVisible(tab));
-  }
 }
 
 void TabStrip::UpdateAccessibleTabIndices() {
@@ -2381,10 +2356,8 @@ void TabStrip::RemoveTabFromViewModel(int index) {
 
   UpdateHoverCard(nullptr);
 
-  // We still need to paint the tab until we actually remove it. Put it
-  // in tabs_closing_map_ so we can find it.
-  tabs_closing_map_[index].push_back(closing_tab);
-  UpdateTabsClosingMap(index + 1, -1);
+  // We still need to keep the tab alive until the remove tab animation
+  // completes. Defer destroying it until then.
   tabs_.Remove(index);
   selected_tabs_.DecrementFrom(index);
 
@@ -2396,10 +2369,7 @@ void TabStrip::OnTabCloseAnimationCompleted(Tab* tab) {
   DCHECK(tab->closing());
 
   std::unique_ptr<Tab> deleter(tab);
-  FindClosingTabResult res(FindClosingTab(tab));
-  res.first->second.erase(res.second);
-  if (res.first->second.empty())
-    tabs_closing_map_.erase(res.first);
+  layout_helper_->OnTabDestroyed(tab);
 
   // Send the Container a message to simulate a mouse moved event at the current
   // mouse position. This tickles the Tab the mouse is currently over to show
@@ -2419,29 +2389,6 @@ void TabStrip::OnGroupCloseAnimationCompleted(TabGroupId group) {
   group_headers_.erase(group);
   // TODO(crbug.com/905491): We might want to simulate a mouse move here, like
   // we do in OnTabCloseAnimationCompleted.
-}
-
-void TabStrip::UpdateTabsClosingMap(int index, int delta) {
-  if (tabs_closing_map_.empty())
-    return;
-
-  if (delta == -1 &&
-      tabs_closing_map_.find(index - 1) != tabs_closing_map_.end() &&
-      tabs_closing_map_.find(index) != tabs_closing_map_.end()) {
-    const Tabs& tabs(tabs_closing_map_[index]);
-    tabs_closing_map_[index - 1].insert(tabs_closing_map_[index - 1].end(),
-                                        tabs.begin(), tabs.end());
-  }
-  TabsClosingMap updated_map;
-  for (auto& i : tabs_closing_map_) {
-    if (i.first > index)
-      updated_map[i.first + delta] = i.second;
-    else if (i.first < index)
-      updated_map[i.first] = i.second;
-  }
-  if (delta > 0 && tabs_closing_map_.find(index) != tabs_closing_map_.end())
-    updated_map[index + delta] = tabs_closing_map_[index];
-  tabs_closing_map_.swap(updated_map);
 }
 
 void TabStrip::StoppedDraggingTab(Tab* tab, bool* is_first_tab) {
@@ -2465,17 +2412,6 @@ void TabStrip::StoppedDraggingTab(Tab* tab, bool* is_first_tab) {
   bounds_animator_.AnimateViewTo(
       tab, ideal_bounds(tab_data_index),
       std::make_unique<ResetDraggingStateDelegate>(this, tab));
-}
-
-TabStrip::FindClosingTabResult TabStrip::FindClosingTab(const Tab* tab) {
-  DCHECK(tab->closing());
-  for (auto i = tabs_closing_map_.begin(); i != tabs_closing_map_.end(); ++i) {
-    auto j = std::find(i->second.begin(), i->second.end(), tab);
-    if (j != i->second.end())
-      return FindClosingTabResult(i, j);
-  }
-  NOTREACHED();
-  return FindClosingTabResult(tabs_closing_map_.end(), Tabs::iterator());
 }
 
 void TabStrip::UpdateStackedLayoutFromMouseEvent(views::View* source,
@@ -2747,7 +2683,7 @@ TabStrip::DropArrow::DropArrow(const BrowserRootView::DropIndex& index,
   params.accept_events = false;
   params.bounds = gfx::Rect(g_drop_indicator_width, g_drop_indicator_height);
   params.context = context->GetNativeWindow();
-  arrow_window->Init(params);
+  arrow_window->Init(std::move(params));
   arrow_window->SetContentsView(arrow_view);
 }
 
@@ -2834,20 +2770,24 @@ Tab* TabStrip::FindTabForEventFrom(const gfx::Point& point,
 }
 
 Tab* TabStrip::FindTabHitByPoint(const gfx::Point& point) {
+  // Check all tabs, even closing tabs. Mouse events need to reach closing tabs
+  // for users to be able to rapidly middle-click close several tabs.
+  std::vector<Tab*> all_tabs = layout_helper_->GetTabs();
+
   // The display order doesn't necessarily match the child order, so we iterate
   // in display order.
-  for (int i = 0; i < tab_count(); ++i) {
+  for (size_t i = 0; i < all_tabs.size(); ++i) {
     // If we don't first exclude points outside the current tab, the code below
     // will return the wrong tab if the next tab is selected, the following tab
     // is active, and |point| is in the overlap region between the two.
-    Tab* tab = tab_at(i);
+    Tab* tab = all_tabs[i];
     if (!IsPointInTab(tab, point))
       continue;
 
     // Selected tabs render atop unselected ones, and active tabs render atop
     // everything.  Check whether the next tab renders atop this one and |point|
     // is in the overlap region.
-    Tab* next_tab = i < (tab_count() - 1) ? tab_at(i + 1) : nullptr;
+    Tab* next_tab = i < (all_tabs.size() - 1) ? all_tabs[i + 1] : nullptr;
     if (next_tab &&
         (next_tab->IsActive() ||
          (next_tab->IsSelected() && !tab->IsSelected())) &&
@@ -2856,17 +2796,6 @@ Tab* TabStrip::FindTabHitByPoint(const gfx::Point& point) {
 
     // This is the topmost tab for this point.
     return tab;
-  }
-
-  // Also check closing tabs.  Mouse events need to reach closing tabs for users
-  // to be able to rapidly middle-click close several tabs. Since closing tabs
-  // are never selected or active, the check here can be simpler than the one
-  // above.
-  for (const auto& index_and_tabs : tabs_closing_map_) {
-    for (Tab* tab : index_and_tabs.second) {
-      if (IsPointInTab(tab, point))
-        return tab;
-    }
   }
 
   return nullptr;

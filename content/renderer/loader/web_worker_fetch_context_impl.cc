@@ -395,7 +395,6 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_render_frame_id(ancestor_frame_id_);
   extra_data->set_frame_request_blocker(frame_request_blocker_);
-  extra_data->set_initiated_in_secure_context(is_secure_context_);
   if (throttle_provider_) {
     extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
         ancestor_frame_id_, request, WebURLRequestToResourceType(request)));
@@ -409,7 +408,6 @@ void WebWorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
     extra_data->set_navigation_response_override(std::move(response_override_));
   }
   request.SetExtraData(std::move(extra_data));
-  request.SetAppCacheHostID(appcache_host_id_);
 
   if (g_rewrite_url)
     request.SetUrl(g_rewrite_url(request.Url().GetString().Utf8(), false));
@@ -507,10 +505,6 @@ void WebWorkerFetchContextImpl::set_top_frame_origin(
   top_frame_origin_ = top_frame_origin;
 }
 
-void WebWorkerFetchContextImpl::set_is_secure_context(bool flag) {
-  is_secure_context_ = flag;
-}
-
 void WebWorkerFetchContextImpl::set_origin_url(const GURL& origin_url) {
   origin_url_ = origin_url;
 }
@@ -523,11 +517,6 @@ void WebWorkerFetchContextImpl::SetResponseOverrideForMainScript(
     std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
   DCHECK(!response_override_);
   response_override_ = std::move(response_override);
-}
-
-void WebWorkerFetchContextImpl::SetApplicationCacheHostID(
-    const base::UnguessableToken& id) {
-  appcache_host_id_ = id;
 }
 
 void WebWorkerFetchContextImpl::OnControllerChanged(
@@ -562,7 +551,6 @@ WebWorkerFetchContextImpl::CloneForNestedWorkerInternal(
   new_context->is_on_sub_frame_ = is_on_sub_frame_;
   new_context->ancestor_frame_id_ = ancestor_frame_id_;
   new_context->frame_request_blocker_ = frame_request_blocker_;
-  new_context->appcache_host_id_ = appcache_host_id_;
   new_context->top_frame_origin_ = top_frame_origin_;
   child_preference_watchers_.AddPtr(std::move(preference_watcher));
   return new_context;
@@ -589,8 +577,9 @@ void WebWorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
       mojo::MakeRequest(&host_ptr_info));
   // To avoid potential dead-lock while synchronous loading, create the
   // SubresourceLoaderFactory on a background thread.
-  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  auto task_runner = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(

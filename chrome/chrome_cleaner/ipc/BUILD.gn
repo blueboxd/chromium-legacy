@@ -19,6 +19,8 @@ source_set("chrome_prompt_ipc") {
   sources = [
     "chrome_prompt_ipc.cc",
     "chrome_prompt_ipc.h",
+    "mojo_chrome_prompt_ipc.cc",
+    "mojo_chrome_prompt_ipc.h",
   ]
 
   deps = [

@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/android/chrome_jni_headers/PictureInPictureActivity_jni.h"
+#include "chrome/browser/android/tab_android.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "ui/views/widget/widget.h"
@@ -21,8 +22,10 @@ OverlayWindowAndroid::OverlayWindowAndroid(
     content::PictureInPictureWindowController* controller)
     : controller_(controller) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_PictureInPictureActivity_createActivity(env,
-                                               reinterpret_cast<long>(this));
+  Java_PictureInPictureActivity_createActivity(
+      env, reinterpret_cast<long>(this),
+      TabAndroid::FromWebContents(controller_->GetInitiatorWebContents())
+          ->GetJavaObject());
 }
 
 OverlayWindowAndroid::~OverlayWindowAndroid() {
@@ -33,12 +36,25 @@ OverlayWindowAndroid::~OverlayWindowAndroid() {
 
 void OverlayWindowAndroid::OnActivityStart(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& jwindow_android) {
   java_ref_ = JavaObjectWeakGlobalRef(env, obj);
+  window_android_ = ui::WindowAndroid::FromJavaWindowAndroid(jwindow_android);
+  window_android_->AddObserver(this);
 }
 
-void OverlayWindowAndroid::OnActivityDestroy(JNIEnv* env) {
+void OverlayWindowAndroid::OnActivityStopped() {
+  Destroy(nullptr);
+}
+
+void OverlayWindowAndroid::Destroy(JNIEnv* env) {
   java_ref_.reset();
+
+  if (window_android_) {
+    window_android_->RemoveObserver(this);
+    window_android_ = nullptr;
+  }
+
   controller_->CloseAndFocusInitiator();
   controller_->OnWindowDestroyed();
 }
@@ -47,6 +63,9 @@ void OverlayWindowAndroid::Close() {
   if (java_ref_.is_uninitialized())
     return;
 
+  DCHECK(window_android_);
+  window_android_->RemoveObserver(this);
+  window_android_ = nullptr;
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_PictureInPictureActivity_close(env, java_ref_.get(env));
   controller_->OnWindowDestroyed();

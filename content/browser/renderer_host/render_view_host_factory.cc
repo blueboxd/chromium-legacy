@@ -27,8 +27,7 @@ RenderViewHost* RenderViewHostFactory::Create(
     int32_t routing_id,
     int32_t main_frame_routing_id,
     int32_t widget_routing_id,
-    bool swapped_out,
-    bool hidden) {
+    bool swapped_out) {
   // RenderViewHost creation can be either browser-driven (by the user opening a
   // new tab) or renderer-driven (by script calling window.open, etc).
   //
@@ -54,7 +53,8 @@ RenderViewHost* RenderViewHostFactory::Create(
   return new RenderViewHostImpl(
       instance,
       RenderWidgetHostFactory::Create(widget_delegate, instance->GetProcess(),
-                                      widget_routing_id, nullptr, hidden),
+                                      widget_routing_id, nullptr,
+                                      /*hidden=*/true),
       delegate, routing_id, main_frame_routing_id, swapped_out,
       true /* has_initialized_audio_host */);
 }

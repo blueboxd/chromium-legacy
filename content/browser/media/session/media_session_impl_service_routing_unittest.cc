@@ -582,6 +582,75 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
+       TestSeekToBehaviorWhenMainFrameIsRouted) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  StartPlayerForFrame(sub_frame_);
+
+  CreateServiceForFrame(main_frame_);
+
+  base::TimeDelta seek_time = base::TimeDelta::FromSeconds(10);
+
+  EXPECT_CALL(*GetClientForFrame(main_frame_),
+              DidReceiveAction(MediaSessionAction::kSeekTo, _))
+      .WillOnce([&run_loop, &seek_time](auto a, auto details) {
+        EXPECT_EQ(seek_time, details->get_seek_to()->seek_time);
+        EXPECT_FALSE(details->get_seek_to()->fast_seek);
+        run_loop.Quit();
+      });
+
+  services_[main_frame_]->EnableAction(MediaSessionAction::kSeekTo);
+
+  MediaSessionImpl::Get(contents())->SeekTo(seek_time);
+  run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       TestScrubToBehaviorWhenMainFrameIsRouted) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  StartPlayerForFrame(sub_frame_);
+
+  CreateServiceForFrame(main_frame_);
+
+  base::TimeDelta seek_time = base::TimeDelta::FromSeconds(10);
+
+  EXPECT_CALL(*GetClientForFrame(main_frame_),
+              DidReceiveAction(MediaSessionAction::kSeekTo, _))
+      .WillOnce([&run_loop, &seek_time](auto a, auto details) {
+        EXPECT_EQ(seek_time, details->get_seek_to()->seek_time);
+        EXPECT_TRUE(details->get_seek_to()->fast_seek);
+        run_loop.Quit();
+      });
+
+  services_[main_frame_]->EnableAction(MediaSessionAction::kSeekTo);
+
+  MediaSessionImpl::Get(contents())->ScrubTo(seek_time);
+  run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest, SeekToActionEnablesScrubTo) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  std::set<MediaSessionAction> expected_actions(default_actions().begin(),
+                                                default_actions().end());
+  expected_actions.insert(MediaSessionAction::kSeekTo);
+  expected_actions.insert(MediaSessionAction::kScrubTo);
+
+  services_[main_frame_]->EnableAction(MediaSessionAction::kSeekTo);
+
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+  observer.WaitForExpectedActions(expected_actions);
+
+  services_[main_frame_]->DisableAction(MediaSessionAction::kSeekTo);
+  observer.WaitForExpectedActions(default_actions());
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
        NotifyObserverMetadataWhenControllable) {
   media_session::MediaMetadata expected_metadata;
   expected_metadata.title = base::ASCIIToUTF16("title");

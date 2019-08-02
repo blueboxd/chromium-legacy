@@ -2450,9 +2450,6 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
 
   if (current_size > 0) {
     // Prune any entries which are in front of the current entry.
-    // last_committed_entry_index_ must be updated here since calls to
-    // NotifyPrunedEntries() below may re-enter and we must make sure
-    // last_committed_entry_index_ is not left in an invalid state.
     int num_pruned = 0;
     while (last_committed_entry_index_ < (current_size - 1)) {
       num_pruned++;

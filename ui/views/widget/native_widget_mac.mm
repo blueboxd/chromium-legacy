@@ -183,7 +183,7 @@ bool NativeWidgetMac::ExecuteCommand(
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, internal::NativeWidgetPrivate implementation:
 
-void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
+void NativeWidgetMac::InitNativeWidget(Widget::InitParams params) {
   ownership_ = params.ownership;
   name_ = params.name;
   type_ = params.type;

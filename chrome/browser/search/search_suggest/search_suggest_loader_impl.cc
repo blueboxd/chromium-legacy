@@ -15,7 +15,6 @@
 #include "chrome/browser/search/search_suggest/search_suggest_data.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/common/google_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/system_connector.h"
@@ -202,10 +201,8 @@ void SearchSuggestLoaderImpl::AuthenticatedURLLoader::OnURLLoaderComplete(
 
 SearchSuggestLoaderImpl::SearchSuggestLoaderImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    GoogleURLTracker* google_url_tracker,
     const std::string& application_locale)
     : url_loader_factory_(url_loader_factory),
-      google_url_tracker_(google_url_tracker),
       application_locale_(application_locale) {}
 
 SearchSuggestLoaderImpl::~SearchSuggestLoaderImpl() = default;
@@ -232,7 +229,7 @@ GURL SearchSuggestLoaderImpl::GetLoadURLForTesting() const {
 GURL SearchSuggestLoaderImpl::GetApiUrl(const std::string& blocklist) const {
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
   if (!google_base_url.is_valid()) {
-    google_base_url = google_url_tracker_->google_url();
+    google_base_url = GURL(google_util::kGoogleHomepageURL);
   }
 
   GURL api_url = google_base_url.Resolve(kNewTabSearchSuggestionsApiPath);

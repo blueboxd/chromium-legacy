@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -64,7 +65,28 @@ class CONTENT_EXPORT ChildThread : public IPC::Sender {
 
   // Returns a connector that can be used to bind interfaces exposed by other
   // services.
+  //
+  // DEPRECATED: Do not introduce new calls to |GetConnector()|. To bind
+  // browser process receivers scoped to this child process, use
+  // |BindHostReceiver()| below.
   virtual service_manager::Connector* GetConnector() = 0;
+
+  // Asks the browser-side process host object to bind |receiver|. Whether or
+  // not the interface type encapsulated by |receiver| is supported depends on
+  // the process type and potentially on the Content embedder.
+  //
+  // Receivers passed into this method arrive in the browser process and are
+  // taken through one of the following flows, stopping if any step decides to
+  // bind the receiver:
+  //
+  //   For renderers:
+  //       1. IO thread, IOThreadHostImpl::BindHostReceiver.
+  //       2. Main thread, RenderProcessHostImpl::BindHostReceiver.
+  //       3. Main thread, ContentBrowserClient::BindHostReceiverForRenderer.
+  //
+  // TODO(crbug.com/977637): Document behavior for other process types when
+  // their support is added.
+  virtual void BindHostReceiver(mojo::GenericPendingReceiver receiver) = 0;
 
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() = 0;
 

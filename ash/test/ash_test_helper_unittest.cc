@@ -53,7 +53,7 @@ TEST_F(AshTestHelperTest, AshTestHelper) {
   Widget::InitParams params;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = ash_test_helper()->CurrentContext();
-  w1->Init(params);
+  w1->Init(std::move(params));
   w1->Show();
   EXPECT_TRUE(w1->IsActive());
   EXPECT_TRUE(w1->IsVisible());

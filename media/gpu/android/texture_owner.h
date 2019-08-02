@@ -36,9 +36,10 @@ namespace media {
 // A Texture wrapper interface that creates and maintains ownership of the
 // attached GL or Vulkan texture. The texture is destroyed with the object.
 // It should only be accessed on the thread it was created on, with the
-// exception of CreateJavaSurface(), which can be called on any thread. It's
-// safe to keep and drop refptrs to it on any thread; it will be automatically
-// destructed on the thread it was constructed on.
+// exception of CreateJavaSurface() and SetFrameAvailableCallback(), which can
+// be called on any thread. It's safe to keep and drop refptrs to it on any
+// thread; it will be automatically destructed on the thread it was constructed
+// on.
 class MEDIA_GPU_EXPORT TextureOwner
     : public base::RefCountedDeleteOnSequence<TextureOwner> {
  public:
@@ -88,25 +89,6 @@ class MEDIA_GPU_EXPORT TextureOwner
   virtual void GetTransformMatrix(float mtx[16]) = 0;
   virtual void ReleaseBackBuffers() = 0;
 
-  // Sets the expectation of onFrameAVailable for a new frame because a buffer
-  // was just released to this surface.
-  virtual void SetReleaseTimeToNow() = 0;
-
-  // Ignores a pending release that was previously indicated with
-  // SetReleaseTimeToNow(). TODO(watk): This doesn't seem necessary. It
-  // actually may be detrimental because the next time we release a buffer we
-  // may confuse its onFrameAvailable with the one we're ignoring.
-  virtual void IgnorePendingRelease() = 0;
-
-  // Whether we're expecting onFrameAvailable. True when SetReleaseTimeToNow()
-  // was called but neither IgnorePendingRelease() nor WaitForFrameAvailable()
-  // have been called since.
-  virtual bool IsExpectingFrameAvailable() = 0;
-
-  // Waits for onFrameAvailable until it's been 5ms since the buffer was
-  // released. This must only be called if IsExpectingFrameAvailable().
-  virtual void WaitForFrameAvailable() = 0;
-
   // Retrieves the AHardwareBuffer from the latest available image data.
   // Note that the object must be used and destroyed on the same thread the
   // TextureOwner is bound to.
@@ -118,11 +100,17 @@ class MEDIA_GPU_EXPORT TextureOwner
  protected:
   friend class base::RefCountedDeleteOnSequence<TextureOwner>;
   friend class base::DeleteHelper<TextureOwner>;
+  friend class CodecBufferWaitCoordinator;
 
   // |texture| is the texture that we'll own.
   TextureOwner(bool binds_texture_on_update,
                std::unique_ptr<gpu::gles2::AbstractTexture> texture);
   virtual ~TextureOwner();
+
+  // Set the callback function to run when a new frame is available.
+  // |frame_available_cb| is thread safe and can be called on any thread.
+  virtual void SetFrameAvailableCallback(
+      const base::RepeatingClosure& frame_available_cb) = 0;
 
   // Drop |texture_| immediately.  Will call OnTextureDestroyed immediately if
   // it hasn't been called before (e.g., due to lost context).

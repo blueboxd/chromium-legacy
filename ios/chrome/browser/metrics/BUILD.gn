@@ -171,7 +171,7 @@ source_set("metrics_internal") {
   deps = [
     ":metrics",
     "//base",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/prerender",

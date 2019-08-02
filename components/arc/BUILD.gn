@@ -102,7 +102,7 @@ static_library("arc") {
     "//chromeos/network",
     "//components/account_id",
     "//components/exo",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/onc",
     "//components/prefs",
     "//components/session_manager/core",

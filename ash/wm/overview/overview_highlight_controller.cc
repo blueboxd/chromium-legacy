@@ -93,11 +93,11 @@ class OverviewHighlightController::HighlightWidget : public views::Widget {
     params.accept_events = false;
     params.parent =
         root_window->GetChildById(kShellWindowId_WallpaperContainer);
+    params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
     set_focus_on_creation(false);
-    Init(params);
+    Init(std::move(params));
 
     aura::Window* widget_window = GetNativeWindow();
-    widget_window->SetProperty(kHideInDeskMiniViewKey, true);
     // Disable the "bounce in" animation when showing the window.
     ::wm::SetWindowVisibilityAnimationTransition(widget_window,
                                                  ::wm::ANIMATE_NONE);

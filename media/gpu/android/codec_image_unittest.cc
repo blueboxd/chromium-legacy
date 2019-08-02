@@ -61,8 +61,11 @@ class CodecImageTest : public testing::Test {
     // The tests rely on this texture being bound.
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id_);
 
-    texture_owner_ = new NiceMock<MockTextureOwner>(
+    auto texture_owner = base::MakeRefCounted<NiceMock<MockTextureOwner>>(
         texture_id_, context_.get(), surface_.get(), BindsTextureOnUpdate());
+    codec_buffer_wait_coordinator_ =
+        base::MakeRefCounted<NiceMock<MockCodecBufferWaitCoordinator>>(
+            std::move(texture_owner));
   }
 
   void TearDown() override {
@@ -83,7 +86,8 @@ class CodecImageTest : public testing::Test {
     wrapper_->DequeueOutputBuffer(nullptr, nullptr, &buffer);
     scoped_refptr<CodecImage> image = new CodecImage();
     image->Initialize(
-        std::move(buffer), kind == kTextureOwner ? texture_owner_ : nullptr,
+        std::move(buffer),
+        kind == kTextureOwner ? codec_buffer_wait_coordinator_ : nullptr,
         base::BindRepeating(&PromotionHintReceiver::OnPromotionHint,
                             base::Unretained(&promotion_hint_receiver_)));
 
@@ -96,7 +100,8 @@ class CodecImageTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   NiceMock<MockMediaCodecBridge>* codec_;
   std::unique_ptr<CodecWrapper> wrapper_;
-  scoped_refptr<NiceMock<MockTextureOwner>> texture_owner_;
+  scoped_refptr<NiceMock<MockCodecBufferWaitCoordinator>>
+      codec_buffer_wait_coordinator_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLSurface> surface_;
@@ -170,8 +175,9 @@ TEST_F(CodecImageTest, CopyTexImageTriggersFrontBufferRendering) {
   // Verify that the release comes before the wait.
   InSequence s;
   EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, true));
-  EXPECT_CALL(*texture_owner_, WaitForFrameAvailable());
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_, WaitForFrameAvailable());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              UpdateTexImage());
   i->CopyTexImage(GL_TEXTURE_EXTERNAL_OES);
   ASSERT_TRUE(i->was_rendered_to_front_buffer());
 }
@@ -181,9 +187,11 @@ TEST_F(CodecImageTestExplicitBind, CopyTexImageTriggersFrontBufferRendering) {
   // Verify that the release comes before the wait.
   InSequence s;
   EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, true));
-  EXPECT_CALL(*texture_owner_, WaitForFrameAvailable());
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
-  EXPECT_CALL(*texture_owner_, EnsureTexImageBound());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_, WaitForFrameAvailable());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              UpdateTexImage());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              EnsureTexImageBound());
   i->CopyTexImage(GL_TEXTURE_EXTERNAL_OES);
   ASSERT_TRUE(i->was_rendered_to_front_buffer());
 }
@@ -192,9 +200,11 @@ TEST_F(CodecImageTest, GetTextureMatrixTriggersFrontBufferRendering) {
   auto i = NewImage(kTextureOwner);
   InSequence s;
   EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, true));
-  EXPECT_CALL(*texture_owner_, WaitForFrameAvailable());
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
-  EXPECT_CALL(*texture_owner_, GetTransformMatrix(_));
+  EXPECT_CALL(*codec_buffer_wait_coordinator_, WaitForFrameAvailable());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              UpdateTexImage());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              GetTransformMatrix(_));
   float matrix[16];
   i->GetTextureMatrix(matrix);
   ASSERT_TRUE(i->was_rendered_to_front_buffer());
@@ -203,14 +213,17 @@ TEST_F(CodecImageTest, GetTextureMatrixTriggersFrontBufferRendering) {
 TEST_F(CodecImageTestExplicitBind,
        GetTextureMatrixTriggersFrontBufferRendering) {
   // GetTextureMatrix should not bind the image.
-  texture_owner_->expect_update_tex_image = false;
+  codec_buffer_wait_coordinator_->texture_owner()->expect_update_tex_image =
+      false;
 
   auto i = NewImage(kTextureOwner);
   InSequence s;
   EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, true));
-  EXPECT_CALL(*texture_owner_, WaitForFrameAvailable());
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
-  EXPECT_CALL(*texture_owner_, GetTransformMatrix(_));
+  EXPECT_CALL(*codec_buffer_wait_coordinator_, WaitForFrameAvailable());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              UpdateTexImage());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              GetTransformMatrix(_));
   float matrix[16];
   i->GetTextureMatrix(matrix);
   ASSERT_TRUE(i->was_rendered_to_front_buffer());
@@ -254,16 +267,17 @@ TEST_F(CodecImageTest, RenderToBackBufferDoesntWait) {
   auto i = NewImage(kTextureOwner);
   InSequence s;
   EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, true));
-  EXPECT_CALL(*texture_owner_, SetReleaseTimeToNow());
-  EXPECT_CALL(*texture_owner_, WaitForFrameAvailable()).Times(0);
+  EXPECT_CALL(*codec_buffer_wait_coordinator_, SetReleaseTimeToNow());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_, WaitForFrameAvailable())
+      .Times(0);
   ASSERT_TRUE(i->RenderToTextureOwnerBackBuffer());
 }
 
 TEST_F(CodecImageTest, PromotingTheBackBufferWaits) {
   auto i = NewImage(kTextureOwner);
-  EXPECT_CALL(*texture_owner_, SetReleaseTimeToNow()).Times(1);
+  EXPECT_CALL(*codec_buffer_wait_coordinator_, SetReleaseTimeToNow()).Times(1);
   i->RenderToTextureOwnerBackBuffer();
-  EXPECT_CALL(*texture_owner_, WaitForFrameAvailable());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_, WaitForFrameAvailable());
   ASSERT_TRUE(i->RenderToFrontBuffer());
 }
 
@@ -288,7 +302,8 @@ TEST_F(CodecImageTest, RenderToFrontBufferRestoresTextureBindings) {
   glGenTextures(1, &pre_bound_texture);
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, pre_bound_texture);
   auto i = NewImage(kTextureOwner);
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              UpdateTexImage());
   i->RenderToFrontBuffer();
   GLint post_bound_texture = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &post_bound_texture);
@@ -296,13 +311,15 @@ TEST_F(CodecImageTest, RenderToFrontBufferRestoresTextureBindings) {
 }
 
 TEST_F(CodecImageTestExplicitBind, RenderToFrontBufferDoesNotBindTexture) {
-  texture_owner_->expect_update_tex_image = false;
+  codec_buffer_wait_coordinator_->texture_owner()->expect_update_tex_image =
+      false;
 
   GLuint pre_bound_texture = 0;
   glGenTextures(1, &pre_bound_texture);
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, pre_bound_texture);
   auto i = NewImage(kTextureOwner);
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              UpdateTexImage());
   i->RenderToFrontBuffer();
   GLint post_bound_texture = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &post_bound_texture);
@@ -321,9 +338,10 @@ TEST_F(CodecImageTest, RenderToFrontBufferRestoresGLContext) {
 
   auto i = NewImage(kTextureOwner);
   // Our context should not be current when UpdateTexImage() is called.
-  EXPECT_CALL(*texture_owner_, UpdateTexImage()).WillOnce(Invoke([&]() {
-    ASSERT_FALSE(context->IsCurrent(surface.get()));
-  }));
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              UpdateTexImage())
+      .WillOnce(
+          Invoke([&]() { ASSERT_FALSE(context->IsCurrent(surface.get())); }));
   i->RenderToFrontBuffer();
   // Our context should have been restored.
   ASSERT_TRUE(context->IsCurrent(surface.get()));
@@ -353,12 +371,17 @@ TEST_F(CodecImageTest, ScheduleOverlayPlaneDoesntSendDuplicateHints) {
 
 TEST_F(CodecImageTest, GetAHardwareBuffer) {
   auto i = NewImage(kTextureOwner);
-  EXPECT_EQ(texture_owner_->get_a_hardware_buffer_count, 0);
+  EXPECT_EQ(codec_buffer_wait_coordinator_->texture_owner()
+                ->get_a_hardware_buffer_count,
+            0);
   EXPECT_FALSE(i->was_rendered_to_front_buffer());
 
-  EXPECT_CALL(*texture_owner_, UpdateTexImage());
+  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
+              UpdateTexImage());
   i->GetAHardwareBuffer();
-  EXPECT_EQ(texture_owner_->get_a_hardware_buffer_count, 1);
+  EXPECT_EQ(codec_buffer_wait_coordinator_->texture_owner()
+                ->get_a_hardware_buffer_count,
+            1);
   EXPECT_TRUE(i->was_rendered_to_front_buffer());
 }
 

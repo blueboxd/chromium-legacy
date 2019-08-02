@@ -19,7 +19,6 @@ namespace media {
 
 class CodecOutputBuffer;
 class CodecSurfaceBundle;
-class TextureOwner;
 class VideoFrame;
 
 // VideoFrameFactory creates CodecOutputBuffer backed VideoFrames. Not thread

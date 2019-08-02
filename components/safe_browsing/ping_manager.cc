@@ -17,10 +17,6 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
@@ -84,8 +80,6 @@ PingManager::PingManager(
     : config_(config), url_loader_factory_(url_loader_factory) {}
 
 PingManager::~PingManager() {}
-
-// net::URLFetcherDelegate implementation ----------------------------------
 
 // All SafeBrowsing request responses are handled here.
 void PingManager::OnURLLoaderComplete(

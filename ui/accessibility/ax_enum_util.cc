@@ -1380,6 +1380,8 @@ const char* ToString(ax::mojom::StringAttribute string_attribute) {
       return "imageDataUrl";
     case ax::mojom::StringAttribute::kInnerHtml:
       return "innerHtml";
+    case ax::mojom::StringAttribute::kInputType:
+      return "inputType";
     case ax::mojom::StringAttribute::kKeyShortcuts:
       return "keyShortcuts";
     case ax::mojom::StringAttribute::kLanguage:
@@ -1438,6 +1440,8 @@ ax::mojom::StringAttribute ParseStringAttribute(const char* string_attribute) {
     return ax::mojom::StringAttribute::kImageDataUrl;
   if (0 == strcmp(string_attribute, "innerHtml"))
     return ax::mojom::StringAttribute::kInnerHtml;
+  if (0 == strcmp(string_attribute, "inputType"))
+    return ax::mojom::StringAttribute::kInputType;
   if (0 == strcmp(string_attribute, "keyShortcuts"))
     return ax::mojom::StringAttribute::kKeyShortcuts;
   if (0 == strcmp(string_attribute, "language"))

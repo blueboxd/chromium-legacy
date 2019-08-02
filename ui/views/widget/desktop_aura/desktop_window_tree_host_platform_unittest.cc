@@ -57,7 +57,7 @@ std::unique_ptr<Widget> CreateWidgetWithNativeWidget() {
   params.remove_standard_frame = true;
   params.native_widget = new DesktopNativeWidgetAura(widget.get());
   params.bounds = gfx::Rect(100, 100, 100, 100);
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 

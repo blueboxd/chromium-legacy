@@ -745,16 +745,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_request->load_flags |= net::LOAD_DO_NOT_USE_EMBEDDED_IDENTITY;
   }
 
-  // |plugin_child_id| only needs to be non-zero if the request originates
-  // outside the render process, so we can use requestorProcessID even
-  // for requests from in-process plugins.
-  resource_request->plugin_child_id = request.GetPluginChildID();
   resource_request->priority =
       ConvertWebKitPriorityToNetPriority(request.GetPriority());
-  resource_request->appcache_host_id =
-      request.AppCacheHostID().is_empty()
-          ? base::nullopt
-          : base::make_optional(request.AppCacheHostID());
   resource_request->should_reset_appcache = request.ShouldResetAppCache();
   resource_request->is_external_request = request.IsExternalRequest();
   resource_request->cors_preflight_policy = request.GetCorsPreflightPolicy();

@@ -131,6 +131,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void DisableWebRtcEventLogOutput(int lid) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   const service_manager::Identity& GetChildIdentity() override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;

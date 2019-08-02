@@ -48,7 +48,7 @@ class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
 
     button_ = new TestButton();
     button_->SetID(NON_DEFAULT_VIEW_ID);
@@ -412,7 +412,7 @@ TEST_F(ViewAccessibilityTest, LayoutCalledInvalidateRootView) {
   std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
 
   View* root = widget->GetRootView();

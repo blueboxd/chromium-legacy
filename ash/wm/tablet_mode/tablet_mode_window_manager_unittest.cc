@@ -120,7 +120,7 @@ class TabletModeWindowManagerTest : public AshTestBase {
     views::Widget* widget = new views::Widget();
     views::Widget::InitParams params;
     params.context = CurrentContext();
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     aura::Window* window = widget->GetNativeWindow();
     window->SetBounds(bounds);

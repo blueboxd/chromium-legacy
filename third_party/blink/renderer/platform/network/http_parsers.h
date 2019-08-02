@@ -164,9 +164,6 @@ PLATFORM_EXPORT bool ParseContentRangeHeaderFor206(const String& content_range,
 
 PLATFORM_EXPORT std::unique_ptr<ServerTimingHeaderVector>
 ParseServerTimingHeader(const String&);
-
-using Mode = blink::ParsedContentType::Mode;
-
 }  // namespace blink
 
 #endif

@@ -775,6 +775,11 @@ if (!is_android) {
       ]
 
       data_deps += [ "//device/vr:openvr_mock" ]
+
+      if (enable_openxr) {
+        deps += [ "//third_party/openxr" ]
+        data_deps += [ "//device/vr:openxr_mock" ]
+      }
     }
   }
 

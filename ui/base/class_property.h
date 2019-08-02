@@ -67,7 +67,14 @@ class PropertyHelper;
 class UI_BASE_EXPORT PropertyHandler {
  public:
   PropertyHandler();
-  ~PropertyHandler();
+  PropertyHandler(PropertyHandler&& other);
+  virtual ~PropertyHandler();
+  PropertyHandler& operator=(PropertyHandler&& rhs) = default;
+
+  // Takes the ownership of all the properties in |other|, overwriting any
+  // similarly-keyed existing properties without affecting existing ones with
+  // different keys.
+  void AcquireAllPropertiesFrom(PropertyHandler&& other);
 
   // Sets the |value| of the given class |property|. Setting to the default
   // value (e.g., NULL) removes the property. The lifetime of objects set as

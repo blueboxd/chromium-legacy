@@ -242,7 +242,7 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = bounds;
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(container_id);
-  widget->Init(params);
+  widget->Init(std::move(params));
   if (show)
     widget->Show();
   return widget;
@@ -266,7 +266,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
   params.bounds =
       bounds_in_screen.IsEmpty() ? gfx::Rect(0, 0, 300, 300) : bounds_in_screen;
   params.context = Shell::GetPrimaryRootWindow();
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->GetNativeWindow()->set_id(shell_window_id);
   widget->Show();
   return base::WrapUnique(widget->GetNativeWindow());

@@ -197,7 +197,8 @@ public class AwShellActivity extends Activity {
         SharedPreferences sharedPreferences =
                 getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         if (mBrowserContext == null) {
-            mBrowserContext = new AwBrowserContext(sharedPreferences, getApplicationContext());
+            mBrowserContext = new AwBrowserContext(
+                    sharedPreferences, AwBrowserContext.getDefault().getNativePointer());
         }
         final AwSettings awSettings =
                 new AwSettings(this /* context */, false /* isAccessFromFileURLsGrantedByDefault */,

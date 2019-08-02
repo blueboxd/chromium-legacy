@@ -695,6 +695,8 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
           continue;
         LayoutFromRootObject(*root);
 
+        root->PaintingLayer()->UpdateLayerPositionsAfterLayout();
+
         // We need to ensure that we mark up all layoutObjects up to the
         // LayoutView for paint invalidation. This simplifies our code as we
         // just always do a full tree walk.
@@ -764,6 +766,7 @@ void LocalFrameView::UpdateLayout() {
 
   FontCachePurgePreventer font_cache_purge_preventer;
   StyleRetainScope style_retain_scope;
+  bool in_subtree_layout = IsSubtreeLayout();
   {
     base::AutoReset<bool> change_scheduling_enabled(&layout_scheduling_enabled_,
                                                     false);
@@ -775,8 +778,6 @@ void LocalFrameView::UpdateLayout() {
     if (GetLayoutView()->NeedsLayout())
       ClearLayoutSubtreeRootsAndMarkContainingBlocks();
     GetLayoutView()->ClearHitTestCache();
-
-    bool in_subtree_layout = IsSubtreeLayout();
 
     // TODO(crbug.com/460956): The notion of a single root for layout is no
     // longer applicable. Remove or update this code.
@@ -873,9 +874,8 @@ void LocalFrameView::UpdateLayout() {
 
   frame_timing_requests_dirty_ = true;
 
-  // FIXME: Could find the common ancestor layer of all dirty subtrees and
-  // mark from there. crbug.com/462719
-  GetLayoutView()->EnclosingLayer()->UpdateLayerPositionsAfterLayout();
+  if (!in_subtree_layout)
+    GetLayoutView()->EnclosingLayer()->UpdateLayerPositionsAfterLayout();
 
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"), "LayoutTree", this,

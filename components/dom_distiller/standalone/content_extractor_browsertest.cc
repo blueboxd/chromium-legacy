@@ -132,7 +132,7 @@ std::unique_ptr<DomDistillerService> CreateDomDistillerService(
     const base::FilePath& db_path,
     const FileToUrlMap& file_to_url_map) {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
 
   // Setting up PrefService for DistilledPagePrefs.
   DistilledPagePrefs::RegisterProfilePrefs(pref_service->registry());

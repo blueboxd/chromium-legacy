@@ -700,6 +700,41 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       LocalizedRoleDescription) {
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+  GURL url(
+      "data:text/html,"
+      "<input>"
+      "<input type='tel'>");
+
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* root = GetManager()->GetRoot();
+  ASSERT_NE(nullptr, root);
+  ASSERT_EQ(1u, root->PlatformChildCount());
+
+  BrowserAccessibility* body = root->PlatformGetChild(0);
+  ASSERT_EQ(2u, body->PlatformChildCount());
+
+  auto TestLocalizedRoleDescription =
+      [body](int child_index,
+             const base::string16& expected_localized_role_description = {}) {
+        BrowserAccessibility* node = body->PlatformGetChild(child_index);
+        ASSERT_NE(nullptr, node);
+
+        EXPECT_EQ(expected_localized_role_description,
+                  node->GetLocalizedStringForRoleDescription());
+      };
+
+  // For testing purposes, assume we get en-US localized strings.
+  TestLocalizedRoleDescription(0, base::ASCIIToUTF16(""));
+  TestLocalizedRoleDescription(1, base::ASCIIToUTF16("telephone"));
+}
+
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        GetStyleNameAttributeAsLocalizedString) {
   AccessibilityNotificationWaiter waiter(shell()->web_contents(),
                                          ui::kAXModeComplete,

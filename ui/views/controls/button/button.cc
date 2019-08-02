@@ -231,7 +231,10 @@ bool Button::OnMouseDragged(const ui::MouseEvent& event) {
   if (state_ != STATE_DISABLED) {
     const bool should_enter_pushed = ShouldEnterPushedState(event);
     const bool should_show_pending =
-        should_enter_pushed && notify_action_ == NOTIFY_ON_RELEASE && !InDrag();
+        should_enter_pushed &&
+        button_controller_->notify_action() ==
+            ButtonController::NotifyAction::NOTIFY_ON_RELEASE &&
+        !InDrag();
     if (HitTestPoint(event.location())) {
       SetState(should_enter_pushed ? STATE_PRESSED : STATE_HOVERED);
       if (should_show_pending && GetInkDrop()->GetTargetInkDropState() ==

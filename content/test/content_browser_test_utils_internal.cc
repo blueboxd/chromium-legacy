@@ -411,19 +411,17 @@ void ShowWidgetMessageFilter::Reset() {
 
 void ShowWidgetMessageFilter::OnShowWidget(int route_id,
                                            const gfx::Rect& initial_rect) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI, this, route_id,
-                     initial_rect));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI,
+                                this, route_id, initial_rect));
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 void ShowWidgetMessageFilter::OnShowPopup(
     const FrameHostMsg_ShowPopup_Params& params) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI, this,
-                     MSG_ROUTING_NONE, params.bounds));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI,
+                                this, MSG_ROUTING_NONE, params.bounds));
 }
 #endif
 

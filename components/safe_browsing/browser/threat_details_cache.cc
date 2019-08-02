@@ -52,9 +52,8 @@ void ThreatDetailsCacheCollector::StartCacheCollection(
 
   // Post a task in the message loop, so the callers don't need to
   // check if we call their callback immediately.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
 }
 
 bool ThreatDetailsCacheCollector::HasStarted() {
@@ -228,16 +227,15 @@ void ThreatDetailsCacheCollector::AdvanceEntry() {
   current_load_.reset();
 
   // Create a task so we don't take over the UI thread for too long.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
 }
 
 void ThreatDetailsCacheCollector::AllDone(bool success) {
   DVLOG(1) << "AllDone";
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   *result_ = success;
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, callback_);
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, callback_);
   callback_.Reset();
 }
 

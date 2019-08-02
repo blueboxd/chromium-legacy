@@ -42,6 +42,10 @@ Color LayoutThemeWin::SystemColor(CSSValueID css_value_id) const {
     case CSSValueID::kHighlighttext:
       system_index = COLOR_HIGHLIGHTTEXT;
       break;
+    case CSSValueID::kLinktext:
+    case CSSValueID::kVisitedtext:
+      system_index = COLOR_HOTLIGHT;
+      break;
     case CSSValueID::kWindow:
       system_index = COLOR_WINDOW;
       break;

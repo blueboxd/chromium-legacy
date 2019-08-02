@@ -23,10 +23,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequence_bound.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -50,6 +52,7 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -205,6 +208,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void DisableWebRtcEventLogOutput(int lid) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   const service_manager::Identity& GetChildIdentity() override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
@@ -684,6 +688,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreateURLLoaderFactoryForRendererProcess(
       network::mojom::URLLoaderFactoryRequest request);
 
+  // Handles incoming requests to bind a process-scoped receiver from the
+  // renderer process. This is posted to the main thread by IOThreadHostImpl
+  // if the request isn't handled on the IO thread.
+  void OnBindHostReceiver(mojo::GenericPendingReceiver receiver);
+
   mojo::OutgoingInvitation mojo_invitation_;
 
   std::unique_ptr<ChildConnection> child_connection_;
@@ -876,7 +885,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend
   // WeakPtrs which are invalidated any time the RPHI is recycled.
-  std::unique_ptr<base::WeakPtrFactory<RenderProcessHostImpl>>
+  base::Optional<base::WeakPtrFactory<RenderProcessHostImpl>>
       instance_weak_factory_;
 
   FrameSinkProviderImpl frame_sink_provider_;
@@ -893,6 +902,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int shutdown_exit_code_;
 
   IpcSendWatcher ipc_send_watcher_for_testing_;
+
+  // IOThreadHostImpl owns some IO-thread state associated with this
+  // RenderProcessHostImpl. This is mainly to allow various IPCs from the
+  // renderer to be handled on the IO thread without a hop to the UI thread.
+  class IOThreadHostImpl;
+  friend class IOThreadHostImpl;
+  base::Optional<base::SequenceBound<IOThreadHostImpl>> io_thread_host_impl_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_{this};
 

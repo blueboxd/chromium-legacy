@@ -50,6 +50,38 @@ class AXPositionTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  void AssertTextLengthEquals(const AXTree* tree,
+                              int32_t node_id,
+                              int expected_text_length) {
+    TestPositionType text_position = AXNodePosition::CreateTextPosition(
+        tree->data().tree_id, node_id, 0 /* text_offset */,
+        ax::mojom::TextAffinity::kUpstream);
+    ASSERT_NE(nullptr, text_position);
+    ASSERT_TRUE(text_position->IsTextPosition());
+    ASSERT_EQ(expected_text_length, text_position->MaxTextOffset());
+    ASSERT_EQ(expected_text_length,
+              static_cast<int>(text_position->GetText().length()));
+  }
+
+  // Creates a new AXTree from a vector of nodes.
+  // Assumes the first node in the vector is the root.
+  std::unique_ptr<AXTree> CreateAXTree(
+      const std::vector<ui::AXNodeData>& nodes) {
+    ui::AXTreeUpdate update;
+    ui::AXTreeData tree_data;
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    update.has_tree_data = true;
+    update.root_id = nodes[0].id;
+    update.nodes = nodes;
+
+    tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+    update.tree_data = tree_data;
+    std::unique_ptr<AXTree> tree = std::make_unique<AXTree>(update);
+    AXNodePosition::SetTreeForTesting(tree.get());
+    return tree;
+  }
+
   AXNodeData root_;
   AXNodeData button_;
   AXNodeData check_box_;
@@ -414,6 +446,49 @@ TEST_F(AXPositionTest, GetMaxTextOffsetFromLineBreak) {
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
   ASSERT_EQ(1, text_position->MaxTextOffset());
+}
+
+TEST_F(AXPositionTest, GetMaxTextOffsetUpdate) {
+  AXNodePosition::SetTreeForTesting(nullptr);
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  ui::AXNodeData more_text_data;
+  more_text_data.id = 3;
+  more_text_data.role = ax::mojom::Role::kStaticText;
+  more_text_data.SetName("more text");
+
+  root_data.child_ids = {2, 3};
+
+  std::unique_ptr<AXTree> new_tree =
+      CreateAXTree({root_data, text_data, more_text_data});
+
+  AssertTextLengthEquals(new_tree.get(), text_data.id, 9);
+  AssertTextLengthEquals(new_tree.get(), root_data.id, 18);
+
+  text_data.SetName("Adjusted line 1");
+  new_tree = CreateAXTree({root_data, text_data, more_text_data});
+  AssertTextLengthEquals(new_tree.get(), text_data.id, 15);
+  AssertTextLengthEquals(new_tree.get(), root_data.id, 24);
+
+  // Value should override name
+  text_data.SetValue("Value should override name");
+  new_tree = CreateAXTree({root_data, text_data, more_text_data});
+  AssertTextLengthEquals(new_tree.get(), text_data.id, 26);
+  AssertTextLengthEquals(new_tree.get(), root_data.id, 35);
+
+  // An empty value should fall back to name
+  text_data.SetValue("");
+  new_tree = CreateAXTree({root_data, text_data, more_text_data});
+  AssertTextLengthEquals(new_tree.get(), text_data.id, 15);
+  AssertTextLengthEquals(new_tree.get(), root_data.id, 24);
 }
 
 TEST_F(AXPositionTest, AtStartOfAnchorWithNullPosition) {

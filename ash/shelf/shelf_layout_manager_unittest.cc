@@ -375,7 +375,7 @@ class ShelfLayoutManagerTest : public AshTestBase {
     params.bounds = gfx::Rect(0, 0, 200, 200);
     params.context = CurrentContext();
     views::Widget* widget = new views::Widget;
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     return widget;
   }

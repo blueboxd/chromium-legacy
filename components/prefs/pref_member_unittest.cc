@@ -36,7 +36,8 @@ class GetPrefValueHelper
     : public base::RefCountedThreadSafe<GetPrefValueHelper> {
  public:
   GetPrefValueHelper()
-      : value_(false), task_runner_(base::CreateSequencedTaskRunner({})) {}
+      : value_(false),
+        task_runner_(base::CreateSequencedTaskRunner({base::ThreadPool()})) {}
 
   void Init(const std::string& pref_name, PrefService* prefs) {
     pref_.Init(pref_name, prefs);

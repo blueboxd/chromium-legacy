@@ -14,8 +14,6 @@
 #include "base/optional.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
 
-class GoogleURLTracker;
-
 namespace base {
 class Value;
 }
@@ -31,7 +29,6 @@ class OneGoogleBarLoaderImpl : public OneGoogleBarLoader {
  public:
   OneGoogleBarLoaderImpl(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      GoogleURLTracker* google_url_tracker,
       const std::string& application_locale,
       bool account_consistency_mirror_required);
   ~OneGoogleBarLoaderImpl() override;
@@ -54,7 +51,6 @@ class OneGoogleBarLoaderImpl : public OneGoogleBarLoader {
   void Respond(Status status, const base::Optional<OneGoogleBarData>& data);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  GoogleURLTracker* google_url_tracker_;
   const std::string application_locale_;
   const bool account_consistency_mirror_required_;
 

@@ -58,7 +58,7 @@ class ScrollBarViewsTest : public ViewsTestBase {
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(0, 0, 100, 100);
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     View* container = new View();
     widget_->SetContentsView(container);
 

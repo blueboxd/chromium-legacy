@@ -325,8 +325,12 @@ class TabStripModel {
   base::Optional<TabGroupId> GetTabGroupForTab(int index) const;
 
   // Returns the TabGroupVisualData instance for the given |group|. The returned
-  // pointer is valid until all tabs in |group| are destroyed.
+  // pointer is valid until all tabs in |group| are destroyed or until
+  // SetVisualDataForGroup is called for |group|.
   const TabGroupVisualData* GetVisualDataForGroup(TabGroupId group) const;
+
+  // Sets the visual data for |group|. Notifies observers of the change.
+  void SetVisualDataForGroup(TabGroupId group, TabGroupVisualData data);
 
   // Returns a list of tab groups that contain at least one tab in this strip.
   std::vector<TabGroupId> ListTabGroups() const;

@@ -43,15 +43,17 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
+
     file_system_context_ = CreateFileSystemContextForTesting(
         /*quota_manager_proxy=*/nullptr, dir_.GetPath());
 
-    test_url_ = file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), storage::kFileSystemTypeTest,
+    test_file_url_ = file_system_context_->CreateCrackedFileSystemURL(
+        test_src_origin_.GetURL(), storage::kFileSystemTypeTest,
         base::FilePath::FromUTF8Unsafe("test"));
 
-    ASSERT_EQ(base::File::FILE_OK, AsyncFileTestHelper::CreateFile(
-                                       file_system_context_.get(), test_url_));
+    ASSERT_EQ(base::File::FILE_OK,
+              AsyncFileTestHelper::CreateFile(file_system_context_.get(),
+                                              test_file_url_));
 
     chrome_blob_context_ = base::MakeRefCounted<ChromeBlobStorageContext>();
     chrome_blob_context_->InitializeOnIOThread(base::FilePath(), nullptr);
@@ -63,9 +65,9 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
     handle_ = std::make_unique<NativeFileSystemFileHandleImpl>(
         manager_.get(),
         NativeFileSystemManagerImpl::BindingContext(
-            test_url_.origin(), /*process_id=*/1,
+            test_src_origin_, test_src_url_, /*process_id=*/1,
             /*frame_id=*/MSG_ROUTING_NONE),
-        test_url_,
+        test_file_url_,
         NativeFileSystemManagerImpl::SharedHandleState(
             allow_grant_, allow_grant_, /*file_system=*/{}));
   }
@@ -91,6 +93,9 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
   }
 
  protected:
+  const GURL test_src_url_ = GURL("http://example.com/foo");
+  const url::Origin test_src_origin_ = url::Origin::Create(test_src_url_);
+
   base::test::ScopedFeatureList scoped_feature_list_;
   TestBrowserThreadBundle scoped_task_environment_;
 
@@ -99,7 +104,7 @@ class NativeFileSystemFileHandleImplTest : public testing::Test {
   scoped_refptr<ChromeBlobStorageContext> chrome_blob_context_;
   scoped_refptr<NativeFileSystemManagerImpl> manager_;
 
-  FileSystemURL test_url_;
+  FileSystemURL test_file_url_;
 
   scoped_refptr<FixedNativeFileSystemPermissionGrant> allow_grant_ =
       base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
@@ -113,7 +118,7 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
 
   const FileSystemURL base_swap_url =
       file_system_context_->CreateCrackedFileSystemURL(
-          GURL("http://example.com"), storage::kFileSystemTypeTest,
+          test_src_origin_.GetURL(), storage::kFileSystemTypeTest,
           base::FilePath::FromUTF8Unsafe("test.crswap"));
 
   std::vector<blink::mojom::NativeFileSystemFileWriterPtr> writers;
@@ -123,7 +128,7 @@ TEST_F(NativeFileSystemFileHandleImplTest, CreateFileWriterOverLimitNotOK) {
       swap_url = base_swap_url;
     } else {
       swap_url = file_system_context_->CreateCrackedFileSystemURL(
-          GURL("http://example.com"), storage::kFileSystemTypeTest,
+          test_src_origin_.GetURL(), storage::kFileSystemTypeTest,
           base::FilePath::FromUTF8Unsafe(
               base::StringPrintf("test.%d.crswap", i)));
     }

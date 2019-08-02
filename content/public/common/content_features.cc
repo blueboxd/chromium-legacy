@@ -336,10 +336,6 @@ const base::Feature kPauseExecutionContextOnBackgroundFreeze = {
     "PauseExecutionContextOnBackgroundFreeze",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether PDF files should be rendered in diffent processes based on origin.
-const base::Feature kPdfIsolation = {"PdfIsolation",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Whether web apps can run periodic tasks upon network connectivity.
 const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

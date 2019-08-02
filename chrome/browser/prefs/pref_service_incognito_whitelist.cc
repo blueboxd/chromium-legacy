@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/google/core/browser/google_pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/rappor/rappor_pref_names.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
@@ -169,10 +168,6 @@ const char* const kPersistentPrefNames[] = {
     prefs::kDevToolsPreferences,
     prefs::kDevToolsDiscoverTCPTargetsEnabled,
     prefs::kDevToolsTCPDiscoveryConfig,
-
-    // Google URL prefs don't store user data and just keep track of the URL.
-    prefs::kLastKnownGoogleURL,
-    prefs::kLastPromptedGoogleURL,
 
 #if defined(OS_WIN)
     // The total number of times that network profile warning is shown is

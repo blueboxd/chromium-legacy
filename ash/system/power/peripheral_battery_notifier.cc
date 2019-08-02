@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/power/hid_battery_util.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -15,13 +16,10 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -49,69 +47,13 @@ const char kNotifierStylusBattery[] = "ash.stylus-battery";
 const char kNotificationOriginUrl[] = "chrome://peripheral-battery";
 const char kNotifierNonStylusBattery[] = "power.peripheral-battery";
 
-// HID device's battery sysfs entry path looks like
-// /sys/class/power_supply/hid-{AA:BB:CC:DD:EE:FF|AAAA:BBBB:CCCC.DDDD}-battery.
-// Here the bluetooth address is showed in reverse order and its true
-// address "FF:EE:DD:CC:BB:AA".
-const char kHIDBatteryPathPrefix[] = "/sys/class/power_supply/hid-";
-const char kHIDBatteryPathSuffix[] = "-battery";
-
 // Prefix added to the address of a Bluetooth device to generate an unique ID
 // when posting a notification to the Message Center.
 const char kBluetoothDeviceIdPrefix[] = "battery_notification_bluetooth-";
 
-// Regex to check for valid bluetooth addresses.
-constexpr char kBluetoothAddressRegex[] =
-    "^([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})$";
-
-// Checks whether the device at |path| is a HID battery. Returns false if |path|
-// is lacking the HID battery prefix or suffix, or if it contains them but has
-// nothing in between.
-bool IsHIDBattery(const std::string& path) {
-  if (!base::StartsWith(path, kHIDBatteryPathPrefix,
-                        base::CompareCase::INSENSITIVE_ASCII) ||
-      !base::EndsWith(path, kHIDBatteryPathSuffix,
-                      base::CompareCase::INSENSITIVE_ASCII)) {
-    return false;
-  }
-
-  return static_cast<int>(path.size()) -
-             static_cast<int>(strlen(kHIDBatteryPathPrefix) +
-                              strlen(kHIDBatteryPathSuffix)) >
-         0;
-}
-
-// Extract the identifier in |path| found between the path prefix and suffix.
-std::string ExtractIdentifier(const std::string& path) {
-  int header_size = strlen(kHIDBatteryPathPrefix);
-  int end_size = strlen(kHIDBatteryPathSuffix);
-  int key_len = path.size() - header_size - end_size;
-  if (key_len <= 0)
-    return std::string();
-
-  return path.substr(header_size, key_len);
-}
-
-// Extracts a Bluetooth address (e.g. "AA:BB:CC:DD:EE:FF") from |path|, a sysfs
-// device path like "/sys/class/power-supply/hid-AA:BB:CC:DD:EE:FF-battery".
-// The address supplied in |path| is reversed, so this method will reverse the
-// extracted address. Returns an empty string if |path| does not contain a
-// Bluetooth address.
-std::string ExtractBluetoothAddressFromPath(const std::string& path) {
-  std::string identifier = ExtractIdentifier(path);
-  if (!RE2::FullMatch(identifier, kBluetoothAddressRegex))
-    return std::string();
-
-  std::string reverse_address = base::ToLowerASCII(identifier);
-  std::vector<base::StringPiece> result = base::SplitStringPiece(
-      reverse_address, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::reverse(result.begin(), result.end());
-  return base::JoinString(result, ":");
-}
-
 // Checks if the device is an external stylus.
 bool IsStylusDevice(const std::string& path, const std::string& model_name) {
-  std::string identifier = ExtractIdentifier(path);
+  std::string identifier = ExtractHIDBatteryIdentifier(path);
   for (const ui::TouchscreenDevice& device :
        ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
     if (device.has_stylus &&
@@ -168,7 +110,8 @@ std::string GetMapKeyForBluetoothAddress(const std::string& bluetooth_address) {
 // Returns the corresponding map key for a HID device.
 std::string GetBatteryMapKey(const std::string& path) {
   // Check if the HID path corresponds to a Bluetooth device.
-  const std::string bluetooth_address = ExtractBluetoothAddressFromPath(path);
+  const std::string bluetooth_address =
+      ExtractBluetoothAddressFromHIDBatteryPath(path);
   return bluetooth_address.empty()
              ? path
              : GetMapKeyForBluetoothAddress(bluetooth_address);
@@ -248,7 +191,7 @@ void PeripheralBatteryNotifier::PeripheralBatteryStatusReceived(
 
   BatteryInfo battery{base::ASCIIToUTF16(name), level, base::TimeTicks(),
                       IsStylusDevice(path, name),
-                      ExtractBluetoothAddressFromPath(path)};
+                      ExtractBluetoothAddressFromHIDBatteryPath(path)};
   UpdateBattery(GetBatteryMapKey(path), battery);
 }
 

@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_message_structs.h"
@@ -253,8 +252,6 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
       g_frame_proxy_map.Get().insert(std::make_pair(web_frame_, this));
   CHECK(result.second) << "Inserted a duplicate item.";
 
-  enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
-
   if (parent_is_local)
     compositing_helper_ = std::make_unique<ChildFrameCompositingHelper>(this);
 
@@ -389,8 +386,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
-    IPC_MESSAGE_HANDLER(FrameMsg_FirstSurfaceActivation,
-                        OnFirstSurfaceActivation)
     IPC_MESSAGE_HANDLER(FrameMsg_IntrinsicSizingInfoOfChildChanged,
                         OnIntrinsicSizingInfoOfChildChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
@@ -455,21 +450,6 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
   crashed_ = true;
   compositing_helper_->ChildFrameGone(local_frame_size(),
                                       screen_info().device_scale_factor);
-}
-
-void RenderFrameProxy::OnFirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {
-  DCHECK(!enable_surface_synchronization_);
-
-  // If this WebFrame has already been detached, its parent will be null. This
-  // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
-  // message may arrive after the frame was removed from the frame tree, but
-  // before the frame has been destroyed. http://crbug.com/446575.
-  if (!web_frame()->Parent())
-    return;
-
-  compositing_helper_->SetSurfaceId(surface_info.id(), local_frame_size(),
-                                    cc::DeadlinePolicy::UseDefaultDeadline());
 }
 
 void RenderFrameProxy::OnIntrinsicSizingInfoOfChildChanged(
@@ -673,16 +653,13 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
             ->GetCurrentLocalSurfaceIdAllocation();
   }
 
-  if (enable_surface_synchronization_) {
-    // If we're synchronizing surfaces, then use an infinite deadline to ensure
-    // everything is synchronized.
-    cc::DeadlinePolicy deadline =
-        capture_sequence_number_changed
-            ? cc::DeadlinePolicy::UseInfiniteDeadline()
-            : cc::DeadlinePolicy::UseDefaultDeadline();
-    viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
-    compositing_helper_->SetSurfaceId(surface_id, local_frame_size(), deadline);
-  }
+  // If we're synchronizing surfaces, then use an infinite deadline to ensure
+  // everything is synchronized.
+  cc::DeadlinePolicy deadline = capture_sequence_number_changed
+                                    ? cc::DeadlinePolicy::UseInfiniteDeadline()
+                                    : cc::DeadlinePolicy::UseDefaultDeadline();
+  viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
+  compositing_helper_->SetSurfaceId(surface_id, local_frame_size(), deadline);
 
   bool rect_changed = !sent_visual_properties_ ||
                       sent_visual_properties_->screen_space_rect !=

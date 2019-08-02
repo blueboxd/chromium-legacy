@@ -80,7 +80,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #endif
@@ -800,8 +800,7 @@ void AppMenuModel::Build() {
   // Always show this option if we're in tablet mode on Chrome OS.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableRequestTabletSite) ||
-      (TabletModeClient::Get() &&
-       TabletModeClient::Get()->tablet_mode_enabled())) {
+      (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())) {
     AddCheckItemWithStringId(IDC_TOGGLE_REQUEST_TABLET_SITE,
                              IDS_TOGGLE_REQUEST_TABLET_SITE);
   }

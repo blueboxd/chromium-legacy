@@ -43,7 +43,6 @@
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_builder.h"
 #include "services/network/crl_set_distributor.h"
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/dns_config_change_manager.h"
@@ -55,7 +54,6 @@
 #include "services/network/public/cpp/load_info_util.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/url_loader.h"
-#include "services/network/url_request_context_builder_mojo.h"
 
 #if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
 #include "crypto/openssl_util.h"
@@ -215,9 +213,7 @@ NetworkService::NetworkService(
     service_binding_.Bind(std::move(service_request));
 
   // |registry_| is nullptr when an in-process NetworkService is
-  // created directly. The latter is done in concert with using
-  // CreateNetworkContextWithBuilder to ease the transition to using the
-  // network service.
+  // created directly, like in most unit tests.
   if (registry_) {
     mojo::core::SetDefaultProcessErrorCallback(
         base::BindRepeating(&HandleBadMessage));
@@ -328,20 +324,6 @@ std::unique_ptr<NetworkService> NetworkService::Create(
     service_manager::mojom::ServiceRequest service_request) {
   return std::make_unique<NetworkService>(nullptr, std::move(request),
                                           std::move(service_request));
-}
-
-std::unique_ptr<mojom::NetworkContext>
-NetworkService::CreateNetworkContextWithBuilder(
-    mojom::NetworkContextRequest request,
-    mojom::NetworkContextParamsPtr params,
-    std::unique_ptr<URLRequestContextBuilderMojo> builder,
-    net::URLRequestContext** url_request_context) {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  std::unique_ptr<NetworkContext> network_context =
-      std::make_unique<NetworkContext>(this, std::move(request),
-                                       std::move(params), std::move(builder));
-  *url_request_context = network_context->url_request_context();
-  return network_context;
 }
 
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {

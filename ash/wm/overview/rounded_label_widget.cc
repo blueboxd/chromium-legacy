@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -71,11 +72,13 @@ class RoundedLabelView : public views::View {
 
 RoundedLabelWidget::InitParams::InitParams() = default;
 
+RoundedLabelWidget::InitParams::InitParams(InitParams&& other) = default;
+
 RoundedLabelWidget::RoundedLabelWidget() = default;
 
 RoundedLabelWidget::~RoundedLabelWidget() = default;
 
-void RoundedLabelWidget::Init(const InitParams& params) {
+void RoundedLabelWidget::Init(InitParams params) {
   views::Widget::InitParams widget_params;
   widget_params.name = params.name;
   widget_params.type = views::Widget::InitParams::TYPE_POPUP;
@@ -86,7 +89,11 @@ void RoundedLabelWidget::Init(const InitParams& params) {
   widget_params.accept_events = false;
   widget_params.parent = params.parent;
   set_focus_on_creation(false);
-  views::Widget::Init(widget_params);
+  if (params.hide_in_mini_view) {
+    widget_params.init_properties_container.SetProperty(kHideInDeskMiniViewKey,
+                                                        true);
+  }
+  views::Widget::Init(std::move(widget_params));
 
   SetContentsView(new RoundedLabelView(
       params.horizontal_padding, params.vertical_padding,

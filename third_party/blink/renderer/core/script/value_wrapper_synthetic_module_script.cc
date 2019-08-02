@@ -18,8 +18,7 @@ namespace blink {
 ValueWrapperSyntheticModuleScript*
 ValueWrapperSyntheticModuleScript::CreateJSONWrapperSyntheticModuleScript(
     const base::Optional<ModuleScriptCreationParams>& params,
-    Modulator* settings_object,
-    const ScriptFetchOptions options_) {
+    Modulator* settings_object) {
   DCHECK(settings_object->HasValidContext());
   ScriptState::Scope scope(settings_object->GetScriptState());
   v8::Local<v8::Context> context =
@@ -51,12 +50,12 @@ ValueWrapperSyntheticModuleScript::CreateJSONWrapperSyntheticModuleScript(
     v8::Local<v8::Value> error = exception_state.GetException();
     exception_state.ClearException();
     return ValueWrapperSyntheticModuleScript::CreateWithError(
-        parsed_json, settings_object, params->GetResponseUrl(),
-        params->GetResponseUrl(), options_, error);
+        parsed_json, settings_object, params->GetResponseUrl(), KURL(),
+        ScriptFetchOptions(), error);
   } else {
     return ValueWrapperSyntheticModuleScript::CreateWithDefaultExport(
-        parsed_json, settings_object, params->GetResponseUrl(),
-        params->GetResponseUrl(), options_);
+        parsed_json, settings_object, params->GetResponseUrl(), KURL(),
+        ScriptFetchOptions());
   }
 }
 
@@ -147,17 +146,6 @@ v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
       V8String(isolate, "default"),
       value_wrapper_synthetic_module_script->export_value_.NewLocal(isolate));
   return v8::Undefined(reinterpret_cast<v8::Isolate*>(isolate));
-}
-
-String ValueWrapperSyntheticModuleScript::InlineSourceTextForCSP() const {
-  // We don't construct a ValueWrapperSyntheticModuleScript with the original
-  // source, but instead construct it from the originally parsed
-  // text. If a need arises for the original module source to be used later,
-  // ValueWrapperSyntheticModuleScript will need to be modified such that its
-  // constructor takes this source text as an additional parameter and stashes
-  // it on the ValueWrapperSyntheticModuleScript.
-  NOTREACHED();
-  return "";
 }
 
 void ValueWrapperSyntheticModuleScript::Trace(Visitor* visitor) {

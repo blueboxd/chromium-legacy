@@ -489,6 +489,11 @@ public class TabContentManager {
         nativeSetCaptureMinRequestTimeForTesting(mNativeTabContentManager, timeMs);
     }
 
+    @VisibleForTesting
+    public int getPendingReadbacksForTesting() {
+        return nativeGetPendingReadbacksForTesting(mNativeTabContentManager);
+    }
+
     @CalledByNative
     protected void notifyListenersOfThumbnailChange(int tabId) {
         for (ThumbnailChangeListener listener : mListeners) {
@@ -520,5 +525,6 @@ public class TabContentManager {
             long nativeTabContentManager, int tabId, Callback<Bitmap> callback);
     private native void nativeSetCaptureMinRequestTimeForTesting(
             long nativeTabContentManager, int timeMs);
+    private native int nativeGetPendingReadbacksForTesting(long nativeTabContentManager);
     private static native void nativeDestroy(long nativeTabContentManager);
 }

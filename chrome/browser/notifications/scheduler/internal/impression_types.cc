@@ -21,7 +21,8 @@ bool Impression::operator==(const Impression& other) const {
   return create_time == other.create_time && feedback == other.feedback &&
          impression == other.impression && integrated == other.integrated &&
          task_start_time == other.task_start_time && guid == other.guid &&
-         type == other.type && impression_mapping == other.impression_mapping;
+         type == other.type && impression_mapping == other.impression_mapping &&
+         custom_data == other.custom_data;
 }
 
 SuppressionInfo::SuppressionInfo(const base::Time& last_trigger,

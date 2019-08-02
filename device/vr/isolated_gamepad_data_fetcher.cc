@@ -30,6 +30,11 @@ bool IsValidDeviceId(device::mojom::XRDeviceId id) {
     return true;
 #endif
 
+#if BUILDFLAG(ENABLE_OPENXR)
+  if (id == device::mojom::XRDeviceId::OPENXR_DEVICE_ID)
+    return true;
+#endif
+
   return false;
 }
 
@@ -49,6 +54,11 @@ GamepadSource GamepadSourceFromDeviceId(device::mojom::XRDeviceId id) {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
   if (id == device::mojom::XRDeviceId::WINDOWS_MIXED_REALITY_ID)
     return GAMEPAD_SOURCE_WIN_MR;
+#endif
+
+#if BUILDFLAG(ENABLE_OPENXR)
+  if (id == device::mojom::XRDeviceId::OPENXR_DEVICE_ID)
+    return GAMEPAD_SOURCE_OPENXR;
 #endif
 
   NOTREACHED();
@@ -217,7 +227,9 @@ void IsolatedGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     // per runtime, we use the XRDeviceId now to associate the controller with
     // a headset.  This doesn't change behavior, but the device/display naming
     // could be confusing here.
-    if (this->source() == GAMEPAD_SOURCE_OPENVR) {
+    if (this->source() == GAMEPAD_SOURCE_OPENXR) {
+      dest.SetID(base::UTF8ToUTF16("OpenXR Controller"));
+    } else if (this->source() == GAMEPAD_SOURCE_OPENVR) {
       dest.SetID(base::UTF8ToUTF16("OpenVR Gamepad"));
     } else if (this->source() == GAMEPAD_SOURCE_OCULUS) {
       if (dest.hand == GamepadHand::kLeft) {

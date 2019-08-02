@@ -39,9 +39,10 @@ void PrinterManagerDialog::ShowPrinterManagerDialog(Profile* profile) {
   if (base::win::GetVersion() >= base::win::Version::WIN10_RS1) {
     platform_util::OpenExternal(profile, GURL("ms-settings:printers"));
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-        base::BindOnce(OpenPrintersDialogCallback));
+    base::PostTask(FROM_HERE,
+                   {base::ThreadPool(), base::MayBlock(),
+                    base::TaskPriority::USER_BLOCKING},
+                   base::BindOnce(OpenPrintersDialogCallback));
   }
 }
 

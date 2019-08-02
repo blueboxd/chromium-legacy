@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
       base::CommandLine(base::CommandLine::ForCurrentProcess()->GetProgram());
   new_test.AppendSwitchASCII(base::kGTestFilterFlag,
                              "ContentBrowserTest.MANUAL_RendererCrash");
-  new_test.AppendSwitch(kRunManualTestsFlag);
+  new_test.AppendSwitch(switches::kRunManualTestsFlag);
   new_test.AppendSwitch(kSingleProcessTestsFlag);
 
 #if defined(THREAD_SANITIZER)
@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, BrowserCrashCallStack) {
       base::CommandLine(base::CommandLine::ForCurrentProcess()->GetProgram());
   new_test.AppendSwitchASCII(base::kGTestFilterFlag,
                              "ContentBrowserTest.MANUAL_BrowserCrash");
-  new_test.AppendSwitch(kRunManualTestsFlag);
+  new_test.AppendSwitch(switches::kRunManualTestsFlag);
   new_test.AppendSwitch(kSingleProcessTestsFlag);
   std::string output;
   base::GetAppOutputAndError(new_test, &output);

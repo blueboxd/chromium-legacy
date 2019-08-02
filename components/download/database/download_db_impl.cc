@@ -52,13 +52,12 @@ DownloadDBImpl::DownloadDBImpl(DownloadNamespace download_namespace,
           download_namespace,
           database_dir,
           leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
-              download_pb::DownloadDBEntry>(
-              base::CreateSequencedTaskRunnerWithTraits(
-                  {base::MayBlock(),
-                   // USER_VISIBLE because it is required to display
-                   // chrome://downloads. https://crbug.com/976223
-                   base::TaskPriority::USER_VISIBLE,
-                   base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
+              download_pb::DownloadDBEntry>(base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               // USER_VISIBLE because it is required to display
+               // chrome://downloads. https://crbug.com/976223
+               base::TaskPriority::USER_VISIBLE,
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
 DownloadDBImpl::DownloadDBImpl(
     DownloadNamespace download_namespace,

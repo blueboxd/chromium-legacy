@@ -439,7 +439,7 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
   if (!der::EncodeTimeAsGeneralizedTime(verification_time,
                                         &der_verification_time)) {
     // This shouldn't be possible.
-    result->Clear();
+    *result = CertPathBuilder::Result();
     return;
   }
 

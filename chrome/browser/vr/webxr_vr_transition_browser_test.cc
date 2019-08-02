@@ -8,6 +8,7 @@
 #include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "device/vr/buildflags/buildflags.h"
 
 // Browser test equivalent of
 // chrome/android/javatests/src/.../browser/vr/WebXrVrTransitionTest.java.
@@ -53,10 +54,19 @@ IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTestWebVrDisabled,
   TestApiDisabledWithoutFlagSetImpl(this,
                                     "test_webvr_disabled_without_flag_set");
 }
+
+#if BUILDFLAG(ENABLE_OPENXR)
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F3(WebXrVrOpenVrBrowserTestWebXrDisabled,
+                                    WebXrVrWmrBrowserTestWebXrDisabled,
+                                    WebXrVrOpenXrBrowserTestWebXrDisabled,
+                                    WebXrVrBrowserTestBase,
+                                    TestWebXrDisabledWithoutFlagSet) {
+#else
 IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTestWebXrDisabled,
                                     WebXrVrWmrBrowserTestWebXrDisabled,
                                     WebXrVrBrowserTestBase,
                                     TestWebXrDisabledWithoutFlagSet) {
+#endif  // BUILDFLAG(ENABLE_OPENXR)
   TestApiDisabledWithoutFlagSetImpl(t, "test_webxr_disabled_without_flag_set");
 }
 

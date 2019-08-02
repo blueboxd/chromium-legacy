@@ -27,6 +27,7 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
 
   AXPositionInstance Clone() const override;
 
+  int MaxTextOffset() const override;
   bool IsInLineBreak() const override;
   bool IsInTextObject() const override;
   bool IsInWhiteSpace() const override;

@@ -9,7 +9,7 @@
 namespace chrome_cleaner {
 
 MockChromePromptIPC::MockChromePromptIPC()
-    : ChromePromptIPC(std::string(), nullptr) {}
+    : MojoChromePromptIPC(std::string(), nullptr) {}
 
 MockChromePromptIPC::~MockChromePromptIPC() = default;
 

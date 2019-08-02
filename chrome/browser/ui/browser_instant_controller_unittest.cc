@@ -50,13 +50,6 @@ const TabReloadTestCase kTabReloadTestCasesFinalProviderNotGoogle[] = {
      false, false},
     {"Other NTP", "https://bar.com/newtab", false, false, false, false}};
 
-// Test cases for when Google is both the initial and final provider.
-const TabReloadTestCase kTabReloadTestCasesFinalProviderGoogle[] = {
-    {"Local NTP", chrome::kChromeSearchLocalNtpUrl, true, true, true, true},
-    {"Remote SERP", "https://www.google.com/url?bar=search+terms", false, false,
-     false, false},
-    {"Other NTP", "https://bar.com/newtab", false, false, false, false}};
-
 class FakeWebContentsObserver : public content::WebContentsObserver {
  public:
   explicit FakeWebContentsObserver(content::WebContents* contents)
@@ -138,52 +131,6 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
     if (test.end_in_local_ntp) {
       EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), observer->current_url())
           << test.description;
-    }
-  }
-}
-
-TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
-  const size_t num_tests = base::size(kTabReloadTestCasesFinalProviderGoogle);
-  std::vector<std::unique_ptr<FakeWebContentsObserver>> observers;
-  for (size_t i = 0; i < num_tests; ++i) {
-    const TabReloadTestCase& test = kTabReloadTestCasesFinalProviderGoogle[i];
-    AddTab(browser(), GURL(test.start_url));
-    content::WebContents* contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-
-    // Validate initial instant state.
-    EXPECT_EQ(test.start_in_instant_process,
-              instant_service_->IsInstantProcess(
-                  contents->GetMainFrame()->GetProcess()->GetID()))
-        << test.description;
-
-    // Setup an observer to verify reload or absence thereof.
-    observers.push_back(std::make_unique<FakeWebContentsObserver>(contents));
-  }
-
-  NotifyGoogleBaseURLUpdate("https://www.google.es/");
-
-  for (size_t i = 0; i < num_tests; ++i) {
-    const TabReloadTestCase& test = kTabReloadTestCasesFinalProviderGoogle[i];
-    FakeWebContentsObserver* observer = observers[i].get();
-
-    // Validate final instant state.
-    EXPECT_EQ(test.end_in_instant_process,
-              search::ShouldAssignURLToInstantRenderer(observer->current_url(),
-                                                       profile()))
-        << test.description;
-
-    // Ensure only the expected tabs(contents) reloaded.
-    base::RunLoop loop;
-    loop.RunUntilIdle();
-    EXPECT_EQ(test.should_reload ? 1 : 0, observer->num_reloads())
-        << test.description;
-
-    if (test.end_in_local_ntp) {
-      EXPECT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl), observer->current_url())
-          << test.description;
-      // The navigation to Local NTP should be definitive i.e. can't go back.
-      EXPECT_FALSE(observer->can_go_back());
     }
   }
 }

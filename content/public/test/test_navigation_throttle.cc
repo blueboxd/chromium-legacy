@@ -87,7 +87,7 @@ NavigationThrottle::ThrottleCheckResult TestNavigationThrottle::ProcessMethod(
       method_properties_[method].result;
   if (method_properties_[method].synchrony == ASYNCHRONOUS) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TestNavigationThrottle::TestNavigationThrottle::
                            CancelAsynchronously,

@@ -8,10 +8,10 @@
 #include <memory>
 #include <vector>
 
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
@@ -35,7 +35,7 @@ class ExclusiveAccessManager;
 class ChromeNativeAppWindowViewsAuraAsh
     : public ChromeNativeAppWindowViewsAura,
       public views::ContextMenuController,
-      public TabletModeClientObserver,
+      public ash::TabletModeObserver,
       public ui::AcceleratorProvider,
       public ExclusiveAccessContext,
       public ExclusiveAccessBubbleViewsContext,
@@ -78,8 +78,9 @@ class ChromeNativeAppWindowViewsAuraAsh
   void SetFullscreen(int fullscreen_types) override;
   void SetActivateOnPointer(bool activate_on_pointer) override;
 
-  // ash:TabletModeObserver:
-  void OnTabletModeToggled(bool enabled) override;
+  // ash::TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
 
   // ui::AcceleratorProvider:
   bool GetAcceleratorForCommandId(int command_id,
@@ -148,6 +149,9 @@ class ChromeNativeAppWindowViewsAuraAsh
                            ImmersiveAndBubbleInsidePublicSessionDom);
   FRIEND_TEST_ALL_PREFIXES(ShapedAppWindowTargeterTest,
                            ResizeInsetsWithinBounds);
+
+  // Invoked to handle tablet mode change.
+  void OnTabletModeToggled(bool enabled);
 
   // Callback for MenuRunner
   void OnMenuClosed();

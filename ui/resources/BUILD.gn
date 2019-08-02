@@ -40,7 +40,7 @@ grit("webui_resources_grd") {
   source = "../webui/resources/webui_resources.grd"
 
   deps = [
-    "//ui/webui/resources/js:modulize",
+    "//ui/webui/resources:modulize",
   ]
 
   # The .grd contains references to generated files.

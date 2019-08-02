@@ -18,6 +18,7 @@ namespace top_domains {
 struct TopDomainEntry {
   std::string skeleton;
   std::string top_domain;
+  bool is_top_500;
 };
 
 class TopDomainTrieEntry : public net::huffman_trie::TrieEntry {

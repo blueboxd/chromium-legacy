@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -19,8 +20,10 @@
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/spellcheck/common/spellcheck.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class SpellCheckHostMetrics;
 
@@ -33,10 +36,7 @@ namespace content {
 class BrowserContext;
 class NotificationDetails;
 class NotificationSource;
-}
-
-namespace service_manager {
-class Identity;
+class RenderProcessHost;
 }
 
 // Encapsulates the browser side spellcheck service. There is one of these per
@@ -98,7 +98,7 @@ class SpellcheckService : public KeyedService,
 
   // Pass the renderer some basic initialization information. Note that the
   // renderer will not load Hunspell until it needs to.
-  void InitForRenderer(const service_manager::Identity& renderer_identity);
+  void InitForRenderer(content::RenderProcessHost* host);
 
   // Returns a metrics counter associated with this object,
   // or null when metrics recording is disabled.
@@ -143,6 +143,12 @@ class SpellcheckService : public KeyedService,
   void OnHunspellDictionaryDownloadFailure(
       const std::string& language) override;
 
+  // Allows tests to override how SpellcheckService binds its interface
+  // receiver, instead of going through a RenderProcessHost by default.
+  using SpellCheckerBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<spellcheck::mojom::SpellChecker>)>;
+  static void OverrideBinderForTesting(SpellCheckerBinder binder);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT);
 
@@ -151,6 +157,9 @@ class SpellcheckService : public KeyedService,
 
   // Returns the status event type.
   static EventType GetStatusEvent();
+
+  mojo::Remote<spellcheck::mojom::SpellChecker> GetSpellCheckerForProcess(
+      content::RenderProcessHost* host);
 
   // Pass all renderers some basic initialization information.
   void InitForAllRenderers();

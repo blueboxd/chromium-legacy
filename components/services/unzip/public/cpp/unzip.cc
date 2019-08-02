@@ -160,9 +160,9 @@ void UnzipWithFilter(mojo::PendingRemote<mojom::Unzipper> unzipper,
   DCHECK(!result_callback.is_null());
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+           base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   background_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&DoUnzipWithFilter, std::move(unzipper), zip_path,

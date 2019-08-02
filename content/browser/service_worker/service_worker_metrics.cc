@@ -319,10 +319,9 @@ void ServiceWorkerMetrics::CountControlledPageLoad(Site site,
   if (ShouldExcludeSiteFromHistogram(site))
     return;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&RecordURLMetricOnUI, "ServiceWorker.ControlledPageUrl",
-                     url));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&RecordURLMetricOnUI,
+                                "ServiceWorker.ControlledPageUrl", url));
 }
 
 void ServiceWorkerMetrics::RecordStartInstalledWorkerStatus(

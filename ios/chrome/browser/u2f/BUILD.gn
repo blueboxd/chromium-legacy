@@ -26,7 +26,7 @@ source_set("u2f_internal") {
   ]
   deps = [
     "//base",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//crypto",
     "//ios/chrome/browser",
     "//ios/chrome/common",

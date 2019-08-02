@@ -972,45 +972,6 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
             *manager->GetRenderWidgetHostView()->GetBackgroundColor());
 }
 
-// Test that we properly set the RenderWidget to be hidden if the visibility of
-// the web contents becomes hidden after the start of navigation but before we
-// commit the navigation. See https://crbug.com/936858 for more details.
-TEST_F(RenderFrameHostManagerTest, WebContentVisibilityHiddenBeforeCommit) {
-  set_should_create_webui(true);
-  scoped_refptr<SiteInstance> blank_instance =
-      SiteInstance::Create(browser_context());
-  blank_instance->GetProcess()->Init();
-
-  // Create a blank tab.
-  std::unique_ptr<TestWebContents> web_contents(
-      TestWebContents::Create(browser_context(), blank_instance));
-  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
-  manager->current_host()->CreateRenderView(-1, MSG_ROUTING_NONE,
-                                            base::UnguessableToken::Create(),
-                                            FrameReplicationState(), false);
-  EXPECT_TRUE(manager->current_host()->IsRenderViewLive());
-  EXPECT_TRUE(manager->current_frame_host()->IsRenderFrameLive());
-
-  // Start navigation.
-  const GURL kUrl(GetWebUIURL("foo"));
-  NavigationEntryImpl entry(
-      nullptr /* instance */, kUrl, Referrer(), base::nullopt,
-      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
-  RenderFrameHostImpl* host = NavigateToEntry(manager, &entry);
-
-  // Hide the web contents before commit.
-  web_contents->WasHidden();
-
-  // Commit.
-  manager->DidNavigateFrame(host, true /* was_caused_by_user_gesture */,
-                            false /* is_same_document_navigation */);
-
-  // We should send a WidgetMsg_WasHidden message to the Renderer.
-  auto* rph = static_cast<MockRenderProcessHost*>(host->GetProcess());
-  EXPECT_TRUE(rph->sink().GetUniqueMessageMatching(WidgetMsg_WasHidden::ID));
-}
-
 // Tests WebUI creation.
 TEST_F(RenderFrameHostManagerTest, WebUI) {
   set_should_create_webui(true);

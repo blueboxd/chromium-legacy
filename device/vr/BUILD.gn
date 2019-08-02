@@ -231,8 +231,12 @@ if (enable_vr) {
       sources += [
         "openxr/openxr_api_wrapper.cc",
         "openxr/openxr_api_wrapper.h",
+        "openxr/openxr_controller.cc",
+        "openxr/openxr_controller.h",
         "openxr/openxr_device.cc",
         "openxr/openxr_device.h",
+        "openxr/openxr_gamepad_helper.cc",
+        "openxr/openxr_gamepad_helper.h",
         "openxr/openxr_render_loop.cc",
         "openxr/openxr_render_loop.h",
         "openxr/openxr_util.cc",
@@ -324,6 +328,52 @@ if (enable_openvr) {
       "//base",
       "//device/vr/public/mojom:test_mojom",
       "//third_party/openvr:openvr_headers",
+    ]
+  }
+}
+
+if (enable_openxr) {
+  # The OpenXR Loader by default looks for the path to the OpenXR Runtime from a
+  # registry key, which typically points to the OpenXR runtime installed on the
+  # system. In test, we want to use the mock OpenXR runtime that is created
+  # below in :openxr_mock. If the XR_RUNTIME_JSON environment variable is set,
+  # the OpenXR loader instead looks for the path to the OpenXR runtime in the
+  # json file instead of the registry key. This json file copied to the output
+  # folder points to our mock OpenXR runtime.
+  copy("json_mock") {
+    sources = [
+      "openxr/test/openxr.json",
+    ]
+    outputs = [
+      "$root_out_dir/mock_vr_clients/bin/openxr/openxr.json",
+    ]
+  }
+
+  shared_library("openxr_mock") {
+    testonly = true
+    output_name = "mock_vr_clients/bin/openxr/openxrruntime"
+
+    sources = [
+      "openxr/openxr_util.cc",
+      "openxr/openxr_util.h",
+      "openxr/test/fake_openxr_impl_api.cc",
+      "openxr/test/openxr_negotiate.h",
+      "openxr/test/openxr_test_helper.cc",
+      "openxr/test/openxr_test_helper.h",
+      "test/test_hook.h",
+    ]
+
+    configs += [ "//third_party/openxr:config" ]
+
+    libs = [
+      "d3d11.lib",
+      "DXGI.lib",
+    ]
+
+    deps = [
+      "//base",
+      "//device/vr:json_mock",
+      "//device/vr/public/mojom:test_mojom",
     ]
   }
 }

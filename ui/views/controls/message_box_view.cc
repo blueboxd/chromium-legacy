@@ -84,7 +84,7 @@ MessageBoxView::InitParams::~InitParams() = default;
 MessageBoxView::MessageBoxView(const InitParams& params)
     : inter_row_vertical_spacing_(params.inter_row_vertical_spacing),
       message_width_(params.message_width) {
-  Init(params);
+  Init(std::move(params));
 }
 
 MessageBoxView::~MessageBoxView() = default;

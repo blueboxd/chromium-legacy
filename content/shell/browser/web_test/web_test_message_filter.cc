@@ -97,7 +97,7 @@ WebTestMessageFilter::OverrideTaskRunnerForMessage(
     case WebTestHostMsg_InitiateCaptureDump::ID:
     case WebTestHostMsg_InspectSecondaryWindow::ID:
     case WebTestHostMsg_DeleteAllCookies::ID:
-      return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+      return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   }
   return nullptr;
 }

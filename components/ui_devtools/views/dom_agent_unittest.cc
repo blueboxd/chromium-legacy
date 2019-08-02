@@ -78,7 +78,7 @@ class DOMAgentTest : public views::ViewsTestBase {
 #if defined(USE_AURA)
     params.parent = GetContext();
 #endif
-    widget->Init(params);
+    widget->Init(std::move(params));
     return widget->native_widget_private();
   }
 
@@ -95,7 +95,7 @@ class DOMAgentTest : public views::ViewsTestBase {
 #endif
     if (name)
       params.name = *name;
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     return widget;
   }

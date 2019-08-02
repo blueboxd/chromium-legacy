@@ -22,6 +22,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_observer.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/widget/widget.h"
@@ -32,6 +33,9 @@ namespace ash {
 namespace {
 
 constexpr int kBarHeight = 104;
+
+// TODO(minch): Migrate this to retrieve the color from AshColorProvider.
+constexpr SkColor kBarColor = SkColorSetA(gfx::kGoogleGrey900, 0xBC);  // 74%
 
 base::string16 GetMiniViewTitle(int mini_view_index) {
   DCHECK_GE(mini_view_index, 0);
@@ -117,7 +121,7 @@ DesksBarView::DesksBarView()
 
   background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   background_view_->layer()->SetFillsBoundsOpaquely(false);
-  background_view_->layer()->SetColor(SkColorSetARGB(60, 0, 0, 0));
+  background_view_->layer()->SetColor(kBarColor);
 
   AddChildView(background_view_);
   AddChildView(new_desk_button_);
@@ -153,7 +157,7 @@ std::unique_ptr<views::Widget> DesksBarView::CreateDesksWidget(
   params.parent = root->GetChildById(kShellWindowId_WallpaperContainer);
   params.bounds = bounds;
   params.name = "VirtualDesksWidget";
-  widget->Init(params);
+  widget->Init(std::move(params));
   ::wm::SetWindowVisibilityAnimationTransition(widget->GetNativeWindow(),
                                                ::wm::ANIMATE_NONE);
 

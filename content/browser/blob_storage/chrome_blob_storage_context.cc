@@ -119,7 +119,7 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
     // disk on the storage context.
     if (!context->IsOffTheRecord() && io_thread_valid) {
       file_task_runner = base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
       // Removes our old blob directories if they exist.
       BrowserThread::PostBestEffortTask(

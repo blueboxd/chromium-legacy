@@ -156,7 +156,7 @@ class ExtendedDesktopTest : public AshTestBase {
     params.bounds = bounds;
     views::Widget* widget = new views::Widget;
     params.context = CurrentContext();
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     return widget;
   }

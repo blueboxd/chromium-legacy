@@ -10,13 +10,15 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/button/button_controller.h"
 
 MediaToolbarButtonView::MediaToolbarButtonView(
     service_manager::Connector* connector)
     : ToolbarButton(this),
       connector_(connector),
       controller_(connector_, this) {
-  set_notify_action(Button::NOTIFY_ON_PRESS);
+  button_controller()->set_notify_action(
+      views::ButtonController::NotifyAction::NOTIFY_ON_PRESS);
   EnableCanvasFlippingForRTLUI(false);
   ToolbarButton::Init();
 

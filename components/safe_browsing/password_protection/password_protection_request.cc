@@ -126,8 +126,7 @@ void PasswordProtectionRequest::CheckWhitelist() {
   // check is required.
   auto result_callback = base::Bind(&OnWhitelistCheckDoneOnIO, GetWeakPtr());
   tracker_.PostTask(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}).get(),
-      FROM_HERE,
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO}).get(), FROM_HERE,
       base::BindOnce(&AllowlistCheckerClient::StartCheckCsdWhitelist,
                      password_protection_service_->database_manager(),
                      main_frame_url_, result_callback));
@@ -138,7 +137,7 @@ void PasswordProtectionRequest::OnWhitelistCheckDoneOnIO(
     base::WeakPtr<PasswordProtectionRequest> weak_request,
     bool match_whitelist) {
   // Don't access weak_request on IO thread. Move it back to UI thread first.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PasswordProtectionRequest::OnWhitelistCheckDone,
                      weak_request, match_whitelist));
@@ -324,9 +323,9 @@ void PasswordProtectionRequest::CollectVisualFeatures() {
 
 void PasswordProtectionRequest::OnScreenshotTaken(const SkBitmap& screenshot) {
   // Do the feature extraction on a worker thread, to avoid blocking the UI.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ExtractVisualFeatures, screenshot),
       base::BindOnce(&PasswordProtectionRequest::OnVisualFeatureCollectionDone,
@@ -414,7 +413,7 @@ void PasswordProtectionRequest::StartTimeout() {
   // The weak pointer used for the timeout will be invalidated (and
   // hence would prevent the timeout) if the check completes on time and
   // execution reaches Finish().
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&PasswordProtectionRequest::Cancel, GetWeakPtr(), true),
       base::TimeDelta::FromMilliseconds(request_timeout_in_ms_));

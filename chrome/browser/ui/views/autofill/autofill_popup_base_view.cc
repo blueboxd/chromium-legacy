@@ -89,7 +89,7 @@ void AutofillPopupBaseView::DoShow() {
     // Ensure the bubble border is not painted on an opaque background.
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->AddObserver(this);
 
     // No animation for popup appearance (too distracting).

@@ -50,6 +50,7 @@ class AnonymizerTool {
   re2::RE2* GetRegExp(const std::string& pattern);
 
   std::string AnonymizeMACAddresses(const std::string& input);
+  std::string AnonymizeAndroidAppStoragePaths(const std::string& input);
   std::string AnonymizeCustomPatterns(std::string input);
   std::string AnonymizeCustomPatternWithContext(
       const std::string& input,

@@ -488,6 +488,7 @@ enum StringAttribute {
   kImageAnnotation,
   kImageDataUrl,
   kInnerHtml,
+  kInputType,
   kKeyShortcuts,
   // Only present when different from parent.
   kLanguage,

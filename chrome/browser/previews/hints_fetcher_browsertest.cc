@@ -40,6 +40,7 @@
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/network_connection_change_simulator.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
@@ -166,6 +167,11 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
         component_info);
 
     run_loop.Run();
+  }
+
+  void SetNetworkConnectionOffline() {
+    content::NetworkConnectionChangeSimulator().SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_NONE);
   }
 
   // Seeds the Site Engagement Service with two HTTP and two HTTPS sites for the
@@ -651,4 +657,35 @@ IN_PROC_BROWSER_TEST_F(
       static_cast<int>(
           optimization_guide::HintCacheStore::StoreEntryType::kComponentHint),
       0);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    HintsFetcherBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(HintsFetcherNetworkOffline)) {
+  const base::HistogramTester* histogram_tester = GetHistogramTester();
+  GURL url = https_url();
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+      optimization_guide::switches::kFetchHintsOverride);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      optimization_guide::switches::kFetchHintsOverrideTimer);
+
+  // Set the network to be offline.
+  SetNetworkConnectionOffline();
+
+  // Set the blacklist state to initialized so the sites in the engagement
+  // service will be used and not blacklisted on the first GetTopHosts
+  // request.
+  SeedSiteEngagementService();
+
+  // Set the blacklist state to initialized so the sites in the engagement
+  // service will be used and not blacklisted on the first GetTopHosts request.
+  SetTopHostBlacklistState(optimization_guide::prefs::
+                               HintsFetcherTopHostBlacklistState::kInitialized);
+
+  // Whitelist NoScript for https_url()'s' host.
+  SetUpComponentUpdateHints(https_url());
+
+  // No HintsFetch should occur because the connection is offline.
+  histogram_tester->ExpectTotalCount(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
 }

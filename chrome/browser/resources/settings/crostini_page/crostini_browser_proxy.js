@@ -51,14 +51,26 @@ cr.define('settings', function() {
      */
     removeCrostiniSharedPath(vmName, path) {}
 
-    /* Request chrome send a crostini-installer-status-changed event with the
-    current installer status */
+    /**
+     * Request chrome send a crostini-installer-status-changed event with the
+     * current installer status
+     */
     requestCrostiniInstallerStatus() {}
 
-    /* Export crostini container. */
+    /**
+     * Request chrome send a crostini-export-import-operation-status-changed
+     * event with the current operation status
+     */
+    requestCrostiniExportImportOperationStatus() {}
+
+    /**
+     * Export crostini container.
+     */
     exportCrostiniContainer() {}
 
-    /* Import crostini container. */
+    /**
+     * Import crostini container.
+     */
     importCrostiniContainer() {}
   }
 
@@ -97,6 +109,11 @@ cr.define('settings', function() {
     /** @override */
     requestCrostiniInstallerStatus() {
       chrome.send('requestCrostiniInstallerStatus');
+    }
+
+    /** @override */
+    requestCrostiniExportImportOperationStatus() {
+      chrome.send('requestCrostiniExportImportOperationStatus');
     }
 
     /** @override */

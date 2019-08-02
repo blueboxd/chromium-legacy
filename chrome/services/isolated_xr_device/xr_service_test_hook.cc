@@ -17,18 +17,27 @@
 #include "device/vr/windows_mixed_reality/mixed_reality_statics.h"
 #endif  // BUILDFLAG(ENABLE_WINDOWS_MR)
 
+#if BUILDFLAG(ENABLE_OPENXR)
+#include "device/vr/openxr/openxr_api_wrapper.h"
+#endif  // BUIDLFLAG(ENABLE_OPENXR)
+
 namespace {
 
 void UnsetTestHook(std::unique_ptr<device::XRTestHookWrapper> wrapper) {
+  // Unset the testhook wrapper with the VR runtimes,
+  // so any future calls to them don't use it.
+
 #if BUILDFLAG(ENABLE_OPENVR)
-  // Unset the testhook wrapper with OpenVR, so any
-  // future calls to OpenVR don't use it.
   device::OpenVRWrapper::SetTestHook(nullptr);
 #endif  // BUILDFLAG(ENABLE_OPENVR)
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
   device::MixedRealityDeviceStatics::SetTestHook(nullptr);
 #endif  // BUILDFLAG(ENABLE_WINDOWS_MR)
+
+#if BUILDFLAG(ENABLE_OPENXR)
+  device::OpenXrApiWrapper::SetTestHook(nullptr);
+#endif  // BUILDFLAG(ENABLE_OPENXR)
 }
 
 }  // namespace
@@ -43,7 +52,7 @@ void XRServiceTestHook::SetTestHook(
       hook ? std::make_unique<XRTestHookWrapper>(hook.PassInterface())
            : nullptr;
 
-  // Register the wrapper testhook with OpenVR and WMR.
+  // Register the wrapper testhook with the VR runtimes
 #if BUILDFLAG(ENABLE_OPENVR)
   OpenVRWrapper::SetTestHook(wrapper.get());
 #endif  // BUILDFLAG(ENABLE_OPENVR)
@@ -51,6 +60,10 @@ void XRServiceTestHook::SetTestHook(
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
   MixedRealityDeviceStatics::SetTestHook(wrapper.get());
 #endif  // BUILDFLAG(ENABLE_WINDOWS_MR)
+
+#if BUILDFLAG(ENABLE_OPENXR)
+  OpenXrApiWrapper::SetTestHook(wrapper.get());
+#endif  // BUILDFLAG(ENABLE_OPENXR)
 
   // Store the new wrapper, so we keep it alive.
   wrapper_ = std::move(wrapper);

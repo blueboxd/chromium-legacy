@@ -742,6 +742,8 @@ AudioNode* AudioNode::connect(AudioNode* destination,
 
   Handler().UpdatePullStatusIfNeeded();
 
+  GraphTracer().DidConnectNodes(this, destination, output_index, input_index);
+
   return destination;
 }
 
@@ -784,6 +786,8 @@ void AudioNode::connect(AudioParam* param,
   connected_params_[output_index]->insert(param);
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidConnectNodeParam(this, param, output_index);
 }
 
 void AudioNode::DisconnectAllFromOutput(unsigned output_index) {
@@ -825,6 +829,8 @@ void AudioNode::disconnect() {
     DisconnectAllFromOutput(i);
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodes(this);
 }
 
 void AudioNode::disconnect(unsigned output_index,
@@ -846,6 +852,8 @@ void AudioNode::disconnect(unsigned output_index,
   DisconnectAllFromOutput(output_index);
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodes(this, nullptr, output_index);
 }
 
 void AudioNode::disconnect(AudioNode* destination,
@@ -876,6 +884,8 @@ void AudioNode::disconnect(AudioNode* destination,
   }
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodes(this, destination);
 }
 
 void AudioNode::disconnect(AudioNode* destination,
@@ -914,6 +924,8 @@ void AudioNode::disconnect(AudioNode* destination,
   }
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodes(this, destination, output_index);
 }
 
 void AudioNode::disconnect(AudioNode* destination,
@@ -955,6 +967,9 @@ void AudioNode::disconnect(AudioNode* destination,
   }
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodes(
+      this, destination, output_index, input_index);
 }
 
 void AudioNode::disconnect(AudioParam* destination_param,
@@ -981,6 +996,8 @@ void AudioNode::disconnect(AudioParam* destination_param,
   }
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodeParam(this, destination_param);
 }
 
 void AudioNode::disconnect(AudioParam* destination_param,
@@ -1010,6 +1027,8 @@ void AudioNode::disconnect(AudioParam* destination_param,
   }
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodeParam(this, destination_param, output_index);
 }
 
 unsigned AudioNode::numberOfInputs() const {

@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
-#include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/icu/source/common/unicode/uidna.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
@@ -286,7 +285,7 @@ IDNConversionResult IDNToUnicodeWithAdjustmentsImpl(
   if (result.has_idn_component) {
     result.matching_top_domain =
         g_idn_spoof_checker.Get().GetSimilarTopDomain(out16);
-    if (enable_spoof_checks && !result.matching_top_domain.empty()) {
+    if (enable_spoof_checks && !result.matching_top_domain.domain.empty()) {
       if (adjustments)
         adjustments->clear();
       result.result = input16;
@@ -705,7 +704,7 @@ Skeletons GetSkeletons(const base::string16& host) {
   return g_idn_spoof_checker.Get().GetSkeletons(host);
 }
 
-std::string LookupSkeletonInTopDomains(const std::string& skeleton) {
+TopDomainEntry LookupSkeletonInTopDomains(const std::string& skeleton) {
   return g_idn_spoof_checker.Get().LookupSkeletonInTopDomains(skeleton);
 }
 

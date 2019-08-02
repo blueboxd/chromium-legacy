@@ -1687,7 +1687,8 @@ void GLES2DecoderPassthroughImpl::BindImage(uint32_t client_texture_id,
                                             bool can_bind_to_sampler) {
   scoped_refptr<TexturePassthrough> passthrough_texture = nullptr;
   if (!resources_->texture_object_map.GetServiceID(client_texture_id,
-                                                   &passthrough_texture)) {
+                                                   &passthrough_texture) ||
+      passthrough_texture == nullptr) {
     return;
   }
 
@@ -2522,7 +2523,8 @@ void GLES2DecoderPassthroughImpl::UpdateTextureSizeFromTarget(GLenum target) {
 void GLES2DecoderPassthroughImpl::UpdateTextureSizeFromClientID(
     GLuint client_id) {
   scoped_refptr<TexturePassthrough> texture = nullptr;
-  if (resources_->texture_object_map.GetServiceID(client_id, &texture)) {
+  if (resources_->texture_object_map.GetServiceID(client_id, &texture) &&
+      texture != nullptr) {
     UpdateTextureSizeFromTexturePassthrough(texture.get(), client_id);
   }
 }

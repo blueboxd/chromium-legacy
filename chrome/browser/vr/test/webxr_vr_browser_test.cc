@@ -14,6 +14,10 @@ using testing::Invoke;
 
 namespace vr {
 
+WebXrVrBrowserTestBase::WebXrVrBrowserTestBase() {
+  enable_features_.push_back(features::kWebXr);
+}
+
 void WebXrVrBrowserTestBase::EnterSessionWithUserGesture(
     content::WebContents* web_contents) {
 #if defined(OS_WIN)
@@ -69,7 +73,26 @@ gfx::Vector3dF WebXrVrBrowserTestBase::GetControllerOffset() const {
   return gfx::Vector3dF();
 }
 
+WebXrVrRuntimelessBrowserTest::WebXrVrRuntimelessBrowserTest() {
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  disable_features_.push_back(features::kWindowsMixedReality);
+#endif
+}
+
+WebXrVrRuntimelessBrowserTestSensorless::
+    WebXrVrRuntimelessBrowserTestSensorless() {
+  disable_features_.push_back(device::kWebXrOrientationSensorDevice);
+}
+
 #if defined(OS_WIN)
+
+WebXrVrOpenVrBrowserTestBase::WebXrVrOpenVrBrowserTestBase() {
+  enable_features_.push_back(features::kOpenVR);
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  disable_features_.push_back(features::kWindowsMixedReality);
+#endif
+}
+
 XrBrowserTestBase::RuntimeType WebXrVrOpenVrBrowserTestBase::GetRuntimeType()
     const {
   return XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR;
@@ -95,6 +118,56 @@ XrBrowserTestBase::RuntimeType WebXrVrWmrBrowserTestBase::GetRuntimeType()
     const {
   return XrBrowserTestBase::RuntimeType::RUNTIME_WMR;
 }
+
+#if BUILDFLAG(ENABLE_OPENXR)
+
+WebXrVrOpenXrBrowserTestBase::WebXrVrOpenXrBrowserTestBase() {
+  enable_features_.push_back(features::kOpenXR);
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+  disable_features_.push_back(features::kWindowsMixedReality);
+#endif
+}
+
+WebXrVrOpenXrBrowserTestBase::~WebXrVrOpenXrBrowserTestBase() = default;
+
+XrBrowserTestBase::RuntimeType WebXrVrOpenXrBrowserTestBase::GetRuntimeType()
+    const {
+  return XrBrowserTestBase::RuntimeType::RUNTIME_OPENXR;
+}
+#endif  // BUILDFLAG(ENABLE_OPENXR)
+
+WebXrVrOpenVrBrowserTest::WebXrVrOpenVrBrowserTest() {
+  // We know at this point that we're going to be running with both OpenVR and
+  // WebXR enabled, so enforce the DirectX 11.1 requirement.
+  runtime_requirements_.push_back(XrTestRequirement::DIRECTX_11_1);
+}
+
+WebXrVrWmrBrowserTest::WebXrVrWmrBrowserTest() {
+  // WMR already enabled by default.
+  runtime_requirements_.push_back(XrTestRequirement::DIRECTX_11_1);
+}
+
+#if BUILDFLAG(ENABLE_OPENXR)
+WebXrVrOpenXrBrowserTest::WebXrVrOpenXrBrowserTest() {
+  runtime_requirements_.push_back(XrTestRequirement::DIRECTX_11_1);
+}
+#endif  // BUILDFLAG(ENABLE_OPENXR)
+
+// Test classes with WebXR disabled.
+WebXrVrOpenVrBrowserTestWebXrDisabled::WebXrVrOpenVrBrowserTestWebXrDisabled() {
+  disable_features_.push_back(features::kWebXr);
+}
+
+WebXrVrWmrBrowserTestWebXrDisabled::WebXrVrWmrBrowserTestWebXrDisabled() {
+  disable_features_.push_back(features::kWebXr);
+}
+
+#if BUILDFLAG(ENABLE_OPENXR)
+WebXrVrOpenXrBrowserTestWebXrDisabled::WebXrVrOpenXrBrowserTestWebXrDisabled() {
+  disable_features_.push_back(features::kWebXr);
+}
+#endif  // BUIDFLAG(ENABLE_OPENXR)
+
 #endif  // OS_WIN
 
 }  // namespace vr

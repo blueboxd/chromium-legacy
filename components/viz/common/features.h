@@ -11,7 +11,6 @@
 
 namespace features {
 
-VIZ_COMMON_EXPORT extern const base::Feature kEnableSurfaceSynchronization;
 VIZ_COMMON_EXPORT extern const base::Feature kEnableVizHitTestSurfaceLayer;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaForGLReadback;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaRenderer;

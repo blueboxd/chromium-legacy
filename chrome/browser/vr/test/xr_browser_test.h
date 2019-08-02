@@ -55,6 +55,9 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   static constexpr char kVrConfigPathVal[] = "./";
   static constexpr char kVrLogPathEnvVar[] = "VR_LOG_PATH";
   static constexpr char kVrLogPathVal[] = "./";
+  static constexpr char kOpenXrConfigPathEnvVar[] = "XR_RUNTIME_JSON";
+  static constexpr char kOpenXrConfigPathVal[] =
+      "./mock_vr_clients/bin/openxr/openxr.json";
   static constexpr char kTestFileDir[] =
       "chrome/test/data/xr/e2e_test_files/html/";
   static constexpr char kSwitchIgnoreRuntimeRequirements[] =
@@ -71,7 +74,8 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   enum class RuntimeType {
     RUNTIME_NONE = 0,
     RUNTIME_OPENVR = 1,
-    RUNTIME_WMR = 2
+    RUNTIME_WMR = 2,
+    RUNTIME_OPENXR = 3
   };
 
   XrBrowserTestBase();

@@ -124,19 +124,9 @@ specific_include_rules = {
     # content -> content/shell dependency is disallowed, except browser tests.
     "+content/shell/browser",
     "+content/shell/common",
-
-    # components/variations/variations_params_manager.h is allowed from tests
-    # (it is part of //components/variations:test_support target).
-    "+components/variations/variations_params_manager.h",
   ],
 
-  "test_utils\.cc": [
-    # components/variations/variations_params_manager.h is allowed from tests
-    # (it is part of //components/variations:test_support target).
-    "+components/variations/variations_params_manager.h",
-  ],
-
-    # Dependencies specific for fuzz targets and other fuzzing-related code.
+  # Dependencies specific for fuzz targets and other fuzzing-related code.
   ".*fuzz.*": [
     "+third_party/libFuzzer/src/utils",  # This contains FuzzedDataProvider.
   ]

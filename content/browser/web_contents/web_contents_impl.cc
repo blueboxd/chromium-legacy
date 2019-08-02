@@ -2801,6 +2801,9 @@ void WebContentsImpl::CreateNewWindow(
     return;
   }
 
+  bool renderer_started_hidden =
+      params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
+
   // Create the new web contents. This will automatically create the new
   // WebContentsView. In the future, we may want to create the view separately.
   CreateParams create_params(GetBrowserContext(), site_instance.get());
@@ -2811,8 +2814,7 @@ void WebContentsImpl::CreateNewWindow(
   create_params.opener_render_process_id = render_process_id;
   create_params.opener_render_frame_id = opener->GetRoutingID();
   create_params.opener_suppressed = params.opener_suppressed;
-  if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
-    create_params.initially_hidden = true;
+  create_params.initially_hidden = renderer_started_hidden;
   create_params.renderer_initiated_creation =
       main_frame_route_id != MSG_ROUTING_NONE;
 
@@ -2847,8 +2849,13 @@ void WebContentsImpl::CreateNewWindow(
 
       // TODO(brettw): It seems bogus that we have to call this function on the
       // newly created object and give it one of its own member variables.
-      new_view->CreateViewForWidget(
+      RenderWidgetHostView* widget_view = new_view->CreateViewForWidget(
           new_contents_impl->GetRenderViewHost()->GetWidget(), false);
+      if (!renderer_started_hidden) {
+        // RenderWidgets for frames always initialize as hidden. If the renderer
+        // created this window as visible, then we show it here.
+        widget_view->Show();
+      }
     }
     // Save the created window associated with the route so we can show it
     // later.

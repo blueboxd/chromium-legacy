@@ -144,7 +144,7 @@ Widget::InitParams::InitParams() = default;
 
 Widget::InitParams::InitParams(Type type) : type(type) {}
 
-Widget::InitParams::InitParams(const InitParams& other) = default;
+Widget::InitParams::InitParams(InitParams&& other) = default;
 
 Widget::InitParams::~InitParams() = default;
 
@@ -204,7 +204,7 @@ Widget* Widget::CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
   params.delegate = delegate;
   params.parent = parent;
   params.bounds = bounds;
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 
@@ -223,7 +223,7 @@ Widget* Widget::CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
   params.delegate = delegate;
   params.context = context;
   params.bounds = bounds;
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 
@@ -294,9 +294,8 @@ bool Widget::RequiresNonClientView(InitParams::Type type) {
          type == InitParams::TYPE_BUBBLE;
 }
 
-void Widget::Init(const InitParams& in_params) {
+void Widget::Init(InitParams params) {
   TRACE_EVENT0("views", "Widget::Init");
-  InitParams params = in_params;
 
   // If an internal name was not provided the class name of the contents view
   // is a reasonable default.
@@ -332,10 +331,17 @@ void Widget::Init(const InitParams& in_params) {
   native_widget_ = CreateNativeWidget(params, this)->AsNativeWidgetPrivate();
   root_view_.reset(CreateRootView());
   default_theme_provider_ = std::make_unique<ui::DefaultThemeProvider>();
-  native_widget_->InitNativeWidget(params);
-  if (params.type == InitParams::TYPE_MENU)
+
+  // Copy the elements of params that will be used after it is moved.
+  const InitParams::Type type = params.type;
+  const gfx::Rect bounds = params.bounds;
+  const ui::WindowShowState show_state = params.show_state;
+  WidgetDelegate* delegate = params.delegate;
+
+  native_widget_->InitNativeWidget(std::move(params));
+  if (type == InitParams::TYPE_MENU)
     is_mouse_button_pressed_ = native_widget_->IsMouseButtonDown();
-  if (RequiresNonClientView(params.type)) {
+  if (RequiresNonClientView(type)) {
     non_client_view_ = new NonClientView;
     non_client_view_->SetFrameView(CreateNonClientFrameView());
     // Create the ClientView, add it to the NonClientView and add the
@@ -354,22 +360,22 @@ void Widget::Init(const InitParams& in_params) {
     UpdateWindowIcon();
     UpdateWindowTitle();
     non_client_view_->ResetWindowControls();
-    SetInitialBounds(params.bounds);
+    SetInitialBounds(bounds);
 
     // Perform the initial layout. This handles the case where the size might
     // not actually change when setting the initial bounds. If it did, child
     // views won't have a dirty Layout state, so won't do any work.
     root_view_->Layout();
 
-    if (params.show_state == ui::SHOW_STATE_MAXIMIZED) {
+    if (show_state == ui::SHOW_STATE_MAXIMIZED) {
       Maximize();
-    } else if (params.show_state == ui::SHOW_STATE_MINIMIZED) {
+    } else if (show_state == ui::SHOW_STATE_MINIMIZED) {
       Minimize();
       saved_show_state_ = ui::SHOW_STATE_MINIMIZED;
     }
-  } else if (params.delegate) {
-    SetContentsView(params.delegate->GetContentsView());
-    SetInitialBoundsForFramelessWindow(params.bounds);
+  } else if (delegate) {
+    SetContentsView(delegate->GetContentsView());
+    SetInitialBoundsForFramelessWindow(bounds);
   }
   // TODO(https://crbug.com/953978): Use GetNativeTheme() for all platforms.
 #if defined(OS_MACOSX) || defined(OS_WIN)

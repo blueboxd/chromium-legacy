@@ -264,8 +264,6 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
       client_->CreateWorkerFetchContext();
   DCHECK(web_worker_fetch_context);
-  web_worker_fetch_context->SetApplicationCacheHostID(
-      appcache_host_->GetHostID());
 
   // TODO(nhiroki); Set |script_type| to mojom::ScriptType::kModule for module
   // fetch (https://crbug.com/824646).

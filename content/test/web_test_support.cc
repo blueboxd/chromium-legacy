@@ -93,12 +93,11 @@ scoped_refptr<RenderWidget> CreateRenderWidgetForFrame(
     const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool swapped_out,
-    bool hidden,
     bool never_visible,
     mojom::WidgetRequest widget_request) {
   return base::MakeRefCounted<test_runner::WebWidgetTestProxy>(
       routing_id, compositor_deps, screen_info, display_mode, swapped_out,
-      hidden, never_visible, std::move(widget_request));
+      /*hidden=*/true, never_visible, std::move(widget_request));
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {

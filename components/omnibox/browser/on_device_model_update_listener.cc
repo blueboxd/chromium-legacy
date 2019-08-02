@@ -41,8 +41,8 @@ OnDeviceModelUpdateListener* OnDeviceModelUpdateListener::GetInstance() {
 }
 
 OnDeviceModelUpdateListener::OnDeviceModelUpdateListener()
-    : task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BEST_EFFORT,
+    : task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()})) {}
 
 OnDeviceModelUpdateListener::~OnDeviceModelUpdateListener() = default;

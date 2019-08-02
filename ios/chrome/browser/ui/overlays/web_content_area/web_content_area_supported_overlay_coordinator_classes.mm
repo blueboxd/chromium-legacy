@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/overlays/web_content_area/web_content_area_supported_overlay_coordinator_classes.h"
 
+#import "ios/chrome/browser/ui/overlays/web_content_area/app_launcher/app_launcher_alert_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/http_auth_dialogs/http_auth_dialog_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_alert_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_confirmation_overlay_coordinator.h"
@@ -16,7 +17,8 @@
 namespace web_content_area {
 
 NSArray<Class>* GetSupportedOverlayCoordinatorClasses() {
-  return @ [[HTTPAuthDialogOverlayCoordinator class],
+  return @ [[AppLauncherAlertOverlayCoordinator class],
+            [HTTPAuthDialogOverlayCoordinator class],
             [JavaScriptAlertOverlayCoordinator class],
             [JavaScriptConfirmationOverlayCoordinator class],
             [JavaScriptPromptOverlayCoordinator class]];

@@ -593,7 +593,8 @@ ash::AppListViewState AppListControllerImpl::GetAppListViewState() {
 }
 
 void AppListControllerImpl::OnShelfAlignmentChanged(aura::Window* root_window) {
-  DismissAppList();
+  if (!IsHomeScreenAvailable())
+    DismissAppList();
 }
 
 void AppListControllerImpl::OnShellDestroying() {

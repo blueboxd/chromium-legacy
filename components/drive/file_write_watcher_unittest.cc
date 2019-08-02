@@ -91,7 +91,7 @@ TEST_F(FileWriteWatcherTest, WatchThreeFiles) {
 
   // Set up the watcher.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   FileWriteWatcher watcher(task_runner.get());
   watcher.DisableDelayForTesting();
 

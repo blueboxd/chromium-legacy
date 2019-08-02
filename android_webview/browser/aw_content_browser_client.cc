@@ -775,12 +775,12 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
             base::BindRepeating(
                 &AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
                 base::Unretained(this))),
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
   }
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   registry->AddInterface(
       base::BindRepeating(&SpellCheckHostImpl::Create),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}));
+      base::CreateSingleThreadTaskRunner({BrowserThread::UI}));
 #endif
 }
 
@@ -971,7 +971,7 @@ bool AwContentBrowserClient::HandleExternalProtocol(
           0 /* process_id */, std::move(request), nullptr,
           true /* intercept_only */);
     } else {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::IO},
           base::BindOnce(
               [](network::mojom::URLLoaderFactoryRequest request) {
@@ -1039,11 +1039,10 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
   int process_id = is_navigation ? 0 : render_process_id;
 
   // Android WebView has one non off-the-record browser context.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy, process_id,
-                     std::move(proxied_receiver),
-                     std::move(target_factory_info)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
+                                process_id, std::move(proxied_receiver),
+                                std::move(target_factory_info)));
   return true;
 }
 
@@ -1057,11 +1056,10 @@ void AwContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver =
       pending_factory->InitWithNewPipeAndPassReceiver();
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
-                     render_process_id, std::move(factory_receiver),
-                     std::move(pending_proxy)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
+                                render_process_id, std::move(factory_receiver),
+                                std::move(pending_proxy)));
 }
 
 uint32_t AwContentBrowserClient::GetWebSocketOptions(

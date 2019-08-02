@@ -160,7 +160,11 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
            UserFriendlyElementName::kWebXrLocationPermissionIndicator, false}});
 }
 
-WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
+// TODO(crbug.com/986621) - Enable for OpenXR
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(
+    WebXrVrOpenVrBrowserTest,
+    WebXrVrWmrBrowserTest,
+    WebXrVrBrowserTestBase,
     TestLocationIndicatorWhenUserAskedToPrompt) {
   TestForInitialIndicatorForContentType(
       t, {{CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ASK,
@@ -182,7 +186,12 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
       });
 }
 
-WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(
+// TODO(crbug.com/986621) - Enable for OpenXR
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(
+    WebXrVrOpenVrBrowserTest,
+    WebXrVrWmrBrowserTest,
+    WebXrVrBrowserTestBase,
+
     TestMultipleInitialIndicators_OneDeviceAllowed) {
   TestForInitialIndicatorForContentType(
       t,

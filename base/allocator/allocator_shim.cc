@@ -9,6 +9,7 @@
 #include <atomic>
 #include <new>
 
+#include "base/allocator/buildflags.h"
 #include "base/atomicops.h"
 #include "base/bits.h"
 #include "base/logging.h"
@@ -351,7 +352,7 @@ ALWAYS_INLINE void ShimAlignedFree(void* address, void* context) {
 // In the case of tcmalloc we also want to plumb into the glibc hooks
 // to avoid that allocations made in glibc itself (e.g., strdup()) get
 // accidentally performed on the glibc heap instead of the tcmalloc one.
-#if defined(USE_TCMALLOC)
+#if BUILDFLAG(USE_TCMALLOC)
 #include "base/allocator/allocator_shim_override_glibc_weak_symbols.h"
 #endif
 

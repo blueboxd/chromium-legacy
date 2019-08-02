@@ -37,7 +37,7 @@ void Intervention::GenerateReport(const LocalFrame* frame,
   InterventionReportBody* body =
       MakeGarbageCollected<InterventionReportBody>(id, message);
   Report* report = MakeGarbageCollected<Report>(
-      "intervention", document->Url().GetString(), body);
+      ReportType::kIntervention, document->Url().GetString(), body);
 
   // Send the intervention report to the Reporting API and any
   // ReportingObservers.

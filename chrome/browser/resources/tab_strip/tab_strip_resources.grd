@@ -17,6 +17,23 @@
           file="tab_strip.html"
           type="chrome_html"
           compress="gzip"/>
+      <structure
+          name="IDR_TAB_STRIP_CUSTOM_ELEMENT_JS"
+          file="custom_element.js"
+          type="chrome_html"
+          compress="gzip"/>
+      <structure
+          name="IDR_TAB_STRIP_TAB_LIST_JS"
+          file="${root_gen_dir}/chrome/browser/resources/tab_strip/tab_list.js"
+          use_base_dir="false"
+          type="chrome_html"
+          compress="gzip"/>
+      <structure
+          name="IDR_TAB_STRIP_TAB_JS"
+          file="${root_gen_dir}/chrome/browser/resources/tab_strip/tab.js"
+          use_base_dir="false"
+          type="chrome_html"
+          compress="gzip"/>
     </structures>
   </release>
 </grit>

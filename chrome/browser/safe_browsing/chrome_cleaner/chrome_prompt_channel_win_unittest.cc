@@ -116,6 +116,15 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
             this, &ChromePromptChannelProtobufTest::CloseCleanerHandles));
   }
 
+  // Expect the histograms contains at least the specified sample.
+  template <typename T>
+  void ExpectSample(ErrorCategory category, T error, int count = 1) {
+    histogram_tester_.ExpectBucketCount(
+        ChromePromptChannelProtobuf::kErrorHistogramName,
+        ChromePromptChannelProtobuf::GetErrorCodeInt(category, error), count);
+  }
+
+  // Expect that the histogram contains only the specified sample.
   template <typename T>
   void ExpectUniqueSample(ErrorCategory category, T error, int count = 1) {
     histogram_tester_.ExpectUniqueSample(
@@ -123,19 +132,14 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
         ChromePromptChannelProtobuf::GetErrorCodeInt(category, error), count);
   }
 
-  void ExpectHistogramEmpty() {
+  void ExpectHistogramSize(uint32_t size) {
     histogram_tester_.ExpectTotalCount(
-        ChromePromptChannelProtobuf::kErrorHistogramName, 0);
+        ChromePromptChannelProtobuf::kErrorHistogramName, size);
   }
 
   // This is used when we want to validate that certain operations failed a
   // precise number of times without needing to know the specific error code.
   void ExpectCategoryErrorCount(const ErrorExpectationMap& expected_counts) {
-    // Not to be used with CustomErrors as those are well-known.
-    EXPECT_THAT(expected_counts,
-                Not(Contains(Key(ErrorCategory::kCustomError))))
-        << "For custom errors please use ExpectUniqueSample";
-
     const std::vector<base::Bucket> buckets = histogram_tester_.GetAllSamples(
         ChromePromptChannelProtobuf::kErrorHistogramName);
 
@@ -526,15 +530,15 @@ TEST_F(ChromePromptChannelProtobufTest, PostExtraPromptRequestField) {
 
   std::string request_content;
   PostRequestWrite(request, &request_content);
-  PostCloseCleanerHandles();
 
+  // Here we should not post a disconnect since the error will trigger one.
   WaitForDisconnect();
 
-  // Having extra fields in PromptUserRequest should not cause any problems.
-  // This means the handling of the first message does not generate errors. The
-  // only error we see is the reading of the next request length which cannot
-  // succeed because we closed the pipes.
-  ExpectCategoryErrorCount({{ErrorCategory::kReadRequestLengthWinError, 1}});
+  // The ReadRequestLengthWinError is because the pipe was closed by the unknown
+  // field error handler while waiting for the next request.
+  ExpectCategoryErrorCount({{ErrorCategory::kReadRequestLengthWinError, 1},
+                            {ErrorCategory::kCustomError, 1}});
+  ExpectSample(ErrorCategory::kCustomError, CustomErrors::kRequestUnknownField);
 
   ExpectReadFails();
 }

@@ -144,10 +144,17 @@ void BluetoothFeaturePodController::UpdateButton() {
 
 void BluetoothFeaturePodController::SetTooltipState(
     const base::string16& tooltip_state) {
-  button_->SetIconTooltip(l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_BLUETOOTH_TOGGLE_TOOLTIP, tooltip_state));
-  button_->SetLabelTooltip(l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS_TOOLTIP, tooltip_state));
+  if (button_->GetEnabled()) {
+    button_->SetIconTooltip(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_BLUETOOTH_TOGGLE_TOOLTIP, tooltip_state));
+    button_->SetLabelTooltip(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS_TOOLTIP, tooltip_state));
+  } else {
+    // Do not show "Toggle" text in tooltip when the button is disabled (e.g.
+    // when the screen is locked or for secondary users).
+    button_->SetIconTooltip(tooltip_state);
+    button_->SetLabelTooltip(tooltip_state);
+  }
 }
 
 void BluetoothFeaturePodController::OnBluetoothSystemStateChanged() {

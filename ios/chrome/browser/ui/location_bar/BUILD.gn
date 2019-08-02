@@ -26,7 +26,7 @@ source_set("location_bar") {
     "resources:location_bar_share",
     "resources:location_bar_voice",
     "//base",
-    "//components/google/core/browser",
+    "//components/google/core/common",
     "//components/omnibox/browser",
     "//components/open_from_clipboard:",
     "//components/search_engines",

@@ -762,8 +762,12 @@ ExecuteCodeFunction::InitResult ExecuteCodeInTabFunction::Init() {
 
 bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage(std::string* error) {
   const CastWebContents* webview = GetWebViewForTab(execute_tab_id_);
+  if (!webview) {
+    *error = ErrorUtils::FormatErrorMessage(
+        keys::kTabIndexNotFoundError, base::NumberToString(execute_tab_id_));
+    return false;
+  }
 
-  CHECK(webview);
   content::WebContents* contents = webview->web_contents();
 
   int frame_id = details_->frame_id ? *details_->frame_id

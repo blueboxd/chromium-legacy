@@ -193,11 +193,9 @@ using web::wk_navigation_util::IsPlaceholderUrl;
               forSameDocumentNavigation:isSameDocumentNavigation];
     } else {
       // Same document navigation does not contain response headers.
-      net::HttpResponseHeaders* headers =
-          isSameDocumentNavigation
-              ? nullptr
-              : self.webStateImpl->GetHttpResponseHeaders();
-      existingContext->SetResponseHeaders(headers);
+      if (isSameDocumentNavigation) {
+        existingContext->SetResponseHeaders(nullptr);
+      }
       existingContext->SetIsSameDocument(isSameDocumentNavigation);
       existingContext->SetHasCommitted(!isSameDocumentNavigation);
       self.webStateImpl->OnNavigationStarted(existingContext);

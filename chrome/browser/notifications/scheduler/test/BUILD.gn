@@ -10,6 +10,8 @@ source_set("test_lib") {
   sources = [
     "fake_clock.cc",
     "fake_clock.h",
+    "mock_background_task_coordinator.cc",
+    "mock_background_task_coordinator.h",
     "mock_display_agent.cc",
     "mock_display_agent.h",
     "mock_display_decider.cc",

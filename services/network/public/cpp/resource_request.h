@@ -51,14 +51,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   GURL referrer;
   net::URLRequest::ReferrerPolicy referrer_policy =
       net::URLRequest::NEVER_CLEAR_REFERRER;
-  bool is_prerendering = false;
   net::HttpRequestHeaders headers;
   net::HttpRequestHeaders cors_exempt_headers;
   int load_flags = 0;
-  int plugin_child_id = -1;
   int resource_type = 0;
   net::RequestPriority priority = net::IDLE;
-  base::Optional<base::UnguessableToken> appcache_host_id;
   bool should_reset_appcache = false;
   bool is_external_request = false;
   mojom::CorsPreflightPolicy cors_preflight_policy =
@@ -81,10 +78,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   int render_frame_id = MSG_ROUTING_NONE;
   bool is_main_frame = false;
   int transition_type = 0;
-  bool allow_download = false;
   bool report_raw_headers = false;
   int previews_state = 0;
-  bool initiated_in_secure_context = false;
   bool upgrade_if_insecure = false;
   bool is_revalidating = false;
   bool should_also_use_factory_bound_origin_for_cors = false;

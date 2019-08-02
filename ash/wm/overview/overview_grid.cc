@@ -169,15 +169,15 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   params.accept_events = false;
   params.parent = parent;
   params.bounds = bounds;
+  params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
   auto widget = std::make_unique<views::Widget>();
   widget->set_focus_on_creation(false);
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   // Show plus icon if drag a tab from a multi-tab window.
   widget->SetContentsView(new DropTargetView(
       dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey)));
   aura::Window* drop_target_window = widget->GetNativeWindow();
-  drop_target_window->SetProperty(kHideInDeskMiniViewKey, true);
   drop_target_window->parent()->StackChildAtBottom(drop_target_window);
   widget->Show();
 
@@ -832,7 +832,7 @@ void OverviewGrid::OnPostWindowStateTypeChange(WindowState* window_state,
     return;
 
   // When swiping away overview mode via shelf, windows will get minimized, but
-  // we do not want to create minimized widgets in their place.
+  // we do not want show a mirrored view in this case.
   if (overview_session_->enter_exit_overview_type() ==
       OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
     return;

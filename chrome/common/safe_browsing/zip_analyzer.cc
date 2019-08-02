@@ -47,8 +47,6 @@ void AnalyzeZipFile(base::File zip_file,
   bool too_big_to_unpack =
       base::checked_cast<uint64_t>(zip_file.GetLength()) >
       FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("zip");
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipTooBigToUnpack",
-                        too_big_to_unpack);
   if (too_big_to_unpack) {
     results->success = false;
     return;

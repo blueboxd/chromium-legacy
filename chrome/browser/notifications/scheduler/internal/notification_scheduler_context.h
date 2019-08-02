@@ -17,7 +17,6 @@ class BackgroundTaskCoordinator;
 class DisplayAgent;
 class DisplayDecider;
 class ImpressionHistoryTracker;
-class NotificationBackgroundTaskScheduler;
 class NotificationSchedulerClientRegistrar;
 class ScheduledNotificationManager;
 struct SchedulerConfig;
@@ -28,7 +27,7 @@ class NotificationSchedulerContext {
  public:
   NotificationSchedulerContext(
       std::unique_ptr<NotificationSchedulerClientRegistrar> client_registrar,
-      std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
+      std::unique_ptr<BackgroundTaskCoordinator> background_task_coordinator,
       std::unique_ptr<ImpressionHistoryTracker> impression_tracker,
       std::unique_ptr<ScheduledNotificationManager> notification_manager,
       std::unique_ptr<DisplayAgent> display_agent,

@@ -4,30 +4,9 @@
 
 #include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
 
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "ui/aura/window.h"
-#include "ui/gfx/native_widget_types.h"
-#include "ui/views/window/dialog_delegate.h"
-
-namespace {
-
-gfx::NativeWindow GetBrowserParentWindow() {
-  if (chromeos::LoginDisplayHost::default_host())
-    return chromeos::LoginDisplayHost::default_host()->GetNativeWindow();
-
-  Browser* browser =
-      chrome::FindTabbedBrowser(ProfileManager::GetPrimaryUserProfile(), true);
-  if (browser)
-    return browser->window()->GetNativeWindow();
-
-  return nullptr;
-}
-
-}  // namespace
+#include "base/bind.h"
+#include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace chromeos {
 
@@ -37,11 +16,7 @@ constexpr base::TimeDelta kSignRequestIdTimeout =
 
 PinDialogManager::PinDialogManager() = default;
 
-PinDialogManager::~PinDialogManager() {
-  // Close the active dialog if present to avoid leaking callbacks.
-  if (active_pin_dialog_)
-    CloseDialog(active_dialog_extension_id_);
-}
+PinDialogManager::~PinDialogManager() = default;
 
 void PinDialogManager::AddSignRequestId(const std::string& extension_id,
                                         int sign_request_id) {
@@ -54,89 +29,78 @@ PinDialogManager::RequestPinResult PinDialogManager::RequestPin(
     const std::string& extension_id,
     const std::string& extension_name,
     int sign_request_id,
-    RequestPinView::RequestPinCodeType code_type,
-    RequestPinView::RequestPinErrorType error_type,
+    PinCodeType code_type,
+    PinErrorLabel error_label,
     int attempts_left,
     RequestPinCallback callback) {
-  bool accept_input = (attempts_left != 0);
-  // If active dialog exists already, we need to make sure it belongs to the
-  // same extension and the user submitted some input.
-  if (active_pin_dialog_ != nullptr) {
-    DCHECK(!active_dialog_extension_id_.empty());
-    if (extension_id != active_dialog_extension_id_)
+  DCHECK_GE(attempts_left, -1);
+  const bool accept_input = (attempts_left != 0);
+
+  // Start from sanity checks, as the extension might have issued this call
+  // incorrectly.
+  if (active_dialog_state_) {
+    // The active dialog exists already, so we need to make sure it belongs to
+    // the same extension and the user submitted some input.
+    if (extension_id != active_dialog_state_->extension_id)
       return RequestPinResult::kOtherFlowInProgress;
-
-    // Extension requests a PIN without having received any input from its
-    // previous request. Reject the new request.
-    if (!active_pin_dialog_->IsLocked())
+    if (active_dialog_state_->request_pin_callback ||
+        active_dialog_state_->stop_pin_request_callback) {
+      // Extension requests a PIN without having received any input from its
+      // previous request. Reject the new request.
       return RequestPinResult::kDialogDisplayedAlready;
+    }
+  } else {
+    // Check the validity of sign_request_id
+    const ExtensionNameRequestIdPair key(extension_id, sign_request_id);
+    if (sign_request_times_.find(key) == sign_request_times_.end())
+      return RequestPinResult::kInvalidId;
+    const base::Time current_time = base::Time::Now();
+    if (current_time - sign_request_times_[key] > kSignRequestIdTimeout)
+      return RequestPinResult::kInvalidId;
 
-    // Set the new callback to be used by the view.
-    active_pin_dialog_->SetCallback(std::move(callback));
-    active_pin_dialog_->SetDialogParameters(code_type, error_type,
-                                            attempts_left, accept_input);
-    active_pin_dialog_->DialogModelChanged();
-    return RequestPinResult::kSuccess;
+    // A new dialog will be opened, so initialize the related internal state.
+    active_dialog_state_.emplace(GetHostForNewDialog(), extension_id,
+                                 extension_name, code_type);
   }
 
-  // Check the validity of sign_request_id
-  const ExtensionNameRequestIdPair key(extension_id, sign_request_id);
-  if (sign_request_times_.find(key) == sign_request_times_.end())
-    return RequestPinResult::kInvalidId;
-
-  const base::Time current_time = base::Time::Now();
-  if (current_time - sign_request_times_[key] > kSignRequestIdTimeout)
-    return RequestPinResult::kInvalidId;
-
-  active_dialog_extension_id_ = extension_id;
-  active_pin_dialog_ = new RequestPinView(
-      extension_name, code_type, attempts_left, std::move(callback), this);
-
-  const gfx::NativeWindow parent = GetBrowserParentWindow();
-  // If there is no parent, falls back to the root window for new windows.
-  active_window_ = views::DialogDelegate::CreateDialogWidget(
-      active_pin_dialog_, /*context=*/ nullptr, parent);
-  active_window_->Show();
+  active_dialog_state_->request_pin_callback = std::move(callback);
+  active_dialog_state_->host->ShowSecurityTokenPinDialog(
+      extension_name, code_type, accept_input, error_label, attempts_left,
+      base::BindOnce(&PinDialogManager::OnPinEntered,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&PinDialogManager::OnPinDialogClosed,
+                     weak_factory_.GetWeakPtr()));
 
   return RequestPinResult::kSuccess;
 }
 
-void PinDialogManager::OnPinDialogInput() {
-  last_response_closed_[active_dialog_extension_id_] = false;
-}
-
-void PinDialogManager::OnPinDialogClosed() {
-  last_response_closed_[active_dialog_extension_id_] = true;
-  // |active_pin_dialog_| is managed by |active_window_|. This local copy of
-  // the pointer is reset here to allow a new dialog to be created when a new
-  // request comes.
-  active_pin_dialog_ = nullptr;
-}
-
 PinDialogManager::StopPinRequestResult
-PinDialogManager::StopPinRequestWithError(
-    const std::string& extension_id,
-    RequestPinView::RequestPinErrorType error_type,
-    StopPinRequestCallback callback) {
-  if (active_pin_dialog_ == nullptr ||
-      extension_id != active_dialog_extension_id_) {
+PinDialogManager::StopPinRequestWithError(const std::string& extension_id,
+                                          PinErrorLabel error_label,
+                                          StopPinRequestCallback callback) {
+  DCHECK_NE(error_label, PinErrorLabel::kNone);
+
+  // Perform sanity checks, as the extension might have issued this call
+  // incorrectly.
+  if (!active_dialog_state_ ||
+      active_dialog_state_->extension_id != extension_id) {
     return StopPinRequestResult::kNoActiveDialog;
   }
-
-  if (!active_pin_dialog_->IsLocked())
+  if (active_dialog_state_->request_pin_callback ||
+      active_dialog_state_->stop_pin_request_callback) {
     return StopPinRequestResult::kNoUserInput;
+  }
 
-  active_pin_dialog_->SetCallback(base::BindOnce(
-      [](StopPinRequestCallback callback, const std::string& user_input) {
-        DCHECK(user_input.empty());
-        std::move(callback).Run();
-      },
-      std::move(callback)));
-  active_pin_dialog_->SetDialogParameters(
-      RequestPinView::RequestPinCodeType::UNCHANGED, error_type,
+  active_dialog_state_->stop_pin_request_callback = std::move(callback);
+  active_dialog_state_->host->ShowSecurityTokenPinDialog(
+      active_dialog_state_->extension_name, active_dialog_state_->code_type,
+      /*enable_user_input=*/false, error_label,
       /*attempts_left=*/-1,
-      /*accept_input=*/false);
-  active_pin_dialog_->DialogModelChanged();
+      base::BindOnce(&PinDialogManager::OnPinEntered,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&PinDialogManager::OnPinDialogClosed,
+                     weak_factory_.GetWeakPtr()));
+
   return StopPinRequestResult::kSuccess;
 }
 
@@ -147,23 +111,29 @@ bool PinDialogManager::LastPinDialogClosed(
 }
 
 bool PinDialogManager::CloseDialog(const std::string& extension_id) {
-  if (extension_id != active_dialog_extension_id_ ||
-      active_pin_dialog_ == nullptr) {
+  // Perform sanity checks, as the extension might have issued this call
+  // incorrectly.
+  if (!active_dialog_state_ ||
+      extension_id != active_dialog_state_->extension_id) {
     LOG(ERROR) << "StopPinRequest called by unexpected extension: "
                << extension_id;
     return false;
   }
 
-  // Close the window. |active_pin_dialog_| gets deleted inside Close().
-  active_window_->Close();
-  active_pin_dialog_ = nullptr;
+  active_dialog_state_->host->CloseSecurityTokenPinDialog();
 
+  // The active dialog state should have been cleared by OnPinDialogClosed().
+  DCHECK(!active_dialog_state_);
+
+  last_response_closed_[extension_id] = true;
   return true;
 }
 
 void PinDialogManager::ExtensionUnloaded(const std::string& extension_id) {
-  if (active_pin_dialog_ && active_dialog_extension_id_ == extension_id)
+  if (active_dialog_state_ &&
+      active_dialog_state_->extension_id == extension_id) {
     CloseDialog(extension_id);
+  }
 
   last_response_closed_[extension_id] = false;
 
@@ -174,6 +144,61 @@ void PinDialogManager::ExtensionUnloaded(const std::string& extension_id) {
     else
       ++it;
   }
+}
+
+void PinDialogManager::AddPinDialogHost(
+    SecurityTokenPinDialogHost* pin_dialog_host) {
+  DCHECK(!base::Contains(added_dialog_hosts_, pin_dialog_host));
+  added_dialog_hosts_.push_back(pin_dialog_host);
+}
+
+void PinDialogManager::RemovePinDialogHost(
+    SecurityTokenPinDialogHost* pin_dialog_host) {
+  if (active_dialog_state_ && active_dialog_state_->host == pin_dialog_host) {
+    pin_dialog_host->CloseSecurityTokenPinDialog();
+    DCHECK(!active_dialog_state_);
+  }
+  DCHECK(base::Contains(added_dialog_hosts_, pin_dialog_host));
+  base::Erase(added_dialog_hosts_, pin_dialog_host);
+}
+
+PinDialogManager::ActiveDialogState::ActiveDialogState(
+    SecurityTokenPinDialogHost* host,
+    const std::string& extension_id,
+    const std::string& extension_name,
+    PinCodeType code_type)
+    : host(host),
+      extension_id(extension_id),
+      extension_name(extension_name),
+      code_type(code_type) {}
+
+PinDialogManager::ActiveDialogState::~ActiveDialogState() = default;
+
+void PinDialogManager::OnPinEntered(const std::string& user_input) {
+  DCHECK(!active_dialog_state_->stop_pin_request_callback);
+  last_response_closed_[active_dialog_state_->extension_id] = false;
+  if (active_dialog_state_->request_pin_callback)
+    std::move(active_dialog_state_->request_pin_callback).Run(user_input);
+}
+
+void PinDialogManager::OnPinDialogClosed() {
+  DCHECK(!active_dialog_state_->request_pin_callback ||
+         !active_dialog_state_->stop_pin_request_callback);
+
+  last_response_closed_[active_dialog_state_->extension_id] = true;
+  if (active_dialog_state_->request_pin_callback) {
+    std::move(active_dialog_state_->request_pin_callback)
+        .Run(/*user_input=*/std::string());
+  }
+  if (active_dialog_state_->stop_pin_request_callback)
+    std::move(active_dialog_state_->stop_pin_request_callback).Run();
+  active_dialog_state_.reset();
+}
+
+SecurityTokenPinDialogHost* PinDialogManager::GetHostForNewDialog() {
+  if (added_dialog_hosts_.empty())
+    return &default_dialog_host_;
+  return added_dialog_hosts_.back();
 }
 
 }  // namespace chromeos

@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_SPELL_CHECK_HOST_CHROME_IMPL_H_
 #define CHROME_BROWSER_SPELLCHECKER_SPELL_CHECK_HOST_CHROME_IMPL_H_
 
+#include "base/callback.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "build/build_config.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"
 #include "components/spellcheck/browser/spelling_service_client.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 class SpellcheckCustomDictionary;
 class SpellcheckService;
@@ -20,12 +21,19 @@ struct SpellCheckResult;
 // Implementation of SpellCheckHost involving Chrome-only features.
 class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
  public:
-  explicit SpellCheckHostChromeImpl(
-      const service_manager::Identity& renderer_identity);
+  explicit SpellCheckHostChromeImpl(int render_process_id);
   ~SpellCheckHostChromeImpl() override;
 
-  static void Create(spellcheck::mojom::SpellCheckHostRequest request,
-                     const service_manager::BindSourceInfo& source_info);
+  static void Create(
+      int render_process_id,
+      mojo::PendingReceiver<spellcheck::mojom::SpellCheckHost> receiver);
+
+  // Allows tests to override how |Create()| is implemented to bind a process
+  // hosts's SpellCheckHost receiver.
+  using Binder = base::RepeatingCallback<void(
+      int /* render_process_id */,
+      mojo::PendingReceiver<spellcheck::mojom::SpellCheckHost>)>;
+  static void OverrideBinderForTesting(Binder binder);
 
  private:
   friend class TestSpellCheckHostChromeImpl;
@@ -90,8 +98,8 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
   // is null if the render process is being shut down.
   virtual SpellcheckService* GetSpellcheckService() const;
 
-  // The identity of the renderer service.
-  const service_manager::Identity renderer_identity_;
+  // The process ID of the renderer.
+  const int render_process_id_;
 
   // A JSON-RPC client that calls the remote Spelling service.
   SpellingServiceClient client_;

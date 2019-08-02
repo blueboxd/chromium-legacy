@@ -14,6 +14,7 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -67,13 +67,13 @@ bool IsLoginFeedbackModalDialog(const AppWindow* app_window) {
 ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh()
     : exclusive_access_manager_(
           std::make_unique<ExclusiveAccessManager>(this)) {
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->AddObserver(this);
+  if (ash::TabletMode::Get())
+    ash::TabletMode::Get()->AddObserver(this);
 }
 
 ChromeNativeAppWindowViewsAuraAsh::~ChromeNativeAppWindowViewsAuraAsh() {
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->RemoveObserver(this);
+  if (ash::TabletMode::Get())
+    ash::TabletMode::Get()->RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -299,11 +299,13 @@ void ChromeNativeAppWindowViewsAuraAsh::SetActivateOnPointer(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// TabletModeClientObserver implementation:
-void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeToggled(bool enabled) {
-  tablet_mode_enabled_ = enabled;
-  UpdateImmersiveMode();
-  widget()->non_client_view()->Layout();
+// TabletModeObserver implementation:
+void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeStarted() {
+  OnTabletModeToggled(true);
+}
+
+void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeEnded() {
+  OnTabletModeToggled(false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -491,6 +493,12 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWindowDestroying(
   observed_window_.Remove(window);
 }
 
+void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeToggled(bool enabled) {
+  tablet_mode_enabled_ = enabled;
+  UpdateImmersiveMode();
+  widget()->non_client_view()->Layout();
+}
+
 void ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed() {
   menu_runner_.reset();
   menu_model_.reset();
@@ -509,7 +517,6 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
   if (app_window()->IsOsFullscreen())
     return true;
 
-  TabletModeClient* client = TabletModeClient::Get();
   // Windows in tablet mode which are resizable have their title bars
   // hidden in ash for more size, so enable immersive mode so users
   // have access to window controls. Non resizable windows do not gain
@@ -517,8 +524,8 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldEnableImmersiveMode() const {
   // is no need for immersive mode.
   // TODO(crbug.com/801619): This adds a little extra animation
   // when minimizing or unminimizing window.
-  return client && client->tablet_mode_enabled() && CanResize() &&
-         !IsMinimized();
+  return ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode() &&
+         CanResize() && !IsMinimized();
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::UpdateImmersiveMode() {

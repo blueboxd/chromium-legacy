@@ -68,11 +68,10 @@ void ChromeExtensionCookies::CreateRestrictedCookieManager(
     return;
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&IOData::CreateRestrictedCookieManager,
-                     base::Unretained(io_data_.get()), origin,
-                     std::move(request)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&IOData::CreateRestrictedCookieManager,
+                                base::Unretained(io_data_.get()), origin,
+                                std::move(request)));
 }
 
 void ChromeExtensionCookies::ClearCookies(const GURL& origin) {
@@ -81,10 +80,9 @@ void ChromeExtensionCookies::ClearCookies(const GURL& origin) {
     return;
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&IOData::ClearCookies, base::Unretained(io_data_.get()),
-                     origin));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&IOData::ClearCookies,
+                                base::Unretained(io_data_.get()), origin));
 }
 
 net::CookieStore* ChromeExtensionCookies::GetCookieStoreForTesting() {
@@ -178,7 +176,7 @@ void ChromeExtensionCookies::OnContentSettingChanged(
       CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&IOData::OnContentSettingChanged,
                      base::Unretained(io_data_.get()), std::move(settings)));
@@ -191,11 +189,10 @@ void ChromeExtensionCookies::OnThirdPartyCookieBlockingChanged(
     return;
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&IOData::OnThirdPartyCookieBlockingChanged,
-                     base::Unretained(io_data_.get()),
-                     block_third_party_cookies));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&IOData::OnThirdPartyCookieBlockingChanged,
+                                base::Unretained(io_data_.get()),
+                                block_third_party_cookies));
 }
 
 void ChromeExtensionCookies::Shutdown() {

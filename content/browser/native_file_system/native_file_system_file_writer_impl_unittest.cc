@@ -46,16 +46,17 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
     file_system_context_ = CreateFileSystemContextForTesting(
         /*quota_manager_proxy=*/nullptr, dir_.GetPath());
 
-    test_url_ = file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), storage::kFileSystemTypeTest,
+    test_file_url_ = file_system_context_->CreateCrackedFileSystemURL(
+        kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
         base::FilePath::FromUTF8Unsafe("test"));
 
     test_swap_url_ = file_system_context_->CreateCrackedFileSystemURL(
-        GURL("http://example.com"), storage::kFileSystemTypeTest,
+        kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
         base::FilePath::FromUTF8Unsafe("test.crswap"));
 
-    ASSERT_EQ(base::File::FILE_OK, AsyncFileTestHelper::CreateFile(
-                                       file_system_context_.get(), test_url_));
+    ASSERT_EQ(base::File::FILE_OK,
+              AsyncFileTestHelper::CreateFile(file_system_context_.get(),
+                                              test_file_url_));
 
     ASSERT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::CreateFile(file_system_context_.get(),
@@ -72,9 +73,9 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
     handle_ = std::make_unique<NativeFileSystemFileWriterImpl>(
         manager_.get(),
         NativeFileSystemManagerImpl::BindingContext(
-            test_url_.origin(), /*process_id=*/1,
+            kTestOrigin, kTestURL, /*process_id=*/1,
             /*frame_id=*/MSG_ROUTING_NONE),
-        test_url_, test_swap_url_,
+        test_file_url_, test_swap_url_,
         NativeFileSystemManagerImpl::SharedHandleState(
             permission_grant_, permission_grant_, /*file_system=*/{}));
   }
@@ -206,6 +207,8 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
   }
 
  protected:
+  const GURL kTestURL = GURL("https://example.com/test");
+  const url::Origin kTestOrigin = url::Origin::Create(kTestURL);
   base::test::ScopedFeatureList scoped_feature_list_;
   TestBrowserThreadBundle scoped_task_environment_;
 
@@ -215,7 +218,7 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
   storage::BlobStorageContext* blob_context_;
   scoped_refptr<NativeFileSystemManagerImpl> manager_;
 
-  FileSystemURL test_url_;
+  FileSystemURL test_file_url_;
   FileSystemURL test_swap_url_;
 
   scoped_refptr<FixedNativeFileSystemPermissionGrant> permission_grant_ =
@@ -247,7 +250,7 @@ TEST_F(NativeFileSystemFileWriterImplTest, WriteInvalidBlob) {
   result = CloseSync();
   EXPECT_EQ(result, base::File::FILE_OK);
 
-  EXPECT_EQ("", ReadFile(test_url_));
+  EXPECT_EQ("", ReadFile(test_file_url_));
 }
 
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidEmptyString) {
@@ -259,7 +262,7 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidEmptyString) {
   result = CloseSync();
   EXPECT_EQ(result, base::File::FILE_OK);
 
-  EXPECT_EQ("", ReadFile(test_url_));
+  EXPECT_EQ("", ReadFile(test_file_url_));
 }
 
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidNonEmpty) {
@@ -272,7 +275,7 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteValidNonEmpty) {
   result = CloseSync();
   EXPECT_EQ(result, base::File::FILE_OK);
 
-  EXPECT_EQ(test_data, ReadFile(test_url_));
+  EXPECT_EQ(test_data, ReadFile(test_file_url_));
 }
 
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetInFile) {
@@ -290,7 +293,7 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetInFile) {
   result = CloseSync();
   EXPECT_EQ(result, base::File::FILE_OK);
 
-  EXPECT_EQ("1234abc890", ReadFile(test_url_));
+  EXPECT_EQ("1234abc890", ReadFile(test_file_url_));
 }
 
 TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetPastFile) {
@@ -302,7 +305,7 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetPastFile) {
   result = CloseSync();
   EXPECT_EQ(result, base::File::FILE_OK);
 
-  EXPECT_EQ("", ReadFile(test_url_));
+  EXPECT_EQ("", ReadFile(test_file_url_));
 }
 
 TEST_F(NativeFileSystemFileWriterImplTest, TruncateShrink) {
@@ -319,7 +322,7 @@ TEST_F(NativeFileSystemFileWriterImplTest, TruncateShrink) {
   result = CloseSync();
   EXPECT_EQ(result, base::File::FILE_OK);
 
-  EXPECT_EQ("12345", ReadFile(test_url_));
+  EXPECT_EQ("12345", ReadFile(test_file_url_));
 }
 
 TEST_F(NativeFileSystemFileWriterImplTest, TruncateGrow) {
@@ -336,7 +339,7 @@ TEST_F(NativeFileSystemFileWriterImplTest, TruncateGrow) {
   result = CloseSync();
   EXPECT_EQ(result, base::File::FILE_OK);
 
-  EXPECT_EQ(std::string("abc\0\0", 5), ReadFile(test_url_));
+  EXPECT_EQ(std::string("abc\0\0", 5), ReadFile(test_file_url_));
 }
 
 TEST_F(NativeFileSystemFileWriterImplTest, CloseAfterCloseNotOK) {

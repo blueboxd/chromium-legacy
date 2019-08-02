@@ -69,6 +69,10 @@ constexpr size_t kClientDataHashLength = 32;
 // https://www.w3.org/TR/webauthn/#sec-authenticator-data
 constexpr size_t kRpIdHashLength = 32;
 
+// Max length for the user handle:
+// https://www.w3.org/TR/webauthn/#user-handle
+constexpr size_t kUserHandleMaxLength = 64;
+
 static_assert(kU2fApplicationParamLength == kRpIdHashLength,
               "kU2fApplicationParamLength must be equal to kRpIdHashLength.");
 

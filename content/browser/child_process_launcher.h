@@ -226,7 +226,6 @@ class CONTENT_EXPORT ChildProcessLauncher {
               int error_code);
 
   Client* client_;
-  BrowserThread::ID client_thread_id_;
 
   // The process associated with this ChildProcessLauncher. Set in Notify by
   // ChildProcessLauncherHelper once the process was started.

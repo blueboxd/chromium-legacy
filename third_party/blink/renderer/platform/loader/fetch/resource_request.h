@@ -214,23 +214,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   int RequestorID() const { return requestor_id_; }
   void SetRequestorID(int requestor_id) { requestor_id_ = requestor_id; }
 
-  // The unique child id (not PID) of the process from which this request
-  // originated. In the case of out-of-process plugins, this allows to link back
-  // the request to the plugin process (as it is processed through a render view
-  // process).
-  int GetPluginChildID() const { return plugin_child_id_; }
-  void SetPluginChildID(int plugin_child_id) {
-    plugin_child_id_ = plugin_child_id;
-  }
-
-  // Allows the request to be matched up with its app cache host.
-  const base::UnguessableToken& AppCacheHostID() const {
-    return app_cache_host_id_;
-  }
-  void SetAppCacheHostID(const base::UnguessableToken& id) {
-    app_cache_host_id_ = id;
-  }
-
   // True if request was user initiated.
   bool HasUserGesture() const { return has_user_gesture_; }
   void SetHasUserGesture(bool);
@@ -484,8 +467,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   ResourceLoadPriority priority_;
   int intra_priority_value_;
   int requestor_id_;
-  int plugin_child_id_;
-  base::UnguessableToken app_cache_host_id_;
   WebURLRequest::PreviewsState previews_state_;
   scoped_refptr<SharableExtraData> sharable_extra_data_;
   mojom::RequestContextType request_context_;

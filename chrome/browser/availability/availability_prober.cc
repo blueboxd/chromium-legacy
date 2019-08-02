@@ -5,6 +5,7 @@
 #include "chrome/browser/availability/availability_prober.h"
 
 #include <math.h>
+
 #include <cmath>
 
 #include "base/base64.h"
@@ -345,6 +346,19 @@ void AvailabilityProber::SendNowIfInactive(bool send_only_in_foreground) {
 #endif
 
   CreateAndStartURLLoader();
+}
+
+void AvailabilityProber::RepeatedlyProbe(base::TimeDelta interval,
+                                         bool send_only_in_foreground) {
+  repeating_timer_ = std::make_unique<base::RepeatingTimer>(tick_clock_);
+  // base::Unretained is safe here because |repeating_timer_| is owned by
+  // |this|.
+  repeating_timer_->Start(
+      FROM_HERE, interval,
+      base::BindRepeating(&AvailabilityProber::SendNowIfInactive,
+                          base::Unretained(this), send_only_in_foreground));
+
+  SendNowIfInactive(send_only_in_foreground);
 }
 
 #if defined(OS_ANDROID)

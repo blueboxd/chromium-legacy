@@ -521,13 +521,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillImportDynamicFormsDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillImportDynamicForms)},
-    {"enable-autofill-import-non-focusable-credit-card-forms",
-     flag_descriptions::kEnableAutofillImportNonFocusableCreditCardFormsName,
-     flag_descriptions::
-         kEnableAutofillImportNonFocusableCreditCardFormsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillImportNonFocusableCreditCardForms)},
     {"enable-autofill-do-not-upload-save-unsupported-cards",
      flag_descriptions::kEnableAutofillDoNotUploadSaveUnsupportedCardsName,
      flag_descriptions::

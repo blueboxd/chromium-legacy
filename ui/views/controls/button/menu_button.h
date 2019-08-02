@@ -25,10 +25,6 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
  public:
   METADATA_HEADER(MenuButton);
 
-  // How much padding to put on the left and right of the menu marker.
-  static constexpr int kMenuMarkerPaddingLeft = 3;
-  static constexpr int kMenuMarkerPaddingRight = -1;
-
   // Create a Button.
   MenuButton(const base::string16& text,
              MenuButtonListener* menu_button_listener,

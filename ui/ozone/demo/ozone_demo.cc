@@ -76,9 +76,6 @@ int main(int argc, char** argv) {
 
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
-  params.using_mojo = ui::OzonePlatform::EnsureInstance()
-                          ->GetPlatformProperties()
-                          .requires_mojo;
   ui::OzonePlatform::InitializeForUI(params);
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
       ->SetCurrentLayoutByName("us");
@@ -87,7 +84,9 @@ int main(int argc, char** argv) {
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 
   std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper;
-  if (!params.using_mojo) {
+  if (!ui::OzonePlatform::GetInstance()
+           ->GetPlatformProperties()
+           .requires_mojo) {
     // OzoneGpuTestHelper transports Chrome IPC messages between host & gpu code
     // in single process mode. We don't use both Chrome IPC and mojo, so only
     // initialize it for non-mojo platforms.

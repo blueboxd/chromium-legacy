@@ -166,7 +166,7 @@ class NativeWidgetMacTest : public WidgetTest {
     Widget::InitParams parent_init_params =
         CreateParams(Widget::InitParams::TYPE_WINDOW);
     parent_init_params.bounds = gfx::Rect(100, 100, 200, 200);
-    CreateWidgetWithTestWindow(parent_init_params, &native_parent);
+    CreateWidgetWithTestWindow(std::move(parent_init_params), &native_parent);
     return native_parent;
   }
 
@@ -177,7 +177,7 @@ class NativeWidgetMacTest : public WidgetTest {
         CreateParams(Widget::InitParams::TYPE_WINDOW);
     parent_init_params.remove_standard_frame = true;
     parent_init_params.bounds = gfx::Rect(100, 100, 200, 200);
-    CreateWidgetWithTestWindow(parent_init_params, &native_parent);
+    CreateWidgetWithTestWindow(std::move(parent_init_params), &native_parent);
     return native_parent;
   }
 
@@ -186,7 +186,7 @@ class NativeWidgetMacTest : public WidgetTest {
                                      NativeWidgetMacTestWindow** window) {
     Widget* widget = new Widget;
     params.native_widget = new TestWindowNativeWidgetMac(widget);
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->Show();
     *window = base::mac::ObjCCastStrict<NativeWidgetMacTestWindow>(
         widget->GetNativeWindow().GetNativeNSWindow());
@@ -492,13 +492,15 @@ TEST_F(NativeWidgetMacTest, ShowInactiveOnChildWidget) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW);
   init_params.bounds = gfx::Rect(100, 100, 200, 200);
-  Widget* parent = CreateWidgetWithTestWindow(init_params, &parent_window);
+  Widget* parent =
+      CreateWidgetWithTestWindow(std::move(init_params), &parent_window);
 
   // CreateWidgetWithTestWindow calls Show()
   EXPECT_EQ(1, [parent_window orderWindowCount]);
 
   init_params.parent = parent->GetNativeView();
-  Widget* child = CreateWidgetWithTestWindow(init_params, &child_window);
+  Widget* child =
+      CreateWidgetWithTestWindow(std::move(init_params), &child_window);
 
   // The child is ordered twice, once by Show() and again (by AppKit) when it is
   // registered as a child window.
@@ -528,7 +530,7 @@ TEST_F(NativeWidgetMacTest, MiniaturizeExternally) {
     return;  // Fails when swarmed. http://crbug.com/660582
   Widget* widget = new Widget;
   Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW);
-  widget->Init(init_params);
+  widget->Init(std::move(init_params));
 
   PaintCountView* view = new PaintCountView();
   widget->GetContentsView()->AddChildView(view);
@@ -756,7 +758,7 @@ Widget* AttachPopupToNativeParent(NSWindow* native_parent) {
   Widget::InitParams init_params;
   init_params.parent = anchor_view.get();
   init_params.type = Widget::InitParams::TYPE_POPUP;
-  child->Init(init_params);
+  child->Init(std::move(init_params));
   return child;
 }
 
@@ -917,7 +919,7 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
         CreateParams(Widget::InitParams::TYPE_POPUP);
     init_params.parent = [native_parent contentView];
     init_params.bounds = gfx::Rect(0, 0, 100, 200);
-    CreateWidgetWithTestWindow(init_params, &window);
+    CreateWidgetWithTestWindow(std::move(init_params), &window);
     [window setDeallocFlag:&child_dealloced];
   }
   {
@@ -1093,7 +1095,7 @@ TEST_F(NativeWidgetMacTest, TwoWidgetTooltips) {
 TEST_F(NativeWidgetMacTest, CapturedMouseUpClearsDrag) {
   MouseTrackingWidget* widget = new MouseTrackingWidget;
   Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW);
-  widget->Init(init_params);
+  widget->Init(std::move(init_params));
 
   NSWindow* window = widget->GetNativeWindow().GetNativeNSWindow();
   BridgedContentView* native_view = [window contentView];
@@ -1664,7 +1666,7 @@ class ParentCloseMonitor : public WidgetObserver {
     init_params.bounds = gfx::Rect(100, 100, 100, 100);
     init_params.native_widget = CreatePlatformNativeWidgetImpl(
         init_params, child, kStubCapture, nullptr);
-    child->Init(init_params);
+    child->Init(std::move(init_params));
     child->Show();
 
     // NSWindow parent/child relationship should be established on Show() and
@@ -1741,7 +1743,7 @@ TEST_F(NativeWidgetMacTest, NoParentDelegateDuringTeardown) {
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(100, 100, 300, 200);
-    parent->Init(params);
+    parent->Init(std::move(params));
     parent->Show();
 
     ParentCloseMonitor monitor(parent.get());
@@ -1856,7 +1858,7 @@ TEST_F(NativeWidgetMacTest, DISABLED_DoesHideTitle) {
   CustomTitleWidgetDelegate delegate(widget);
   params.delegate = &delegate;
   params.bounds = gfx::Rect(0, 0, 800, 600);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
 
   NSWindow* ns_window = widget->GetNativeWindow().GetNativeNSWindow();
@@ -1895,7 +1897,7 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   init_params.bounds = rect;
-  Widget* widget = CreateWidgetWithTestWindow(init_params, &window);
+  Widget* widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
 
   // Simulate the initial paint.
   BridgedNativeWidgetTestApi(window).SimulateFrameSwap(rect.size());
@@ -1905,7 +1907,7 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   widget->CloseNow();
 
   init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
-  widget = CreateWidgetWithTestWindow(init_params, &window);
+  widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   BridgedNativeWidgetTestApi test_api(window);
 
   // First paint on a translucent window needs to invalidate the shadow. Once.
@@ -1947,20 +1949,20 @@ TEST_F(NativeWidgetMacTest, ContentOpacity) {
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 
   EXPECT_EQ(init_params.opacity, Widget::InitParams::INFER_OPACITY);
-  Widget* widget = CreateWidgetWithTestWindow(init_params, &window);
+  Widget* widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
 
   // Infer should default to opaque on Mac.
   EXPECT_TRUE([[window contentView] isOpaque]);
   widget->CloseNow();
 
   init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
-  widget = CreateWidgetWithTestWindow(init_params, &window);
+  widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   EXPECT_FALSE([[window contentView] isOpaque]);
   widget->CloseNow();
 
   // Test opaque explicitly.
   init_params.opacity = Widget::InitParams::OPAQUE_WINDOW;
-  widget = CreateWidgetWithTestWindow(init_params, &window);
+  widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   EXPECT_TRUE([[window contentView] isOpaque]);
   widget->CloseNow();
 }
@@ -1974,7 +1976,7 @@ TEST_F(NativeWidgetMacTest, GetWorkAreaBoundsInScreen) {
   // This is relative to the top-left of the primary screen, so unless the bot's
   // display is smaller than 400x300, the window will be wholly contained there.
   params.bounds = gfx::Rect(100, 100, 300, 200);
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.Show();
   NSRect expected = [[[NSScreen screens] firstObject] visibleFrame];
   NSRect actual = gfx::ScreenRectToNSRect(widget.GetWorkAreaBoundsInScreen());
@@ -2126,7 +2128,7 @@ TEST_F(NativeWidgetMacTest, ReparentNativeViewBounds) {
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.parent = parent->GetNativeView();
   Widget* widget = new Widget;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->SetContentsView(new View);
 
   NSView* child_view = widget->GetNativeView().GetNativeNSView();
@@ -2163,16 +2165,16 @@ TEST_F(NativeWidgetMacTest, ReparentNativeViewTypes) {
   Widget::InitParams toplevel_params =
       CreateParams(Widget::InitParams::TYPE_POPUP);
   toplevel_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  toplevel1->Init(toplevel_params);
+  toplevel1->Init(std::move(toplevel_params));
   toplevel1->Show();
 
   std::unique_ptr<Widget> toplevel2(new Widget);
-  toplevel2->Init(toplevel_params);
+  toplevel2->Init(std::move(toplevel_params));
   toplevel2->Show();
 
   Widget* child = new Widget;
   Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
-  child->Init(child_params);
+  child->Init(std::move(child_params));
   child->Show();
 
   Widget::ReparentNativeView(child->GetNativeView(),

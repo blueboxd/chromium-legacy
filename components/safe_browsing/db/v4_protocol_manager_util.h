@@ -22,7 +22,6 @@
 #include "base/strings/string_piece.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/safebrowsing.pb.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 namespace net {

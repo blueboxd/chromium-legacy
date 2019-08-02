@@ -21,7 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuGroup;
 import org.chromium.chrome.browser.contextmenu.RevampedContextMenuCoordinator.ListItemType;
-import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,19 +62,18 @@ public class RevampedContextMenuCoordinatorTest {
         rawItems.add(new Pair<>(ContextMenuGroup.IMAGE, groupTwo));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        List<Pair<Integer, PropertyModel>> itemList =
-                mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
 
-        assertThat(itemList.get(0).first, equalTo(ListItemType.HEADER));
-        assertThat(itemList.get(1).first, equalTo(ListItemType.DIVIDER));
-        assertThat(itemList.get(2).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(3).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(4).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(5).first, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
-        assertThat(itemList.get(6).first, equalTo(ListItemType.DIVIDER));
-        assertThat(itemList.get(7).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(8).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(9).first, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
+        assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
+        assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));
+        assertThat(itemList.get(2).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(3).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(4).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(5).type, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
+        assertThat(itemList.get(6).type, equalTo(ListItemType.DIVIDER));
+        assertThat(itemList.get(7).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(8).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(9).type, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
     }
 
     @Test
@@ -96,15 +95,14 @@ public class RevampedContextMenuCoordinatorTest {
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        List<Pair<Integer, PropertyModel>> itemList =
-                mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
 
-        assertThat(itemList.get(0).first, equalTo(ListItemType.HEADER));
-        assertThat(itemList.get(1).first, equalTo(ListItemType.DIVIDER));
-        assertThat(itemList.get(2).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(3).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(4).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
-        assertThat(itemList.get(5).first, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
+        assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
+        assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));
+        assertThat(itemList.get(2).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(3).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(4).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(5).type, equalTo(ListItemType.CONTEXT_MENU_SHARE_ITEM));
     }
 
     @Test
@@ -118,11 +116,10 @@ public class RevampedContextMenuCoordinatorTest {
         rawItems.add(new Pair<>(ContextMenuGroup.LINK, groupOne));
 
         mCoordinator.initializeHeaderCoordinatorForTesting(mActivity, params);
-        List<Pair<Integer, PropertyModel>> itemList =
-                mCoordinator.getItemList(mActivity, rawItems, params);
+        ModelList itemList = mCoordinator.getItemList(mActivity, rawItems, params);
 
-        assertThat(itemList.get(0).first, equalTo(ListItemType.HEADER));
-        assertThat(itemList.get(1).first, equalTo(ListItemType.DIVIDER));
-        assertThat(itemList.get(2).first, equalTo(ListItemType.CONTEXT_MENU_ITEM));
+        assertThat(itemList.get(0).type, equalTo(ListItemType.HEADER));
+        assertThat(itemList.get(1).type, equalTo(ListItemType.DIVIDER));
+        assertThat(itemList.get(2).type, equalTo(ListItemType.CONTEXT_MENU_ITEM));
     }
 }

@@ -163,7 +163,7 @@ class TranslateBubbleViewTest : public ChromeViewsTestBase {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
 
     anchor_widget_.reset(new views::Widget());
-    anchor_widget_->Init(params);
+    anchor_widget_->Init(std::move(params));
     anchor_widget_->Show();
 
     mock_model_ = new MockTranslateBubbleModel(

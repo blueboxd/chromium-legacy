@@ -423,29 +423,6 @@ int PDFiumPage::GetLink(int char_index, LinkTarget* target) {
   return -1;
 }
 
-std::vector<int> PDFiumPage::GetLinks(pp::Rect text_area,
-                                      std::vector<LinkTarget>* targets) {
-  std::vector<int> links;
-  if (!available_)
-    return links;
-
-  CalculateLinks();
-
-  for (size_t i = 0; i < links_.size(); ++i) {
-    for (const auto& rect : links_[i].rects) {
-      if (rect.Intersects(text_area)) {
-        if (targets) {
-          LinkTarget target;
-          target.url = links_[i].url;
-          targets->push_back(target);
-        }
-        links.push_back(i);
-      }
-    }
-  }
-  return links;
-}
-
 void PDFiumPage::CalculateLinks() {
   if (calculated_links_)
     return;

@@ -45,10 +45,10 @@ class RenderFrameImpl;
 
 // TODO(guidou): Add |request_id| and |is_processing_user_gesture| to
 // blink::WebUserMediaRequest and remove this struct.
-struct UserMediaRequest {
-  UserMediaRequest(int request_id,
-                   const blink::WebUserMediaRequest& web_request,
-                   bool is_processing_user_gesture);
+struct UserMediaRequestInfo {
+  UserMediaRequestInfo(int request_id,
+                       const blink::WebUserMediaRequest& web_request,
+                       bool is_processing_user_gesture);
   const int request_id;
   const blink::WebUserMediaRequest web_request;
   const bool is_processing_user_gesture;
@@ -78,13 +78,13 @@ class CONTENT_EXPORT UserMediaProcessor
   // during the execution of a task on the main thread unless ProcessRequest or
   // DeleteWebRequest are invoked.
   // TODO(guidou): Remove this method. https://crbug.com/764293
-  UserMediaRequest* CurrentRequest();
+  UserMediaRequestInfo* CurrentRequest();
 
   // Starts processing |request| in order to create a new MediaStream. When
   // processing of |request| is complete, it notifies by invoking |callback|.
   // This method must be called only if there is no request currently being
   // processed.
-  void ProcessRequest(std::unique_ptr<UserMediaRequest> request,
+  void ProcessRequest(std::unique_ptr<UserMediaRequestInfo> request,
                       base::OnceClosure callback);
 
   // If |web_request| is the request currently being processed, stops processing

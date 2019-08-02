@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -118,7 +118,8 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
         const extensions::Extension* extension =
             GetExtension(profile, extension_id);
         DCHECK(extension);
-        ShowAppInfoInAppList(bounds, profile, extension);
+        ShowAppInfoInAppList(self->GetAppListWindow(), bounds, profile,
+                             extension);
       },
       weak_ptr_factory_.GetWeakPtr(), profile, extension_id));
 }

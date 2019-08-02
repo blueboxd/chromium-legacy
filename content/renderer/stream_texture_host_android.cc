@@ -85,6 +85,9 @@ gpu::Mailbox StreamTextureHost::CreateSharedImage(const gfx::Size& size) {
 }
 
 gpu::SyncToken StreamTextureHost::GenUnverifiedSyncToken() {
+  // TODO(vikassoni): Remove CHECK after debugging.
+  CHECK(channel_);
+
   return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                         gpu::CommandBufferIdFromChannelAndRoute(
                             channel_->channel_id(), route_id_),

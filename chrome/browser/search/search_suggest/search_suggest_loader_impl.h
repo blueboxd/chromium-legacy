@@ -14,8 +14,6 @@
 #include "base/optional.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
 
-class GoogleURLTracker;
-
 namespace base {
 class Value;
 }
@@ -31,7 +29,6 @@ class SearchSuggestLoaderImpl : public SearchSuggestLoader {
  public:
   SearchSuggestLoaderImpl(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      GoogleURLTracker* google_url_tracker,
       const std::string& application_locale);
   ~SearchSuggestLoaderImpl() override;
 
@@ -54,7 +51,6 @@ class SearchSuggestLoaderImpl : public SearchSuggestLoader {
   void Respond(Status status, const base::Optional<SearchSuggestData>& data);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  GoogleURLTracker* google_url_tracker_;
   const std::string application_locale_;
 
   std::vector<SearchSuggestionsCallback> callbacks_;

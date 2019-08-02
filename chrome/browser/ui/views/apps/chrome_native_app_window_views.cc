@@ -126,7 +126,7 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
       create_params.visible_on_all_workspaces;
 
   OnBeforeWidgetInit(create_params, &init_params, widget());
-  widget()->Init(init_params);
+  widget()->Init(std::move(init_params));
 
   // The frame insets are required to resolve the bounds specifications
   // correctly. So we set the window bounds and constraints now.

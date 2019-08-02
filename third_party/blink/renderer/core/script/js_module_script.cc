@@ -57,8 +57,8 @@ JSModuleScript* JSModuleScript::Create(
   // immediately turn the script into errored state. Thus the members will not
   // be used for the speced algorithms, but may be used from inspector.
   JSModuleScript* script =
-      CreateInternal(source_text, modulator, result, source_url, base_url,
-                     options, start_position, produce_cache_data);
+      CreateInternal(source_text.length(), modulator, result, source_url,
+                     base_url, options, start_position, produce_cache_data);
 
   // <spec step="8">If result is a list of errors, then:</spec>
   if (exception_state.HadException()) {
@@ -108,17 +108,15 @@ JSModuleScript* JSModuleScript::CreateForTest(
     ModuleRecord record,
     const KURL& base_url,
     const ScriptFetchOptions& options) {
-  ParkableString dummy_source_text(String("").ReleaseImpl());
   KURL dummy_source_url;
-  return CreateInternal(dummy_source_text, modulator, record, dummy_source_url,
-                        base_url, options, TextPosition::MinimumPosition(),
-                        nullptr);
+  return CreateInternal(0, modulator, record, dummy_source_url, base_url,
+                        options, TextPosition::MinimumPosition(), nullptr);
 }
 
 // <specdef
 // href="https://html.spec.whatwg.org/C/#creating-a-javascript-module-script">
 JSModuleScript* JSModuleScript::CreateInternal(
-    const ParkableString& source_text,
+    size_t source_text_length,
     Modulator* modulator,
     ModuleRecord result,
     const KURL& source_url,
@@ -134,10 +132,8 @@ JSModuleScript* JSModuleScript::CreateInternal(
   // <spec step="4">Set script's base URL to baseURL.</spec>
   //
   // <spec step="5">Set script's fetch options to options.</spec>
-  //
-  // [nospec] |source_text| is saved for CSP checks.
   JSModuleScript* module_script = MakeGarbageCollected<JSModuleScript>(
-      modulator, result, source_url, base_url, options, source_text,
+      modulator, result, source_url, base_url, options, source_text_length,
       start_position, produce_cache_data);
 
   // Step 7, a part of ParseModule(): Passing script as the last parameter
@@ -152,7 +148,7 @@ JSModuleScript::JSModuleScript(Modulator* settings_object,
                                const KURL& source_url,
                                const KURL& base_url,
                                const ScriptFetchOptions& fetch_options,
-                               const ParkableString& source_text,
+                               size_t source_text_length,
                                const TextPosition& start_position,
                                ModuleRecordProduceCacheData* produce_cache_data)
     : ModuleScript(settings_object,
@@ -160,13 +156,9 @@ JSModuleScript::JSModuleScript(Modulator* settings_object,
                    source_url,
                    base_url,
                    fetch_options),
-      source_text_(source_text),
+      source_text_length_(source_text_length),
       start_position_(start_position),
       produce_cache_data_(produce_cache_data) {}
-
-String JSModuleScript::InlineSourceTextForCSP() const {
-  return source_text_.ToString();
-}
 
 void JSModuleScript::ProduceCache() {
   if (!produce_cache_data_)
@@ -176,7 +168,7 @@ void JSModuleScript::ProduceCache() {
   v8::Isolate* isolate = script_state->GetIsolate();
   ScriptState::Scope scope(script_state);
 
-  V8CodeCache::ProduceCache(isolate, produce_cache_data_, source_text_.length(),
+  V8CodeCache::ProduceCache(isolate, produce_cache_data_, source_text_length_,
                             SourceURL(), StartPosition());
 
   produce_cache_data_ = nullptr;

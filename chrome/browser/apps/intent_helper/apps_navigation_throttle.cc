@@ -28,7 +28,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "url/origin.h"
@@ -140,15 +139,8 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
       close_reason == IntentPickerCloseReason::OPEN_APP;
   switch (app_type) {
     case apps::mojom::AppType::kWeb:
-      if (should_launch_app) {
-        const extensions::Extension* extension =
-            extensions::ExtensionRegistry::Get(
-                web_contents->GetBrowserContext())
-                ->GetExtensionById(launch_name,
-                                   extensions::ExtensionRegistry::ENABLED);
-        DCHECK(extension);
-        ReparentWebContentsIntoAppBrowser(web_contents, extension);
-      }
+      if (should_launch_app)
+        ReparentWebContentsIntoAppBrowser(web_contents, launch_name);
       break;
     case apps::mojom::AppType::kUnknown:
       // We reach here if the picker was closed without an app being chosen,

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/common/navigation_corrector.mojom.h"
@@ -36,18 +35,6 @@ NavigationCorrectionTabObserver::NavigationCorrectionTabObserver(
         base::Bind(&NavigationCorrectionTabObserver::OnEnabledChanged,
                    base::Unretained(this)));
   }
-
-  GoogleURLTracker* google_url_tracker =
-      GoogleURLTrackerFactory::GetForProfile(profile_);
-  if (google_url_tracker) {
-    if (google_util::IsGoogleDomainUrl(GetNavigationCorrectionURL(),
-                                       google_util::ALLOW_SUBDOMAIN,
-                                       google_util::ALLOW_NON_STANDARD_PORTS))
-      google_url_tracker->RequestServerCheck();
-    google_url_updated_subscription_ = google_url_tracker->RegisterCallback(
-        base::Bind(&NavigationCorrectionTabObserver::OnGoogleURLUpdated,
-                   base::Unretained(this)));
-  }
 }
 
 NavigationCorrectionTabObserver::~NavigationCorrectionTabObserver() {}
@@ -74,10 +61,6 @@ void NavigationCorrectionTabObserver::RenderFrameCreated(
 ////////////////////////////////////////////////////////////////////////////////
 // Internal helpers
 
-void NavigationCorrectionTabObserver::OnGoogleURLUpdated() {
-  UpdateNavigationCorrectionInfo(web_contents()->GetMainFrame());
-}
-
 GURL NavigationCorrectionTabObserver::GetNavigationCorrectionURL() const {
   // Disable navigation corrections when the preference is disabled or when in
   // Incognito mode.
@@ -95,7 +78,7 @@ void NavigationCorrectionTabObserver::OnEnabledChanged() {
 
 void NavigationCorrectionTabObserver::UpdateNavigationCorrectionInfo(
     RenderFrameHost* render_frame_host) {
-  GURL google_base_url(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
+  GURL google_base_url(UIThreadSearchTermsData().GoogleBaseURLValue());
   chrome::mojom::NavigationCorrectorAssociatedPtr client;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
   client->SetNavigationCorrectionInfo(

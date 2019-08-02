@@ -35,6 +35,14 @@ InitiatorCSPInfo::InitiatorCSPInfo(const InitiatorCSPInfo& other) = default;
 
 InitiatorCSPInfo::~InitiatorCSPInfo() = default;
 
+mojom::CommonNavigationParamsPtr CreateCommonNavigationParams() {
+  auto common_params = mojom::CommonNavigationParams::New();
+  common_params->referrer = blink::mojom::Referrer::New();
+  common_params->navigation_start = base::TimeTicks::Now();
+
+  return common_params;
+}
+
 mojom::CommitNavigationParamsPtr CreateCommitNavigationParams() {
   auto commit_params = mojom::CommitNavigationParams::New();
   commit_params->navigation_token = base::UnguessableToken::Create();

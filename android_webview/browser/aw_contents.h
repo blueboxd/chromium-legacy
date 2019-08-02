@@ -98,6 +98,9 @@ class AwContents : public FindHelper::Listener,
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jobject> GetBrowserContext(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   void SetCompositorFrameConsumer(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

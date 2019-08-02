@@ -134,14 +134,6 @@ void ApplicationCacheHostForFrame::SetSubresourceFactory(
       std::move(pending_factories));
 }
 
-void ApplicationCacheHostForFrame::WillStartLoading(ResourceRequest& request) {
-  if (!IsApplicationCacheEnabled() || !backend_host_.is_bound())
-    return;
-  const base::UnguessableToken& host_id = GetHostID();
-  if (!host_id.is_empty())
-    request.SetAppCacheHostID(host_id);
-}
-
 void ApplicationCacheHostForFrame::WillStartLoadingMainResource(
     DocumentLoader* loader,
     const KURL& url,

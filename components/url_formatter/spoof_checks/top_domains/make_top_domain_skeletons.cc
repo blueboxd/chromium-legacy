@@ -112,7 +112,7 @@ int GenerateSkeletons(const char* input_file_name,
 int main(int argc, const char** argv) {
   if (argc != 1) {
     std::cerr << "Generates the list of top domain skeletons to use as input to"
-                 "\nbase/dafsa/make_dafsa.py.\nUsage: "
+                 " top_domain_generator.\nUsage: "
               << argv[0] << '\n';
     return 1;
   }

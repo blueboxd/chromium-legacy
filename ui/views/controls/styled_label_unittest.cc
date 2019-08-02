@@ -376,7 +376,7 @@ TEST_F(StyledLabelTest, Color) {
 
   Widget* widget = new Widget();
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* container = new View();
   widget->SetContentsView(container);
   container->AddChildView(styled());

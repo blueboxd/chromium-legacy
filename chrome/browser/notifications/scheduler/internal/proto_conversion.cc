@@ -325,6 +325,12 @@ void ClientStateToProto(ClientState* client_state,
       proto_impression_mapping->set_impression_result(
           ToImpressionResult(mapping.second));
     }
+
+    for (const auto& pair : impression.custom_data) {
+      auto* data = impression_ptr->add_custom_data();
+      data->set_key(pair.first);
+      data->set_value(pair.second);
+    }
   }
 
   if (client_state->suppression_info.has_value()) {
@@ -365,6 +371,11 @@ void ClientStateFromProto(proto::ClientState* proto,
       auto impression_result =
           FromImpressionResult(proto_impression_mapping.impression_result());
       impression.impression_mapping[user_feedback] = impression_result;
+    }
+
+    for (int i = 0; i < proto_impression.custom_data_size(); ++i) {
+      const auto& pair = proto_impression.custom_data(i);
+      impression.custom_data.emplace(pair.key(), pair.value());
     }
 
     client_state->impressions.emplace_back(std::move(impression));

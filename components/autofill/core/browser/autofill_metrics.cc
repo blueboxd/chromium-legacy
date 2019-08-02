@@ -609,22 +609,6 @@ void AutofillMetrics::LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
 }
 
 // static
-void AutofillMetrics::LogUploadDisallowedForNetworkMetric(
-    const std::string& network) {
-  UploadDisallowedForNetworkMetric metric;
-  if (network == kEloCard) {
-    metric = DISALLOWED_ELO;
-  } else if (network == kJCBCard) {
-    metric = DISALLOWED_JCB;
-  } else {
-    NOTREACHED();
-    return;
-  }
-  UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardUploadDisallowedForNetwork",
-                            metric);
-}
-
-// static
 void AutofillMetrics::LogUploadOfferedCardOriginMetric(
     UploadOfferedCardOriginMetric metric) {
   DCHECK_LT(metric, NUM_UPLOAD_OFFERED_CARD_ORIGIN_METRICS);
@@ -648,14 +632,6 @@ void AutofillMetrics::LogSaveCardCardholderNamePrefilled(bool prefilled) {
 // static
 void AutofillMetrics::LogSaveCardCardholderNameWasEdited(bool edited) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.SaveCardCardholderNameWasEdited", edited);
-}
-
-// static
-void AutofillMetrics::LogPaymentsCustomerDataBillingIdStatus(
-    BillingIdStatus status) {
-  DCHECK_LE(status, BillingIdStatus::kMaxValue);
-  UMA_HISTOGRAM_ENUMERATION("Autofill.PaymentsCustomerDataBillingIdStatus",
-                            status);
 }
 
 // static

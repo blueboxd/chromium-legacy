@@ -385,12 +385,11 @@ void VerdictCacheManager::CleanUpExpiredVerdicts() {
 void VerdictCacheManager::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindRepeating(
-          &VerdictCacheManager::RemoveContentSettingsOnURLsDeleted,
-          GetWeakPtr(), deletion_info.IsAllHistory(),
-          deletion_info.deleted_rows()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindRepeating(
+                     &VerdictCacheManager::RemoveContentSettingsOnURLsDeleted,
+                     GetWeakPtr(), deletion_info.IsAllHistory(),
+                     deletion_info.deleted_rows()));
 }
 
 // Overridden from history::HistoryServiceObserver.

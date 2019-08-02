@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/login_auth_recorder.h"
 
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
@@ -116,7 +116,7 @@ void LoginAuthRecorder::RecordAuthMethod(AuthMethod method) {
   }
 
   // Record usage of the authentication method in lock screen.
-  const bool is_tablet_mode = TabletModeClient::Get()->tablet_mode_enabled();
+  const bool is_tablet_mode = ash::TabletMode::Get()->InTabletMode();
   if (is_tablet_mode) {
     UMA_HISTOGRAM_ENUMERATION("Ash.Login.Lock.AuthMethod.Used.TabletMode",
                               method);

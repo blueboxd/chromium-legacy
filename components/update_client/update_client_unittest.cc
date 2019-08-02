@@ -1633,8 +1633,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
       unpack_path_ = unpack_path;
       EXPECT_TRUE(base::DirectoryExists(unpack_path_));
-      base::PostTaskWithTraits(
-          FROM_HERE, {base::MayBlock()},
+      base::PostTask(
+          FROM_HERE, {base::ThreadPool(), base::MayBlock()},
           base::BindOnce(std::move(callback),
                          CrxInstaller::Result(InstallError::GENERIC_ERROR)));
     }

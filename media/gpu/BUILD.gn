@@ -103,6 +103,8 @@ component("gpu") {
       "android/android_video_surface_chooser_impl.h",
       "android/codec_allocator.cc",
       "android/codec_allocator.h",
+      "android/codec_buffer_wait_coordinator.cc",
+      "android/codec_buffer_wait_coordinator.h",
       "android/codec_image.cc",
       "android/codec_image.h",
       "android/codec_image_group.cc",

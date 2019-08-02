@@ -67,7 +67,7 @@ class Surface final : public ui::PropertyHandler {
   using PropertyDeallocator = void (*)(int64_t value);
 
   Surface();
-  ~Surface();
+  ~Surface() override;
 
   // Type-checking downcast routine.
   static Surface* AsSurface(const aura::Window* window);

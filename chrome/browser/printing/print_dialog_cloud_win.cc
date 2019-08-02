@@ -130,8 +130,9 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
                               const base::string16& print_ticket,
                               const std::string& file_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ReadFile, path_to_file),
       base::BindOnce(&CreatePrintDialog, browser_context, print_job_title,
                      print_ticket, file_type));

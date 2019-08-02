@@ -320,7 +320,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
   params.delegate = delegate_view_;
   params.parent = shelf_container;
 
-  Init(params);
+  Init(std::move(params));
 
   // The shelf should not take focus when initially shown.
   set_focus_on_creation(false);

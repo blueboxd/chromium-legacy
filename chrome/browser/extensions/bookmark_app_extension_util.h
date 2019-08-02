@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_EXTENSION_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_EXTENSION_UTIL_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 
 class Profile;
@@ -21,7 +23,7 @@ bool CanBookmarkAppReparentTab(Profile* profile,
                                const Extension* extension,
                                bool shortcut_created);
 void BookmarkAppReparentTab(content::WebContents* contents,
-                            const Extension* extension);
+                            const std::string& app_id);
 
 bool CanBookmarkAppRevealAppShim();
 void BookmarkAppRevealAppShim(Profile* profile, const Extension* extension);

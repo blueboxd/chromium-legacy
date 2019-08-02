@@ -664,9 +664,10 @@ void Layer::SetRoundedCorner(const gfx::RoundedCornersF& corner_radii) {
   inputs_.corner_radii = corner_radii;
   SetSubtreePropertyChanged();
   SetNeedsCommit();
-  PropertyTrees* property_trees = layer_tree_host_->property_trees();
+  PropertyTrees* property_trees =
+      layer_tree_host_ ? layer_tree_host_->property_trees() : nullptr;
   EffectNode* node = nullptr;
-  if (effect_tree_index() != EffectTree::kInvalidNodeId &&
+  if (property_trees && effect_tree_index() != EffectTree::kInvalidNodeId &&
       (node = property_trees->effect_tree.Node(effect_tree_index()))) {
     node->rounded_corner_bounds =
         gfx::RRectF(EffectiveClipRect(), corner_radii);

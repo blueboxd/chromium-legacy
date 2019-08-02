@@ -123,6 +123,10 @@ class Browser : public TabStripModelObserver,
   enum Type {
     // If you add a new type, consider updating the test
     // BrowserTest.StartMaximized.
+    // TODO(crbug.com/990158): It is now possible that even TYPE_POPUP can have
+    // tabs.  Rename TYPE_TABBED to TYPE_DEFAULT, and replace calls to
+    // |is_type_tabbed()| with SupportsWindowFeature(Browser::FEATURE_TABSTRIP)
+    // where the client needs to know if tabs are supported in the browser.
     TYPE_TABBED = 1,
     TYPE_POPUP = 2
   };

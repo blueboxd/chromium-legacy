@@ -54,7 +54,7 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
       GetDialogWidgetInitParams(this, nullptr, nullptr, gfx::Rect());
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
       kShellWindowId_SystemModalContainer);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
 
   update_timer_.Start(

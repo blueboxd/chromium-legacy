@@ -41,7 +41,8 @@ using MatchType = LookalikeUrlInterstitialPage::MatchType;
 using UserAction = LookalikeUrlInterstitialPage::UserAction;
 using NavigationSuggestionEvent =
     lookalikes::LookalikeUrlNavigationThrottle::NavigationSuggestionEvent;
-using DomainInfo = lookalikes::DomainInfo;
+using lookalikes::DomainInfo;
+using url_formatter::TopDomainEntry;
 
 typedef content::NavigationThrottle::ThrottleCheckResult ThrottleCheckResult;
 
@@ -68,9 +69,9 @@ bool IsTopDomain(const DomainInfo& domain_info) {
   // Top domains are only accessible through their skeletons, so query the top
   // domains trie for each skeleton of this domain.
   for (const std::string& skeleton : domain_info.skeletons) {
-    const std::string top_domain =
+    const TopDomainEntry top_domain =
         url_formatter::LookupSkeletonInTopDomains(skeleton);
-    if (domain_info.domain_and_registry == top_domain) {
+    if (domain_info.domain_and_registry == top_domain.domain) {
       return true;
     }
   }
@@ -104,7 +105,8 @@ std::string GetSimilarDomainFromTop500(const DomainInfo& navigated_domain) {
               base::UTF8ToUTF16(navigated_skeleton),
               base::UTF8ToUTF16(top_domain_skeleton))) {
         const std::string top_domain =
-            url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton);
+            url_formatter::LookupSkeletonInTopDomains(top_domain_skeleton)
+                .domain;
         DCHECK(!top_domain.empty());
         // If the only difference between the navigated and top
         // domains is the registry part, this is unlikely to be a spoofing
@@ -439,8 +441,16 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
     return content::NavigationThrottle::PROCEED;
   }
 
+  ukm::SourceId source_id = ukm::ConvertToSourceId(
+      navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+
+  bool record_ukm;
   if (!GetMatchingDomain(navigated_domain, engaged_sites, &matched_domain,
-                         &match_type)) {
+                         &match_type, &record_ukm)) {
+    if (record_ukm) {
+      LookalikeUrlInterstitialPage::RecordUkmEvent(
+          source_id, match_type, UserAction::kInterstitialNotShown);
+    }
     return content::NavigationThrottle::PROCEED;
   }
   DCHECK(!matched_domain.empty());
@@ -450,8 +460,6 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
     return content::NavigationThrottle::PROCEED;
   }
 
-  ukm::SourceId source_id = ukm::ConvertToSourceId(
-      navigation_handle()->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
 
   if (ShouldDisplayInterstitial(match_type)) {
     // matched_domain can be a top domain or an engaged domain. Simply use its
@@ -504,10 +512,13 @@ bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
     const DomainInfo& navigated_domain,
     const std::vector<DomainInfo>& engaged_sites,
     std::string* matched_domain,
-    MatchType* match_type) {
+    MatchType* match_type,
+    bool* force_record_ukm) {
   DCHECK(!navigated_domain.domain_and_registry.empty());
   DCHECK(matched_domain);
   DCHECK(match_type);
+  DCHECK(force_record_ukm);
+  *force_record_ukm = false;
 
   if (navigated_domain.idn_result.has_idn_component) {
     // If the navigated domain is IDN, check its skeleton against engaged sites
@@ -521,18 +532,26 @@ bool LookalikeUrlNavigationThrottle::GetMatchingDomain(
       return true;
     }
 
-    if (!navigated_domain.idn_result.matching_top_domain.empty()) {
+    if (!navigated_domain.idn_result.matching_top_domain.domain.empty()) {
       // In practice, this is not possible since the top domain list does not
       // contain IDNs, so domain_and_registry can't both have IDN and be a top
       // domain. Still, sanity check in case the top domain list changes in the
       // future.
       // At this point, navigated domain should not be a top domain.
       DCHECK_NE(navigated_domain.domain_and_registry,
-                navigated_domain.idn_result.matching_top_domain);
+                navigated_domain.idn_result.matching_top_domain.domain);
       RecordEvent(NavigationSuggestionEvent::kMatchTopSite);
-      *matched_domain = navigated_domain.idn_result.matching_top_domain;
+      *matched_domain = navigated_domain.idn_result.matching_top_domain.domain;
       *match_type = MatchType::kTopSite;
-      return true;
+
+      if (navigated_domain.idn_result.matching_top_domain.is_top_500) {
+        return true;
+      } else {
+        // We will not show an interstitial if the domain is not top 500 but we
+        // still want to record metrics.
+        *force_record_ukm = true;
+        return false;
+      }
     }
   }
 

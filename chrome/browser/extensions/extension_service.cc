@@ -1848,10 +1848,9 @@ void ExtensionService::Observe(int type,
       }
 
       process_map->RemoveAllFromProcess(process->GetID());
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&InfoMap::UnregisterAllExtensionsInProcess,
-                         system_->info_map(), process->GetID()));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(&InfoMap::UnregisterAllExtensionsInProcess,
+                                    system_->info_map(), process->GetID()));
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED: {

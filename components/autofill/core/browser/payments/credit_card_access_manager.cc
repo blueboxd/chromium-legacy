@@ -223,8 +223,8 @@ void CreditCardAccessManager::FetchCreditCard(
   if (AuthenticationRequiresUnmaskDetails()) {
     // Wait for |ready_to_start_authentication_| to be signaled by
     // OnDidGetUnmaskDetails() or until timeout before calling Authenticate().
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&WaitForEvent, &ready_to_start_authentication_),
         base::BindOnce(&CreditCardAccessManager::Authenticate,
                        weak_ptr_factory_.GetWeakPtr()));

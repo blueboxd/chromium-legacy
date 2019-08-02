@@ -122,7 +122,7 @@ TEST_F(LocalExtensionCacheTest, Basic) {
 
   LocalExtensionCache cache(
       cache_dir, 1000, base::TimeDelta::FromDays(30),
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -170,7 +170,7 @@ TEST_F(LocalExtensionCacheTest, KeepHashed) {
 
   LocalExtensionCache cache(
       cache_dir, 1000, base::TimeDelta::FromDays(30),
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -207,7 +207,7 @@ TEST_F(LocalExtensionCacheTest, KeepLatest) {
 
   LocalExtensionCache cache(
       cache_dir, 1000, base::TimeDelta::FromDays(30),
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -243,7 +243,7 @@ TEST_F(LocalExtensionCacheTest, Complex) {
 
   LocalExtensionCache cache(
       cache_dir, 1000, base::TimeDelta::FromDays(30),
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;
@@ -310,7 +310,7 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
 
   LocalExtensionCache cache(
       cache_dir, 1000, base::TimeDelta::FromDays(30),
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}));
   cache.SetCacheStatusPollingDelayForTests(base::TimeDelta());
 
   bool initialized = false;

@@ -5,7 +5,6 @@
 #include "android_webview/browser/net/init_native_callback.h"
 
 #include "android_webview/browser/android_protocol_handler.h"
-#include "android_webview/browser/net/aw_url_request_job_factory.h"
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "net/url_request/url_request_interceptor.h"

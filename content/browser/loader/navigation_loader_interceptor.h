@@ -66,6 +66,9 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   // indicates whether to discard the subresource loader params previously
   // returned by MaybeCreateSubresourceLoaderParams().
   //
+  // |callback| and |fallback_callback| must not be invoked after the
+  // destruction of this interceptor.
+  //
   // |browser_context| will only be non-null when this interceptor is running on
   // the UI thread, and |resource_context| will only be non-null when running on
   // the IO thread.

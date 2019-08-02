@@ -35,7 +35,7 @@ public class TouchlessDelegate {
         return new TouchlessExploreSitesPage(activity, host);
     }
 
-    public static Class<?> getNoTouchActivityClass() {
+    public static Class<? extends ChromeActivity> getNoTouchActivityClass() {
         return NoTouchActivity.class;
     }
 

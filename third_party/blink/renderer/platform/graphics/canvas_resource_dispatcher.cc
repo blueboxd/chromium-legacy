@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
@@ -61,9 +60,7 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
       binding_(this),
       placeholder_canvas_id_(canvas_id),
       num_unreclaimed_frames_posted_(0),
-      client_(client),
-      enable_surface_synchronization_(
-          ::features::IsSurfaceSynchronizationEnabled()) {
+      client_(client) {
   // Frameless canvas pass an invalid |frame_sink_id_|; don't create mojo
   // channel for this special case.
   if (!frame_sink_id_.is_valid())
@@ -284,12 +281,9 @@ bool CanvasResourceDispatcher::PrepareFrame(
   if (change_size_for_next_commit_ ||
       !parent_local_surface_id_allocator_.HasValidLocalSurfaceIdAllocation()) {
     parent_local_surface_id_allocator_.GenerateId();
-    if (enable_surface_synchronization_) {
-      surface_embedder_->SetLocalSurfaceId(
-          parent_local_surface_id_allocator_
-              .GetCurrentLocalSurfaceIdAllocation()
-              .local_surface_id());
-    }
+    surface_embedder_->SetLocalSurfaceId(
+        parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
+            .local_surface_id());
     change_size_for_next_commit_ = false;
   }
   frame->metadata.local_surface_id_allocation_time =

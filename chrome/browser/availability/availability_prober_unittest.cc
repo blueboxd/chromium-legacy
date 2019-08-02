@@ -851,3 +851,24 @@ TEST_F(AvailabilityProberTest, CacheEntryAge) {
   histogram_tester.ExpectTotalCount(
       "Availability.Prober.CacheEntryAge.Litepages", 2);
 }
+
+TEST_F(AvailabilityProberTest, Repeating) {
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<AvailabilityProber> prober = NewProber();
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->RepeatedlyProbe(base::TimeDelta::FromSeconds(1), false);
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  FastForward(base::TimeDelta::FromSeconds(1));
+  EXPECT_TRUE(prober->is_active());
+
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+}

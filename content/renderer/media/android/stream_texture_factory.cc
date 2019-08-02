@@ -77,9 +77,12 @@ void StreamTextureProxy::CreateSharedImage(
     const gfx::Size& size,
     gpu::Mailbox* mailbox,
     gpu::SyncToken* unverified_sync_token) {
+  // TODO(vikassoni): Remove CHECK after debugging.
+  CHECK(host_);
   *mailbox = host_->CreateSharedImage(size);
   if (!mailbox)
     return;
+  CHECK(host_);
   *unverified_sync_token = host_->GenUnverifiedSyncToken();
 }
 

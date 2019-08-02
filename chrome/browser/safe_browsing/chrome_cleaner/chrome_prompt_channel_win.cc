@@ -592,6 +592,8 @@ void ChromePromptChannelProtobuf::CloseHandles() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This will cause the next ::ReadFile call in ServiceChromePromptRequests to
   // fail, triggering the error handler that kills the cleaner process.
+  ::CancelIoEx(request_read_handle_.Get(), nullptr);
+  ::CancelIoEx(response_write_handle_.Get(), nullptr);
   request_read_handle_.Close();
   response_write_handle_.Close();
 }
@@ -613,6 +615,8 @@ void ChromePromptChannelProtobuf::HandlePromptUserRequest(
   // an error, could just be a more recent cleaner version.)
   if (!request.unknown_fields().empty()) {
     LOG(ERROR) << "Discarding PromptUserRequest with unknown fields.";
+    WriteStatusErrorCodeToHistogram(ErrorCategory::kCustomError,
+                                    CustomErrors::kRequestUnknownField);
     return;
   }
 
@@ -623,6 +627,8 @@ void ChromePromptChannelProtobuf::HandlePromptUserRequest(
     if (!base::UTF8ToUTF16(file_path.c_str(), file_path.size(),
                            &file_path_utf16)) {
       LOG(ERROR) << "Undisplayable file path in PromptUserRequest.";
+      WriteStatusErrorCodeToHistogram(ErrorCategory::kCustomError,
+                                      CustomErrors::kUndisplayableFilePath);
       return;
     }
     files_to_delete.push_back(base::FilePath(file_path_utf16));
@@ -637,6 +643,9 @@ void ChromePromptChannelProtobuf::HandlePromptUserRequest(
       if (!base::UTF8ToUTF16(registry_key.c_str(), registry_key.size(),
                              &registry_key_utf16)) {
         LOG(ERROR) << "Undisplayable registry key in PromptUserRequest.";
+        WriteStatusErrorCodeToHistogram(
+            ErrorCategory::kCustomError,
+            CustomErrors::kUndisplayableRegistryKey);
         return;
       }
       registry_keys.push_back(registry_key_utf16);
@@ -655,6 +664,8 @@ void ChromePromptChannelProtobuf::HandlePromptUserRequest(
       if (!base::UTF8ToUTF16(extension_id.c_str(), extension_id.size(),
                              &extension_id_utf16)) {
         LOG(ERROR) << "Undisplayable extension id in PromptUserRequest.";
+        WriteStatusErrorCodeToHistogram(ErrorCategory::kCustomError,
+                                        CustomErrors::kUndisplayableExtension);
         return;
       }
       extension_ids.push_back(extension_id_utf16);

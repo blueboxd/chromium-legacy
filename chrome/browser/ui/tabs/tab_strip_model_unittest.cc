@@ -35,6 +35,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 using content::WebContents;
 
@@ -200,6 +201,15 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     states_.push_back(s);
   }
 
+  struct TabGroupVisualDataUpdate {
+    TabGroupId group;
+    TabGroupVisualData visual_data;
+  };
+
+  const std::vector<TabGroupVisualDataUpdate>& visual_data_updates() const {
+    return visual_data_updates_;
+  }
+
   // TabStripModelObserver overrides:
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
@@ -258,6 +268,14 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     }
   }
 
+  void OnTabGroupVisualDataChanged(
+      TabStripModel* tab_strip_model,
+      TabGroupId group,
+      const TabGroupVisualData* visual_data) override {
+    visual_data_updates_.push_back(
+        TabGroupVisualDataUpdate{group, *visual_data});
+  }
+
   void TabChangedAt(WebContents* contents,
                     int index,
                     TabChangeType change_type) override {
@@ -287,6 +305,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
  private:
   std::vector<State> states_;
+  std::vector<TabGroupVisualDataUpdate> visual_data_updates_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
 };
@@ -3378,6 +3397,45 @@ TEST_F(TabStripModelTest, DiscontinuousNewTabIndexTooLow) {
   strip.AddWebContents(CreateWebContentsWithID(3), 0, ui::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_NONE, group);
   EXPECT_EQ("0 3 1 2", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, SetVisualDataForGroup) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 1);
+  const TabGroupId group = strip.AddToNewGroup({0});
+
+  const TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"), SK_ColorCYAN);
+  strip.SetVisualDataForGroup(group, new_data);
+  const TabGroupVisualData* data = strip.GetVisualDataForGroup(group);
+  EXPECT_EQ(data->title(), new_data.title());
+  EXPECT_EQ(data->color(), new_data.color());
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, VisualDataChangeNotifiesObservers) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  MockTabStripModelObserver observer;
+  strip.AddObserver(&observer);
+  PrepareTabs(&strip, 1);
+  const TabGroupId group = strip.AddToNewGroup({0});
+
+  // Check that we are notified about the placeholder TabGroupVisualData.
+  ASSERT_EQ(1u, observer.visual_data_updates().size());
+  EXPECT_EQ(group, observer.visual_data_updates()[0].group);
+
+  const TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"), SK_ColorBLUE);
+  strip.SetVisualDataForGroup(group, new_data);
+
+  // Now check that we are notified when we change it.
+  ASSERT_EQ(2u, observer.visual_data_updates().size());
+  EXPECT_EQ(group, observer.visual_data_updates()[1].group);
+  EXPECT_EQ(new_data.title(),
+            observer.visual_data_updates()[1].visual_data.title());
 
   strip.CloseAllTabs();
 }

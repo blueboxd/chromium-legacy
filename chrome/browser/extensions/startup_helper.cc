@@ -112,18 +112,16 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
       const base::Optional<int>& dnr_ruleset_checksum) override {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
     success_ = true;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
   }
 
   void OnUnpackFailure(const CrxInstallError& error) override {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
     success_ = false;
     error_ = error.message();
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&ValidateCrxHelper::FinishOnUIThread, this));
   }
 
   void FinishOnUIThread() {

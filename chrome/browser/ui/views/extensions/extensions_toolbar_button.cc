@@ -13,6 +13,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/button_controller.h"
 
 ExtensionsToolbarButton::ExtensionsToolbarButton(
     Browser* browser,
@@ -21,7 +22,8 @@ ExtensionsToolbarButton::ExtensionsToolbarButton(
       browser_(browser),
       extensions_container_(extensions_container) {
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_EXTENSIONS_BUTTON));
-  set_notify_action(Button::NOTIFY_ON_PRESS);
+  button_controller()->set_notify_action(
+      views::ButtonController::NotifyAction::NOTIFY_ON_PRESS);
 }
 
 void ExtensionsToolbarButton::UpdateIcon() {

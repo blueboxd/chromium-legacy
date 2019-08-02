@@ -100,14 +100,17 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
       LookalikeUrlInterstitialPage::MatchType match_type) const;
 
   // Returns true if a domain is visually similar to the hostname of |url|. The
-  // matching domain can be a top domain or an engaged site. Similarity check
-  // is made using both visual skeleton and edit distance comparison. If this
-  // returns true, match details will be written into |matched_domain| and
+  // matching domain can be a top 500 domain or an engaged site. Similarity
+  // check is made using both visual skeleton and edit distance comparison. If
+  // this returns true, match details will be written into |matched_domain| and
   // |match_type|. They cannot be nullptr.
+  // |force_record_ukm| can be set to true even if the function returns false.
+  // In this case, the caller must record a UKM using |match_type|.
   bool GetMatchingDomain(const DomainInfo& navigated_domain,
                          const std::vector<DomainInfo>& engaged_sites,
                          std::string* matched_domain,
-                         LookalikeUrlInterstitialPage::MatchType* match_type);
+                         LookalikeUrlInterstitialPage::MatchType* match_type,
+                         bool* force_record_ukm);
 
   ThrottleCheckResult ShowInterstitial(
       const GURL& safe_domain,

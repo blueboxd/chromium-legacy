@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -139,8 +139,7 @@ void ArcAppContextMenu::ShowPackageInfo() {
   if (arc::ShowPackageInfo(app_info->package_name,
                            arc::mojom::ShowPackageInfoPage::MAIN,
                            controller()->GetAppListDisplayId()) &&
-      !(TabletModeClient::Get() &&
-        TabletModeClient::Get()->tablet_mode_enabled())) {
+      !(ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())) {
     controller()->DismissView();
   }
 }

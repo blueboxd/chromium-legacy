@@ -106,7 +106,7 @@ class AutofillPopupViewNativeViewsTest : public ChromeViewsTestBase {
         CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(0, 0, 200, 200);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_.Init(params);
+    widget_.Init(std::move(params));
   }
 
   std::unique_ptr<autofill::AutofillPopupViewNativeViews> view_;

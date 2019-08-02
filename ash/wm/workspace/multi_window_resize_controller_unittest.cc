@@ -142,7 +142,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   params1.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params1.bounds = gfx::Rect(100, 200);
   params1.context = CurrentContext();
-  w1->Init(params1);
+  w1->Init(std::move(params1));
   w1->Show();
 
   std::unique_ptr<views::Widget> w2(new views::Widget);
@@ -151,7 +151,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   params2.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params2.bounds = gfx::Rect(100, 0, 100, 100);
   params2.context = CurrentContext();
-  w2->Init(params2);
+  w2->Init(std::move(params2));
   w2->Show();
 
   std::unique_ptr<views::Widget> w3(new views::Widget);
@@ -160,7 +160,7 @@ TEST_F(MultiWindowResizeControllerTest, IsOverWindows) {
   params3.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params3.bounds = gfx::Rect(100, 100, 100, 100);
   params3.context = CurrentContext();
-  w3->Init(params3);
+  w3->Init(std::move(params3));
   w3->Show();
 
   ui::test::EventGenerator* generator = GetEventGenerator();

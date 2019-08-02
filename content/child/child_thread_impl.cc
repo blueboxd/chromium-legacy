@@ -275,15 +275,25 @@ class ChildProcessImpl : public mojom::ChildProcess {
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
       base::WeakPtr<ChildThreadImpl> weak_main_thread,
       base::RepeatingClosure quit_closure,
-      ChildThreadImpl::Options::ServiceBinder service_binder)
+      ChildThreadImpl::Options::ServiceBinder service_binder,
+      mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver)
       : main_thread_task_runner_(std::move(main_thread_task_runner)),
         weak_main_thread_(std::move(weak_main_thread)),
         quit_closure_(std::move(quit_closure)),
-        service_binder_(std::move(service_binder)) {}
+        service_binder_(std::move(service_binder)),
+        host_receiver_(std::move(host_receiver)) {}
   ~ChildProcessImpl() override = default;
 
  private:
   // mojom::ChildProcess:
+  void Initialize(mojo::PendingRemote<mojom::ChildProcessHostBootstrap>
+                      bootstrap) override {
+    // The browser only calls this method once.
+    DCHECK(host_receiver_);
+    mojo::Remote<mojom::ChildProcessHostBootstrap>(std::move(bootstrap))
+        ->BindProcessHost(std::move(host_receiver_));
+  }
+
   void ProcessShutdown() override {
     main_thread_task_runner_->PostTask(FROM_HERE,
                                        base::BindOnce(quit_closure_));
@@ -341,11 +351,32 @@ class ChildProcessImpl : public mojom::ChildProcess {
       service_binder_.Run(std::move(receiver));
   }
 
+  void BindReceiver(mojo::GenericPendingReceiver receiver) override {
+    std::string interface_name = *receiver.interface_name();
+    mojo::ScopedMessagePipeHandle pipe = receiver.PassPipe();
+    // TODO(crbug.com/977637): Update BindChildProcessInterface to take a
+    // GenericPendingReceiver* so we don't have to unpack and re-pack |receiver|
+    // to call this.
+    GetContentClient()->BindChildProcessInterface(interface_name, &pipe);
+    if (!pipe)
+      return;
+    receiver = mojo::GenericPendingReceiver(interface_name, std::move(pipe));
+
+    // TODO(crbug.com/977637): Support something like ServiceBinder for general
+    // interface receiver binding on the IO thread by different ChildThreadImpl
+    // subclasses.
+
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&ChildThreadImpl::OnBindReceiver,
+                                  weak_main_thread_, std::move(receiver)));
+  }
+
   const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
   const base::WeakPtr<ChildThreadImpl> weak_main_thread_;
   const base::RepeatingClosure quit_closure_;
 
   ChildThreadImpl::Options::ServiceBinder service_binder_;
+  mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessImpl);
 };
@@ -355,11 +386,13 @@ void BindChildProcessImpl(
     base::WeakPtr<ChildThreadImpl> weak_main_thread,
     base::RepeatingClosure quit_closure,
     ChildThreadImpl::Options::ServiceBinder service_binder,
+    mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver,
     mojom::ChildProcessRequest request) {
   mojo::MakeSelfOwnedReceiver<mojom::ChildProcess>(
       std::make_unique<ChildProcessImpl>(
           std::move(main_thread_task_runner), std::move(weak_main_thread),
-          std::move(quit_closure), std::move(service_binder)),
+          std::move(quit_closure), std::move(service_binder),
+          std::move(host_receiver)),
       std::move(request));
 }
 
@@ -557,10 +590,12 @@ void ChildThreadImpl::Init(const Options& options) {
   registry->AddInterface(base::Bind(&ChildHistogramFetcherFactoryImpl::Create),
                          GetIOTaskRunner());
 
+  auto host_receiver = child_process_host_.BindNewPipeAndPassReceiver();
   registry->AddInterface(
-      base::BindRepeating(
-          &BindChildProcessImpl, base::ThreadTaskRunnerHandle::Get(),
-          weak_factory_.GetWeakPtr(), quit_closure_, options.service_binder),
+      base::BindRepeating(&BindChildProcessImpl,
+                          base::ThreadTaskRunnerHandle::Get(),
+                          weak_factory_.GetWeakPtr(), quit_closure_,
+                          options.service_binder, base::Passed(&host_receiver)),
       GetIOTaskRunner());
   GetServiceManagerConnection()->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));
@@ -733,6 +768,10 @@ service_manager::Connector* ChildThreadImpl::GetConnector() {
   return service_manager_connection_->GetConnector();
 }
 
+void ChildThreadImpl::BindHostReceiver(mojo::GenericPendingReceiver receiver) {
+  child_process_host_->BindHostReceiver(std::move(receiver));
+}
+
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   return &router_;
@@ -816,6 +855,8 @@ void ChildThreadImpl::RunService(
     mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
   DLOG(ERROR) << "Ignoring unhandled request to run service: " << service_name;
 }
+
+void ChildThreadImpl::OnBindReceiver(mojo::GenericPendingReceiver receiver) {}
 
 ChildThreadImpl* ChildThreadImpl::current() {
   return g_lazy_child_thread_impl_tls.Pointer()->Get();

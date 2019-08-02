@@ -101,7 +101,7 @@ WideFrameView::WideFrameView(views::Widget* target)
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
 
-  widget_->Init(params);
+  widget_->Init(std::move(params));
 
   aura::Window* window = widget_->GetNativeWindow();
   // Overview normally clips the caption container which exists on the same

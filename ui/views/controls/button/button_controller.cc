@@ -28,7 +28,7 @@ bool ButtonController::OnMousePressed(const ui::MouseEvent& event) {
   }
   button_controller_delegate_->RequestFocusFromEvent();
   if (button_controller_delegate_->IsTriggerableEvent(event) &&
-      button_->notify_action() == Button::NOTIFY_ON_PRESS) {
+      notify_action_ == ButtonController::NOTIFY_ON_PRESS) {
     button_controller_delegate_->NotifyClick(event);
     // NOTE: We may be deleted at this point (by the listener's notification
     // handler).
@@ -43,7 +43,7 @@ void ButtonController::OnMouseReleased(const ui::MouseEvent& event) {
     } else {
       button_->SetState(Button::STATE_HOVERED);
       if (button_controller_delegate_->IsTriggerableEvent(event) &&
-          button_->notify_action() == Button::NOTIFY_ON_RELEASE) {
+          notify_action_ == ButtonController::NOTIFY_ON_RELEASE) {
         button_controller_delegate_->NotifyClick(event);
         // NOTE: We may be deleted at this point (by the listener's notification
         // handler).
@@ -51,7 +51,7 @@ void ButtonController::OnMouseReleased(const ui::MouseEvent& event) {
       }
     }
   }
-  if (button_->notify_action() == Button::NOTIFY_ON_RELEASE)
+  if (notify_action_ == ButtonController::NOTIFY_ON_RELEASE)
     button_controller_delegate_->OnClickCanceled(event);
 }
 

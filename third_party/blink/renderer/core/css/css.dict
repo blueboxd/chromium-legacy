@@ -912,6 +912,8 @@
 "light"
 "dark"
 "active"
+"linktext"
+"visitedtext"
 
 # at-rules
 "@charset"

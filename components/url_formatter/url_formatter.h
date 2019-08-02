@@ -25,6 +25,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_offset_string_conversions.h"
+#include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
 #include "net/base/escape.h"
 
 class GURL;
@@ -53,8 +54,8 @@ struct IDNConversionResult {
   // The top domain that the hostname of the input is visually similar to. Is
   // empty if the input didn't match any top domain.
   // E.g. IDNToUnicodeWithDetails("googlé.com") will fill |result| with
-  // "xn--googl-fsa.com" and |matching_top_domain| with "google.com".
-  std::string matching_top_domain;
+  // "xn--googl-fsa.com" and |matching_top_domain.domain| with "google.com".
+  TopDomainEntry matching_top_domain;
 };
 
 // Nothing is omitted.
@@ -192,7 +193,7 @@ Skeletons GetSkeletons(const base::string16& host);
 
 // Returns a domain from the top 10K list matching the given skeleton. Used for
 // spoof checking.
-std::string LookupSkeletonInTopDomains(const std::string& skeleton);
+TopDomainEntry LookupSkeletonInTopDomains(const std::string& skeleton);
 
 }  // namespace url_formatter
 

@@ -3568,20 +3568,18 @@
       },
     },
 
-    # Temporarily disabled, since all experimental bots are active now.
-    # TODO(ynovikov): Re-enable once Win10 Intel is switched to x64 crbug.com/988833
-    #'gpu_noop_sleep_telemetry_test': {
+    'gpu_noop_sleep_telemetry_test': {
       # The former GPU-specific generator script contained logic to
       # detect whether the so-called "experimental" GPU bots, which test
       # newer driver versions, were identical to the "stable" versions
       # of the bots, and if so to mirror their configurations. We prefer
       # to keep this new script simpler and to just configure this by
       # hand in waterfalls.pyl.
-      #'noop_sleep': {
-      #}
-    #},
+      'noop_sleep': {
+      }
+    },
 
-    'gpu_skia_renderer_telemetry_tests': {
+    'gpu_skia_renderer_non_vulkan_telemetry_tests': {
       'skia_renderer_pixel_skia_gold_test': {
         'name': 'skia_renderer_pixel_skia_gold_test',
         'args': [
@@ -3652,6 +3650,11 @@
         ],
       },
     },
+
+    'gpu_skia_renderer_telemetry_tests': [
+      'gpu_skia_renderer_non_vulkan_telemetry_tests',
+      'gpu_skia_renderer_vulkan_telemetry_tests',
+    ],
 
     'gpu_skia_renderer_vulkan_gtests': {
       'vulkan_content_browsertests': {
@@ -3789,6 +3792,25 @@
           # it.
           '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
           '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough',
+        ],
+        'swarming': {
+          # These tests currently take about an hour and fifteen minutes
+          # to run. Split them into roughly 5-minute shards.
+          'shards': 20,
+        },
+      },
+    },
+
+    'gpu_webgl2_conformance_gles_passthrough_telemetry_tests': {
+      'webgl2_conformance_gl_passthrough_tests': {
+        'telemetry_test_name': 'webgl_conformance',
+        'args': [
+          '--webgl-conformance-version=2.0.1',
+          # The current working directory when run via isolate is
+          # out/Debug or out/Release. Reference this file relatively to
+          # it.
+          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
+          '--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough',
         ],
         'swarming': {
           # These tests currently take about an hour and fifteen minutes
@@ -4969,6 +4991,7 @@
       'chromedriver_py_tests_isolated_scripts',
       'desktop_chromium_isolated_scripts',
       'linux_specific_chromium_isolated_scripts',
+      'skia_renderer_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
     ],
 
@@ -5185,12 +5208,6 @@
       'gpu_blink_web_tests_vulkan',
     ],
 
-    'gpu_blink_web_tests_and_angle_perf_isolated_scripts': [
-      'gpu_angle_perf_isolated_scripts',
-      'gpu_blink_web_tests_skia_renderer',
-      'gpu_blink_web_tests_vulkan',
-    ],
-
     'gpu_chromeos_telemetry_tests': [
       'gpu_webgl_conformance_telemetry_tests',
     ],
@@ -5223,6 +5240,7 @@
     'gpu_fyi_android_webgl2_and_gold_telemetry_tests': [
       'gpu_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
+      'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
     ],
 
     'gpu_fyi_linux_debug_gtests': [
@@ -5234,9 +5252,8 @@
       'gpu_swiftshader_gtests',
     ],
 
-    'gpu_fyi_linux_intel_and_nvidia_release_experimental_telemetry_tests': [
+    'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_skia_renderer_vulkan_telemetry_tests',
       'gpu_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
@@ -5244,8 +5261,9 @@
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests': [
+    'gpu_fyi_linux_intel_release_experimental_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
+      'gpu_skia_renderer_vulkan_telemetry_tests',
       'gpu_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',

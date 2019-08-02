@@ -18,6 +18,7 @@ import android.view.ViewStructure;
 import android.view.autofill.AutofillValue;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.autofill.FormData;
 import org.chromium.components.autofill.FormFieldData;

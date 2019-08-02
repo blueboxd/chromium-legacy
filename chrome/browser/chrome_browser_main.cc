@@ -62,6 +62,7 @@
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
 #include "chrome/browser/component_updater/safety_tips_component_installer.h"
+#include "chrome/browser/component_updater/ssl_error_assistant_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
 #include "chrome/browser/defaults.h"
@@ -274,10 +275,6 @@
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #include "chrome/browser/background/background_mode_manager.h"
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
-
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/component_updater/ssl_error_assistant_component_installer.h"
-#endif  // BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/startup_helper.h"
@@ -525,9 +522,7 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
 
     RegisterFileTypePoliciesComponent(cus, path);
 
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
     RegisterSSLErrorAssistantComponent(cus, path);
-#endif
   }
 
   RegisterMediaEngagementPreloadComponent(cus, base::OnceClosure());

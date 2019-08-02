@@ -161,8 +161,9 @@ void AddKeyPrefixToGetManyRequest(const std::string& key_prefix,
 class LevelDBServiceTest : public testing::Test {
  public:
   LevelDBServiceTest()
-      : leveldb_service_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      : leveldb_service_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
         leveldb_receiver_(&leveldb_service_,
                           leveldb_remote_.BindNewPipeAndPassReceiver()) {}
   ~LevelDBServiceTest() override = default;

@@ -42,6 +42,7 @@
 #include "media/cdm/cdm_proxy.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/mime_util.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -191,11 +192,6 @@ struct MainFunctionParams;
 struct OpenURLParams;
 struct Referrer;
 struct WebPreferences;
-
-CONTENT_EXPORT void OverrideOnBindInterface(
-    const service_manager::BindSourceInfo& remote_info,
-    const std::string& name,
-    mojo::ScopedMessagePipeHandle* handle);
 
 // Embedder API (or SPI) for participating in browser logic, to be implemented
 // by the client of the content browser. See ChromeContentBrowserClient for the
@@ -968,10 +964,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) {}
 
-  virtual void OverrideOnBindInterface(
-      const service_manager::BindSourceInfo& remote_info,
-      const std::string& name,
-      mojo::ScopedMessagePipeHandle* handle) {}
+  // Called on the main thread to handle an unhandled interface receiver binding
+  // request from a render process. See |RenderThread::BindHostReceiver()|.
+  virtual void BindHostReceiverForRenderer(
+      RenderProcessHost* render_process_host,
+      mojo::GenericPendingReceiver receiver) {}
 
   // Called just before the Service Manager is initialized.
   virtual void WillStartServiceManager() {}

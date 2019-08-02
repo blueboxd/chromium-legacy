@@ -82,7 +82,7 @@ TestChildModalParent* TestChildModalParent::Show(aura::Window* context) {
   params.context = context;
   params.bounds =
       gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   return test_child_modal_parent;
 }
@@ -95,7 +95,7 @@ TestChildModalParent::TestChildModalParent(aura::Window* context)
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = context;
-  modal_parent_->Init(params);
+  modal_parent_->Init(std::move(params));
   modal_parent_->GetRootView()->SetBackground(
       views::CreateSolidBackground(kModalParentColor));
   auto* modal_parent_textfield = new views::Textfield;

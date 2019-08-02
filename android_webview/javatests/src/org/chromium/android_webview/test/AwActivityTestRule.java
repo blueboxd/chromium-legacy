@@ -99,9 +99,9 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         return getActivity();
     }
 
-    public AwBrowserContext createAwBrowserContextOnUiThread(
-            InMemorySharedPreferences prefs, Context appContext) {
-        return new AwBrowserContext(prefs, appContext);
+    public AwBrowserContext createAwBrowserContextOnUiThread(InMemorySharedPreferences prefs) {
+        // Native pointer is initialized later in startBrowserProcess if needed.
+        return new AwBrowserContext(prefs, 0);
     }
 
     public TestDependencyFactory createTestDependencyFactory() {
@@ -133,17 +133,19 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         }
         launchActivity(); // The Activity must be launched in order to load native code
         final InMemorySharedPreferences prefs = new InMemorySharedPreferences();
-        final Context appContext = InstrumentationRegistry.getInstrumentation()
-                                           .getTargetContext()
-                                           .getApplicationContext();
         TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> mBrowserContext = createAwBrowserContextOnUiThread(prefs, appContext));
+                () -> mBrowserContext = createAwBrowserContextOnUiThread(prefs));
     }
 
     public void startBrowserProcess() throws Exception {
         // The Activity must be launched in order for proper webview statics to be setup.
         launchActivity();
         TestThreadUtils.runOnUiThreadBlocking(() -> AwBrowserProcess.start());
+        if (mBrowserContext != null) {
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> mBrowserContext.setNativePointer(
+                            AwBrowserContext.getDefault().getNativePointer()));
+        }
     }
 
     public static void enableJavaScriptOnUiThread(final AwContents awContents) {

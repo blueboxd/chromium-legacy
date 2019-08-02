@@ -55,7 +55,7 @@ class BridgedNativeWidgetUITest : public WidgetTest {
     init_params.bounds = gfx::Rect(100, 100, 300, 200);
     init_params.delegate = new ResizableDelegateView;
     widget_.reset(new Widget);
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
   }
 
   void TearDown() override {
@@ -286,7 +286,7 @@ TEST_F(BridgedNativeWidgetUITest, DISABLED_HitTest) {
   init_params.delegate = widget_delegate;
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(100, 200, 400, 300);
-  widget.Init(init_params);
+  widget.Init(std::move(init_params));
 
   WidgetActivationWaiter activation_waiter(&widget, true);
   widget.Show();

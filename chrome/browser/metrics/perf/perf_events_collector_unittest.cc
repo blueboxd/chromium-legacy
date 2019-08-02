@@ -116,13 +116,19 @@ class TestIncognitoObserver : public WindowedIncognitoObserver {
   // Used for passing observers to ParseOutputProtoIfValid().
   static std::unique_ptr<WindowedIncognitoObserver> CreateWithIncognitoLaunched(
       bool incognito_launched) {
-    auto observer = base::WrapUnique(new TestIncognitoObserver());
-    observer->set_incognito_launched(incognito_launched);
-    return observer;
+    return base::WrapUnique(new TestIncognitoObserver(incognito_launched));
   }
 
+  ~TestIncognitoObserver() override = default;
+
+  bool IncognitoLaunched() const override { return incognito_launched_; }
+
  private:
-  TestIncognitoObserver() {}
+  TestIncognitoObserver(bool incognito_launched)
+      : WindowedIncognitoObserver(nullptr, 0),
+        incognito_launched_(incognito_launched) {}
+
+  bool incognito_launched_;
 
   DISALLOW_COPY_AND_ASSIGN(TestIncognitoObserver);
 };
@@ -188,9 +194,9 @@ TEST_F(PerfCollectorTest, CheckSetup) {
   EXPECT_TRUE(stored_profiles.empty());
 
   EXPECT_FALSE(TestIncognitoObserver::CreateWithIncognitoLaunched(false)
-                   ->incognito_launched());
+                   ->IncognitoLaunched());
   EXPECT_TRUE(TestIncognitoObserver::CreateWithIncognitoLaunched(true)
-                  ->incognito_launched());
+                  ->IncognitoLaunched());
   base::ThreadPoolInstance::Get()->FlushForTesting();
   scoped_task_environment_->RunUntilIdle();
   EXPECT_GT(perf_collector_->max_frequencies_mhz_.size(), 0u);

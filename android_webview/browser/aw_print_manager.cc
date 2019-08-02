@@ -118,9 +118,9 @@ void AwPrintManager::OnDidPrintDocument(
   }
 
   base::PostTaskAndReplyWithResult(
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
+      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
+                              base::TaskPriority::BEST_EFFORT,
+                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::BindRepeating(&SaveDataToFd, fd_, number_pages_, data),
       pdf_writing_done_callback_);

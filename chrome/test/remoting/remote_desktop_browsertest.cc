@@ -66,6 +66,8 @@ RemoteDesktopBrowserTest::RemoteDesktopBrowserTest()
 RemoteDesktopBrowserTest::~RemoteDesktopBrowserTest() {}
 
 void RemoteDesktopBrowserTest::SetUp() {
+  if (BrowserTestBase::ShouldSkipManualTests())
+    GTEST_SKIP();
   ParseCommandLine();
   PlatformAppBrowserTest::SetUp();
 }

@@ -48,17 +48,16 @@ void DesktopBrowserFrameAura::OnHostClosed() {
 }
 
 void DesktopBrowserFrameAura::InitNativeWidget(
-    const views::Widget::InitParams& params) {
+    views::Widget::InitParams params) {
   browser_desktop_window_tree_host_ =
       BrowserDesktopWindowTreeHost::CreateBrowserDesktopWindowTreeHost(
           browser_frame_,
           this,
           browser_view_,
           browser_frame_);
-  views::Widget::InitParams modified_params = params;
-  modified_params.desktop_window_tree_host =
+  params.desktop_window_tree_host =
       browser_desktop_window_tree_host_->AsDesktopWindowTreeHost();
-  DesktopNativeWidgetAura::InitNativeWidget(modified_params);
+  DesktopNativeWidgetAura::InitNativeWidget(std::move(params));
 
   visibility_controller_.reset(new wm::VisibilityController);
   aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(),

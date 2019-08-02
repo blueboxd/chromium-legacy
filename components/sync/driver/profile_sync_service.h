@@ -134,7 +134,7 @@ class ProfileSyncService : public SyncService,
   void TriggerRefresh(const ModelTypeSet& types) override;
   void ReadyForStartChanged(ModelType type) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
-  base::Optional<UserDemographics> GetUserDemographics(base::Time now) override;
+  UserDemographicsResult GetUserDemographics(base::Time now) override;
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
@@ -330,6 +330,9 @@ class ProfileSyncService : public SyncService,
   void NotifyShutdown();
 
   void ClearUnrecoverableError();
+
+  // Initializes and starts |sync_thread_|.
+  void StartSyncThreadIfNeeded();
 
   // Kicks off asynchronous initialization of the SyncEngine.
   void StartUpSlowEngineComponents();

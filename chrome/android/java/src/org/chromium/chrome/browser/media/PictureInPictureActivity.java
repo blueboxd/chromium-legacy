@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.media;
 
+import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 
@@ -11,6 +13,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A picture in picture activity which get created when requesting
@@ -19,6 +25,41 @@ import org.chromium.chrome.browser.init.AsyncInitializationActivity;
  */
 public class PictureInPictureActivity extends AsyncInitializationActivity {
     private static long sNativeOverlayWindowAndroid;
+    private static Tab sInitiatorTab;
+    private static int sInitiatorTabTaskID;
+    private static InitiatorTabObserver sTabObserver;
+
+    private static class InitiatorTabObserver extends EmptyTabObserver {
+        private enum Status { OK, DESTROYED }
+        private PictureInPictureActivity mActivity;
+        private Status mStatus;
+
+        InitiatorTabObserver() {
+            mStatus = Status.OK;
+        }
+
+        public void setActivity(PictureInPictureActivity activity) {
+            mActivity = activity;
+        }
+
+        public Status getStatus() {
+            return mStatus;
+        }
+
+        @Override
+        public void onDestroyed(Tab tab) {
+            if (tab.isClosing() || !isInitiatorTabAlive()) {
+                mStatus = Status.DESTROYED;
+                if (mActivity != null) mActivity.finish();
+            }
+        }
+
+        @Override
+        public void onCrash(Tab tab) {
+            mStatus = Status.DESTROYED;
+            if (mActivity != null) mActivity.finish();
+        }
+    }
 
     @Override
     protected void triggerLayoutInflation() {
@@ -35,41 +76,66 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
         super.onStart();
         enterPictureInPictureMode();
 
-        // Finish the activity if OverlayWindowAndroid has already been destroyed.
-        if (sNativeOverlayWindowAndroid == 0) {
+        // Finish the activity if OverlayWindowAndroid has already been destroyed
+        // or InitiatorTab has been destroyed by user or crashed.
+        if (sNativeOverlayWindowAndroid == 0
+                || sTabObserver.getStatus() == InitiatorTabObserver.Status.DESTROYED) {
             this.finish();
             return;
         }
 
-        PictureInPictureActivityJni.get().onActivityStart(sNativeOverlayWindowAndroid, this);
+        sTabObserver.setActivity(this);
+
+        PictureInPictureActivityJni.get().onActivityStart(
+                sNativeOverlayWindowAndroid, this, getWindowAndroid());
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        if (sNativeOverlayWindowAndroid == 0) return;
-
-        PictureInPictureActivityJni.get().onActivityDestroy(sNativeOverlayWindowAndroid);
         sNativeOverlayWindowAndroid = 0;
+        sInitiatorTab.removeObserver(sTabObserver);
+        sInitiatorTab = null;
+        sTabObserver = null;
+    }
+
+    @Override
+    protected ActivityWindowAndroid createWindowAndroid() {
+        return new ActivityWindowAndroid(this);
+    }
+
+    @SuppressLint("NewApi")
+    private static boolean isInitiatorTabAlive() {
+        ActivityManager activityManager =
+                (ActivityManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.ACTIVITY_SERVICE);
+        for (ActivityManager.AppTask appTask : activityManager.getAppTasks()) {
+            if (appTask.getTaskInfo().id == sInitiatorTabTaskID) return true;
+        }
+
+        return false;
     }
 
     @CalledByNative
     private void close() {
-        sNativeOverlayWindowAndroid = 0;
         this.finish();
     }
 
     @CalledByNative
-    private static void createActivity(long nativeOverlayWindowAndroid) {
+    private static void createActivity(long nativeOverlayWindowAndroid, Object initiatorTab) {
         Context context = ContextUtils.getApplicationContext();
         Intent intent = new Intent(context, PictureInPictureActivity.class);
 
         // Dissociate OverlayWindowAndroid if there is one already.
         if (sNativeOverlayWindowAndroid != 0)
-            PictureInPictureActivityJni.get().onActivityDestroy(sNativeOverlayWindowAndroid);
+            PictureInPictureActivityJni.get().destroy(sNativeOverlayWindowAndroid);
 
         sNativeOverlayWindowAndroid = nativeOverlayWindowAndroid;
+        sInitiatorTab = (Tab) initiatorTab;
+        sInitiatorTabTaskID = sInitiatorTab.getActivity().getTaskId();
+
+        sTabObserver = new InitiatorTabObserver();
+        sInitiatorTab.addObserver(sTabObserver);
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
@@ -84,8 +150,9 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
 
     @NativeMethods
     interface Natives {
-        void onActivityStart(long nativeOverlayWindowAndroid, PictureInPictureActivity self);
+        void onActivityStart(long nativeOverlayWindowAndroid, PictureInPictureActivity self,
+                WindowAndroid window);
 
-        void onActivityDestroy(long nativeOverlayWindowAndroid);
+        void destroy(long nativeOverlayWindowAndroid);
     }
 }

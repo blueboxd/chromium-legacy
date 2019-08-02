@@ -111,6 +111,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -1085,9 +1086,13 @@ void ChromeContentRendererClient::OnBindInterface(
 void ChromeContentRendererClient::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  service_binding_.GetConnector()->BindInterface(
-      service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName),
-      interface_name, std::move(interface_pipe));
+  // TODO(crbug.com/977637): Get rid of the use of this implementation of
+  // |service_manager::LocalInterfaceProvider|. This was done only to avoid
+  // churning spellcheck code while eliminting the "chrome" and
+  // "chrome_renderer" services. Spellcheck is (and should remain) the only
+  // consumer of this implementation.
+  RenderThread::Get()->BindHostReceiver(
+      mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -1333,11 +1338,6 @@ bool ChromeContentRendererClient::IsLinkVisited(uint64_t link_hash) {
 blink::WebPrescientNetworking*
 ChromeContentRendererClient::GetPrescientNetworking() {
   return prescient_networking_dispatcher_.get();
-}
-
-bool ChromeContentRendererClient::IsPrerenderingFrame(
-    const content::RenderFrame* render_frame) {
-  return prerender::PrerenderHelper::IsPrerendering(render_frame);
 }
 
 bool ChromeContentRendererClient::IsExternalPepperPlugin(
@@ -1640,6 +1640,15 @@ bool ChromeContentRendererClient::RequiresHtmlImports(const GURL& url) {
   can_use_polyfill |= url.host() == chrome::kChromeUIPrintHost;
 #endif
   return url.SchemeIs(content::kChromeUIScheme) && !can_use_polyfill;
+}
+
+void ChromeContentRendererClient::BindReceiverOnMainThread(
+    mojo::GenericPendingReceiver receiver) {
+  // TODO(crbug.com/977637): Get rid of the use of BinderRegistry here. This is
+  // only used to bind a spellcheck interface.
+  std::string interface_name = *receiver.interface_name();
+  auto pipe = receiver.PassPipe();
+  registry_.TryBindInterface(interface_name, &pipe);
 }
 
 void ChromeContentRendererClient::OnWebRtcLoggingAgentRequest(

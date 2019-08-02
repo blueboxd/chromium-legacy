@@ -60,10 +60,24 @@ class CrostiniExportImport : public KeyedService,
                              public crostini::ExportContainerProgressObserver,
                              public crostini::ImportContainerProgressObserver {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called immediately before operation begins with |in_progress|=true, and
+    // again immediately after the operation completes with |in_progress|=false.
+    virtual void OnCrostiniExportImportOperationStatusChanged(
+        bool in_progress) = 0;
+  };
+
   static CrostiniExportImport* GetForProfile(Profile* profile);
 
   explicit CrostiniExportImport(Profile* profile);
   ~CrostiniExportImport() override;
+
+  void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
+
+  void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
+  }
 
   // KeyedService:
   void Shutdown() override;
@@ -82,8 +96,11 @@ class CrostiniExportImport : public KeyedService,
                        base::FilePath path,
                        CrostiniManager::CrostiniResultCallback callback);
 
-  // Cancel currently running export/import
+  // Cancel currently running export/import.
   void CancelOperation(ExportImportType type, ContainerId id);
+
+  // Whether an export or import is currently in progress.
+  bool GetExportImportOperationStatus() const;
 
   CrostiniExportImportNotification* GetNotificationForTesting(
       ContainerId container_id);
@@ -173,6 +190,7 @@ class CrostiniExportImport : public KeyedService,
   // Notifications must have unique-per-profile identifiers.
   // A non-static member on a profile-keyed-service will suffice.
   int next_notification_id_;
+  base::ObserverList<Observer> observers_;
   // weak_ptr_factory_ should always be last member.
   base::WeakPtrFactory<CrostiniExportImport> weak_ptr_factory_;
 

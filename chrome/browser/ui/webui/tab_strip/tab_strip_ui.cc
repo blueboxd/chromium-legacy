@@ -16,9 +16,15 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUITabStripHost);
 
+  std::string generated_path =
+      "@out_folder@/gen/chrome/browser/resources/tab_strip/";
+
   for (size_t i = 0; i < kTabStripResourcesSize; ++i) {
-    html_source->AddResourcePath(kTabStripResources[i].name,
-                                 kTabStripResources[i].value);
+    std::string path = kTabStripResources[i].name;
+    if (path.rfind(generated_path, 0) == 0) {
+      path = path.substr(generated_path.length());
+    }
+    html_source->AddResourcePath(path, kTabStripResources[i].value);
   }
 
   html_source->SetDefaultResource(IDR_TAB_STRIP_HTML);

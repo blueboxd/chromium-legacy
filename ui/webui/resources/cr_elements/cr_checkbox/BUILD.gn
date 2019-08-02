@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -14,4 +15,10 @@ js_library("cr_checkbox") {
   deps = [
     "//third_party/polymer/v1_0/components-chromium/paper-behaviors:paper-ripple-behavior-extracted",
   ]
+}
+
+polymer_modulizer("cr_checkbox") {
+  js_file = "cr_checkbox.js"
+  html_file = "cr_checkbox.html"
+  html_type = "dom-module"
 }

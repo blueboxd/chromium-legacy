@@ -1113,12 +1113,6 @@ void FeatureInfo::InitializeFeatures() {
         gfx::BufferFormat::YUV_420_BIPLANAR);
   }
 
-  if (gfx::HasExtension(extensions, "GL_APPLE_ycbcr_422")) {
-    AddExtensionString("GL_CHROMIUM_ycbcr_422_image");
-    feature_flags_.chromium_image_ycbcr_422 = true;
-    feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::UYVY_422);
-  }
-
 #if defined(OS_MACOSX)
   // Mac can create GLImages out of XR30 IOSurfaces only after High Sierra.
   feature_flags_.chromium_image_xr30 = base::mac::IsAtLeastOS10_13();

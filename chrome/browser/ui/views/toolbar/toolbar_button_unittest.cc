@@ -66,7 +66,7 @@ class TestParentView : public views::View {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.context = context;
     widget_ = std::make_unique<views::Widget>();
-    widget_->Init(params);
+    widget_->Init(std::move(params));
   }
   ~TestParentView() override = default;
 

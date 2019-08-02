@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundXhrTest, TlsClientAuth) {
   // Install a null ClientCertStore so the client auth prompt isn't bypassed due
   // to the system certificate store returning no certificates.
   base::RunLoop loop;
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&InstallNullCertStoreFactoryOnIOThread,
                      browser()->profile()->GetResourceContext()),

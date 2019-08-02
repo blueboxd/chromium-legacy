@@ -23,6 +23,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/controls/button/button_controller.h"
 
 namespace ash {
 namespace {
@@ -39,7 +40,8 @@ HomeButton::HomeButton(Shelf* shelf)
     : ShelfControlButton(shelf, this), controller_(this) {
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
-  set_notify_action(Button::NOTIFY_ON_PRESS);
+  button_controller()->set_notify_action(
+      views::ButtonController::NotifyAction::NOTIFY_ON_PRESS);
   set_has_ink_drop_action_on_click(false);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));

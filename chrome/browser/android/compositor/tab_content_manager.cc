@@ -412,6 +412,12 @@ void TabContentManager::SetCaptureMinRequestTimeForTesting(
   thumbnail_cache_->SetCaptureMinRequestTimeForTesting(timeMs);
 }
 
+jint TabContentManager::GetPendingReadbacksForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return pending_tab_readbacks_.size();
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------

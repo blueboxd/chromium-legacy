@@ -248,23 +248,6 @@ void WebURLRequest::SetRequestorID(int requestor_id) {
   resource_request_->SetRequestorID(requestor_id);
 }
 
-int WebURLRequest::GetPluginChildID() const {
-  return resource_request_->GetPluginChildID();
-}
-
-void WebURLRequest::SetPluginChildID(int plugin_child_id) {
-  resource_request_->SetPluginChildID(plugin_child_id);
-}
-
-const base::UnguessableToken& WebURLRequest::AppCacheHostID() const {
-  return resource_request_->AppCacheHostID();
-}
-
-void WebURLRequest::SetAppCacheHostID(
-    const base::UnguessableToken& app_cache_host_id) {
-  resource_request_->SetAppCacheHostID(app_cache_host_id);
-}
-
 bool WebURLRequest::PassResponsePipeToClient() const {
   return resource_request_->DownloadToBlob();
 }

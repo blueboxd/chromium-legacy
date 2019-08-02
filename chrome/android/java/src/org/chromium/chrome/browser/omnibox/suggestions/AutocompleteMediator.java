@@ -12,7 +12,6 @@ import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Pair;
 import android.view.View;
 import android.widget.TextView;
 
@@ -48,6 +47,8 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
@@ -231,12 +232,12 @@ class AutocompleteMediator
     @Override
     public void notifyPropertyModelsChanged() {
         if (mPreventSuggestionListPropertyChanges) return;
-        List<Pair<Integer, PropertyModel>> models = new ArrayList<>(mCurrentModels.size());
+        ModelList suggestions = mListPropertyModel.get(SuggestionListProperties.SUGGESTION_MODELS);
+        suggestions.clear();
         for (int i = 0; i < mCurrentModels.size(); i++) {
             PropertyModel model = mCurrentModels.get(i).model;
-            models.add(new Pair<>(mCurrentModels.get(i).processor.getViewTypeId(), model));
+            suggestions.add(new ListItem(mCurrentModels.get(i).processor.getViewTypeId(), model));
         }
-        mListPropertyModel.set(SuggestionListProperties.SUGGESTION_MODELS, models);
     }
 
     @Override
@@ -244,7 +245,7 @@ class AutocompleteMediator
         return mDataProvider != null ? mDataProvider.getProfile() : null;
     }
 
-    /**
+    /**m
      * Sets the data provider for the toolbar.
      */
     void setToolbarDataProvider(ToolbarDataProvider provider) {

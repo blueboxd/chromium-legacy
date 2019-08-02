@@ -213,8 +213,7 @@ class CONTENT_EXPORT FrameTree {
       int32_t routing_id,
       int32_t main_frame_routing_id,
       int32_t widget_routing_id,
-      bool swapped_out,
-      bool hidden);
+      bool swapped_out);
 
   // Returns the existing RenderViewHost for a new RenderFrameHost.
   // There should always be such a RenderViewHost, because the main frame

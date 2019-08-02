@@ -32,6 +32,7 @@
 
 using testing::_;
 using testing::ElementsAre;
+using testing::Pair;
 using testing::Pointee;
 using testing::UnorderedElementsAre;
 
@@ -58,6 +59,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                bool(const std::vector<autofill::PasswordForm*>& local_forms,
                     const GURL& origin,
                     const CredentialsCallback& callback));
+  MOCK_METHOD3(
+      PasswordWasAutofilled,
+      void(const std::map<base::string16, const autofill::PasswordForm*>&,
+           const GURL&,
+           const std::vector<const autofill::PasswordForm*>*));
 
   explicit MockPasswordManagerClient(PasswordStore* store)
       : store_(store), password_manager_(this) {
@@ -964,7 +970,6 @@ TEST_F(CredentialManagerImplTest,
   std::vector<GURL> federations;
 
   EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(_)).Times(0);
-
   ExpectZeroClickSignInFailure(CredentialMediationRequirement::kSilent, false,
                                federations);
 }
@@ -1613,6 +1618,35 @@ TEST_F(CredentialManagerImplTest, RespectBlacklistingFederatedCredential) {
 
   ASSERT_TRUE(client_->pending_manager());
   EXPECT_TRUE(client_->pending_manager()->IsBlacklisted());
+}
+
+TEST_F(CredentialManagerImplTest,
+       ManagePasswordsUICredentialsUpdatedUnconditionallyInSilentMediation) {
+  autofill::PasswordForm federated = origin_path_form_;
+  federated.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
+  federated.signon_realm =
+      "federation://" + federated.origin.host() + "/google.com";
+  store_->AddLogin(federated);
+
+  form_.username_value = base::ASCIIToUTF16("username_value");
+  store_->AddLogin(form_);
+
+  EXPECT_CALL(*client_,
+              PasswordWasAutofilled(
+                  ElementsAre(Pair(form_.username_value, Pointee(form_))), _,
+                  Pointee(ElementsAre(Pointee(federated)))));
+
+  bool called = false;
+  CredentialManagerError error;
+  base::Optional<CredentialInfo> credential;
+  std::vector<GURL> federations;
+  federations.push_back(GURL("https://google.com/"));
+
+  CallGet(CredentialMediationRequirement::kSilent, true, federations,
+          base::BindOnce(&GetCredentialCallback, &called, &error, &credential));
+
+  RunAllPendingTasks();
 }
 
 }  // namespace password_manager

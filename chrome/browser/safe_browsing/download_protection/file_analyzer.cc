@@ -294,10 +294,6 @@ void FileAnalyzer::ExtractFileOrDmgFeatures(
     bool download_file_has_koly_signature) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "SBClientDownload."
-      "DownloadFileWithoutDiskImageExtensionHasKolySignature",
-      download_file_has_koly_signature);
   if (download_file_has_koly_signature)
     StartExtractDmgFeatures();
   else
@@ -333,19 +329,7 @@ void FileAnalyzer::OnDmgAnalysisFinished(
                              uma_file_type);
     results_.type = ClientDownloadRequest::MAC_EXECUTABLE;
   } else {
-    base::UmaHistogramSparse("SBClientDownload.DmgFileFailureByType",
-                             uma_file_type);
     results_.type = ClientDownloadRequest::MAC_ARCHIVE_FAILED_PARSING;
-  }
-
-  if (results_.archived_executable) {
-    base::UmaHistogramSparse("SBClientDownload.DmgFileHasExecutableByType",
-                             uma_file_type);
-    UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.DmgFileArchivedBinariesCount",
-                            archive_results.archived_binary.size());
-  } else {
-    base::UmaHistogramSparse("SBClientDownload.DmgFileHasNoExecutableByType",
-                             uma_file_type);
   }
 
   UMA_HISTOGRAM_MEDIUM_TIMES("SBClientDownload.ExtractDmgFeaturesTimeMedium",

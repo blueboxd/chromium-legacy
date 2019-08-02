@@ -548,9 +548,15 @@ String StylePropertySerializer::SerializeShorthand(
     case CSSPropertyID::kWebkitTextStroke:
       return GetShorthandValue(webkitTextStrokeShorthand());
     case CSSPropertyID::kMarker: {
-      if (const CSSValue* value =
-              property_set_.GetPropertyCSSValue(GetCSSPropertyMarkerStart()))
-        return value->CssText();
+      if (const CSSValue* start =
+              property_set_.GetPropertyCSSValue(GetCSSPropertyMarkerStart())) {
+        const CSSValue* mid =
+            property_set_.GetPropertyCSSValue(GetCSSPropertyMarkerMid());
+        const CSSValue* end =
+            property_set_.GetPropertyCSSValue(GetCSSPropertyMarkerEnd());
+        if (mid && end && *start == *mid && *start == *end)
+          return start->CssText();
+      }
       return String();
     }
     case CSSPropertyID::kBorderRadius:

@@ -5,8 +5,10 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "ui/events/event.h"
@@ -19,6 +21,7 @@ class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
       : initial_extension_name_(base::ASCIIToUTF16("Initial Extension Name")),
         initial_tooltip_(base::ASCIIToUTF16("Initial tooltip")) {}
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
     BrowserWithTestWindowTest::SetUp();
 
     widget_ = std::make_unique<views::Widget>();
@@ -36,7 +39,7 @@ class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
         CreateNativeWidget(NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA,
                            &init_params, widget_.get());
 #endif
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
 
     auto controller =
         std::make_unique<TestToolbarActionViewController>("hello");
@@ -64,6 +67,7 @@ class ExtensionsMenuButtonTest : public BrowserWithTestWindowTest {
     test_api.NotifyClick(click_event);
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   const base::string16 initial_extension_name_;
   const base::string16 initial_tooltip_;
   std::unique_ptr<views::Widget> widget_;

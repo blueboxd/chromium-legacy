@@ -154,11 +154,14 @@ void NativeWidgetAura::SetResizeBehaviorFromDelegate(WidgetDelegate* delegate,
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, internal::NativeWidgetPrivate implementation:
 
-void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
+void NativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   // See Widget::InitParams::context for details.
   DCHECK(params.parent || params.context);
 
   ownership_ = params.ownership;
+
+  window_->AcquireAllPropertiesFrom(
+      std::move(params.init_properties_container));
 
   RegisterNativeWidgetForWindow(this, window_);
   window_->SetType(GetAuraWindowTypeForWidgetType(params.type));

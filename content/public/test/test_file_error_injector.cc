@@ -161,7 +161,7 @@ void DownloadFileWithError::Initialize(
     if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, Initialize; just
       // return the error.
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(std::move(callback_to_use), error_to_return, 0));
       return;
@@ -218,7 +218,7 @@ void DownloadFileWithError::RenameAndUniquify(
     if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, RenameAndUniquify; just
       // return the error.
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(callback, error_to_return, base::FilePath()));
       return;
@@ -251,7 +251,7 @@ void DownloadFileWithError::RenameAndAnnotate(
     if (download::DOWNLOAD_INTERRUPT_REASON_NONE != error_to_return) {
       // Don't execute a, probably successful, RenameAndAnnotate; just
       // return the error.
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(callback, error_to_return, base::FilePath()));
       return;
@@ -408,13 +408,13 @@ void TestFileErrorInjector::DestroyingDownloadFile() {
 }
 
 void TestFileErrorInjector::RecordDownloadFileConstruction() {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&TestFileErrorInjector::DownloadFileCreated, this));
 }
 
 void TestFileErrorInjector::RecordDownloadFileDestruction() {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&TestFileErrorInjector::DestroyingDownloadFile, this));
 }

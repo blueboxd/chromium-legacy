@@ -14,6 +14,7 @@ import static com.google.android.libraries.feed.basicstream.internal.viewholders
 
 import static org.hamcrest.Matchers.instanceOf;
 
+import android.os.Build;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.filters.MediumTest;
@@ -30,6 +31,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -110,6 +112,8 @@ public class FeedTooltipTest {
 
     @Test
     @MediumTest
+    @DisableIf.
+    Build(sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/990135")
     @Feature({"FeedNewTabPage"})
     public void testShowTooltip() throws Exception {
         int callCount = mTestObserver.firstCardShownCallback.getCallCount();

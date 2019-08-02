@@ -17,8 +17,9 @@ namespace internal {
 
 FontServiceThread::FontServiceThread(mojom::FontServicePtr font_service)
     : font_service_info_(font_service.PassInterface()),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::USER_VISIBLE, base::MayBlock()})) {
+      task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+           base::MayBlock()})) {
   task_runner_->PostTask(FROM_HERE, base::BindOnce(&FontServiceThread::Init,
                                                    weak_factory_.GetWeakPtr()));
 }

@@ -57,6 +57,9 @@ class AppBrowserController : public TabStripModelObserver,
   // Whether the custom tab bar should be visible.
   virtual bool ShouldShowCustomTabBar() const = 0;
 
+  // Whether the browser should include the tab strip.
+  virtual bool HasTabStrip() const;
+
   // Returns true if the hosted app buttons should be shown in the frame for
   // this BrowserView.
   virtual bool ShouldShowHostedAppButtonContainer() const = 0;

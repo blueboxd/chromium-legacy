@@ -162,7 +162,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
     browser_threads_.reset(
         new TestBrowserThreadBundle(TestBrowserThreadBundle::REAL_IO_THREAD));
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+        base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
     InitializeMojo();
     mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(

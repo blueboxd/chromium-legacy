@@ -11,13 +11,11 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/search/promos/promo_data.h"
-#include "components/google/core/browser/google_url_tracker.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,46 +24,18 @@
 using testing::Eq;
 using testing::StartsWith;
 
-namespace {
-// Required to instantiate a GoogleUrlTracker in UNIT_TEST_MODE.
-class GoogleURLTrackerClientStub : public GoogleURLTrackerClient {
- public:
-  GoogleURLTrackerClientStub() {}
-  ~GoogleURLTrackerClientStub() override {}
-
-  bool IsBackgroundNetworkingEnabled() override { return true; }
-  PrefService* GetPrefs() override { return nullptr; }
-  network::SharedURLLoaderFactory* GetURLLoaderFactory() override {
-    return nullptr;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerClientStub);
-};
-
-}  // namespace
-
 class PromoServiceTest : public testing::Test {
  public:
   PromoServiceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)),
-        google_url_tracker_(
-            std::make_unique<GoogleURLTrackerClientStub>(),
-            GoogleURLTracker::ALWAYS_DOT_COM_MODE,
-            network::TestNetworkConnectionTracker::GetInstance()) {}
+                &test_url_loader_factory_)) {}
 
   void SetUp() override {
     testing::Test::SetUp();
 
-    service_ = std::make_unique<PromoService>(test_shared_loader_factory_,
-                                              &google_url_tracker_);
-  }
-
-  void TearDown() override {
-    static_cast<KeyedService&>(google_url_tracker_).Shutdown();
+    service_ = std::make_unique<PromoService>(test_shared_loader_factory_);
   }
 
   void SetUpResponseWithData(const GURL& load_url,
@@ -94,8 +64,6 @@ class PromoServiceTest : public testing::Test {
 
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
-
-  GoogleURLTracker google_url_tracker_;
 
   std::unique_ptr<PromoService> service_;
 };

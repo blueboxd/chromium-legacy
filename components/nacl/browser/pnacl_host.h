@@ -180,8 +180,8 @@ class PnaclHost {
   void DeInitIfSafe();
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::USER_VISIBLE});
 
   // Operations which are pending with the cache backend, which we should
   // wait for before destroying it (see comment on DeInitIfSafe).

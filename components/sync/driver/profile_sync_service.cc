@@ -221,13 +221,6 @@ void ProfileSyncService::Initialize() {
 
   sync_prefs_.AddSyncPrefObserver(this);
 
-  // If sync is disallowed by policy, clean up.
-  if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)) {
-    // Note that this won't actually clear data, since neither |engine_| nor
-    // |sync_thread_| exist at this point. Bug or feature?
-    StopImpl(CLEAR_DATA);
-  }
-
   if (!IsLocalSyncEnabled()) {
     auth_manager_->RegisterForAuthNotifications();
     for (auto* provider : invalidations_identity_providers_) {
@@ -235,11 +228,13 @@ void ProfileSyncService::Initialize() {
         provider->SetActiveAccountId(GetAuthenticatedAccountInfo().account_id);
       }
     }
+  }
 
-    if (!IsSignedIn()) {
-      // Clean up in case of previous crash during signout.
-      StopImpl(CLEAR_DATA);
-    }
+  // If sync is disabled permanently, clean up old data that may be around (e.g.
+  // crash during signout).
+  if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY) ||
+      HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN)) {
+    StopImpl(CLEAR_DATA);
   }
 
   // Note: We need to record the initial state *after* calling
@@ -423,6 +418,19 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {
   startup_controller_->OnDataTypeRequestsSyncStartup(type);
 }
 
+void ProfileSyncService::StartSyncThreadIfNeeded() {
+  if (sync_thread_) {
+    // Already started.
+    return;
+  }
+
+  sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
+  base::Thread::Options options;
+  options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+  bool success = sync_thread_->StartWithOptions(options);
+  DCHECK(success);
+}
+
 void ProfileSyncService::StartUpSlowEngineComponents() {
   DCHECK(IsEngineAllowedToStart());
 
@@ -435,13 +443,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
     last_actionable_error_ = SyncProtocolError();
   }
 
-  if (!sync_thread_) {
-    sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
-    base::Thread::Options options;
-    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-    bool success = sync_thread_->StartWithOptions(options);
-    DCHECK(success);
-  }
+  StartSyncThreadIfNeeded();
 
   SyncEngine::InitParams params;
   params.sync_task_runner = sync_thread_->task_runner();
@@ -467,18 +469,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   }
   params.sync_manager_factory =
       std::make_unique<SyncManagerFactory>(network_connection_tracker_);
-  // The first time we start up the engine we want to ensure we have a clean
-  // directory, so delete any old one that might be there.
-  params.delete_sync_data_folder = !user_settings_->IsFirstSetupComplete();
-  if (params.delete_sync_data_folder) {
-    // This looks questionable here but it mimics the old behavior of deleting
-    // the directory via Directory::DeleteDirectoryFiles(). One consecuence is
-    // that, for sync the transport users (without sync-the-feature enabled),
-    // the cache GUID and other fields are reset on every restart.
-    // TODO(crbug.com/923285): Reconsider the lifetime of the cache GUID and
-    // its persistence depending on StorageOption.
-    sync_prefs_.ClearDirectoryConsistencyPreferences();
-  }
   params.enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
   params.local_sync_backend_folder = sync_client_->GetLocalSyncBackendFolder();
   params.restored_key_for_bootstrapping =
@@ -533,12 +523,24 @@ void ProfileSyncService::Shutdown() {
 
 void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
   if (!engine_) {
-    if (reason == ShutdownReason::DISABLE_SYNC && sync_thread_) {
-      // If the engine is already shut down when a DISABLE_SYNC happens,
-      // the data directory needs to be cleaned up here.
-      sync_thread_->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&syncable::Directory::DeleteDirectoryFiles,
-                                    sync_client_->GetSyncDataPath()));
+    // If the engine hasn't started or is already shut down when a DISABLE_SYNC
+    // happens, the data directory needs to be cleaned up here.
+    if (reason == ShutdownReason::DISABLE_SYNC) {
+      // Clearing the Directory via Directory::DeleteDirectoryFiles() requires
+      // the |sync_thread_| initialized. It also means there's IO involved which
+      // may we considerable overhead if triggered consistently upon browser
+      // startup (which is the case for certain codepaths such as the user being
+      // signed out). To avoid that, SyncPrefs is used to determine whether it's
+      // worth.
+      if (!sync_prefs_.GetCacheGuid().empty()) {
+        StartSyncThreadIfNeeded();
+      }
+      if (sync_thread_) {
+        sync_thread_->task_runner()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&syncable::Directory::DeleteDirectoryFiles,
+                           sync_client_->GetSyncDataPath()));
+      }
     }
     return;
   }
@@ -1670,13 +1672,14 @@ void ProfileSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {
   }
 }
 
-base::Optional<UserDemographics> ProfileSyncService::GetUserDemographics(
-    base::Time now) {
+UserDemographicsResult ProfileSyncService::GetUserDemographics(base::Time now) {
   // Do not provide demographics when sync is disabled or paused because user
   // demographics should only be provided when the other sync data can be
   // uploaded to the sync server.
-  if (!IsSyncFeatureEnabled() || auth_manager_->IsSyncPaused())
-    return base::nullopt;
+  if (!IsSyncFeatureEnabled() || auth_manager_->IsSyncPaused()) {
+    return UserDemographicsResult::ForStatus(
+        UserDemographicsStatus::kSyncNotEnabled);
+  }
 
   return sync_prefs_.GetUserDemographics(now);
 }

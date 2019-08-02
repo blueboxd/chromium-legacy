@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueu
 import org.chromium.chrome.browser.download.DownloadMetrics.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaBackgroundDownload;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -54,7 +55,11 @@ import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OfflineContentProvider;
+import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.PendingState;
+import org.chromium.components.offline_items_collection.UpdateDelta;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
@@ -225,6 +230,44 @@ public class DownloadManagerService
             mIsSupportedMimeType = progress.mIsSupportedMimeType;
         }
     }
+
+    private class BackgroundDownloadUmaRecorder implements OfflineContentProvider.Observer {
+        BackgroundDownloadUmaRecorder() {
+            OfflineContentAggregatorFactory.get().addObserver(this);
+        }
+
+        @Override
+        public void onItemUpdated(OfflineItem item, UpdateDelta updateDelta) {
+            if (!LegacyHelpers.isLegacyDownload(item.id)) return;
+            switch (item.state) {
+                case OfflineItemState.COMPLETE:
+                    maybeRecordBackgroundDownload(UmaBackgroundDownload.COMPLETED, item.id.id);
+                    break;
+                case OfflineItemState.CANCELLED:
+                    maybeRecordBackgroundDownload(UmaBackgroundDownload.CANCELLED, item.id.id);
+                    break;
+                case OfflineItemState.INTERRUPTED:
+                    maybeRecordBackgroundDownload(UmaBackgroundDownload.INTERRUPTED, item.id.id);
+                    break;
+                case OfflineItemState.FAILED:
+                    maybeRecordBackgroundDownload(UmaBackgroundDownload.FAILED, item.id.id);
+                    break;
+                case OfflineItemState.PENDING:
+                case OfflineItemState.PAUSED:
+                case OfflineItemState.IN_PROGRESS:
+                default:
+                    break;
+            }
+        }
+
+        @Override
+        public void onItemsAdded(ArrayList<OfflineItem> items) {}
+
+        @Override
+        public void onItemRemoved(ContentId id) {}
+    }
+
+    private BackgroundDownloadUmaRecorder mBackgroundDownloadUmaRecorder;
 
     /**
      * Creates DownloadManagerService.
@@ -1977,6 +2020,9 @@ public class DownloadManagerService
                     UmaBackgroundDownload.STARTED, 0);
             nativeRecordFirstBackgroundInterruptReason(getNativeDownloadManagerService(),
                     mFirstBackgroundDownloadId, true /* downloadStarted */);
+        }
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)) {
+            mBackgroundDownloadUmaRecorder = new BackgroundDownloadUmaRecorder();
         }
     }
 

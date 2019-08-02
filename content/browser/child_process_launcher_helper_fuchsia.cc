@@ -48,7 +48,7 @@ void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
-  DCHECK_CURRENTLY_ON(client_thread_id_);
+  DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
 
   sandbox_policy_.Initialize(delegate_->GetSandboxType());
 }

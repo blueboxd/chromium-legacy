@@ -87,7 +87,7 @@ TEST_F(AXAuraObjCacheTest, ValidTree) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  parent_widget->Init(params);
+  parent_widget->Init(std::move(params));
   parent_widget->GetNativeWindow()->SetTitle(
       base::ASCIIToUTF16("ParentWindow"));
   parent_widget->Show();
@@ -99,7 +99,7 @@ TEST_F(AXAuraObjCacheTest, ValidTree) {
   params.child = true;
   params.bounds = gfx::Rect(100, 100, 200, 200);
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
-  child_widget->Init(params);
+  child_widget->Init(std::move(params));
   child_widget->GetNativeWindow()->SetTitle(base::ASCIIToUTF16("ChildWindow"));
   child_widget->Show();
 

@@ -520,9 +520,8 @@ void CrxInstaller::OnUnpackSuccess(
     return;
   }
 
-  if (!base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&CrxInstaller::CheckInstall, this)))
+  if (!base::PostTask(FROM_HERE, {BrowserThread::UI},
+                      base::BindOnce(&CrxInstaller::CheckInstall, this)))
     NOTREACHED();
 }
 
@@ -866,10 +865,9 @@ void CrxInstaller::ReloadExtensionAfterInstall(
 
 void CrxInstaller::ReportFailureFromFileThread(const CrxInstallError& error) {
   DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
-  if (!base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&CrxInstaller::ReportFailureFromUIThread, this,
-                         error))) {
+  if (!base::PostTask(FROM_HERE, {BrowserThread::UI},
+                      base::BindOnce(&CrxInstaller::ReportFailureFromUIThread,
+                                     this, error))) {
     NOTREACHED();
   }
 }
@@ -911,7 +909,7 @@ void CrxInstaller::ReportSuccessFromFileThread() {
   if (install_cause() == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD)
     UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionInstalled", 1, 2);
 
-  if (!base::PostTaskWithTraits(
+  if (!base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CrxInstaller::ReportSuccessFromUIThread, this)))
     NOTREACHED();
@@ -1005,7 +1003,7 @@ void CrxInstaller::NotifyCrxInstallComplete(
     ConfirmReEnable();
 
   if (!installer_callback_.is_null() &&
-      !base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
+      !base::CreateSingleThreadTaskRunner({BrowserThread::UI})
            ->PostTask(FROM_HERE,
                       base::BindOnce(std::move(installer_callback_), error))) {
     NOTREACHED();

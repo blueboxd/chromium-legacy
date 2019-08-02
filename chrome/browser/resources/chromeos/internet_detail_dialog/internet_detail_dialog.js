@@ -88,6 +88,34 @@ Polymer({
     this.getNetworkDetails_();
   },
 
+  /** @override */
+  ready: function() {
+    CrOncStrings = {
+      OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
+      OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
+      OncTypeMobile: loadTimeData.getString('OncTypeMobile'),
+      OncTypeTether: loadTimeData.getString('OncTypeTether'),
+      OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
+      OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
+      OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),
+      networkListItemConnected:
+          loadTimeData.getString('networkListItemConnected'),
+      networkListItemConnecting:
+          loadTimeData.getString('networkListItemConnecting'),
+      networkListItemConnectingTo:
+          loadTimeData.getString('networkListItemConnectingTo'),
+      networkListItemInitializing:
+          loadTimeData.getString('networkListItemInitializing'),
+      networkListItemScanning:
+          loadTimeData.getString('networkListItemScanning'),
+      networkListItemNotConnected:
+          loadTimeData.getString('networkListItemNotConnected'),
+      networkListItemNoNetwork:
+          loadTimeData.getString('networkListItemNoNetwork'),
+      vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
+    };
+  },
+
   /** @private */
   close_: function() {
     chrome.send('dialogClose');

@@ -29,7 +29,6 @@
 #include "media/base/media_content_type.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 #include "ui/gfx/favicon_size.h"
 
 #if defined(OS_ANDROID)
@@ -913,6 +912,20 @@ void MediaSessionImpl::SkipAd() {
   DidReceiveAction(media_session::mojom::MediaSessionAction::kSkipAd);
 }
 
+void MediaSessionImpl::SeekTo(base::TimeDelta seek_time) {
+  DidReceiveAction(
+      media_session::mojom::MediaSessionAction::kSeekTo,
+      blink::mojom::MediaSessionActionDetails::NewSeekTo(
+          blink::mojom::MediaSessionSeekToDetails::New(seek_time, false)));
+}
+
+void MediaSessionImpl::ScrubTo(base::TimeDelta seek_time) {
+  DidReceiveAction(
+      media_session::mojom::MediaSessionAction::kSeekTo,
+      blink::mojom::MediaSessionActionDetails::NewSeekTo(
+          blink::mojom::MediaSessionSeekToDetails::New(seek_time, true)));
+}
+
 void MediaSessionImpl::GetMediaImageBitmap(
     const media_session::MediaImage& image,
     int minimum_size_px,
@@ -1070,6 +1083,12 @@ void MediaSessionImpl::OnMediaSessionActionsChanged(
 
 void MediaSessionImpl::DidReceiveAction(
     media_session::mojom::MediaSessionAction action) {
+  DidReceiveAction(action, nullptr /* details */);
+}
+
+void MediaSessionImpl::DidReceiveAction(
+    media_session::mojom::MediaSessionAction action,
+    blink::mojom::MediaSessionActionDetailsPtr details) {
   MediaSessionUmaHelper::RecordMediaSessionUserAction(
       MediaSessionActionToUserAction(action), focused_);
 
@@ -1108,7 +1127,7 @@ void MediaSessionImpl::DidReceiveAction(
   if (!routed_service_)
     return;
 
-  routed_service_->GetClient()->DidReceiveAction(action, nullptr /* details */);
+  routed_service_->GetClient()->DidReceiveAction(action, std::move(details));
 }
 
 bool MediaSessionImpl::IsServiceActiveForRenderFrameHost(RenderFrameHost* rfh) {
@@ -1193,6 +1212,12 @@ void MediaSessionImpl::RebuildAndNotifyActionsChanged() {
     actions.insert(media_session::mojom::MediaSessionAction::kPlay);
     actions.insert(media_session::mojom::MediaSessionAction::kPause);
     actions.insert(media_session::mojom::MediaSessionAction::kStop);
+  }
+
+  // If we support kSeekTo then we support kScrubTo as well.
+  if (base::Contains(actions,
+                     media_session::mojom::MediaSessionAction::kSeekTo)) {
+    actions.insert(media_session::mojom::MediaSessionAction::kScrubTo);
   }
 
   if (actions_ == actions)

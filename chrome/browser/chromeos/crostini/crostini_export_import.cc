@@ -175,6 +175,9 @@ void CrostiniExportImport::Start(
     return;
   } else {
     notifications_.emplace_hint(it, container_id, notification);
+    for (auto& observer : observers_) {
+      observer.OnCrostiniExportImportOperationStatusChanged(true);
+    }
   }
 
   switch (type) {
@@ -504,6 +507,9 @@ CrostiniExportImportNotification& CrostiniExportImport::RemoveNotification(
   DCHECK(it != notifications_.end());
   auto& notification = *it->second;
   notifications_.erase(it);
+  for (auto& observer : observers_) {
+    observer.OnCrostiniExportImportOperationStatusChanged(false);
+  }
   return notification;
 }
 
@@ -530,6 +536,11 @@ void CrostiniExportImport::CancelOperation(ExportImportType type,
     default:
       NOTREACHED();
   }
+}
+
+bool CrostiniExportImport::GetExportImportOperationStatus() const {
+  ContainerId id(kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
+  return notifications_.find(id) != notifications_.end();
 }
 
 CrostiniExportImportNotification*

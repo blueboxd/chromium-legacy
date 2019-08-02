@@ -168,9 +168,9 @@ void InstantiatePersistentHistograms(const base::FilePath& metrics_dir) {
       }
     }
     // Schedule the creation of a "spare" file for use on the next run.
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::LOWEST,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::LOWEST,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(base::IgnoreResult(
                            &base::GlobalHistogramAllocator::CreateSpareFile),
@@ -211,9 +211,9 @@ void InstantiatePersistentHistograms(const base::FilePath& metrics_dir) {
   allocator->CreateTrackingHistograms(kBrowserMetricsName);
 
 #if defined(OS_WIN)
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::LOWEST,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::LOWEST,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&DeleteOldWindowsTempFiles, std::move(metrics_dir)),
       kDeleteOldWindowsTempFilesDelay);

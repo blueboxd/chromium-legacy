@@ -128,10 +128,10 @@ void AwBrowserTerminator::OnChildExit(
   std::vector<ScopedJavaGlobalRef<jobject>> java_web_contents;
   GetJavaWebContentsForRenderProcess(rph, &java_web_contents);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::HIGHEST},
-      base::BindOnce(OnRenderProcessGone, java_web_contents, info.pid,
-                     info.is_crashed()));
+  base::PostTask(FROM_HERE,
+                 {content::BrowserThread::UI, base::TaskPriority::HIGHEST},
+                 base::BindOnce(OnRenderProcessGone, java_web_contents,
+                                info.pid, info.is_crashed()));
 }
 
 }  // namespace android_webview

@@ -21,6 +21,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/controls/button/button_controller.h"
 
 namespace media_router {
 
@@ -54,7 +55,8 @@ CastToolbarButton::CastToolbarButton(
       browser_(browser),
       profile_(browser_->profile()),
       context_menu_(std::move(context_menu)) {
-  set_notify_action(Button::NOTIFY_ON_PRESS);
+  button_controller()->set_notify_action(
+      views::ButtonController::NotifyAction::NOTIFY_ON_PRESS);
 
   EnableCanvasFlippingForRTLUI(false);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ICON_TOOLTIP_TEXT));

@@ -65,7 +65,7 @@ void NativeAppWindowViews::InitializeWindow(
   init_params.delegate = this;
   if (create_params.always_on_top)
     init_params.z_order = ui::ZOrderLevel::kFloatingWindow;
-  widget_->Init(init_params);
+  widget_->Init(std::move(init_params));
   widget_->CenterWindow(
       create_params.GetInitialWindowBounds(gfx::Insets()).size());
 }

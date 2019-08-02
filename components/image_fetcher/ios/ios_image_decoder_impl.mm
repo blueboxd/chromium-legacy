@@ -41,8 +41,9 @@ class IOSImageDecoderImpl : public ImageDecoder {
 
   // The task runner used to decode images if necessary.
   const scoped_refptr<base::TaskRunner> task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   // The WeakPtrFactory is used to cancel callbacks if ImageFetcher is

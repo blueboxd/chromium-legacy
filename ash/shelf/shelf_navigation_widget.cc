@@ -82,16 +82,17 @@ ShelfNavigationWidget::Delegate::Delegate(Shelf* shelf, ShelfView* shelf_view)
     : shelf_(shelf) {
   set_allow_deactivate_on_esc(true);
 
+  const int control_size = ShelfConstants::control_size();
   std::unique_ptr<BackButton> back_button_ptr =
       std::make_unique<BackButton>(shelf);
   back_button_ = AddChildView(std::move(back_button_ptr));
-  back_button_->SetSize(gfx::Size(kShelfControlSize, kShelfControlSize));
+  back_button_->SetSize(gfx::Size(control_size, control_size));
 
   std::unique_ptr<HomeButton> home_button_ptr =
       std::make_unique<HomeButton>(shelf);
   home_button_ = AddChildView(std::move(home_button_ptr));
   home_button_->set_context_menu_controller(shelf_view);
-  home_button_->SetSize(gfx::Size(kShelfControlSize, kShelfControlSize));
+  home_button_->SetSize(gfx::Size(control_size, control_size));
 
   GetViewAccessibility().OverrideNextFocus(shelf->shelf_widget());
   GetViewAccessibility().OverridePreviousFocus(shelf->GetStatusAreaWidget());
@@ -141,7 +142,7 @@ void ShelfNavigationWidget::Delegate::UpdateLayoutManager() {
           ? views::BoxLayout::Orientation::kHorizontal
           : views::BoxLayout::Orientation::kVertical;
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      orientation, gfx::Insets(), kShelfButtonSpacing));
+      orientation, gfx::Insets(), ShelfConstants::button_spacing()));
 }
 
 ShelfNavigationWidget::ShelfNavigationWidget(Shelf* shelf,
@@ -168,7 +169,7 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = container;
-  Init(params);
+  Init(std::move(params));
   set_focus_on_creation(false);
   GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
   SetContentsView(delegate_);
@@ -178,12 +179,13 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
 }
 
 gfx::Size ShelfNavigationWidget::GetIdealSize() const {
+  const int control_size = ShelfConstants::control_size();
   if (!shelf_->IsHorizontalAlignment())
-    return gfx::Size(kShelfControlSize, kShelfControlSize);
+    return gfx::Size(control_size, control_size);
   return gfx::Size(IsTabletMode()
-                       ? (2 * kShelfControlSize + kShelfButtonSpacing)
-                       : kShelfControlSize,
-                   kShelfControlSize);
+                       ? (2 * control_size + ShelfConstants::button_spacing())
+                       : control_size,
+                   control_size);
 }
 
 bool ShelfNavigationWidget::OnNativeWidgetActivationChanged(bool active) {
@@ -228,8 +230,10 @@ void ShelfNavigationWidget::OnTabletModeStarted() {
 
   bounds_animator_->SetAnimationDuration(kBackButtonOpacityAnimationDurationMs);
   bounds_animator_->AnimateViewTo(
-      GetHomeButton(), gfx::Rect(kShelfControlSize + kShelfButtonSpacing, 0,
-                                 kShelfControlSize, kShelfControlSize));
+      GetHomeButton(),
+      gfx::Rect(
+          ShelfConstants::control_size() + ShelfConstants::button_spacing(), 0,
+          ShelfConstants::control_size(), ShelfConstants::control_size()));
 }
 
 void ShelfNavigationWidget::OnTabletModeEnded() {
@@ -243,7 +247,8 @@ void ShelfNavigationWidget::OnTabletModeEnded() {
   GetBackButton()->SetFocusBehavior(views::View::FocusBehavior::NEVER);
   bounds_animator_->SetAnimationDuration(kBackButtonOpacityAnimationDurationMs);
   bounds_animator_->AnimateViewTo(
-      GetHomeButton(), gfx::Rect(0, 0, kShelfControlSize, kShelfControlSize));
+      GetHomeButton(), gfx::Rect(0, 0, ShelfConstants::control_size(),
+                                 ShelfConstants::control_size()));
 }
 
 void ShelfNavigationWidget::OnImplicitAnimationsCompleted() {

@@ -23,7 +23,6 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
@@ -36,23 +35,17 @@
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
-#include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_error_job.h"
-#include "net/url_request/url_request_job_factory_impl.h"
-#include "net/url_request/url_request_test_job.h"
-#include "net/url_request/url_request_test_util.h"
-#include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "sql/test/test_helpers.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -78,11 +71,20 @@ static GURL GetMockUrl(const std::string& path) {
   return GURL("http://mockhost/" + path);
 }
 
-std::unique_ptr<TestBrowserContext> browser_context;
 const int kProcessId = 1;
-std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment;
-scoped_refptr<base::SingleThreadTaskRunner> io_runner;
 std::unique_ptr<base::Thread> background_thread;
+
+bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
+  if (params->url_request.url == GetMockUrl("manifest")) {
+    URLLoaderInterceptor::WriteResponse("", "CACHE MANIFEST\n",
+                                        params->client.get());
+    return true;
+  } else if (params->url_request.url == GetMockUrl("empty.html")) {
+    URLLoaderInterceptor::WriteResponse("", "", params->client.get());
+    return true;
+  }
+  return false;
+}
 
 }  // namespace
 
@@ -241,7 +243,7 @@ class AppCacheStorageImplTest : public testing::Test {
     FlushAllTasks();
 
     // We also have to wait for InitTask completion call to be performed
-    // on the IO thread prior to running the test. Its guaranteed to be
+    // on the UI thread prior to running the test. Its guaranteed to be
     // queued by this time.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppCacheStorageImplTest::RunMethod<Method>,
@@ -249,15 +251,6 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   static void SetUpTestCase() {
-    scoped_task_environment = std::make_unique<TestBrowserThreadBundle>(
-        TestBrowserThreadBundle::REAL_IO_THREAD);
-
-    browser_context = std::make_unique<TestBrowserContext>();
-    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kProcessId,
-                                                       browser_context.get());
-
-    io_runner = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
-
     // We start the background thread as TYPE_IO because we also use the
     // db_thread for the disk_cache which needs to be of TYPE_IO.
     base::Thread::Options options(base::MessagePumpType::IO, 0);
@@ -267,44 +260,35 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   static void TearDownTestCase() {
-    io_runner.reset();
     background_thread.reset();
-    ChildProcessSecurityPolicyImpl::GetInstance()->Remove(kProcessId);
-    browser_context.reset();
-    scoped_task_environment.reset();
   }
 
   // Test harness --------------------------------------------------
 
-  AppCacheStorageImplTest() {
-    auto head = network::CreateResourceResponseHead(net::HTTP_OK);
-    network::URLLoaderCompletionStatus status;
+  AppCacheStorageImplTest()
+      : interceptor_(base::BindRepeating(&InterceptRequest)),
+        weak_partition_factory_(static_cast<StoragePartitionImpl*>(
+            BrowserContext::GetDefaultStoragePartition(&browser_context_))) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kProcessId,
+                                                       &browser_context_);
+  }
 
-    head.mime_type = "text/cache-manifest";
-    mock_url_loader_factory_.AddResponse(GetMockUrl("manifest"), head,
-                                         "CACHE MANIFEST\n", status);
-
-    head.mime_type = "text/html";
-    mock_url_loader_factory_.AddResponse(GetMockUrl("empty.html"), head, "",
-                                         status);
-    // TODO(http://crbug.com/824840): Enable NavigationLoaderOnUI for these
-    // tests.
-    feature_list_.InitWithFeatures({}, {features::kNavigationLoaderOnUI});
+  ~AppCacheStorageImplTest() override {
+    ChildProcessSecurityPolicyImpl::GetInstance()->Remove(kProcessId);
   }
 
   template <class Method>
-  void RunTestOnIOThread(Method method) {
+  void RunTestOnUIThread(Method method) {
     base::RunLoop run_loop;
     test_finished_cb_ = run_loop.QuitClosure();
-    io_runner->PostTask(
-        FROM_HERE,
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&AppCacheStorageImplTest::MethodWrapper<Method>,
                        base::Unretained(this), method));
     run_loop.Run();
   }
 
   void SetUpTest() {
-    DCHECK(io_runner->BelongsToCurrentThread());
     service_ = std::make_unique<AppCacheServiceImpl>(nullptr, nullptr);
     service_->Initialize(base::FilePath());
     mock_quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>();
@@ -313,7 +297,6 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void TearDownTest() {
-    DCHECK(io_runner->BelongsToCurrentThread());
     scoped_refptr<base::SequencedTaskRunner> db_runner =
         storage()->db_task_runner_;
     storage()->CancelDelegateCallbacks(delegate());
@@ -332,7 +315,6 @@ class AppCacheStorageImplTest : public testing::Test {
   void TestFinished() {
     // We unwind the stack prior to finishing up to let stack
     // based objects get deleted.
-    DCHECK(io_runner->BelongsToCurrentThread());
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppCacheStorageImplTest::TestFinishedUnwound,
                                   base::Unretained(this)));
@@ -348,7 +330,6 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void ScheduleNextTask() {
-    DCHECK(io_runner->BelongsToCurrentThread());
     if (task_stack_.empty()) {
       return;
     }
@@ -1623,11 +1604,8 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // Recreate the service to point at the db and corruption on disk.
-    service_ = std::make_unique<AppCacheServiceImpl>(nullptr, nullptr);
-    auto loader_factory_getter = base::MakeRefCounted<URLLoaderFactoryGetter>();
-    loader_factory_getter->SetNetworkFactoryForTesting(
-        &mock_url_loader_factory_, /* is_corb_enabled = */ true);
-    service_->set_url_loader_factory_getter(loader_factory_getter.get());
+    service_ = std::make_unique<AppCacheServiceImpl>(
+        nullptr, weak_partition_factory_.GetWeakPtr());
 
     service_->Initialize(temp_directory_.GetPath());
     mock_quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>();
@@ -1799,6 +1777,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   // Data members --------------------------------------------------
+  TestBrowserThreadBundle scoped_task_environment_;
 
   base::OnceClosure test_finished_cb_;
   base::stack<base::OnceClosure> task_stack_;
@@ -1814,13 +1793,14 @@ class AppCacheStorageImplTest : public testing::Test {
   mojo::Remote<blink::mojom::AppCacheHost> host_remote_;
 
   // Specifically for the Reinitalize test.
-  base::test::ScopedFeatureList feature_list_;
   base::ScopedTempDir temp_directory_;
   std::unique_ptr<MockServiceObserver> observer_;
   MockAppCacheFrontend frontend_;
   mojo::ReceiverSet<blink::mojom::AppCacheFrontend> frontend_receivers_;
   std::unique_ptr<AppCacheRequestHandler> handler_;
-  network::TestURLLoaderFactory mock_url_loader_factory_;
+  URLLoaderInterceptor interceptor_;
+  TestBrowserContext browser_context_;
+  base::WeakPtrFactory<StoragePartitionImpl> weak_partition_factory_;
 
   // Test data
   const base::Time kZeroTime;
@@ -1867,135 +1847,135 @@ class AppCacheStorageImplTest : public testing::Test {
 };
 
 TEST_F(AppCacheStorageImplTest, LoadCache_Miss) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::LoadCache_Miss);
+  RunTestOnUIThread(&AppCacheStorageImplTest::LoadCache_Miss);
 }
 
 TEST_F(AppCacheStorageImplTest, LoadCache_NearHit) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::LoadCache_NearHit);
+  RunTestOnUIThread(&AppCacheStorageImplTest::LoadCache_NearHit);
 }
 
 TEST_F(AppCacheStorageImplTest, CreateGroupInEmptyOrigin) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::CreateGroupInEmptyOrigin);
+  RunTestOnUIThread(&AppCacheStorageImplTest::CreateGroupInEmptyOrigin);
 }
 
 TEST_F(AppCacheStorageImplTest, CreateGroupInPopulatedOrigin) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::CreateGroupInPopulatedOrigin);
+  RunTestOnUIThread(&AppCacheStorageImplTest::CreateGroupInPopulatedOrigin);
 }
 
 TEST_F(AppCacheStorageImplTest, LoadGroupAndCache_FarHit) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::LoadGroupAndCache_FarHit);
+  RunTestOnUIThread(&AppCacheStorageImplTest::LoadGroupAndCache_FarHit);
 }
 
 TEST_F(AppCacheStorageImplTest, StoreNewGroup) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::StoreNewGroup);
+  RunTestOnUIThread(&AppCacheStorageImplTest::StoreNewGroup);
 }
 
 TEST_F(AppCacheStorageImplTest, StoreExistingGroup) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::StoreExistingGroup);
+  RunTestOnUIThread(&AppCacheStorageImplTest::StoreExistingGroup);
 }
 
 TEST_F(AppCacheStorageImplTest, StoreExistingGroupExistingCache) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::StoreExistingGroupExistingCache);
+  RunTestOnUIThread(&AppCacheStorageImplTest::StoreExistingGroupExistingCache);
 }
 
 TEST_F(AppCacheStorageImplTest, FailStoreGroup_SizeTooBig) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::FailStoreGroup_SizeTooBig);
+  RunTestOnUIThread(&AppCacheStorageImplTest::FailStoreGroup_SizeTooBig);
 }
 
 TEST_F(AppCacheStorageImplTest, FailStoreGroup_PaddingTooBig) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::FailStoreGroup_PaddingTooBig);
+  RunTestOnUIThread(&AppCacheStorageImplTest::FailStoreGroup_PaddingTooBig);
 }
 
 TEST_F(AppCacheStorageImplTest, MakeGroupObsolete) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::MakeGroupObsolete);
+  RunTestOnUIThread(&AppCacheStorageImplTest::MakeGroupObsolete);
 }
 
 TEST_F(AppCacheStorageImplTest, MarkEntryAsForeign) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::MarkEntryAsForeign);
+  RunTestOnUIThread(&AppCacheStorageImplTest::MarkEntryAsForeign);
 }
 
 TEST_F(AppCacheStorageImplTest, MarkEntryAsForeignWithLoadInProgress) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::MarkEntryAsForeignWithLoadInProgress);
 }
 
 TEST_F(AppCacheStorageImplTest, FindNoMainResponse) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::FindNoMainResponse);
+  RunTestOnUIThread(&AppCacheStorageImplTest::FindNoMainResponse);
 }
 
 TEST_F(AppCacheStorageImplTest, BasicFindMainResponseInDatabase) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::BasicFindMainResponseInDatabase);
+  RunTestOnUIThread(&AppCacheStorageImplTest::BasicFindMainResponseInDatabase);
 }
 
 TEST_F(AppCacheStorageImplTest, BasicFindMainResponseInWorkingSet) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::BasicFindMainResponseInWorkingSet);
 }
 
 TEST_F(AppCacheStorageImplTest, BasicFindMainFallbackResponseInDatabase) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::BasicFindMainFallbackResponseInDatabase);
 }
 
 TEST_F(AppCacheStorageImplTest, BasicFindMainFallbackResponseInWorkingSet) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::BasicFindMainFallbackResponseInWorkingSet);
 }
 
 TEST_F(AppCacheStorageImplTest, BasicFindMainInterceptResponseInDatabase) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::BasicFindMainInterceptResponseInDatabase);
 }
 
 TEST_F(AppCacheStorageImplTest, BasicFindMainInterceptResponseInWorkingSet) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::BasicFindMainInterceptResponseInWorkingSet);
 }
 
 TEST_F(AppCacheStorageImplTest, FindMainResponseWithMultipleHits) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::FindMainResponseWithMultipleHits);
+  RunTestOnUIThread(&AppCacheStorageImplTest::FindMainResponseWithMultipleHits);
 }
 
 TEST_F(AppCacheStorageImplTest, FindMainResponseExclusionsInDatabase) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::FindMainResponseExclusionsInDatabase);
 }
 
 TEST_F(AppCacheStorageImplTest, FindMainResponseExclusionsInWorkingSet) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::FindMainResponseExclusionsInWorkingSet);
 }
 
 TEST_F(AppCacheStorageImplTest, FindInterceptPatternMatchInWorkingSet) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::FindInterceptPatternMatchInWorkingSet);
 }
 
 TEST_F(AppCacheStorageImplTest, FindInterceptPatternMatchInDatabase) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::FindInterceptPatternMatchInDatabase);
 }
 
 TEST_F(AppCacheStorageImplTest, FindFallbackPatternMatchInWorkingSet) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::FindFallbackPatternMatchInWorkingSet);
 }
 
 TEST_F(AppCacheStorageImplTest, FindFallbackPatternMatchInDatabase) {
-  RunTestOnIOThread(
+  RunTestOnUIThread(
       &AppCacheStorageImplTest::FindFallbackPatternMatchInDatabase);
 }
 
 TEST_F(AppCacheStorageImplTest, Reinitialize1) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::Reinitialize1);
+  RunTestOnUIThread(&AppCacheStorageImplTest::Reinitialize1);
 }
 
 TEST_F(AppCacheStorageImplTest, Reinitialize2) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::Reinitialize2);
+  RunTestOnUIThread(&AppCacheStorageImplTest::Reinitialize2);
 }
 
 TEST_F(AppCacheStorageImplTest, Reinitialize3) {
-  RunTestOnIOThread(&AppCacheStorageImplTest::Reinitialize3);
+  RunTestOnUIThread(&AppCacheStorageImplTest::Reinitialize3);
 }
 
 // That's all folks!

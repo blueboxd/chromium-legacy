@@ -66,7 +66,7 @@ public class WebApkActivity extends WebappActivity {
 
     @Override
     public String getWebApkPackageName() {
-        return getWebappInfo().webApkPackageName();
+        return getWebApkInfo().webApkPackageName();
     }
 
     @Override
@@ -78,7 +78,7 @@ public class WebApkActivity extends WebappActivity {
     @Override
     public void onResumeWithNative() {
         super.onResumeWithNative();
-        AppHooks.get().setDisplayModeForActivity(getWebappInfo().displayMode(), this);
+        AppHooks.get().setDisplayModeForActivity(getWebApkInfo().displayMode(), this);
     }
 
     @Override
@@ -92,11 +92,34 @@ public class WebApkActivity extends WebappActivity {
     protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
         super.onDeferredStartupWithStorage(storage);
 
-        WebApkInfo info = (WebApkInfo) getWebappInfo();
+        WebApkInfo info = getWebApkInfo();
         WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.distributor());
 
         mUpdateManager = new WebApkUpdateManager(storage);
         mUpdateManager.updateIfNeeded(getActivityTab(), info);
+    }
+
+    @Override
+    protected void onDeferredStartupWithNullStorage(
+            WebappDisclosureSnackbarController disclosureSnackbarController) {
+        // WebappDataStorage objects are cleared if a user clears Chrome's data. Recreate them
+        // for WebAPKs since we need to store metadata for updates and disclosure notifications.
+        WebappRegistry.getInstance().register(
+                getWebApkInfo().id(), new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        if (isActivityFinishingOrDestroyed()) return;
+
+                        onDeferredStartupWithStorage(storage);
+                        // Set force == true to indicate that we need to show a privacy
+                        // disclosure for the newly installed unbound WebAPKs which
+                        // have no storage yet. We can't simply default to a showing if the
+                        // storage has a default value as we don't want to show this disclosure
+                        // for pre-existing unbound WebAPKs.
+                        disclosureSnackbarController.maybeShowDisclosure(
+                                WebApkActivity.this, storage, true /* force */);
+                    }
+                });
     }
 
     @Override
@@ -109,7 +132,7 @@ public class WebApkActivity extends WebappActivity {
 
     @Override
     public void onPauseWithNative() {
-        WebApkInfo info = (WebApkInfo) getWebappInfo();
+        WebApkInfo info = getWebApkInfo();
         long sessionDuration = SystemClock.elapsedRealtime() - mStartTime;
         WebApkUma.recordWebApkSessionDuration(info.distributor(), sessionDuration);
         WebApkUkmRecorder.recordWebApkSessionDuration(
@@ -130,11 +153,19 @@ public class WebApkActivity extends WebappActivity {
         super.onDestroyInternal();
     }
 
+    /**
+     * Returns structure containing data about the WebApk currently displayed.
+     * The return value should not be cached.
+     */
+    public WebApkInfo getWebApkInfo() {
+        return (WebApkInfo) getWebappInfo();
+    }
+
     @Override
     protected boolean handleBackPressed() {
         if (super.handleBackPressed()) return true;
 
-        if (getWebappInfo().isSplashProvidedByWebApk() && isSplashShowing()) {
+        if (getWebApkInfo().isSplashProvidedByWebApk() && isSplashShowing()) {
             // When the WebAPK provides the splash screen, the splash screen activity is stacked
             // underneath the WebAPK. The splash screen finishes itself in
             // {@link Activity#onResume()}. When finishing the WebApkActivity, there is sometimes a

@@ -28,13 +28,13 @@ namespace {
 
 #if defined(OS_WIN)
 scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
-  return base::CreateCOMSTATaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  return base::CreateCOMSTATaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 #else   // OS_WIN
 scoped_refptr<base::TaskRunner> GetTaskRunner() {
-  return base::CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  return base::CreateTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
 }
 #endif  // OS_WIN
 
